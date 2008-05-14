@@ -54,7 +54,7 @@ module Neo
       end
     end
   
-    def Node.properties(*props)
+    def self.properties(*props)
       props.each do |prop|
         puts "Define #{prop}"
         define_method(prop) do 
@@ -70,7 +70,7 @@ module Neo
       end
     end
     
-    def Node.relations(*relations)
+    def self.relations(*relations)
       relations.each do |r|
         
 #        define_method(r) do 
