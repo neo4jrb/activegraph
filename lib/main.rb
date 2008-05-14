@@ -1,12 +1,12 @@
 include Java
 
 
-
-
 module Neo
   
   require 'neo-1.0-b6.jar'
   require 'jta-spec1_0_1.jar'
+  require 'index-util-0.4-20080512.110337-6.jar'
+  require 'lucene-core-2.3.2.jar'
 
   
   EmbeddedNeo = org.neo4j.api.core.EmbeddedNeo
@@ -15,6 +15,7 @@ module Neo
   Traverser = org.neo4j.api.core.Traverser
   ReturnableEvaluator = org.neo4j.api.core.ReturnableEvaluator
   Direction = org.neo4j.api.core.Direction
+  IndexService = org.neo4j.util.index.IndexService
   
   def start
     puts "start neo"
@@ -43,7 +44,6 @@ module Neo
 
   
   class Node
-    
     attr_reader :internal_node 
     
     def initialize
@@ -52,13 +52,17 @@ module Neo
       else
         @internal_node = Neo.create_node  
       end
+      
+      
+      # TODO
+      # Maybe we should create a meta node that knows what type this node is of, (if that meta node does not already exist )
+      # A relationship is created between this new node and the meta node.
+      # When do serialization back to ruby object from Neo we read this relationship and create the correct class
     end
   
     def self.properties(*props)
       props.each do |prop|
-        puts "Define #{prop}"
         define_method(prop) do 
-          puts "Get #{prop}"       
           @internal_node.get_property(prop.to_s)
         end
 
