@@ -1,13 +1,20 @@
 include Java
 
 
+
+
 module Neo
   
   require 'neo-1.0-b6.jar'
   require 'jta-spec1_0_1.jar'
 
+  
   EmbeddedNeo = org.neo4j.api.core.EmbeddedNeo
   Transaction = org.neo4j.api.core.Transaction
+  StopEvaluator = org.neo4j.api.core.StopEvaluator
+  Traverser = org.neo4j.api.core.Traverser
+  ReturnableEvaluator = org.neo4j.api.core.ReturnableEvaluator
+  Direction = org.neo4j.api.core.Direction
   
   def start
     puts "start neo"
@@ -85,6 +92,21 @@ module Neo
       @type = type
     end
     
+    def each
+      traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST, 
+        StopEvaluator::DEPTH_ONE,
+        ReturnableEvaluator::ALL_BUT_START_NODE,
+        RelationshipType.instance(:friend),
+        Direction::OUTGOING)
+      puts "Traverser #{traverser.inspect}"
+
+      iter = traverser.iterator
+      while (iter.hasNext) do
+        yield iter.next
+      end
+    end
+    
+    
     def <<(other)
       puts "added #{other}"
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
@@ -133,6 +155,10 @@ end
 
 class Employee < Person
   properties :salary 
+  
+  def to_s
+    "Employee #{@name}"
+  end
 end
 
 n1 = Employee.new do |node| # this code body is run in a transaction
@@ -148,6 +174,7 @@ end
 
 puts "Name #{n1.name}, salary: #{n1.salary}"
 
+n2.friends.each {|n| puts "Node #{n.inspect}"}
 
 #n1.friends << "hoho"
 
