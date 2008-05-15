@@ -21,6 +21,8 @@ module Neo
     puts "start neo"
     @@neo = EmbeddedNeo.new("var/neo")  
     
+    # add a super node having subnodes to all metaclasses
+    # a metaclass is a node that is created for each time someone inherits from the Node class
     transaction do
       @@metaclasses =Node.new
     end
@@ -54,7 +56,6 @@ module Neo
     
     def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
-        puts "INTERNAL NODE"
         @internal_node = args[0]
         return
       end
@@ -110,12 +111,14 @@ module Neo
       end
     end
     
-    def self.relations(*relations)
-      relations.each do |r|
-        
-        #        define_method(r) do 
-      end
-    end
+#    def self.relations(*relations)
+#      relations.each do |r|
+#        define_method(r) do 
+#          puts "Relationship '#{r}'"
+#          Relations.new(self,RelationshipType.instance(r.to_sym))
+#        end
+#      end
+#    end
 
     def friends
       Relations.new(self,RelationshipType.instance(:friend))
@@ -133,6 +136,7 @@ module Neo
     end
     
     def each
+      puts "each called on node #{@node}"
       traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST, 
         StopEvaluator::DEPTH_ONE,
         ReturnableEvaluator::ALL_BUT_START_NODE,

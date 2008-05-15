@@ -19,12 +19,12 @@ describe Neo::Node do
     Neo::transaction {
       node = Neo::Node.new
     }
-    node.should be_an_instance_of Neo::Node
+    node.should be_an_instance_of(Neo::Node)
   end
 
   it "should run in a transaction if a block is given at new"  do
     node = Neo::Node.new { }
-    node.should be_an_instance_of Neo::Node    
+    node.should be_an_instance_of(Neo::Node)
   end
   
   it "should have a constructor that takes a native Neo Java object" do
@@ -100,11 +100,22 @@ describe Neo::Node do
   end
   
   
-  it "should allow to declare relations" do
+#  it "should allow to declare relations" do
+#    #given
+#    class Person < Neo::Node
+#      properties :name, :age 
+#      relations :friends
+#    end
+#
+#    p = Person.new {}    
+#    puts "Method: " + p.instance_method.to_s
+#  end
+
+    it "should allow to add relations" do
     #given
     class Person < Neo::Node
       properties :name, :age 
-      #  relations :friend # TODO
+      #relations :friends
     end
     
     p1 = Person.new do|node|
@@ -123,7 +134,7 @@ describe Neo::Node do
     #given
     class Person < Neo::Node
       properties :name, :age 
-      #  relations :friend # TODO
+#relations :friends  # TODO !!!!!!!!
     end
     
     p1 = Person.new do|node|
@@ -136,29 +147,9 @@ describe Neo::Node do
     end
     
     # then
-    p2.friends.should be_kind_of Enumerable
+    p2.friends.should be_kind_of(Enumerable)
     found = p2.friends.find{|node| node.name == 'p1'}
     found.name.should == "p1"
   end
   
-  
-  it "should do stuff" do
-    class Person < Neo::Node
-      properties :name, :age 
-      #  relations :friend, :child
-    end
-    
-    class Employee < Person
-      properties :salary 
-      
-      def to_s
-        "Employee #{@name}"
-      end
-    end
-    
-    n1 = Employee.new do |node| # this code body is run in a transaction
-      node.name = "kalle"
-      node.salary = 10
-    end 
-  end
 end
