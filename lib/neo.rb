@@ -52,7 +52,14 @@ module Neo
   class Node
     attr_reader :internal_node 
     
-    def initialize
+    def initialize(*args)
+      if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
+        puts "INTERNAL NODE"
+        @internal_node = args[0]
+        return
+      end
+      
+      
       if block_given? # check if we should run in a transaction
         Neo.transaction { @internal_node = Neo::create_node; yield self }
       else
@@ -135,7 +142,7 @@ module Neo
 
       iter = traverser.iterator
       while (iter.hasNext) do
-        yield iter.next
+        yield Node.new(iter.next)
       end
     end
     
