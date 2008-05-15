@@ -20,6 +20,11 @@ module Neo
   def start
     puts "start neo"
     @@neo = EmbeddedNeo.new("var/neo")  
+    
+    transaction do
+      @@metaclasses =Node.new
+    end
+    
   end
 
   def stop
@@ -59,7 +64,31 @@ module Neo
       # A relationship is created between this new node and the meta node.
       # When do serialization back to ruby object from Neo we read this relationship and create the correct class
     end
-  
+
+    def method_missing(methodname, *args)
+      name = methodname.to_s
+      setter = /=$/ === name
+      expected_args = 0
+      if setter
+        name = name[0...-1]
+        expected_args = 1
+      end
+      unless args.size == expected_args
+        err = "wrong number of arguments (#{args.size} for #{expected_args})"
+        raise ArgumentError.new(err)
+      end
+
+      if setter
+          @internal_node.set_property(name, args[0])
+      else
+          return @internal_node.get_property(name)
+      end      
+    end
+    
+    def self.inherited(c)
+      puts "Class #{c} < #{self}"
+    end
+    
     def self.properties(*props)
       props.each do |prop|
         define_method(prop) do 
@@ -68,7 +97,6 @@ module Neo
 
         name = (prop.to_s() +"=")
         define_method(name) do |value|
-          puts "Set #{prop} to #{value}"               
           @internal_node.set_property(prop.to_s, value)
         end
       end
@@ -77,7 +105,7 @@ module Neo
     def self.relations(*relations)
       relations.each do |r|
         
-#        define_method(r) do 
+        #        define_method(r) do 
       end
     end
 
@@ -142,7 +170,7 @@ module Neo
     
   end
   
-
+ 
 end
 
 
@@ -154,7 +182,7 @@ start
 
 class Person < Node
   properties :name, :age 
-#  relations :friend, :child
+  #  relations :friend, :child
 end
 
 class Employee < Person
@@ -168,6 +196,7 @@ end
 n1 = Employee.new do |node| # this code body is run in a transaction
   node.name = "kalle"
   node.salary = 10
+  node.bar = "foobar"
 end 
 
 n2 = Employee.new do |node| # this code body is run in a transaction
@@ -179,6 +208,9 @@ end
 puts "Name #{n1.name}, salary: #{n1.salary}"
 
 n2.friends.each {|n| puts "Node #{n.inspect}"}
+
+puts "N1 #{n1.bar}"
+
 
 #n1.friends << "hoho"
 
