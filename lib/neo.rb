@@ -17,8 +17,8 @@ module Neo
   Direction = org.neo4j.api.core.Direction
   IndexService = org.neo4j.util.index.IndexService
   
-  def start
-    puts "start neo"
+  def self.start
+    puts "start neo #{self.inspect}"
     @@neo = EmbeddedNeo.new("var/neo")  
     
     transaction do
@@ -27,11 +27,11 @@ module Neo
     
   end
 
-  def stop
+  def self.stop
     @@neo.shutdown  
   end
   
-  def transaction      
+  def self.transaction      
     tx = Transaction.begin  
     begin  
       yield  
@@ -43,7 +43,7 @@ module Neo
     end      
   end  
   
-  def create_node
+  def self.create_node
     @@neo.createNode
   end
 
@@ -53,7 +53,11 @@ module Neo
     
     def initialize
       if block_given? # check if we should run in a transaction
-        transaction { @internal_node = Neo.create_node; yield self } 
+        Neo.transaction do 
+          @internal_node = Neo::create_node
+          puts "InternalNode #{internal_node}"
+          yield self 
+        end
       else
         @internal_node = Neo.create_node  
       end
@@ -69,6 +73,7 @@ module Neo
       name = methodname.to_s
       setter = /=$/ === name
       expected_args = 0
+      puts "Undefined '#{name}'"
       if setter
         name = name[0...-1]
         expected_args = 1
@@ -173,52 +178,4 @@ module Neo
  
 end
 
-
-############################################################
-# Example of usage
-include Neo
-
-start
-
-class Person < Node
-  properties :name, :age 
-  #  relations :friend, :child
-end
-
-class Employee < Person
-  properties :salary 
-  
-  def to_s
-    "Employee #{@name}"
-  end
-end
-
-n1 = Employee.new do |node| # this code body is run in a transaction
-  node.name = "kalle"
-  node.salary = 10
-  node.bar = "foobar"
-end 
-
-n2 = Employee.new do |node| # this code body is run in a transaction
-  node.name = "sune"
-  node.salary = 20
-  node.friends << n1
-end 
-
-puts "Name #{n1.name}, salary: #{n1.salary}"
-
-n2.friends.each {|n| puts "Node #{n.inspect}"}
-
-puts "N1 #{n1.bar}"
-
-
-#n1.friends << "hoho"
-
-#r1 = RelationshipType.instance 'kalle'
-#r2 = RelationshipType.instance 'kalle'
-#puts "NAME #{r1.inspect} = #{r2.inspect}"
-
-#exit
-
-stop
 
