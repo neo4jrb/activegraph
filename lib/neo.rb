@@ -18,7 +18,7 @@ module Neo
   IndexService = org.neo4j.util.index.IndexService
   
   def self.start
-    puts "start neo #{self.inspect}"
+    puts "start neo"
     @@neo = EmbeddedNeo.new("var/neo")  
     
     transaction do
@@ -28,6 +28,7 @@ module Neo
   end
 
   def self.stop
+    puts "stop neo"
     @@neo.shutdown  
   end
   
@@ -53,13 +54,9 @@ module Neo
     
     def initialize
       if block_given? # check if we should run in a transaction
-        Neo.transaction do 
-          @internal_node = Neo::create_node
-          puts "InternalNode #{internal_node}"
-          yield self 
-        end
+        Neo.transaction { @internal_node = Neo::create_node; yield self }
       else
-        @internal_node = Neo.create_node  
+        @internal_node = Neo::create_node  
       end
       
       
@@ -73,7 +70,6 @@ module Neo
       name = methodname.to_s
       setter = /=$/ === name
       expected_args = 0
-      puts "Undefined '#{name}'"
       if setter
         name = name[0...-1]
         expected_args = 1
@@ -91,7 +87,7 @@ module Neo
     end
     
     def self.inherited(c)
-      puts "Class #{c} < #{self}"
+      # puts "Class #{c} < #{self}"
     end
     
     def self.properties(*props)
@@ -135,7 +131,7 @@ module Neo
         ReturnableEvaluator::ALL_BUT_START_NODE,
         RelationshipType.instance(:friend),
         Direction::OUTGOING)
-      puts "Traverser #{traverser.inspect}"
+      # puts "Traverser #{traverser.inspect}"
 
       iter = traverser.iterator
       while (iter.hasNext) do
@@ -145,7 +141,6 @@ module Neo
     
     
     def <<(other)
-      puts "added #{other}"
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
       self
     end

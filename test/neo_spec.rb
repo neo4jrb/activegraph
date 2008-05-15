@@ -5,15 +5,28 @@
 require 'neo'
 
 
-
 describe Neo::Node do
-  before do
+  before(:all) do
     Neo::start
   end
 
-  after do
+  after(:all) do
     Neo::stop
   end  
+
+  it "should construct a new node"  do
+    node = nil
+    Neo::transaction {
+      node = Neo::Node.new
+    }
+    node.should be_an_instance_of Neo::Node
+  end
+
+  it "should run in a transaction if a block is given at new"  do
+    node = Neo::Node.new { }
+    node.should be_an_instance_of Neo::Node    
+  end
+  
   
   it "should do stuff" do
     class Person < Neo::Node

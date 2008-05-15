@@ -9,7 +9,7 @@ require 'rake/rdoctask'
 require 'spec/rake/spectask'
 
 
-#task :default => :spec
+task :default => :spec
 
 desc "spec"
 Spec::Rake::SpecTask.new do |t|
