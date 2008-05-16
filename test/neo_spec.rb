@@ -5,6 +5,42 @@
 require 'neo'
 
 
+describe Neo do
+  before(:all) do
+    Neo::start
+  end
+
+  after(:all) do
+    Neo::stop
+  end  
+  
+  it "should have a find_metaclass method" do
+    n = Neo::find_metaclass('Kalle')
+    n.should be_nil
+    
+    class Kalle < Neo::Node 
+    end
+    
+    n = Neo::find_metaclass('Kalle')
+    n.should_not be_nil
+    n.should be_kind_of(Neo::RubyMetaClass)
+  end
+ 
+end
+
+
+describe Neo::RubyMetaClass do
+  before(:all) do
+    Neo::start
+  end
+
+  after(:all) do
+    Neo::stop
+  end  
+  
+end 
+
+
 describe Neo::Node do
   before(:all) do
     Neo::start
@@ -34,6 +70,17 @@ describe Neo::Node do
     node1.internal_node.should be_equal(node2.internal_node)
   end
   
+  
+  it "should have a metaclass property" do
+    node1 = Neo::Node.new { }
+    node1.metaclass.should be == "Neo::Node"
+    
+    class FooBar < Neo::Node
+    end
+    
+    node2 = FooBar.new {}
+    node2.metaclass.should be == "FooBar"    
+  end
   
   it "should have setter and getters for any property" do
     #given
@@ -65,6 +112,27 @@ describe Neo::Node do
     person.age.should == 42
   end
 
+  it "should create a meta node for each new subclass of Node" do
+    # when
+    class FooBar < Neo::Node
+    end
+    
+    # then
+    metanode = Neo::metaclasses_node.nodes.find{|node| node.classname == 'FooBar'}
+    metanode.should be_kind_of(Neo::Node)
+  end
+  
+
+  it "should have subclasses that have references to a MetaNode" do
+    # when
+    class FooBar < Neo::Node
+    end
+    
+    # then
+    metanode = Neo::metaclasses_node.nodes.find{|node| node.classname == 'FooBar'}
+    metanode.should be_kind_of(Neo::Node)
+  end
+  
   it "should have generated setter and getters for declared properties" do
     # given
     class Person < Neo::Node
@@ -115,7 +183,7 @@ describe Neo::Node do
     #given
     class Person < Neo::Node
       properties :name, :age 
-      #relations :friends
+      relations :friends
     end
     
     p1 = Person.new do|node|
@@ -128,20 +196,32 @@ describe Neo::Node do
        node.friends << p1
     end
   end
+  
+  it "should allow to dynamically add relations" do
+    Neo::transaction {
+      node1 = Neo::Node.new    
+      node2 = Neo::Node.new    
+     
+      Neo::Node.add_relation_type(:foos)
+      
+      node2.foos << node1
+    }
+  end
 
 
   it "should have relationship getters that returns Enumerable objects" do
     #given
     class Person < Neo::Node
       properties :name, :age 
-#relations :friends  # TODO !!!!!!!!
+      relations :friends
     end
     
-    p1 = Person.new do|node|
+    # when
+    p1 = Person.new do |node|
        node.name = "p1"
     end
 
-    p2 = Person.new do|node|
+    p2 = Person.new do |node|
        node.name = "p2"
        node.friends << p1
     end
@@ -150,6 +230,7 @@ describe Neo::Node do
     p2.friends.should be_kind_of(Enumerable)
     found = p2.friends.find{|node| node.name == 'p1'}
     found.name.should == "p1"
+    found.should be_kind_of(Person)
   end
   
 end

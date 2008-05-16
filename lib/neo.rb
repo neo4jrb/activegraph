@@ -24,11 +24,19 @@ module Neo
     # add a super node having subnodes to all metaclasses
     # a metaclass is a node that is created for each time someone inherits from the Node class
     transaction do
-      @@metaclasses =Node.new
+      @@metaclasses_node = RubyMetaClasses.new  # TODO (@@neo.getReferenceNode)
     end
     
   end
 
+  def self.metaclasses_node
+    @@metaclasses_node
+  end
+  
+  def self.find_metaclass(classname) 
+    metaclasses_node.nodes.find{|node| node.classname == classname}    
+  end
+  
   def self.stop
     puts "stop neo"
     @@neo.shutdown  
@@ -57,21 +65,19 @@ module Neo
     def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         @internal_node = args[0]
-        return
-      end
-      
-      
-      if block_given? # check if we should run in a transaction
-        Neo.transaction { @internal_node = Neo::create_node; yield self }
+        # TODO check if a transaction is needed
+        Neo.transaction {self.metaclass = self.class.to_s}
+      elsif block_given? # check if we should run in a transaction
+        Neo.transaction { init_internal; yield self }
       else
-        @internal_node = Neo::create_node  
+        init_internal
       end
-      
-      
-      # TODO
-      # Maybe we should create a meta node that knows what type this node is of, (if that meta node does not already exist )
-      # A relationship is created between this new node and the meta node.
-      # When do serialization back to ruby object from Neo we read this relationship and create the correct class
+    end
+    
+    def init_internal
+      @internal_node = Neo::create_node  
+      self.metaclass = self.class.to_s
+      # TODO set metaclass node to point to self
     end
 
     def method_missing(methodname, *args)
@@ -83,7 +89,7 @@ module Neo
         expected_args = 1
       end
       unless args.size == expected_args
-        err = "wrong number of arguments (#{args.size} for #{expected_args})"
+        err = "method '#{name}' has wrong number of arguments (#{args.size} for #{expected_args})"
         raise ArgumentError.new(err)
       end
 
@@ -95,7 +101,14 @@ module Neo
     end
     
     def self.inherited(c)
-      # puts "Class #{c} < #{self}"
+      if c == Neo::RubyMetaClass or c == Neo::RubyMetaClasses
+        return
+      end
+      # TODO check: should only be created once  ?      
+      RubyMetaClass.new do |n|
+       n.classname = c.to_s
+       Neo::metaclasses_node.nodes << n
+      end
     end
     
     def self.properties(*props)
@@ -111,19 +124,18 @@ module Neo
       end
     end
     
-#    def self.relations(*relations)
-#      relations.each do |r|
-#        define_method(r) do 
-#          puts "Relationship '#{r}'"
-#          Relations.new(self,RelationshipType.instance(r.to_sym))
-#        end
-#      end
-#    end
-
-    def friends
-      Relations.new(self,RelationshipType.instance(:friend))
+    def self.add_relation_type(type)
+        define_method(type) do 
+          Relations.new(self,type.to_s)
+        end
     end
     
+    
+    def self.relations(*relations)
+      relations.each {|type| add_relation_type(type)}
+    end
+
+    properties :metaclass
   end
 
   
@@ -132,24 +144,29 @@ module Neo
     
     def initialize(node, type)
       @node = node
-      @type = type
+      @type = RelationshipType.instance(type)      
     end
     
     def each
-      puts "each called on node #{@node}"
       traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST, 
         StopEvaluator::DEPTH_ONE,
         ReturnableEvaluator::ALL_BUT_START_NODE,
-        RelationshipType.instance(:friend),
+        @type,
         Direction::OUTGOING)
-      # puts "Traverser #{traverser.inspect}"
-
+      
       iter = traverser.iterator
       while (iter.hasNext) do
-        yield Node.new(iter.next)
+        inode = iter.next
+        classname = inode.get_property('metaclass')
+        
+        # get the class that might exist in a module
+        clazz = classname.split("::").inject(Kernel) do |container, name|
+          container.const_get(name.to_s)
+        end
+        yield clazz.new(inode)
       end
     end
-    
+      
     
     def <<(other)
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
@@ -181,7 +198,16 @@ module Neo
     
   end
   
- 
+  
+  class RubyMetaClass < Node
+    properties :classname
+    relations :instances
+  end
+
+  class RubyMetaClasses < Node
+    relations :nodes
+  end
+  
 end
 
 
