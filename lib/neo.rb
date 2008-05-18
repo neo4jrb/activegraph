@@ -25,7 +25,7 @@ module Neo
     # a classname is a node that is created for each time someone inherits from the Node class
     transaction do
       # TODO there should only be one metanodes object (@@neo.getReferenceNode)
-      @@meta_nodes = MetaNodes.new  
+      @@meta_nodes = MetaNodes.new #(@@neo.getReferenceNode)
     end
     
   end
@@ -60,6 +60,20 @@ module Neo
   end
 
   
+  def self.find_node(id) 
+    neo_node = @@neo.findNodeById(id)
+    load_node(neo_node)
+  end
+  
+  def self.load_node(neo_node)
+    classname = neo_node.get_property('classname')
+    # get the class that might exist in a module
+    clazz = classname.split("::").inject(Kernel) do |container, name|
+      container.const_get(name.to_s)
+    end
+    clazz.new(neo_node)
+  end
+  
   class Node
     attr_reader :internal_node 
     
@@ -67,7 +81,9 @@ module Neo
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         @internal_node = args[0]
         # TODO check if a transaction is needed, what happends if we already are in a transaction ?
-        Neo.transaction {self.classname = self.class.to_s}
+        #puts "Create new for #{self.class.to_s}: #{@internal_node.hasProperty('classname')}"
+        Neo.transaction {self.classname = self.class.to_s} unless @internal_node.hasProperty("classname")
+        #puts "DONE"
       elsif block_given? # check if we should run in a transaction
         Neo.transaction { init_internal; yield self }
       else
@@ -122,6 +138,14 @@ module Neo
         metanode
       end      
 
+    end
+    
+    # 
+    # Returns a unique id
+    # Calls getId on the neo node java object
+    #
+    def neo_node_id
+      @internal_node.getId()
     end
     
     #
@@ -180,14 +204,7 @@ module Neo
       
       iter = traverser.iterator
       while (iter.hasNext) do
-        inode = iter.next
-        classname = inode.get_property('classname')
-        
-        # get the class that might exist in a module
-        clazz = classname.split("::").inject(Kernel) do |container, name|
-          container.const_get(name.to_s)
-        end
-        yield clazz.new(inode)
+        yield Neo::load_node(iter.next)
       end
     end
       

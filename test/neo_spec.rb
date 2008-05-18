@@ -28,6 +28,9 @@ describe Neo do
     n.should be_kind_of(Neo::MetaNode)
   end
  
+  it "should find an (ruby) object stored in neo given its unique id"
+  #node = Neo::find_node(id) ...
+  
 end
 
 
@@ -41,7 +44,20 @@ describe Neo::MetaNode do
   end  
 
   it "should find all instances of a class" 
+  
+  it "should be unique, when neo is restarted" do
+    class Foo < Neo::Node
+    end
+    
+    id1 = Neo::find_meta_node('Foo').neo_node_id
+    Neo::stop
+    Neo::start
+    id2 = Neo::find_meta_node('Foo').neo_node_id # bug, does not even find it again
+    id1.should == id2
+  end
+  # make sure that the node_id is the same when neo is restarted
 end 
+
 
 
 describe Neo::Node do
@@ -74,7 +90,13 @@ describe Neo::Node do
   end
   
   
-  it "should have a property for the name of the ruby class it represent" do
+  it "should have a unique (neo) id" do
+    n1 = Neo::Node.new{}
+    n1.neo_node_id.should be_kind_of(Fixnum)
+  end
+  
+  
+  it "should know the name of the ruby class it represent" do
     node1 = Neo::Node.new { }
     node1.classname.should be == "Neo::Node"
     
@@ -243,5 +265,9 @@ describe Neo::Node do
     found.name.should == "p1"
     found.should be_kind_of(Person)
   end
+  
+  it "should not be possible to add to a relationship a none Neo::Node"
+  
+  it "should not be possible to set a neo property that is not a string of fixnum"
   
 end
