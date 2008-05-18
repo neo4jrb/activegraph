@@ -21,20 +21,21 @@ module Neo
     puts "start neo"
     @@neo = EmbeddedNeo.new("var/neo")  
     
-    # add a super node having subnodes to all metaclasses
-    # a metaclass is a node that is created for each time someone inherits from the Node class
+    # add a super node having subnodes to all classnamees
+    # a classname is a node that is created for each time someone inherits from the Node class
     transaction do
-      @@metaclasses_node = RubyMetaClasses.new  # TODO (@@neo.getReferenceNode)
+      # TODO there should only be one metanodes object (@@neo.getReferenceNode)
+      @@meta_nodes = MetaNodes.new  
     end
     
   end
 
-  def self.metaclasses_node
-    @@metaclasses_node
+  def self.meta_nodes
+    @@meta_nodes
   end
   
-  def self.find_metaclass(classname) 
-    metaclasses_node.nodes.find{|node| node.classname == classname}    
+  def self.find_meta_node(classname) 
+    meta_nodes.nodes.find{|node| node.meta_classname == classname}    
   end
   
   def self.stop
@@ -65,8 +66,8 @@ module Neo
     def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         @internal_node = args[0]
-        # TODO check if a transaction is needed
-        Neo.transaction {self.metaclass = self.class.to_s}
+        # TODO check if a transaction is needed, what happends if we already are in a transaction ?
+        Neo.transaction {self.classname = self.class.to_s}
       elsif block_given? # check if we should run in a transaction
         Neo.transaction { init_internal; yield self }
       else
@@ -76,11 +77,12 @@ module Neo
     
     def init_internal
       @internal_node = Neo::create_node  
-      self.metaclass = self.class.to_s
-      # TODO set metaclass node to point to self
+      self.classname = self.class.to_s
+      # TODO set classname node to point to self
     end
 
     def method_missing(methodname, *args)
+      # allows to set and get any neo property without declaring them first
       name = methodname.to_s
       setter = /=$/ === name
       expected_args = 0
@@ -101,16 +103,33 @@ module Neo
     end
     
     def self.inherited(c)
-      if c == Neo::RubyMetaClass or c == Neo::RubyMetaClasses
+      # This method adds a MetaNode for each class that inherits from the Node
+      # must avoid endless recursion 
+      if c == Neo::MetaNode or c == Neo::MetaNodes
         return
       end
+      
+      # create a meta node representing the new class
       # TODO check: should only be created once  ?      
-      RubyMetaClass.new do |n|
-       n.classname = c.to_s
-       Neo::metaclasses_node.nodes << n
+      metanode = MetaNode.new do |n|
+       n.meta_classname = c.to_s
+       Neo::meta_nodes.nodes << n
       end
+      
+      # define the 'meta_node' method in the new class
+      classname = class << c;  self;  end
+      classname.send :define_method, :meta_node do
+        metanode
+      end      
+
     end
     
+    #
+    # Allows to declare Neo properties.
+    # Notice that you do not need to declare any properties in order to 
+    # set and get a neo property.
+    # An undeclared setter/getter will handled in the method_missing method instead.
+    #
     def self.properties(*props)
       props.each do |prop|
         define_method(prop) do 
@@ -124,6 +143,11 @@ module Neo
       end
     end
     
+    
+    #
+    # Allows to declare Neo relationsships.
+    # The speficied name will be used as the type of the neo relationship.
+    #
     def self.add_relation_type(type)
         define_method(type) do 
           Relations.new(self,type.to_s)
@@ -135,7 +159,7 @@ module Neo
       relations.each {|type| add_relation_type(type)}
     end
 
-    properties :metaclass
+    properties :classname
   end
 
   
@@ -157,7 +181,7 @@ module Neo
       iter = traverser.iterator
       while (iter.hasNext) do
         inode = iter.next
-        classname = inode.get_property('metaclass')
+        classname = inode.get_property('classname')
         
         # get the class that might exist in a module
         clazz = classname.split("::").inject(Kernel) do |container, name|
@@ -199,12 +223,12 @@ module Neo
   end
   
   
-  class RubyMetaClass < Node
-    properties :classname
+  class MetaNode < Node
+    properties :meta_classname # the name of the ruby class it represent
     relations :instances
   end
 
-  class RubyMetaClasses < Node
+  class MetaNodes < Node
     relations :nodes
   end
   

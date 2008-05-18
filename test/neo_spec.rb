@@ -14,22 +14,24 @@ describe Neo do
     Neo::stop
   end  
   
-  it "should have a find_metaclass method" do
-    n = Neo::find_metaclass('Kalle')
+  it "should not find a meta node of a class that does not exist" do
+    n = Neo::find_meta_node('Kalle')
     n.should be_nil
-    
+  end
+  
+  it "should find the meta node of a class that exists" do
     class Kalle < Neo::Node 
     end
     
-    n = Neo::find_metaclass('Kalle')
+    n = Neo::find_meta_node('Kalle')
     n.should_not be_nil
-    n.should be_kind_of(Neo::RubyMetaClass)
+    n.should be_kind_of(Neo::MetaNode)
   end
  
 end
 
 
-describe Neo::RubyMetaClass do
+describe Neo::MetaNode do
   before(:all) do
     Neo::start
   end
@@ -37,7 +39,8 @@ describe Neo::RubyMetaClass do
   after(:all) do
     Neo::stop
   end  
-  
+
+  it "should find all instances of a class" 
 end 
 
 
@@ -63,7 +66,7 @@ describe Neo::Node do
     node.should be_an_instance_of(Neo::Node)
   end
   
-  it "should have a constructor that takes a native Neo Java object" do
+  it "should allow to create a node from a native Neo Java object" do
     node1 = Neo::Node.new { }
     node2 = Neo::Node.new(node1.internal_node)
     
@@ -71,17 +74,25 @@ describe Neo::Node do
   end
   
   
-  it "should have a metaclass property" do
+  it "should have a property for the name of the ruby class it represent" do
     node1 = Neo::Node.new { }
-    node1.metaclass.should be == "Neo::Node"
+    node1.classname.should be == "Neo::Node"
     
     class FooBar < Neo::Node
     end
     
     node2 = FooBar.new {}
-    node2.metaclass.should be == "FooBar"    
+    node2.classname.should be == "FooBar"    
   end
-  
+
+  it "should have a meta node for each class" do
+    class Kalle < Neo::Node 
+    end
+    
+    meta_node = Kalle.meta_node 
+    meta_node.should be_kind_of(Neo::MetaNode)
+  end
+
   it "should have setter and getters for any property" do
     #given
     node = Neo::Node.new do |n|
@@ -118,7 +129,7 @@ describe Neo::Node do
     end
     
     # then
-    metanode = Neo::metaclasses_node.nodes.find{|node| node.classname == 'FooBar'}
+    metanode = Neo::meta_nodes.nodes.find{|node| node.meta_classname == 'FooBar'}
     metanode.should be_kind_of(Neo::Node)
   end
   
@@ -129,7 +140,7 @@ describe Neo::Node do
     end
     
     # then
-    metanode = Neo::metaclasses_node.nodes.find{|node| node.classname == 'FooBar'}
+    metanode = Neo::meta_nodes.nodes.find{|node| node.meta_classname == 'FooBar'}
     metanode.should be_kind_of(Neo::Node)
   end
   
