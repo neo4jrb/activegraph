@@ -1,5 +1,3 @@
-include Java
-
 require 'neo/java_libs'
 require 'neo/neo_service'
 require 'neo/node'
