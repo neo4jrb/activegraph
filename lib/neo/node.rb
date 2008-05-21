@@ -19,10 +19,13 @@ module Neo
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         @internal_node = args[0]
         self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
+        $neo_logger.debug {"created '#{self.class.to_s}' using provided java neo node id #{@internal_node.getId()}"}
       elsif block_given? # check if we should run in a transaction
         Neo.transaction { init_internal; yield self }
+        $neo_logger.debug {"created '#{self.class.to_s}' with a new transaction"}        
       else
         init_internal
+        $neo_logger.debug {"created '#{self.class.to_s}' without a new transaction"}                
       end
     end
     
@@ -122,6 +125,7 @@ module Neo
         metanode
       end      
 
+      $neo_logger.debug{"created MetaNode for '#{c.to_s}'"}
     end
 
     

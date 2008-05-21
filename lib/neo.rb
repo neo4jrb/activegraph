@@ -9,6 +9,7 @@ module Neo
   # Set logger used by Neo
   $neo_logger = Logger.new(STDOUT)
   $neo_logger.level = Logger::WARN
+  #$neo_logger.level = Logger::DEBUG
  
   
   #
