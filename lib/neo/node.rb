@@ -67,7 +67,18 @@ module Neo
     def neo_node_id
       @internal_node.getId()
     end
+
+    def eql?(o)    
+      o.is_a?(self.class) && o.internal_node == internal_node
+    end
     
+    def ==(o)
+      eql?(o)
+    end
+    
+    def hash
+      internal_node.hashCode
+    end
     
     def to_s
       iter = @internal_node.getPropertyKeys.iterator

@@ -4,3 +4,4 @@
 * Implement pending rspecs
 * Add more rspecs, I think there is a bug when using several transactions
 * When running rspec with warning enabled it reports some problems - fix it.
+* Fix TODO's in the code

@@ -25,8 +25,8 @@ end
 describe "When neo has been restarted" do
 
   def restart
-      Neo::neo_service.stop
-      Neo::neo_service.start DB_LOCATION
+    Neo::neo_service.stop
+    Neo::neo_service.start DB_LOCATION
   end
   
   describe Neo::NeoService do
@@ -149,7 +149,14 @@ describe "When running in one transaction" do
       n.should be_kind_of(Neo::MetaNode)
     end
  
-    it "should find an (ruby) object stored in neo given its unique id"
+    it "should find an (ruby) object stored in neo given its unique id" do
+      class Foo < Neo::Node
+      end
+
+      foo1 = Foo.new
+      foo2 = Neo::neo_service.find_node(foo1.neo_node_id)
+      foo1.neo_node_id.should == foo2.neo_node_id
+    end
     #node = Neo::find_node(id) ...
   
   end
@@ -161,26 +168,35 @@ describe "When running in one transaction" do
   
   describe Neo::Node do
  
-    it "should construct a new node in a transaction"  do
-      node = nil
+    it "should be created with no arguments"  do
       node = Neo::Node.new
       node.should be_an_instance_of(Neo::Node)
     end
   
-    it "should run in a transaction if a block is given at new"  do
-      node = Neo::Node.new { }
-      node.should be_an_instance_of(Neo::Node)
+    it "should allow to set properties using a block at construction"  do
+      node = Neo::Node.new { |node|
+        node.foo = "foo"
+      }
+      node.foo.should == "foo"
     end
     
     it "should allow to create a node from a native Neo Java object" do
-      node1 = Neo::Node.new { }
+      node1 = Neo::Node.new
+      node2 = Neo::Node.new(node1.internal_node)
+    end
+    
+    it "should be == another node only if it has the same node id" do
+      node1 = Neo::Node.new
       node2 = Neo::Node.new(node1.internal_node)
       
       node1.internal_node.should be_equal(node2.internal_node)
+      node1.should == node2
+      
+      node1.hash.should == node2.hash
     end
     
     
-    it "should have a unique (neo) id" do
+    it "should have a neo id" do
       n1 = Neo::Node.new
       n1.neo_node_id.should be_kind_of(Fixnum)
     end
