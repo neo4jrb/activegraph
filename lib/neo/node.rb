@@ -71,10 +71,17 @@ module Neo
     
     def to_s
       iter = @internal_node.getPropertyKeys.iterator
-      s = self.class.to_s + ", properties:\n"
-      while (iter.hasNext) do
-        p = iter.next
-        s << "'#{p}' = '#{@internal_node.getProperty(p)}'\n"
+      s = self.class.to_s
+      if !iter.hasNext 
+        s << " no properties"
+      else
+        s << " Properties: ["
+        while (iter.hasNext) do
+          p = iter.next
+          s << "['#{p}' = '#{@internal_node.getProperty(p)}']"
+          s << ', ' if iter.hasNext
+        end
+        s << "]"
       end
       s
     end

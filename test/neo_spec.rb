@@ -22,9 +22,14 @@ end
 # the following specs are not always run inside ONE Neo transaction
 # 
 
-describe "When using several transactions" do
+describe "When neo has been restarted" do
 
-  describe Neo::MetaNode do
+  def restart
+      Neo::neo_service.stop
+      Neo::neo_service.start DB_LOCATION
+  end
+  
+  describe Neo::NeoService do
     before(:all) do
       start
     end
@@ -33,9 +38,38 @@ describe "When using several transactions" do
       stop
     end  
     
-    it "should find all instances of a class" 
+    it "should contain referenses to all meta nodes" do
+      # given
+      Neo::transaction {
+        metas = Neo::neo_service.meta_nodes.nodes
+        metas.to_a.size.should == 0
+      }
+      
+      class Foo < Neo::Node
+      end
+      
+      
+      Neo::transaction {
+        metas = Neo::neo_service.meta_nodes.nodes
+        metas.to_a.size.should == 1
+      }
+      
+      # when 
+      restart
+      
+      # then
+      Neo::transaction {
+        metas = Neo::neo_service.meta_nodes.nodes
+        metas.to_a.size.should == 1
+        meta = Neo::neo_service.find_meta_node('Foo')
+        meta.should_not be_nil
+        meta.meta_classname.should == "Foo"
+      }
+      
+      
+    end
     
-    it "should be unique, when neo is restarted" do
+    it "should have unique node ids for the Meta Node" do
       # when Neo is restarted make sure that the node representing the class
       # has the same node_id
     
@@ -47,14 +81,27 @@ describe "When using several transactions" do
         id1 = Neo::neo_service.find_meta_node('Foo').neo_node_id
       }
 
-      Neo::neo_service.stop
-      Neo::neo_service.start DB_LOCATION
-    
+      restart
+      
       id2 = nil
       Neo::transaction {
         id2 = Neo::neo_service.find_meta_node('Foo').neo_node_id
       }
       id1.should == id2
+    end
+    
+    it "should load node using its id" do
+      node = Neo::Node.new {|n|
+        n.baaz = "hello"
+      }
+      
+      Neo::neo_service.stop
+      Neo::neo_service.start DB_LOCATION
+      
+      Neo::transaction {
+        node2 = Neo::neo_service.find_node(node.neo_node_id)
+        node.baaz.should == "hello"
+      }
     end
   end 
 end
@@ -63,7 +110,7 @@ end
 # the following specs are run inside one Neo transaction
 # 
 
-describe "When using one transactions" do
+describe "When running in one transaction" do
   before(:all) do
     start
   end
@@ -134,19 +181,19 @@ describe "When using one transactions" do
     
     
     it "should have a unique (neo) id" do
-      n1 = Neo::Node.new{}
+      n1 = Neo::Node.new
       n1.neo_node_id.should be_kind_of(Fixnum)
     end
     
     
     it "should know the name of the ruby class it represent" do
-      node1 = Neo::Node.new { }
+      node1 = Neo::Node.new
       node1.classname.should be == "Neo::Node"
       
       class FooBar < Neo::Node
       end
       
-      node2 = FooBar.new {}
+      node2 = FooBar.new
       node2.classname.should be == "FooBar"    
     end
   

@@ -83,4 +83,20 @@ Traversing relationships:
 Note that the bars method returns an object that mixins the Enumeration module.
 
 
+=== Unmarshalling
+
+The neo module will automatically unmarshalling nodes to the correct ruby class.
+It does this by reading the classname property and loading that ruby class with that node.
+
+  class Foo << Neo::Node
+    def hello
+    end
+  end
+
+  f1 = Foo.new {}
+  
+  # load the class again
+  f2 = Neo::neo_service.find_node(foo.neo_node_id)
+  f2.hello
+  # f2.class == Foo
 

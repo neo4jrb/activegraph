@@ -21,7 +21,6 @@ module Neo
     # 
     def start(storage = "var/neo")
       raise Exception.new("Already started neo") if @neo
-      puts "start neo"
       @neo = EmbeddedNeo.new(storage)  
       
       ref_node = nil
@@ -29,6 +28,9 @@ module Neo
         ref_node = @neo.getReferenceNode
         @meta_nodes = MetaNodes.new(ref_node)
       end
+      
+      $neo_logger.info{ "Started neo. DB at '#{storage}'"}
+
     end
     
     
@@ -50,7 +52,7 @@ module Neo
     # Returns a Node object that has the given id or nil
     # 
     def find_node(id) 
-      neo_node = @neo.findNodeById(id)
+      neo_node = @neo.getNodeById(id)
       load_node(neo_node)
     end
   
@@ -69,7 +71,7 @@ module Neo
     # Must be done before the program stops
     #
     def stop
-      puts "stop neo #{@neo}"
+      $neo_logger.info {"stop neo #{@neo}"}
       @neo.shutdown  
       @neo = nil
     end
