@@ -18,7 +18,7 @@ module Neo
     tx = Transaction.begin  
     
     begin  
-      yield  
+      yield tx
       tx.success  
     rescue Exception => e  
       raise e  

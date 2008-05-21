@@ -1,3 +1,86 @@
-== neo
+= Neo4j.rb
 
-You should document your project here.
+Neo4j.rb is a ruby wrapper around the Java Neo api.
+See http://www.neo4j.org/
+
+== Examples
+
+Here are some examples of how to use the API.
+
+
+=== Using transactions
+
+Most operations on neo requires an transaction.
+  include 'neo'
+
+  Neo::transaction {
+    node = Neo.new
+  }
+
+You have also access to transaction object
+
+   Neo::transaction { |t|
+     # something failed
+     t.failure # will cause a rollback
+   }
+
+
+If a block is not given than the transaction method will return a transaction object.
+
+   transaction = Neo::transaction
+   transaction.begin
+   # etc ...
+
+=== Create a node
+
+If a block is provided the node will be created in an transaction
+  node = Neo.new { }
+
+
+=== Set properties
+
+You can set any properties without declaring them first
+ 
+  # create a node with to properties 
+  node = Neo::Node.new { |n|
+     n.foo = "123"
+     n.bar = "432"
+  }
+ 
+  # access those properties
+  puts node.foo
+  
+If you want you can also declare those properties, like the attr_accessor
+
+  class Foo < Neo::Node 
+     properties :foo, :bar
+  end
+
+  Neo::transaction {
+    f = Foo.new
+    f.foo = "123"
+   }
+
+=== Using relationships
+
+Relationships has to be declared first like this:
+
+  class Foo < Neo::Node
+     relations :bars
+  end
+
+Add a relation to a node:
+
+  f = Foo.new { |n|
+    n.bars < a_bar_node
+  }
+
+
+Traversing relationships:
+
+  f.bars.each { |n| puts n }
+
+Note that the bars method returns an object that mixins the Enumeration module.
+
+
+
