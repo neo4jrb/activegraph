@@ -191,18 +191,19 @@ describe "When running in one transaction" do
   end
 
 
-  # ------------------------------------------------------------------------------
-  # Node
-  # 
+  # ----------------------------------------------------------------------------
+  # Creating a new Neo node should ...
+  #
+
   
-  describe Neo::Node do
+  describe Neo::Node, '(creating a new)' do
  
-    it "should be created with no arguments"  do
+    it "should allow constructor with no arguments"  do
       node = Neo::Node.new
       node.should be_an_instance_of(Neo::Node)
     end
   
-    it "should allow to set properties using a block at construction"  do
+    it "should allow to set any properties in a block"  do
       node = Neo::Node.new { |node|
         node.foo = "foo"
       }
@@ -213,28 +214,56 @@ describe "When running in one transaction" do
       node1 = Neo::Node.new
       node2 = Neo::Node.new(node1.internal_node)
     end
+  end
+  
+  
+  
+  # ----------------------------------------------------------------------------
+  # A created Neo node should ...
+  #
+  
+  describe Neo::Node, '(a newly created one)' do
     
+    before(:each) do
+      @node = Neo::Node.new
+    end
+
     it "should be == another node only if it has the same node id" do
-      node1 = Neo::Node.new
-      node2 = Neo::Node.new(node1.internal_node)
-      
-      node1.internal_node.should be_equal(node2.internal_node)
-      node1.should == node2
-      
-      node1.hash.should == node2.hash
+      node2 = Neo::Node.new(@node.internal_node)
+      @node.internal_node.should be_equal(node2.internal_node)
+      @node.should == node2
+      @node.hash.should == node2.hash
     end
     
     
     it "should have a neo id" do
-      n1 = Neo::Node.new
-      n1.neo_node_id.should be_kind_of(Fixnum)
+      @node.neo_node_id.should be_kind_of(Fixnum)
+    end
+
+    it "should know the name of the ruby class it represent" do
+      @node.classname.should be == "Neo::Node"
     end
     
+    it "should allow to dynamically add relations" do
+      node2 = Neo::Node.new    
+      
+      # add a relationship to all nodes named 'foos'
+      Neo::Node.add_relation_type(:foos)
+      
+      node2.foos << @node
+    end
+
+    
+    it "should not be possible to add to a relationship a none Neo::Node"
+    
+    it "should not be possible to set a neo property that is not a string of fixnum"
+
+  end
+
+  
+  describe Neo::Node, '(when inherit from it)' do
     
     it "should know the name of the ruby class it represent" do
-      node1 = Neo::Node.new
-      node1.classname.should be == "Neo::Node"
-      
       class FooBar < Neo::Node
       end
       
@@ -250,18 +279,6 @@ describe "When running in one transaction" do
       meta_node.should be_kind_of(Neo::MetaNode)
     end
   
-    it "should have setter and getters for any property" do
-      #given
-      node = Neo::Node.new do |n|
-        n.foo = "foo"
-        n.bar = "foobar"
-      end
-      
-      # then
-      node.foo.should == "foo"
-      node.bar.should == "foobar"
-    end
-    
   
     it "should allow to declare properties"  do
       # given
@@ -354,14 +371,6 @@ describe "When running in one transaction" do
       end
     end
     
-    it "should allow to dynamically add relations" do
-      node1 = Neo::Node.new    
-      node2 = Neo::Node.new    
-       
-      Neo::Node.add_relation_type(:foos)
-        
-      node2.foos << node1
-    end
   
   
     it "should have relationship getters that returns Enumerable objects" do
@@ -388,9 +397,6 @@ describe "When running in one transaction" do
       found.should be_kind_of(Person)
     end
     
-    it "should not be possible to add to a relationship a none Neo::Node"
-    
-    it "should not be possible to set a neo property that is not a string of fixnum"
     
   end
 end
