@@ -25,5 +25,5 @@ desc 'Generate RDoc'
 rd = Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = '../doc/output/rdoc'
   rdoc.options << '--title' << 'Neo' << '--line-numbers' << '--inline-source' << '--main' << 'README'
-  rdoc.rdoc_files.include('README', 'lib/**/*.rb')
+  rdoc.rdoc_files.include('README', 'TODO', 'lib/**/*.rb')
 end
