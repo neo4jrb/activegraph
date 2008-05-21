@@ -162,6 +162,15 @@ describe "When running in one transaction" do
   # NeoService
   # 
 
+  describe Neo::MetaNode do
+
+    it "should hold all referenses to its instances"
+  end
+  
+  # ------------------------------------------------------------------------------
+  # NeoService
+  # 
+
   describe Neo::NeoService do
   
     it "should not find a meta node of a class that does not exist" do
@@ -260,6 +269,10 @@ describe "When running in one transaction" do
 
   end
 
+  
+  # ----------------------------------------------------------------------------
+  # When inherit from Neo::Node it should ...
+  #
   
   describe Neo::Node, '(when inherit from it)' do
     
