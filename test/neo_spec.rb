@@ -18,6 +18,35 @@ def stop
   FileUtils.rm_r DB_LOCATION if File.directory?(DB_LOCATION)
 end
 
+describe "When doing a rollback in one transaction" do
+  before(:all) do
+    start
+  end
+  
+  after(:all) do
+    stop
+  end  
+  
+  it "should not create a meta class" do
+    # given
+    Neo::transaction { |t|
+      class FooBar < Neo::Node
+      end
+
+      # when doing rollback
+      t.failure
+    }
+    
+    # then
+    Neo::transaction {
+      metanode = Neo::neo_service.find_meta_node('FooBar')
+      metanode.should be_nil
+    }
+  end
+  
+end
+
+
 # ------------------------------------------------------------------------------
 # the following specs are not always run inside ONE Neo transaction
 # 

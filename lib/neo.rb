@@ -1,6 +1,7 @@
 require 'neo/java_libs'
 require 'neo/neo_service'
 require 'neo/node'
+require 'neo/transaction'
 require 'logger'
 
 module Neo
@@ -9,7 +10,7 @@ module Neo
   # Set logger used by Neo
   $neo_logger = Logger.new(STDOUT)
   $neo_logger.level = Logger::WARN
-  #$neo_logger.level = Logger::DEBUG
+  #$neo_logger.level = Logger::INFO
  
   
   #
@@ -38,13 +39,15 @@ module Neo
   # 
   #
   def transaction     
-    return Transaction unless block_given?
+    return Neo::Transaction.new unless block_given?
 
-    tx = Transaction.begin  
+    tx = Neo::Transaction.new
+    
+    tx.begin
     
     begin  
       yield tx
-      tx.success  
+      tx.success unless tx.failure?
     rescue Exception => e  
       raise e  
     ensure  

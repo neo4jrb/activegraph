@@ -7,7 +7,6 @@ module Neo
   require 'neo/lucene-core-2.3.2.jar'
   
   EmbeddedNeo = org.neo4j.api.core.EmbeddedNeo
-  Transaction = org.neo4j.api.core.Transaction
   StopEvaluator = org.neo4j.api.core.StopEvaluator
   Traverser = org.neo4j.api.core.Traverser
   ReturnableEvaluator = org.neo4j.api.core.ReturnableEvaluator

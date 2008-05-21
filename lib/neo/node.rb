@@ -125,7 +125,7 @@ module Neo
         metanode
       end      
 
-      $neo_logger.debug{"created MetaNode for '#{c.to_s}'"}
+      $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
     end
 
     
