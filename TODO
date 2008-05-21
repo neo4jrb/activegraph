@@ -1,0 +1,5 @@
+== TODO
+
+* Let Node be a module instead so that we can use it as an mixin
+* Implement pending rspecs
+* Add more rspecs, I think there is a bug when using several transactions
