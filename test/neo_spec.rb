@@ -24,39 +24,39 @@ end
 
 describe "When using several transactions" do
 
-describe Neo::MetaNode do
-  before(:all) do
-    start
-  end
-
-  after(:all) do
-    stop
-  end  
-    
-  it "should find all instances of a class" 
-    
-  it "should be unique, when neo is restarted" do
-    # when Neo is restarted make sure that the node representing the class
-    # has the same node_id
-    
-    class Foo < Neo::Node
+  describe Neo::MetaNode do
+    before(:all) do
+      start
     end
 
-    id1 = nil
-    Neo::transaction {
-      id1 = Neo::neo_service.find_meta_node('Foo').neo_node_id
-    }
-
-    Neo::neo_service.stop
-    Neo::neo_service.start DB_LOCATION
+    after(:all) do
+      stop
+    end  
     
-    id2 = nil
-    Neo::transaction {
-      id2 = Neo::neo_service.find_meta_node('Foo').neo_node_id
-    }
-    id1.should == id2
-  end
-end 
+    it "should find all instances of a class" 
+    
+    it "should be unique, when neo is restarted" do
+      # when Neo is restarted make sure that the node representing the class
+      # has the same node_id
+    
+      class Foo < Neo::Node
+      end
+
+      id1 = nil
+      Neo::transaction {
+        id1 = Neo::neo_service.find_meta_node('Foo').neo_node_id
+      }
+
+      Neo::neo_service.stop
+      Neo::neo_service.start DB_LOCATION
+    
+      id2 = nil
+      Neo::transaction {
+        id2 = Neo::neo_service.find_meta_node('Foo').neo_node_id
+      }
+      id1.should == id2
+    end
+  end 
 end
 
 # ------------------------------------------------------------------------------
@@ -82,9 +82,9 @@ describe "When using one transactions" do
   end
 
 
-# ------------------------------------------------------------------------------
-# NeoService
-# 
+  # ------------------------------------------------------------------------------
+  # NeoService
+  # 
 
   describe Neo::NeoService do
   
@@ -108,9 +108,9 @@ describe "When using one transactions" do
   end
 
 
-# ------------------------------------------------------------------------------
-# Node
-# 
+  # ------------------------------------------------------------------------------
+  # Node
+  # 
   
   describe Neo::Node do
  
