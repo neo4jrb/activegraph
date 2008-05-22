@@ -225,7 +225,7 @@ describe "When running in one transaction" do
       all.size.should == 2
     end
     
-    it "should not hold all referenses to other instances" do
+    it "should not hold referenses to other instances" do
       class FooBarA < Neo::Node; end
       class FooBarB < Neo::Node; end
       
