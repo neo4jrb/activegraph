@@ -5,6 +5,10 @@
 require 'neo'
 require 'fileutils'  
 
+
+# ------------------------------------------------------------------------------
+# Utility methods
+
 DB_LOCATION = 'var/neo'
 
 def start
@@ -18,6 +22,23 @@ def stop
   FileUtils.rm_r DB_LOCATION if File.directory?(DB_LOCATION)
 end
 
+
+# ------------------------------------------------------------------------------
+# Shared examples
+# TODO add more behaviours and use it more
+shared_examples_for "Node" do
+  it "should have a to_s method" do
+    @node.should respond_to(:to_s)
+    @node.to_s.should be_kind_of(String)
+  end
+end
+
+
+# ------------------------------------------------------------------------------
+# the following specs are run when doing  a rollback in one transaction 
+# 
+
+
 describe "When doing a rollback in one transaction" do
   before(:all) do
     start
@@ -26,11 +47,30 @@ describe "When doing a rollback in one transaction" do
   after(:all) do
     stop
   end  
-  
+
+
+  it "should not change properties" do
+    # given
+    node = Neo::Node.new {|n| n.foo = 'foo'}
+
+    # when
+    Neo::transaction { |t|
+      node.foo = "changed"
+
+      # when doing rollback
+      t.failure
+    }
+    
+    # then
+    Neo::transaction { 
+      node.foo.should == 'foo'
+    }
+  end
+    
   it "should not create a meta class" do
     # given
     Neo::transaction { |t|
-      class FooBar < Neo::Node
+      class FooBar1 < Neo::Node
       end
 
       # when doing rollback
@@ -39,7 +79,7 @@ describe "When doing a rollback in one transaction" do
     
     # then
     Neo::transaction {
-      metanode = Neo::neo_service.find_meta_node('FooBar')
+      metanode = Neo::neo_service.find_meta_node('FooBar1')
       metanode.should be_nil
     }
   end
@@ -81,6 +121,9 @@ describe "When neo has been restarted" do
       Neo::transaction {
         metas = Neo::neo_service.meta_nodes.nodes
         metas.to_a.size.should == 1
+        meta = Neo::neo_service.find_meta_node('Foo')
+        meta.should_not be_nil
+        meta.meta_classname.should == "Foo"
       }
       
       # when 
@@ -124,8 +167,7 @@ describe "When neo has been restarted" do
         n.baaz = "hello"
       }
       
-      Neo::neo_service.stop
-      Neo::neo_service.start DB_LOCATION
+      restart
       
       Neo::transaction {
         node2 = Neo::neo_service.find_node(node.neo_node_id)
@@ -159,12 +201,29 @@ describe "When running in one transaction" do
 
 
   # ------------------------------------------------------------------------------
-  # NeoService
+  # MetaNode
   # 
 
   describe Neo::MetaNode do
-
-    it "should hold all referenses to its instances"
+    before(:all) do
+      class FooBar43 < Neo::Node
+      end
+      
+      @node = FooBar43.meta_node
+    end
+    
+    
+    it_should_behave_like "Node"
+     
+    it "should hold all referenses to its instances" do
+      fb1 = FooBar43.new
+      fb2 = FooBar43.new
+      
+      all = FooBar43.meta_node.instances.to_a
+      all.should include(fb1)
+      all.should include(fb2)
+      all.size.should == 2
+    end
   end
   
   # ------------------------------------------------------------------------------
@@ -188,10 +247,10 @@ describe "When running in one transaction" do
     end
  
     it "should find an (ruby) object stored in neo given its unique id" do
-      class Foo < Neo::Node
+      class Foo45 < Neo::Node
       end
 
-      foo1 = Foo.new
+      foo1 = Foo45.new
       foo2 = Neo::neo_service.find_node(foo1.neo_node_id)
       foo1.neo_node_id.should == foo2.neo_node_id
     end
@@ -262,6 +321,16 @@ describe "When running in one transaction" do
       node2.foos << @node
     end
 
+    it "should allow to change properties" do
+      # given
+      node = Neo::Node.new { |n| n.baaz = "Baaz"}
+      
+      # when
+      node.baaz = "Changed it"
+      
+      # then
+      node.baaz.should =='Changed it'
+    end
     
     it "should not be possible to add to a relationship a none Neo::Node"
     
@@ -277,11 +346,11 @@ describe "When running in one transaction" do
   describe Neo::Node, '(when inherit from it)' do
     
     it "should know the name of the ruby class it represent" do
-      class FooBar < Neo::Node
+      class FooBar3 < Neo::Node
       end
       
-      node2 = FooBar.new
-      node2.classname.should be == "FooBar"    
+      node2 = FooBar3.new
+      node2.classname.should be == "FooBar3"    
     end
   
     it "should have a meta node for each class" do
@@ -289,18 +358,19 @@ describe "When running in one transaction" do
       end
       
       meta_node = Kalle.meta_node 
+      meta_node.should_not be_nil
       meta_node.should be_kind_of(Neo::MetaNode)
     end
   
   
     it "should allow to declare properties"  do
       # given
-      class Person < Neo::Node
+      class Person0 < Neo::Node
         properties :name, :age 
       end
       
       # when
-      person = Person.new {|node|
+      person = Person0.new {|node|
         node.name = "kalle"
         node.age = 42
       }
@@ -312,22 +382,22 @@ describe "When running in one transaction" do
   
     it "should have subclasses that have references to a MetaNode" do
       # when
-      class FooBar3 < Neo::Node
+      class FooBar4 < Neo::Node
       end
       
       # then
-      metanode = Neo::neo_service.find_meta_node('FooBar3')
+      metanode = Neo::neo_service.find_meta_node('FooBar4')
       metanode.should be_kind_of(Neo::MetaNode)
     end
     
     it "should have generated setter and getters for declared properties" do
       # given
-      class Person < Neo::Node
+      class Person1 < Neo::Node
         properties :my_property
       end
   
       # when
-      p = Person.new {}
+      p = Person1.new {}
       
       # then
       p.methods.should include("my_property")
@@ -336,11 +406,11 @@ describe "When running in one transaction" do
   
     it "should have generated setter and getters for subclasses as well" do
       # given
-      class Person < Neo::Node
+      class Person2 < Neo::Node
         properties :my_property
       end
   
-      class Employee < Person
+      class Employee < Person2
         properties :salary
       end
   
@@ -357,28 +427,28 @@ describe "When running in one transaction" do
     
     it "should allow to declare relations" do
       #given
-      class Person < Neo::Node
+      class Person3 < Neo::Node
         properties :name, :age 
         relations :friends
       end
   
-      person = Person.new    
+      person = Person3.new    
       person.methods.should include("friends")
     end
   
     it "should allow to add relations" do
       #given
-      class Person < Neo::Node
+      class Person4 < Neo::Node
         properties :name, :age 
         relations :friends
       end
       
-      p1 = Person.new do|node|
+      p1 = Person4.new do|node|
         node.name = "p1"
       end
   
       # then    
-      p2 = Person.new do|node|
+      p2 = Person4.new do|node|
         node.name = "p2"
         node.friends << p1
       end
@@ -388,17 +458,17 @@ describe "When running in one transaction" do
   
     it "should have relationship getters that returns Enumerable objects" do
       #given
-      class Person < Neo::Node
+      class Person5 < Neo::Node
         properties :name, :age 
         relations :friends
       end
       
       # when
-      p1 = Person.new do |node|
+      p1 = Person5.new do |node|
         node.name = "p1"
       end
   
-      p2 = Person.new do |node|
+      p2 = Person5.new do |node|
         node.name = "p2"
         node.friends << p1
       end
@@ -407,7 +477,7 @@ describe "When running in one transaction" do
       p2.friends.should be_kind_of(Enumerable)
       found = p2.friends.find{|node| node.name == 'p1'}
       found.name.should == "p1"
-      found.should be_kind_of(Person)
+      found.should be_kind_of(Person5)
     end
     
     

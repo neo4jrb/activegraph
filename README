@@ -100,3 +100,15 @@ It does this by reading the classname property and loading that ruby class with 
   f2.hello
   # f2.class == Foo
 
+=== Referensing instances
+
+Neo4j.rb will automatically store all instances in a MetaNode.
+For example, let say you want to find all instance of class FooBar
+
+
+      fb1 = FooBar.new
+      fb2 = FooBar.new
+      
+      all = FooBar.meta_node.instances.to_a  # => [fb1, fb2]
+
+

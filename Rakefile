@@ -14,10 +14,10 @@ desc "spec"
 Spec::Rake::SpecTask.new do |t|
     t.libs << "test"
     t.libs << "lib"
+#    t.rcov = true # have not got RCov working with JRuby yet - but it should ...
     t.spec_files = FileList['test/**/*_spec.rb']
-    t.warning = true
-    t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
-#    t.rcov = true
+#    t.warning = true
+#    t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
   end
 
 

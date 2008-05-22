@@ -14,6 +14,11 @@ module Neo
     #
     # Must be run in an transaction unless a block is given 
     # If a block is given a new transaction will be created
+    # 
+    # Does
+    # * sets the neo property 'classname' to self.class.to_s
+    # * creates a neo node java object (in @internal_node)
+    # * creates a relationship in the metanode instance to this instance
     #    
     def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
@@ -21,18 +26,21 @@ module Neo
         self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
         $neo_logger.debug {"created '#{self.class.to_s}' using provided java neo node id #{@internal_node.getId()}"}
       elsif block_given? # check if we should run in a transaction
-        Neo.transaction { init_internal; yield self }
+        Neo.transaction { create_internal_node; yield self }
         $neo_logger.debug {"created '#{self.class.to_s}' with a new transaction"}        
       else
-        init_internal
+        create_internal_node
         $neo_logger.debug {"created '#{self.class.to_s}' without a new transaction"}                
       end
     end
     
-    def init_internal
+    def create_internal_node
       @internal_node = Neo::neo_service.create_node
       self.classname = self.class.to_s
-      # TODO set classname node to point to self
+     
+      # add the instance to the list of instances in the meta node      
+      # self.class.meta_node.nil might be nil since it could be a MetaNode
+      self.class.meta_node.instances << self unless self.class.meta_node.nil?
     end
 
     def method_missing(methodname, *args)
@@ -104,7 +112,24 @@ module Neo
     # Node class methods
     #
     
+    #
+    # Returns a meta node corresponding to this class.
+    # This meta_node is an class instance variable (and not a class variable)
+    #
+    def self.meta_node
+      @meta_node
+    end
     
+    
+    
+    #
+    # Implements the inherited hook that will be called when someone
+    # inherits from this class.
+    # 
+    # This method does:
+    # * Creates a MetaNode and adds a relationship from the Neo::neo_service.meta_nodes.nodes
+    # * Creates a class method 'meta_node' that will return this meta node
+    #
     def self.inherited(c)
       # This method adds a MetaNode for each class that inherits from the Node
       # must avoid endless recursion 
@@ -112,18 +137,15 @@ module Neo
         return
       end
       
-      # create a meta node representing the new class
-      # TODO check: should only be created once  ?      
-      metanode = MetaNode.new do |n|
+      # create a new @meta_node since it does not exist
+      # the @meta node represents this class (holds the references to instance of it etc)
+      meta_node = MetaNode.new do |n|
         n.meta_classname = c.to_s
         Neo::neo_service.meta_nodes.nodes << n
-      end
-      
-      # define the 'meta_node' method in the new class
-      classname = class << c;  self;  end
-      classname.send :define_method, :meta_node do
-        metanode
       end      
+      c.instance_eval {
+        @meta_node = meta_node 
+      }
 
       $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
     end
