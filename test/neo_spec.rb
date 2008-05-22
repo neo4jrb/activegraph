@@ -224,6 +224,26 @@ describe "When running in one transaction" do
       all.should include(fb2)
       all.size.should == 2
     end
+    
+    it "should not hold all referenses to other instances" do
+      class FooBarA < Neo::Node; end
+      class FooBarB < Neo::Node; end
+      
+      a1 = FooBarA.new
+      a2 = FooBarA.new
+      b1 = FooBarB.new      
+      
+      allA = FooBarA.meta_node.instances.to_a
+      allA.should include(a1)
+      allA.should include(a2)
+      allA.size.should == 2
+      
+      allB = FooBarB.meta_node.instances.to_a
+      allB.should include(b1)
+      allB.size.should == 1
+      allB.should_not include(a1)
+    end
+    
   end
   
   # ------------------------------------------------------------------------------
