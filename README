@@ -31,18 +31,28 @@ If a block is not given than the transaction method will return a transaction ob
    transaction.begin
    # etc ...
 
-=== Create a node
+=== Create a Neo Node class
 
-If a block is provided the node will be created in an transaction
-  node = Neo.new { }
+Use the Neo::Node mixin
 
+  class MyNode 
+     include Neo::Node
+   end
 
-=== Set properties
+=== Create an instance
 
-You can set any properties without declaring them first
- 
+If a block is provided then the creation of the instance will be performed in an
+transaction.
+
+  node = MyNode.new { }
+
+=== Properties
+
+You can set any properties without declaring them first, see example below.
+Those properties will be stored on in the Neo database.
+
   # create a node with to properties 
-  node = Neo::Node.new { |n|
+  node = MyNode.new { |n|
      n.foo = "123"
      n.bar = "432"
   }
@@ -52,12 +62,15 @@ You can set any properties without declaring them first
   
 If you want you can also declare those properties, like the attr_accessor
 
-  class Foo < Neo::Node 
+  class SomeNode
+     include Neo::Node
      properties :foo, :bar
   end
 
+And to set a property
+
   Neo::transaction {
-    f = Foo.new
+    f = SomeNode.new
     f.foo = "123"
    }
 
@@ -65,7 +78,8 @@ If you want you can also declare those properties, like the attr_accessor
 
 Relationships has to be declared first like this:
 
-  class Foo < Neo::Node
+  class Foo 
+     include Neo::Node
      relations :bars
   end
 
@@ -88,7 +102,9 @@ Note that the bars method returns an object that mixins the Enumeration module.
 The neo module will automatically unmarshalling nodes to the correct ruby class.
 It does this by reading the classname property and loading that ruby class with that node.
 
-  class Foo << Neo::Node
+  class Foo 
+    include Neo::Node
+
     def hello
     end
   end
@@ -111,20 +127,7 @@ For example, let say you want to find all instance of class FooBar
       
       all = FooBar.meta_node.instances.to_a  # => [fb1, fb2]
 
-=== Using mixins
+=== Quering (using lucene)
 
-If you do not want to inherit from Neo::Node you can use the Neo::NodeMixin instead
-Example
-  class MyNode
-    include Neo::NodeMixin
-    def initialize(*args, &block)
-      init_internal_node(*args, &block)
-    end
-  end
-  @node = MyNode.new
-
-Notice that the init_internal_node method must be called in the initialize method.
-It is not possible (???) to mixin a initialize method from the mixin.
-Using super does not work when chaining initialize methods in mixins, see
-http://groups.google.com/group/ruby-talk-google/msg/f38239bcaeb70648
+Not implemented yet.
 

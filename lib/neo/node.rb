@@ -8,7 +8,7 @@ module Neo
   # Is a wrapper around a Java neo node
   # 
   #
-  module NodeMixin
+  module Node
     attr_reader :internal_node 
     
     #
@@ -20,7 +20,7 @@ module Neo
     # * creates a neo node java object (in @internal_node)
     # * creates a relationship in the metanode instance to this instance
     #    
-    def init_internal_node(*args)
+    def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         @internal_node = args[0]
         self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
@@ -32,6 +32,8 @@ module Neo
         create_internal_node
         $neo_logger.debug {"created '#{self.class.to_s}' without a new transaction"}                
       end
+      
+      super()
     end
     
     def create_internal_node
@@ -91,22 +93,19 @@ module Neo
       internal_node.hashCode
     end
     
-    def to_s
+    #
+    # Returns a hash of all properties {key => value, ...}
+    #
+    def properties
+      ret = {}
       iter = @internal_node.getPropertyKeys.iterator
-      s = self.class.to_s
-      if !iter.hasNext 
-        s << " no properties"
-      else
-        s << " Properties: ["
-        while (iter.hasNext) do
-          p = iter.next
-          s << "['#{p}' = '#{@internal_node.getProperty(p)}']"
-          s << ', ' if iter.hasNext
-        end
-        s << "]"
+      while (iter.hasNext) do
+        key = iter.next
+        ret << {key => @internal_node.getProperty(key)}
       end
-      s
+      ret
     end
+
     
     # INHERIT_OR_INCLUDE_PROC is proc that contains code that 
     # is used both in the inherited and the included methods.
@@ -117,7 +116,7 @@ module Neo
       
       # This method adds a MetaNode for each class that inherits from the Node
       # must avoid endless recursion 
-      return if c == Neo::Node or c == Neo::MetaNode or c == Neo::MetaNodes 
+      return if c == Neo::BaseNode or c == Neo::MetaNode or c == Neo::MetaNodes 
       
       # create a new @meta_node since it does not exist
       # the @meta node represents this class (holds the references to instance of it etc)
@@ -158,10 +157,10 @@ module Neo
         @meta_node
       end
     
-    def inherited(c)
-      Neo::Node::INHERIT_OR_INCLUDE_PROC.call c
-      $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
-    end
+      def inherited(c)
+        Neo::Node::INHERIT_OR_INCLUDE_PROC.call c
+        $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
+      end
     
       #
       # Allows to declare Neo properties.
@@ -201,15 +200,15 @@ module Neo
 
   end
   
-  class Node 
-    include Neo::NodeMixin
+  class BaseNode 
+    include Neo::Node
     
-    def initialize(*args, &block)
-      # we have to call the init_internal_node
-      # super does not work when chaining initialize in mixins, see
-      # http://groups.google.com/group/ruby-talk-google/msg/f38239bcaeb70648
-      init_internal_node(*args, &block)
-    end
+    #    def initialize(*args, &block)
+    #      # we have to call the init_internal_node
+    #      # super does not work when chaining initialize in mixins, see
+    #      # http://groups.google.com/group/ruby-talk-google/msg/f38239bcaeb70648
+    #      init_internal_node(*args, &block)
+    #    end
     
   end
   
@@ -218,7 +217,7 @@ module Neo
   # Holds the class name of an Neo node.
   # Used for example to create a Ruby object from a neo node.
   #
-  class MetaNode < Neo::Node
+  class MetaNode < Neo::BaseNode
     properties :meta_classname # the name of the ruby class it represent
     relations :instances
     
@@ -227,7 +226,7 @@ module Neo
   #
   # A container node for all MetaNode
   #
-  class MetaNodes < Neo::Node
+  class MetaNodes < Neo::BaseNode
     relations :nodes
   end
 

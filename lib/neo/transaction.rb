@@ -32,15 +32,17 @@ module Neo
     tx = Neo::Transaction.new
     
     tx.begin
+    ret = nil
     
     begin  
-      yield tx
+      ret = yield tx
       tx.success unless tx.failure?
     rescue Exception => e  
       raise e  
     ensure  
       tx.finish  
     end      
+    ret
   end  
   
   module_function :transaction
