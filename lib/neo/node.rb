@@ -8,7 +8,7 @@ module Neo
   # Is a wrapper around a Java neo node
   # 
   #
-  class Node
+  module NodeMixin
     attr_reader :internal_node 
     
     #
@@ -20,13 +20,13 @@ module Neo
     # * creates a neo node java object (in @internal_node)
     # * creates a relationship in the metanode instance to this instance
     #    
-    def initialize(*args)
+    def init_internal_node(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         @internal_node = args[0]
         self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
         $neo_logger.debug {"created '#{self.class.to_s}' using provided java neo node id #{@internal_node.getId()}"}
       elsif block_given? # check if we should run in a transaction
-        Neo.transaction { create_internal_node; yield self }
+        Neo::transaction { create_internal_node; yield self }
         $neo_logger.debug {"created '#{self.class.to_s}' with a new transaction"}        
       else
         create_internal_node
@@ -53,7 +53,7 @@ module Neo
         expected_args = 1
       end
       unless args.size == expected_args
-        err = "method '#{name}' has wrong number of arguments (#{args.size} for #{expected_args})"
+        err = "method '#{name}' on '#{self.class.to_s}' has wrong number of arguments (#{args.size} for #{expected_args})"
         raise ArgumentError.new(err)
       end
 
@@ -108,18 +108,27 @@ module Neo
       s
     end
     
-    # --------------------------------------------------------------------------
-    # Node class methods
-    #
-    
-    #
-    # Returns a meta node corresponding to this class.
-    # This meta_node is an class instance variable (and not a class variable)
-    #
-    def self.meta_node
-      @meta_node
+    # INHERIT_OR_INCLUDE_PROC is proc that contains code that 
+    # is used both in the inherited and the included methods.
+    # TODO must be a nicer way of doing this ?
+    INHERIT_OR_INCLUDE_PROC = proc do |c|
+      c.extend(ClassMethods)
+      c.properties :classname      
+      
+      # This method adds a MetaNode for each class that inherits from the Node
+      # must avoid endless recursion 
+      return if c == Neo::Node or c == Neo::MetaNode or c == Neo::MetaNodes 
+      
+      # create a new @meta_node since it does not exist
+      # the @meta node represents this class (holds the references to instance of it etc)
+      meta_node = Neo::MetaNode.new do |n|
+        n.meta_classname = c.to_s
+        Neo::neo_service.meta_nodes.nodes << n
+      end      
+      c.instance_eval {
+        @meta_node = meta_node 
+      }
     end
-    
     
     
     #
@@ -130,63 +139,78 @@ module Neo
     # * Creates a MetaNode and adds a relationship from the Neo::neo_service.meta_nodes.nodes
     # * Creates a class method 'meta_node' that will return this meta node
     #
-    def self.inherited(c)
-      # This method adds a MetaNode for each class that inherits from the Node
-      # must avoid endless recursion 
-      if c == MetaNode or c == MetaNodes
-        return
-      end
-      
-      # create a new @meta_node since it does not exist
-      # the @meta node represents this class (holds the references to instance of it etc)
-      meta_node = MetaNode.new do |n|
-        n.meta_classname = c.to_s
-        Neo::neo_service.meta_nodes.nodes << n
-      end      
-      c.instance_eval {
-        @meta_node = meta_node 
-      }
+    def self.included(c)
+      Neo::Node::INHERIT_OR_INCLUDE_PROC.call c
 
+      $neo_logger.info{"included: created MetaNode for '#{c.to_s}'"}
+    end
+
+    # --------------------------------------------------------------------------
+    # Node class methods
+    #
+    module ClassMethods
+    
+      #
+      # Returns a meta node corresponding to this class.
+      # This meta_node is an class instance variable (and not a class variable)
+      #
+      def meta_node
+        @meta_node
+      end
+    
+    def inherited(c)
+      Neo::Node::INHERIT_OR_INCLUDE_PROC.call c
       $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
     end
-
     
-    #
-    # Allows to declare Neo properties.
-    # Notice that you do not need to declare any properties in order to 
-    # set and get a neo property.
-    # An undeclared setter/getter will handled in the method_missing method instead.
-    #
-    def self.properties(*props)
-      props.each do |prop|
-        define_method(prop) do 
-          @internal_node.get_property(prop.to_s)
-        end
+      #
+      # Allows to declare Neo properties.
+      # Notice that you do not need to declare any properties in order to 
+      # set and get a neo property.
+      # An undeclared setter/getter will be handled in the method_missing method instead.
+      #
+      def properties(*props)
+        props.each do |prop|
+          define_method(prop) do 
+            @internal_node.get_property(prop.to_s)
+          end
 
-        name = (prop.to_s() +"=")
-        define_method(name) do |value|
-          @internal_node.set_property(prop.to_s, value)
+          name = (prop.to_s() +"=")
+          define_method(name) do |value|
+            @internal_node.set_property(prop.to_s, value)
+          end
         end
       end
-    end
     
     
-    #
-    # Allows to declare Neo relationsships.
-    # The speficied name will be used as the type of the neo relationship.
-    #
-    def self.add_relation_type(type)
-      define_method(type) do 
-        Relations.new(self,type.to_s)
+      #
+      # Allows to declare Neo relationsships.
+      # The speficied name will be used as the type of the neo relationship.
+      #
+      def add_relation_type(type)
+        define_method(type) do 
+          Relations.new(self,type.to_s)
+        end
+      end
+    
+    
+      def relations(*relations)
+        relations.each {|type| add_relation_type(type)}
       end
     end
-    
-    
-    def self.relations(*relations)
-      relations.each {|type| add_relation_type(type)}
-    end
 
-    properties :classname
+  end
+  
+  class Node 
+    include Neo::NodeMixin
+    
+    def initialize(*args, &block)
+      # we have to call the init_internal_node
+      # super does not work when chaining initialize in mixins, see
+      # http://groups.google.com/group/ruby-talk-google/msg/f38239bcaeb70648
+      init_internal_node(*args, &block)
+    end
+    
   end
   
   
@@ -194,16 +218,19 @@ module Neo
   # Holds the class name of an Neo node.
   # Used for example to create a Ruby object from a neo node.
   #
-  class MetaNode < Node
+  class MetaNode < Neo::Node
     properties :meta_classname # the name of the ruby class it represent
     relations :instances
+    
   end
 
   #
   # A container node for all MetaNode
   #
-  class MetaNodes < Node
+  class MetaNodes < Neo::Node
     relations :nodes
   end
+
+
   
 end

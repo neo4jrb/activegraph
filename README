@@ -111,4 +111,20 @@ For example, let say you want to find all instance of class FooBar
       
       all = FooBar.meta_node.instances.to_a  # => [fb1, fb2]
 
+=== Using mixins
+
+If you do not want to inherit from Neo::Node you can use the Neo::NodeMixin instead
+Example
+  class MyNode
+    include Neo::NodeMixin
+    def initialize(*args, &block)
+      init_internal_node(*args, &block)
+    end
+  end
+  @node = MyNode.new
+
+Notice that the init_internal_node method must be called in the initialize method.
+It is not possible (???) to mixin a initialize method from the mixin.
+Using super does not work when chaining initialize methods in mixins, see
+http://groups.google.com/group/ruby-talk-google/msg/f38239bcaeb70648
 

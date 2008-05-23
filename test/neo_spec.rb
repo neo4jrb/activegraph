@@ -31,6 +31,48 @@ shared_examples_for "Node" do
     @node.should respond_to(:to_s)
     @node.to_s.should be_kind_of(String)
   end
+  
+  it "should be == another node only if it has the same node id" do
+    clazz = @node.class
+    node2 = clazz.new(@node.internal_node)
+    @node.internal_node.should be_equal(node2.internal_node)
+    @node.should == node2
+    @node.hash.should == node2.hash
+  end
+    
+    
+  it "should have a neo id" do
+    @node.neo_node_id.should be_kind_of(Fixnum)
+  end
+
+  it "should know the name of the ruby class it represent" do
+    @node.classname.should be == @node.class.to_s
+  end
+    
+  it "should allow to dynamically add relations" do
+    node2 = Neo::Node.new    
+      
+    # add a relationship to all nodes named 'foos'
+    Neo::Node.add_relation_type(:foos)
+      
+    node2.foos << @node
+  end
+
+  it "should allow to change properties" do
+    # given
+    node = Neo::Node.new { |n| n.baaz = "Baaz"}
+      
+    # when
+    node.baaz = "Changed it"
+      
+    # then
+    node.baaz.should =='Changed it'
+  end
+    
+  it "should not be possible to add to a relationship a none Neo::Node"
+    
+  it "should not be possible to set a neo property that is not a string of fixnum"
+  
 end
 
 
@@ -305,6 +347,24 @@ describe "When running in one transaction" do
   end
   
   
+  # ----------------------------------------------------------------------------
+  # A created Neo node using NeoMixin it should ...
+  #
+  
+  describe 'Mixin (a newly created one)' do
+    
+    before(:each) do
+      class Mixin1
+        include Neo::NodeMixin
+        def initialize(*args, &block)
+          init_internal_node(*args, &block)
+        end
+      end
+      @node = Mixin1.new
+    end
+    
+    it_should_behave_like "Node"
+  end
   
   # ----------------------------------------------------------------------------
   # A created Neo node should ...
@@ -316,46 +376,8 @@ describe "When running in one transaction" do
       @node = Neo::Node.new
     end
 
-    it "should be == another node only if it has the same node id" do
-      node2 = Neo::Node.new(@node.internal_node)
-      @node.internal_node.should be_equal(node2.internal_node)
-      @node.should == node2
-      @node.hash.should == node2.hash
-    end
-    
-    
-    it "should have a neo id" do
-      @node.neo_node_id.should be_kind_of(Fixnum)
-    end
-
-    it "should know the name of the ruby class it represent" do
-      @node.classname.should be == "Neo::Node"
-    end
-    
-    it "should allow to dynamically add relations" do
-      node2 = Neo::Node.new    
-      
-      # add a relationship to all nodes named 'foos'
-      Neo::Node.add_relation_type(:foos)
-      
-      node2.foos << @node
-    end
-
-    it "should allow to change properties" do
-      # given
-      node = Neo::Node.new { |n| n.baaz = "Baaz"}
-      
-      # when
-      node.baaz = "Changed it"
-      
-      # then
-      node.baaz.should =='Changed it'
-    end
-    
-    it "should not be possible to add to a relationship a none Neo::Node"
-    
-    it "should not be possible to set a neo property that is not a string of fixnum"
-
+   it_should_behave_like "Node"
+   
   end
 
   
