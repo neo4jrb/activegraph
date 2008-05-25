@@ -40,14 +40,13 @@ shared_examples_for "Node" do
     @node.hash.should == node2.hash
   end
     
+
   it "should know all its properties" do
-    pending
-    #undefined method `<<' for {}:Hash
-    #/home/andreas/work/neo4j.rb/lib/neo/node.rb:104:in `properties'
     @node.p1 = "val1"
     @node.p2 = "val2"
     
-    @node.properties.should include(['p1', 'p2'])
+    @node.props.should have_key('p1')
+    @node.props.should have_key('p2')
   end
   
   
@@ -59,24 +58,23 @@ shared_examples_for "Node" do
     @node.classname.should be == @node.class.to_s
   end
     
-  it "should allow to dynamically add relations" do
-    node2 = Neo::BaseNode.new    
-      
+  it "should allow to dynamically add any relation type" do
     # add a relationship to all nodes named 'foos'
-    Neo::BaseNode.add_relation_type(:foos)
-      
-    node2.foos << @node
+    @node.class.add_relation_type(:foos)
+    added = Neo::BaseNode.new
+    @node.foos << added
+    @node.foos.to_a.should include(added)
   end
 
   it "should allow to change properties" do
     # given
-    node = Neo::BaseNode.new { |n| n.baaz = "Baaz"}
+    @node.baaz = "first"
       
     # when
-    node.baaz = "Changed it"
+    @node.baaz = "Changed it"
       
     # then
-    node.baaz.should =='Changed it'
+    @node.baaz.should =='Changed it'
   end
     
   it "can not have a relationship to a none Neo::Node"
@@ -119,15 +117,19 @@ describe "When doing a rollback in one transaction" do
     Neo::transaction { node.foo.should == 'foo'   }
   end
     
-  it "should only change the properties in the transaction that was rolledback" do
+  it "should support chained transactions" do
     # given
+    pending
     node = Neo::BaseNode.new {|n| n.foo = 'foo'}
-    Neo::transaction { |t| node.bar = "bar" }
     
-    # when doing a rollback
-    Neo::transaction { |t| node.bar = "changed"; node.foo = "changed"; t.failure }
+    Neo::transaction do 
+      node.bar = "bar" 
+      # when doing a rollback on a sub transaction
+      Neo::transaction { |t| node.bar = "changed"; node.foo = "changed"; t.failure }
+    end
     
-    # then
+    
+    # then only that transaction should be rolled back
     Neo::transaction {  
       node.foo.should == 'foo' 
       node.bar.should == 'bar'
@@ -378,7 +380,17 @@ describe "When running in one transaction" do
       node = SimpleNodeMixin.new
       node.should be_kind_of(Neo::Node)
     end
-  
+
+   it "should allow to declare properties"  do
+    # given
+    class DummyNode < Neo::BaseNode
+      properties :name, :age 
+    end
+
+    node = DummyNode.new
+    node.class.decl_props.should include(:name, :age)
+  end
+
     it "should allow to set any properties in a block"  do
       node = SimpleNodeMixin.new { |node|
         node.foo = "foo"
@@ -449,22 +461,6 @@ describe "When running in one transaction" do
     end
   
   
-    it "should allow to declare properties"  do
-      # given
-      class Person0 < Neo::BaseNode
-        properties :name, :age 
-      end
-      
-      # when
-      person = Person0.new {|node|
-        node.name = "kalle"
-        node.age = 42
-      }
-      
-      # then
-      person.name.should == "kalle"
-      person.age.should == 42
-    end
   
     it "should have subclasses that have references to a MetaNode" do
       # when

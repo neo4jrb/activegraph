@@ -110,15 +110,16 @@ module Neo
     #
     # Returns a hash of all properties {key => value, ...}
     #
-    def properties
+    def props
       ret = {}
       iter = @internal_node.getPropertyKeys.iterator
       while (iter.hasNext) do
         key = iter.next
-        ret << {key => @internal_node.getProperty(key)}
+        ret[key] = @internal_node.getProperty(key)
       end
       ret
     end
+    
 
     
     # INHERIT_OR_INCLUDE_PROC is proc that contains code that 
@@ -162,7 +163,7 @@ module Neo
     # Node class methods
     #
     module ClassMethods
-
+      attr_reader :decl_props
 
       #
       #  Returns all the instance of this class
@@ -192,7 +193,9 @@ module Neo
       # An undeclared setter/getter will be handled in the method_missing method instead.
       #
       def properties(*props)
+       @decl_props ||= []        
         props.each do |prop|
+          @decl_props << prop
           define_method(prop) do 
             @internal_node.get_property(prop.to_s)
           end
