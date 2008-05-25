@@ -567,5 +567,35 @@ describe "When running in one transaction" do
     end
     
     
+    it "should find all instance" do
+      class Person6 
+        include Neo::Node
+      end
+      
+      p1 = Person6.new { |n| n.name = "person1"}
+      p2 = Person6.new { |n| n.name = "person2"}
+
+      Person6.all.should include(p1,p2)
+      Person6.all.size.should == 2
+    end
+
+    it "should find all instance of inherited classes" do
+      
+      class Person7
+        include Neo::Node
+      end
+
+      class Person8 < Person7
+      end
+      
+      p1 = Person7.new { |n| n.name = "person1"}
+      p2 = Person8.new { |n| n.name = "person2"}
+
+      Person7.all.should include(p1,p2)
+      Person7.all.size.should == 2
+      Person8.all.should include(p2)
+      Person8.all.size.should == 1
+    end
+    
   end
 end

@@ -17,7 +17,7 @@ Most operations on neo requires an transaction.
     node = Neo.new
   }
 
-You have also access to transaction object
+You have also access to transaction object so that you can do a rollback.
 
    Neo::transaction { |t|
      # something failed
@@ -97,6 +97,34 @@ Traversing relationships:
 Note that the bars method returns an object that mixins the Enumeration module.
 
 
+=== Find all
+
+For example, let say you want to find all instance of class FooBar
+
+
+      fb1 = FooBar.new
+      fb2 = FooBar.new
+      
+      all = FooBar.all  # => [fb1, fb2]
+
+Neo4j.rb will automatically have relationships to all instances in a MetaNode.
+Each class that includes the Neo::Node mixin has a class instance variable to this MetaNode.
+
+This also works for inheritance, example
+
+     class Foo
+        include Neo::Node
+     end 
+
+     class Bar < Foo
+     end
+
+     f = Foo.new
+     b = Bar.new
+
+     Foo.all # => [f,b]
+     Bar.all # => [b]
+
 === Unmarshalling
 
 The neo module will automatically unmarshalling nodes to the correct ruby class.
@@ -115,17 +143,6 @@ It does this by reading the classname property and loading that ruby class with 
   f2 = Neo::neo_service.find_node(foo.neo_node_id)
   f2.hello
   # f2.class == Foo
-
-=== Referensing instances
-
-Neo4j.rb will automatically store all instances in a MetaNode.
-For example, let say you want to find all instance of class FooBar
-
-
-      fb1 = FooBar.new
-      fb2 = FooBar.new
-      
-      all = FooBar.meta_node.instances.to_a  # => [fb1, fb2]
 
 === Quering (using lucene)
 

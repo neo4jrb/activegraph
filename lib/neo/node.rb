@@ -39,10 +39,24 @@ module Neo
     def create_internal_node
       @internal_node = Neo::neo_service.create_node
       self.classname = self.class.to_s
-     
+      update_meta_node_instances self.class
+    end
+    
+    def update_meta_node_instances(clazz)
+      meta_node = clazz.meta_node
+      # $neo_logger.warn("No meta_node for #{self} type #{self.class.to_s}") if meta_node.nil?
+      return if meta_node.nil?
+      
       # add the instance to the list of instances in the meta node      
       # self.class.meta_node.nil might be nil since it could be a MetaNode
-      self.class.meta_node.instances << self unless self.class.meta_node.nil?
+      meta_node.instances << self
+      
+      # TODO add to ancestors as well
+      clazz.ancestors.each do |a|
+        next if a == clazz 
+        next unless a.respond_to?(:meta_node)
+        update_meta_node_instances a
+      end
     end
 
     def method_missing(methodname, *args)
@@ -148,7 +162,16 @@ module Neo
     # Node class methods
     #
     module ClassMethods
-    
+
+
+      #
+      #  Returns all the instance of this class
+      #   
+      def all
+        @meta_node.instances.to_a
+      end
+      
+      
       #
       # Returns a meta node corresponding to this class.
       # This meta_node is an class instance variable (and not a class variable)
