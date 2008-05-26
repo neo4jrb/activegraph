@@ -8,7 +8,7 @@ module Neo4j
   # 
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
-  class NeoService
+  class Neo
     include Singleton
 
     #

@@ -84,7 +84,7 @@ describe "When neo has been restarted" do
     Neo4j::neo_service.start DB_LOCATION
   end
   
-  describe Neo4j::NeoService do
+  describe Neo4j::Neo do
     before(:all) do
       start
     end

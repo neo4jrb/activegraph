@@ -138,13 +138,13 @@ describe "When running in one transaction" do
   end
   
   # ------------------------------------------------------------------------------
-  # NeoService
+  # Neo
   # 
 
-  describe Neo4j::NeoService do
+  describe Neo4j::Neo do
   
     it "should not find a meta node of a class that does not exist" do
-      n = Neo4j::NeoService.instance.find_meta_node('Kalle')
+      n = Neo4j::Neo.instance.find_meta_node('Kalle')
       n.should be_nil
     end
   
@@ -152,7 +152,7 @@ describe "When running in one transaction" do
       class Kalle < Neo4j::BaseNode 
       end
     
-      n = Neo4j::NeoService.instance.find_meta_node('Kalle')
+      n = Neo4j::Neo.instance.find_meta_node('Kalle')
       n.should_not be_nil
       n.should be_kind_of(Neo4j::MetaNode)
     end

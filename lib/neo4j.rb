@@ -17,10 +17,10 @@ require 'neo4j/node'
 module Neo4j
  
   #
-  # Returns a NeoService
+  # Returns a Neo
   # 
   def neo_service
-    NeoService.instance
+    Neo.instance
   end  
   
   module_function :neo_service
