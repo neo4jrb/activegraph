@@ -8,16 +8,18 @@ See http://www.neo4j.org/
 Here are some examples of how to use the API.
 
 
-=== Using transactions
+=== Transactions
 
-Most operations on neo requires an transaction.
+All operations that work with the node space (even read operations) must be wrapped in a transaction.
+Example:
+
   include 'neo'
 
   Neo::transaction {
     node = Neo.new
   }
 
-You have also access to transaction object so that you can do a rollback.
+Example of how to do rollback
 
    Neo::transaction { |t|
      # something failed
@@ -31,7 +33,10 @@ If a block is not given than the transaction method will return a transaction ob
    transaction.begin
    # etc ...
 
-=== Create a Neo Node class
+=== Neo::Node
+A Neo::Node is a wrapper around the java org.neo4j.api.core.Node interface.
+A node can have properties and relationships to other nodes.
+
 
 Use the Neo::Node mixin
 
@@ -39,14 +44,14 @@ Use the Neo::Node mixin
      include Neo::Node
    end
 
-=== Create an instance
+=== Create a Node
 
 If a block is provided then the creation of the instance will be performed in an
 transaction.
 
   node = MyNode.new { }
 
-=== Properties
+=== Node Properties
 
 You can set any properties without declaring them first, see example below.
 Those properties will be stored on in the Neo database.
@@ -74,7 +79,7 @@ And to set a property
     f.foo = "123"
    }
 
-=== Using relationships
+=== Relationships
 
 Relationships has to be declared first like this:
 
@@ -107,8 +112,9 @@ For example, let say you want to find all instance of class FooBar
       
       all = FooBar.all  # => [fb1, fb2]
 
-Neo4j.rb will automatically have relationships to all instances in a MetaNode.
+Neo4j.rb will automatically manage relationships between instances and classes in a MetaNode.
 Each class that includes the Neo::Node mixin has a class instance variable to this MetaNode.
+This MetaNode is used by the 'all' method to find all the instance of a certain ruby class.
 
 This also works for inheritance, example
 
