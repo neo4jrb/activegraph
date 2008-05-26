@@ -109,7 +109,7 @@ describe "When neo has been restarted" do
         metas.to_a.size.should == 1
         meta = Neo4j::Neo.instance.find_meta_node('Foo')
         meta.should_not be_nil
-        meta.meta_classname.should == "Foo"
+        meta.ref_classname.should == "Foo"
       }
       
       # when 
@@ -121,7 +121,7 @@ describe "When neo has been restarted" do
         metas.to_a.size.should == 1
         meta = Neo4j::Neo.instance.find_meta_node('Foo')
         meta.should_not be_nil
-        meta.meta_classname.should == "Foo"
+        meta.ref_classname.should == "Foo"
       }
       
       
