@@ -17,7 +17,7 @@ module Neo4j
         Direction::OUTGOING)
       iter = traverser.iterator
       while (iter.hasNext) do
-        yield Neo4j::neo_service.load_node(iter.next)
+        yield Neo4j::Neo.instance.load_node(iter.next)
       end
     end
       

@@ -37,7 +37,7 @@ module Neo4j
     end
     
     def create_internal_node
-      @internal_node = Neo4j::neo_service.create_node
+      @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
       update_meta_node_instances self.class
     end
@@ -137,7 +137,7 @@ module Neo4j
       # the @meta node represents this class (holds the references to instance of it etc)
       meta_node = Neo4j::MetaNode.new do |n|
         n.meta_classname = c.to_s
-        Neo4j::neo_service.meta_nodes.nodes << n
+        Neo4j::Neo.instance.meta_nodes.nodes << n
       end      
       c.instance_eval {
         @meta_node = meta_node 
@@ -155,8 +155,6 @@ module Neo4j
     #
     def self.included(c)
       Neo4j::Node::INHERIT_OR_INCLUDE_PROC.call c
-
-      $neo_logger.info{"included: created MetaNode for '#{c.to_s}'"}
     end
 
     # --------------------------------------------------------------------------
@@ -183,7 +181,6 @@ module Neo4j
     
       def inherited(c)
         Neo4j::Node::INHERIT_OR_INCLUDE_PROC.call c
-        $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
       end
     
       #
@@ -228,14 +225,6 @@ module Neo4j
   
   class BaseNode 
     include Neo4j::Node
-    
-    #    def initialize(*args, &block)
-    #      # we have to call the init_internal_node
-    #      # super does not work when chaining initialize in mixins, see
-    #      # http://groups.google.com/group/ruby-talk-google/msg/f38239bcaeb70648
-    #      init_internal_node(*args, &block)
-    #    end
-    
   end
   
   

@@ -162,7 +162,7 @@ describe "When running in one transaction" do
       end
 
       foo1 = Foo45.new
-      foo2 = Neo4j::neo_service.find_node(foo1.neo_node_id)
+      foo2 = Neo4j::Neo.instance.find_node(foo1.neo_node_id)
       foo1.neo_node_id.should == foo2.neo_node_id
     end
     #node = Neo4j::find_node(id) ...
@@ -296,7 +296,7 @@ describe "When running in one transaction" do
       end
       
       # then
-      metanode = Neo4j::neo_service.find_meta_node('FooBar4')
+      metanode = Neo4j::Neo.instance.find_meta_node('FooBar4')
       metanode.should be_kind_of(Neo4j::MetaNode)
     end
     

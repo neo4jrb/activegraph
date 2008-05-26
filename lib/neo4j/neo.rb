@@ -10,6 +10,7 @@ module Neo4j
   # 
   class Neo
     include Singleton
+    attr_accessor :db_storage
 
     #
     # meta_nodes : Return the meta nodes containing relationship to all MetaNode objects
@@ -20,8 +21,9 @@ module Neo4j
     # starts neo with a database at the given storage location
     # 
     def start(storage = "var/neo")
+      @db_storage = storage
       raise Exception.new("Already started neo") if @neo
-      @neo = EmbeddedNeo.new(storage)  
+      @neo = EmbeddedNeo.new(@db_storage)  
       
       ref_node = nil
       Neo4j::transaction do
@@ -29,7 +31,7 @@ module Neo4j
         @meta_nodes = MetaNodes.new(ref_node)
       end
       
-      $neo_logger.info{ "Started neo. DB at '#{storage}'"}
+      $neo_logger.info{ "Started neo. DB at '#{@db_storage}'"}
 
     end
     

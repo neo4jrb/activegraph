@@ -65,7 +65,7 @@ describe "When doing a rollback in one transaction" do
     
     # then
     Neo4j::transaction {
-      metanode = Neo4j::neo_service.find_meta_node('FooBar1')
+      metanode = Neo4j::Neo.instance.find_meta_node('FooBar1')
       metanode.should be_nil
     }
   end
@@ -80,8 +80,8 @@ end
 describe "When neo has been restarted" do
 
   def restart
-    Neo4j::neo_service.stop
-    Neo4j::neo_service.start DB_LOCATION
+    Neo4j::Neo.instance.stop
+    Neo4j::Neo.instance.start DB_LOCATION
   end
   
   describe Neo4j::Neo do
@@ -96,7 +96,7 @@ describe "When neo has been restarted" do
     it "should contain referenses to all meta nodes" do
       # given
       Neo4j::transaction {
-        metas = Neo4j::neo_service.meta_nodes.nodes
+        metas = Neo4j::Neo.instance.meta_nodes.nodes
         metas.to_a.size.should == 0
       }
       
@@ -105,9 +105,9 @@ describe "When neo has been restarted" do
       
       
       Neo4j::transaction {
-        metas = Neo4j::neo_service.meta_nodes.nodes
+        metas = Neo4j::Neo.instance.meta_nodes.nodes
         metas.to_a.size.should == 1
-        meta = Neo4j::neo_service.find_meta_node('Foo')
+        meta = Neo4j::Neo.instance.find_meta_node('Foo')
         meta.should_not be_nil
         meta.meta_classname.should == "Foo"
       }
@@ -117,9 +117,9 @@ describe "When neo has been restarted" do
       
       # then
       Neo4j::transaction {
-        metas = Neo4j::neo_service.meta_nodes.nodes
+        metas = Neo4j::Neo.instance.meta_nodes.nodes
         metas.to_a.size.should == 1
-        meta = Neo4j::neo_service.find_meta_node('Foo')
+        meta = Neo4j::Neo.instance.find_meta_node('Foo')
         meta.should_not be_nil
         meta.meta_classname.should == "Foo"
       }
@@ -134,11 +134,11 @@ describe "When neo has been restarted" do
       class Foo < Neo4j::BaseNode
       end
 
-      id1 = Neo4j::transaction { Neo4j::neo_service.find_meta_node('Foo').neo_node_id  }
+      id1 = Neo4j::transaction { Neo4j::Neo.instance.find_meta_node('Foo').neo_node_id  }
 
       restart
       
-      id2 = Neo4j::transaction { Neo4j::neo_service.find_meta_node('Foo').neo_node_id }
+      id2 = Neo4j::transaction { Neo4j::Neo.instance.find_meta_node('Foo').neo_node_id }
       id1.should == id2
     end
     
@@ -150,8 +150,8 @@ describe "When neo has been restarted" do
       restart
       
       Neo4j::transaction {
-        node2 = Neo4j::neo_service.find_node(node.neo_node_id)
-        node.baaz.should == "hello"
+        node2 = Neo4j::Neo.instance.find_node(node.neo_node_id)
+        node2.baaz.should == "hello"
       }
     end
   end 
