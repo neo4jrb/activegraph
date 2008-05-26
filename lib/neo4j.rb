@@ -1,5 +1,3 @@
-
-
 require 'neo4j/java_libs'
 require 'neo4j/neo'
 require 'neo4j/transaction'
@@ -13,4 +11,4 @@ require 'neo4j/node'
 require 'logger'
 $neo_logger = Logger.new(STDOUT)
 $neo_logger.level = Logger::WARN
-#$neo_logger.level = Logger::INFO
+#$neo_logger.level = Logger::DEBUG

@@ -6,3 +6,7 @@
 * Fix TODO's in the code
 * Check visibility of methods, set internal method to private
 * Check if it it possible to avoid using the init_internal_node method when using NodeMixin ?
+
+== Bugs
+
+* Initializaton of Neo: when the MetaNodes are loading Neo must have been started - which it has not

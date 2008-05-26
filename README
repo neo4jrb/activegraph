@@ -131,6 +131,22 @@ This also works for inheritance, example
      Foo.all # => [f,b]
      Bar.all # => [b]
 
+=== MetaNodes, implementation details
+
+The Node mixin defines the ruby hook methods 'included' and 'inherited' which will be
+called when someone includes the Neo::Node mixin or creates a subclass from a 
+class that includes that mixin.
+
+When the included or inherited methods are called it will create a
+MetaNode that has a relationship to its instances.
+When an instance is created, which includes the Neo::Node mixin, it
+will add a relationship between the new node and its meta node. All
+this logic is handled in the initialize method (initialize is like a
+constructor in Java) which the Neo::Node mixin provides.
+The initialize method will also update ancestors MetaNodes, so that
+the referenses for ancestor classes and the new node will work as you
+would expect.
+
 === Unmarshalling
 
 The neo module will automatically unmarshalling nodes to the correct ruby class.

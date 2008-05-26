@@ -21,25 +21,38 @@ module Neo4j
     # * creates a relationship in the metanode instance to this instance
     #    
     def initialize(*args)
+      $neo_logger.debug("Initialize #{self}")
+      # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
-        @internal_node = args[0]
-        self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
-        $neo_logger.debug {"created '#{self.class.to_s}' using provided java neo node id #{@internal_node.getId()}"}
+        init_with_node(args[0])
       elsif block_given? # check if we should run in a transaction
-        Neo4j::transaction { create_internal_node; yield self }
-        $neo_logger.debug {"created '#{self.class.to_s}' with a new transaction"}        
-      else
-        create_internal_node
-        $neo_logger.debug {"created '#{self.class.to_s}' without a new transaction"}                
+        Neo4j::transaction { init_without_node; yield self }
+      else # initialize without a new transaction
+        init_without_node
       end
       
-      super()
+      # must call super with no arguments so that chaining of initialize method will work
+      super() 
     end
     
-    def create_internal_node
+    #
+    # Inits this node with the specified java neo node
+    #
+    def init_with_node(node)
+        @internal_node = node
+        self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
+        $neo_logger.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
+    end
+    
+    
+    #
+    # Inits when no neo java node exists. Must create a new neo java node first.
+    #
+    def init_without_node
       @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
       update_meta_node_instances self.class
+      $neo_logger.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
     def update_meta_node_instances(clazz)
@@ -51,7 +64,6 @@ module Neo4j
       # self.class.meta_node.nil might be nil since it could be a MetaNode
       meta_node.instances << self
       
-      # TODO add to ancestors as well
       clazz.ancestors.each do |a|
         next if a == clazz 
         next unless a.respond_to?(:meta_node)
@@ -59,6 +71,10 @@ module Neo4j
       end
     end
 
+    
+    #
+    # A hook used to set and get undeclared properties
+    #
     def method_missing(methodname, *args)
       # allows to set and get any neo property without declaring them first
       name = methodname.to_s
@@ -79,6 +95,7 @@ module Neo4j
         @internal_node.set_property(name, args[0])
       else
         if !@internal_node.has_property(name)
+          $neo_logger.warn("Missing property '#{name}' for class '#{self.class.to_s}' id :#{neo_node_id}")
           super.method_missing(methodname, *args)
         else        
           @internal_node.get_property(name)
@@ -136,7 +153,7 @@ module Neo4j
       # create a new @meta_node since it does not exist
       # the @meta node represents this class (holds the references to instance of it etc)
       meta_node = Neo4j::MetaNode.new do |n|
-        n.meta_classname = c.to_s
+        n.ref_classname = c.to_s
         Neo4j::Neo.instance.meta_nodes.nodes << n
       end      
       c.instance_eval {
@@ -233,9 +250,8 @@ module Neo4j
   # Used for example to create a Ruby object from a neo node.
   #
   class MetaNode < Neo4j::BaseNode
-    properties :meta_classname # the name of the ruby class it represent
+    properties :ref_classname # the name of the ruby class it represent
     relations :instances
-    
   end
 
   #

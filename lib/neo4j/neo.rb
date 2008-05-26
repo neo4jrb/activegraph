@@ -47,7 +47,7 @@ module Neo4j
     # Find the meta node represented by the given Ruby class name
     #
     def find_meta_node(classname) 
-      @meta_nodes.nodes.find{|node| node.meta_classname == classname}    
+      @meta_nodes.nodes.find{|node| node.ref_classname == classname}    
     end
     
     #
@@ -60,8 +60,8 @@ module Neo4j
   
     def load_node(neo_node)
       classname = neo_node.get_property('classname')
-      #      puts "Load node #{neo_node} class #{classname}"
-      # get the class that might exist in a module
+      
+      # find the class (classes are constants) 
       clazz = classname.split("::").inject(Kernel) do |container, name|
         container.const_get(name.to_s)
       end
