@@ -2,25 +2,9 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
  
-require 'neo'
-require 'fileutils'  
+require 'neo4j'
+require 'spec_helper'
 
-
-# ------------------------------------------------------------------------------
-# Utility methods
-
-DB_LOCATION = 'var/neo'
-
-def start
-  FileUtils.rm_r DB_LOCATION if File.directory?(DB_LOCATION)
-  Neo::NeoService.instance.start(DB_LOCATION)
-end
-
-
-def stop
-  Neo::NeoService.instance.stop
-  FileUtils.rm_r DB_LOCATION if File.directory?(DB_LOCATION)
-end
 
 
 # ------------------------------------------------------------------------------
@@ -61,7 +45,7 @@ shared_examples_for "Node" do
   it "should allow to dynamically add any relation type" do
     # add a relationship to all nodes named 'foos'
     @node.class.add_relation_type(:foos)
-    added = Neo::BaseNode.new
+    added = Neo4j::BaseNode.new
     @node.foos << added
     @node.foos.to_a.should include(added)
   end
@@ -85,163 +69,7 @@ end
 
 
 # ------------------------------------------------------------------------------
-# the following specs are run when doing  a rollback in one transaction 
-# 
-
-describe "Transaction" do
-  before(:all) do start end
-  after(:all)  do stop  end  
-  
-  it "should return the value of the transaction performed" do
-    val = Neo::transaction{ 42} 
-    val.should == 42
-  end
-end
-
-describe "When doing a rollback in one transaction" do
-  before(:all) do start end
-  after(:all)  do stop  end  
-
-
-  it "should not change properties" do
-    # given
-    node = Neo::BaseNode.new {|n| n.foo = 'foo'}
-
-    # when doing a rollback
-    Neo::transaction { |t|
-      node.foo = "changed"
-      t.failure
-    }
-    
-    # then
-    Neo::transaction { node.foo.should == 'foo'   }
-  end
-    
-  it "should support chained transactions" do
-    # given
-    pending
-    node = Neo::BaseNode.new {|n| n.foo = 'foo'}
-    
-    Neo::transaction do 
-      node.bar = "bar" 
-      # when doing a rollback on a sub transaction
-      Neo::transaction { |t| node.bar = "changed"; node.foo = "changed"; t.failure }
-    end
-    
-    
-    # then only that transaction should be rolled back
-    Neo::transaction {  
-      node.foo.should == 'foo' 
-      node.bar.should == 'bar'
-    }
-  end
-  
-  it "should not create a meta class" do
-    # given
-    Neo::transaction { |t|
-      class FooBar1 < Neo::BaseNode
-      end
-
-      # when doing rollback
-      t.failure
-    }
-    
-    # then
-    Neo::transaction {
-      metanode = Neo::neo_service.find_meta_node('FooBar1')
-      metanode.should be_nil
-    }
-  end
-  
-end
-
-
-# ------------------------------------------------------------------------------
-# the following specs are not always run inside ONE Neo transaction
-# 
-
-describe "When neo has been restarted" do
-
-  def restart
-    Neo::neo_service.stop
-    Neo::neo_service.start DB_LOCATION
-  end
-  
-  describe Neo::NeoService do
-    before(:all) do
-      start
-    end
-
-    after(:all) do
-      stop
-    end  
-    
-    it "should contain referenses to all meta nodes" do
-      # given
-      Neo::transaction {
-        metas = Neo::neo_service.meta_nodes.nodes
-        metas.to_a.size.should == 0
-      }
-      
-      class Foo < Neo::BaseNode
-      end
-      
-      
-      Neo::transaction {
-        metas = Neo::neo_service.meta_nodes.nodes
-        metas.to_a.size.should == 1
-        meta = Neo::neo_service.find_meta_node('Foo')
-        meta.should_not be_nil
-        meta.meta_classname.should == "Foo"
-      }
-      
-      # when 
-      restart
-      
-      # then
-      Neo::transaction {
-        metas = Neo::neo_service.meta_nodes.nodes
-        metas.to_a.size.should == 1
-        meta = Neo::neo_service.find_meta_node('Foo')
-        meta.should_not be_nil
-        meta.meta_classname.should == "Foo"
-      }
-      
-      
-    end
-    
-    it "should have unique node ids for the Meta Node" do
-      # when Neo is restarted make sure that the node representing the class
-      # has the same node_id
-    
-      class Foo < Neo::BaseNode
-      end
-
-      id1 = Neo::transaction { Neo::neo_service.find_meta_node('Foo').neo_node_id  }
-
-      restart
-      
-      id2 = Neo::transaction { Neo::neo_service.find_meta_node('Foo').neo_node_id }
-      id1.should == id2
-    end
-    
-    it "should load node using its id" do
-      node = Neo::BaseNode.new {|n|
-        n.baaz = "hello"
-      }
-      
-      restart
-      
-      Neo::transaction {
-        node2 = Neo::neo_service.find_node(node.neo_node_id)
-        node.baaz.should == "hello"
-      }
-    end
-  end 
-end
-
-# ------------------------------------------------------------------------------
-# the following specs are run inside one Neo transaction
+# the following specs are run inside one Neo4j transaction
 # 
 
 describe "When running in one transaction" do
@@ -254,7 +82,7 @@ describe "When running in one transaction" do
   end  
   
   before(:each) do
-    @transaction = Neo::transaction.begin 
+    @transaction = Neo4j::transaction.begin 
   end
   
   after(:each) do
@@ -267,9 +95,9 @@ describe "When running in one transaction" do
   # MetaNode
   # 
 
-  describe Neo::MetaNode do
+  describe Neo4j::MetaNode do
     before(:all) do
-      class FooBar43 < Neo::BaseNode
+      class FooBar43 < Neo4j::BaseNode
       end
       
       @node = FooBar43.meta_node
@@ -289,8 +117,8 @@ describe "When running in one transaction" do
     end
     
     it "should not hold referenses to other instances" do
-      class FooBarA < Neo::BaseNode; end
-      class FooBarB < Neo::BaseNode; end
+      class FooBarA < Neo4j::BaseNode; end
+      class FooBarB < Neo4j::BaseNode; end
       
       a1 = FooBarA.new
       a2 = FooBarA.new
@@ -313,77 +141,77 @@ describe "When running in one transaction" do
   # NeoService
   # 
 
-  describe Neo::NeoService do
+  describe Neo4j::NeoService do
   
     it "should not find a meta node of a class that does not exist" do
-      n = Neo::NeoService.instance.find_meta_node('Kalle')
+      n = Neo4j::NeoService.instance.find_meta_node('Kalle')
       n.should be_nil
     end
   
     it "should find the meta node of a class that exists" do
-      class Kalle < Neo::BaseNode 
+      class Kalle < Neo4j::BaseNode 
       end
     
-      n = Neo::NeoService.instance.find_meta_node('Kalle')
+      n = Neo4j::NeoService.instance.find_meta_node('Kalle')
       n.should_not be_nil
-      n.should be_kind_of(Neo::MetaNode)
+      n.should be_kind_of(Neo4j::MetaNode)
     end
  
     it "should find an (ruby) object stored in neo given its unique id" do
-      class Foo45 < Neo::BaseNode
+      class Foo45 < Neo4j::BaseNode
       end
 
       foo1 = Foo45.new
-      foo2 = Neo::neo_service.find_node(foo1.neo_node_id)
+      foo2 = Neo4j::neo_service.find_node(foo1.neo_node_id)
       foo1.neo_node_id.should == foo2.neo_node_id
     end
-    #node = Neo::find_node(id) ...
+    #node = Neo4j::find_node(id) ...
   
   end
 
 
   # ----------------------------------------------------------------------------
-  # Creating a new Neo node should ...
+  # Creating a new Neo4j node should ...
   #
 
   
-  describe Neo::BaseNode, '(creating a new)' do
+  describe Neo4j::BaseNode, '(creating a new)' do
  
     it "should allow constructor with no arguments"  do
-      node = Neo::BaseNode.new
-      node.should be_an_instance_of(Neo::BaseNode)
+      node = Neo4j::BaseNode.new
+      node.should be_an_instance_of(Neo4j::BaseNode)
     end
   
     it "should allow to set any properties in a block"  do
-      node = Neo::BaseNode.new { |node|
+      node = Neo4j::BaseNode.new { |node|
         node.foo = "foo"
       }
       node.foo.should == "foo"
     end
     
     it "should allow to create a node from a native Neo Java object" do
-      node1 = Neo::BaseNode.new
-      node2 = Neo::BaseNode.new(node1.internal_node)
+      node1 = Neo4j::BaseNode.new
+      node2 = Neo4j::BaseNode.new(node1.internal_node)
       node1.internal_node.should == node2.internal_node      
     end
   end
 
   # hmm, why do i have to call the to_s method here ?
-  describe Neo::Node.to_s, '(creating a new)' do
+  describe Neo4j::Node.to_s, '(creating a new)' do
     before(:all) do
       class SimpleNodeMixin
-        include Neo::Node
+        include Neo4j::Node
       end
     end
  
     it "should allow constructor with no arguments"  do
       node = SimpleNodeMixin.new
-      node.should be_kind_of(Neo::Node)
+      node.should be_kind_of(Neo4j::Node)
     end
 
    it "should allow to declare properties"  do
     # given
-    class DummyNode < Neo::BaseNode
+    class DummyNode < Neo4j::BaseNode
       properties :name, :age 
     end
 
@@ -399,7 +227,7 @@ describe "When running in one transaction" do
     end
     
     it "should allow to create a node from a native Neo Java object" do
-      node1 = Neo::BaseNode.new
+      node1 = Neo4j::BaseNode.new
       node2 = SimpleNodeMixin.new(node1.internal_node)
       node1.internal_node.should == node2.internal_node
     end
@@ -407,14 +235,14 @@ describe "When running in one transaction" do
   
   
   # ----------------------------------------------------------------------------
-  # A created Neo node using NeoMixin it should ...
+  # A created Neo4j node using NeoMixin it should ...
   #
   
   describe 'Mixin (a newly created one)' do
     
     before(:each) do
       class Mixin1
-        include Neo::Node
+        include Neo4j::Node
       end
       @node = Mixin1.new
     end
@@ -423,13 +251,13 @@ describe "When running in one transaction" do
   end
   
   # ----------------------------------------------------------------------------
-  # A created Neo node should ...
+  # A created Neo4j node should ...
   #
   
-  describe Neo::BaseNode, '(a newly created one)' do
+  describe Neo4j::BaseNode, '(a newly created one)' do
     
     before(:each) do
-      @node = Neo::BaseNode.new
+      @node = Neo4j::BaseNode.new
     end
 
     it_should_behave_like "Node"
@@ -438,13 +266,13 @@ describe "When running in one transaction" do
 
   
   # ----------------------------------------------------------------------------
-  # When inherit from Neo::BaseNode it should ...
+  # When inherit from Neo4j::BaseNode it should ...
   #
   
-  describe Neo::BaseNode, '(when inherit from it)' do
+  describe Neo4j::BaseNode, '(when inherit from it)' do
     
     it "should know the name of the ruby class it represent" do
-      class FooBar3 < Neo::BaseNode
+      class FooBar3 < Neo4j::BaseNode
       end
       
       node2 = FooBar3.new
@@ -452,29 +280,29 @@ describe "When running in one transaction" do
     end
   
     it "should have a meta node for each class" do
-      class Kalle < Neo::BaseNode 
+      class Kalle < Neo4j::BaseNode 
       end
       
       meta_node = Kalle.meta_node 
       meta_node.should_not be_nil
-      meta_node.should be_kind_of(Neo::MetaNode)
+      meta_node.should be_kind_of(Neo4j::MetaNode)
     end
   
   
   
     it "should have subclasses that have references to a MetaNode" do
       # when
-      class FooBar4 < Neo::BaseNode
+      class FooBar4 < Neo4j::BaseNode
       end
       
       # then
-      metanode = Neo::neo_service.find_meta_node('FooBar4')
-      metanode.should be_kind_of(Neo::MetaNode)
+      metanode = Neo4j::neo_service.find_meta_node('FooBar4')
+      metanode.should be_kind_of(Neo4j::MetaNode)
     end
     
     it "should have generated setter and getters for declared properties" do
       # given
-      class Person1 < Neo::BaseNode
+      class Person1 < Neo4j::BaseNode
         properties :my_property
       end
   
@@ -488,7 +316,7 @@ describe "When running in one transaction" do
   
     it "should allow to set and get properties on subclasses" do
       # given
-      class Person2 < Neo::BaseNode
+      class Person2 < Neo4j::BaseNode
         properties :my_property
       end
   
@@ -509,7 +337,7 @@ describe "When running in one transaction" do
     
     it "should allow to declare relations" do
       #given
-      class Person3 < Neo::BaseNode
+      class Person3 < Neo4j::BaseNode
         properties :name, :age 
         relations :friends
       end
@@ -520,7 +348,7 @@ describe "When running in one transaction" do
   
     it "should allow to add relations" do
       #given
-      class Person4 < Neo::BaseNode
+      class Person4 < Neo4j::BaseNode
         properties :name, :age 
         relations :friends
       end
@@ -540,7 +368,7 @@ describe "When running in one transaction" do
   
     it "should be possible find other nodes by using relations" do
       #given
-      class Person5 < Neo::BaseNode
+      class Person5 < Neo4j::BaseNode
         properties :name, :age 
         relations :friends
       end
@@ -565,7 +393,7 @@ describe "When running in one transaction" do
     
     it "should find all instance" do
       class Person6 
-        include Neo::Node
+        include Neo4j::Node
       end
       
       p1 = Person6.new { |n| n.name = "person1"}
@@ -578,7 +406,7 @@ describe "When running in one transaction" do
     it "should find all instance of inherited classes" do
       
       class Person7
-        include Neo::Node
+        include Neo4j::Node
       end
 
       class Person8 < Person7

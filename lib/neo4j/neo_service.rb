@@ -1,10 +1,10 @@
 require 'singleton'
 
-module Neo
+module Neo4j
   
   
   #
-  # Allows start and stop the Neo service
+  # Allows start and stop the Neo4j service
   # 
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
@@ -24,7 +24,7 @@ module Neo
       @neo = EmbeddedNeo.new(storage)  
       
       ref_node = nil
-      Neo::transaction do
+      Neo4j::transaction do
         ref_node = @neo.getReferenceNode
         @meta_nodes = MetaNodes.new(ref_node)
       end

@@ -1,5 +1,5 @@
 
-module Neo
+module Neo4j
   
   class Relations
     include Enumerable
@@ -17,7 +17,7 @@ module Neo
         Direction::OUTGOING)
       iter = traverser.iterator
       while (iter.hasNext) do
-        yield Neo::neo_service.load_node(iter.next)
+        yield Neo4j::neo_service.load_node(iter.next)
       end
     end
       

@@ -1,6 +1,6 @@
 include Java
 
-module Neo
+module Neo4j
   require 'neo4j/neo-1.0-b6.jar'
   require 'neo4j/jta-spec1_0_1.jar'
   require 'neo4j/index-util-0.4-20080512.110337-6.jar'

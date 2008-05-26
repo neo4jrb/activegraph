@@ -1,9 +1,9 @@
 require 'neo4j/relations'
 
-module Neo
+module Neo4j
 
   #
-  # Represent a node in the Neo space.
+  # Represent a node in the Neo4j space.
   # 
   # Is a wrapper around a Java neo node
   # 
@@ -26,7 +26,7 @@ module Neo
         self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
         $neo_logger.debug {"created '#{self.class.to_s}' using provided java neo node id #{@internal_node.getId()}"}
       elsif block_given? # check if we should run in a transaction
-        Neo::transaction { create_internal_node; yield self }
+        Neo4j::transaction { create_internal_node; yield self }
         $neo_logger.debug {"created '#{self.class.to_s}' with a new transaction"}        
       else
         create_internal_node
@@ -37,7 +37,7 @@ module Neo
     end
     
     def create_internal_node
-      @internal_node = Neo::neo_service.create_node
+      @internal_node = Neo4j::neo_service.create_node
       self.classname = self.class.to_s
       update_meta_node_instances self.class
     end
@@ -131,13 +131,13 @@ module Neo
       
       # This method adds a MetaNode for each class that inherits from the Node
       # must avoid endless recursion 
-      return if c == Neo::BaseNode or c == Neo::MetaNode or c == Neo::MetaNodes 
+      return if c == Neo4j::BaseNode or c == Neo4j::MetaNode or c == Neo4j::MetaNodes 
       
       # create a new @meta_node since it does not exist
       # the @meta node represents this class (holds the references to instance of it etc)
-      meta_node = Neo::MetaNode.new do |n|
+      meta_node = Neo4j::MetaNode.new do |n|
         n.meta_classname = c.to_s
-        Neo::neo_service.meta_nodes.nodes << n
+        Neo4j::neo_service.meta_nodes.nodes << n
       end      
       c.instance_eval {
         @meta_node = meta_node 
@@ -150,11 +150,11 @@ module Neo
     # inherits from this class.
     # 
     # This method does:
-    # * Creates a MetaNode and adds a relationship from the Neo::neo_service.meta_nodes.nodes
+    # * Creates a MetaNode and adds a relationship from the Neo4j::neo_service.meta_nodes.nodes
     # * Creates a class method 'meta_node' that will return this meta node
     #
     def self.included(c)
-      Neo::Node::INHERIT_OR_INCLUDE_PROC.call c
+      Neo4j::Node::INHERIT_OR_INCLUDE_PROC.call c
 
       $neo_logger.info{"included: created MetaNode for '#{c.to_s}'"}
     end
@@ -182,12 +182,12 @@ module Neo
       end
     
       def inherited(c)
-        Neo::Node::INHERIT_OR_INCLUDE_PROC.call c
+        Neo4j::Node::INHERIT_OR_INCLUDE_PROC.call c
         $neo_logger.info{"inherited: created MetaNode for '#{c.to_s}'"}
       end
     
       #
-      # Allows to declare Neo properties.
+      # Allows to declare Neo4j properties.
       # Notice that you do not need to declare any properties in order to 
       # set and get a neo property.
       # An undeclared setter/getter will be handled in the method_missing method instead.
@@ -209,7 +209,7 @@ module Neo
     
     
       #
-      # Allows to declare Neo relationsships.
+      # Allows to declare Neo4j relationsships.
       # The speficied name will be used as the type of the neo relationship.
       #
       def add_relation_type(type)
@@ -227,7 +227,7 @@ module Neo
   end
   
   class BaseNode 
-    include Neo::Node
+    include Neo4j::Node
     
     #    def initialize(*args, &block)
     #      # we have to call the init_internal_node
@@ -240,10 +240,10 @@ module Neo
   
   
   #
-  # Holds the class name of an Neo node.
+  # Holds the class name of an Neo4j node.
   # Used for example to create a Ruby object from a neo node.
   #
-  class MetaNode < Neo::BaseNode
+  class MetaNode < Neo4j::BaseNode
     properties :meta_classname # the name of the ruby class it represent
     relations :instances
     
@@ -252,7 +252,7 @@ module Neo
   #
   # A container node for all MetaNode
   #
-  class MetaNodes < Neo::BaseNode
+  class MetaNodes < Neo4j::BaseNode
     relations :nodes
   end
 

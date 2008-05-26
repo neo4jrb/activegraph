@@ -1,5 +1,5 @@
 # 
-# Set logger used by Neo
+# Set logger used by Neo4j
 # Need to be done first since loading the required files might use this logger
 #
 require 'logger'
@@ -14,7 +14,7 @@ require 'neo4j/transaction'
 require 'neo4j/node'
 
 
-module Neo
+module Neo4j
  
   #
   # Returns a NeoService

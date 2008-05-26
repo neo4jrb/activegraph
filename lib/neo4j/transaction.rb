@@ -1,19 +1,19 @@
 
-module Neo
+module Neo4j
   
   #
-  # Runs a block in a Neo transaction
+  # Runs a block in a Neo4j transaction
   #
   #  Most operations on neo requires an transaction.
   #  include 'neo'
   #
-  #  Neo::transaction {
-  #    node = Neo.new
+  #  Neo4j::transaction {
+  #    node = Neo4j.new
   #  }
   #
   # You have also access to transaction object
   #
-  #   Neo::transaction { |t|
+  #   Neo4j::transaction { |t|
   #     # something failed
   #     t.failure # will cause a rollback
   #   }
@@ -21,15 +21,15 @@ module Neo
   #
   # If a block is not given than the transaction method will return a transaction object.
   #
-  #   transaction = Neo::transaction
+  #   transaction = Neo4j::transaction
   #   transaction.begin
   # etc ...
   # 
   #
   def transaction     
-    return Neo::Transaction.new unless block_given?
+    return Neo4j::Transaction.new unless block_given?
 
-    tx = Neo::Transaction.new
+    tx = Neo4j::Transaction.new
     
     tx.begin
     ret = nil
@@ -48,7 +48,7 @@ module Neo
   module_function :transaction
   
   #
-  # Wraps a Neo java transaction
+  # Wraps a Neo4j java transaction
   #
   class Transaction
     # holds the wrapped org.neo4j.api.core.Transaction
@@ -118,6 +118,6 @@ module Neo
 #   puts yield
 # end
 #  
-# n = Neo::Transaction.new
+# n = Neo4j::Transaction.new
 # n.begin
 #
