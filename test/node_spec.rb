@@ -100,7 +100,11 @@ describe "When running in one transaction" do
       @node.props.should have_key('p2')
     end
   
-  
+    it "should allow to get a property that has not been set" do
+      @node.not_set_prop.should be_nil
+    end
+    
+    
     it "should have a neo id" do
       @node.should respond_to(:neo_node_id)
       @node.neo_node_id.should be_kind_of(Fixnum)

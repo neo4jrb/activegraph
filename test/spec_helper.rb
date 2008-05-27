@@ -4,17 +4,21 @@
 
 require 'fileutils'  
 
-DB_LOCATION = 'var/neo'
+def delete_db
+  FileUtils.rm_r Neo4j::NEO_STORAGE           if File.directory? Neo4j::NEO_STORAGE
+  FileUtils.rm_r Neo4j::LUCENE_INDEX_STORAGE  if File.directory? Neo4j::LUCENE_INDEX_STORAGE
+end
+
 
 def start
-  FileUtils.rm_r DB_LOCATION if File.directory?(DB_LOCATION)
-  Neo4j::Neo.instance.start(DB_LOCATION)
+  delete_db
+  Neo4j::Neo.instance.start
 end
 
 
 def stop
   Neo4j::Neo.instance.stop
-  FileUtils.rm_r DB_LOCATION if File.directory?(DB_LOCATION)
+  delete_db
 end
 
 

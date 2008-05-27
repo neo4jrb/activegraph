@@ -96,7 +96,8 @@ module Neo4j
       else
         if !@internal_node.has_property(name)
           $neo_logger.warn("Missing property '#{name}' for class '#{self.class.to_s}' id :#{neo_node_id}")
-          super.method_missing(methodname, *args)
+          return nil # TODO hmm, should we allow this. Maybe only declared props should do this
+          # super.method_missing(methodname, *args)
         else        
           @internal_node.get_property(name)
         end      

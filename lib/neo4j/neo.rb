@@ -2,6 +2,8 @@ require 'singleton'
 
 module Neo4j
   
+    NEO_STORAGE = 'var/neo'
+    LUCENE_INDEX_STORAGE = 'var/lucene'
   
   #
   # Allows start and stop the Neo4j service
@@ -10,20 +12,23 @@ module Neo4j
   # 
   class Neo
     include Singleton
-    attr_accessor :db_storage
+    attr_accessor :db_storage, :lucene 
 
     #
     # meta_nodes : Return the meta nodes containing relationship to all MetaNode objects
     #
     attr_reader :meta_nodes 
     
+    
+    
     #
     # starts neo with a database at the given storage location
     # 
-    def start(storage = "var/neo")
+    def start(storage = NEO_STORAGE)
       @db_storage = storage
       raise Exception.new("Already started neo") if @neo
       @neo = EmbeddedNeo.new(@db_storage)  
+      @lucene = Lucene.new LUCENE_INDEX_STORAGE
       
       ref_node = nil
       Neo4j::transaction do
@@ -31,7 +36,7 @@ module Neo4j
         @meta_nodes = MetaNodes.new(ref_node)
       end
       
-      $neo_logger.info{ "Started neo. DB at '#{@db_storage}'"}
+      $neo_logger.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 
     end
     
@@ -76,6 +81,7 @@ module Neo4j
       $neo_logger.info {"stop neo #{@neo}"}
       @neo.shutdown  
       @neo = nil
+      @lucene = nil
     end
     
   end
