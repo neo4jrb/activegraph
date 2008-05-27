@@ -17,7 +17,8 @@ Spec::Rake::SpecTask.new do |t|
 #    t.rcov = true # have not got RCov working with JRuby yet - but it should ...
     t.spec_files = FileList['test/**/*_spec.rb']
 #    t.warning = true
-#    t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
+    t.spec_opts = ['--format specdoc', '--color']
+    # t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
   end
 
 
