@@ -39,9 +39,9 @@ module Neo4j
     # Inits this node with the specified java neo node
     #
     def init_with_node(node)
-        @internal_node = node
-        self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
-        $neo_logger.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
+      @internal_node = node
+      self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
+      $neo_logger.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
     end
     
     
@@ -137,7 +137,24 @@ module Neo4j
       end
       ret
     end
-    
+
+
+
+    #
+    #  Index all declared properties
+    #
+    def index
+      clazz = self.class
+      id    = neo_node_id.to_s
+
+      fields = {}
+      clazz.decl_props.each do |k|
+        key = k.to_s
+        fields[key] = props[key]
+      end
+      
+      Neo4j::Neo.instance.lucene.index(id, fields)
+    end
 
     
     # INHERIT_OR_INCLUDE_PROC is proc that contains code that 
@@ -208,7 +225,7 @@ module Neo4j
       # An undeclared setter/getter will be handled in the method_missing method instead.
       #
       def properties(*props)
-       @decl_props ||= []        
+        @decl_props ||= []        
         props.each do |prop|
           @decl_props << prop
           define_method(prop) do 
@@ -218,6 +235,8 @@ module Neo4j
           name = (prop.to_s() +"=")
           define_method(name) do |value|
             @internal_node.set_property(prop.to_s, value)
+            # TODO: performance , we here reindex everytime a property changes ...
+            index
           end
         end
       end
@@ -237,6 +256,25 @@ module Neo4j
       def relations(*relations)
         relations.each {|type| add_relation_type(type)}
       end
+      
+      #
+      # Finds all nodes of this type (and ancestors of this type) having
+      # the specified property values.
+      # 
+      # == Example
+      #   MyNode.find(:name => 'foo', :company => 'bar')
+      #
+      def find(query)
+        q = query.dup
+        q['classname'] = self.to_s
+        ids = Neo4j::Neo.instance.lucene.find(q)
+        
+        # TODO performance, we load all the found entries. Maybe better using Enumeration
+        # and load it when needed
+        ids.collect {|id| Neo4j::Neo.instance.find_node(id)}
+      end      
+
+      
     end
 
   end
@@ -253,6 +291,10 @@ module Neo4j
   class MetaNode < Neo4j::BaseNode
     properties :ref_classname # the name of the ruby class it represent
     relations :instances
+    
+    def index
+      # overriding super index since we do not want to index these nodes
+    end
   end
 
   #
@@ -260,6 +302,11 @@ module Neo4j
   #
   class MetaNodes < Neo4j::BaseNode
     relations :nodes
+    
+    def index
+      # overriding super index since we do not want to index these nodes
+    end
+    
   end
 
 

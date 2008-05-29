@@ -101,6 +101,23 @@ Traversing relationships:
 
 Note that the bars method returns an object that mixins the Enumeration module.
 
+=== Quering (using lucene)
+
+All declared properties are automatically indexed by lucene.
+
+Example
+
+      class TestNode 
+        include Neo4j::Node
+        properties :name, :age
+      end
+    
+      node = TestNode.new
+      node.name = 'foo'
+      node.age  = 42
+
+
+      TestNode.find(:name => 'foo', :age => 42) # => [node]
 
 === Find all
 
@@ -166,7 +183,4 @@ It does this by reading the classname property and loading that ruby class with 
   f2.hello
   # f2.class == Foo
 
-=== Quering (using lucene)
-
-Not implemented yet.
 

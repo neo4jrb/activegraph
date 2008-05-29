@@ -9,39 +9,43 @@ module Neo4j
   
     # import java classes
     IndexReader = org.apache.lucene.index.IndexReader
-    IndexSearcher = org.apache.lucene.search.IndexSearcher
     Term = org.apache.lucene.index.Term
+    IndexWriter = org.apache.lucene.index.IndexWriter    
     Document = org.apache.lucene.document.Document
     StandardAnalyzer = org.apache.lucene.analysis.standard.StandardAnalyzer
     Field = org.apache.lucene.document.Field
+    
     TermQuery = org.apache.lucene.search.TermQuery  
-    IndexWriter = org.apache.lucene.index.IndexWriter
-  
-  
+    MultiTermQuery = org.apache.lucene.search.MultiTermQuery    
+    BooleanClause = org.apache.lucene.search.BooleanClause
+    BooleanQuery  = org.apache.lucene.search.BooleanQuery
+    IndexSearcher = org.apache.lucene.search.IndexSearcher
+
+ 
     @index_path = nil
     def initialize(an_index_path = "data/")
       @index_path = an_index_path
     end
   
-    def index(node)
+
+    def index(id, fields)
       index_available = IndexReader.index_exists(@index_path)
       index_writer = IndexWriter.new(@index_path, StandardAnalyzer.new, !index_available)
       
-      clazz = node.class
-      id    = node.neo_node_id.to_s
-      term_to_delete = Term.new("id", id) # if it exists
+      term_to_delete = Term.new('id', id) # if it exists
       doc   = Document.new
-      props = node.props
-      
-      clazz.decl_props.each do |k|
-        key = k.to_s
-        value = props[key]
+      doc.add(Field.new('id', id, Field::Store::YES, Field::Index::NO_NORMS))
+    
+      fields.each_pair do |key, value|  
+#        puts "index #{key} = #{value}"
+        value = '' if value.nil?
         doc.add(Field.new(key,value, Field::Store::YES, Field::Index::NO_NORMS))                               
       end
       
       index_writer.updateDocument(term_to_delete, doc) # delete any old docs with same id
       index_writer.close
     end
+
     
     def add_documents id_text_pair_array # e.g., [[1,"test1"],[2,'test2']]
       index_available = IndexReader.index_exists(@index_path)
@@ -58,7 +62,29 @@ module Neo4j
     end
   
   
-    def search(field, value)
+    def find(fields)
+      query = BooleanQuery.new
+      
+      fields.each_pair do |key,value|  
+        puts "search '#{key.to_s}' '#{value}'"
+        term  = Term.new(key.to_s, value)        
+        q = TermQuery.new(term)
+        query.add(q, BooleanClause::Occur::MUST)
+      end
+
+
+      engine = IndexSearcher.new(@index_path)
+      hits = engine.search(query).iterator
+      results = []
+      while (hits.hasNext && hit = hits.next)
+        id = hit.getDocument.getField("id").stringValue.to_i
+        results <<  id #[hit.getScore, id, text]
+      end
+      engine.close
+      results
+    end
+
+    def search2(field, value)
       puts "search '#{field}' '#{value}'"
       term  = Term.new(field, value)
       query = TermQuery.new(term)
@@ -73,7 +99,7 @@ module Neo4j
       engine.close
       results
     end
-  
+    
   
     def search_with_query(query)
       parse_query = org.apache.lucene.queryParser.QueryParser.new(
@@ -105,5 +131,3 @@ module Neo4j
   end
 
 end
-
-

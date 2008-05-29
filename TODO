@@ -2,6 +2,7 @@
 
 * Delete node
 * Lucene integeration
+* Make lucene integration thread safe
 * Implement pending rspecs
 * When running rspec with warning enabled it reports some problems - fix it.
 * Fix TODO's in the code
