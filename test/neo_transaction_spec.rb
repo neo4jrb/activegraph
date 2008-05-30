@@ -81,7 +81,7 @@ describe "When neo has been restarted" do
 
   def restart
     Neo4j::Neo.instance.stop
-    Neo4j::Neo.instance.start DB_LOCATION
+    Neo4j::Neo.instance.start 
   end
   
   describe Neo4j::Neo do

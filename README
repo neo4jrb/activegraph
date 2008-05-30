@@ -28,7 +28,7 @@ Example of how to do rollback
    }
 
 
-If a block is not given than the transaction method will return a transaction object.
+If a block is not given then the transaction method will return a transaction object.
 
    transaction = Neo4j::transaction
    transaction.begin
