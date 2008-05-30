@@ -149,7 +149,10 @@ This also works for inheritance, example
      Foo.all # => [f,b]
      Bar.all # => [b]
 
-=== MetaNodes, implementation details
+
+== Implementation details
+
+=== MetaNodes
 
 The Node mixin defines the ruby hook methods 'included' and 'inherited' which will be
 called when someone includes the Neo::Node mixin or creates a subclass from a 
@@ -183,5 +186,4 @@ It does this by reading the classname property and loading that ruby class with 
   f2 = Neo::neo_service.find_node(foo.neo_node_id)
   f2.hello
   # f2.class == Foo
-
 
