@@ -1,7 +1,8 @@
 = Neo4j.rb
 
-Neo4j.rb is a ruby wrapper around the Java Neo api.
-See http://www.neo4j.org/
+Neo4j is a network database framework for JRuby.
+It uses the neo4j java library (http://www.neo4j.org/) and lucene for indexing and searching.
+
 
 == Examples
 
@@ -15,13 +16,13 @@ Example:
 
   include 'neo'
 
-  Neo::transaction {
-    node = Neo.new
+  Neo4j::transaction {
+    node = Neo4j::Node.new
   }
 
 Example of how to do rollback
 
-   Neo::transaction { |t|
+   Neo4j::transaction { |t|
      # something failed
      t.failure # will cause a rollback
    }
@@ -29,7 +30,7 @@ Example of how to do rollback
 
 If a block is not given than the transaction method will return a transaction object.
 
-   transaction = Neo::transaction
+   transaction = Neo4j::transaction
    transaction.begin
    # etc ...
 

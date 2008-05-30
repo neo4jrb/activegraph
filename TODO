@@ -1,7 +1,7 @@
 == TODO
 
-* Delete node
-* Lucene integeration
+* Implement delete method on Neo4j::Node
+* Lucene integeration with neo4j transaction
 * Make lucene integration thread safe
 * Implement pending rspecs
 * When running rspec with warning enabled it reports some problems - fix it.
