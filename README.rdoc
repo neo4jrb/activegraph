@@ -14,7 +14,7 @@ Here are some examples of how to use the API.
 All operations that work with the node space (even read operations) must be wrapped in a transaction.
 Example:
 
-  include 'neo'
+  include 'neo4j'
 
   Neo4j::Transaction.run {
     node = MyNode.new
@@ -39,10 +39,10 @@ You can also run it without a block, like this:
 A Neo::Node is a wrapper around the java org.neo4j.api.core.Node interface.
 A node can have properties and relationships to other nodes.
 
-Use the Neo::Node mixin
+Use the Neo4j::Node mixin
 
   class MyNode 
-     include Neo::Node
+     include Neo4j::Node
    end
 
 === Create a Node
@@ -69,7 +69,7 @@ Those properties will be stored on in the Neo database.
 If you want you can also declare those properties, like the attr_accessor
 
   class SomeNode
-     include Neo::Node
+     include Neo4j::Node
      properties :foo, :bar
   end
 

@@ -22,7 +22,6 @@ module Neo4j
     IndexSearcher = org.apache.lucene.search.IndexSearcher
 
  
-    @index_path = nil
     def initialize(an_index_path = "data/")
       @index_path = an_index_path
     end

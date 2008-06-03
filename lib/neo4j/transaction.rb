@@ -1,4 +1,7 @@
 
+require 'thread'
+require 'monitor'
+
 module Neo4j
   
   
@@ -9,8 +12,9 @@ module Neo4j
   class Transaction
     attr_reader :neo_transaction
     
+    extend MonitorMixin  # want it as class methods
+    
     @@counter = 0 # just for debugging purpose, not thread safe ...
-
 
     #
     # Runs a block in a Neo4j transaction
@@ -38,14 +42,15 @@ module Neo4j
       $NEO_LOGGER.warn{"already start transaction, tried to run start twice"} if Transaction.running?
       raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
-
-      if !Transaction.running? 
-        tx = Neo4j::Transaction.new
-        tx.start
-      else
-        tx = Transaction.current
+      tx = nil
+      synchronize do
+        if !Transaction.running? 
+          tx = Neo4j::Transaction.new
+          tx.start
+        else
+          tx = Transaction.current
+        end
       end
-      
       ret = nil
     
       begin  
@@ -60,9 +65,11 @@ module Neo4j
     end  
     
     def initialize
-      raise Exception.new("Can't create a new transaction because one is already running (#{Transaction.current})") if Transaction.running?
-      @@counter += 1      
-      Thread.current[:transaction] = self
+      Transaction.synchronize do
+        raise Exception.new("Can't create a new transaction because one is already running (#{Transaction.current})") if Transaction.running?
+        @@counter += 1      
+        Thread.current[:transaction] = self
+      end
       $NEO_LOGGER.debug{"create #{self.to_s}"}
     end
     

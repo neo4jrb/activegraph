@@ -24,6 +24,30 @@ describe "When running in one transaction" do
   end  
   
   
+  describe "when changing properties" do
+    before(:all) do
+      class TestNode 
+        include Neo4j::Node
+        properties :name, :age
+      end
+    end
+    
+    it "should reindex it" do
+      # given
+      n1 = TestNode.new
+      n1.name = 'hi'
+      TestNode.find(:name => 'hi').should include(n1)
+      
+      # when
+      n1.name = "oj"
+      
+      # then
+      TestNode.find(:name => 'hi').should_not include(n1)
+      TestNode.find(:name => 'oj').should include(n1)      
+    end
+  end
+  
+  
   describe "simple search" do
     before(:all) do
       class TestNode 
