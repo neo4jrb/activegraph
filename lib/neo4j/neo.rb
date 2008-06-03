@@ -36,7 +36,7 @@ module Neo4j
         @meta_nodes = MetaNodes.new(ref_node)
       end
       
-      $neo_logger.info{ "Started neo. Database storage located at '#{@db_storage}'"}
+      $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 
     end
     
@@ -78,7 +78,7 @@ module Neo4j
     # Must be done before the program stops
     #
     def stop
-      $neo_logger.info {"stop neo #{@neo}"}
+      $NEO_LOGGER.info {"stop neo #{@neo}"}
       @neo.shutdown  
       @neo = nil
       @lucene = nil

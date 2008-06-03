@@ -57,7 +57,7 @@ module Neo4j
     @@instance = nil
     
     def initialize
-      $neo_logger.debug{"create new transaction"}
+      $NEO_LOGGER.debug{"create new transaction"}
     end
     
     
@@ -78,7 +78,7 @@ module Neo4j
     def begin
         @@instance = self        
         @internal = org.neo4j.api.core.Transaction.begin
-        $neo_logger.debug{"begin transaction #{self.to_s}"}
+        $NEO_LOGGER.debug{"begin transaction #{self.to_s}"}
         @failure = false
         self
       end
@@ -92,7 +92,7 @@ module Neo4j
       #
       def success
         raise Exception.new("no transaction started, can't do success on it") unless @internal     
-        $neo_logger.debug{"success transaction #{self.to_s}"}      
+        $NEO_LOGGER.debug{"success transaction #{self.to_s}"}      
         @internal.success
       end
     
@@ -102,7 +102,7 @@ module Neo4j
       #
       def finish
         raise Exception.new("no transaction started, can't do success on it") unless @internal     
-        $neo_logger.debug{"finish transaction #{self.to_s}"}            
+        $NEO_LOGGER.debug{"finish transaction #{self.to_s}"}            
         @internal.finish
         @@instance = nil
       end
@@ -113,7 +113,7 @@ module Neo4j
       #
       def failure
         raise Exception.new("no transaction started, can't do failure on it") unless @internal     
-        $neo_logger.debug{"failure transaction #{self.to_s}"}                  
+        $NEO_LOGGER.debug{"failure transaction #{self.to_s}"}                  
         @internal.failure
         @failure = true
       end
@@ -124,8 +124,8 @@ module Neo4j
     
   end
   
-# $neo_logger = Object.new
-# def $neo_logger.debug
+# $NEO_LOGGER = Object.new
+# def $NEO_LOGGER.debug
 #   puts yield
 # end
 #  

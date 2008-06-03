@@ -21,7 +21,7 @@ module Neo4j
     # * creates a relationship in the metanode instance to this instance
     #    
     def initialize(*args)
-      $neo_logger.debug("Initialize #{self}")
+      $NEO_LOGGER.debug("Initialize #{self}")
       # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         init_with_node(args[0])
@@ -41,7 +41,7 @@ module Neo4j
     def init_with_node(node)
       @internal_node = node
       self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
-      $neo_logger.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
+      $NEO_LOGGER.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
     end
     
     
@@ -52,12 +52,12 @@ module Neo4j
       @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
       update_meta_node_instances self.class
-      $neo_logger.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
+      $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
     def update_meta_node_instances(clazz)
       meta_node = clazz.meta_node
-      # $neo_logger.warn("No meta_node for #{self} type #{self.class.to_s}") if meta_node.nil?
+      # $NEO_LOGGER.warn("No meta_node for #{self} type #{self.class.to_s}") if meta_node.nil?
       return if meta_node.nil?
       
       # add the instance to the list of instances in the meta node      
@@ -95,7 +95,7 @@ module Neo4j
         @internal_node.set_property(name, args[0])
       else
         if !@internal_node.has_property(name)
-          $neo_logger.warn("Missing property '#{name}' for class '#{self.class.to_s}' id :#{neo_node_id}")
+          $NEO_LOGGER.warn("Missing property '#{name}' for class '#{self.class.to_s}' id :#{neo_node_id}")
           return nil # TODO hmm, should we allow this. Maybe only declared props should do this
           # super.method_missing(methodname, *args)
         else        

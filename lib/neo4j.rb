@@ -10,6 +10,6 @@ require 'neo4j/node'
 # Need to be done first since loading the required files might use this logger
 #
 require 'logger'
-$neo_logger = Logger.new(STDOUT)
-$neo_logger.level = Logger::WARN
-#$neo_logger.level = Logger::DEBUG
+$NEO_LOGGER = Logger.new(STDOUT)
+$NEO_LOGGER.level = Logger::WARN
+#$NEO_LOGGER.level = Logger::DEBUG
