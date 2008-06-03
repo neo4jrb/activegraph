@@ -54,9 +54,18 @@ module Neo4j
     # holds the wrapped org.neo4j.api.core.Transaction
     attr_accessor :internal
 
+    @@instance = nil
+    
     def initialize
       $neo_logger.debug{"create new transaction"}
-      
+    end
+    
+    
+    #
+    # Get the current transaction
+    #
+    def self.instance
+      @@instance
     end
     
     def failure?
@@ -67,6 +76,7 @@ module Neo4j
     # Starts a new transaction
     #
     def begin
+        @@instance = self        
         @internal = org.neo4j.api.core.Transaction.begin
         $neo_logger.debug{"begin transaction #{self.to_s}"}
         @failure = false
@@ -94,6 +104,7 @@ module Neo4j
         raise Exception.new("no transaction started, can't do success on it") unless @internal     
         $neo_logger.debug{"finish transaction #{self.to_s}"}            
         @internal.finish
+        @@instance = nil
       end
 
       #

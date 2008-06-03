@@ -84,38 +84,6 @@ module Neo4j
       results
     end
 
-    def search2(field, value)
-      puts "search '#{field}' '#{value}'"
-      term  = Term.new(field, value)
-      query = TermQuery.new(term)
-      engine = IndexSearcher.new(@index_path)
-      hits = engine.search(query).iterator
-      results = []
-      while (hits.hasNext && hit = hits.next)
-        id = hit.getDocument.getField("id").stringValue.to_i
-        text = hit.getDocument.getField(field).stringValue
-        results <<  [hit.getScore, id, text]
-      end
-      engine.close
-      results
-    end
-    
-  
-    def search_with_query(query)
-      parse_query = org.apache.lucene.queryParser.QueryParser.new(
-        'text', StandardAnalyzer.new)
-      query = parse_query.parse(query)
-      engine = IndexSearcher.new(@index_path)
-      hits = engine.search(query).iterator
-      results = []
-      while (hits.hasNext && hit = hits.next)
-        id = hit.getDocument.getField("id").stringValue.to_i
-        text = hit.getDocument.getField("text").stringValue
-        results << [hit.getScore, id, text]
-      end
-      engine.close
-      results
-    end
   
     def delete_documents id_array # e.g., [1,5,88]
       index_available = IndexReader.index_exists(@index_path)
