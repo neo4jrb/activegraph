@@ -6,7 +6,7 @@ module Neo4j
     LUCENE_INDEX_STORAGE = 'var/lucene'
   
   #
-  # Allows start and stop the Neo4j service
+  # Allows run and stop the Neo4j service
   # 
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
@@ -31,7 +31,7 @@ module Neo4j
       @lucene = Lucene.new LUCENE_INDEX_STORAGE
       
       ref_node = nil
-      Neo4j::transaction do
+      Neo4j::Transaction.run do
         ref_node = @neo.getReferenceNode
         @meta_nodes = MetaNodes.new(ref_node)
       end

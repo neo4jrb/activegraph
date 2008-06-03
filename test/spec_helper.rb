@@ -27,16 +27,12 @@ end
 # All those classes will be removed (uses ruby remove_const)
 #
 def remove_class_defs
-  Neo4j::transaction do
-  
-    Neo4j::Neo.instance.meta_nodes.nodes.each do |n| 
-      clazz =  n.ref_classname.to_sym
-      #    puts "Remove #{n.ref_classname}" if Object.const
-      Object.instance_eval do 
-        begin 
-          remove_const clazz 
-        end if const_defined? clazz 
-      end
+  Neo4j::Neo.instance.meta_nodes.nodes.each do |n| 
+    clazz =  n.ref_classname.to_sym
+    Object.instance_eval do 
+      begin 
+        remove_const clazz 
+      end if const_defined? clazz 
     end
   end
 end

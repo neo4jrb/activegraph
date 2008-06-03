@@ -16,28 +16,28 @@ Example:
 
   include 'neo'
 
-  Neo4j::transaction {
-    node = Neo4j::Node.new
+  Neo4j::Transaction.run {
+    node = MyNode.new
   }
 
 Example of how to do rollback
 
-   Neo4j::transaction { |t|
+   Neo4j::Transaction.run { |t|
      # something failed
      t.failure # will cause a rollback
    }
 
 
-If a block is not given then the transaction method will return a transaction object.
+You can also run it without a block, like this:
 
-   transaction = Neo4j::transaction
-   transaction.begin
-   # etc ...
+   transaction = Neo4j::Transaction.new
+   transaction.start
+   # do something
+   transaction.finish
 
 === Neo::Node
 A Neo::Node is a wrapper around the java org.neo4j.api.core.Node interface.
 A node can have properties and relationships to other nodes.
-
 
 Use the Neo::Node mixin
 
@@ -75,10 +75,11 @@ If you want you can also declare those properties, like the attr_accessor
 
 And to set a property
 
-  Neo::transaction {
     f = SomeNode.new
     f.foo = "123"
-   }
+
+Those declared properties will also be indexed, see below: Quering.
+
 
 === Relationships
 
@@ -183,7 +184,7 @@ It does this by reading the classname property and loading that ruby class with 
   f1 = Foo.new {}
   
   # load the class again
-  f2 = Neo::neo_service.find_node(foo.neo_node_id)
+  f2 = Neo4j::Neo.instance.find_node(foo.neo_node_id)
   f2.hello
   # f2.class == Foo
 

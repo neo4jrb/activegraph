@@ -12,7 +12,8 @@ require 'pp'
 describe "When running in one transaction" do
   before(:all) do
     start
-    @transaction = Neo4j::transaction.begin 
+    @transaction = Neo4j::Transaction.new
+    @transaction.start
   end
 
   after(:all) do

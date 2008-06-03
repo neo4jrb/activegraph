@@ -25,9 +25,11 @@ module Neo4j
       # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         init_with_node(args[0])
-      elsif block_given? # check if we should run in a transaction
-        Neo4j::transaction { init_without_node; yield self }
-      else # initialize without a new transaction
+      elsif block_given? and Neo4j::Transaction.running? # block but no new transaction ?
+        init_without_node; yield self
+      elsif block_given? and !Neo4j::Transaction.running? # check if we should run in a transaction
+        Neo4j::Transaction.run { init_without_node; yield self }
+      else 
         init_without_node
       end
       
