@@ -1,4 +1,4 @@
-require 'neo4j/java_libs'
+require 'neo4j/jars'
 require 'neo4j/neo'
 require 'neo4j/transaction'
 require 'neo4j/lucene'
