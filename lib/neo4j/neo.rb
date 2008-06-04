@@ -2,17 +2,26 @@ require 'singleton'
 
 module Neo4j
   
-    NEO_STORAGE = 'var/neo'
-    LUCENE_INDEX_STORAGE = 'var/lucene'
+  
+  #
+  # Default location of neo storage
+  NEO_STORAGE = 'var/neo'
+    
+  #
+  # Default location of lucene index files
+  #
+  LUCENE_INDEX_STORAGE = 'var/lucene'
   
   #
   # Allows run and stop the Neo4j service
+  # Contains global ćonstants such as location of the neo storage and index files
+  # on the filesystem.
   # 
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
   class Neo
     include Singleton
-    attr_accessor :db_storage, :lucene 
+    attr_accessor :db_storage, :index_storage 
 
     #
     # meta_nodes : Return the meta nodes containing relationship to all MetaNode objects
@@ -24,11 +33,12 @@ module Neo4j
     #
     # starts neo with a database at the given storage location
     # 
-    def start(storage = NEO_STORAGE)
+    def start(storage = NEO_STORAGE, index_storage = LUCENE_INDEX_STORAGE)
       @db_storage = storage
+      @index_storage = index_storage
+      
       raise Exception.new("Already started neo") if @neo
       @neo = EmbeddedNeo.new(@db_storage)  
-      @lucene = Lucene.new LUCENE_INDEX_STORAGE
       
       ref_node = nil
       Neo4j::Transaction.run do
@@ -48,6 +58,14 @@ module Neo4j
       @neo.createNode
     end
     
+    
+    def index_node(node)
+      raise NotInTransactionError.new unless Transaction.running?
+      
+      Transaction.current.index_node node
+    end
+    
+    
     # 
     # Find the meta node represented by the given Ruby class name
     #
@@ -63,6 +81,7 @@ module Neo4j
       load_node(neo_node)
     end
   
+    
     def load_node(neo_node)
       classname = neo_node.get_property('classname')
       
@@ -81,8 +100,14 @@ module Neo4j
       $NEO_LOGGER.info {"stop neo #{@neo}"}
       @neo.shutdown  
       @neo = nil
-      @lucene = nil
     end
+
+
+    
+    def tx_manager
+      @neo.getConfig().getTxModule().getTxManager()
+    end
+    
     
   end
 end

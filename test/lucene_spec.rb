@@ -12,14 +12,11 @@ require 'pp'
 describe "When running in one transaction" do
   before(:all) do
     start
-    @transaction = Neo4j::Transaction.new
-    @transaction.start
   end
 
   after(:all) do
-    remove_class_defs     # so that we can define the same class again        
-    @transaction.failure # do not want to store anything
-    @transaction.finish
+    #    remove_class_defs     # so that we can define the same class again        
+    #    @transaction.failure # do not want to store anything
     stop
   end  
   
@@ -34,16 +31,27 @@ describe "When running in one transaction" do
     
     it "should reindex it" do
       # given
-      n1 = TestNode.new
-      n1.name = 'hi'
-      TestNode.find(:name => 'hi').should include(n1)
+      n1 = Neo4j::Transaction.run do
+        n1 = TestNode.new
+        n1.name = 'hi'
+        n1
+      end
+      
+      Neo4j::Transaction.run do
+        TestNode.find(:name => 'hi').should include(n1)
+      end
+      
       
       # when
-      n1.name = "oj"
+      Neo4j::Transaction.run do
+        n1.name = "oj"
+      end
       
       # then
-      TestNode.find(:name => 'hi').should_not include(n1)
-      TestNode.find(:name => 'oj').should include(n1)      
+      Neo4j::Transaction.run do
+        TestNode.find(:name => 'hi').should_not include(n1)
+        TestNode.find(:name => 'oj').should include(n1)      
+      end
     end
   end
   
@@ -55,38 +63,40 @@ describe "When running in one transaction" do
         properties :name, :age
       end
       @foos = []
-      5.times {|n|
-        node = TestNode.new
-        node.name = "foo#{n}"
-        node.age = "#{n}"
-        @foos << node
-      }
-      @bars = []
-      5.times {|n|
-        node = TestNode.new
-        node.name = "bar#{n}"
-        node.age = "#{n}"
-        @bars << node
-      }
-      
+      Neo4j::Transaction.run do
+        5.times {|n|
+          node = TestNode.new
+          node.name = "foo#{n}"
+          node.age = "#{n}"
+          @foos << node
+        }
+        @bars = []
+        5.times {|n|
+          node = TestNode.new
+          node.name = "bar#{n}"
+          node.age = "#{n}"
+          @bars << node
+        }
+      end
     end
     
     it "should find one node" do
-      found = TestNode.find(:name => 'foo2')
+      
+      found = Neo4j::Transaction.run {TestNode.find(:name => 'foo2')}
       found[0].name.should == 'foo2'
       found.should include(@foos[2])
       found.size.should == 1
     end
 
     it "should find two nodes" do
-      found = TestNode.find(:age => '0')
+      found = Neo4j::Transaction.run {TestNode.find(:age => '0')}      
       found.should include(@foos[0])
       found.should include(@bars[0])      
       found.size.should == 2
     end
 
     it "should find using two fields" do
-      found = TestNode.find(:age => '0', :name => 'foo0')
+      found = Neo4j::Transaction.run {TestNode.find(:age => '0', :name => 'foo0')}      
       found.should include(@foos[0])
       found.size.should == 1
     end

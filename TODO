@@ -8,6 +8,7 @@
 * Fix TODO's in the code
 * Check visibility of methods, set internal method to private
 * Performance tests
+* Start a new transaction when needed ?
 
 == Bugs
 

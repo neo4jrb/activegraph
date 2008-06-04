@@ -1,4 +1,6 @@
 require 'neo4j/relations'
+require 'neo4j/lucene_query'
+
 
 module Neo4j
 
@@ -24,13 +26,14 @@ module Neo4j
       $NEO_LOGGER.debug("Initialize #{self}")
       # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
-        init_with_node(args[0])
-      elsif block_given? and Neo4j::Transaction.running? # block but no new transaction ?
-        init_without_node; yield self
-      elsif block_given? and !Neo4j::Transaction.running? # check if we should run in a transaction
-        Neo4j::Transaction.run { init_without_node; yield self }
+        Transaction.run {init_with_node(args[0])} unless Transaction.running?
+        init_with_node(args[0])                   if Transaction.running?
+      elsif block_given? 
+        Transaction.run {init_without_node; yield self} unless Transaction.running?        
+        begin init_without_node; yield self end         if Transaction.running?                
       else 
-        init_without_node
+        Transaction.run {init_without_node} unless Transaction.running?        
+        init_without_node                   if Transaction.running?                
       end
       
       # must call super with no arguments so that chaining of initialize method will work
@@ -155,10 +158,13 @@ module Neo4j
         fields[key] = props[key]
       end
       
-      Neo4j::Neo.instance.lucene.index(id, fields)
+      #      Neo4j::Neo.instance.lucene.index(id, fields)
+      
+      Neo.instance.index_node(self)
     end
 
     
+   
     # INHERIT_OR_INCLUDE_PROC is proc that contains code that 
     # is used both in the inherited and the included methods.
     # TODO must be a nicer way of doing this ?
@@ -267,15 +273,22 @@ module Neo4j
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
       def find(query)
-        q = query.dup
-        q['classname'] = self.to_s
-        ids = Neo4j::Neo.instance.lucene.find(q)
+        #        q = query.dup
+        #        q['classname'] = self.to_s
+        ids = LuceneQuery.find(index_storage_path, query)
+#        ids = Neo4j::Neo.instance.lucene.find(q)
         
         # TODO performance, we load all the found entries. Maybe better using Enumeration
         # and load it when needed
         ids.collect {|id| Neo4j::Neo.instance.find_node(id)}
       end      
 
+      #
+      # The location of the lucene index for this node.
+      #
+      def index_storage_path
+        Neo4j::Neo.instance.index_storage + "/" + self.to_s.gsub('::', '/')
+      end
       
     end
 
