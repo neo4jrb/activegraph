@@ -97,18 +97,62 @@ module Neo4j
       raise Exception.new("Node not initialized, called method '#{methodname}' on #{self.class.to_s}") unless @internal_node
       
       if setter
-        @internal_node.set_property(name, args[0])
+        set_property(name, args[0])
       else
-        if !@internal_node.has_property(name)
-          $NEO_LOGGER.warn("Missing property '#{name}' for class '#{self.class.to_s}' id :#{neo_node_id}")
-          return nil # TODO hmm, should we allow this. Maybe only declared props should do this
-          # super.method_missing(methodname, *args)
-        else        
-          @internal_node.get_property(name)
-        end      
+        get_property(name)
       end
     end
     
+    
+    #
+    # Set a neo property on this node.
+    # You should not use this method, instead set property like you do in Ruby:
+    # 
+    #   n = Node.new
+    #   n.foo = 'hej'
+    # 
+    # Runs in a new transaction if there is not one already running,
+    # otherwise it will run in the existing transaction.
+    #
+    def set_property(name, value)
+      $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
+      Transaction.run {
+        @internal_node.set_property(name, value)
+      }
+    end
+ 
+    # 
+    # Returns the value of the given neo property.
+    # You should not use this method, instead use get properties like you do in Ruby:
+    # 
+    #   n = Node.new
+    #   n.foo = 'hej'
+    #   puts n.foo
+    # 
+    # The n.foo call will intern use this method.
+    # If the property does not exist it will return nil.
+    # Runs in a new transaction if there is not one already running,
+    # otherwise it will run in the existing transaction.
+    #    
+    def get_property(name)
+      $NEO_LOGGER.debug{"get property '#{name}'"}        
+      
+      Transaction.run {
+        return nil if ! has_property(name)
+        @internal_node.get_property(name)
+      }
+    end
+    
+    #
+    # Checks if the given neo property exists.
+    # Runs in a new transaction if there is not one already running,
+    # otherwise it will run in the existing transaction.
+    #
+    def has_property(name)
+      Transaction.run {
+        @internal_node.has_property(name)
+      }
+    end
     
     # 
     # Returns a unique id
@@ -237,14 +281,17 @@ module Neo4j
         props.each do |prop|
           @decl_props << prop
           define_method(prop) do 
-            @internal_node.get_property(prop.to_s)
+            get_property(prop.to_s)
+            #            @internal_node.get_property(prop.to_s)
           end
 
           name = (prop.to_s() +"=")
           define_method(name) do |value|
-            @internal_node.set_property(prop.to_s, value)
-            # TODO: performance , we here reindex everytime a property changes ...
-            index
+            Transaction.run do
+              set_property(prop.to_s, value)
+              #@internal_node.set_property(prop.to_s, value)
+              index
+            end
           end
         end
       end
@@ -273,14 +320,13 @@ module Neo4j
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
       def find(query)
-        #        q = query.dup
-        #        q['classname'] = self.to_s
         ids = LuceneQuery.find(index_storage_path, query)
-#        ids = Neo4j::Neo.instance.lucene.find(q)
         
         # TODO performance, we load all the found entries. Maybe better using Enumeration
         # and load it when needed
-        ids.collect {|id| Neo4j::Neo.instance.find_node(id)}
+        Transaction.run do
+          ids.collect {|id| Neo4j::Neo.instance.find_node(id)}
+        end
       end      
 
       #

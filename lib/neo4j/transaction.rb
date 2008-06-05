@@ -1,6 +1,7 @@
 
 require 'thread'
 require 'monitor'
+require 'delegate'
 require 'neo4j/lucene_transaction'
 
 
@@ -62,7 +63,6 @@ module Neo4j
       #   transaction = Neo4j::Transaction.run
       #
       def run
-        $NEO_LOGGER.warn{"already start transaction, tried to run start twice"} if Transaction.running?
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         tx = nil
@@ -73,7 +73,7 @@ module Neo4j
             tx = Neo4j::Transaction.new
             tx.start
           else
-            tx = Transaction.current  # TODO this will not work since the we call finish on the parent transaction !
+            tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
           end
         end
         ret = nil
@@ -195,5 +195,25 @@ module Neo4j
     
   end
   
+  
+  #
+  # This is returned when trying to create a new transaction while a transaction is arleady running
+  # There is no real support for chained transaction since Neo4j does not support chained transactions.
+  # This class will do nothing when the finish method is called.
+  # Finish will only be called when the 'main' transaction does it.
+  # 
+  #
+  class ChainedTransaction < DelegateClass(Transaction)
+    
+    def initialize(tx)
+      super(tx)
+    end
+    
+    #
+    # Do nothing since Neo4j does not support chained transactions.
+    # 
+    def finish
+    end
+  end
   
 end

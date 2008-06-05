@@ -1,63 +1,42 @@
 = Neo4j.rb
 
-Neo4j is a network database framework for JRuby.
-It uses the neo4j java library (http://www.neo4j.org/) and lucene for indexing and searching.
+Neo4j.rb is a network database framework for JRuby.
+ 
+It uses two powerful java libraries: neo4j and lucene.
+The java neo4j library is a network-oriented database — that is, an embedded, disk-based, fully transactional Java persistence engine that stores data structured in networks rather than in tables. A network (or graph) is a flexible data structure that allows a more agile and rapid style of development (for example, no need for a database schema)
+One of its strength is its fast traversal of relationship in a hugh node space (billion nodes/relationships/properties on single-machine hardware). 
+
+Neo4j.rb also provides support for indexing and querying the node space by using the java lucene library.
+Neo4j.rb wraps those two java libraries to make it behave like any other ruby persistance framework.
+
+For more info, see http://www.neo4j.org/ and http://lucene.apache.org/java/docs/index.html
 
 
-== Examples
+=== Neo4j::Node
 
-Here are some examples of how to use the API.
-
-
-=== Transactions
-
-All operations that work with the node space (even read operations) must be wrapped in a transaction.
-Example:
-
-  include 'neo4j'
-
-  Neo4j::Transaction.run {
-    node = MyNode.new
-  }
-
-Example of how to do rollback
-
-   Neo4j::Transaction.run { |t|
-     # something failed
-     t.failure # will cause a rollback
-   }
-
-
-You can also run it without a block, like this:
-
-   transaction = Neo4j::Transaction.new
-   transaction.start
-   # do something
-   transaction.finish
-
-=== Neo::Node
-A Neo::Node is a wrapper around the java org.neo4j.api.core.Node interface.
+Neo4j::Node is a mixin that lets instances to be stored as a node in the neo node space on disk.
 A node can have properties and relationships to other nodes.
 
-Use the Neo4j::Node mixin
+Example of how declare a class that has this behaviour:
 
   class MyNode 
      include Neo4j::Node
    end
 
+
 === Create a Node
 
 If a block is provided then the creation of the instance will be performed in an
-transaction.
+transaction, see below for more information on transactions.
 
   node = MyNode.new { }
 
 === Node Properties
 
-You can set any properties without declaring them first, see example below.
+You can set any properties, see example below.
 Those properties will be stored on in the Neo database.
 
-  # create a node with to properties 
+  # create a node with to properties in one transaction
   node = MyNode.new { |n|
      n.foo = "123"
      n.bar = "432"
@@ -66,19 +45,11 @@ Those properties will be stored on in the Neo database.
   # access those properties
   puts node.foo
   
-If you want you can also declare those properties, like the attr_accessor
 
-  class SomeNode
-     include Neo4j::Node
-     properties :foo, :bar
-  end
-
-And to set a property
+You can also a property like this:
 
     f = SomeNode.new
     f.foo = "123"
-
-Those declared properties will also be indexed, see below: Quering.
 
 
 === Relationships
@@ -102,6 +73,64 @@ Traversing relationships:
   f.bars.each { |n| puts n }
 
 Note that the bars method returns an object that mixins the Enumeration module.
+
+=== Transactions
+
+All operations that work with the node space (even read operations) must be wrapped in a transaction.
+Luckly neo4j.rb will automatically create a transaction for those operation that needs it if one is not already provided.
+
+For example all get, set and find operations will start a new transaction if none is already not runnig (for that thread).
+
+If you want to perfrom a set of operation in a single transaction, use the Neo4j::Transaction.run method:
+
+Example
+
+Neo4j::Transaction.run {
+  node1.foo = "value"
+  node2.bar = "hi"
+}
+
+
+==== Write Locks
+Neo4j has write locks on nodes. 
+That means that read operation on a node will be blocked if one thread in a transaction and has written to a property of that node. 
+The lock will be released as soon as the thread holding the write lock finishes the transaction.
+
+
+==== Rollback
+
+Neo4j support rollbacks on transaction. Example:
+Example:
+
+  include 'neo4j'
+
+  node = MyNode.new
+
+  Neo4j::Transaction.run { |t|
+     node.foo = "hej"
+     # something failed so we signal for a failure 
+     t.failure # will cause a rollback, node.foo will not be updated
+  }
+
+
+You can also run it without a block, like this:
+
+   transaction = Neo4j::Transaction.new
+   transaction.start
+   # do something
+   transaction.finish
+
+=== Indexing
+
+If you want you can also declare those properties, like the attr_accessor
+
+  class SomeNode
+     include Neo4j::Node
+     properties :foo, :bar
+  end
+
+
+(TODO change name of properties to index)
 
 === Quering (using lucene)
 
