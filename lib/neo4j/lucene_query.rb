@@ -18,7 +18,16 @@ module Neo4j
 
  
   
+    #
+    # Finds the node ids using the index at the given location and
+    # having the specified fields
+    #
+    #
     def find(index_path, fields)
+      # are there any index for this node ?
+      # if not return an empty array
+      return [] unless File.directory? index_path
+      
       query = BooleanQuery.new
       
       fields.each_pair do |key,value|  
@@ -26,7 +35,6 @@ module Neo4j
         q = TermQuery.new(term)
         query.add(q, BooleanClause::Occur::MUST)
       end
-
 
       engine = IndexSearcher.new(index_path)
       hits = engine.search(query).iterator

@@ -15,13 +15,39 @@ describe "When running in one transaction" do
   end
 
   after(:all) do
-    #    remove_class_defs     # so that we can define the same class again        
+        remove_class_defs     # so that we can define the same class again        
     #    @transaction.failure # do not want to store anything
     stop
   end  
   
   
-  describe "when changing properties" do
+  describe Neo4j::LuceneTransaction, "when rollback a transaction" do
+    before(:all) do
+      class Test2Node 
+        include Neo4j::Node
+        properties :name, :age
+      end
+    end
+    
+    it "should reindex it" do
+      # given
+      n1 = Neo4j::Transaction.run do |t|
+        n1 = Test2Node.new
+        n1.name = 'hello'
+        
+        # when
+        t.failure  
+        n1
+      end
+      
+      # then
+      Neo4j::Transaction.run do
+        Test2Node.find(:name => 'hello').should_not include(n1)
+      end
+    end    
+  end
+  
+  describe Neo4j::LuceneTransaction, "when changing properties" do
     before(:all) do
       class TestNode 
         include Neo4j::Node
@@ -56,7 +82,7 @@ describe "When running in one transaction" do
   end
   
   
-  describe "simple search" do
+  describe Neo4j::LuceneQuery, "(simple search)" do
     before(:all) do
       class TestNode 
         include Neo4j::Node
