@@ -7,7 +7,7 @@ The java neo4j library is a network-oriented database — that is, an embedded, 
 One of its strength is its fast traversal of relationship in a hugh node space (billion nodes/relationships/properties on single-machine hardware). 
 
 Neo4j.rb also provides support for indexing and querying the node space by using the java lucene library.
-Neo4j.rb wraps those two java libraries to make it behave like any other ruby persistance framework.
+Neo4j.rb wraps those two java libraries to make it look like a ruby persistance framework.
 
 For more info, see http://www.neo4j.org/ and http://lucene.apache.org/java/docs/index.html
 
@@ -36,7 +36,7 @@ transaction, see below for more information on transactions.
 You can set any properties, see example below.
 Those properties will be stored on in the Neo database.
 
-  # create a node with to properties in one transaction
+  # create a node with two properties in one transaction
   node = MyNode.new { |n|
      n.foo = "123"
      n.bar = "432"
@@ -46,7 +46,7 @@ Those properties will be stored on in the Neo database.
   puts node.foo
   
 
-You can also a property like this:
+You can also set a property like this:
 
     f = SomeNode.new
     f.foo = "123"
@@ -54,17 +54,18 @@ You can also a property like this:
 
 === Relationship
 
-Relationships has to be declared first like this:
+Relationships has to be declared.
+For example, let say that Foo can have a relationship to other nodes with the type 'friends':
 
   class Foo 
      include Neo::Node
-     relations :friends
+     relations :friends  # will generate a friends method
   end
 
-Add a relation to a node:
+Add a relation to another node:
 
   f = Foo.new 
-  f.friends < SomeOtherNode.new
+  f.friends << SomeOtherNode.new
   
 
 === Traversing relationships:
@@ -76,6 +77,8 @@ For example the Foo example above declares one relationship of type friends.
 You can traverse all Foo's friend by doing:
 
   f.bars.each { |n| puts n }
+
+(TODO this just goes one level deep in the graph, we should support of any level of traversal)
 
 
 === Finding Relationships
@@ -92,7 +95,7 @@ Then we can find all incoming and outgoing relationships like this:
 
   n1.relations.to_a # => [#<Neo4j::Relation:0x134ae32]
 
-A Neo4j::Relation represents a relationship between two nodes.
+A Neo4j::Relation object represents a relationship between two nodes.
 
   n1.relations[0].start_node # => n1
   n1.relations[0].end_node # => n2
@@ -105,10 +108,17 @@ If we are only interested in all incoming nodes, we can do
 
   n2.relations.incoming # => [#<Neo4j::Relation:0x134ae32]
 
+Or outgoing:
+
+  n1.relations.outgoing # => [#<Neo4j::Relation:0x134aea2]
+
 
 === Finding nodes in a relationship
 
-Example:
+If you do not want those relationship object but instead want the nodes you can use the 'nodes' method
+in the Neo4j::Relation object.
+
+For example:
 
   n2.relations.incoming.nodes # => [n1]
 
