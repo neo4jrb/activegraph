@@ -344,8 +344,7 @@ describe Neo4j::Node.to_s, "delete"  do
     stop
   end
   
-  it "should ?" do
-    pending
+  it "should delete all relationships as well" do
     # given
     t1 = TestNode.new
     t2 = TestNode.new { |n| n.friends << t1}

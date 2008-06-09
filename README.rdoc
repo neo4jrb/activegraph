@@ -31,6 +31,15 @@ transaction, see below for more information on transactions.
 
   node = MyNode.new { }
 
+=== Delete a Node
+
+The Neo4j::Node mixin defines a delete method that will delete the node and all its relationships.
+Example:
+
+  node = MyNode.new
+  node.delete
+
+
 === Node Properties
 
 You can set any properties, see example below.
@@ -54,7 +63,7 @@ You can also set a property like this:
 
 === Relationship
 
-Relationships has to be declared.
+Relationships has to be declared by using the 'relations' class method.
 For example, let say that Foo can have a relationship to other nodes with the type 'friends':
 
   class Foo 
@@ -62,7 +71,7 @@ For example, let say that Foo can have a relationship to other nodes with the ty
      relations :friends  # will generate a friends method
   end
 
-Add a relation to another node:
+Example how to add a relation to another node:
 
   f = Foo.new 
   f.friends << SomeOtherNode.new

@@ -78,6 +78,10 @@ module Neo4j
     def other_node(node)
       BaseNode.new(@internal_r.getOtherNode(node))
     end
+    
+    def delete
+      @internal_r.delete
+    end
   end
 
   #

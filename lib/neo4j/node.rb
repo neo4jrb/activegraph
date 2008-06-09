@@ -192,7 +192,10 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      Transaction.run {  @internal_node.delete }
+      Transaction.run {  
+        relations.each {|r| r.delete}
+        @internal_node.delete 
+      }
     end
     
     
