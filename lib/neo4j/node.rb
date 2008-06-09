@@ -56,26 +56,9 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
-      update_meta_node_instances self.class
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
-    def update_meta_node_instances(clazz)
-      meta_node = clazz.meta_node
-      # $NEO_LOGGER.warn("No meta_node for #{self} type #{self.class.to_s}") if meta_node.nil?
-      return if meta_node.nil?
-      
-      # add the instance to the list of instances in the meta node      
-      # self.class.meta_node.nil might be nil since it could be a MetaNode
-      meta_node.instances << self
-      
-      clazz.ancestors.each do |a|
-        next if a == clazz 
-        next unless a.respond_to?(:meta_node)
-        update_meta_node_instances a
-      end
-    end
-
     
     #
     # A hook used to set and get undeclared properties
@@ -163,7 +146,7 @@ module Neo4j
     end
 
     def eql?(o)    
-      o.is_a?(self.class) && o.internal_node == internal_node
+      o.kind_of?(Node) && o.internal_node == internal_node
     end
     
     def ==(o)
@@ -193,55 +176,38 @@ module Neo4j
     #  Index all declared properties
     #
     def index
-      clazz = self.class
-      id    = neo_node_id.to_s
-
       fields = {}
-      clazz.decl_props.each do |k|
+      self.class.decl_props.each do |k|
         key = k.to_s
         fields[key] = props[key]
       end
-      
-      #      Neo4j::Neo.instance.lucene.index(id, fields)
       
       Neo.instance.index_node(self)
     end
 
     
-   
-    # INHERIT_OR_INCLUDE_PROC is proc that contains code that 
-    # is used both in the inherited and the included methods.
-    # TODO must be a nicer way of doing this ?
-    INHERIT_OR_INCLUDE_PROC = proc do |c|
-      c.extend(ClassMethods)
-      c.properties :classname      
-      
-      # This method adds a MetaNode for each class that inherits from the Node
-      # must avoid endless recursion 
-      return if c == Neo4j::BaseNode or c == Neo4j::MetaNode or c == Neo4j::MetaNodes 
-      
-      # create a new @meta_node since it does not exist
-      # the @meta node represents this class (holds the references to instance of it etc)
-      meta_node = Neo4j::MetaNode.new do |n|
-        n.ref_classname = c.to_s
-        Neo4j::Neo.instance.meta_nodes.nodes << n
-      end      
-      c.instance_eval {
-        @meta_node = meta_node 
-      }
+    #
+    # Deletes this node.
+    # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
+    # Runs in a new transaction if one is not already running.
+    #
+    def delete
+      Transaction.run {  @internal_node.delete }
     end
     
     
     #
-    # Implements the inherited hook that will be called when someone
-    # inherits from this class.
-    # 
-    # This method does:
-    # * Creates a MetaNode and adds a relationship from the Neo4j::neo_service.meta_nodes.nodes
-    # * Creates a class method 'meta_node' that will return this meta node
+    # Returns an array of nodes that has a relation from this
+    #
+    def relations
+      Relations.new(@internal_node)
+    end
+   
+    #
+    # Adds classmethods in the ClassMethods module
     #
     def self.included(c)
-      Neo4j::Node::INHERIT_OR_INCLUDE_PROC.call c
+      c.extend ClassMethods
     end
 
     # --------------------------------------------------------------------------
@@ -250,26 +216,6 @@ module Neo4j
     module ClassMethods
       attr_reader :decl_props
 
-      #
-      #  Returns all the instance of this class
-      #   
-      def all
-        @meta_node.instances.to_a
-      end
-      
-      
-      #
-      # Returns a meta node corresponding to this class.
-      # This meta_node is an class instance variable (and not a class variable)
-      #
-      def meta_node
-        @meta_node
-      end
-    
-      def inherited(c)
-        Neo4j::Node::INHERIT_OR_INCLUDE_PROC.call c
-      end
-    
       #
       # Allows to declare Neo4j properties.
       # Notice that you do not need to declare any properties in order to 
@@ -303,7 +249,7 @@ module Neo4j
       #
       def add_relation_type(type)
         define_method(type) do 
-          Relations.new(self,type.to_s)
+          NodesWithRelationType.new(self,type.to_s)
         end
       end
     
@@ -343,33 +289,5 @@ module Neo4j
   class BaseNode 
     include Neo4j::Node
   end
-  
-  
-  #
-  # Holds the class name of an Neo4j node.
-  # Used for example to create a Ruby object from a neo node.
-  #
-  class MetaNode < Neo4j::BaseNode
-    properties :ref_classname # the name of the ruby class it represent
-    relations :instances
-    
-    def index
-      # overriding super index since we do not want to index these nodes
-    end
-  end
-
-  #
-  # A container node for all MetaNode
-  #
-  class MetaNodes < Neo4j::BaseNode
-    relations :nodes
-    
-    def index
-      # overriding super index since we do not want to index these nodes
-    end
-    
-  end
-
-
   
 end

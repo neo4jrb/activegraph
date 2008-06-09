@@ -22,17 +22,3 @@ def stop
 end
 
 
-#
-# Uses the Neo meta nodes to find all the defined classes 
-# All those classes will be removed (uses ruby remove_const)
-#
-def remove_class_defs
-  Neo4j::Neo.instance.meta_nodes.nodes.each do |n| 
-    clazz =  n.ref_classname.to_sym
-    Object.instance_eval do 
-      begin 
-        remove_const clazz 
-      end if const_defined? clazz 
-    end
-  end
-end

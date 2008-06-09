@@ -52,27 +52,66 @@ You can also a property like this:
     f.foo = "123"
 
 
-=== Relationships
+=== Relationship
 
 Relationships has to be declared first like this:
 
   class Foo 
      include Neo::Node
-     relations :bars
+     relations :friends
   end
 
 Add a relation to a node:
 
-  f = Foo.new { |n|
-    n.bars < a_bar_node
-  }
+  f = Foo.new 
+  f.friends < SomeOtherNode.new
+  
 
+=== Traversing relationships:
 
-Traversing relationships:
+Each type of relationship has a method that returns an Enumerable object that enables you
+to traverse that type of relationship. 
+
+For example the Foo example above declares one relationship of type friends.
+You can traverse all Foo's friend by doing:
 
   f.bars.each { |n| puts n }
 
-Note that the bars method returns an object that mixins the Enumeration module.
+
+=== Finding Relationships
+
+Given we have the two nodes with a relationship between them:
+
+  n1 = Foo.new
+  n2 = Foo.new
+  
+  n1.friends << n2
+  
+
+Then we can find all incoming and outgoing relationships like this:
+
+  n1.relations.to_a # => [#<Neo4j::Relation:0x134ae32]
+
+A Neo4j::Relation represents a relationship between two nodes.
+
+  n1.relations[0].start_node # => n1
+  n1.relations[0].end_node # => n2
+
+(TODO  relationship can have properties just like a node can)
+
+=== Finding outgoing and incoming relationships
+
+If we are only interested in all incoming nodes, we can do 
+
+  n2.relations.incoming # => [#<Neo4j::Relation:0x134ae32]
+
+
+=== Finding nodes in a relationship
+
+Example:
+
+  n2.relations.incoming.nodes # => [n1]
+
 
 === Transactions
 
@@ -85,16 +124,15 @@ If you want to perfrom a set of operation in a single transaction, use the Neo4j
 
 Example
 
-Neo4j::Transaction.run {
-  node1.foo = "value"
-  node2.bar = "hi"
-}
+  Neo4j::Transaction.run {
+    node1.foo = "value"
+    node2.bar = "hi"
+  }
 
 
-==== Write Locks
-Neo4j has write locks on nodes. 
-That means that read operation on a node will be blocked if one thread in a transaction and has written to a property of that node. 
-The lock will be released as soon as the thread holding the write lock finishes the transaction.
+==== Transactions and JTA
+
+TODO, will soon support two phase commit transactions, (using Java JTA api)
 
 
 ==== Rollback
@@ -150,53 +188,8 @@ Example
 
       TestNode.find(:name => 'foo', :age => 42) # => [node]
 
-=== Find all
-
-For example, let say you want to find all instance of class FooBar
-
-
-      fb1 = FooBar.new
-      fb2 = FooBar.new
-      
-      all = FooBar.all  # => [fb1, fb2]
-
-Neo4j.rb will automatically manage relationships between instances and classes in a MetaNode.
-Each class that includes the Neo::Node mixin has a class instance variable to this MetaNode.
-This MetaNode is used by the 'all' method to find all the instance of a certain ruby class.
-
-This also works for inheritance, example
-
-     class Foo
-        include Neo::Node
-     end 
-
-     class Bar < Foo
-     end
-
-     f = Foo.new
-     b = Bar.new
-
-     Foo.all # => [f,b]
-     Bar.all # => [b]
-
 
 == Implementation details
-
-=== MetaNodes
-
-The Node mixin defines the ruby hook methods 'included' and 'inherited' which will be
-called when someone includes the Neo::Node mixin or creates a subclass from a 
-class that includes that mixin.
-
-When the included or inherited methods are called it will create a
-MetaNode that has a relationship to its instances.
-When an instance is created, which includes the Neo::Node mixin, it
-will add a relationship between the new node and its meta node. All
-this logic is handled in the initialize method (initialize is like a
-constructor in Java) which the Neo::Node mixin provides.
-The initialize method will also update ancestors MetaNodes, so that
-the referenses for ancestor classes and the new node will work as you
-would expect.
 
 === Unmarshalling
 

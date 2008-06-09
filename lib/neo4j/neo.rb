@@ -39,15 +39,7 @@ module Neo4j
       
       raise Exception.new("Already started neo") if @neo
       @neo = EmbeddedNeo.new(@db_storage)  
-      
-      ref_node = nil
-      Neo4j::Transaction.run do
-        ref_node = @neo.getReferenceNode
-        @meta_nodes = MetaNodes.new(ref_node)
-      end
-      
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
-
     end
     
     
@@ -61,24 +53,20 @@ module Neo4j
     
     def index_node(node)
       raise NotInTransactionError.new unless Transaction.running?
-      
       Transaction.current.index_node node
     end
     
     
-    # 
-    # Find the meta node represented by the given Ruby class name
     #
-    def find_meta_node(classname) 
-      @meta_nodes.nodes.find{|node| node.ref_classname == classname}    
-    end
-    
-    #
-    # Returns a Node object that has the given id or nil
+    # Returns a Node object that has the given id or nil if it does not exist.
     # 
     def find_node(id) 
+      begin
       neo_node = @neo.getNodeById(id)
       load_node(neo_node)
+      rescue org.neo4j.impl.core.NotFoundException
+        nil
+      end
     end
   
     

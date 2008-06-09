@@ -17,7 +17,6 @@ describe "When running in one transaction" do
   end
 
   after(:all) do
-    remove_class_defs    # so that we can define the same class again        
     @transaction.failure # do not want to store anything
     @transaction.finish
     stop
@@ -37,7 +36,7 @@ describe "When running in one transaction" do
       TestNode1.new
     end
 
-    it "should call the initialize method"  do
+    it "should allow to initialize itself"  do
       # given an initialize method
       class TestNode2
         include Neo4j::Node
@@ -170,24 +169,6 @@ describe "When running in one transaction" do
       node.hash.should_not == @nodes[0].hash
     end
     
-
-    it "should find all instance" do
-      @nodes.each {|node| TestNode.all.should include(node) }
-      TestNode.all.size.should == @nodes.size
-    end
-
-    
-    it "should find all instance of inherited classes" do
-      class SubNode < TestNode; end
-      
-      s = SubNode.new
-      TestNode.all.size.should == @nodes.size + 1
-      TestNode.all.should include(s)
-      
-      SubNode.all.size.should == 1
-      SubNode.all.to_a.should include(s)
-    end
-    
   end
   
 
@@ -279,7 +260,101 @@ describe "When running in one transaction" do
       t2.friends.to_a.should_not include(t1)      
     end
     
+    it "should find all outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      
+      outgoing = t1.relations.outgoing.to_a
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
+    end
+    
+    it "should find all incoming nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      
+      outgoing = t2.relations.incoming.to_a
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
+    end
+
+    it "should find no incoming or outgoing nodes when there are none" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t2.relations.incoming.to_a.size.should == 0
+      t2.relations.outgoing.to_a.size.should == 0
+    end
+
+    it "should incoming nodes should not be found in outcoming nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      t1.relations.incoming.to_a.size.should == 0
+      t2.relations.outgoing.to_a.size.should == 0
+    end
+
+
+    it "should find both incoming and outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      t1.relations.nodes.to_a.should include(t2)
+      t2.relations.nodes.to_a.should include(t1)
+    end
+
+    it "should find several both incoming and outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+            
+      t1.friends << t2
+      t1.friends << t3
+      
+      t1.relations.nodes.to_a.should include(t2,t3)
+      t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
+      t2.relations.incoming.nodes.to_a.should include(t1)      
+      t3.relations.incoming.nodes.to_a.should include(t1)      
+      t1.relations.nodes.to_a.size.should == 2
+    end
+    
   end
-  
 
 end
+
+describe Neo4j::Node.to_s, "delete"  do
+  before(:all) do
+    start
+    class TestNode 
+      include Neo4j::Node
+      relations :friends
+    end
+
+  end
+    
+  after(:all) do
+    stop
+  end
+  
+  it "should ?" do
+    pending
+    # given
+    t1 = TestNode.new
+    t2 = TestNode.new { |n| n.friends << t1}
+      
+    # when
+    t1.delete
+    
+    # then
+    t2.friends.to_a.should_not include(t1)      
+  end
+end
+

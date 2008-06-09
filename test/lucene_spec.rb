@@ -15,7 +15,6 @@ describe "Lucene Queries" do
   end
 
   after(:all) do
-    remove_class_defs     # so that we can define the same class again        
     stop
   end  
   
@@ -40,9 +39,7 @@ describe "Lucene Queries" do
       end
       
       # then
-      Neo4j::Transaction.run do
-        Test2Node.find(:name => 'hello').should_not include(n1)
-      end
+      Test2Node.find(:name => 'hello').should_not include(n1)
     end    
   end
   

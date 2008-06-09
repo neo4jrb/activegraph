@@ -1,8 +1,91 @@
 
 module Neo4j
   
+  
+  #
+  # Enables finding relations for one node
+  #
   class Relations
     include Enumerable
+    
+    attr_reader :internal_node 
+    
+    def initialize(internal_node)
+      @internal_node = internal_node
+      @direction = Direction::BOTH
+    end
+    
+    def outgoing
+      @direction = Direction::OUTGOING
+      self
+    end
+
+    def incoming
+      @direction = Direction::INCOMING
+      self
+    end
+
+    def  both
+      @direction = Direction::BOTH
+      self
+    end
+    
+    def each
+      iter = @internal_node.getRelationships(@direction)
+      while (iter.hasNext) do
+        yield Relation.new(iter.next)
+      end
+    end
+
+    
+    def nodes
+      RelationNode.new(self)
+    end
+  end
+
+
+  class RelationNode
+    include Enumerable
+    
+    def initialize(relations)
+      @relations = relations
+    end
+    
+    def each
+      @relations.each do |relation|
+        yield relation.other_node(@relations.internal_node)
+      end
+    end
+  end
+  
+  #
+  # Wrapper class for a java org.neo4j.api.core.Relationship class
+  #
+  class Relation
+  
+    def initialize(r)
+      @internal_r = r
+    end
+  
+    def end_node
+      BaseNode.new(@internal_r.getEndNode)
+    end
+  
+    def start_node
+      BaseNode.new(@internal_r.getStartNode)
+    end
+  
+    def other_node(node)
+      BaseNode.new(@internal_r.getOtherNode(node))
+    end
+  end
+
+  #
+  # Enables traversal of nodes of a specific type that one node has.
+  #
+  class NodesWithRelationType
+    include Enumerable
+    
     
     def initialize(node, type)
       @node = node

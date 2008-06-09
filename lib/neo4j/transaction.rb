@@ -63,19 +63,22 @@ module Neo4j
       #   transaction = Neo4j::Transaction.run
       #
       def run
+        $NEO_LOGGER.info("new transaction " + caller[0])
+        $NEO_LOGGER.info(caller[1])        
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         tx = nil
         
         # reuse existing transaction ?
-        synchronize do
+#        synchronize do
           if !Transaction.running? 
             tx = Neo4j::Transaction.new
             tx.start
           else
+            $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
             tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
           end
-        end
+#        end
         ret = nil
     
         begin  
@@ -111,16 +114,17 @@ module Neo4j
     
     
     def initialize
-      Transaction.synchronize do
+#      Transaction.synchronize do
         raise AlreadyInTransactionError.new if Transaction.running?
         @@counter += 1      
+        @id = @@counter
         Thread.current[:transaction] = self
-      end
+#      end
       $NEO_LOGGER.debug{"create #{self.to_s}"}
     end
     
     def to_s
-      "Transaction: #{@@counter} failure: #{failure?}, running #{Transaction.running?}, thread: #{Thread.current.to_s}"
+      "Transaction: #{@id} failure: #{failure?}, running #{Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
     end
  
 
@@ -135,7 +139,7 @@ module Neo4j
       @neo_tx= org.neo4j.api.core.Transaction.begin
       @failure = false      
       
-      $NEO_LOGGER.debug{"started #{self.to_s}"}
+      $NEO_LOGGER.info{"started #{self.to_s}"}
       self
     end
 
@@ -146,7 +150,7 @@ module Neo4j
     #
     def success
       raise NotInTransactionError.new unless Transaction.running?
-      $NEO_LOGGER.debug{"success #{self.to_s}"}      
+      $NEO_LOGGER.info{"success #{self.to_s}"}      
       @neo_tx.success
     end
     
@@ -160,7 +164,7 @@ module Neo4j
       @neo_tx=nil
       @lucene_tx = nil
       Thread.current[:transaction] = nil
-      $NEO_LOGGER.debug{"finished #{self.to_s}"}                  
+      $NEO_LOGGER.info{"finished #{self.to_s}"}                  
     end
 
     #
@@ -171,7 +175,7 @@ module Neo4j
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.failure
       @failure = true
-      $NEO_LOGGER.debug{"failure #{self.to_s}"}                        
+      $NEO_LOGGER.info{"failure #{self.to_s}"}                        
     end
     
     
@@ -207,12 +211,20 @@ module Neo4j
     
     def initialize(tx)
       super(tx)
+      @tx = tx # store it only for logging purpose
     end
     
+    def success
+      
+    end
     #
     # Do nothing since Neo4j does not support chained transactions.
     # 
     def finish
+      $NEO_LOGGER.info("tried to finish chained transaction #{@tx}")
+      $NEO_LOGGER.info(caller[0])      
+      $NEO_LOGGER.info(caller[1])            
+      $NEO_LOGGER.info(caller[2])                  
     end
   end
   
