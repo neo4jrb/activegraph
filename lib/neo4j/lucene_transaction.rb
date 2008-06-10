@@ -1,5 +1,9 @@
+require 'neo4j/jars'
+
 module Neo4j
     
+  class LuceneIndexOutOfSyncException < RuntimeError
+  end
   
   class LuceneTransaction
     
@@ -11,12 +15,22 @@ module Neo4j
     StandardAnalyzer = org.apache.lucene.analysis.standard.StandardAnalyzer
     Field = org.apache.lucene.document.Field
 
-    attr_reader :nodes  # the nodes to be indexed
     
+    #
+    # Must store which nodes should be indexed and deleted since we will
+    # update the index first after the transaction is commited.
+    #
+    attr_reader :nodes  # a hash of id and nodes that should be indexed
+    attr_reader :deleted_nodes # a hash of id and nodes that should be deleted from index
+    
+    #
+    # Implement the java callback interface Synchronization
+    #
     include javax.transaction.Synchronization
     
     def initialize
       @nodes = {}
+      @deleted_nodes = {}
     end
 
     
@@ -27,10 +41,23 @@ module Neo4j
     def afterCompletion(status)
       if status == javax.transaction.Status::STATUS_COMMITTED 
         $NEO_LOGGER.debug{"update lucene index since transaction is commited"}
-        @nodes.each_value { |node| update_index(node) } #index(node)}        
+
+        # delete documents for nodes that has been deleted
+        @deleted_nodes.each_value {|node| delete_document(node.class.index_storage_path, node.neo_node_id)}
+        
+        # make sure we do not update nodes that has been deleted
+        deleted_ids = @nodes.keys & @deleted_nodes.keys
+        deleted_ids.each {|id| @nodes.delete(id)}
+        $NEO_LOGGER.debug("delet from updated: #{deleted_ids}")        
+        
+        # update index of all nodes that has not been deleted
+        @nodes.each_value { |node| update_index(node) } 
       end
       
       $NEO_LOGGER.info{"afterCompletion #{status}"}
+    rescue => error 
+      # since we will get poor error handling inside a java callback we rescue all exceptions here
+      $NEO_LOGGER.error(error)
     end
 
     
@@ -54,18 +81,11 @@ module Neo4j
         fields[key] = props[key]
       end
 
-      begin
-        path = node.class.index_storage_path
-        update_index_fields(path, id, fields)
-      rescue => ex
-        # since we will run in a java transaction we will get poor error messages
-        # so we log it here instead
-        $NEO_LOGGER.error("Can't index node #{node} since #{ex}")        
-        ex.backtrace.each{|x| $NEO_LOGGER.error(x)}
-      end
-      
+      path = node.class.index_storage_path
+      update_index_fields(path, id, fields)
     end
-   
+
+    
     def update_index_fields(index_path, id, fields)
       index_available = IndexReader.index_exists(index_path)
       index_writer = IndexWriter.new(index_path, StandardAnalyzer.new, !index_available)
@@ -83,18 +103,14 @@ module Neo4j
     end
 
 
-# TODO call this when a node is deleted    
-    def delete_documents id_array # e.g., [1,5,88]
-      index_available = IndexReader.index_exists(@index_path)
+    def delete_document(index_path, id) # e.g., [1,5,88]
+      index_available = IndexReader.index_exists(index_path)
       index_writer = IndexWriter.new(
-        @index_path,
+        index_path,
         StandardAnalyzer.new,
         !index_available)
-      id_array.each {|id|
-        index_writer.deleteDocuments(Term.new("id", id.to_s))
-      }
+      index_writer.deleteDocuments(Term.new("id", id.to_s))
       index_writer.close
     end
-    
   end
 end

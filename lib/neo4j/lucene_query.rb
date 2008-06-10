@@ -31,7 +31,7 @@ module Neo4j
       query = BooleanQuery.new
       
       fields.each_pair do |key,value|  
-        term  = Term.new(key.to_s, value)        
+        term  = Term.new(key.to_s, value.to_s)        
         q = TermQuery.new(term)
         query.add(q, BooleanClause::Occur::MUST)
       end

@@ -2,15 +2,16 @@
 
 Neo4j.rb is a network database framework for JRuby.
  
-It uses two powerful java libraries: neo4j and lucene.
-The java neo4j library is a network-oriented database — that is, an embedded, disk-based, fully transactional Java persistence engine that stores data structured in networks rather than in tables. A network (or graph) is a flexible data structure that allows a more agile and rapid style of development (for example, no need for a database schema)
-One of its strength is its fast traversal of relationship in a hugh node space (billion nodes/relationships/properties on single-machine hardware). 
+It provides:
+* Mapping of ruby objects to nodes in networks rather than in tables. 
+* Storage of ruby object to a file system.
+* Fast traversal of relationships between nodes in a hugh node space.
+* Transaction with rollbacks support. 
+* Indexing and quering of ruby objects.
 
-Neo4j.rb also provides support for indexing and querying the node space by using the java lucene library.
-Neo4j.rb wraps those two java libraries to make it look like a ruby persistance framework.
-
-For more info, see http://www.neo4j.org/ and http://lucene.apache.org/java/docs/index.html
-
+To make this possible it uses two powerful java libraries: 
+* Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
+* Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
 === Neo4j::Node
 
@@ -34,11 +35,13 @@ transaction, see below for more information on transactions.
 === Delete a Node
 
 The Neo4j::Node mixin defines a delete method that will delete the node and all its relationships.
+
 Example:
 
   node = MyNode.new
   node.delete
 
+The node in the example above will be removed from the neo database on the filesystem and the lucene index
 
 === Node Properties
 
@@ -47,8 +50,8 @@ Those properties will be stored on in the Neo database.
 
   # create a node with two properties in one transaction
   node = MyNode.new { |n|
-     n.foo = "123"
-     n.bar = "432"
+     n.foo = 123  
+     n.bar = 3.14
   }
  
   # access those properties
@@ -58,22 +61,23 @@ Those properties will be stored on in the Neo database.
 You can also set a property like this:
 
     f = SomeNode.new
-    f.foo = "123"
+    f.foo = 123
 
+Neo4j.rb supports properties to by of type String, Fixnum, Float and Boolean.
 
 === Relationship
 
 Relationships has to be declared by using the 'relations' class method.
-For example, let say that Foo can have a relationship to other nodes with the type 'friends':
+For example, let say that Person can have a relationship to other nodes with the type 'friends':
 
-  class Foo 
+  class Person 
      include Neo::Node
      relations :friends  # will generate a friends method
   end
 
 Example how to add a relation to another node:
 
-  f = Foo.new 
+  f = Person.new 
   f.friends << SomeOtherNode.new
   
 
@@ -82,10 +86,10 @@ Example how to add a relation to another node:
 Each type of relationship has a method that returns an Enumerable object that enables you
 to traverse that type of relationship. 
 
-For example the Foo example above declares one relationship of type friends.
-You can traverse all Foo's friend by doing:
+For example the Person example above declares one relationship of type friends.
+You can traverse all Person's friend by doing:
 
-  f.bars.each { |n| puts n }
+  f.friends.each { |n| puts n }
 
 (TODO this just goes one level deep in the graph, we should support of any level of traversal)
 
@@ -94,8 +98,8 @@ You can traverse all Foo's friend by doing:
 
 Given we have the two nodes with a relationship between them:
 
-  n1 = Foo.new
-  n2 = Foo.new
+  n1 = Person.new
+  n2 = Person.new
   
   n1.friends << n2
   
@@ -187,7 +191,7 @@ If you want you can also declare those properties, like the attr_accessor
   end
 
 
-(TODO change name of properties to index)
+(TODO change name of properties to index ?)
 
 === Quering (using lucene)
 
@@ -195,18 +199,19 @@ All declared properties are automatically indexed by lucene.
 
 Example
 
-      class TestNode 
+      class Person 
         include Neo4j::Node
         properties :name, :age
       end
     
-      node = TestNode.new
+      node = Person.new
       node.name = 'foo'
       node.age  = 42
 
 
-      TestNode.find(:name => 'foo', :age => 42) # => [node]
+      Person.find(:name => 'foo', :age => 42) # => [node]
 
+The query parameter (like properties on a Neo4j::Node) can be of type String, Fixnum, Float and boolean.
 
 == Implementation details
 
@@ -215,17 +220,18 @@ Example
 The neo module will automatically unmarshalling nodes to the correct ruby class.
 It does this by reading the classname property and loading that ruby class with that node.
 
-  class Foo 
+  class Person 
     include Neo::Node
 
     def hello
     end
   end
 
-  f1 = Foo.new {}
+  f1 = Person.new {}
   
   # load the class again
   f2 = Neo4j::Neo.instance.find_node(foo.neo_node_id)
-  f2.hello
-  # f2.class == Foo
-
+  
+  # f2 will now be new instance of Person, but will be == f1
+  f1 == f2 # => true
+  

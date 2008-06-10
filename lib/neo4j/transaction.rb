@@ -1,6 +1,6 @@
 
 require 'thread'
-require 'monitor'
+#require 'monitor'
 require 'delegate'
 require 'neo4j/lucene_transaction'
 
@@ -18,14 +18,15 @@ module Neo4j
   #
   class AlreadyInTransactionError < StandardError; end
   
-  #
+  
+    #
   # Wraps a Neo4j java transaction and lucene transactions.
   # There can only be one transaction per thread.
   #
   class Transaction
     attr_reader :neo_tx
     
-    extend MonitorMixin  # want it as class methods      
+#    extend MonitorMixin  # want it as class methods      
     
     @@counter = 0 # just for debugging purpose
 
@@ -70,15 +71,15 @@ module Neo4j
         tx = nil
         
         # reuse existing transaction ?
-#        synchronize do
-          if !Transaction.running? 
-            tx = Neo4j::Transaction.new
-            tx.start
-          else
-            $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
-            tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
-          end
-#        end
+        #        synchronize do
+        if !Transaction.running? 
+          tx = Neo4j::Transaction.new
+          tx.start
+        else
+          $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
+          tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
+        end
+        #        end
         ret = nil
     
         begin  
@@ -114,12 +115,12 @@ module Neo4j
     
     
     def initialize
-#      Transaction.synchronize do
-        raise AlreadyInTransactionError.new if Transaction.running?
-        @@counter += 1      
-        @id = @@counter
-        Thread.current[:transaction] = self
-#      end
+      #      Transaction.synchronize do
+      raise AlreadyInTransactionError.new if Transaction.running?
+      @@counter += 1      
+      @id = @@counter
+      Thread.current[:transaction] = self
+      #      end
       $NEO_LOGGER.debug{"create #{self.to_s}"}
     end
     
@@ -185,6 +186,19 @@ module Neo4j
     # If the transaction rolled back the node will not be indexed.
     #
     def index_node(node)
+      lucene_tx.nodes[node.neo_node_id] = node
+    end
+    
+    def remove_node(node)
+      lucene_tx.deleted_nodes[node.neo_node_id] = node
+    end
+
+    #
+    # Creates a new LuceneTransaction if one is not already created.
+    # Registers that transaction for syncrhonization with the neo transaction, 
+    # so that when neo transaction is commited the lucenene transaction will also be commited.
+    #
+    def lucene_tx
       if ! @lucene_tx
         $NEO_LOGGER.info{"Register lucene transaction for #{self}"}
         tx_manager = Neo.instance.tx_manager # use the neo java api
@@ -192,13 +206,9 @@ module Neo4j
         @lucene_tx = LuceneTransaction.new        
         tx.registerSynchronization( @lucene_tx );        
       end
-
-      @lucene_tx.nodes[node.neo_node_id] = node
-
+      @lucene_tx
     end
-    
   end
-  
   
   #
   # This is returned when trying to create a new transaction while a transaction is arleady running
@@ -214,17 +224,14 @@ module Neo4j
       @tx = tx # store it only for logging purpose
     end
     
-    def success
+    #      def success
+    #      end
       
-    end
     #
     # Do nothing since Neo4j does not support chained transactions.
     # 
     def finish
       $NEO_LOGGER.info("tried to finish chained transaction #{@tx}")
-      $NEO_LOGGER.info(caller[0])      
-      $NEO_LOGGER.info(caller[1])            
-      $NEO_LOGGER.info(caller[2])                  
     end
   end
   

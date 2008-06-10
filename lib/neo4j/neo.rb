@@ -62,8 +62,8 @@ module Neo4j
     # 
     def find_node(id) 
       begin
-      neo_node = @neo.getNodeById(id)
-      load_node(neo_node)
+        neo_node = @neo.getNodeById(id)
+        load_node(neo_node)
       rescue org.neo4j.impl.core.NotFoundException
         nil
       end

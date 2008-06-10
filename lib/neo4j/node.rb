@@ -14,13 +14,12 @@ module Neo4j
     attr_reader :internal_node 
     
     #
-    # Must be run in a transaction unless a block is given 
-    # If a block is given a new transaction will be created
+    # Will create a new transaction if one is not already running.
+    # If a block is given a new transaction will be created.
     # 
     # Does
     # * sets the neo property 'classname' to self.class.to_s
     # * creates a neo node java object (in @internal_node)
-    # * creates a relationship in the metanode instance to this instance
     #    
     def initialize(*args)
       $NEO_LOGGER.debug("Initialize #{self}")
@@ -182,7 +181,7 @@ module Neo4j
         fields[key] = props[key]
       end
       
-      Neo.instance.index_node(self)
+      Neo.instance.index_node(self)  # TODO, use transaction directly, do not go via Neo.instance
     end
 
     
@@ -192,9 +191,10 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      Transaction.run {  
+      Transaction.run { |t|
         relations.each {|r| r.delete}
         @internal_node.delete 
+        t.remove_node(self)  # 
       }
     end
     
@@ -274,7 +274,11 @@ module Neo4j
         # TODO performance, we load all the found entries. Maybe better using Enumeration
         # and load it when needed
         Transaction.run do
-          ids.collect {|id| Neo4j::Neo.instance.find_node(id)}
+          ids.collect do |id| 
+            node = Neo4j::Neo.instance.find_node(id)
+            raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
+            node
+          end
         end
       end      
 

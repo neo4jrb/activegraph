@@ -133,10 +133,27 @@ describe "When running in one transaction" do
       @node.baaz.should =='Changed it'
     end
 
+    it "should allow to set properties of type Fixnum, Float and Boolean" do
+      # when
+      @node.baaz = 42
+      @node.foo = 3.14
+      @node.bar = true
+      @node.bar2 = false
+      
+      # make sure we test that the properties are stored in the neo database
+      n = Neo4j::Neo.instance.find_node(@node.neo_node_id)
+      
+      # then
+      n.baaz.should == 42
+      n.foo.should == 3.14
+      n.bar.should be_true
+      n.bar2.should be_false
+    end
+
 
     it "can not have a relationship to a none Neo::Node"
     
-    it "can not set a property that is not a string of fixnum"
+    it "can not set a property that is not of type string,fixnum,float or boolean"
    
   end
 

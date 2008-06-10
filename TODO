@@ -1,14 +1,10 @@
 == TODO
 
-* Implement delete method on Neo4j::Node, check referense to the deleted node.
-* Lucene integeration with neo4j transaction, need to close IndexWriter when finished transaction (if it did not fail)
-* Make lucene integration thread safe
 * Implement pending rspecs
 * When running rspec with warning enabled it reports some problems - fix it.
 * Fix TODO's in the code
 * Check visibility of methods, set internal method to private
-* Performance tests
-* Start a new transaction when needed ?
+* Performance issues, lucene
 
 == Bugs
 
