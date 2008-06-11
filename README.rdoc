@@ -33,7 +33,7 @@ Example of usage:
     index.update(doc)
     index.commit
     
-    index.find('name' => 'andreas') # => [0]
+    index.find('name' => 'andreas') # => [42]
     
     index.delete(42)
     index.commit
