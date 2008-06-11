@@ -261,6 +261,23 @@ module Neo4j
         relations.each {|type| add_relation_type(type)}
       end
       
+      
+      #
+      # Expects type of relation and class.
+      # Example
+      # 
+      #   class Company
+      #     has :employees, Person
+      #   end
+      #
+      def has(type, clazz)
+        # TODO !!!!!
+        define_method(type) do |*query|   # TODO support query
+          NodesWithRelationType.new(self,type.to_s, clazz)
+        end
+      end
+      
+      
       #
       # Finds all nodes of this type (and ancestors of this type) having
       # the specified property values.

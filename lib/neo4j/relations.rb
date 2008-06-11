@@ -91,9 +91,10 @@ module Neo4j
     include Enumerable
     
     
-    def initialize(node, type)
+    def initialize(node, type, other_node_class = nil)
       @node = node
       @type = RelationshipType.instance(type)      
+      @other_node_class = other_node_class
     end
     
     def each
@@ -110,6 +111,11 @@ module Neo4j
       
     
     def <<(other)
+      # TODO, should we check if we should create a new transaction ?
+      if !@other_node_class.nil?
+        lucene_tx = Neo4j::Transaction.current.lucene_tx
+        lucene_tx.update_index_fields
+      end
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
       self
     end

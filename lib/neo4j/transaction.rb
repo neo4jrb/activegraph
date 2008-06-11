@@ -186,11 +186,11 @@ module Neo4j
     # If the transaction rolled back the node will not be indexed.
     #
     def index_node(node)
-      lucene_tx.nodes[node.neo_node_id] = node
+      lucene_tx.update_index(node)
     end
     
     def remove_node(node)
-      lucene_tx.deleted_nodes[node.neo_node_id] = node
+      lucene_tx.delete_index(node)
     end
 
     #

@@ -9,9 +9,42 @@ It provides:
 * Transaction with rollbacks support. 
 * Indexing and quering of ruby objects.
 
+Neo4j.rb consist of two modules: Neo4j and Lucene.
+Neo4j depends on the Lucene module.
+
 To make this possible it uses two powerful java libraries: 
 * Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
+
+
+== The Lucene Module
+
+Example of usage:
+  
+    require 'lucene'
+
+    include Lucene
+
+    index = Index.new('var/myindex')    
+
+    doc = Document.new(42)
+    doc << Field.new('name', 'andreas')
+
+    index.update(doc)
+    index.commit
+    
+    index.find('name' => 'andreas') # => [0]
+    
+    index.delete(42)
+    index.commit
+    index.find('name' => 'andreas') # => []
+
+Notice that you have to call the commit method in order to update the index.
+This is because of performance - updates to lucene index should be made in a batch.
+
+You can use this module without using the Neo4j module.
+
+== The Neo4j Module
 
 === Neo4j::Node
 
@@ -246,6 +279,7 @@ Let say we want to find all employees in a company who are of age 42:
   end
 
   c.employees(:age => 42)
+
 
 === Implementation plan
 
