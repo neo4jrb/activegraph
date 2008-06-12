@@ -1,6 +1,5 @@
 require 'neo4j/relations'
-require 'neo4j/lucene_query'
-
+require 'lucene'
 
 module Neo4j
 
@@ -132,7 +131,7 @@ module Neo4j
     #
     def has_property(name)
       Transaction.run {
-        @internal_node.has_property(name)
+        @internal_node.has_property(name.to_s)
       }
     end
     
@@ -175,13 +174,19 @@ module Neo4j
     #  Index all declared properties
     #
     def index
-      fields = {}
+      $NEO_LOGGER.debug("Index #{neo_node_id}")
+      doc = Lucene::Document.new(neo_node_id)
+      
       self.class.decl_props.each do |k|
         key = k.to_s
-        fields[key] = props[key]
+        value = get_property(k)
+        $NEO_LOGGER.debug("Add field '#{key}' = '#{value}'")
+        doc << Lucene::Field.new(key, value)
       end
-      
-      Neo.instance.index_node(self)  # TODO, use transaction directly, do not go via Neo.instance
+
+      puts "INDEX PATH IS #@@lucene_index_path"
+      index = Lucene::Index.new(@@lucene_index_path)      
+      index.update(doc)
     end
 
     
@@ -191,10 +196,12 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
+      puts "INDEX PATH IS #@@lucene_index_path"
       Transaction.run { |t|
         relations.each {|r| r.delete}
         @internal_node.delete 
-        t.remove_node(self)  # 
+        index = Lucene::Index.new(@@lucene_index_path)              
+        index.delete(neo_node_id)
       }
     end
     
@@ -211,6 +218,14 @@ module Neo4j
     #
     def self.included(c)
       c.extend ClassMethods
+      
+      # all subclasses share the same index
+      # need to inject a 
+      c.module_eval do |c|
+        # set the path where to store the index
+        @@lucene_index_path = Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/')        
+      end
+      
     end
 
     # --------------------------------------------------------------------------
@@ -286,10 +301,11 @@ module Neo4j
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
       def find(query)
-        ids = LuceneQuery.find(index_storage_path, query)
+        ids = index.find(query)
+        #ids = LuceneQuery.find(index_storage_path, query)
         
         # TODO performance, we load all the found entries. Maybe better using Enumeration
-        # and load it when needed
+        # and load it when needed. Wrap it in a SearchResult
         Transaction.run do
           ids.collect do |id| 
             node = Neo4j::Neo.instance.find_node(id)
@@ -299,11 +315,13 @@ module Neo4j
         end
       end      
 
+      
       #
-      # The location of the lucene index for this node.
+      # The index path for this class.
+      # The same path is shared by all subclasses.
       #
-      def index_storage_path
-        Neo4j::Neo.instance.index_storage + "/" + self.to_s.gsub('::', '/')
+      def lucene_index_path
+        @@lucene_index_path  # this var is set in the self.included method above
       end
       
     end

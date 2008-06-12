@@ -21,7 +21,7 @@ module Neo4j
   # 
   class Neo
     include Singleton
-    attr_accessor :db_storage, :index_storage 
+    attr_accessor :db_storage
 
     #
     # meta_nodes : Return the meta nodes containing relationship to all MetaNode objects
@@ -33,9 +33,8 @@ module Neo4j
     #
     # starts neo with a database at the given storage location
     # 
-    def start(storage = NEO_STORAGE, index_storage = LUCENE_INDEX_STORAGE)
+    def start(storage = NEO_STORAGE)
       @db_storage = storage
-      @index_storage = index_storage
       
       raise Exception.new("Already started neo") if @neo
       @neo = EmbeddedNeo.new(@db_storage)  

@@ -1,5 +1,8 @@
 require 'delegate'
+require 'monitor'
 require 'lucene/jars'
+require 'lucene/transaction'
+require 'lucene/index_searcher'
 
 #
 # A wrapper for the Java lucene search library.
@@ -14,18 +17,51 @@ module Lucene
   # (Performace will be bad otherwise).
   #  
   class Index
-    # TODO thread synchronization
+    attr_reader :path 
+    
+     
+    # locks per index path, must not write to the same index from 2 threads 
+    @@locks = {}    
+    @@locks.extend MonitorMixin
     
     def initialize(path)
       @path = path # where the index is stored on disk
-      @documents = {}
-      @deleted_ids = []
+      @documents = {}  # documents to be updated
+      @deleted_ids = [] # documents to be deleted
     end
-    
+
+    #
+    # Tries to reuse an Index instance for the current running transaction.
+    # 
+    # If a Lucene::Transaction is running it will register this index in that transaction if
+    # this has not already been done.
+    # When it has been registered in the transaction the transaction will commit the index 
+    # when the transaction is commited.
+    #
+    def self.new(path)
+      if Transaction.running?
+        Transaction.current.register_index(super(path)) unless Transaction.current.index?(path)
+        Transaction.current.index(path)
+      else
+        super(path)
+      end
+    end
+
+    #
+    # Updates the specified document.
+    # The index file not be updated until the transaction commits.
+    # The doc is stored in memory till the transaction commits.
+    #
     def update(doc)
       @documents[doc.id.value] = doc
     end
     
+    #
+    # Delete the specified document.
+    # Precondition: a Lucene::Transaction must be running.
+    # The index file not be updated until the transaction commits.
+    # The doc is stored in memory till the transaction commits.
+    #
     def delete(id)
       @deleted_ids << id.to_s
     end
@@ -34,74 +70,46 @@ module Lucene
       @documents[id.to_s]
     end
     
-    def self.instance(path)
-      # TODO: THREAD safty
-      @instances ||= {}
-      @instances[path] = Index.new(path) unless has_index(path)
-      @instances[path]
-    end
-    
-    def self.remove_instance(path)
-      @instances ||= {}
-      @instances.delete(path) unless has_index(path)
-    end
-    
-    def self.has_index(path)
-      return false unless @instances
-      return @instances[path] != nil
-    end
-    
+    # 
     # 
     # Writes to the index files
     # Open and closes an lucene IndexWriter
+    # Close the IndexSearcher so that it will read the updated index next time.
+    # This method will automatically be called from a Lucene::Transaction if it was running when the index was created.
     #
     def commit
-      delete_documents # deletes all docuements given @deleted_ids
+      lock.synchronize do
+        $LUCENE_LOGGER.debug "  BEGIN: COMMIT"
+        delete_documents # deletes all docuements given @deleted_ids
       
-      # are any updated document deleted ?
-      deleted_ids = @documents.keys & @deleted_ids
-      # delete them those
-      deleted_ids.each {|id| @documents.delete(id)}
+        # are any updated document deleted ?
+        deleted_ids = @documents.keys & @deleted_ids
+        # delete them those
+        deleted_ids.each {|id| @documents.delete(id)}
       
-      # update the remaining documents that has not been deleted
-      update_documents # update @documents
-    ensure
-      @documents.clear
-      @deleted_ids.clear
+        # update the remaining documents that has not been deleted
+        update_documents # update @documents
+        
+        @documents.clear  # TODO: should we do this in an ensure block ?
+        @deleted_ids.clear
+        $LUCENE_LOGGER.debug "  END: COMMIT"        
+      end
+    rescue => ex
+      $LUCENE_LOGGER.error(ex)
+      #      ex.backtrace.each{|x| $LUCENE_LOGGER.error(x)}
+      raise ex
     end
 
-    #
-    # Returns true if the index already exists.
-    #
-    def exist?
-      IndexReader.index_exists(@path)
-    end
-    
-    
-    def find(fields)
-      # are there any index for this node ?
-      # if not return an empty array
-      return [] unless exist?
-      
-      query = BooleanQuery.new
-      
-      fields.each_pair do |key,value|  
-        term  = org.apache.lucene.index.Term.new(key.to_s, value.to_s)        
-        q = TermQuery.new(term)
-        query.add(q, BooleanClause::Occur::MUST)
-      end
 
-      engine = IndexSearcher.new(@path)
-      hits = engine.search(query).iterator
-      results = []
-      while (hits.hasNext && hit = hits.next)
-        id = hit.getDocument.getField("id").stringValue.to_i
-        results <<  id #[hit.getScore, id, text]
-      end
-      results
-    ensure
-      engine.close unless engine.nil?
+    #
+    # Delegetes to the IndexSearcher.find method
+    #
+    def find(query)
+      # new method is a factory method, does not create if it already exists
+      searcher = IndexSearcher.new(@path)
+      searcher.find(query)
     end
+    
     
     def to_s
       "Index [path: '#@path', #{@documents.size} documents]"
@@ -113,6 +121,25 @@ module Lucene
     #
     
     private 
+
+    #
+    # There is one lock per index path.
+    #
+    def lock
+      @@locks.synchronize do
+        @@locks[@path] ||= Monitor.new
+        @@locks[@path]
+      end
+    end
+    
+    #
+    # Returns true if the index already exists.
+    #
+    def exist?
+      IndexReader.index_exists(@path)
+    end
+
+    
     
     def update_documents
       index_writer = IndexWriter.new(@path, StandardAnalyzer.new, ! exist?)
@@ -125,8 +152,6 @@ module Lucene
       index_writer.close
     end
 
-    private 
-    
     def delete_documents
       return unless exist? # if no index exists then there is nothing to do
       

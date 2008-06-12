@@ -4,7 +4,7 @@
 
 require 'fileutils'  
 
-require 'lucene/index'
+require 'lucene'
 
 include Lucene
 
@@ -83,6 +83,27 @@ describe Index do
     result.size.should == 0
   end
 
+  
+  it "should find indexed fields using having the same key" do
+    # given
+    doc = Document.new(42)
+    doc << Field.new('name', 'andreas1')
+    doc << Field.new('name', 'andreas2')    
+    @index.update(doc)
+    @index.commit
+    
+    # when
+    result1 = @index.find('name' => 'andreas1')
+    result2 = @index.find('name' => 'andreas2')
+    
+    # then 
+    result1.should include(42)
+    result1.size.should == 1
+    result2.should include(42)
+    result2.size.should == 1
+    
+  end
+
   it "should not find the old field if the field has been changed" do
     # given
     doc = Document.new(42)
@@ -118,14 +139,6 @@ describe Index do
     
     # then
     result.size.should == 0
-  end
-  
-  it "should have a singleton method for keeping Index object in memory" do
-    Index.remove_instance('foo')
-    foo1 = Index.instance('foo')
-    foo2 = Index.instance('foo')
-    
-    foo1.should be_equal(foo2) # should be same instance
   end
 end
 

@@ -44,6 +44,37 @@ This is because of performance - updates to lucene index should be made in a bat
 
 You can use this module without using the Neo4j module.
 
+=== Thread-safety
+
+The Lucene::Index is thread safe.
+It guarantees that an index is not updated from two thread at the same time.
+
+
+=== Lucene Transactions
+
+Use the Lucene::Transaction in order to do atomic commits 
+
+Example:
+
+    Transaction.run do |t|
+      index = Index.new('var/index/foo')        
+      doc = Document.new(42)
+      doc << Field.new('name', 'andreas')
+      index.update(doc)
+      t.failure  # rollback
+    end  
+    
+    result = index.find('name' => 'andreas')
+    result.size.should == 0
+
+
+=== Lucene::IndexSearcher
+
+The index.find method simply delegates to the Lucene::IndexSearcher.
+You use that class instead. It cache lucene IndexSearcher and check if it should
+reload from disk.
+
+
 == The Neo4j Module
 
 === Neo4j::Node

@@ -2,7 +2,6 @@
 require 'thread'
 #require 'monitor'
 require 'delegate'
-require 'neo4j/lucene_transaction'
 
 
 module Neo4j
@@ -19,14 +18,14 @@ module Neo4j
   class AlreadyInTransactionError < StandardError; end
   
   
-    #
+  #
   # Wraps a Neo4j java transaction and lucene transactions.
   # There can only be one transaction per thread.
   #
   class Transaction
     attr_reader :neo_tx
     
-#    extend MonitorMixin  # want it as class methods      
+    #    extend MonitorMixin  # want it as class methods      
     
     @@counter = 0 # just for debugging purpose
 
@@ -64,8 +63,7 @@ module Neo4j
       #   transaction = Neo4j::Transaction.run
       #
       def run
-        $NEO_LOGGER.info("new transaction " + caller[0])
-        $NEO_LOGGER.info(caller[1])        
+        $NEO_LOGGER.info{"new transaction " + caller[0]}
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         tx = nil
@@ -86,9 +84,17 @@ module Neo4j
           ret = yield tx
           tx.success unless tx.failure?
         rescue Exception => e  
+          $NEO_LOGGER.warn{"Neo transaction rolled back because an exception, #{e}"}
+          tx.failure
           raise e  
         ensure  
           tx.finish  
+          # do we have a lucene transaction to commit ?
+          if Lucene::Transaction.running?
+            Lucene::Transaction.current.failure if tx.failure?
+            # TODO: what if neo fails to commit should we commit anyway the lucene
+            Lucene::Transaction.current.commit 
+          end
         end      
         ret
       end  
@@ -177,36 +183,6 @@ module Neo4j
       @neo_tx.failure
       @failure = true
       $NEO_LOGGER.info{"failure #{self.to_s}"}                        
-    end
-    
-    
-    #
-    # Index the specified node.
-    # This will be performed when the transaction is commited
-    # If the transaction rolled back the node will not be indexed.
-    #
-    def index_node(node)
-      lucene_tx.update_index(node)
-    end
-    
-    def remove_node(node)
-      lucene_tx.delete_index(node)
-    end
-
-    #
-    # Creates a new LuceneTransaction if one is not already created.
-    # Registers that transaction for syncrhonization with the neo transaction, 
-    # so that when neo transaction is commited the lucenene transaction will also be commited.
-    #
-    def lucene_tx
-      if ! @lucene_tx
-        $NEO_LOGGER.info{"Register lucene transaction for #{self}"}
-        tx_manager = Neo.instance.tx_manager # use the neo java api
-        tx = tx_manager.getTransaction()
-        @lucene_tx = LuceneTransaction.new        
-        tx.registerSynchronization( @lucene_tx );        
-      end
-      @lucene_tx
     end
   end
   
