@@ -74,6 +74,8 @@ module Neo4j
           tx = Neo4j::Transaction.new
           tx.start
         else
+          #          yield Transaction.current
+          #          return
           $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
           tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
         end
@@ -90,11 +92,6 @@ module Neo4j
         ensure  
           tx.finish  
           # do we have a lucene transaction to commit ?
-          if Lucene::Transaction.running?
-            Lucene::Transaction.current.failure if tx.failure?
-            # TODO: what if neo fails to commit should we commit anyway the lucene
-            Lucene::Transaction.current.commit 
-          end
         end      
         ret
       end  
@@ -169,8 +166,19 @@ module Neo4j
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.finish
       @neo_tx=nil
-      @lucene_tx = nil
       Thread.current[:transaction] = nil
+      
+      if Lucene::Transaction.running?
+        $NEO_LOGGER.debug("LUCENE TX running failure: #{failure?}")            
+        
+        # mark lucene transaction for failure if the neo transaction fails
+        Lucene::Transaction.current.failure if failure?
+        Lucene::Transaction.current.commit 
+      else
+        $NEO_LOGGER.debug("NO LUCENE TX running")
+      end
+          
+      
       $NEO_LOGGER.info{"finished #{self.to_s}"}                  
     end
 

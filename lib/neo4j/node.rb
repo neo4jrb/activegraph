@@ -120,7 +120,7 @@ module Neo4j
       
       Transaction.run {
         return nil if ! has_property(name)
-        @internal_node.get_property(name)
+        @internal_node.get_property(name.to_s)
       }
     end
     
@@ -173,22 +173,26 @@ module Neo4j
     #
     #  Index all declared properties
     #
-    def index
+    def update_index
       $NEO_LOGGER.debug("Index #{neo_node_id}")
       doc = Lucene::Document.new(neo_node_id)
       
+      $NEO_LOGGER.debug("FIELDS to index #{self.class.decl_props.inspect}")
       self.class.decl_props.each do |k|
         key = k.to_s
         value = get_property(k)
+        next if value.nil? # or value.empty?
         $NEO_LOGGER.debug("Add field '#{key}' = '#{value}'")
         doc << Lucene::Field.new(key, value)
       end
 
-      puts "INDEX PATH IS #@@lucene_index_path"
-      index = Lucene::Index.new(@@lucene_index_path)      
-      index.update(doc)
+      lucene_index.update(doc)
     end
 
+    
+    def lucene_index
+      self.class.lucene_index
+    end
     
     #
     # Deletes this node.
@@ -196,12 +200,10 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      puts "INDEX PATH IS #@@lucene_index_path"
       Transaction.run { |t|
         relations.each {|r| r.delete}
         @internal_node.delete 
-        index = Lucene::Index.new(@@lucene_index_path)              
-        index.delete(neo_node_id)
+        lucene_index.delete(neo_node_id)
       }
     end
     
@@ -217,22 +219,28 @@ module Neo4j
     # Adds classmethods in the ClassMethods module
     #
     def self.included(c)
-      c.extend ClassMethods
-      
       # all subclasses share the same index
       # need to inject a 
-      c.module_eval do |c|
+      c.instance_eval do |c|
         # set the path where to store the index
         @@lucene_index_path = Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/')        
+        @@decl_props = []
+        def lucene_index
+          Lucene::Index.new(@@lucene_index_path)      
+        end
+        
+        def decl_props
+          @@decl_props
+        end
       end
       
+      c.extend ClassMethods
     end
 
     # --------------------------------------------------------------------------
     # Node class methods
     #
     module ClassMethods
-      attr_reader :decl_props
 
       #
       # Allows to declare Neo4j properties.
@@ -241,20 +249,17 @@ module Neo4j
       # An undeclared setter/getter will be handled in the method_missing method instead.
       #
       def properties(*props)
-        @decl_props ||= []        
         props.each do |prop|
-          @decl_props << prop
+          decl_props << prop
           define_method(prop) do 
             get_property(prop.to_s)
-            #            @internal_node.get_property(prop.to_s)
           end
 
           name = (prop.to_s() +"=")
           define_method(name) do |value|
             Transaction.run do
               set_property(prop.to_s, value)
-              #@internal_node.set_property(prop.to_s, value)
-              index
+              update_index
             end
           end
         end
@@ -301,7 +306,7 @@ module Neo4j
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
       def find(query)
-        ids = index.find(query)
+        ids = lucene_index.find(query)
         #ids = LuceneQuery.find(index_storage_path, query)
         
         # TODO performance, we load all the found entries. Maybe better using Enumeration
@@ -314,16 +319,6 @@ module Neo4j
           end
         end
       end      
-
-      
-      #
-      # The index path for this class.
-      # The same path is shared by all subclasses.
-      #
-      def lucene_index_path
-        @@lucene_index_path  # this var is set in the self.included method above
-      end
-      
     end
 
   end

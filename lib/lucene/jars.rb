@@ -13,6 +13,4 @@ module Lucene
   MultiTermQuery = org.apache.lucene.search.MultiTermQuery    
   BooleanClause = org.apache.lucene.search.BooleanClause
   BooleanQuery  = org.apache.lucene.search.BooleanQuery
-  IndexSearcher = org.apache.lucene.search.IndexSearcher
-
 end

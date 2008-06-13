@@ -39,12 +39,17 @@ module Lucene
     # when the transaction is commited.
     #
     def self.new(path)
-      if Transaction.running?
-        Transaction.current.register_index(super(path)) unless Transaction.current.index?(path)
-        Transaction.current.index(path)
-      else
-        super(path)
+      # create a new transaction if needed      
+      Transaction.new unless Transaction.running?
+
+      # create a new instance only if it does not already exist in the current transaction
+      unless Transaction.current.index?(path)
+        instance = super(path) 
+        Transaction.current.register_index(instance) 
       end
+
+      # return the index for the current transaction
+      Transaction.current.index(path)
     end
 
     #
@@ -92,6 +97,9 @@ module Lucene
         
         @documents.clear  # TODO: should we do this in an ensure block ?
         @deleted_ids.clear
+        
+        # if we are running in a transaction remove this so it will not be commited twice
+        Transaction.current.deregister_index(self) if Transaction.running?
         $LUCENE_LOGGER.debug "  END: COMMIT"        
       end
     rescue => ex
@@ -192,8 +200,8 @@ module Lucene
     attr_reader :key, :value 
     
     def initialize(key, value, store = false)
-      @key = key
-      @value = value
+      @key = key.to_s
+      @value = value.to_s
       @store = store ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO
     end
     

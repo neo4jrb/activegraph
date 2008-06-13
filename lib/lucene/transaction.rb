@@ -33,6 +33,7 @@ module Lucene
         end 
       end
       @commited = true
+      $LUCENE_LOGGER.error("Index was not removed from commited transaction: #{@indexes.inspect}") if !@indexes.empty? && !@rollback 
       @indexes.clear
       Thread.current[:lucene_transaction] = nil
     end
@@ -54,6 +55,16 @@ module Lucene
       $LUCENE_LOGGER.debug{"Registered index for #{index}"}
     end
 
+    #
+    # Deregister the index so that it will not be part of the transaction
+    # any longer.
+    #
+    def deregister_index(index)
+      @indexes.delete index.path
+      $LUCENE_LOGGER.debug{"Deregistered index for #{index}"}
+    end
+    
+    
     def index?(path)
       @indexes[path] != nil
     end

@@ -51,7 +51,7 @@ module Lucene
     def index_searcher
       if @index_reader.nil? || @index_reader.getVersion() != IndexReader.getCurrentVersion(@path)
         @index_reader = IndexReader.open(@path)        
-        @index_searcher = IndexSearcher.new(@index_reader)        
+        @index_searcher = org.apache.lucene.search.IndexSearcher.new(@index_reader)        
         $LUCENE_LOGGER.debug("Opened new IndexSearcher for #{to_s}")         
       end
       @index_searcher

@@ -39,8 +39,9 @@ Example of usage:
     index.commit
     index.find('name' => 'andreas') # => []
 
-Notice that you have to call the commit method in order to update the index.
-This is because of performance - updates to lucene index should be made in a batch.
+Notice that you have to call the commit method in order to update the index on the disk.
+By performing several update and delete operations before a commit will be much
+faster then performing commit after each operation. 
 
 You can use this module without using the Neo4j module.
 
@@ -70,10 +71,10 @@ Example:
 
 === Lucene::IndexSearcher
 
-The index.find method simply delegates to the Lucene::IndexSearcher.
-You use that class instead. It cache lucene IndexSearcher and check if it should
-reload from disk.
-
+Instead of using the Index#find method you can use the Lucene::IndexSearcher.
+(Index#find method simply delegates to the Lucene::IndexSearcher).
+IndexSearcher will cache the index (or actually the lucene IndexReader) in memory 
+and check if it should reload it from disk.
 
 == The Neo4j Module
 
