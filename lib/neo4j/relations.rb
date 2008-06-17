@@ -33,7 +33,7 @@ module Neo4j
     def each
       iter = @internal_node.getRelationships(@direction)
       while (iter.hasNext) do
-        yield Relation.new(iter.next)
+        yield RelationWrapper.new(iter.next)
       end
     end
 
@@ -61,7 +61,7 @@ module Neo4j
   #
   # Wrapper class for a java org.neo4j.api.core.Relationship class
   #
-  class Relation
+  class RelationWrapper
   
     def initialize(r)
       @internal_r = r
@@ -82,6 +82,42 @@ module Neo4j
     def delete
       @internal_r.delete
     end
+
+    def set_property(key,value)
+      @internal_r.setProperty(key,value)
+    end    
+    
+    def property?(key)
+      @internal_r.hasProperty(key)
+    end
+    
+    def get_property(key)
+      @internal_r.getProperty(key)
+    end
+    #
+    # A hook used to set and get undeclared properties
+    #
+    def method_missing(methodname, *args)
+      # allows to set and get any neo property without declaring them first
+      name = methodname.to_s
+      setter = /=$/ === name
+      expected_args = 0
+      if setter
+        name = name[0...-1]
+        expected_args = 1
+      end
+      unless args.size == expected_args
+        err = "method '#{name}' on '#{self.class.to_s}' has wrong number of arguments (#{args.size} for #{expected_args})"
+        raise ArgumentError.new(err)
+      end
+
+      if setter
+        set_property(name, args[0])
+      else
+        get_property(name)
+      end
+    end
+    
   end
 
   #
@@ -109,13 +145,40 @@ module Neo4j
       end
     end
       
+    #
+    # Creates a relationship between this and the other node.
+    # Returns the relationship object that has property like a Node has.
+    #
+    #   n1 = Node.new # Node has declared having a friend type of relationship 
+    #   n2 = Node.new
+    #   
+    #   relation = n1.friends.new(n2)
+    #   relation.friend_since = 1992 # set a property on this relationship
+    #
+    def new(other)
+      r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
+      RelationWrapper.new(r)
+    end
     
+    
+    #
+    # Creates a relationship between this and the other node.
+    # Returns self so that we can add several nodes like this:
+    # 
+    #   n1 = Node.new # Node has declared having a friend type of relationship
+    #   n2 = Node.new
+    #   n3 = Node.new
+    #   
+    #   n1 << n2 << n3
+    #
+    # This is the same as:
+    #  
+    #   n1.friends.new(n2)
+    #   n1.friends.new(n3)
+    #
     def <<(other)
       # TODO, should we check if we should create a new transaction ?
-      if !@other_node_class.nil?
-        lucene_tx = Neo4j::Transaction.current.lucene_tx
-        lucene_tx.update_index_fields
-      end
+      # TODO, should we update lucene index ?
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
       self
     end

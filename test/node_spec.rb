@@ -342,9 +342,9 @@ describe "When running in one transaction" do
       t3.relations.incoming.nodes.to_a.should include(t1)      
       t1.relations.nodes.to_a.size.should == 2
     end
-    
   end
 
+  
 end
 
 describe Neo4j::Node.to_s, "delete"  do

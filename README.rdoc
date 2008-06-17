@@ -146,6 +146,20 @@ Example how to add a relation to another node:
   f.friends << SomeOtherNode.new
   
 
+=== Properties on a relationship
+
+A relationship can have properties just like a node. 
+
+Example:
+
+  p1 = Person.new
+  p2 = Person.new
+
+  relation = p1.friends.new(p2)
+
+  # set a property 'since' on this relationship bewteen p1 and p2
+  relation.since = 1992
+
 === Traversing relationships:
 
 Each type of relationship has a method that returns an Enumerable object that enables you
@@ -304,29 +318,81 @@ It does this by reading the classname property and loading that ruby class with 
 == TODO  
 
 Support for query relationships.
-Let say we want to find all employees in a company who are of age 42:
+Let say we want to find all employees in a company whos name are Andreas and have
+work since 2001
 
+Given
   class Company
-    relation :employees, Person
+    # has relationship employees of type Person with index :employed_date
+    has :employees, index {  
+        of_type Person
+        with_index :employed_date
+    }  
   end
 
-  c.employees(:age => 42)
+  c = Company.new 'Jayway'  # Company and Person are Neo nodes
+  p = Person.new 'Andreas'
+  c.employees << Relation.new(:employed_date = 2001) << p
+
+How to find
+
+  c.find :employees {employed_date >= 2001)}.where {name == 'Andreas'}
+
+    employees.person
+    where(Person) { name == 'Andreas' and ... }
+    where(Relation) :employed_date >= 2001
+  }
+
+Or maybe
+
+  c.employees.find(Person.name => 'Andreas', :employed_date.gt => 2001)
 
 
 === Implementation plan
 
-The index (lucene documents) will look something like this
-Person       Company
-id           id
-age          name
-company_id   person_id, person_id
-company_id   
+The example above will have 3 lucene indexes. They will look something like this:
+(Display the field ids)
 
-when company.employees << n
-add index on Company
-employees_id
-add index on Person
-company_id
+    Person       Company
+    id           id
+    name          name
+                 
+
+    Company_Employees
+    company_id
+    person_id
+    employed_date
+    
+
+When a relation is added to the Company
+1.  add new Document to Company_Employees 
+2.  add new Field in Company Document that has a refense to the Company_Employees
+
+When searching
+  c.employees.find(Person.name => 'Andreas', :employed_date.gt => 2001)
+
+
+Two queries:
+Find all ids where company_id = x AND employed_date = 2001 in Company_Employees
+find all
+
+
+A MultiSearch uses both Person and Company index.
+
+Containing the term queries: person_age='Andreas', company_id = 42, employees:id
+A lucene filter is created from 
+
+
+  name_filter = QueryFilter.new(TermQuery.new(Term.new(:person_name, 'Andreas')))
+  # a ChainedFilter would have been used if needed search on more terms
+
+  rel_query = TermQuery.new(Term.new(:id, '
+  searcher = IndexSearcher.new Person
+  hits = searcher.search(
+  
+
+Search fields will be id 
+
 
 when person.company << c
 add index on Person, company_id
