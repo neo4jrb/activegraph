@@ -1,5 +1,5 @@
 require 'neo4j'
-require 'spec_helper'
+require 'neo4j/spec_helper'
 
 
 
