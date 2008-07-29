@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "neo4j.rb"
-  s.version = "0.1"
+  s.version = "0.0.1"
   s.summary = "Network Database for JRuby"
   s.homepage = "http://github.com/andreasronge/neo4j.rb/tree"
   s.platform = Gem::Platform::RUBY
