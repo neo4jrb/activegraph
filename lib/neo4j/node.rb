@@ -313,7 +313,7 @@ module Neo4j
         # and load it when needed. Wrap it in a SearchResult
         Transaction.run do
           ids.collect do |id| 
-            node = Neo4j::Neo.instance.find_node(id)
+            node = Neo4j::Neo.instance.find_node(id.to_i)
             raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
             node
           end

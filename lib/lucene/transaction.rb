@@ -48,7 +48,7 @@ module Lucene
     end
     
     #
-    # Register a index to take part of this transaction
+    # Registers an index to take part of this transaction
     #
     def register_index(index)
       @indexes[index.path] = index
@@ -93,7 +93,7 @@ module Lucene
       end
 
       #
-      # Retunrs the current transaction.
+      # Returns the current transaction or nil
       #
       def current
         Thread.current[:lucene_transaction]

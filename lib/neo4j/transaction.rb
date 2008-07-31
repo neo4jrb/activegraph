@@ -86,7 +86,7 @@ module Neo4j
           ret = yield tx
           tx.success unless tx.failure?
         rescue Exception => e  
-          $NEO_LOGGER.warn{"Neo transaction rolled back because an exception, #{e}"}
+          $NEO_LOGGER.warn{"Neo transaction rolled back because of an exception, #{e}"}
           tx.failure
           raise e  
         ensure  

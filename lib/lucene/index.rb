@@ -1,15 +1,30 @@
-require 'delegate'
 require 'monitor'
 require 'lucene/jars'
 require 'lucene/transaction'
 require 'lucene/index_searcher'
+require 'lucene/document'
+require 'lucene/field_info'
+require 'lucene/field_infos'
 
 #
 # A wrapper for the Java lucene search library.
 #
 module Lucene
   
-
+  def pad(value)
+    case value
+    when Fixnum then  sprintf('%011d',value)     # TODO: configurable
+    when Float  then  sprintf('%024.12f', value)  # TODO: configurable
+    when Bignum then  sprintf('%024d, value')
+    else value.to_s
+    end
+  end
+    
+    
+  
+  class DocumentDeletedException < StandardError; end
+  class IdFieldMissingException < StandardError; end
+  
   # 
   # Represents a Lucene Index.
   # The index is written/updated only when the commit method is called.
@@ -17,17 +32,22 @@ module Lucene
   # (Performace will be bad otherwise).
   #  
   class Index
-    attr_reader :path 
+    attr_reader :path, :field_infos, :docs
     
      
     # locks per index path, must not write to the same index from 2 threads 
     @@locks = {}    
     @@locks.extend MonitorMixin
     
-    def initialize(path)
+    def initialize(path, id_field)
       @path = path # where the index is stored on disk
-      @documents = {}  # documents to be updated
+      
+      @docs = {}  # documents to be commited, a hash of Document
       @deleted_ids = [] # documents to be deleted
+      @field_infos = FieldInfos.new(id_field)
+      
+      # store the id_field, otherwise we can not find it
+      @field_infos[id_field] = FieldInfo.new(:store => true)
     end
 
     #
@@ -38,13 +58,13 @@ module Lucene
     # When it has been registered in the transaction the transaction will commit the index 
     # when the transaction is commited.
     #
-    def self.new(path)
+    def self.new(path, id_field = :id)
       # create a new transaction if needed      
       Transaction.new unless Transaction.running?
 
       # create a new instance only if it does not already exist in the current transaction
       unless Transaction.current.index?(path)
-        instance = super(path) 
+        instance = super(path, id_field) 
         Transaction.current.register_index(instance) 
       end
 
@@ -52,13 +72,34 @@ module Lucene
       Transaction.current.index(path)
     end
 
+    
+    def clear
+      @docs.clear
+      Transaction.current.deregister_index self if Transaction.running?
+    end
+    
+    def self.clear(path)
+      return unless Transaction.running?
+      return unless Transaction.current.index?(path)
+      Transaction.current.index(path).clear
+    end
+    
+    def <<(key_values)
+      doc = Document.new(@field_infos, key_values)
+      @docs[doc.id] = doc
+    end
+    
+    def id_field
+      @field_infos.id_field
+    end
+    
     #
     # Updates the specified document.
-    # The index file not be updated until the transaction commits.
+    # The index file will not be updated until the transaction commits.
     # The doc is stored in memory till the transaction commits.
     #
     def update(doc)
-      @documents[doc.id.value] = doc
+      @docs[doc.id] = doc
     end
     
     #
@@ -71,8 +112,13 @@ module Lucene
       @deleted_ids << id.to_s
     end
     
+    
+    def deleted?(id)
+      @deleted_ids.include?(id.to_s)
+    end
+    
     def updated?(id)
-      @documents[id.to_s]
+      @docs[id.to_s]
     end
     
     # 
@@ -88,14 +134,14 @@ module Lucene
         delete_documents # deletes all docuements given @deleted_ids
       
         # are any updated document deleted ?
-        deleted_ids = @documents.keys & @deleted_ids
+        deleted_ids = @docs.keys & @deleted_ids
         # delete them those
-        deleted_ids.each {|id| @documents.delete(id)}
+        deleted_ids.each {|id| @docs.delete(id)}
       
         # update the remaining documents that has not been deleted
         update_documents # update @documents
         
-        @documents.clear  # TODO: should we do this in an ensure block ?
+        @docs.clear  # TODO: should we do this in an ensure block ?
         @deleted_ids.clear
         
         # if we are running in a transaction remove this so it will not be commited twice
@@ -114,13 +160,13 @@ module Lucene
     #
     def find(query)
       # new method is a factory method, does not create if it already exists
-      searcher = IndexSearcher.new(@path)
+      searcher = IndexSearcher.new(@path, @field_infos)
       searcher.find(query)
     end
     
     
     def to_s
-      "Index [path: '#@path', #{@documents.size} documents]"
+      "Index [path: '#@path', #{@docs.size} documents]"
     end
     
     #
@@ -151,14 +197,15 @@ module Lucene
     
     def update_documents
       index_writer = IndexWriter.new(@path, StandardAnalyzer.new, ! exist?)
-      @documents.each_value do |doc|
+      @docs.each_value do |doc|
         # removes the document and adds it
-        index_writer.updateDocument(doc.id.to_java_term, doc.to_java)
+        doc.update(index_writer)
       end
     ensure
       # TODO exception handling, what if ...
       index_writer.close
     end
+
 
     def delete_documents
       return unless exist? # if no index exists then there is nothing to do
@@ -174,52 +221,6 @@ module Lucene
     
 
   end
-  
-  class Document < DelegateClass(Array)
-    
-    attr_reader :id  # the field id
-    
-    def initialize(id)
-      super([]) # initialize with an empty array of fields
-      @id = Field.new('id', id.to_s, true)
-    end
-    
-    def to_java
-      doc   =   org.apache.lucene.document.Document.new
-      doc.add(@id.to_java) # want to store the key
-      each {|field| doc.add(field.to_java)}
-      doc
-    end
-    
-    def to_s
-      "Document [id '#{@id.key}', #{size} fields]"
-    end
-  end
-  
-  class Field
-    attr_reader :key, :value 
-    
-    def initialize(key, value, store = false)
-      @key = key.to_s
-      @value = value.to_s
-      @store = store ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO
-    end
-    
-    def to_java_term
-      org.apache.lucene.index.Term.new(@key, @value)
-    end
-    
-    
-    def to_java
-      org.apache.lucene.document.Field.new(@key, @value, @store, org.apache.lucene.document.Field::Index::NO_NORMS)
-    end
-
-    
-    def to_s
-      "Field [key='#{@key}', value='#{@value}', store=#{@store}]"
-    end
-  end
-  
 end
 
 

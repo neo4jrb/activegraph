@@ -10,15 +10,16 @@ module Lucene
     
     @@paths = {}
     
-    def initialize(path)
+    def initialize(path,field_infos)
       @path = path
+      @field_infos = field_infos
     end
 
     #
     # Only create a new object if it does not already exist for this path    
     #
-    def self.new(path)
-      @@paths[path] = super(path) if @@paths[path].nil?
+    def self.new(path,id_field)
+      @@paths[path] = super(path,id_field) if @@paths[path].nil?
       @@paths[path]
     end
 
@@ -30,18 +31,26 @@ module Lucene
       query = BooleanQuery.new
       
       fields.each_pair do |key,value|  
-        term  = org.apache.lucene.index.Term.new(key.to_s, value.to_s)        
-        q = TermQuery.new(term)
+        q = if (value.kind_of? Range)
+          first = org.apache.lucene.index.Term.new(key.to_s, pad(value.first))        
+          last = org.apache.lucene.index.Term.new(key.to_s, pad(value.last))        
+          org.apache.lucene.search.RangeQuery.new(first, last, !value.exclude_end?)
+        elsif
+          term  = org.apache.lucene.index.Term.new(key.to_s, value.to_s)        
+          TermQuery.new(term) 
+        end
         query.add(q, BooleanClause::Occur::MUST)
       end
 
-      hits = index_searcher.search(query).iterator
-      results = []
-      while (hits.hasNext && hit = hits.next)
-        id = hit.getDocument.getField("id").stringValue.to_i
-        results <<  id #[hit.getScore, id, text]
-      end
-      results
+      Hits.new(@field_infos, index_searcher.search(query))
+      
+      #      hits = index_searcher.search(query).iterator
+      #      results = []
+      #      while (hits.hasNext && hit = hits.next)
+      #        id = hit.getDocument.getField("id").stringValue.to_i
+      #        results <<  id #[hit.getScore, id, text]
+      #      end
+      #      results
     end
     
     

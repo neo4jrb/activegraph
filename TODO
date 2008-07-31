@@ -1,11 +1,24 @@
-== TODO
+== User Stories
+
+* Support creating multi field index from several different node classes.
+** Today it only support index on one node class.
+** Maybe something like this
+   
+   index = Index.new(Company => [:name, :employees], [Company, :employees] => [:since], [Company, :employees, Person] => [:name, :age])
+
+   With this information we build an index
+   
+
+* Handle corrupt lucene index after a crash
+** Find which index is locked in reindex all those
+
+* Compare performance with jdbc and mysql
+
+
+== Other
 
 * Implement pending rspecs
 * When running rspec with warning enabled it reports some problems - fix it.
 * Fix TODO's in the code
 * Check visibility of methods, set internal method to private
-* Performance issues, lucene
 
-== Bugs
-
-* Initializaton of Neo: when the MetaNodes are loading Neo must have been started - which it has not
