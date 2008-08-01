@@ -171,8 +171,8 @@ module Lucene
     #
     def find(query)
       # new method is a factory method, does not create if it already exists
-      searcher = IndexSearcher.new(@path, @field_infos)
-      searcher.find(query)
+      searcher = IndexSearcher.new(@path)
+      searcher.find(query, @field_infos)
     end
     
     

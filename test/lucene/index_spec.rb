@@ -241,11 +241,13 @@ describe Index, ".field_infos" do
     hits = @index.find(:name => 'andreas')
     
     $LUCENE_LOGGER.level = Logger::DEBUG
+    
+    @index.field_infos[:id][:type].should == Fixnum
     # then
     hits.size.should == 1
     hits[0][:id].should == 1
     hits[0][:bar].should == 3.14
     hits[0][:name].should == 'andreas'
-    $LUCENE_LOGGER.level = Logger::WARNF
+    $LUCENE_LOGGER.level = Logger::WARN
   end
 end

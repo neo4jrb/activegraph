@@ -10,20 +10,19 @@ module Lucene
     
     @@paths = {}
     
-    def initialize(path,field_infos)
+    def initialize(path)
       @path = path
-      @field_infos = field_infos
     end
 
     #
     # Only create a new object if it does not already exist for this path    
     #
-    def self.new(path,id_field)
-      @@paths[path] = super(path,id_field) if @@paths[path].nil?
+    def self.new(path)
+      @@paths[path] = super(path) if @@paths[path].nil?
       @@paths[path]
     end
 
-    def find(fields)
+    def find(fields, field_infos)
       # are there any index for this node ?
       # if not return an empty array
       return [] unless exist?
@@ -42,15 +41,7 @@ module Lucene
         query.add(q, BooleanClause::Occur::MUST)
       end
 
-      Hits.new(@field_infos, index_searcher.search(query))
-      
-      #      hits = index_searcher.search(query).iterator
-      #      results = []
-      #      while (hits.hasNext && hit = hits.next)
-      #        id = hit.getDocument.getField("id").stringValue.to_i
-      #        results <<  id #[hit.getScore, id, text]
-      #      end
-      #      results
+      Hits.new(field_infos, index_searcher.search(query))
     end
     
     
