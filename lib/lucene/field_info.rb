@@ -8,8 +8,14 @@ module Lucene
     def initialize(values)
       @info = DEFAULTS.dup
       @info.merge! values
+      $LUCENE_LOGGER.debug{"new FieldInfo: #{@info.inspect}"}
     end
 
+    def dup
+      FieldInfo.new(@info)
+    end
+    
+    
     def [](key)
       @info[key]
     end
@@ -20,12 +26,12 @@ module Lucene
     
     def java_field(key, value)    
       store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO      
+      $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{value.to_s}'"}      
       org.apache.lucene.document.Field.new(key.to_s, value.to_s, store, org.apache.lucene.document.Field::Index::UN_TOKENIZED ) #org.apache.lucene.document.Field::Index::NO_NORMS)
     end
     
     def convert_type(value)
       method = TYPE_CONVERSION_TABLE[@info[:type]]
-      puts "Method #{method.to_s}"
       raise ConversionNotSupportedException.new("Can't convert key '#{key}' since method '#{method}' is missing") unless value.respond_to? method
       value.send(method)
     end

@@ -16,6 +16,7 @@ module Lucene
     end
     
     def [](key)
+      $LUCENE_LOGGER.debug{"FieldInfos create new FieldInfo key '#{key}'"} if @infos[key].nil?
       @infos[key] ||= DEFAULTS.dup
       @infos[key]
     end

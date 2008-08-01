@@ -10,7 +10,7 @@ module Lucene
       @props = {}
       props.each_pair do |key,value|
         @props[key] = field_infos[key].convert_type(value)
-        puts "Converted #{key} '#{value}' type: '#{value.class.to_s}' to '#{@props[key].class.to_s}'"
+        $LUCENE_LOGGER.debug{"Converted #{key} '#{value}' type: '#{value.class.to_s}' to '#{@props[key]}' type: '#{@props[key].class.to_s}'"}
       end
     end
 
@@ -26,7 +26,7 @@ module Lucene
       field_infos.each_pair do |key, field|
         #puts "Convert field #{key} store=#{field.store?}"
         next unless field.store?
-        #value = yield key.to_s
+        raise StandardError.new("expected field '#{key.to_s}' to exist in document") if java_doc.getField(key.to_s).nil?
         value = java_doc.getField(key.to_s).stringValue
         fields.merge!({key => value})
       end

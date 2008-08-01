@@ -32,7 +32,7 @@ module Lucene
   # (Performace will be bad otherwise).
   #  
   class Index
-    attr_reader :path, :field_infos, :docs
+    attr_reader :path, :field_infos, :uncommited
     
      
     # locks per index path, must not write to the same index from 2 threads 
@@ -42,7 +42,7 @@ module Lucene
     def initialize(path, id_field)
       @path = path # where the index is stored on disk
       
-      @docs = {}  # documents to be commited, a hash of Document
+      @uncommited = {}  # documents to be commited, a hash of Document
       @deleted_ids = [] # documents to be deleted
       @field_infos = FieldInfos.new(id_field)
       
@@ -73,20 +73,31 @@ module Lucene
     end
 
     
+    #
+    # Delete all uncommited documents. Also deregister this index
+    # from the current transaction (if there is one transaction)
+    #
     def clear
-      @docs.clear
+      @uncommited.clear
       Transaction.current.deregister_index self if Transaction.running?
     end
-    
+
+    #
+    # See instance method Index.clear
+    #
     def self.clear(path)
       return unless Transaction.running?
       return unless Transaction.current.index?(path)
       Transaction.current.index(path).clear
     end
     
+    #
+    # Adds a document to be commited
+    #
     def <<(key_values)
       doc = Document.new(@field_infos, key_values)
-      @docs[doc.id] = doc
+      @uncommited[doc.id] = doc
+      self
     end
     
     def id_field
@@ -99,7 +110,7 @@ module Lucene
     # The doc is stored in memory till the transaction commits.
     #
     def update(doc)
-      @docs[doc.id] = doc
+      @uncommited[doc.id] = doc
     end
     
     #
@@ -118,7 +129,7 @@ module Lucene
     end
     
     def updated?(id)
-      @docs[id.to_s]
+      @uncommited[id.to_s]
     end
     
     # 
@@ -134,14 +145,14 @@ module Lucene
         delete_documents # deletes all docuements given @deleted_ids
       
         # are any updated document deleted ?
-        deleted_ids = @docs.keys & @deleted_ids
+        deleted_ids = @uncommited.keys & @deleted_ids
         # delete them those
-        deleted_ids.each {|id| @docs.delete(id)}
+        deleted_ids.each {|id| @uncommited.delete(id)}
       
         # update the remaining documents that has not been deleted
         update_documents # update @documents
         
-        @docs.clear  # TODO: should we do this in an ensure block ?
+        @uncommited.clear  # TODO: should we do this in an ensure block ?
         @deleted_ids.clear
         
         # if we are running in a transaction remove this so it will not be commited twice
@@ -166,7 +177,7 @@ module Lucene
     
     
     def to_s
-      "Index [path: '#@path', #{@docs.size} documents]"
+      "Index [path: '#@path', #{@uncommited.size} documents]"
     end
     
     #
@@ -193,11 +204,14 @@ module Lucene
       IndexReader.index_exists(@path)
     end
 
-    
+    #
+    # --------------------------------------------------------------------------
+    # 
+    private
     
     def update_documents
       index_writer = IndexWriter.new(@path, StandardAnalyzer.new, ! exist?)
-      @docs.each_value do |doc|
+      @uncommited.each_value do |doc|
         # removes the document and adds it
         doc.update(index_writer)
       end

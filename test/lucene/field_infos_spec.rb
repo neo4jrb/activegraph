@@ -49,6 +49,7 @@ describe FieldInfos do
 
   it "can set several individual properties of a FieldInfo" do
     # given
+        $LUCENE_LOGGER.level = Logger::DEBUG
     f = FieldInfos.new(:my_id)
     
     # when
@@ -57,9 +58,12 @@ describe FieldInfos do
     f[:value][:bar] = 42
     
     # then
+    f[:value].object_id.should_not == f[:foo].object_id
+    
     f[:value][:type].should == Float
     f[:foo][:type].should == Fixnum
     f[:value][:bar].should == 42
+        $LUCENE_LOGGER.level = Logger::WARN
   end
   
 end

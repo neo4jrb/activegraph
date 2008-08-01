@@ -25,13 +25,13 @@ describe FieldInfo do
     f[:bar].should == 2
   end
   
-#  it "clone" do
-#    f1 = FieldInfo.new(:store => true, :foo => 1, :bar=>2)
-#    f1.freeze
-#    f2 = f1.dup
-#    f2[:store] = false
-#    f1[:store].should be_true
-#    f2[:store].should be_false
-#  end
+  it "should handle dup - create a new copy of it" do
+    f1 = FieldInfo.new(:store => true, :foo => 1, :bar=>2)
+    f1.freeze
+    f2 = f1.dup
+    f2[:store] = false
+    f1[:store].should be_true
+    f2[:store].should be_false
+  end
 end
 

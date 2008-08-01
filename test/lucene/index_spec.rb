@@ -32,7 +32,7 @@ describe Index, '(one uncommited document)' do
     @index.clear
     
     # then
-    @index.docs.size.should == 0
+    @index.uncommited.size.should == 0
   end
 
   it "should be empty after commit" do
@@ -40,14 +40,14 @@ describe Index, '(one uncommited document)' do
     @index.commit
     
     # then
-    @index.docs.size.should == 0
+    @index.uncommited.size.should == 0
   end
   
   it "contains one uncommited document" do
     # then
-    @index.docs.size.should == 1
-    @index.docs['42'][:id].should == '42'
-    @index.docs['42'][:name].should == 'andreas'
+    @index.uncommited.size.should == 1
+    @index.uncommited['42'][:id].should == '42'
+    @index.uncommited['42'][:name].should == 'andreas'
   end
   
   it "should not have created an index file" do
@@ -56,7 +56,7 @@ describe Index, '(one uncommited document)' do
 end
 
 
-describe Index, '(empty)' do
+describe Index, '(no uncommited documents)' do
   before(:each) do
     delete_all_indexes
     @index = Index.new($INDEX_DIR)    
@@ -68,7 +68,7 @@ describe Index, '(empty)' do
   end
   
   it "has no uncommited documents" do
-    @index.docs.size.should == 0
+    @index.uncommited.size.should == 0
   end
   
 
@@ -83,15 +83,26 @@ describe Index, ".find" do
     @index << {:id => "1", :name => 'name1', :value=>1}
     @index << {:id => "2", :name => 'name2', :value=>2}
     @index << {:id => "3", :name => 'name3', :value=>3}
-    @doc1 = @index.docs["1"]
+    @doc1 = @index.uncommited["1"]
     @index.commit
   end
   
-  it "should find indexed documents" do
+  it "should find indexed documents using the id field" do
     result = @index.find(:id=>"1")
     result.size.should == 1
     result.should include(@doc1)
   end
+
+  it "should find indexed documents using any field" do
+    result = @index.find(:name=>"name1")
+    result.size.should == 1
+    result.should include(@doc1)
+    
+    result = @index.find(:value=>"1")
+    result.size.should == 1
+    result.should include(@doc1)
+  end
+
   
   it "should return document containing the stored fields for that index" do
     # when
@@ -106,7 +117,7 @@ describe Index, ".find" do
   
 end
 
-describe Index, "<< (add uncommited documents)" do
+describe Index, "<< (add documents to be commited)" do
   before(:each) do
     delete_all_indexes
     Index.clear($INDEX_DIR)
@@ -116,17 +127,22 @@ describe Index, "<< (add uncommited documents)" do
   
   it "converts all fields into strings" do
     @index << {:id => 42, :foo => 1}
-    @index.docs['42'][:foo].should == '1'
+    @index.uncommited['42'][:foo].should == '1'
   end
-  
+
+  it "can add several documents" do
+    @index << {:id => "1", :foo => 'a'} << {:id => "2", :foo => 'b'}
+    
+    # then
+    @index.uncommited.size.should == 2
+    @index.uncommited['1'][:foo].should == 'a'
+    @index.uncommited['2'][:foo].should == 'b'
+  end
+
   it "can have several values for the same key" do
     pending
     @index << {:id => 42, :name => ['foo','bar','baaz']}
   end
-  it "ensure that the document contains an id_field" do
-    pending
-  end
-  
 end
 
 describe Index, ".id_field" do
@@ -151,7 +167,7 @@ describe Index, ".id_field" do
     index << {:my_id => '123', :name=>"foo"}
     
     # when then
-    index.docs['123'][:name].should == 'foo'
+    index.uncommited['123'][:name].should == 'foo'
   end
   
   it "must be included in all documents" do
@@ -202,7 +218,34 @@ describe Index, ".field_infos" do
     @index.field_infos[:value][:type].should == String
   end
   
+  it "has a default that can be overridden" do
+    # given
+    @index.field_infos[:bar][:type] = Float
+    # then
+    @index.field_infos[:bar][:type].should == Float
+    @index.field_infos[:id][:type].should == String
+    @index.field_infos[:name][:type].should == String    
+  end
+  
   it "can be used to convert properties" do
-    pending
+    #given
+    @index.field_infos[:bar][:store] = true
+    @index.field_infos[:bar][:type] = Float
+    @index.field_infos[:id][:type] = Fixnum
+    @index.field_infos[:name][:store] = true
+    
+    @index << {:id => 1, :bar => 3.14, :name => "andreas"}
+    @index.commit
+    
+    # when
+    hits = @index.find(:name => 'andreas')
+    
+    $LUCENE_LOGGER.level = Logger::DEBUG
+    # then
+    hits.size.should == 1
+    hits[0][:id].should == 1
+    hits[0][:bar].should == 3.14
+    hits[0][:name].should == 'andreas'
+    $LUCENE_LOGGER.level = Logger::WARNF
   end
 end
