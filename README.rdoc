@@ -1,6 +1,6 @@
-= Neo4j.rb
+= Neo4j
 
-Neo4j.rb is a network database framework for JRuby.
+Neo4j is a network database framework for JRuby.
  
 It provides:
 * Mapping of ruby objects to nodes in networks rather than in tables. 
@@ -19,7 +19,7 @@ To make this possible it uses two powerful java libraries:
 
 == The Lucene Module
 
-You can use this module without using the Neo4j module.
+You can use this module without using the Neo4j module. 
 
 Example of how to write a document and find it:
   
@@ -132,6 +132,15 @@ Example:
     
     result = index.find('name' => 'andreas')
     result.size.should == 0
+
+You can find which documents are uncommited by using the uncommited index property.
+Example
+
+      index = Index.new('var/index/foo')        
+      index.uncommited #=> [document1, document2] 
+
+Notice that even if it looks like a new Index instance object was created the index.uncommited
+may return an not empty array. This is because Index.new is a singleton - a new instance object is not created.
 
 
 === Lucene::IndexSearcher

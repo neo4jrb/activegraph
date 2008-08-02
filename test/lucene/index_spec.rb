@@ -113,6 +113,7 @@ describe Index, ".find (exact match)" do
     @index << {:id => "3", :name => 'name3', :value=>2, :group=>'b'}
     @doc1 = @index.uncommited["1"]
     @doc2 = @index.uncommited["2"]
+    @doc3 = @index.uncommited["3"]
     @index.commit
   end
   
@@ -132,6 +133,13 @@ describe Index, ".find (exact match)" do
     result.should include(@doc1)
   end
 
+
+  it "should find several documents having the same property" do
+    result = @index.find(:value => 2)
+    result.size.should == 2
+    result.should include(@doc2,@doc3)
+  end
+  
   it "should find using several fields" do
     result = @index.find(:value => 2, :group => 'a')
     result.size.should == 1
