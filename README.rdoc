@@ -22,6 +22,7 @@ To make this possible it uses two powerful java libraries:
 You can use this module without using the Neo4j module. 
 
 Example of how to write a document and find it:
+(a document is like a record or row in a relation database).
   
     require 'lucene'
 
@@ -66,6 +67,7 @@ For example if you want the id field to be a fixnum
     # the document contains all stored fields (see below)
     doc[:id]   # => 1     
 
+If the field_info type parameter is not set then it has a default value of String.
 
 === Storage of fields
 By default only the id field will be stored.
@@ -99,6 +101,17 @@ Example
     doc[:id]   # => 1     
     doc[:name] # => 'foo'
 
+=== Setting field infos
+
+As shown above you can set field infos like this
+
+  index.field_infos[:id][:type] = Fixnum    
+
+Or you can set several properties like this:
+
+  index.field_infos[:id] = {:type => Fixnum, :store => true}    
+
+
 === Queries
 
 Lucene.rb support search in several fields:
@@ -120,7 +133,8 @@ It guarantees that an index is not updated from two thread at the same time.
 
 === Lucene Transactions
 
-Use the Lucene::Transaction in order to do atomic commits 
+Use the Lucene::Transaction in order to do atomic commits.
+By using a transaction you do not need to call the Index.commit method.
 
 Example:
 
@@ -134,6 +148,7 @@ Example:
     result.size.should == 0
 
 You can find which documents are uncommited by using the uncommited index property.
+
 Example
 
       index = Index.new('var/index/foo')        
@@ -141,14 +156,6 @@ Example
 
 Notice that even if it looks like a new Index instance object was created the index.uncommited
 may return an not empty array. This is because Index.new is a singleton - a new instance object is not created.
-
-
-=== Lucene::IndexSearcher
-
-Instead of using the Index#find method you can use the Lucene::IndexSearcher.
-(Index#find method simply delegates to the Lucene::IndexSearcher).
-IndexSearcher will cache the index (or actually the lucene IndexReader) in memory 
-and check if it should reload it from disk.
 
 == The Neo4j Module
 
@@ -364,9 +371,8 @@ Example
 
       Person.find(:name => 'foo', :age => 42) # => [node]
 
-The query parameter (like properties on a Neo4j::Node) can be of type String, Fixnum, Float and boolean.
-
-== Implementation details
+The query parameter (like properties on a Neo4j::Node) can be of type String, Fixnum, Float, boolean or Range.
+For more information read about the lucene module above.
 
 === Unmarshalling
 
