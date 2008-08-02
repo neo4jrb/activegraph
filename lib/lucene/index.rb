@@ -11,6 +11,9 @@ require 'lucene/field_infos'
 #
 module Lucene
   
+  #
+  # TODO move this to a class
+  #
   def pad(value)
     case value
     when Fixnum then  sprintf('%011d',value)     # TODO: configurable

@@ -70,20 +70,49 @@ describe Index, '(no uncommited documents)' do
   it "has no uncommited documents" do
     @index.uncommited.size.should == 0
   end
-  
-
 end
 
-describe Index, ".find" do
+
+describe Index, ".find (range)" do
+  before(:each) do
+    delete_all_indexes
+    Index.clear($INDEX_DIR)
+    @index = Index.new($INDEX_DIR)    
+    @index.field_infos[:id][:type] = Fixnum    
+    @index.field_infos[:value][:type] = Fixnum
+    @docs = {}
+   
+    for i in 1..5 do
+      @index << {:id => i, :value=>i}
+      @docs[i] = @index.uncommited[i]
+    end
+    @index.commit
+  end
+
+  it "should find using a inclusive range query" do
+    # when
+    
+    result = @index.find(:value => 2..4)
+
+    #    $LUCENE_LOGGER.level = Logger::WARN
+    
+    # then
+    result.size.should == 3    
+    result.should include(@docs[2], @docs[3], @docs[4])
+  end
+end
+
+describe Index, ".find (exact match)" do
   before(:each) do
     delete_all_indexes
     Index.clear($INDEX_DIR)
     @index = Index.new($INDEX_DIR)    
     @index.field_infos[:name] = FieldInfo.new(:store => true)
-    @index << {:id => "1", :name => 'name1', :value=>1}
-    @index << {:id => "2", :name => 'name2', :value=>2}
-    @index << {:id => "3", :name => 'name3', :value=>3}
+    @index << {:id => "1", :name => 'name1', :value=>1, :group=>'a'}
+    @index << {:id => "2", :name => 'name2', :value=>2, :group=>'a'}
+    @index << {:id => "3", :name => 'name3', :value=>2, :group=>'b'}
     @doc1 = @index.uncommited["1"]
+    @doc2 = @index.uncommited["2"]
     @index.commit
   end
   
@@ -98,9 +127,15 @@ describe Index, ".find" do
     result.size.should == 1
     result.should include(@doc1)
     
-    result = @index.find(:value=>"1")
+    result = @index.find(:value=>1)
     result.size.should == 1
     result.should include(@doc1)
+  end
+
+  it "should find using several fields" do
+    result = @index.find(:value => 2, :group => 'a')
+    result.size.should == 1
+    result.should include(@doc2)
   end
 
   
@@ -240,14 +275,11 @@ describe Index, ".field_infos" do
     # when
     hits = @index.find(:name => 'andreas')
     
-    $LUCENE_LOGGER.level = Logger::DEBUG
-    
     @index.field_infos[:id][:type].should == Fixnum
     # then
     hits.size.should == 1
     hits[0][:id].should == 1
     hits[0][:bar].should == 3.14
     hits[0][:name].should == 'andreas'
-    $LUCENE_LOGGER.level = Logger::WARN
   end
 end

@@ -9,7 +9,7 @@ module Lucene
 
       @props = {}
       props.each_pair do |key,value|
-        @props[key] = field_infos[key].convert_type(value)
+        @props[key] = field_infos[key].convert_to_ruby(value)
         $LUCENE_LOGGER.debug("FieldInfo #{key} type: #{field_infos[key][:type]}")
         $LUCENE_LOGGER.debug{"Converted #{key} '#{value}' type: '#{value.class.to_s}' to '#{@props[key]}' type: '#{@props[key].class.to_s}'"}
       end

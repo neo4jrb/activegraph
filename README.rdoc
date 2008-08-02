@@ -19,31 +19,98 @@ To make this possible it uses two powerful java libraries:
 
 == The Lucene Module
 
-Example of usage:
+You can use this module without using the Neo4j module.
+
+Example of how to write a document and find it:
   
     require 'lucene'
 
     include Lucene
 
-    index = Index.new('var/myindex')    
+    index = Index.new('var/myindex')  # store the index at dir: var/myindex
 
-    doc = Document.new(42)
-    doc << Field.new('name', 'andreas')
+    # add one document (a document is like a record or row in a relation database)
+    index << {:id=>'1', :name=>'foo'}
 
-    index.update(doc)
+    # write to the index file
     index.commit
-    
-    index.find('name' => 'andreas') # => [42]
-    
-    index.delete(42)
-    index.commit
-    index.find('name' => 'andreas') # => []
+
+    # find that document
+    doc = index.find('name' => 'foo') 
+
+    # the document contains all stored fields (see below)
+    doc[:id]   # => '1'    
 
 Notice that you have to call the commit method in order to update the index on the disk.
 By performing several update and delete operations before a commit will be much
 faster then performing commit after each operation. 
 
-You can use this module without using the Neo4j module.
+=== Conversion of types
+
+Lucene.rb can handle type conversion for you.
+For example if you want the id field to be a fixnum
+
+    require 'lucene'
+    include Lucene
+
+    index = Index.new('var/myindex')  # store the index at dir: var/myindex
+    index.field_infos[:id][:type] = Fixnum    
+
+    index << {:id=>1, :name=>'foo'} # notice 1 is not a string now
+
+    index.commit
+
+    # find that document
+    doc = index.find('name' => 'foo') 
+
+    # the document contains all stored fields (see below)
+    doc[:id]   # => 1     
+
+
+=== Storage of fields
+By default only the id field will be stored.
+That means that in the example above the :name field will not be included in the document.
+
+Example
+    doc = index.find('name' => 'foo') 
+    doc[:id]   # => 1     
+    doc[:name] # => nil
+
+Use the field info :store=true if you want a field to be stored in the index
+(otherwise it will only be searchable).
+
+Example
+
+    require 'lucene'
+    include Lucene
+
+    index = Index.new('var/myindex')  # store the index at dir: var/myindex
+    index.field_infos[:id][:type] = Fixnum    
+    index.field_infos[:name][:store] = true # store this field
+
+    index << {:id=>1, :name=>'foo'} # notice 1 is not a string now
+
+    index.commit
+
+    # find that document
+    doc = index.find('name' => 'foo') 
+
+    # the document contains all stored fields (see below)
+    doc[:id]   # => 1     
+    doc[:name] # => 'foo'
+
+=== Queries
+
+Lucene.rb support search in several fields:
+Example
+
+    # finds all document having both name 'foo' and age 42
+    doc = index.find('name' => 'foo', :age=>42)  
+
+Range queries
+
+    # finds all document having both name 'foo' and age between 3 and 30
+    doc = index.find('name' => 'foo', :age=>3..30)  
 
 === Thread-safety
 
@@ -59,9 +126,7 @@ Example:
 
     Transaction.run do |t|
       index = Index.new('var/index/foo')        
-      doc = Document.new(42)
-      doc << Field.new('name', 'andreas')
-      index.update(doc)
+      index << { id=>42, :name=>'andreas'}
       t.failure  # rollback
     end  
     

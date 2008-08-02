@@ -29,13 +29,18 @@ module Lucene
       
       query = BooleanQuery.new
       
-      fields.each_pair do |key,value|  
+      fields.each_pair do |key,value|
+        field = field_infos[key]
         q = if (value.kind_of? Range)
-          first = org.apache.lucene.index.Term.new(key.to_s, pad(value.first))        
-          last = org.apache.lucene.index.Term.new(key.to_s, pad(value.last))        
+          first_value = field.convert_to_lucene(value.first)
+          last_value = field.convert_to_lucene(value.last)
+          first = org.apache.lucene.index.Term.new(key.to_s, first_value)        
+          last = org.apache.lucene.index.Term.new(key.to_s, last_value)        
+          $LUCENE_LOGGER.debug{"Range find key '#{key.to_s}' #{first_value}' to '#{last_value}'"}
           org.apache.lucene.search.RangeQuery.new(first, last, !value.exclude_end?)
         elsif
-          term  = org.apache.lucene.index.Term.new(key.to_s, value.to_s)        
+          converted_value = field.convert_to_lucene(value)
+          term  = org.apache.lucene.index.Term.new(key.to_s, converted_value)        
           TermQuery.new(term) 
         end
         query.add(q, BooleanClause::Occur::MUST)
