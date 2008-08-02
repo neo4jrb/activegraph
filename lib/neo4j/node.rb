@@ -175,7 +175,7 @@ module Neo4j
     #
     def update_index
       $NEO_LOGGER.debug("Index #{neo_node_id}")
-      doc = Lucene::Document.new(neo_node_id)
+      doc = {:id => neo_node_id}
       
       $NEO_LOGGER.debug("FIELDS to index #{self.class.decl_props.inspect}")
       self.class.decl_props.each do |k|
@@ -183,10 +183,10 @@ module Neo4j
         value = get_property(k)
         next if value.nil? # or value.empty?
         $NEO_LOGGER.debug("Add field '#{key}' = '#{value}'")
-        doc << Lucene::Field.new(key, value)
+        doc.merge!({key => value})
       end
 
-      lucene_index.update(doc)
+      lucene_index << doc
     end
 
     
@@ -306,13 +306,14 @@ module Neo4j
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
       def find(query)
-        ids = lucene_index.find(query)
+        hits = lucene_index.find(query)
         #ids = LuceneQuery.find(index_storage_path, query)
         
         # TODO performance, we load all the found entries. Maybe better using Enumeration
         # and load it when needed. Wrap it in a SearchResult
         Transaction.run do
-          ids.collect do |id| 
+          hits.collect do |doc| 
+            id = doc[:id]
             node = Neo4j::Neo.instance.find_node(id.to_i)
             raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
             node

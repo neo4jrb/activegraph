@@ -34,15 +34,13 @@ describe Transaction do
     index = nil
     Transaction.run do
       index = Index.new('var/index/foo')        
-      doc = Document.new(42)
-      doc << Field.new('name', 'andreas')
-      index.update(doc)
+      index << {:id => '1', :name => 'andreas'}
     end  # when it commits&
     
     # then
     result = index.find('name' => 'andreas')
-    result.should include(42)
-    result.size.should == 1
+    result.size.should == 1    
+    result[0][:id].should == '1'
   end
   
   it "should not index docuements when transaction has rolled back" do
@@ -50,16 +48,13 @@ describe Transaction do
     index = nil
     Transaction.run do |t|
       index = Index.new('var/index/foo')        
-      doc = Document.new(42)
-      doc << Field.new('name', 'andreas')
-      index.update(doc)
+      index << {:id => '1', :name => 'andreas'}
       t.failure
-    end  # when it commits&
+    end  # when it commits
     
     # then
     result = index.find('name' => 'andreas')
     result.size.should == 0
-    
   end
   
   
@@ -68,23 +63,22 @@ describe Transaction do
     t1 = Thread.start do 
       Transaction.run do |t|
         index = Index.new('var/index/foo')        
-        doc = Document.new(42)
-        doc << Field.new('name', 'andreas')
-        index.update(doc)
+        index << {:id => '1', :name => 'andreas'}
         sleep(0.1)            
       end  # when it commits&
     end
     
     # then
     index = Index.new('var/index/foo')              
-    result = index.find('name' => 'andreas')
+    result = index.find(:name => 'andreas')
     result.size.should == 0
     t1.join
     
     # t1 has not commited so we should find it
-    result = index.find('name' => 'andreas')
-    result.should include(42)
-    result.size.should == 1
+    result = index.find(:name => 'andreas')
+    result.size.should == 1    
+    result[0][:id].should == '1'
+
   end
   
   it "should update an index from several threads" do
@@ -94,10 +88,9 @@ describe Transaction do
         threads << Thread.start(i,k) do |ii,kk|
           Transaction.run do |t|
             index = Index.new('var/index/foo')        
-            doc = Document.new(ii*10 + kk)
+            id = (ii*10 + kk).to_s
             value = "thread#{ii}#{kk}"
-            doc << Field.new('name', value)
-            index.update(doc)
+            index << {:id => id, :name => value}
           end  # when it commits&
         end
       end
@@ -111,9 +104,9 @@ describe Transaction do
     for i in 1..10 do
       for k in 1..5 do
         value = "thread#{i}#{k}"
-        result = index.find('name' => value)
-        result.should include(i*10 +k)
+        result = index.find(:name => value)
         result.size.should == 1
+        result[0][:id].should == (i*10 +k).to_s
       end
     end
   end

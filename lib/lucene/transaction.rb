@@ -82,7 +82,7 @@ module Lucene
         begin
           yield tx
         rescue => ex
-          tx.rollback!
+          tx.failure
           # TODO reuse of error handling and logging
           $LUCENE_LOGGER.error{"Got exception #{ex}"}      
           ex.backtrace.each {|t| $LUCENE_LOGGER.error(t)}
