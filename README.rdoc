@@ -343,7 +343,8 @@ You can also run it without a block, like this:
 
 === Indexing
 
-If you want you can also declare those properties, like the attr_accessor
+If you want you can also declare properties to be indexed.
+Use the properties class method, example:
 
   class SomeNode
      include Neo4j::Node
