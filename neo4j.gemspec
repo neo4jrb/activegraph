@@ -1,5 +1,5 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Sat Aug 02 22:07:41 +0200 2008
+# LAST UPDATED : Sun Aug 03 09:07:14 +0200 2008
 #
 # RUN : 'rake gem:update_gemspec'
 
@@ -45,15 +45,15 @@ Gem::Specification.new do |s|
  "test/neo4j/node_lucene_spec.rb",
  "test/neo4j/node_spec.rb",
  "test/neo4j/relation_spec.rb"]
- s.rubygems_version = "1.1.0"
+ s.rubygems_version = "1.2.0"
  s.platform = "ruby"
- s.date = "Sat Aug 02 00:00:00 +0200 2008"
+ s.date = "Sun Aug 03 00:00:00 +0200 2008"
  s.homepage = "http://github.com/andreasronge/neo4j/tree"
  s.bindir = "bin"
  s.summary = "A Network Database for JRuby"
  s.rdoc_options = ["--quiet", "--title", "neo4j and lucene documentation", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  s.specification_version = "2"
- s.version = "0.0.1"
+ s.version = "0.0.2"
  s.required_rubygems_version = ">= 0"
  s.require_paths = ["lib"]
  s.required_ruby_version = ">= 1.8.4"
