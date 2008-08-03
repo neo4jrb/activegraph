@@ -16,6 +16,15 @@ To make this possible it uses two powerful java libraries:
 * Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
+== Installation
+
+Neo4j exists as a gem at http://gems.github.com/list.html.
+To install it please type:
+
+   gem sources -a http://gems.github.com 
+   sudo gem install andreasronge-neo4j
+
+The gem sources command only needs to be executed once.
 
 == The Lucene Module
 
