@@ -1,6 +1,6 @@
 = Neo4j
 
-Neo4j is a network database framework for JRuby.
+Neo4j is a graph database framework for JRuby.
  
 It provides:
 * Mapping of ruby objects to nodes in networks rather than in tables. 
@@ -55,9 +55,19 @@ Notice that you have to call the commit method in order to update the index on t
 By performing several update and delete operations before a commit will be much
 faster then performing commit after each operation. 
 
+=== Id field
+
+All Documents must have one id field. If one is not specified it is :id of type String.
+A different id can be specified in the second parameter in the Index constructor.
+
+  Index.new('some/path/to/the/index', :my_id)
+
+To change the type of the my_id from String to a different type see below.
+
 === Conversion of types
 
-Lucene.rb can handle type conversion for you.
+Lucene.rb can handle type conversion for you. (The java lucene library stores all
+the fields as Strings)
 For example if you want the id field to be a fixnum
 
     require 'lucene'

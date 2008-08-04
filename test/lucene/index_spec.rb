@@ -80,26 +80,43 @@ describe Index, ".find (range)" do
     @index = Index.new($INDEX_DIR)    
     @index.field_infos[:id][:type] = Fixnum    
     @index.field_infos[:value][:type] = Fixnum
+  end
+
+  it "should find docs using a inclusive range query" do
+    # given
     @docs = {}
-   
     for i in 1..5 do
       @index << {:id => i, :value=>i}
       @docs[i] = @index.uncommited[i]
     end
     @index.commit
-  end
 
-  it "should find using a inclusive range query" do
     # when
-    
     result = @index.find(:value => 2..4)
-
-    #    $LUCENE_LOGGER.level = Logger::WARN
     
     # then
     result.size.should == 3    
     result.should include(@docs[2], @docs[3], @docs[4])
   end
+  
+  it "should find docs using an inclusive range query with padding 0's" do
+    # given
+    @index << {:id => 3, :value=>3}
+    @index << {:id => 30, :value=>30}
+    @index << {:id => 32, :value=>32}
+    @index << {:id => 100, :value=>100}
+    doc30 = @index.uncommited[30]
+    doc32 = @index.uncommited[32]
+    @index.commit
+
+    # when
+    result = @index.find(:value => 30..35)
+    
+    # then
+    result.size.should == 2    
+    result.should include(doc30, doc32)
+  end
+  
 end
 
 describe Index, ".find (exact match)" do
@@ -133,7 +150,12 @@ describe Index, ".find (exact match)" do
     result.should include(@doc1)
   end
 
+  it "should find nothing if it does not exist" do
+    result = @index.find(:name=>"name")
+    result.should be_empty
+  end
 
+  
   it "should find several documents having the same property" do
     result = @index.find(:value => 2)
     result.size.should == 2
@@ -211,6 +233,22 @@ describe Index, ".id_field" do
     
     # when then
     index.uncommited['123'][:name].should == 'foo'
+  end
+
+  it "can be used to delete documents"  do
+    # given
+    index = Index.new($INDEX_DIR, :my_id)    
+    index.field_infos[:my_id][:type] = Fixnum
+    index << {:my_id => 123, :name=>"foo"}
+    index.commit
+    index.find(:name=>'foo').should_not be_empty
+    
+    # when delete it
+    index.delete(123)
+    index.commit
+    
+    # then
+    index.find(:name=>'foo').should be_empty
   end
   
   it "must be included in all documents" do
@@ -291,3 +329,110 @@ describe Index, ".field_infos" do
     hits[0][:name].should == 'andreas'
   end
 end
+
+describe Index, " when updating a document" do
+  before(:each) do
+    delete_all_indexes
+    @index = Index.new($INDEX_DIR)  
+    @index.clear    
+  end
+  
+  it "should not find the old field if the field has been changed" do
+    # given
+    @index << {:id => 'a', :name=>'andreas'}
+    @index.commit
+    @index.find(:name => 'andreas').should_not be_empty
+    
+    # when it change
+    @index << {:id => 'a', :name=>'foo'}
+    @index.commit
+    
+    # then it can not be found
+    @index.find(:name => 'andreas').should be_empty
+  end
+
+  it "should not find a deleted document" do
+    # given
+    @index << {:id => 'a', :name=>'andreas'}
+    @index.commit
+    @index.find(:name => 'andreas').should_not be_empty
+    
+    # when it is deleted
+    @index.delete('a')
+    @index.commit
+    
+    # then it can not be found
+    @index.find(:name => 'andreas').should be_empty
+  end
+
+end
+
+#
+#  it "should flag that a document is deleted before a it is commited" do
+#    # given a document exists
+#    doc = Document.new("42")
+#    doc << Field.new('name', 'andreas')
+#    @index.update(doc)
+#    @index.commit
+#    
+#    # when delete it
+#    @index.delete("42")
+#    
+#    # then it should know it has been marked as deleted
+#    @index.should be_deleted("42")
+#  end
+#  
+#  it "should flag that a document is not any longer deleted after it has been deleted and commit" do
+#    # given a document exists
+#    doc = Document.new("42")
+#    doc << Field.new('name', 'andreas')
+#    @index.update(doc)
+#    @index.commit
+#    
+#    # when delete it and commit it
+#    @index.delete("42")
+#    @index.commit
+#    
+#    # then it should not be marked as deleted any more
+#    @index.should_not be_deleted("42")
+#  end
+#  
+#  it "should not find documents that has been deleted before commited" do
+#    # given
+#    doc = Document.new("42")
+#    doc << Field.new('name', 'andreas')
+#    @index.update(doc)
+#    @index.delete("42")
+#    @index.commit
+#    
+#    # when
+#    result = @index.find('name' => 'andreas')
+#    
+#    # then
+#    result.size.should == 0
+#  end
+#  
+#  it "should raise an exception when updating a deleted document" do
+#    # given
+#    doc = Document.new("42")
+#    doc << Field.new('name', 'andreas')
+#    lambda {
+#      @index.delete("42")
+#      @index.update(doc)
+#    }.should raise_error
+#  end
+#
+#  it "should allow to delete and update an document in two transactions" do
+#    # given
+#    doc = Document.new("42")
+#    doc << Field.new('name', 'andreas')
+#    lambda {
+#      @index.delete("42")
+#      @index.commit
+#      @index.update(doc)
+#      @index.commit
+#    }.should_not raise_error
+#  end
+#  
+#end
+

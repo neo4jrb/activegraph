@@ -1,4 +1,10 @@
 module Lucene
+  
+  #
+  # A document is like a record or row in a relation database.
+  # Contains the field infos which can be used for type conversions or
+  # specifying if the field should be stored or only searchable.
+  # 
   class Document
     
     attr_reader :id_field, :field_infos  

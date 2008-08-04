@@ -11,20 +11,6 @@ require 'lucene/field_infos'
 #
 module Lucene
   
-  #
-  # TODO move this to a class
-  #
-  def pad(value)
-    case value
-    when Fixnum then  sprintf('%011d',value)     # TODO: configurable
-    when Float  then  sprintf('%024.12f', value)  # TODO: configurable
-    when Bignum then  sprintf('%024d, value')
-    else value.to_s
-    end
-  end
-    
-    
-  
   class DocumentDeletedException < StandardError; end
   class IdFieldMissingException < StandardError; end
   
@@ -118,9 +104,8 @@ module Lucene
     
     #
     # Delete the specified document.
-    # Precondition: a Lucene::Transaction must be running.
     # The index file not be updated until the transaction commits.
-    # The doc is stored in memory till the transaction commits.
+    # The id of the deleted document is stored in memory till the transaction commits.
     #
     def delete(id)
       @deleted_ids << id.to_s
@@ -228,8 +213,11 @@ module Lucene
       return unless exist? # if no index exists then there is nothing to do
       
       writer = IndexWriter.new(@path, StandardAnalyzer.new, false)
+      id_field = @field_infos[@field_infos.id_field]
+      
       @deleted_ids.each do |id|
-        writer.deleteDocuments(Term.new("id", id.to_s))
+        converted_value = id_field.convert_to_lucene(id)        
+        writer.deleteDocuments(Term.new(@field_infos.id_field.to_s, converted_value))
       end
     ensure
       # TODO exception handling, what if ...

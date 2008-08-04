@@ -1,6 +1,11 @@
 require 'lucene/field_info'
 
 module Lucene
+  
+  #
+  # A collection of FieldInfo objects. Also contains the name of the id field.
+  # Fields has default value FieldInfos::DEFAULTS.
+  # 
   class FieldInfos 
     DEFAULTS = FieldInfo.new({}).freeze
     
