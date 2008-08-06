@@ -45,11 +45,13 @@ Example of how to write a document and find it:
     # write to the index file
     index.commit
 
-    # find that document
-    doc = index.find('name' => 'foo') 
+    # find a document with name foo
+    # hits is a ruby Enumeration of documents
+    hits = index.find('name' => 'foo') 
 
-    # the document contains all stored fields (see below)
-    doc[:id]   # => '1'    
+    # show the id of the first document (document 0) found
+    # (the document contains all stored fields - see below)
+    hits[0][:id]   # => '1'    
 
 Notice that you have to call the commit method in order to update the index on the disk.
 By performing several update and delete operations before a commit will be much
@@ -80,11 +82,12 @@ For example if you want the id field to be a fixnum
 
     index.commit
 
-    # find that document
-    doc = index.find('name' => 'foo') 
+    # find that document, hits is a ruby Enumeration of documents
+    hits = index.find(:name => 'foo') 
 
-    # the document contains all stored fields (see below)
-    doc[:id]   # => 1     
+    # show the id of the first document (document 0) found
+    # (the document contains all stored fields - see below)
+    doc[0][:id]   # => 1     
 
 If the field_info type parameter is not set then it has a default value of String.
 
@@ -113,12 +116,13 @@ Example
 
     index.commit
 
-    # find that document
-    doc = index.find('name' => 'foo') 
+    # find that document, hits is a ruby Enumeration of documents
+    hits = index.find('name' => 'foo') 
 
-    # the document contains all stored fields (see below)
-    doc[:id]   # => 1     
-    doc[:name] # => 'foo'
+    # let say hits only contains one document so we can use doc[0] for that one
+    # that document contains all stored fields (see below)
+    doc[0][:id]   # => 1     
+    doc[0][:name] # => 'foo'
 
 === Setting field infos
 
@@ -131,18 +135,27 @@ Or you can set several properties like this:
   index.field_infos[:id] = {:type => Fixnum, :store => true}    
 
 
-=== Queries
+=== Simple Queries
 
 Lucene.rb support search in several fields:
 Example
 
     # finds all document having both name 'foo' and age 42
-    doc = index.find('name' => 'foo', :age=>42)  
+    hits = index.find('name' => 'foo', :age=>42)  
 
 Range queries
 
     # finds all document having both name 'foo' and age between 3 and 30
-    doc = index.find('name' => 'foo', :age=>3..30)  
+    hits = index.find('name' => 'foo', :age=>3..30)  
+
+=== Advanced Queries (DSL)
+
+The queries above can also be written in a lucene.rb DSL:
+
+    hits = index.find { (name == 'andreas') & (foo == 'bar')}
+
+(not fully implemented yet, but the example above works).
+
 
 === Thread-safety
 

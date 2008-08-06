@@ -157,10 +157,16 @@ module Lucene
     #
     # Delegetes to the IndexSearcher.find method
     #
-    def find(query)
+    def find(query=nil, &block)
       # new method is a factory method, does not create if it already exists
       searcher = IndexSearcher.new(@path)
-      searcher.find(query, @field_infos)
+      
+      puts "NIL !" if block.nil?
+      if block.nil?
+        return searcher.find(@field_infos, query) 
+      else
+        return searcher.find_dsl(@field_infos, &block) 
+      end
     end
     
     

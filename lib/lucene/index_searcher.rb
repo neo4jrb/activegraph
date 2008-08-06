@@ -22,7 +22,15 @@ module Lucene
       @@paths[path]
     end
 
-    def find(fields, field_infos)
+    def find_dsl(field_infos,&block)
+      exp = QueryDSL.parse(&block)  
+      query = exp.to_lucene(field_infos)
+      
+      Hits.new(field_infos, index_searcher.search(query))      
+    end
+    
+    
+    def find(field_infos, fields)
       # are there any index for this node ?
       # if not return an empty array
       return [] unless exist?
