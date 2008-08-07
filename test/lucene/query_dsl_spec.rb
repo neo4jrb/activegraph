@@ -38,6 +38,17 @@ describe Lucene::QueryDSL, 'used from Index.find' do
     hits.should include(@doc1, @doc2)
   end
 
+  it "should find a document using a compound | expression" do
+    hits = @index.find { (name == 'andreas') | (name == 'x')}
+    hits.size.should == 3
+    hits.should include(@doc1, @doc2, @doc3)
+    
+    hits = @index.find { (name == 'andreasx') | (name == 'x')}
+    hits.size.should == 1
+    hits.should include(@doc3)
+    
+  end
+
   it "should find with Range" do
     hits = @index.find { value == 2..9 }
     hits.size.should == 2
@@ -51,7 +62,7 @@ describe Lucene::QueryDSL, 'used from Index.find' do
   end
 
   
-  it "should find a simple dsl query" do
+  it "should find with a compound & expression" do
     hits = @index.find { (name == 'andreas') & (foo == 'bar')}
     
     hits.size.should == 1
@@ -64,6 +75,17 @@ describe Lucene::QueryDSL do
 
   it "should parse & expressions" do
     expr = Lucene::QueryDSL.parse{ (name == 'andreas') & (age == 30)}
+    expr.op.should == :&
+    expr.left.left.should == :name
+    expr.left.right.should == 'andreas'
+    
+    expr.right.left.should == :age
+    expr.right.right.should == 30
+  end
+
+  it "should parse | expressions" do
+    expr = Lucene::QueryDSL.parse{ (name == 'andreas') | (age == 30)}
+    expr.op.should == :|
     expr.left.left.should == :name
     expr.left.right.should == 'andreas'
     
@@ -73,9 +95,6 @@ describe Lucene::QueryDSL do
 
   it "should parse range expressions" do
     expr = Lucene::QueryDSL.parse{ name == 1..3}
-    puts "TYPE !!! " + expr.left.to_s
-    puts "TYPE !!! " + expr.left.class.to_s
-    puts "TYPE !!! " + expr.right.class.to_s
     
     expr.left.should == :name
     expr.right.should be_kind_of(Range)

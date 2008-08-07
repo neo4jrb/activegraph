@@ -154,8 +154,10 @@ The queries above can also be written in a lucene.rb DSL:
 
     hits = index.find { (name == 'andreas') & (foo == 'bar')}
 
-(not fully implemented yet, but the example above works).
+Expression with OR (|) is supported, example
 
+   # find all documents with name 'andreas' or age between 30 and 40
+    hits = index.find { (name == 'andreas') | (age == 30..40)}
 
 === Thread-safety
 

@@ -24,14 +24,12 @@ module Lucene
     end
   
     def ==(other)
-      puts "== '#{other}' type: #{other.class.to_s}"
       @op = :==
         @right = other
       @query
     end
   
     def >(other)
-      puts "> '#{other}'"
       @op = :>
         @right = other
       @query
@@ -46,8 +44,9 @@ module Lucene
         raise ArgumentError.new("Right term is not an Expression, but a '#{@right.class.to_s}'") unless @right.kind_of? Lucene::Expression
         right_query = @right.to_lucene(field_infos)
         query = BooleanQuery.new
-        query.add(left_query, BooleanClause::Occur::MUST)
-        query.add(right_query, BooleanClause::Occur::MUST)
+        clause = (@op == :&) ? BooleanClause::Occur::MUST : BooleanClause::Occur::SHOULD
+        query.add(left_query, clause)
+        query.add(right_query, clause)
         return query
       else
         field_info = field_infos[@left]
@@ -70,8 +69,6 @@ module Lucene
     
     def self.find(field_infos = FieldInfos.new(:id), &expr) 
       exp = QueryDSL.parse(&expr)
-      
-      
       exp.to_lucene(field_infos)
     end
       
@@ -84,7 +81,6 @@ module Lucene
     end
     
     def method_missing(methodname, *args)
-      puts "called '#{methodname}'"
       expr = Expression.new_uncomplete(methodname, self)
       @stack.push expr
       expr
@@ -95,8 +91,6 @@ module Lucene
     end
     
     def <=>(to)
-      puts "<=> #{to} type #{to.class.to_s}"
-      puts "Stack top #{@stack.last}"
       from = @stack.last.right
       @stack.last.right = Range.new(from, to)
       @stack.last
@@ -109,7 +103,15 @@ module Lucene
       left = @stack.pop
       expr = Expression.new_complete(left, :&, right)
       @stack.push expr
-      puts "& '#{other}'"
+      self
+    end
+
+    def |(other)
+      raise ArgumentError.new("Expected at least two expression on stack, got #{@stack.size}") if @stack.size < 2
+      right = @stack.pop
+      left = @stack.pop
+      expr = Expression.new_complete(left, :|, right)
+      @stack.push expr
       self
     end
 
