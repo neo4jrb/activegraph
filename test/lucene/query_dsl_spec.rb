@@ -21,23 +21,41 @@ describe Lucene::QueryDSL, 'used from Index.find' do
     delete_all_indexes
     @index = Index.new($INDEX_DIR)    
     @index.clear
-    @index << {:id => '42', :name => 'andreas', :foo => 'bar'}
-    @doc = @index.uncommited['42']
+    @index.field_infos[:value][:type] = Fixnum
+    @index << {:id => '42', :name => 'andreas', :foo => 'bar', :value => 1}
+    @index << {:id => '43', :name => 'andreas', :foo => 'baaz', :value => 2}    
+    @index << {:id => '44', :name => 'x', :foo => 'bar', :value => 3}        
+    @doc1 = @index.uncommited['42']
+    @doc2 = @index.uncommited['43']
+    @doc3 = @index.uncommited['44']
     @index.commit
   end
 
-  it "should find a simple dsl query" do
+  it "should find a document using a simple dsl query" do
     hits = @index.find { name == 'andreas'}
     
-    hits.size.should == 1
-    hits.should include(@doc)
+    hits.size.should == 2
+    hits.should include(@doc1, @doc2)
   end
+
+  it "should find with Range" do
+    hits = @index.find { value == 2..9 }
+    hits.size.should == 2
+    hits.should include(@doc2, @doc3)
+  end
+
+  it "should find with Range in a compound expression " do
+    hits = @index.find { (name == 'andreas') & (value == 2..9) }
+    hits.size.should == 1
+    hits.should include(@doc2)
+  end
+
   
   it "should find a simple dsl query" do
     hits = @index.find { (name == 'andreas') & (foo == 'bar')}
     
     hits.size.should == 1
-    hits.should include(@doc)
+    hits.should include(@doc1)
   end
   
 end
@@ -45,12 +63,24 @@ end
 describe Lucene::QueryDSL do
 
   it "should parse & expressions" do
-    expr = Lucene::QueryDSL.parse{ (name == 'andreas') & (age == [30..40])}
+    expr = Lucene::QueryDSL.parse{ (name == 'andreas') & (age == 30)}
     expr.left.left.should == :name
     expr.left.right.should == 'andreas'
     
     expr.right.left.should == :age
-    expr.right.right.should == [30..40]
+    expr.right.right.should == 30
+  end
+
+  it "should parse range expressions" do
+    expr = Lucene::QueryDSL.parse{ name == 1..3}
+    puts "TYPE !!! " + expr.left.to_s
+    puts "TYPE !!! " + expr.left.class.to_s
+    puts "TYPE !!! " + expr.right.class.to_s
+    
+    expr.left.should == :name
+    expr.right.should be_kind_of(Range)
+    expr.right.first.should == 1
+    expr.right.last.should == 3
   end
   
   it "should generate a lucene query" do
@@ -80,10 +110,6 @@ describe Lucene::QueryDSL do
     term1 = clauses[1].getQuery.getTerm
     term1.field.should == 'age'
     term1.text.should == '1'
-  end
-  
-  it "should handle range" do
-    pending "need to refactor and reuse index_searcher.rb"
   end
   
 end

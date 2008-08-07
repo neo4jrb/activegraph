@@ -24,7 +24,7 @@ module Lucene
     end
   
     def ==(other)
-      puts "== '#{other}'"
+      puts "== '#{other}' type: #{other.class.to_s}"
       @op = :==
         @right = other
       @query
@@ -39,10 +39,9 @@ module Lucene
   
     
     def to_lucene(field_infos)
-      puts "TO Lucene '#{to_s}' #{@left.kind_of? Lucene::Expression}"
+      $LUCENE_LOGGER.debug{"QueryDSL.to_lucene '#{to_s}'"}
       
       if @left.kind_of? Lucene::Expression
-        puts "Expressions #{@left} #{@right}"
         left_query = @left.to_lucene(field_infos)
         raise ArgumentError.new("Right term is not an Expression, but a '#{@right.class.to_s}'") unless @right.kind_of? Lucene::Expression
         right_query = @right.to_lucene(field_infos)
@@ -51,14 +50,8 @@ module Lucene
         query.add(right_query, BooleanClause::Occur::MUST)
         return query
       else
-        key = @left
-        value = @right
-#        puts "Simple Term #{key} #{value}: type #{@left.class.to_s} #{@right.class.to_s}"
-        field_info = field_infos[key]
-        raise ArgumentError.new("Unknown field '#{key}'") if field_info.nil?
-        converted_value = field_info.convert_to_lucene(value)
-        term  = org.apache.lucene.index.Term.new(key.to_s, converted_value)        
-        return TermQuery.new(term) 
+        field_info = field_infos[@left]
+        field_info.convert_to_query(@left, @right)
       end
     end
 
@@ -85,8 +78,9 @@ module Lucene
     
   
     def self.parse(&query)
-      e = QueryDSL.new.instance_eval(&query)
-      e.stack.last
+      query_dsl = QueryDSL.new
+      query_dsl.instance_eval(&query)
+      query_dsl.stack.last
     end
     
     def method_missing(methodname, *args)
@@ -98,6 +92,14 @@ module Lucene
   
     def ==(other)
       puts "WRONG == '#{other}'"
+    end
+    
+    def <=>(to)
+      puts "<=> #{to} type #{to.class.to_s}"
+      puts "Stack top #{@stack.last}"
+      from = @stack.last.right
+      @stack.last.right = Range.new(from, to)
+      @stack.last
     end
   
   

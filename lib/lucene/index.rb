@@ -161,7 +161,6 @@ module Lucene
       # new method is a factory method, does not create if it already exists
       searcher = IndexSearcher.new(@path)
       
-      puts "NIL !" if block.nil?
       if block.nil?
         return searcher.find(@field_infos, query) 
       else
