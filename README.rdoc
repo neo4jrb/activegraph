@@ -9,7 +9,7 @@ It provides:
 * Transaction with rollbacks support. 
 * Indexing and quering of ruby objects.
 
-Neo4j consist of two modules: Neo4j and Lucene.
+Neo4j consists of two modules: Neo4j and Lucene.
 Neo4j depends on the Lucene module.
 
 It uses two powerful java libraries: 
