@@ -9,10 +9,10 @@ It provides:
 * Transaction with rollbacks support. 
 * Indexing and quering of ruby objects.
 
-Neo4j.rb consist of two modules: Neo4j and Lucene.
+Neo4j consist of two modules: Neo4j and Lucene.
 Neo4j depends on the Lucene module.
 
-To make this possible it uses two powerful java libraries: 
+It uses two powerful java libraries: 
 * Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
@@ -47,7 +47,7 @@ Example of how to write a document and find it:
 
     # find a document with name foo
     # hits is a ruby Enumeration of documents
-    hits = index.find('name' => 'foo') 
+    hits = index.find{name == 'foo'}
 
     # show the id of the first document (document 0) found
     # (the document contains all stored fields - see below)
@@ -407,7 +407,11 @@ Example
       Person.find(:name => 'foo', :age => 42) # => [node]
 
 The query parameter (like properties on a Neo4j::Node) can be of type String, Fixnum, Float, boolean or Range.
-For more information read about the lucene module above.
+The query above can also be written in a lucene query DSL:
+
+      Person.find{(name =='foo') & (age => 42)} # => [node]
+
+For more information see the lucene module above.
 
 === Unmarshalling
 

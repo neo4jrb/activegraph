@@ -304,9 +304,14 @@ module Neo4j
       # 
       # == Example
       #   MyNode.find(:name => 'foo', :company => 'bar')
+      #   
+      # Or using a DSL query
+      #   MyNode.find{(name == 'foo') & (company == 'bar')}
+      #   
+      # See the lucene module for more information how to do a query.
       #
-      def find(query)
-        hits = lucene_index.find(query)
+      def find(query=nil, &block)
+        hits = lucene_index.find(query, &block)
         #ids = LuceneQuery.find(index_storage_path, query)
         
         # TODO performance, we load all the found entries. Maybe better using Enumeration

@@ -1,4 +1,5 @@
 require 'lucene/jars'
+require 'lucene/query_dsl'
 
 module Lucene
   

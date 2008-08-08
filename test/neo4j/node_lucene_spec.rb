@@ -128,4 +128,10 @@ describe "Find Nodes using Lucene" do
     found.size.should == 2
   end
     
+  
+  it "should find using a DSL query" do
+    found = TestNode.find{(age == 0) && (name == 'foo0')}
+    found.should include(@foos[0])
+    found.size.should == 1
+  end
 end
