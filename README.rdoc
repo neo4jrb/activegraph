@@ -325,6 +325,17 @@ For example:
 
   n2.relations.incoming.nodes # => [n1]
 
+=== Finding outgoing/incomming nodes of a specific relationship type
+
+Let say we want to find who has my phone number and who consider me as a friend
+
+  # who has my phone numbers
+  me.relations.incomming(:phone_numbers).nodes # => people with my phone numbers
+
+  # who consider me as a friend
+  me.relations.incomming(:friend).nodes # => people with a friend relationship to me
+
+Remember that relationships are not symmetrical.
 
 === Transactions
 
@@ -425,66 +436,4 @@ It does this by reading the classname property and loading that ruby class with 
   f1 == f2 # => true
 
   
-
-= TODO not implemented yet =
-
-TODO: the above just goes one level deep in the graph, we should support of any level of traversal
-The following example is not implemented yet:
-
-  f.friends{ age > 30}.friends{ name == 'foo'}.each { |n| puts n}
-
-Find all person with more then 5 friends or having the same name
-
-  Person.find{ age > 30 & company == 'foo AB' }
-
-  Company.person{age > 30}
-
-  class Person
-    include Neo4j::Node
-    relations_from Company, :company
-    
-    def initialize
-        Company.people << self
-    end
-
-    def company
-      relations.incomming[:company]
-    end
-
-    def self.find
-        RootNode.company.people.each
-    end
-  end
-
-parent
-  class RootNode
-    relations_to Company
-
-  end
-
-  class Company
-
-
-     def self.find
-         RootNode.instance.company.each {}
-     end
-     
-     relations_to Person, :people
-  end
-
-  Person.find
-  Person.company
-
-  Company.find
-
-  class Person
-     refs Persons
-  end
-    # create a new person
-    Person.new 
-
-  RootNode
-  Company.new
-  Person.find{ (friends.size > 5) | (name == friends.name) }
-
 

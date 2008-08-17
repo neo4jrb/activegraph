@@ -251,9 +251,18 @@ describe "When running in one transaction" do
 
       # then
       t1.friends.to_a.should include(t2)
-      t2.friends.to_a.should_not include(t1)      
     end
 
+    it "is none symmetric (if a is friend to b then b does not have to be friend to a)" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t1.friends << t2
+
+      # then
+      t1.friends.to_a.should include(t2)
+      t2.friends.to_a.should_not include(t1)      
+    end
+    
     it "should allow to add several relationships" do
       # given
       t1 = TestNode.new
@@ -341,6 +350,19 @@ describe "When running in one transaction" do
       t2.relations.incoming.nodes.to_a.should include(t1)      
       t3.relations.incoming.nodes.to_a.should include(t1)      
       t1.relations.nodes.to_a.size.should == 2
+    end
+    
+    it "should find incomming nodes of a specific type" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+            
+      t1.friends << t2
+      t1.friends << t3
+      
+      t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
+      t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
+      t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
     end
   end
 

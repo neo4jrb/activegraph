@@ -13,3 +13,20 @@ $NEO_LOGGER = Logger.new(STDOUT)
 $NEO_LOGGER.level = Logger::WARN
 #$NEO_LOGGER.level = Logger::INFO
 #$NEO_LOGGER.level = Logger::DEBUG
+
+#
+#     module Baaz
+#       class Customer
+#         
+#       end
+#       
+#       class Purchase
+#         
+#       end
+#      class CustomerPurchaseRelation
+#        include Neo4j::Relation
+#      end
+#     end
+#
+#    c = Baaz::Customer.new
+#    c.bar

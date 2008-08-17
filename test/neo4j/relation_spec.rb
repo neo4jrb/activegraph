@@ -68,12 +68,13 @@ describe "When running in one transaction" do
     end
     
     it "should allow traverse any depth" do
+      pending "depth parameter on traversal should be configurable"
+      
       @t1.friends.friends.to_a.should include(@t21, @t22)
       # hmm, not natural that it will include the friends as well and not only friends to friends
       @t1.friends.friends.to_a.size.should == 3 
     end
     
   end  
-  
   
 end
