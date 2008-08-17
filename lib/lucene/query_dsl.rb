@@ -35,6 +35,20 @@ module Lucene
       @query
     end
   
+    #
+    # Returns the fields being used in a query
+    #
+    def _fields(fields = [])
+      if (@left.kind_of? Expression)
+        @left._fields(fields)
+      else
+        fields << @left
+      end
+      if (@right.kind_of? Expression)
+        @right._fields(fields)
+      end     
+      fields
+    end
     
     def to_lucene(field_infos)
       $LUCENE_LOGGER.debug{"QueryDSL.to_lucene '#{to_s}'"}

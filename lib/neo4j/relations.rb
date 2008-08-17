@@ -127,21 +127,35 @@ module Neo4j
     include Enumerable
     
     
-    def initialize(node, type, other_node_class = nil)
+    # TODO other_node_class not used ?
+    def initialize(node, type, other_node_class = nil, &filter)
       @node = node
       @type = RelationshipType.instance(type)      
       @other_node_class = other_node_class
+      @filter = filter
+      @depth = 1
+    end
+    
+    def friends
+      @depth += 1
+      self
     end
     
     def each
+      stop = DepthStopEvaluator.new(@depth)
       traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST, 
-        StopEvaluator::DEPTH_ONE,
+        stop, #StopEvaluator::DEPTH_ONE,
         ReturnableEvaluator::ALL_BUT_START_NODE,
         @type,
         Direction::OUTGOING)
       iter = traverser.iterator
       while (iter.hasNext) do
-        yield Neo4j::Neo.instance.load_node(iter.next)
+        node = Neo4j::Neo.instance.load_node(iter.next)
+        if !@filter.nil?
+          res =  node.instance_eval(&@filter)
+          next unless res
+        end
+        yield node
       end
     end
       
@@ -209,4 +223,27 @@ module Neo4j
     end
     
   end
+  
+  class DepthStopEvaluator
+    include StopEvaluator
+    
+    def initialize(depth)
+      @depth = depth
+    end
+    
+    def isStopNode(pos)
+      pos.depth >= @depth
+    end
+  end
+#  /**
+#64	         * Traverses to depth 1.
+#65	         */
+#66	        public static final StopEvaluator DEPTH_ONE = new StopEvaluator()
+#67	        {
+#68	                public boolean isStopNode( TraversalPosition currentPosition )
+#69	                {
+#70	                        return currentPosition.depth() >= 1;
+#71	                }
+#72	        };
+  
 end

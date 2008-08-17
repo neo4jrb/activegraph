@@ -111,6 +111,14 @@ describe Lucene::QueryDSL do
     term.field.should == 'name'
     term.text.should == 'andreas'
   end
+  
+  it "should know which fields are being used in a query" do
+    expr = Lucene::QueryDSL.parse{ name == 'andreas' }
+    expr._fields.should == [:name]
+    
+    expr = Lucene::QueryDSL.parse{ (name == 'andreas') | (age == 1) }
+    expr._fields.should == [:name, :age]
+  end
 
   
   it "should generate a lucene query" do

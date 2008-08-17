@@ -47,11 +47,11 @@ Example of how to write a document and find it:
 
     # find a document with name foo
     # hits is a ruby Enumeration of documents
-    hits = index.find{name == 'foo'}
+    docs = index.find{name == 'foo'}
 
     # show the id of the first document (document 0) found
     # (the document contains all stored fields - see below)
-    hits[0][:id]   # => '1'    
+    docs[0][:id]   # => '1'    
 
 Notice that you have to call the commit method in order to update the index on the disk.
 By performing several update and delete operations before a commit will be much
@@ -285,10 +285,6 @@ You can traverse all Person's friend by doing:
 
   f.friends.each { |n| puts n }
 
-(TODO this just goes one level deep in the graph, we should support of any level of traversal)
-
-
-
 === Finding Relationships
 
 Given we have the two nodes with a relationship between them:
@@ -337,7 +333,7 @@ Luckly neo4j.rb will automatically create a transaction for those operation that
 
 For example all get, set and find operations will start a new transaction if none is already not runnig (for that thread).
 
-If you want to perfrom a set of operation in a single transaction, use the Neo4j::Transaction.run method:
+If you want to perform a set of operation in a single transaction, use the Neo4j::Transaction.run method:
 
 Example
 
@@ -345,11 +341,6 @@ Example
     node1.foo = "value"
     node2.bar = "hi"
   }
-
-
-==== Transactions and JTA
-
-TODO, will soon support two phase commit transactions, (using Java JTA api)
 
 
 ==== Rollback
@@ -434,3 +425,66 @@ It does this by reading the classname property and loading that ruby class with 
   f1 == f2 # => true
 
   
+
+= TODO not implemented yet =
+
+TODO: the above just goes one level deep in the graph, we should support of any level of traversal
+The following example is not implemented yet:
+
+  f.friends{ age > 30}.friends{ name == 'foo'}.each { |n| puts n}
+
+Find all person with more then 5 friends or having the same name
+
+  Person.find{ age > 30 & company == 'foo AB' }
+
+  Company.person{age > 30}
+
+  class Person
+    include Neo4j::Node
+    relations_from Company, :company
+    
+    def initialize
+        Company.people << self
+    end
+
+    def company
+      relations.incomming[:company]
+    end
+
+    def self.find
+        RootNode.company.people.each
+    end
+  end
+
+parent
+  class RootNode
+    relations_to Company
+
+  end
+
+  class Company
+
+
+     def self.find
+         RootNode.instance.company.each {}
+     end
+     
+     relations_to Person, :people
+  end
+
+  Person.find
+  Person.company
+
+  Company.find
+
+  class Person
+     refs Persons
+  end
+    # create a new person
+    Person.new 
+
+  RootNode
+  Company.new
+  Person.find{ (friends.size > 5) | (name == friends.name) }
+
+
