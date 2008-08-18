@@ -14,19 +14,27 @@ $NEO_LOGGER.level = Logger::WARN
 #$NEO_LOGGER.level = Logger::INFO
 #$NEO_LOGGER.level = Logger::DEBUG
 
-#
-#     module Baaz
-#       class Customer
-#         
-#       end
+#Neo4j::Neo.instance.start
+#  
+#module Baaz
+#  class Customer
+#    include Neo4j::Node
+#    relations :purchases
+#  end
 #       
-#       class Purchase
-#         
-#       end
-#      class CustomerPurchaseRelation
-#        include Neo4j::Relation
-#      end
-#     end
+#  class Purchase
+#    include Neo4j::Node
+#  end
+#  class CustomerPurchaseRelation
+#    include Neo4j::Relation
+#  end
+#end
 #
-#    c = Baaz::Customer.new
-#    c.bar
+#c = Baaz::Customer.new
+#c.name = 'kalle'
+#p = Baaz::Purchase.new
+#Neo4j::Transaction.run do
+#  c.purchases << p
+#  p.customer.nodes.each {|n| puts "Customer #{n.name}"}
+#end
+#Neo4j::Neo.instance.stop    

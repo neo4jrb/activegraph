@@ -4,6 +4,30 @@ require 'neo4j/spec_helper'
 
 
 
+describe "When NOT running in one transaction" do
+  before(:all) do
+    start
+  end
+
+  after(:all) do
+    stop
+  end  
+  
+  
+  
+  it "It should create a new transaction when updating a relationship" do
+    pending "Refactoring needed, should be easier to declare methods as transactional"
+    class FooNode 
+      include Neo4j::Node
+      
+      relations :friends
+    end
+      
+    f1 = FooNode.new
+    f2 = FooNode.new
+    f1.friends << f2
+  end
+end
 
 # ------------------------------------------------------------------------------
 # the following specs are run inside one Neo4j transaction

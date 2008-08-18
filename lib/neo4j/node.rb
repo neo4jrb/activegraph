@@ -273,11 +273,11 @@ module Neo4j
       def add_relation_type(rel_name)
         # This code will be nicer in Ruby 1.9, can't use define_method
         module_eval(%Q{def #{rel_name}(&block)
-                      NodesWithRelationType.new(self,'#{rel_name}', &block)
-                   end},  __FILE__, __LINE__)
-#        define_method(type) do 
-#          NodesWithRelationType.new(self,type.to_s)
-#        end
+                        NodesWithRelationType.new(self,'#{rel_name.to_s}', &block)
+                    end},  __FILE__, __LINE__)
+        #        define_method(type) do 
+        #          NodesWithRelationType.new(self,type.to_s)
+        #        end
       end
     
     

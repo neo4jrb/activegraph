@@ -4,7 +4,6 @@ module Neo4j
   
   module Relation
     def self.included(c)
-      #parts = c.to_s.scan('::')
       context = c.to_s.split('::')[0...-1].inject(Kernel) do |mod, name|
         mod.const_get(name.to_s)
       end      
@@ -13,13 +12,15 @@ module Neo4j
       
       a,b = clazzname.sub(/Relation$/,'').scan(/[A-Z]+[a-z]+/)
       #puts "included in '#{a}' and '#{b}'"
-      raise ArgumentError.new("unknown node '#{a} in relation '#{clazzname}'") unless context.const_defined?(a.to_sym)
-      raise ArgumentError.new("unknown node '#{b}' in relation '#{clazzname}") unless context.const_defined?(b.to_sym)      
+      raise ArgumentError.new("unknown node class '#{a}' in relation '#{c.to_s}'") unless context.const_defined?(a.to_sym)
+      raise ArgumentError.new("unknown node class '#{b}' in relation '#{c.to_s}'") unless context.const_defined?(b.to_sym)      
       
-      # add methods purchases in a
-      a_clazz = context.const_get(a.to_sym)
+      # add methods purchases in Customer
+      a_clazz = context.const_get(b.to_sym)
       a_clazz.instance_eval do
-        define_method(:purchases) { puts "HEJ HEJ"}
+        define_method(:customer) do
+          relations.incoming(:purchases)
+        end
       end
     end
   end  
@@ -58,13 +59,6 @@ module Neo4j
       iter = @internal_node.getRelationships(@direction).iterator if @type.nil?
       iter = @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
       
-#      if ! @type.nil?
-#        puts "TYPE #{@type.inspect} next #{iter.hasNext.to_s}"
-#        iter = @internal_node.getRelationships(@direction).iterator
-#      end
-      # has_next,next,__jsend!,remove,hasNext,iterator,each,zip,reject,sort,to_a,find,entries,map,each_with_index,member?,include?,max,min,inject,sort_by,collect,partition,detect,all?,grep,select,find_all,any?,get_class,notifyAll,notify,toString,notify_all,wait,hashCode,to_string,hash_code,equals,getClass,__jcreate!,synchronized,to_s,java_class,java_object=,java_object,to_java_object,equal?,==,hash,eql?,handle_different_imports,include_class,args_and_options,java_kind_of?,should_receive,rspec_reset,received_message?,stub!,rspec_verify,should_not_receive,share_as,shared_examples_for,share_examples_for,context,describe,should_not,should,methods,freeze,extend,nil?,object_id,tainted?,method,is_a?,instance_variable_get,instance_variable_defined?,instance_variable_set,display,send,private_methods,com,type,instance_of?,id,taint,class,instance_variables,org,__send__,=~,protected_methods,inspect,__id__,frozen?,java,respond_to?,instance_eval,===,untaint,clone,singleton_methods,instance_exec,kind_of?,dup,javax,public_methods
-      #__jsend!,size,contains,get,set,add_all,subList,lastIndexOf,hash_code,equals,iterator,list_iterator,add,indexOf,listIterator,addAll,hashCode,last_index_of,clear,remove,sub_list,index_of,sort,[]=,_wrap_yield,[],sort!,toString,empty,to_string,toArray,retainAll,removeAll,contains_all,is_empty,retain_all,remove_all,to_array,empty?,containsAll,isEmpty,<<,join,length,+,-,each,zip,reject,to_a,find,entries,map,each_with_index,member?,include?,max,min,inject,sort_by,collect,partition,detect,all?,grep,select,find_all,any?,get_class,notifyAll,notify,notify_all,wait,getClass,__jcreate!,synchronized,to_s,java_class,java_object=,java_object,to_java_object,equal?,==,hash,eql?,handle_different_imports,include_class,args_and_options,java_kind_of?,should_receive,rspec_reset,received_message?,stub!,rspec_verify,should_not_receive,share_as,shared_examples_for,share_examples_for,context,describe,should_not,should,methods,freeze,extend,nil?,object_id,tainted?,method,is_a?,instance_variable_get,instance_variable_defined?,instance_variable_set,display,send,private_methods,com,type,instance_of?,id,taint,class,instance_variables,org,__send__,=~,protected_methods,inspect,__id__,frozen?,java,respond_to?,instance_eval,===,untaint,clone,singleton_methods,instance_exec,kind_of?,dup,javax,public_methods
-      #puts "ITER #{iter} #{iter.class.to_s}, #{iter.inspect}, #{iter.methods.join(",")}"
       while (iter.hasNext) do
         n = iter.next
         yield RelationWrapper.new(n)

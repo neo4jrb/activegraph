@@ -240,6 +240,7 @@ describe "When running in one transaction" do
       class TestNode 
         include Neo4j::Node
         relations :friends
+        relations :parents
       end
     end    
     
@@ -251,6 +252,20 @@ describe "When running in one transaction" do
 
       # then
       t1.friends.to_a.should include(t2)
+    end
+    
+    it "should allow to have several different type of relationships to other nodes" do
+      me = TestNode.new
+      f1 = TestNode.new
+      p1 = TestNode.new
+      me.friends << f1
+      me.parents << p1
+
+      # then
+      me.friends.to_a.should include(f1)
+      me.friends.to_a.size.should == 1
+      me.parents.to_a.should include(p1)
+      me.parents.to_a.size.should == 1
     end
 
     it "is none symmetric (if a is friend to b then b does not have to be friend to a)" do
@@ -369,7 +384,7 @@ describe "When running in one transaction" do
   
 end
 
-describe Neo4j::Node.to_s, "delete"  do
+describe Neo4j::Node.to_s, "(when deleting a node)"  do
   before(:all) do
     start
     class TestNode 
