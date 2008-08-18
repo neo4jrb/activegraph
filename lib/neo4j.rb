@@ -3,6 +3,7 @@ require 'neo4j/neo'
 require 'neo4j/transaction'
 require 'neo4j/node'
 require 'lucene'
+require 'inflector'
 
 # 
 # Set logger used by Neo4j
