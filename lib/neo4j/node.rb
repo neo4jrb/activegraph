@@ -275,9 +275,6 @@ module Neo4j
         module_eval(%Q{def #{rel_name}(&block)
                         NodesWithRelationType.new(self,'#{rel_name.to_s}', &block)
                     end},  __FILE__, __LINE__)
-        #        define_method(type) do 
-        #          NodesWithRelationType.new(self,type.to_s)
-        #        end
       end
     
     
@@ -288,17 +285,21 @@ module Neo4j
       
       #
       # Expects type of relation and class.
-      # Example
+      # Example:
       # 
-      #   class Company
-      #     has :employees, Person
+      #   class Order
+      #     # default last parameter will be :order_lines
+      #     contains :one_or_more, OrderLine 
+      #     is_contained_in :one_and_only_one, Customer
       #   end
       #
-      def has(type, clazz)
-        # TODO !!!!!
-        define_method(type) do |*query|   # TODO support query
-          NodesWithRelationType.new(self,type.to_s, clazz)
+      def contains(multiplicity, clazz, name=nil)
+        if (name.nil?) 
+          name = Inflector.pluralize(clazz.to_s)
+          name = Inflector.underscore(name)
         end
+
+        add_relation_type(name)
       end
       
       

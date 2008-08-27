@@ -46,7 +46,29 @@ describe "When running in one transaction" do
     stop
   end  
   
-  
+  describe "When specifiying a contain relationship with default name" do
+    before(:all) do
+      class Order
+        include Neo4j::Node
+        properties :date
+      end
+      
+      class Customer
+        include Neo4j::Node
+        properties :age, :name
+        contains :zero_or_more, Order # default name will be orders
+      end
+
+    end
+    
+    it "can add new nodes to that relationship" do
+      c = Customer.new
+      o = Order.new
+      c.orders << o
+      
+      c.orders.to_a.should include(o)
+    end
+  end
   
   describe "When creating a relationship" do
     before(:all) do

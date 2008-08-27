@@ -2,28 +2,6 @@
 module Neo4j
   
   
-  module Relation
-    def self.included(c)
-      context = c.to_s.split('::')[0...-1].inject(Kernel) do |mod, name|
-        mod.const_get(name.to_s)
-      end      
-      clazzname = c.to_s.split('::')[-1]
-      #puts "Context #{context.to_s} NAME '#{clazzname}'"
-      
-      a,b = clazzname.sub(/Relation$/,'').scan(/[A-Z]+[a-z]+/)
-      #puts "included in '#{a}' and '#{b}'"
-      raise ArgumentError.new("unknown node class '#{a}' in relation '#{c.to_s}'") unless context.const_defined?(a.to_sym)
-      raise ArgumentError.new("unknown node class '#{b}' in relation '#{c.to_s}'") unless context.const_defined?(b.to_sym)      
-      
-      # add methods purchases in Customer
-      a_clazz = context.const_get(b.to_sym)
-      a_clazz.instance_eval do
-        define_method(:customer) do
-          relations.incoming(:purchases)
-        end
-      end
-    end
-  end  
   #
   # Enables finding relations for one node
   #
