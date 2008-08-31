@@ -219,20 +219,12 @@ module Neo4j
     # Adds classmethods in the ClassMethods module
     #
     def self.included(c)
-      # all subclasses share the same index
-      # need to inject a 
-      c.instance_eval do |c|
-        # set the path where to store the index
-        @@lucene_index_path = Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/')        
-        @@decl_props = []
-        def lucene_index
-          Lucene::Index.new(@@lucene_index_path)      
-        end
-        
-        def decl_props
-          @@decl_props
-        end
-      end
+      # all subclasses share the same index, declared properties and listeners
+      c.instance_eval do
+        const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
+        const_set(:DECL_PROPS, [])
+        const_set(:LISTENERS, [])
+      end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
       c.extend ClassMethods
     end
@@ -241,6 +233,28 @@ module Neo4j
     # Node class methods
     #
     module ClassMethods
+
+      #
+      # Access to class constants.
+      # These properties are shared by the class and its siblings.
+      # For example that means that we can specify properties for a parent
+      # class and the child classes will 'inherit' those properties.
+      # 
+      
+      
+      def lucene_index
+        Lucene::Index.new(self::LUCENE_INDEX_PATH)      
+      end
+        
+      def listeners
+        self::LISTENERS
+      end
+      
+      def decl_props
+        self::DECL_PROPS
+      end
+      
+      # ------------------------------------------------------------------------
 
       #
       # Allows to declare Neo4j properties.

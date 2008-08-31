@@ -231,7 +231,7 @@ describe "When running in one transaction" do
   
   
   # ----------------------------------------------------------------------------
-  # Declared relanship on a node should ...
+  # Declared relationship on a node should ...
   #
   
   describe Neo4j::Node.to_s, '(declared relationship)' do
@@ -381,6 +381,53 @@ describe "When running in one transaction" do
     end
   end
 
+  
+  describe Neo4j::Node.to_s, " events" do
+    before(:all) do
+      class FooNode 
+        include Neo4j::Node
+        properties :bar
+      end
+    end
+    
+    it "should have a listeners class property" do
+      f = FooNode.new
+      class BaazNode
+        include Neo4j::Node
+      end
+      b = BaazNode.new
+      FooNode.listeners << 'a'
+      FooNode.listeners.size.should == 1
+      FooNode.listeners[0].should == 'a'
+      BaazNode.listeners.size.should == 0
+      
+    end
+    it "should allow to deregister an event listener"
+    
+    it "should allow to register an event listener"
+    
+    it "should notify event listener for new node created"
+    
+    it "should notify event listener for node deleted"
+    
+    it "should notify event listener for property change events" do
+      pending
+      # given
+      f = FooNode.new
+      events = []
+      FooNode.add_listener {|event| events << event}
+      
+      # when
+      f.foo = 'foo'
+      
+      # then
+      events.size.should == 1
+      events[0].should kind_of(Neo4j::PropertyChangedEvent)
+      events[0].property.should == :foo
+      events[0].from.should == nil
+      events[0].to.should == 'foo'
+    end
+  end
   
 end
 
