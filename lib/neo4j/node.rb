@@ -100,12 +100,13 @@ module Neo4j
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
       Transaction.run {
+        old_value = get_property(name)
+        @internal_node.set_property(name, value)
         if (name != 'classname')  # do not want events on internal properties
-          old_value = get_property(name)
           event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
           self.class.fire_event(event)
         end
-        @internal_node.set_property(name, value)
+        
       }
     end
  
@@ -196,7 +197,6 @@ module Neo4j
       lucene_index << doc
     end
 
-    
     def lucene_index
       self.class.lucene_index
     end
@@ -277,6 +277,31 @@ module Neo4j
       def fire_event(event)
         listeners.each {|p| p.call event}
       end
+      
+      
+      #
+      # Updates index for a relationship
+      # Register an event listener on the rel_clazz that will keep
+      # the lucene index synchronized.
+      # 
+      #
+      def update_index(rel_clazz, rel_name, &block)
+        rel_clazz.add_listener do |event|
+          value = event.node.instance_eval(&block)
+          update_relation_index(event.node, rel_name, value)     
+        end
+      end
+      
+      def update_relation_index(other_node, key, value)
+        # generate a unique id
+        id = "#{other_node.neo_node_id}.#{key}"
+        $NEO_LOGGER.debug("update_relation_index #{id} key: '#{key}', value: '#{value}'")
+
+        # need to index both the class and node id of the other node since it might be deleted
+        doc = {:id => id, key => value, :_neo_rel_class => other_node.class.to_s, :_neo_rel_id => other_node.neo_node_id}
+        lucene_index << doc
+      end
+    
       
       # ------------------------------------------------------------------------
 

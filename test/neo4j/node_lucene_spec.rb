@@ -154,3 +154,71 @@ describe "Find Nodes using Lucene" do
     found.size.should == 1
   end
 end
+
+describe Neo4j::Node, " index on relationship" do
+  
+  before(:all) do
+    class Order
+      include Neo4j::Node
+    end
+    class Customer
+      include Neo4j::Node
+      contains :zero_or_more, Order      
+    end
+    
+    Order.update_index(Customer, 'Customer.name'){name}
+  end
+  
+  before(:each) do  # we need to remove the index before each spec
+    start
+  end
+  
+  after(:each) do
+    stop
+  end  
+
+  it "should index relationships" do
+    # use Order index
+    # id is the node id of Order.nodeId . Customer.nodeId
+    # update document key: Customer.name value 
+    
+    
+    # when
+    c = nil
+    Neo4j::Transaction.run do
+      c = Customer.new
+      o = Order.new
+      c.name = "kalle"
+      o.cost = "123"
+      c.orders << o
+    end
+    
+    # then
+    orders = Order.find('Customer.name' => 'kalle')
+    orders.size.should == 1
+    orders[0].should == c
+  end
+  
+  it "should reindex the relationship when the node changes" do
+    # given
+    c = nil
+    Neo4j::Transaction.run do
+      c = Customer.new
+      o = Order.new
+      c.name = "kalle"
+      o.cost = "123"
+      c.orders << o
+    end
+    
+    # when
+    c.name = 'andreas'
+    
+    # then
+    orders = Order.find('Customer.name' => 'kalle')
+    orders.size.should == 0
+    
+    orders = Order.find('Customer.name' => 'andreas')
+    orders.size.should == 1
+    orders[0].should == c
+  end
+end
