@@ -429,12 +429,23 @@ describe "When running in one transaction" do
       FooNode.listeners.should include(listener)
     end
     
-    it "should notify event listener for new node created"
+    it "should notify event listener for new node created" do
+      # given
+      events = []
+      FooNode.add_listener {|event| events << event}
+      
+      # when
+      f = FooNode.new
+      
+      # then
+      events.size.should == 1
+      events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
+      events[0].node.should == f
+    end
     
     it "should notify event listener for node deleted"
     
     it "should notify event listener for property change events" do
-      pending
       # given
       f = FooNode.new
       events = []
@@ -445,10 +456,11 @@ describe "When running in one transaction" do
       
       # then
       events.size.should == 1
-      events[0].should kind_of(Neo4j::PropertyChangedEvent)
+      events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
       events[0].property.should == :foo
-      events[0].from.should == nil
-      events[0].to.should == 'foo'
+      events[0].old_value.should == nil
+      events[0].new_value.should == 'foo'
+      events[0].node.should == f
     end
   end
   

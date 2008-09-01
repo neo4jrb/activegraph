@@ -37,6 +37,7 @@ module Neo4j
       
       # must call super with no arguments so that chaining of initialize method will work
       super() 
+      self.class.fire_event NodeCreatedEvent.new(self)
     end
     
     #
@@ -99,6 +100,11 @@ module Neo4j
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
       Transaction.run {
+        if (name != 'classname')  # do not want events on internal properties
+          old_value = get_property(name)
+          event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
+          self.class.fire_event(event)
+        end
         @internal_node.set_property(name, value)
       }
     end
@@ -266,6 +272,10 @@ module Neo4j
       
       def remove_listener(listener)
         listeners.delete(listener)
+      end
+      
+      def fire_event(event)
+        listeners.each {|p| p.call event}
       end
       
       # ------------------------------------------------------------------------

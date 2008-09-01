@@ -21,11 +21,15 @@ module Neo4j
     end
   end
   
-  class NodeDeleted < Event
-    
+  class NodeDeletedEvent < Event
+    def initialize(node)
+      super node
+    end
   end
   
-  class NodeAdded < Event
-    
+  class NodeCreatedEvent < Event
+    def initialize(node)
+      super node
+    end
   end
 end
