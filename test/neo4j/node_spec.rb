@@ -390,21 +390,44 @@ describe "When running in one transaction" do
       end
     end
     
-    it "should have a listeners class property" do
-      f = FooNode.new
+    before(:each) do
+       FooNode.listeners.clear # remove all listeners between tests     
+    end
+    
+    it "should have a listeners class property that are shared by subclasses" do
       class BaazNode
         include Neo4j::Node
       end
-      b = BaazNode.new
+
+      class FooChildNode < FooNode
+      end
+      
       FooNode.listeners << 'a'
       FooNode.listeners.size.should == 1
       FooNode.listeners[0].should == 'a'
+      FooChildNode.listeners.size.should == 1      
+      FooChildNode.listeners[0].should == 'a'      
       BaazNode.listeners.size.should == 0
       
+      FooChildNode.listeners << 'b'
+      FooNode.listeners.size.should == 2
+      FooNode.listeners[1].should == 'b'
     end
-    it "should allow to deregister an event listener"
     
-    it "should allow to register an event listener"
+    
+    it "should allow to deregister an event listener" do
+      listener = FooNode.add_listener {|event| puts event}
+
+      FooNode.remove_listener(listener)
+      FooNode.listeners.size.should == 0
+    end
+    
+    it "should allow to register an event listener" do
+      listener = FooNode.add_listener {|event| puts event}
+      
+      FooNode.listeners.size.should == 1
+      FooNode.listeners.should include(listener)
+    end
     
     it "should notify event listener for new node created"
     

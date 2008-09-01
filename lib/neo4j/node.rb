@@ -1,4 +1,5 @@
 require 'neo4j/relations'
+require 'neo4j/events'
 require 'lucene'
 
 module Neo4j
@@ -252,6 +253,19 @@ module Neo4j
       
       def decl_props
         self::DECL_PROPS
+      end
+      
+      
+      # ------------------------------------------------------------------------
+      # Event listener
+      
+      def add_listener(&block)
+        listeners << block
+        block
+      end
+      
+      def remove_listener(listener)
+        listeners.delete(listener)
       end
       
       # ------------------------------------------------------------------------
