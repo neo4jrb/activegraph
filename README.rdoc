@@ -299,6 +299,20 @@ You can traverse all Person's friend by doing:
 
   f.friends.each { |n| puts n }
 
+=== Filtering nodes in a relationship
+
+If you want to find one node in a relationship you can use a filter.
+Example, let say we want to find a friend with name 'andreas'
+
+  n1 = Person.new
+  n2 = Person.new {|n| n.name = 'andreas'}
+  n3 = Person.new
+
+  n1.friends{ name == 'andreas' }.to_a # => [n2]
+
+The block { name == 'andreas' } will be evaluated on each node in the relationship.
+If the evaluation returns true the node will be included in the filter search result.
+
 === Finding Relationships
 
 Given we have the two nodes with a relationship between them:
@@ -431,7 +445,7 @@ For more information see the lucene module above.
 
 === Indexing and Quering Relationships
 
-The Neo4j::Node#update_index method can be used to index relationships to other classes.
+The Neo4j::Node#index method can be used to index relationships to other classes.
 
 Example, let say we have to classes, Customer and Orders:
   

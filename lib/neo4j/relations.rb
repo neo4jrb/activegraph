@@ -204,6 +204,7 @@ module Neo4j
       # TODO, should we check if we should create a new transaction ?
       # TODO, should we update lucene index ?
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
+      @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name))
       self
     end
   end

@@ -46,7 +46,7 @@ describe "When running in one transaction" do
     stop
   end  
   
-  describe "When specifiying a contain relationship with default name" do
+  describe "When specifying a contain relationship with default name" do
     before(:all) do
       class Order
         include Neo4j::Node
@@ -91,6 +91,23 @@ describe "When running in one transaction" do
     end
   end
 
+  describe "Deleting a relationship between two nodes" do
+    before(:all) do
+      class Person
+        include Neo4j::Node
+        relations :friends
+      end
+    end    
+    
+    it "should allow to delate a relationship" do
+      p1 = Person.new
+      p2 = Person.new
+      
+      p1.friends << p2
+      pending
+      
+    end
+  end
   describe "When a relationship exist between two nodes" do
     before(:all) do
       class TestNode 

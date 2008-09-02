@@ -22,7 +22,7 @@ module Neo4j
   end
   
   class RelationshipEvent < Event
-    attr_reader :to_node, :relation_node
+    attr_reader :to_node, :relation_name
     def initialize(from_node, to_node, relation_name)
       @to_node = to_node
       @relation_name = relation_name

@@ -382,11 +382,10 @@ describe "When running in one transaction" do
   end
 
   
-  describe Neo4j::Node.to_s, " events" do
+  describe Neo4j::Node.to_s, " property events" do
     before(:all) do
       class FooNode 
         include Neo4j::Node
-        properties :bar
       end
     end
     
@@ -397,6 +396,7 @@ describe "When running in one transaction" do
     it "should have a listeners class property that are shared by subclasses" do
       class BaazNode
         include Neo4j::Node
+        relations :people
       end
 
       class FooChildNode < FooNode
@@ -443,6 +443,10 @@ describe "When running in one transaction" do
       events[0].node.should == f
     end
     
+    it "should notify event listener when a new relationship is created" do
+      
+    end
+    
     it "should notify event listener for node deleted"
     
     it "should notify event listener for property change events" do
@@ -461,6 +465,44 @@ describe "When running in one transaction" do
       events[0].old_value.should == nil
       events[0].new_value.should == 'foo'
       events[0].node.should == f
+    end
+  end
+
+  describe Neo4j::Node.to_s, " relationship events" do
+    before(:all) do
+      class Customer
+        include Neo4j::Node
+        relations :orders
+      end
+      
+      class Order
+        include Neo4j::Node        
+      end
+    end
+    
+    before(:each) do
+       Customer.listeners.clear # remove all listeners between tests     
+       Order.listeners.clear # remove all listeners between tests     
+    end
+    
+    it "should notify event listener when a new relationship is created" do
+      # given
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      cust = Customer.new
+      order = Order.new
+      
+      # when
+      cust.orders << order
+      
+      # then
+      events.size.should == 2
+      events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
+      events[1].should be_kind_of(Neo4j::RelationshipAddedEvent)
+      events[1].node.should == cust
+      events[1].to_node.should == order
+      events[1].relation_name.should == 'orders'
     end
   end
   
