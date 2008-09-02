@@ -307,7 +307,7 @@ Example, let say we want to find a friend with name 'andreas'
   n1 = Person.new
   n2 = Person.new {|n| n.name = 'andreas'}
   n3 = Person.new
-
+  n1.friends << n2 << n3
   n1.friends{ name == 'andreas' }.to_a # => [n2]
 
 The block { name == 'andreas' } will be evaluated on each node in the relationship.
