@@ -158,6 +158,7 @@ end
 describe Neo4j::Node, " index on relationship" do
   
   before(:all) do
+    # given
     class Order
       include Neo4j::Node
     end
@@ -177,12 +178,24 @@ describe Neo4j::Node, " index on relationship" do
     stop
   end  
 
+  
+  it "should not index nodes that are not part of the relationship" do
+    pending 
+    # when
+    c = nil
+    Neo4j::Transaction.run do
+      c = Customer.new
+      o = Order.new
+      c.name = "kalle"
+      o.cost = "123"
+    end
+    
+    # then
+    orders = Order.find('Customer.name' => 'kalle')
+    orders.size.should == 0
+  end
+
   it "should index relationships" do
-    # use Order index
-    # id is the node id of Order.nodeId . Customer.nodeId
-    # update document key: Customer.name value 
-    
-    
     # when
     c = nil
     Neo4j::Transaction.run do

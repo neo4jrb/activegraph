@@ -287,6 +287,8 @@ module Neo4j
       #
       def update_index(rel_clazz, rel_name, &block)
         rel_clazz.add_listener do |event|
+          # TODO: only update if the event.node has a relation to this node
+          # find incomming nodes from this node
           value = event.node.instance_eval(&block)
           update_relation_index(event.node, rel_name, value)     
         end
