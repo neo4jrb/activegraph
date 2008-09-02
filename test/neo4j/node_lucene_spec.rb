@@ -167,7 +167,7 @@ describe Neo4j::Node, " index on relationship" do
       contains :zero_or_more, Order      
     end
     
-    Order.update_index(Customer, 'Customer.name'){name}
+    Order.index(Customer, 'Customer.name'){name}
   end
   
   before(:each) do  # we need to remove the index before each spec
@@ -180,7 +180,6 @@ describe Neo4j::Node, " index on relationship" do
 
   
   it "should not index nodes that are not part of the relationship" do
-    pending 
     # when
     c = nil
     Neo4j::Transaction.run do
@@ -195,15 +194,35 @@ describe Neo4j::Node, " index on relationship" do
     orders.size.should == 0
   end
 
-  it "should index relationships" do
+  it "should index existing relationships" do
     # when
     c = nil
+    o = nil
+    Neo4j::Transaction.run do
+      c = Customer.new
+      o = Order.new
+      c.orders << o
+      c.name = "kalle"
+      o.cost = "123"
+    end
+    
+    # then
+    orders = Order.find('Customer.name' => 'kalle')
+    orders.size.should == 1
+    orders[0].should == c
+  end
+
+  it "should index new relationships" do
+    pending
+    # when
+    c = nil
+    o = nil
     Neo4j::Transaction.run do
       c = Customer.new
       o = Order.new
       c.name = "kalle"
       o.cost = "123"
-      c.orders << o
+      c.orders << o      
     end
     
     # then

@@ -21,6 +21,27 @@ module Neo4j
     end
   end
   
+  class RelationshipEvent < Event
+    attr_reader :to_node, :relation_node
+    def initialize(from_node, to_node, relation_name)
+      @to_node = to_node
+      @relation_name = relation_name
+      super from_node
+    end
+  end
+  
+  class RelationshipAddedEvent < RelationshipEvent
+    def initialize(from_node, to_node, relation_name)
+      super
+    end
+  end
+
+  class RelationshipRemovedEvent < RelationshipEvent
+    def initialize(from_node, to_node, relation_name)
+      super
+    end
+  end
+  
   class NodeDeletedEvent < Event
     def initialize(node)
       super node

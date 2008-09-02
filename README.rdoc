@@ -446,7 +446,7 @@ Example, let say we have to classes, Customer and Orders:
 
 Now we want to create an index so that we can find all orders a customer has made.
 
-  Order.update_index(Customer, 'Customer.name'){name}
+  Order.index(Customer, 'Customer.name'){name}
 
 (That means, when a Customer node changes then eval the block ({name}) in that node context and
 put it in the index with the key 'Customer.name')

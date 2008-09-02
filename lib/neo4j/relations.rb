@@ -33,10 +33,13 @@ module Neo4j
       self
     end
     
+    def empty?
+      !iterator.hasNext
+    end
+    
+    
     def each
-      iter = @internal_node.getRelationships(@direction).iterator if @type.nil?
-      iter = @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
-      
+      iter = iterator
       while (iter.hasNext) do
         n = iter.next
         yield RelationWrapper.new(n)
@@ -46,6 +49,11 @@ module Neo4j
     
     def nodes
       RelationNode.new(self)
+    end
+    
+    def iterator
+      return @internal_node.getRelationships(@direction).iterator if @type.nil?
+      return @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
     end
   end
 

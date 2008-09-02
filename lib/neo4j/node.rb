@@ -280,20 +280,22 @@ module Neo4j
       
       
       #
-      # Updates index for a relationship
+      # Index a relationship
       # Register an event listener on the rel_clazz that will keep
       # the lucene index synchronized.
-      # 
       #
-      def update_index(rel_clazz, rel_name, &block)
+      def index(rel_clazz, lucene_rel_name, &block)
         rel_clazz.add_listener do |event|
-          # TODO: only update if the event.node has a relation to this node
-          # find incomming nodes from this node
-          value = event.node.instance_eval(&block)
-          update_relation_index(event.node, rel_name, value)     
+          rel_name = default_name_for_relationship(self.to_s)
+#          puts "Relation #{event} clazz #{event.node.to_s} #{rel_name} empty: #{event.node.relations.outgoing(rel_name.to_sym).empty?.to_s}"
+          if (!event.node.relations.outgoing(rel_name.to_sym).empty?)
+            value = event.node.instance_eval(&block)
+            update_relation_index(event.node, lucene_rel_name, value)     
+          end
         end
       end
       
+     
       def update_relation_index(other_node, key, value)
         # generate a unique id
         id = "#{other_node.neo_node_id}.#{key}"
@@ -348,25 +350,27 @@ module Neo4j
       end
       
       
-      #
-      # Expects type of relation and class.
-      # Example:
-      # 
+      # Specifies a relationship between two node classes.
+      # Expects type of relation and class. Example:
+      #       
       #   class Order
-      #     # default last parameter will be :order_lines
-      #     contains :one_or_more, OrderLine 
-      #     is_contained_in :one_and_only_one, Customer
+      #      # default last parameter will be :order_lines
+      #      contains :one_or_more, OrderLine 
+      #      is_contained_in :one_and_only_one, Customer
       #   end
-      #
-      def contains(multiplicity, clazz, name=nil)
-        if (name.nil?) 
-          name = Inflector.pluralize(clazz.to_s)
-          name = Inflector.underscore(name)
-        end
-
+      #      
+      def contains(multiplicity, clazz, name=default_name_for_relationship(clazz))
         add_relation_type(name)
       end
       
+      #
+      # Returns the default name of relationship to a other node class.
+      #
+      def default_name_for_relationship(clazz)
+        # TODO remove namespace :: 
+        name = Inflector.pluralize(clazz.to_s)
+        Inflector.underscore(name)
+      end      
       
       #
       # Finds all nodes of this type (and ancestors of this type) having
