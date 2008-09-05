@@ -37,6 +37,14 @@ module Neo4j
       !iterator.hasNext
     end
     
+    # 
+    # Returns the relationship object to the other node.
+    #
+    def [](other_node)
+      find {|r| r.end_node.neo_node_id == other_node.neo_node_id}
+    end
+    
+    
     
     def each
       iter = iterator
@@ -93,8 +101,17 @@ module Neo4j
       BaseNode.new(@internal_r.getOtherNode(node))
     end
     
+    #
+    # Deletes the relationship between two nodes.
+    # Will fire a RelationshipDeletedEvent on the start_node class.
+    #
     def delete
+      from_node = start_node
+      to_node = end_node
       @internal_r.delete
+      clazz = from_node.class
+      type = @internal_r.getType().name()
+      clazz.fire_event(RelationshipDeletedEvent.new(from_node, to_node, type))
     end
 
     def set_property(key,value)
@@ -202,7 +219,6 @@ module Neo4j
     #
     def <<(other)
       # TODO, should we check if we should create a new transaction ?
-      # TODO, should we update lucene index ?
       @node.internal_node.createRelationshipTo(other.internal_node, @type)
       @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name))
       self

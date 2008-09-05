@@ -343,6 +343,20 @@ Or outgoing:
 
   n1.relations.outgoing # => [#<Neo4j::Relation:0x134aea2]
 
+To find a specific relationship use the [] operator:
+
+  n1.relations.outgoing[n2] = #<Neo4j::Relation:0x134aea2
+
+Or which is better performance wise (since only friends relationships are being traversed):
+
+  n1.relations.outgoing(:friends)[n2] = #<Neo4j::Relation:0x134aea2
+
+=== Deleting a relationship
+
+Use the Neo4j::Relation#delete method.
+For example, to delete the relationship between n1 and n2 from the example above:
+
+    n1.relations.outgoing(:friends)[n2].delete
 
 === Finding nodes in a relationship
 

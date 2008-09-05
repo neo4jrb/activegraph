@@ -207,7 +207,7 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      Transaction.run { |t|
+      Transaction.run { 
         relations.each {|r| r.delete}
         @internal_node.delete 
         lucene_index.delete(neo_node_id)
@@ -265,10 +265,21 @@ module Neo4j
       # ------------------------------------------------------------------------
       # Event listener
       
+      #
+      # Add a listener for this Node class that will be notified 
+      # when a node of that type changes.
+      # The following events can be sent to the specified proc.
+      # Neo4j::PropertyChangedEvent
+      # Neo4j::RelationshipAddedEvent
+      # Neo4j::RelationshipDeletedEvent
+      # Neo4j::NodeDeletedEvent
+      # Neo4j::NodeCreatedEvent
+      #
       def add_listener(&block)
         listeners << block
         block
       end
+      
       
       def remove_listener(listener)
         listeners.delete(listener)

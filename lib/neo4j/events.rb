@@ -36,7 +36,7 @@ module Neo4j
     end
   end
 
-  class RelationshipRemovedEvent < RelationshipEvent
+  class RelationshipDeletedEvent < RelationshipEvent
     def initialize(from_node, to_node, relation_name)
       super
     end

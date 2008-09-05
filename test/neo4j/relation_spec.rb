@@ -99,15 +99,22 @@ describe "When running in one transaction" do
       end
     end    
     
-    it "should allow to delate a relationship" do
+    it "should allow to delete a relationship" do
       p1 = Person.new
       p2 = Person.new
       
       p1.friends << p2
-      pending
+      p1.friends.to_a.should include(p2)
       
+      # when
+      p1.relations.outgoing[p2].delete
+      
+      # then
+      p1.friends.to_a.should_not include(p2)
     end
   end
+  
+  
   describe "When a relationship exist between two nodes" do
     before(:all) do
       class TestNode 
