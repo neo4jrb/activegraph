@@ -14,7 +14,8 @@ describe "When NOT running in one transaction" do
   end  
   
   
-  
+
+# TODO reuse specs in node_spec.rb somehow, make it DRY  
   it "It should create a new transaction when updating a relationship" do
     pending "Refactoring needed, should be easier to declare methods as transactional"
     class FooNode 
@@ -33,7 +34,7 @@ end
 # the following specs are run inside one Neo4j transaction
 # 
 
-describe "When running in one transaction" do
+describe Neo4j::Node.to_s, " contains: " do
   before(:all) do
     start
     @transaction = Neo4j::Transaction.new 
@@ -46,7 +47,7 @@ describe "When running in one transaction" do
     stop
   end  
   
-  describe "When specifying a contain relationship with default name" do
+  describe "A customer contains zero or more order" do
     before(:all) do
       class Order
         include Neo4j::Node
@@ -61,90 +62,58 @@ describe "When running in one transaction" do
 
     end
     
-    it "can add new nodes to that relationship" do
-      c = Customer.new
-      o = Order.new
-      c.orders << o
-      
-      c.orders.to_a.should include(o)
-    end
-  end
-  
-  describe "When creating a relationship" do
-    before(:all) do
-      class TestNode 
-        include Neo4j::Node
-      
-        relations :friends
-      end
-    end
-    
-    it "should allow to set properties on it" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      
-      r = t1.friends.new(t2)
-      
-      r.friend_since = 1992
-      
-      r.friend_since.should == 1992
-    end
-  end
-
-  describe "Deleting a relationship between two nodes" do
-    before(:all) do
-      class Person
-        include Neo4j::Node
-        relations :friends
-      end
-    end    
-    
-    it "should allow to delete a relationship" do
-      p1 = Person.new
-      p2 = Person.new
-      
-      p1.friends << p2
-      p1.friends.to_a.should include(p2)
+    it "should contain the order when customer.orders << order" do
+      # given
+      customer = Customer.new
+      order = Order.new
       
       # when
-      p1.relations.outgoing[p2].delete
+      customer.orders << order
       
       # then
-      p1.friends.to_a.should_not include(p2)
+      customer.orders.to_a.should include(order)
+    end
+    
+    it "should allow to set a property on the customer-order relationship" do
+      # given
+      customer = Customer.new
+      order = Order.new
+      relation = customer.orders.new(order) # another way of adding a relationship
+
+      # when      
+      relation.my_prop = 'a property'
+
+      # then      
+      relation.my_prop.should == 'a property'
+    end
+    
+    it "should not contain the order when the customer-order relation has been deleted" do
+      # given
+      customer = Customer.new
+      order = Order.new
+      relation = customer.orders.new(order) # another way of adding a relationship
+      
+      # when
+      relation.delete
+      
+      # then
+      customer.orders.to_a.should_not include(order)
+    end
+    
+    it "should find the order using a filter: customer.orders{ order_id == '2'}" do
+      # given
+      customer = Customer.new
+      order1 = Order.new{|n| n.order_id = '1'}
+      order2 = Order.new{|n| n.order_id = '2'}
+      order3 = Order.new{|n| n.order_id = '3'}
+      customer.orders << order1 << order2 << order3
+      
+      # when
+      result = customer.orders{ order_id == '2'}.to_a
+      
+      # then
+      result.should include(order2)
+      result.size.should == 1
     end
   end
-  
-  
-  describe "When a relationship exist between two nodes" do
-    before(:all) do
-      class TestNode 
-        include Neo4j::Node
-      
-        relations :friends
-      end
-      
-      @t1 = TestNode.new { |n| n.name = 't1'} 
-      @t2 = TestNode.new { |n| n.name = 't2'} 
-      @t1.friends << @t2
-      
-      @t21 = TestNode.new { |n| n.name = '21'} 
-      @t22 = TestNode.new { |n| n.name = '22'} 
-      @t2.friends << @t21 << @t22
-    end
-    
-    it "should allow to filter out nodes" do
-      @t1.friends{ name == 't2' }.to_a.should include(@t2)
-      @t1.friends{ name == 't1' }.to_a.should_not include(@t2)
-    end
-    
-    it "should allow traverse any depth" do
-      pending "depth parameter on traversal should be configurable"
-      
-      @t1.friends.friends.to_a.should include(@t21, @t22)
-      # hmm, not natural that it will include the friends as well and not only friends to friends
-      @t1.friends.friends.to_a.size.should == 3 
-    end
-    
-  end  
-  
 end
