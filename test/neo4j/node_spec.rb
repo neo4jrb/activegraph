@@ -423,13 +423,15 @@ describe Neo4j::Node.to_s do
   
     describe 'event listeners' do
       before(:all) do
-        class FooNode 
+        undefine_class :TestNode  # make sure it is not already defined
+        
+        class TestNode 
           include Neo4j::Node
         end
       end
     
       before(:each) do
-        FooNode.listeners.clear # remove all listeners between tests     
+        TestNode.listeners.clear # remove all listeners between tests     
       end
     
       it "should be shared by subclasses" do
@@ -438,124 +440,43 @@ describe Neo4j::Node.to_s do
           relations :people
         end
 
-        class FooChildNode < FooNode
+        class FooChildNode < TestNode
         end
       
-        FooNode.listeners << 'a'
-        FooNode.listeners.size.should == 1
-        FooNode.listeners[0].should == 'a'
+        TestNode.listeners << 'a'
+        TestNode.listeners.size.should == 1
+        TestNode.listeners[0].should == 'a'
         FooChildNode.listeners.size.should == 1      
         FooChildNode.listeners[0].should == 'a'      
         BaazNode.listeners.size.should == 0
       
         FooChildNode.listeners << 'b'
-        FooNode.listeners.size.should == 2
-        FooNode.listeners[1].should == 'b'
+        TestNode.listeners.size.should == 2
+        TestNode.listeners[1].should == 'b'
       end
     
     
       it "can be removed" do
-        listener = FooNode.add_listener {|event| puts event}
+        listener = TestNode.add_listener {|event| puts event}
 
-        FooNode.remove_listener(listener)
-        FooNode.listeners.size.should == 0
+        TestNode.remove_listener(listener)
+        TestNode.listeners.size.should == 0
       end
     
       it "can be added" do
-        listener = FooNode.add_listener {|event| puts event}
+        listener = TestNode.add_listener {|event| puts event}
       
-        FooNode.listeners.size.should == 1
-        FooNode.listeners.should include(listener)
+        TestNode.listeners.size.should == 1
+        TestNode.listeners.should include(listener)
       end
     end
   
   
     # ----------------------------------------------------------------------------
-    # property events
+    # fire events
     #
   
-    describe 'NodeCreatedEvent' do # TODO split up into several describe blocks, one for each event type
-      before(:all) do
-        class FooNode 
-          include Neo4j::Node
-        end
-      end
-    
-      before(:each) do
-        FooNode.listeners.clear # remove all listeners between tests     
-      end
-    
-    
-      it "should notify event listener for new node created" do
-        # given
-        events = []
-        FooNode.add_listener {|event| events << event}
-      
-        # when
-        f = FooNode.new
-      
-        # then
-        events.size.should == 1
-        events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
-        events[0].node.should == f
-      end
-    
-      it "should notify event listener when a new relationship is created" 
-    
-      it "should notify event listener when a relationship between two nodes has been deleted" do
-        pending 
-        # given
-        class ANode
-          include Neo4j::Node
-          relations :bnodes
-        end
-        class BNode
-          include Neo4j::Node
-        end
-      
-        a = ANode.new
-        b = BNode.new
-        a.bnodes << b
-
-        ANode.listeners.clear # remove all listeners between tests
-        events = []
-        ANode.add_listener {|event| events << event}
-      
-        # when
-        a.relations.outgoing(:bnodes)[b].delete
-      
-        # then
-        a.bnodes.to_a.size.should == 0 # just to make sure it really was deleted
-        events.size.should == 1
-        events[0].should be_kind_of(RelationshipDeletedEvent)
-      end
-    
-      it "should notify event listener for node deleted" 
-    
-      it "should notify event listener for property change events" do
-        # given
-        f = FooNode.new
-        events = []
-        FooNode.add_listener {|event| events << event}
-      
-        # when
-        f.foo = 'foo'
-      
-        # then
-        events.size.should == 1
-        events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
-        events[0].property.should == :foo
-        events[0].old_value.should == nil
-        events[0].new_value.should == 'foo'
-        events[0].node.should == f
-      end
-    end
-
-    # ----------------------------------------------------------------------------
-    # relationship events
-    #
-
-    describe 'relationship events' do
+    describe 'fire events' do 
       before(:all) do
         class Customer
           include Neo4j::Node
@@ -572,7 +493,64 @@ describe Neo4j::Node.to_s do
         Order.listeners.clear # remove all listeners between tests     
       end
     
-      it "should notify event listener when a new relationship is created" do
+    
+      it "should fire a NodeCreatedEvent when a new node created" do
+        # given
+        events = []
+        Customer.add_listener {|event| events << event}
+      
+        # when
+        f = Customer.new
+      
+        # then
+        events.size.should == 1
+        events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
+        events[0].node.should == f
+      end
+    
+      it "should fire a NodeDeletedEvent when a node is deleted" 
+    
+      it "should fire a PropertyChangedEvent when a property on a node changes" do
+        # given
+        f = Customer.new
+        events = []
+        Customer.add_listener {|event| events << event}
+      
+        # when
+        f.foo = 'foo'
+      
+        # then
+        events.size.should == 1
+        events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
+        events[0].property.should == :foo
+        events[0].old_value.should == nil
+        events[0].new_value.should == 'foo'
+        events[0].node.should == f
+      end
+
+
+    
+      it "should fire a RelationshipDeletedEvent when a relationship between two nodes has been deleted" do
+        pending 
+        # given
+        cust = Customer.new
+        order = Order.new
+        cust.orders << order
+
+        events = []
+        Customer.add_listener {|event| events << event}
+      
+        # when
+        cust.relations.outgoing(:orders)[b].delete
+      
+        # then
+        cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
+        events.size.should == 1
+        events[0].should be_kind_of(RelationshipDeletedEvent)
+      end
+    
+
+      it "should fire a RelationshipAddedEvent when a new relationship is created" do
         # given
         events = []
         Customer.add_listener {|event| events << event}
