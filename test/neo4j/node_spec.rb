@@ -317,292 +317,305 @@ describe Neo4j::Node.to_s do
       # then
       sub.friends.to_a.should include(t)
     end
-
-    # ----------------------------------------------------------------------------
-    # finding relationships
-    #
-  
-    describe 'finding relationships' do
-      before(:all) do
-        undefine_class :TestNode  # make sure it is not already defined
-      
-        class TestNode 
-          include Neo4j::Node
-          relations :friends
-          relations :parents
-        end
-      end    
-    
-      it "should find all outgoing nodes" do
-        # given
-        t1 = TestNode.new
-        t2 = TestNode.new
-        t1.friends << t2
-
-        # when
-        outgoing = t1.relations.outgoing.to_a
-      
-        # then
-        outgoing.size.should == 1
-        outgoing[0].end_node.should == t2
-        outgoing[0].start_node.should == t1
-      end
-    
-      it "should find all incoming nodes" do
-        t1 = TestNode.new
-        t2 = TestNode.new
-      
-        t1.friends << t2
-      
-        outgoing = t2.relations.incoming.to_a
-        outgoing.size.should == 1
-        outgoing[0].end_node.should == t2
-        outgoing[0].start_node.should == t1
-      end
-
-      it "should find no incoming or outgoing nodes when there are none" do
-        t1 = TestNode.new
-        t2 = TestNode.new
-      
-        t2.relations.incoming.to_a.size.should == 0
-        t2.relations.outgoing.to_a.size.should == 0
-      end
-
-      it "should incoming nodes should not be found in outcoming nodes" do
-        t1 = TestNode.new
-        t2 = TestNode.new
-      
-        t1.friends << t2
-        t1.relations.incoming.to_a.size.should == 0
-        t2.relations.outgoing.to_a.size.should == 0
-      end
-
-
-      it "should find both incoming and outgoing nodes" do
-        t1 = TestNode.new
-        t2 = TestNode.new
-      
-        t1.friends << t2
-        t1.relations.nodes.to_a.should include(t2)
-        t2.relations.nodes.to_a.should include(t1)
-      end
-
-      it "should find several both incoming and outgoing nodes" do
-        t1 = TestNode.new
-        t2 = TestNode.new
-        t3 = TestNode.new
-            
-        t1.friends << t2
-        t1.friends << t3
-      
-        t1.relations.nodes.to_a.should include(t2,t3)
-        t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
-        t2.relations.incoming.nodes.to_a.should include(t1)      
-        t3.relations.incoming.nodes.to_a.should include(t1)      
-        t1.relations.nodes.to_a.size.should == 2
-      end
-    
-      it "should find incomming nodes of a specific type" do
-        t1 = TestNode.new
-        t2 = TestNode.new
-        t3 = TestNode.new
-            
-        t1.friends << t2
-        t1.friends << t3
-      
-        t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
-        t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
-        t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
-      end
-    end
-
-
-    # ----------------------------------------------------------------------------
-    # event listeners
-    #
-  
-    describe 'event listeners' do
-      before(:all) do
-        undefine_class :TestNode  # make sure it is not already defined
-        
-        class TestNode 
-          include Neo4j::Node
-        end
-      end
-    
-      before(:each) do
-        TestNode.listeners.clear # remove all listeners between tests     
-      end
-    
-      it "should be shared by subclasses" do
-        class BaazNode
-          include Neo4j::Node
-          relations :people
-        end
-
-        class FooChildNode < TestNode
-        end
-      
-        TestNode.listeners << 'a'
-        TestNode.listeners.size.should == 1
-        TestNode.listeners[0].should == 'a'
-        FooChildNode.listeners.size.should == 1      
-        FooChildNode.listeners[0].should == 'a'      
-        BaazNode.listeners.size.should == 0
-      
-        FooChildNode.listeners << 'b'
-        TestNode.listeners.size.should == 2
-        TestNode.listeners[1].should == 'b'
-      end
-    
-    
-      it "can be removed" do
-        listener = TestNode.add_listener {|event| puts event}
-
-        TestNode.remove_listener(listener)
-        TestNode.listeners.size.should == 0
-      end
-    
-      it "can be added" do
-        listener = TestNode.add_listener {|event| puts event}
-      
-        TestNode.listeners.size.should == 1
-        TestNode.listeners.should include(listener)
-      end
-    end
-  
-  
-    # ----------------------------------------------------------------------------
-    # fire events
-    #
-  
-    describe 'fire events' do 
-      before(:all) do
-        class Customer
-          include Neo4j::Node
-          relations :orders
-        end
-      
-        class Order
-          include Neo4j::Node        
-        end
-      end
-    
-      before(:each) do
-        Customer.listeners.clear # remove all listeners between tests     
-        Order.listeners.clear # remove all listeners between tests     
-      end
-    
-    
-      it "should fire a NodeCreatedEvent when a new node created" do
-        # given
-        events = []
-        Customer.add_listener {|event| events << event}
-      
-        # when
-        f = Customer.new
-      
-        # then
-        events.size.should == 1
-        events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
-        events[0].node.should == f
-      end
-    
-      it "should fire a NodeDeletedEvent when a node is deleted" 
-    
-      it "should fire a PropertyChangedEvent when a property on a node changes" do
-        # given
-        f = Customer.new
-        events = []
-        Customer.add_listener {|event| events << event}
-      
-        # when
-        f.foo = 'foo'
-      
-        # then
-        events.size.should == 1
-        events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
-        events[0].property.should == :foo
-        events[0].old_value.should == nil
-        events[0].new_value.should == 'foo'
-        events[0].node.should == f
-      end
-
-
-    
-      it "should fire a RelationshipDeletedEvent when a relationship between two nodes has been deleted" do
-        pending 
-        # given
-        cust = Customer.new
-        order = Order.new
-        cust.orders << order
-
-        events = []
-        Customer.add_listener {|event| events << event}
-      
-        # when
-        cust.relations.outgoing(:orders)[b].delete
-      
-        # then
-        cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
-        events.size.should == 1
-        events[0].should be_kind_of(RelationshipDeletedEvent)
-      end
-    
-
-      it "should fire a RelationshipAddedEvent when a new relationship is created" do
-        # given
-        events = []
-        Customer.add_listener {|event| events << event}
-      
-        cust = Customer.new
-        order = Order.new
-      
-        # when
-        cust.orders << order
-      
-        # then
-        events.size.should == 2
-        events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
-        events[1].should be_kind_of(Neo4j::RelationshipAddedEvent)
-        events[1].node.should == cust
-        events[1].to_node.should == order
-        events[1].relation_name.should == 'orders'
-      end
-    end
-  
   end
+  
+  # ----------------------------------------------------------------------------
+  # finding relationships
+  #
+  
+  describe 'finding relationships' do
+    before(:all) do
+      undefine_class :TestNode  # make sure it is not already defined
+      
+      class TestNode 
+        include Neo4j::Node
+        relations :friends
+        relations :parents
+      end
+    end    
+    
+    it "should find all outgoing nodes" do
+      # given
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t1.friends << t2
+
+      # when
+      outgoing = t1.relations.outgoing.to_a
+      
+      # then
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
+    end
+    
+    it "should find all incoming nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      
+      outgoing = t2.relations.incoming.to_a
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
+    end
+
+    it "should find no incoming or outgoing nodes when there are none" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t2.relations.incoming.to_a.size.should == 0
+      t2.relations.outgoing.to_a.size.should == 0
+    end
+
+    it "should incoming nodes should not be found in outcoming nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      t1.relations.incoming.to_a.size.should == 0
+      t2.relations.outgoing.to_a.size.should == 0
+    end
+
+
+    it "should find both incoming and outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      t1.relations.nodes.to_a.should include(t2)
+      t2.relations.nodes.to_a.should include(t1)
+    end
+
+    it "should find several both incoming and outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+            
+      t1.friends << t2
+      t1.friends << t3
+      
+      t1.relations.nodes.to_a.should include(t2,t3)
+      t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
+      t2.relations.incoming.nodes.to_a.should include(t1)      
+      t3.relations.incoming.nodes.to_a.should include(t1)      
+      t1.relations.nodes.to_a.size.should == 2
+    end
+    
+    it "should find incomming nodes of a specific type" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+            
+      t1.friends << t2
+      t1.friends << t3
+      
+      t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
+      t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
+      t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
+    end
+  end
+
+
+  # ----------------------------------------------------------------------------
+  # event listeners
+  #
+  
+  describe 'event listeners' do
+    before(:all) do
+      undefine_class :TestNode  # make sure it is not already defined
+        
+      class TestNode 
+        include Neo4j::Node
+      end
+    end
+    
+    before(:each) do
+      TestNode.listeners.clear # remove all listeners between tests     
+    end
+    
+    it "should be shared by subclasses" do
+      class BaazNode
+        include Neo4j::Node
+        relations :people
+      end
+
+      class FooChildNode < TestNode
+      end
+      
+      TestNode.listeners << 'a'
+      TestNode.listeners.size.should == 1
+      TestNode.listeners[0].should == 'a'
+      FooChildNode.listeners.size.should == 1      
+      FooChildNode.listeners[0].should == 'a'      
+      BaazNode.listeners.size.should == 0
+      
+      FooChildNode.listeners << 'b'
+      TestNode.listeners.size.should == 2
+      TestNode.listeners[1].should == 'b'
+    end
+    
+    
+    it "can be removed" do
+      listener = TestNode.add_listener {}
+
+      TestNode.remove_listener(listener)
+      TestNode.listeners.size.should == 0
+    end
+    
+    it "can be added" do
+      listener = TestNode.add_listener {}
+      
+      TestNode.listeners.size.should == 1
+      TestNode.listeners.should include(listener)
+    end
+  end
+  
+  
+  # ----------------------------------------------------------------------------
+  # fire events
+  #
+  
+  describe 'fire events' do 
+    before(:all) do
+      class Customer
+        include Neo4j::Node
+        relations :orders
+      end
+      
+      class Order
+        include Neo4j::Node        
+      end
+    end
+    
+    before(:each) do
+      Customer.listeners.clear # remove all listeners between tests     
+      Order.listeners.clear # remove all listeners between tests     
+    end
+    
+    
+    it "should fire a NodeCreatedEvent when a new node created" do
+      # given
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      # when
+      f = Customer.new
+      
+      # then
+      events.size.should == 1
+      events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
+      events[0].node.should == f
+    end
+    
+    it "should fire a NodeDeletedEvent when a node is deleted" do
+      # given
+      f = Customer.new
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      # when
+      f.delete
+      
+      # then
+      events.size.should == 1
+      events[0].should be_kind_of(Neo4j::NodeDeletedEvent)
+      events[0].node.should == f
+    end
+    
+    it "should fire a PropertyChangedEvent when a property on a node changes" do
+      # given
+      f = Customer.new
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      # when
+      f.foo = 'foo'
+      
+      # then
+      events.size.should == 1
+      events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
+      events[0].property.should == :foo
+      events[0].old_value.should == nil
+      events[0].new_value.should == 'foo'
+      events[0].node.should == f
+    end
+
+
+    
+    it "should fire a RelationshipDeletedEvent when a relationship between two nodes has been deleted" do
+      # given
+      cust = Customer.new
+      order = Order.new
+      cust.orders << order
+
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      # when
+      cust.relations.outgoing(:orders)[order].delete
+      
+      # then
+      cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
+      events.size.should == 1
+      events[0].should be_kind_of(Neo4j::RelationshipDeletedEvent)
+    end
+    
+
+    it "should fire a RelationshipAddedEvent when a new relationship is created" do
+      # given
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      cust = Customer.new
+      order = Order.new
+      
+      # when
+      cust.orders << order
+      
+      # then
+      events.size.should == 2
+      events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
+      events[1].should be_kind_of(Neo4j::RelationshipAddedEvent)
+      events[1].node.should == cust
+      events[1].to_node.should == order
+      events[1].relation_name.should == 'orders'
+    end
+  end
+  
 end
+
 
 # ----------------------------------------------------------------------------
 # delete
 #
 
 describe Neo4j::Node.to_s, 'delete'  do
-  before(:all) do
-    start
-    class TestNode 
-      include Neo4j::Node
-      relations :friends
-    end
+before(:all) do
+  start
+  class TestNode 
+    include Neo4j::Node
+    relations :friends
+  end
 
-  end
+end
     
-  after(:all) do
-    stop
-  end
+after(:all) do
+  stop
+end
   
-  it "should delete all relationships as well" do
-    # given
-    t1 = TestNode.new
-    t2 = TestNode.new { |n| n.friends << t1}
+it "should delete all relationships as well" do
+  # given
+  t1 = TestNode.new
+  t2 = TestNode.new { |n| n.friends << t1}
       
-    # when
-    t1.delete
+  # when
+  t1.delete
     
-    # then
-    t2.friends.to_a.should_not include(t1)      
-  end
+  # then
+  t2.friends.to_a.should_not include(t1)      
+end
 end
 
 

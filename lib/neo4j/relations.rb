@@ -90,15 +90,18 @@ module Neo4j
     end
   
     def end_node
-      BaseNode.new(@internal_r.getEndNode)
+      id = @internal_r.getEndNode.getId
+      Neo.instance.find_node id
     end
   
     def start_node
-      BaseNode.new(@internal_r.getStartNode)
+      id = @internal_r.getStartNode.getId
+      Neo.instance.find_node id
     end
   
     def other_node(node)
-      BaseNode.new(@internal_r.getOtherNode(node))
+      id = @internal_r.getOtherNode(node).getId     
+      Neo.instance.find_node id
     end
     
     #

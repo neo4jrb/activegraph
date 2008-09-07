@@ -37,7 +37,6 @@ module Neo4j
       
       # must call super with no arguments so that chaining of initialize method will work
       super() 
-      self.class.fire_event NodeCreatedEvent.new(self)
     end
     
     #
@@ -56,6 +55,7 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
+      self.class.fire_event NodeCreatedEvent.new(self)      
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
@@ -211,6 +211,7 @@ module Neo4j
         relations.each {|r| r.delete}
         @internal_node.delete 
         lucene_index.delete(neo_node_id)
+        self.class.fire_event(NodeDeletedEvent.new(self))        
       }
     end
     
