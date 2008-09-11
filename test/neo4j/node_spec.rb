@@ -425,8 +425,15 @@ describe Neo4j::Node.to_s do
   describe 'event listeners' do
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
-        
+      undefine_class :ChildTestNode  
+      undefine_class :NotChildTestNode
+      
       class TestNode 
+        include Neo4j::Node
+      end
+      class ChildTestNode < TestNode
+      end
+      class NotChildTestNode 
         include Neo4j::Node
       end
     end
@@ -436,24 +443,20 @@ describe Neo4j::Node.to_s do
     end
     
     it "should be shared by subclasses" do
-      class BaazNode
-        include Neo4j::Node
-        relations :people
-      end
-
-      class FooChildNode < TestNode
-      end
-      
+      # when adding a listener
       TestNode.listeners << 'a'
+      
+      # then both Test Listener
       TestNode.listeners.size.should == 1
       TestNode.listeners[0].should == 'a'
-      FooChildNode.listeners.size.should == 1      
-      FooChildNode.listeners[0].should == 'a'      
-      BaazNode.listeners.size.should == 0
+      ChildTestNode.listeners.size.should == 1      
+      ChildTestNode.listeners[0].should == 'a'      
+      NotChildTestNode.listeners.size.should == 0
       
-      FooChildNode.listeners << 'b'
+      ChildTestNode.listeners << 'b'
       TestNode.listeners.size.should == 2
       TestNode.listeners[1].should == 'b'
+      NotChildTestNode.listeners.size.should == 0      
     end
     
     
@@ -581,6 +584,25 @@ describe Neo4j::Node.to_s do
       events[1].node.should == cust
       events[1].to_node.should == order
       events[1].relation_name.should == 'orders'
+    end
+    
+    it "should fire RelationshipDeletedEvent when a node and its relationships are deleted" do
+      pending
+      # given
+      events = []
+      Customer.add_listener {|event| events << event}
+      
+      cust = Customer.new
+      order = Order.new
+      cust.orders << order
+      
+      # when
+      order.delete
+      
+      # then
+      cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
+      events.size.should == 1
+      events[0].should be_kind_of(Neo4j::RelationshipDeletedEvent)
     end
   end
   

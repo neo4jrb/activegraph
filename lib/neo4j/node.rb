@@ -2,6 +2,8 @@ require 'neo4j/relations'
 require 'neo4j/events'
 require 'lucene'
 
+require 'neo4j/transactional'
+
 module Neo4j
 
   #
@@ -12,6 +14,8 @@ module Neo4j
   #
   module Node
     attr_reader :internal_node 
+
+    extend Transactional
     
     #
     # Will create a new transaction if one is not already running.
@@ -99,15 +103,12 @@ module Neo4j
     #
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
-      Transaction.run {
         old_value = get_property(name)
         @internal_node.set_property(name, value)
         if (name != 'classname')  # do not want events on internal properties
           event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
           self.class.fire_event(event)
         end
-        
-      }
     end
  
     # 
@@ -126,10 +127,8 @@ module Neo4j
     def get_property(name)
       $NEO_LOGGER.debug{"get property '#{name}'"}        
       
-      Transaction.run {
         return nil if ! has_property(name)
         @internal_node.get_property(name.to_s)
-      }
     end
     
     #
@@ -143,6 +142,7 @@ module Neo4j
       }
     end
     
+   
     # 
     # Returns a unique id
     # Calls getId on the neo node java object
@@ -207,12 +207,10 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      Transaction.run { 
         relations.each {|r| r.delete}
         @internal_node.delete 
         lucene_index.delete(neo_node_id)
         self.class.fire_event(NodeDeletedEvent.new(self))        
-      }
     end
     
     
@@ -222,7 +220,11 @@ module Neo4j
     def relations
       Relations.new(@internal_node)
     end
-   
+
+    transactional :set_property, :get_property, :delete
+
+
+    
     #
     # Adds classmethods in the ClassMethods module
     #
@@ -242,6 +244,9 @@ module Neo4j
     #
     module ClassMethods
 
+      
+    
+        
       #
       # Access to class constants.
       # These properties are shared by the class and its siblings.
@@ -299,7 +304,7 @@ module Neo4j
       def index(rel_clazz, lucene_rel_name, &block)
         rel_clazz.add_listener do |event|
           rel_name = default_name_for_relationship(self.to_s)
-#          puts "Relation #{event} clazz #{event.node.to_s} #{rel_name} empty: #{event.node.relations.outgoing(rel_name.to_sym).empty?.to_s}"
+          #          puts "Relation #{event} clazz #{event.node.to_s} #{rel_name} empty: #{event.node.relations.outgoing(rel_name.to_sym).empty?.to_s}"
           if (!event.node.relations.outgoing(rel_name.to_sym).empty?)
             value = event.node.instance_eval(&block)
             update_relation_index(event.node, lucene_rel_name, value)     
