@@ -1,4 +1,6 @@
 
+require 'neo4j/transactional'
+
 module Neo4j
   
   
@@ -84,7 +86,8 @@ module Neo4j
   # Wrapper class for a java org.neo4j.api.core.Relationship class
   #
   class RelationWrapper
-  
+    extend Neo4j::Transactional
+    
     def initialize(r)
       @internal_r = r
     end
@@ -128,30 +131,8 @@ module Neo4j
     def get_property(key)
       @internal_r.getProperty(key)
     end
-    #
-    # A hook used to set and get undeclared properties
-    #
-    def method_missing(methodname, *args)
-      # allows to set and get any neo property without declaring them first
-      name = methodname.to_s
-      setter = /=$/ === name
-      expected_args = 0
-      if setter
-        name = name[0...-1]
-        expected_args = 1
-      end
-      unless args.size == expected_args
-        err = "method '#{name}' on '#{self.class.to_s}' has wrong number of arguments (#{args.size} for #{expected_args})"
-        raise ArgumentError.new(err)
-      end
-
-      if setter
-        set_property(name, args[0])
-      else
-        get_property(name)
-      end
-    end
     
+    transactional :delete
   end
 
   #
@@ -159,7 +140,7 @@ module Neo4j
   #
   class NodesWithRelationType
     include Enumerable
-    
+    extend Neo4j::Transactional
     
     # TODO other_node_class not used ?
     def initialize(node, type, other_node_class = nil, &filter)
@@ -226,6 +207,8 @@ module Neo4j
       @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name))
       self
     end
+    
+    transactional :<<
   end
   
   #

@@ -64,32 +64,6 @@ module Neo4j
     end
     
     
-    #
-    # A hook used to set and get undeclared properties
-    #
-    def method_missing(methodname, *args)
-      # allows to set and get any neo property without declaring them first
-      name = methodname.to_s
-      setter = /=$/ === name
-      expected_args = 0
-      if setter
-        name = name[0...-1]
-        expected_args = 1
-      end
-      unless args.size == expected_args
-        err = "method '#{name}' on '#{self.class.to_s}' has wrong number of arguments (#{args.size} for #{expected_args})"
-        raise ArgumentError.new(err)
-      end
-
-      raise Exception.new("Node not initialized, called method '#{methodname}' on #{self.class.to_s}") unless @internal_node
-      
-      if setter
-        set_property(name, args[0])
-      else
-        get_property(name)
-      end
-    end
-    
     
     #
     # Set a neo property on this node.
@@ -137,9 +111,7 @@ module Neo4j
     # otherwise it will run in the existing transaction.
     #
     def has_property(name)
-      Transaction.run {
-        @internal_node.has_property(name.to_s)
-      }
+       @internal_node.has_property(name.to_s)
     end
     
    
@@ -213,6 +185,14 @@ module Neo4j
         self.class.fire_event(NodeDeletedEvent.new(self))        
     end
     
+
+    def classname
+      get_property('classname')
+    end
+    
+    def classname=(value)
+      set_property('classname', value)
+    end
     
     #
     # Returns an array of nodes that has a relation from this
@@ -221,7 +201,8 @@ module Neo4j
       Relations.new(@internal_node)
     end
 
-    transactional :set_property, :get_property, :delete
+    
+    transactional :has_property, :set_property, :get_property, :delete
 
 
     
@@ -243,10 +224,7 @@ module Neo4j
     # Node class methods
     #
     module ClassMethods
-
-      
     
-        
       #
       # Access to class constants.
       # These properties are shared by the class and its siblings.

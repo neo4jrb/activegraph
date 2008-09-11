@@ -40,6 +40,15 @@ module Neo4j
     class << self 
       
 
+      def called
+        res = ""
+        for i in 2..7 do
+        res << /\`([^\']+)\'/.match(caller(i).first)[1]
+        res << ', ' unless i == 4
+        end
+        res
+      end 
+    
       #
       # Runs a block in a Neo4j transaction
       #
@@ -63,7 +72,7 @@ module Neo4j
       #   transaction = Neo4j::Transaction.run
       #
       def run
-        $NEO_LOGGER.info{"new transaction " + caller[0]}
+        $NEO_LOGGER.info{"new transaction " + called}
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         tx = nil

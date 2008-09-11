@@ -9,8 +9,11 @@ describe "When doing a rollback in one transaction" do
 
   it "should not change properties" do
     # given
-    node = Neo4j::Transaction.run { Neo4j::BaseNode.new {|n| n.foo = 'foo'}  }
+    #$NEO_LOGGER.level = Logger::DEBUG
 
+    node = Neo4j::Transaction.run { Neo4j::BaseNode.new {|n| n.foo = 'foo'} }
+
+     #   $NEO_LOGGER.level = Logger::WARN
     # when doing a rollback
     Neo4j::Transaction.run { |t|
       node.foo = "changed"
