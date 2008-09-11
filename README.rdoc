@@ -7,7 +7,7 @@ It provides:
 * Storage of ruby object to a file system.
 * Fast traversal of relationships between nodes in a hugh node space.
 * Transaction with rollbacks support. 
-* Indexing and quering of ruby objects.
+* Indexing and querying of ruby objects.
 
 Neo4j consist of two modules: Neo4j and Lucene.
 Neo4j depends on the Lucene module.
@@ -25,6 +25,64 @@ To install it please type:
    sudo gem install andreasronge-neo4j
 
 The gem sources command only needs to be executed once.
+
+== Two Minute Tutorial
+
+  class Person
+    include Neo4j::Node
+
+    properties :name, age
+    relations :friends
+
+    index :name  # adds a lucene index on the name
+    index :age
+  end
+
+The example above specifies how to map a Neo node to a ruby Person instance.
+All neo properties have to be declared (unless you include the DynamicAccessor mixin).
+Relations between nodes can be specified by using the relations
+
+Before using neo it has to be started
+
+  Neo4j::Neo.instance.start
+
+Creating a Person node instance
+
+  person = Person.new
+
+Setting a property:
+
+  person.name = 'kalle'
+  person.age  = 23
+
+If a transaction is not specified then the operation will automatically be wrapped in
+a transaction. 
+
+Quering using lucene:
+
+  Person.find (:name => 'kalle')
+
+or DSL
+
+  Person.find ((name == 'kalle') & (age == 20..30)) # => [ person ]
+
+Adding a relationship between two nodes:
+
+  person2 = Person.new
+  person.friends << person2
+
+Traversing relationships
+
+  person.friends.each {|n| ... }
+
+Deleting a relationship
+
+  person.relations[person2].delete
+
+Deleting a node (and all its relationships)
+
+  person.delete
+
 
 == The Lucene Module
 

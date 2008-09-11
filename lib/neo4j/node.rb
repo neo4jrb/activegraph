@@ -77,12 +77,12 @@ module Neo4j
     #
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
-        old_value = get_property(name)
-        @internal_node.set_property(name, value)
-        if (name != 'classname')  # do not want events on internal properties
-          event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
-          self.class.fire_event(event)
-        end
+      old_value = get_property(name)
+      @internal_node.set_property(name, value)
+      if (name != 'classname')  # do not want events on internal properties
+        event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
+        self.class.fire_event(event)
+      end
     end
  
     # 
@@ -101,8 +101,8 @@ module Neo4j
     def get_property(name)
       $NEO_LOGGER.debug{"get property '#{name}'"}        
       
-        return nil if ! has_property(name)
-        @internal_node.get_property(name.to_s)
+      return nil if ! has_property(name)
+      @internal_node.get_property(name.to_s)
     end
     
     #
@@ -111,7 +111,7 @@ module Neo4j
     # otherwise it will run in the existing transaction.
     #
     def has_property(name)
-       @internal_node.has_property(name.to_s)
+      @internal_node.has_property(name.to_s)
     end
     
    
@@ -179,10 +179,10 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-        relations.each {|r| r.delete}
-        @internal_node.delete 
-        lucene_index.delete(neo_node_id)
-        self.class.fire_event(NodeDeletedEvent.new(self))        
+      relations.each {|r| r.delete}
+      @internal_node.delete 
+      lucene_index.delete(neo_node_id)
+      self.class.fire_event(NodeDeletedEvent.new(self))        
     end
     
 
@@ -305,10 +305,8 @@ module Neo4j
       # ------------------------------------------------------------------------
 
       #
-      # Allows to declare Neo4j properties.
-      # Notice that you do not need to declare any properties in order to 
-      # set and get a neo property.
-      # An undeclared setter/getter will be handled in the method_missing method instead.
+      # Declares Neo4j node properties.
+      # You need to declare properties in order to set them unless you include the dynamic_accessor mixin.
       #
       def properties(*props)
         props.each do |prop|
@@ -319,15 +317,30 @@ module Neo4j
 
           name = (prop.to_s() +"=")
           define_method(name) do |value|
-            Transaction.run do
-              set_property(prop.to_s, value)
-              update_index
-            end
+            set_property(prop.to_s, value)
           end
         end
       end
     
-    
+      
+      # 
+      # Sets a index on a specific property
+      #
+      def index(prop)
+        decl_props << prop
+        define_method(prop) do 
+          get_property(prop.to_s)
+        end
+
+        name = (prop.to_s() +"=")
+        define_method(name) do |value|
+          Transaction.run do  
+            set_property(prop.to_s, value) # TODO maybe we should use an alias instead
+            update_index
+          end
+        end
+      end
+      
       #
       # Allows to declare Neo4j relationsships.
       # The speficied name will be used as the type of the neo relationship.

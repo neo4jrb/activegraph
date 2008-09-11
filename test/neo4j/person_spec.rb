@@ -9,28 +9,38 @@ class Person
   
   #index :friends, :name
   # same as  index(:friends, Person, 'Friend.name') {name}
-  #index :name
+  index :name
 end
 
 describe Person do
-  before(:all) do
+  before(:each) do
     start
   end
 
-  after(:all) do
+  after(:each) do
     stop
   end  
   
   it "should be possible to create a new instance" do
     person = Person.new
-    person.name = 'kalle'
+    result = Neo4j::Neo.instance.find_node person.neo_node_id
+    result.should == person
+  end
+  
+
+  it "should be possible to find it given its name" do
+    person1 = Person.new
+    person1.name = 'kalle'
+    person2 = Person.new
+    person2.name = "sune"
+
+    # when
+    result = Person.find(:name => 'kalle')
     
     # then
-    
-    result = Neo4j::Neo.instance.find_node person.neo_node_id
-    #result = Person.find { name == 'kalle'}
-    result.should == person
-    result.name.should == 'kalle'
+    result.should include(person1)
+    result.should_not include(person2)
+    result.size.should == 1
   end
   
   
