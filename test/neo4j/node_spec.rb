@@ -94,6 +94,7 @@ describe Neo4j::Node.to_s do
       
       class TestNode 
         include Neo4j::Node
+        properties :p1, :p2, :baaz, :foo, :bar, :bar2, :not_set_prop
       end
       @node = TestNode.new
     end
@@ -485,6 +486,7 @@ describe Neo4j::Node.to_s do
       class Customer
         include Neo4j::Node
         relations :orders
+        properties :name
       end
       
       class Order
@@ -534,12 +536,12 @@ describe Neo4j::Node.to_s do
       Customer.add_listener {|event| events << event}
       
       # when
-      f.foo = 'foo'
+      f.name = 'foo'
       
       # then
       events.size.should == 1
       events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
-      events[0].property.should == :foo
+      events[0].property.should == :name
       events[0].old_value.should == nil
       events[0].new_value.should == 'foo'
       events[0].node.should == f
@@ -614,30 +616,30 @@ end
 #
 
 describe Neo4j::Node.to_s, 'delete'  do
-before(:all) do
-  start
-  class TestNode 
-    include Neo4j::Node
-    relations :friends
-  end
+  before(:all) do
+    start
+    class TestNode 
+      include Neo4j::Node
+      relations :friends
+    end
 
-end
+  end
     
-after(:all) do
-  stop
-end
+  after(:all) do
+    stop
+  end
   
-it "should delete all relationships as well" do
-  # given
-  t1 = TestNode.new
-  t2 = TestNode.new { |n| n.friends << t1}
+  it "should delete all relationships as well" do
+    # given
+    t1 = TestNode.new
+    t2 = TestNode.new { |n| n.friends << t1}
       
-  # when
-  t1.delete
+    # when
+    t1.delete
     
-  # then
-  t2.friends.to_a.should_not include(t1)      
-end
+    # then
+    t2.friends.to_a.should_not include(t1)      
+  end
 end
 
 
