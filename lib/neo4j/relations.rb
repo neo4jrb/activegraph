@@ -52,7 +52,7 @@ module Neo4j
       iter = iterator
       while (iter.hasNext) do
         n = iter.next
-        yield RelationWrapper.new(n)
+        yield Neo4j::Neo.instance.load_relationship(n)
       end
     end
 
@@ -82,16 +82,40 @@ module Neo4j
     end
   end
   
-  #
-  # Wrapper class for a java org.neo4j.api.core.Relationship class
-  #
-  class RelationWrapper
-    extend Neo4j::Transactional
-    
-    def initialize(r)
-      @internal_r = r
+  module Relation
+    def initialize(*args)
+      if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Relationship)
+        Transaction.run {init_with_rel(args[0])} unless Transaction.running?
+        init_with_rel(args[0])                   if Transaction.running?
+      else 
+        Transaction.run {init_without_rel} unless Transaction.running?        
+        init_without_rel                   if Transaction.running?                
+      end
+      
+      # must call super with no arguments so that chaining of initialize method will work
+      super() 
     end
-  
+    
+    #
+    # Inits this node with the specified java neo node
+    #
+    def init_with_rel(node)
+      @internal_r = node
+      self.classname = self.class.to_s unless @internal_r.hasProperty("classname")
+      $NEO_LOGGER.debug {"loading relation '#{self.class.to_s}' id #{@internal_r.getId()}"}
+    end
+    
+    
+    #
+    # Inits when no neo java node exists. Must create a new neo java node first.
+    #
+    def init_without_rel
+      @internal_r = Neo4j::Neo.instance.create_node
+      self.classname = self.class.to_s
+      self.class.fire_event NodeCreatedEvent.new(self)      
+      $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
+    end
+    
     def end_node
       id = @internal_r.getEndNode.getId
       Neo.instance.find_node id
@@ -131,6 +155,50 @@ module Neo4j
     def get_property(key)
       @internal_r.getProperty(key)
     end
+    
+    def classname
+      get_property('classname')
+    end
+    
+    def classname=(value)
+      set_property('classname', value)
+    end
+    
+ 
+    def neo_relation_id
+      @internal_r.getId()
+    end
+    
+    #
+    # Adds classmethods in the ClassMethods module
+    #
+    def self.included(c)
+      c.extend ClassMethods
+    end
+    
+    module ClassMethods
+      def properties(*props)
+        props.each do |prop|
+          define_method(prop) do 
+            get_property(prop.to_s)
+          end
+
+          name = (prop.to_s() +"=")
+          define_method(name) do |value|
+            set_property(prop.to_s, value)
+          end
+        end
+
+      end
+    end
+  end  
+  
+  #
+  # Wrapper class for a java org.neo4j.api.core.Relationship class
+  #
+  class DynamicRelation
+    extend Neo4j::Transactional
+    include Neo4j::Relation
     
     transactional :delete
   end
@@ -182,7 +250,7 @@ module Neo4j
     #
     def new(other)
       r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
-      RelationWrapper.new(r)
+      @node.class.relation_types[@type.name.to_sym].new(r)
     end
     
     
@@ -203,13 +271,14 @@ module Neo4j
     #
     def <<(other)
       # TODO, should we check if we should create a new transaction ?
-      @node.internal_node.createRelationshipTo(other.internal_node, @type)
+      r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
+      @node.class.relation_types[@type.name.to_sym].new(r)
       @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name))
       self
     end
     
     transactional :<<
-  end
+    end
   
   #
   # This is a private class holding the type of a relationship
@@ -252,15 +321,4 @@ module Neo4j
       pos.depth >= @depth
     end
   end
-  #  /**
-  #64	         * Traverses to depth 1.
-  #65	         */
-  #66	        public static final StopEvaluator DEPTH_ONE = new StopEvaluator()
-  #67	        {
-  #68	                public boolean isStopNode( TraversalPosition currentPosition )
-  #69	                {
-  #70	                        return currentPosition.depth() >= 1;
-  #71	                }
-  #72	        };
-  
 end

@@ -51,13 +51,21 @@ describe Neo4j::Node.to_s, " contains: " do
     before(:all) do
       class Order
         include Neo4j::Node
-        properties :date
+        properties :date, :order_id
+      end
+      
+      class CustOrderRel
+        include Neo4j::Relation
+        properties :my_prop
       end
       
       class Customer
         include Neo4j::Node
         properties :age, :name
+        
+        # TODO should be easier to say the thing below
         contains :zero_or_more, Order # default name will be orders
+        relations :orders => CustOrderRel
       end
 
     end

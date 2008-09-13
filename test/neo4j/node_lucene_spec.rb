@@ -36,7 +36,6 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     # given
     n1 = TestNode.new
     n1.name = 'hi'
-      
     TestNode.find(:name => 'hi').should include(n1)
       
       
@@ -161,13 +160,15 @@ describe Neo4j::Node, " index on relationship" do
     # given
     class Order
       include Neo4j::Node
+      properties :cost
     end
     class Customer
       include Neo4j::Node
-      contains :zero_or_more, Order      
+      contains :zero_or_more, Order   
+      properties :name      
     end
     
-    Order.index(Customer, 'Customer.name'){name}
+    Order.index_rel(Customer, 'Customer.name'){name}
   end
   
   before(:each) do  # we need to remove the index before each spec

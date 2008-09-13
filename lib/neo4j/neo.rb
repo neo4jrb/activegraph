@@ -68,7 +68,8 @@ module Neo4j
       end
     end
   
-    
+
+        
     def load_node(neo_node)
       classname = neo_node.get_property('classname')
       
@@ -78,6 +79,8 @@ module Neo4j
       end
       clazz.new(neo_node)
     end
+    
+    alias :load_relationship :load_node
     
     #
     # Stop neo

@@ -215,6 +215,7 @@ module Neo4j
         const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
         const_set(:DECL_PROPS, [])
         const_set(:LISTENERS, [])
+        const_set(:RELATION_TYPES, Hash.new(Neo4j::DynamicRelation))
       end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
       c.extend ClassMethods
@@ -245,6 +246,10 @@ module Neo4j
         self::DECL_PROPS
       end
       
+      def relation_types
+        self::RELATION_TYPES
+      end
+      
       
       # ------------------------------------------------------------------------
       # Event listener
@@ -270,6 +275,7 @@ module Neo4j
       end
       
       def fire_event(event)
+        $NEO_LOGGER.debug{"fire_event #{event.inspect} to #{listeners.size} listeners" }
         listeners.each {|p| p.call event}
       end
       
@@ -279,7 +285,7 @@ module Neo4j
       # Register an event listener on the rel_clazz that will keep
       # the lucene index synchronized.
       #
-      def index(rel_clazz, lucene_rel_name, &block)
+      def index_rel(rel_clazz, lucene_rel_name, &block)
         rel_clazz.add_listener do |event|
           rel_name = default_name_for_relationship(self.to_s)
           #          puts "Relation #{event} clazz #{event.node.to_s} #{rel_name} empty: #{event.node.relations.outgoing(rel_name.to_sym).empty?.to_s}"
@@ -306,7 +312,7 @@ module Neo4j
 
       #
       # Declares Neo4j node properties.
-      # You need to declare properties in order to set them unless you include the dynamic_accessor mixin.
+      # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessor mixin.
       #
       def properties(*props)
         props.each do |prop|
@@ -317,7 +323,10 @@ module Neo4j
 
           name = (prop.to_s() +"=")
           define_method(name) do |value|
-            set_property(prop.to_s, value)
+            Transaction.run do
+              set_property(prop.to_s, value)
+              update_index
+            end
           end
         end
       end
@@ -354,7 +363,14 @@ module Neo4j
     
     
       def relations(*relations)
-        relations.each {|type| add_relation_type(type)}
+        if relations[0].respond_to?(:each_pair) 
+          relations[0].each_pair do |type,clazz| 
+            add_relation_type(type)
+            relation_types.merge! type => clazz
+          end
+        else
+          relations.each {|type| add_relation_type(type)}
+        end
       end
       
       

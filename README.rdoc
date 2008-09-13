@@ -62,9 +62,9 @@ Quering using lucene:
 
   Person.find (:name => 'kalle')
 
-or DSL
+or DSL, example finding person with name kalle or with age between 20 and 30:
 
-  Person.find ((name == 'kalle') & (age == 20..30)) # => [ person ]
+  Person.find ((name == 'kalle') | (age == 20..30)) # => [ person ]
 
 Adding a relationship between two nodes:
 
@@ -82,6 +82,36 @@ Deleting a relationship
 Deleting a node (and all its relationships)
 
   person.delete
+
+Specifying relationships:
+
+      class CustomerOrderRelation
+        include Neo4j::Relation
+        properties :prio
+      end
+      
+      class Customer
+        include Neo4j::Node
+        relations :orders => CustomerOrderRelation
+        relations :friends # has default type Neo4j::DynamicRelation 
+      end
+      
+      class Order
+        include Neo4j::Node        
+      end
+
+
+Notice that relationships also can have properties.
+Creating a new Customer Order relationship can be done like this
+
+      c = Customer.new 
+      o = Order.new
+      r = c.orders.new(o)
+      r.prio = 'important'
+
+or like this
+
+      c.orders << Order.new
 
 
 == The Lucene Module
