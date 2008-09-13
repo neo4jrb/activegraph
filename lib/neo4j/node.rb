@@ -3,6 +3,7 @@ require 'neo4j/events'
 require 'lucene'
 
 require 'neo4j/transactional'
+require 'neo4j/dynamic_accessor'
 
 module Neo4j
 
@@ -429,6 +430,7 @@ module Neo4j
   
   class BaseNode 
     include Neo4j::Node
+    include Neo4j::DynamicAccessor
   end
   
 end
