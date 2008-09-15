@@ -1,10 +1,3 @@
-require 'neo4j/relations'
-require 'neo4j/events'
-require 'lucene'
-
-require 'neo4j/transactional'
-require 'neo4j/dynamic_accessor'
-
 module Neo4j
 
   #

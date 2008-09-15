@@ -3,7 +3,7 @@ require 'neo4j/spec_helper'
 
 
 
-describe "When doing a rollback in one transaction" do
+describe "transaction rollback" do
   before(:all) do start end
   after(:all)  do stop  end  
 

@@ -4,50 +4,207 @@ require 'neo4j/spec_helper'
 
 
 
-describe "When NOT running in one transaction" do
+describe Neo4j::Node.to_s do
   before(:all) do
     start
+#    @transaction = Neo4j::Transaction.new 
+#    @transaction.start
   end
 
   after(:all) do
+ #   @transaction.finish
     stop
   end  
-  
-  
 
-# TODO reuse specs in node_spec.rb somehow, make it DRY  
-  it "It should create a new transaction when updating a relationship" do
-    pending "Refactoring needed, should be easier to declare methods as transactional"
-    class FooNode 
-      include Neo4j::Node
+  
+  # ----------------------------------------------------------------------------
+  # adding relations with <<
+  #
+  
+  describe '#relations << operator' do
+    
+    before(:all) do
+      undefine_class :TestNode  # make sure it is not already defined
       
-      relations :friends
+      class TestNode 
+        include Neo4j::Node
+        relations :friends
+        relations :parents
+      end
+    end    
+    
+    it "should allow to add relation types outside a class definition" do
+      # given
+      node = TestNode.new
+      
+      # when
+      TestNode.add_relation_type(:foos)
+      
+      # then
+      added = Neo4j::BaseNode.new
+      node.foos << added
+      node.foos.to_a.should include(added)
     end
+
+    
+    it "should add a relation of a specific type to another node" do
+      t1 = TestNode.new
+      t2 = TestNode.new
       
-    f1 = FooNode.new
-    f2 = FooNode.new
-    f1.friends << f2
+      # when
+      t1.friends << t2
+
+      # then
+      t1.friends.to_a.should include(t2)
+    end
+    
+    it "should add relations of different types to other nodes" do
+      me = TestNode.new
+      f1 = TestNode.new
+      p1 = TestNode.new
+      me.friends << f1
+      me.parents << p1
+
+      # then
+      me.friends.to_a.should include(f1)
+      me.friends.to_a.size.should == 1
+      me.parents.to_a.should include(p1)
+      me.parents.to_a.size.should == 1
+    end
+
+    it "should be none symmetric (if a is friend to b then b does not have to be friend to a)" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t1.friends << t2
+
+      # then
+      t1.friends.to_a.should include(t2)
+      t2.friends.to_a.should_not include(t1)      
+    end
+    
+    it "should allow to chain << operations in one line" do
+      # given
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+      t1.friends << t2 << t3
+      
+      # then t2 should be a friend of t1
+      t1.friends.to_a.should include(t2,t3)
+    end
+
+
+    it "should be allowed in subclasses" do
+      undefine_class :SubNode  # make sure it is not already defined
+      class SubNode < TestNode; end
+      sub = SubNode.new
+      t = TestNode.new
+      sub.friends << t
+
+      # then
+      sub.friends.to_a.should include(t)
+    end
   end
-end
-
-# ------------------------------------------------------------------------------
-# the following specs are run inside one Neo4j transaction
-# 
-
-describe Neo4j::Node.to_s, " contains: " do
-  before(:all) do
-    start
-    @transaction = Neo4j::Transaction.new 
-    @transaction.start
-  end
-
-  after(:all) do
-    @transaction.failure # do not want to store anything
-    @transaction.finish
-    stop
-  end  
   
-  describe "A customer contains zero or more order" do
+  # ----------------------------------------------------------------------------
+  # finding relationships
+  #
+  
+  describe '#relations traversing outgoing and incoming nodes' do
+    before(:all) do
+      undefine_class :TestNode  # make sure it is not already defined
+      
+      class TestNode 
+        include Neo4j::Node
+        relations :friends
+        relations :parents
+      end
+    end    
+    
+    it "should find all outgoing nodes" do
+      # given
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t1.friends << t2
+
+      # when
+      outgoing = t1.relations.outgoing.to_a
+      
+      # then
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
+    end
+    
+    it "should find all incoming nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      
+      outgoing = t2.relations.incoming.to_a
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
+    end
+
+    it "should find no incoming or outgoing nodes when there are none" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t2.relations.incoming.to_a.size.should == 0
+      t2.relations.outgoing.to_a.size.should == 0
+    end
+
+    it "should make sure that incoming nodes are not found in outcoming nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      t1.relations.incoming.to_a.size.should == 0
+      t2.relations.outgoing.to_a.size.should == 0
+    end
+
+
+    it "should find both incoming and outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      
+      t1.friends << t2
+      t1.relations.nodes.to_a.should include(t2)
+      t2.relations.nodes.to_a.should include(t1)
+    end
+
+    it "should find several both incoming and outgoing nodes" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+            
+      t1.friends << t2
+      t1.friends << t3
+      
+      t1.relations.nodes.to_a.should include(t2,t3)
+      t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
+      t2.relations.incoming.nodes.to_a.should include(t1)      
+      t3.relations.incoming.nodes.to_a.should include(t1)      
+      t1.relations.nodes.to_a.size.should == 2
+    end
+    
+    it "should find incomming nodes of a specific type" do
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+            
+      t1.friends << t2
+      t1.friends << t3
+      
+      t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
+      t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
+      t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
+    end
+  end
+
+  describe "#contains (A customer contains zero or more orders)" do
     before(:all) do
       class Order
         include Neo4j::Node
@@ -122,6 +279,63 @@ describe Neo4j::Node.to_s, " contains: " do
       # then
       result.should include(order2)
       result.size.should == 1
+    end
+  end
+  
+  describe '#relations, creating new' do 
+    before(:all) do
+      class CustomerOrderRelation
+        include Neo4j::Relation
+        properties :prio
+      end
+      
+      class Customer
+        include Neo4j::Node
+        relations :orders => CustomerOrderRelation
+        relations :friends
+      end
+      
+      class Order
+        include Neo4j::Node        
+      end
+    end
+
+    it "should know the class for a relation type" do
+      Customer.relation_types.keys.should include(:orders)
+      Customer.relation_types[:orders].should == CustomerOrderRelation
+    end
+    
+    it "should have a default relation class for a none specified relation type" do
+      Customer.relation_types[:friends].should == Neo4j::DynamicRelation
+    end
+    
+    
+    it "should be possible to create a new relation of the specified type" do
+      c = Customer.new 
+      o = Order.new
+      r = c.orders.new(o)
+      r.should be_kind_of(CustomerOrderRelation)
+    end
+    
+    
+    it "should be possible to set a property on relationship (not DynamicRelation)" do
+      c = Customer.new 
+      o = Order.new
+      r = c.orders.new(o)
+      r.prio = 'important'
+      r.prio.should == 'important'
+      
+      c.relations.outgoing(:orders)[o].prio.should == 'important'
+    end
+    
+    it "should load the correct relation class when traversing relationships" do
+      c = Customer.new 
+      o1 = Order.new
+      o2 = Order.new
+      
+      c.orders << o1 << o2
+      
+      c.relations.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelation) }
     end
   end
 end

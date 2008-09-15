@@ -1,9 +1,8 @@
-# 
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
- 
-
 module Neo4j
+  
+  #
+  # The base class of all Neo4j events
+  #
   class Event
     attr_reader :node
     def initialize(node)

@@ -1,6 +1,3 @@
-
-require 'neo4j/transactional'
-
 module Neo4j
   
   
@@ -83,6 +80,8 @@ module Neo4j
   end
   
   module Relation
+    extend Transactional
+    
     def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Relationship)
         Transaction.run {init_with_rel(args[0])} unless Transaction.running?
@@ -169,6 +168,8 @@ module Neo4j
       @internal_r.getId()
     end
     
+    transactional :property?, :set_property, :get_property, :delete
+    
     #
     # Adds classmethods in the ClassMethods module
     #
@@ -199,8 +200,6 @@ module Neo4j
   class DynamicRelation
     extend Neo4j::Transactional
     include Neo4j::Relation
-    
-    transactional :delete
   end
 
   #
@@ -239,17 +238,14 @@ module Neo4j
     end
       
     #
-    # Creates a relationship between this and the other node.
-    # Returns the relationship object that has property like a Node has.
-    #
-    #   n1 = Node.new # Node has declared having a friend type of relationship 
-    #   n2 = Node.new
-    #   
-    #   relation = n1.friends.new(n2)
-    #   relation.friend_since = 1992 # set a property on this relationship
+    # Creates a relationship instance between this and the other node.
+    # If a class for the relationship has not been specified it will be of type DynamicRelation.
+    # To set a relationship type see #Neo4j::relations
     #
     def new(other)
-      r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
+      r = Neo4j::Transaction.run {
+       @node.internal_node.createRelationshipTo(other.internal_node, @type)
+      }
       @node.class.relation_types[@type.name.to_sym].new(r)
     end
     

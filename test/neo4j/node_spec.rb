@@ -12,13 +12,13 @@ require 'neo4j/spec_helper'
 describe Neo4j::Node.to_s do
   before(:all) do
     start
-    @transaction = Neo4j::Transaction.new 
-    @transaction.start
+#    @transaction = Neo4j::Transaction.new 
+#    @transaction.start
   end
 
   after(:all) do
-    @transaction.failure # do not want to store anything
-    @transaction.finish
+#    @transaction.failure # do not want to store anything
+#    @transaction.finish
     stop
   end  
  
@@ -87,7 +87,7 @@ describe Neo4j::Node.to_s do
   # properties
   #
   
-  describe 'properties' do
+  describe '#properties' do
     
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
@@ -150,6 +150,33 @@ describe Neo4j::Node.to_s do
     end
 
 
+    it "should generated setter and getters methods" do
+      # when
+      p = TestNode.new {}
+      
+      # then
+      p.methods.should include('p1','p2','baaz','foo','bar','bar2')
+      p.methods.should include("p1=")
+    end
+    
+    it "should automatically be defined on subclasses" do
+      undefine_class :SubNode  # make sure it is not already defined
+      
+      # given
+      class SubNode < TestNode
+        properties :salary
+      end
+  
+      # when
+      p = SubNode.new {}
+      
+      # then
+      p.methods.should include("p1")
+      p.methods.should include("p1")
+      p.methods.should include("salary")
+      p.methods.should include("salary=")
+    end
+
     it "can not have a relationship to a none Neo::Node"
     
     it "can not set a property that is not of type string,fixnum,float or boolean"
@@ -187,236 +214,6 @@ describe Neo4j::Node.to_s do
     
   end
   
-
-  # ----------------------------------------------------------------------------
-  # declared properties
-  #
-  
-  describe 'declared properties' do
-    before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
-      class TestNode 
-        include Neo4j::Node
-        properties :my_property        
-      end
-    end    
-    
-    it "should generated setter and getters methods" do
-      # when
-      p = TestNode.new {}
-      
-      # then
-      p.methods.should include("my_property")
-      p.methods.should include("my_property=")
-    end
-    
-    it "should automatically be defined on subclasses" do
-      undefine_class :SubNode  # make sure it is not already defined
-      
-      # given
-      class SubNode < TestNode
-        properties :salary
-      end
-  
-      # when
-      p = SubNode.new {}
-      
-      # then
-      p.methods.should include("my_property")
-      p.methods.should include("my_property=")
-      p.methods.should include("salary")
-      p.methods.should include("salary=")
-    end
-    
-  end
-  
-  
-  # ----------------------------------------------------------------------------
-  # adding relations with <<
-  #
-  
-  describe 'adding relations with <<' do
-    
-    before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
-      
-      class TestNode 
-        include Neo4j::Node
-        relations :friends
-        relations :parents
-      end
-    end    
-    
-    it "should also work with dynamically defined relation types" do
-      # given
-      node = TestNode.new
-      
-      # when
-      TestNode.add_relation_type(:foos)
-      
-      # then
-      added = Neo4j::BaseNode.new
-      node.foos << added
-      node.foos.to_a.should include(added)
-    end
-
-    
-    it "should add a relation of a specific type to another node" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      
-      # when
-      t1.friends << t2
-
-      # then
-      t1.friends.to_a.should include(t2)
-    end
-    
-    it "should add relations of different types to other nodes" do
-      me = TestNode.new
-      f1 = TestNode.new
-      p1 = TestNode.new
-      me.friends << f1
-      me.parents << p1
-
-      # then
-      me.friends.to_a.should include(f1)
-      me.friends.to_a.size.should == 1
-      me.parents.to_a.should include(p1)
-      me.parents.to_a.size.should == 1
-    end
-
-    it "should be none symmetric (if a is friend to b then b does not have to be friend to a)" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      t1.friends << t2
-
-      # then
-      t1.friends.to_a.should include(t2)
-      t2.friends.to_a.should_not include(t1)      
-    end
-    
-    it "should allow to chain << operations in one line" do
-      # given
-      t1 = TestNode.new
-      t2 = TestNode.new
-      t3 = TestNode.new
-      t1.friends << t2 << t3
-      
-      # then t2 should be a friend of t1
-      t1.friends.to_a.should include(t2,t3)
-    end
-
-
-    it "should be allowed in subclasses" do
-      undefine_class :SubNode  # make sure it is not already defined
-      class SubNode < TestNode; end
-      sub = SubNode.new
-      t = TestNode.new
-      sub.friends << t
-
-      # then
-      sub.friends.to_a.should include(t)
-    end
-  end
-  
-  # ----------------------------------------------------------------------------
-  # finding relationships
-  #
-  
-  describe 'finding relationships' do
-    before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
-      
-      class TestNode 
-        include Neo4j::Node
-        relations :friends
-        relations :parents
-      end
-    end    
-    
-    it "should find all outgoing nodes" do
-      # given
-      t1 = TestNode.new
-      t2 = TestNode.new
-      t1.friends << t2
-
-      # when
-      outgoing = t1.relations.outgoing.to_a
-      
-      # then
-      outgoing.size.should == 1
-      outgoing[0].end_node.should == t2
-      outgoing[0].start_node.should == t1
-    end
-    
-    it "should find all incoming nodes" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      
-      t1.friends << t2
-      
-      outgoing = t2.relations.incoming.to_a
-      outgoing.size.should == 1
-      outgoing[0].end_node.should == t2
-      outgoing[0].start_node.should == t1
-    end
-
-    it "should find no incoming or outgoing nodes when there are none" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      
-      t2.relations.incoming.to_a.size.should == 0
-      t2.relations.outgoing.to_a.size.should == 0
-    end
-
-    it "should incoming nodes should not be found in outcoming nodes" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      
-      t1.friends << t2
-      t1.relations.incoming.to_a.size.should == 0
-      t2.relations.outgoing.to_a.size.should == 0
-    end
-
-
-    it "should find both incoming and outgoing nodes" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      
-      t1.friends << t2
-      t1.relations.nodes.to_a.should include(t2)
-      t2.relations.nodes.to_a.should include(t1)
-    end
-
-    it "should find several both incoming and outgoing nodes" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      t3 = TestNode.new
-            
-      t1.friends << t2
-      t1.friends << t3
-      
-      t1.relations.nodes.to_a.should include(t2,t3)
-      t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
-      t2.relations.incoming.nodes.to_a.should include(t1)      
-      t3.relations.incoming.nodes.to_a.should include(t1)      
-      t1.relations.nodes.to_a.size.should == 2
-    end
-    
-    it "should find incomming nodes of a specific type" do
-      t1 = TestNode.new
-      t2 = TestNode.new
-      t3 = TestNode.new
-            
-      t1.friends << t2
-      t1.friends << t3
-      
-      t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
-      t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
-      t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
-    end
-  end
 
 
   # ----------------------------------------------------------------------------

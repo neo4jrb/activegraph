@@ -1,9 +1,3 @@
-
-require 'thread'
-#require 'monitor'
-require 'delegate'
-
-
 module Neo4j
   
   #

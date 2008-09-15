@@ -1,5 +1,8 @@
-
 module Neo4j
+  
+  #
+  # Includes support for wrapping a method in a Neo4j transaction.
+  #
   module Transactional
   
     def transactional(*methods)
