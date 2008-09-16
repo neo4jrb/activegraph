@@ -1,5 +1,9 @@
 module Neo4j
 
+  
+  class LuceneIndexOutOfSyncException < StandardError
+    
+  end
   #
   # Represent a node in the Neo4j space.
   # 
@@ -279,13 +283,41 @@ module Neo4j
       # Register an event listener on the rel_clazz that will keep
       # the lucene index synchronized.
       #
-      def index_rel(rel_clazz, lucene_rel_name, &block)
+      def index_rel(rel_clazz, rel_name, lucene_rel_name, &block)
+        
+        # TODO CLEAN UP THIS MESS !
+         
+        #puts "ADDED LISTENER ON #{rel_clazz}"
         rel_clazz.add_listener do |event|
-          rel_name = default_name_for_relationship(self.to_s)
-          #          puts "Relation #{event} clazz #{event.node.to_s} #{rel_name} empty: #{event.node.relations.outgoing(rel_name.to_sym).empty?.to_s}"
-          if (!event.node.relations.outgoing(rel_name.to_sym).empty?)
+          #rel_name = default_name_for_relationship(self.to_s)
+          has_relations = !event.node.relations.outgoing(rel_name.to_sym).empty?
+
+          case event
+          when RelationshipDeletedEvent
+            id = "#{event.to_node.neo_node_id}.#{event.relation_id}" 
+            lucene_index.delete(id)
+          when RelationshipAddedEvent
+            # puts "#{event} #{event.relation_name} == #{rel_name} ? #{has_relations}"
+            # was a relation added to the relation type we are interested in ?
+            if (event.relation_name == rel_name) 
+              value = event.node.instance_eval(&block)
+              # generate a unique id that is also loadable. Example id "123.456" will load node with id 123
+              id = "#{event.to_node.neo_node_id}.#{event.relation_id}" 
+              doc = {:id => id, lucene_rel_name => value, :neo_node_id => event.node.neo_node_id,  :_neo_relation_id => event.relation_id}
+              puts "ADDED #{doc.inspect}"
+              lucene_index << doc
+            end
+            
+          when PropertyChangedEvent
             value = event.node.instance_eval(&block)
-            update_relation_index(event.node, lucene_rel_name, value)     
+            event.node.relations.outgoing(rel_name.to_sym).each do |r|
+              rel_id = r.neo_relation_id
+              node_id = r.end_node.neo_node_id.to_s
+              id = "#{node_id}.#{rel_id}"
+              doc = {:id => id, lucene_rel_name => value, :neo_node_id => event.node.neo_node_id,  :_neo_relation_id => rel_id}
+              puts "CHANGED #{doc.inspect}"
+              lucene_index << doc
+            end
           end
         end
       end
@@ -298,6 +330,7 @@ module Neo4j
 
         # need to index both the class and node id of the other node since it might be deleted
         doc = {:id => id, key => value, :_neo_rel_class => other_node.class.to_s, :_neo_rel_id => other_node.neo_node_id}
+        puts "DOC #{doc.inspect}"
         lucene_index << doc
       end
     

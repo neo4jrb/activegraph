@@ -8,6 +8,10 @@ module Neo4j
     def initialize(node)
       @node = node
     end
+    
+    def to_s
+      "Event #{self.class.to_s} on node #@node (#{@node.neo_node_id})"
+    end
   end
   
   class PropertyChangedEvent < Event
@@ -21,22 +25,27 @@ module Neo4j
   end
   
   class RelationshipEvent < Event
-    attr_reader :to_node, :relation_name
-    def initialize(from_node, to_node, relation_name)
+    attr_reader :to_node, :relation_name, :relation_id
+    def initialize(from_node, to_node, relation_name, relation_id)
       @to_node = to_node
       @relation_name = relation_name
+      @relation_id = relation_id
       super from_node
+    end
+    
+    def to_s
+      super + " relation_name: #{@relation_name} id: #{@relation_id} to_node:#{@to_node}"
     end
   end
   
   class RelationshipAddedEvent < RelationshipEvent
-    def initialize(from_node, to_node, relation_name)
+    def initialize(from_node, to_node, relation_name, relation_id)
       super
     end
   end
 
   class RelationshipDeletedEvent < RelationshipEvent
-    def initialize(from_node, to_node, relation_name)
+    def initialize(from_node, to_node, relation_name, relation_id)
       super
     end
   end

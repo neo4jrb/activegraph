@@ -87,6 +87,7 @@ module Neo4j
         Transaction.run {init_with_rel(args[0])} unless Transaction.running?
         init_with_rel(args[0])                   if Transaction.running?
       else 
+        raise ArgumentError.new("This code should not be executed - remove todo") 
         Transaction.run {init_without_rel} unless Transaction.running?        
         init_without_rel                   if Transaction.running?                
       end
@@ -111,7 +112,7 @@ module Neo4j
     def init_without_rel
       @internal_r = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
-      self.class.fire_event NodeCreatedEvent.new(self)      
+      self.class.fire_event RelationshipAddedEvent.new(self)  #from_node, to_node, relation_name, relation_id    
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
@@ -140,7 +141,7 @@ module Neo4j
       @internal_r.delete
       clazz = from_node.class
       type = @internal_r.getType().name()
-      clazz.fire_event(RelationshipDeletedEvent.new(from_node, to_node, type))
+      clazz.fire_event(RelationshipDeletedEvent.new(from_node, to_node, type, @internal_r.getId))
     end
 
     def set_property(key,value)
@@ -269,7 +270,9 @@ module Neo4j
       # TODO, should we check if we should create a new transaction ?
       r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
       @node.class.relation_types[@type.name.to_sym].new(r)
-      @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name))
+      puts "FIRE ON #{@node.class.to_s} REL ADDED"
+      @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name, r.getId()))
+      other.class.fire_event(RelationshipAddedEvent.new(other, @node, @type.name, r.getId()))
       self
     end
     

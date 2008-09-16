@@ -168,7 +168,7 @@ describe Neo4j::Node, " index on relationship" do
       properties :name      
     end
     
-    Order.index_rel(Customer, 'Customer.name'){name}
+    Order.index_rel(Customer, 'orders', 'Customer.name'){name}
   end
   
   before(:each) do  # we need to remove the index before each spec
@@ -182,13 +182,10 @@ describe Neo4j::Node, " index on relationship" do
   
   it "should not index nodes that are not part of the relationship" do
     # when
-    c = nil
-    Neo4j::Transaction.run do
-      c = Customer.new
-      o = Order.new
-      c.name = "kalle"
-      o.cost = "123"
-    end
+    c = Customer.new
+    o = Order.new
+    c.name = "kalle"
+    o.cost = "123"
     
     # then
     orders = Order.find('Customer.name' => 'kalle')
@@ -197,15 +194,11 @@ describe Neo4j::Node, " index on relationship" do
 
   it "should index existing relationships" do
     # when
-    c = nil
-    o = nil
-    Neo4j::Transaction.run do
-      c = Customer.new
-      o = Order.new
-      c.orders << o
-      c.name = "kalle"
-      o.cost = "123"
-    end
+    c = Customer.new
+    o = Order.new
+    c.orders << o
+    c.name = "kalle"
+    o.cost = "123"
     
     # then
     orders = Order.find('Customer.name' => 'kalle')
@@ -214,34 +207,49 @@ describe Neo4j::Node, " index on relationship" do
   end
 
   it "should index new relationships" do
-    pending
     # when
-    c = nil
-    o = nil
-    Neo4j::Transaction.run do
-      c = Customer.new
-      o = Order.new
-      c.name = "kalle"
-      o.cost = "123"
-      c.orders << o      
-    end
+    c = Customer.new
+    o = Order.new
+    c.name = "kalle"
+    o.cost = "123"
+    c.orders << o      
     
     # then
     orders = Order.find('Customer.name' => 'kalle')
     orders.size.should == 1
     orders[0].should == c
   end
+
+  it "should remove the index when the relationship is deleted" do
+    # when
+    c = Customer.new
+    o = Order.new
+    c.name = "kalle"
+    o.cost = "123"
+    c.orders << o      
+    orders = Order.find('Customer.name' => 'kalle')
+    orders.size.should == 1
+    
+    # when
+    c.relations.outgoing(:orders)[o].delete
+    c.relations.outgoing(:orders).to_a.size.should == 0
+    #_neo_rel_id
+    r = Customer.lucene_index.find(:_neo_rel_class => Order.to_s.to_sym)
+    r.size.should == 1
+    r = Customer.find(:_neo_rel_id => 2)
+    r.size.should == 1
+    orders = Order.find('Customer.name' => 'kalle')
+    puts "NEO NODEID FOUND #{orders[0]}, #{orders[0].neo_node_id}"
+    orders.size.should == 0
+  end
   
   it "should reindex the relationship when the node changes" do
     # given
-    c = nil
-    Neo4j::Transaction.run do
-      c = Customer.new
-      o = Order.new
-      c.name = "kalle"
-      o.cost = "123"
-      c.orders << o
-    end
+    c = Customer.new
+    o = Order.new
+    c.name = "kalle"
+    o.cost = "123"
+    c.orders << o
     
     # when
     c.name = 'andreas'

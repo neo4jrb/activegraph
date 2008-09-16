@@ -107,7 +107,7 @@ describe Neo4j::Node.to_s do
   end
   
   # ----------------------------------------------------------------------------
-  # finding relationships
+  #  traversing outgoing and incoming nodes
   #
   
   describe '#relations traversing outgoing and incoming nodes' do
