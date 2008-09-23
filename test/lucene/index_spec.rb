@@ -364,6 +364,16 @@ describe Index, " when updating a document" do
     # then it can not be found
     @index.find(:name => 'andreas').should be_empty
   end
+  
+  it "should find documents that have the same properties" do
+    # given
+    @index << {:id => 'a', :name=>'bar'}
+    @index << {:id => 'a.1', :name=>'bar'}
+    
+    @index.commit
+    res = @index.find(:name => 'bar')
+    res.size.should == 2
+  end
 
 end
 

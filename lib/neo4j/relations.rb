@@ -270,7 +270,6 @@ module Neo4j
       # TODO, should we check if we should create a new transaction ?
       r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
       @node.class.relation_types[@type.name.to_sym].new(r)
-      puts "FIRE ON #{@node.class.to_s} REL ADDED"
       @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name, r.getId()))
       other.class.fire_event(RelationshipAddedEvent.new(other, @node, @type.name, r.getId()))
       self

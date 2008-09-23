@@ -12,8 +12,14 @@ module Neo4j
     def to_s
       "Event #{self.class.to_s} on node #@node (#{@node.neo_node_id})"
     end
+
+    def match?(event_clazz, prop_name, prop_value)
+      return false if self.class != event_clazz
+      return false unless self.respond_to?(prop_name)
+      return send(prop_name).to_s == prop_value.to_s
+    end
   end
-  
+
   class PropertyChangedEvent < Event
     attr_reader :property, :old_value, :new_value 
     def initialize(node, property, old_value, new_value)
@@ -21,6 +27,10 @@ module Neo4j
       @old_value = old_value
       @new_value = new_value
       super node
+    end
+
+    def to_s
+      "#{super} prop: #{@property} old: '#{@old_value}' new: '#{@new_value}'"
     end
   end
   

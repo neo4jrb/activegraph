@@ -10,6 +10,8 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     class TestNode 
       include Neo4j::Node
       properties :name, :age
+      index :name
+      index :age
     end
   end
   after(:all) do
@@ -89,6 +91,10 @@ describe "Find Nodes using Lucene" do
     class TestNode 
       include Neo4j::Node
       properties :name, :age, :male, :height
+      index :name
+      index :age
+      index :male
+      index :height
     end
     @foos = []
     5.times {|n|
@@ -155,7 +161,7 @@ describe "Find Nodes using Lucene" do
 end
 
 describe Neo4j::Node, " index on relationship" do
-  
+
   before(:all) do
     # given
     class Order
@@ -164,7 +170,7 @@ describe Neo4j::Node, " index on relationship" do
     end
     class Customer
       include Neo4j::Node
-      contains :zero_or_more, Order   
+      has :zero_or_more, Order   
       properties :name      
     end
     

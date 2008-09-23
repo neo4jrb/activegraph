@@ -221,7 +221,7 @@ describe Neo4j::Node.to_s do
         properties :age, :name
         
         # TODO should be easier to say the thing below
-        contains :zero_or_more, Order # default name will be orders
+        has :zero_or_more, Order # default name will be orders
         relations :orders => CustOrderRel
       end
 

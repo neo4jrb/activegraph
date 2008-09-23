@@ -216,64 +216,7 @@ describe Neo4j::Node.to_s do
   
 
 
-  # ----------------------------------------------------------------------------
-  # event listeners
-  #
-  
-  describe 'event listeners' do
-    before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
-      undefine_class :ChildTestNode  
-      undefine_class :NotChildTestNode
-      
-      class TestNode 
-        include Neo4j::Node
-      end
-      class ChildTestNode < TestNode
-      end
-      class NotChildTestNode 
-        include Neo4j::Node
-      end
-    end
-    
-    before(:each) do
-      TestNode.listeners.clear # remove all listeners between tests     
-    end
-    
-    it "should be shared by subclasses" do
-      # when adding a listener
-      TestNode.listeners << 'a'
-      
-      # then both Test Listener
-      TestNode.listeners.size.should == 1
-      TestNode.listeners[0].should == 'a'
-      ChildTestNode.listeners.size.should == 1      
-      ChildTestNode.listeners[0].should == 'a'      
-      NotChildTestNode.listeners.size.should == 0
-      
-      ChildTestNode.listeners << 'b'
-      TestNode.listeners.size.should == 2
-      TestNode.listeners[1].should == 'b'
-      NotChildTestNode.listeners.size.should == 0      
-    end
-    
-    
-    it "can be removed" do
-      listener = TestNode.add_listener {}
-
-      TestNode.remove_listener(listener)
-      TestNode.listeners.size.should == 0
-    end
-    
-    it "can be added" do
-      listener = TestNode.add_listener {}
-      
-      TestNode.listeners.size.should == 1
-      TestNode.listeners.should include(listener)
-    end
-  end
-  
-  
+ 
   # ----------------------------------------------------------------------------
   # fire events
   #
@@ -292,56 +235,43 @@ describe Neo4j::Node.to_s do
     end
     
     before(:each) do
-      Customer.listeners.clear # remove all listeners between tests     
-      Order.listeners.clear # remove all listeners between tests     
+      Customer.index_updaters.clear # remove all listeners between tests     
+      Order.index_updaters.clear # remove all listeners between tests     
     end
     
     
     it "should fire a NodeCreatedEvent when a new node created" do
       # given
-      events = []
-      Customer.add_listener {|event| events << event}
+      iu = mock('IndexUpdater')
+      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::NodeCreatedEvent))
+
+      Customer.index_updaters << iu
       
       # when
       f = Customer.new
-      
-      # then
-      events.size.should == 1
-      events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
-      events[0].node.should == f
     end
     
     it "should fire a NodeDeletedEvent when a node is deleted" do
       # given
       f = Customer.new
-      events = []
-      Customer.add_listener {|event| events << event}
+      
+      iu = mock('IndexUpdater')
+      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::NodeDeletedEvent))
+      Customer.index_updaters << iu
       
       # when
       f.delete
-      
-      # then
-      events.size.should == 1
-      events[0].should be_kind_of(Neo4j::NodeDeletedEvent)
-      events[0].node.should == f
     end
     
     it "should fire a PropertyChangedEvent when a property on a node changes" do
       # given
       f = Customer.new
-      events = []
-      Customer.add_listener {|event| events << event}
+      iu = mock('IndexUpdater')
+      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::PropertyChangedEvent))
+      Customer.index_updaters << iu
       
       # when
       f.name = 'foo'
-      
-      # then
-      events.size.should == 1
-      events[0].should be_kind_of(Neo4j::PropertyChangedEvent)
-      events[0].property.should == :name
-      events[0].old_value.should == nil
-      events[0].new_value.should == 'foo'
-      events[0].node.should == f
     end
 
 
@@ -352,44 +282,36 @@ describe Neo4j::Node.to_s do
       order = Order.new
       cust.orders << order
 
-      events = []
-      Customer.add_listener {|event| events << event}
+      iu = mock('IndexUpdater')
+      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::RelationshipDeletedEvent)) 
+      Customer.index_updaters << iu
       
       # when
       cust.relations.outgoing(:orders)[order].delete
       
-      # then
-      cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
-      events.size.should == 1
-      events[0].should be_kind_of(Neo4j::RelationshipDeletedEvent)
     end
     
 
     it "should fire a RelationshipAddedEvent when a new relationship is created" do
       # given
-      events = []
-      Customer.add_listener {|event| events << event}
-      
       cust = Customer.new
       order = Order.new
+
+      iu = mock('IndexUpdater')
+      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::RelationshipAddedEvent)) 
+      Customer.index_updaters << iu
       
       # when
       cust.orders << order
       
-      # then
-      events.size.should == 2
-      events[0].should be_kind_of(Neo4j::NodeCreatedEvent)
-      events[1].should be_kind_of(Neo4j::RelationshipAddedEvent)
-      events[1].node.should == cust
-      events[1].to_node.should == order
-      events[1].relation_name.should == 'orders'
     end
     
     it "should fire RelationshipDeletedEvent when a node and its relationships are deleted" do
       pending
       # given
-      events = []
-      Customer.add_listener {|event| events << event}
+      iu = mock('IndexUpdater')
+      iu.should_receive(:trigger_on?) #Neo4j::RelationshipAddedEvent
+      Customer.index_updaters << iu
       
       cust = Customer.new
       order = Order.new

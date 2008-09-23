@@ -29,3 +29,11 @@ def undefine_class(clazz_sym)
     end if const_defined? clazz_sym
   end
 end
+
+module Neo4j
+  class BaseNode
+    include Node
+    include DynamicAccessor
+  end
+  
+end

@@ -24,7 +24,6 @@ module Neo4j
     # * creates a neo node java object (in @internal_node)
     #    
     def initialize(*args)
-      $NEO_LOGGER.debug("Initialize #{self}")
       # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         Transaction.run {init_with_node(args[0])} unless Transaction.running?
@@ -109,7 +108,7 @@ module Neo4j
     # otherwise it will run in the existing transaction.
     #
     def has_property(name)
-      @internal_node.has_property(name.to_s)
+      @internal_node.has_property(name.to_s) unless @internal_node.nil?
     end
     
    
@@ -146,26 +145,6 @@ module Neo4j
       ret
     end
 
-
-
-    #
-    #  Index all declared properties
-    #
-    def update_index
-      $NEO_LOGGER.debug("Index #{neo_node_id}")
-      doc = {:id => neo_node_id}
-      
-      $NEO_LOGGER.debug("FIELDS to index #{self.class.decl_props.inspect}")
-      self.class.decl_props.each do |k|
-        key = k.to_s
-        value = get_property(k)
-        next if value.nil? # or value.empty?
-        $NEO_LOGGER.debug("Add field '#{key}' = '#{value}'")
-        doc.merge!({key => value})
-      end
-
-      lucene_index << doc
-    end
 
     def lucene_index
       self.class.lucene_index
@@ -208,11 +187,10 @@ module Neo4j
     # Adds classmethods in the ClassMethods module
     #
     def self.included(c)
-      # all subclasses share the same index, declared properties and listeners
+      # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
         const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
-        const_set(:DECL_PROPS, [])
-        const_set(:LISTENERS, [])
+        const_set(:INDEX_UPDATERS, [])
         const_set(:RELATION_TYPES, Hash.new(Neo4j::DynamicRelation))
       end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
@@ -236,12 +214,8 @@ module Neo4j
         Lucene::Index.new(self::LUCENE_INDEX_PATH)      
       end
         
-      def listeners
-        self::LISTENERS
-      end
-      
-      def decl_props
-        self::DECL_PROPS
+      def index_updaters
+        self::INDEX_UPDATERS
       end
       
       def relation_types
@@ -250,90 +224,19 @@ module Neo4j
       
       
       # ------------------------------------------------------------------------
-      # Event listener
-      
-      #
-      # Add a listener for this Node class that will be notified 
-      # when a node of that type changes.
-      # The following events can be sent to the specified proc.
-      # Neo4j::PropertyChangedEvent
-      # Neo4j::RelationshipAddedEvent
-      # Neo4j::RelationshipDeletedEvent
-      # Neo4j::NodeDeletedEvent
-      # Neo4j::NodeCreatedEvent
-      #
-      def add_listener(&block)
-        listeners << block
-        block
-      end
-      
-      
-      def remove_listener(listener)
-        listeners.delete(listener)
-      end
+      # Event index_updater
       
       def fire_event(event)
-        $NEO_LOGGER.debug{"fire_event #{event.inspect} to #{listeners.size} listeners" }
-        listeners.each {|p| p.call event}
-      end
-      
-      
-      #
-      # Index a relationship
-      # Register an event listener on the rel_clazz that will keep
-      # the lucene index synchronized.
-      #
-      def index_rel(rel_clazz, rel_name, lucene_rel_name, &block)
-        
-        # TODO CLEAN UP THIS MESS !
-         
-        #puts "ADDED LISTENER ON #{rel_clazz}"
-        rel_clazz.add_listener do |event|
-          #rel_name = default_name_for_relationship(self.to_s)
-          has_relations = !event.node.relations.outgoing(rel_name.to_sym).empty?
-
-          case event
-          when RelationshipDeletedEvent
-            id = "#{event.to_node.neo_node_id}.#{event.relation_id}" 
-            lucene_index.delete(id)
-          when RelationshipAddedEvent
-            # puts "#{event} #{event.relation_name} == #{rel_name} ? #{has_relations}"
-            # was a relation added to the relation type we are interested in ?
-            if (event.relation_name == rel_name) 
-              value = event.node.instance_eval(&block)
-              # generate a unique id that is also loadable. Example id "123.456" will load node with id 123
-              id = "#{event.to_node.neo_node_id}.#{event.relation_id}" 
-              doc = {:id => id, lucene_rel_name => value, :neo_node_id => event.node.neo_node_id,  :_neo_relation_id => event.relation_id}
-              puts "ADDED #{doc.inspect}"
-              lucene_index << doc
-            end
-            
-          when PropertyChangedEvent
-            value = event.node.instance_eval(&block)
-            event.node.relations.outgoing(rel_name.to_sym).each do |r|
-              rel_id = r.neo_relation_id
-              node_id = r.end_node.neo_node_id.to_s
-              id = "#{node_id}.#{rel_id}"
-              doc = {:id => id, lucene_rel_name => value, :neo_node_id => event.node.neo_node_id,  :_neo_relation_id => rel_id}
-              puts "CHANGED #{doc.inspect}"
-              lucene_index << doc
-            end
+        if (index_updaters.find {|updater| updater.trigger_on?(event)})
+          id = event.node.neo_node_id # hmm, is this possible ?
+          doc = {:id => id }
+          index_updaters.each do |updater|
+            d = updater.index(event.node)
+            doc.merge! d
           end
+          lucene_index << doc
         end
-      end
-      
-     
-      def update_relation_index(other_node, key, value)
-        # generate a unique id
-        id = "#{other_node.neo_node_id}.#{key}"
-        $NEO_LOGGER.debug("update_relation_index #{id} key: '#{key}', value: '#{value}'")
-
-        # need to index both the class and node id of the other node since it might be deleted
-        doc = {:id => id, key => value, :_neo_rel_class => other_node.class.to_s, :_neo_rel_id => other_node.neo_node_id}
-        puts "DOC #{doc.inspect}"
-        lucene_index << doc
-      end
-    
+      end      
       
       # ------------------------------------------------------------------------
 
@@ -343,17 +246,13 @@ module Neo4j
       #
       def properties(*props)
         props.each do |prop|
-          decl_props << prop
           define_method(prop) do 
             get_property(prop.to_s)
           end
 
           name = (prop.to_s() +"=")
           define_method(name) do |value|
-            Transaction.run do
-              set_property(prop.to_s, value)
-              update_index
-            end
+            set_property(prop.to_s, value)
           end
         end
       end
@@ -363,17 +262,8 @@ module Neo4j
       # Sets a index on a specific property
       #
       def index(prop)
-        decl_props << prop
-        define_method(prop) do 
-          get_property(prop.to_s)
-        end
-
-        name = (prop.to_s() +"=")
-        define_method(name) do |value|
-          Transaction.run do  
-            set_property(prop.to_s, value) # TODO maybe we should use an alias instead
-            update_index
-          end
+        index_updaters << IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |node|
+          {prop => node.send(prop)}
         end
       end
       
@@ -387,7 +277,23 @@ module Neo4j
                         NodesWithRelationType.new(self,'#{rel_name.to_s}', &block)
                     end},  __FILE__, __LINE__)
       end
-    
+
+      # TODO refactoring (duplicated code) !
+      def add_single_relation_type(rel_name)
+        # This code will be nicer in Ruby 1.9, can't use define_method
+        # TODO refactoring ! error handling etc ..
+        module_eval(%Q{def #{rel_name}=(value)
+                        r = NodesWithRelationType.new(self,'#{rel_name.to_s}')
+                        r << value
+                    end},  __FILE__, __LINE__)
+        
+        module_eval(%Q{def #{rel_name}
+                        r = NodesWithRelationType.new(self,'#{rel_name.to_s}')
+                        r.to_a[0]
+                    end},  __FILE__, __LINE__)
+        
+      end
+      
     
       def relations(*relations)
         if relations[0].respond_to?(:each_pair) 
@@ -410,18 +316,26 @@ module Neo4j
       #      is_contained_in :one_and_only_one, Customer
       #   end
       #      
-      def contains(multiplicity, clazz, name=default_name_for_relationship(clazz))
-        add_relation_type(name)
+      def has(multiplicity, clazz, name=default_name_for_relationship(clazz, multiplicity))
+        add_relation_type(name) unless singular?(multiplicity)
+        add_single_relation_type(name) if singular?(multiplicity)
       end
       
       #
       # Returns the default name of relationship to a other node class.
       #
-      def default_name_for_relationship(clazz)
+      def default_name_for_relationship(clazz, multiplicity)
         # TODO remove namespace :: 
-        name = Inflector.pluralize(clazz.to_s)
+        name = clazz.to_s
+        # if it is of multiplicity :x_to_one or :one use singulare
+        name = Inflector.pluralize(clazz.to_s) unless singular?(multiplicity)
         Inflector.underscore(name)
       end      
+      
+      def singular?(name)
+        name.to_s =~ /one$/
+      end
+      
       
       #
       # Finds all nodes of this type (and ancestors of this type) having
@@ -451,12 +365,5 @@ module Neo4j
         end
       end      
     end
-
   end
-  
-  class BaseNode 
-    include Neo4j::Node
-    include Neo4j::DynamicAccessor
-  end
-  
 end
