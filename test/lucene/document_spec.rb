@@ -19,5 +19,10 @@ describe Document do
     doc[:my_id].should == "1"
     doc[:value].should == 1.23
   end
+  
+  it "should handle multiple fields with the same id" do
+    doc = Document.new(@infos, {:my_id => 1, :name => ['abc', 'def', '123']})    
+    doc[:name].should == ['abc', 'def', '123']
+  end
 end
 

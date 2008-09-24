@@ -267,6 +267,21 @@ module Neo4j
         end
       end
       
+      
+       # when Order with a relationship to Customer
+  # For each customer in an order update total_cost
+  # index "orders.total_cost"
+      def index2(rel_prop)
+        rel, prop = rel_prop.split('.')
+        iu = IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |customer|
+          doc = {}
+          relations = customer.send(rel)
+          # TODO need to set multiple 'orders.total_cost' hash does not support that - lucene.rb support
+          relations.each {|order| doc[rel_prop] = order.send(prop)}
+          doc
+        end
+        clazz.index_triggers << iu.trigger
+      end
       #
       # Allows to declare Neo4j relationsships.
       # The speficied name will be used as the type of the neo relationship.

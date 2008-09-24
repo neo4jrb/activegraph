@@ -75,8 +75,15 @@ module Lucene
       @props.each_pair do |key,value|
         field_info = @field_infos[key]
         # TODO value could be an array if value.kind_of? Enumerable
-        field = field_info.java_field(key,value)
-        java_doc.add(field)
+        if (value.kind_of?(Array))
+          value.each do |v|
+            field = field_info.java_field(key,v)
+            java_doc.add(field)
+          end
+        else
+          field = field_info.java_field(key,value)
+          java_doc.add(field)
+        end
       end
       java_doc
     end

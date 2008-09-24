@@ -5,7 +5,7 @@ module Lucene
     DEFAULTS = {:store => false, :type => String}.freeze 
     TYPE_CONVERSION_TABLE = { Fixnum => :to_i, Float => :to_f, String => :to_s }
     
-    def initialize(values)
+    def initialize(values = {})
       @info = DEFAULTS.dup
       @info.merge! values
       $LUCENE_LOGGER.debug{"new FieldInfo: #{@info.inspect}"}
@@ -34,15 +34,23 @@ module Lucene
     def convert_to_ruby(value)
       method = TYPE_CONVERSION_TABLE[@info[:type]]
       raise ConversionNotSupportedException.new("Can't convert key '#{key}' since method '#{method}' is missing") unless value.respond_to? method
-      value.send(method)
+      if (value.kind_of?(Array))       
+        value.collect{|v| v.send(method)}
+      else
+        value.send(method)
+      end
     end
 
     def convert_to_lucene(value)    
-      case @info[:type].to_s # otherwise it will match Class
-      when Fixnum.to_s then  sprintf('%011d',value)     # TODO: configurable
-      when Float.to_s  then  sprintf('%024.12f', value)  # TODO: configurable
-      when Bignum.to_s then  sprintf('%024d, value')
-      else value.to_s
+      if (value.kind_of?(Array)) 
+        value.collect{|v| convert_to_lucene(v)}
+      else
+        case @info[:type].to_s # otherwise it will match Class
+        when Fixnum.to_s then  sprintf('%011d',value)     # TODO: configurable
+        when Float.to_s  then  sprintf('%024.12f', value)  # TODO: configurable
+        when Bignum.to_s then  sprintf('%024d, value')
+        else value.to_s
+        end
       end
     end
     

@@ -32,6 +32,13 @@ class Customer
   end
   
   index :age
+  
+  # when Order with a relationship to Customer
+  # For each customer in an order update total_cost
+  # index "orders.total_cost"
+  
+  # For each orders in a product AND for each customer in a order add the name
+  # index "orders.products.name"
 end
 
 

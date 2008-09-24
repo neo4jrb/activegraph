@@ -145,6 +145,13 @@ Notice that you have to call the commit method in order to update the index on t
 By performing several update and delete operations before a commit will be much
 faster then performing commit after each operation. 
 
+=== Indexing several values with the same key
+
+Let say a person can have several phone numbers. How do we index that ?
+
+  index << {:id=>'1', :name=>'adam', :phone => ['987-654', '1234-5678']}
+  
+
 === Id field
 
 All Documents must have one id field. If one is not specified it is :id of type String.
