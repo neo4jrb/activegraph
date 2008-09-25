@@ -10,7 +10,6 @@ require 'neo4j/relations'
 require 'neo4j/dynamic_accessor'
 require 'neo4j/neo'
 require 'neo4j/transaction'
-require 'neo4j/index_updater'
 require 'neo4j/node'
 
 require 'lucene'

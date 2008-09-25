@@ -37,8 +37,8 @@ module Neo4j
       def called
         res = ""
         for i in 2..7 do
-        res << /\`([^\']+)\'/.match(caller(i).first)[1]
-        res << ', ' unless i == 4
+          res << /\`([^\']+)\'/.match(caller(i).first)[1]
+          res << ', ' unless i == 4
         end
         res
       end 
@@ -110,7 +110,6 @@ module Neo4j
       def failure?
         current.failure?
       end
-      
     end
 
   
@@ -125,6 +124,7 @@ module Neo4j
       raise AlreadyInTransactionError.new if Transaction.running?
       @@counter += 1      
       @id = @@counter
+      @nodes_to_be_reindexed = {}
       Thread.current[:transaction] = self
       #      end
       $NEO_LOGGER.debug{"create #{self.to_s}"}
@@ -171,6 +171,11 @@ module Neo4j
       @neo_tx=nil
       Thread.current[:transaction] = nil
       
+      unless failure?
+        @nodes_to_be_reindexed.each_value {|node| node.reindex}
+        @nodes_to_be_reindexed.clear
+      end
+      
       if Lucene::Transaction.running?
         $NEO_LOGGER.debug("LUCENE TX running failure: #{failure?}")            
         
@@ -195,6 +200,14 @@ module Neo4j
       @failure = true
       $NEO_LOGGER.info{"failure #{self.to_s}"}                        
     end
+    
+    #
+    # Marks a node to be reindexed before the transaction ends
+    #
+    def reindex(node)
+      @nodes_to_be_reindexed[node.neo_node_id] = node
+    end
+    
   end
   
   #
@@ -202,7 +215,8 @@ module Neo4j
   # There is no real support for chained transaction since Neo4j does not support chained transactions.
   # This class will do nothing when the finish method is called.
   # Finish will only be called when the 'main' transaction does it.
-  # 
+  #  
+  #  TODO investigate if Neo already does this ???
   #
   class ChainedTransaction < DelegateClass(Transaction)
     

@@ -178,6 +178,17 @@ module Neo4j
       Relations.new(@internal_node)
     end
 
+
+    def reindex
+      puts "reindex #{self.inspect}"
+      doc = {:id => neo_node_id }
+      self.class.index_updaters.each do |updater|
+        puts "call updater on #{self.inspect}"
+        updater.call(self, doc)
+      end
+      lucene_index << doc
+    end
+
     
     transactional :has_property, :set_property, :get_property, :delete
 
@@ -191,6 +202,7 @@ module Neo4j
       c.instance_eval do
         const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
         const_set(:INDEX_UPDATERS, [])
+        const_set(:INDEX_TRIGGERS, [])
         const_set(:RELATION_TYPES, Hash.new(Neo4j::DynamicRelation))
       end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
@@ -217,7 +229,11 @@ module Neo4j
       def index_updaters
         self::INDEX_UPDATERS
       end
-      
+
+      def index_triggers
+        self::INDEX_TRIGGERS
+      end
+
       def relation_types
         self::RELATION_TYPES
       end
@@ -227,16 +243,11 @@ module Neo4j
       # Event index_updater
       
       def fire_event(event)
-        if (index_updaters.find {|updater| updater.trigger_on?(event)})
-          id = event.node.neo_node_id # hmm, is this possible ?
-          doc = {:id => id }
-          index_updaters.each do |updater|
-            d = updater.index(event.node)
-            doc.merge! d
-          end
-          lucene_index << doc
-        end
-      end      
+        puts "fire_event #{event}"
+        index_triggers.each {|trigger| trigger.call(event.node, event)}
+        #Neo4j::Transaction.current.reindex(event.node) # ???
+      end
+      
       
       # ------------------------------------------------------------------------
 
@@ -261,26 +272,50 @@ module Neo4j
       # 
       # Sets a index on a specific property
       #
-      def index(prop)
+      def index_old(prop)
         index_updaters << IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |node|
           {prop => node.send(prop)}
         end
       end
       
       
-       # when Order with a relationship to Customer
-  # For each customer in an order update total_cost
-  # index "orders.total_cost"
-      def index2(rel_prop)
+      # when Order with a relationship to Customer
+      # For each customer in an order update total_cost
+      # index "orders.total_cost"
+      def index(rel_prop)
         rel, prop = rel_prop.split('.')
-        iu = IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |customer|
-          doc = {}
-          relations = customer.send(rel)
-          # TODO need to set multiple 'orders.total_cost' hash does not support that - lucene.rb support
-          relations.each {|order| doc[rel_prop] = order.send(prop)}
-          doc
+        puts "index2 '#{rel}', '#{prop}'"
+        #      updater = IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |customer, doc|
+        #        values = []
+        #        relations = customer.send(rel)
+        #        relations.each {|order| values << order.send(prop)}
+        #        doc[rel_prop] = values
+        #      end
+      
+        
+        incoming_rel_type = Inflector.demodulize(self)
+        incoming_rel_type.sub!(/(^.)/) {|m| m.downcase } # uncapitilize
+        # TODO we must know if we should use singular or plural - we here simple assume singular relationship
+        
+        # updater
+        updater = lambda do |customer, doc| 
+          values = []
+          relations = customer.relations.incoming(incoming_rel_type.to_sym).nodes # :customer
+          relations.each {|order| values << order.send(prop)}
+          doc[rel_prop.to_sym] = values
+          puts "updater doc:total_cost with #{values.inspect}"
         end
-        clazz.index_triggers << iu.trigger
+        index_updaters << updater
+      
+        # trigger
+        trigger = lambda do |order, event|
+          if event.match?(Neo4j::PropertyChangedEvent, :property, prop)
+            rel = order.send(incoming_rel_type)
+            rel.send(:reindex) unless rel.nil?
+            #puts "reindex #{order.customer.inspect} #{order.customer.nil?}"
+          end
+        end
+        Order.index_triggers << trigger
       end
       #
       # Allows to declare Neo4j relationsships.

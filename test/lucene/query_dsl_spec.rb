@@ -25,9 +25,12 @@ describe Lucene::QueryDSL, 'used from Index.find' do
     @index << {:id => '42', :name => 'andreas', :foo => 'bar', :value => 1}
     @index << {:id => '43', :name => 'andreas', :foo => 'baaz', :value => 2}    
     @index << {:id => '44', :name => 'x', :foo => 'bar', :value => 3}        
+    @index << {:id => '45', :name => ['x','y','z']}            
+    
     @doc1 = @index.uncommited['42']
     @doc2 = @index.uncommited['43']
     @doc3 = @index.uncommited['44']
+    @doc4 = @index.uncommited['45']
     @index.commit
   end
 
@@ -40,13 +43,22 @@ describe Lucene::QueryDSL, 'used from Index.find' do
 
   it "should find a document using a compound | expression" do
     hits = @index.find { (name == 'andreas') | (name == 'x')}
-    hits.size.should == 3
-    hits.should include(@doc1, @doc2, @doc3)
+    hits.size.should == 4
+    hits.should include(@doc1, @doc2, @doc3, @doc4)
     
     hits = @index.find { (name == 'andreasx') | (name == 'x')}
-    hits.size.should == 1
-    hits.should include(@doc3)
+    hits.size.should == 2
+    hits.should include(@doc3, @doc4)
     
+  end
+
+  it "should find a document using a compound & expression with the same key" do
+    hits = @index.find { (name == 'y') & (name == 'x')}
+    hits.size.should == 1
+    hits.should include(@doc4)
+    
+    hits = @index.find { (name == 'y') & (name == 'x') & (name == 'a')}
+    hits.size.should == 0
   end
 
   it "should find with Range" do
