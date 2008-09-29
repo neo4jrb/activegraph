@@ -180,13 +180,12 @@ module Neo4j
 
 
     def reindex
-      puts "reindex #{self.inspect}"
       doc = {:id => neo_node_id }
       self.class.index_updaters.each do |updater|
-        puts "call updater on #{self.inspect}"
         updater.call(self, doc)
       end
       lucene_index << doc
+      puts "DOC #{doc.inspect}"
     end
 
     
@@ -203,7 +202,7 @@ module Neo4j
         const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
         const_set(:INDEX_UPDATERS, [])
         const_set(:INDEX_TRIGGERS, [])
-        const_set(:RELATION_TYPES, Hash.new(Neo4j::DynamicRelation))
+        const_set(:RELATIONS_INFO, {})
       end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
       c.extend ClassMethods
@@ -234,8 +233,12 @@ module Neo4j
         self::INDEX_TRIGGERS
       end
 
-      def relation_types
-        self::RELATION_TYPES
+      
+      #
+      # Contains information of all relationships, name, type, and multiplicity
+      # 
+      def relations_info
+        self::RELATIONS_INFO
       end
       
       
@@ -243,9 +246,8 @@ module Neo4j
       # Event index_updater
       
       def fire_event(event)
-        puts "fire_event #{event}"
         index_triggers.each {|trigger| trigger.call(event.node, event)}
-        #Neo4j::Transaction.current.reindex(event.node) # ???
+        #Neo4j::Transaction.current.reindex(event.node) # ??? TODO reindex after a transaction finish
       end
       
       
@@ -269,54 +271,59 @@ module Neo4j
       end
     
       
-      # 
-      # Sets a index on a specific property
-      #
-      def index_old(prop)
-        index_updaters << IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |node|
-          {prop => node.send(prop)}
-        end
-      end
-      
       
       # when Order with a relationship to Customer
       # For each customer in an order update total_cost
       # index "orders.total_cost"
       def index(rel_prop)
-        rel, prop = rel_prop.split('.')
-        puts "index2 '#{rel}', '#{prop}'"
-        #      updater = IndexUpdater.new(Neo4j::PropertyChangedEvent, :property, prop) do |customer, doc|
-        #        values = []
-        #        relations = customer.send(rel)
-        #        relations.each {|order| values << order.send(prop)}
-        #        doc[rel_prop] = values
-        #      end
-      
+        rel, prop = rel_prop.to_s.split('.')
+        index_property(rel) if prop.nil?
+        index_relation(rel_prop, rel,prop) unless prop.nil?
+      end
+
+      def index_property(prop)
+        updater = lambda do |node, doc| 
+          doc[prop] = node.send(prop)
+        end
+        index_updaters << updater
         
-        incoming_rel_type = Inflector.demodulize(self)
-        incoming_rel_type.sub!(/(^.)/) {|m| m.downcase } # uncapitilize
+        trigger = lambda do |node, event|
+          node.reindex if event.match?(Neo4j::PropertyChangedEvent, :property, prop)
+        end
+        index_triggers << trigger
+      end
+      
+      
+      def index_relation(index_key, rel, prop)
+        rel_type = relations_info[rel.to_sym][:rel_type]
+        #        incoming_rel_type = Inflector.demodulize(self)
+        #        incoming_rel_type.sub!(/(^.)/) {|m| m.downcase } # uncapitilize
         # TODO we must know if we should use singular or plural - we here simple assume singular relationship
         
         # updater
         updater = lambda do |customer, doc| 
           values = []
-          relations = customer.relations.incoming(incoming_rel_type.to_sym).nodes # :customer
+          relations = customer.relations.both(rel_type.to_sym).nodes # :customer
           relations.each {|order| values << order.send(prop)}
-          doc[rel_prop.to_sym] = values
-          puts "updater doc:total_cost with #{values.inspect}"
+          doc[index_key] = values
         end
         index_updaters << updater
       
         # trigger
         trigger = lambda do |order, event|
           if event.match?(Neo4j::PropertyChangedEvent, :property, prop)
-            rel = order.send(incoming_rel_type)
-            rel.send(:reindex) unless rel.nil?
-            #puts "reindex #{order.customer.inspect} #{order.customer.nil?}"
+            rel = order.send(rel_type)
+            if (rel.kind_of?(Neo4j::NodesWithRelationType))
+              rel.each {|r| r.send(:reindex)} 
+            else
+              rel.send(:reindex) unless rel.nil?
+            end
           end
         end
-        Order.index_triggers << trigger
+        clazz = relations_info[rel.to_sym][:class] # TODO not sure if we need to keep this information relations_info ...
+        clazz.index_triggers << trigger
       end
+      
       #
       # Allows to declare Neo4j relationsships.
       # The speficied name will be used as the type of the neo relationship.
@@ -328,7 +335,6 @@ module Neo4j
                     end},  __FILE__, __LINE__)
       end
 
-      # TODO refactoring (duplicated code) !
       def add_single_relation_type(rel_name)
         # This code will be nicer in Ruby 1.9, can't use define_method
         # TODO refactoring ! error handling etc ..
@@ -341,46 +347,47 @@ module Neo4j
                         r = NodesWithRelationType.new(self,'#{rel_name.to_s}')
                         r.to_a[0]
                     end},  __FILE__, __LINE__)
-        
       end
       
-    
-      def relations(*relations)
-        if relations[0].respond_to?(:each_pair) 
-          relations[0].each_pair do |type,clazz| 
-            add_relation_type(type)
-            relation_types.merge! type => clazz
-          end
-        else
-          relations.each {|type| add_relation_type(type)}
-        end
-      end
-      
-      
+
+      #      
       # Specifies a relationship between two node classes.
       # Expects type of relation and class. Example:
       #       
       #   class Order
       #      # default last parameter will be :order_lines
-      #      contains :one_or_more, OrderLine 
-      #      is_contained_in :one_and_only_one, Customer
+      #      has :one_or_more, OrderLine 
+      #      has :one_and_only_one, Customer
       #   end
       #      
-      def has(multiplicity, clazz, name=default_name_for_relationship(clazz, multiplicity))
-        add_relation_type(name) unless singular?(multiplicity)
-        add_single_relation_type(name) if singular?(multiplicity)
+      def has(multiplicity, rel_name, clazz, rel_type = rel_name)
+        add_relation_type(rel_type) unless singular?(multiplicity)
+        add_single_relation_type(rel_type) if singular?(multiplicity)
+        relations_info[rel_name] = {:multiplicity => multiplicity, :class => clazz, :rel_type => rel_type, :outgoing => true, :relation => Neo4j::DynamicRelation}
+      end
+
+      
+
+      #
+      # Defines a method for navigation to incoming relationships
+      # Example 
+      # class Customer
+      #   belongs :zero_or_more, :orders, Order, :customer
+      # end
+      # 
+      # The third parameter is by default plural of the second parameter if multiplicity does
+      # not end with _or_more
+      # 
+      def belongs_to(multiplicity, rel_name, clazz, rel_type)
+        relations_info[rel_name] = {:multiplicity => multiplicity, :rel_type => rel_type, :class => clazz, :outgoing => false}        
       end
       
       #
-      # Returns the default name of relationship to a other node class.
-      #
-      def default_name_for_relationship(clazz, multiplicity)
-        # TODO remove namespace :: 
-        name = clazz.to_s
-        # if it is of multiplicity :x_to_one or :one use singulare
-        name = Inflector.pluralize(clazz.to_s) unless singular?(multiplicity)
-        Inflector.underscore(name)
-      end      
+      # Creates a new relation. The relation must be outgoing.
+      # 
+      def new_relation(rel_name, internal_relation)
+        relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
+      end
       
       def singular?(name)
         name.to_s =~ /one$/

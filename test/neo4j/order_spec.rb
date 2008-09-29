@@ -16,8 +16,8 @@ class Order
   include Neo4j::Node
   properties :total_cost
   properties :dispatched
-  has :one_or_more, Product
-  has :one, Customer
+  has :one_or_more, :products, Product
+  has :one, :customer, Customer
 end
     
 class Customer
@@ -25,17 +25,20 @@ class Customer
   properties :name      
   properties :age
   
-  #belongs_to :zero_or_more, Order  # contains incoming relationship of type 'orders'
-    
+  belongs_to :zero_or_more, :orders, Order, :customer  # contains incoming relationship of type 'orders'
+  has :zero_or_more, :friends, Customer
+  
   def to_s
     "Customer [name=#{name}]"
   end
   
-  #index :age
+  index "age"
+  index "name"
   
   # when Order with a relationship to Customer
   # For each customer in an order update total_cost
   index "orders.total_cost"
+  index "friends.age"
   
   # For each orders in a product AND for each customer in a order add the name
   # index "orders.products.name"
@@ -63,7 +66,7 @@ describe "Customer,Order,Product" do
     
     # setup fixture
     
-    @c1 = Customer.new # {|n| n.name = 'calle'; n.age = 30}
+    @c1 = Customer.new  {|n| n.name = 'calle'; n.age = 30}
     #p = Product.new {|n| n.product_name = "bike"; n.units_in_stock=3; n.unit_price = 100.50}
     @order1 = Order.new # {|n| n.total_cost = '200'; n.dispatched = "20080104"; n.customer = @c1 }#n.products << p }
     @order1.customer = @c1
@@ -71,9 +74,8 @@ describe "Customer,Order,Product" do
     @order2 = Order.new
     @order2.total_cost = '42'
     @order2.customer = @c1
-    #@c2 = Customer.new{|n| n.name = 'adam'; n.age = 29}
-    
-    #@c3 = Customer.new{|n| n.name = 'bertil'; n.age = 30}
+    @c2 = Customer.new{|n| n.name = 'adam'; n.age = 29}
+    @c3 = Customer.new{|n| n.name = 'bertil'; n.age = 30}
   end
 
  
@@ -81,7 +83,7 @@ describe "Customer,Order,Product" do
     stop
   end  
 
-  it "should find customers who has made two order with a total cost of 100 and 42" do
+  it "should find customers who has made two orders with a total cost of 100 and 42" do
     #@c1.relations.incoming(:customer).nodes.each {|n| puts "ORDER IS #{n.inspect}"}
     @order1.total_cost = '100'
     
@@ -91,11 +93,9 @@ describe "Customer,Order,Product" do
     r = Customer.find('orders.total_cost' => '42')
     r.size.should == 1
     r.should include(@c1)
-    
   end
   
-  it "should have a Order#customer method" do
-    pending
+  it "should generate methods for navigation of relationship between Customer,Order,Product" do
     o = Order.new
     o.should respond_to(:customer)
     o.should respond_to(:customer=)
@@ -107,25 +107,61 @@ describe "Customer,Order,Product" do
     o.customer.should == c
   end
 
-  it "should find all customer of age 30"  do
+  
+  it "should find customer with friends age of 1" do
+    c1 = Customer.new  {|n| n.name = 'c1'; n.age = 1}
+    c2 = Customer.new  {|n| n.name = 'c2'; n.age = 2}
+    c3 = Customer.new  {|n| n.name = 'c3'; n.age = 3}
+    
+    c1.friends << c2
+    c2.friends << c3
+    c3.friends << c1
+    
+    # when, TODO, not needed should reindex when node created !
+    c1.age = 1
+    c2.age = 2
+    c3.age = 3
+    
+    res = Customer.find(:'friends.age' => 1)
+    res.size.should == 2
+    res.should include(c1, c3)
+  end
+  
+  it "should find customer with friends age of 1 before changing value" do
     pending
+    c1 = Customer.new  {|n| n.name = 'c1'; n.age = 1}
+    c2 = Customer.new  {|n| n.name = 'c2'; n.age = 2}
+    c3 = Customer.new  {|n| n.name = 'c3'; n.age = 3}
+    
+    c1.friends << c2
+    c2.friends << c3
+    c3.friends << c1
+    
+    res = Customer.find(:'friends.age' => 1)
+    res.size.should == 2
+    res.should include(c1, c3)
+  end
+  
+  it "should find all customer of age 30"  do
     c = Customer.find(:age => 30)
     c.size.should == 2
     c.should include(@c1, @c3)
   end
 
   it "should not find any customer of age 30 if there age has changed"  do
-    pending
     c = Customer.find(:age => 30)
     c.size.should == 2
+    
+    # when
     c[0].age = 31
     c[1].age = 32
+    
+    # then
     c = Customer.find(:age => 30)
     c.size.should == 0
   end
 
   it "should not find any customer if they have been deleted"  do
-    pending
     c = Customer.find(:age => 30)
     c.size.should == 2
     c[0].delete
@@ -135,73 +171,3 @@ describe "Customer,Order,Product" do
   end
 end
 
-#index :name # does
-#
-#index :orders, :name
-#
-#Customer.update_index_when(PropertyChangedEvent).with_property('name') do |index, id, customer|
-#  index << {:id => id, :name => customer.name}
-#end
-#
-#Customer.update_index_when(NodeDeletedEvent) do |index, id, customer|
-#  index.delete(id)
-#end
-#
-# Some examples how to index relationship to support advanced queries:
-
-# Example 1
-# 
-# Find customers who have made orders with a total cost above ...
-#Customer.find("orders.total_cost > 20000")
-#
-## Needs index on orders.total_cost:
-#Customer.index "orders.total_cost"
-#
-## Which will generate the following event listener/index updater
-#
-#Customer.update_index_when(PropertyChangedEvent.fired_on(Order).with_property('total_cost')).for_each_relation(:customer) do |index, order, relation, customer|
-#  index << {:id => "#{customer.neo_node_id}.#{relation.neo_relation_id}", :total_cost => order.total_cost}
-#end
-#
-#Customer.update_index_when(RelationshipAddedEvent.fired_on(Order).with_relation_name('customer')) do |index, order, relation, customer|
-#  index << {:id => "#{customer.neo_node_id}.#{relation.neo_relation_id}", :total_cost => order.total_cost}
-#end
-#
-#Customer.update_index_when(RelationshipDeletedEvent.fired_on(Order).with_relation_name('customer')) do |index, order, relation, customer|
-#  index.delete("#{customer.neo_node_id}.#{relation.neo_relation_id}")
-#end
-#
-#etc...
-
-# Example 2
-#
-# Find all products that customer with age between 20 & 30 have bought 
-#Product.find('orders.customer.age' => 20..30)
-#
-## That will need index on 
-#Product.index('order.customer.age')
-#
-## Which will generate the following event listener/index updater
-#
-#Product.update_index_when(PropertyChangedEvent.fired_on(Customer).with_property('age')).for_each_relation(:orders, :products) do |id, index, customer|
-#  #order.relations(:products).each do |r|
-#   # id = "#{product.neo_node_id}.#{relation.neo_relation_id}.#{r.neo_relation_id}"
-#    index << {:id => id, :"orders.customer.age" => customer.age}
-#  end
-#end
-#
-#Product.update_index_when(RelationshipDeletedEvent.fired_on(Order).with_relation_name('customer')) do |index, order, relation, customer|
-#  order.relations(:products).each do |r|
-#    product = r.end_node
-#    index.delete("#{product.neo_node_id}.#{relation.neo_relation_id}.#{r.neo_relation_id}")
-#  end
-#end
-#
-##etc...
-
-
-# PropertyChangedEvent Order - ignore all
-# RelationshipAddedEvent match   Order.customer  index customer.age
-# RelationshipDeletedEvent match Order.customer delete index customer.age
-# PropertyChangedEvent match     Customer.age   index customer.age
-# NodeDeletedEvent               Customer       delete index.customer.age

@@ -269,7 +269,7 @@ module Neo4j
     def <<(other)
       # TODO, should we check if we should create a new transaction ?
       r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
-      @node.class.relation_types[@type.name.to_sym].new(r)
+      @node.class.new_relation(@type.name,r)
       @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name, r.getId()))
       other.class.fire_event(RelationshipAddedEvent.new(other, @node, @type.name, r.getId()))
       self
