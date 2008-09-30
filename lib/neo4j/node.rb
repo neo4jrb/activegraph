@@ -185,7 +185,6 @@ module Neo4j
         updater.call(self, doc)
       end
       lucene_index << doc
-      puts "DOC #{doc.inspect}"
     end
 
     
@@ -296,14 +295,11 @@ module Neo4j
       
       def index_relation(index_key, rel, prop)
         rel_type = relations_info[rel.to_sym][:rel_type]
-        #        incoming_rel_type = Inflector.demodulize(self)
-        #        incoming_rel_type.sub!(/(^.)/) {|m| m.downcase } # uncapitilize
-        # TODO we must know if we should use singular or plural - we here simple assume singular relationship
         
         # updater
         updater = lambda do |customer, doc| 
           values = []
-          relations = customer.relations.both(rel_type.to_sym).nodes # :customer
+          relations = customer.relations.both(rel_type.to_sym).nodes 
           relations.each {|order| values << order.send(prop)}
           doc[index_key] = values
         end
@@ -312,15 +308,11 @@ module Neo4j
         # trigger
         trigger = lambda do |order, event|
           if event.match?(Neo4j::PropertyChangedEvent, :property, prop)
-            rel = order.send(rel_type)
-            if (rel.kind_of?(Neo4j::NodesWithRelationType))
-              rel.each {|r| r.send(:reindex)} 
-            else
-              rel.send(:reindex) unless rel.nil?
-            end
+            relations = order.relations.both(rel_type.to_sym).nodes
+            relations.each {|r| r.send(:reindex)} 
           end
         end
-        clazz = relations_info[rel.to_sym][:class] # TODO not sure if we need to keep this information relations_info ...
+        clazz = relations_info[rel.to_sym][:class]
         clazz.index_triggers << trigger
       end
       

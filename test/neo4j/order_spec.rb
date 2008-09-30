@@ -124,7 +124,7 @@ describe "Customer,Order,Product" do
     
     res = Customer.find(:'friends.age' => 1)
     res.size.should == 2
-    res.should include(c1, c3)
+    res.should include(c2, c3)
   end
   
   it "should find customer with friends age of 1 before changing value" do
