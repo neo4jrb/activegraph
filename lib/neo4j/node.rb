@@ -287,7 +287,7 @@ module Neo4j
         index_updaters << updater
         
         trigger = lambda do |node, event|
-          node.reindex if event.match?(Neo4j::PropertyChangedEvent, :property, prop)
+          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop)
         end
         index_triggers << trigger
       end
@@ -296,7 +296,7 @@ module Neo4j
       def index_relation(index_key, rel, prop)
         rel_type = relations_info[rel.to_sym][:rel_type]
         
-        # updater
+        # updater - called when index needs to be updated
         updater = lambda do |customer, doc| 
           values = []
           relations = customer.relations.both(rel_type.to_sym).nodes 
@@ -305,9 +305,11 @@ module Neo4j
         end
         index_updaters << updater
       
-        # trigger
+        # trigger - knows if an index needs to be updated
         trigger = lambda do |order, event|
-          if event.match?(Neo4j::PropertyChangedEvent, :property, prop)
+          if (Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) or
+                Neo4j::RelationshipEvent.trigger?(event) or
+                Neo4j::NodeLifecycleEvent.trigger?(event))
             relations = order.relations.both(rel_type.to_sym).nodes
             relations.each {|r| r.send(:reindex)} 
           end

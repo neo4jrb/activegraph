@@ -95,6 +95,10 @@ describe "Customer,Order,Product" do
     r.should include(@c1)
   end
   
+  it "should not find customer with 1 order when those orders has been deleted" do
+    pending
+  end
+  
   it "should generate methods for navigation of relationship between Customer,Order,Product" do
     o = Order.new
     o.should respond_to(:customer)
@@ -108,10 +112,10 @@ describe "Customer,Order,Product" do
   end
 
   
-  it "should find customer with friends age of 1" do
-    c1 = Customer.new  {|n| n.name = 'c1'; n.age = 1}
-    c2 = Customer.new  {|n| n.name = 'c2'; n.age = 2}
-    c3 = Customer.new  {|n| n.name = 'c3'; n.age = 3}
+  it "should find customer who has a friends with age 1" do
+    c1 = Customer.new
+    c2 = Customer.new
+    c3 = Customer.new
     
     c1.friends << c2
     c2.friends << c3
@@ -127,8 +131,7 @@ describe "Customer,Order,Product" do
     res.should include(c2, c3)
   end
   
-  it "should find customer with friends age of 1 before changing value" do
-    pending
+  it "should find customer who has a friend with age 1 after changing age" do
     c1 = Customer.new  {|n| n.name = 'c1'; n.age = 1}
     c2 = Customer.new  {|n| n.name = 'c2'; n.age = 2}
     c3 = Customer.new  {|n| n.name = 'c3'; n.age = 3}
@@ -139,7 +142,7 @@ describe "Customer,Order,Product" do
     
     res = Customer.find(:'friends.age' => 1)
     res.size.should == 2
-    res.should include(c1, c3)
+    res.should include(c2, c3)
   end
   
   it "should find all customer of age 30"  do

@@ -13,10 +13,8 @@ module Neo4j
       "Event #{self.class.to_s} on node #@node (#{@node.neo_node_id})"
     end
 
-    def match?(event_clazz, prop_name, prop_value)
-      return false if self.class != event_clazz
-      return false unless self.respond_to?(prop_name)
-      return send(prop_name).to_s == prop_value.to_s
+    def self.trigger?(event)
+      event.kind_of?(self)
     end
   end
 
@@ -28,6 +26,12 @@ module Neo4j
       @new_value = new_value
       super node
     end
+
+    def self.trigger?(event, prop_name, prop_value)
+      return false unless super event
+      return false unless event.respond_to?(prop_name)
+      return event.send(prop_name).to_s == prop_value.to_s
+    end    
 
     def to_s
       "#{super} prop: #{@property} old: '#{@old_value}' new: '#{@new_value}'"
@@ -46,6 +50,7 @@ module Neo4j
     def to_s
       super + " relation_name: #{@relation_name} id: #{@relation_id} to_node:#{@to_node}"
     end
+    
   end
   
   class RelationshipAddedEvent < RelationshipEvent
@@ -60,13 +65,15 @@ module Neo4j
     end
   end
   
-  class NodeDeletedEvent < Event
+  class NodeLifecycleEvent < Event; end
+  
+  class NodeDeletedEvent < NodeLifecycleEvent
     def initialize(node)
       super node
     end
   end
   
-  class NodeCreatedEvent < Event
+  class NodeCreatedEvent < NodeLifecycleEvent
     def initialize(node)
       super node
     end
