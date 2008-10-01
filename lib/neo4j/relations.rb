@@ -136,12 +136,9 @@ module Neo4j
     # Will fire a RelationshipDeletedEvent on the start_node class.
     #
     def delete
-      from_node = start_node
-      to_node = end_node
-      @internal_r.delete
-      clazz = from_node.class
       type = @internal_r.getType().name()
-      clazz.fire_event(RelationshipDeletedEvent.new(from_node, to_node, type, @internal_r.getId))
+      start_node.class.fire_event(RelationshipDeletedEvent.new(start_node, end_node, type, @internal_r.getId))      
+      @internal_r.delete      
     end
 
     def set_property(key,value)

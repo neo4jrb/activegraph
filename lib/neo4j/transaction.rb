@@ -72,17 +72,13 @@ module Neo4j
         tx = nil
         
         # reuse existing transaction ?
-        #        synchronize do
         if !Transaction.running? 
           tx = Neo4j::Transaction.new
           tx.start
         else
-          #          yield Transaction.current
-          #          return
           $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
           tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
         end
-        #        end
         ret = nil
     
         begin  
@@ -94,7 +90,6 @@ module Neo4j
           raise e  
         ensure  
           tx.finish  
-          # do we have a lucene transaction to commit ?
         end      
         ret
       end  
@@ -172,7 +167,7 @@ module Neo4j
       Thread.current[:transaction] = nil
       
       unless failure?
-        @nodes_to_be_reindexed.each_value {|node| node.reindex}
+        @nodes_to_be_reindexed.each_value {|node| node.reindex!}
         @nodes_to_be_reindexed.clear
       end
       

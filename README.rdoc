@@ -89,6 +89,7 @@ Deleting a node (and all its relationships)
   person.delete
 
 Specifying relationships:
+
 TODO: those example are currently broken, relations has been replaced by has and belongs_to.
 
       class CustomerOrderRelation

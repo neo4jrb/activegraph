@@ -156,10 +156,10 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
+      self.class.fire_event(NodeDeletedEvent.new(self))                          
       relations.each {|r| r.delete}
       @internal_node.delete 
       lucene_index.delete(neo_node_id)
-      self.class.fire_event(NodeDeletedEvent.new(self))        
     end
     
 
@@ -178,8 +178,11 @@ module Neo4j
       Relations.new(@internal_node)
     end
 
-
     def reindex
+      Transaction.current.reindex(self)
+    end
+    
+    def reindex!
       doc = {:id => neo_node_id }
       self.class.index_updaters.each do |updater|
         updater.call(self, doc)
@@ -287,7 +290,7 @@ module Neo4j
         index_updaters << updater
         
         trigger = lambda do |node, event|
-          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop)
+          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) 
         end
         index_triggers << trigger
       end
