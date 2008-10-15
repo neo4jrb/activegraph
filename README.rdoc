@@ -34,8 +34,8 @@ The gem sources command only needs to be executed once.
     # define Neo4j properties
     properties :name, age
 
-    # define a method 'friends' for relationship friends of type Person
-    has :zero_or_more, :friends, Person 
+    # define a relationship to any other Neo4j::Node
+    has_n :friends
 
     index 'name'  # adds a lucene index on the name
     index 'age'
@@ -90,21 +90,20 @@ Deleting a node (and all its relationships)
 
 Specifying relationships:
 
-TODO: those example are currently broken, relations has been replaced by has and belongs_to.
-
-      class CustomerOrderRelation
+      class Role
         include Neo4j::Relation
-        properties :prio
+        properties :name
+      end
+
+      class Actor
+        include Neo4j::Node { 
+        has_n(:acted_in).to(Movie).relation(Role)
       end
       
-      class Customer
-        include Neo4j::Node
-        relations :orders => CustomerOrderRelation
-        relations :friends # has default type Neo4j::DynamicRelation 
-      end
-      
-      class Order
-        include Neo4j::Node        
+      class Movie
+        include Neo4j::Node     
+        properties :title
+        properties :year
       end
 
 

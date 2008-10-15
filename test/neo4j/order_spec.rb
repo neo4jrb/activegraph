@@ -1,8 +1,12 @@
 require 'neo4j'
 require 'neo4j/spec_helper'
 
-class Order; end
-class Customer; end
+class Order
+  include Neo4j::Node
+end
+class Customer
+  include Neo4j::Node
+end
 
 class Product
   include Neo4j::Node
@@ -11,22 +15,28 @@ class Product
   properties :unit_price
   #  belongs_to :zero_or_more, Order
 end
-    
+
+class OrderLine
+  include Neo4j::Relation
+  properties :units
+  properties :unit_price
+end
+
 class Order
-  include Neo4j::Node
   properties :total_cost
   properties :dispatched
-  has :one_or_more, :products, Product
-  has :one, :customer, Customer
+  has_n(:products).to(Product).relation(OrderLine)
+  has_one(:customer).to(Customer)
+  
+  index "customer.age"
 end
     
 class Customer
-  include Neo4j::Node
   properties :name      
   properties :age
   
-  belongs_to :zero_or_more, :orders, Order, :customer  # contains incoming relationship of type 'orders'
-  has :zero_or_more, :friends, Customer
+  has_n(:orders).from(Order, :customer) # :zero_or_more, :orders, Order, :customer  # contains incoming relationship of type 'orders'
+  has_n(:friends).to(Customer)
   
   def to_s
     "Customer [name=#{name}]"
@@ -212,7 +222,7 @@ describe "Customer,Order,Product" do
   
   
   
-  it "should not find any customer if they have been deleted"  do
+  it "should not find any customer if they all have been deleted"  do
     c1 = Customer.new  {|n| n.name = 'c1'; n.age = 29}
     c = Customer.find(:age => 29)
     c.size.should == 1

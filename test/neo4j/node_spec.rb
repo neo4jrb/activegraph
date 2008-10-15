@@ -34,7 +34,7 @@ describe Neo4j::Node.to_s do
       undefine_class :TestNode  # must undefine this since each spec defines it
     end
     
-    it "should allow constructor with no arguments"  do
+    it "should accept no arguments"  do
       class TestNode
         include Neo4j::Node
       end

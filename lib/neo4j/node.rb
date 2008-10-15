@@ -64,7 +64,8 @@ module Neo4j
     
     #
     # Set a neo property on this node.
-    # You should not use this method, instead set property like you do in Ruby:
+    # You should not use this method. It is used by the Node#properties classmethod
+    # that generates neo property accessors methods.
     # 
     #   n = Node.new
     #   n.foo = 'hej'
@@ -84,14 +85,8 @@ module Neo4j
  
     # 
     # Returns the value of the given neo property.
-    # You should not use this method, instead use get properties like you do in Ruby:
+    # You should not use this method. It is used by the Node#properties classmethod
     # 
-    #   n = Node.new
-    #   n.foo = 'hej'
-    #   puts n.foo
-    # 
-    # The n.foo call will intern use this method.
-    # If the property does not exist it will return nil.
     # Runs in a new transaction if there is not one already running,
     # otherwise it will run in the existing transaction.
     #    
@@ -249,7 +244,6 @@ module Neo4j
       
       def fire_event(event)
         index_triggers.each {|trigger| trigger.call(event.node, event)}
-        #Neo4j::Transaction.current.reindex(event.node) # ??? TODO reindex after a transaction finish
       end
       
       
@@ -273,14 +267,17 @@ module Neo4j
       end
     
       
-      
-      # when Order with a relationship to Customer
-      # For each customer in an order update total_cost
-      # index "orders.total_cost"
-      def index(rel_prop)
-        rel, prop = rel_prop.to_s.split('.')
-        index_property(rel) if prop.nil?
-        index_relation(rel_prop, rel,prop) unless prop.nil?
+      #      
+      # Index a property a relationship.
+      # If the rel_prop arg contains a '.' then it will index the relationship.
+      # For example "friends.name" will index each node with property name in the relationship friends.
+      # For example "name" will index the name property of this Node class.
+      #
+      def index(rel_type_prop)
+        puts "INDEX #{rel_type_prop}"
+        rel_type, prop = rel_type_prop.to_s.split('.')
+        index_property(rel_type) if prop.nil?
+        index_relation(rel_type_prop, rel_type, prop) unless prop.nil?
       end
 
       def index_property(prop)
@@ -296,88 +293,71 @@ module Neo4j
       end
       
       
-      def index_relation(index_key, rel, prop)
-        rel_type = relations_info[rel.to_sym][:rel_type]
+      def index_relation(index_key, rel_type, prop)
+        clazz = relations_info[rel_type.to_sym][:class]
+        
+        type = relations_info[rel_type.to_sym][:type]  # this or the other node we index ?
+        rel_type = type.to_sym unless type.nil?
         
         # updater - called when index needs to be updated
-        updater = lambda do |customer, doc| 
+        updater = lambda do |my_node, doc| 
           values = []
-          relations = customer.relations.both(rel_type.to_sym).nodes 
-          relations.each {|order| values << order.send(prop)}
+          relations = my_node.relations.both(rel_type).nodes 
+          relations.each {|other_node| values << other_node.send(prop)}
           doc[index_key] = values
         end
         index_updaters << updater
       
         # trigger - knows if an index needs to be updated
-        trigger = lambda do |order, event|
+        trigger = lambda do |other_node, event|
           if (Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) or
                 Neo4j::RelationshipEvent.trigger?(event) or
                 Neo4j::NodeLifecycleEvent.trigger?(event))
-            relations = order.relations.both(rel_type.to_sym).nodes
+            relations = other_node.relations.both(rel_type).nodes
             relations.each {|r| r.send(:reindex)} 
           end
         end
-        clazz = relations_info[rel.to_sym][:class]
         clazz.index_triggers << trigger
-      end
-      
-      #
-      # Allows to declare Neo4j relationsships.
-      # The speficied name will be used as the type of the neo relationship.
-      #
-      def add_relation_type(rel_name)
-        # This code will be nicer in Ruby 1.9, can't use define_method
-        module_eval(%Q{def #{rel_name}(&block)
-                        NodesWithRelationType.new(self,'#{rel_name.to_s}', &block)
-                    end},  __FILE__, __LINE__)
-      end
-
-      def add_single_relation_type(rel_name)
-        # This code will be nicer in Ruby 1.9, can't use define_method
-        # TODO refactoring ! error handling etc ..
-        module_eval(%Q{def #{rel_name}=(value)
-                        r = NodesWithRelationType.new(self,'#{rel_name.to_s}')
-                        r << value
-                    end},  __FILE__, __LINE__)
-        
-        module_eval(%Q{def #{rel_name}
-                        r = NodesWithRelationType.new(self,'#{rel_name.to_s}')
-                        r.to_a[0]
-                    end},  __FILE__, __LINE__)
       end
       
 
       #      
       # Specifies a relationship between two node classes.
-      # Expects type of relation and class. Example:
-      #       
+      # Example      
       #   class Order
-      #      # default last parameter will be :order_lines
-      #      has :one_or_more, OrderLine 
-      #      has :one_and_only_one, Customer
+      #      has_one(:customer).of_class(Customer)
       #   end
       #      
-      def has(multiplicity, rel_name, clazz, rel_type = rel_name)
-        add_relation_type(rel_type) unless singular?(multiplicity)
-        add_single_relation_type(rel_type) if singular?(multiplicity)
-        relations_info[rel_name] = {:multiplicity => multiplicity, :class => clazz, :rel_type => rel_type, :outgoing => true, :relation => Neo4j::DynamicRelation}
+      def has_one(rel_type)
+
+        module_eval(%Q{def #{rel_type}=(value)
+                        r = NodesWithRelationType.new(self,'#{rel_type.to_s}')
+                        r << value
+                    end},  __FILE__, __LINE__)
+        
+        module_eval(%Q{def #{rel_type}
+                        r = NodesWithRelationType.new(self,'#{rel_type.to_s}')
+                        r.to_a[0]
+                    end},  __FILE__, __LINE__)
+        relations_info[rel_type] = RelationInfo.new
       end
 
       
 
-      #
-      # Defines a method for navigation to incoming relationships
-      # Example 
-      # class Customer
-      #   belongs :zero_or_more, :orders, Order, :customer
-      # end
-      # 
-      # The third parameter is by default plural of the second parameter if multiplicity does
-      # not end with _or_more
-      # 
-      def belongs_to(multiplicity, rel_name, clazz, rel_type)
-        relations_info[rel_name] = {:multiplicity => multiplicity, :rel_type => rel_type, :class => clazz, :outgoing => false}        
+      #      
+      # Specifies a relationship between two node classes.
+      # Example      
+      #   class Order
+      #      has_n(:order_lines).of_class(OrderLine).of_relation_class(OrderLine)
+      #   end
+      #      
+      def has_n(rel_type) #, clazz, rel_type = rel_name)
+        module_eval(%Q{def #{rel_type}(&block)
+                        NodesWithRelationType.new(self,'#{rel_type.to_s}', &block)
+                    end},  __FILE__, __LINE__)
+        relations_info[rel_type] = RelationInfo.new
       end
+
       
       #
       # Creates a new relation. The relation must be outgoing.
@@ -386,10 +366,7 @@ module Neo4j
         relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
       end
       
-      def singular?(name)
-        name.to_s =~ /one$/
-      end
-      
+     
       
       #
       # Finds all nodes of this type (and ancestors of this type) having
