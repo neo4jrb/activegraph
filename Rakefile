@@ -76,7 +76,7 @@ namespace :gem do
  
   desc "Run :package and install the .gem locally"
   task :install => [:update_gemspec, :package] do
-    sh %{sudo gem install --local pkg/neo4j.gem --no-rdoc --no-ri}
+    sh %{gem install --local pkg/neo4j-#{spec.version}.gem --no-rdoc --no-ri}
   end
  
   desc "Run :clean and uninstall the .gem"
