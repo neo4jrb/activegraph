@@ -274,7 +274,6 @@ module Neo4j
       # For example "name" will index the name property of this Node class.
       #
       def index(rel_type_prop)
-        puts "INDEX #{rel_type_prop}"
         rel_type, prop = rel_type_prop.to_s.split('.')
         index_property(rel_type) if prop.nil?
         index_relation(rel_type_prop, rel_type, prop) unless prop.nil?

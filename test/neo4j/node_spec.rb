@@ -9,7 +9,7 @@ require 'neo4j/spec_helper'
 # the following specs are run inside one Neo4j transaction
 # 
 
-describe Neo4j::Node.to_s do
+describe 'Neo4j::Node' do
   before(:all) do
     start
 #    @transaction = Neo4j::Transaction.new 
@@ -225,7 +225,7 @@ describe Neo4j::Node.to_s do
     before(:all) do
       class Customer
         include Neo4j::Node
-        relations :orders
+        has_n :orders
         properties :name
       end
       
@@ -235,17 +235,17 @@ describe Neo4j::Node.to_s do
     end
     
     before(:each) do
-      Customer.index_updaters.clear # remove all listeners between tests     
-      Order.index_updaters.clear # remove all listeners between tests     
+      Customer.index_triggers.clear # remove all listeners between tests     
+      Order.index_triggers.clear # remove all listeners between tests     
     end
     
     
     it "should fire a NodeCreatedEvent when a new node created" do
       # given
       iu = mock('IndexUpdater')
-      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::NodeCreatedEvent))
+      iu.should_receive(:call).once.with(an_instance_of(Customer), an_instance_of(Neo4j::NodeCreatedEvent))
 
-      Customer.index_updaters << iu
+      Customer.index_triggers << iu
       
       # when
       f = Customer.new
@@ -256,8 +256,8 @@ describe Neo4j::Node.to_s do
       f = Customer.new
       
       iu = mock('IndexUpdater')
-      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::NodeDeletedEvent))
-      Customer.index_updaters << iu
+      iu.should_receive(:call).once.with(f, an_instance_of(Neo4j::NodeDeletedEvent))
+      Customer.index_triggers << iu
       
       # when
       f.delete
@@ -267,8 +267,8 @@ describe Neo4j::Node.to_s do
       # given
       f = Customer.new
       iu = mock('IndexUpdater')
-      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::PropertyChangedEvent))
-      Customer.index_updaters << iu
+      iu.should_receive(:call).once.with(f, an_instance_of(Neo4j::PropertyChangedEvent))            
+      Customer.index_triggers << iu
       
       # when
       f.name = 'foo'
@@ -283,8 +283,8 @@ describe Neo4j::Node.to_s do
       cust.orders << order
 
       iu = mock('IndexUpdater')
-      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::RelationshipDeletedEvent)) 
-      Customer.index_updaters << iu
+      iu.should_receive(:call).once.with(cust, an_instance_of(Neo4j::RelationshipDeletedEvent))   
+      Customer.index_triggers << iu
       
       # when
       cust.relations.outgoing(:orders)[order].delete
@@ -298,8 +298,8 @@ describe Neo4j::Node.to_s do
       order = Order.new
 
       iu = mock('IndexUpdater')
-      iu.should_receive(:trigger_on?).once.with(an_instance_of(Neo4j::RelationshipAddedEvent)) 
-      Customer.index_updaters << iu
+      iu.should_receive(:call).once.with(cust, an_instance_of(Neo4j::RelationshipAddedEvent)) 
+      Customer.index_triggers << iu
       
       # when
       cust.orders << order
@@ -307,23 +307,19 @@ describe Neo4j::Node.to_s do
     end
     
     it "should fire RelationshipDeletedEvent when a node and its relationships are deleted" do
-      pending
       # given
       iu = mock('IndexUpdater')
-      iu.should_receive(:trigger_on?) #Neo4j::RelationshipAddedEvent
-      Customer.index_updaters << iu
-      
+      iu.should_receive(:call).once.with(an_instance_of(Customer), an_instance_of(Neo4j::RelationshipDeletedEvent))      
       cust = Customer.new
       order = Order.new
       cust.orders << order
-      
+      Customer.index_triggers << iu      
+
       # when
       order.delete
       
       # then
       cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
-      events.size.should == 1
-      events[0].should be_kind_of(Neo4j::RelationshipDeletedEvent)
     end
   end
   
@@ -334,12 +330,12 @@ end
 # delete
 #
 
-describe Neo4j::Node.to_s, 'delete'  do
+describe "Neo4j::Node#delete"  do
   before(:all) do
     start
     class TestNode 
       include Neo4j::Node
-      relations :friends
+      has_n :friends
     end
 
   end

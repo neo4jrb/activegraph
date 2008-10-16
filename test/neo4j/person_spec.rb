@@ -5,10 +5,8 @@ require 'neo4j/spec_helper'
 class Person
   include Neo4j::Node
   properties :name
-  relations :friends
+  has_n :friends
   
-  #index :friends, :name
-  # same as  index(:friends, Person, 'Friend.name') {name}
   index :name
 end
 

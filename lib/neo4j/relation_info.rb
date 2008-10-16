@@ -27,7 +27,7 @@ module Neo4j
     
     
     def relation(rel_class)
-      @info[:relation_class] = rel_class
+      @info[:relation] = rel_class
       self
     end
   end

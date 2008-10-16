@@ -28,24 +28,11 @@ describe Neo4j::Node.to_s do
       
       class TestNode 
         include Neo4j::Node
-        relations :friends
-        relations :parents
+        has_n :friends
+        has_n :parents
       end
     end    
     
-    it "should allow to add relation types outside a class definition" do
-      # given
-      node = TestNode.new
-      
-      # when
-      TestNode.add_relation_type(:foos)
-      
-      # then
-      added = Neo4j::BaseNode.new
-      node.foos << added
-      node.foos.to_a.should include(added)
-    end
-
     
     it "should add a relation of a specific type to another node" do
       t1 = TestNode.new
@@ -116,8 +103,8 @@ describe Neo4j::Node.to_s do
       
       class TestNode 
         include Neo4j::Node
-        relations :friends
-        relations :parents
+        has_n :friends
+        has_n :parents
       end
     end    
     
@@ -204,7 +191,7 @@ describe Neo4j::Node.to_s do
     end
   end
 
-  describe "#contains (A customer contains zero or more orders)" do
+  describe "#has_n (A customer contains zero or more orders)" do
     before(:all) do
       class Order
         include Neo4j::Node
@@ -221,8 +208,7 @@ describe Neo4j::Node.to_s do
         properties :age, :name
         
         # TODO should be easier to say the thing below
-        has :zero_or_more, Order # default name will be orders
-        relations :orders => CustOrderRel
+        has_n(:orders).relation(CustOrderRel)
       end
 
     end
@@ -291,8 +277,8 @@ describe Neo4j::Node.to_s do
       
       class Customer
         include Neo4j::Node
-        relations :orders => CustomerOrderRelation
-        relations :friends
+        has_n(:orders).relation(CustomerOrderRelation)
+        has_n :friends
       end
       
       class Order
@@ -300,15 +286,6 @@ describe Neo4j::Node.to_s do
       end
     end
 
-    it "should know the class for a relation type" do
-      Customer.relation_types.keys.should include(:orders)
-      Customer.relation_types[:orders].should == CustomerOrderRelation
-    end
-    
-    it "should have a default relation class for a none specified relation type" do
-      Customer.relation_types[:friends].should == Neo4j::DynamicRelation
-    end
-    
     
     it "should be possible to create a new relation of the specified type" do
       c = Customer.new 

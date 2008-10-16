@@ -244,7 +244,10 @@ module Neo4j
       r = Neo4j::Transaction.run {
        @node.internal_node.createRelationshipTo(other.internal_node, @type)
       }
-      @node.class.relation_types[@type.name.to_sym].new(r)
+      puts "@type.name = #{@type.name.to_sym}"
+      puts "@node.class.relations_info[@type.name.to_sym]=#{@node.class.relations_info[@type.name.to_sym].info.inspect}"
+      @node.class.relations_info[@type.name.to_sym][:relation].new(r)
+      #@node.class.relation_types[@type.name.to_sym].new(r)
     end
     
     
