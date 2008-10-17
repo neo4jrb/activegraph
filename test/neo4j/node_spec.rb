@@ -29,7 +29,7 @@ describe 'Neo4j::Node' do
   #
 
   
-  describe 'initialize' do
+  describe '#initialize' do
     after(:each)  do
       undefine_class :TestNode  # must undefine this since each spec defines it
     end
@@ -190,6 +190,7 @@ describe 'Neo4j::Node' do
   describe 'equality (==)' do
     
     before(:all) do
+      undefine_class :TestNode  # make sure it is not already defined
       class TestNode 
         include Neo4j::Node
       end
@@ -223,41 +224,43 @@ describe 'Neo4j::Node' do
   
   describe 'fire events' do 
     before(:all) do
-      class Customer
+      undefine_class :TestNode  # make sure it is not already defined
+      class TestNode
         include Neo4j::Node
         has_n :orders
         properties :name
       end
       
-      class Order
-        include Neo4j::Node        
+      undefine_class :TestNode2  # make sure it is not already defined
+      class TestNode2
+        include Neo4j::Node
       end
     end
     
     before(:each) do
-      Customer.index_triggers.clear # remove all listeners between tests     
-      Order.index_triggers.clear # remove all listeners between tests     
+      TestNode.index_triggers.clear # remove all listeners between tests     
+      TestNode2.index_triggers.clear # remove all listeners between tests
     end
     
     
     it "should fire a NodeCreatedEvent when a new node created" do
       # given
       iu = mock('IndexUpdater')
-      iu.should_receive(:call).once.with(an_instance_of(Customer), an_instance_of(Neo4j::NodeCreatedEvent))
+      iu.should_receive(:call).once.with(an_instance_of(TestNode), an_instance_of(Neo4j::NodeCreatedEvent))
 
-      Customer.index_triggers << iu
+      TestNode.index_triggers << iu
       
       # when
-      f = Customer.new
+      f = TestNode.new
     end
     
     it "should fire a NodeDeletedEvent when a node is deleted" do
       # given
-      f = Customer.new
+      f = TestNode.new
       
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(f, an_instance_of(Neo4j::NodeDeletedEvent))
-      Customer.index_triggers << iu
+      TestNode.index_triggers << iu
       
       # when
       f.delete
@@ -265,10 +268,10 @@ describe 'Neo4j::Node' do
     
     it "should fire a PropertyChangedEvent when a property on a node changes" do
       # given
-      f = Customer.new
+      f = TestNode.new
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(f, an_instance_of(Neo4j::PropertyChangedEvent))            
-      Customer.index_triggers << iu
+      TestNode.index_triggers << iu
       
       # when
       f.name = 'foo'
@@ -278,13 +281,13 @@ describe 'Neo4j::Node' do
     
     it "should fire a RelationshipDeletedEvent when a relationship between two nodes has been deleted" do
       # given
-      cust = Customer.new
-      order = Order.new
+      cust = TestNode.new
+      order = TestNode.new
       cust.orders << order
 
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(cust, an_instance_of(Neo4j::RelationshipDeletedEvent))   
-      Customer.index_triggers << iu
+      TestNode.index_triggers << iu
       
       # when
       cust.relations.outgoing(:orders)[order].delete
@@ -292,35 +295,66 @@ describe 'Neo4j::Node' do
     end
     
 
-    it "should fire a RelationshipAddedEvent when a new relationship is created" do
+    it "should fire a RelationshipAddedEvent when a new relationship is created to the same class" do
+      pending
       # given
-      cust = Customer.new
-      order = Order.new
+      t1 = TestNode.new
+      t2 = TestNode.new # same class
 
       iu = mock('IndexUpdater')
-      iu.should_receive(:call).once.with(cust, an_instance_of(Neo4j::RelationshipAddedEvent)) 
-      Customer.index_triggers << iu
+      iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipAddedEvent))
+      TestNode.index_triggers << iu
       
       # when
-      cust.orders << order
+      t1.orders << t2
+    end
+
+    it "should fire a RelationshipAddedEvent when a new relationship is created to a different class" do
+      # given
+      t1 = TestNode.new
+      t2 = TestNode2.new  # a different class
+
+      iu = mock('IndexUpdater')
+      iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipAddedEvent)) 
+      TestNode.index_triggers << iu
       
+      # when
+      t1.orders << t2
     end
     
-    it "should fire RelationshipDeletedEvent when a node and its relationships are deleted" do
+    it "should fire RelationshipDeletedEvent when a node and its relationships are deleted (same class)" do
+      pending
       # given
       iu = mock('IndexUpdater')
-      iu.should_receive(:call).once.with(an_instance_of(Customer), an_instance_of(Neo4j::RelationshipDeletedEvent))      
-      cust = Customer.new
-      order = Order.new
-      cust.orders << order
-      Customer.index_triggers << iu      
+      iu.should_receive(:call).once.with(an_instance_of(TestNode), an_instance_of(Neo4j::RelationshipDeletedEvent))      
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t1.orders << t2
+      TestNode.index_triggers << iu      
 
       # when
-      order.delete
+      t2.delete
       
       # then
-      cust.orders.to_a.size.should == 0 # just to make sure it really was deleted
+      t1.orders.to_a.size.should == 0 # just to make sure it really was deleted
     end
+    
+    it "should fire RelationshipDeletedEvent when a node and its relationships are deleted (two different classes)" do
+      # given
+      iu = mock('IndexUpdater')
+      iu.should_receive(:call).once.with(an_instance_of(TestNode), an_instance_of(Neo4j::RelationshipDeletedEvent))      
+      t1 = TestNode.new
+      t2 = TestNode2.new
+      t1.orders << t2
+      TestNode.index_triggers << iu      
+
+      # when
+      t2.delete
+      
+      # then
+      t1.orders.to_a.size.should == 0 # just to make sure it really was deleted
+    end
+    
   end
   
 end
@@ -333,6 +367,7 @@ end
 describe "Neo4j::Node#delete"  do
   before(:all) do
     start
+    undefine_class :TestNode
     class TestNode 
       include Neo4j::Node
       has_n :friends

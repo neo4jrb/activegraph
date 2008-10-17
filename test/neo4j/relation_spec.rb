@@ -4,15 +4,12 @@ require 'neo4j/spec_helper'
 
 
 
-describe Neo4j::Node.to_s do
+describe "Neo4j::Node#relations " do
   before(:all) do
     start
-#    @transaction = Neo4j::Transaction.new 
-#    @transaction.start
   end
 
   after(:all) do
- #   @transaction.finish
     stop
   end  
 
@@ -21,7 +18,7 @@ describe Neo4j::Node.to_s do
   # adding relations with <<
   #
   
-  describe '#relations << operator' do
+  describe '<< operator' do
     
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
@@ -34,7 +31,7 @@ describe Neo4j::Node.to_s do
     end    
     
     
-    it "should add a relation of a specific type to another node" do
+    it "should add a node to a relation" do
       t1 = TestNode.new
       t2 = TestNode.new
       
