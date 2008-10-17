@@ -188,6 +188,37 @@ describe "Neo4j::Node#relations " do
     end
   end
 
+  describe "#has_one" do
+    before(:all) do
+      undefine_class :Person
+      undefine_class :Address
+      class Address
+      end
+      
+      class Person
+        include Neo4j::Node
+        has_one(:address).to(Address)
+      end
+
+      class Address
+        include Neo4j::Node
+        properties :city, :road
+        has_n(:people).from(Person, :address)
+      end
+    end
+
+    it "should create a relationship with assignment like node1.rel = node2" do
+      pending
+      p = Person.new
+      p.address = Address.new {|a| a.city = 'malmoe'; a.road = 'my road'}
+
+      p.address.should be_kind_of(Address)
+      p.address.people.to_a.size.should == 1
+      p.address.people.to_a.should include(p)
+    end
+  end
+
+  
   describe "#has_n (A customer contains zero or more orders)" do
     before(:all) do
       class Order

@@ -10,8 +10,7 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     class TestNode 
       include Neo4j::Node
       properties :name, :age
-      index :name
-      index :age
+      index :name, :age
     end
   end
   after(:all) do

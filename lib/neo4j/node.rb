@@ -273,10 +273,12 @@ module Neo4j
       # For example "friends.name" will index each node with property name in the relationship friends.
       # For example "name" will index the name property of this Node class.
       #
-      def index(rel_type_prop)
-        rel_type, prop = rel_type_prop.to_s.split('.')
-        index_property(rel_type) if prop.nil?
-        index_relation(rel_type_prop, rel_type, prop) unless prop.nil?
+      def index(*rel_type_props)
+        rel_type_props.each do |rel_type_prop|
+          rel_type, prop = rel_type_prop.to_s.split('.')
+          index_property(rel_type) if prop.nil?
+          index_relation(rel_type_prop, rel_type, prop) unless prop.nil?
+        end
       end
 
       def index_property(prop)
