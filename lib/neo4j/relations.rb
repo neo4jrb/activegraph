@@ -242,7 +242,7 @@ module Neo4j
     #
     def new(other)
       r = Neo4j::Transaction.run {
-       @node.internal_node.createRelationshipTo(other.internal_node, @type)
+        @node.internal_node.createRelationshipTo(other.internal_node, @type)
       }
       @node.class.relations_info[@type.name.to_sym][:relation].new(r)
       #@node.class.relation_types[@type.name.to_sym].new(r)
@@ -265,7 +265,6 @@ module Neo4j
     #   n1.friends.new(n3)
     #
     def <<(other)
-      # TODO, should we check if we should create a new transaction ?
       r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
       @node.class.new_relation(@type.name,r)
       @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name, r.getId()))

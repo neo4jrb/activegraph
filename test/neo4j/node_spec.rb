@@ -296,13 +296,14 @@ describe 'Neo4j::Node' do
     
 
     it "should fire a RelationshipAddedEvent when a new relationship is created to the same class" do
-      pending
       # given
       t1 = TestNode.new
       t2 = TestNode.new # same class
 
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipAddedEvent))
+      iu.should_receive(:call).once.with(t2, an_instance_of(Neo4j::RelationshipAddedEvent))
+
       TestNode.index_triggers << iu
       
       # when
@@ -323,13 +324,14 @@ describe 'Neo4j::Node' do
     end
     
     it "should fire RelationshipDeletedEvent when a node and its relationships are deleted (same class)" do
-      pending
       # given
-      iu = mock('IndexUpdater')
-      iu.should_receive(:call).once.with(an_instance_of(TestNode), an_instance_of(Neo4j::RelationshipDeletedEvent))      
       t1 = TestNode.new
       t2 = TestNode.new
       t1.orders << t2
+
+      iu = mock('IndexUpdater')      
+      iu.should_receive(:call).once.with(t2, an_instance_of(Neo4j::NodeDeletedEvent))                              
+      iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipDeletedEvent))            
       TestNode.index_triggers << iu      
 
       # when
