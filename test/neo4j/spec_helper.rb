@@ -22,11 +22,13 @@ def stop
 end
 
 
-def undefine_class(clazz_sym)
-  Object.instance_eval do 
-    begin 
-      remove_const clazz_sym
-    end if const_defined? clazz_sym
+def undefine_class(*clazz_syms)
+  clazz_syms.each do |clazz_sym|
+    Object.instance_eval do
+      begin
+        remove_const clazz_sym
+      end if const_defined? clazz_sym
+    end
   end
 end
 

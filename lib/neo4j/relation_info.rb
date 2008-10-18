@@ -4,7 +4,9 @@ module Neo4j
     attr_accessor :info 
     def initialize
       @info = {}
+      # set defaults
       @info[:relation] = DynamicRelation
+      @info[:outgoing] = true
     end
     
     

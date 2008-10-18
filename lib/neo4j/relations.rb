@@ -208,12 +208,21 @@ module Neo4j
     extend Neo4j::Transactional
     
     # TODO other_node_class not used ?
-    def initialize(node, type, other_node_class = nil, &filter)
+    def initialize(node, type, &filter)
       @node = node
       @type = RelationshipType.instance(type)      
-      @other_node_class = other_node_class
       @filter = filter
       @depth = 1
+      @info = node.class.relations_info[type.to_sym]
+
+      if @info[:outgoing]
+        @direction = Direction::OUTGOING
+        @type = RelationshipType.instance(type)
+      else
+        @direction = Direction::INCOMING
+        other_class_type = @info[:type].to_s
+        @type = RelationshipType.instance(other_class_type)      
+      end
     end
     
        
@@ -223,7 +232,7 @@ module Neo4j
         stop, #StopEvaluator::DEPTH_ONE,
         ReturnableEvaluator::ALL_BUT_START_NODE,
         @type,
-        Direction::OUTGOING)
+        @direction)
       iter = traverser.iterator
       while (iter.hasNext) do
         node = Neo4j::Neo.instance.load_node(iter.next)
@@ -241,11 +250,13 @@ module Neo4j
     # To set a relationship type see #Neo4j::relations
     #
     def new(other)
+      from, to = @node, other
+      from,to = to,from unless @info[:outgoing]
+      
       r = Neo4j::Transaction.run {
-        @node.internal_node.createRelationshipTo(other.internal_node, @type)
+        from.internal_node.createRelationshipTo(to.internal_node, @type)
       }
-      @node.class.relations_info[@type.name.to_sym][:relation].new(r)
-      #@node.class.relation_types[@type.name.to_sym].new(r)
+      from.class.relations_info[@type.name.to_sym][:relation].new(r)
     end
     
     
@@ -265,10 +276,13 @@ module Neo4j
     #   n1.friends.new(n3)
     #
     def <<(other)
-      r = @node.internal_node.createRelationshipTo(other.internal_node, @type)
-      @node.class.new_relation(@type.name,r)
-      @node.class.fire_event(RelationshipAddedEvent.new(@node, other, @type.name, r.getId()))
-      other.class.fire_event(RelationshipAddedEvent.new(other, @node, @type.name, r.getId()))
+      from, to = @node, other
+      from,to = to,from unless @info[:outgoing]
+      
+      r = from.internal_node.createRelationshipTo(to.internal_node, @type)
+      from.class.new_relation(@type.name,r)
+      from.class.fire_event(RelationshipAddedEvent.new(from, to, @type.name, r.getId()))
+      other.class.fire_event(RelationshipAddedEvent.new(to, from, @type.name, r.getId()))
       self
     end
     

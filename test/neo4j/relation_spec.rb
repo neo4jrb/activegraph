@@ -188,10 +188,10 @@ describe "Neo4j::Node#relations " do
     end
   end
 
-  describe "#has_one" do
+  describe "#has_one to #has_n" do
     before(:all) do
-      undefine_class :Person
-      undefine_class :Address
+      undefine_class :Person, :Address
+
       class Address
       end
       
@@ -208,22 +208,41 @@ describe "Neo4j::Node#relations " do
     end
 
     it "should create a relationship with assignment like node1.rel = node2" do
-      pending
+      # given
       p = Person.new
+
+      # when
       p.address = Address.new {|a| a.city = 'malmoe'; a.road = 'my road'}
 
+      # then
       p.address.should be_kind_of(Address)
       p.address.people.to_a.size.should == 1
       p.address.people.to_a.should include(p)
     end
+
+    it "should allow to find the relationship with a simple node1.rel (no traversal)" do
+      a = Address.new
+      p = Person.new
+
+      # when
+      a.people << p
+
+      # then
+      p.address.should == a
+    end
   end
 
   
-  describe "#has_n (A customer contains zero or more orders)" do
+  describe "#has_n to #has_one" do
     before(:all) do
+      undefine_class :Customer, :Order, :CustOrderRel
+
+      class Customer; end
+      
       class Order
         include Neo4j::Node
         properties :date, :order_id
+        has_one(:customer).from(Customer, :orders)
       end
       
       class CustOrderRel
@@ -251,6 +270,20 @@ describe "Neo4j::Node#relations " do
       
       # then
       customer.orders.to_a.should include(order)
+      customer.orders.to_a.size == 1      
+    end
+
+    it "should allow to set the relationship on an incoming node" do
+      # given
+      customer = Customer.new
+      order = Order.new
+      
+      # when
+      order.customer = customer
+      
+      # then
+      customer.orders.to_a.should include(order)
+      customer.orders.to_a.size == 1
     end
     
     it "should allow to set a property on the customer-order relationship" do

@@ -349,10 +349,10 @@ module Neo4j
       # Specifies a relationship between two node classes.
       # Example      
       #   class Order
-      #      has_n(:order_lines).of_class(OrderLine).of_relation_class(OrderLine)
+      #      has_n(:order_lines).to(Product).relation(OrderLine)
       #   end
       #      
-      def has_n(rel_type) #, clazz, rel_type = rel_name)
+      def has_n(rel_type) 
         module_eval(%Q{def #{rel_type}(&block)
                         NodesWithRelationType.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)

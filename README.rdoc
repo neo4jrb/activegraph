@@ -26,6 +26,9 @@ To install it please type:
 
 The gem sources command only needs to be executed once.
 
+JRuby version 1.1.4 does not work with Neo4j.rb because of a bug (JRUBY-2959).
+This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
+
 == Two Minute Tutorial
 
   class Person
@@ -34,7 +37,7 @@ The gem sources command only needs to be executed once.
     # define Neo4j properties
     properties :name, age
 
-    # define a relationship to any other Neo4j::Node
+    # define an one way relationship to any other Neo4j::Node
     has_n :friends
 
     index 'name'  # adds a lucene index on the name
@@ -80,6 +83,10 @@ Traversing relationships
 
   person.friends.each {|n| ... }
 
+Traversing using a filter
+
+  person.friends{ age == 23 }.each {|n| ...}
+
 Deleting a relationship
 
   person.relations[person2].delete
@@ -96,7 +103,7 @@ Specifying relationships:
       end
 
       class Actor
-        include Neo4j::Node { 
+        include Neo4j::Node
         has_n(:acted_in).to(Movie).relation(Role)
       end
       
@@ -104,20 +111,38 @@ Specifying relationships:
         include Neo4j::Node     
         properties :title
         properties :year
+
+        # defines a method for traversing incoming acted_in relationships from Actor
+        has_n(:actors).from(Actor, :acted_in)
       end
 
 
 Notice that relationships also can have properties.
 Creating a new Customer Order relationship can be done like this
 
-      c = Customer.new 
-      o = Order.new
-      r = c.orders.new(o)
-      r.prio = 'important'
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      keanu_reeves.acted_in << matrix
 
-or like this
+or you can also specify this relationship on the incoming node
 
-      c.orders << Order.new
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      matrix.actors << keanu_reeves
+
+Example of accessing the Role between an Actor and a Movie
+
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      role = keanu_reeves.acted_in.new(matrix)
+      role.name = 'neo'
+
+or
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      keanu_reeves.acted_in << matrix
+      keanu_reeves.acted_in
+      keanu_reeves.relations.outgoing(:acted_in)[matrix].name = 'neo'
 
 
 == The Lucene Module
@@ -364,7 +389,8 @@ You can also set a property like this:
 
 Neo4j.rb supports properties to by of type String, Fixnum, Float and Boolean.
 
-=== Relationship
+
+=== Relationship has_n
 
 Neo relationships are none symmetrical. That means that if A has a relation to B
 then it may not be true that B has a relation to A.
@@ -382,6 +408,37 @@ Example how to add a relation to another node:
   f = Person.new 
   f.friends << SomeOtherNode.new
   
+=== Relationship has_one
+
+Example of has_one: A person can have at most one Address
+
+      class Person
+        include Neo4j::Node
+        has_one(:address).to(Address)
+      end
+
+      class Address
+        include Neo4j::Node
+        properties :city, :road
+        has_n(:people).from(Person, :address)
+      end
+
+In the example above we have Neo4j.rb will generate the following methods
+  * in Person, the method ''address='' and ''address''
+  * in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
+
+Example of usage
+
+      p = Person.new
+      p.address = Address.new
+      p.address.city = 'malmoe'
+
+
+Or from the incoming ''address'' relationship
+
+      a = Address.new {|n| n.city = 'malmoe'}
+      a.people << Person.new
+
 
 === Properties on a relationship
 
@@ -396,6 +453,9 @@ Example:
 
   # set a property 'since' on this relationship bewteen p1 and p2
   relation.since = 1992
+
+If a Relationship class has not been specified for a relationship then any properties
+can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
 
 === Traversing relationships:
 
