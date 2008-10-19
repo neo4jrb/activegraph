@@ -148,20 +148,6 @@ describe "Customer,Order,Product" do
       Customer.find('orders.total_cost' => '200').size.should == 0
     end
       
-    
-      
-    it "should generate methods for navigation of relationship between Customer,Order,Product" do
-      o = Order.new
-      o.should respond_to(:customer)
-      o.should respond_to(:customer=)
-      o.should respond_to(:products)
-      o.should_not respond_to(:products=)
-        
-      c = Customer.new
-      o.customer = c
-      o.customer.should == c
-    end
-    
       
     it "should find customer who has a friends of age 30, setting relationship first and then age" do
       c1 = Customer.new

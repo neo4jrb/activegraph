@@ -424,8 +424,8 @@ Example of has_one: A person can have at most one Address
       end
 
 In the example above we have Neo4j.rb will generate the following methods
-  * in Person, the method ''address='' and ''address''
-  * in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
+ * in Person, the method ''address='' and ''address''
+ * in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
 
 Example of usage
 

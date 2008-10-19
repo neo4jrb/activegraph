@@ -34,6 +34,9 @@ module Neo4j
     class << self 
       
 
+      #
+      # debugging method
+      #
       def called
         res = ""
         for i in 2..7 do
@@ -138,7 +141,7 @@ module Neo4j
     # Starts a new transaction
     #
     def start
-      @neo_tx= org.neo4j.api.core.Transaction.begin
+      @neo_tx= Neo4j::Neo.instance.begin_transaction #org.neo4j.api.core.Transaction.begin
       @failure = false      
       
       $NEO_LOGGER.info{"started #{self.to_s}"}

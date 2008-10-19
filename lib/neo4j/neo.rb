@@ -42,17 +42,20 @@ module Neo4j
     
     #
     # Create an internal neo node (returns a java object)
+    # Don't use this method - only for internal use.
     #
     def create_node
       @neo.createNode
     end
-    
-    
-    def index_node(node)
-      raise NotInTransactionError.new unless Transaction.running?
-      Transaction.current.index_node node
+
+    #
+    # Returns an internal neo transaction object.
+    # Don't use this method - only for internal use.
+    #
+    def begin_transaction
+      @neo.begin_tx
     end
-    
+
     
     #
     # Returns a Node object that has the given id or nil if it does not exist.
