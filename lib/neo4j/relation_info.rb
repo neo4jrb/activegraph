@@ -20,10 +20,15 @@ module Neo4j
       self
     end
     
-    def from(clazz, type)
+    def from(*args) #(clazz, type)
       @info[:outgoing] = false
-      @info[:class] = clazz
-      @info[:type] = type
+      if (args.size > 1)
+        @info[:class] = args[0]
+        @info[:type] = args[1]
+      else
+        @info[:type] = args[0]
+      end
+      
       self
     end
     

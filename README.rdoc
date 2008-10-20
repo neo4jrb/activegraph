@@ -26,6 +26,10 @@ To install it please type:
 
 The gem sources command only needs to be executed once.
 
+To install from the source:
+* Press the download button at http://github.com/andreasronge/neo4j/tree/master
+* From command line type: ''rake gem:install''
+
 JRuby version 1.1.4 does not work with Neo4j.rb because of a bug (JRUBY-2959).
 This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
 
@@ -400,13 +404,22 @@ For example, let say that Person can have a relationship to other nodes with the
 
   class Person 
      include Neo::Node
-     has_n :friends  # will generate a friends method
+     has_n :knows  # will generate a knows method for outgoing relationships
+     has_n(:known_by).from(:knows)  #  will generate a known_by method for incomming knows relationship
   end
 
 Example how to add a relation to another node:
 
-  f = Person.new 
-  f.friends << SomeOtherNode.new
+  me = Person.new 
+  neo = Person.new
+  me.knows << neo # me knows neo but neo does not know me
+
+Notice that you can also add relationship on the incoming relationship
+The following example is the same as the example above:
+
+  me = Person.new 
+  neo = Person.new
+  neo.known_by << me # neo is known by me, that means that I know neo but neo does have to know me
   
 === Relationship has_one
 

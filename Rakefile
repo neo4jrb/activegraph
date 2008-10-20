@@ -43,7 +43,7 @@ PKG_FILES = %w( README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test}/**/*
  
 spec = Gem::Specification.new do |s|
   s.name = "neo4j"
-  s.version = '0.0.2'
+  s.version = '0.0.3'
   s.authors = "Andreas Ronge"
   s.homepage = "http://github.com/andreasronge/neo4j/tree"
   s.summary = "A graph database for JRuby"
