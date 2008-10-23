@@ -15,7 +15,7 @@ desc "spec"
 Spec::Rake::SpecTask.new do |t|
   t.libs << "test"
   t.libs << "lib"
-  #    t.rcov = true # have not got RCov working with JRuby yet - but it should ...
+  # t.rcov = true # have not got RCov working with JRuby yet - but it should ...
   t.spec_files = FileList['test/**/*_spec.rb']
   #    t.warning = true
   t.spec_opts = ['--format specdoc', '--color']
@@ -39,21 +39,20 @@ end
 CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png"]
  
 # The file list used to package tarballs, gems, and for generating the xmpp4r.gemspec.
-PKG_FILES = %w( README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test}/**/*"]
+PKG_FILES = %w( LICENSE README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test}/**/*"]
  
 spec = Gem::Specification.new do |s|
   s.name = "neo4j"
-  s.version = '0.0.3'
+  s.version = '0.0.4'
   s.authors = "Andreas Ronge"
   s.homepage = "http://github.com/andreasronge/neo4j/tree"
   s.summary = "A graph database for JRuby"
   s.description = s.summary
- # s.platform = Gem::Platform::CURRENT
   s.require_path = 'lib'
   s.executables = []
   s.files = PKG_FILES
   s.test_files = []
- 
+  s.homepage = 'http://neo4j.rubyforge.org' 
   # rdoc
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc  )
