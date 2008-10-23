@@ -12,9 +12,11 @@ require 'neo4j/neo'
 require 'neo4j/transaction'
 require 'neo4j/relation_info'
 require 'neo4j/node'
+require 'neo4j/version'
 
 require 'lucene'
 require 'inflector'
+
 
 # 
 # Set logger used by Neo4j

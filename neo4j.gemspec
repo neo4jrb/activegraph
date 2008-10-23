@@ -1,11 +1,12 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Mon Oct 20 12:04:25 +0200 2008
+# LAST UPDATED : Thu Oct 23 15:05:22 +0200 2008
 #
 # RUN : 'rake gem:update_gemspec'
 
 Gem::Specification.new do |s|
  s.description = "A graph database for JRuby"
- s.files = ["README.rdoc",
+ s.files = ["LICENSE",
+ "README.rdoc",
  "TODO",
  "Rakefile",
  "neo4j.gemspec",
@@ -31,6 +32,7 @@ Gem::Specification.new do |s|
  "lib/neo4j/dynamic_accessor.rb",
  "lib/neo4j/neo.rb",
  "lib/neo4j/jars",
+ "lib/neo4j/version.rb",
  "lib/neo4j/relations.rb",
  "lib/neo4j/node.rb",
  "lib/neo4j/relation_info.rb",
@@ -61,13 +63,15 @@ Gem::Specification.new do |s|
  "test/neo4j/event_spec.rb"]
  s.rubygems_version = "1.2.0"
  s.platform = "ruby"
- s.date = "Mon Oct 20 00:00:00 +0200 2008"
+ s.date = "Thu Oct 23 00:00:00 +0200 2008"
  s.homepage = "http://github.com/andreasronge/neo4j/tree"
+ s.rubyforge_project = "neo4j"
  s.bindir = "bin"
  s.summary = "A graph database for JRuby"
  s.rdoc_options = ["--quiet", "--title", "neo4j and lucene documentation", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  s.specification_version = "2"
- s.version = "0.0.3"
+ s.email = "andreas.ronge@gmail.com"
+ s.version = "0.0.4"
  s.required_rubygems_version = ">= 0"
  s.require_paths = ["lib"]
  s.required_ruby_version = ">= 1.8.4"

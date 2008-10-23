@@ -8,8 +8,28 @@ require 'rake/rdoctask'
 require 'spec/version'
 require 'spec/rake/spectask'
 require 'rake/gempackagetask'
+#require 'hoe'
+
+require 'lib/neo4j/version'
+
+GEM_NAME = 'neo4j'
+PROJECT_SUMMARY= "A graph database for JRuby"
+GEM_VERSION =Neo4j::VERSION
+
 
 task :default => :spec
+#
+#Hoe.new(GEM_NAME, GEM_VERSION) do |p|
+#  p.rubyforge_name = GEM_NAME
+#  s.summary = PROJECT_SUMMARY
+#end
+
+
+desc "Flog all Ruby files in lib"
+task :flog do
+  system("find lib -name '*.rb' | xargs flog")
+end
+
 
 desc "spec"
 Spec::Rake::SpecTask.new do |t|
@@ -42,17 +62,19 @@ CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png"]
 PKG_FILES = %w( LICENSE README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test}/**/*"]
  
 spec = Gem::Specification.new do |s|
-  s.name = "neo4j"
-  s.version = '0.0.4'
+  s.name = GEM_NAME
+  s.version = GEM_VERSION
   s.authors = "Andreas Ronge"
+  s.email = 'andreas.ronge@gmail.com'
   s.homepage = "http://github.com/andreasronge/neo4j/tree"
-  s.summary = "A graph database for JRuby"
+  s.rubyforge_project = 'neo4j'
+  s.summary = PROJECT_SUMMARY
   s.description = s.summary
   s.require_path = 'lib'
   s.executables = []
   s.files = PKG_FILES
   s.test_files = []
-  s.homepage = 'http://neo4j.rubyforge.org' 
+  #s.homepage = 'http://neo4j.rubyforge.org' 
   # rdoc
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc  )

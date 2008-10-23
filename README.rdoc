@@ -18,13 +18,10 @@ It uses two powerful java libraries:
 
 == Installation
 
-Neo4j exists as a gem at http://gems.github.com/list.html.
+Neo4j exists as a gem at rubyforge
 To install it please type:
 
-   gem sources -a http://gems.github.com 
-   sudo gem install andreasronge-neo4j
-
-The gem sources command only needs to be executed once.
+   gem install neo4j
 
 To install from the source:
 * Press the download button at http://github.com/andreasronge/neo4j/tree/master
