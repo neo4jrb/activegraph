@@ -17,7 +17,8 @@ def parse_actors(file)
       if !tab_items[0].empty?
         current_actor = Actor.new
         current_actor.name = tab_items.shift.strip
-        actors += 1
+        actors += 1        
+        puts "Parse new actor no. #{actors} '#{current_actor.name}'"
       end
       tab_items.shift
     

@@ -15,9 +15,9 @@ Neo4j::Transaction.run do
   puts "Willis, Bruce has acted in: "
   #willis.relations.incoming.each {|r| puts "In: #{r}"}
   #willis.relations.incoming.nodes.each {|r| puts "In: #{r.title}"}
-  willis.relations.outgoing.each {|r| puts "Out: #{r.to_s}" }
-  willis.relations.outgoing.nodes.each {|n| puts "Out: #{n.title}" }
-  willis.acted_in do |movie|
+#  willis.relations.outgoing.each {|r| puts "Out: #{r.to_s}" }
+#  willis.relations.outgoing.nodes.each {|n| puts "Out: #{n.title}" }
+  willis.acted_in.each do |movie|
     puts "Movie #{movie.title}"
   end
 end
