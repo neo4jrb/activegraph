@@ -24,7 +24,7 @@ describe "When running in one transaction" do
   end
   
   after(:each) do
-    @transaction.failure # do not want to store anything
+    @transaction.failure # do& not want to store anything
     @transaction.finish
   end
   

@@ -128,9 +128,11 @@ describe Index, ".find (exact match)" do
     @index << {:id => "1", :name => 'name1', :value=>1, :group=>'a'}
     @index << {:id => "2", :name => 'name2', :value=>2, :group=>'a'}
     @index << {:id => "3", :name => 'name3', :value=>2, :group=>'b'}
+    @index << {:id => "4", :name => ['abc', 'def', '123']}
     @doc1 = @index.uncommited["1"]
     @doc2 = @index.uncommited["2"]
     @doc3 = @index.uncommited["3"]
+    @doc4 = @index.uncommited["4"]
     @index.commit
   end
   
@@ -168,6 +170,18 @@ describe Index, ".find (exact match)" do
     result.should include(@doc2)
   end
 
+  it "should find a document that has several values for the same key" do
+    result = @index.find(:name => 'def')
+    result.size.should == 1
+    result.should include(@doc4)
+    
+    result = @index.find(:name => '123')
+    result.size.should == 1
+    result.should include(@doc4)
+
+    result = @index.find(:name => 'ojo')
+    result.size.should == 0
+  end
   
   it "should return document containing the stored fields for that index" do
     # when
@@ -205,8 +219,8 @@ describe Index, "<< (add documents to be commited)" do
   end
 
   it "can have several values for the same key" do
-    pending
     @index << {:id => 42, :name => ['foo','bar','baaz']}
+    @index.uncommited['42'][:name].should == ['foo','bar','baaz']
   end
 end
 
@@ -363,6 +377,16 @@ describe Index, " when updating a document" do
     
     # then it can not be found
     @index.find(:name => 'andreas').should be_empty
+  end
+  
+  it "should find documents that have the same properties" do
+    # given
+    @index << {:id => 'a', :name=>'bar'}
+    @index << {:id => 'a.1', :name=>'bar'}
+    
+    @index.commit
+    res = @index.find(:name => 'bar')
+    res.size.should == 2
   end
 
 end

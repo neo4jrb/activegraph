@@ -13,9 +13,10 @@ def delete_all_indexes
   FileUtils.rm_r $INDEX_LOCATION if File.directory? $INDEX_LOCATION
 end
 
-describe Transaction do
+describe Lucene::Transaction do
   
   before(:each) do
+    Thread.current[:lucene_transaction] = nil
     delete_all_indexes
   end
   
@@ -24,15 +25,15 @@ describe Transaction do
     Transaction.current.commit if Transaction.running?
   end
   
-  it "should have a to_s method" do
-    t = Transaction.new 
+  it "should have a to_s method ju" do
+    t = Lucene::Transaction.new 
     t.to_s.should match(/Transaction \[commited=false, rollback=false, indexes=0, object_id=/)
   end
   
   it "should update all indexes when it commits" do
     # given
     index = nil
-    Transaction.run do
+    Lucene::Transaction.run do
       index = Index.new('var/index/foo')        
       index << {:id => '1', :name => 'andreas'}
     end  # when it commits&
@@ -46,7 +47,7 @@ describe Transaction do
   it "should not index docuements when transaction has rolled back" do
     # given
     index = nil
-    Transaction.run do |t|
+    Lucene::Transaction.run do |t|
       index = Index.new('var/index/foo')        
       index << {:id => '1', :name => 'andreas'}
       t.failure
@@ -61,7 +62,7 @@ describe Transaction do
   it "should not find updated documents from a different thread/transaction" do
     # given
     t1 = Thread.start do 
-      Transaction.run do |t|
+      Lucene::Transaction.run do |t|
         index = Index.new('var/index/foo')        
         index << {:id => '1', :name => 'andreas'}
         sleep(0.1)            
@@ -86,7 +87,7 @@ describe Transaction do
     for i in 1..10 do
       for k in 1..5 do      
         threads << Thread.start(i,k) do |ii,kk|
-          Transaction.run do |t|
+          Lucene::Transaction.run do |t|
             index = Index.new('var/index/foo')        
             id = (ii*10 + kk).to_s
             value = "thread#{ii}#{kk}"

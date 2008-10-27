@@ -10,6 +10,7 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     class TestNode 
       include Neo4j::Node
       properties :name, :age
+      index :name, :age
     end
   end
   after(:all) do
@@ -36,7 +37,6 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     # given
     n1 = TestNode.new
     n1.name = 'hi'
-      
     TestNode.find(:name => 'hi').should include(n1)
       
       
@@ -63,7 +63,26 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     TestNode.find(:name => 'remove').should_not include(n1)
   end
 end
+
+describe "A node with no lucene index" do
+  before(:all) do
+    start
+    class TestNodeWithNoIndex
+      include Neo4j::Node
+    end
+    
+  end
   
+  after(:all) do
+    stop
+  end  
+
+  it "should return no nodes in a query" do
+    found = TestNodeWithNoIndex.find(:age => 0)
+    
+    found.should == []
+  end
+end
   
 describe "Find Nodes using Lucene" do
   before(:all) do
@@ -71,6 +90,10 @@ describe "Find Nodes using Lucene" do
     class TestNode 
       include Neo4j::Node
       properties :name, :age, :male, :height
+      index :name
+      index :age
+      index :male
+      index :height
     end
     @foos = []
     5.times {|n|
@@ -135,3 +158,4 @@ describe "Find Nodes using Lucene" do
     found.size.should == 1
   end
 end
+

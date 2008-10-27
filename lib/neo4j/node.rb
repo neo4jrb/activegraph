@@ -1,8 +1,9 @@
-require 'neo4j/relations'
-require 'lucene'
-
 module Neo4j
 
+  
+  class LuceneIndexOutOfSyncException < StandardError
+    
+  end
   #
   # Represent a node in the Neo4j space.
   # 
@@ -11,6 +12,8 @@ module Neo4j
   #
   module Node
     attr_reader :internal_node 
+
+    extend Transactional
     
     #
     # Will create a new transaction if one is not already running.
@@ -21,7 +24,6 @@ module Neo4j
     # * creates a neo node java object (in @internal_node)
     #    
     def initialize(*args)
-      $NEO_LOGGER.debug("Initialize #{self}")
       # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
         Transaction.run {init_with_node(args[0])} unless Transaction.running?
@@ -54,40 +56,16 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
+      self.class.fire_event NodeCreatedEvent.new(self)      
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
     
-    #
-    # A hook used to set and get undeclared properties
-    #
-    def method_missing(methodname, *args)
-      # allows to set and get any neo property without declaring them first
-      name = methodname.to_s
-      setter = /=$/ === name
-      expected_args = 0
-      if setter
-        name = name[0...-1]
-        expected_args = 1
-      end
-      unless args.size == expected_args
-        err = "method '#{name}' on '#{self.class.to_s}' has wrong number of arguments (#{args.size} for #{expected_args})"
-        raise ArgumentError.new(err)
-      end
-
-      raise Exception.new("Node not initialized, called method '#{methodname}' on #{self.class.to_s}") unless @internal_node
-      
-      if setter
-        set_property(name, args[0])
-      else
-        get_property(name)
-      end
-    end
-    
     
     #
     # Set a neo property on this node.
-    # You should not use this method, instead set property like you do in Ruby:
+    # You should not use this method. It is used by the Node#properties classmethod
+    # that generates neo property accessors methods.
     # 
     #   n = Node.new
     #   n.foo = 'hej'
@@ -97,31 +75,26 @@ module Neo4j
     #
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
-      Transaction.run {
-        @internal_node.set_property(name, value)
-      }
+      old_value = get_property(name)
+      @internal_node.set_property(name, value)
+      if (name != 'classname')  # do not want events on internal properties
+        event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
+        self.class.fire_event(event)
+      end
     end
  
     # 
     # Returns the value of the given neo property.
-    # You should not use this method, instead use get properties like you do in Ruby:
+    # You should not use this method. It is used by the Node#properties classmethod
     # 
-    #   n = Node.new
-    #   n.foo = 'hej'
-    #   puts n.foo
-    # 
-    # The n.foo call will intern use this method.
-    # If the property does not exist it will return nil.
     # Runs in a new transaction if there is not one already running,
     # otherwise it will run in the existing transaction.
     #    
     def get_property(name)
       $NEO_LOGGER.debug{"get property '#{name}'"}        
       
-      Transaction.run {
-        return nil if ! has_property(name)
-        @internal_node.get_property(name.to_s)
-      }
+      return nil if ! has_property(name)
+      @internal_node.get_property(name.to_s)
     end
     
     #
@@ -130,11 +103,10 @@ module Neo4j
     # otherwise it will run in the existing transaction.
     #
     def has_property(name)
-      Transaction.run {
-        @internal_node.has_property(name.to_s)
-      }
+      @internal_node.has_property(name.to_s) unless @internal_node.nil?
     end
     
+   
     # 
     # Returns a unique id
     # Calls getId on the neo node java object
@@ -169,27 +141,6 @@ module Neo4j
     end
 
 
-
-    #
-    #  Index all declared properties
-    #
-    def update_index
-      $NEO_LOGGER.debug("Index #{neo_node_id}")
-      doc = {:id => neo_node_id}
-      
-      $NEO_LOGGER.debug("FIELDS to index #{self.class.decl_props.inspect}")
-      self.class.decl_props.each do |k|
-        key = k.to_s
-        value = get_property(k)
-        next if value.nil? # or value.empty?
-        $NEO_LOGGER.debug("Add field '#{key}' = '#{value}'")
-        doc.merge!({key => value})
-      end
-
-      lucene_index << doc
-    end
-
-    
     def lucene_index
       self.class.lucene_index
     end
@@ -200,13 +151,20 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      Transaction.run { |t|
-        relations.each {|r| r.delete}
-        @internal_node.delete 
-        lucene_index.delete(neo_node_id)
-      }
+      self.class.fire_event(NodeDeletedEvent.new(self))                          
+      relations.each {|r| r.delete}
+      @internal_node.delete 
+      lucene_index.delete(neo_node_id)
     end
     
+
+    def classname
+      get_property('classname')
+    end
+    
+    def classname=(value)
+      set_property('classname', value)
+    end
     
     #
     # Returns an array of nodes that has a relation from this
@@ -214,25 +172,35 @@ module Neo4j
     def relations
       Relations.new(@internal_node)
     end
-   
+
+    def reindex
+      Transaction.current.reindex(self)
+    end
+    
+    def reindex!
+      doc = {:id => neo_node_id }
+      self.class.index_updaters.each do |updater|
+        updater.call(self, doc)
+      end
+      lucene_index << doc
+    end
+
+    
+    transactional :has_property, :set_property, :get_property, :delete
+
+
+    
     #
     # Adds classmethods in the ClassMethods module
     #
     def self.included(c)
-      # all subclasses share the same index
-      # need to inject a 
-      c.instance_eval do |c|
-        # set the path where to store the index
-        @@lucene_index_path = Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/')        
-        @@decl_props = []
-        def lucene_index
-          Lucene::Index.new(@@lucene_index_path)      
-        end
-        
-        def decl_props
-          @@decl_props
-        end
-      end
+      # all subclasses share the same index, declared properties and index_updaters
+      c.instance_eval do
+        const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
+        const_set(:INDEX_UPDATERS, [])
+        const_set(:INDEX_TRIGGERS, [])
+        const_set(:RELATIONS_INFO, {})
+      end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
       c.extend ClassMethods
     end
@@ -241,62 +209,165 @@ module Neo4j
     # Node class methods
     #
     module ClassMethods
+    
+      #
+      # Access to class constants.
+      # These properties are shared by the class and its siblings.
+      # For example that means that we can specify properties for a parent
+      # class and the child classes will 'inherit' those properties.
+      # 
+      
+      
+      def lucene_index
+        Lucene::Index.new(self::LUCENE_INDEX_PATH)      
+      end
+        
+      def index_updaters
+        self::INDEX_UPDATERS
+      end
+
+      def index_triggers
+        self::INDEX_TRIGGERS
+      end
+
+      
+      #
+      # Contains information of all relationships, name, type, and multiplicity
+      # 
+      def relations_info
+        self::RELATIONS_INFO
+      end
+      
+      
+      # ------------------------------------------------------------------------
+      # Event index_updater
+      
+      def fire_event(event)
+        index_triggers.each {|trigger| trigger.call(event.node, event)}
+      end
+      
+      
+      # ------------------------------------------------------------------------
 
       #
-      # Allows to declare Neo4j properties.
-      # Notice that you do not need to declare any properties in order to 
-      # set and get a neo property.
-      # An undeclared setter/getter will be handled in the method_missing method instead.
+      # Declares Neo4j node properties.
+      # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessor mixin.
       #
       def properties(*props)
         props.each do |prop|
-          decl_props << prop
           define_method(prop) do 
             get_property(prop.to_s)
           end
 
           name = (prop.to_s() +"=")
           define_method(name) do |value|
-            Transaction.run do
-              set_property(prop.to_s, value)
-              update_index
-            end
+            set_property(prop.to_s, value)
           end
         end
       end
     
-    
+      
+      #      
+      # Index a property a relationship.
+      # If the rel_prop arg contains a '.' then it will index the relationship.
+      # For example "friends.name" will index each node with property name in the relationship friends.
+      # For example "name" will index the name property of this Node class.
       #
-      # Allows to declare Neo4j relationsships.
-      # The speficied name will be used as the type of the neo relationship.
-      #
-      def add_relation_type(type)
-        define_method(type) do 
-          NodesWithRelationType.new(self,type.to_s)
+      def index(*rel_type_props)
+        rel_type_props.each do |rel_type_prop|
+          rel_type, prop = rel_type_prop.to_s.split('.')
+          index_property(rel_type) if prop.nil?
+          index_relation(rel_type_prop, rel_type, prop) unless prop.nil?
         end
       end
-    
-    
-      def relations(*relations)
-        relations.each {|type| add_relation_type(type)}
+
+      def index_property(prop)
+        updater = lambda do |node, doc| 
+          doc[prop] = node.send(prop)
+        end
+        index_updaters << updater
+        
+        trigger = lambda do |node, event|
+          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) 
+        end
+        index_triggers << trigger
       end
       
       
-      #
-      # Expects type of relation and class.
-      # Example
-      # 
-      #   class Company
-      #     has :employees, Person
+      def index_relation(index_key, rel_type, prop)
+        clazz = relations_info[rel_type.to_sym][:class]
+        
+        type = relations_info[rel_type.to_sym][:type]  # this or the other node we index ?
+        rel_type = type.to_sym unless type.nil?
+        
+        # updater - called when index needs to be updated
+        updater = lambda do |my_node, doc| 
+          values = []
+          relations = my_node.relations.both(rel_type).nodes 
+          relations.each {|other_node| values << other_node.send(prop)}
+          doc[index_key] = values
+        end
+        index_updaters << updater
+      
+        # trigger - knows if an index needs to be updated
+        trigger = lambda do |other_node, event|
+          if (Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) or
+                Neo4j::RelationshipEvent.trigger?(event) or
+                Neo4j::NodeLifecycleEvent.trigger?(event))
+            relations = other_node.relations.both(rel_type).nodes
+            relations.each {|r| r.send(:reindex)} 
+          end
+        end
+        clazz.index_triggers << trigger
+      end
+      
+
+      #      
+      # Specifies a relationship between two node classes.
+      # Example      
+      #   class Order
+      #      has_one(:customer).of_class(Customer)
       #   end
+      #      
+      def has_one(rel_type)
+
+        module_eval(%Q{def #{rel_type}=(value)
+                        r = NodesWithRelationType.new(self,'#{rel_type.to_s}')
+                        r << value
+                    end},  __FILE__, __LINE__)
+        
+        module_eval(%Q{def #{rel_type}
+                        r = NodesWithRelationType.new(self,'#{rel_type.to_s}')
+                        r.to_a[0]
+                    end},  __FILE__, __LINE__)
+        relations_info[rel_type] = RelationInfo.new
+      end
+
+      
+
+      #      
+      # Specifies a relationship between two node classes.
+      # Example      
+      #   class Order
+      #      has_n(:order_lines).to(Product).relation(OrderLine)
+      #   end
+      #      
+      def has_n(rel_type) 
+        module_eval(%Q{def #{rel_type}(&block)
+                        NodesWithRelationType.new(self,'#{rel_type.to_s}', &block)
+                    end},  __FILE__, __LINE__)
+        relations_info[rel_type] = RelationInfo.new
+      end
+
+      
       #
-      def has(type, clazz)
-        # TODO !!!!!
-        define_method(type) do |*query|   # TODO support query
-          NodesWithRelationType.new(self,type.to_s, clazz)
-        end
+      # Creates a new relation. The relation must be outgoing.
+      # 
+      def new_relation(rel_name, internal_relation)
+        relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
       end
       
+     
       
       #
       # Finds all nodes of this type (and ancestors of this type) having
@@ -326,11 +397,5 @@ module Neo4j
         end
       end      
     end
-
   end
-  
-  class BaseNode 
-    include Neo4j::Node
-  end
-  
 end

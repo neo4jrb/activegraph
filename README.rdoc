@@ -7,7 +7,7 @@ It provides:
 * Storage of ruby object to a file system.
 * Fast traversal of relationships between nodes in a hugh node space.
 * Transaction with rollbacks support. 
-* Indexing and quering of ruby objects.
+* Indexing and querying of ruby objects.
 
 Neo4j consists of two modules: Neo4j and Lucene.
 Neo4j depends on the Lucene module.
@@ -18,13 +18,133 @@ It uses two powerful java libraries:
 
 == Installation
 
-Neo4j exists as a gem at http://gems.github.com/list.html.
+Neo4j exists as a gem at rubyforge
 To install it please type:
 
-   gem sources -a http://gems.github.com 
-   sudo gem install andreasronge-neo4j
+   gem install neo4j
 
-The gem sources command only needs to be executed once.
+To install from the source:
+* Press the download button at http://github.com/andreasronge/neo4j/tree/master
+* From command line type: ''rake gem:install''
+
+JRuby version 1.1.4 does not work with Neo4j.rb because of a bug (JRUBY-2959).
+This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
+
+== Two Minute Tutorial
+
+  class Person
+    include Neo4j::Node
+
+    # define Neo4j properties
+    properties :name, age
+
+    # define an one way relationship to any other Neo4j::Node
+    has_n :friends
+
+    index 'name'  # adds a lucene index on the name
+    index 'age'
+    index 'friends.age' # index each friend age as well
+  end
+
+The example above specifies how to map a Neo node to a ruby Person instance.
+All neo properties have to be declared (unless you include the DynamicAccessor mixin).
+Relations between nodes can be specified by using the relations
+
+Before using neo it has to be started
+
+  Neo4j::Neo.instance.start
+
+Creating a Person node instance
+
+  person = Person.new
+
+Setting a property:
+
+  person.name = 'kalle'
+  person.age  = 23
+
+If a transaction is not specified then the operation will automatically be wrapped in
+a transaction. 
+
+Example of quering using lucene:
+
+  Person.find (:name => 'kalle') 
+  Person.find ('friend.age' => 30) # find people who has a friend of age 30
+
+or DSL, example finding person with name kalle or with age between 20 and 30:
+
+  Person.find ((name == 'kalle') | (age == 20..30)) # => [ person ]
+
+Adding a relationship between two nodes:
+
+  person2 = Person.new
+  person.friends << person2
+
+Traversing relationships
+
+  person.friends.each {|n| ... }
+
+Traversing using a filter
+
+  person.friends{ age == 23 }.each {|n| ...}
+
+Deleting a relationship
+
+  person.relations[person2].delete
+
+Deleting a node (and all its relationships)
+
+  person.delete
+
+Specifying relationships:
+
+      class Role
+        include Neo4j::Relation
+        properties :name
+      end
+
+      class Actor
+        include Neo4j::Node
+        has_n(:acted_in).to(Movie).relation(Role)
+      end
+      
+      class Movie
+        include Neo4j::Node     
+        properties :title
+        properties :year
+
+        # defines a method for traversing incoming acted_in relationships from Actor
+        has_n(:actors).from(Actor, :acted_in)
+      end
+
+
+Notice that relationships also can have properties.
+Creating a new Customer Order relationship can be done like this
+
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      keanu_reeves.acted_in << matrix
+
+or you can also specify this relationship on the incoming node
+
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      matrix.actors << keanu_reeves
+
+Example of accessing the Role between an Actor and a Movie
+
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      role = keanu_reeves.acted_in.new(matrix)
+      role.name = 'neo'
+
+or
+      keanu_reeves = Actor.new
+      matrix       = Movie.new
+      keanu_reeves.acted_in << matrix
+      keanu_reeves.acted_in
+      keanu_reeves.relations.outgoing(:acted_in)[matrix].name = 'neo'
+
 
 == The Lucene Module
 
@@ -47,15 +167,22 @@ Example of how to write a document and find it:
 
     # find a document with name foo
     # hits is a ruby Enumeration of documents
-    hits = index.find{name == 'foo'}
+    docs = index.find{name == 'foo'}
 
     # show the id of the first document (document 0) found
     # (the document contains all stored fields - see below)
-    hits[0][:id]   # => '1'    
+    docs[0][:id]   # => '1'    
 
 Notice that you have to call the commit method in order to update the index on the disk.
 By performing several update and delete operations before a commit will be much
 faster then performing commit after each operation. 
+
+=== Indexing several values with the same key
+
+Let say a person can have several phone numbers. How do we index that ?
+
+  index << {:id=>'1', :name=>'adam', :phone => ['987-654', '1234-5678']}
+  
 
 === Id field
 
@@ -193,6 +320,17 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 == The Neo4j Module
 
+=== Start and Stop of the Neo Database
+
+In order to use neo it has to be started first.
+  
+   Neo4j::Neo.instance.start
+
+To stop the neo database:
+
+   Neo4j::Neo.instance.stop
+
+
 === Neo4j::Node
 
 Neo4j::Node is a mixin that lets instances to be stored as a node in the neo node space on disk.
@@ -202,7 +340,7 @@ Example of how declare a class that has this behaviour:
 
   class MyNode 
      include Neo4j::Node
-   end
+  end
 
 
 === Create a Node
@@ -225,8 +363,15 @@ The node in the example above will be removed from the neo database on the files
 
 === Node Properties
 
-You can set any properties, see example below.
-Those properties will be stored on in the Neo database.
+In order to use properties they have to be declared first
+
+  class MyNode
+     include Neo4j::Node
+     properties :foo, :bar
+  end
+
+These properties (foo and bar) will be stored in the Neo database.
+You can set those properties:
 
   # create a node with two properties in one transaction
   node = MyNode.new { |n|
@@ -245,21 +390,65 @@ You can also set a property like this:
 
 Neo4j.rb supports properties to by of type String, Fixnum, Float and Boolean.
 
-=== Relationship
+
+=== Relationship has_n
+
+Neo relationships are none symmetrical. That means that if A has a relation to B
+then it may not be true that B has a relation to A.
 
 Relationships has to be declared by using the 'relations' class method.
 For example, let say that Person can have a relationship to other nodes with the type 'friends':
 
   class Person 
      include Neo::Node
-     relations :friends  # will generate a friends method
+     has_n :knows  # will generate a knows method for outgoing relationships
+     has_n(:known_by).from(:knows)  #  will generate a known_by method for incomming knows relationship
   end
 
 Example how to add a relation to another node:
 
-  f = Person.new 
-  f.friends << SomeOtherNode.new
+  me = Person.new 
+  neo = Person.new
+  me.knows << neo # me knows neo but neo does not know me
+
+Notice that you can also add relationship on the incoming relationship
+The following example is the same as the example above:
+
+  me = Person.new 
+  neo = Person.new
+  neo.known_by << me # neo is known by me, that means that I know neo but neo does have to know me
   
+=== Relationship has_one
+
+Example of has_one: A person can have at most one Address
+
+      class Person
+        include Neo4j::Node
+        has_one(:address).to(Address)
+      end
+
+      class Address
+        include Neo4j::Node
+        properties :city, :road
+        has_n(:people).from(Person, :address)
+      end
+
+In the example above we have Neo4j.rb will generate the following methods
+ * in Person, the method ''address='' and ''address''
+ * in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
+
+Example of usage
+
+      p = Person.new
+      p.address = Address.new
+      p.address.city = 'malmoe'
+
+
+Or from the incoming ''address'' relationship
+
+      a = Address.new {|n| n.city = 'malmoe'}
+      a.people << Person.new
+
 
 === Properties on a relationship
 
@@ -275,6 +464,9 @@ Example:
   # set a property 'since' on this relationship bewteen p1 and p2
   relation.since = 1992
 
+If a Relationship class has not been specified for a relationship then any properties
+can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
+
 === Traversing relationships:
 
 Each type of relationship has a method that returns an Enumerable object that enables you
@@ -285,9 +477,19 @@ You can traverse all Person's friend by doing:
 
   f.friends.each { |n| puts n }
 
-(TODO this just goes one level deep in the graph, we should support of any level of traversal)
+=== Filtering nodes in a relationship
 
+If you want to find one node in a relationship you can use a filter.
+Example, let say we want to find a friend with name 'andreas'
 
+  n1 = Person.new
+  n2 = Person.new {|n| n.name = 'andreas'}
+  n3 = Person.new
+  n1.friends << n2 << n3
+  n1.friends{ name == 'andreas' }.to_a # => [n2]
+
+The block { name == 'andreas' } will be evaluated on each node in the relationship.
+If the evaluation returns true the node will be included in the filter search result.
 
 === Finding Relationships
 
@@ -319,6 +521,20 @@ Or outgoing:
 
   n1.relations.outgoing # => [#<Neo4j::Relation:0x134aea2]
 
+To find a specific relationship use the [] operator:
+
+  n1.relations.outgoing[n2] = #<Neo4j::Relation:0x134aea2
+
+Or which is better performance wise (since only friends relationships are being traversed):
+
+  n1.relations.outgoing(:friends)[n2] = #<Neo4j::Relation:0x134aea2
+
+=== Deleting a relationship
+
+Use the Neo4j::Relation#delete method.
+For example, to delete the relationship between n1 and n2 from the example above:
+
+    n1.relations.outgoing(:friends)[n2].delete
 
 === Finding nodes in a relationship
 
@@ -329,6 +545,17 @@ For example:
 
   n2.relations.incoming.nodes # => [n1]
 
+=== Finding outgoing/incoming nodes of a specific relationship type
+
+Let say we want to find who has my phone number and who consider me as a friend
+
+  # who has my phone numbers
+  me.relations.incoming(:phone_numbers).nodes # => people with my phone numbers
+
+  # who consider me as a friend
+  me.relations.incoming(:friend).nodes # => people with a friend relationship to me
+
+Remember that relationships are not symmetrical.
 
 === Transactions
 
@@ -337,7 +564,7 @@ Luckly neo4j.rb will automatically create a transaction for those operation that
 
 For example all get, set and find operations will start a new transaction if none is already not runnig (for that thread).
 
-If you want to perfrom a set of operation in a single transaction, use the Neo4j::Transaction.run method:
+If you want to perform a set of operation in a single transaction, use the Neo4j::Transaction.run method:
 
 Example
 
@@ -345,11 +572,6 @@ Example
     node1.foo = "value"
     node2.bar = "hi"
   }
-
-
-==== Transactions and JTA
-
-TODO, will soon support two phase commit transactions, (using Java JTA api)
 
 
 ==== Rollback
@@ -390,13 +612,14 @@ Use the properties class method, example:
 
 === Quering (using lucene)
 
-All declared properties are automatically indexed by lucene.
+You can declare properties to be indexed by lucene by the index method:
 
 Example
 
       class Person 
         include Neo4j::Node
         properties :name, :age
+        index :name, :age
       end
     
       node = Person.new
@@ -412,6 +635,61 @@ The query above can also be written in a lucene query DSL:
       Person.find{(name =='foo') & (age => 42)} # => [node]
 
 For more information see the lucene module above.
+
+=== Indexing and Quering Relationships
+
+The Neo4j::Node#index method can be used to index relationships to other classes.
+
+Example, let say we have to classes, Customer and Orders:
+  
+  class Customer
+    include Neo4j::Node
+
+    properties :name
+
+    # specifies outgoing relationships to Order
+    has_n(:orders).to(Order)
+
+    # create an index on customer-->order#total_cost
+    index "orders.total_cost"
+  end
+
+
+  class Order
+    include Neo4j::Node
+
+    properties :total_cost
+
+    # specifies one incoming relationship from Customer
+    has_one(:customer).from(Customer, :orders)
+
+    # create an index on the order<--customer#name relationship
+    index "customer.name"
+  end
+
+Notice that we can index both incoming and outgoing relationships.
+
+Let's create a customer and one order for that customer
+
+    Neo4j::Transaction.run do
+      cust = Customer.new
+      order = Order.new
+      cust.name = "kalle"
+      order.total_cost = "1000"
+
+      cust.orders << order 
+    end
+
+Now we can find both Orders with a total cost between 500 and 2000 and Customers with name 'kalle' using lucene
+
+Example:
+
+   customers = Customer.find('orders.total_cost' => 500..2000, 'name' => 'kalle')
+
+Or also possible from the other way:
+
+   orders = Order.find('total_cost' => 500..2000, 'customer.name' => 'kalle')
+
 
 === Unmarshalling
 
@@ -434,3 +712,4 @@ It does this by reading the classname property and loading that ruby class with 
   f1 == f2 # => true
 
   
+

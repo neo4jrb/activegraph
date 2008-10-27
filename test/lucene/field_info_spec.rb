@@ -33,5 +33,19 @@ describe FieldInfo do
     f1[:store].should be_true
     f2[:store].should be_false
   end
+  
+  it "should handle conversion of arrays" do
+    f = FieldInfo.new
+    c = f.convert_to_lucene(['a','b','c'])
+    c.should == ['a', 'b', 'c']
+  end
+  
+  it "should handle conversion of arrays and each value should be converted to correct type" do
+    f = FieldInfo.new
+    f[:type] = Fixnum
+    c = f.convert_to_lucene(['1','2','3'])
+    c.should == ["00000000001", "00000000002", "00000000003"]
+  end
+
 end
 

@@ -1,9 +1,3 @@
-
-require 'thread'
-#require 'monitor'
-require 'delegate'
-
-
 module Neo4j
   
   #
@@ -41,6 +35,18 @@ module Neo4j
       
 
       #
+      # debugging method
+      #
+      def called
+        res = ""
+        for i in 2..7 do
+          res << /\`([^\']+)\'/.match(caller(i).first)[1]
+          res << ', ' unless i == 4
+        end
+        res
+      end 
+    
+      #
       # Runs a block in a Neo4j transaction
       #
       #  Most operations on neo requires an transaction.
@@ -63,23 +69,19 @@ module Neo4j
       #   transaction = Neo4j::Transaction.run
       #
       def run
-        $NEO_LOGGER.info{"new transaction " + caller[0]}
+        $NEO_LOGGER.info{"new transaction " + called}
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         tx = nil
         
         # reuse existing transaction ?
-        #        synchronize do
         if !Transaction.running? 
           tx = Neo4j::Transaction.new
           tx.start
         else
-          #          yield Transaction.current
-          #          return
           $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
           tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
         end
-        #        end
         ret = nil
     
         begin  
@@ -91,7 +93,6 @@ module Neo4j
           raise e  
         ensure  
           tx.finish  
-          # do we have a lucene transaction to commit ?
         end      
         ret
       end  
@@ -107,7 +108,6 @@ module Neo4j
       def failure?
         current.failure?
       end
-      
     end
 
   
@@ -122,6 +122,7 @@ module Neo4j
       raise AlreadyInTransactionError.new if Transaction.running?
       @@counter += 1      
       @id = @@counter
+      @nodes_to_be_reindexed = {}
       Thread.current[:transaction] = self
       #      end
       $NEO_LOGGER.debug{"create #{self.to_s}"}
@@ -140,7 +141,7 @@ module Neo4j
     # Starts a new transaction
     #
     def start
-      @neo_tx= org.neo4j.api.core.Transaction.begin
+      @neo_tx= Neo4j::Neo.instance.begin_transaction #org.neo4j.api.core.Transaction.begin
       @failure = false      
       
       $NEO_LOGGER.info{"started #{self.to_s}"}
@@ -168,6 +169,11 @@ module Neo4j
       @neo_tx=nil
       Thread.current[:transaction] = nil
       
+      unless failure?
+        @nodes_to_be_reindexed.each_value {|node| node.reindex!}
+        @nodes_to_be_reindexed.clear
+      end
+      
       if Lucene::Transaction.running?
         $NEO_LOGGER.debug("LUCENE TX running failure: #{failure?}")            
         
@@ -192,6 +198,14 @@ module Neo4j
       @failure = true
       $NEO_LOGGER.info{"failure #{self.to_s}"}                        
     end
+    
+    #
+    # Marks a node to be reindexed before the transaction ends
+    #
+    def reindex(node)
+      @nodes_to_be_reindexed[node.neo_node_id] = node
+    end
+    
   end
   
   #
@@ -199,7 +213,8 @@ module Neo4j
   # There is no real support for chained transaction since Neo4j does not support chained transactions.
   # This class will do nothing when the finish method is called.
   # Finish will only be called when the 'main' transaction does it.
-  # 
+  #  
+  #  TODO investigate if Neo already does this ???
   #
   class ChainedTransaction < DelegateClass(Transaction)
     
