@@ -260,6 +260,25 @@ describe "Neo4j::Node#relations " do
 
     end
     
+    it "should allow to travers customer.orders getting both the CustOrderRel and Order (#each_with_relation)" do
+      pending "each_with_relation not implemented on NodesWithRelationType"
+#      customer = Customer.new
+#      order = Order.new
+#      order.order_id = 42
+#      cust_order = customer.orders.new(order)
+#      cust_order.my_prop = "andreas"
+#
+#      # when
+#      rels = []
+#      nodes = []
+#      customer.orders.each_with_relation {|node,rel| puts rel;  rels << rel; nodes << node}
+#
+#      # then
+#      rels[0].should == cust_order
+#      nodes[0].should == order
+    end
+
+    
     it "should contain the order when customer.orders << order" do
       # given
       customer = Customer.new
@@ -364,6 +383,14 @@ describe "Neo4j::Node#relations " do
       r.prio.should == 'important'
       
       c.relations.outgoing(:orders)[o].prio.should == 'important'
+    end
+    
+    it "should be possible to read an unset property on relationship (not DynamicRelation)" do
+      c = Customer.new 
+      o = Order.new
+      r = c.orders.new(o)
+      
+      r.prio.should == nil
     end
     
     it "should load the correct relation class when traversing relationships" do

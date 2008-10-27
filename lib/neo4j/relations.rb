@@ -46,10 +46,12 @@ module Neo4j
     
     
     def each
-      iter = iterator
-      while (iter.hasNext) do
-        n = iter.next
-        yield Neo4j::Neo.instance.load_relationship(n)
+      Neo4j::Transaction.run do
+        iter = iterator
+        while (iter.hasNext) do
+          n = iter.next
+          yield Neo4j::Neo.instance.load_relationship(n)
+        end
       end
     end
 
@@ -150,6 +152,7 @@ module Neo4j
     end
     
     def get_property(key)
+      return nil unless self.property?(key)
       @internal_r.getProperty(key)
     end
     
@@ -233,14 +236,16 @@ module Neo4j
         ReturnableEvaluator::ALL_BUT_START_NODE,
         @type,
         @direction)
-      iter = traverser.iterator
-      while (iter.hasNext) do
-        node = Neo4j::Neo.instance.load_node(iter.next)
-        if !@filter.nil?
-          res =  node.instance_eval(&@filter)
-          next unless res
+      Neo4j::Transaction.run do
+        iter = traverser.iterator
+        while (iter.hasNext) do
+          node = Neo4j::Neo.instance.load_node(iter.next)
+          if !@filter.nil?
+            res =  node.instance_eval(&@filter)
+            next unless res
+          end
+          yield node
         end
-        yield node
       end
     end
       

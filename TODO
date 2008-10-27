@@ -8,3 +8,4 @@
 * Fix TODO's in the code
 * Check visibility of methods, set internal method to private
 * the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available
+* refactoring: fix better name of classes in neo4j/relations.rb

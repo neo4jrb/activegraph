@@ -5,8 +5,7 @@ class Role
   properties :title, :character
   
   def to_s
-    self.title if property?('title')
-    self.character if property?('character')
+    "Role title #{self.title} character #{self.character}"
   end
 end
 

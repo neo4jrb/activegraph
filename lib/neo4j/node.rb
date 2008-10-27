@@ -93,7 +93,7 @@ module Neo4j
     def get_property(name)
       $NEO_LOGGER.debug{"get property '#{name}'"}        
       
-      return nil if ! has_property(name)
+      return nil if ! property?(name)
       @internal_node.get_property(name.to_s)
     end
     
@@ -102,7 +102,7 @@ module Neo4j
     # Runs in a new transaction if there is not one already running,
     # otherwise it will run in the existing transaction.
     #
-    def has_property(name)
+    def property?(name)
       @internal_node.has_property(name.to_s) unless @internal_node.nil?
     end
     
@@ -186,7 +186,7 @@ module Neo4j
     end
 
     
-    transactional :has_property, :set_property, :get_property, :delete
+    transactional :property?, :set_property, :get_property, :delete
 
 
     

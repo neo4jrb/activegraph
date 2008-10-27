@@ -56,10 +56,10 @@ end
 ##############################################################################
  
 # What files/dirs should 'rake clean' remove?
-CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png"]
+CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png", 'var']
  
 # The file list used to package tarballs, gems, and for generating the xmpp4r.gemspec.
-PKG_FILES = %w( LICENSE README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test}/**/*"]
+PKG_FILES = %w( LICENSE README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test,examples}/**/*"]
  
 spec = Gem::Specification.new do |s|
   s.name = GEM_NAME

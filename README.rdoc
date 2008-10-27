@@ -33,6 +33,7 @@ This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
 == Two Minute Tutorial
   require "rubygems"
   require "neo4j"
+
   class Person
     include Neo4j::Node
 
