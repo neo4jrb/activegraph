@@ -35,7 +35,7 @@ This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
   require "neo4j"
 
   class Person
-    include Neo4j::Node
+    include Neo4j::NodeMixin
 
     # define Neo4j properties
     properties :name, :age
@@ -101,17 +101,17 @@ Deleting a node (and all its relationships)
 Specifying relationships:
 
       class Role
-        include Neo4j::Relation
+        include Neo4j::RelationMixin
         properties :name
       end
 
       class Actor
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_n(:acted_in).to(Movie).relation(Role)
       end
       
       class Movie
-        include Neo4j::Node     
+        include Neo4j::NodeMixin
         properties :title
         properties :year
 
@@ -333,15 +333,15 @@ To stop the neo database:
    Neo4j::Neo.instance.stop
 
 
-=== Neo4j::Node
+=== Neo4j::NodeMixin
 
-Neo4j::Node is a mixin that lets instances to be stored as a node in the neo node space on disk.
+Neo4j::NodeMixin is a mixin that lets instances to be stored as a node in the neo node space on disk.
 A node can have properties and relationships to other nodes.
 
 Example of how declare a class that has this behaviour:
 
   class MyNode 
-     include Neo4j::Node
+     include Neo4j::NodeMixin
   end
 
 
@@ -354,7 +354,7 @@ transaction, see below for more information on transactions.
 
 === Delete a Node
 
-The Neo4j::Node mixin defines a delete method that will delete the node and all its relationships.
+The Neo4j::NodeMixin mixin defines a delete method that will delete the node and all its relationships.
 
 Example:
 
@@ -368,7 +368,7 @@ The node in the example above will be removed from the neo database on the files
 In order to use properties they have to be declared first
 
   class MyNode
-     include Neo4j::Node
+     include Neo4j::NodeMixin
      properties :foo, :bar
   end
 
@@ -425,12 +425,12 @@ The following example is the same as the example above:
 Example of has_one: A person can have at most one Address
 
       class Person
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_one(:address).to(Address)
       end
 
       class Address
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         properties :city, :road
         has_n(:people).from(Person, :address)
       end
@@ -504,9 +504,9 @@ Given we have the two nodes with a relationship between them:
 
 Then we can find all incoming and outgoing relationships like this:
 
-  n1.relations.to_a # => [#<Neo4j::Relation:0x134ae32]
+  n1.relations.to_a # => [#<Neo4j::RelationMixin:0x134ae32]
 
-A Neo4j::Relation object represents a relationship between two nodes.
+A Neo4j::RelationMixin object represents a relationship between two nodes.
 
   n1.relations[0].start_node # => n1
   n1.relations[0].end_node # => n2
@@ -517,23 +517,23 @@ A Neo4j::Relation object represents a relationship between two nodes.
 
 If we are only interested in all incoming nodes, we can do 
 
-  n2.relations.incoming # => [#<Neo4j::Relation:0x134ae32]
+  n2.relations.incoming # => [#<Neo4j::RelationMixin:0x134ae32]
 
 Or outgoing:
 
-  n1.relations.outgoing # => [#<Neo4j::Relation:0x134aea2]
+  n1.relations.outgoing # => [#<Neo4j::RelationMixin:0x134aea2]
 
 To find a specific relationship use the [] operator:
 
-  n1.relations.outgoing[n2] = #<Neo4j::Relation:0x134aea2
+  n1.relations.outgoing[n2] = #<Neo4j::RelationMixin:0x134aea2
 
 Or which is better performance wise (since only friends relationships are being traversed):
 
-  n1.relations.outgoing(:friends)[n2] = #<Neo4j::Relation:0x134aea2
+  n1.relations.outgoing(:friends)[n2] = #<Neo4j::RelationMixin:0x134aea2
 
 === Deleting a relationship
 
-Use the Neo4j::Relation#delete method.
+Use the Neo4j::RelationMixin#delete method.
 For example, to delete the relationship between n1 and n2 from the example above:
 
     n1.relations.outgoing(:friends)[n2].delete
@@ -541,7 +541,7 @@ For example, to delete the relationship between n1 and n2 from the example above
 === Finding nodes in a relationship
 
 If you do not want those relationship object but instead want the nodes you can use the 'nodes' method
-in the Neo4j::Relation object.
+in the Neo4j::RelationMixin object.
 
 For example:
 
@@ -605,7 +605,7 @@ If you want you can also declare properties to be indexed.
 Use the properties class method, example:
 
   class SomeNode
-     include Neo4j::Node
+     include Neo4j::NodeMixin
      properties :foo, :bar
   end
 
@@ -619,7 +619,7 @@ You can declare properties to be indexed by lucene by the index method:
 Example
 
       class Person 
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         properties :name, :age
         index :name, :age
       end
@@ -631,7 +631,7 @@ Example
 
       Person.find(:name => 'foo', :age => 42) # => [node]
 
-The query parameter (like properties on a Neo4j::Node) can be of type String, Fixnum, Float, boolean or Range.
+The query parameter (like properties on a Neo4j::NodeMixin) can be of type String, Fixnum, Float, boolean or Range.
 The query above can also be written in a lucene query DSL:
 
       Person.find{(name =='foo') & (age => 42)} # => [node]
@@ -640,12 +640,12 @@ For more information see the lucene module above.
 
 === Indexing and Quering Relationships
 
-The Neo4j::Node#index method can be used to index relationships to other classes.
+The Neo4j::NodeMixin#index method can be used to index relationships to other classes.
 
 Example, let say we have to classes, Customer and Orders:
   
   class Customer
-    include Neo4j::Node
+    include Neo4j::NodeMixin
 
     properties :name
 
@@ -658,7 +658,7 @@ Example, let say we have to classes, Customer and Orders:
 
 
   class Order
-    include Neo4j::Node
+    include Neo4j::NodeMixin
 
     properties :total_cost
 
