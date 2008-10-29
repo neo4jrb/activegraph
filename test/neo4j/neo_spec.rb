@@ -38,7 +38,7 @@ describe "When running in one transaction" do
     it "should find a node given its neo node id" do
       # given
       class TestNode 
-        include Neo4j::Node
+        include Neo4j::NodeMixin
       end
       t1 = TestNode.new
       

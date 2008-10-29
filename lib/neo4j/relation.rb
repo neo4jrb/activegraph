@@ -1,11 +1,11 @@
   module Neo4j
 
   #
-  # A module that can be mixed in like a Neo4j::Node
+  # A module that can be mixed in like a Neo4j::NodeMixin
   # It wraps the Neo4j Relationship class.
   #
-  module Relation
-    extend Transactional
+  module RelationMixin
+    extend TransactionalMixin
 
     def initialize(*args)
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Relationship)

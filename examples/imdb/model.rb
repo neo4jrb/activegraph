@@ -1,7 +1,7 @@
 class Movie; end
 
 class Role
-  include Neo4j::Relation
+  include Neo4j::RelationMixin
   properties :title, :character
   
   def to_s
@@ -10,7 +10,7 @@ class Role
 end
 
 class Actor
-  include Neo4j::Node
+  include Neo4j::NodeMixin
   properties :name
   has_n(:acted_in).to(Movie).relation(Role)
 
@@ -18,7 +18,7 @@ class Actor
 end
 
 class Movie
-  include Neo4j::Node
+  include Neo4j::NodeMixin
   properties :title
   properties :year
 

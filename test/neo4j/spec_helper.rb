@@ -34,8 +34,8 @@ end
 
 module Neo4j
   class BaseNode
-    include Node
-    include DynamicAccessor
+    include NodeMixin
+    include DynamicAccessorMixin
   end
   
 end

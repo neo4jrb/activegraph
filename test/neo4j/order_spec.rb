@@ -2,14 +2,14 @@ require 'neo4j'
 require 'neo4j/spec_helper'
 
 class Order
-  include Neo4j::Node
+  include Neo4j::NodeMixin
 end
 class Customer
-  include Neo4j::Node
+  include Neo4j::NodeMixin
 end
 
 class Product
-  include Neo4j::Node
+  include Neo4j::NodeMixin
   properties :product_name
   properties :units_in_stock
   properties :unit_price
@@ -17,7 +17,7 @@ class Product
 end
 
 class OrderLine
-  include Neo4j::Relation
+  include Neo4j::RelationMixin
   properties :units
   properties :unit_price
 end

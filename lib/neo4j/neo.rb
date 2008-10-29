@@ -58,7 +58,7 @@ module Neo4j
 
     
     #
-    # Returns a Node object that has the given id or nil if it does not exist.
+    # Returns a NodeMixin object that has the given id or nil if it does not exist.
     # 
     def find_node(id) 
       begin

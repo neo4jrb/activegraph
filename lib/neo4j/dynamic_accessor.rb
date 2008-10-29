@@ -4,7 +4,7 @@ module Neo4j
   # A mixin that allows to set any property without declaring it first.
   # Uses method_missing
   #
-  module DynamicAccessor
+  module DynamicAccessorMixin
     #
     # A hook used to set and get undeclared properties
     #

@@ -3,7 +3,7 @@ require 'neo4j/spec_helper'
 
 
 class Person
-  include Neo4j::Node
+  include Neo4j::NodeMixin
   properties :name
   has_n :friends
   

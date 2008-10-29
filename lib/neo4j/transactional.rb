@@ -3,7 +3,7 @@ module Neo4j
   #
   # Includes support for wrapping a method in a Neo4j transaction.
   #
-  module Transactional
+  module TransactionalMixin
   
     def transactional(*methods)
       methods.each do |name|

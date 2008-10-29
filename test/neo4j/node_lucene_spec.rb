@@ -8,7 +8,7 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
   before(:all) do
     start
     class TestNode 
-      include Neo4j::Node
+      include Neo4j::NodeMixin
       properties :name, :age
       index :name, :age
     end
@@ -68,7 +68,7 @@ describe "A node with no lucene index" do
   before(:all) do
     start
     class TestNodeWithNoIndex
-      include Neo4j::Node
+      include Neo4j::NodeMixin
     end
     
   end
@@ -88,7 +88,7 @@ describe "Find Nodes using Lucene" do
   before(:all) do
     start
     class TestNode 
-      include Neo4j::Node
+      include Neo4j::NodeMixin
       properties :name, :age, :male, :height
       index :name
       index :age

@@ -5,9 +5,9 @@ module Neo4j
   # Wrapper class for a java org.neo4j.api.core.Relationship class
   #
   class DynamicRelation
-    extend Neo4j::Transactional
-    include Neo4j::Relation
-    include Neo4j::DynamicAccessor
+    extend Neo4j::TransactionalMixin
+    include Neo4j::RelationMixin
+    include Neo4j::DynamicAccessorMixin
     # TODO include dyanmic_accessors ?
   end
 

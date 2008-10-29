@@ -12,7 +12,7 @@ include Neo4j
 #end
 
 class Person
-  include Neo4j::Node
+  include Neo4j::NodeMixin
   properties :age
 end
 

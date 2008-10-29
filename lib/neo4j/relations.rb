@@ -89,11 +89,11 @@ module Neo4j
   #
   # Enables traversal of nodes of a specific type that one node has.
   # Used for traversing relationship of a specific type.
-  # Neo4j::Node can declare
+  # Neo4j::NodeMixin can declare
   #
-  class NodesWithRelationType
+  class HasNRelations
     include Enumerable
-    extend Neo4j::Transactional
+    extend Neo4j::TransactionalMixin
     
     # TODO other_node_class not used ?
     def initialize(node, type, &filter)
@@ -156,7 +156,7 @@ module Neo4j
     # 
     #   n1 = Node.new # Node has declared having a friend type of relationship
     #   n2 = Node.new
-    #   n3 = Node.new
+    #   n3 = NodeMixin.new
     #   
     #   n1 << n2 << n3
     #
@@ -175,7 +175,23 @@ module Neo4j
       other.class.fire_event(RelationshipAddedEvent.new(to, from, @type.name, r.getId()))
       self
     end
-    
+
+
+    #
+    # Private class
+    #
+    class DepthStopEvaluator
+      include StopEvaluator
+
+      def initialize(depth)
+        @depth = depth
+      end
+
+      def isStopNode(pos)
+        pos.depth >= @depth
+      end
+    end
+
     transactional :<<
     end
   
@@ -209,15 +225,4 @@ module Neo4j
     
   end
   
-  class DepthStopEvaluator
-    include StopEvaluator
-    
-    def initialize(depth)
-      @depth = depth
-    end
-    
-    def isStopNode(pos)
-      pos.depth >= @depth
-    end
-  end
 end

@@ -36,7 +36,7 @@ describe 'Neo4j::Node' do
     
     it "should accept no arguments"  do
       class TestNode
-        include Neo4j::Node
+        include Neo4j::NodeMixin
       end
       TestNode.new
     end
@@ -44,7 +44,7 @@ describe 'Neo4j::Node' do
     it "should allow to initialize itself"  do
       # given an initialize method
       class TestNode
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         attr_reader :foo 
         def initialize
           @foo = "bar"
@@ -61,7 +61,7 @@ describe 'Neo4j::Node' do
 
     it "should allow arguments for the initialize method"  do
       class TestNode
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         attr_reader :foo 
         def initialize(value)
           @foo = value
@@ -73,7 +73,7 @@ describe 'Neo4j::Node' do
     
     it "should allow to create a node from a native Neo Java object" do
       class TestNode
-        include Neo4j::Node
+        include Neo4j::NodeMixin
       end
       
       node1 = TestNode.new
@@ -93,7 +93,7 @@ describe 'Neo4j::Node' do
       undefine_class :TestNode  # make sure it is not already defined
       
       class TestNode 
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         properties :p1, :p2, :baaz, :foo, :bar, :bar2, :not_set_prop
       end
       @node = TestNode.new
@@ -192,7 +192,7 @@ describe 'Neo4j::Node' do
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
       class TestNode 
-        include Neo4j::Node
+        include Neo4j::NodeMixin
       end
       NODES = 5
       @nodes = []
@@ -226,14 +226,14 @@ describe 'Neo4j::Node' do
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
       class TestNode
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_n :orders
         properties :name
       end
       
       undefine_class :TestNode2  # make sure it is not already defined
       class TestNode2
-        include Neo4j::Node
+        include Neo4j::NodeMixin
       end
     end
     
@@ -371,7 +371,7 @@ describe "Neo4j::Node#delete"  do
     start
     undefine_class :TestNode
     class TestNode 
-      include Neo4j::Node
+      include Neo4j::NodeMixin
       has_n :friends
     end
 

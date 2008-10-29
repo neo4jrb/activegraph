@@ -10,10 +10,10 @@ module Neo4j
   # Is a wrapper around a Java neo node
   # 
   #
-  module Node
+  module NodeMixin
     attr_reader :internal_node 
 
-    extend Transactional
+    extend TransactionalMixin
     
     #
     # Will create a new transaction if one is not already running.
@@ -85,7 +85,7 @@ module Neo4j
  
     # 
     # Returns the value of the given neo property.
-    # You should not use this method. It is used by the Node#properties classmethod
+    # You should not use this method. It is used by the NodeMixin#properties classmethod
     # 
     # Runs in a new transaction if there is not one already running,
     # otherwise it will run in the existing transaction.
@@ -116,7 +116,7 @@ module Neo4j
     end
 
     def eql?(o)    
-      o.kind_of?(Node) && o.internal_node == internal_node
+      o.kind_of?(NodeMixin) && o.internal_node == internal_node
     end
     
     def ==(o)
@@ -206,7 +206,7 @@ module Neo4j
     end
 
     # --------------------------------------------------------------------------
-    # Node class methods
+    # NodeMixin class methods
     #
     module ClassMethods
     
@@ -251,7 +251,7 @@ module Neo4j
 
       #
       # Declares Neo4j node properties.
-      # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessor mixin.
+      # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessorMixin mixin.
       #
       def properties(*props)
         props.each do |prop|
@@ -271,7 +271,7 @@ module Neo4j
       # Index a property a relationship.
       # If the rel_prop arg contains a '.' then it will index the relationship.
       # For example "friends.name" will index each node with property name in the relationship friends.
-      # For example "name" will index the name property of this Node class.
+      # For example "name" will index the name property of this NodeMixin class.
       #
       def index(*rel_type_props)
         rel_type_props.each do |rel_type_prop|
@@ -332,12 +332,12 @@ module Neo4j
       def has_one(rel_type)
 
         module_eval(%Q{def #{rel_type}=(value)
-                        r = NodesWithRelationType.new(self,'#{rel_type.to_s}')
+                        r = HasNRelations.new(self,'#{rel_type.to_s}')
                         r << value
                     end},  __FILE__, __LINE__)
         
         module_eval(%Q{def #{rel_type}
-                        r = NodesWithRelationType.new(self,'#{rel_type.to_s}')
+                        r = HasNRelations.new(self,'#{rel_type.to_s}')
                         r.to_a[0]
                     end},  __FILE__, __LINE__)
         relations_info[rel_type] = RelationInfo.new
@@ -354,7 +354,7 @@ module Neo4j
       #      
       def has_n(rel_type) 
         module_eval(%Q{def #{rel_type}(&block)
-                        NodesWithRelationType.new(self,'#{rel_type.to_s}', &block)
+                        HasNRelations.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
         relations_info[rel_type] = RelationInfo.new
       end

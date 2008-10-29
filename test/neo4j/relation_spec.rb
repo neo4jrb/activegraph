@@ -24,7 +24,7 @@ describe "Neo4j::Node#relations " do
       undefine_class :TestNode  # make sure it is not already defined
       
       class TestNode 
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_n :friends
         has_n :parents
       end
@@ -99,7 +99,7 @@ describe "Neo4j::Node#relations " do
       undefine_class :TestNode  # make sure it is not already defined
       
       class TestNode 
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_n :friends
         has_n :parents
       end
@@ -196,12 +196,12 @@ describe "Neo4j::Node#relations " do
       end
       
       class Person
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_one(:address).to(Address)
       end
 
       class Address
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         properties :city, :road
         has_n(:people).from(Person, :address)
       end
@@ -240,18 +240,18 @@ describe "Neo4j::Node#relations " do
       class Customer; end
       
       class Order
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         properties :date, :order_id
         has_one(:customer).from(Customer, :orders)
       end
       
       class CustOrderRel
-        include Neo4j::Relation
+        include Neo4j::RelationMixin
         properties :my_prop
       end
       
       class Customer
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         properties :age, :name
         
         # TODO should be easier to say the thing below
@@ -261,7 +261,7 @@ describe "Neo4j::Node#relations " do
     end
     
     it "should allow to travers customer.orders getting both the CustOrderRel and Order (#each_with_relation)" do
-      pending "each_with_relation not implemented on NodesWithRelationType"
+      pending "each_with_relation not implemented on HasNRelations"
 #      customer = Customer.new
 #      order = Order.new
 #      order.order_id = 42
@@ -351,18 +351,18 @@ describe "Neo4j::Node#relations " do
   describe '#relations, creating new' do 
     before(:all) do
       class CustomerOrderRelation
-        include Neo4j::Relation
+        include Neo4j::RelationMixin
         properties :prio
       end
       
       class Customer
-        include Neo4j::Node
+        include Neo4j::NodeMixin
         has_n(:orders).relation(CustomerOrderRelation)
         has_n :friends
       end
       
       class Order
-        include Neo4j::Node        
+        include Neo4j::NodeMixin
       end
     end
 
