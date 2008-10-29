@@ -170,7 +170,7 @@ module Neo4j
     # Returns an array of nodes that has a relation from this
     #
     def relations
-      Relations.new(@internal_node)
+      RelationTraverser.new(@internal_node)
     end
 
     def reindex
