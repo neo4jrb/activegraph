@@ -87,6 +87,16 @@ describe "Customer,Order,Product" do
       r = c.orders.new(o)
       r.should be_kind_of(Neo4j::DynamicRelation)
     end
+
+    it "should allow to set properties on the customer - order relationship" do
+      c = Customer.new
+      o = Order.new
+      r = c.orders.new(o)
+
+      r.foo_bar = "hej"
+
+      r.foo_bar.should == "hej"
+    end
     
     it "should allow to create a OrderLine relationship between an order and a product" do
       o = Order.new

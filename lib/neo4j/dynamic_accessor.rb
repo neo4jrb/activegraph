@@ -22,8 +22,6 @@ module Neo4j
         raise ArgumentError.new(err)
       end
 
-      raise Exception.new("Node not initialized, called method '#{methodname}' on #{self.class.to_s}") unless @internal_node
-      
       if setter
         set_property(name, args[0])
       else
