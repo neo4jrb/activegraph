@@ -170,7 +170,7 @@ module Neo4j
     # Returns an array of nodes that has a relation from this
     #
     def relations
-      RelationTraverser.new(@internal_node)
+      Relations::RelationTraverser.new(@internal_node)
     end
 
     def reindex
@@ -332,15 +332,15 @@ module Neo4j
       def has_one(rel_type)
 
         module_eval(%Q{def #{rel_type}=(value)
-                        r = HasNRelations.new(self,'#{rel_type.to_s}')
+                        r = Relations::HasNRelations.new(self,'#{rel_type.to_s}')
                         r << value
                     end},  __FILE__, __LINE__)
         
         module_eval(%Q{def #{rel_type}
-                        r = HasNRelations.new(self,'#{rel_type.to_s}')
+                        r = Relations::HasNRelations.new(self,'#{rel_type.to_s}')
                         r.to_a[0]
                     end},  __FILE__, __LINE__)
-        relations_info[rel_type] = RelationInfo.new
+        relations_info[rel_type] = Relations::RelationInfo.new
       end
 
       
@@ -354,9 +354,9 @@ module Neo4j
       #      
       def has_n(rel_type) 
         module_eval(%Q{def #{rel_type}(&block)
-                        HasNRelations.new(self,'#{rel_type.to_s}', &block)
+                        Relations::HasNRelations.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
-        relations_info[rel_type] = RelationInfo.new
+        relations_info[rel_type] = Relations::RelationInfo.new
       end
 
       

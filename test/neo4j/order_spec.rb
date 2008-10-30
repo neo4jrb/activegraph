@@ -85,7 +85,7 @@ describe "Customer,Order,Product" do
       c = Customer.new
       o = Order.new
       r = c.orders.new(o)
-      r.should be_kind_of(Neo4j::DynamicRelation)
+      r.should be_kind_of(Neo4j::Relations::DynamicRelation)
     end
 
     it "should allow to set properties on the customer - order relationship" do

@@ -35,7 +35,7 @@ module Neo4j
       @db_storage = storage
       
       raise Exception.new("Already started neo") if @neo
-      @neo = EmbeddedNeo.new(@db_storage)  
+      @neo = org.neo4j.api.core.EmbeddedNeo.new(@db_storage)
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
     end
     
