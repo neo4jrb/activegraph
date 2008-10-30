@@ -4,6 +4,7 @@ module Neo4j
   class LuceneIndexOutOfSyncException < StandardError
     
   end
+
   #
   # Represent a node in the Neo4j space.
   # 
@@ -167,16 +168,25 @@ module Neo4j
     end
     
     #
-    # Returns an array of nodes that has a relation from this
+    # Returns a relatio traverser for traversing all types of relation from and to this node
+    # @see Neo4j::Relations::RelationTraverser
     #
     def relations
       Relations::RelationTraverser.new(@internal_node)
     end
 
+    #
+    # Mark this node to be reindex by lucene after the transaction finishes
+    #
     def reindex
       Transaction.current.reindex(self)
     end
-    
+
+    #
+    # Reindex this node now
+    #
+    # @api private
+    #
     def reindex!
       doc = {:id => neo_node_id }
       self.class.index_updaters.each do |updater|
@@ -218,14 +228,20 @@ module Neo4j
       # 
       
       
+      #
+      # @api private
       def lucene_index
         Lucene::Index.new(self::LUCENE_INDEX_PATH)      
       end
         
+      #
+      # @api private
       def index_updaters
         self::INDEX_UPDATERS
       end
 
+      #
+      # @api private
       def index_triggers
         self::INDEX_TRIGGERS
       end
@@ -241,7 +257,9 @@ module Neo4j
       
       # ------------------------------------------------------------------------
       # Event index_updater
-      
+
+      #
+      # @api private
       def fire_event(event)
         index_triggers.each {|trigger| trigger.call(event.node, event)}
       end
@@ -281,6 +299,8 @@ module Neo4j
         end
       end
 
+      #
+      # @api private
       def index_property(prop)
         updater = lambda do |node, doc| 
           doc[prop] = node.send(prop)
@@ -294,6 +314,8 @@ module Neo4j
       end
       
       
+      #
+      # @api private
       def index_relation(index_key, rel_type, prop)
         clazz = relations_info[rel_type.to_sym][:class]
         
@@ -362,7 +384,7 @@ module Neo4j
       
       #
       # Creates a new relation. The relation must be outgoing.
-      # 
+      # @api private
       def new_relation(rel_name, internal_relation)
         relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
       end
