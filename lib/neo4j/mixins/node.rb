@@ -57,6 +57,8 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j::Neo.instance.create_node
       self.classname = self.class.to_s
+      Neo4j::Neo.instance.ref_node.connect(self) unless self.kind_of? Neo::ReferenceNode
+
       self.class.fire_event NodeCreatedEvent.new(self)      
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
@@ -206,6 +208,7 @@ module Neo4j
     def self.included(c)
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
+        const_set(:ROOT_CLASS, self.to_s)
         const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
         const_set(:INDEX_UPDATERS, [])
         const_set(:INDEX_TRIGGERS, [])
@@ -227,7 +230,12 @@ module Neo4j
       # class and the child classes will 'inherit' those properties.
       # 
       
-      
+      #
+      # @api private
+      def root_class
+        self::ROOT_CLASS
+      end
+
       #
       # @api private
       def lucene_index

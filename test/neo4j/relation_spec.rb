@@ -127,16 +127,16 @@ describe "Neo4j::Node#relations " do
       t1.friends << t2
       
       outgoing = t2.relations.incoming.to_a
-      outgoing.size.should == 1
-      outgoing[0].end_node.should == t2
-      outgoing[0].start_node.should == t1
+      outgoing.size.should == 2 # 2 since we also have a relationship to ref node
+      outgoing[1].end_node.should == t2
+      outgoing[1].start_node.should == t1
     end
 
     it "should find no incoming or outgoing nodes when there are none" do
       t1 = TestNode.new
       t2 = TestNode.new
       
-      t2.relations.incoming.to_a.size.should == 0
+      t2.relations.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
       t2.relations.outgoing.to_a.size.should == 0
     end
 
@@ -145,7 +145,7 @@ describe "Neo4j::Node#relations " do
       t2 = TestNode.new
       
       t1.friends << t2
-      t1.relations.incoming.to_a.size.should == 0
+      t1.relations.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
       t2.relations.outgoing.to_a.size.should == 0
     end
 
@@ -171,7 +171,7 @@ describe "Neo4j::Node#relations " do
       t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
       t2.relations.incoming.nodes.to_a.should include(t1)      
       t3.relations.incoming.nodes.to_a.should include(t1)      
-      t1.relations.nodes.to_a.size.should == 2
+      t1.relations.nodes.to_a.size.should == 3 # since we also have a relationship to ref node
     end
     
     it "should find incomming nodes of a specific type" do

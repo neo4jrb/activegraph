@@ -12,13 +12,13 @@ require 'neo4j/spec_helper'
 describe 'Neo4j::Node' do
   before(:all) do
     start
-#    @transaction = Neo4j::Transaction.new 
-#    @transaction.start
+    #    @transaction = Neo4j::Transaction.new
+    #    @transaction.start
   end
 
   after(:all) do
-#    @transaction.failure # do not want to store anything
-#    @transaction.finish
+    #    @transaction.failure # do not want to store anything
+    #    @transaction.finish
     stop
   end  
  
@@ -31,6 +31,7 @@ describe 'Neo4j::Node' do
   
   describe '#initialize' do
     after(:each)  do
+      Neo4j::Neo.instance.ref_node.relations.each {|r| r.delete}
       undefine_class :TestNode  # must undefine this since each spec defines it
     end
     
@@ -79,6 +80,44 @@ describe 'Neo4j::Node' do
       node1 = TestNode.new
       node2 = TestNode.new(node1.internal_node)
       node1.internal_node.should == node2.internal_node      
+    end
+
+    it "should create a referense from the reference node root" do
+      class TestNode
+        include Neo4j::NodeMixin
+      end
+
+      ref_node = Neo4j::Neo.instance.ref_node
+      ref_node.relations.outgoing(TestNode.to_s).should be_empty
+
+      # when
+      t = TestNode.new
+      
+      # then
+      nodes = ref_node.relations.outgoing(TestNode.to_s).nodes
+      nodes.to_a.size.should == 1
+      nodes.should include(t)
+    end
+
+    it "should create a referense from the reference node root for inherited classes" do
+      class TestNode
+        include Neo4j::NodeMixin
+      end
+      
+      class SubNode < TestNode
+      end
+
+      ref_node = Neo4j::Neo.instance.ref_node
+      ref_node.relations.outgoing(TestNode.to_s).should be_empty
+
+      # when
+      t = SubNode.new
+
+      # then
+      nodes = ref_node.relations.outgoing(TestNode.to_s).nodes
+      nodes.to_a.size.should == 1
+      nodes.should include(t)
+      SubNode.root_class.should == TestNode.to_s
     end
   end
 
@@ -265,7 +304,7 @@ describe 'Neo4j::Node' do
       # when
       f.delete
     end
-    
+
     it "should fire a PropertyChangedEvent when a property on a node changes" do
       # given
       f = TestNode.new

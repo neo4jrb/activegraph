@@ -34,7 +34,15 @@ describe "When running in one transaction" do
   # 
 
   describe Neo4j::Neo do
-  
+
+    it "should have a reference node" do
+      ref_node = Neo4j::Neo.instance.ref_node
+      ref_node.should_not be_nil
+      ref_node.value = 'kalle'
+
+      ref_node.value.should == 'kalle'
+    end
+
     it "should find a node given its neo node id" do
       # given
       class TestNode 
@@ -50,7 +58,7 @@ describe "When running in one transaction" do
     end
   
     it "should not find a node that does not exist" do
-      pending 'Neo trunk does not throw the correct exception, wait till they fix it '
+      #pending 'Neo trunk does not throw the correct exception, wait till they fix it '
       n = Neo4j::Neo.instance.find_node(10)
       n.should be_nil
     end

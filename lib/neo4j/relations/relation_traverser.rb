@@ -32,7 +32,7 @@ module Neo4j
       end
 
       def empty?
-        !iterator.hasNext
+        Neo4j::Transaction.run {!iterator.hasNext}
       end
 
       #
@@ -62,6 +62,10 @@ module Neo4j
       def iterator
         return @internal_node.getRelationships(@direction).iterator if @type.nil?
         return @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
+      end
+
+      def to_s
+        "RelationTraverser [direction=#{@direction}, type=#{@type}]"
       end
 
       #

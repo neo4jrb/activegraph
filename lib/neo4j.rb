@@ -3,15 +3,12 @@ require 'singleton'
 require 'thread'
 require 'delegate'
 
+# external jars
+require 'neo4j/jars'
+
 # lucene
 require 'lucene'
 
-# neo4j
-require 'neo4j/jars'
-require 'neo4j/events'
-require 'neo4j/neo'
-require 'neo4j/transaction'
-require 'neo4j/version'
 
 # mixins
 require 'neo4j/mixins/transactional'
@@ -25,6 +22,13 @@ require 'neo4j/relations/dynamic_relation'
 require 'neo4j/relations/relations'
 require 'neo4j/relations/has_n_relations'
 require 'neo4j/relations/relation_traverser'
+
+# neo4j
+require 'neo4j/events'
+require 'neo4j/neo'
+require 'neo4j/transaction'
+require 'neo4j/version'
+
 
 
 
