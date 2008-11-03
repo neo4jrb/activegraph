@@ -287,7 +287,7 @@ describe 'Neo4j::Node' do
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(an_instance_of(TestNode), an_instance_of(Neo4j::NodeCreatedEvent))
 
-      TestNode.index_triggers << iu
+      TestNode.index_triggers['foo'] = iu
       
       # when
       f = TestNode.new
@@ -299,7 +299,7 @@ describe 'Neo4j::Node' do
       
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(f, an_instance_of(Neo4j::NodeDeletedEvent))
-      TestNode.index_triggers << iu
+      TestNode.index_triggers['foo'] = iu
       
       # when
       f.delete
@@ -310,7 +310,7 @@ describe 'Neo4j::Node' do
       f = TestNode.new
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(f, an_instance_of(Neo4j::PropertyChangedEvent))            
-      TestNode.index_triggers << iu
+      TestNode.index_triggers['foo'] = iu
       
       # when
       f.name = 'foo'
@@ -326,7 +326,7 @@ describe 'Neo4j::Node' do
 
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(cust, an_instance_of(Neo4j::RelationshipDeletedEvent))   
-      TestNode.index_triggers << iu
+      TestNode.index_triggers['foo'] = iu
       
       # when
       cust.relations.outgoing(:orders)[order].delete
@@ -343,7 +343,7 @@ describe 'Neo4j::Node' do
       iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipAddedEvent))
       iu.should_receive(:call).once.with(t2, an_instance_of(Neo4j::RelationshipAddedEvent))
 
-      TestNode.index_triggers << iu
+      TestNode.index_triggers['foo'] = iu
       
       # when
       t1.orders << t2
@@ -356,7 +356,7 @@ describe 'Neo4j::Node' do
 
       iu = mock('IndexUpdater')
       iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipAddedEvent)) 
-      TestNode.index_triggers << iu
+      TestNode.index_triggers['foo'] = iu
       
       # when
       t1.orders << t2
@@ -371,7 +371,7 @@ describe 'Neo4j::Node' do
       iu = mock('IndexUpdater')      
       iu.should_receive(:call).once.with(t2, an_instance_of(Neo4j::NodeDeletedEvent))                              
       iu.should_receive(:call).once.with(t1, an_instance_of(Neo4j::RelationshipDeletedEvent))            
-      TestNode.index_triggers << iu      
+      TestNode.index_triggers['foo'] = iu
 
       # when
       t2.delete
@@ -387,7 +387,7 @@ describe 'Neo4j::Node' do
       t1 = TestNode.new
       t2 = TestNode2.new
       t1.orders << t2
-      TestNode.index_triggers << iu      
+      TestNode.index_triggers['foo'] = iu
 
       # when
       t2.delete

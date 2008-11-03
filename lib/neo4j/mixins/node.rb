@@ -191,7 +191,7 @@ module Neo4j
     #
     def reindex!
       doc = {:id => neo_node_id }
-      self.class.index_updaters.each do |updater|
+      self.class.index_updaters.each_value do |updater|
         updater.call(self, doc)
       end
       lucene_index << doc
@@ -210,8 +210,8 @@ module Neo4j
       c.instance_eval do
         const_set(:ROOT_CLASS, self.to_s)
         const_set(:LUCENE_INDEX_PATH, "/" + self.to_s.gsub('::', '/'))
-        const_set(:INDEX_UPDATERS, [])
-        const_set(:INDEX_TRIGGERS, [])
+        const_set(:INDEX_UPDATERS, {})
+        const_set(:INDEX_TRIGGERS, {})
         const_set(:RELATIONS_INFO, {})
       end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
@@ -269,7 +269,7 @@ module Neo4j
       #
       # @api private
       def fire_event(event)
-        index_triggers.each {|trigger| trigger.call(event.node, event)}
+        index_triggers.each_value {|trigger| trigger.call(event.node, event)}
       end
       
       
@@ -308,17 +308,41 @@ module Neo4j
       end
 
       #
+      # Remote one or more specified indexes.
+      # This indexes will not be updated anymore, old indexes will still exist
+      # until the update_index method is called.
+      #
+      def remove_index(*keys)
+        keys.each do |key|
+          index_updaters.delete key.to_s
+          index_triggers.delete key.to_s
+        end
+      end
+
+
+      #
+      # Traverse all nodes and update the lucene index.
+      # Can be used for example if it is neccessarly to change the index on a class
+      #
+      def update_index
+        all.nodes.each do |n|
+          n.reindex!
+          puts "REINDEXED #{n}"
+        end
+      end
+      
+      #
       # @api private
       def index_property(prop)
         updater = lambda do |node, doc| 
           doc[prop] = node.send(prop)
         end
-        index_updaters << updater
+        index_updaters[prop] = updater
         
         trigger = lambda do |node, event|
           node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) 
         end
-        index_triggers << trigger
+        index_triggers[prop] = trigger
       end
       
       
@@ -337,7 +361,7 @@ module Neo4j
           relations.each {|other_node| values << other_node.send(prop)}
           doc[index_key] = values
         end
-        index_updaters << updater
+        index_updaters[index_key] = updater
       
         # trigger - knows if an index needs to be updated
         trigger = lambda do |other_node, event|
@@ -348,7 +372,7 @@ module Neo4j
             relations.each {|r| r.send(:reindex)} 
           end
         end
-        clazz.index_triggers << trigger
+        clazz.index_triggers[index_key] = trigger
       end
       
 

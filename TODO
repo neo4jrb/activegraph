@@ -1,11 +1,11 @@
-== TODO
+== TODO - soon
 
 * more tests on transactions and concurrency issues
 * performance tests and check for memory leaks
-* using two phase commit to make sure the lucene index is synchronized.
-* Handle corrupt lucene index after a crash
 * Better documentation, use YARD instead of RDoc
 * Fix TODO's in the code
-* Check visibility of methods, set internal method to private
 * the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available
-* make it possible to configure where the database and lucene index should be stored on the file system
+
+== TODO - later
+* using two phase commit to make sure the lucene index is synchronized.
+* Handle corrupt lucene index after a crash

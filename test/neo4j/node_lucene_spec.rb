@@ -157,5 +157,19 @@ describe "Find Nodes using Lucene" do
     found.should include(@foos[0])
     found.size.should == 1
   end
+
+  it "should be possible to remove an index" do
+    # given
+    found = TestNode.find(:name => 'foo2')
+    found.size.should == 1
+
+    # when
+    TestNode.remove_index(:name)
+    TestNode.update_index
+
+    # then
+    found = TestNode.find(:name => 'foo2')
+    found.size.should == 0
+  end
 end
 

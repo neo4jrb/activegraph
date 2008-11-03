@@ -632,16 +632,43 @@ You can also run it without a block, like this:
 
 === Indexing
 
-If you want you can also declare properties to be indexed.
-Use the properties class method, example:
+Properties and relationships which should be indexed by lucene can be specified by the index class method.
+For example to index the proeprties foo and bar
 
   class SomeNode
      include Neo4j::NodeMixin
      properties :foo, :bar
+     index :foo, :bar
   end
 
+Everytime a node of type SomeNode (or a subclass) is create, deleted or updated the lucene index of will be updated.
 
-(TODO change name of properties to index ?)
+=== Deleting or Reindex
+
+Sometimes it's neccessarly to change the index of a class after alot of node instances already have been created.
+To delete an index use the class method 'remove_index'
+To update an index use the class method 'update_index' which will update all already created nodes in the neo database.
+
+Example
+
+  class Person
+    include Neo4j
+    properties :name, :age, :phone
+    index :name, :age
+  end
+
+  p1 = Person.new {|n| n.name = 'andreas'; n.phone = 123}
+  Person.find (:name => 'andreas') # => [p1]
+  Person.find (:phone => 123) # => []
+
+  # change index and reindex all person nodes already created in the neo database.
+  Person.remove_index :name
+  Person.index :phone  # add an index on phone
+  Person.update_index
+
+  Person.find (:name => 'andreas') # => []
+  Person.find (:phone => 123) # => [p1]
+
 
 === Quering (using lucene)
 
