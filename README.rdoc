@@ -54,7 +54,10 @@ Relations between nodes can be specified by using the relations
 
 Before using neo it has to be started
 
-  Neo4j.start
+   Neo4j.start '/home/neo/neodb', '/home/neo/lucene_index'
+
+The neo database will be stored at '/home/neo/neodb' and the lucene index files will
+be stored at '/home/neo/lucene_index'.
 
 Creating a Person node instance
 
@@ -221,6 +224,7 @@ For example if you want the id field to be a fixnum
 If the field_info type parameter is not set then it has a default value of String.
 
 === Storage of fields
+
 By default only the id field will be stored.
 That means that in the example above the :name field will not be included in the document.
 
@@ -326,7 +330,7 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 In order to use neo it has to be started first.
   
-   Neo4j.start 'home/neo/neodb', 'home/neo/lucene_index'
+   Neo4j.start '/home/neo/neodb', '/home/neo/lucene_index'
 
 The start method takes 2 paremters - the location on the filesystem of the neo
 database and the lucene index.
@@ -394,6 +398,30 @@ You can also set a property like this:
     f.foo = 123
 
 Neo4j.rb supports properties to by of type String, Fixnum, Float and Boolean.
+
+=== Finding all nodes
+
+To find all nodes of a specific type use the all method.
+Example
+
+  class Car
+    include Neo4j::Node
+    property :wheels
+  end
+
+  class Volvo < Car
+  end
+
+  v = Volvo.new
+  c = Car.new
+
+  Car.all   # will return all relationships from the reference node to car obejcts
+  Volvo.all # will return the same as Car.all
+
+To return nodes (just like the relations method)
+
+  Car.all.nodes    # => [c,v]
+  Volvo.all.nodes  # => [c,v]
 
 
 === Relationship has_n
@@ -715,6 +743,17 @@ It does this by reading the classname property and loading that ruby class with 
   
   # f2 will now be new instance of Person, but will be == f1
   f1 == f2 # => true
+
+=== Reference node
+
+There is one node that can always be find - the reference node.
+Example:
+
+    Neo4j.instance.ref_node
+
+This node has a relationship to all created nodes.
+It is used internally to recreate an index or finding all nodes of a specific type.
+
 
   
 
