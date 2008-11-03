@@ -55,10 +55,10 @@ def parse_actors(file)
 end
 
 
-Neo4j::Neo.instance.start
+Neo4j.start
 
 
 parse_actors('data/test-actors.list')
 
 
-Neo4j::Neo.instance.stop
+Neo4j.stop

@@ -26,6 +26,7 @@ require 'neo4j/relations/relation_traverser'
 # neo4j
 require 'neo4j/events'
 require 'neo4j/neo'
+require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/version'
 

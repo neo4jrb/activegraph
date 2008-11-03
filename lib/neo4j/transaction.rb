@@ -141,7 +141,7 @@ module Neo4j
     # Starts a new transaction
     #
     def start
-      @neo_tx= Neo4j::Neo.instance.begin_transaction #org.neo4j.api.core.Transaction.begin
+      @neo_tx= Neo4j.instance.begin_transaction #org.neo4j.api.core.Transaction.begin
       @failure = false      
       
       $NEO_LOGGER.info{"started #{self.to_s}"}

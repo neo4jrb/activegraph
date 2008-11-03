@@ -1,14 +1,39 @@
 module Neo4j
-  
-  
+
+
   #
-  # Default location of neo storage
-  NEO_STORAGE = 'var/neo'
-    
+  # starts neo with a database at the given storage location for neo and lucene
   #
-  # Default location of lucene index files
+  def self.start(db_location, lucene_index_location)
+    raise Exception.new("Already started neo") if @instance
+    @instance = Neo.new db_location
+    @lucene_index_location = lucene_index_location
+    @instance.start
+  end
+
   #
-  LUCENE_INDEX_STORAGE = 'var/lucene'
+  # Return the started neo instance or nil if not started
+  #
+  def self.instance
+    @instance
+  end
+
+  #
+  # Stop the current instance unless it is not started
+  #
+  def self.stop
+    @instance.stop unless @instance.nil?
+    @instance = nil
+  end
+
+  def self.lucene_index_location
+    @lucene_index_location
+  end
+
+  def self.neo_db_location
+    @instance.db_storage
+  end
+
   
   #
   # Allows run and stop the Neo4j service
@@ -18,7 +43,6 @@ module Neo4j
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
   class Neo
-    include Singleton
     attr_accessor :db_storage
 
     #
@@ -26,45 +50,15 @@ module Neo4j
     #
     attr_reader :ref_node
 
-
-    #
-    # Holds references to all other nodes
-    # The classname of the nodes are used as the name of the relationship to those nodes.
-    # There is only one reference node in a neo space, which can always been found (Neo4j::Neo#:ref_node)
-    #
-    class ReferenceNode
-      include Neo4j::NodeMixin
-      include Neo4j::DynamicAccessorMixin
-
-      has_n :roots
-
-      def initialize(*args)
-        super
-        set_property('classname', self.class.to_s) if property?('classname').nil?
-      end
-
-      #
-      # Connects the given node with the reference node
-      #
-      def connect(node)
-        clazz = node.class.root_class
-        type = Neo4j::Relations::RelationshipType.instance(clazz)
-        internal_node.createRelationshipTo(node.internal_node, type) #if Transaction.running?
-      end
+    def initialize(db_storage)
+      @db_storage = db_storage
     end
-    
-    #
-    # starts neo with a database at the given storage location
-    # 
-    def start(storage = NEO_STORAGE)
-      @db_storage = storage
-      
-      raise Exception.new("Already started neo") if @neo
+
+    def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(@db_storage)
       Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
     end
-    
     
     #
     # Create an internal neo node (returns a java object)
@@ -88,8 +82,10 @@ module Neo4j
     # 
     def find_node(id) 
       begin
-        neo_node = @neo.getNodeById(id)
-        load_node(neo_node)
+        Transaction.run do
+          neo_node = @neo.getNodeById(id)
+          load_node(neo_node)
+        end
       rescue org.neo4j.api.core.NotFoundException 
         nil
       end

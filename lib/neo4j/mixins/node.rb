@@ -55,9 +55,9 @@ module Neo4j
     # Inits when no neo java node exists. Must create a new neo java node first.
     #
     def init_without_node
-      @internal_node = Neo4j::Neo.instance.create_node
+      @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
-      Neo4j::Neo.instance.ref_node.connect(self) unless self.kind_of? Neo::ReferenceNode
+      Neo4j.instance.ref_node.connect(self) 
 
       self.class.fire_event NodeCreatedEvent.new(self)      
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
@@ -209,7 +209,7 @@ module Neo4j
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
         const_set(:ROOT_CLASS, self.to_s)
-        const_set(:LUCENE_INDEX_PATH, Neo4j::LUCENE_INDEX_STORAGE + "/" + self.to_s.gsub('::', '/'))
+        const_set(:LUCENE_INDEX_PATH, "/" + self.to_s.gsub('::', '/'))
         const_set(:INDEX_UPDATERS, [])
         const_set(:INDEX_TRIGGERS, [])
         const_set(:RELATIONS_INFO, {})
@@ -239,7 +239,7 @@ module Neo4j
       #
       # @api private
       def lucene_index
-        Lucene::Index.new(self::LUCENE_INDEX_PATH)      
+        Lucene::Index.new(Neo4j.lucene_index_location + self::LUCENE_INDEX_PATH)
       end
         
       #
@@ -389,7 +389,11 @@ module Neo4j
         relations_info[rel_type] = Relations::RelationInfo.new
       end
 
-      
+
+      def all
+        ref = Neo4j.instance.ref_node
+        ref.relations.outgoing(root_class)
+      end
       #
       # Creates a new relation. The relation must be outgoing.
       # @api private
@@ -420,7 +424,7 @@ module Neo4j
         Transaction.run do
           hits.collect do |doc| 
             id = doc[:id]
-            node = Neo4j::Neo.instance.find_node(id.to_i)
+            node = Neo4j.instance.find_node(id.to_i)
             raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
             node
           end

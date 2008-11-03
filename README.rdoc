@@ -54,7 +54,7 @@ Relations between nodes can be specified by using the relations
 
 Before using neo it has to be started
 
-  Neo4j::Neo.instance.start
+  Neo4j.start
 
 Creating a Person node instance
 
@@ -326,11 +326,14 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 In order to use neo it has to be started first.
   
-   Neo4j::Neo.instance.start
+   Neo4j.start 'home/neo/neodb', 'home/neo/lucene_index'
+
+The start method takes 2 paremters - the location on the filesystem of the neo
+database and the lucene index.
 
 To stop the neo database:
 
-   Neo4j::Neo.instance.stop
+   Neo4j.stop
 
 
 === Neo4j::NodeMixin
@@ -708,7 +711,7 @@ It does this by reading the classname property and loading that ruby class with 
   f1 = Person.new {}
   
   # load the class again
-  f2 = Neo4j::Neo.instance.find_node(foo.neo_node_id)
+  f2 = Neo4j.instance.find_node(foo.neo_node_id)
   
   # f2 will now be new instance of Person, but will be == f1
   f1 == f2 # => true

@@ -2,22 +2,26 @@
 # Helper methods for specs
 #
 
-require 'fileutils'  
+require 'fileutils'
+require 'tmpdir'
+
+NEO_STORAGE = Dir::tmpdir + "/neo_storage"
+LUCENE_INDEX_LOCATION = Dir::tmpdir + "/neo_lucene_storage"
 
 def delete_db
-  FileUtils.rm_r Neo4j::NEO_STORAGE           if File.directory? Neo4j::NEO_STORAGE
-  FileUtils.rm_r Neo4j::LUCENE_INDEX_STORAGE  if File.directory? Neo4j::LUCENE_INDEX_STORAGE
+  FileUtils.rm_rf NEO_STORAGE
+  FileUtils.rm_rf LUCENE_INDEX_LOCATION
 end
 
 
 def start
   delete_db
-  Neo4j::Neo.instance.start
+  Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
 end
 
 
 def stop
-  Neo4j::Neo.instance.stop
+  Neo4j.stop
   delete_db
 end
 
@@ -30,12 +34,4 @@ def undefine_class(*clazz_syms)
       end if const_defined? clazz_sym
     end
   end
-end
-
-module Neo4j
-  class BaseNode
-    include NodeMixin
-    include DynamicAccessorMixin
-  end
-  
 end

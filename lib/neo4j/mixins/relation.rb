@@ -35,7 +35,7 @@
     # Inits when no neo java node exists. Must create a new neo java node first.
     #
     def init_without_rel
-      @internal_r = Neo4j::Neo.instance.create_node
+      @internal_r = Neo4j.instance.create_node
       self.classname = self.class.to_s
       self.class.fire_event RelationshipAddedEvent.new(self)  #from_node, to_node, relation_name, relation_id
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}
@@ -43,17 +43,17 @@
 
     def end_node
       id = @internal_r.getEndNode.getId
-      Neo.instance.find_node id
+      Neo4j.instance.find_node id
     end
 
     def start_node
       id = @internal_r.getStartNode.getId
-      Neo.instance.find_node id
+      Neo4j.instance.find_node id
     end
 
     def other_node(node)
       id = @internal_r.getOtherNode(node).getId
-      Neo.instance.find_node id
+      Neo4j.instance.find_node id
     end
 
     #
@@ -62,7 +62,8 @@
     #
     def delete
       type = @internal_r.getType().name()
-      start_node.class.fire_event(RelationshipDeletedEvent.new(start_node, end_node, type, @internal_r.getId))
+      # start_node can be nil if it is a node that is not managed by Neo4j.rb
+      start_node.class.fire_event(RelationshipDeletedEvent.new(start_node, end_node, type, @internal_r.getId)) unless start_node.nil?
       @internal_r.delete
     end
 

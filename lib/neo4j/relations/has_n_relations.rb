@@ -38,7 +38,7 @@ module Neo4j
         Neo4j::Transaction.run do
           iter = traverser.iterator
           while (iter.hasNext) do
-            node = Neo4j::Neo.instance.load_node(iter.next)
+            node = Neo4j.instance.load_node(iter.next)
             if !@filter.nil?
               res =  node.instance_eval(&@filter)
               next unless res

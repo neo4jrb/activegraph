@@ -31,8 +31,8 @@ describe 'Neo4j::Node' do
   
   describe '#initialize' do
     after(:each)  do
-      Neo4j::Neo.instance.ref_node.relations.each {|r| r.delete}
-      undefine_class :TestNode  # must undefine this since each spec defines it
+      Neo4j.instance.ref_node.relations.each {|r| r.delete}
+      undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
     end
     
     it "should accept no arguments"  do
@@ -87,7 +87,7 @@ describe 'Neo4j::Node' do
         include Neo4j::NodeMixin
       end
 
-      ref_node = Neo4j::Neo.instance.ref_node
+      ref_node = Neo4j.instance.ref_node
       ref_node.relations.outgoing(TestNode.to_s).should be_empty
 
       # when
@@ -107,7 +107,7 @@ describe 'Neo4j::Node' do
       class SubNode < TestNode
       end
 
-      ref_node = Neo4j::Neo.instance.ref_node
+      ref_node = Neo4j.instance.ref_node
       ref_node.relations.outgoing(TestNode.to_s).should be_empty
 
       # when
@@ -179,7 +179,7 @@ describe 'Neo4j::Node' do
       @node.bar2 = false
       
       # make sure we test that the properties are stored in the neo database
-      n = Neo4j::Neo.instance.find_node(@node.neo_node_id)
+      n = Neo4j.instance.find_node(@node.neo_node_id)
       
       # then
       n.baaz.should == 42
@@ -397,7 +397,65 @@ describe 'Neo4j::Node' do
     end
     
   end
-  
+
+
+  # ----------------------------------------------------------------------------
+  # all
+  #
+  describe '#all' do
+    before(:each)  do
+      Neo4j.instance.ref_node.relations.each {|r| r.delete}
+      undefine_class :TestNode  # must undefine this since each spec defines it
+    end
+
+    it "should return all node instances" do
+      class TestNode
+        include Neo4j::NodeMixin
+      end
+
+      t1 = TestNode.new
+      t2 = TestNode.new
+
+      # when
+      TestNode.all.to_a.size.should == 2
+      TestNode.all.nodes.to_a.should include(t1)
+      TestNode.all.nodes.to_a.should include(t2)
+    end
+
+
+    it "should not return deleted node instances" do
+      class TestNode
+        include Neo4j::NodeMixin
+      end
+
+      t1 = TestNode.new
+      t2 = TestNode.new
+      TestNode.all.to_a.size.should == 2
+
+      # when
+      t1.delete
+      TestNode.all.to_a.size.should == 1
+      TestNode.all.nodes.to_a.should include(t2)
+    end
+
+    it "should return subclasses instances as well" do
+      class A
+        include Neo4j::NodeMixin
+      end
+
+      class B < A
+      end
+
+      # when
+      a = A.new
+      b = B.new
+
+      # then
+      A.all.to_a.size.should == 2
+      B.all.nodes.to_a.should include(a,b)
+    end
+
+  end
 end
 
 

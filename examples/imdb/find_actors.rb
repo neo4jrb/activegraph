@@ -3,7 +3,7 @@ require "neo4j"
 
 require "model"
 
-Neo4j::Neo.instance.start
+Neo4j.start
 
 
 
@@ -19,4 +19,4 @@ willis.acted_in.each do |movie|
   puts "Movie #{movie.title}"
 end
 
-Neo4j::Neo.instance.stop
+Neo4j.stop

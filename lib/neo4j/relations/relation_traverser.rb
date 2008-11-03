@@ -49,7 +49,7 @@ module Neo4j
           iter = iterator
           while (iter.hasNext) do
             n = iter.next
-            yield Neo4j::Neo.instance.load_relationship(n)
+            yield Neo4j.instance.load_relationship(n)
           end
         end
       end

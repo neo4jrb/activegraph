@@ -21,7 +21,7 @@ describe Person do
   
   it "should be possible to create a new instance" do
     person = Person.new
-    result = Neo4j::Neo.instance.find_node person.neo_node_id
+    result = Neo4j.instance.find_node person.neo_node_id
     result.should == person
   end
   
