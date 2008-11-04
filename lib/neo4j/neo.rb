@@ -5,7 +5,7 @@ module Neo4j
   # starts neo with a database at the given storage location for neo and lucene
   #
   def self.start(db_location, lucene_index_location)
-    raise Exception.new("Already started neo") if @instance
+    raise StandardError.new("Already started neo") if @instance
     @instance = Neo.new db_location
     @lucene_index_location = lucene_index_location
     @instance.start

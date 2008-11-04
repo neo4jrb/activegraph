@@ -119,6 +119,37 @@ describe Index, ".find (range)" do
   
 end
 
+
+describe Index, ".find (with TOKENIZED index)" do
+  before(:each) do
+    delete_all_indexes
+    Index.clear($INDEX_DIR)
+    @index = Index.new($INDEX_DIR)
+    @index.field_infos[:name][:tokenized] = true
+    
+    @index << {:id => "1", :name => 'hej hopp', :name2=>'hej hopp'}
+    @index << {:id => "2", :name => 'hello world', :name2=>'hej hopp'}
+    @index << {:id => "3", :name => 'hello there', :name2=>'hej hopp'}
+    @index << {:id => "4", :name => ['hello', 'hej', '123']}
+    @doc1 = @index.uncommited["1"]
+    @doc2 = @index.uncommited["2"]
+    @doc3 = @index.uncommited["3"]
+    @doc4 = @index.uncommited["4"]
+    @index.commit
+  end
+
+  it "should find indexed documents using the tokenized field" do
+    result = @index.find(:name=>"hello")
+    result.size.should == 3
+    result.should include(@doc2,@doc3, @doc4)
+  end
+
+  it "should not find indexed documents using the untokenized field" do
+    result = @index.find(:name2=>"hello")
+    result.size.should == 0
+  end
+end
+
 describe Index, ".find (exact match)" do
   before(:each) do
     delete_all_indexes

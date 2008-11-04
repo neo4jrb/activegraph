@@ -300,6 +300,13 @@ module Neo4j
       # For example "name" will index the name property of this NodeMixin class.
       #
       def index(*rel_type_props)
+        if rel_type_props.size == 2 and rel_type_props[1].kind_of?(Hash)
+          rel_type_props[1].each_pair do |key,value|
+            idx = rel_type_props[0]
+            lucene_index.field_infos[idx.to_sym][key] = value
+          end
+          rel_type_props = rel_type_props[0..0]
+        end
         rel_type_props.each do |rel_type_prop|
           rel_type, prop = rel_type_prop.to_s.split('.')
           index_property(rel_type) if prop.nil?
@@ -327,20 +334,19 @@ module Neo4j
       def update_index
         all.nodes.each do |n|
           n.reindex!
-          puts "REINDEXED #{n}"
         end
       end
       
       #
       # @api private
       def index_property(prop)
-        updater = lambda do |node, doc| 
+        updater = lambda do |node, doc|
           doc[prop] = node.send(prop)
         end
         index_updaters[prop] = updater
         
         trigger = lambda do |node, event|
-          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) 
+          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop)
         end
         index_triggers[prop] = trigger
       end
@@ -355,9 +361,9 @@ module Neo4j
         rel_type = type.to_sym unless type.nil?
         
         # updater - called when index needs to be updated
-        updater = lambda do |my_node, doc| 
+        updater = lambda do |my_node, doc|
           values = []
-          relations = my_node.relations.both(rel_type).nodes 
+          relations = my_node.relations.both(rel_type).nodes
           relations.each {|other_node| values << other_node.send(prop)}
           doc[index_key] = values
         end
@@ -369,20 +375,20 @@ module Neo4j
                 Neo4j::RelationshipEvent.trigger?(event) or
                 Neo4j::NodeLifecycleEvent.trigger?(event))
             relations = other_node.relations.both(rel_type).nodes
-            relations.each {|r| r.send(:reindex)} 
+            relations.each {|r| r.send(:reindex)}
           end
         end
         clazz.index_triggers[index_key] = trigger
       end
       
 
-      #      
+      #
       # Specifies a relationship between two node classes.
-      # Example      
+      # Example
       #   class Order
       #      has_one(:customer).of_class(Customer)
       #   end
-      #      
+      #
       def has_one(rel_type)
 
         module_eval(%Q{def #{rel_type}=(value)
@@ -399,14 +405,14 @@ module Neo4j
 
       
 
-      #      
+      #
       # Specifies a relationship between two node classes.
-      # Example      
+      # Example
       #   class Order
       #      has_n(:order_lines).to(Product).relation(OrderLine)
       #   end
-      #      
-      def has_n(rel_type) 
+      #
+      def has_n(rel_type)
         module_eval(%Q{def #{rel_type}(&block)
                         Relations::HasNRelations.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
@@ -430,13 +436,13 @@ module Neo4j
       #
       # Finds all nodes of this type (and ancestors of this type) having
       # the specified property values.
-      # 
+      #
       # == Example
       #   MyNode.find(:name => 'foo', :company => 'bar')
-      #   
+      #
       # Or using a DSL query
       #   MyNode.find{(name == 'foo') & (company == 'bar')}
-      #   
+      #
       # See the lucene module for more information how to do a query.
       #
       def find(query=nil, &block)
@@ -446,14 +452,14 @@ module Neo4j
         # TODO performance, we load all the found entries. Maybe better using Enumeration
         # and load it when needed. Wrap it in a SearchResult
         Transaction.run do
-          hits.collect do |doc| 
+          hits.collect do |doc|
             id = doc[:id]
             node = Neo4j.instance.find_node(id.to_i)
             raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
             node
           end
         end
-      end      
+      end
     end
   end
 end

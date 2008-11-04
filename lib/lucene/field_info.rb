@@ -27,8 +27,9 @@ module Lucene
     def java_field(key, value)    
       store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO      
       cvalue = convert_to_lucene(value)
-      $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}'"}      
-      org.apache.lucene.document.Field.new(key.to_s, cvalue, store, org.apache.lucene.document.Field::Index::UN_TOKENIZED ) #org.apache.lucene.document.Field::Index::NO_NORMS)
+      $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}'"}
+      token_type = tokenized? ? org.apache.lucene.document.Field::Index::TOKENIZED : org.apache.lucene.document.Field::Index::UN_TOKENIZED
+      org.apache.lucene.document.Field.new(key.to_s, cvalue, store, token_type ) #org.apache.lucene.document.Field::Index::NO_NORMS)
     end
     
     def convert_to_ruby(value)
@@ -67,6 +68,10 @@ module Lucene
         term  = org.apache.lucene.index.Term.new(key.to_s, converted_value)        
         TermQuery.new(term) 
       end
+    end
+
+    def tokenized?
+      @info[:tokenized]
     end
     
     def store?

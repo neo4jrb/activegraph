@@ -83,7 +83,40 @@ describe "A node with no lucene index" do
     found.should == []
   end
 end
-  
+
+
+describe "Find Nodes using Lucene and tokenized index" do
+  before(:all) do
+    start
+    undefine_class :Person
+    class Person
+      include Neo4j::NodeMixin
+      properties :name#, :name2
+      index :name,   :tokenized => true
+#      index :name2, :tokenized => false # default
+    end
+    names = ['Andreas Ronge', 'Kalle Kula', 'Laban Suneström', 'Sune Larsson', 'hej hopp']
+    @foos = []
+    names.each {|n|
+      node = Person.new
+      node.name = n
+#      node.name2 = n
+      @foos << node
+    }
+  end
+
+  after(:all) do
+    stop
+  end
+
+  it "should find one node" do
+    pending
+    found = Person.find(:name => 'hej')
+    found.size.should == 1
+    found.should include(@foos[4])
+  end
+end
+
 describe "Find Nodes using Lucene" do
   before(:all) do
     start

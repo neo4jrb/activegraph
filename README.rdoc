@@ -43,12 +43,13 @@ This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
     # define an one way relationship to any other Person node
     has_n(:friends).to(Person)
 
-    index :name  # adds a lucene index on the name
+    index :name, :tokenized => true  # adds a lucene index on the name
     index :age
     index 'friends.age' # index each friend age as well
   end
 
 The example above specifies how to map a Neo node to a ruby Person instance.
+Tokenized means that the name will be normalize before its terms will be stored in the index. This is useful for common text where no exact match is needed.
 All neo properties have to be declared (unless you include the DynamicAccessor mixin).
 Relations between nodes can be specified by using the relations
 
