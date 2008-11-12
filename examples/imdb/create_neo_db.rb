@@ -1,3 +1,5 @@
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
+
 require "rubygems" 
 require "neo4j"
 require "model"
@@ -55,7 +57,7 @@ def parse_actors(file)
 end
 
 
-Neo4j.start
+Neo4j.start '/tmp/neo', '/tmp/lucene'
 
 
 parse_actors('data/test-actors.list')
