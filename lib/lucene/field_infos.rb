@@ -21,15 +21,16 @@ module Lucene
     end
     
     def [](key)
-      $LUCENE_LOGGER.debug{"FieldInfos create new FieldInfo key '#{key}'"} if @infos[key].nil?
-      @infos[key] ||= DEFAULTS.dup
-      @infos[key]
+      k = key.to_sym
+      $LUCENE_LOGGER.debug{"FieldInfos create new FieldInfo key '#{k}'"} if @infos[k].nil?
+      @infos[k] ||= DEFAULTS.dup
+      @infos[k]
     end
     
     def []=(key,value)
       case value
-      when Hash : @infos[key] = FieldInfo.new(value)
-      when FieldInfo : @infos[key] = value
+      when Hash then @infos[key] = FieldInfo.new(value)
+      when FieldInfo then @infos[key] = value
       else raise ArgumentError.new("only accept Hash and FieldInfo, got #{value.class.to_s}")
       end
     end

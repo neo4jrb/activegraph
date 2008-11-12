@@ -12,6 +12,7 @@ $INDEX_DIR = 'var/index'
 
 
 def delete_all_indexes
+  Index.delete_field_infos
   FileUtils.rm_r $INDEX_DIR if File.directory? $INDEX_DIR
 end
 

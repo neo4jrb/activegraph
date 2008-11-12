@@ -27,8 +27,8 @@ module Lucene
     def java_field(key, value)    
       store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO      
       cvalue = convert_to_lucene(value)
-      $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}'"}
       token_type = tokenized? ? org.apache.lucene.document.Field::Index::TOKENIZED : org.apache.lucene.document.Field::Index::UN_TOKENIZED
+      $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}' type=#{token_type}"}
       org.apache.lucene.document.Field.new(key.to_s, cvalue, store, token_type ) #org.apache.lucene.document.Field::Index::NO_NORMS)
     end
     
@@ -91,7 +91,9 @@ module Lucene
     end
     
     def to_s
-      "FieldInfo [store=#{store?}]"
+      s = "FieldInfo(#{self.object_id.to_s})
+      @info.each_pair {|key,value| s << "#{key}=#{value} "}
+      s + "]"
     end
     
     

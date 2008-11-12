@@ -50,10 +50,10 @@ module Neo4j
       # Runs a block in a Neo4j transaction
       #
       #  Most operations on neo requires an transaction.
-      #  include 'neo'
+      #  include 'neo4j'
       #
       #  Neo4j::Transaction.run {
-      #    node = Neo4j.new
+      #    node = PersonNode.new
       #  }
       #
       # You have also access to transaction object

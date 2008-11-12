@@ -1,6 +1,3 @@
-# 
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 
 require 'fileutils'  
 
@@ -10,8 +7,9 @@ include Lucene
 
 $INDEX_DIR = 'var/index'
 
-
 def delete_all_indexes
+  Index.delete_field_infos
+  Transaction.current.deregister_all_indexes if Transaction.running?
   FileUtils.rm_r $INDEX_DIR if File.directory? $INDEX_DIR
 end
 
@@ -142,6 +140,13 @@ describe Index, ".find (with TOKENIZED index)" do
     result = @index.find(:name=>"hello")
     result.size.should == 3
     result.should include(@doc2,@doc3, @doc4)
+  end
+
+  it "should find indexed documents using the tokenized field" do
+    pending "Not implemented properly tokenized lucene fields yet"
+    result = @index.find(:name=>"there")
+    result.size.should == 1
+    result.should include(@doc3)
   end
 
   it "should not find indexed documents using the untokenized field" do
@@ -422,6 +427,12 @@ describe Index, " when updating a document" do
 
 end
 
+#describe Index, " when deleting a document" do
+#  before(:each) do
+#    delete_all_indexes
+#    @index = Index.new($INDEX_DIR)  
+#    @index.clear    
+#  end
 #
 #  it "should flag that a document is deleted before a it is commited" do
 #    # given a document exists
@@ -436,6 +447,7 @@ end
 #    # then it should know it has been marked as deleted
 #    @index.should be_deleted("42")
 #  end
+#end
 #  
 #  it "should flag that a document is not any longer deleted after it has been deleted and commit" do
 #    # given a document exists

@@ -2,20 +2,21 @@ require 'neo4j'
 require 'neo4j/spec_helper'
 
 
-class Person
-  include Neo4j::NodeMixin
-  properties :name
-  has_n :friends
-  
-  index :name
-end
 
-describe Person do
-  before(:each) do
+describe "Person" do
+  before(:all) do
     start
+    undefine_class :Person
+
+    class Person
+      include Neo4j::NodeMixin
+      properties :name
+      has_n :friends
+      index :name
+    end
   end
 
-  after(:each) do
+  after(:all) do
     stop
   end  
   

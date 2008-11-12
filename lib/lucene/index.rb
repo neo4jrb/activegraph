@@ -28,15 +28,24 @@ module Lucene
     @@locks = {}    
     @@locks.extend MonitorMixin
     
-    def initialize(path, id_field)
-      @path = path # where the index is stored on disk
+    def initialize(path, id_field, field_infos=nil)
+      # make that another thread finish a commit before creating a new Index belonging
+      # to a new transaction/thread
+      lock.synchronize do 
+        @path = path # where the index is stored on disk
       
-      @uncommited = {}  # documents to be commited, a hash of Document
-      @deleted_ids = [] # documents to be deleted
-      @field_infos = FieldInfos.new(id_field)
+        @uncommited = {}  # documents to be commited, a hash of Document
+        @deleted_ids = [] # documents to be deleted
       
-      # store the id_field, otherwise we can not find it
-      @field_infos[id_field] = FieldInfo.new(:store => true)
+        if (field_infos.nil?)
+          @field_infos = FieldInfos.new(id_field.to_sym)
+          # store the id_field, otherwise we can not find it
+          @field_infos[id_field] = FieldInfo.new(:store => true)
+        else
+          # reuse an old field info
+          @field_infos = field_infos
+        end
+      end
     end
 
     #
@@ -53,7 +62,10 @@ module Lucene
 
       # create a new instance only if it does not already exist in the current transaction
       unless Transaction.current.index?(path)
-        instance = super(path, id_field) 
+        # TODO We must copy the id_fields or they be lost
+        @global_field_infos ||= {}
+        instance = super(path, id_field, @global_field_infos[path]) 
+        @global_field_infos[path] = instance.field_infos
         Transaction.current.register_index(instance) 
       end
 
@@ -61,13 +73,22 @@ module Lucene
       Transaction.current.index(path)
     end
 
+    #
+    # For testing purpose, deletes all field infos that are stored
+    #
+    def self.delete_field_infos
+      @global_field_infos = nil
+      Transaction.current.deregister_all_indexes if Transaction.running?
+    end
     
     #
     # Delete all uncommited documents. Also deregister this index
     # from the current transaction (if there is one transaction)
     #
     def clear
-      @uncommited.clear
+      lock.synchronize do
+        @uncommited.clear
+      end
       Transaction.current.deregister_index self if Transaction.running?
     end
 
@@ -85,7 +106,9 @@ module Lucene
     #
     def <<(key_values)
       doc = Document.new(@field_infos, key_values)
-      @uncommited[doc.id] = doc
+      lock.synchronize do
+        @uncommited[doc.id] = doc
+      end
       self
     end
     
@@ -99,7 +122,9 @@ module Lucene
     # The doc is stored in memory till the transaction commits.
     #
     def update(doc)
-      @uncommited[doc.id] = doc
+      lock.synchronize do
+        @uncommited[doc.id] = doc
+      end
     end
     
     #
@@ -108,7 +133,9 @@ module Lucene
     # The id of the deleted document is stored in memory till the transaction commits.
     #
     def delete(id)
-      @deleted_ids << id.to_s
+      lock.synchronize do
+        @deleted_ids << id.to_s
+      end
     end
     
     
@@ -128,6 +155,8 @@ module Lucene
     # This method will automatically be called from a Lucene::Transaction if it was running when the index was created.
     #
     def commit
+      # TODO not enough to block threads here, since the @uncommited and @deleted_ids may change
+      # Need to synchronize 
       lock.synchronize do
         $LUCENE_LOGGER.debug "  BEGIN: COMMIT"
         delete_documents # deletes all docuements given @deleted_ids

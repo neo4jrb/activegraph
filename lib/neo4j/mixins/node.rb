@@ -170,7 +170,7 @@ module Neo4j
     end
     
     #
-    # Returns a relatio traverser for traversing all types of relation from and to this node
+    # Returns a relation traverser for traversing all types of relation from and to this node
     # @see Neo4j::Relations::RelationTraverser
     #
     def relations

@@ -46,6 +46,10 @@ module Lucene
     def rollback?
       @rollback
     end
+
+    def rollback!
+      @rollback = true
+    end
     
     #
     # Registers an index to take part of this transaction
@@ -62,6 +66,14 @@ module Lucene
     def deregister_index(index)
       @indexes.delete index.path
       $LUCENE_LOGGER.debug{"Deregistered index for #{index}"}
+    end
+
+    #
+    # Deregister all indexes, used for testing purpose.
+    #
+    def deregister_all_indexes
+      @indexes.clear
+      $LUCENE_LOGGER.debug{"Deregistered all index"}
     end
     
     

@@ -9,6 +9,7 @@ NEO_STORAGE = Dir::tmpdir + "/neo_storage"
 LUCENE_INDEX_LOCATION = Dir::tmpdir + "/neo_lucene_storage"
 
 def delete_db
+  Lucene::Index.delete_field_infos
   FileUtils.rm_rf NEO_STORAGE
   FileUtils.rm_rf LUCENE_INDEX_LOCATION
 end

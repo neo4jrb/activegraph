@@ -89,7 +89,9 @@ module Lucene
     end
     
     def to_s
-      "Document [#@id_field='#{self[@id_field]}', #{@props.size} fields]"
+      p = ""
+      @props.each_pair { |key,value| p << "'#{key}' = '#{value}' " }
+      "Document [#@id_field='#{self[@id_field]}', #{p}]"
     end
   end
 end
