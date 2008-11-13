@@ -64,7 +64,10 @@ Neo4j.start DB_NEO_DIR, DB_LUCENE_DIR
 
 require "model"
 
-parse_actors('data/test-actors.list')
+Neo4j::Transaction.run do
 
+  parse_actors('data/test-actors.list')
+
+end
 
 Neo4j.stop
