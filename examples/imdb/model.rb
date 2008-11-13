@@ -26,3 +26,5 @@ class Movie
   has_n(:actors).from(Actor, :acted_in)
 end
 
+DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
+DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")

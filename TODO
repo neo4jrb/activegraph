@@ -1,10 +1,11 @@
 == TODO - soon
 
-* more tests on transactions and concurrency issues
+* sorting using lucene
+* add option to use the new lucene 2.4.0 InstantiatedIndex RAM-based index for faster indexing
+* the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available* more tests on transactions and concurrency issues
 * performance tests and check for memory leaks
 * Better documentation, use YARD instead of RDoc
 * Fix TODO's in the code
-* the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available
 
 == TODO - later
 * using two phase commit to make sure the lucene index is synchronized.

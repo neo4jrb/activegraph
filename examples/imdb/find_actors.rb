@@ -3,7 +3,7 @@ require "neo4j"
 
 require "model"
 
-Neo4j.start
+Neo4j.start DB_NEO_DIR, DB_LUCENE_DIR
 
 
 

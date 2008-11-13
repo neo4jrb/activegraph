@@ -57,7 +57,7 @@ def parse_actors(file)
 end
 
 
-Neo4j.start '/tmp/neo', '/tmp/lucene'
+Neo4j.start DB_NEO_DIR, DB_LUCENE_DIR
 
 
 parse_actors('data/test-actors.list')
