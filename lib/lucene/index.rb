@@ -33,7 +33,6 @@ module Lucene
       # to a new transaction/thread
       lock.synchronize do 
         @path = path # where the index is stored on disk
-
         @uncommited = {}  # documents to be commited, a hash of Document
         @deleted_ids = [] # documents to be deleted
       
@@ -64,11 +63,9 @@ module Lucene
       unless Transaction.current.index?(path)
         # TODO We must copy the id_fields or they be lost
         @global_field_infos ||= {}
-        @ram_dirs ||= {}
-        @ram_dirs[path] ||= org.apache.lucene.store.RAMDirectory.new
-        instance = super(@ram_dirs[path], id_field, @global_field_infos[path]) 
+        instance = super(path, id_field, @global_field_infos[path]) 
         @global_field_infos[path] = instance.field_infos
-        Transaction.current.register_index(instance) 
+        Transaction.current.register_index(path, instance) 
       end
 
       # return the index for the current transaction

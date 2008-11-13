@@ -54,8 +54,8 @@ module Lucene
     #
     # Registers an index to take part of this transaction
     #
-    def register_index(index)
-      @indexes[index.path] = index
+    def register_index(key, index)
+      @indexes[key] = index
       $LUCENE_LOGGER.debug{"Registered index for #{index}"}
     end
 

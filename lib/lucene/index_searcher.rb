@@ -11,8 +11,8 @@ module Lucene
     
     @@paths = {}
     
-    def initialize(directory)
-      @path = directory
+    def initialize(path)
+      @path = path
     end
 
     #
