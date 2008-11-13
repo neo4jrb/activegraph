@@ -223,7 +223,7 @@ module Lucene
     # Returns true if the index already exists.
     #
     def exist?
-      IndexReader.index_exists(@path)
+      org.apache.lucene.index.IndexReader.index_exists(@path)
     end
 
     #
@@ -232,7 +232,7 @@ module Lucene
     private
     
     def update_documents
-      index_writer = IndexWriter.new(@path, StandardAnalyzer.new, ! exist?)
+      index_writer = org.apache.lucene.index.IndexWriter.new(@path, org.apache.lucene.analysis.standard.StandardAnalyzer.new, ! exist?)
       @uncommited.each_value do |doc|
         # removes the document and adds it
         doc.update(index_writer)
@@ -246,12 +246,12 @@ module Lucene
     def delete_documents
       return unless exist? # if no index exists then there is nothing to do
       
-      writer = IndexWriter.new(@path, StandardAnalyzer.new, false)
+      writer = org.apache.lucene.index.IndexWriter.new(@path, org.apache.lucene.analysis.standard.StandardAnalyzer.new, false)
       id_field = @field_infos[@field_infos.id_field]
       
       @deleted_ids.each do |id|
         converted_value = id_field.convert_to_lucene(id)        
-        writer.deleteDocuments(Term.new(@field_infos.id_field.to_s, converted_value))
+        writer.deleteDocuments(org.apache.lucene.index.Term.new(@field_infos.id_field.to_s, converted_value))
       end
     ensure
       # TODO exception handling, what if ...

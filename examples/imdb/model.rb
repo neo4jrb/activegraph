@@ -13,8 +13,11 @@ class Actor
   include Neo4j::NodeMixin
   properties :name
   has_n(:acted_in).to(Movie).relation(Role)
+  index :name, :tokenized => true
 
-  index :name
+  def to_s
+    "Actor #{self.name}"
+  end
 end
 
 class Movie
@@ -24,7 +27,9 @@ class Movie
 
   # defines a method for traversing incoming acted_in relationships from Actor
   has_n(:actors).from(Actor, :acted_in)
+  
+  def to_s
+    "Movie #{self.title}"
+  end
 end
 
-DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
-DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")

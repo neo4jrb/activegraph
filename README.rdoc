@@ -43,8 +43,9 @@ This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
     # define an one way relationship to any other Person node
     has_n(:friends).to(Person)
 
-    index :name, :tokenized => true  # adds a lucene index on the name
-    index :age
+    # adds a lucene index on the following properties
+    index :name, :tokenized => true   # tokenized means text search, see below
+    index :age                        # not tokenized means exact search
     index 'friends.age' # index each friend age as well
   end
 

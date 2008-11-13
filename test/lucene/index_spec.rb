@@ -1,4 +1,4 @@
-
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 require 'fileutils'  
 
 require 'lucene'
@@ -140,13 +140,15 @@ describe Index, ".find (with TOKENIZED index)" do
     result = @index.find(:name=>"hello")
     result.size.should == 3
     result.should include(@doc2,@doc3, @doc4)
+    
+    result = @index.find(:name=>"world")
+    result.size.should == 1
+    result.should include(@doc2)
   end
 
-  it "should find indexed documents using the tokenized field" do
-    pending "Not implemented properly tokenized lucene fields yet"
+  it "should not find stopwords like 'there'" do
     result = @index.find(:name=>"there")
-    result.size.should == 1
-    result.should include(@doc3)
+    result.size.should == 0
   end
 
   it "should not find indexed documents using the untokenized field" do

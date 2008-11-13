@@ -98,7 +98,7 @@ describe "Find Nodes using Lucene and tokenized index" do
         "Person '#{self.name}'"
       end
     end
-    names = ['Andreas Ronge', 'Kalle Kula', 'Laban Person', 'Sune Larsson', 'hej hopp']
+    names = ['Andreas Ronge', 'Kalle Kula', 'Laban Surename', 'Sune Larsson', 'hej hopp']
     @foos = []
     names.each {|n|
       node = Person.new
@@ -126,14 +126,14 @@ describe "Find Nodes using Lucene and tokenized index" do
   end
 
   it "should find using part of a word" do
-    pending "Tokenized search fields not working yet"
-    found = Person.find(:name => 'Laban Person')
+#    pending "Tokenized search fields not working yet"
+    found = Person.find(:name => 'ronge')
     found.size.should == 1
-    #found.should include(@foos[3])
+    found.should include(@foos[0])
   end
   
   it "should not found a node using a none tokenized field when quering using one token" do
-    found = Person.find(:name2 => 'hej')
+    found = Person.find(:name2 => 'ronge')
     found.size.should == 0
   end
   

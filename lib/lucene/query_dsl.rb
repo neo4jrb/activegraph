@@ -57,8 +57,8 @@ module Lucene
         left_query = @left.to_lucene(field_infos)
         raise ArgumentError.new("Right term is not an Expression, but a '#{@right.class.to_s}'") unless @right.kind_of? Lucene::Expression
         right_query = @right.to_lucene(field_infos)
-        query = BooleanQuery.new
-        clause = (@op == :&) ? BooleanClause::Occur::MUST : BooleanClause::Occur::SHOULD
+        query = org.apache.lucene.search.BooleanQuery.new
+        clause = (@op == :&) ? org.apache.lucene.search.BooleanClause::Occur::MUST : org.apache.lucene.search.BooleanClause::Occur::SHOULD
         query.add(left_query, clause)
         query.add(right_query, clause)
         return query

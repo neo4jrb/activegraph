@@ -36,12 +36,12 @@ module Lucene
       # if not return an empty array
       return [] unless exist?
       
-      query = BooleanQuery.new
+      query = org.apache.lucene.search.BooleanQuery.new
       
       fields.each_pair do |key,value|
         field = field_infos[key]
         q = field.convert_to_query(key, value)
-        query.add(q, BooleanClause::Occur::MUST)
+        query.add(q, org.apache.lucene.search.BooleanClause::Occur::MUST)
       end
 
       Hits.new(field_infos, index_searcher.search(query))
@@ -52,8 +52,8 @@ module Lucene
     # Checks if it needs to reload the index searcher
     #
     def index_searcher
-      if @index_reader.nil? || @index_reader.getVersion() != IndexReader.getCurrentVersion(@path)
-        @index_reader = IndexReader.open(@path)        
+      if @index_reader.nil? || @index_reader.getVersion() != org.apache.lucene.index.IndexReader.getCurrentVersion(@path)
+        @index_reader = org.apache.lucene.index.IndexReader.open(@path)        
         @index_searcher = org.apache.lucene.search.IndexSearcher.new(@index_reader)        
         $LUCENE_LOGGER.debug("Opened new IndexSearcher for #{to_s}")         
       end
@@ -64,7 +64,7 @@ module Lucene
     # Returns true if the index already exists.
     #
     def exist?
-      IndexReader.index_exists(@path)
+      org.apache.lucene.index.IndexReader.index_exists(@path)
     end
 
   end

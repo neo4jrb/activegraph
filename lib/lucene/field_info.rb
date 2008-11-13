@@ -27,7 +27,7 @@ module Lucene
     def java_field(key, value)    
       store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO      
       cvalue = convert_to_lucene(value)
-      token_type = tokenized? ? org.apache.lucene.document.Field::Index::TOKENIZED : org.apache.lucene.document.Field::Index::UN_TOKENIZED
+      token_type = tokenized? ? org.apache.lucene.document.Field::Index::ANALYZED : org.apache.lucene.document.Field::Index::NOT_ANALYZED
       $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}' type=#{token_type}"}
       org.apache.lucene.document.Field.new(key.to_s, cvalue, store, token_type ) #org.apache.lucene.document.Field::Index::NO_NORMS)
     end
@@ -65,8 +65,12 @@ module Lucene
         org.apache.lucene.search.RangeQuery.new(first, last, !value.exclude_end?)
       elsif
         converted_value = convert_to_lucene(value)
-        term  = org.apache.lucene.index.Term.new(key.to_s, converted_value)        
-        TermQuery.new(term) 
+        term = org.apache.lucene.index.Term.new(key.to_s, converted_value)        
+        org.apache.lucene.search.TermQuery.new(term)
+#        pq = org.apache.lucene.search.PhraseQuery.new
+#        pq.add(term)
+#        pq.setSlop 3
+#        pq
       end
     end
 

@@ -1,3 +1,4 @@
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 require 'lucene/query_dsl'
 
 
@@ -118,7 +119,6 @@ describe Lucene::QueryDSL do
   it "should generate a lucene query" do
     expr = Lucene::QueryDSL.parse{ name == 'andreas' }
     query = expr.to_lucene(Lucene::FieldInfos.new(:id))
-    
     query.should be_kind_of(Java::OrgApacheLuceneSearch::TermQuery)
     term = query.getTerm
     term.field.should == 'name'
