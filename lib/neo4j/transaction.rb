@@ -165,14 +165,15 @@ module Neo4j
     #
     def finish
       raise NotInTransactionError.new unless Transaction.running?
-      @neo_tx.finish
-      @neo_tx=nil
-      Thread.current[:transaction] = nil
       
       unless failure?
         @nodes_to_be_reindexed.each_value {|node| node.reindex!}
         @nodes_to_be_reindexed.clear
       end
+      
+      @neo_tx.finish
+      @neo_tx=nil
+      Thread.current[:transaction] = nil
       
       if Lucene::Transaction.running?
         $NEO_LOGGER.debug("LUCENE TX running failure: #{failure?}")            

@@ -3,22 +3,22 @@ require 'lucene'
 
 include Lucene
 
-describe FieldInfos do
+describe IndexInfo do
   it "should have an id_field" do
-    f = FieldInfos.new(:my_id)
+    f = IndexInfo.new(:my_id)
     f.id_field.should == :my_id
   end
   
   it "should have a default for any key" do
-    f = FieldInfos.new(:my_id)
-    f[42].should == FieldInfos::DEFAULTS
-    FieldInfos::DEFAULTS[:store].should == false
+    f = IndexInfo.new(:my_id)
+    f[42].should == IndexInfo::DEFAULTS
+    IndexInfo::DEFAULTS[:store].should == false
     f[42][:store].should == false
   end
   
   it "can set a field by a hash of infos " do
     # given
-    f = FieldInfos.new(:my_id)
+    f = IndexInfo.new(:my_id)
     # when
     f[:value] = {:type => Float}
     # then
@@ -28,7 +28,7 @@ describe FieldInfos do
 
   it "can set a field by a FieldInfo" do
     # given
-    f = FieldInfos.new(:my_id)
+    f = IndexInfo.new(:my_id)
     # when
     f[:value] = FieldInfo.new(:type => Float)
     # then
@@ -38,7 +38,7 @@ describe FieldInfos do
 
   it "can set a individual property of a FieldInfo" do
     # given
-    f = FieldInfos.new(:my_id)
+    f = IndexInfo.new(:my_id)
     
     # when
     f[:value][:type] = Float
@@ -50,8 +50,7 @@ describe FieldInfos do
 
   it "can set several individual properties of a FieldInfo" do
     # given
-        $LUCENE_LOGGER.level = Logger::DEBUG
-    f = FieldInfos.new(:my_id)
+    f = IndexInfo.new(:my_id)
     
     # when
     f[:value][:type] = Float
@@ -64,14 +63,13 @@ describe FieldInfos do
     f[:value][:type].should == Float
     f[:foo][:type].should == Fixnum
     f[:value][:bar].should == 42
-        $LUCENE_LOGGER.level = Logger::WARN
   end
   
 end
 
-describe "FieldInfos::DEFAULTS" do
+describe "IndexInfo::DEFAULTS" do
   it "should have default values" do
-    FieldInfos::DEFAULTS[:store].should == false
-    FieldInfos::DEFAULTS[:type].should == String
+    IndexInfo::DEFAULTS[:store].should == false
+    IndexInfo::DEFAULTS[:type].should == String
   end
 end

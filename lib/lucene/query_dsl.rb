@@ -81,7 +81,7 @@ module Lucene
       #yield self
     end
     
-    def self.find(field_infos = FieldInfos.new(:id), &expr) 
+    def self.find(field_infos = IndexInfo.new(:id), &expr) 
       exp = QueryDSL.parse(&expr)
       exp.to_lucene(field_infos)
     end

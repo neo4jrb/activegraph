@@ -174,13 +174,13 @@ Example of how to write a document and find it:
 
     # find a document with name foo
     # hits is a ruby Enumeration of documents
-    docs = index.find{name == 'foo'}
+    hits = index.find{name == 'foo'}
 
     # show the id of the first document (document 0) found
     # (the document contains all stored fields - see below)
-    docs[0][:id]   # => '1'    
+    hits[0][:id]   # => '1'    
 
-Notice that you have to call the commit method in order to update the index on the disk.
+Notice that you have to call the commit method in order to update the index on the disk/RAM.
 By performing several update and delete operations before a commit will be much
 faster then performing commit after each operation. 
 

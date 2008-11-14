@@ -7,7 +7,6 @@ module Lucene
     
     def initialize
       raise TransactionAlreadyRunningException.new if Transaction.running?
-        
       Thread.current[:lucene_transaction] = self
       
       @rollback = false
@@ -73,7 +72,7 @@ module Lucene
     #
     def deregister_all_indexes
       @indexes.clear
-      $LUCENE_LOGGER.debug{"Deregistered all index"}
+      $LUCENE_LOGGER.debug{"Deregistered all index, #{@indexes.inspect}"}
     end
     
     

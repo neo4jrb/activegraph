@@ -4,7 +4,7 @@ require 'lucene/transaction'
 require 'lucene/index_searcher'
 require 'lucene/document'
 require 'lucene/field_info'
-require 'lucene/field_infos'
+require 'lucene/index_info'
 
 #
 # A wrapper for the Java lucene search library.
@@ -21,32 +21,24 @@ module Lucene
   # (Performace will be bad otherwise).
   #  
   class Index
-    attr_reader :path, :field_infos, :uncommited
+    attr_reader :path, :uncommited
     
      
     # locks per index path, must not write to the same index from 2 threads 
     @@locks = {}    
     @@locks.extend MonitorMixin
     
-    def initialize(path, id_field, field_infos=nil)
-      # make that another thread finish a commit before creating a new Index belonging
-      # to a new transaction/thread
-      lock.synchronize do 
-        @path = path # where the index is stored on disk
-        @uncommited = {}  # documents to be commited, a hash of Document
-        @deleted_ids = [] # documents to be deleted
-      
-        if (field_infos.nil?)
-          @field_infos = FieldInfos.new(id_field.to_sym)
-          # store the id_field, otherwise we can not find it
-          @field_infos[id_field] = FieldInfo.new(:store => true)
-        else
-          # reuse an old field info
-          @field_infos = field_infos
-        end
-      end
+    def initialize(path, index_info)
+      @path = path # a key (i.e. filepath) where the index is stored on disk/or RAM              
+      @index_info = index_info # the actual storage of the index
+      @uncommited = {}  # documents to be commited, a hash of Document
+      @deleted_ids = [] # documents to be deleted
     end
 
+    def field_infos
+      IndexInfo.instance(@path)
+    end
+    
     #
     # Tries to reuse an Index instance for the current running transaction.
     # 
@@ -55,31 +47,27 @@ module Lucene
     # When it has been registered in the transaction the transaction will commit the index 
     # when the transaction is commited.
     #
-    def self.new(path, id_field = :id)
-      # create a new transaction if needed      
-      Transaction.new unless Transaction.running?
+    def self.new(path, id_field = :id, store_on_file = true)
+      # make sure no one modifies the index specified at given path
+      lock(path).synchronize do
+        # create a new transaction if needed      
+        Transaction.new unless Transaction.running?
 
-      # create a new instance only if it does not already exist in the current transaction
-      unless Transaction.current.index?(path)
-        # TODO We must copy the id_fields or they be lost
-        @global_field_infos ||= {}
-        instance = super(path, id_field, @global_field_infos[path]) 
-        @global_field_infos[path] = instance.field_infos
-        Transaction.current.register_index(path, instance) 
+        # create a new instance only if it does not already exist in the current transaction
+        unless Transaction.current.index?(path)
+          $LUCENE_LOGGER.debug{"Index#new #{path} not in current transaction => new index"}
+          IndexInfo.new_instance(path, id_field, store_on_file) unless IndexInfo.instance?(path)
+          info = IndexInfo.instance(path)
+          index = super(path, info)
+          Transaction.current.register_index(path, index) 
+        end
+
+        $LUCENE_LOGGER.debug{"Index#new '#{path}' #{Transaction.current.index(path)}"}
+        # return the index for the current transaction
+        Transaction.current.index(path)
       end
-
-      # return the index for the current transaction
-      Transaction.current.index(path)
     end
 
-    #
-    # For testing purpose, deletes all field infos that are stored
-    #
-    def self.delete_field_infos
-      @global_field_infos = nil
-      Transaction.current.deregister_all_indexes if Transaction.running?
-    end
-    
     #
     # Delete all uncommited documents. Also deregister this index
     # from the current transaction (if there is one transaction)
@@ -104,7 +92,7 @@ module Lucene
     # Adds a document to be commited
     #
     def <<(key_values)
-      doc = Document.new(@field_infos, key_values)
+      doc = Document.new(field_infos, key_values)
       lock.synchronize do
         @uncommited[doc.id] = doc
       end
@@ -112,7 +100,7 @@ module Lucene
     end
     
     def id_field
-      @field_infos.id_field
+      @index_info.id_field
     end
     
     #
@@ -187,12 +175,12 @@ module Lucene
     #
     def find(query=nil, &block)
       # new method is a factory method, does not create if it already exists
-      searcher = IndexSearcher.new(@path)
+      searcher = IndexSearcher.new(@index_info.storage)
       
       if block.nil?
-        return searcher.find(@field_infos, query) 
+        return searcher.find(@index_info, query) 
       else
-        return searcher.find_dsl(@field_infos, &block) 
+        return searcher.find_dsl(@index_info, &block) 
       end
     end
     
@@ -217,12 +205,19 @@ module Lucene
         @@locks[@path]
       end
     end
+
+    def self.lock(path)
+      @@locks.synchronize do
+        @@locks[path] ||= Monitor.new
+        @@locks[path]
+      end
+    end
     
     #
     # Returns true if the index already exists.
     #
     def exist?
-      org.apache.lucene.index.IndexReader.index_exists(@path)
+      @index_info.index_exists?
     end
 
     #
@@ -231,7 +226,7 @@ module Lucene
     private
     
     def update_documents
-      index_writer = org.apache.lucene.index.IndexWriter.new(@path, org.apache.lucene.analysis.standard.StandardAnalyzer.new, ! exist?)
+      index_writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, org.apache.lucene.analysis.standard.StandardAnalyzer.new, ! exist?)
       @uncommited.each_value do |doc|
         # removes the document and adds it
         doc.update(index_writer)
@@ -245,12 +240,12 @@ module Lucene
     def delete_documents
       return unless exist? # if no index exists then there is nothing to do
       
-      writer = org.apache.lucene.index.IndexWriter.new(@path, org.apache.lucene.analysis.standard.StandardAnalyzer.new, false)
-      id_field = @field_infos[@field_infos.id_field]
+      writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, org.apache.lucene.analysis.standard.StandardAnalyzer.new, false)
+      id_field = @index_info.infos[@index_info.id_field]
       
       @deleted_ids.each do |id|
         converted_value = id_field.convert_to_lucene(id)        
-        writer.deleteDocuments(org.apache.lucene.index.Term.new(@field_infos.id_field.to_s, converted_value))
+        writer.deleteDocuments(org.apache.lucene.index.Term.new(@index_info.id_field.to_s, converted_value))
       end
     ensure
       # TODO exception handling, what if ...

@@ -9,6 +9,9 @@ Neo4j.start DB_NEO_DIR, DB_LUCENE_DIR
 
 require "model"
 
+puts "REINDEX ACTORS"
+Actor.update_index
+puts "Find all actors named willis"
 result = Actor.find(:name => "willis") #, Bruce")
 
 puts "Found #{result.size} actors"

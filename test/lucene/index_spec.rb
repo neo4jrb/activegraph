@@ -8,8 +8,8 @@ include Lucene
 $INDEX_DIR = 'var/index'
 
 def delete_all_indexes
-  Index.delete_field_infos
-  Transaction.current.deregister_all_indexes if Transaction.running?
+  IndexInfo.delete_all
+  Lucene::Transaction.current.commit if Lucene::Transaction.running?
   FileUtils.rm_r $INDEX_DIR if File.directory? $INDEX_DIR
 end
 
@@ -338,10 +338,11 @@ describe Index, ".field_infos" do
 
   it "has a default value for the id_field - store => true" do
     @index.field_infos[:id][:store].should == true
+    $LUCENE_LOGGER.level = Logger::INFO
   end
 
   it "has a default for unspecified fields" do
-    @index.field_infos[:foo].should == FieldInfos::DEFAULTS
+    @index.field_infos[:foo].should == IndexInfo::DEFAULTS
   end
 
   it "should use a default for unspecified type, for example all fields has default :type => String" do

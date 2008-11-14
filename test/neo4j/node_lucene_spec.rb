@@ -1,8 +1,40 @@
-require 'neo4j'
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
+
 require 'neo4j/spec_helper'
+require 'neo4j'
 
 
+describe "Neo4j with lucene index in memory" do
+  it "should by default keep index on disk" do
+    start
+    class TestNode 
+      include Neo4j::NodeMixin
+      properties :name, :age
+      index :name #, :storage => :ram
+    end
+    
+    t = TestNode.new
+    t.name = 'hello'
+    File.exist?(LUCENE_INDEX_LOCATION).should be_true
+    stop
+  end
   
+  it "should keep index in RAM if specified" do
+    start
+    class TestNode 
+      include Neo4j::NodeMixin
+      properties :name, :age
+      index :name, :storage => :ram
+    end
+    
+    t = TestNode.new
+    t.name = 'hello'
+    File.exist?(LUCENE_INDEX_LOCATION).should be_false
+    stop
+  end
+  
+end  
   
 describe "Neo4j & Lucene Transaction Synchronization:" do
   before(:all) do
@@ -126,7 +158,7 @@ describe "Find Nodes using Lucene and tokenized index" do
   end
 
   it "should find using part of a word" do
-#    pending "Tokenized search fields not working yet"
+    #    pending "Tokenized search fields not working yet"
     found = Person.find(:name => 'ronge')
     found.size.should == 1
     found.should include(@foos[0])
