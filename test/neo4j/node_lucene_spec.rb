@@ -180,9 +180,9 @@ describe "Find Nodes using Lucene" do
       include Neo4j::NodeMixin
       properties :name, :age, :male, :height
       index :name
-      index :age
+      index :age, :type => Fixnum
       index :male
-      index :height
+      index :height, :type => Float
     end
     @foos = []
     5.times {|n|
@@ -202,6 +202,9 @@ describe "Find Nodes using Lucene" do
       node.height = n * 0.1        
       @bars << node
     }
+    
+    @node100 = TestNode.new  {|n| n.name = "node"; n.age = 100}
+    
   end
     
   after(:all) do
@@ -213,6 +216,16 @@ describe "Find Nodes using Lucene" do
     found[0].name.should == 'foo2'
     found.should include(@foos[2])
     found.size.should == 1
+  end
+
+  it "should find one node using a range" do
+    found = TestNode.find(:age => 0..2)
+    found.size.should == 6
+    found.should include(@foos[1])
+    
+    found = TestNode.find(:age => 100)
+    found.size.should == 1
+    found.should include(@node100)
   end
 
   it "should find two nodes" do

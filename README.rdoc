@@ -27,8 +27,8 @@ To install from the source:
 * Press the download button at http://github.com/andreasronge/neo4j/tree/master
 * From command line type: ''rake gem:install''
 
-JRuby version 1.1.4 does not work with Neo4j.rb because of a bug (JRUBY-2959).
-This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
+JRuby version 1.1.4 does not work with Neo4j.rb because of a JRuby bug.
+This bug is fixed in JRuby 1.1.5. 
 
 == Two Minute Tutorial
   require "rubygems"
@@ -707,6 +707,24 @@ The query above can also be written in a lucene query DSL:
       Person.find{(name =='foo') & (age => 42)} # => [node]
 
 For more information see the lucene module above.
+
+=== Indexing and Property Types
+
+In order to use range querie on numbers the property types must be converted.
+This is done by using the :type optional parameter:
+
+  class Person
+    include Neo4j::NodeMixin
+    properties :name, :age
+    index :age, :type => Fixnum
+  end
+
+By using :type => Fixnum the age will be padded with '0's (lucene only support string comparsion).
+
+Example, if the :type => Fixnum was not specified then
+
+  p = Person.new {|n| n.age = 100 }
+  Person.find(:age => 0..8) # => [p]
 
 === Indexing and Quering Relationships
 

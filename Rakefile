@@ -37,7 +37,6 @@ Spec::Rake::SpecTask.new do |t|
   t.libs << "lib"
   # t.rcov = true # have not got RCov working with JRuby yet - but it should ...
   t.spec_files = FileList['test/**/*_spec.rb']
-  #    t.warning = true
   t.spec_opts = ['--format specdoc', '--color']
   # t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
 end
@@ -59,7 +58,7 @@ end
 CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png", 'var']
  
 # The file list used to package tarballs, gems, and for generating the xmpp4r.gemspec.
-PKG_FILES = %w( LICENSE README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test,examples}/**/*"]
+PKG_FILES = %w( LICENSE CHANGELOG README.rdoc TODO Rakefile neo4j.gemspec ) + Dir["{lib,test,examples}/**/*"]
  
 spec = Gem::Specification.new do |s|
   s.name = GEM_NAME
@@ -77,7 +76,7 @@ spec = Gem::Specification.new do |s|
   #s.homepage = 'http://neo4j.rubyforge.org' 
   # rdoc
   s.has_rdoc = true
-  s.extra_rdoc_files = %w( README.rdoc  )
+  s.extra_rdoc_files = %w( README.rdoc )
   s.rdoc_options = ["--quiet", "--title", "neo4j and lucene documentation", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  
   s.required_ruby_version = ">= 1.8.4"

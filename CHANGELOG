@@ -1,0 +1,11 @@
+== 0.0.5 / 2009-11-17
+* Supports keeping lucene index in memory instead of on disk
+* Added support for lucene full text search
+* Fixed so neo4j runs on JRuby 1.1.5
+* Implemented support for reindex all instances of a node class. This is needed if the lucene index is kept in memory or if the index is changed.
+* Added ReferenceNode. All nodes now have a relationship from this reference node.
+* Lots of refactoring
+* Added the IMDB example. It shows how to create a neo database, lucene queries and node traversals.
+
+== 0.0.4 / 2009-10-23
+* First release to rubyforge

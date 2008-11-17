@@ -17,7 +17,7 @@ end
 
 def start
   delete_db
-  Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
+  Neo4j.start NEO_STORAGE , LUCENE_INDEX_LOCATION
 end
 
 
