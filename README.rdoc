@@ -44,8 +44,7 @@ This bug will be solved in JRuby 1.1.5. JRuby 1.1.3 does work.
     has_n(:friends).to(Person)
 
     # adds a lucene index on the following properties
-    index :name, :tokenized => true   # tokenized means text search, see below
-    index :age                        # not tokenized means exact search
+    index :name, :age
     index 'friends.age' # index each friend age as well
   end
 
@@ -56,10 +55,12 @@ Relations between nodes can be specified by using the relations
 
 Before using neo it has to be started
 
-   Neo4j.start '/home/neo/neodb', '/home/neo/lucene_index'
+   Neo4j.start '/home/neo/neodb'
 
-The neo database will be stored at '/home/neo/neodb' and the lucene index files will
-be stored at '/home/neo/lucene_index'.
+The neo database will be stored at '/home/neo/neodb' and the lucene index files be kept in memory.
+The lucene index can be kept on disk if Neo4j is started with two parameter:
+
+   Neo4j.start '/home/neo/neodb', '/home/neo/lucene'  # keep lucene index on disk at /home/neo/lucene
 
 Creating a Person node instance
 
@@ -152,6 +153,7 @@ or
       keanu_reeves.acted_in
       keanu_reeves.relations.outgoing(:acted_in)[matrix].name = 'neo'
 
+More information about neo4j can be found after the Lucene section below.
 
 == The Lucene Module
 
@@ -334,8 +336,10 @@ In order to use neo it has to be started first.
   
    Neo4j.start '/home/neo/neodb', '/home/neo/lucene_index'
 
-The start method takes 2 paremters - the location on the filesystem of the neo
-database and the lucene index.
+The start method takes one or two paremters - the location on the filesystem of the neo
+database and optional the location of the lucene index. If no location is given for the lucen index
+it will be kept in memory. Keeping index in memory will increase the performance of lucene operations.
+
 
 To stop the neo database:
 
@@ -352,6 +356,12 @@ Example of how declare a class that has this behaviour:
   class MyNode 
      include Neo4j::NodeMixin
   end
+
+=== Index in Memory instead of disk
+
+If index is stored in memory then one needs to reindex all nodes when the application starts up again.
+
+   MyNode.update_index # will traverse all MyNode instances and (re)create the lucene index in memory.
 
 
 === Create a Node
@@ -751,6 +761,18 @@ Example:
 Or also possible from the other way:
 
    orders = Order.find('total_cost' => 500..2000, 'customer.name' => 'kalle')
+
+=== Full text search
+
+Neo4j supports full text search by setting the tokenized property to true on an index.
+(see JavaDoc for org.apache.lucene.document.Field.Index.ANALYZED).
+
+  class Comment
+    include Neo4j::NodeMixin
+
+    properties :comment
+    index comment, :tokenized => true
+  end
 
 
 === Unmarshalling

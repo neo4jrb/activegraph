@@ -2,9 +2,10 @@ module Neo4j
 
 
   #
-  # starts neo with a database at the given storage location for neo and lucene
+  # Starts neo with a database at the given storage location for neo and lucene.
+  # If no location is given for lucene then it will keep the index files in memory.
   #
-  def self.start(db_location, lucene_index_location)
+  def self.start(db_location, lucene_index_location=nil)
     raise StandardError.new("Already started neo") if @instance
     @instance = Neo.new db_location
     @lucene_index_location = lucene_index_location
@@ -26,6 +27,20 @@ module Neo4j
     @instance = nil
   end
 
+  
+  # Creates a new lucene index
+  #
+  def self.new_lucene_index(node_class_id)
+    if (Neo4j.lucene_index_location.nil?)
+      Lucene::Index.new(node_class_id, :id, false)
+    else
+      Lucene::Index.new(Neo4j.lucene_index_location + node_class_id, :id, true)       
+    end
+  end
+
+  # Returns the location of the lucene index on disk. 
+  # Is nil if index is stored in memory.
+  #
   def self.lucene_index_location
     @lucene_index_location
   end

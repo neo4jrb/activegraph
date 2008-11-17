@@ -7,7 +7,8 @@ require 'neo4j'
 
 describe "Neo4j with lucene index in memory" do
   it "should by default keep index on disk" do
-    start
+    delete_db
+    Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
     class TestNode 
       include Neo4j::NodeMixin
       properties :name, :age
@@ -20,8 +21,9 @@ describe "Neo4j with lucene index in memory" do
     stop
   end
   
-  it "should keep index in RAM if specified" do
-    start
+  it "should keep index in RAM if no location is specified for lucene when starting neo4j" do
+    delete_db
+    Neo4j.start NEO_STORAGE
     class TestNode 
       include Neo4j::NodeMixin
       properties :name, :age

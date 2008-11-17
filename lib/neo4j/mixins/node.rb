@@ -239,7 +239,7 @@ module Neo4j
       #
       # @api private
       def lucene_index
-        Lucene::Index.new(Neo4j.lucene_index_location + self::LUCENE_INDEX_PATH)
+        Neo4j.new_lucene_index(self::LUCENE_INDEX_PATH)
       end
         
       #
