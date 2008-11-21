@@ -38,20 +38,20 @@ This bug is fixed in JRuby 1.1.5.
     include Neo4j::NodeMixin
 
     # define Neo4j properties
-    properties :name, :age
+    properties :name, :salary.
 
     # define an one way relationship to any other Person node
     has_n(:friends).to(Person)
 
     # adds a lucene index on the following properties
-    index :name, :age
+    index :name, :salary
     index 'friends.age' # index each friend age as well
   end
 
 The example above specifies how to map a Neo node to a ruby Person instance.
-Tokenized means that the name will be normalize before its terms will be stored in the index. This is useful for common text where no exact match is needed.
-All neo properties have to be declared (unless you include the DynamicAccessor mixin).
-Relations between nodes can be specified by using the relations
+Neo properties and relationships are declared using the 'properties' and 'has_n'/'has_one' NodeMixin class method.
+In the example above a lucene index will be updated when the name or salary property changes. 
+The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
 
 Before using neo it has to be started
 
@@ -60,7 +60,7 @@ Before using neo it has to be started
 The neo database will be stored at '/home/neo/neodb' and the lucene index files be kept in memory.
 The lucene index can be kept on disk if Neo4j is started with two parameter:
 
-   Neo4j.start '/home/neo/neodb', '/home/neo/lucene'  # keep lucene index on disk at /home/neo/lucene
+   Neo4j.start '/home/neo/neodb', '/home/neo/lucene'  
 
 Creating a Person node instance
 
@@ -69,7 +69,7 @@ Creating a Person node instance
 Setting a property:
 
   person.name = 'kalle'
-  person.age  = 23
+  person.salary  = 10000
 
 If a transaction is not specified then the operation will automatically be wrapped in
 a transaction. 
@@ -77,11 +77,11 @@ a transaction.
 Example of quering using lucene:
 
   Person.find (:name => 'kalle') 
-  Person.find ('friend.age' => 30) # find people who has a friend of age 30
+  Person.find ('friend.age' => 15000) # find people who has a friend of age 30
 
 or DSL, example finding person with name kalle or with age between 20 and 30:
 
-  Person.find ((name == 'kalle') | (age == 20..30)) # => [ person ]
+  Person.find ((name == 'kalle') | (salary == 10000..30000)) # => [ person ]
 
 Adding a relationship between two nodes:
 
@@ -94,7 +94,7 @@ Traversing relationships
 
 Traversing using a filter
 
-  person.friends{ age == 23 }.each {|n| ...}
+  person.friends{ salary == 10000 }.each {|n| ...}
 
 Deleting a relationship
 
