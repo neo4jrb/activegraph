@@ -29,6 +29,7 @@ require 'neo4j/neo'
 require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/version'
+require 'neo4j/search_result'
 
 
 

@@ -114,7 +114,7 @@ describe "A node with no lucene index" do
   it "should return no nodes in a query" do
     found = TestNodeWithNoIndex.find(:age => 0)
     
-    found.should == []
+    found.size.should == 0
   end
 end
 

@@ -1,12 +1,12 @@
 == TODO - soon
 
 * sorting using lucene
-* the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available* more tests on transactions and concurrency issues
+* the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available
 * performance tests and check for memory leaks
-* Better documentation, use YARD instead of RDoc
-* Fix TODO's in the code
+* better documentation, use YARD instead of RDoc
+* fix TODO's in the code
 
 == TODO - later
-* Handle corrupt lucene index after a crash.
+* handle corrupt lucene index after a crash.
 * using two phase commit to make sure the lucene index is synchronized, not sure if we want this.
 
