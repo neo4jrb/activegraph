@@ -1,14 +1,15 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 require "rubygems" 
 require "neo4j"
+require "model"
 
 DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
 DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")
 
 Neo4j.start DB_NEO_DIR #, DB_LUCENE_DIR
 
-require "model"
 
+Actor.index :name, :tokenized => true
 puts "REINDEX ACTORS"
 Actor.update_index
 puts "Find all actors named willis"

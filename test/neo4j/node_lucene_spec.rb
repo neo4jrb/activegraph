@@ -153,6 +153,23 @@ describe "Find Nodes using Lucene and tokenized index" do
     found.should include(@foos[4])
   end
 
+  it "should find one node using a string query" do
+    found = Person.find("name:'hej'")
+    found.size.should == 1
+    found.should include(@foos[4])
+    
+    found = Person.find("name:hopp")
+    found.size.should == 1
+    found.should include(@foos[4])
+    
+  end
+
+  it "should find one node using a wildcard string query" do
+    found = Person.find("name:Andreas*")
+    found.size.should == 1
+    found.should include(@foos[0])
+  end
+  
   it "should find using lowercase one token search" do
     found = Person.find(:name => 'kula')
     found.size.should == 1

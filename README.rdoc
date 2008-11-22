@@ -31,6 +31,9 @@ JRuby version 1.1.4 does not work with Neo4j.rb because of a JRuby bug.
 This bug is fixed in JRuby 1.1.5. 
 
 == Two Minute Tutorial
+
+=== Creating a model
+
   require "rubygems"
   require "neo4j"
 
@@ -53,6 +56,8 @@ Neo properties and relationships are declared using the 'properties' and 'has_n'
 In the example above a lucene index will be updated when the name or salary property changes. 
 The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
 
+=== Start and stop
+
 Before using neo it has to be started
 
    Neo4j.start '/home/neo/neodb'
@@ -62,9 +67,13 @@ The lucene index can be kept on disk if Neo4j is started with two parameter:
 
    Neo4j.start '/home/neo/neodb', '/home/neo/lucene'  
 
+=== Creating a node
+
 Creating a Person node instance
 
   person = Person.new
+
+=== Setting properties
 
 Setting a property:
 
@@ -74,14 +83,25 @@ Setting a property:
 If a transaction is not specified then the operation will automatically be wrapped in
 a transaction. 
 
-Example of quering using lucene:
+=== Queries
 
+There are different ways to write queries.
+Using a hash:
   Person.find (:name => 'kalle') 
-  Person.find ('friend.age' => 15000) # find people who has a friend of age 30
+  Person.find ('friend.age' => 15000) # find people who has a friend with a salary of 15000
 
-or DSL, example finding person with name kalle or with age between 20 and 30:
+or DSL, example finding person with name kalle or with a salary between 10000 and 300000:
 
   Person.find ((name == 'kalle') | (salary == 10000..30000)) # => [ person ]
+
+or using the lucene query language:
+  
+  Person.find("name:kalle AND salary:[10000 TO 30000]")
+
+The Lucene query language supports wildcard, grouping, boolean, fuzzy queries, etc...
+For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.html
+
+=== Relationships
 
 Adding a relationship between two nodes:
 
@@ -104,7 +124,10 @@ Deleting a node (and all its relationships)
 
   person.delete
 
-Specifying relationships:
+=== Example on Relationships
+
+A more complecated example that shows how to navigate from incomming and
+outgoing relationships.
 
       class Role
         include Neo4j::RelationMixin
@@ -284,6 +307,15 @@ Range queries
 
     # finds all document having both name 'foo' and age between 3 and 30
     hits = index.find('name' => 'foo', :age=>3..30)  
+
+=== Lucene Queries
+
+If the query is string then the string is a lucene query.
+
+  hits = index.find('name:foo')
+
+For more information see:
+http://lucene.apache.org/java/2_4_0/queryparsersyntax.html
 
 === Advanced Queries (DSL)
 
@@ -706,7 +738,12 @@ The query above can also be written in a lucene query DSL:
 
       Person.find{(name =='foo') & (age => 42)} # => [node]
 
-For more information see the lucene module above.
+Or lucene query language:
+       
+     Person.find("name:foo AND age:42")
+
+For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.html or the lucene module above.
+
 
 === Indexing and Property Types
 

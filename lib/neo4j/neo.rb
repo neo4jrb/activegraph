@@ -27,6 +27,12 @@ module Neo4j
     @instance = nil
   end
 
+  # 
+  # Returns true if neo4j is running
+  #
+  def self.running?
+    ! @instance.nil?
+  end
   
   # Creates a new lucene index
   #

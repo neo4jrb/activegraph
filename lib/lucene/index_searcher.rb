@@ -31,23 +31,30 @@ module Lucene
     end
     
     
-    def find(field_infos, fields)
+    def find(field_info, fields)
       # are there any index for this node ?
       # if not return an empty array
       return [] unless exist?
       
-      query = org.apache.lucene.search.BooleanQuery.new
-      
-      fields.each_pair do |key,value|
-        field = field_infos[key]
-        q = field.convert_to_query(key, value)
-        query.add(q, org.apache.lucene.search.BooleanClause::Occur::MUST)
+      query = case fields
+      when String
+        parser = org.apache.lucene.queryParser.QueryParser.new(field_info.id_field.to_s, org.apache.lucene.analysis.standard.StandardAnalyzer.new)
+        parser.parse(fields)
+      when Hash
+        query = org.apache.lucene.search.BooleanQuery.new
+        fields.each_pair do |key,value|
+          field = field_info[key]
+          q = field.convert_to_query(key, value)
+          query.add(q, org.apache.lucene.search.BooleanClause::Occur::MUST)
+        end
+        query
+      else
+        raise StandardError.new("Unknown type #{fields.class.to_s} for find #{fields}")
       end
-
-      Hits.new(field_infos, index_searcher.search(query))
+      Hits.new(field_info, index_searcher.search(query))
+      
     end
-    
-    
+
     #
     # Checks if it needs to reload the index searcher
     #

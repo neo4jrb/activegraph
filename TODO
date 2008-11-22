@@ -1,13 +1,12 @@
 == TODO - soon
 
-* enable use of RAMDirectory to speed up lucene indexing - keep index in memory instead of on disk
 * sorting using lucene
-* add option to use the new lucene 2.4.0 InstantiatedIndex RAM-based index for faster indexing
 * the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available* more tests on transactions and concurrency issues
 * performance tests and check for memory leaks
 * Better documentation, use YARD instead of RDoc
 * Fix TODO's in the code
 
 == TODO - later
-* using two phase commit to make sure the lucene index is synchronized.
-* Handle corrupt lucene index after a crash
+* Handle corrupt lucene index after a crash.
+* using two phase commit to make sure the lucene index is synchronized, not sure if we want this.
+

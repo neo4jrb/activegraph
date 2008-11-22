@@ -80,7 +80,7 @@ describe Index, ".find (range)" do
     @index.field_infos[:value][:type] = Fixnum
   end
 
-  it "should find docs using a inclusive range query" do
+  it "should find docs using an inclusive range query" do
     # given
     @docs = {}
     for i in 1..5 do
@@ -146,6 +146,12 @@ describe Index, ".find (with TOKENIZED index)" do
     result.should include(@doc2)
   end
 
+  it "should find indexed documents using the tokenized field" do
+    result = @index.find("name:he*")
+    result.size.should == 4
+    result.should include(@doc1,@doc2, @doc3)
+  end
+  
   it "should not find stopwords like 'there'" do
     result = @index.find(:name=>"there")
     result.size.should == 0
@@ -155,6 +161,50 @@ describe Index, ".find (with TOKENIZED index)" do
     result = @index.find(:name2=>"hello")
     result.size.should == 0
   end
+end
+
+describe Index, "#find (with string queries)" do
+  before(:each) do
+    delete_all_indexes
+    Index.clear($INDEX_DIR)
+    @index = Index.new($INDEX_DIR)    
+    @index.field_infos[:name] = FieldInfo.new(:store => true)
+    @index << {:id => "1", :name => 'name1', :value=>1, :group=>'a'}
+    @index << {:id => "2", :name => 'name2', :value=>2, :group=>'a'}
+    @index << {:id => "3", :name => 'name3', :value=>2, :group=>'b'}
+    @index << {:id => "4", :name => ['abc', 'def', '123']}
+    @doc1 = @index.uncommited["1"]
+    @doc2 = @index.uncommited["2"]
+    @doc3 = @index.uncommited["3"]
+    @doc4 = @index.uncommited["4"]
+    @index.commit
+  end
+  
+  
+  it "should find a doc by only using its id, index.find('1')" do
+    r = @index.find("1")
+    r.size.should == 1
+    r.should include(@doc1)
+  end
+  
+  it "should find a doc with a specified field, index.find('name:\"name1\"')" do
+    r = @index.find("name:'name2'")
+    r.size.should == 1
+    r.should include(@doc2)
+  end
+
+  it "should find a doc with wildcard queries" do
+    r = @index.find("name:name*")
+    r.size.should == 3
+    r.should include(@doc2)
+  end
+
+  it "should find handle OR queries" do
+    r = @index.find('group:\"b\" OR name:\"name1\"')
+    r.size.should == 2
+    r.should include(@doc3,@doc1)
+  end
+  
 end
 
 describe Index, ".find (exact match)" do
