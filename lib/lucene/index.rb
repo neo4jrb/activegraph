@@ -47,7 +47,7 @@ module Lucene
     # When it has been registered in the transaction the transaction will commit the index 
     # when the transaction is commited.
     #
-    def self.new(path, id_field = :id, store_on_file = true)
+    def self.new(path, id_field = Config[:id_field], store_on_file = Config[:store_on_file])
       # make sure no one modifies the index specified at given path
       lock(path).synchronize do
         # create a new transaction if needed      
@@ -67,6 +67,8 @@ module Lucene
         Transaction.current.index(path)
       end
     end
+
+
 
     #
     # Delete all uncommited documents. Also deregister this index
@@ -173,12 +175,20 @@ module Lucene
     #
     # Delegetes to the IndexSearcher.find method
     #
-    def find(query=nil, &block)
+    def find(*query, &block)
       # new method is a factory method, does not create if it already exists
       searcher = IndexSearcher.new(@index_info.storage)
       
+      # check sorting parameters
+      query.last == :sort_by
+      query.find{|x| x == :sort_by}
       if block.nil?
-        return searcher.find(@index_info, query) 
+        case query.first
+        when String
+          return searcher.find(@index_info, query)           
+        when Hash
+          return searcher.find(@index_info, query.first) 
+        end
       else
         return searcher.find_dsl(@index_info, &block) 
       end

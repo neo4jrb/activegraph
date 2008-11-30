@@ -16,12 +16,8 @@ describe "transaction rollback" do
   after(:all)  do stop  end  
 
   it "should not change properties" do
-    # given
-    #$NEO_LOGGER.level = Logger::DEBUG
-
     node = Neo4j::Transaction.run { BaseNode.new {|n| n.foo = 'foo'} }
 
-    #   $NEO_LOGGER.level = Logger::WARN
     # when doing a rollback
     Neo4j::Transaction.run { |t|
       node.foo = "changed"
@@ -40,7 +36,7 @@ describe "When neo has been restarted" do
 
   def restart
     Neo4j.stop
-    Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
+    Neo4j.start NEO_STORAGE
   end
   
   

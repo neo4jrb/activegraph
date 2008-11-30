@@ -4,10 +4,11 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 require 'neo4j/spec_helper'
 require 'neo4j'
 
-
-describe "Neo4j with lucene index in memory" do
-  it "should by default keep index on disk" do
+describe "Neo4j.start" do
+  it "should keep index on filesystem if specifed" do
     delete_db
+    LUCENE_INDEX_LOCATION = 'tmp/lucene'
+    FileUtils.rm_rf LUCENE_INDEX_LOCATION
     Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
     class TestNode 
       include Neo4j::NodeMixin
@@ -18,10 +19,11 @@ describe "Neo4j with lucene index in memory" do
     t = TestNode.new
     t.name = 'hello'
     File.exist?(LUCENE_INDEX_LOCATION).should be_true
+    FileUtils.rm_rf LUCENE_INDEX_LOCATION
     stop
   end
   
-  it "should keep index in RAM if no location is specified for lucene when starting neo4j" do
+  it "should keep index in RAM if filesystem path for lucene index is not specified" do
     delete_db
     Neo4j.start NEO_STORAGE
     class TestNode 
@@ -32,7 +34,6 @@ describe "Neo4j with lucene index in memory" do
     
     t = TestNode.new
     t.name = 'hello'
-    File.exist?(LUCENE_INDEX_LOCATION).should be_false
     stop
   end
   
@@ -118,6 +119,47 @@ describe "A node with no lucene index" do
   end
 end
 
+describe "Find with sorting" do
+  before(:all) do
+    start
+    undefine_class :Person7
+    class Person7
+      include Neo4j::NodeMixin
+      properties :name, :city
+      index :name
+      index :city
+    end
+    @kalle = Person7.new {|p| p.name = 'kalle'; p.city = 'malmoe'}
+    @andreas = Person7.new {|p| p.name = 'andreas'; p.city = 'malmoe'}
+    @sune = Person7.new {|p| p.name = 'sune'; p.city = 'malmoe'}
+    @anders = Person7.new {|p| p.name = 'anders'; p.city = 'malmoe'}
+  end
+
+  after(:all) do
+    stop
+  end
+
+  it "should find and sort using a hash query" do
+    persons = Person7.find(:city => 'malmoe').sort_by(:name)
+    persons.size.should == 4
+    persons[0].should == @anders
+    persons[1].should == @andreas
+    persons[2].should == @kalle
+    persons[3].should == @sune
+  end
+
+  it "should not sort when not specified to do so" do
+    persons = Person7.find(:city => 'malmoe')
+    persons.size.should == 4
+    sorted =  persons[0] == @anders &&
+      persons[1] == @andreas &&
+      persons[2] == @kalle &&
+      persons[3] == @sune
+    sorted.should == false
+  end
+
+end
+
 
 describe "Find Nodes using Lucene and tokenized index" do
   before(:all) do
@@ -139,7 +181,6 @@ describe "Find Nodes using Lucene and tokenized index" do
       node.name = n
       node.name2 = n
       @foos << node
-      #puts "ADD #{node}"
     }
   end
 

@@ -1,26 +1,13 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 require 'lucene'
-require 'fileutils'
-include Lucene
+require 'lucene/spec_helper'
 
-$INDEX_LOCATION = 'var/index'
-#$LUCENE_LOGGER.level = Logger::DEBUG
-
-def delete_all_indexes
-  Index.delete_all_storages
-  FileUtils.rm_r $INDEX_LOCATION if File.directory? $INDEX_LOCATION
-end
 
 describe Lucene::Transaction do
   
   before(:each) do
-    Thread.current[:lucene_transaction] = nil
-    delete_all_indexes
-  end
-  
-  before(:each) do
-    # make sure we do not get side effects, if one test forgets to commit a transaction
-    Transaction.current.commit if Transaction.running?
+    setup_lucene
   end
   
   it "should have a to_s method" do

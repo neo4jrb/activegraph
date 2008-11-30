@@ -1,28 +1,19 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
-require 'fileutils'  
-
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 require 'lucene'
+require 'lucene/spec_helper'
 
-include Lucene
-
-$INDEX_DIR = 'var/index'
-
-def delete_all_indexes
-  IndexInfo.delete_all
-  Lucene::Transaction.current.commit if Lucene::Transaction.running?
-  FileUtils.rm_r $INDEX_DIR if File.directory? $INDEX_DIR
-end
 
 describe Index, '(one uncommited document)' do
   before(:each) do
-    delete_all_indexes
-    @index = Index.new($INDEX_DIR)    
+    setup_lucene
+    @index = Index.new('my_index')
     @index.clear
     @index << {:id => '42', :name => 'andreas'}
   end
 
   it "has a to_s method with which says: index path and number of not commited documents" do
-    @index.to_s.should == "Index [path: 'var/index', 1 documents]"
+    @index.to_s.should == "Index [path: 'my_index', 1 documents]"
   end
 
   it "should be empty after clear" do
@@ -47,22 +38,18 @@ describe Index, '(one uncommited document)' do
     @index.uncommited['42'][:id].should == '42'
     @index.uncommited['42'][:name].should == 'andreas'
   end
-  
-  it "should not have created an index file" do
-    File.directory?($INDEX_DIR).should be_false
-  end
 end
 
 
 describe Index, '(no uncommited documents)' do
   before(:each) do
-    delete_all_indexes
-    @index = Index.new($INDEX_DIR)    
+    setup_lucene
+    @index = Index.new 'myindex'
     @index.clear    
   end
 
   it "has a to_s method with which says: index path and no uncommited documents" do
-    @index.to_s.should == "Index [path: 'var/index', 0 documents]"
+    @index.to_s.should == "Index [path: 'myindex', 0 documents]"
   end
   
   it "has no uncommited documents" do
@@ -73,9 +60,8 @@ end
 
 describe Index, ".find (range)" do
   before(:each) do
-    delete_all_indexes
-    Index.clear($INDEX_DIR)
-    @index = Index.new($INDEX_DIR)    
+    setup_lucene
+    @index = Index.new('some_index')
     @index.field_infos[:id][:type] = Fixnum    
     @index.field_infos[:value][:type] = Fixnum
   end
@@ -120,9 +106,8 @@ end
 
 describe Index, ".find (with TOKENIZED index)" do
   before(:each) do
-    delete_all_indexes
-    Index.clear($INDEX_DIR)
-    @index = Index.new($INDEX_DIR)
+    setup_lucene
+    @index = Index.new('my index')
     @index.field_infos[:name][:tokenized] = true
     
     @index << {:id => "1", :name => 'hej hopp', :name2=>'hej hopp'}
@@ -165,9 +150,8 @@ end
 
 describe Index, "#find (with string queries)" do
   before(:each) do
-    delete_all_indexes
-    Index.clear($INDEX_DIR)
-    @index = Index.new($INDEX_DIR)    
+    setup_lucene
+    @index = Index.new('myindex')
     @index.field_infos[:name] = FieldInfo.new(:store => true)
     @index << {:id => "1", :name => 'name1', :value=>1, :group=>'a'}
     @index << {:id => "2", :name => 'name2', :value=>2, :group=>'a'}
@@ -207,11 +191,11 @@ describe Index, "#find (with string queries)" do
   
 end
 
+
 describe Index, ".find (exact match)" do
   before(:each) do
-    delete_all_indexes
-    Index.clear($INDEX_DIR)
-    @index = Index.new($INDEX_DIR)    
+    setup_lucene
+    @index = Index.new('myindex')
     @index.field_infos[:name] = FieldInfo.new(:store => true)
     @index << {:id => "1", :name => 'name1', :value=>1, :group=>'a'}
     @index << {:id => "2", :name => 'name2', :value=>2, :group=>'a'}
@@ -286,9 +270,8 @@ end
 
 describe Index, "<< (add documents to be commited)" do
   before(:each) do
-    delete_all_indexes
-    Index.clear($INDEX_DIR)
-    @index = Index.new($INDEX_DIR)    
+    setup_lucene
+    @index = Index.new('myindex')
     @index.field_infos[:foo] = FieldInfo.new(:store => true)
   end
   
@@ -314,23 +297,22 @@ end
 
 describe Index, ".id_field" do
   before(:each) do
-    delete_all_indexes
-    Index.clear($INDEX_DIR)
+    setup_lucene
   end
 
   it "has a default" do
-    index = Index.new($INDEX_DIR)    
+    index = Index.new 'myindex'
     index.id_field.should == :id
   end
   
   it "can have a specified one" do
-    index = Index.new($INDEX_DIR, :my_id)    
+    index = Index.new('myindex', :my_id)
     index.id_field.should == :my_id
   end
   
   it "is used to find uncommited documents" do
     # given
-    index = Index.new($INDEX_DIR, :my_id)    
+    index = Index.new('myindex', :my_id)
     index << {:my_id => '123', :name=>"foo"}
     
     # when then
@@ -339,7 +321,7 @@ describe Index, ".id_field" do
 
   it "can be used to delete documents"  do
     # given
-    index = Index.new($INDEX_DIR, :my_id)    
+    index = Index.new('myindex', :my_id)
     index.field_infos[:my_id][:type] = Fixnum
     index << {:my_id => 123, :name=>"foo"}
     index.commit
@@ -355,7 +337,7 @@ describe Index, ".id_field" do
   
   it "must be included in all documents" do
     # given
-    index = Index.new($INDEX_DIR, :my_id)    
+    index = Index.new('myindex', :my_id)
 
     # when not included
     lambda {
@@ -381,8 +363,8 @@ end
 
 describe Index, ".field_infos" do
   before(:each) do
-    delete_all_indexes
-    @index = Index.new($INDEX_DIR)  
+    setup_lucene
+    @index = Index.new('myindex')
     @index.clear    
   end
 
@@ -435,9 +417,8 @@ end
 
 describe Index, " when updating a document" do
   before(:each) do
-    delete_all_indexes
-    @index = Index.new($INDEX_DIR)  
-    @index.clear    
+    setup_lucene
+    @index = Index.new('myindex')
   end
   
   it "should not find the old field if the field has been changed" do
@@ -479,80 +460,4 @@ describe Index, " when updating a document" do
   end
 
 end
-
-#describe Index, " when deleting a document" do
-#  before(:each) do
-#    delete_all_indexes
-#    @index = Index.new($INDEX_DIR)  
-#    @index.clear    
-#  end
-#
-#  it "should flag that a document is deleted before a it is commited" do
-#    # given a document exists
-#    doc = Document.new("42")
-#    doc << Field.new('name', 'andreas')
-#    @index.update(doc)
-#    @index.commit
-#    
-#    # when delete it
-#    @index.delete("42")
-#    
-#    # then it should know it has been marked as deleted
-#    @index.should be_deleted("42")
-#  end
-#end
-#  
-#  it "should flag that a document is not any longer deleted after it has been deleted and commit" do
-#    # given a document exists
-#    doc = Document.new("42")
-#    doc << Field.new('name', 'andreas')
-#    @index.update(doc)
-#    @index.commit
-#    
-#    # when delete it and commit it
-#    @index.delete("42")
-#    @index.commit
-#    
-#    # then it should not be marked as deleted any more
-#    @index.should_not be_deleted("42")
-#  end
-#  
-#  it "should not find documents that has been deleted before commited" do
-#    # given
-#    doc = Document.new("42")
-#    doc << Field.new('name', 'andreas')
-#    @index.update(doc)
-#    @index.delete("42")
-#    @index.commit
-#    
-#    # when
-#    result = @index.find('name' => 'andreas')
-#    
-#    # then
-#    result.size.should == 0
-#  end
-#  
-#  it "should raise an exception when updating a deleted document" do
-#    # given
-#    doc = Document.new("42")
-#    doc << Field.new('name', 'andreas')
-#    lambda {
-#      @index.delete("42")
-#      @index.update(doc)
-#    }.should raise_error
-#  end
-#
-#  it "should allow to delete and update an document in two transactions" do
-#    # given
-#    doc = Document.new("42")
-#    doc << Field.new('name', 'andreas')
-#    lambda {
-#      @index.delete("42")
-#      @index.commit
-#      @index.update(doc)
-#      @index.commit
-#    }.should_not raise_error
-#  end
-#  
-#end
 

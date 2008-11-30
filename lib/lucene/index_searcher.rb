@@ -31,30 +31,53 @@ module Lucene
     end
     
     
-    def find(field_info, fields)
+    def find(field_info, query)
       # are there any index for this node ?
       # if not return an empty array
       return [] unless exist?
       
-      query = case fields
-      when String
+      #puts "QUERY #{query.inspect}" # '#{query.first.class.to_s}' value #{query.first}"
+      sort_by ||= query[1].delete(:sort_by) if query.size > 1 && query[1].kind_of?(Hash)
+      sort_by ||= query.delete(:sort_by)
+      #puts "QUERY sort #{sort_by}"
+      # TODO Refactoring ! too long and complex method
+      lucene_query = case query
+      when Array
         parser = org.apache.lucene.queryParser.QueryParser.new(field_info.id_field.to_s, org.apache.lucene.analysis.standard.StandardAnalyzer.new)
-        parser.parse(fields)
+        parser.parse(query.first)
       when Hash
-        query = org.apache.lucene.search.BooleanQuery.new
-        fields.each_pair do |key,value|
+        bquery = org.apache.lucene.search.BooleanQuery.new
+        query.each_pair do |key,value|
           field = field_info[key]
           q = field.convert_to_query(key, value)
-          query.add(q, org.apache.lucene.search.BooleanClause::Occur::MUST)
+          bquery.add(q, org.apache.lucene.search.BooleanClause::Occur::MUST)
         end
-        query
+        bquery
       else
-        raise StandardError.new("Unknown type #{fields.class.to_s} for find #{fields}")
+        raise StandardError.new("Unknown type #{query.class.to_s} for find #{query}")
       end
-      Hits.new(field_info, index_searcher.search(query))
+      
+      if sort_by.nil?
+        Hits.new(field_info, index_searcher.search(lucene_query))
+      else
+        sort = create_sort(sort_by) 
+        Hits.new(field_info, index_searcher.search(lucene_query, sort))
+      end
       
     end
 
+    def create_sort(fields)
+      case fields
+      when String,Symbol
+        org.apache.lucene.search.Sort.new(fields.to_s)
+      when Array
+        sort = org.apache.lucene.search.Sort.new
+        fields.each{|field| sort.setSort(field.to_s)}
+        sort
+      else
+        StandardError.new("Unknown type #{fields.class.to_s}")
+      end      
+    end
     #
     # Checks if it needs to reload the index searcher
     #

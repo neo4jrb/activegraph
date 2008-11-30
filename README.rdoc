@@ -101,6 +101,10 @@ or using the lucene query language:
 The Lucene query language supports wildcard, grouping, boolean, fuzzy queries, etc...
 For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.html
 
+Sorting, example:
+
+  Person.find(:name => 'kalle').sort_by(:salary)
+
 === Relationships
 
 Adding a relationship between two nodes:

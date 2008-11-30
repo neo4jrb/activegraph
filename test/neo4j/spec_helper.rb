@@ -6,18 +6,18 @@ require 'fileutils'
 require 'tmpdir'
 
 NEO_STORAGE = Dir::tmpdir + "/neo_storage"
-LUCENE_INDEX_LOCATION = Dir::tmpdir + "/neo_lucene_storage"
 
 def delete_db
-  Lucene::IndexInfo.delete_all
+  # make sure we finish all transactions
+  Neo4j::Transaction.current.finish if Neo4j::Transaction.running?
+  Lucene::Config.delete_all
   FileUtils.rm_rf NEO_STORAGE
-  FileUtils.rm_rf LUCENE_INDEX_LOCATION
 end
 
 
 def start
   delete_db
-  Neo4j.start NEO_STORAGE , LUCENE_INDEX_LOCATION
+  Neo4j.start NEO_STORAGE
 end
 
 

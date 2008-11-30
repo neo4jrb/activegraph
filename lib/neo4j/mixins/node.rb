@@ -420,6 +420,9 @@ module Neo4j
       end
 
 
+      #
+      # Returns node instances of this class.
+      #
       def all
         ref = Neo4j.instance.ref_node
         ref.relations.outgoing(root_class)
@@ -446,20 +449,7 @@ module Neo4j
       # See the lucene module for more information how to do a query.
       #
       def find(query=nil, &block)
-        # TODO, hmm, thread synchronization ? it is possible that one node is deleted after it is found
-        hits = lucene_index.find(query, &block)
-
-        SearchResult.new hits
-        # TODO performance, we load all the found entries. Maybe better using Enumeration
-        # and load it when needed. Wrap it in a SearchResult
-#        Transaction.run do
-#          hits.collect do |doc|
-#            id = doc[:id]
-#            node = Neo4j.instance.find_node(id.to_i)
-#            raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
-#            node
-#          end
-#        end
+        SearchResult.new lucene_index, query, &block
       end
     end
   end

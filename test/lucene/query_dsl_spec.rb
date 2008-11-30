@@ -1,28 +1,14 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
-require 'lucene/query_dsl'
-
-
-# TODO DRY
-require 'fileutils'  
-
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 require 'lucene'
+require 'lucene/spec_helper'
 
-include Lucene
-
-$INDEX_DIR = 'var/index'
-
-
-def delete_all_indexes
-  Index.delete_field_infos
-  FileUtils.rm_r $INDEX_DIR if File.directory? $INDEX_DIR
-end
 
 describe Lucene::QueryDSL, 'used from Index.find' do
   
   before(:each) do
-    delete_all_indexes
-    @index = Index.new($INDEX_DIR)    
-    @index.clear
+    setup_lucene
+    @index = Index.new('my_index')
     @index.field_infos[:value][:type] = Fixnum
     @index << {:id => '42', :name => 'andreas', :foo => 'bar', :value => 1}
     @index << {:id => '43', :name => 'andreas', :foo => 'baaz', :value => 2}    

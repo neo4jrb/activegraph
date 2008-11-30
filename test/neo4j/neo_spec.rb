@@ -22,19 +22,19 @@ describe Neo4j::Neo do
   end
   
   it "should not be possible to get an instance if neo is stopped" do
-    Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
+    Neo4j.start NEO_STORAGE
     Neo4j.stop
     Neo4j.instance.should be_nil
   end
  
   it "should have a reference node" do
-    Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
+    Neo4j.start NEO_STORAGE
     ref_node = Neo4j.instance.ref_node
     ref_node.should_not be_nil
   end
 
   it "should find a node given its neo node id" do
-    Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
+    Neo4j.start NEO_STORAGE
 
     # given
     class TestNode
@@ -50,7 +50,7 @@ describe Neo4j::Neo do
   end
   
   it "should not find a node that does not exist" do
-    Neo4j.start NEO_STORAGE, LUCENE_INDEX_LOCATION
+    Neo4j.start NEO_STORAGE
     n = Neo4j.instance.find_node(10)
     n.should be_nil
   end
