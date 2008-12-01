@@ -2,7 +2,25 @@ require 'lucene/jars'
 require 'lucene/query_dsl'
 
 module Lucene
-  
+
+  class Asc
+    class << self
+      def [](*values)
+        values.map{|x| org.apache.lucene.search.SortField.new(x.to_s)}
+        #org.apache.lucene.search.Sort.new(values.map{|x| org.apache.lucene.search.SortField.new(x.to_s)}.to_java(:'org.apache.lucene.search.SortField'))
+      end
+    end
+  end
+
+  class Desc
+    class << self
+      def [](*values)
+        values.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}
+        #org.apache.lucene.search.Sort.new(values.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}.to_java(:'org.apache.lucene.search.SortField'))
+      end
+    end
+  end
+
   #
   # Does reuse Lucene Index Search for the same index.
   # Reloads the index if the index has changed.
@@ -37,7 +55,7 @@ module Lucene
       return [] unless exist?
       
       #puts "QUERY #{query.inspect}" # '#{query.first.class.to_s}' value #{query.first}"
-      sort_by ||= query[1].delete(:sort_by) if query.size > 1 && query[1].kind_of?(Hash)
+      sort_by ||= query[1].delete(:sort_by) if query[1].kind_of?(Hash)
       sort_by ||= query.delete(:sort_by)
       #puts "QUERY sort #{sort_by}"
       # TODO Refactoring ! too long and complex method
@@ -66,26 +84,43 @@ module Lucene
       
     end
 
+    def parse_field(field)
+      case field
+      when String,Symbol
+        [org.apache.lucene.search.SortField.new(field.to_s)]
+      when org.apache.lucene.search.SortField
+        [field]
+      when Array
+        raise StandardError.new("Unknown sort field '#{field}'") unless field.first.kind_of?(org.apache.lucene.search.SortField)
+        field
+      end
+    end
+
+
     def create_sort(fields)
       case fields
       when String,Symbol
         org.apache.lucene.search.Sort.new(fields.to_s)
+      when org.apache.lucene.search.SortField
+        org.apache.lucene.search.Sort.new(fields)
       when Array
-        sort = org.apache.lucene.search.Sort.new
-        fields.each{|field| sort.setSort(field.to_s)}
-        sort
+        sorts = []
+        fields.each do |field|
+          sorts += parse_field(field)
+        end
+        org.apache.lucene.search.Sort.new(sorts.to_java(:'org.apache.lucene.search.SortField')) 
       else
         StandardError.new("Unknown type #{fields.class.to_s}")
-      end      
+      end
     end
     #
     # Checks if it needs to reload the index searcher
     #
     def index_searcher
       if @index_reader.nil? || @index_reader.getVersion() != org.apache.lucene.index.IndexReader.getCurrentVersion(@path)
-        @index_reader = org.apache.lucene.index.IndexReader.open(@path)        
-        @index_searcher = org.apache.lucene.search.IndexSearcher.new(@index_reader)        
-        $LUCENE_LOGGER.debug("Opened new IndexSearcher for #{to_s}")         
+        @index_reader = org.apache.lucene.index.IndexReader.open(@path)
+        @index_searcher = org.apache.lucene.search.IndexSearcher.new(@index_reader)
+        $LUCENE_LOGGER.debug("Opened new IndexSearcher for #{to_s}")
       end
       @index_searcher
     end

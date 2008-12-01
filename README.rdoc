@@ -104,6 +104,9 @@ For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.
 Sorting, example:
 
   Person.find(:name => 'kalle').sort_by(:salary)
+  Person.find(:name => 'kalle').sort_by(Desc[:salary], Asc[:country])
+  Person.find(:name => 'kalle').sort_by(Desc[:salary, :country])
+
 
 === Relationships
 
@@ -331,6 +334,21 @@ Expression with OR (|) is supported, example
 
    # find all documents with name 'andreas' or age between 30 and 40
     hits = index.find { (name == 'andreas') | (age == 30..40)}
+
+=== Sorting
+
+Sorting is specified by the 'sort_by' parameter
+Example
+
+  hits = index.find(:name => 'foo', :sort_by=>:category)
+
+To sort by several fields:
+
+  hits = index.find(:name => 'foo', :sort_by=>[:category, :country])
+
+Example sort order
+
+  hits = index.find(:name => 'foo', :sort_by=>[Desc[:category, :country], Asc[:city]])
 
 === Thread-safety
 
