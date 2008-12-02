@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 
 require "rubygems" 
 require "neo4j"
-
+require "model"
 
 def parse_actors(file)
   movies = {}
@@ -57,12 +57,8 @@ def parse_actors(file)
 end
 
 
-DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
-DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")
-
-Neo4j.start DB_NEO_DIR #, DB_LUCENE_DIR
-
-require "model"
+Neo4j::Config[:storage_path] = DB_NEO_DIR
+Neo4j.start
 
 Neo4j::Transaction.run do
 

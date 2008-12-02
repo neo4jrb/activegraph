@@ -3,11 +3,8 @@ require "rubygems"
 require "neo4j"
 require "model"
 
-DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
-DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")
-
-Neo4j.start DB_NEO_DIR #, DB_LUCENE_DIR
-
+Neo4j::Config[:storage_path] = DB_NEO_DIR
+Neo4j.start
 
 Actor.index :name, :tokenized => true
 puts "REINDEX ACTORS"
