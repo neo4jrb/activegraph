@@ -34,12 +34,6 @@ end
 
 describe "When neo has been restarted" do
 
-  def restart
-    Neo4j.stop
-    Neo4j.start NEO_STORAGE
-  end
-  
-  
   describe Neo4j::Neo do
     before(:all) do
       start
@@ -55,7 +49,8 @@ describe "When neo has been restarted" do
         n.baaz = "hello"
       }
       
-      restart
+      Neo4j.stop
+      Neo4j.start
       
       Neo4j::Transaction.run {
         node2 = Neo4j.instance.find_node(node.neo_node_id)

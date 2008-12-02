@@ -306,13 +306,15 @@ describe Index, ".id_field" do
   end
   
   it "can have a specified one" do
-    index = Index.new('myindex', :my_id)
+    index = Index.new('myindex')
+    index.field_infos.id_field = :my_id
     index.id_field.should == :my_id
   end
   
   it "is used to find uncommited documents" do
     # given
-    index = Index.new('myindex', :my_id)
+    index = Index.new('myindex')
+    index.field_infos.id_field = :my_id
     index << {:my_id => '123', :name=>"foo"}
     
     # when then
@@ -321,7 +323,8 @@ describe Index, ".id_field" do
 
   it "can be used to delete documents"  do
     # given
-    index = Index.new('myindex', :my_id)
+    index = Index.new('myindex')
+    index.field_infos.id_field = :my_id
     index.field_infos[:my_id][:type] = Fixnum
     index << {:my_id => 123, :name=>"foo"}
     index.commit
@@ -337,8 +340,8 @@ describe Index, ".id_field" do
   
   it "must be included in all documents" do
     # given
-    index = Index.new('myindex', :my_id)
-
+    index = Index.new('myindex')
+    index.field_infos.id_field = :my_id
     # when not included
     lambda {
       index << {:id=>2, :name=>"foo"} # my_id missing

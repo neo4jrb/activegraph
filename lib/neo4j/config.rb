@@ -1,16 +1,14 @@
 
-module Lucene
+module Neo4j
 
 
   #
-  # Keeps configuration for lucene.
-  # Contains both common configuration for all lucene indexes as well
-  # as specific configuration for each index (TODO).
+  # Keeps configuration for neo4j
   # This code is copied from merb-core/config.rb.
   #
   class Config
     class << self
-      # Returns the hash of default config values for lucene.
+      # Returns the hash of default config values for neo4j
       #
       # ==== Returns
       # Hash:: The defaults for the config.
@@ -18,9 +16,7 @@ module Lucene
       # :api: private
       def defaults
         @defaults ||= {
-          :store_on_file => false,
-          :id_field => :id,
-          :storage_path => nil
+          :storage_path => 'tmp/neo4j'
         }
       end
 
@@ -31,8 +27,8 @@ module Lucene
       # c<Hash>:: The configuration parameters.
       #
       # ==== Examples
-      # Lucene::Config.use do |config|
-      # config[:in_memory] = true
+      # Neo4j::Config.use do |config|
+      # config[:storage_path] = '/var/neo4j'
       # end
       #
       # ==== Returns
@@ -93,7 +89,6 @@ module Lucene
       # :api: private
       def delete_all
         @configuration = nil
-        IndexInfo.delete_all
       end
 
 

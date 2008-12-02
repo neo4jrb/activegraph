@@ -47,7 +47,7 @@ module Lucene
     # When it has been registered in the transaction the transaction will commit the index 
     # when the transaction is commited.
     #
-    def self.new(path, id_field = Config[:id_field], store_on_file = Config[:store_on_file])
+    def self.new(path)
       # make sure no one modifies the index specified at given path
       lock(path).synchronize do
         # create a new transaction if needed      
@@ -56,7 +56,6 @@ module Lucene
         # create a new instance only if it does not already exist in the current transaction
         unless Transaction.current.index?(path)
           $LUCENE_LOGGER.debug{"Index#new #{path} not in current transaction => new index"}
-          IndexInfo.new_instance(path, id_field, store_on_file) unless IndexInfo.instance?(path)
           info = IndexInfo.instance(path)
           index = super(path, info)
           Transaction.current.register_index(path, index) 

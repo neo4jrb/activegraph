@@ -5,10 +5,9 @@ module Neo4j
   # Starts neo with a database at the given storage location for neo and lucene.
   # If no location is given for lucene then it will keep the index files in memory.
   #
-  def self.start(db_location, lucene_index_location=nil)
+  def self.start
     raise StandardError.new("Already started neo") if @instance
-    @instance = Neo.new db_location
-    @lucene_index_location = lucene_index_location
+    @instance = Neo.new 
     @instance.start
   end
 
@@ -34,27 +33,6 @@ module Neo4j
     ! @instance.nil?
   end
   
-  # Creates a new lucene index
-  #
-  def self.new_lucene_index(node_class_id)
-    if (Neo4j.lucene_index_location.nil?)
-      Lucene::Index.new(node_class_id, :id, false)
-    else
-      Lucene::Index.new(Neo4j.lucene_index_location + node_class_id, :id, true)       
-    end
-  end
-
-  # Returns the location of the lucene index on disk. 
-  # Is nil if index is stored in memory.
-  #
-  def self.lucene_index_location
-    @lucene_index_location
-  end
-
-  def self.neo_db_location
-    @instance.db_storage
-  end
-
   
   #
   # Allows run and stop the Neo4j service
@@ -64,19 +42,14 @@ module Neo4j
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
   class Neo
-    attr_accessor :db_storage
 
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
     attr_reader :ref_node
 
-    def initialize(db_storage)
-      @db_storage = db_storage
-    end
-
     def start
-      @neo = org.neo4j.api.core.EmbeddedNeo.new(@db_storage)
+      @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
       Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
     end

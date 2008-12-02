@@ -24,6 +24,7 @@ require 'neo4j/relations/has_n_relations'
 require 'neo4j/relations/relation_traverser'
 
 # neo4j
+require 'neo4j/config'
 require 'neo4j/events'
 require 'neo4j/neo'
 require 'neo4j/reference_node'

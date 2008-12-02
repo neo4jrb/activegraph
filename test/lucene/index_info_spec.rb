@@ -5,12 +5,13 @@ include Lucene
 
 describe IndexInfo do
   it "should have an id_field" do
-    f = IndexInfo.new(:my_id)
+    f = IndexInfo.new('path')
+    f.id_field = :my_id
     f.id_field.should == :my_id
   end
   
   it "should have a default for any key" do
-    f = IndexInfo.new(:my_id)
+    f = IndexInfo.new('some_path')
     f[42].should == IndexInfo::DEFAULTS
     IndexInfo::DEFAULTS[:store].should == false
     f[42][:store].should == false
@@ -18,7 +19,7 @@ describe IndexInfo do
   
   it "can set a field by a hash of infos " do
     # given
-    f = IndexInfo.new(:my_id)
+    f = IndexInfo.new('some_path')
     # when
     f[:value] = {:type => Float}
     # then
@@ -28,7 +29,7 @@ describe IndexInfo do
 
   it "can set a field by a FieldInfo" do
     # given
-    f = IndexInfo.new(:my_id)
+    f = IndexInfo.new('some_path')
     # when
     f[:value] = FieldInfo.new(:type => Float)
     # then
@@ -38,7 +39,7 @@ describe IndexInfo do
 
   it "can set a individual property of a FieldInfo" do
     # given
-    f = IndexInfo.new(:my_id)
+    f = IndexInfo.new('some_path')
     
     # when
     f[:value][:type] = Float
@@ -50,7 +51,7 @@ describe IndexInfo do
 
   it "can set several individual properties of a FieldInfo" do
     # given
-    f = IndexInfo.new(:my_id)
+    f = IndexInfo.new('some_path')
     
     # when
     f[:value][:type] = Float

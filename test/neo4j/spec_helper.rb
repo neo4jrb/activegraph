@@ -6,18 +6,32 @@ require 'fileutils'
 require 'tmpdir'
 
 NEO_STORAGE = Dir::tmpdir + "/neo_storage"
+LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
+
 
 def delete_db
   # make sure we finish all transactions
   Neo4j::Transaction.current.finish if Neo4j::Transaction.running?
+
+  # delete all configuration
   Lucene::Config.delete_all
+
+  # delete db on filesystem
   FileUtils.rm_rf NEO_STORAGE
+  FileUtils.rm_rf LUCENE_INDEX_LOCATION
 end
 
 
 def start
+  # delete both lucene and neo db
   delete_db
-  Neo4j.start NEO_STORAGE
+
+  # set default configuration
+  Lucene::Config[:store_on_file] = false
+  Neo4j::Config[:storage_path] = NEO_STORAGE
+
+  # start neo
+  Neo4j.start
 end
 
 

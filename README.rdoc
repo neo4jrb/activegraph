@@ -58,14 +58,17 @@ The salary of all friends are also indexed which means we can query for people w
 
 === Start and stop
 
-Before using neo it has to be started
+Before using neo it has to be configured and started
 
-   Neo4j.start '/home/neo/neodb'
+   Neo4j::Config[:storage_path] = '/home/neo/neodb'
+   Neo4j.start 
 
-The neo database will be stored at '/home/neo/neodb' and the lucene index files be kept in memory.
-The lucene index can be kept on disk if Neo4j is started with two parameter:
+The neo database will be stored at '/home/neo/neodb' and the lucene index files be kept in memory by default.
+The lucene index can be kept on disk:
 
-   Neo4j.start '/home/neo/neodb', '/home/neo/lucene'  
+   Lucene::Config[:store_on_file] = true
+   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+   Neo4j.start
 
 === Creating a node
 
@@ -101,7 +104,7 @@ or using the lucene query language:
 The Lucene query language supports wildcard, grouping, boolean, fuzzy queries, etc...
 For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.html
 
-Sorting, example:
+=== Sorting, example
 
   Person.find(:name => 'kalle').sort_by(:salary)
   Person.find(:name => 'kalle').sort_by(Desc[:salary], Asc[:country])
@@ -196,7 +199,9 @@ Example of how to write a document and find it:
 
     include Lucene
 
-    index = Index.new('var/myindex')  # store the index at dir: var/myindex
+    # the var/myindex parameter is either a path where to store the index or
+    # just a key if index is kept in memory (see below)
+    index = Index.new('var/myindex')  
 
     # add one document (a document is like a record or row in a relation database)
     index << {:id=>'1', :name=>'foo'}
@@ -216,6 +221,25 @@ Notice that you have to call the commit method in order to update the index on t
 By performing several update and delete operations before a commit will be much
 faster then performing commit after each operation. 
 
+=== Keep indexing on disk
+
+By default Neo4j::Lucene keeps indexes in memory. That means that when the application restarts
+the index will be gone and you have to reindex everything again.
+
+To keep indexes in memory:
+
+   Lucene::Config[:store_on_file] = true
+   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+
+When creating a new index the location of the index will be the Lucene::Config[:storage_path] + index path
+Example:
+
+   Lucene::Config[:store_on_file] = true
+   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+   index = Index.new('/foo/lucene')
+
+The example above will store the index at /home/neo/lucene-db/foo/lucene
+
 === Indexing several values with the same key
 
 Let say a person can have several phone numbers. How do we index that ?
@@ -226,9 +250,10 @@ Let say a person can have several phone numbers. How do we index that ?
 === Id field
 
 All Documents must have one id field. If one is not specified it is :id of type String.
-A different id can be specified in the second parameter in the Index constructor.
+A different id can be specified using the field_infos id_field property on the index:
 
-  Index.new('some/path/to/the/index', :my_id)
+  index = Index.new('some/path/to/the/index')
+  index.field_infos.id_field = :my_id
 
 To change the type of the my_id from String to a different type see below.
 
@@ -388,17 +413,23 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 In order to use neo it has to be started first.
   
-   Neo4j.start '/home/neo/neodb', '/home/neo/lucene_index'
+   Neo4j.start 
 
-The start method takes one or two paremters - the location on the filesystem of the neo
-database and optional the location of the lucene index. If no location is given for the lucen index
-it will be kept in memory. Keeping index in memory will increase the performance of lucene operations.
+By default lucene indexes are kept in memory.
+Keeping index in memory will increase the performance of lucene operations (such as updating the index).
 
+Example to configure Lucene to store indexes on disk instead
+
+   Lucene::Config[:store_on_file] = true
+   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+
+Before using Neo4j the location where the database is stored on disk must be configured:
+
+   Neo4j::Config[:storage_path] = '/home/neo/neodb'
 
 To stop the neo database:
 
    Neo4j.stop
-
 
 === Neo4j::NodeMixin
 
@@ -881,7 +912,4 @@ Example:
 
 This node has a relationship to all created nodes.
 It is used internally to recreate an index or finding all nodes of a specific type.
-
-
-  
 

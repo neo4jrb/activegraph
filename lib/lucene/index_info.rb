@@ -14,12 +14,23 @@ module Lucene
   class IndexInfo 
     DEFAULTS = FieldInfo.new({}).freeze
     
-    attr_reader :id_field, :storage, :infos
+    attr_reader :infos, :path
+    attr_accessor :id_field
+    attr_writer :store_on_file
 
-    def initialize(id_field, storage=nil)
-      @id_field = id_field.to_sym
+    # Initializes this object by setting values to default values specified in the Lucene::Config.
+    # The path/id to the index is specified by the the path parameter.
+    # If the index is Lucene::Config[:storage_path]
+    # ==== Block parameters
+    # path<String>:: The id or the (incomplete) path on the filesystem of the index
+    #
+    # :api: private
+    def initialize(path)
+      $LUCENE_LOGGER.debug{"IndexInfo#initialize(#{path})"}
+      @id_field = Lucene::Config[:id_field].to_sym
+      @path = path
+      @store_on_file = Lucene::Config[:store_on_file]
       @infos = {}
-      @storage = storage
       # always store the id field
       @infos[@id_field] = FieldInfo.new(:store => true)
     end
@@ -28,23 +39,44 @@ module Lucene
       "IndexInfo [#{@id_field}, #{@infos.inspect}]"
     end
 
+    def store_on_file?
+      @store_on_file
+    end
+    
+    def storage
+      @storage ||= create_storage
+    end
+
+    def create_storage
+      if store_on_file?
+        raise StandardError.new("Lucene::Config[:storage_path] is nil but index configured to be stored on filesystem") if Lucene::Config[:storage_path].nil?
+        Lucene::Config[:storage_path] + @path
+      else
+        org.apache.lucene.store.RAMDirectory.new
+      end
+    end
+
+    
     def self.instance?(path)
       return false if @instances.nil?
       ! @instances[path].nil?
     end
 
+    # Creates and initializes an IndexInfo object by setting values to default
+    # values specified in the Lucene::Config. Does not create new object if it has
+    # already been created before with the given path.
+    # 
+    # If the index is stored on the filesystem the complete path will be
+    # Lucene::Config[:storage_path] + /path
+    # 
+    # ==== Block parameters
+    # path<String>:: The id or the (incomplete) path on the filesystem of the index
+    #
+    # :api: public
     def self.instance(path)
-      raise StandardError.new("No StorageInfo has been created for path '#{path}' yet") unless @instances[path]
-      $LUCENE_LOGGER.debug{"IndexInfos#instance(#{path}) : ret #{@instances[path]}"}      
-      @instances[path]
-    end
-    
-    def self.new_instance(path, id_field, store_on_file)
-      $LUCENE_LOGGER.debug{"IndexInfos#new_instance '#{path}'"}
       @instances ||= {}
-      storage = path
-      storage = org.apache.lucene.store.RAMDirectory.new  unless store_on_file
-      @instances[path] = IndexInfo.new(id_field, storage)
+      $LUCENE_LOGGER.debug{"IndexInfos#instance(#{path}) : @instances[path]: #{@instances[path]}"}
+      @instances[path] ||= IndexInfo.new(path)
     end
     
     def self.delete_all
@@ -58,7 +90,7 @@ module Lucene
     end
     
     def index_exists?
-      org.apache.lucene.index.IndexReader.index_exists(@storage)
+      org.apache.lucene.index.IndexReader.index_exists(storage)
     end
     
     def each_pair
