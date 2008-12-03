@@ -1,3 +1,4 @@
+== 0.0.6 / 2009-12-03
 * Removed the configuration from the Neo4j.start method. Now exist in Neo4j::Config and Lucene::Config.
 * Implemented sort_by method.
 * Lazy loading of search result. Execute the query and load the nodes only if needed.

@@ -110,6 +110,15 @@ For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.
   Person.find(:name => 'kalle').sort_by(Desc[:salary], Asc[:country])
   Person.find(:name => 'kalle').sort_by(Desc[:salary, :country])
 
+=== Search Results
+
+The query is not performed until the search result is requested.
+Example of using the search result.
+
+  res = Person.find(:name => 'kalle')
+  res.size  # => 10
+  res.each {|x| puts x.name}
+  res[0].name = 'sune'
 
 === Relationships
 
