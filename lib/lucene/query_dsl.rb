@@ -1,8 +1,3 @@
-require 'lucene'
-
-#require 'lucene/jars'
-#require 'lucene/field_infos'
-
 module Lucene
   
   class Expression

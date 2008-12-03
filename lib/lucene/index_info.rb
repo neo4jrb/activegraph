@@ -1,5 +1,3 @@
-require 'lucene/field_info'
-
 module Lucene
   
   #

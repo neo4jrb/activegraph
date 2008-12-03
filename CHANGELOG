@@ -1,3 +1,9 @@
+* Removed the configuration from the Neo4j.start method. Now exist in Neo4j::Config and Lucene::Config.
+* Implemented sort_by method.
+* Lazy loading of search result. Execute the query and load the nodes only if needed.
+* Added support to use lucene query language, example: Person.find("name:foo AND age:42")
+* All test now uses RAM based lucene indexes.
+
 == 0.0.5 / 2009-11-17
 * Supports keeping lucene index in memory instead of on disk
 * Added support for lucene full text search

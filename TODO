@@ -1,13 +1,12 @@
 == TODO - soon
 
 * identity map - http://www.martinfowler.com/eaaCatalog/identityMap.html
-* sorting using lucene
 * the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available
 * performance tests and check for memory leaks
 * better documentation, use YARD instead of RDoc
 * fix TODO's in the code
 
-== TODO - later
+== TODO - maybe 
 * handle corrupt lucene index after a crash.
 * using two phase commit to make sure the lucene index is synchronized, not sure if we want this.
 

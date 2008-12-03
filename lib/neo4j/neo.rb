@@ -1,10 +1,19 @@
 module Neo4j
 
 
+  # Starts neo.
+  # Before using neo it has to be started and the location of the Neo database on the filesystem must
+  # have been configured, Neo4j::Config[:storage_path].
   #
-  # Starts neo with a database at the given storage location for neo and lucene.
-  # If no location is given for lucene then it will keep the index files in memory.
+  # ==== Examples
+  # Neo4j::Config[:storage_path] = '/var/neo4j-db'
+  # Neo4j.start
   #
+  # ==== Returns
+  # The neo instance
+  #
+  # @raise [StandardError] if Neo already has been started
+  # :api: public
   def self.start
     raise StandardError.new("Already started neo") if @instance
     @instance = Neo.new 
@@ -13,14 +22,19 @@ module Neo4j
 
   #
   # Return the started neo instance or nil if not started
-  #
+  # 
+  # ==== Returns
+  # The neo instance
+  # 
+  # :api: public
   def self.instance
     @instance
   end
 
-  #
-  # Stop the current instance unless it is not started
-  #
+  # Stops the current instance unless it is not started.
+  # This must be done in order to avoid corrupt neo database.
+  # 
+  # :api: public
   def self.stop
     @instance.stop unless @instance.nil?
     @instance = nil

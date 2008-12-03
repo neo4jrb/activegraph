@@ -1,21 +1,42 @@
-require 'lucene/jars'
-require 'lucene/query_dsl'
-
 module Lucene
 
   class Asc
     class << self
-      def [](*values)
-        values.map{|x| org.apache.lucene.search.SortField.new(x.to_s)}
-        #org.apache.lucene.search.Sort.new(values.map{|x| org.apache.lucene.search.SortField.new(x.to_s)}.to_java(:'org.apache.lucene.search.SortField'))
+
+      # Specifies which fields should be sorted in ascending order
+      #
+      # ==== Parameters
+      # fields<Array>:: One or more fields to sort in ascending order
+      #
+      # ==== Examples
+      # Asc[:name, :age]
+      #
+      # ==== Returns
+      # An array of sort fields
+      #
+      # :api: public
+      def [](*fields)
+        fields.map{|x| org.apache.lucene.search.SortField.new(x.to_s)}
       end
     end
   end
 
   class Desc
     class << self
-      def [](*values)
-        values.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}
+      # Specifies which fields should be sorted in descending order
+      #
+      # ==== Block parameters
+      # fields<Array>:: One or more fields to sort in descending order
+      #
+      # ==== Examples
+      # Desc[:name, :age]
+      #
+      # ==== Returns
+      # An array of sort fields
+      #
+      # :api: public
+      def [](*fields)
+        fields.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}
         #org.apache.lucene.search.Sort.new(values.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}.to_java(:'org.apache.lucene.search.SortField'))
       end
     end
@@ -113,6 +134,7 @@ module Lucene
         StandardError.new("Unknown type #{fields.class.to_s}")
       end
     end
+
     #
     # Checks if it needs to reload the index searcher
     #

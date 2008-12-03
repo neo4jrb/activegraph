@@ -38,15 +38,27 @@ module Lucene
     def field_infos
       IndexInfo.instance(@path)
     end
-    
+
+
+    # Returns an Index instance for the current running transaction.
     #
     # Tries to reuse an Index instance for the current running transaction.
-    # 
     # If a Lucene::Transaction is running it will register this index in that transaction if
     # this has not already been done.
-    # When it has been registered in the transaction the transaction will commit the index 
-    # when the transaction is commited.
+    # When it has been registered in the transaction the transaction will commit the index
+    # when the transaction is finished.
+    # The configuration (kept in the #field_infos) for this index will be the same for all indexes with the same path/key.
     #
+    # ==== Parameters
+    # path<String>:: The key or location where the index should be stored (relative Lucene::Config[:storage_path]
+    #
+    # ==== Examples
+    # Index.new 'foo/lucene-db'
+    #
+    # ==== Returns
+    # Returns a new or an already existing Index
+    #
+    # :api: public
     def self.new(path)
       # make sure no one modifies the index specified at given path
       lock(path).synchronize do
@@ -89,9 +101,20 @@ module Lucene
       Transaction.current.index(path).clear
     end
     
+    # Creates a new document from the given hash of values.
+    # This document will be stored in this instance till it is commited.
     #
-    # Adds a document to be commited
+    # ==== Parameters
+    # path<String>:: The key or location where the index should be stored (relative Lucene::Config[:storage_path]
     #
+    # ==== Examples
+    # index = Index.new('name_or_path_to_index')
+    # index << {:id=>'1', :name=>'foo'} 
+    #
+    # ==== Returns
+    # Returns the index instance so that this method can be chained
+    #
+    # :api: public
     def <<(key_values)
       doc = Document.new(field_infos, key_values)
       lock.synchronize do
