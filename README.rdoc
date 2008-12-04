@@ -70,7 +70,7 @@ Setting a property:
   person.salary  = 10000
 
 If a transaction is not specified then the operation will automatically be wrapped in
-a transaction. 
+a transaction.  Neo4j does handle primitive properties of type like String, Fixnum, Float.
 
 === Queries
 

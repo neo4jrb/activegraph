@@ -17,6 +17,7 @@ module Neo4j
     extend TransactionalMixin
     
     #
+    # Initialize the the neo node for this instance.
     # Will create a new transaction if one is not already running.
     # If a block is given a new transaction will be created.
     # 
