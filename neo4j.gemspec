@@ -1,5 +1,5 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Wed Dec 03 18:47:49 +0100 2008
+# LAST UPDATED : Wed Dec 03 19:02:20 +0100 2008
 #
 # RUN : 'rake gem:update_gemspec'
 
@@ -76,34 +76,7 @@ Gem::Specification.new do |s|
  "examples/imdb/model.rb",
  "examples/imdb/find_actors.rb",
  "examples/imdb/create_neo_db.rb",
- "examples/imdb/db",
- "examples/imdb/load_test.rb",
- "examples/imdb/data",
- "examples/imdb/db/neo",
- "examples/imdb/db/neo/neostore.propertystore.db.strings",
- "examples/imdb/db/neo/neostore.propertystore.db.index.id",
- "examples/imdb/db/neo/neostore.propertystore.db.index.keys.id",
- "examples/imdb/db/neo/neostore.relationshiptypestore.db",
- "examples/imdb/db/neo/neostore.propertystore.db.index.keys",
- "examples/imdb/db/neo/neostore.id",
- "examples/imdb/db/neo/neostore.relationshiptypestore.db.id",
- "examples/imdb/db/neo/neostore.relationshipstore.db",
- "examples/imdb/db/neo/neostore.propertystore.db.strings.id",
- "examples/imdb/db/neo/neostore.relationshipstore.db.id",
- "examples/imdb/db/neo/neostore.propertystore.db.arrays.id",
- "examples/imdb/db/neo/neostore.nodestore.db.id",
- "examples/imdb/db/neo/tm_tx_log.1",
- "examples/imdb/db/neo/neostore.propertystore.db.arrays",
- "examples/imdb/db/neo/neostore.relationshiptypestore.db.names.id",
- "examples/imdb/db/neo/neostore.relationshiptypestore.db.names",
- "examples/imdb/db/neo/neostore.propertystore.db.index",
- "examples/imdb/db/neo/neostore.propertystore.db",
- "examples/imdb/db/neo/neostore.propertystore.db.id",
- "examples/imdb/db/neo/active_tx_log",
- "examples/imdb/db/neo/neostore.nodestore.db",
- "examples/imdb/db/neo/neostore",
- "examples/imdb/data/test-movies.list",
- "examples/imdb/data/test-actors.list"]
+ "examples/imdb/load_test.rb"]
  s.rubygems_version = "1.3.1"
  s.platform = "ruby"
  s.date = "Wed Dec 03 00:00:00 +0100 2008"

@@ -12,6 +12,30 @@ require 'neo4j/spec_helper'
 
 #$NEO_LOGGER.level = Logger::DEBUG
 
+describe "Neo4j" do
+  before(:all) do
+    FileUtils.rm_rf '/tmp/neo4j'
+    Neo4j::Config[:storage_path] = NEO_STORAGE
+  end
+
+
+  it "should not need to be started or stopped before using it" do
+    undefine_class :Foo
+    class Foo
+      include Neo4j::NodeMixin
+      properties :name
+      index :name
+    end
+    res = Foo.find(:name => 'kalle')
+    res.size.should == 0
+    f = Foo.new
+    f.name = 'kalle'
+    res = Foo.find(:name => 'kalle')
+    res.size.should == 1
+    res[0].name.should == 'kalle'
+  end
+end
+
 describe Neo4j::Neo do
   before(:each) do
     start
@@ -21,9 +45,10 @@ describe Neo4j::Neo do
     stop
   end
   
-  it "should not be possible to get an instance if neo is stopped" do
+  it "should return a new neo instance if neo has been stopped" do
+    x = Neo4j.instance
     Neo4j.stop
-    Neo4j.instance.should be_nil
+    Neo4j.instance.should_not == x
   end
  
   it "should have a reference node" do
@@ -37,14 +62,14 @@ describe Neo4j::Neo do
       include Neo4j::NodeMixin
     end
     t1 = TestNode.new
-      
+
     # when
     t2 = Neo4j.instance.find_node(t1.neo_node_id)
-      
+
     # then
     t1.should == t2
   end
-  
+
   it "should not find a node that does not exist" do
     n = Neo4j.instance.find_node(10)
     n.should be_nil

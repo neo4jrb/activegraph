@@ -56,20 +56,6 @@ Neo properties and relationships are declared using the 'properties' and 'has_n'
 In the example above a lucene index will be updated when the name or salary property changes. 
 The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
 
-=== Start and stop
-
-Before using neo it has to be configured and started
-
-   Neo4j::Config[:storage_path] = '/home/neo/neodb'
-   Neo4j.start 
-
-The neo database will be stored at '/home/neo/neodb' and the lucene index files be kept in memory by default.
-The lucene index can be kept on disk:
-
-   Lucene::Config[:store_on_file] = true
-   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
-   Neo4j.start
-
 === Creating a node
 
 Creating a Person node instance
@@ -420,10 +406,6 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 === Start and Stop of the Neo Database
 
-In order to use neo it has to be started first.
-  
-   Neo4j.start 
-
 By default lucene indexes are kept in memory.
 Keeping index in memory will increase the performance of lucene operations (such as updating the index).
 
@@ -436,9 +418,10 @@ Before using Neo4j the location where the database is stored on disk must be con
 
    Neo4j::Config[:storage_path] = '/home/neo/neodb'
 
-To stop the neo database:
+To stop the neo database - you do not need to do this since it will be done automatically when the virtual machine exits.
 
    Neo4j.stop
+
 
 === Neo4j::NodeMixin
 

@@ -1,5 +1,6 @@
 == TODO - soon
 
+* Loading nodes that does not exist generated a stack dump.
 * identity map - http://www.martinfowler.com/eaaCatalog/identityMap.html
 * the Neo4j::Node find method should use the Neo4j traversal if there are no lucene index available
 * performance tests and check for memory leaks

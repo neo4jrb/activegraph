@@ -3,13 +3,23 @@ module Neo4j
   #
   # Raised when an operation was called without a running transaction.
   #
-  class NotInTransactionError < StandardError; end
+  class NotInTransactionError < StandardError
+    def initialize
+      #      puts "NOT IN TRANSACTION ERROR"
+      #      puts caller
+    end
+  end
   
   
   #
   # Raised when an operation was called when an transaction was already running.
   #
-  class AlreadyInTransactionError < StandardError; end
+  class AlreadyInTransactionError < StandardError
+    def initialize
+      #      puts "AlreadyInTransactionError"
+      #      puts caller
+    end
+  end
   
   
   #
@@ -45,7 +55,21 @@ module Neo4j
         end
         res
       end 
-    
+
+      def placebo?(tx)
+        Neo4j.instance.placebo_tx == tx
+      end
+      
+      def new
+        neo_tx= Neo4j.instance.begin_transaction #org.neo4j.api.core.Transaction.begin        
+        if placebo?(neo_tx)
+          raise StandardError.new("Neo4j created a placebo transaction but an real transaction did not exist yet") if !Transaction.running?
+          Transaction.current.placebo
+        else
+          super(neo_tx)
+        end
+      end
+      
       #
       # Runs a block in a Neo4j transaction
       #
@@ -73,15 +97,17 @@ module Neo4j
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         tx = nil
+        tx = Neo4j::Transaction.new
+        #tx.start
         
         # reuse existing transaction ?
-        if !Transaction.running? 
-          tx = Neo4j::Transaction.new
-          tx.start
-        else
-          $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
-          tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
-        end
+        #        if !Transaction.running?
+        #          tx = Neo4j::Transaction.new
+        #          tx.start
+        #        else
+        #          $NEO_LOGGER.info("Start chained transaction for #{Transaction.current}")
+        #          tx = ChainedTransaction.new(Transaction.current)  # TODO this will not work since the we call finish on the parent transaction !
+        #        end
         ret = nil
     
         begin  
@@ -117,36 +143,44 @@ module Neo4j
     #
     
     
-    def initialize
-      #      Transaction.synchronize do
+    def initialize(neo_tx)
       raise AlreadyInTransactionError.new if Transaction.running?
-      @@counter += 1      
+      @neo_tx = neo_tx
+      @@counter += 1
       @id = @@counter
+      @failure = false      
       @nodes_to_be_reindexed = {}
       Thread.current[:transaction] = self
-      #      end
       $NEO_LOGGER.debug{"create #{self.to_s}"}
     end
     
     def to_s
-      "Transaction: #{@id} failure: #{failure?}, running #{Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
+      "Transaction: placebo: #{placebo?}, #{@id} failure: #{failure?}, running #{Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
     end
  
 
     def failure?
       @failure == true
     end
-    
-    #
-    # Starts a new transaction
-    #
-    def start
-      @neo_tx= Neo4j.instance.begin_transaction #org.neo4j.api.core.Transaction.begin
-      @failure = false      
-      
-      $NEO_LOGGER.info{"started #{self.to_s}"}
-      self
+
+    def placebo?
+      @neo_tx == Neo4j.instance.placebo_tx
     end
+
+    def placebo
+      @placebo ||= PlaceboTransaction.new(self)
+    end
+    
+#    #
+#    # Starts a new transaction
+#    #
+#    def start
+#      @neo_tx= Neo4j.instance.begin_transaction #org.neo4j.api.core.Transaction.begin
+#      @failure = false
+#
+#      $NEO_LOGGER.info{"started #{self.to_s}"}
+#      self
+#    end
 
     
     #
@@ -165,7 +199,6 @@ module Neo4j
     #
     def finish
       raise NotInTransactionError.new unless Transaction.running?
-      
       unless failure?
         @nodes_to_be_reindexed.each_value {|node| node.reindex!}
         @nodes_to_be_reindexed.clear
@@ -210,23 +243,20 @@ module Neo4j
   end
   
   #
-  # This is returned when trying to create a new transaction while a transaction is arleady running
+  # This is returned when trying to create a new transaction while a transaction is already running
   # There is no real support for chained transaction since Neo4j does not support chained transactions.
   # This class will do nothing when the finish method is called.
   # Finish will only be called when the 'main' transaction does it.
   #  
   #  TODO investigate if Neo already does this ???
   #
-  class ChainedTransaction < DelegateClass(Transaction)
+  class PlaceboTransaction < DelegateClass(Transaction)
     
     def initialize(tx)
       super(tx)
       @tx = tx # store it only for logging purpose
     end
     
-    #      def success
-    #      end
-      
     #
     # Do nothing since Neo4j does not support chained transactions.
     # 

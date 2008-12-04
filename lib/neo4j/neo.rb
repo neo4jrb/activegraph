@@ -1,7 +1,7 @@
 module Neo4j
 
 
-  # Starts neo.
+  # Starts neo unless it is not already started.
   # Before using neo it has to be started and the location of the Neo database on the filesystem must
   # have been configured, Neo4j::Config[:storage_path].
   #
@@ -12,23 +12,27 @@ module Neo4j
   # ==== Returns
   # The neo instance
   #
-  # @raise [StandardError] if Neo already has been started
   # :api: public
   def self.start
-    raise StandardError.new("Already started neo") if @instance
+    return if @instance
     @instance = Neo.new 
     @instance.start
+    at_exit do
+      Neo4j.stop
+    end
+    @instance
   end
 
   #
-  # Return the started neo instance or nil if not started
+  # Return a started neo instance.
+  # It will be started if this has not already been done.
   # 
   # ==== Returns
   # The neo instance
   # 
   # :api: public
   def self.instance
-    @instance
+    @instance ||= start
   end
 
   # Stops the current instance unless it is not started.
@@ -60,14 +64,21 @@ module Neo4j
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node
+    attr_reader :ref_node, :placebo_tx
 
     def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
       Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
+
+      # get the placebo transaction
+      # the second time we create an transaction the placebo transaction will
+      # be returned from neo. We need to know if we are using real transaction or a placebo.
+      tx = begin_transaction
+      @placebo_tx = begin_transaction
+      tx.finish
     end
-    
+
     #
     # Create an internal neo node (returns a java object)
     # Don't use this method - only for internal use.
