@@ -5,6 +5,7 @@ module Neo4j
     
   end
 
+ 
   #
   # Represent a node in the Neo4j space.
   # 
@@ -80,6 +81,7 @@ module Neo4j
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
       old_value = get_property(name)
+      value = '' if value.nil? # neo does not accept nil as a property value
       @internal_node.set_property(name, value)
       if (name != 'classname')  # do not want events on internal properties
         event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
@@ -109,7 +111,42 @@ module Neo4j
     def property?(name)
       @internal_node.has_property(name.to_s) unless @internal_node.nil?
     end
-    
+
+
+    # Creates a struct class containig all properties of this class.
+    # This value object can be used from Ruby on Rails RESTful routing.
+    # 
+    # ==== Example
+    #
+    # h = Person.value_object.new
+    # h.name    # => nil
+    # h.name='kalle'
+    # h[:name]   # => 'kalle'
+    #
+    # ==== Returns
+    # a value object struct
+    #
+    def value_object
+      vo = self.class.value_object.new
+      vo._update(props)
+      vo
+    end
+
+    #
+    # Updates this node's properties by using the provided struct/hash.
+    #
+    # ==== Parameters
+    # struct_or_hash<#each_pair>:: the key and value to be set
+    #
+    # ==== Returns
+    # self
+    #
+    def update(struct_or_hash)
+      struct_or_hash.each_pair do |key,value|
+        self.send("#{key}=".to_sym, value) unless self.class.properties_info[key.to_sym].nil?
+      end
+      self
+    end
    
     # 
     # Returns a unique id
@@ -117,6 +154,13 @@ module Neo4j
     #
     def neo_node_id
       @internal_node.getId()
+    end
+
+    # Same as neo_node_id but returns a String intead.
+    # Used by Ruby on Rails.
+    #
+    def to_param
+      neo_node_id.to_s
     end
 
     def eql?(o)    
@@ -214,6 +258,7 @@ module Neo4j
         const_set(:INDEX_UPDATERS, {})
         const_set(:INDEX_TRIGGERS, {})
         const_set(:RELATIONS_INFO, {})
+        const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:LUCENE_INDEX_PATH)
       
       c.extend ClassMethods
@@ -263,6 +308,9 @@ module Neo4j
         self::RELATIONS_INFO
       end
       
+      def properties_info
+        self::PROPERTIES_INFO
+      end
       
       # ------------------------------------------------------------------------
       # Event index_updater
@@ -282,6 +330,7 @@ module Neo4j
       #
       def properties(*props)
         props.each do |prop|
+          properties_info[prop.to_sym] = true
           define_method(prop) do 
             get_property(prop.to_s)
           end
@@ -292,8 +341,23 @@ module Neo4j
           end
         end
       end
-    
-      
+
+      # Creates a struct class containig all properties of this class.
+      #
+      # ==== Example
+      #
+      # h = Person.value_object.new
+      # h.name    # => nil
+      # h.name='kalle'
+      # h[:name]   # => 'kalle'
+      #
+      # ==== Returns
+      # a struct
+      #
+      def value_object
+        @value_class ||= create_value_class
+      end
+
       #      
       # Index a property a relationship.
       # If the rel_prop arg contains a '.' then it will index the relationship.
@@ -452,6 +516,51 @@ module Neo4j
       def find(query=nil, &block)
         SearchResult.new lucene_index, query, &block
       end
+
+
+      # Creates a new value object class (a Struct) represeting this class.
+      # 
+      # The struct will have the Ruby on Rails method: model_name and
+      # new_record? so that it can be used for restful routing.
+      #
+      # @api private
+      def create_value_class
+        # the name of the class we want to create
+        name = "#{self.to_s}ValueObject".gsub("::", '_')
+
+        # remove previous class if exists
+        Neo4j.instance_eval do
+          remove_const name
+        end if Neo4j.const_defined?(name)
+
+        # get the properties we want in the new class
+        props = self.properties_info.keys.map{|k| ":#{k}"}.join(',')
+        Neo4j.module_eval %Q[class #{name} < Struct.new(#{props}); end]
+
+        # get reference to the new class
+        clazz = Neo4j.const_get(name)
+
+        # make it more Ruby on Rails friendly - try adding model_name method
+        if self.respond_to?(:model_name)
+          model = self.model_name.clone
+          (class << clazz; self; end).instance_eval do
+            define_method(:model_name) {model}
+          end
+        end
+
+        # by calling the _update method we change the state of the struct
+        # so that new_record returns false - Ruby on Rails
+        clazz.instance_eval do
+          define_method(:_update) do |hash|
+            @_updated = true
+            hash.each_pair {|key,value| self[key.to_sym] = value if members.include?(key.to_s) }
+          end
+          define_method(:new_record?) { ! defined? @_updated }
+        end
+
+        clazz
+      end
+
     end
   end
 end

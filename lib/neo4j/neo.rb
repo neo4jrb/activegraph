@@ -23,7 +23,6 @@ module Neo4j
     @instance
   end
 
-  #
   # Return a started neo instance.
   # It will be started if this has not already been done.
   # 
@@ -47,10 +46,24 @@ module Neo4j
   # 
   # Returns true if neo4j is running
   #
+  # :api: public
   def self.running?
     ! @instance.nil?
   end
   
+  # Return a started neo instance.
+  # It will be started if this has not already been done.
+  # 
+  # ==== Parameters
+  # node_id<String, to_i>:: 
+  # 
+  # ==== Returns
+  # The node object (NodeMixin) or nil
+  # 
+  # :api: public
+  def self.load(node_id)
+    self.instance.find_node(node_id.to_i)
+  end
   
   #
   # Allows run and stop the Neo4j service

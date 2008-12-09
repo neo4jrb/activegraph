@@ -33,11 +33,34 @@ describe 'Neo4j::Node' do
 
   
   describe '#initialize' do
-    after(:each)  do
+    before(:each)  do
       Neo4j.instance.ref_node.relations.each {|r| r.delete}
       undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
     end
-    
+
+    it "should know which properties a class has"  do
+      class TestNode
+        include Neo4j::NodeMixin
+        properties :kalle, :sune, :age
+      end
+      TestNode.properties_info[:kalle].should_not be_nil
+      TestNode.properties_info[:sune].should_not be_nil
+      TestNode.properties_info[:age].should_not be_nil
+      TestNode.properties_info.size.should == 3
+    end
+
+
+    it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
+      class TestNode
+        include Neo4j::NodeMixin
+        properties :kalle, :sune, :age
+      end
+
+      t = TestNode.new
+      t.update({:foo=>'123', :bar=>2})
+      t.kalle.should == nil
+    end
+
     it "should accept no arguments"  do
       class TestNode
         include Neo4j::NodeMixin
@@ -172,6 +195,14 @@ describe 'Neo4j::Node' do
       
       # then
       @node.baaz.should =='Changed it'
+    end
+
+    it "should allow to set properties to nil" do
+      @node.baaz = nil
+      @node.baaz.should == ''
+      @node.baaz = 42
+      @node.baaz = nil
+      @node.baaz.should == ''
     end
 
     it "should allow to set properties of type Fixnum, Float and Boolean" do
