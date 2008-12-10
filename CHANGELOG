@@ -1,3 +1,11 @@
+== 0.0.7 / 2009-12-10
+* Added method to_param and methods on the value object needed for Ruby on Rails
+* Impl. update from a value object/hash for a node
+* Impl. generation of value object classes/instances from a node.
+* Refactoring the Transaction handling (reuse PlaceboTransaction instances if possible)
+* Removed the need to start and stop neo. It will be done automatically when needed.
+
+
 == 0.0.6 / 2009-12-03
 * Removed the configuration from the Neo4j.start method. Now exist in Neo4j::Config and Lucene::Config.
 * Implemented sort_by method.

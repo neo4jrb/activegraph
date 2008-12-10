@@ -6,35 +6,22 @@ require 'neo4j/spec_helper'
 
 
 
-
-
-# ------------------------------------------------------------------------------
-# the following specs are run inside one Neo4j transaction
-# 
-
 describe 'Neo4j::Node' do
   before(:all) do
     start
-    #    @transaction = Neo4j::Transaction.new
-    #    @transaction.start
   end
 
   after(:all) do
-    #    @transaction.failure # do not want to store anything
-    #    @transaction.finish
     stop
   end  
  
-
-
   # ----------------------------------------------------------------------------
   # initialize
   #
-
   
   describe '#initialize' do
     before(:each)  do
-      Neo4j.instance.ref_node.relations.each {|r| r.delete}
+      stop
       undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
     end
 
@@ -47,18 +34,6 @@ describe 'Neo4j::Node' do
       TestNode.properties_info[:sune].should_not be_nil
       TestNode.properties_info[:age].should_not be_nil
       TestNode.properties_info.size.should == 3
-    end
-
-
-    it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
-      class TestNode
-        include Neo4j::NodeMixin
-        properties :kalle, :sune, :age
-      end
-
-      t = TestNode.new
-      t.update({:foo=>'123', :bar=>2})
-      t.kalle.should == nil
     end
 
     it "should accept no arguments"  do
@@ -147,6 +122,52 @@ describe 'Neo4j::Node' do
     end
   end
 
+
+  # ----------------------------------------------------------------------------
+  # update
+  #
+
+  describe '#update' do
+    before(:all)  do
+      undefine_class :TestNode
+      class TestNode
+        include Neo4j::NodeMixin
+        properties :name, :age
+      end
+    end
+
+    it "should be able to update a node from a value obejct" do
+      # given
+      t = TestNode.new
+      t.name='kalle'
+      t.age=2
+      vo = t.value_object
+      t2 = TestNode.new
+      t2.name = 'foo'
+
+      # when
+      t2.update(vo)
+
+      # then
+      t2.name.should == 'kalle'
+      t2.age.should == 2
+    end
+
+    it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
+      t = TestNode.new
+      t.update({:name=>'123', :oj=>'hoj'})
+      t.name.should == '123'
+      t.age.should == nil
+    end
+
+    it "should be able to update a node by using a hash" do
+      t = TestNode.new
+      t.update({:name=>'andreas', :age=>3})
+      t.name.should == 'andreas'
+      t.age.should == 3
+    end
+
+  end
   
   # ----------------------------------------------------------------------------
   # properties

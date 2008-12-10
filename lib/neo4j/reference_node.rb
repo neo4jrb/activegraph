@@ -8,29 +8,45 @@ module Neo4j
   class ReferenceNode
     #    include Neo4j::NodeMixin
     #    include Neo4j::DynamicAccessorMixin
-
-    def initialize(internal_node)
+    extend Neo4j::TransactionalMixin
+    
+    #
+    # :api: private
+   def initialize(internal_node)
       @internal_node = internal_node
-      #      super
-      #      set_property('classname', self.class.to_s) if property?('classname').nil?
     end
 
     #
     # Returns a relatio traverser for traversing all types of relation from and to this node
     # @see Neo4j::Relations::RelationTraverser
     #
+    # :api: public
+    #
     def relations
       Relations::RelationTraverser.new(@internal_node)
     end
 
+    # Connects the given node with the reference node.
+    # The type of the relationship will be the same as the class name of the
+    # specified node unless the optional parameter type is specified.
+    # This method is used internally to keep a reference to all node instances in the node space
+    # (useful for example for reindexing all nodes by traversing the node space).
     #
-    # Connects the given node with the reference node
+    # ==== Parameters
+    # node<Neo4j::NodeMixin>:: Connect the reference node with this node
+    # type<String>:: Optinal, the type of the relationship we want to create
     #
-    def connect(node)
-      clazz = node.class.root_class
-      type = Neo4j::Relations::RelationshipType.instance(clazz)
-      @internal_node.createRelationshipTo(node.internal_node, type) #if Transaction.running?
+    # ==== Returns
+    # nil
+    #
+    # :api: private
+    def connect(node, type = node.class.root_class)
+      @internal_node.createRelationshipTo(node.internal_node, Neo4j::Relations::RelationshipType.instance(type))
+      nil
     end
+
+
+    transactional :connect
   end
 
 end

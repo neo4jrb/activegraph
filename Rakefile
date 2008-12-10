@@ -35,7 +35,7 @@ desc "spec"
 Spec::Rake::SpecTask.new do |t|
   t.libs << "test"
   t.libs << "lib"
-  # t.rcov = true # have not got RCov working with JRuby yet - but it should ...
+#  t.rcov = true 
   t.spec_files = FileList['test/**/*_spec.rb']
   t.spec_opts = ['--format specdoc', '--color']
   # t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
@@ -45,8 +45,8 @@ end
 desc 'Generate RDoc'
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = '../doc/output/rdoc'
-  rdoc.options << '--title' << 'Neo' << '--line-numbers' << '--inline-source' << '--main' << 'README'
-  rdoc.rdoc_files.include('README.rdoc', 'TODO', 'lib/**/*.rb')
+  rdoc.options << '--title' << 'Neo' << '--line-numbers' << '--inline-source' << '--main' << 'README.rdoc'
+  rdoc.rdoc_files.include('README.rdoc', 'TODO', 'CHANGELOG', 'lib/**/*.rb')
 end
 
 

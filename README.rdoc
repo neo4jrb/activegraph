@@ -8,6 +8,7 @@ It provides:
 * Fast traversal of relationships between nodes in a hugh node space.
 * Transaction with rollbacks support. 
 * Indexing and querying of ruby objects.
+* Can be used instead of ActiveRecord in Ruby on Rails or Merb
 
 Neo4j consists of two modules: Neo4j and Lucene.
 Neo4j depends on the Lucene module.
@@ -19,6 +20,7 @@ It uses two powerful java libraries:
 This document contains:
 * Installation guide
 * Ten Minute Tutorial
+* Ruby on Rails with Neo4j.rb
 * Lucene API Documentation
 * Neo4j API Documentation
 
@@ -189,7 +191,7 @@ or
 
 More information about neo4j can be found after the Lucene section below.
 
-== Ruby on Rails
+== Ruby on Rails with Neo4j.rb
 
 Neo4j.rb does work nicely with R&R.
 
@@ -244,7 +246,7 @@ Edit the config/routes.rb file
 
   ActionController::Routing::Routes.draw do |map|
      map.resources :actors do |actor|
-      actor.resources :acted_in#, :controller => 'movies'
+      actor.resources :acted_in
       actor.resource :movies, :controller => 'acted_in'
      end
 
@@ -336,7 +338,6 @@ acted_in_controller.rb:
       def edit
         @movie = Neo4j.load(params[:id])
       end
-
     end
 
 ==== Add views
@@ -840,7 +841,7 @@ A Neo4j::RelationMixin object represents a relationship between two nodes.
   n1.relations[0].start_node # => n1
   n1.relations[0].end_node # => n2
 
-(TODO  relationship can have properties just like a node can)
+Relationships can also have properties just like a node.
 
 === Finding outgoing and incoming relationships
 
@@ -904,6 +905,21 @@ Example
     node2.bar = "hi"
   }
 
+There is also a TransactionalMixin that lets you declare which method should be wrapped inside a transaction.
+Example:
+
+  class Person
+    include Neo4j::NodeMixin
+    extend Neo4j::TransactionalMixin
+
+    properties :name, :age
+
+    def do_stuff
+      # ... no transaction stuff needed to be written here.
+    end
+
+    transactional :do_stuff
+  end
 
 ==== Rollback
 
@@ -1099,17 +1115,17 @@ It does this by reading the classname property and loading that ruby class with 
   f1 = Person.new {}
   
   # load the class again
-  f2 = Neo4j.instance.find_node(foo.neo_node_id)
+  f2 = Neo4j.load(foo.neo_node_id)
   
   # f2 will now be new instance of Person, but will be == f1
   f1 == f2 # => true
 
 === Reference node
 
-There is one node that can always be find - the reference node.
+There is one node that can always be find - the reference node, Neo4j::ReferenceNode.
 Example:
 
-    Neo4j.instance.ref_node
+    Neo4j.ref_node
 
 This node has a relationship to all created nodes.
 It is used internally to recreate an index or finding all nodes of a specific type.

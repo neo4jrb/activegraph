@@ -7,6 +7,7 @@ require 'tmpdir'
 
 NEO_STORAGE = Dir::tmpdir + "/neo_storage"
 LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
+Neo4j::Config[:storage_path] = NEO_STORAGE
 
 
 def delete_db

@@ -55,7 +55,7 @@ module Neo4j
   # It will be started if this has not already been done.
   # 
   # ==== Parameters
-  # node_id<String, to_i>:: 
+  # node_id<String, to_i>:: the unique neo id for one node
   # 
   # ==== Returns
   # The node object (NodeMixin) or nil
@@ -64,7 +64,22 @@ module Neo4j
   def self.load(node_id)
     self.instance.find_node(node_id.to_i)
   end
-  
+
+
+  # Returns the reference node, which is a "starting point" in the node space.
+  #
+  # Usually, a client attaches relationships to this node that leads into various parts of the node space.
+  # For more information about common node space organizational patterns, see the design guide at http://neo4j.org/doc.
+  #
+  # ==== Returns
+  # The the ReferenceNode
+  #
+  # :api: public
+  def self.ref_node
+    self.instance.ref_node
+  end
+
+
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files
