@@ -6,9 +6,9 @@ require 'neo4j/spec_helper'
 
 
 
-undefine_class :MyNode
+undefine_class :FooBarNode
 
-class MyNode
+class FooBarNode
   include Neo4j::NodeMixin
   properties :name, :age
 end
@@ -20,13 +20,13 @@ describe 'ValueObjects' do
 
 
   it "should value object created with new param should be anew record" do
-    clazz = MyNode.value_object
+    clazz = FooBarNode.value_object
     a = clazz.new
     a.should be_new_record
   end
 
   it "update with correct values" do
-    clazz = MyNode.value_object
+    clazz = FooBarNode.value_object
     a = clazz.new
     a._update(:name => 'hej', :age=>42)
     a.name.should == 'hej'
@@ -35,7 +35,7 @@ describe 'ValueObjects' do
   end
 
   it "update with incorrect values" do
-    clazz = MyNode.value_object
+    clazz = FooBarNode.value_object
     a = clazz.new
     a._update(:ojoj => 'hej', :age=>42)
     a.name.should == nil
@@ -44,7 +44,7 @@ describe 'ValueObjects' do
   end
 
   it "create a value object from an existing node" do
-    node = MyNode.new
+    node = FooBarNode.new
     node.name = 'hej'
 
     vo = node.value_object

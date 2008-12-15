@@ -44,5 +44,27 @@ describe FieldInfo do
     c.should == ["00000000001", "00000000002", "00000000003"]
   end
 
+  it "should convert to correct ruby type from a lucene string value" do
+    f = FieldInfo.new
+    f[:type] = Fixnum
+    f.convert_to_ruby("123").should == 123
+  end
+
+  it "should convert Dates to lucene" do
+    f = FieldInfo.new
+    f[:type] = Date
+    f.convert_to_lucene(Date.new(2008,12,15)).should == "20081215"
+  end
+
+  it "should convert Dates from lucene" do
+    f = FieldInfo.new
+    f[:type] = Date
+    d = f.convert_to_ruby('20081215')
+    d.should be_instance_of(Date)
+    d.year.should == 2008
+    d.month.should == 12
+    d.day.should == 15
+  end
+
 end
 

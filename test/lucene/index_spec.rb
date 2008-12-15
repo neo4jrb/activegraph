@@ -416,6 +416,27 @@ describe Index, ".field_infos" do
     hits[0][:bar].should == 3.14
     hits[0][:name].should == 'andreas'
   end
+
+
+  it "can be used to convert and store Date properties" do
+    #given
+    @index.field_infos[:since][:store] = true
+    @index.field_infos[:since][:type] = Date
+
+    @index << {:id => 1, :since => Date.new(2008,3,26)}
+    @index.commit
+
+    # when
+    hits = @index.find(:id => "1")
+
+    # then
+    hits.size.should == 1
+    hits[0][:since].should be_instance_of(Date)
+    hits[0][:since].year.should == 2008
+    hits[0][:since].month.should == 3
+    hits[0][:since].day.should == 26
+  end
+
 end
 
 describe Index, " when updating a document" do
@@ -462,5 +483,29 @@ describe Index, " when updating a document" do
     res.size.should == 2
   end
 
+
+  describe "Indexing with Dates" do
+    before(:each) do
+      setup_lucene
+      @index = Index.new('myindex')
+      @index.field_infos[:since][:store] = false
+      @index.field_infos[:since][:type] = Date
+    end
+
+
+    it "can find an index using a date" do
+      #given
+
+      @index << {:id => 1, :since => Date.new(2008,4,26)}
+      @index.commit
+
+      # when
+      hits = @index.find(:since => Date.new(2008,4,26))
+
+      # then
+      hits.size.should == 1
+      hits[0][:id].should == '1'
+    end
+  end
 end
 

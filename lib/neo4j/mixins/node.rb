@@ -324,6 +324,26 @@ module Neo4j
       
       # ------------------------------------------------------------------------
 
+
+      def property(*props)
+        pname = props[0].to_sym
+        if props.size > 1
+          properties_info[pname] = *props[1..-1]
+        else
+          properties_info[pname] = {}
+        end
+
+        define_method(pname) do
+          get_property(pname.to_s)
+        end
+
+        name = (pname.to_s() +"=").to_sym
+        define_method(name) do |value|
+          set_property(pname.to_s, value)
+        end
+      end
+
+
       #
       # Declares Neo4j node properties.
       # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessorMixin mixin.

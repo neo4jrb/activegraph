@@ -1,9 +1,10 @@
+require 'date'
+
 module Lucene
   class ConversionNotSupportedException < StandardError; end
-  
+
   class FieldInfo 
-    DEFAULTS = {:store => false, :type => String}.freeze 
-    TYPE_CONVERSION_TABLE = { Fixnum => :to_i, Float => :to_f, String => :to_s }
+    DEFAULTS = {:store => false, :type => String}.freeze
     
     def initialize(values = {})
       @info = DEFAULTS.dup
@@ -15,7 +16,6 @@ module Lucene
       FieldInfo.new(@info)
     end
     
-    
     def [](key)
       @info[key]
     end
@@ -24,32 +24,45 @@ module Lucene
       @info[key] = value
     end
     
-    def java_field(key, value)    
-      store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO      
+    def java_field(key, value)
+      store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO
       cvalue = convert_to_lucene(value)
       token_type = tokenized? ? org.apache.lucene.document.Field::Index::ANALYZED : org.apache.lucene.document.Field::Index::NOT_ANALYZED
       $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}' token_type=#{token_type}"}
       org.apache.lucene.document.Field.new(key.to_s, cvalue, store, token_type ) #org.apache.lucene.document.Field::Index::NO_NORMS)
     end
-    
+
     def convert_to_ruby(value)
-      method = TYPE_CONVERSION_TABLE[@info[:type]]
-      raise ConversionNotSupportedException.new("Can't convert key '#{key}' since method '#{method}' is missing") unless value.respond_to? method
-      if (value.kind_of?(Array))       
-        value.collect{|v| v.send(method)}
-      else
-        value.send(method)
+      if (value.kind_of?(Array))
+        value.collect{|v| convert_to_ruby(v)}
+      else case @info[:type].to_s
+        when NilClass.to_s then  ""  # TODO, should we accept nil values in indexes ?
+        when String.to_s then value.to_s
+        when Fixnum.to_s then  value.to_i
+        when Float.to_s  then  value.to_f
+        when Date.to_s
+          return value if value.kind_of? Date
+          date = org.apache.lucene.document.DateTools.stringToDate(value)
+          seconds_since_1970 = date.getTime / 1000
+          Date.new(*Time.at(seconds_since_1970).to_a[3 .. 5].reverse)
+        else
+          raise ConversionNotSupportedException.new("Can't convert key '#{value}' of with type '#{@info[:type].class.to_s}'")
+        end
       end
     end
 
-    def convert_to_lucene(value)    
-      if (value.kind_of?(Array)) 
+    def convert_to_lucene(value)
+      if (value.kind_of?(Array))
         value.collect{|v| convert_to_lucene(v)}
       else
         case @info[:type].to_s # otherwise it will match Class
         when Fixnum.to_s then  sprintf('%011d',value)     # TODO: configurable
         when Float.to_s  then  sprintf('%024.12f', value)  # TODO: configurable
         when Bignum.to_s then  sprintf('%024d, value')
+        when Date.to_s
+          t = Time.gm(value.year, value.month, value.day)
+          d = t.to_i * 1000
+          org.apache.lucene.document.DateTools.timeToString(d,org.apache.lucene.document.DateTools::Resolution::DAY )
         else value.to_s
         end
       end
@@ -59,18 +72,18 @@ module Lucene
       if (value.kind_of? Range)
         first_value = convert_to_lucene(value.first)
         last_value = convert_to_lucene(value.last)
-        first = org.apache.lucene.index.Term.new(key.to_s, first_value)        
-        last = org.apache.lucene.index.Term.new(key.to_s, last_value)        
+        first = org.apache.lucene.index.Term.new(key.to_s, first_value)
+        last = org.apache.lucene.index.Term.new(key.to_s, last_value)
         $LUCENE_LOGGER.debug{"convert_to_query: Range key '#{key.to_s}' #{first_value}' to '#{last_value}'"}
         org.apache.lucene.search.RangeQuery.new(first, last, !value.exclude_end?)
       elsif
         converted_value = convert_to_lucene(value)
-        term = org.apache.lucene.index.Term.new(key.to_s, converted_value)        
+        term = org.apache.lucene.index.Term.new(key.to_s, converted_value)
         org.apache.lucene.search.TermQuery.new(term)
-#        pq = org.apache.lucene.search.PhraseQuery.new
-#        pq.add(term)
-#        pq.setSlop 3
-#        pq
+        #        pq = org.apache.lucene.search.PhraseQuery.new
+        #        pq.add(term)
+        #        pq.setSlop 3
+        #        pq
       end
     end
 
@@ -95,9 +108,8 @@ module Lucene
     end
     
     def to_s
-      s = "FieldInfo(#{self.object_id.to_s})
-      @info.each_pair {|key,value| s << "#{key}=#{value} "}
-      s + "]"
+      infos = @info.keys.inject(""){|s, key| s << "#{key}=#{@info[key]} "}
+      "FieldInfo(#{self.object_id.to_s}) [#{infos}]"
     end
     
     

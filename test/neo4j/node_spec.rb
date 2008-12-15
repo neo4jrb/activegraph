@@ -89,13 +89,13 @@ describe 'Neo4j::Node' do
       end
 
       ref_node = Neo4j.instance.ref_node
-      ref_node.relations.outgoing(TestNode.to_s).should be_empty
+      ref_node.relations.outgoing(TestNode).should be_empty
 
       # when
       t = TestNode.new
       
       # then
-      nodes = ref_node.relations.outgoing(TestNode.to_s).nodes
+      nodes = ref_node.relations.outgoing(TestNode).nodes
       nodes.to_a.size.should == 1
       nodes.should include(t)
     end
@@ -109,13 +109,13 @@ describe 'Neo4j::Node' do
       end
 
       ref_node = Neo4j.instance.ref_node
-      ref_node.relations.outgoing(TestNode.to_s).should be_empty
+      ref_node.relations.outgoing(TestNode).should be_empty
 
       # when
       t = SubNode.new
 
       # then
-      nodes = ref_node.relations.outgoing(TestNode.to_s).nodes
+      nodes = ref_node.relations.outgoing(TestNode).nodes
       nodes.to_a.size.should == 1
       nodes.should include(t)
       SubNode.root_class.should == TestNode.to_s

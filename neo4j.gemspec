@@ -1,5 +1,5 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Tue Dec 09 19:10:33 +0100 2008
+# LAST UPDATED : Wed Dec 10 15:30:46 +0100 2008
 #
 # RUN : 'rake gem:update_gemspec'
 
@@ -38,7 +38,6 @@ Gem::Specification.new do |s|
  "lib/neo4j/neo.rb",
  "lib/neo4j/transaction.rb",
  "lib/neo4j/relations",
- "lib/neo4j/value_object.rb",
  "lib/neo4j/mixins/transactional.rb",
  "lib/neo4j/mixins/node.rb",
  "lib/neo4j/mixins/relation.rb",
@@ -70,6 +69,7 @@ Gem::Specification.new do |s|
  "test/neo4j/node_spec.rb",
  "test/neo4j/relation_spec.rb",
  "test/neo4j/value_object_spec.rb",
+ "test/neo4j/ref_node_spec.rb",
  "test/neo4j/person_spec.rb",
  "examples/imdb",
  "examples/imdb/install.sh",
@@ -80,7 +80,7 @@ Gem::Specification.new do |s|
  "examples/imdb/load_test.rb"]
  s.rubygems_version = "1.3.1"
  s.platform = "ruby"
- s.date = "Tue Dec 09 00:00:00 +0100 2008"
+ s.date = "Wed Dec 10 00:00:00 +0100 2008"
  s.homepage = "http://github.com/andreasronge/neo4j/tree"
  s.rubyforge_project = "neo4j"
  s.bindir = "bin"
