@@ -10,12 +10,19 @@ It provides:
 * Indexing and querying of ruby objects.
 * Can be used instead of ActiveRecord in Ruby on Rails or Merb
 
-Neo4j consists of two modules: Neo4j and Lucene.
-Neo4j depends on the Lucene module.
-
-It uses two powerful java libraries: 
+It uses two powerful and mature java libraries:
 * Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
+
+Neo4j.rb Status
+* There are now over 200 RSpecs.
+* Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
+* Has been load tested (loaded 18000 nodes and done queries/travesal in several threads.)
+* Has not been used in production yet (as far as I know).
+
+Project information
+* http://neo4j.lighthouseapp.com
+* http://twitter.com/ronge
 
 This document contains:
 * Installation guide
