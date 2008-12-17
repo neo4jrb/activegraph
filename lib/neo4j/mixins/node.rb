@@ -17,7 +17,7 @@ module Neo4j
 
     extend TransactionalMixin
     
-    #
+
     # Initialize the the neo node for this instance.
     # Will create a new transaction if one is not already running.
     # If a block is given a new transaction will be created.
@@ -25,7 +25,8 @@ module Neo4j
     # Does
     # * sets the neo property 'classname' to self.class.to_s
     # * creates a neo node java object (in @internal_node)
-    #    
+    #
+    # :api: public
     def initialize(*args)
       # was a neo java node provided ?
       if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
@@ -43,19 +44,19 @@ module Neo4j
       super() 
     end
     
-    #
+
     # Inits this node with the specified java neo node
     #
+    # :api: private
     def init_with_node(node)
       @internal_node = node
       self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
       $NEO_LOGGER.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
     end
     
-    
-    #
     # Inits when no neo java node exists. Must create a new neo java node first.
     #
+    # :api: private
     def init_without_node
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
@@ -236,11 +237,11 @@ module Neo4j
       self.class.lucene_index
     end
     
-    #
     # Deletes this node.
     # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
     # Runs in a new transaction if one is not already running.
     #
+    # :api: public
     def delete
       self.class.fire_event(NodeDeletedEvent.new(self))
       relations.each {|r| r.delete}
@@ -248,35 +249,35 @@ module Neo4j
       lucene_index.delete(neo_node_id)
     end
     
-
+    # :api: private
     def classname
       get_property('classname')
     end
-    
+
+    # :api: private
     def classname=(value)
       set_property('classname', value)
     end
     
-    #
+
     # Returns a relation traverser for traversing all types of relation from and to this node
     # @see Neo4j::Relations::RelationTraverser
     #
+    # :api: public
     def relations
       Relations::RelationTraverser.new(@internal_node)
     end
 
-    #
     # Mark this node to be reindex by lucene after the transaction finishes
     #
+    # @api private
     def reindex
       Transaction.current.reindex(self)
     end
 
-    #
     # Reindex this node now
     #
     # @api private
-    #
     def reindex!
       doc = {:id => neo_node_id }
       self.class.index_updaters.each_value do |updater|
@@ -458,10 +459,17 @@ module Neo4j
         @value_class ||= create_value_class
       end
 
-      # Index a property a relationship.
+      # Index a property or a relationship.
       # If the rel_prop arg contains a '.' then it will index the relationship.
       # For example "friends.name" will index each node with property name in the relationship friends.
       # For example "name" will index the name property of this NodeMixin class.
+      #
+      # ==== Example
+      #   class Person
+      #     include Neo4j::NodeMixin
+      #     property :name
+      #     index :name
+      #   end
       #
       # :api: public     
       def index(*rel_type_props)
@@ -523,7 +531,7 @@ module Neo4j
         
         type = relations_info[rel_type.to_sym][:type]  # this or the other node we index ?
         rel_type = type.to_sym unless type.nil?
-        
+
         # updater - called when index needs to be updated
         updater = lambda do |my_node, doc|
           values = []

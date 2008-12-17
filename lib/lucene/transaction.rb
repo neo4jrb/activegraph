@@ -18,10 +18,10 @@ module Lucene
     def to_s
       "Transaction [commited=#@commited, rollback=#@rollback, indexes=#{@indexes.size}, object_id=#{object_id}]"
     end
-    #
+
+    
     # Commits all registered Indexes.
     # Stops this transaction (running? will be false)
-    # TODO rename commit method to finish ?
     #
     def commit
       if !@rollback

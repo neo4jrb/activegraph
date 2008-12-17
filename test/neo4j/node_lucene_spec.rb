@@ -336,21 +336,34 @@ describe "Find Nodes using Lucene" do
   end
 
   describe "Find Nodes using Lucene date index" do
-    before(:all) do
+    before(:each) do
       undefine_class :PersonNode
       start
       class PersonNode
         include Neo4j::NodeMixin
-        properties :name, :born
+        property :name
+        property :born, :type => Date
         index :name
         index :born, :type => Date
       end
     end
     
-    after(:all) do
+    after(:each) do
       stop
     end
 
+    it "should find using a date query" do
+      result = PersonNode.find("born:[20080427 TO 20100203]")
+      result.size.should == 0
+      node = PersonNode.new
+      node.born.should be_nil
+      node.name = 'kalle'
+      node.born = Date.new 2008,05,06
+
+      # when
+      result = PersonNode.find("born:[20080427 TO 20100203]")
+      result.size.should == 1
+    end
   end
 end
 

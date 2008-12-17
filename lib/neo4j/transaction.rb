@@ -167,7 +167,6 @@ module Neo4j
     # upon invocation of finish() unless failure()  has or will be invoked before then.
     # 
     # :api: public
-    #
     def success
       raise NotInTransactionError.new unless Transaction.running?
       $NEO_LOGGER.info{"success #{self.to_s}"}      
@@ -175,10 +174,10 @@ module Neo4j
     end
     
     
-    # Commits or marks this transaction for rollback, depending on whether success() or failure() has been previously invoked.
+    # Commits or marks this transaction for rollback, depending on whether
+    # success() or failure() has been previously invoked.
     #
     # :api: public
-    #
     def finish
       raise NotInTransactionError.new unless Transaction.running?
       unless failure?
@@ -204,8 +203,8 @@ module Neo4j
       $NEO_LOGGER.info{"finished #{self.to_s}"}                  
     end
 
-    #  Marks this transaction as failed, which means that it will inexplicably
-    #  be rolled back upon invocation of finish().
+    # Marks this transaction as failed, which means that it will inexplicably
+    # be rolled back upon invocation of finish().
     #
     # :api: public
     def failure
@@ -215,9 +214,9 @@ module Neo4j
       $NEO_LOGGER.info{"failure #{self.to_s}"}                        
     end
     
-    #
     # Marks a node to be reindexed before the transaction ends
     #
+    # :api: private
     def reindex(node)
       @nodes_to_be_reindexed[node.neo_node_id] = node
     end

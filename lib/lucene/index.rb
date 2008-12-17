@@ -158,8 +158,6 @@ module Lucene
       @uncommited[id.to_s]
     end
     
-    # 
-    # 
     # Writes to the index files
     # Open and closes an lucene IndexWriter
     # Close the IndexSearcher so that it will read the updated index next time.
@@ -260,7 +258,7 @@ module Lucene
     def update_documents
       index_writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, org.apache.lucene.analysis.standard.StandardAnalyzer.new, ! exist?)
       @uncommited.each_value do |doc|
-        # removes the document and adds it
+        # removes the document and adds it again
         doc.update(index_writer)
       end
     ensure
@@ -276,7 +274,7 @@ module Lucene
       id_field = @index_info.infos[@index_info.id_field]
       
       @deleted_ids.each do |id|
-        converted_value = id_field.convert_to_lucene(id)        
+        converted_value = id_field.convert_to_lucene(id)
         writer.deleteDocuments(org.apache.lucene.index.Term.new(@index_info.id_field.to_s, converted_value))
       end
     ensure

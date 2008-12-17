@@ -444,6 +444,21 @@ describe Index, " when updating a document" do
     setup_lucene
     @index = Index.new('myindex')
   end
+
+  it "should remove the field if set to nil" do
+    # given
+    @index << {:id => 'a', :name=>'andreas'}
+    @index.commit
+    @index.find(:name => 'andreas').size.should == 1
+
+    # when
+    @index << {:id => 'a', :name=>nil}
+    @index.commit
+
+    # then
+    @index.find(:name => 'andreas').size.should == 0
+  end
+
   
   it "should not find the old field if the field has been changed" do
     # given

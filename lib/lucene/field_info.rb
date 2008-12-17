@@ -25,13 +25,24 @@ module Lucene
     end
     
     def java_field(key, value)
-      store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO
+      # convert the ruby value to a string that lucene can handle
       cvalue = convert_to_lucene(value)
+
+      # check if this field should be indexed 
+      return nil if cvalue.nil?
+
+      # decide if the field should be stored in the lucene index or not
+      store = store? ? org.apache.lucene.document.Field::Store::YES : org.apache.lucene.document.Field::Store::NO
+
+      # decide if it should be tokenized/analyzed by lucene
       token_type = tokenized? ? org.apache.lucene.document.Field::Index::ANALYZED : org.apache.lucene.document.Field::Index::NOT_ANALYZED
       $LUCENE_LOGGER.debug{"java_field store=#{store} key='#{key.to_s}' value='#{cvalue}' token_type=#{token_type}"}
+
+      # create the new Field
       org.apache.lucene.document.Field.new(key.to_s, cvalue, store, token_type ) #org.apache.lucene.document.Field::Index::NO_NORMS)
     end
 
+    
     def convert_to_ruby(value)
       if (value.kind_of?(Array))
         value.collect{|v| convert_to_ruby(v)}
@@ -42,6 +53,7 @@ module Lucene
         when Float.to_s  then  value.to_f
         when Date.to_s
           return value if value.kind_of? Date
+          return nil if value.nil?
           date = org.apache.lucene.document.DateTools.stringToDate(value)
           seconds_since_1970 = date.getTime / 1000
           Date.new(*Time.at(seconds_since_1970).to_a[3 .. 5].reverse)
@@ -54,6 +66,8 @@ module Lucene
     def convert_to_lucene(value)
       if (value.kind_of?(Array))
         value.collect{|v| convert_to_lucene(v)}
+      elsif value.nil?
+        value
       else
         case @info[:type].to_s # otherwise it will match Class
         when Fixnum.to_s then  sprintf('%011d',value)     # TODO: configurable

@@ -7,7 +7,7 @@ module Lucene
   # 
   class Document
     
-    attr_reader :id_field, :field_infos  
+    attr_reader :id_field, :field_infos, :props
     
     def initialize(field_infos, props = {})
       @id_field = field_infos.id_field
@@ -31,7 +31,6 @@ module Lucene
     def self.convert(field_infos, java_doc)
       fields = {}
       field_infos.each_pair do |key, field|
-        #puts "Convert field #{key} store=#{field.store?}"
         next unless field.store?
         raise StandardError.new("expected field '#{key.to_s}' to exist in document") if java_doc.getField(key.to_s).nil?
         value = java_doc.getField(key.to_s).stringValue
@@ -78,11 +77,11 @@ module Lucene
         if (value.kind_of?(Array))
           value.each do |v|
             field = field_info.java_field(key,v)
-            java_doc.add(field)
+            java_doc.add(field) unless field.nil?
           end
         else
           field = field_info.java_field(key,value)
-          java_doc.add(field)
+          java_doc.add(field) unless field.nil?
         end
       end
       java_doc
