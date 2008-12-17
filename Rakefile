@@ -77,7 +77,7 @@ spec = Gem::Specification.new do |s|
   # rdoc
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc )
-  s.rdoc_options = ["--quiet", "--title", "neo4j and lucene documentation", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
+  s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  
   s.required_ruby_version = ">= 1.8.4"
  

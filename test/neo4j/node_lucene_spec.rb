@@ -1,8 +1,8 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
-require 'neo4j/spec_helper'
 require 'neo4j'
+require 'neo4j/spec_helper'
 
 
 describe "Neo4j.start" do
@@ -333,6 +333,24 @@ describe "Find Nodes using Lucene" do
     # then
     found = TestNode.find(:name => 'foo2')
     found.size.should == 0
+  end
+
+  describe "Find Nodes using Lucene date index" do
+    before(:all) do
+      undefine_class :PersonNode
+      start
+      class PersonNode
+        include Neo4j::NodeMixin
+        properties :name, :born
+        index :name
+        index :born, :type => Date
+      end
+    end
+    
+    after(:all) do
+      stop
+    end
+
   end
 end
 

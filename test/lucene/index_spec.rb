@@ -495,7 +495,6 @@ describe Index, " when updating a document" do
 
     it "can find an index using a date" do
       #given
-
       @index << {:id => 1, :since => Date.new(2008,4,26)}
       @index.commit
 
@@ -506,6 +505,21 @@ describe Index, " when updating a document" do
       hits.size.should == 1
       hits[0][:id].should == '1'
     end
+
+    it "can find an index using a date range" do
+      #given
+      @index << {:id => 1, :since => Date.new(2008,4,26)}
+      @index.commit
+
+      # then
+      @index.find("since:[20080427 TO 20100203]").size.should == 0
+      @index.find("since:[20080422 TO 20080425]").size.should == 0
+      @index.find("since:{20080426 TO 20090425}").size.should == 0
+      @index.find("since:[20080426 TO 20090203]")[0][:id].should == '1'
+      @index.find("since:[20080425 TO 20080426]")[0][:id].should == '1'
+      @index.find("since:[20000425 TO 20200426]")[0][:id].should == '1'
+    end
+
   end
 end
 

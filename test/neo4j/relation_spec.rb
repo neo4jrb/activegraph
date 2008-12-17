@@ -386,5 +386,8 @@ describe "Neo4j::Node#relations " do
       
       c.relations.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelation) }
     end
+
+    it "can not have a relationship to a none Neo::Node"
+
   end
 end

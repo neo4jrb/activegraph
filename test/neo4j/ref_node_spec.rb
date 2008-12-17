@@ -6,20 +6,16 @@ require 'neo4j/spec_helper'
 
 
 
-undefine_class :MyNode
-
-class MyNode
-  include Neo4j::NodeMixin
-  properties :name, :age
-  
-  def to_s
-    puts "MYNODE #{name}"
-  end
-end
 
 describe 'ReferenceNode' do
-
-  before(:each) { stop }
+  before(:each) do
+    stop
+    undefine_class :MyNode
+    class MyNode
+      include Neo4j::NodeMixin
+      properties :name, :age
+    end
+  end
   
   it "has a reference to all created nodes" do
     Neo4j.ref_node.relations.should be_empty

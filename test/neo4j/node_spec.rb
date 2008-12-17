@@ -25,17 +25,6 @@ describe 'Neo4j::Node' do
       undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
     end
 
-    it "should know which properties a class has"  do
-      class TestNode
-        include Neo4j::NodeMixin
-        properties :kalle, :sune, :age
-      end
-      TestNode.properties_info[:kalle].should_not be_nil
-      TestNode.properties_info[:sune].should_not be_nil
-      TestNode.properties_info[:age].should_not be_nil
-      TestNode.properties_info.size.should == 3
-    end
-
     it "should accept no arguments"  do
       class TestNode
         include Neo4j::NodeMixin
@@ -169,113 +158,6 @@ describe 'Neo4j::Node' do
 
   end
   
-  # ----------------------------------------------------------------------------
-  # properties
-  #
-  
-  describe '#properties' do
-    
-    before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
-      
-      class TestNode 
-        include Neo4j::NodeMixin
-        properties :p1, :p2, :baaz, :foo, :bar, :bar2, :not_set_prop
-      end
-      @node = TestNode.new
-    end
-
-    it "should know which properties has been set" do
-      @node.p1 = "val1"
-      @node.p2 = "val2"
-    
-      @node.props.should have_key('p1')
-      @node.props.should have_key('p2')
-    end
-  
-    it "should allow to get a property that has not been set" do
-      @node.not_set_prop.should be_nil
-    end
-    
-    
-    it "should have a neo id property" do
-      @node.should respond_to(:neo_node_id)
-      @node.neo_node_id.should be_kind_of(Fixnum)
-    end
-
-    it "should have a property for the ruby class it represent" do
-      @node.classname.should be == TestNode.to_s
-    end
-    
-    it "should allow to set any property" do
-      # given
-      @node.baaz = "first"
-      
-      # when
-      @node.baaz = "Changed it"
-      
-      # then
-      @node.baaz.should =='Changed it'
-    end
-
-    it "should allow to set properties to nil" do
-      @node.baaz = nil
-      @node.baaz.should == ''
-      @node.baaz = 42
-      @node.baaz = nil
-      @node.baaz.should == ''
-    end
-
-    it "should allow to set properties of type Fixnum, Float and Boolean" do
-      # when
-      @node.baaz = 42
-      @node.foo = 3.14
-      @node.bar = true
-      @node.bar2 = false
-      
-      # make sure we test that the properties are stored in the neo database
-      n = Neo4j.instance.find_node(@node.neo_node_id)
-      
-      # then
-      n.baaz.should == 42
-      n.foo.should == 3.14
-      n.bar.should be_true
-      n.bar2.should be_false
-    end
-
-
-    it "should generated setter and getters methods" do
-      # when
-      p = TestNode.new {}
-      
-      # then
-      p.methods.should include('p1','p2','baaz','foo','bar','bar2')
-      p.methods.should include("p1=")
-    end
-    
-    it "should automatically be defined on subclasses" do
-      undefine_class :SubNode  # make sure it is not already defined
-      
-      # given
-      class SubNode < TestNode
-        properties :salary
-      end
-  
-      # when
-      p = SubNode.new {}
-      
-      # then
-      p.methods.should include("p1")
-      p.methods.should include("p1")
-      p.methods.should include("salary")
-      p.methods.should include("salary=")
-    end
-
-    it "can not have a relationship to a none Neo::Node"
-    
-    it "can not set a property that is not of type string,fixnum,float or boolean"
-   
-  end
 
   # ----------------------------------------------------------------------------
   # equality ==
@@ -457,7 +339,7 @@ describe 'Neo4j::Node' do
   # ----------------------------------------------------------------------------
   # all
   #
-  describe '#all' do
+  describe 'Neo4j::Node#all' do
     before(:each)  do
       Neo4j.instance.ref_node.relations.each {|r| r.delete}
       undefine_class :TestNode  # must undefine this since each spec defines it

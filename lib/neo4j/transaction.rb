@@ -105,6 +105,7 @@ module Neo4j
           tx.success unless tx.failure?
         rescue Exception => e  
           $NEO_LOGGER.warn{"Neo transaction rolled back because of an exception, #{e}"}
+          $NEO_LOGGER.warn{e.backtrace.join("\n")}
           tx.failure
           raise e  
         ensure  

@@ -27,14 +27,14 @@ Project information
 This document contains:
 * Installation guide
 * Ten Minute Tutorial
-* Ruby on Rails with Neo4j.rb
 * Lucene API Documentation
 * Neo4j API Documentation
+* Ruby on Rails with Neo4j.rb
 
 == Installation
 
 Neo4j exists as a gem at rubyforge
-To install it please type:
+To install it:
 
    gem install neo4j
 
@@ -91,12 +91,7 @@ a transaction.  Neo4j does handle primitive properties of type like String, Fixn
 
 There are different ways to write queries.
 Using a hash:
-  Person.find (:name => 'kalle') 
-  Person.find ('friend.age' => 15000) # find people who has a friend with a salary of 15000
-
-or DSL, example finding person with name kalle or with a salary between 10000 and 300000:
-
-  Person.find ((name == 'kalle') | (salary == 10000..30000)) # => [ person ]
+  Person.find (:name => 'kalle', :age => 20..30)  # find people with name kalle and age between 20 and 30
 
 or using the lucene query language:
   
@@ -197,208 +192,6 @@ or
       keanu_reeves.relations.outgoing(:acted_in)[matrix].name = 'neo'
 
 More information about neo4j can be found after the Lucene section below.
-
-== Ruby on Rails with Neo4j.rb
-
-Neo4j.rb does work nicely with R&R.
-
-It has been verified on rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
-
-=== Configuration
-
-==== Install Neo4j.rb
-  gem install neo4j
-
-==== Install rails
-  gem install rails
-
-==== Create a rails project, movies
-  rails movies
-
-==== Config rails
-Config rails to use Neo4j.rb instead of ActiveRecord, edit movies/config/environment.rb
-environment.rb:
-  config.frameworks -= [ :active_record ] #, :active_resource, :action_mailer ]
-  config.gem "neo4j", :version => "0.0.7"
-
-==== Create Models
-Create model in movies/app/models
-actor.rb:
-
-  class Role
-    include Neo4j::RelationMixin
-    properties :title, :character
-  end
-
-  class Actor
-    include Neo4j::NodeMixin
-    properties :name, :phone, :salary
-    has_n(:acted_in).to(Movie).relation(Role)
-    index :name
-  end
-
-movie.rb:
-  class Movie
-
-    include Neo4j::NodeMixin
-    properties :title
-    properties :year
-
-    # defines a method for traversing incoming acted_in relationships from Actor
-    has_n(:actors).from(Actor, :acted_in)
-  end
-
-==== Create RESTful routes
-Edit the config/routes.rb file
-
-  ActionController::Routing::Routes.draw do |map|
-     map.resources :actors do |actor|
-      actor.resources :acted_in
-      actor.resource :movies, :controller => 'acted_in'
-     end
-
-==== Create Controllers
-
-Add the following controllers in app/controllers
-
-actors_controller.rb:
-
-    class ActorsController < ApplicationController
-      before_filter :find_actor, :only => [:show, :edit, :update, :destroy]
-
-      def index
-        @actors = Actor.all.nodes
-      end
-
-      def create
-        @actor = Actor.new
-        @actor.update(params[:actor])
-        flash[:notice] = 'Actor was successfully created.'
-        redirect_to(@actor)
-      end
-
-      def update
-        @actor.update(params[:actor])
-        flash[:notice] = 'Actor was successfully updated.'
-        redirect_to(@actor)
-      end
-
-      def destroy
-        @actor.delete
-        redirect_to(actors_url)
-      end
-
-
-      def edit
-      end
-
-      def show
-      end
-
-      def new
-        @actor = Actor.value_object.new
-      end
-
-      private
-      def find_actor
-        @actor = Neo4j.load(params[:id])
-      end
-    end
-
-
-acted_in_controller.rb:
-
-    class ActedInController < ApplicationController
-      def index
-        @actor = Neo4j.load(params[:actor_id])
-        @movies = @actor.acted_in.nodes
-      end
-
-      def create
-        @actor = Neo4j.load(params[:actor_id])
-        @movie = Movie.new
-        @movie.update(params[:movie])
-        @actor.acted_in << @movie
-        flash[:notice] = 'Movie was successfully created.'
-        redirect_to(@actor)
-      end
-
-      def update
-        @actor = Neo4j.load(params[:actor_id])
-        @movie = Movie.new
-        @movie.update(params[:movie])
-        @actor.acted_in.new @movie
-        @movie.update(params[:movie])
-        flash[:notice] = 'Movie was successfully updated.'
-        redirect_to(@movie)
-      end
-
-      def show
-        @movie = Neo4j.load(params[:id])
-      end
-
-      def new
-        @actor = Neo4j.load(params[:actor_id])
-        @movie = Movie.value_object.new
-      end
-
-      def edit
-        @movie = Neo4j.load(params[:id])
-      end
-    end
-
-==== Add views
-
-Add the following views in app/views/actors
-index.html.erb:
-
-    <h1>Listing actors</h1>
-
-    <table>
-      <tr>
-        <th>Name</th>
-      </tr>
-
-      <% for actor in @actors %>
-        <tr>
-          <td><%=h actor.name %></td>
-          <td><%= link_to 'Edit', edit_actor_path(actor) %></td>
-          <td><%= link_to 'Show', actor %></td>
-          <td><%= link_to 'Destroy', actor, :confirm => 'Are you sure?', :method => :delete %></td>
-        </tr>
-      <% end %>
-    </table>
-
-    <br />
-
-    <%= link_to 'New actor', new_actor_path %>
-
-new.html.erb:
-
-    <h1>New Actor</h1>
-
-    <% form_for(@actor) do |f| %>
-      <p>
-        <%= f.label :name %><br />
-        <%= f.text_field :name %>
-      </p>
-      <p>
-        <%= f.label :phone %><br />
-        <%= f.text_field :phone %>
-      </p>
-      <p>
-        <%= f.label :salary%><br />
-        <%= f.text_field :salary %>
-      </p>
-      <p>
-        <%= f.submit "Update" %>
-      </p>
-
-    <% end %>
-
-
-
-    <%= link_to 'Back', actors_path %>
 
 == The Lucene Module
 
@@ -703,7 +496,40 @@ You can also set a property like this:
     f = SomeNode.new
     f.foo = 123
 
-Neo4j.rb supports properties to by of type String, Fixnum, Float and Boolean.
+Neo4j.rb supports properties to by of type String, Fixnum, Float and true/false
+
+=== Property Types and Marshalling
+
+If you want to set a property of a different type then String, Fixnum, Float or true/false
+you have to specify its type.
+
+Example, to set a property to any type
+
+  class MyNode
+    include Neo4j::NodeMixin
+    property :foo, :type => Object
+  end
+
+
+  node = MyNode.new
+  node.foo = [1,"3", 3.14]
+
+  Neo4j.load(node.neo_node_id).foo.class # => Array
+
+
+=== Property of type Date
+
+Example of using Date queries:
+
+  class MyNode
+    include Neo4j::NodeMixin
+    property :since, :type => Date
+    index :since, :type => Date
+  end
+
+
+TODO   MyNode.find 
+
 
 === Finding all nodes
 
@@ -1136,4 +962,206 @@ Example:
 
 This node has a relationship to all created nodes.
 It is used internally to recreate an index or finding all nodes of a specific type.
+
+== Ruby on Rails with Neo4j.rb
+
+Neo4j.rb does work nicely with R&R.
+
+It has been verified on rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
+
+=== Configuration
+
+==== Install Neo4j.rb
+  gem install neo4j
+
+==== Install rails
+  gem install rails
+
+==== Create a rails project, movies
+  rails movies
+
+==== Config rails
+Config rails to use Neo4j.rb instead of ActiveRecord, edit movies/config/environment.rb
+environment.rb:
+  config.frameworks -= [ :active_record ] #, :active_resource, :action_mailer ]
+  config.gem "neo4j", :version => "0.0.7"
+
+==== Create Models
+Create model in movies/app/models
+actor.rb:
+
+  class Role
+    include Neo4j::RelationMixin
+    properties :title, :character
+  end
+
+  class Actor
+    include Neo4j::NodeMixin
+    properties :name, :phone, :salary
+    has_n(:acted_in).to(Movie).relation(Role)
+    index :name
+  end
+
+movie.rb:
+  class Movie
+
+    include Neo4j::NodeMixin
+    properties :title
+    properties :year
+
+    # defines a method for traversing incoming acted_in relationships from Actor
+    has_n(:actors).from(Actor, :acted_in)
+  end
+
+==== Create RESTful routes
+Edit the config/routes.rb file
+
+  ActionController::Routing::Routes.draw do |map|
+     map.resources :actors do |actor|
+      actor.resources :acted_in
+      actor.resource :movies, :controller => 'acted_in'
+     end
+
+==== Create Controllers
+
+Add the following controllers in app/controllers
+
+actors_controller.rb:
+
+    class ActorsController < ApplicationController
+      before_filter :find_actor, :only => [:show, :edit, :update, :destroy]
+
+      def index
+        @actors = Actor.all.nodes
+      end
+
+      def create
+        @actor = Actor.new
+        @actor.update(params[:actor])
+        flash[:notice] = 'Actor was successfully created.'
+        redirect_to(@actor)
+      end
+
+      def update
+        @actor.update(params[:actor])
+        flash[:notice] = 'Actor was successfully updated.'
+        redirect_to(@actor)
+      end
+
+      def destroy
+        @actor.delete
+        redirect_to(actors_url)
+      end
+
+
+      def edit
+      end
+
+      def show
+      end
+
+      def new
+        @actor = Actor.value_object.new
+      end
+
+      private
+      def find_actor
+        @actor = Neo4j.load(params[:id])
+      end
+    end
+
+
+acted_in_controller.rb:
+
+    class ActedInController < ApplicationController
+      def index
+        @actor = Neo4j.load(params[:actor_id])
+        @movies = @actor.acted_in.nodes
+      end
+
+      def create
+        @actor = Neo4j.load(params[:actor_id])
+        @movie = Movie.new
+        @movie.update(params[:movie])
+        @actor.acted_in << @movie
+        flash[:notice] = 'Movie was successfully created.'
+        redirect_to(@actor)
+      end
+
+      def update
+        @actor = Neo4j.load(params[:actor_id])
+        @movie = Movie.new
+        @movie.update(params[:movie])
+        @actor.acted_in.new @movie
+        @movie.update(params[:movie])
+        flash[:notice] = 'Movie was successfully updated.'
+        redirect_to(@movie)
+      end
+
+      def show
+        @movie = Neo4j.load(params[:id])
+      end
+
+      def new
+        @actor = Neo4j.load(params[:actor_id])
+        @movie = Movie.value_object.new
+      end
+
+      def edit
+        @movie = Neo4j.load(params[:id])
+      end
+    end
+
+==== Add views
+
+Add the following views in app/views/actors
+index.html.erb:
+
+    <h1>Listing actors</h1>
+
+    <table>
+      <tr>
+        <th>Name</th>
+      </tr>
+
+      <% for actor in @actors %>
+        <tr>
+          <td><%=h actor.name %></td>
+          <td><%= link_to 'Edit', edit_actor_path(actor) %></td>
+          <td><%= link_to 'Show', actor %></td>
+          <td><%= link_to 'Destroy', actor, :confirm => 'Are you sure?', :method => :delete %></td>
+        </tr>
+      <% end %>
+    </table>
+
+    <br />
+
+    <%= link_to 'New actor', new_actor_path %>
+
+new.html.erb:
+
+    <h1>New Actor</h1>
+
+    <% form_for(@actor) do |f| %>
+      <p>
+        <%= f.label :name %><br />
+        <%= f.text_field :name %>
+      </p>
+      <p>
+        <%= f.label :phone %><br />
+        <%= f.text_field :phone %>
+      </p>
+      <p>
+        <%= f.label :salary%><br />
+        <%= f.text_field :salary %>
+      </p>
+      <p>
+        <%= f.submit "Update" %>
+      </p>
+
+    <% end %>
+
+
+
+    <%= link_to 'Back', actors_path %>
 

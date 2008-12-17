@@ -66,48 +66,82 @@ module Neo4j
     end
     
     
-    
+    # Sets a neo property on this node. This property does not have to be declared first.
+    # If the value of the property is nil the property will be removed.
     #
-    # Set a neo property on this node.
-    # You should not use this method. It is used by the Node#properties classmethod
-    # that generates neo property accessors methods.
-    # 
-    #   n = Node.new
-    #   n.foo = 'hej'
-    # 
     # Runs in a new transaction if there is not one already running,
     # otherwise it will run in the existing transaction.
     #
+    # ==== Parameters
+    # name<String>:: the name of the property to be set
+    # value<Object>:: the value of the property to be set.
+    #
+    # ==== Example
+    #   n = Node.new
+    #   n.foo = 'hej'
+    # 
+    # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
       old_value = get_property(name)
-      value = '' if value.nil? # neo does not accept nil as a property value
-      @internal_node.set_property(name, value)
+
+      if value.nil?
+        remove_property(name)
+      elsif self.class.marshal?(name)
+        @internal_node.set_property(name, Marshal.dump(value).to_java_bytes)
+      else
+        @internal_node.set_property(name, value)
+      end
+
       if (name != 'classname')  # do not want events on internal properties
         event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
         self.class.fire_event(event)
       end
     end
- 
-    # 
+
+    # Removes the property from this node.
+    # For more information see JavaDoc PropertyContainer#removeProperty
+    #
+    # ==== Example
+    #   a = Node.new
+    #   a.set_property('foo',2)
+    #   a.remove_property('foo')
+    #   a.get_property('foo') # => nil
+    #
+    # ==== Returns
+    # true if the property was removed, false otherwise
+    #
+    # :api: public
+    def remove_property(name)
+      !@internal_node.removeProperty(name).nil?
+    end
+
+
     # Returns the value of the given neo property.
-    # You should not use this method. It is used by the NodeMixin#properties classmethod
-    # 
-    # Runs in a new transaction if there is not one already running,
-    # otherwise it will run in the existing transaction.
-    #    
+    #
+    # ==== Returns
+    # the value of the property or nil if the property does not exist
+    #
+    # :api: public
     def get_property(name)
-      $NEO_LOGGER.debug{"get property '#{name}'"}        
+      $NEO_LOGGER.debug{"get property '#{name}'"}
       
       return nil if ! property?(name)
-      @internal_node.get_property(name.to_s)
+      value = @internal_node.get_property(name.to_s)
+      if self.class.marshal?(name)
+        Marshal.load(String.from_java_bytes(value))
+      else
+        value
+      end
     end
-    
-    #
+
+
     # Checks if the given neo property exists.
-    # Runs in a new transaction if there is not one already running,
-    # otherwise it will run in the existing transaction.
     #
+    # ==== Returns
+    # true if the property exists
+    #
+    # :api: public
     def property?(name)
       @internal_node.has_property(name.to_s) unless @internal_node.nil?
     end
@@ -115,7 +149,7 @@ module Neo4j
 
     # Creates a struct class containig all properties of this class.
     # This value object can be used from Ruby on Rails RESTful routing.
-    # 
+    #
     # ==== Example
     #
     # h = Person.value_object.new
@@ -126,6 +160,7 @@ module Neo4j
     # ==== Returns
     # a value object struct
     #
+    # :api: public
     def value_object
       vo = self.class.value_object.new
       vo._update(props)
@@ -141,29 +176,37 @@ module Neo4j
     # ==== Returns
     # self
     #
+    # :api: public
     def update(struct_or_hash)
       struct_or_hash.each_pair do |key,value|
-        self.send("#{key}=".to_sym, value) unless self.class.properties_info[key.to_sym].nil?
+        method = "#{key}=".to_sym
+        self.send(method, value) if self.respond_to?(method)
       end
       self
     end
-   
-    # 
-    # Returns a unique id
+
+
+    # Returns an unique id
     # Calls getId on the neo node java object
     #
+    # ==== Returns
+    # Fixnum:: the unique neo id of the node.
+    #
+    # :api: public
     def neo_node_id
       @internal_node.getId()
     end
 
-    # Same as neo_node_id but returns a String intead.
+
+    # Same as neo_node_id but returns a String intead of a Fixnum.
     # Used by Ruby on Rails.
     #
+    # :api: public
     def to_param
       neo_node_id.to_s
     end
 
-    def eql?(o)    
+    def eql?(o)
       o.kind_of?(NodeMixin) && o.internal_node == internal_node
     end
     
@@ -175,9 +218,9 @@ module Neo4j
       internal_node.hashCode
     end
     
-    #
     # Returns a hash of all properties {key => value, ...}
     #
+    # :api: public
     def props
       ret = {}
       iter = @internal_node.getPropertyKeys.iterator
@@ -199,9 +242,9 @@ module Neo4j
     # Runs in a new transaction if one is not already running.
     #
     def delete
-      self.class.fire_event(NodeDeletedEvent.new(self))                          
+      self.class.fire_event(NodeDeletedEvent.new(self))
       relations.each {|r| r.delete}
-      @internal_node.delete 
+      @internal_node.delete
       lucene_index.delete(neo_node_id)
     end
     
@@ -243,7 +286,7 @@ module Neo4j
     end
 
     
-    transactional :property?, :set_property, :get_property, :delete
+    transactional :property?, :set_property, :get_property, :remove_property, :delete
 
 
     
@@ -258,8 +301,8 @@ module Neo4j
         const_set(:INDEX_UPDATERS, {})
         const_set(:INDEX_TRIGGERS, {})
         const_set(:RELATIONS_INFO, {})
-        const_set(:PROPERTIES_INFO, {})
-      end unless c.const_defined?(:LUCENE_INDEX_PATH)
+        const_set(:PROPERTIES_INFO, Hash.new.default={})
+      end unless c.const_defined?(:ROOT_CLASS)
       
       c.extend ClassMethods
     end
@@ -274,44 +317,44 @@ module Neo4j
       # These properties are shared by the class and its siblings.
       # For example that means that we can specify properties for a parent
       # class and the child classes will 'inherit' those properties.
-      # 
-      
       #
-      # @api private
+      
+      # :api: private
       def root_class
         self::ROOT_CLASS
       end
 
       #
-      # @api private
+      # :api: private
       def lucene_index
         Lucene::Index.new(self::LUCENE_INDEX_PATH)
       end
         
       #
-      # @api private
+      # :api: private
       def index_updaters
         self::INDEX_UPDATERS
       end
 
-      #
-      # @api private
+      # :api: private
       def index_triggers
         self::INDEX_TRIGGERS
       end
 
       
-      #
       # Contains information of all relationships, name, type, and multiplicity
-      # 
+      #
+      # :api: private
       def relations_info
         self::RELATIONS_INFO
       end
-      
+
+      # :api: private
       def properties_info
         self::PROPERTIES_INFO
       end
-      
+
+     
       # ------------------------------------------------------------------------
       # Event index_updater
 
@@ -324,7 +367,7 @@ module Neo4j
       
       # ------------------------------------------------------------------------
 
-
+      # TODO should we have this method or not ?
       def property(*props)
         pname = props[0].to_sym
         if props.size > 1
@@ -332,7 +375,8 @@ module Neo4j
         else
           properties_info[pname] = {}
         end
-
+        properties_info[pname][:defined] = true
+        
         define_method(pname) do
           get_property(pname.to_s)
         end
@@ -343,15 +387,50 @@ module Neo4j
         end
       end
 
-
+      # Returns true if the given property name should be marshalled.
+      # All properties that has a type will be marshalled.
       #
+      # ===== Example
+      #   class Foo
+      #     include Neo4j::NodeMixin
+      #     properties :name
+      #     properties :since, :type => Date
+      #   end
+      #   Foo.marshal?(:since) => true
+      #   Foo.marshal?(:name) => false
+      #
+      # ==== Returns
+      # true if the property will be marshalled, false otherwise
+      #
+      # :api: public
+      def marshal?(prop_name)
+        return false if properties_info[prop_name.to_sym].nil?
+        return false if properties_info[prop_name.to_sym][:type].nil?
+        return true
+      end
+
+
+      # Returns true if the given property name has been defined with the class
+      # method property or properties
+      #
+      # ==== Returns
+      # true or false
+      #
+      # :api: public
+      def property?(prop_name)
+        properties_info[prop_name.to_sym][:defined].nil?
+      end
+
+
       # Declares Neo4j node properties.
       # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessorMixin mixin.
       #
+      # :api: public
       def properties(*props)
         props.each do |prop|
-          properties_info[prop.to_sym] = true
-          define_method(prop) do 
+          properties_info[prop.to_sym] ||= {}
+          properties_info[prop.to_sym][:defined] = true
+          define_method(prop) do
             get_property(prop.to_s)
           end
 
@@ -372,18 +451,19 @@ module Neo4j
       # h[:name]   # => 'kalle'
       #
       # ==== Returns
-      # a struct
+      # Struct
       #
+      # :api: public
       def value_object
         @value_class ||= create_value_class
       end
 
-      #      
       # Index a property a relationship.
       # If the rel_prop arg contains a '.' then it will index the relationship.
       # For example "friends.name" will index each node with property name in the relationship friends.
       # For example "name" will index the name property of this NodeMixin class.
       #
+      # :api: public     
       def index(*rel_type_props)
         if rel_type_props.size == 2 and rel_type_props[1].kind_of?(Hash)
           rel_type_props[1].each_pair do |key,value|
@@ -399,11 +479,12 @@ module Neo4j
         end
       end
 
-      #
+
       # Remote one or more specified indexes.
       # This indexes will not be updated anymore, old indexes will still exist
       # until the update_index method is called.
       #
+      # :api: public
       def remove_index(*keys)
         keys.each do |key|
           index_updaters.delete key.to_s
@@ -412,18 +493,17 @@ module Neo4j
       end
 
 
-      #
       # Traverse all nodes and update the lucene index.
       # Can be used for example if it is neccessarly to change the index on a class
       #
+      # :api: public
       def update_index
         all.nodes.each do |n|
           n.reindex!
         end
       end
       
-      #
-      # @api private
+      # :api: private
       def index_property(prop)
         updater = lambda do |node, doc|
           doc[prop] = node.send(prop)
@@ -437,8 +517,7 @@ module Neo4j
       end
       
       
-      #
-      # @api private
+      # :api: private
       def index_relation(index_key, rel_type, prop)
         clazz = relations_info[rel_type.to_sym][:class]
         
@@ -466,14 +545,14 @@ module Neo4j
         clazz.index_triggers[index_key] = trigger
       end
       
-
-      #
       # Specifies a relationship between two node classes.
-      # Example
+      #
+      # ==== Example
       #   class Order
       #      has_one(:customer).of_class(Customer)
       #   end
       #
+      # :api: public
       def has_one(rel_type)
 
         module_eval(%Q{def #{rel_type}=(value)
@@ -490,13 +569,14 @@ module Neo4j
 
       
 
-      #
       # Specifies a relationship between two node classes.
-      # Example
+      #
+      # ==== Example
       #   class Order
       #      has_n(:order_lines).to(Product).relation(OrderLine)
       #   end
       #
+      # :api: public
       def has_n(rel_type)
         module_eval(%Q{def #{rel_type}(&block)
                         Relations::HasNRelations.new(self,'#{rel_type.to_s}', &block)
@@ -508,41 +588,49 @@ module Neo4j
       #
       # Returns node instances of this class.
       #
+      # :api: public
       def all
         ref = Neo4j.instance.ref_node
         ref.relations.outgoing(root_class)
       end
-      #
+
+
       # Creates a new relation. The relation must be outgoing.
-      # @api private
+      # 
+      # :api: private
       def new_relation(rel_name, internal_relation)
         relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
       end
       
      
       
-      #
       # Finds all nodes of this type (and ancestors of this type) having
       # the specified property values.
+      # See the lucene module for more information how to do a query.
       #
-      # == Example
+      # ==== Example
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
       # Or using a DSL query
       #   MyNode.find{(name == 'foo') & (company == 'bar')}
       #
-      # See the lucene module for more information how to do a query.
+      # ==== Returns
+      # Neo4j::SearchResult
       #
+      # :api: public
       def find(query=nil, &block)
         SearchResult.new lucene_index, query, &block
       end
 
 
       # Creates a new value object class (a Struct) represeting this class.
-      # 
+      #
       # The struct will have the Ruby on Rails method: model_name and
       # new_record? so that it can be used for restful routing.
       #
+      # TODO: if the DynamicMixin is used it should return somthing more flexible
+      # since we do not know which property a class has.
+      # 
       # @api private
       def create_value_class
         # the name of the class we want to create
