@@ -57,6 +57,16 @@ module Lucene
           date = org.apache.lucene.document.DateTools.stringToDate(value)
           seconds_since_1970 = date.getTime / 1000
           Date.new(*Time.at(seconds_since_1970).to_a[3 .. 5].reverse)
+        when DateTime.to_s
+          return value if value.kind_of? DateTime
+          return nil if value.nil?
+          year = value[0..3].to_i
+          month = value[4..5].to_i
+          day = value[6..7].to_i
+          hour = value[8..9].to_i
+          min = value[10..11].to_i
+          sec = value[12..13].to_i
+          DateTime.civil(year,month,day,hour,min,sec)
         else
           raise ConversionNotSupportedException.new("Can't convert key '#{value}' of with type '#{@info[:type].class.to_s}'")
         end
@@ -74,9 +84,14 @@ module Lucene
         when Float.to_s  then  sprintf('%024.12f', value)  # TODO: configurable
         when Bignum.to_s then  sprintf('%024d, value')
         when Date.to_s
-          t = Time.gm(value.year, value.month, value.day)
+          t = Time.utc(value.year, value.month, value.day)
           d = t.to_i * 1000
           org.apache.lucene.document.DateTools.timeToString(d,org.apache.lucene.document.DateTools::Resolution::DAY )
+        when DateTime.to_s
+          # only utc times are supported 
+          t = Time.utc(value.year, value.month, value.day, value.hour, value.min, value.sec)
+          d = t.to_i * 1000
+          org.apache.lucene.document.DateTools.timeToString(d,org.apache.lucene.document.DateTools::Resolution::SECOND )
         else value.to_s
         end
       end

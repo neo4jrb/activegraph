@@ -517,7 +517,7 @@ Example, to set a property to any type
   Neo4j.load(node.neo_node_id).foo.class # => Array
 
 
-=== Property of type Date
+=== Property of type Date and DateTime
 
 Example of using Date queries:
 
@@ -527,9 +527,21 @@ Example of using Date queries:
     index :since, :type => Date
   end
 
+  node.since = Date.new 2008,05,06
+  MyNode.find("born:[20080427 TO 20100203]")[0].since # => Date 2008,05,06
 
-TODO   MyNode.find 
+Example of using DateTime queries:
 
+  class MyNode
+    include Neo4j::NodeMixin
+    property :since, :type => DateTime
+    index :since, :type => DateTime
+  end
+
+  node.since = DateTime.civil 2008,04,27,15,25,59
+  MyNode.find("since:[200804271504 TO 201002031534]")[0].since # => DateTime ...
+
+Only UTC timezone is allowed.
 
 === Finding all nodes
 

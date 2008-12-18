@@ -418,7 +418,7 @@ describe Index, ".field_infos" do
   end
 
 
-  it "can be used to convert and store Date properties" do
+  it "can be used to convert and store Date field" do
     #given
     @index.field_infos[:since][:store] = true
     @index.field_infos[:since][:type] = Date
@@ -435,6 +435,29 @@ describe Index, ".field_infos" do
     hits[0][:since].year.should == 2008
     hits[0][:since].month.should == 3
     hits[0][:since].day.should == 26
+  end
+
+
+  it "can be used to convert and store DateTime field" do
+    #given
+    @index.field_infos[:since][:store] = true
+    @index.field_infos[:since][:type] = DateTime
+    date = DateTime.new(2008,12,18,11,4,59)
+    @index << {:id => 1, :since => date}
+    @index.commit
+
+    # when
+    hits = @index.find(:id => "1")
+
+    # then
+    hits.size.should == 1
+    hits[0][:since].should be_instance_of(DateTime)
+    hits[0][:since].year.should == 2008
+    hits[0][:since].month.should == 12
+    hits[0][:since].day.should == 18
+    hits[0][:since].hour.should == 11
+    hits[0][:since].min.should == 4
+    hits[0][:since].sec.should == 59
   end
 
 end
@@ -505,6 +528,9 @@ describe Index, " when updating a document" do
       @index = Index.new('myindex')
       @index.field_infos[:since][:store] = false
       @index.field_infos[:since][:type] = Date
+
+      @index.field_infos[:born][:store] = false
+      @index.field_infos[:born][:type] = DateTime
     end
 
 
@@ -521,7 +547,7 @@ describe Index, " when updating a document" do
       hits[0][:id].should == '1'
     end
 
-    it "can find an index using a date range" do
+    it "can find an index using a Date range" do
       #given
       @index << {:id => 1, :since => Date.new(2008,4,26)}
       @index.commit
@@ -533,6 +559,27 @@ describe Index, " when updating a document" do
       @index.find("since:[20080426 TO 20090203]")[0][:id].should == '1'
       @index.find("since:[20080425 TO 20080426]")[0][:id].should == '1'
       @index.find("since:[20000425 TO 20200426]")[0][:id].should == '1'
+    end
+
+    it "can find an index using a DateTime range" do
+      #given
+      # only UTC times are supported 
+      @index << {:id => 1, :born => DateTime.civil(2008,4,26,15,58,02)}
+      @index.commit
+
+      # then
+      @index.find("born:[20080427 TO 20100203]").size.should == 0
+      @index.find("born:[20080422 TO 20080425]").size.should == 0
+      @index.find("born:[20080426 TO 20090203]")[0][:id].should == '1'
+      @index.find("born:[20080425 TO 20080427]")[0][:id].should == '1'
+      @index.find("born:[20000425 TO 20200426]")[0][:id].should == '1'
+
+      @index.find("born:[200804260000 TO 200804262359]")[0][:id].should == '1'
+      @index.find("born:[200804261500 TO 200804261600]")[0][:id].should == '1'
+      @index.find("born:[200804261557 TO 200804261559]")[0][:id].should == '1'
+      @index.find("born:[20080426155759 TO 20080426155804]")[0][:id].should == '1'
+      @index.find("born:[200804261559 TO 200804261601]").size.should == 0
+      @index.find("born:[200804261557 TO 200804261500]").size.should == 0
     end
 
   end
