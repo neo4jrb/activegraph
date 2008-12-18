@@ -1,3 +1,10 @@
+== 0.1.0 / 2009-12-18
+* Property can now be of any type (and not only String, Fixnum, Float)
+* Indexing and Query with Date and DateTime
+* YARD documentation
+* Properties can be removed
+* A property can be set to nil (it will then be removed).
+
 == 0.0.7 / 2009-12-10
 * Added method to_param and methods on the value object needed for Ruby on Rails
 * Impl. update from a value object/hash for a node
