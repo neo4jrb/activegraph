@@ -1,6 +1,6 @@
-= Neo4j
+= Neo4j.rb
 
-Neo4j is a graph database framework for JRuby.
+Neo4j.rb is a graph database for JRuby.
  
 It provides:
 * Mapping of ruby objects to nodes in networks rather than in tables. 
@@ -14,17 +14,25 @@ It uses two powerful and mature java libraries:
 * Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
-Neo4j.rb Status
-* There are now over 200 RSpecs.
+=== Status
+* There are over 200 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
 * Has been load tested (loaded 18000 nodes and done queries/travesal in several threads.)
 * Has not been used in production yet (as far as I know).
 
-Project information
-* http://neo4j.lighthouseapp.com
-* http://twitter.com/ronge
+=== Project information
+* GitHub - http://github.com/andreasronge/neo4j/tree/master
+* Issue Tracking - http://neo4j.lighthouseapp.com
+* Twitter - http://twitter.com/ronge
+* API Yard Documentation - http://neo4j.rubyforge.org/
+* Source repo - git://github.com/andreasronge/neo4j.git
 
-This document contains:
+=== Copyright
+Neo4j.rb was created in 2008 by Andreas Ronge (andreas -DOT- ronge -AT- gmail -DOT- com) and is licensed under the MIT license.
+Please see the LICENSE for more information.
+
+=== Content
+This page contains the following information:
 * Installation guide
 * Ten Minute Tutorial
 * Lucene API Documentation
@@ -33,14 +41,14 @@ This document contains:
 
 == Installation
 
-Neo4j exists as a gem at rubyforge
 To install it:
 
    gem install neo4j
 
-To install from the source:
-* Press the download button at http://github.com/andreasronge/neo4j/tree/master
-* From command line type: ''rake gem:install''
+To install from the latest source:
+  git clone git://github.com/andreasronge/neo4j.git
+  cd neo4j
+  rake gem:install
 
 JRuby version 1.1.4 does not work with Neo4j.rb because of a JRuby bug.
 This bug is fixed in JRuby 1.1.5. 

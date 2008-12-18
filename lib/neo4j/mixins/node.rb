@@ -219,7 +219,10 @@ module Neo4j
       internal_node.hashCode
     end
     
-    # Returns a hash of all properties {key => value, ...}
+    # Returns a hash of all properties.
+    #
+    # ==== Returns
+    # Hash:: property key and property value
     #
     # :api: public
     def props
