@@ -138,12 +138,23 @@ describe 'Neo4j::Node having a property of type Object' do
     class Stuff
       include Neo4j::NodeMixin
       property :stuff, :type => Object
+      property :foo
     end
 
     @node = Stuff.new
   end
 
   after(:each) { stop }
+
+  it "should know the type of the property" do
+    Stuff.properties_info[:stuff].class.should == Hash
+    Stuff.properties_info[:stuff][:type].should == Object
+  end
+
+  it "should have no type unless specified" do
+    Stuff.properties_info[:foo].class.should == Hash
+    Stuff.properties_info[:foo][:type].should be_nil
+  end
 
   it "should allow to set properties of type Array" do
     # when
@@ -173,7 +184,7 @@ describe 'Neo4j::Node having a property of type Object' do
 end
 
 # ----------------------------------------------------------------------------
-# properties
+# property
 #
 
 describe 'Neo4j properties' do
@@ -182,7 +193,7 @@ describe 'Neo4j properties' do
     undefine_class :TestNode  # make sure it is not already defined
     class TestNode
       include Neo4j::NodeMixin
-      properties :p1, :p2
+      property :p1, :p2
     end
     @node = TestNode.new
   end
@@ -275,7 +286,7 @@ describe 'Neo4j properties' do
   
     # given
     class SubNode < TestNode
-      properties :salary
+      property :salary
     end
   
     # when

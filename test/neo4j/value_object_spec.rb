@@ -10,7 +10,7 @@ undefine_class :FooBarNode
 
 class FooBarNode
   include Neo4j::NodeMixin
-  properties :name, :age
+  property :name, :age
 end
 
 describe 'ValueObjects' do

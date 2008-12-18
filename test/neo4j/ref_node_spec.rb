@@ -13,7 +13,7 @@ describe 'ReferenceNode' do
     undefine_class :MyNode
     class MyNode
       include Neo4j::NodeMixin
-      properties :name, :age
+      property :name, :age
     end
   end
   

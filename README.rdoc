@@ -56,7 +56,7 @@ This bug is fixed in JRuby 1.1.5.
     include Neo4j::NodeMixin
 
     # define Neo4j properties
-    properties :name, :salary.
+    property :name, :salary.
 
     # define an one way relationship to any other Person node
     has_n(:friends).to(Person)
@@ -67,7 +67,7 @@ This bug is fixed in JRuby 1.1.5.
   end
 
 The example above specifies how to map a Neo node to a ruby Person instance.
-Neo properties and relationships are declared using the 'properties' and 'has_n'/'has_one' NodeMixin class method.
+Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
 In the example above a lucene index will be updated when the name or salary property changes. 
 The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
 
@@ -146,7 +146,7 @@ outgoing relationships.
 
       class Role
         include Neo4j::RelationMixin
-        properties :name
+        property :name
       end
 
       class Actor
@@ -156,8 +156,8 @@ outgoing relationships.
       
       class Movie
         include Neo4j::NodeMixin
-        properties :title
-        properties :year
+        property :title
+        property :year
 
         # defines a method for traversing incoming acted_in relationships from Actor
         has_n(:actors).from(Actor, :acted_in)
@@ -475,7 +475,7 @@ In order to use properties they have to be declared first
 
   class MyNode
      include Neo4j::NodeMixin
-     properties :foo, :bar
+     property :foo, :bar
   end
 
 These properties (foo and bar) will be stored in the Neo database.
@@ -606,7 +606,7 @@ Example of has_one: A person can have at most one Address
 
       class Address
         include Neo4j::NodeMixin
-        properties :city, :road
+        property :city, :road
         has_n(:people).from(Person, :address)
       end
 
@@ -757,7 +757,7 @@ Example:
     include Neo4j::NodeMixin
     extend Neo4j::TransactionalMixin
 
-    properties :name, :age
+    property :name, :age
 
     def do_stuff
       # ... no transaction stuff needed to be written here.
@@ -796,7 +796,7 @@ For example to index the proeprties foo and bar
 
   class SomeNode
      include Neo4j::NodeMixin
-     properties :foo, :bar
+     property :foo, :bar
      index :foo, :bar
   end
 
@@ -812,7 +812,7 @@ Example
 
   class Person
     include Neo4j
-    properties :name, :age, :phone
+    property :name, :age, :phone
     index :name, :age
   end
 
@@ -837,7 +837,7 @@ Example
 
       class Person 
         include Neo4j::NodeMixin
-        properties :name, :age
+        property :name, :age
         index :name, :age
       end
     
@@ -848,7 +848,7 @@ Example
 
       Person.find(:name => 'foo', :age => 42) # => [node]
 
-The query parameter (like properties on a Neo4j::NodeMixin) can be of type String, Fixnum, Float, boolean or Range.
+The query parameter (like property on a Neo4j::NodeMixin) can be of type String, Fixnum, Float, boolean or Range.
 The query above can also be written in a lucene query DSL:
 
       Person.find{(name =='foo') & (age => 42)} # => [node]
@@ -867,7 +867,7 @@ This is done by using the :type optional parameter:
 
   class Person
     include Neo4j::NodeMixin
-    properties :name, :age
+    property :name, :age
     index :age, :type => Fixnum
   end
 
@@ -887,7 +887,7 @@ Example, let say we have to classes, Customer and Orders:
   class Customer
     include Neo4j::NodeMixin
 
-    properties :name
+    property :name
 
     # specifies outgoing relationships to Order
     has_n(:orders).to(Order)
@@ -900,7 +900,7 @@ Example, let say we have to classes, Customer and Orders:
   class Order
     include Neo4j::NodeMixin
 
-    properties :total_cost
+    property :total_cost
 
     # specifies one incoming relationship from Customer
     has_one(:customer).from(Customer, :orders)
@@ -940,7 +940,7 @@ Neo4j supports full text search by setting the tokenized property to true on an 
   class Comment
     include Neo4j::NodeMixin
 
-    properties :comment
+    property :comment
     index comment, :tokenized => true
   end
 
@@ -1004,22 +1004,21 @@ actor.rb:
 
   class Role
     include Neo4j::RelationMixin
-    properties :title, :character
+    property :title, :character
   end
 
   class Actor
     include Neo4j::NodeMixin
-    properties :name, :phone, :salary
+    property :name, :phone, :salary
     has_n(:acted_in).to(Movie).relation(Role)
     index :name
   end
 
 movie.rb:
   class Movie
-
     include Neo4j::NodeMixin
-    properties :title
-    properties :year
+    property :title
+    property :year
 
     # defines a method for traversing incoming acted_in relationships from Actor
     has_n(:actors).from(Actor, :acted_in)

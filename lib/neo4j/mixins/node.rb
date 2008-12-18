@@ -302,7 +302,7 @@ module Neo4j
         const_set(:INDEX_UPDATERS, {})
         const_set(:INDEX_TRIGGERS, {})
         const_set(:RELATIONS_INFO, {})
-        const_set(:PROPERTIES_INFO, Hash.new.default={})
+        const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:ROOT_CLASS)
       
       c.extend ClassMethods
@@ -368,23 +368,63 @@ module Neo4j
       
       # ------------------------------------------------------------------------
 
-      # TODO should we have this method or not ?
+
+      # Generates accessor method and sets configuration for Neo4j node properties.
+      # The generated accessor is a simple wrapper around the #set_property and
+      # #get_property methods.
+      #
+      # If a property is set to nil the property will be removed.
+      #
+      # ==== Configuration
+      # By setting the :type configuration parameter to 'Object' makes
+      # it possible to marshal any ruby object.
+      #
+      # If no type is provided the only the native Neo4j property types are allowed:
+      # * TrueClass, FalseClass
+      # * String
+      # * Fixnum
+      # * Float
+      # * Boolean
+      #
+      # ==== Parameters
+      # props<Array,Hash>:: a variable length arguments or a hash, see example below
+      #
+      # ==== Example
+      #   class Baaz; end
+      #
+      #   class Foo
+      #     include Neo4j::NodeMixin
+      #     property name, city # can set several properties in one go
+      #     property bar, :type => Object # allow serialization of any ruby object
+      #   end
+      #
+      #   f = Foo.new
+      #   f.bar = Baaz.new
+      #
+      # :api: public
       def property(*props)
-        pname = props[0].to_sym
-        if props.size > 1
-          properties_info[pname] = *props[1..-1]
-        else
-          properties_info[pname] = {}
-        end
-        properties_info[pname][:defined] = true
-        
-        define_method(pname) do
-          get_property(pname.to_s)
+        if props.size == 2 and props[1].kind_of?(Hash)
+          props[1].each_pair do |key,value|
+            pname = props[0].to_sym
+            properties_info[pname] ||= {}
+            properties_info[pname][key] = value
+          end
+          props = props[0..0]
         end
 
-        name = (pname.to_s() +"=").to_sym
-        define_method(name) do |value|
-          set_property(pname.to_s, value)
+        props.each do |prop|
+          pname = prop.to_sym
+          properties_info[pname] ||= {}
+          properties_info[pname][:defined] = true
+        
+          define_method(pname) do
+            get_property(pname.to_s)
+          end
+
+          name = (pname.to_s() +"=").to_sym
+          define_method(name) do |value|
+            set_property(pname.to_s, value)
+          end
         end
       end
 
@@ -394,8 +434,8 @@ module Neo4j
       # ===== Example
       #   class Foo
       #     include Neo4j::NodeMixin
-      #     properties :name
-      #     properties :since, :type => Date
+      #     property :name
+      #     property :since, :type => Date
       #   end
       #   Foo.marshal?(:since) => true
       #   Foo.marshal?(:name) => false
@@ -422,25 +462,6 @@ module Neo4j
         properties_info[prop_name.to_sym][:defined].nil?
       end
 
-
-      # Declares Neo4j node properties.
-      # You need to declare properties in order to set them unless you include the Neo4j::DynamicAccessorMixin mixin.
-      #
-      # :api: public
-      def properties(*props)
-        props.each do |prop|
-          properties_info[prop.to_sym] ||= {}
-          properties_info[prop.to_sym][:defined] = true
-          define_method(prop) do
-            get_property(prop.to_s)
-          end
-
-          name = (prop.to_s() +"=")
-          define_method(name) do |value|
-            set_property(prop.to_s, value)
-          end
-        end
-      end
 
       # Creates a struct class containig all properties of this class.
       #

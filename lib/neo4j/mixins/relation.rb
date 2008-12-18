@@ -103,7 +103,7 @@
     end
 
     module ClassMethods
-      def properties(*props)
+      def property(*props)
         props.each do |prop|
           define_method(prop) do
             get_property(prop.to_s)

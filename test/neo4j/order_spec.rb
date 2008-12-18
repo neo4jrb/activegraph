@@ -13,21 +13,21 @@ end
 
 class Product
   include Neo4j::NodeMixin
-  properties :product_name
-  properties :units_in_stock
-  properties :unit_price
+  property :product_name
+  property :units_in_stock
+  property :unit_price
   #  belongs_to :zero_or_more, Order
 end
 
 class OrderLine
   include Neo4j::RelationMixin
-  properties :units
-  properties :unit_price
+  property :units
+  property :unit_price
 end
 
 class Order
-  properties :total_cost
-  properties :dispatched
+  property :total_cost
+  property :dispatched
   has_n(:products).to(Product).relation(OrderLine)
   has_one(:customer).to(Customer)
   
@@ -35,8 +35,8 @@ class Order
 end
     
 class Customer
-  properties :name      
-  properties :age
+  property :name
+  property :age
   
   has_n(:orders).from(Order, :customer) # :zero_or_more, :orders, Order, :customer  # contains incoming relationship of type 'orders'
   has_n(:friends).to(Customer)

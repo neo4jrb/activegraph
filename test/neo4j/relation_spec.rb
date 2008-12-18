@@ -205,7 +205,7 @@ describe "Neo4j::Node#relations " do
 
       class Address
         include Neo4j::NodeMixin
-        properties :city, :road
+        property :city, :road
         has_n(:people).from(Person, :address)
       end
     end
@@ -244,18 +244,18 @@ describe "Neo4j::Node#relations " do
       
       class Order
         include Neo4j::NodeMixin
-        properties :date, :order_id
+        property :date, :order_id
         has_one(:customer).from(Customer, :orders)
       end
       
       class CustOrderRel
         include Neo4j::RelationMixin
-        properties :my_prop
+        property :my_prop
       end
       
       class Customer
         include Neo4j::NodeMixin
-        properties :age, :name
+        property :age, :name
         
         # TODO should be easier to say the thing below
         has_n(:orders).relation(CustOrderRel)
@@ -336,7 +336,7 @@ describe "Neo4j::Node#relations " do
     before(:all) do
       class CustomerOrderRelation
         include Neo4j::RelationMixin
-        properties :prio
+        property :prio
       end
       
       class Customer

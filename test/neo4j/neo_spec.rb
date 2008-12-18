@@ -23,7 +23,7 @@ describe "Neo4j" do
     undefine_class :Foo
     class Foo
       include Neo4j::NodeMixin
-      properties :name
+      property :name
       index :name
     end
     res = Foo.find(:name => 'kalle')

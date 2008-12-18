@@ -10,7 +10,7 @@ describe "Neo4j.start" do
     undefine_class :TestNode
     class TestNode
       include Neo4j::NodeMixin
-      properties :name, :age
+      property :name, :age
       index :name
     end
   end
@@ -46,7 +46,7 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     undefine_class :TestNode
     class TestNode 
       include Neo4j::NodeMixin
-      properties :name, :age
+      property :name, :age
       index :name, :age
     end
   end
@@ -128,7 +128,7 @@ describe "Find with sorting" do
     undefine_class :Person7
     class Person7
       include Neo4j::NodeMixin
-      properties :name, :city
+      property :name, :city
       index :name
       index :city
     end
@@ -170,7 +170,7 @@ describe "Find Nodes using Lucene and tokenized index" do
     undefine_class :Person
     class Person
       include Neo4j::NodeMixin
-      properties :name, :name2
+      property :name, :name2
       index :name,   :tokenized => true
       index :name2, :tokenized => false # default
       def to_s
@@ -239,7 +239,7 @@ describe "Find Nodes using Lucene" do
     start
     class TestNode
       include Neo4j::NodeMixin
-      properties :name, :age, :male, :height
+      property :name, :age, :male, :height
       index :name
       index :age, :type => Fixnum
       index :male

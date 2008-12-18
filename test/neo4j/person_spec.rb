@@ -13,7 +13,7 @@ describe "Person" do
 
     class Person
       include Neo4j::NodeMixin
-      properties :name
+      property :name
       has_n :friends
       index :name
     end

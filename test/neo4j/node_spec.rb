@@ -121,7 +121,7 @@ describe 'Neo4j::Node' do
       undefine_class :TestNode
       class TestNode
         include Neo4j::NodeMixin
-        properties :name, :age
+        property :name, :age
       end
     end
 
@@ -204,7 +204,7 @@ describe 'Neo4j::Node' do
       class TestNode
         include Neo4j::NodeMixin
         has_n :orders
-        properties :name
+        property :name
       end
       
       undefine_class :TestNode2  # make sure it is not already defined

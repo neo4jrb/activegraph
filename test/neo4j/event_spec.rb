@@ -16,7 +16,7 @@ include Neo4j
 
 class Person
   include Neo4j::NodeMixin
-  properties :age
+  property :age
 end
 
 
