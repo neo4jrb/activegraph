@@ -7,7 +7,7 @@ class Movie; end
 
 class Role
   include Neo4j::RelationMixin
-  properties :title, :character
+  property :title, :character
   
   def to_s
     "Role title #{self.title} character #{self.character}"
@@ -16,7 +16,7 @@ end
 
 class Actor
   include Neo4j::NodeMixin
-  properties :name
+  property :name
   has_n(:acted_in).to(Movie).relation(Role)
   index :name, :tokenized => true
 
@@ -27,8 +27,8 @@ end
 
 class Movie
   include Neo4j::NodeMixin
-  properties :title
-  properties :year
+  property :title
+  property :year
 
   # defines a method for traversing incoming acted_in relationships from Actor
   has_n(:actors).from(Actor, :acted_in)

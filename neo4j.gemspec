@@ -1,5 +1,5 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Wed Dec 10 15:30:46 +0100 2008
+# LAST UPDATED : Thu Dec 18 15:23:17 +0100 2008
 #
 # RUN : 'rake gem:update_gemspec'
 
@@ -8,7 +8,6 @@ Gem::Specification.new do |s|
  s.files = ["LICENSE",
  "CHANGELOG",
  "README.rdoc",
- "TODO",
  "Rakefile",
  "neo4j.gemspec",
  "lib/neo4j.rb",
@@ -69,6 +68,7 @@ Gem::Specification.new do |s|
  "test/neo4j/node_spec.rb",
  "test/neo4j/relation_spec.rb",
  "test/neo4j/value_object_spec.rb",
+ "test/neo4j/property_spec.rb",
  "test/neo4j/ref_node_spec.rb",
  "test/neo4j/person_spec.rb",
  "examples/imdb",
@@ -77,15 +77,18 @@ Gem::Specification.new do |s|
  "examples/imdb/model.rb",
  "examples/imdb/find_actors.rb",
  "examples/imdb/create_neo_db.rb",
- "examples/imdb/load_test.rb"]
+ "examples/imdb/load_test.rb",
+ "examples/imdb/data",
+ "examples/imdb/data/test-movies.list",
+ "examples/imdb/data/test-actors.list"]
  s.rubygems_version = "1.3.1"
  s.platform = "ruby"
- s.date = "Wed Dec 10 00:00:00 +0100 2008"
+ s.date = "Thu Dec 18 00:00:00 +0100 2008"
  s.homepage = "http://github.com/andreasronge/neo4j/tree"
  s.rubyforge_project = "neo4j"
  s.bindir = "bin"
  s.summary = "A graph database for JRuby"
- s.rdoc_options = ["--quiet", "--title", "neo4j and lucene documentation", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
+ s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  s.specification_version = "2"
  s.email = "andreas.ronge@gmail.com"
  s.version = "0.0.7"
