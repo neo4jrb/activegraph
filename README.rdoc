@@ -28,7 +28,7 @@ It uses two powerful and mature java libraries:
 * Source repo - git://github.com/andreasronge/neo4j.git
 
 === Presentation Materials
- * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
+* Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
 
 === Copyright
 Neo4j.rb was created in 2008 by Andreas Ronge (andreas -DOT- ronge -AT- gmail -DOT- com) and is licensed under the MIT license.
