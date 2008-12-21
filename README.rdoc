@@ -5,7 +5,7 @@ Neo4j.rb is a graph database for JRuby.
 It provides:
 * Mapping of ruby objects to nodes in networks rather than in tables. 
 * Storage of ruby object to a file system.
-* Fast traversal of relationships between nodes in a hugh node space.
+* Fast traversal of relationships between nodes in a huge node space.
 * Transaction with rollbacks support. 
 * Indexing and querying of ruby objects.
 * Can be used instead of ActiveRecord in Ruby on Rails or Merb
@@ -26,6 +26,9 @@ It uses two powerful and mature java libraries:
 * Twitter - http://twitter.com/ronge
 * API Yard Documentation - http://neo4j.rubyforge.org/
 * Source repo - git://github.com/andreasronge/neo4j.git
+
+=== Presentation Materials
+ * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
 
 === Copyright
 Neo4j.rb was created in 2008 by Andreas Ronge (andreas -DOT- ronge -AT- gmail -DOT- com) and is licensed under the MIT license.
