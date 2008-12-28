@@ -188,7 +188,46 @@ describe "Neo4j::Node#relations " do
       t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
       t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
       t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
+
     end
+  end
+
+  describe "node#relations.outgoing.levels" do
+    before(:all) do
+      undefine_class :PersonNode
+      class PersonNode
+        include Neo4j::NodeMixin
+        property :name
+        has_n :friends
+      end
+
+      @n0 = PersonNode.new
+      @n1 = PersonNode.new
+      @n11 = PersonNode.new
+      @n111 = PersonNode.new
+      @n12 = PersonNode.new
+      @n112 = PersonNode.new
+      @n1121 = PersonNode.new
+      @n0.friends << n1 << n12
+      @n1.friends << n11 << n12
+      @n11.friends << n111 << n112
+      @n112.friends << n1121
+    end
+
+    it "should get all nodes two levels deep (for levels(2))" do
+      pending
+      nodes = @n1.relations.outgoing(:friends).levels(2)
+      nodes.should include(@n11,@n12,@n112)
+      nodes.should_not include(@n0,@n1,@n1121)
+    end
+
+    it "should get all nodes (for levels(:all))" do
+      pending
+      nodes = @n1.relations.outgoing(:friends).levels(:all)
+      nodes.should include(@n11,@n12,@n112,@n1121)
+      nodes.should_not include(@n0,@n1)
+    end
+
   end
 
   describe "#has_one to #has_n" do
