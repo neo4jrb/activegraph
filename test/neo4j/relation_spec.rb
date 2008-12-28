@@ -192,7 +192,7 @@ describe "Neo4j::Node#relations " do
     end
   end
 
-  describe "node#relations.outgoing.levels" do
+  describe "traversing nodes of any depth" do
     before(:all) do
       undefine_class :PersonNode
       class PersonNode
@@ -208,15 +208,35 @@ describe "Neo4j::Node#relations " do
       @n12 = PersonNode.new
       @n112 = PersonNode.new
       @n1121 = PersonNode.new
-      @n0.friends << n1 << n12
-      @n1.friends << n11 << n12
-      @n11.friends << n111 << n112
-      @n112.friends << n1121
+      @n0.friends << @n1 << @n12
+      @n1.friends << @n11 << @n12
+      @n11.friends << @n111 << @n112
+      @n112.friends << @n1121
+    end
+
+    it "should be possible with node.friends.depth(2).each" do
+      nodes = @n1.friends.depth(2)
+      nodes.should include(@n11,@n12,@n112)
+      nodes.should_not include(@n0,@n1,@n1121)
+    end
+
+    it "should be possible with node.friends.depth(3).each" do
+      nodes = @n1.friends.depth(3)
+      nodes.should include(@n11,@n12,@n112, @n1121)
+      nodes.should_not include(@n0,@n1)
+    end
+
+    it "should be possible with node.friends.depth(:all).each" do
+      pending
+      nodes = @n1.friends.depth(:all)
+      nodes.should include(@n11,@n12,@n112, @n1121)
+      nodes.should_not include(@n0,@n1)
     end
 
     it "should get all nodes two levels deep (for levels(2))" do
       pending
       nodes = @n1.relations.outgoing(:friends).levels(2)
+      @n1.friends.levels
       nodes.should include(@n11,@n12,@n112)
       nodes.should_not include(@n0,@n1,@n1121)
     end

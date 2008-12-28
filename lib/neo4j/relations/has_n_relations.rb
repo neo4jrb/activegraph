@@ -27,7 +27,24 @@ module Neo4j
         end
       end
 
-
+      # Sets the depth of the traversal.
+      # Default is 1 if not specified.
+      #
+      # ==== Example
+      #  morpheus.friends.depth(:all).each { ... }
+      #  morpheus.friends.depth(3).each { ... }
+      #  
+      # ==== Arguments
+      # d<Fixnum,Symbol>:: the depth or :all if traversing to the end of the network.
+      # ==== Return
+      # self
+      # 
+      # :api: public
+      def depth(d)
+        @depth = d
+        self
+      end
+      
       def each
         stop = DepthStopEvaluator.new(@depth)
         traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
@@ -98,9 +115,17 @@ module Neo4j
         include org.neo4j.api.core.StopEvaluator
 
         def initialize(depth)
+#          puts "DEPTH = #{depth} #{depth.class.to_s}"
           @depth = depth
         end
 
+#        def self.new(depth)
+#          if depth.to_sym == :all
+#            return org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
+#          end
+#          super depth
+#        end
+        
         def isStopNode(pos)
           pos.depth >= @depth
         end
