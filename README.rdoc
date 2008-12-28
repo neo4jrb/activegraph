@@ -142,6 +142,10 @@ Traversing using a filter
 
   person.friends{ salary == 10000 }.each {|n| ...}
 
+Traversing with a specific depth (depth 1 is default)
+
+  person.friends{ salary == 10000}.depth(3).each { ... }
+
 Deleting a relationship
 
   person.relations[person2].delete
@@ -661,9 +665,18 @@ Each type of relationship has a method that returns an Enumerable object that en
 to traverse that type of relationship. 
 
 For example the Person example above declares one relationship of type friends.
-You can traverse all Person's friend by doing:
+You can traverse all Person's friend by doing of depth 1:
 
   f.friends.each { |n| puts n }
+
+Traversing friends of a specific depth.
+Example finding all friends and friends friends.
+
+  f.friends.depth(2).each { ...}
+
+Traversing to the end of the graph
+
+  f.friends.depth(:all).each { ...}
 
 === Filtering nodes in a relationship
 

@@ -14,7 +14,7 @@ module Neo4j
         @node = node
         @type = RelationshipType.instance(type)
         @filter = filter
-        @depth = 1
+        @stop_evaluator = DepthStopEvaluator.new(1)
         @info = node.class.relations_info[type.to_sym]
 
         if @info[:outgoing]
@@ -41,14 +41,17 @@ module Neo4j
       # 
       # :api: public
       def depth(d)
-        @depth = d
+        if d == :all
+          @stop_evaluator = org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
+        else
+          @stop_evaluator = DepthStopEvaluator.new(d)
+        end
         self
       end
       
       def each
-        stop = DepthStopEvaluator.new(@depth)
         traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
-          stop,
+          @stop_evaluator,
           org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
           @type,
           @direction)
@@ -65,7 +68,7 @@ module Neo4j
         end
       end
 
-      #
+
       # Creates a relationship instance between this and the other node.
       # If a class for the relationship has not been specified it will be of type DynamicRelation.
       # To set a relationship type see #Neo4j::relations
@@ -81,10 +84,10 @@ module Neo4j
       end
 
 
-      #
       # Creates a relationship between this and the other node.
-      # Returns self so that we can add several nodes like this:
       #
+      # ==== Example
+      # 
       #   n1 = Node.new # Node has declared having a friend type of relationship
       #   n2 = Node.new
       #   n3 = NodeMixin.new
@@ -96,6 +99,10 @@ module Neo4j
       #   n1.friends.new(n2)
       #   n1.friends.new(n3)
       #
+      # ==== Returns
+      # self
+      #
+      # :api: public
       def <<(other)
         from, to = @node, other
         from,to = to,from unless @info[:outgoing]
@@ -108,23 +115,15 @@ module Neo4j
       end
 
 
-      #
       # Private class
       #
+      # :api: private
       class DepthStopEvaluator
         include org.neo4j.api.core.StopEvaluator
 
         def initialize(depth)
-#          puts "DEPTH = #{depth} #{depth.class.to_s}"
           @depth = depth
         end
-
-#        def self.new(depth)
-#          if depth.to_sym == :all
-#            return org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
-#          end
-#          super depth
-#        end
         
         def isStopNode(pos)
           pos.depth >= @depth
