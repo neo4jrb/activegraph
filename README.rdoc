@@ -30,9 +30,10 @@ It uses two powerful and mature java libraries:
 === Presentation Materials
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
 
-=== Copyright
-Neo4j.rb was created in 2008 by Andreas Ronge (andreas -DOT- ronge -AT- gmail -DOT- com) and is licensed under the MIT license.
-Please see the LICENSE for more information.
+=== License
+Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
+Lucene -  Apache, see http://lucene.apache.org/java/docs/features.html
+Neo4j - Dual free software/commercial license, see http://neo4j.org/
 
 === Content
 This page contains the following information:
