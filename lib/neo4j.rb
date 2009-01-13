@@ -22,6 +22,7 @@ require 'neo4j/relations/dynamic_relation'
 require 'neo4j/relations/relations'
 require 'neo4j/relations/has_n_relations'
 require 'neo4j/relations/relation_traverser'
+require 'neo4j/relations/node_traverser'
 
 # neo4j
 require 'neo4j/config'

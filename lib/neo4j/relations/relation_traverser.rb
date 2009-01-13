@@ -54,12 +54,12 @@ module Neo4j
         end
       end
 
-
       def nodes
         NodeTraverser.new(self)
       end
 
       def iterator
+        # if type is nil then we traverse all relationship types of depth one
         return @internal_node.getRelationships(@direction).iterator if @type.nil?
         return @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
       end
@@ -68,7 +68,6 @@ module Neo4j
         "RelationTraverser [direction=#{@direction}, type=#{@type}]"
       end
 
-      #
       # Used from RelationTraverser when traversing nodes instead of relationships.
       #
       class NodeTraverser

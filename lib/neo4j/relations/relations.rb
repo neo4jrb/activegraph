@@ -1,9 +1,31 @@
+#
+# This files contains common private classes used by the Neo4j::Relations module
+#
+
 module Neo4j
   module Relations
 
+    # Wrapper for the neo4j StopEvalutor interface.
+    # Used in the Neo4j Traversers.
     #
-    # This is a private class holding the type of a relationship
-    #
+    # :api: private
+    class DepthStopEvaluator
+      include org.neo4j.api.core.StopEvaluator
+
+      def initialize(depth)
+        @depth = depth
+      end
+
+      def isStopNode(pos)
+        pos.depth >= @depth
+      end
+    end
+
+
+    # Wrapper for the Java RelationshipType interface.
+    # Each type is a singelton.
+    # 
+    # :api: private
     class RelationshipType
       include org.neo4j.api.core.RelationshipType
 

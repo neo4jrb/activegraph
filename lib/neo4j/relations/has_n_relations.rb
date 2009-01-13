@@ -1,6 +1,6 @@
 module Neo4j
   module Relations
-    #
+
     # Enables traversal of nodes of a specific type that one node has.
     # Used for traversing relationship of a specific type.
     # Neo4j::NodeMixin can declare
@@ -114,21 +114,6 @@ module Neo4j
         self
       end
 
-
-      # Private class
-      #
-      # :api: private
-      class DepthStopEvaluator
-        include org.neo4j.api.core.StopEvaluator
-
-        def initialize(depth)
-          @depth = depth
-        end
-        
-        def isStopNode(pos)
-          pos.depth >= @depth
-        end
-      end
 
       transactional :<<
       end

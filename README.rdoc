@@ -31,9 +31,9 @@ It uses two powerful and mature java libraries:
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
 
 === License
-Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
-Lucene -  Apache, see http://lucene.apache.org/java/docs/features.html
-Neo4j - Dual free software/commercial license, see http://neo4j.org/
+* Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
+* Lucene -  Apache, see http://lucene.apache.org/java/docs/features.html
+* Neo4j - Dual free software/commercial license, see http://neo4j.org/
 
 === Content
 This page contains the following information:
