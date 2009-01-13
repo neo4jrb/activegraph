@@ -263,14 +263,39 @@ module Neo4j
     end
     
 
-    # Returns a relation traverser for traversing all types of relation from and to this node
-    # @see Neo4j::Relations::RelationTraverser
+    # Returns a Neo4j::Relations::RelationTraverser object for accessing relations from and to this node.
+    # The Neo4j::Relations::RelationTraverser is an Enumerable that returns Neo4j::RelationMixin objects.
+    #
+    # ==== See Also
+    # * Neo4j::Relations::RelationTraverser
+    # * Neo4j::RelationMixin
+    #
+    # ==== Example
+    #
+    #   person_node.relations.outgoing(:friends).each { ... }
     #
     # :api: public
     def relations
       Relations::RelationTraverser.new(@internal_node)
     end
 
+
+    # Returns a Neo4j::Relations::NodeTraverser object for traversing nodes from and to this node.
+    # The Neo4j::Relations::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
+    #
+    # ==== See Also
+    # Neo4j::Relations::NodeTraverser
+    #
+    # ==== Example
+    #
+    #   person_node.traverse.outgoing(:friends).each { ... }
+    #
+    # :api: public
+    def traverse
+      Relations::NodeTraverser.new(@internal_node)
+    end
+
+    
     # Mark this node to be reindex by lucene after the transaction finishes
     #
     # @api private

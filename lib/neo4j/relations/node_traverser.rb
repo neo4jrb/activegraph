@@ -2,7 +2,7 @@ module Neo4j
   module Relations
 
     # Enables traversing nodes
-    #
+    # TODO duplicated code, see RelationTraverser,  Inheritance ?
     class NodeTraverser
       include Enumerable
 
@@ -41,7 +41,7 @@ module Neo4j
           iter = iterator
           while (iter.hasNext) do
             n = iter.next
-            yield Neo4j.load(n)
+            yield Neo4j.load(n.get_id)
           end
         end
       end
