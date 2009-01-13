@@ -71,8 +71,8 @@ module Neo4j
 
       # Creates a relationship instance between this and the other node.
       # If a class for the relationship has not been specified it will be of type DynamicRelation.
-      # To set a relationship type see #Neo4j::relations
       #
+      # :api: public
       def new(other)
         from, to = @node, other
         from,to = to,from unless @info[:outgoing]

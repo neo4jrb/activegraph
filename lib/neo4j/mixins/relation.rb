@@ -1,65 +1,71 @@
-  module Neo4j
+module Neo4j
 
-  #
+
   # A module that can be mixed in like a Neo4j::NodeMixin
   # It wraps the Neo4j Relationship class.
   #
   module RelationMixin
     extend TransactionalMixin
 
+    # Initialize the Relation object with specified java org.neo4j.api.core.Relationship object
+    # Expects at least one parameter.
+    # 
+    # ==== Parameters
+    # param1<org.neo4j.api.core.Relationship>:: the internal java relationship object
+    # 
+    # :api: public
     def initialize(*args)
-      if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Relationship)
-        Transaction.run {init_with_rel(args[0])} unless Transaction.running?
-        init_with_rel(args[0])                   if Transaction.running?
-      else
-        raise ArgumentError.new("This code should not be executed - remove todo")
-        Transaction.run {init_without_rel} unless Transaction.running?
-        init_without_rel                   if Transaction.running?
-      end
+      Transaction.run {init_with_rel(args[0])} unless Transaction.running?
+      init_with_rel(args[0])                   if Transaction.running?
 
       # must call super with no arguments so that chaining of initialize method will work
       super()
     end
 
-    #
+
     # Inits this node with the specified java neo node
     #
+    # :api: private
     def init_with_rel(node)
       @internal_r = node
       self.classname = self.class.to_s unless @internal_r.hasProperty("classname")
       $NEO_LOGGER.debug {"loading relation '#{self.class.to_s}' id #{@internal_r.getId()}"}
     end
 
-
-    #
-    # Inits when no neo java node exists. Must create a new neo java node first.
-    #
-    def init_without_rel
-      @internal_r = Neo4j.instance.create_node
-      self.classname = self.class.to_s
-      self.class.fire_event RelationshipAddedEvent.new(self)  #from_node, to_node, relation_name, relation_id
-      $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}
-    end
-
+    # :api: public
     def end_node
       id = @internal_r.getEndNode.getId
       Neo4j.instance.find_node id
     end
 
+    # :api: public
     def start_node
       id = @internal_r.getStartNode.getId
       Neo4j.instance.find_node id
     end
 
+    # :api: public
     def other_node(node)
       id = @internal_r.getOtherNode(node).getId
       Neo4j.instance.find_node id
     end
 
+    # Returns the neo relationship type that this relationship is used in.
+    # (see java API org.neo4j.api.core.Relationship#getType  and org.neo4j.api.core.RelationshipType)
     #
+    # ==== Returns
+    # Symbol
+    # 
+    # :api: public
+    def relationship_type
+      @internal_r.get_type.name.to_sym
+    end
+    
+
     # Deletes the relationship between two nodes.
     # Will fire a RelationshipDeletedEvent on the start_node class.
     #
+    # :api: public
     def delete
       type = @internal_r.getType().name()
       # start_node can be nil if it is a node that is not managed by Neo4j.rb

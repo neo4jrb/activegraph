@@ -281,7 +281,7 @@ describe "Neo4j::NodeMixin#has_n " do
     end
 
 
-    it "should return a RelationMixin of correct type" do
+    it "should return a RelationMixin of correct class" do
       # given
       c = Customer.new
       o = Order.new
@@ -291,6 +291,18 @@ describe "Neo4j::NodeMixin#has_n " do
 
       # then
       r.should be_kind_of(CustomerOrderRelation)
+    end
+
+    it "should return a RelationMixin of relationship type" do
+      # given
+      c = Customer.new
+      o = Order.new
+
+      # when
+      r = c.orders.new(o)
+
+      # then
+      r.relationship_type.should == :orders
     end
 
 

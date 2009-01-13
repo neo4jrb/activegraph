@@ -17,7 +17,7 @@ It uses two powerful and mature java libraries:
 === Status
 * There are over 200 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
-* Has been load tested (loaded 18000 nodes and done queries/travesal in several threads.)
+* Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
 * Has not been used in production yet (as far as I know).
 
 === Project information
@@ -660,17 +660,17 @@ Example:
 If a Relationship class has not been specified for a relationship then any properties
 can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
 
-=== Traversing relationships:
+=== Traversing has_n Relationships
 
 Each type of relationship has a method that returns an Enumerable object that enables you
 to traverse that type of relationship. 
 
 For example the Person example above declares one relationship of type friends.
-You can traverse all Person's friend by doing of depth 1:
+You can traverse all Person's friend (depth 1 is default)
 
   f.friends.each { |n| puts n }
 
-Traversing friends of a specific depth.
+It is also possible to traverse a relationship of an arbitrary depth.
 Example finding all friends and friends friends.
 
   f.friends.depth(2).each { ...}
@@ -711,7 +711,11 @@ A Neo4j::RelationMixin object represents a relationship between two nodes.
   n1.relations[0].start_node # => n1
   n1.relations[0].end_node # => n2
 
-Relationships can also have properties just like a node.
+A RelationMixin contains the relationship type which connects it connects two nodes with, example:
+
+  n1.relations[0].relationship_type # => :friends
+
+Relationships can also have properties just like a node (NodeMixin).
 
 === Finding outgoing and incoming relationships
 
@@ -755,9 +759,81 @@ Let say we want to find who has my phone number and who consider me as a friend
   me.relations.incoming(:phone_numbers).nodes # => people with my phone numbers
 
   # who consider me as a friend
-  me.relations.incoming(:friend).nodes # => people with a friend relationship to me
+  me.relations.incoming(:friends).nodes # => people with a friend relationship to me
 
 Remember that relationships are not symmetrical.
+Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#traverse method below.
+
+=== Traversing Nodes
+
+The Neo4j::NodeMixin also has a method for traversing nodes instead of relationships.
+It works in a similar way to the Neo4j::NodeMixin#relations method.
+
+Example:
+
+  me.relations.incoming(:friends).nodes # => people with a friend relationship to me
+  # is the same as
+  me.traverse.incoming(:friends) # => people with a friend relationship to me
+
+Unlike the Neo4j::NodeMixin#relations the type(s) of relationships must be specified in the
+incoming, outgoing or both method. Those three methods can take one or more relationship types parameters
+if more then one type of relationship should be traversed.
+
+The Neo4j::NodeMixin#traverse method it allows you to traverse nodes of any depth with a filter.
+
+==== Traversing Nodes of Arbitrary Depth
+
+The depth method allows you to specify how deep the traverse should be.
+If not specified only one level traverse is done.
+
+Example:
+
+  me.traverse.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
+
+
+==== Traversing Nodes with filter
+
+It's possible to filter which nodes should be returned from the traverser object by
+using the filter method.
+The filter method takes a block with the parameter of type TraversalPosition which
+contains information about current node, how many nodes has been returned, depth etc.
+This information can be used in order to decide if the node should included in the traversal search result.
+If the provided block returns true then the node will be included in the search result.
+
+The TraversalPosition is a wrapper of java interface TraversalPosition, see
+http://api.neo4j.org/current/org/neo4j/api/core/TraversalPosition.html
+
+Example:
+
+  # A location contains a hierarchy of other locations
+  # Example region (asia) contains countries which contains  cities etc...
+  class Location
+    include Neo4j::NodeMixin
+    has_n :contains
+    has_n :companies
+    property :name
+    index :name
+  end
+
+  # A company can exist in one or more locations
+  # A company can be local for a sub location (like a city) or global for a whole region (ie. europe).
+  class Company
+    include Neo4j::NodeMixin
+    property :name
+  end
+
+  # finding all companies in sweden
+  # notice how the tp (TraversalPosition) parameter is used in order to only
+  # include nodes included in a companies relationship.
+  sweden = Location.find('sweden')
+  traverser = sweden.traverse.outgoing(:contains, :companies).depth(:all).filter do |tp|
+    tp.last_relationship_traversed.relationship_type == :companies
+  end
+
+  traverser.each {|company| puts "Company name #{company.name}"}
+
+Notice that the example above also shows that the traverser can traverse more then one
+relationship type at the same type.
 
 === Transactions
 
