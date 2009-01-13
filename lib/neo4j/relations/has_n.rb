@@ -5,7 +5,7 @@ module Neo4j
     # Used for traversing relationship of a specific type.
     # Neo4j::NodeMixin can declare
     #
-    class HasNRelations
+    class HasN
       include Enumerable
       extend Neo4j::TransactionalMixin
 

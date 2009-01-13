@@ -588,12 +588,12 @@ module Neo4j
       def has_one(rel_type)
 
         module_eval(%Q{def #{rel_type}=(value)
-                        r = Relations::HasNRelations.new(self,'#{rel_type.to_s}')
+                        r = Relations::HasN.new(self,'#{rel_type.to_s}')
                         r << value
                     end},  __FILE__, __LINE__)
         
         module_eval(%Q{def #{rel_type}
-                        r = Relations::HasNRelations.new(self,'#{rel_type.to_s}')
+                        r = Relations::HasN.new(self,'#{rel_type.to_s}')
                         r.to_a[0]
                     end},  __FILE__, __LINE__)
         relations_info[rel_type] = Relations::RelationInfo.new
@@ -611,7 +611,7 @@ module Neo4j
       # :api: public
       def has_n(rel_type)
         module_eval(%Q{def #{rel_type}(&block)
-                        Relations::HasNRelations.new(self,'#{rel_type.to_s}', &block)
+                        Relations::HasN.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
         relations_info[rel_type] = Relations::RelationInfo.new
       end
