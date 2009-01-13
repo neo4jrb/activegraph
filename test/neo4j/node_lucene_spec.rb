@@ -234,7 +234,7 @@ describe "Find Nodes using Lucene and tokenized index" do
 
 end
 
-describe "Find Nodes using Lucene" do
+describe "Find nodes using Lucene" do
   before(:all) do
     start
     class TestNode

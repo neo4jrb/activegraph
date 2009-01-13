@@ -13,7 +13,7 @@ class MyPropertyData
 end
 
 
-describe 'Neo4j::Nodes having no properties' do
+describe 'NodeMixin having no properties' do
   before(:all) do
     start
     undefine_class :MyNode
@@ -39,7 +39,7 @@ describe 'Neo4j::Nodes having no properties' do
 
 end
 
-describe 'Neo4j::Nodes having Date properties' do
+describe 'NodeMixin having Date properties' do
 
   before(:all) do
     start

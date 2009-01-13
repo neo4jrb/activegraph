@@ -1,6 +1,6 @@
 module Neo4j
   module Relations
-    #
+
     # Enables finding relations for one node
     #
     class RelationTraverser

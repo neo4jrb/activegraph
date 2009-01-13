@@ -5,7 +5,7 @@ require 'neo4j'
 require 'neo4j/spec_helper'
 
 
-describe "Neo4j::Node#has_one " do
+describe "Neo4j::NodeMixin#has_one " do
   before(:all) do
     start
     undefine_class :Person, :Address

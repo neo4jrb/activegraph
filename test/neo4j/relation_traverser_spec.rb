@@ -7,7 +7,7 @@ require 'neo4j/spec_helper'
 
 
 
-describe "Neo4j::Node#relations " do
+describe "RelationTraverser" do
   before(:all) do
     start
   end

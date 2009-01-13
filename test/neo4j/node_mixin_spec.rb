@@ -6,7 +6,7 @@ require 'neo4j/spec_helper'
 
 
 
-describe 'Neo4j::Node' do
+describe 'NodeMixin' do
   before(:all) do
     start
   end
