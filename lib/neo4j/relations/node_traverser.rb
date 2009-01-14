@@ -1,6 +1,8 @@
 module Neo4j
   module Relations
 
+    class IllegalTraversalArguments < StandardError; end
+    
     # Enables traversing nodes
     # TODO duplicated code, see RelationTraverser,  Inheritance ?
     class NodeTraverser
@@ -10,25 +12,32 @@ module Neo4j
 
       def initialize(internal_node)
         @internal_node = internal_node
-        @direction = org.neo4j.api.core.Direction::BOTH
         @stop_evaluator = DepthStopEvaluator.new(1)
+        # what types of relationships and which directions should be traversed
+        @types_and_dirs = []
       end
 
-      def outgoing(*type)
-        @type = type
-        @direction = org.neo4j.api.core.Direction::OUTGOING
+      def outgoing(*types)
+        types.each do |type|
+          @types_and_dirs << RelationshipType.instance(type)
+          @types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
+        end
         self
       end
 
-      def incoming(type = nil)
-        @type = type
-        @direction = org.neo4j.api.core.Direction::INCOMING
+      def incoming(*types)
+        types.each do |type|
+          @types_and_dirs << RelationshipType.instance(type)
+          @types_and_dirs << org.neo4j.api.core.Direction::INCOMING
+        end
         self
       end
 
-      def both(type = nil)
-        @type = type
-        @direction = org.neo4j.api.core.Direction::BOTH
+      def both(*types)
+        types.each do |type|
+          @types_and_dirs << RelationshipType.instance(type)
+          @types_and_dirs << org.neo4j.api.core.Direction::BOTH
+        end
         self
       end
 
@@ -48,20 +57,20 @@ module Neo4j
 
       def iterator
         # check that we know which type of relationship should be traversed
-        raise "Unknown type of relationship. Need to know which type(s) of relationship in order to traverse" if @type.nil?
-
+        if @types_and_dirs.empty?
+          raise IllegalTraversalArguments.new "Unknown type of relationship. Needs to know which type(s) of relationship in order to traverse. Please use the outgoing, incoming or both method."
+        end
+        
         # create the traverser iterator
         #        @internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
         #          @stop_evaluator,
         #          org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
         #          RelationshipType.instance(@type),
         #          @direction).iterator
-        type_and_dirs = [RelationshipType.instance(@type),@direction].to_java :object
         @internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
           @stop_evaluator,
           org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
-          type_and_dirs).iterator
-
+          @types_and_dirs.to_java(:object)).iterator
       end
 
       def to_s

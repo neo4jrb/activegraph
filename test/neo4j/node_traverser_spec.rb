@@ -135,55 +135,77 @@ describe "NodeTraverser" do
       class Location
         include Neo4j::NodeMixin
         has_n :contains
-        has_n :companies
+        has_n :trips
         property :name
         index :name
+
+        def self.create(name)
+          location = Location.new
+          location.name = name
+          location
+        end
       end
 
-      # A company can exist in one or more locations
-      # A company can be local for a sub location (like a city) or global for a whole region (ie. europe).
-      class Company
+      # A Trip can be specific for one global area, such as "see all of sweden" or
+      # local such as a 'city tour of malmoe'
+      class Trip
         include Neo4j::NodeMixin
         property :name
+
+        def self.create(name)
+          trip = Trip.new
+          trip.name = name
+          trip
+        end
+
       end
+
+      @europe = Location.create 'europe'
+      @sweden = Location.create 'sweden'
+      @denmark = Location.create 'denmark'
+      @malmoe = Location.create 'malmoe'
+      @stockholm = Location.create 'stockholm'
+      @europe.contains << @sweden << @denmark
+      @sweden.contains << @malmoe << @stockholm
+
+      @sweden_trip = Trip.create 'See all of sweden in 14 days'
+      @city_tour = Trip.create 'The city tour specialist'
+      @malmoe_trip = Trip.create 'Malmoe city sightseeing by boat'
+
+      @sweden.trips << @sweden_trip
+      @malmoe.trips << @malmoe_trip
+      @malmoe.trips << @city_tour
+      @stockholm.trips << @city_tour # the same city tour is available both in malmoe and stockholm
     end
 
-    it "should return both types of Nodes when traversing two relationship types" do
-      pending
-      europe = Location.new{|n| n.name = 'europe'}
-      sweden = Location.new{|n| n.name = 'sweden'}
-      denmark = Location.new{|n| n.name = 'denmark'}
-      elmhult = Location.new{|n| n.name = 'elmhult'}
-      europe.contains << sweden << denmark
-      sweden.contains << elmhult
-
-      ikea = Company.new{|n| n.name = 'ikea'}
-      elmhult.companies << ikea
-
-      carlsberg = Company.new{|n| n.name = 'ikea'}
-      denmark.companies << carlsberg
-      
-      nodes = sweden.traverse.outgoing(:contains, :companies).to_a
-      nodes.should include(europe, sweden, denmark)
-      nodes.should include(ikea, carlsberg)
+    it "should raise an exception if no type of direction is specified for the traversal" do
+      # when and then
+      lambda { @sweden.traverse.to_a }.should raise_error(Neo4j::Relations::IllegalTraversalArguments)
+      lambda { @sweden.traverse.outgoing().to_a }.should raise_error(Neo4j::Relations::IllegalTraversalArguments)
     end
 
-#    it "should return both types of Nodes when traversing two relationship types" do
-#      europe = Location.new{|n| n.name = 'europe'}
-#      sweden = Location.new{|n| n.name = 'sweden'}
-#      denmark = Location.new{|n| n.name = 'denmark'}
-#      elmhult = Location.new{|n| n.name = 'elmhult'}
-#      europe.contains << sweden << denmark
-#      sweden.contains << elmhult
-#
-#      ikea = Company.new{|n| n.name = 'ikea'}
-#      elmhult.companies << ikea
-#
-#      carlsberg = Company.new{|n| n.name = 'ikea'}
-#      denmark.companies << carlsberg
-#
-#      sweden.traverse.outgoing(:contains, :companies)
-#    end
+    it "should work with two outgoing relationship types" do
+      # default is traversal of depth one
+      nodes = @sweden.traverse.outgoing(:contains, :trips).to_a
+      nodes.should include(@malmoe, @stockholm)
+      nodes.should include(@sweden_trip)
+      nodes.size.should == 3
+    end
+
+    it "should work with two incoming relationship types" do
+      # in which cities are the 'The city tour specialist' available in
+      nodes = @city_tour.traverse.incoming(:contains, :trips).to_a
+      nodes.should include(@malmoe)
+      nodes.should include(@stockholm)
+      nodes.size.should == 2
+    end
+
+    it "should work with both incoming and outgoing relationship types" do
+      nodes = @stockholm.traverse.incoming(:contains).outgoing(:trips).to_a
+      nodes.should include(@sweden)
+      nodes.should include(@city_tour)
+      nodes.size.should == 2
+    end
 
   end
   

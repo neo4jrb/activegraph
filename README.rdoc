@@ -791,10 +791,52 @@ Example:
 
   me.traverse.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
 
+==== Traversing With Several Relationship Types
+
+It is possible to traverse sevaral relationship types at the same type.
+The incoming, both and outgoing methods takes list of arguments.
+
+Example, given the following holiday trip domain:
+
+  # A location contains a hierarchy of other locations
+  # Example region (asia) contains countries which contains  cities etc...
+  class Location
+    include Neo4j::NodeMixin
+    has_n :contains
+    has_n :trips
+    property :name
+    index :name
+
+  # A Trip can be specific for one global area, such as "see all of sweden" or
+  # local such as a 'city tour of malmoe'
+  class Trip
+    include Neo4j::NodeMixin
+    property :name
+  end
+
+  # create all nodes
+  # ...
+
+  # setup the relationship between all nodes
+  @europe.contains << @sweden << @denmark
+  @sweden.contains << @malmoe << @stockholm
+
+  @sweden.trips << @sweden_trip
+  @malmoe.trips << @malmoe_trip
+  @malmoe.trips << @city_tour
+  @stockholm.trips << @city_tour # the same city tour is available both in malmoe and stockholm
+
+Then we can traverse both the contains and the trips relationship types
+Example:
+  @sweden.traverse.outgoing(:contains, :trips).to_a # => [@malmoe, @stockholm, @sweden_trip]
+
+It is also possible to traverse both incoming and outgoing relationships, example:
+
+  @sweden.traverse.outgoing(:contains, :trips).incoming(:contains).to_a # => [@malmoe, @stockholm, @sweden_trip, @europe]
 
 ==== Traversing Nodes With a Filter
 
-It's possible to filter which nodes should be returned from the traverser object by
+It's possible to filter which nodes should be returned from the traverser by
 using the filter method.
 The filter method takes a block with the parameter of type TraversalPosition which
 contains information about current node, how many nodes has been returned, depth etc.
@@ -804,37 +846,15 @@ If the provided block returns true then the node will be included in the search 
 The TraversalPosition is a wrapper of java interface TraversalPosition, see
 http://api.neo4j.org/current/org/neo4j/api/core/TraversalPosition.html
 
-Example:
+For example if we only want to return the Trip objects in the example above:
 
-  # A location contains a hierarchy of other locations
-  # Example region (asia) contains countries which contains  cities etc...
-  class Location
-    include Neo4j::NodeMixin
-    has_n :contains
-    has_n :companies
-    property :name
-    index :name
-  end
-
-  # A company can exist in one or more locations
-  # A company can be local for a sub location (like a city) or global for a whole region (ie. europe).
-  class Company
-    include Neo4j::NodeMixin
-    property :name
-  end
-
-  # finding all companies in sweden
   # notice how the tp (TraversalPosition) parameter is used in order to only
-  # include nodes included in a companies relationship.
-  sweden = Location.find('sweden')
-  traverser = sweden.traverse.outgoing(:contains, :companies).depth(:all).filter do |tp|
-    tp.last_relationship_traversed.relationship_type == :companies
+  # return nodes included in a 'trips' relationship.
+  traverser = @sweden.traverse.outgoing(:contains, :trips).filter do |tp|
+    tp.last_relationship_traversed.relationship_type == :trips
   end
 
-  traverser.each {|company| puts "Company name #{company.name}"}
-
-Notice that the example above also shows that the traverser can traverse more then one
-relationship type at the same type.
+  traverser.to_a # => [@sweden_trip]
 
 === Transactions
 
