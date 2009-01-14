@@ -627,10 +627,10 @@ Example of has_one: A person can have at most one Address
       end
 
 In the example above we have Neo4j.rb will generate the following methods
- * in Person, the method ''address='' and ''address''
- * in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
+* in Person, the method ''address='' and ''address''
+* in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
 
-Example of usage
+Example of usage:
 
       p = Person.new
       p.address = Address.new
@@ -767,7 +767,8 @@ Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#trave
 === Traversing Nodes
 
 The Neo4j::NodeMixin also has a method for traversing nodes instead of relationships.
-It works in a similar way to the Neo4j::NodeMixin#relations method.
+It works in a similar way to the Neo4j::NodeMixin#relations method but also allows
+traversing the node space of arbitrary depth.
 
 Example:
 
@@ -779,7 +780,7 @@ Unlike the Neo4j::NodeMixin#relations the type(s) of relationships must be speci
 incoming, outgoing or both method. Those three methods can take one or more relationship types parameters
 if more then one type of relationship should be traversed.
 
-The Neo4j::NodeMixin#traverse method it allows you to traverse nodes of any depth with a filter.
+The Neo4j::NodeMixin#traverse method allows you to traverse the node space of any depth with a filter, see below.
 
 ==== Traversing Nodes of Arbitrary Depth
 
@@ -791,7 +792,7 @@ Example:
   me.traverse.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
 
 
-==== Traversing Nodes with filter
+==== Traversing Nodes With a Filter
 
 It's possible to filter which nodes should be returned from the traverser object by
 using the filter method.
