@@ -125,6 +125,64 @@ describe "NodeTraverser" do
       t2.traverse.incoming(:friends).to_a.should include(t1)
       t3.traverse.incoming(:friends).to_a.should include(t1)
     end
+
+    it "should find outgoing nodes of depth 2" do
+      # given
+      t = TestNode.new
+      t1 = TestNode.new
+      t11 = TestNode.new
+      t111 = TestNode.new
+      t12 = TestNode.new
+      t2 = TestNode.new
+
+      t.friends << t1 << t2
+      t1.friends << t12 << t11
+      t11.friends << t111
+
+      # when and then
+      t1_outgoing = t1.traverse.outgoing(:friends).depth(2).to_a
+      t1_outgoing.size.should == 3
+      t1_outgoing.should include(t11, t111, t12)
+    end
+
+    it "should find outgoing nodes of depth all" do
+      # given
+      t = TestNode.new
+      t1 = TestNode.new
+      t11 = TestNode.new
+      t111 = TestNode.new
+      t12 = TestNode.new
+      t2 = TestNode.new
+
+      t.friends << t1 << t2
+      t1.friends << t12 << t11
+      t11.friends << t111
+
+      # when and then
+      t_outgoing = t.traverse.outgoing(:friends).depth(:all).to_a
+      t_outgoing.size.should == 5
+      t_outgoing.should include(t1,t11, t111,t12,t2)
+    end
+
+    it "should find incoming nodes of depth 2" do
+      # given
+      t = TestNode.new
+      t1 = TestNode.new
+      t11 = TestNode.new
+      t111 = TestNode.new
+      t12 = TestNode.new
+      t2 = TestNode.new
+
+      t.friends << t1 << t2
+      t1.friends << t12 << t11
+      t11.friends << t111
+
+      # when and then
+      t11_incoming = t11.traverse.incoming(:friends).depth(2).to_a
+      t11_incoming.size.should == 2
+      t11_incoming.should include(t, t1)
+    end
+
   end
 
 

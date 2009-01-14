@@ -17,6 +17,15 @@ module Neo4j
         @types_and_dirs = []
       end
 
+      def depth(d)
+        if d == :all
+          @stop_evaluator = org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
+        else
+          @stop_evaluator = DepthStopEvaluator.new(d)
+        end
+        self
+      end
+      
       def outgoing(*types)
         types.each do |type|
           @types_and_dirs << RelationshipType.instance(type)
@@ -61,12 +70,6 @@ module Neo4j
           raise IllegalTraversalArguments.new "Unknown type of relationship. Needs to know which type(s) of relationship in order to traverse. Please use the outgoing, incoming or both method."
         end
         
-        # create the traverser iterator
-        #        @internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
-        #          @stop_evaluator,
-        #          org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
-        #          RelationshipType.instance(@type),
-        #          @direction).iterator
         @internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
           @stop_evaluator,
           org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
