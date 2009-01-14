@@ -9,21 +9,19 @@ module Neo4j
       include Enumerable
       extend Neo4j::TransactionalMixin
 
-      # TODO other_node_class not used ?
       def initialize(node, type, &filter)
         @node = node
         @type = RelationshipType.instance(type)
+        @traverser = NodeTraverser.new(node.internal_node)
         @filter = filter
-        @stop_evaluator = DepthStopEvaluator.new(1)
         @info = node.class.relations_info[type.to_sym]
 
         if @info[:outgoing]
-          @direction = org.neo4j.api.core.Direction::OUTGOING
-          @type = RelationshipType.instance(type)
+          @traverser.outgoing(type)
         else
-          @direction = org.neo4j.api.core.Direction::INCOMING
           other_class_type = @info[:type].to_s
           @type = RelationshipType.instance(other_class_type)
+          @traverser.incoming(other_class_type)
         end
       end
 
@@ -41,31 +39,12 @@ module Neo4j
       # 
       # :api: public
       def depth(d)
-        if d == :all
-          @stop_evaluator = org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
-        else
-          @stop_evaluator = DepthStopEvaluator.new(d)
-        end
+        @traverser.depth(d)
         self
       end
       
-      def each
-        traverser = @node.internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
-          @stop_evaluator,
-          org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
-          @type,
-          @direction)
-        Neo4j::Transaction.run do
-          iter = traverser.iterator
-          while (iter.hasNext) do
-            node = Neo4j.instance.load_node(iter.next)
-            if !@filter.nil?
-              res =  node.instance_eval(&@filter)
-              next unless res
-            end
-            yield node
-          end
-        end
+      def each(&block)
+        @traverser.each(&block)
       end
 
 
