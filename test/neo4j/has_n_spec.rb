@@ -148,22 +148,6 @@ describe "Neo4j::NodeMixin#has_n " do
       nodes.to_a.size.should == 2
     end
 
-
-    it "should get all nodes two levels deep (for depth(2))" do
-      pending "see lighthouse ticket 19"
-      nodes = @n1.nodes.outgoing(:friends).depth(2)
-      @n1.friends.levels
-      nodes.should include(@n11,@n12,@n112)
-      nodes.should_not include(@n0,@n1,@n1121)
-    end
-
-    it "should get all nodes (for levels(:all))" do
-      pending "see lighthouse ticket 19"
-      nodes = @n1.nodes.outgoing(:friends).depth(:all)
-      nodes.should include(@n11,@n12,@n112,@n1121)
-      nodes.should_not include(@n0,@n1)
-    end
-
   end
 
   describe "many to one relationship" do
