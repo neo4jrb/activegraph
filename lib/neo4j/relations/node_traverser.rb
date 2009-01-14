@@ -14,7 +14,7 @@ module Neo4j
         @stop_evaluator = DepthStopEvaluator.new(1)
       end
 
-      def outgoing(type = nil)
+      def outgoing(*type)
         @type = type
         @direction = org.neo4j.api.core.Direction::OUTGOING
         self
@@ -51,11 +51,17 @@ module Neo4j
         raise "Unknown type of relationship. Need to know which type(s) of relationship in order to traverse" if @type.nil?
 
         # create the traverser iterator
+        #        @internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
+        #          @stop_evaluator,
+        #          org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
+        #          RelationshipType.instance(@type),
+        #          @direction).iterator
+        type_and_dirs = [RelationshipType.instance(@type),@direction].to_java :object
         @internal_node.traverse(org.neo4j.api.core.Traverser::Order::BREADTH_FIRST,
           @stop_evaluator,
           org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE,
-          RelationshipType.instance(@type),
-          @direction).iterator
+          type_and_dirs).iterator
+
       end
 
       def to_s

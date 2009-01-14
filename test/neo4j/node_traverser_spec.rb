@@ -127,5 +127,64 @@ describe "NodeTraverser" do
     end
   end
 
+
+  describe "traversing several relationships at the same time" do
+    before(:all) do
+      # A location contains a hierarchy of other locations
+      # Example region (asia) contains countries which contains  cities etc...
+      class Location
+        include Neo4j::NodeMixin
+        has_n :contains
+        has_n :companies
+        property :name
+        index :name
+      end
+
+      # A company can exist in one or more locations
+      # A company can be local for a sub location (like a city) or global for a whole region (ie. europe).
+      class Company
+        include Neo4j::NodeMixin
+        property :name
+      end
+    end
+
+    it "should return both types of Nodes when traversing two relationship types" do
+      pending
+      europe = Location.new{|n| n.name = 'europe'}
+      sweden = Location.new{|n| n.name = 'sweden'}
+      denmark = Location.new{|n| n.name = 'denmark'}
+      elmhult = Location.new{|n| n.name = 'elmhult'}
+      europe.contains << sweden << denmark
+      sweden.contains << elmhult
+
+      ikea = Company.new{|n| n.name = 'ikea'}
+      elmhult.companies << ikea
+
+      carlsberg = Company.new{|n| n.name = 'ikea'}
+      denmark.companies << carlsberg
+      
+      nodes = sweden.traverse.outgoing(:contains, :companies).to_a
+      nodes.should include(europe, sweden, denmark)
+      nodes.should include(ikea, carlsberg)
+    end
+
+#    it "should return both types of Nodes when traversing two relationship types" do
+#      europe = Location.new{|n| n.name = 'europe'}
+#      sweden = Location.new{|n| n.name = 'sweden'}
+#      denmark = Location.new{|n| n.name = 'denmark'}
+#      elmhult = Location.new{|n| n.name = 'elmhult'}
+#      europe.contains << sweden << denmark
+#      sweden.contains << elmhult
+#
+#      ikea = Company.new{|n| n.name = 'ikea'}
+#      elmhult.companies << ikea
+#
+#      carlsberg = Company.new{|n| n.name = 'ikea'}
+#      denmark.companies << carlsberg
+#
+#      sweden.traverse.outgoing(:contains, :companies)
+#    end
+
+  end
   
 end
