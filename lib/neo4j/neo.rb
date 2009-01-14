@@ -140,18 +140,17 @@ module Neo4j
   
 
 
-    #
     # Loads a Neo node
     # Expects the neo property 'classname' to exist.
     # That property is used to load the ruby instance
     #
+    # :api: private
     def load_node(neo_node)
       return nil unless neo_node.has_property('classname')
       _load neo_node.get_property('classname'), neo_node
     end
 
 
-    #
     # Loads a Neo relationship
     # If the neo property 'classname' to exist it will use that to create an instance of that class.
     # Otherwise it will create an instance of Neo4j::Relations::DynamicRelation that represent 'rel'

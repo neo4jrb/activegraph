@@ -13,7 +13,6 @@ module Neo4j
         @node = node
         @type = RelationshipType.instance(type)
         @traverser = NodeTraverser.new(node.internal_node)
-        @filter = filter
         @info = node.class.relations_info[type.to_sym]
 
         if @info[:outgoing]
@@ -23,8 +22,11 @@ module Neo4j
           @type = RelationshipType.instance(other_class_type)
           @traverser.incoming(other_class_type)
         end
+
+        @traverser.filter(&filter) unless filter.nil?
       end
 
+      
       # Sets the depth of the traversal.
       # Default is 1 if not specified.
       #

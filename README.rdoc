@@ -837,10 +837,22 @@ It is also possible to traverse both incoming and outgoing relationships, exampl
 ==== Traversing Nodes With a Filter
 
 It's possible to filter which nodes should be returned from the traverser by
-using the filter method.
-The filter method takes a block with the parameter of type TraversalPosition which
+using the filter function.
+
+==== Filtering: Using Evaluation in the Context of the Current Node
+If the provided filter function does not take any parameter it will be evaluted in the context
+of the current node being traversed.
+That means that one can writer filter functions like this:
+
+  @sweden.traverse.outgoing(:contains, :trips).filter { name == 'sweden' }
+
+==== Filtering: Using the TraversalPostion
+The filter method can take a block with the parameter of type TraversalPosition which
 contains information about current node, how many nodes has been returned, depth etc.
-This information can be used in order to decide if the node should included in the traversal search result.
+It that case the provided filter function will not be evaluated in the context of the current node
+as described above.
+
+The information contained in the TraversalPostion can be used in order to decide if the node should included in the traversal search result.
 If the provided block returns true then the node will be included in the search result.
 
 The TraversalPosition is a wrapper of java interface TraversalPosition, see

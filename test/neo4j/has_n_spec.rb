@@ -245,7 +245,7 @@ describe "Neo4j::NodeMixin#has_n " do
     end
 
     it "should find the order using a filter: customer.orders{ order_id == '2'}" do
-      pending "filter not implemented yet, see ticket 17"
+#      pending "filter not implemented yet, see ticket 17"
       # given
       customer = Customer.new
       order1 = Order.new{|n| n.order_id = '1'}

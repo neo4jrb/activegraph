@@ -30,6 +30,7 @@ describe "NodeTraverser" do
         include Neo4j::NodeMixin
         has_n :friends
         has_n :parents
+        property :name
       end
     end    
     
@@ -181,6 +182,89 @@ describe "NodeTraverser" do
       t11_incoming = t11.traverse.incoming(:friends).depth(2).to_a
       t11_incoming.size.should == 2
       t11_incoming.should include(t, t1)
+    end
+
+    it "should find outgoing nodes using a filter function that will be evaluated in the context of the current node" do
+      # given
+      a = TestNode.new {|n| n.name = 'a'}
+      b = TestNode.new {|n| n.name = 'b'}
+      c = TestNode.new {|n| n.name = 'c'}
+      a.friends << b << c
+
+      # when
+      result = a.traverse.outgoing(:friends).filter{ name == 'b'}.to_a
+
+      # then
+      result.size.should == 1
+      result.should include(b)
+    end
+
+  end
+
+  describe 'traversing using the TraversalPostion information' do
+    before(:all) do
+      undefine_class :TestNode  # make sure it is not already defined
+
+      class TestNode
+        include Neo4j::NodeMixin
+        has_n :friends
+        has_n :parents
+        property :name
+      end
+
+      # given
+      @a = TestNode.new {|n| n.name = 'a'}
+      @b = TestNode.new {|n| n.name = 'b'}
+      @c = TestNode.new {|n| n.name = 'c'}
+      @p = TestNode.new {|n| n.name = 'p'}
+      @a.friends << @b << @c
+      @a.parents << @p
+    end
+
+    it "should work with the TraversalPosition#current_node parameter" do
+      # when
+      result = @a.traverse.outgoing(:friends).filter{|tp| tp.current_node.name == 'b'}.to_a
+
+      # then
+      result.size.should == 1
+      result.should include(@b)
+    end
+
+    it "should work with the TraversalPosition#previous_node parameter" do
+      # when
+      result = @a.traverse.outgoing(:friends).filter{|tp| tp.previous_node.name == 'a' unless tp.previous_node.nil?}.to_a
+
+      # then
+      result.size.should == 2
+      result.should include(@b,@c)
+    end
+
+    it "should work with the TraversalPosition#last_relationship_traversed parameter" do
+      # when
+      result = @a.traverse.outgoing(:friends, :parents).filter do |tp|
+        tp.last_relationship_traversed.relationship_type == :parents unless tp.last_relationship_traversed.nil?
+      end.to_a
+
+      # then
+      result.size.should == 1
+      result.should include(@p)
+    end
+
+    it "should work with the TraversalPosition#depth parameter" do
+      # when
+      result = @a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.depth == 0 }.to_a
+
+      # then
+      result.size.should == 1
+      result.should include(@a)
+    end
+
+    it "should work with the TraversalPosition#returned_nodes_count parameter" do
+      # when
+      result = @a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.returned_nodes_count < 2 }.to_a
+
+      # then
+      result.size.should == 2
     end
 
   end
