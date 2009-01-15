@@ -201,6 +201,11 @@ describe "NodeTraverser" do
 
   end
 
+
+  # ----------------------------------------------------------------------------
+  #  traversing using the TraversalPostion information
+  #
+
   describe 'traversing using the TraversalPostion information' do
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
@@ -269,6 +274,9 @@ describe "NodeTraverser" do
 
   end
 
+  # ----------------------------------------------------------------------------
+  #  traversing several relationships at the same time
+  #
 
   describe "traversing several relationships at the same time" do
     before(:all) do
@@ -340,6 +348,18 @@ describe "NodeTraverser" do
       nodes.should include(@malmoe)
       nodes.should include(@stockholm)
       nodes.size.should == 2
+    end
+
+    it "should work with two outgoing relationship types and a filter" do
+      # find all trips in sweden
+      nodes = @sweden.traverse.outgoing(:contains, :trips).depth(:all).filter do |tp|
+        tp.last_relationship_traversed.relationship_type == :trips unless tp.last_relationship_traversed.nil?
+      end.to_a
+
+      nodes.should include(@sweden_trip)
+      nodes.should include(@city_tour)
+      nodes.should include(@malmoe_trip)
+      nodes.size.should == 3
     end
 
     it "should work with both incoming and outgoing relationship types" do

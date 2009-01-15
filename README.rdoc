@@ -628,12 +628,16 @@ To return nodes (just like the relations method)
   Volvo.all.nodes  # => [c,v]
 
 
-=== Relationship has_n
+=== Relationship has_n and has_one
 
 Neo relationships are none symmetrical. That means that if A has a relation to B
 then it may not be true that B has a relation to A.
 
-Relationships has to be declared by using the 'relations' class method.
+Relationships has to be declared by using the 'has_n' or 'has_one'
+Neo4j::NodeMixin class methods.
+
+==== has_n
+
 For example, let say that Person can have a relationship to other nodes with the type 'friends':
 
   class Person 
@@ -655,7 +659,7 @@ The following example is the same as the example above:
   neo = Person.new
   neo.known_by << me # neo is known by me, that means that I know neo but neo does have to know me
   
-=== Relationship has_one
+==== Relationship has_one
 
 Example of has_one: A person can have at most one Address
 
@@ -687,24 +691,7 @@ Or from the incoming ''address'' relationship
       a.people << Person.new
 
 
-=== Properties on a relationship
-
-A relationship can have properties just like a node. 
-
-Example:
-
-  p1 = Person.new
-  p2 = Person.new
-
-  relation = p1.friends.new(p2)
-
-  # set a property 'since' on this relationship bewteen p1 and p2
-  relation.since = 1992
-
-If a Relationship class has not been specified for a relationship then any properties
-can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
-
-=== Traversing has_n Relationships
+==== Traversing has_n Relationships
 
 Each type of relationship has a method that returns an Enumerable object that enables you
 to traverse that type of relationship. 
@@ -723,7 +710,7 @@ Traversing to the end of the graph
 
   f.friends.depth(:all).each { ...}
 
-=== Filtering nodes in a relationship
+==== Filtering Nodes
 
 If you want to find one node in a relationship you can use a filter.
 Example, let say we want to find a friend with name 'andreas'
@@ -737,94 +724,14 @@ Example, let say we want to find a friend with name 'andreas'
 The block { name == 'andreas' } will be evaluated on each node in the relationship.
 If the evaluation returns true the node will be included in the filter search result.
 
-=== Finding Relationships
-
-Given we have the two nodes with a relationship between them:
-
-  n1 = Person.new
-  n2 = Person.new
-  
-  n1.friends << n2
-
-Then we can find all incoming and outgoing relationships like this:
-
-  n1.relations.to_a # => [#<Neo4j::RelationMixin:0x134ae32]
-
-A Neo4j::RelationMixin object represents a relationship between two nodes.
-
-  n1.relations[0].start_node # => n1
-  n1.relations[0].end_node # => n2
-
-A RelationMixin contains the relationship type which connects it connects two nodes with, example:
-
-  n1.relations[0].relationship_type # => :friends
-
-Relationships can also have properties just like a node (NodeMixin).
-
-=== Finding outgoing and incoming relationships
-
-If we are only interested in all incoming nodes, we can do 
-
-  n2.relations.incoming # => [#<Neo4j::RelationMixin:0x134ae32]
-
-Or outgoing:
-
-  n1.relations.outgoing # => [#<Neo4j::RelationMixin:0x134aea2]
-
-To find a specific relationship use the [] operator:
-
-  n1.relations.outgoing[n2] = #<Neo4j::RelationMixin:0x134aea2
-
-Or which is better performance wise (since only friends relationships are being traversed):
-
-  n1.relations.outgoing(:friends)[n2] = #<Neo4j::RelationMixin:0x134aea2
-
-=== Deleting a relationship
-
-Use the Neo4j::RelationMixin#delete method.
-For example, to delete the relationship between n1 and n2 from the example above:
-
-    n1.relations.outgoing(:friends)[n2].delete
-
-=== Finding nodes in a relationship
-
-If you do not want those relationship object but instead want the nodes you can use the 'nodes' method
-in the Neo4j::RelationMixin object.
-
-For example:
-
-  n2.relations.incoming.nodes # => [n1]
-
-=== Finding outgoing/incoming nodes of a specific relationship type
-
-Let say we want to find who has my phone number and who consider me as a friend
-
-  # who has my phone numbers
-  me.relations.incoming(:phone_numbers).nodes # => people with my phone numbers
-
-  # who consider me as a friend
-  me.relations.incoming(:friends).nodes # => people with a friend relationship to me
-
-Remember that relationships are not symmetrical.
-Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#traverse method below.
-
 === Traversing Nodes
 
-The Neo4j::NodeMixin also has a method for traversing nodes instead of relationships.
-It works in a similar way to the Neo4j::NodeMixin#relations method but also allows
-traversing the node space of arbitrary depth.
-
-Example:
-
-  me.relations.incoming(:friends).nodes # => people with a friend relationship to me
-  # is the same as
-  me.traverse.incoming(:friends) # => people with a friend relationship to me
-
-Unlike the Neo4j::NodeMixin#relations the type(s) of relationships must be specified in the
-incoming, outgoing or both method. Those three methods can take one or more relationship types parameters
+The Neo4j::NodeMixin#traverse method is a more powerful method compared to the
+generated has_n and has_one methods. Unlike those generated method it can
+traverse several relationship types at the same time. The types of relationships
+being traversed must therefore always be specified in the incoming, outgoing or both method.
+Those three methods can take one or more relationship types parameters
 if more then one type of relationship should be traversed.
-
-The Neo4j::NodeMixin#traverse method allows you to traverse the node space of any depth with a filter, see below.
 
 ==== Traversing Nodes of Arbitrary Depth
 
@@ -835,7 +742,7 @@ Example:
 
   me.traverse.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
 
-==== Traversing With Several Relationship Types
+==== Traversing Nodes With Several Relationship Types
 
 It is possible to traverse sevaral relationship types at the same type.
 The incoming, both and outgoing methods takes list of arguments.
@@ -881,7 +788,9 @@ It is also possible to traverse both incoming and outgoing relationships, exampl
 ==== Traversing Nodes With a Filter
 
 It's possible to filter which nodes should be returned from the traverser by
-using the filter function.
+using the filter function. This filter function will be evaluated differently
+depending on if it takes one argument or no arguments, see below.
+
 
 ==== Filtering: Using Evaluation in the Context of the Current Node
 If the provided filter function does not take any parameter it will be evaluted in the context
@@ -891,13 +800,14 @@ That means that one can writer filter functions like this:
   @sweden.traverse.outgoing(:contains, :trips).filter { name == 'sweden' }
 
 ==== Filtering: Using the TraversalPostion
-The filter method can take a block with the parameter of type TraversalPosition which
-contains information about current node, how many nodes has been returned, depth etc.
-It that case the provided filter function will not be evaluated in the context of the current node
-as described above.
+If the filter method takes one parameter then it will be given an object of type
+TraversalPosition which contains information about current node, how many nodes
+has been returned, depth etc.
 
 The information contained in the TraversalPostion can be used in order to decide if the node should included in the traversal search result.
 If the provided block returns true then the node will be included in the search result.
+
+The filter function will not be evaluated in the context of the current node when this parameter is provided.
 
 The TraversalPosition is a wrapper of java interface TraversalPosition, see
 http://api.neo4j.org/current/org/neo4j/api/core/TraversalPosition.html
@@ -911,6 +821,135 @@ For example if we only want to return the Trip objects in the example above:
   end
 
   traverser.to_a # => [@sweden_trip]
+
+=== Relationships
+
+A relationship between two nodes can have properties just like a node.
+
+Example:
+
+  p1 = Person.new
+  p2 = Person.new
+
+  relation = p1.friends.new(p2)
+
+  # set a property 'since' on this relationship bewteen p1 and p2
+  relation.since = 1992
+
+If a Relationship class has not been specified for a relationship then any properties
+can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
+
+If you instead want to use your own class for a relationship use the
+Neo4j::NodeMixin#has_n.relation method, example:
+
+      class Role
+        # This class can be used as the relationship between two nodes
+        # since it includes the following mixin
+        include Neo4j::RelationMixin
+        property :name
+      end
+
+      class Actor
+        include Neo4j::NodeMixin
+        # use the Role class above in the relationship between Actor and Movie
+        has_n(:acted_in).to(Movie).relation(Role)
+      end
+
+
+=== Finding Relationships
+
+The Neo4j::NodeMixin#relations method can be used to find incoming or outgoing relationship objects.
+Example of listing all types of outgoing (default) relation objects (of depth one) from the me node.
+
+  me.relations.each {|rel| ... }
+
+If we instead want to list the nodes that those relationships points to then the nodes method can be used.
+
+  me.relations.nodes.each {|rel| ... }
+
+Listing all incoming relationship obejcts of any relationship type:
+
+  me.relations.incoming.each { ... }
+
+Listing both incoming and outgoing relationship object of a specific type:
+
+  me.relations.both(:friends) { }
+
+Finding one outgoing relationship of a specific type and node (you)
+
+  me.relations.outgoing(:friends)[you] # => [#<Neo4j::RelationMixin:0x134ae32]
+
+
+==== Finding Relationships Example
+
+Example, given we have the two nodes with a relationship between them:
+
+  n1 = Person.new
+  n2 = Person.new
+
+  n1.friends << n2
+
+Then we can find all incoming and outgoing relationships like this:
+
+  n1.relations.to_a # => [#<Neo4j::RelationMixin:0x134ae32]
+
+A Neo4j::RelationMixin object represents a relationship between two nodes.
+
+  n1.relations[0].start_node # => n1
+  n1.relations[0].end_node # => n2
+
+A RelationMixin contains the relationship type which connects it connects two nodes with, example:
+
+  n1.relations[0].relationship_type # => :friends
+
+Relationships can also have properties just like a node (NodeMixin).
+
+=== Finding outgoing and incoming relationships
+
+If we are only interested in all incoming nodes, we can do
+
+  n2.relations.incoming # => [#<Neo4j::RelationMixin:0x134ae32]
+
+Or outgoing:
+
+  n1.relations.outgoing # => [#<Neo4j::RelationMixin:0x134aea2]
+
+To find a specific relationship use the [] operator:
+
+  n1.relations.outgoing[n2] = #<Neo4j::RelationMixin:0x134aea2
+
+Or which is better performance wise (since only friends relationships are being traversed):
+
+  n1.relations.outgoing(:friends)[n2] = #<Neo4j::RelationMixin:0x134aea2
+
+=== Deleting a relationship
+
+Use the Neo4j::RelationMixin#delete method.
+For example, to delete the relationship between n1 and n2 from the example above:
+
+    n1.relations.outgoing(:friends)[n2].delete
+
+=== Finding nodes in a relationship
+
+If you do not want those relationship object but instead want the nodes you can use the 'nodes' method
+in the Neo4j::RelationMixin object.
+
+For example:
+
+  n2.relations.incoming.nodes # => [n1]
+
+=== Finding outgoing/incoming nodes of a specific relationship type
+
+Let say we want to find who has my phone number and who consider me as a friend
+
+  # who has my phone numbers
+  me.relations.incoming(:phone_numbers).nodes # => people with my phone numbers
+
+  # who consider me as a friend
+  me.relations.incoming(:friends).nodes # => people with a friend relationship to me
+
+Remember that relationships are not symmetrical.
+Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#traverse method below.
 
 === Transactions
 
