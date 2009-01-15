@@ -7,7 +7,7 @@ require 'neo4j/spec_helper'
 class Order
   include Neo4j::NodeMixin
 end
-class Customer
+class CustomerA
   include Neo4j::NodeMixin
 end
 
@@ -29,26 +29,26 @@ class Order
   property :total_cost
   property :dispatched
   has_n(:products).to(Product).relation(OrderLine)
-  has_one(:customer).to(Customer)
+  has_one(:customer).to(CustomerA)
   
   index "customer.age"
 end
     
-class Customer
+class CustomerA
   property :name
   property :age
   
   has_n(:orders).from(Order, :customer) # :zero_or_more, :orders, Order, :customer  # contains incoming relationship of type 'orders'
-  has_n(:friends).to(Customer)
+  has_n(:friends).to(CustomerA)
   
   def to_s
-    "Customer [name=#{name}]"
+    "CustomerA [name=#{name}]"
   end
   
   index "age"
   index "name"
   
-  # when Order with a relationship to Customer
+  # when Order with a relationship to CustomerA
   # For each customer in an order update total_cost
   index "orders.total_cost"
   index "friends.age"
@@ -59,13 +59,13 @@ end
 
 
 
-describe "Customer,Order,Product" do
-  #    * An Customer can have One or Many Orders
+describe "CustomerA,Order,Product" do
+  #    * An CustomerA can have One or Many Orders
   #    * An Order can contain One or Many Products (OrderLines)
   #    * A Product can be associated with One or Many Orders
   #    * A Supplier can supply One or Many Products
 
-  #   1. Which Products have been Ordered by a Customer
+  #   1. Which Products have been Ordered by a CustomerA
   #   2. What date/time was a particular Order dispatched
   #   3. How many open Orders do we have in the system
   #   4. What is the Total Order Cost for a certain Order
@@ -85,14 +85,14 @@ describe "Customer,Order,Product" do
 
   describe "create relation" do
     it "should allow to create a new dynamic relationship to an order from a customer instance" do
-      c = Customer.new
+      c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
       r.should be_kind_of(Neo4j::Relations::DynamicRelation)
     end
 
     it "should allow to set properties on the customer - order relationship" do
-      c = Customer.new
+      c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
 
@@ -112,7 +112,7 @@ describe "Customer,Order,Product" do
 
   describe "#find" do
     it "should find one customers who has made two orders with a certain total cost" do
-      customer = Customer.new
+      customer = CustomerA.new
       order1 = Order.new
       order1.total_cost = 100
       order1.customer = customer
@@ -121,51 +121,51 @@ describe "Customer,Order,Product" do
       order2.total_cost = 42
       order2.customer = customer
       
-      r = Customer.find('orders.total_cost' => '100', 'orders.total_cost' => '42')
+      r = CustomerA.find('orders.total_cost' => '100', 'orders.total_cost' => '42')
       r.size.should == 1
       r.should include(customer)
     end
   
     it "should find two customers who has made two orders with a certain total cost" do
-      customer1 = Customer.new
+      customer1 = CustomerA.new
       order1 = Order.new
       order1.total_cost = 100
       order1.customer = customer1
       
-      customer2 = Customer.new
+      customer2 = CustomerA.new
       order2 = Order.new
       order2.total_cost = 42
       order2.customer = customer2
   
-      r = Customer.find('orders.total_cost' => 100)
+      r = CustomerA.find('orders.total_cost' => 100)
       r.size.should == 1
       r.should include(customer1)
       
-      r = Customer.find('orders.total_cost' => 42)
+      r = CustomerA.find('orders.total_cost' => 42)
       r.size.should == 1
       r.should include(customer2)
     end
     
     it "should not find a customer with 1 order of a total cost of 200 if that order has been deleted" do
-      customer = Customer.new
+      customer = CustomerA.new
       order = Order.new
       order.total_cost = '200'
       order.customer = customer
         
-      Customer.find('orders.total_cost' => '200').size.should == 1
+      CustomerA.find('orders.total_cost' => '200').size.should == 1
         
       # when
       order.delete
         
       # then
-      Customer.find('orders.total_cost' => '200').size.should == 0
+      CustomerA.find('orders.total_cost' => '200').size.should == 0
     end
       
       
     it "should find customer who has a friends of age 30, setting relationship first and then age" do
-      c1 = Customer.new
-      c2 = Customer.new
-      c3 = Customer.new
+      c1 = CustomerA.new
+      c2 = CustomerA.new
+      c3 = CustomerA.new
         
       c1.friends << c2
       c2.friends << c3
@@ -175,31 +175,31 @@ describe "Customer,Order,Product" do
       c2.age = 30
       c3.age = 31
         
-      res = Customer.find('friends.age' => 30)
+      res = CustomerA.find('friends.age' => 30)
       res.size.should == 2
       res.should include(c1, c3)
     end
     
     it "should find customer who has a friend with age 30, setting age first and then relationship" do
-      c1 = Customer.new  {|n| n.name = 'c1'; n.age = 29}
-      c2 = Customer.new  {|n| n.name = 'c2'; n.age = 30}
-      c3 = Customer.new  {|n| n.name = 'c3'; n.age = 31}
+      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
+      c2 = CustomerA.new  {|n| n.name = 'c2'; n.age = 30}
+      c3 = CustomerA.new  {|n| n.name = 'c3'; n.age = 31}
       
       c1.friends << c2
       c2.friends << c3
       c3.friends << c1
       
-      res = Customer.find(:'friends.age' => 30)
+      res = CustomerA.find(:'friends.age' => 30)
       res.size.should == 2
       res.should include(c1, c3)
     end
     
     it "should find all customer of age 30"  do
-      c1 = Customer.new  {|n| n.name = 'c1'; n.age = 29}
-      c2 = Customer.new  {|n| n.name = 'c2'; n.age = 30}
-      c3 = Customer.new  {|n| n.name = 'c3'; n.age = 30}
+      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
+      c2 = CustomerA.new  {|n| n.name = 'c2'; n.age = 30}
+      c3 = CustomerA.new  {|n| n.name = 'c3'; n.age = 30}
 
-      c = Customer.find(:age => 30)
+      c = CustomerA.find(:age => 30)
       c.size.should == 2
       c.should include(c2, c3)
     end
@@ -207,9 +207,9 @@ describe "Customer,Order,Product" do
   
   
     it "should not find a customer by name if the name has changed"  do
-      c1 = Customer.new  {|n| n.name = 'c1'; n.age = 29}
+      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
 
-      c = Customer.find(:name => 'c1')
+      c = CustomerA.find(:name => 'c1')
       c.size.should == 1
       c.should include(c1)
       
@@ -217,14 +217,14 @@ describe "Customer,Order,Product" do
       c1.name = 'c2'
       
       # then
-      c = Customer.find(:name => 'c1')
+      c = CustomerA.find(:name => 'c1')
       c.size.should == 0
     end
 
     it "should find a customer by the new name if the name has changed"  do
-      c1 = Customer.new  {|n| n.name = 'c1'; n.age = 29}
+      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
 
-      c = Customer.find(:name => 'c1')
+      c = CustomerA.find(:name => 'c1')
       c.size.should == 1
       c.should include(c1)
       
@@ -232,7 +232,7 @@ describe "Customer,Order,Product" do
       c1.name = 'c2'
       
       # then
-      c = Customer.find(:name => 'c2')
+      c = CustomerA.find(:name => 'c2')
       c.size.should == 1
       c.should include(c1)
     end
@@ -240,11 +240,11 @@ describe "Customer,Order,Product" do
   
   
     it "should not find any customer if they all have been deleted"  do
-      c1 = Customer.new  {|n| n.name = 'c1'; n.age = 29}
-      c = Customer.find(:age => 29)
+      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
+      c = CustomerA.find(:age => 29)
       c.size.should == 1
       c1.delete
-      c = Customer.find(:age => 29)
+      c = CustomerA.find(:age => 29)
       c.size.should == 0
     end
 
