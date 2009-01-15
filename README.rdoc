@@ -27,8 +27,9 @@ It uses two powerful and mature java libraries:
 * API Yard Documentation - http://neo4j.rubyforge.org/
 * Source repo - git://github.com/andreasronge/neo4j.git
 
-=== Presentation Materials
+=== Presentation Materials and other URLs
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
+* Neo4j wiki - http://wiki.neo4j.org/content/Main_Page (check the guidelines and domain modeling gallery pages)
 
 === License
 * Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
@@ -93,7 +94,8 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
   end
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
-Adding new types of properties and relationships can also be done without using those class methods at an alread existing node.
+Adding new types of properties and relationships can also be done without using
+those class methods at an alread existing node (see Neo4j::DynamicAccessorMixin).
 
 By using the NodeMixin all instances of the Person class can now be stored in the Neo4j node space and
 be retrieved/queried by traversing the node space or performing Lucene queries.
@@ -186,16 +188,25 @@ the same time - Neo4j::NodeMixin#traverse.
 
 === Example on Relationships
 
-A more complex example that shows how to navigate from incoming and
-outgoing relationships:
+In the first example the friends relationship can have relationships to any
+other node of any class.
+In the next example we specify that the 'acted_in' relationship should use
+the Ruby classes Actor, Role and Movie.
+This is done by using the has_n class method:
 
       class Role
-        include Neo4j::RelationMixin # Relationships is also Ruby objects
+        include Neo4j::RelationMixin
+        # notice that neo4j relationships can also have properties
         property :name
       end
 
       class Actor
         include Neo4j::NodeMixin
+
+        # The following line defines the acted_in relationship
+        # using the following classes:
+        # Actor[Node] --(Role[Relation])--> Movie[Node]
+        #
         has_n(:acted_in).to(Movie).relation(Role)
       end
       
@@ -208,32 +219,21 @@ outgoing relationships:
         has_n(:actors).from(Actor, :acted_in)
       end
 
-
-Notice that relationships also can have properties.
-Creating a new Customer Order relationship can be done like this
+Creating a new Actor-Role-Movie relationship can be done like this:
 
       keanu_reeves = Actor.new
       matrix       = Movie.new
       keanu_reeves.acted_in << matrix
 
 or you can also specify this relationship on the incoming node
+(since we provided that information in the has_n methods).
 
       keanu_reeves = Actor.new
       matrix       = Movie.new
       matrix.actors << keanu_reeves
 
-Example of accessing the Role between an Actor and a Movie
+Example of accessing the Role relationship object between an Actor and a Movie
 
-      keanu_reeves = Actor.new
-      matrix       = Movie.new
-      role = keanu_reeves.acted_in.new(matrix)
-      role.name = 'neo'
-
-or
-      keanu_reeves = Actor.new
-      matrix       = Movie.new
-      keanu_reeves.acted_in << matrix
-      keanu_reeves.acted_in
       keanu_reeves.relations.outgoing(:acted_in)[matrix].name = 'neo'
 
 More information about neo4j can be found after the Lucene section below.
@@ -459,9 +459,10 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 == The Neo4j Module
 
-Neo4j.rb is used to map Ruby objects to nodes and relationships in a network.
-It supports two ways of retrieval/quering - by Neo4j traversal or
-by using Lucene indexes.
+The Neo4j module is used to map Ruby objects to nodes and relationships in a network.
+It supports two different ways of retrieval/quering:
+* Neo4j traversal, Neo4j::NodeMixin#traverse (or Neo4j::NodeMixin#has_n)
+* Lucene indexes, Neo4j::NodeMixin#find
 
 === Start and Stop of the Neo4j
 
@@ -633,32 +634,67 @@ To return nodes (just like the relations method)
 Neo relationships are none symmetrical. That means that if A has a relation to B
 then it may not be true that B has a relation to A.
 
-Relationships has to be declared by using the 'has_n' or 'has_one'
+Relationships can be declared by using the 'has_n' or 'has_one'
 Neo4j::NodeMixin class methods.
 
 ==== has_n
 
-For example, let say that Person can have a relationship to other nodes with the type 'friends':
+The has_n Neo4j::NodeMixin class method creates a new instance method that can
+be used for both traversing and adding new objects to a specific relationship type.
+
+For example, let say that Person can have a relationship to any other node class with the type 'friends':
 
   class Person 
+     include Neo::Node
+     has_n :knows  # will generate a knows method for outgoing relationships
+  end
+
+The generated knows method will allow you to add new relationships, example:
+
+  me = Person.new
+  neo = Person.new
+  me.knows << neo  # me knows neo but neo does not know me
+
+You can add any object to the 'knows' relationship as long as it
+includes the Neo4j::NodeMixin, example:
+
+  person = Person.new
+  car = Volvo.new # Volvo is a class that includes the Neo4j::NodeMixin
+  person.knows << car
+
+If you want to express that the relationship should point to a specific class
+use the 'to' method on the has_n method.
+
+  class Person
+     include Neo::Node
+     has_n(:knows).to(Person)
+  end
+
+It is also possible to generate methods for incoming relationships by using the
+'from' method on the has_n method.
+
+Example:
+  class Person
      include Neo::Node
      has_n :knows  # will generate a knows method for outgoing relationships
      has_n(:known_by).from(:knows)  #  will generate a known_by method for incomming knows relationship
   end
 
-Example how to add a relation to another node:
+By doing this you can add a relationships on either the incoming or outgoing node.
+The from method can also take an additional class parameter if it has incoming nodes
+from a different node class (see the Actor-Role-Movie example at the top of this document).
+
+Example of adding a 'knows' relationship from the other node:
 
   me = Person.new 
   neo = Person.new
+  neo.known_by << me # me knows neo but neo does not know me
+ 
+The known_by method creates a 'knows' relationship between the me and neo nodes.
+This is the same as doing:
+
   me.knows << neo # me knows neo but neo does not know me
 
-Notice that you can also add relationship on the incoming relationship
-The following example is the same as the example above:
-
-  me = Person.new 
-  neo = Person.new
-  neo.known_by << me # neo is known by me, that means that I know neo but neo does have to know me
-  
 ==== Relationship has_one
 
 Example of has_one: A person can have at most one Address

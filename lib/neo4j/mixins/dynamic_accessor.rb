@@ -1,9 +1,9 @@
 module Neo4j
   
-  # 
-  # A mixin that allows to set any property without declaring it first.
-  # Uses method_missing
+  # A mixin that allows to write/read any property without declaring it first.
+  # Uses method_missing Ruby hook.
   #
+  # :api: public
   module DynamicAccessorMixin
     #
     # A hook used to set and get undeclared properties

@@ -1,6 +1,10 @@
 module Neo4j
 
   module Relations
+
+    # Stores the relationship data for a Neo4j::NodeMixin class.
+    #
+    # :api: private
     class RelationInfo
       attr_accessor :info
       def initialize

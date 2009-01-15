@@ -642,7 +642,6 @@ module Neo4j
       end
 
 
-      #
       # Returns node instances of this class.
       #
       # :api: public
@@ -652,7 +651,7 @@ module Neo4j
       end
 
 
-      # Creates a new relation. The relation must be outgoing.
+      # Creates a new outgoing relation.
       # 
       # :api: private
       def new_relation(rel_name, internal_relation)
@@ -668,7 +667,7 @@ module Neo4j
       # ==== Example
       #   MyNode.find(:name => 'foo', :company => 'bar')
       #
-      # Or using a DSL query
+      # Or using a DSL query (experimental)
       #   MyNode.find{(name == 'foo') & (company == 'bar')}
       #
       # ==== Returns
