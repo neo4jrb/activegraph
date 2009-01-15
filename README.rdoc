@@ -15,7 +15,7 @@ It uses two powerful and mature java libraries:
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
 === Status
-* There are over 200 RSpecs.
+* There are over 250 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
 * Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
 * Has not been used in production yet (as far as I know).
@@ -55,11 +55,25 @@ To install from the latest source:
   rake gem:install
 
 JRuby version 1.1.4 does not work with Neo4j.rb because of a JRuby bug.
-This bug is fixed in JRuby 1.1.5. 
+This bug is fixed in JRuby 1.1.5.
+
+==== Running all RSpecs
+
+To check that neo4j.rb is working:
+
+  cd neo4j # the folder containing the Rakefile
+  rake     # you may have to type jruby -S rake depending how you installed JRuby
+
+Make sure that you have installed RSpec and Rake, otherwise type:
+
+  gem install rspec  # or jruby -S gem install rspec
+  gem install rake   # or jruby -S gem install rake
 
 == Ten Minute Tutorial
 
-=== Creating a model
+=== Creating a Model
+
+The following example specifies how to map a Neo4j node to a Ruby Person instance.
 
   require "rubygems"
   require "neo4j"
@@ -70,17 +84,21 @@ This bug is fixed in JRuby 1.1.5.
     # define Neo4j properties
     property :name, :salary.
 
-    # define an one way relationship to any other Person node
-    has_n(:friends).to(Person)
+    # define an one way relationship to any other node
+    has_n :friends
 
     # adds a lucene index on the following properties
     index :name, :salary
     index 'friends.age' # index each friend age as well
   end
 
-The example above specifies how to map a Neo node to a ruby Person instance.
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
-In the example above a lucene index will be updated when the name or salary property changes. 
+Adding new types of properties and relationships can also be done without using those class methods at an alread existing node.
+
+By using the NodeMixin all instances of the Person class can now be stored in the Neo4j node space and
+be retrieved/queried by traversing the node space or performing Lucene queries.
+
+A lucene index will be updated when the name or salary property changes.
 The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
 
 === Creating a node
@@ -97,9 +115,9 @@ Setting a property:
   person.salary  = 10000
 
 If a transaction is not specified then the operation will automatically be wrapped in
-a transaction.  Neo4j does handle primitive properties of type like String, Fixnum, Float.
+a transaction. 
 
-=== Queries
+=== Lucene Queries
 
 There are different ways to write queries.
 Using a hash:
@@ -128,16 +146,32 @@ Example of using the search result.
   res.each {|x| puts x.name}
   res[0].name = 'sune'
 
-=== Relationships
+=== Creating a Relationships
 
 Adding a relationship between two nodes:
 
   person2 = Person.new
   person.friends << person2
 
-Traversing relationships
+=== Deleting a Relationship
 
-  person.friends.each {|n| ... }
+To delete the relationship between person and person2:
+
+  person.relations[person2].delete
+
+If a node is deleted then all its (incoming) relationship will also be deleted
+Deleting a node is performed by using the delete method:
+
+  person.delete
+
+=== Node Traversals
+
+The has_one and has_many create a convenient method for traversals and managing relationships to other nodes.
+Example:
+
+  Person.has_n :friends # generates the friends instance method
+  # all instances of Person now has a friends method so that we can do the following
+  person.friends.each {|n| ...  }
 
 Traversing using a filter
 
@@ -147,21 +181,16 @@ Traversing with a specific depth (depth 1 is default)
 
   person.friends{ salary == 10000}.depth(3).each { ... }
 
-Deleting a relationship
-
-  person.relations[person2].delete
-
-Deleting a node (and all its relationships)
-
-  person.delete
+There is also a more powerful method for traversing several relationships at
+the same time - Neo4j::NodeMixin#traverse.
 
 === Example on Relationships
 
-A more complecated example that shows how to navigate from incomming and
-outgoing relationships.
+A more complex example that shows how to navigate from incoming and
+outgoing relationships:
 
       class Role
-        include Neo4j::RelationMixin
+        include Neo4j::RelationMixin # Relationships is also Ruby objects
         property :name
       end
 
@@ -430,7 +459,32 @@ may return an not empty array. This is because Index.new is a singleton - a new 
 
 == The Neo4j Module
 
-=== Start and Stop of the Neo Database
+Neo4j.rb is used to map Ruby objects to nodes and relationships in a network.
+It supports two ways of retrieval/quering - by Neo4j traversal or
+by using Lucene indexes.
+
+=== Start and Stop of the Neo4j
+
+Unlike the Java Neo4j implementation it is not neccessarly to start Neo4j.
+It will automatically be started when needed.
+It also uses a hook to automatically shutdown Neo4j.
+Shutdown of neo4j can also be done using the stop method, example:
+
+  Neo4j.stop
+
+==== Neo4j Configuration
+
+Before using Neo4j the location where the database is stored on disk should be configured.
+The neo4j configuration is kept in the Neo4j::Config class:
+
+   Neo4j::Config[:storage_path] = '/home/neo/neodb'
+
+=== Lucene Integration
+
+Neo4j.rb uses the Lucene module. That means that the Neo4j::NodeMixin has method for
+both traversal and lucene queries/indexing.
+
+==== Lucene Configuration
 
 By default lucene indexes are kept in memory.
 Keeping index in memory will increase the performance of lucene operations (such as updating the index).
@@ -440,14 +494,11 @@ Example to configure Lucene to store indexes on disk instead
    Lucene::Config[:store_on_file] = true
    Lucene::Config[:storage_path] => '/home/neo/lucene-db'
 
-Before using Neo4j the location where the database is stored on disk must be configured:
+==== Lucene Index in Memory
 
-   Neo4j::Config[:storage_path] = '/home/neo/neodb'
+If index is stored in memory then one needs to reindex all nodes when the application starts up again.
 
-To stop the neo database - you do not need to do this since it will be done automatically when the virtual machine exits.
-
-   Neo4j.stop
-
+   MyNode.update_index # will traverse all MyNode instances and (re)create the lucene index in memory.
 
 === Neo4j::NodeMixin
 
@@ -459,13 +510,6 @@ Example of how declare a class that has this behaviour:
   class MyNode 
      include Neo4j::NodeMixin
   end
-
-=== Index in Memory instead of disk
-
-If index is stored in memory then one needs to reindex all nodes when the application starts up again.
-
-   MyNode.update_index # will traverse all MyNode instances and (re)create the lucene index in memory.
-
 
 === Create a Node
 
@@ -936,7 +980,7 @@ For example to index the proeprties foo and bar
 
 Everytime a node of type SomeNode (or a subclass) is create, deleted or updated the lucene index of will be updated.
 
-=== Deleting or Reindex
+=== Updating Lucene Index
 
 Sometimes it's neccessarly to change the index of a class after alot of node instances already have been created.
 To delete an index use the class method 'remove_index'
