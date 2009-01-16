@@ -15,27 +15,30 @@ describe "Neo4j.start" do
     end
   end
 
+  before(:each) { start }
+  after(:each) { stop }
+
   it "should keep index on filesystem if specifed" do
-    start
     Lucene::Config[:store_on_file] = true
-    Lucene::Config[:storage_path]  = LUCENE_INDEX_LOCATION
 
     t = TestNode.new
     t.name = 'hello'
-    File.exist?(LUCENE_INDEX_LOCATION).should be_true
-    FileUtils.rm_rf LUCENE_INDEX_LOCATION
-    stop
+    File.exist?(Lucene::Config[:storage_path]).should be_true
   end
 
   it "should keep index in RAM if filesystem path for lucene index is not specified" do
-    start
-    Lucene::Config[:store_on_file] = false
+    # given
+    # make index does not exist on file
+    FileUtils.rm_rf Lucene::Config[:storage_path]
+    File.exist?(Lucene::Config[:storage_path]).should be_false
 
+    # when
+    Lucene::Config[:store_on_file] = false
     t = TestNode.new
     t.name = 'hello'
 
+    # then
     File.exist?(LUCENE_INDEX_LOCATION).should be_false
-    stop
   end
 
 end

@@ -13,12 +13,6 @@ require 'neo4j/spec_helper'
 #$NEO_LOGGER.level = Logger::DEBUG
 
 describe "Neo4j" do
-  before(:all) do
-    FileUtils.rm_rf '/tmp/neo4j'
-    Neo4j::Config[:storage_path] = NEO_STORAGE
-  end
-
-
   it "should not need to be started or stopped before using it" do
     undefine_class :Foo
     class Foo
