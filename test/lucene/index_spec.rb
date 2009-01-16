@@ -419,7 +419,6 @@ describe Index, ".field_infos" do
 
 
   it "can be used to convert and store Date field" do
-    pending "There is a bug with timezone and dates probably"
     #given
     @index.field_infos[:since][:store] = true
     @index.field_infos[:since][:type] = Date

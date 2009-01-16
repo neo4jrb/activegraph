@@ -57,7 +57,6 @@ describe FieldInfo do
   end
 
   it "should convert Dates from lucene" do
-    pending "There is a bug with timezone and dates probably"
     f = FieldInfo.new
     f[:type] = Date
     d = f.convert_to_ruby('20081215')

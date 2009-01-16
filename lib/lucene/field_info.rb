@@ -54,9 +54,10 @@ module Lucene
         when Date.to_s
           return value if value.kind_of? Date
           return nil if value.nil?
-          date = org.apache.lucene.document.DateTools.stringToDate(value)
-          seconds_since_1970 = date.getTime / 1000
-          Date.new(*Time.at(seconds_since_1970).to_a[3 .. 5].reverse)
+          year = value[0..3].to_i
+          month = value[4..5].to_i
+          day = value[6..7].to_i
+          Date.new year,month,day
         when DateTime.to_s
           return value if value.kind_of? DateTime
           return nil if value.nil?
