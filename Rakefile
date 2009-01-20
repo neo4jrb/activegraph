@@ -5,9 +5,11 @@ require 'rake'
 require 'rake/clean'
 require 'rake/testtask'
 require 'rake/rdoctask'
+# require 'yard'
 require 'spec/version'
 require 'spec/rake/spectask'
 require 'rake/gempackagetask'
+
 #require 'hoe'
 
 require 'lib/neo4j/version'
@@ -35,7 +37,7 @@ desc "spec"
 Spec::Rake::SpecTask.new do |t|
   t.libs << "test"
   t.libs << "lib"
-#  t.rcov = true 
+  #  t.rcov = true
   t.spec_files = FileList['test/**/*_spec.rb']
   t.spec_opts = ['--format specdoc', '--color']
   # t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
@@ -49,6 +51,17 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README.rdoc', 'CHANGELOG', 'lib/**/*.rb')
 end
 
+desc "Generated YARD documenation"
+YARD::Rake::YardocTask.new do |t|
+  t.files   = ['README.rdoc', 'CHANGELOG', 'lib/**/*.rb']   # optional
+  t.options << '-r README.rdoc'
+end if defined? YARD
+
+desc 'Upload documentation to RubyForge.'
+task 'upload-docs' do
+  sh "scp -r doc/* " +
+    "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
+end
 
 ##############################################################################
 # PACKAGING & INSTALLATION
