@@ -3,7 +3,8 @@
 Neo4j.rb is a graph database for JRuby.
  
 It provides:
-* Mapping of ruby objects to nodes in networks rather than in tables. 
+* Mapping of ruby objects to nodes in networks rather than in tables.
+* Dynamic, and schema-free - no need to declare nodes/properties/relationships in advance.
 * Storage of ruby object to a file system.
 * Fast traversal of relationships between nodes in a huge node space.
 * Transaction with rollbacks support. 
@@ -64,11 +65,6 @@ To check that neo4j.rb is working:
 
   cd neo4j # the folder containing the Rakefile
   rake     # you may have to type jruby -S rake depending how you installed JRuby
-
-Make sure that you have installed RSpec and Rake, otherwise type:
-
-  gem install rspec  # or jruby -S gem install rspec
-  gem install rake   # or jruby -S gem install rake
 
 == Ten Minute Tutorial
 
@@ -161,14 +157,15 @@ To delete the relationship between person and person2:
 
   person.relations[person2].delete
 
-If a node is deleted then all its (incoming) relationship will also be deleted
+If a node is deleted then all its relationship will also be deleted
 Deleting a node is performed by using the delete method:
 
   person.delete
 
 === Node Traversals
 
-The has_one and has_many create a convenient method for traversals and managing relationships to other nodes.
+The has_one and has_many methods create a convenient method for traversals and
+managing relationships to other nodes.
 Example:
 
   Person.has_n :friends # generates the friends instance method
@@ -184,7 +181,7 @@ Traversing with a specific depth (depth 1 is default)
   person.friends{ salary == 10000}.depth(3).each { ... }
 
 There is also a more powerful method for traversing several relationships at
-the same time - Neo4j::NodeMixin#traverse.
+the same time - Neo4j::NodeMixin#traverse, see below.
 
 === Example on Relationships
 
@@ -242,8 +239,22 @@ More information about neo4j can be found after the Lucene section below.
 
 You can use this module without using the Neo4j module. 
 
+Lucene provides:
+* Flexible Queries - Phrases, Wildcards, Compound boolean expressions etc...
+* Field-specific Queries eg. title, artist, album
+* Sorting
+* Ranked Searching
+
+=== Lucene Document
+
+In lucene everything is a Document. A document can represent anything textual:
+Word Document, DVD (the textual metadata only), or a Neo4j.rb node.
+A document is like a record or row in a relation database.
+
+The following example shows how a document can be created by using the ''<<'' operator
+on the Lucene::Index class and found using the Lucene::Index#find method.
+
 Example of how to write a document and find it:
-(a document is like a record or row in a relation database).
   
     require 'lucene'
 
@@ -827,7 +838,6 @@ It's possible to filter which nodes should be returned from the traverser by
 using the filter function. This filter function will be evaluated differently
 depending on if it takes one argument or no arguments, see below.
 
-
 ==== Filtering: Using Evaluation in the Context of the Current Node
 If the provided filter function does not take any parameter it will be evaluted in the context
 of the current node being traversed.
@@ -1227,6 +1237,17 @@ Example:
 
 This node has a relationship to all created nodes.
 It is used internally to recreate an index or finding all nodes of a specific type.
+
+=== Performance Issues
+
+It is recommended to wrap several Neo4j operations including read operations
+in a singel transaction if possible for better performance.
+Updating a lucene index can be slow. A solution to this is to keep the index in memory instead of on disk.
+
+I'm currently looking at how to scale neo4j.rb by a simple master-slave cluster by
+using ActiveMQ (see the cluster branch).
+Another solution might be to simply copy the master database (rsync ?) to the slaves.
+
 
 == Ruby on Rails with Neo4j.rb
 

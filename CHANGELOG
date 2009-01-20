@@ -1,11 +1,18 @@
-== 0.1.0 / 2009-12-18
+== 0.2.0 / 2009-01-20
+* Impl. Neo4j::Node#traverse - enables traversal and filtering using TraversalPosition info (#17,#19)
+* Impl. traversal to any depth (#15)
+* Impl. traversal several relationships type at the same time (#16)
+* Fixed a Lucene timezone bug (#20)
+* Lots of refactoring of the neo4j.rb traversal code and RSpecs
+
+== 0.1.0 / 2008-12-18
 * Property can now be of any type (and not only String, Fixnum, Float)
 * Indexing and Query with Date and DateTime
 * YARD documentation
 * Properties can be removed
 * A property can be set to nil (it will then be removed).
 
-== 0.0.7 / 2009-12-10
+== 0.0.7 / 2008-12-10
 * Added method to_param and methods on the value object needed for Ruby on Rails
 * Impl. update from a value object/hash for a node
 * Impl. generation of value object classes/instances from a node.
@@ -13,14 +20,14 @@
 * Removed the need to start and stop neo. It will be done automatically when needed.
 
 
-== 0.0.6 / 2009-12-03
+== 0.0.6 / 2008-12-03
 * Removed the configuration from the Neo4j.start method. Now exist in Neo4j::Config and Lucene::Config.
 * Implemented sort_by method.
 * Lazy loading of search result. Execute the query and load the nodes only if needed.
 * Added support to use lucene query language, example: Person.find("name:foo AND age:42")
 * All test now uses RAM based lucene indexes.
 
-== 0.0.5 / 2009-11-17
+== 0.0.5 / 2008-11-17
 * Supports keeping lucene index in memory instead of on disk
 * Added support for lucene full text search
 * Fixed so neo4j runs on JRuby 1.1.5
@@ -29,5 +36,5 @@
 * Lots of refactoring
 * Added the IMDB example. It shows how to create a neo database, lucene queries and node traversals.
 
-== 0.0.4 / 2009-10-23
+== 0.0.4 / 2008-10-23
 * First release to rubyforge
