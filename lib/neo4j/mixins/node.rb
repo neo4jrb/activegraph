@@ -480,14 +480,18 @@ module Neo4j
 
 
       # Returns true if the given property name has been defined with the class
-      # method property or properties
+      # method property or properties.
+      #
+      # Notice that the node may have properties that has not been declared.
+      # It is always possible to set an undeclared property on a node.
       #
       # ==== Returns
       # true or false
       #
       # :api: public
       def property?(prop_name)
-        properties_info[prop_name.to_sym][:defined].nil?
+        return false if properties_info[prop_name.to_sym].nil?
+        properties_info[prop_name.to_sym][:defined] == true
       end
 
 

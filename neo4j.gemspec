@@ -1,11 +1,11 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Thu Dec 18 21:48:37 +0100 2008
+# LAST UPDATED : Tue Jan 20 14:55:36 +0100 2009
 #
 # RUN : 'rake gem:update_gemspec'
 
 Gem::Specification.new do |s|
- s.date = "Thu Dec 18 00:00:00 +0100 2008"
- s.version = "0.1.0"
+ s.date = "Tue Jan 20 00:00:00 +0100 2009"
+ s.version = "0.2.0"
  s.authors = ["Andreas Ronge"]
  s.require_paths = ["lib"]
  s.name = "neo4j"
@@ -54,8 +54,10 @@ Gem::Specification.new do |s|
  "lib/neo4j/relations",
  "lib/neo4j/relations/relations.rb",
  "lib/neo4j/relations/relation_info.rb",
+ "lib/neo4j/relations/has_n.rb",
+ "lib/neo4j/relations/node_traverser.rb",
  "lib/neo4j/relations/dynamic_relation.rb",
- "lib/neo4j/relations/has_n_relations.rb",
+ "lib/neo4j/relations/traversal_position.rb",
  "lib/neo4j/relations/relation_traverser.rb",
  "test/lucene",
  "test/lucene/sort_spec.rb",
@@ -67,18 +69,21 @@ Gem::Specification.new do |s|
  "test/lucene/field_info_spec.rb",
  "test/lucene/index_spec.rb",
  "test/neo4j",
+ "test/neo4j/relation_traverser_spec.rb",
  "test/neo4j/neo_spec.rb",
  "test/neo4j/transaction_spec.rb",
  "test/neo4j/spec_helper.rb",
+ "test/neo4j/node_traverser_spec.rb",
  "test/neo4j/event_spec.rb",
+ "test/neo4j/has_one_spec.rb",
  "test/neo4j/node_lucene_spec.rb",
  "test/neo4j/order_spec.rb",
- "test/neo4j/node_spec.rb",
- "test/neo4j/relation_spec.rb",
  "test/neo4j/value_object_spec.rb",
  "test/neo4j/property_spec.rb",
  "test/neo4j/ref_node_spec.rb",
  "test/neo4j/person_spec.rb",
+ "test/neo4j/has_n_spec.rb",
+ "test/neo4j/node_mixin_spec.rb",
  "examples/rails",
  "examples/imdb",
  "examples/imdb/install.sh",
