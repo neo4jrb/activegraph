@@ -15,23 +15,22 @@ module Neo4j
       @relation_index_updaters = {}
     end
     
-    def add_index_on_property(index_key)
-      @property_index_updater.properties << index_key
+    def add_index_on_property(prop)
+      @property_index_updater.properties << prop
     end
 
-    def all_updaters
-      [@property_index_updater] + @relation_index_updaters.values
+    def remove_index_on_property(prop)
+      @property_index_updater.delete(prop)
     end
-    
-    def add_index_on_property_in_relation(index_key, rel_type, prop)
+
+    def add_index_in_relation_on_property(index_key, rel_type, prop)
       @relation_index_updaters[index_key] ||= RelationIndexUpdater.new(index_key, rel_type)
       @relation_index_updaters[index_key].properties << prop
     end
 
-    def remove_index(index_key)
-      find_updater_for_property(index_key).each do |updater|
-        updater.properties.delete(index_key)
-      end
+    def remove_index_in_relation_on_property(index_key, rel_type, prop)
+      @relation_index_updaters[index_key] ||= RelationIndexUpdater.new(index_key, rel_type)
+      @relation_index_updaters[index_key].properties.delete(prop)
     end
 
     def find_updater_for_property(prop)
@@ -44,32 +43,38 @@ module Neo4j
       @relation_index_updaters.values.find_all { |updater| updater.on_relation_created_or_deleted?(relation_type) }
     end
     
-    def property_changed(node, prop)
-      # which triggers will be triggered when the property changed ?
-      trigger_reindex(node, find_updater_for_property(prop))
+    def on_property_changed(node, prop)
+      # which triggers will be triggered when the property is changed ?
+      trigger_update_index(node, find_updater_for_property(prop))
     end
 
-    def node_deleted(node)
+    def on_node_deleted(node)
       @lucene_index.delete(node.neo_node_id)
       # we do not need to trigger reindex with all updaters, since
       # that will be handled with deleted relations
-      # trigger_reindex(node, all_updaters)
+      # trigger_update_index(node, all_updaters)
     end
 
-    def relation_created_or_deleted(from_node, relation_type)
-      trigger_reindex(from_node, find_updater_for_relation(relation_type))
+    def on_relation_created_or_deleted(from_node, relation_type)
+      trigger_update_index(from_node, find_updater_for_relation(relation_type))
     end
 
     # for all the given triggers find all the nodes that they think needs to be reindexed
-    def trigger_reindex(node, updaters)
+    def trigger_update_index(node, updaters)
       updaters.each do |updater|
         # notice that a trigger on one node may trigger updates on several other nodes
-        updater.nodes_to_be_reindexed(node).each {|node_needed_reindex| reindex node_needed_reindex}
+        updater.nodes_to_be_reindexed(node).each {|related_node| related_node.update_index}
       end
     end
 
-    def reindex(node)
-      puts "UPDATE NODE"
+    def all_updaters
+      [@property_index_updater] + @relation_index_updaters.values
+    end
+    
+    # This method is called from the Neo4j::NodeMixin class when
+    # the index for the nodex should be updated.
+    # It is triggered from the Neo4j::Indexer#trigger_update_index method
+    def update_index(node)
       document = {:id => node.neo_node_id }
       all_updaters.each do |updater|
         updater.update_document(document, node)
@@ -122,7 +127,7 @@ module Neo4j
     end
 
     def on_property_changed?(property)
-      !@properties.find(property).nil?
+      @properties.include?(property)
     end
 
     def on_relation_created_or_deleted?(rel_type)
