@@ -1,107 +1,124 @@
 module Neo4j
 
-  # This class is responsible for keeping the lucene index synchronized with the node space
-  # Each Neo4j::NodeMixin class has a reference to this class.
-  # The node will call a xxx_changed method when a  node has changed.
-  # If a trigger is registered on this index for this change then it will
-  # find all the nodes that needs to be reindexed.
+  # This class is responsible for both knowing which nodes that needs to be reindexed
+  # and how to perform the reindex operation.
+  # 
+  # There is one Indexer per Node root class.
   #
   class Indexer
-    attr_accessor :triggers
+    attr_reader :document_updaters
+    
+    def initialize(clazz)
+      @relation_indexers = {}
+      @property_indexer = PropertyIndexer.new
+      @document_updaters = [@property_indexer]
+      # the file name of the lucene index if kept on disk
+      @index_path = clazz.root_class.gsub('::', '/')
+    end
+    
+    def self.instance(clazz)
+      @instances ||= {}
+      @instances[clazz.root_class] ||= Indexer.new(clazz)
+      @instances[clazz.root_class]
+    end
 
-    def initialize(lucene_index)
-      @lucene_index = lucene_index
-      @property_index_updater = PropertyIndexUpdater.new
-      @relation_index_updaters = {}
+    # only for testing purpose
+    def self.clear_all_instances
+      @instance == nil
+    end
+    
+    def self.index(node)
+      indexer = instance(node.class)
+      indexer.index(node)
     end
     
     def add_index_on_property(prop)
-      @property_index_updater.properties << prop
+      @property_indexer.properties << prop
     end
 
     def remove_index_on_property(prop)
-      @property_index_updater.delete(prop)
+      @property_indexer.properties.delete prop
     end
 
-    def add_index_in_relation_on_property(index_key, rel_type, prop)
-      @relation_index_updaters[index_key] ||= RelationIndexUpdater.new(index_key, rel_type)
-      @relation_index_updaters[index_key].properties << prop
+    def add_index_in_relation_on_property(target_class, rel_name, rel_type, prop)
+      if relation_indexer_for?(rel_name)
+        indexer = new_relation_indexer_for(rel_name, rel_type)
+        self.instance(target_class).document_updaters << indexer
+      end
+      relation_indexer_for(rel_name).properties << prop
     end
 
-    def remove_index_in_relation_on_property(index_key, rel_type, prop)
-      @relation_index_updaters[index_key] ||= RelationIndexUpdater.new(index_key, rel_type)
-      @relation_index_updaters[index_key].properties.delete(prop)
+    def index(node)
+      document = {:id => node.neo_node_id }
+
+      @document_updaters.each do |updater|
+        updater.update_document(document, node)
+      end
+
+      lucene_index << document
     end
 
-    def find_updater_for_property(prop)
-      all = @relation_index_updaters.values.find_all { |updater| updater.on_property_changed?(prop) }
-      all << @property_index_updater if @property_index_updater.on_property_changed?(prop)
-      all
-    end
-
-    def find_updater_for_relation(relation_type)
-      @relation_index_updaters.values.find_all { |updater| updater.on_relation_created_or_deleted?(relation_type) }
+    def lucene_index
+      Lucene::Index.new(@index_path)
     end
     
     def on_property_changed(node, prop)
       # which triggers will be triggered when the property is changed ?
-      trigger_update_index(node, find_updater_for_property(prop))
+      trigger_update_index(node, find_indexers_for_property(prop))
     end
 
-    def on_node_deleted(node)
-      @lucene_index.delete(node.neo_node_id)
-      # we do not need to trigger reindex with all updaters, since
-      # that will be handled with deleted relations
-      # trigger_update_index(node, all_updaters)
+    def on_relation_created_or_deleted(to_node, rel_type)
+      trigger_update_index(to_node, find_indexers_for_relation(rel_type))
     end
 
-    def on_relation_created_or_deleted(from_node, relation_type)
-      trigger_update_index(from_node, find_updater_for_relation(relation_type))
+    def find_indexers_for_property(prop)
+      all = @relation_indexers.values.find_all { |indexer| indexer.on_property_changed?(prop) }
+      all << @property_indexer if @property_indexer.on_property_changed?(prop)
+      all
+    end
+
+    def find_indexers_for_relation(rel_type)
+      @relation_indexers.values.find_all { |indexer| indexer.on_relation_created_or_deleted?(rel_type) }
     end
 
     # for all the given triggers find all the nodes that they think needs to be reindexed
-    def trigger_update_index(node, updaters)
-      updaters.each do |updater|
+    def trigger_update_index(node, indexers)
+      indexers.each do |indexer|
         # notice that a trigger on one node may trigger updates on several other nodes
-        updater.nodes_to_be_reindexed(node).each {|related_node| related_node.update_index}
+        indexer.nodes_to_be_reindexed(node).each do |related_node|
+          Indexer.index(related_node)
+        end
       end
     end
 
-    def all_updaters
-      [@property_index_updater] + @relation_index_updaters.values
+    def relation_indexer_for(rel_name)
+      @relation_indexers[rel_name]
     end
-    
-    # This method is called from the Neo4j::NodeMixin class when
-    # the index for the nodex should be updated.
-    # It is triggered from the Neo4j::Indexer#trigger_update_index method
-    def update_index(node)
-      document = {:id => node.neo_node_id }
-      all_updaters.each do |updater|
-        updater.update_document(document, node)
-      end
 
-      @lucene_index << document
+    def relation_indexer_for?(rel_name)
+      !relation_indexer_for(rel_name).nil?
     end
+
+    def new_relation_indexer_for(rel_name, rel_type)
+      @relation_indexers[rel_name] = RelationIndexer.new(rel_name, rel_type)
+    end
+
   end
 
-  class PropertyIndexUpdater
+  
+  class PropertyIndexer
     attr_reader :properties
 
     def initialize
       @properties = []
     end
-    
+
     def nodes_to_be_reindexed(node)
-      puts "nodes_to_be_reindexed '#{node.to_s}'"
       [node]
     end
     
     def on_property_changed?(prop)
       @properties.include?(prop)
-    end
-
-    def on_relation_created_or_deleted?(rel_type)
-      false
     end
 
     def update_document(document, node)
@@ -110,20 +127,25 @@ module Neo4j
   end
 
 
-  # A.x -d-> B.y  A.index d.y
-  # B << RelationIndexUpdater.new('d').properties << 'y'
-  # when a B node changes then all its A nodes has to be reindexed with the value
-  # of all nodes in the d relationship type.
+  # If node class A has a relation with type 'd' to node class B
+  #   A.x -d-> B.y  A.index d.y
+  # Then
+  #   indexer = RelationIndexer.new('d','d').properties << 'y'
+  #   IndexTrigger.instance_for(B) << indexer
+  #   IndexUpdater.instance_for(A) << indexer
+  # If property y on a B node changes then all its nodes in the relation 'd' will
+  # be reindexed.  Those nodes (which will be of type node class A) will use the same RelationIndexer to update the
+  # index document with key field 'd.y' and values of property y of all nodes in the
+  # relationship 'd'
+  # 
   #
-  class RelationIndexUpdater
+  class RelationIndexer
     attr_reader :rel_type, :properties
     
-    def initialize(index_base_key, rel_type)
+    def initialize(rel_name, rel_type)
       @properties = []
       @rel_type = rel_type
-      # usally the same as rel_type, but we can have a different name of the
-      # index then the name of the relationship type
-      @index_base_key = index_base_key
+      @rel_name = rel_name
     end
 
     def on_property_changed?(property)
@@ -139,19 +161,21 @@ module Neo4j
     end
 
     def index_key(property)
-      "#@index_base_key.#{property}".to_sym
+      "#@rel_name.#{property}".to_sym
     end
-    
-    def update_document(node, document)
+
+    def update_document(document, node)
       return if node.deleted?
-      
+
       relations = node.relations.both(@rel_type).nodes
       relations.each do |other_node|
         next if other_node.deleted?
-        @properties.each {|p| document[index_key(p)] = []}
-        @properties.each {|p| document[index_key(p)] << other_node.send(p)}
+        @properties.each do |p|
+          index_key = index_key(p)
+          document[index_key] ||= []
+          document[index_key] << other_node.send(p)
+        end
       end
-
     end
   end
 
