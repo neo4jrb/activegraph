@@ -29,17 +29,14 @@ module Neo4j
     # :api: public
     def initialize(*args)
       # was a neo java node provided ?
-      if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
-        Transaction.run {init_with_node(args[0])} unless Transaction.running?
-        init_with_node(args[0])                   if Transaction.running?
-      elsif block_given? 
-        Transaction.run {init_without_node; yield self} unless Transaction.running?        
-        begin init_without_node; yield self end         if Transaction.running?                
-      else 
-        Transaction.run {init_without_node} unless Transaction.running?        
-        init_without_node                   if Transaction.running?                
+      Transaction.run do
+        if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
+          init_with_node(args[0])
+        else
+          init_without_node
+          yield self if block_given?
+        end
       end
-      
       # must call super with no arguments so that chaining of initialize method will work
       super() 
     end
@@ -61,8 +58,6 @@ module Neo4j
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
       Neo4j.instance.ref_node.connect(self) 
-
-      self.class.fire_event NodeCreatedEvent.new(self)      
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
@@ -84,7 +79,7 @@ module Neo4j
     # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
-      old_value = get_property(name)
+      #old_value = get_property(name)
 
       if value.nil?
         remove_property(name)
@@ -95,8 +90,7 @@ module Neo4j
       end
 
       if (name != 'classname')  # do not want events on internal properties
-        event = PropertyChangedEvent.new(self, name.to_sym, old_value, value)
-        self.class.fire_event(event)
+        self.class.indexer.on_property_changed(self, name)
       end
     end
 
@@ -114,7 +108,9 @@ module Neo4j
     #
     # :api: public
     def remove_property(name)
-      !@internal_node.removeProperty(name).nil?
+      removed = !@internal_node.removeProperty(name).nil?
+      self.class.indexer.on_property_changed(self, name) if removed
+      removed
     end
 
 
@@ -235,10 +231,6 @@ module Neo4j
       ret
     end
 
-
-    def lucene_index
-      self.class.lucene_index
-    end
     
     # Deletes this node.
     # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
@@ -246,12 +238,11 @@ module Neo4j
     #
     # :api: public
     def delete
-      self.class.fire_event(NodeDeletedEvent.new(self))
-      relations.each {|r| r.delete}
+      relations.each {|r| r.delete} 
       @internal_node.delete
-      lucene_index.delete(neo_node_id)
+      self.class.indexer.delete_index(self)
     end
-    
+
     # :api: private
     def classname
       get_property('classname')
@@ -296,27 +287,17 @@ module Neo4j
     end
 
     
-    # Mark this node to be reindex by lucene after the transaction finishes
-    #
+    # Updates the index for this node.
+    # This method will be automatically called when needed
+    # (a property changed or a relationship was created/deleted)
+    # 
     # @api private
-    def reindex
-      Transaction.current.reindex(self)
+    def update_index
+      self.class.indexer.index(self)
     end
 
-    # Reindex this node now
-    #
-    # @api private
-    def reindex!
-      doc = {:id => neo_node_id }
-      self.class.index_updaters.each_value do |updater|
-        updater.call(self, doc)
-      end
-      lucene_index << doc
-    end
 
-    
     transactional :property?, :set_property, :get_property, :remove_property, :delete
-
 
     
     #
@@ -325,10 +306,7 @@ module Neo4j
     def self.included(c)
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
-        const_set(:ROOT_CLASS, self.to_s)
-        const_set(:LUCENE_INDEX_PATH, "/" + self.to_s.gsub('::', '/'))
-        const_set(:INDEX_UPDATERS, {})
-        const_set(:INDEX_TRIGGERS, {})
+        const_set(:ROOT_CLASS, self)
         const_set(:RELATIONS_INFO, {})
         const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:ROOT_CLASS)
@@ -353,24 +331,11 @@ module Neo4j
         self::ROOT_CLASS
       end
 
-      #
-      # :api: private
-      def lucene_index
-        Lucene::Index.new(self::LUCENE_INDEX_PATH)
+      def indexer
+        Indexer.instance(root_class)
       end
-        
-      #
-      # :api: private
-      def index_updaters
-        self::INDEX_UPDATERS
-      end
-
-      # :api: private
-      def index_triggers
-        self::INDEX_TRIGGERS
-      end
-
       
+     
       # Contains information of all relationships, name, type, and multiplicity
       #
       # :api: private
@@ -384,15 +349,6 @@ module Neo4j
       end
 
      
-      # ------------------------------------------------------------------------
-      # Event index_updater
-
-      #
-      # @api private
-      def fire_event(event)
-        index_triggers.each_value {|trigger| trigger.call(event.node, event)}
-      end
-      
       
       # ------------------------------------------------------------------------
 
@@ -529,14 +485,14 @@ module Neo4j
         if rel_type_props.size == 2 and rel_type_props[1].kind_of?(Hash)
           rel_type_props[1].each_pair do |key,value|
             idx = rel_type_props[0]
-            lucene_index.field_infos[idx.to_sym][key] = value
+            indexer.field_infos[idx.to_sym][key] = value
           end
           rel_type_props = rel_type_props[0..0]
         end
         rel_type_props.each do |rel_type_prop|
-          rel_type, prop = rel_type_prop.to_s.split('.')
-          index_property(rel_type) if prop.nil?
-          index_relation(rel_type_prop, rel_type, prop) unless prop.nil?
+          rel_name, prop = rel_type_prop.to_s.split('.')
+          index_property(rel_name) if prop.nil?
+          index_relation(rel_name, prop) unless prop.nil?
         end
       end
 
@@ -548,8 +504,13 @@ module Neo4j
       # :api: public
       def remove_index(*keys)
         keys.each do |key|
-          index_updaters.delete key.to_s
-          index_triggers.delete key.to_s
+          rel_name, prop = key.to_s.split('.')
+          if prop.nil?
+            indexer.remove_index_on_property(rel_name)
+          else
+            clazz, rel_type = rel_class_and_type_for(rel_name)
+            clazz.indexer.remove_index_in_relation_on_property(rel_type, prop)
+          end
         end
       end
 
@@ -560,51 +521,32 @@ module Neo4j
       # :api: public
       def update_index
         all.nodes.each do |n|
-          n.reindex!
+          n.update_index
         end
       end
       
       # :api: private
       def index_property(prop)
-        updater = lambda do |node, doc|
-          doc[prop] = node.send(prop)
-        end
-        index_updaters[prop] = updater
-        
-        trigger = lambda do |node, event|
-          node.reindex if Neo4j::PropertyChangedEvent.trigger?(event, :property, prop)
-        end
-        index_triggers[prop] = trigger
+        indexer.add_index_on_property(prop)
       end
       
       
       # :api: private
-      def index_relation(index_key, rel_type, prop)
-        clazz = relations_info[rel_type.to_sym][:class]
-        
-        type = relations_info[rel_type.to_sym][:type]  # this or the other node we index ?
-        rel_type = type.to_sym unless type.nil?
+      def index_relation(rel_name, prop)
+        # find the trigger and updater classes and the rel_type of the given rel_name
+        trigger_clazz = relations_info[rel_name.to_sym][:class]
+        trigger_clazz ||= self # if not defined in a has_n
 
-        # updater - called when index needs to be updated
-        updater = lambda do |my_node, doc|
-          values = []
-          relations = my_node.relations.both(rel_type).nodes
-          relations.each {|other_node| values << other_node.send(prop)}
-          doc[index_key] = values
-        end
-        index_updaters[index_key] = updater
-      
-        # trigger - knows if an index needs to be updated
-        trigger = lambda do |other_node, event|
-          if (Neo4j::PropertyChangedEvent.trigger?(event, :property, prop) or
-                Neo4j::RelationshipEvent.trigger?(event) or
-                Neo4j::NodeLifecycleEvent.trigger?(event))
-            relations = other_node.relations.both(rel_type).nodes
-            relations.each {|r| r.send(:reindex)}
-          end
-        end
-        clazz.index_triggers[index_key] = trigger
+        updater_clazz = self
+
+        rel_type = relations_info[rel_name.to_sym][:type]  # this or the other node we index ?
+        rel_type ||= rel_name # if not defined (in a has_n) use the same name as the rel_name
+
+        # add index on the trigger class and connect it to the updater_clazz
+        # (a trigger may cause an update of the index using the Indexer specified on the updater class)
+        trigger_clazz.indexer.add_index_in_relation_on_property(updater_clazz, rel_name, rel_type, prop)
       end
+
       
       # Specifies a relationship between two node classes.
       #
@@ -679,7 +621,7 @@ module Neo4j
       #
       # :api: public
       def find(query=nil, &block)
-        SearchResult.new lucene_index, query, &block
+        self.indexer.find(query, block)
       end
 
 

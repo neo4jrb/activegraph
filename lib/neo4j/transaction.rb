@@ -140,7 +140,6 @@ module Neo4j
       @@counter += 1
       @id = @@counter
       @failure = false      
-      @nodes_to_be_reindexed = {}
       Thread.current[:transaction] = self
       $NEO_LOGGER.debug{"create #{self.to_s}"}
     end
@@ -180,11 +179,6 @@ module Neo4j
     # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
-      unless failure?
-        @nodes_to_be_reindexed.each_value {|node| node.reindex!}
-        @nodes_to_be_reindexed.clear
-      end
-      
       @neo_tx.finish
       @neo_tx=nil
       Thread.current[:transaction] = nil
@@ -212,13 +206,6 @@ module Neo4j
       @neo_tx.failure
       @failure = true
       $NEO_LOGGER.info{"failure #{self.to_s}"}                        
-    end
-    
-    # Marks a node to be reindexed before the transaction ends
-    #
-    # :api: private
-    def reindex(node)
-      @nodes_to_be_reindexed[node.neo_node_id] = node
     end
     
   end

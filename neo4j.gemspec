@@ -1,10 +1,10 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Tue Jan 20 14:55:36 +0100 2009
+# LAST UPDATED : Thu Mar 12 21:20:07 +0100 2009
 #
 # RUN : 'rake gem:update_gemspec'
 
 Gem::Specification.new do |s|
- s.date = "Tue Jan 20 00:00:00 +0100 2009"
+ s.date = "Thu Mar 12 00:00:00 +0100 2009"
  s.version = "0.2.0"
  s.authors = ["Andreas Ronge"]
  s.require_paths = ["lib"]
@@ -48,6 +48,7 @@ Gem::Specification.new do |s|
  "lib/neo4j/events.rb",
  "lib/neo4j/config.rb",
  "lib/neo4j/jars.rb",
+ "lib/neo4j/indexer.rb",
  "lib/neo4j/search_result.rb",
  "lib/neo4j/neo.rb",
  "lib/neo4j/transaction.rb",
@@ -74,24 +75,49 @@ Gem::Specification.new do |s|
  "test/neo4j/transaction_spec.rb",
  "test/neo4j/spec_helper.rb",
  "test/neo4j/node_traverser_spec.rb",
- "test/neo4j/event_spec.rb",
  "test/neo4j/has_one_spec.rb",
+ "test/neo4j/indexer_spec.rb",
  "test/neo4j/node_lucene_spec.rb",
  "test/neo4j/order_spec.rb",
+ "test/neo4j/index_spec.rb",
  "test/neo4j/value_object_spec.rb",
  "test/neo4j/property_spec.rb",
  "test/neo4j/ref_node_spec.rb",
  "test/neo4j/person_spec.rb",
  "test/neo4j/has_n_spec.rb",
  "test/neo4j/node_mixin_spec.rb",
- "examples/rails",
  "examples/imdb",
  "examples/imdb/install.sh",
- "examples/imdb/load2.rb",
  "examples/imdb/model.rb",
  "examples/imdb/find_actors.rb",
  "examples/imdb/create_neo_db.rb",
- "examples/imdb/load_test.rb"]
+ "examples/imdb/db",
+ "examples/imdb/db/neo",
+ "examples/imdb/db/neo/neostore.propertystore.db.strings",
+ "examples/imdb/db/neo/neostore.propertystore.db.index.id",
+ "examples/imdb/db/neo/neostore.propertystore.db.index.keys.id",
+ "examples/imdb/db/neo/neostore.relationshiptypestore.db",
+ "examples/imdb/db/neo/neostore.propertystore.db.index.keys",
+ "examples/imdb/db/neo/neostore.id",
+ "examples/imdb/db/neo/neostore.relationshiptypestore.db.id",
+ "examples/imdb/db/neo/neostore.relationshipstore.db",
+ "examples/imdb/db/neo/neostore.propertystore.db.strings.id",
+ "examples/imdb/db/neo/neostore.relationshipstore.db.id",
+ "examples/imdb/db/neo/neostore.propertystore.db.arrays.id",
+ "examples/imdb/db/neo/neostore.nodestore.db.id",
+ "examples/imdb/db/neo/tm_tx_log.1",
+ "examples/imdb/db/neo/neostore.propertystore.db.arrays",
+ "examples/imdb/db/neo/neostore.relationshiptypestore.db.names.id",
+ "examples/imdb/db/neo/neostore.relationshiptypestore.db.names",
+ "examples/imdb/db/neo/neostore.propertystore.db.index",
+ "examples/imdb/db/neo/neostore.propertystore.db",
+ "examples/imdb/db/neo/neostore.propertystore.db.id",
+ "examples/imdb/db/neo/active_tx_log",
+ "examples/imdb/db/neo/neostore.nodestore.db",
+ "examples/imdb/db/neo/neostore",
+ "examples/imdb/data",
+ "examples/imdb/data/test-movies.list",
+ "examples/imdb/data/test-actors.list"]
  s.email = "andreas.ronge@gmail.com"
  s.required_ruby_version = ">= 1.8.4"
  s.rubygems_version = "1.3.1"

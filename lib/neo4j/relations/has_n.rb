@@ -90,8 +90,10 @@ module Neo4j
 
         r = from.internal_node.createRelationshipTo(to.internal_node, @type)
         from.class.new_relation(@type.name,r)
-        from.class.fire_event(RelationshipAddedEvent.new(from, to, @type.name, r.getId()))
-        other.class.fire_event(RelationshipAddedEvent.new(to, from, @type.name, r.getId()))
+
+        from.class.indexer.on_relation_created(from, @type.name)
+#        from.class.fire_event(RelationshipAddedEvent.new(from, to, @type.name, r.getId()))
+#        other.class.fire_event(RelationshipAddedEvent.new(to, from, @type.name, r.getId()))
         self
       end
 

@@ -60,10 +60,13 @@ end
 Neo4j::Config[:storage_path] = DB_NEO_DIR
 Neo4j.start
 
+t1 = Time.now
 Neo4j::Transaction.run do
 
   parse_actors('data/test-actors.list')
 
 end
 
+# For me it takes 33.78 sec
+puts "Created database in #{Time.now - t1} seconds"
 Neo4j.stop

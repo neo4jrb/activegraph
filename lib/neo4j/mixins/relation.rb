@@ -68,9 +68,11 @@ module Neo4j
     # :api: public
     def delete
       type = @internal_r.getType().name()
-      # start_node can be nil if it is a node that is not managed by Neo4j.rb
-      start_node.class.fire_event(RelationshipDeletedEvent.new(start_node, end_node, type, @internal_r.getId)) unless start_node.nil?
       @internal_r.delete
+
+      # TODO not sure if we need to do it on both start and end node ...
+#      start_node.class.indexer.on_relation_deleted(start_node, type) unless start_node.nil?
+      end_node.class.indexer.on_relation_deleted(end_node, type) unless end_node.nil?
     end
 
     def set_property(key,value)

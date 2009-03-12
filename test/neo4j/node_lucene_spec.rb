@@ -57,6 +57,11 @@ describe "Neo4j & Lucene Transaction Synchronization:" do
     stop
   end  
 
+  it "should specify which properties to index using NodeMixin#index method" do
+    TestNode.indexer.property_indexer.properties.should include(:name, :age)
+    TestNode.indexer.property_indexer.properties.size.should == 2
+  end
+
   it "should not update the index if the transaction rollsback" do
     # given
     TestNode.find(:name => 'hello').size.should == 0

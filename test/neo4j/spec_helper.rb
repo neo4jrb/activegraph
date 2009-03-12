@@ -48,8 +48,16 @@ def undefine_class(*clazz_syms)
   clazz_syms.each do |clazz_sym|
     Object.instance_eval do
       begin
+        Neo4j::Indexer.remove_instance const_get(clazz_sym)
         remove_const clazz_sym
       end if const_defined? clazz_sym
     end
+  end
+end
+
+
+def clazz_from_symbol(classname_as_symbol)
+  classname_as_symbol.to_s.split("::").inject(Kernel) do |container, name|
+    container.const_get(name.to_s)
   end
 end

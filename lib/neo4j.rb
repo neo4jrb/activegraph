@@ -27,7 +27,6 @@ require 'neo4j/relations/node_traverser'
 
 # neo4j
 require 'neo4j/config'
-require 'neo4j/events'
 require 'neo4j/indexer' # this will replace neo4j/events
 require 'neo4j/neo'
 require 'neo4j/reference_node'
