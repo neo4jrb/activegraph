@@ -1,3 +1,8 @@
+== 0.2.1 / 2009-03-15
+* Refactoring of lucene indexing of the node space (28)
+* Fixed bug on Neo4j::Nodemixin#property? (#22)
+
+
 == 0.2.0 / 2009-01-20
 * Impl. Neo4j::Node#traverse - enables traversal and filtering using TraversalPosition info (#17,#19)
 * Impl. traversal to any depth (#15)
