@@ -167,6 +167,7 @@ describe "CustomerA,Order,Product" do
       CustomerA.find('orders.total_cost' => '200').size.should == 0
     end
 
+
     it "should find customer who has a friends of age 30, setting relationship first and then age" do
       c1 = CustomerA.new
       c2 = CustomerA.new
