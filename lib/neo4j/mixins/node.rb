@@ -79,13 +79,14 @@ module Neo4j
     # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
-      #old_value = get_property(name)
 
       if value.nil?
         remove_property(name)
       elsif self.class.marshal?(name)
         @internal_node.set_property(name, Marshal.dump(value).to_java_bytes)
       else
+        # in JRuby 1.2.0 it converts a Float incorrectly to a java.lang.float
+        value = java.lang.Double.new(value) if value.is_a? Float
         @internal_node.set_property(name, value)
       end
 
