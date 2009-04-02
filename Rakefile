@@ -93,7 +93,8 @@ spec = Gem::Specification.new do |s|
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  
   s.required_ruby_version = ">= 1.8.4"
- 
+
+  s.add_dependency("json_pure", ">=1.1.4")
 end
  
 Rake::GemPackageTask.new(spec) do |pkg|

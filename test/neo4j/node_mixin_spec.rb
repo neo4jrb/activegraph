@@ -285,5 +285,49 @@ describe "Neo4j::Node#delete"  do
   end
 end
 
+# ----------------------------------------------------------------------------
+# delete
+#
 
+describe "Neo4j::Node#props"  do
+  before(:all) do
+    start
+    undefine_class :TestNode
+    class TestNode
+      include Neo4j::NodeMixin
+
+      property :name
+      property :age
+    end
+  end
+
+  after(:all) do
+    stop
+  end
+
+  it "should only contain classname on a node with no properties" do
+    t1 = TestNode.new
+    p = t1.props
+    p.keys.should include('classname')
+    p.keys.size.should == 1
+  end
+
+  it "should be okey to call props on a loaded node with no properties" do
+    t1 = TestNode.new
+    id = t1.neo_node_id
+    t2 = Neo4j.load(id)
+    p = t2.props
+    p.keys.should include('classname')
+    p.keys.size.should == 1
+  end
+
+  it "should return undeclared properties" do
+    t1 = TestNode.new
+    t1.set_property('hoj', 'koj')
+    p = t1.props
+    p.keys.should include('hoj')
+    p['hoj'].should == 'koj'
+  end
+
+end
 

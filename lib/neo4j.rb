@@ -9,6 +9,8 @@ require 'neo4j/jars'
 # lucene
 require 'lucene'
 
+# restful
+require 'rest'
 
 # mixins
 require 'neo4j/mixins/transactional'

@@ -15,6 +15,12 @@ require 'neo4j'
 #
 module RestMixin
 
+  def uri
+    host = Sinatra::Application.host
+    port = Sinatra::Application.port
+    "http://#{host}:#{port}/#{self.class.to_s}/#{self.neo_node_id}"
+  end
+
   def self.included(c)
     classname = c.to_s
 
@@ -53,6 +59,3 @@ module RestMixin
 end
 
 
-#
-#
-#Sinatra::Application.run! :port => 9123

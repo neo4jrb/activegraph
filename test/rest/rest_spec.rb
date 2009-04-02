@@ -14,17 +14,39 @@ class Person
   # by includeing the following mixin we will expose this node as a RESTful resource
   include RestMixin
   property :name
+  has_n :friends
 end
 
 describe 'Restful' do
   include Sinatra::Test
 
-  before(:all) do
+  before(:each) do
     Neo4j.stop
     FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
   end
+
+  it "should know the URI of a Person instance" do
+    person = Person.new
+    port = Sinatra::Application.port # we do not know it since we have not started it - mocked
+    person.uri.should == "http://0.0.0.0:#{port}/Person/#{person.neo_node_id}"
+  end
   
+  it "should create a relationship on POST /Person/friends" do
+    pending "TODO"
+    adam = Person.new
+    adam.name = 'adam'
+
+    bertil = Person.new
+    bertil.name = 'bertil'
+
+    data = { :uri => bertil.uri }
+
+    # when
+    post '/Person', data.to_json
+
+  end
+
   it "should create a new Person on POST /Person" do
     data = { :name => 'kalle'}
 
