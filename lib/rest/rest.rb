@@ -30,11 +30,25 @@ module RestMixin
   def self.included(c)
     classname = c.to_s
 
+    Sinatra::Application.get("/#{classname}/:id/traverse") do
+      content_type :json
+      node = Neo4j.load(params[:id])
+      return 404, "Can't find node with id #{params[:id]}" if node.nil?
+
+      relation = params['relation']
+      depth = params['depth']
+      depth ||= 1
+      uris = node.traverse.outgoing(relation.to_sym).depth(depth.to_i).collect{|node| node._uri}
+      {'uri_list' => uris}.to_json
+    end
+
+
     Sinatra::Application.get("/#{classname}/:id/:prop") do
       content_type :json
       node = Neo4j.load(params[:id])
       {params[:prop]=>node.get_property(params[:prop])}.to_json
     end
+
 
     Sinatra::Application.post("/#{classname}/:id/:rel") do
       content_type :json
@@ -71,7 +85,6 @@ module RestMixin
     Sinatra::Application.get("/Relations/:id") do
       content_type :json
       rel = Neo4j.load_relationship(params[:id])
-      puts "REL PROPS #{rel.props.inspect} - #{rel.inspect}"
       return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
       rel.props.to_json
     end

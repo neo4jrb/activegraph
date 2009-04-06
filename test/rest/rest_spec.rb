@@ -45,6 +45,29 @@ describe 'Restful' do
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
     person._uri.should == "http://0.0.0.0:#{port}/Person/#{person.neo_node_id}"
   end
+
+  it "should be possible to traverse a relationship on GET /Person/<id>/traverse?relation=friends&depth=1" do
+    adam = Person.new
+    adam.name = 'adam'
+
+    bertil = Person.new
+    bertil.name = 'bertil'
+
+    carl = Person.new
+
+    adam.friends << bertil << carl
+
+    # when
+    get "/Person/#{adam.neo_node_id}/traverse?relation=friends&depth=1"
+
+    # then
+    status.should == 200
+    body = JSON.parse(response.body)
+    body['uri_list'].should_not be_nil
+    body['uri_list'][0].should == 'http://0.0.0.0:4567/Person/2'
+    body['uri_list'][1].should == 'http://0.0.0.0:4567/Person/3'
+    body['uri_list'].size.should == 2
+  end
   
   it "should create a relationship on POST /Person/friends" do
     adam = Person.new
