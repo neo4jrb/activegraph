@@ -7,6 +7,20 @@ require 'spec'
 require 'spec/interop/test'
 require 'sinatra/test'
 
+# TODO refactor, duplicated code in spec_helper
+
+require 'fileutils'
+require 'tmpdir'
+
+# suppress all warnings
+$NEO_LOGGER.level = Logger::ERROR
+NEO_STORAGE = Dir::tmpdir + "/neo_storage"
+LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
+Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
+Lucene::Config[:store_on_file] = false
+Neo4j::Config[:storage_path] = NEO_STORAGE
+
+
 Sinatra::Application.set :environment, :test
 
 class Person
@@ -20,7 +34,7 @@ end
 describe 'Restful' do
   include Sinatra::Test
 
-  before(:each) do
+  after(:each) do
     Neo4j.stop
     FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
@@ -29,23 +43,40 @@ describe 'Restful' do
   it "should know the URI of a Person instance" do
     person = Person.new
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
-    person.uri.should == "http://0.0.0.0:#{port}/Person/#{person.neo_node_id}"
+    person._uri.should == "http://0.0.0.0:#{port}/Person/#{person.neo_node_id}"
   end
   
   it "should create a relationship on POST /Person/friends" do
-    pending "TODO"
     adam = Person.new
     adam.name = 'adam'
 
     bertil = Person.new
     bertil.name = 'bertil'
 
-    data = { :uri => bertil.uri }
 
     # when
-    post '/Person', data.to_json
+    post "/Person/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
 
+    # then
+    status.should == 201
+    response.location.should == "/Relations/2"
+    adam.friends.should include(bertil)
   end
+
+  it "should be possible to load a relationship on GET /Relations/<id>" do
+    adam = Person.new
+    bertil = Person.new
+    rel = adam.friends.new(bertil)
+    rel.foo = "bar"
+    # when
+    get "/Relations/#{rel.neo_relation_id}"
+
+    # then
+    status.should == 200
+    body = JSON.parse(response.body)
+    body['foo'].should == 'bar'
+  end
+
 
   it "should create a new Person on POST /Person" do
     data = { :name => 'kalle'}

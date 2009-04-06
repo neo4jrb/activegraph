@@ -51,8 +51,7 @@ module Neo4j
     ! @instance.nil?
   end
   
-  # Return a started neo instance.
-  # It will be started if this has not already been done.
+  # Return a Neo node.
   # 
   # ==== Parameters
   # node_id<String, to_i>:: the unique neo id for one node
@@ -65,6 +64,18 @@ module Neo4j
     self.instance.find_node(node_id.to_i)
   end
 
+  # Return a Neo Relationship.
+  #
+  # ==== Parameters
+  # node_id<String, to_i>:: the unique neo id for one node
+  #
+  # ==== Returns
+  # The node object (RelationshipMixin) or nil
+  #
+  # :api: public
+  def self.load_relationship(rel_id)
+    self.instance.find_relationship(rel_id.to_i)
+  end
 
   # Returns the reference node, which is a "starting point" in the node space.
   #
@@ -139,6 +150,17 @@ module Neo4j
     end
   
 
+    # Loads a Neo relationship
+    # Expects the neo property 'classname' to exist.
+    # That property is used to load the ruby instance
+    #
+    # :api: private
+    def find_relationship(id)
+      Transaction.run do
+        neo_node = @neo.getRelationshipById(id)
+        load_node(neo_node)
+      end
+    end
 
     # Loads a Neo node
     # Expects the neo property 'classname' to exist.

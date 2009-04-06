@@ -15,10 +15,16 @@ require 'neo4j'
 #
 module RestMixin
 
-  def uri
+  #URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$'
+  URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)$'
+  def _uri
+    "#{_base_uri}/#{self.class.to_s}/#{self.neo_node_id}"
+  end
+
+  def _base_uri
     host = Sinatra::Application.host
     port = Sinatra::Application.port
-    "http://#{host}:#{port}/#{self.class.to_s}/#{self.neo_node_id}"
+    "http://#{host}:#{port}"
   end
 
   def self.included(c)
@@ -28,6 +34,46 @@ module RestMixin
       content_type :json
       node = Neo4j.load(params[:id])
       {params[:prop]=>node.get_property(params[:prop])}.to_json
+    end
+
+    Sinatra::Application.post("/#{classname}/:id/:rel") do
+      content_type :json
+      node = Neo4j.load(params[:id])
+      rel = params[:rel]
+
+      # does this relationship exist ?
+      if !node.class.relations_info.keys.include?(rel.to_sym)
+        return 409, "Can't add relation on '#{rel}' since it does not exist"
+      end
+      body = request.body.read
+      data = JSON.parse(body)
+      uri = data['uri']
+      match = URL_REGEXP.match(uri)
+      return 400, "Bad node uri '#{uri}'" if match.nil?
+      to_clazz, to_node_id = match[6].split('/')
+
+      other_node = Neo4j.load(to_node_id.to_i)
+      return 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
+
+      if to_clazz != other_node.class.to_s
+        return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
+      end
+
+      rel_obj = node.instance_eval "#{rel}.new(other_node)" # TODO use send method instead
+
+      return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
+      
+      # create URI
+      redirect "/Relations/#{rel_obj.neo_relation_id.to_s}", 201 # created
+    end
+
+
+    Sinatra::Application.get("/Relations/:id") do
+      content_type :json
+      rel = Neo4j.load_relationship(params[:id])
+      puts "REL PROPS #{rel.props.inspect} - #{rel.inspect}"
+      return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
+      rel.props.to_json
     end
 
     Sinatra::Application.put("/#{classname}/:id/:prop") do

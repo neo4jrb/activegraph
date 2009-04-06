@@ -1,11 +1,11 @@
 # WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!
-# LAST UPDATED : Thu Mar 12 21:20:07 +0100 2009
+# LAST UPDATED : Thu Apr 02 22:31:38 +0200 2009
 #
 # RUN : 'rake gem:update_gemspec'
 
 Gem::Specification.new do |s|
- s.date = "Thu Mar 12 00:00:00 +0100 2009"
- s.version = "0.2.0"
+ s.date = "Thu Apr 02 00:00:00 +0200 2009"
+ s.version = "0.2.2"
  s.authors = ["Andreas Ronge"]
  s.require_paths = ["lib"]
  s.name = "neo4j"
@@ -18,6 +18,8 @@ Gem::Specification.new do |s|
  "README.rdoc",
  "Rakefile",
  "neo4j.gemspec",
+ "lib/rest",
+ "lib/rest/rest.rb",
  "lib/neo4j.rb",
  "lib/lucene",
  "lib/lucene/index_info.rb",
@@ -32,6 +34,51 @@ Gem::Specification.new do |s|
  "lib/lucene/query_dsl.rb",
  "lib/lucene/document.rb",
  "lib/lucene/transaction.rb",
+ "lib/tmp",
+ "lib/tmp/neo4j",
+ "lib/tmp/neo4j/neostore.propertystore.db.strings",
+ "lib/tmp/neo4j/neostore.propertystore.db.index.id",
+ "lib/tmp/neo4j/neostore.propertystore.db.index.keys.id",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238681795313",
+ "lib/tmp/neo4j/neostore.relationshiptypestore.db",
+ "lib/tmp/neo4j/neostore.propertystore.db.index.keys",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238676091163",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238679171736",
+ "lib/tmp/neo4j/neostore.id",
+ "lib/tmp/neo4j/neostore.relationshiptypestore.db.id",
+ "lib/tmp/neo4j/neostore.relationshipstore.db",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238672666741",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238676392741",
+ "lib/tmp/neo4j/neostore.propertystore.db.strings.id",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238675865256",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238676248744",
+ "lib/tmp/neo4j/neostore.relationshipstore.db.id",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238679456967",
+ "lib/tmp/neo4j/neostore.propertystore.db.arrays.id",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238676607111",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238675746091",
+ "lib/tmp/neo4j/neostore.nodestore.db.id",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238679857167",
+ "lib/tmp/neo4j/tm_tx_log.1",
+ "lib/tmp/neo4j/neostore.propertystore.db.arrays",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238672783332",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238672423257",
+ "lib/tmp/neo4j/neostore.relationshiptypestore.db.names.id",
+ "lib/tmp/neo4j/neostore.relationshiptypestore.db.names",
+ "lib/tmp/neo4j/nioneo_logical.log",
+ "lib/tmp/neo4j/neostore.propertystore.db.index",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238673375491",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238677687517",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238672963437",
+ "lib/tmp/neo4j/neostore.propertystore.db",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238678673846",
+ "lib/tmp/neo4j/neostore.propertystore.db.id",
+ "lib/tmp/neo4j/active_tx_log",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238669982933",
+ "lib/tmp/neo4j/neostore.nodestore.db",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238670061101",
+ "lib/tmp/neo4j/nioneo_logical.log.recovered-1238669664042",
+ "lib/tmp/neo4j/neostore",
  "lib/lucene.rb",
  "lib/neo4j",
  "lib/neo4j/reference_node.rb",
@@ -45,7 +92,6 @@ Gem::Specification.new do |s|
  "lib/neo4j/jars/jta-spec1_0_1.jar",
  "lib/neo4j/jars/neo-1.0-b7.jar",
  "lib/neo4j/jars/shell-1.0-b7.jar",
- "lib/neo4j/events.rb",
  "lib/neo4j/config.rb",
  "lib/neo4j/jars.rb",
  "lib/neo4j/indexer.rb",
@@ -60,6 +106,9 @@ Gem::Specification.new do |s|
  "lib/neo4j/relations/dynamic_relation.rb",
  "lib/neo4j/relations/traversal_position.rb",
  "lib/neo4j/relations/relation_traverser.rb",
+ "lib/rest.rb",
+ "test/rest",
+ "test/rest/rest_spec.rb",
  "test/lucene",
  "test/lucene/sort_spec.rb",
  "test/lucene/transaction_spec.rb",
@@ -86,6 +135,8 @@ Gem::Specification.new do |s|
  "test/neo4j/person_spec.rb",
  "test/neo4j/has_n_spec.rb",
  "test/neo4j/node_mixin_spec.rb",
+ "examples/javascript",
+ "examples/javascript/hello.js",
  "examples/imdb",
  "examples/imdb/install.sh",
  "examples/imdb/model.rb",
@@ -128,5 +179,6 @@ Gem::Specification.new do |s|
  s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
  s.summary = "A graph database for JRuby"
  s.description = "A graph database for JRuby"
+ s.add_dependency "json_pure", ">= 1.1.4, runtime"
  s.bindir = "bin"
 end

@@ -101,7 +101,23 @@ module Neo4j
       @internal_r.getId()
     end
 
-    transactional :property?, :set_property, :get_property, :delete
+    # Returns a hash of all properties.
+    #
+    # ==== Returns
+    # Hash:: property key and property value
+    #
+    # :api: public
+    def props # TODO duplicated code - node.rb
+      ret = {}
+      iter = @internal_r.getPropertyKeys.iterator
+      while (iter.hasNext) do
+        key = iter.next
+        ret[key] = @internal_r.getProperty(key)
+      end
+      ret
+    end
+
+    transactional :property?, :set_property, :get_property, :delete, :props
 
     #
     # Adds classmethods in the ClassMethods module
