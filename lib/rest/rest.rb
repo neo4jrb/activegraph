@@ -18,6 +18,20 @@ module RestMixin
   #URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$'
   URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)$'
 
+  Sinatra::Application.get("/neo") do
+    #      content_type :html
+    "<html><body><h2>Neo4j.rb is alive !</h2></body></html>"
+  end
+
+  Sinatra::Application.get("/relations/:id") do
+    content_type :json
+    rel = Neo4j.load_relationship(params[:id])
+    return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
+    rel.props.to_json
+  end
+
+
+  
   def _uri
     "#{_base_uri}/nodes/#{self.class.to_s}/#{self.neo_node_id}"
   end
@@ -30,6 +44,9 @@ module RestMixin
 
   def self.included(c)
     classname = c.to_s
+
+    puts "Register /neo"
+
 
     Sinatra::Application.get("/nodes/#{classname}/:id/traverse") do
       content_type :json
@@ -83,12 +100,6 @@ module RestMixin
     end
 
 
-    Sinatra::Application.get("/relations/:id") do
-      content_type :json
-      rel = Neo4j.load_relationship(params[:id])
-      return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
-      rel.props.to_json
-    end
 
     Sinatra::Application.put("/nodes/#{classname}/:id/:prop") do
       content_type :json

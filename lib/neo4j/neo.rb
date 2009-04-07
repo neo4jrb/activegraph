@@ -1,3 +1,5 @@
+require 'thread'
+
 module Neo4j
 
 
@@ -20,9 +22,24 @@ module Neo4j
     at_exit do
       Neo4j.stop
     end
+
+    # check if we should start Restful server
+    if Config[:rest_server]
+      start_rest
+    end
     @instance
   end
 
+  def self.start_rest
+    puts "RESTful already started" if @sinatra
+    return if @sinatra
+    
+    @sinatra = Thread.new do
+      puts "Start Restful server at port #{Config[:rest_port]}"
+      Sinatra::Application.run! :port => Config[:rest_port]
+    end
+  end
+  
   # Return a started neo instance.
   # It will be started if this has not already been done.
   # 
@@ -39,6 +56,12 @@ module Neo4j
   # 
   # :api: public
   def self.stop
+    if @sinatra
+      # TODO must be a nicer way to do this - to shutdown sinatra
+      @sinatra.kill
+      @sinatra = nil
+    end
+    
     @instance.stop unless @instance.nil?
     @instance = nil
   end

@@ -16,7 +16,8 @@ module Neo4j
       # :api: private
       def defaults
         @defaults ||= {
-          :storage_path => 'tmp/neo4j'
+          :storage_path => 'tmp/neo4j',
+          :rest_port => 9123
         }
       end
 
