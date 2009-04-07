@@ -18,9 +18,17 @@ module RestMixin
   #URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$'
   URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)$'
 
-  Sinatra::Application.get("/neo") do
+
+
+  Sinatra::Application.get("/test") do
     #      content_type :html
     "<html><body><h2>Neo4j.rb is alive !</h2></body></html>"
+  end
+
+  Sinatra::Application.post("/neo") do
+    body = request.body.read
+    eval(body)
+    200
   end
 
   Sinatra::Application.get("/relations/:id") do
