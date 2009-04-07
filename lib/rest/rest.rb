@@ -27,7 +27,7 @@ module RestMixin
 
   Sinatra::Application.post("/neo") do
     body = request.body.read
-    eval(body)
+    Object.class_eval body
     200
   end
 
@@ -53,7 +53,7 @@ module RestMixin
   def self.included(c)
     classname = c.to_s
 
-    puts "Register /neo"
+    puts "Register Neo Node Class /nodes/#{classname}"
 
 
     Sinatra::Application.get("/nodes/#{classname}/:id/traverse") do

@@ -40,6 +40,25 @@ describe 'Restful' do
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
   end
 
+  it "should support POST ruby code on /neo" do
+    code = <<END_OF_STRING
+class Foo
+include Neo4j::NodeMixin
+include RestMixin
+property :name
+puts "DEFINED KLASS"
+end
+END_OF_STRING
+
+    # when
+    post "/neo", code
+    
+    # then
+    status.should == 200
+    (defined? Foo).should == "constant"
+  end
+
+
   it "should know the URI of a Person instance" do
     person = Person.new
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
