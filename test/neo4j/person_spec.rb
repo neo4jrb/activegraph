@@ -13,9 +13,10 @@ describe "Person" do
 
     class Person
       include Neo4j::NodeMixin
-      property :name
+      property :name, :age
       has_n :friends
       index :name
+      index :'friends.age'
     end
   end
 
@@ -28,7 +29,22 @@ describe "Person" do
     result = Neo4j.instance.find_node person.neo_node_id
     result.should == person
   end
-  
+
+  it "should find persons who has friends with a specific age" do
+    me = Person.new
+    me.age = 10
+    you = Person.new
+    you.age = 20
+
+    me.friends << you
+    
+    # when
+    res = Person.find('friends.age' => '20')
+
+    # then
+    res.size.should == 1
+    res[0].should == me
+  end
 
   it "should be possible to find it given its name" do
     person1 = Person.new

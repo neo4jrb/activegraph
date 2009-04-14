@@ -180,7 +180,10 @@ module Neo4j
     # :api: private
     def on_relation_created(node, rel_type)
       # make sure we're interested in indexing this relation
-      reindex_related_nodes(node) if @rel_type == rel_type
+      if @rel_type == rel_type
+        reindex_related_nodes(node)
+        Indexer.index(node)
+      end
     end
 
     # :api: private
