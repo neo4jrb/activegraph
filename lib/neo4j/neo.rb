@@ -96,8 +96,6 @@ module Neo4j
 
     def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
-      Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
-      $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 
       # get the placebo transaction
       # the second time we create an transaction the placebo transaction will
@@ -105,6 +103,10 @@ module Neo4j
       tx = begin_transaction
       @placebo_tx = begin_transaction
       tx.finish
+
+      Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
+      $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
+
     end
 
     #
