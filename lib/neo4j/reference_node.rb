@@ -7,25 +7,8 @@ module Neo4j
   #
   class ReferenceNode
     include Neo4j::NodeMixin
-    #    include Neo4j::DynamicAccessorMixin
     extend Neo4j::TransactionalMixin
     
-    #
-    # :api: private
-#   def initialize(internal_node)
-#      @internal_node = internal_node
-#    end
-
-    #
-    # Returns a relatio traverser for traversing all types of relation from and to this node
-    # @see Neo4j::Relations::RelationTraverser
-    #
-    # :api: public
-    #
-#    def relations
-#      Relations::RelationTraverser.new(@internal_node)
-#    end
-
     # Connects the given node with the reference node.
     # The type of the relationship will be the same as the class name of the
     # specified node unless the optional parameter type is specified.
