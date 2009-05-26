@@ -39,5 +39,18 @@ describe 'ReferenceNode' do
     Neo4j.ref_node.relations.outgoing('mytype').nodes.should include(n)
   end
 
+  it "can allow to create my own relationships (with has_n,has_one) from the reference node" do
+    node = MyNode.new
+    node.name = "ojoj"
+
+    # when
+    Neo4j.ref_node.class.has_one :my_node
+
+    # then
+    Neo4j.ref_node.my_node = node
+    Neo4j.ref_node.my_node.should == node
+    Neo4j.ref_node.my_node.name.should == "ojoj"
+  end
+
 end
 
