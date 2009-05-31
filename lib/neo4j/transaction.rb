@@ -103,15 +103,12 @@ module Neo4j
     
         begin
           tx = Neo4j::Transaction.new
-          puts "  RUN TX " + tx.to_s
           ret = yield tx
           tx.success unless tx.failure?
         rescue Exception => e
-          puts "  BOOM " + e.backtrace.join("\n")
           tx.failure
           raise e  
         ensure
-          puts "  FINISH TX " + tx.to_s
           tx.finish  
         end      
         ret
@@ -183,7 +180,6 @@ module Neo4j
     # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
-      puts "FINISH " + to_s
       @neo_tx.finish
       @neo_tx=nil
       Thread.current[:transaction] = nil
@@ -204,7 +200,6 @@ module Neo4j
     #
     # :api: public
     def failure
-      puts "FAILURE --------------------------"
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.failure
       @failure = true
@@ -232,11 +227,10 @@ module Neo4j
     # Do nothing since Neo4j does not support chained transactions.
     # 
     def finish
-      puts "   Finish placebo"
     end
 
     def to_s
-      "   PLACEBO"
+      "PLACEBO TX"
     end
   end
   
