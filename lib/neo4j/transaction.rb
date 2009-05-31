@@ -37,13 +37,13 @@ module Neo4j
         res = ""
         for i in 2..7 do
           res << /\`([^\']+)\'/.match(caller(i).first)[1]
-          res << ', ' unless i == 4
+          res << ', ' 
         end
         res
       end 
 
       def placebo?(tx)
-        Neo4j.instance.placebo_tx == tx
+        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeo$PlaceboTransaction'
       end
 
       # Creates a transaction. If one is already running then a 'placebo' transaction will be created instead.
@@ -51,12 +51,15 @@ module Neo4j
       # real transaction.
       #
       def new
-        neo_tx= Neo4j.instance.begin_transaction
-        if placebo?(neo_tx)
-          raise StandardError.new("Neo4j created a placebo transaction but an real transaction did not exist yet") if !Transaction.running?
-          Transaction.current.placebo
+        tx = Neo4j.instance.begin_transaction
+        if running?
+          # expects a placebo transaction, check just in case
+          raise "Expected placebo transaction since one normal is already running" unless placebo?(tx)
+          tx = Transaction.current.create_placebo_tx_if_not_already_exists
+          tx
         else
-          super(neo_tx)
+          raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)
+          super(tx)
         end
       end
       
@@ -94,21 +97,21 @@ module Neo4j
       # :api: public
       #
       def run
-        $NEO_LOGGER.info{"new transaction " + called}
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         ret = nil
     
         begin
           tx = Neo4j::Transaction.new
+          puts "  RUN TX " + tx.to_s
           ret = yield tx
           tx.success unless tx.failure?
-        rescue Exception => e  
-          $NEO_LOGGER.warn{"Neo transaction rolled back because of an exception, #{e}"}
-          $NEO_LOGGER.warn{e.backtrace.join("\n")}
+        rescue Exception => e
+          puts "  BOOM " + e.backtrace.join("\n")
           tx.failure
           raise e  
-        ensure  
+        ensure
+          puts "  FINISH TX " + tx.to_s
           tx.finish  
         end      
         ret
@@ -119,7 +122,7 @@ module Neo4j
       end
     
       def running?
-        self.current != nil && self.current.neo_tx != nil
+        self.current != nil # && self.current.neo_tx != nil
       end
     
       def failure?
@@ -141,7 +144,6 @@ module Neo4j
       @id = @@counter
       @failure = false      
       Thread.current[:transaction] = self
-      $NEO_LOGGER.debug{"create #{self.to_s}"}
     end
     
     def to_s
@@ -153,11 +155,13 @@ module Neo4j
       @failure == true
     end
 
+
     def placebo?
-      @neo_tx == Neo4j.instance.placebo_tx
+      false
+      #      self.class.placebo?(@neo_tx)
     end
 
-    def placebo
+    def create_placebo_tx_if_not_already_exists
       @placebo ||= PlaceboTransaction.new(self)
     end
     
@@ -179,6 +183,7 @@ module Neo4j
     # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
+      puts "FINISH " + to_s
       @neo_tx.finish
       @neo_tx=nil
       Thread.current[:transaction] = nil
@@ -192,9 +197,6 @@ module Neo4j
       else
         $NEO_LOGGER.debug{"NO LUCENE TX running"}
       end
-          
-      
-      $NEO_LOGGER.info{"finished #{self.to_s}"}                  
     end
 
     # Marks this transaction as failed, which means that it will inexplicably
@@ -202,6 +204,7 @@ module Neo4j
     #
     # :api: public
     def failure
+      puts "FAILURE --------------------------"
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.failure
       @failure = true
@@ -221,12 +224,19 @@ module Neo4j
       super(tx)
       @tx = tx # store it only for logging purpose
     end
-    
-    #
+
+    def placebo?
+      true
+    end
+
     # Do nothing since Neo4j does not support chained transactions.
     # 
     def finish
-      $NEO_LOGGER.info{"tried to finish chained transaction #{@tx}"}
+      puts "   Finish placebo"
+    end
+
+    def to_s
+      "   PLACEBO"
     end
   end
   
