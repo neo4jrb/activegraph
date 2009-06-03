@@ -95,6 +95,10 @@ module Neo4j
       end
     end
 
+		def []=(name, value)
+			self.set_property(name, value)
+		end
+
     # Removes the property from this node.
     # For more information see JavaDoc PropertyContainer#removeProperty
     #
@@ -133,7 +137,10 @@ module Neo4j
       end
     end
 
-
+		def [](name)
+			self.get_property(name)
+		end
+		
     # Checks if the given neo property exists.
     #
     # ==== Returns
