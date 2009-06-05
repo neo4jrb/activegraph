@@ -7,29 +7,8 @@ module Neo4j
   #
   class ReferenceNode
     include Neo4j::NodeMixin
-    extend Neo4j::TransactionalMixin
     
-    # Connects the given node with the reference node.
-    # The type of the relationship will be the same as the class name of the
-    # specified node unless the optional parameter type is specified.
-    # This method is used internally to keep a reference to all node instances in the node space
-    # (useful for example for reindexing all nodes by traversing the node space).
-    #
-    # ==== Parameters
-    # node<Neo4j::NodeMixin>:: Connect the reference node with this node
-    # type<String>:: Optinal, the type of the relationship we want to create
-    #
-    # ==== Returns
-    # nil
-    #
-    # :api: private
-    def connect(node, type = node.class.root_class)
-      @internal_node.createRelationshipTo(node.internal_node, Neo4j::Relations::RelationshipType.instance(type))
-      nil
-    end
-
-
-    transactional :connect
+    has_one :container_node
   end
 
 end

@@ -11,9 +11,29 @@ class BaseNode
 end
 
 
+
+#describe "placebo transaction" do
+##  before(:all) do start end
+#  after(:all)  do stop  end
+#
+#  it "should not change properties" do
+#    neo = org.neo4j.api.core.EmbeddedNeo.new '/var/tmp/neo4jtest'
+#    tx1 = neo.begin_tx
+#    tx2 = neo.begin_tx
+#    puts "TX1 " + tx1.java_object.java_type
+#    puts "TX2 " + tx2.java_object.java_type
+#    tx1.java_object.java_type.should == 'org.neo4j.api.core.EmbeddedNeo$TransactionImpl'
+#    tx2.java_object.java_type.should == 'org.neo4j.api.core.EmbeddedNeo$PlaceboTransaction'
+#    tx2.finish
+#    tx1.finish
+#    neo.shutdown
+#  end
+#
+#end
+
 describe "transaction rollback" do
   before(:all) do start end
-  after(:all)  do stop  end  
+  after(:all)  do stop  end
 
   it "should not change properties" do
     node = Neo4j::Transaction.run { BaseNode.new {|n| n.foo = 'foo'} }
@@ -23,11 +43,11 @@ describe "transaction rollback" do
       node.foo = "changed"
       t.failure
     }
-    
+
     # then
     Neo4j::Transaction.run { node.foo.should == 'foo'   }
   end
-  
+
 end
 
 
@@ -41,22 +61,22 @@ describe "When neo has been restarted" do
 
     after(:all) do
       stop
-    end  
-    
-    
+    end
+
+
     it "should load node using its id" do
       node = BaseNode.new {|n|
         n.baaz = "hello"
       }
-      
+
       Neo4j.stop
       Neo4j.start
-      
+
       Neo4j::Transaction.run {
         node2 = Neo4j.instance.find_node(node.neo_node_id)
         node2.baaz.should == "hello"
       }
     end
-  end 
+  end
 end
 
