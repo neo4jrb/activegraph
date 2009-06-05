@@ -79,6 +79,10 @@ module Neo4j
     self.instance.ref_node
   end
 
+  def self.container_node
+    self.instance.container_node
+  end
+
 
   #
   # Allows run and stop the Neo4j service
@@ -92,19 +96,18 @@ module Neo4j
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node, :placebo_tx
+    attr_reader :ref_node, :container_node
 
     def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
 
-      # get the placebo transaction
-      # the second time we create an transaction the placebo transaction will
-      # be returned from neo. We need to know if we are using real transaction or a placebo.
-      tx = begin_transaction
-      @placebo_tx = begin_transaction
-      tx.finish
-
-      Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
+      Transaction.run do
+        @ref_node = ReferenceNode.new(@neo.getReferenceNode())
+        if @ref_node.container_node.nil?
+          @ref_node.container_node = ContainerNode.new
+          @container_node = @ref_node.container_node  # to speed things up
+        end
+      end
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 
     end
@@ -176,8 +179,10 @@ module Neo4j
     #
     def stop
       $NEO_LOGGER.info {"stop neo #{@neo}"}
+      EventHandler.remove_all_listeners
       @neo.shutdown  
       @neo = nil
+      @ref_node = nil
     end
 
 

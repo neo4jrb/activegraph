@@ -57,7 +57,7 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
-      Neo4j.instance.ref_node.connect(self) 
+      EventHandler.node_created(self)
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     
@@ -79,7 +79,6 @@ module Neo4j
     # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
-
       if value.nil?
         remove_property(name)
       elsif self.class.marshal?(name)
@@ -593,7 +592,7 @@ module Neo4j
       #
       # :api: public
       def all
-        ref = Neo4j.instance.ref_node
+        ref = Neo4j.container_node
         ref.relations.outgoing(root_class)
       end
 
