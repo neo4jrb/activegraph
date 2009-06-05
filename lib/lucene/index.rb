@@ -207,8 +207,7 @@ module Lucene
         case query.first
         when String
           return searcher.find(@index_info, query)           
-        when Hash
-        when Array
+        when Hash, Array
           return searcher.find(@index_info, query.first) 
         end
       else
