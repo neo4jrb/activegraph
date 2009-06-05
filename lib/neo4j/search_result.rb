@@ -20,7 +20,14 @@ module Neo4j
     end
 
     def query_params
-      return @query.merge({:sort_by => @sort_by_fields}) unless @sort_by_fields.empty?
+      unless @sort_by_fields.empty?
+        return case @query
+          when Hash
+            @query.merge({:sort_by => @sort_by_fields}) 
+          when String
+            [@query, { :sort_by => @sort_by_fields}]  
+        end
+      end
       return @query
     end
     

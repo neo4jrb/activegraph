@@ -198,15 +198,17 @@ module Lucene
     def find(*query, &block)
       # new method is a factory method, does not create if it already exists
       searcher = IndexSearcher.new(@index_info.storage)
-      
+			
       # check sorting parameters
       query.last == :sort_by
       query.find{|x| x == :sort_by}
+			
       if block.nil?
         case query.first
         when String
           return searcher.find(@index_info, query)           
         when Hash
+        when Array
           return searcher.find(@index_info, query.first) 
         end
       else

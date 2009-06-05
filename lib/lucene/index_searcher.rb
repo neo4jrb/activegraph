@@ -82,6 +82,7 @@ module Lucene
       # TODO Refactoring ! too long and complex method
       lucene_query = case query
       when Array
+        sort_by ||= query.last.delete(:sort_by) if query.last.kind_of?(Hash)
         parser = org.apache.lucene.queryParser.QueryParser.new(field_info.id_field.to_s, org.apache.lucene.analysis.standard.StandardAnalyzer.new)
         parser.parse(query.first)
       when Hash
