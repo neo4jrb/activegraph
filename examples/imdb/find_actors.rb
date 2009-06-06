@@ -1,5 +1,5 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
-require "rubygems" 
+#require "rubygems" 
 require "neo4j"
 require "model"
 

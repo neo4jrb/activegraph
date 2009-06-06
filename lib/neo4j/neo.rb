@@ -1,6 +1,5 @@
 module Neo4j
 
-
   # Starts neo unless it is not already started.
   # Before using neo it has to be started and the location of the Neo database on the filesystem must
   # have been configured, Neo4j::Config[:storage_path].
@@ -105,8 +104,8 @@ module Neo4j
         @ref_node = ReferenceNode.new(@neo.getReferenceNode())
         if @ref_node.container_node.nil?
           @ref_node.container_node = ContainerNode.new
-          @container_node = @ref_node.container_node  # to speed things up
         end
+        @container_node = @ref_node.container_node  # to speed things up
       end
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 
