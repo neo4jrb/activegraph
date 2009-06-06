@@ -57,7 +57,7 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
-      EventHandler.node_created(self)
+      Neo4j.instance.event_handler.node_created(self)
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
     end
     

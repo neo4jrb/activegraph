@@ -6,7 +6,7 @@ module Neo4j
 
     def init_without_node
       super
-      EventHandler.listeners << self
+      Neo4j.instance.event_handler.add_listener self
     end
     
     # Connects the given node with the reference node.

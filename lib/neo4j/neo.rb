@@ -95,10 +95,11 @@ module Neo4j
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node, :container_node
+    attr_reader :ref_node, :container_node, :event_handler
 
     def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
+      @event_handler = EventHandler.new
 
       Transaction.run do
         @ref_node = ReferenceNode.new(@neo.getReferenceNode())
@@ -178,8 +179,8 @@ module Neo4j
     #
     def stop
       $NEO_LOGGER.info {"stop neo #{@neo}"}
-      EventHandler.remove_all_listeners
       @neo.shutdown  
+      @event_handler = nil
       @neo = nil
       @ref_node = nil
     end
