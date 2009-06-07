@@ -78,11 +78,6 @@ module Neo4j
     self.instance.ref_node
   end
 
-  def self.container_node
-    self.instance.container_node
-  end
-
-
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files
@@ -95,7 +90,7 @@ module Neo4j
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node, :container_node, :event_handler
+    attr_reader :ref_node, :index_node, :event_handler
 
     def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
@@ -103,10 +98,10 @@ module Neo4j
 
       Transaction.run do
         @ref_node = ReferenceNode.new(@neo.getReferenceNode())
-        if @ref_node.container_node.nil?
-          @ref_node.container_node = ContainerNode.new
+        if @ref_node.index_node.nil?
+          @ref_node.index_node = IndexNode.new
         end
-        @container_node = @ref_node.container_node  # to speed things up
+        @index_node = @ref_node.index_node  # to speed things up
       end
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 

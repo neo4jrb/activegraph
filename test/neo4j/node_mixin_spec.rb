@@ -77,14 +77,14 @@ describe 'NodeMixin' do
         include Neo4j::NodeMixin
       end
 
-      container_node = Neo4j.instance.container_node
-      container_node.relations.outgoing(TestNode).should be_empty
+      index_node = Neo4j.instance.index_node
+      index_node.relations.outgoing(TestNode).should be_empty
 
       # when
       t = TestNode.new
       
       # then
-      nodes = container_node.relations.outgoing(TestNode).nodes
+      nodes = index_node.relations.outgoing(TestNode).nodes
       nodes.to_a.size.should == 1
       nodes.should include(t)
     end
@@ -97,14 +97,14 @@ describe 'NodeMixin' do
       class SubNode < TestNode
       end
 
-      container_node = Neo4j.instance.container_node
-      container_node.relations.outgoing(TestNode).should be_empty
+      index_node = Neo4j.instance.index_node
+      index_node.relations.outgoing(TestNode).should be_empty
 
       # when
       t = SubNode.new
 
       # then
-      nodes = container_node.relations.outgoing(TestNode).nodes
+      nodes = index_node.relations.outgoing(TestNode).nodes
       nodes.to_a.size.should == 1
       nodes.should include(t)
       SubNode.root_class.should == TestNode
@@ -198,7 +198,7 @@ describe 'NodeMixin' do
   #
   describe 'Neo4j::Node#all' do
     before(:each)  do
-      Neo4j.container_node.relations.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
+      Neo4j.instance.index_node.relations.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
       undefine_class :TestNode  # must undefine this since each spec defines it
     end
 

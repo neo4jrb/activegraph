@@ -8,7 +8,7 @@ module Neo4j
   class ReferenceNode
     include Neo4j::NodeMixin
     
-    has_one :container_node
+    has_one :index_node
   end
 
 end

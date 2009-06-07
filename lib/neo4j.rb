@@ -30,7 +30,7 @@ require 'neo4j/config'
 require 'neo4j/indexer' # this will replace neo4j/events
 require 'neo4j/neo'
 require 'neo4j/event_handler'
-require 'neo4j/container_node'
+require 'neo4j/index_node'
 require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/search_result'

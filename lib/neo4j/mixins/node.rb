@@ -599,7 +599,7 @@ module Neo4j
       #
       # :api: public
       def all
-        ref = Neo4j.container_node
+        ref = Neo4j.instance.index_node
         ref.relations.outgoing(root_class)
       end
 

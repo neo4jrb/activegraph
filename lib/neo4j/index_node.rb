@@ -1,6 +1,6 @@
 module Neo4j
 
-  class ContainerNode
+  class IndexNode
     include NodeMixin
     extend Neo4j::TransactionalMixin
 
