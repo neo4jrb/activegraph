@@ -672,7 +672,7 @@ module Neo4j
             @_updated = true
             hash.each_pair {|key,value| self[key.to_sym] = value if members.include?(key.to_s) }
           end
-          define_method(:new_record?) { ! defined? @_updated }
+          define_method(:new_record?) { ! defined?(@_updated) }
         end
 
         clazz
