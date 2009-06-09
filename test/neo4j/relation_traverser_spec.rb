@@ -32,6 +32,44 @@ describe "RelationTraverser" do
         has_n :parents
       end
     end    
+
+    it "should relation?(:friends)==false when there are no friends" do
+      t = TestNode.new
+      t.relation?(:friends).should == false
+    end
+
+    it "should relation?(:friends)==true when there are is one friend" do
+      t = TestNode.new
+      t1 = TestNode.new
+      t.friends << t1
+      t.relation?(:friends).should == true
+    end
+
+    it "should relation?(:friends, :incoming) should return true/false if there are incoming friends" do
+      t = TestNode.new
+      t1 = TestNode.new
+      t.friends << t1
+      t.relation?(:friends, :incoming).should == false
+      t1.relation?(:friends, :incoming).should == true
+    end
+
+    it "should relation?(:friends, :incoming) should return true/false if there are incoming friends" do
+      t = TestNode.new
+      t1 = TestNode.new
+      t.friends << t1
+      t.relation?(:friends, :outgoing).should == true
+      t1.relation?(:friends, :outgoing).should == false
+    end
+
+    it "should define a friends? method" do
+      t = TestNode.new
+      t1 = TestNode.new
+      t.friends << t1
+      t.friends?.should == true
+      t1.friends?.should == true
+      t1.friends?(:incoming).should == true
+      t.friends?(:incoming).should == false      
+    end
     
     it "should find all outgoing nodes" do
       # given

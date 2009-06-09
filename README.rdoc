@@ -115,9 +115,16 @@ Setting a property:
 If a transaction is not specified then the operation will automatically be wrapped in
 a transaction. 
 
+=== Finding Nodes and Queries
+
+There are two ways of finding/quering nodes in neo4j - by doing a traversal or by using lucene queries.
+When doing a traversal one start from a node and travers one or more relationships (one or more levels deep).
+This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
+node from a lucene query.
+
 === Lucene Queries
 
-There are different ways to write queries.
+There are different ways to write lucene queries.
 Using a hash:
   Person.find (:name => 'kalle', :age => 20..30)  # find people with name kalle and age between 20 and 30
 
@@ -150,6 +157,17 @@ Adding a relationship between two nodes:
 
   person2 = Person.new
   person.friends << person2
+
+=== Check if relationship exists
+
+Neo4j.rb adds the following method for each relationship <relationship_name>?
+Example:
+
+  person = Person.new
+  person.friends? # => false - no friends yet
+  person.friends << person2
+  person.friends? # => true - it now has one (or more) friends
+
 
 === Deleting a Relationship
 

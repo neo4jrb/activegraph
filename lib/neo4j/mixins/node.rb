@@ -278,6 +278,36 @@ module Neo4j
     end
 
 
+
+    # Check if the given relationship exists
+    # Returns true if there are one or more relationships from this node to other nodes
+    # with the given relationship.
+    # It will not return true only because the relationship is defined.
+    #  
+    # ==== Parameters
+    # rel_name<#to_s>:: the key and value to be set
+    # dir:: optional default :both (either, :outgoing, :incoming, :both)
+    #
+    # ==== Returns
+    # true if one or more relationships exists for the given rel_name and dir
+    #
+    # :api: public
+    def relation?(rel_name, dir=:both)
+      type = Relations::RelationshipType.instance(rel_name.to_s)
+      java_dir = case dir
+        when :outgoing
+          org.neo4j.api.core.Direction::OUTGOING
+        when :incoming
+          org.neo4j.api.core.Direction::INCOMING
+        when :both
+          org.neo4j.api.core.Direction::BOTH
+        else
+          raise "Unknown parameter #{dir}, only accept :outgoing, :incoming or :both"
+      end
+      @internal_node.hasRelationship(type, java_dir)
+    end
+
+    
     # Returns a Neo4j::Relations::NodeTraverser object for traversing nodes from and to this node.
     # The Neo4j::Relations::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
     #
@@ -588,12 +618,29 @@ module Neo4j
       #
       # :api: public
       def has_n(rel_type)
-        module_eval(%Q{def #{rel_type}(&block)
+        module_eval(%Q{
+                    def #{rel_type}?(dir=:both)
+                       relation?('#{rel_type.to_s}', dir)
+                    end
+      
+                    def #{rel_type}(&block)
                         Relations::HasN.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
         relations_info[rel_type] = Relations::RelationInfo.new
       end
 
+
+      def has_list(rel_type)
+        module_eval(%Q{
+                    def #{rel_type}?(dir=:both)
+                       relation?('#{rel_type.to_s}', dir)
+                    end
+        
+                    def #{rel_type}(&block)
+                        Relations::HasList.new(self,'#{rel_type.to_s}', &block)
+                    end},  __FILE__, __LINE__)
+        relations_info[rel_type] = Relations::RelationInfo.new
+      end
 
       # Returns node instances of this class.
       #
@@ -610,8 +657,7 @@ module Neo4j
       def new_relation(rel_name, internal_relation)
         relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
       end
-      
-     
+
       
       # Finds all nodes of this type (and ancestors of this type) having
       # the specified property values.
