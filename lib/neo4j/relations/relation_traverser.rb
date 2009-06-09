@@ -35,6 +35,14 @@ module Neo4j
         Neo4j::Transaction.run {!iterator.hasNext}
       end
 
+      # Return the first relationship or nil
+      #
+      def first
+        iter = iterator
+        return nil unless iter.hasNext
+        return Neo4j.instance.load_relationship(iter.next)
+      end
+
       #
       # Returns the relationship object to the other node.
       #
@@ -77,6 +85,13 @@ module Neo4j
           @relations = relations
         end
 
+        def first
+          iter = @relations.iterator
+          return nil unless iter.hasNext()
+          rel = Neo4j.instance.load_relationship(iter.next)
+          rel.other_node(@relations.internal_node)
+        end
+        
         def each
           @relations.each do |relation|
             yield relation.other_node(@relations.internal_node)

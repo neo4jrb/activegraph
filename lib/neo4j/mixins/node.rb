@@ -1,11 +1,11 @@
 module Neo4j
 
-  
+
   class LuceneIndexOutOfSyncException < StandardError
-    
+
   end
 
- 
+
   #
   # Represent a node in the Neo4j space.
   # 
@@ -13,10 +13,10 @@ module Neo4j
   # 
   #
   module NodeMixin
-    attr_reader :internal_node 
+    attr_reader :internal_node
 
     extend TransactionalMixin
-    
+
 
     # Initialize the the neo node for this instance.
     # Will create a new transaction if one is not already running.
@@ -38,9 +38,9 @@ module Neo4j
         end
       end
       # must call super with no arguments so that chaining of initialize method will work
-      super() 
+      super()
     end
-    
+
 
     # Inits this node with the specified java neo node
     #
@@ -50,7 +50,7 @@ module Neo4j
       self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
       $NEO_LOGGER.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
     end
-    
+
     # Inits when no neo java node exists. Must create a new neo java node first.
     #
     # :api: private
@@ -58,10 +58,10 @@ module Neo4j
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
       Neo4j.instance.event_handler.node_created(self)
-      $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}        
+      $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}
     end
-    
-    
+
+
     # Sets a neo property on this node. This property does not have to be declared first.
     # If the value of the property is nil the property will be removed.
     #
@@ -78,7 +78,7 @@ module Neo4j
     # 
     # :api: public
     def set_property(name, value)
-      $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
+      $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}
       if value.nil?
         remove_property(name)
       elsif self.class.marshal?(name)
@@ -94,9 +94,9 @@ module Neo4j
       end
     end
 
-		def []=(name, value)
-			self.set_property(name, value)
-		end
+    def []=(name, value)
+      self.set_property(name, value)
+    end
 
     # Removes the property from this node.
     # For more information see JavaDoc PropertyContainer#removeProperty
@@ -126,7 +126,7 @@ module Neo4j
     # :api: public
     def get_property(name)
       $NEO_LOGGER.debug{"get property '#{name}'"}
-      
+
       return nil if ! property?(name)
       value = @internal_node.get_property(name.to_s)
       if self.class.marshal?(name)
@@ -136,10 +136,10 @@ module Neo4j
       end
     end
 
-		def [](name)
-			self.get_property(name)
-		end
-		
+    def [](name)
+      self.get_property(name)
+    end
+
     # Checks if the given neo property exists.
     #
     # ==== Returns
@@ -182,7 +182,7 @@ module Neo4j
     #
     # :api: public
     def update(struct_or_hash)
-      struct_or_hash.each_pair do |key,value|
+      struct_or_hash.each_pair do |key, value|
         method = "#{key}=".to_sym
         self.send(method, value) if self.respond_to?(method)
       end
@@ -213,15 +213,15 @@ module Neo4j
     def eql?(o)
       o.kind_of?(NodeMixin) && o.internal_node == internal_node
     end
-    
+
     def ==(o)
       eql?(o)
     end
-    
+
     def hash
       internal_node.hashCode
     end
-    
+
     # Returns a hash of all properties.
     #
     # ==== Returns
@@ -238,14 +238,14 @@ module Neo4j
       ret
     end
 
-    
+
     # Deletes this node.
     # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
     # Runs in a new transaction if one is not already running.
     #
     # :api: public
     def delete
-      relations.each {|r| r.delete} 
+      relations.each {|r| r.delete}
       @internal_node.delete
       self.class.indexer.delete_index(self)
     end
@@ -259,7 +259,7 @@ module Neo4j
     def classname=(value)
       set_property('classname', value)
     end
-    
+
 
     # Returns a Neo4j::Relations::RelationTraverser object for accessing relations from and to this node.
     # The Neo4j::Relations::RelationTraverser is an Enumerable that returns Neo4j::RelationMixin objects.
@@ -278,6 +278,19 @@ module Neo4j
     end
 
 
+    # Creates a not declared relationship between this node and the given other_node with the given relationship type
+    # Use this method if you do not want to declare the relationship with the class methods has_one or has_n.
+    # Can be used at any time on any node.
+    #
+    # ==== Returns
+    # a Relationship object (see Neo4j::RelationMixin)  representing this created relationship
+    #
+    # :api: public
+    def add_relation(other_node, type)
+      type = Relations::RelationshipType.instance(type.to_s)
+      rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
+      Neo4j.instance.load_relationship(rel)
+    end
 
     # Check if the given relationship exists
     # Returns true if there are one or more relationships from this node to other nodes
@@ -294,20 +307,21 @@ module Neo4j
     # :api: public
     def relation?(rel_name, dir=:both)
       type = Relations::RelationshipType.instance(rel_name.to_s)
-      java_dir = case dir
-        when :outgoing
-          org.neo4j.api.core.Direction::OUTGOING
-        when :incoming
-          org.neo4j.api.core.Direction::INCOMING
-        when :both
-          org.neo4j.api.core.Direction::BOTH
-        else
-          raise "Unknown parameter #{dir}, only accept :outgoing, :incoming or :both"
-      end
+      java_dir =
+              case dir
+                when :outgoing
+                  org.neo4j.api.core.Direction::OUTGOING
+                when :incoming
+                  org.neo4j.api.core.Direction::INCOMING
+                when :both
+                  org.neo4j.api.core.Direction::BOTH
+                else
+                  raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
+              end
       @internal_node.hasRelationship(type, java_dir)
     end
 
-    
+
     # Returns a Neo4j::Relations::NodeTraverser object for traversing nodes from and to this node.
     # The Neo4j::Relations::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
     #
@@ -323,7 +337,7 @@ module Neo4j
       Relations::NodeTraverser.new(@internal_node)
     end
 
-    
+
     # Updates the index for this node.
     # This method will be automatically called when needed
     # (a property changed or a relationship was created/deleted)
@@ -334,9 +348,9 @@ module Neo4j
     end
 
 
-    transactional :property?, :set_property, :get_property, :remove_property, :delete
+    transactional :property?, :set_property, :get_property, :remove_property, :delete, :add_relation
 
-    
+
     #
     # Adds classmethods in the ClassMethods module
     #
@@ -347,7 +361,7 @@ module Neo4j
         const_set(:RELATIONS_INFO, {})
         const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:ROOT_CLASS)
-      
+
       c.extend ClassMethods
     end
 
@@ -355,14 +369,14 @@ module Neo4j
     # NodeMixin class methods
     #
     module ClassMethods
-    
+
       #
       # Access to class constants.
       # These properties are shared by the class and its siblings.
       # For example that means that we can specify properties for a parent
       # class and the child classes will 'inherit' those properties.
       #
-      
+
       # :api: private
       def root_class
         self::ROOT_CLASS
@@ -371,8 +385,8 @@ module Neo4j
       def indexer
         Indexer.instance(root_class)
       end
-      
-     
+
+
       # Contains information of all relationships, name, type, and multiplicity
       #
       # :api: private
@@ -385,8 +399,7 @@ module Neo4j
         self::PROPERTIES_INFO
       end
 
-     
-      
+
       # ------------------------------------------------------------------------
 
 
@@ -425,7 +438,7 @@ module Neo4j
       # :api: public
       def property(*props)
         if props.size == 2 and props[1].kind_of?(Hash)
-          props[1].each_pair do |key,value|
+          props[1].each_pair do |key, value|
             pname = props[0].to_sym
             properties_info[pname] ||= {}
             properties_info[pname][key] = value
@@ -437,7 +450,7 @@ module Neo4j
           pname = prop.to_sym
           properties_info[pname] ||= {}
           properties_info[pname][:defined] = true
-        
+
           define_method(pname) do
             get_property(pname.to_s)
           end
@@ -520,7 +533,7 @@ module Neo4j
       # :api: public     
       def index(*rel_type_props)
         if rel_type_props.size == 2 and rel_type_props[1].kind_of?(Hash)
-          rel_type_props[1].each_pair do |key,value|
+          rel_type_props[1].each_pair do |key, value|
             idx = rel_type_props[0]
             indexer.field_infos[idx.to_sym][key] = value
           end
@@ -561,13 +574,13 @@ module Neo4j
           n.update_index
         end
       end
-      
+
       # :api: private
       def index_property(prop)
         indexer.add_index_on_property(prop)
       end
-      
-      
+
+
       # :api: private
       def index_relation(rel_name, prop)
         # find the trigger and updater classes and the rel_type of the given rel_name
@@ -584,7 +597,7 @@ module Neo4j
         trigger_clazz.indexer.add_index_in_relation_on_property(updater_clazz, rel_name, rel_type, prop)
       end
 
-      
+
       # Specifies a relationship between two node classes.
       #
       # ==== Example
@@ -599,7 +612,7 @@ module Neo4j
                         r = Relations::HasN.new(self,'#{rel_type.to_s}')
                         r << value
                     end},  __FILE__, __LINE__)
-        
+
         module_eval(%Q{def #{rel_type}
                         r = Relations::HasN.new(self,'#{rel_type.to_s}')
                         r.to_a[0]
@@ -607,7 +620,6 @@ module Neo4j
         relations_info[rel_type] = Relations::RelationInfo.new
       end
 
-      
 
       # Specifies a relationship between two node classes.
       #
@@ -658,7 +670,7 @@ module Neo4j
         relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
       end
 
-      
+
       # Finds all nodes of this type (and ancestors of this type) having
       # the specified property values.
       # See the lucene module for more information how to do a query.
@@ -706,7 +718,10 @@ module Neo4j
         # make it more Ruby on Rails friendly - try adding model_name method
         if self.respond_to?(:model_name)
           model = self.model_name.clone
-          (class << clazz; self; end).instance_eval do
+          (
+          class << clazz;
+            self;
+          end).instance_eval do
             define_method(:model_name) {model}
           end
         end
@@ -716,7 +731,7 @@ module Neo4j
         clazz.instance_eval do
           define_method(:_update) do |hash|
             @_updated = true
-            hash.each_pair {|key,value| self[key.to_sym] = value if members.include?(key.to_s) }
+            hash.each_pair {|key, value| self[key.to_sym] = value if members.include?(key.to_s) }
           end
           define_method(:new_record?) { ! defined?(@_updated) }
         end

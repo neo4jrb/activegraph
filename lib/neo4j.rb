@@ -24,6 +24,7 @@ require 'neo4j/relations/traversal_position'
 require 'neo4j/relations/has_n'
 require 'neo4j/relations/relation_traverser'
 require 'neo4j/relations/node_traverser'
+require 'neo4j/relations/has_list'
 
 # neo4j
 require 'neo4j/config'

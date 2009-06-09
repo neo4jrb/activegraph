@@ -14,7 +14,6 @@ module Neo4j
         @type = RelationshipType.instance(type)
         @traverser = NodeTraverser.new(node.internal_node)
         @info = node.class.relations_info[type.to_sym]
-
         if @info[:outgoing]
           @traverser.outgoing(type)
         else
@@ -87,10 +86,8 @@ module Neo4j
       def <<(other)
         from, to = @node, other
         from,to = to,from unless @info[:outgoing]
-
         r = from.internal_node.createRelationshipTo(to.internal_node, @type)
         from.class.new_relation(@type.name,r)
-
         from.class.indexer.on_relation_created(from, @type.name)
         self
       end

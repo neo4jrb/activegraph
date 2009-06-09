@@ -61,6 +61,7 @@ It does not work with jruby 1.2.0RC2
 
 ==== Running all RSpecs
 
+
 To check that neo4j.rb is working:
 
   cd neo4j # the folder containing the Rakefile
@@ -113,11 +114,30 @@ Setting a property:
   person.salary  = 10000
 
 If a transaction is not specified then the operation will automatically be wrapped in
-a transaction. 
+a transaction.
+
+=== Dynamic Properties
+Notice that it is not required to specify which attributes should be available on a node. Any attributes can be
+set using the [] operator.
+
+Example:
+
+  person['a_not_defined_property'] = 'hello'
+
+
+=== Dynamic Relationships
+Like dynamic properties, relationships does not have to be defined using has_n or has_one for a class.
+A relationship can be added at any time on any node.
+
+Example:
+
+  person.add_relation(other_node, 'best_friend')
+
 
 === Finding Nodes and Queries
 
-There are two ways of finding/quering nodes in neo4j - by doing a traversal or by using lucene queries.
+There are three ways of finding/quering nodes in neo4j - by doing a traversal or by using lucene queries or using the
+unique neo4j id (Neo4j::NodeMixin#neo_node_id).
 When doing a traversal one start from a node and travers one or more relationships (one or more levels deep).
 This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
 node from a lucene query.
@@ -756,7 +776,12 @@ Or from the incoming ''address'' relationship
       a.people << Person.new
 
 
-==== Traversing has_n Relationships
+=== Relationship has_list
+The has_n relationship will not maintain the order of when items are inserted to the relationship.
+If order should be preserved then use the has_list class method instead.
+TODO:
+
+==== Traversing Relationships
 
 Each type of relationship has a method that returns an Enumerable object that enables you
 to traverse that type of relationship. 

@@ -46,7 +46,9 @@ module Neo4j
 
     # :api: public
     def other_node(node)
-      id = @internal_r.getOtherNode(node).getId
+      neo_node = node
+      neo_node = node.internal_node if node.respond_to?(:internal_node)
+      id = @internal_r.getOtherNode(neo_node).getId
       Neo4j.instance.find_node id
     end
 
@@ -60,7 +62,7 @@ module Neo4j
     def relationship_type
       @internal_r.get_type.name.to_sym
     end
-    
+
 
     # Deletes the relationship between two nodes.
     # Will fire a RelationshipDeletedEvent on the start_node class.
@@ -75,8 +77,8 @@ module Neo4j
       end_node.class.indexer.on_relation_deleted(end_node, type) unless end_node.nil?
     end
 
-    def set_property(key,value)
-      @internal_r.setProperty(key,value)
+    def set_property(key, value)
+      @internal_r.setProperty(key, value)
     end
 
     def property?(key)

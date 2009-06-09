@@ -7,19 +7,29 @@ module Neo4j
 
       def initialize(node, type, &filter)
         @node = node
-        @type = RelationshipType.instance(type)
-        @traverser = NodeTraverser.new(node.internal_node)
-        @info = node.class.relations_info[type.to_sym]
-        @traverser.filter(&filter) unless filter.nil?
+        #@type = RelationshipType.instance(type)
+        @type = type.to_s
       end
 
       def <<(other)
-        # does node have a relationship ?
-        r = @node.internal_node.createRelationshipTo(to.internal_node, @type)
-        @node.class.new_relation(@type.name,r)
+        Neo4j::Transaction.run do
+          # does node have a relationship ?
+          if (@node.relation?(@type))
+            # get that relationship
+            puts "relation exists"
+            first = @node.relations.outgoing(@type).first
+            puts "First #{first}"
 
-        from.class.indexer.on_relation_created(from, @type.name)
-        self
+            # delete this relationship
+            first.delete
+            old_first = first.other_node(@node)
+            @node.add_relation(other, @type)
+            other.add_relation(old_first, @type)
+          else
+            # the first node will be set
+            @node.add_relation(other, @type)
+          end
+        end
       end
 
     end
