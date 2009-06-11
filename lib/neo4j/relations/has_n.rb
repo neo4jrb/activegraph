@@ -21,11 +21,10 @@ module Neo4j
           @type = RelationshipType.instance(other_class_type)
           @traverser.incoming(other_class_type)
         end
-
         @traverser.filter(&filter) unless filter.nil?
       end
 
-      
+
       # Sets the depth of the traversal.
       # Default is 1 if not specified.
       #
@@ -43,11 +42,25 @@ module Neo4j
         @traverser.depth(d)
         self
       end
-      
+
       def each(&block)
         @traverser.each(&block)
       end
 
+
+      # Returns true if there are no node in this type of relationship
+      #
+      # :api: public
+      def empty?
+        @traverser.empty?
+      end
+
+      # Return the first relationship or nil
+      #
+      # :api: public
+      def first
+        @traverser.empty?
+      end
 
       # Creates a relationship instance between this and the other node.
       # If a class for the relationship has not been specified it will be of type DynamicRelation.
@@ -55,7 +68,7 @@ module Neo4j
       # :api: public
       def new(other)
         from, to = @node, other
-        from,to = to,from unless @info[:outgoing]
+        from, to = to, from unless @info[:outgoing]
 
         r = Neo4j::Transaction.run {
           from.internal_node.createRelationshipTo(to.internal_node, @type)
@@ -85,16 +98,16 @@ module Neo4j
       # :api: public
       def <<(other)
         from, to = @node, other
-        from,to = to,from unless @info[:outgoing]
+        from, to = to, from unless @info[:outgoing]
         r = from.internal_node.createRelationshipTo(to.internal_node, @type)
-        from.class.new_relation(@type.name,r)
+        from.class.new_relation(@type.name, r)
         from.class.indexer.on_relation_created(from, @type.name)
         self
       end
 
 
       transactional :<<
-      end
+    end
 
   end
 end

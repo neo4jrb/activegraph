@@ -115,6 +115,7 @@ module Neo4j
         ret
       end  
 
+     
       def current
         Thread.current[:transaction]
       end

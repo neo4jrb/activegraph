@@ -14,7 +14,7 @@ module Neo4j
   # :api: public
   def self.start
     return if @instance
-    @instance = Neo.new 
+    @instance = Neo.new
     @instance.start
     at_exit do
       Neo4j.stop
@@ -49,7 +49,7 @@ module Neo4j
   def self.running?
     ! @instance.nil?
   end
-  
+
   # Return a started neo instance.
   # It will be started if this has not already been done.
   # 
@@ -78,6 +78,20 @@ module Neo4j
     self.instance.ref_node
   end
 
+
+  # Returns an event handler.
+  # This event handler can be used for listen to event such as when the Neo4j is started/stopped or
+  # when a node is created/deleted, a property/relationship is changed.
+  #
+  # ==== Returns
+  # a Neo4j::EventHandler instance
+  #
+  # :api: public
+  def self.event_handler
+    @event_handler ||= EventHandler.new
+  end
+
+  
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files
@@ -90,18 +104,14 @@ module Neo4j
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node, :index_node, :event_handler
+    attr_reader :ref_node
 
     def start
-      @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
-      @event_handler = EventHandler.new
+      @neo = org.neo4j.api.core.EmbeddedNeo.new(Config[:storage_path])
 
       Transaction.run do
         @ref_node = ReferenceNode.new(@neo.getReferenceNode())
-        if @ref_node.index_node.nil?
-          @ref_node.index_node = IndexNode.new
-        end
-        @index_node = @ref_node.index_node  # to speed things up
+        Neo4j.event_handler.neo_started(self)
       end
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
 
@@ -123,21 +133,20 @@ module Neo4j
       @neo.begin_tx
     end
 
-    
+
     #
     # Returns a NodeMixin object that has the given id or nil if it does not exist.
     # 
-    def find_node(id) 
+    def find_node(id)
       begin
         Transaction.run do
           neo_node = @neo.getNodeById(id)
           load_node(neo_node)
         end
-      rescue org.neo4j.api.core.NotFoundException 
+      rescue org.neo4j.api.core.NotFoundException
         nil
       end
     end
-  
 
 
     # Loads a Neo node
@@ -167,26 +176,25 @@ module Neo4j
       end
       clazz.new(node_or_relationship)
     end
-    
+
     #
     # Stop neo
     # Must be done before the program stops
     #
     def stop
       $NEO_LOGGER.info {"stop neo #{@neo}"}
-      @neo.shutdown  
-      @event_handler = nil
+      Neo4j.event_handler.neo_stopped(self)
+      @neo.shutdown
       @neo = nil
       @ref_node = nil
     end
 
 
-    
     def tx_manager
       @neo.getConfig().getTxModule().getTxManager()
     end
-    
-    
+
+
   end
 end
 

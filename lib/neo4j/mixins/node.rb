@@ -57,7 +57,7 @@ module Neo4j
     def init_without_node
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
-      Neo4j.instance.event_handler.node_created(self)
+      Neo4j.event_handler.node_created(self)
       $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}
     end
 
@@ -95,7 +95,7 @@ module Neo4j
     end
 
     def []=(name, value)
-      self.set_property(name, value)
+      self.set_property(name.to_s, value)
     end
 
     # Removes the property from this node.
@@ -137,7 +137,7 @@ module Neo4j
     end
 
     def [](name)
-      self.get_property(name)
+      self.get_property(name.to_s)
     end
 
     # Checks if the given neo property exists.
@@ -299,13 +299,13 @@ module Neo4j
     #  
     # ==== Parameters
     # rel_name<#to_s>:: the key and value to be set
-    # dir:: optional default :both (either, :outgoing, :incoming, :both)
+    # dir:: optional default :outgoing (either, :outgoing, :incoming, :both)
     #
     # ==== Returns
     # true if one or more relationships exists for the given rel_name and dir
     #
     # :api: public
-    def relation?(rel_name, dir=:both)
+    def relation?(rel_name, dir=:outgoing)
       type = Relations::RelationshipType.instance(rel_name.to_s)
       java_dir =
               case dir
@@ -631,10 +631,6 @@ module Neo4j
       # :api: public
       def has_n(rel_type)
         module_eval(%Q{
-                    def #{rel_type}?(dir=:both)
-                       relation?('#{rel_type.to_s}', dir)
-                    end
-      
                     def #{rel_type}(&block)
                         Relations::HasN.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
@@ -644,10 +640,6 @@ module Neo4j
 
       def has_list(rel_type)
         module_eval(%Q{
-                    def #{rel_type}?(dir=:both)
-                       relation?('#{rel_type.to_s}', dir)
-                    end
-        
                     def #{rel_type}(&block)
                         Relations::HasList.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
@@ -658,8 +650,8 @@ module Neo4j
       #
       # :api: public
       def all
-        ref = Neo4j.instance.index_node
-        ref.relations.outgoing(root_class)
+        index_node = IndexNode.instance
+        index_node.relations.outgoing(root_class)
       end
 
 

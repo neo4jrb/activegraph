@@ -6,20 +6,40 @@ module Neo4j
       @listeners = []
     end
 
-    def add_listener(listener)
-      @listeners << listener
+    def add(listener)
+      @listeners << listener unless @listeners.include?(listener)
+      add_filter(listener) # the listener do not want to get events on it self
     end
 
-    def remove_all_listeners
-      @listeners = nil
+    def remove(listener)
+      @listeners.delete(listener)
     end
-      
+
+    def remove_all
+      @listeners = []
+    end
+
+    def add_filter(filter_class)
+      @filter_classes ||= []
+      @filter_classes << filter_class  unless @filter_classes.include?(filter_class)
+    end
+    
     def node_created(node)
-      @listeners.each {|li| li.on_node_created(node)}
+      return if @filter_classes.include?(node.class)
+      @listeners.each {|li| li.on_node_created(node) if li.respond_to?(:on_node_created)}
     end
 
     def node_deleted(node)
-      @listeners.each {|li| li.on_node_deleted(node)}
+      return if @filter_classes.include?(node.class)
+      @listeners.each {|li| li.on_node_deleted(node) if li.respond_to?(:on_node_deleted)}
+    end
+
+    def neo_started(neo_instance)
+      @listeners.each {|li| li.on_neo_started(neo_instance) if li.respond_to?(:on_neo_started)}
+    end
+
+    def neo_stopped(neo_instance)
+      @listeners.each {|li| li.on_neo_stopped(neo_instance) if li.respond_to?(:on_neo_stopped)}
     end
   end
 end

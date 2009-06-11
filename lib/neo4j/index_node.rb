@@ -4,11 +4,7 @@ module Neo4j
     include NodeMixin
     extend Neo4j::TransactionalMixin
 
-    def init_without_node
-      super
-      Neo4j.instance.event_handler.add_listener self
-    end
-    
+
     # Connects the given node with the reference node.
     # The type of the relationship will be the same as the class name of the
     # specified node unless the optional parameter type is specified.
@@ -24,19 +20,38 @@ module Neo4j
     #
     # :api: private
     def connect(node, type = node.class.root_class)
-      Transaction.run do
-        rtype = Neo4j::Relations::RelationshipType.instance(type)
-        @internal_node.createRelationshipTo(node.internal_node, rtype)
-      end
+      rtype = Neo4j::Relations::RelationshipType.instance(type)
+      @internal_node.createRelationshipTo(node.internal_node, rtype)
       nil
     end
 
     def on_node_created(node)
       # we have to avoid connecting to our self
-      connect(node) unless self == node 
+      connect(node) unless self == node
     end
 
-    # transactional :connect
+    def self.on_neo_started(neo_instance)
+      return if neo_instance.ref_node.relation?(:index_node)
+      @index_node = IndexNode.new # cache this so we do not have to look it up always
+      neo_instance.ref_node.add_relation(@index_node, :index_node)
+      Neo4j.event_handler.add(@index_node)
+    end
+
+    def self.on_neo_stopped(neo_instance)
+      # unregister the instance
+      Neo4j.event_handler.remove(@index_node)
+      @index_node = nil
+    end
+
+    def self.instance
+      @index_node
+    end
+
+    transactional :connect
   end
+
+
+  # Add this so it can add it self as listener
+  Neo4j.event_handler.add(IndexNode)
 
 end

@@ -61,16 +61,7 @@ describe "RelationTraverser" do
       t1.relation?(:friends, :outgoing).should == false
     end
 
-    it "should define a friends? method" do
-      t = TestNode.new
-      t1 = TestNode.new
-      t.friends << t1
-      t.friends?.should == true
-      t1.friends?.should == true
-      t1.friends?(:incoming).should == true
-      t.friends?(:incoming).should == false      
-    end
-    
+   
     it "should find all outgoing nodes" do
       # given
       t1 = TestNode.new

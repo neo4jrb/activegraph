@@ -31,13 +31,6 @@ module Neo4j
         # java does not treat nil as false so we need to do instead
         (result)? true : false
       end
-      
-      #       public boolean isReturnableNode( TraversalPosition position )
-      #     {
-      #         // Return nodes until we've reached 5 nodes or end of graph
-      #         return position.returnedNodesCount() < 5;
-      #     }
-
     end
 
     

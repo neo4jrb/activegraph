@@ -10,6 +10,9 @@ require 'neo4j/jars'
 require 'lucene'
 
 
+# config
+require 'neo4j/config'
+
 # mixins
 require 'neo4j/mixins/transactional'
 require 'neo4j/mixins/relation'
@@ -27,7 +30,6 @@ require 'neo4j/relations/node_traverser'
 require 'neo4j/relations/has_list'
 
 # neo4j
-require 'neo4j/config'
 require 'neo4j/indexer' # this will replace neo4j/events
 require 'neo4j/neo'
 require 'neo4j/event_handler'
@@ -35,6 +37,7 @@ require 'neo4j/index_node'
 require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/search_result'
+# require 'neo4j/tx_node_list'   - has to be included if we want this feature
 require 'neo4j/version'
 
 

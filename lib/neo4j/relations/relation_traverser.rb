@@ -63,7 +63,7 @@ module Neo4j
       end
 
       def nodes
-        NodeTraverser.new(self)
+        RelationsEnumeration.new(self)
       end
 
       def iterator
@@ -78,7 +78,7 @@ module Neo4j
 
       # Used from RelationTraverser when traversing nodes instead of relationships.
       #
-      class NodeTraverser
+      class RelationsEnumeration
         include Enumerable
 
         def initialize(relations)

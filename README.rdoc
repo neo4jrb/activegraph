@@ -91,8 +91,8 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
   end
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
-Adding new types of properties and relationships can also be done without using
-those class methods at an alread existing node (see Neo4j::DynamicAccessorMixin).
+Adding new types of properties and relationships can also be done without
+declaring those propertie/relationships (like the example above), see Neo4j::DynamicAccessorMixin,  or the [] and add_relation methods.
 
 By using the NodeMixin all instances of the Person class can now be stored in the Neo4j node space and
 be retrieved/queried by traversing the node space or performing Lucene queries.
@@ -178,15 +178,12 @@ Adding a relationship between two nodes:
   person2 = Person.new
   person.friends << person2
 
-=== Check if relationship exists
+The person.friends returns an object that has a number of useful methods (it also includes the Enumerable mixin).
+Example
 
-Neo4j.rb adds the following method for each relationship <relationship_name>?
-Example:
-
-  person = Person.new
-  person.friends? # => false - no friends yet
-  person.friends << person2
-  person.friends? # => true - it now has one (or more) friends
+  person.friends.empty? # => false
+  person.friends.first  # => person2
+  person.friends.include?(person2) # => true
 
 
 === Deleting a Relationship
@@ -779,7 +776,19 @@ Or from the incoming ''address'' relationship
 === Relationship has_list
 The has_n relationship will not maintain the order of when items are inserted to the relationship.
 If order should be preserved then use the has_list class method instead.
-TODO:
+
+Example
+
+  class Company
+    has_list :employees
+  end
+
+  company = Company.new
+  company.employees << employee1 << employee2
+
+  # prints first employee2 and then employee1
+  company.employees.each {|employee| puts employee.name}
+
 
 ==== Traversing Relationships
 

@@ -13,8 +13,8 @@ describe 'NodeMixin' do
 
   after(:all) do
     stop
-  end  
- 
+  end
+
   # ----------------------------------------------------------------------------
   # initialize
   #
@@ -23,6 +23,7 @@ describe 'NodeMixin' do
     before(:each)  do
       stop
       undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
+      start
     end
 
     it "should accept no arguments"  do
@@ -77,7 +78,8 @@ describe 'NodeMixin' do
         include Neo4j::NodeMixin
       end
 
-      index_node = Neo4j.instance.index_node
+      index_node = Neo4j::IndexNode.instance
+      puts "INDEX NODE #{index_node}"
       index_node.relations.outgoing(TestNode).should be_empty
 
       # when
@@ -97,7 +99,7 @@ describe 'NodeMixin' do
       class SubNode < TestNode
       end
 
-      index_node = Neo4j.instance.index_node
+      index_node = Neo4j::IndexNode.instance
       index_node.relations.outgoing(TestNode).should be_empty
 
       # when
@@ -198,7 +200,7 @@ describe 'NodeMixin' do
   #
   describe 'Neo4j::Node#all' do
     before(:each)  do
-      Neo4j.instance.index_node.relations.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
+      Neo4j::IndexNode.instance.relations.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
       undefine_class :TestNode  # must undefine this since each spec defines it
     end
 
