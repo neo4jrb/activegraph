@@ -3,6 +3,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
+require 'extensions/reindexer'
 
 
 describe "Neo4j.start" do

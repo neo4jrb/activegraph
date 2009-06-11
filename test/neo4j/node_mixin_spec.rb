@@ -79,7 +79,6 @@ describe 'NodeMixin' do
       end
 
       index_node = Neo4j::IndexNode.instance
-      puts "INDEX NODE #{index_node}"
       index_node.relations.outgoing(TestNode).should be_empty
 
       # when

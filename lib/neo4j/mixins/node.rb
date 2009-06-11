@@ -565,15 +565,6 @@ module Neo4j
       end
 
 
-      # Traverse all nodes and update the lucene index.
-      # Can be used for example if it is neccessarly to change the index on a class
-      #
-      # :api: public
-      def update_index
-        all.nodes.each do |n|
-          n.update_index
-        end
-      end
 
       # :api: private
       def index_property(prop)
@@ -646,13 +637,6 @@ module Neo4j
         relations_info[rel_type] = Relations::RelationInfo.new
       end
 
-      # Returns node instances of this class.
-      #
-      # :api: public
-      def all
-        index_node = IndexNode.instance
-        index_node.relations.outgoing(root_class)
-      end
 
 
       # Creates a new outgoing relation.

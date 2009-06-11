@@ -33,12 +33,16 @@ require 'neo4j/relations/has_list'
 require 'neo4j/indexer' # this will replace neo4j/events
 require 'neo4j/neo'
 require 'neo4j/event_handler'
-require 'neo4j/index_node'
 require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/search_result'
 # require 'neo4j/tx_node_list'   - has to be included if we want this feature
 require 'neo4j/version'
+
+
+
+# TODO
+# require 'extensions/reindexer'
 
 
 

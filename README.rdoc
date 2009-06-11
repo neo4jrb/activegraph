@@ -56,8 +56,7 @@ To install from the latest source:
   cd neo4j
   rake gem:install
 
-This has been verified to work on JRuby 1.1.5 and 1.1.6
-It does not work with jruby 1.2.0RC2
+This has been verified to work on JRuby 1.3.0
 
 ==== Running all RSpecs
 
@@ -1125,6 +1124,8 @@ To update an index use the class method 'update_index' which will update all alr
 
 Example
 
+  require 'neo4j'
+  require 'neo4j/extensions/tx_tracker' # needed for the update_index method
   class Person
     include Neo4j
     property :name, :age, :phone
@@ -1143,7 +1144,11 @@ Example
   Person.find (:name => 'andreas') # => []
   Person.find (:phone => 123) # => [p1]
 
+In order to use the update_index method you must include the reindexer neo4j.rb extension.
+This extensions will keep a relationship to each created node so that it later can recreate
+the index by traversing those relationships.
 
+                                                                       
 === Quering (using lucene)
 
 You can declare properties to be indexed by lucene by the index method:

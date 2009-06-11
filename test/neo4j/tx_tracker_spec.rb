@@ -3,14 +3,14 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
-require 'neo4j/tx_node_list'
+require 'extensions/tx_tracker'
 
 
 class TxTestNode
   include Neo4j::NodeMixin
 end
 
-describe "TxNodeList" do
+describe "TxTracker (TxNodeList)" do
 
 
   before(:all) do  

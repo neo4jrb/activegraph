@@ -3,6 +3,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
+require 'extensions/reindexer'
 
 
 
@@ -28,12 +29,9 @@ describe 'ReferenceNode' do
   end
  
   it "has a reference to a created node" do
-    puts "NODES " + Neo4j::IndexNode.instance.relations.nodes.to_a.inspect
     #should only have a reference to the reference node
-    Neo4j::IndexNode.instance.relations.nodes.each {|p| puts "P : #{p}"}
     n = MyNode.new
     n.name = 'hoj'
-    Neo4j::IndexNode.instance.relations.nodes.each {|p| puts "-P : #{p}"}
 
     # then
     Neo4j::IndexNode.instance.relations.nodes.should include(n)

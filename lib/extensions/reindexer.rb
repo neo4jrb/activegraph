@@ -1,5 +1,31 @@
 module Neo4j
 
+  module NodeMixin
+
+    module ClassMethods
+
+      # Traverse all nodes and update the lucene index.
+      # Can be used for example if it is neccessarly to change the index on a class
+      #
+      # :api: public
+      def update_index
+        all.nodes.each do |n|
+          n.update_index
+        end
+      end
+      
+      # Returns node instances of this class.
+      #
+      # :api: public
+      def all
+        index_node = IndexNode.instance
+        index_node.relations.outgoing(root_class)
+      end
+
+    end
+  end
+
+
   class IndexNode
     include NodeMixin
     extend Neo4j::TransactionalMixin
