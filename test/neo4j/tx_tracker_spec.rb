@@ -8,6 +8,7 @@ require 'extensions/tx_tracker'
 
 class TxTestNode
   include Neo4j::NodeMixin
+  property :myid
 end
 
 describe "TxTracker (TxNodeList)" do
@@ -52,5 +53,22 @@ describe "TxTracker (TxNodeList)" do
     tx_node[:created].should == true
   end
 
+
+  it "should set property 'tx_finished' on the last TxNode that was commited" do
+    Neo4j::Transaction.run do
+      TxTestNode.new.myid = '1'
+      TxTestNode.new.myid = '2'
+      TxTestNode.new.myid = '3'
+    end
+    first = @tx_node_list.tx_nodes.first
+    first[:tx_finished].should == true
+
+    second = @tx_node_list.tx_nodes.to_a[1]
+    second[:tx_finished].should be_nil
+
+    third = @tx_node_list.tx_nodes.to_a[2]
+    third[:tx_finished].should be_nil
+
+  end
 
 end

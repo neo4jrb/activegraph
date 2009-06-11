@@ -27,6 +27,12 @@ module Neo4j
       self.tx_nodes << tx
     end
 
+    def on_tx_finished(tx)
+      return if self.tx_nodes.empty? # nothing yet commited
+      last_commited_node = self.tx_nodes.first
+      last_commited_node[:tx_finished] = true
+    end
+
     def self.on_neo_started(neo_instance)
       return if neo_instance.ref_node.relationship?(:tx_node_list)
       @tx_node_list = TxNodeList.new # cache this so we do not have to look it up always
@@ -39,6 +45,7 @@ module Neo4j
       Neo4j.event_handler.remove(@tx_node_list)
       @tx_node_list = nil
     end
+
 
     def self.instance
       @tx_node_list
@@ -53,5 +60,8 @@ module Neo4j
   # Add this so it can add it self as listener
   Neo4j.event_handler.add_filter(TxNode)
   Neo4j.event_handler.add(TxNodeList)
+
+  # if neo is already run we have to let txnodelist have a chance to add it self
+  TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
 
 end

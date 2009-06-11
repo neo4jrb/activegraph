@@ -182,6 +182,7 @@ module Neo4j
     # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
+      Neo4j.event_handler.tx_finished(self) unless @failure
       @neo_tx.finish
       @neo_tx=nil
       Thread.current[:transaction] = nil

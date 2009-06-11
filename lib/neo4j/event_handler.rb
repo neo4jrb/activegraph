@@ -34,6 +34,10 @@ module Neo4j
       @listeners.each {|li| li.on_node_deleted(node) if li.respond_to?(:on_node_deleted)}
     end
 
+    def tx_finished(tx)
+      @listeners.each {|li| li.on_tx_finished(tx) if li.respond_to?(:on_tx_finished)}
+    end
+
     def neo_started(neo_instance)
       @listeners.each {|li| li.on_neo_started(neo_instance) if li.respond_to?(:on_neo_started)}
     end
