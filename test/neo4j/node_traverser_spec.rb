@@ -330,8 +330,8 @@ describe "NodeTraverser" do
 
     it "should raise an exception if no type of direction is specified for the traversal" do
       # when and then
-      lambda { @sweden.traverse.to_a }.should raise_error(Neo4j::Relations::IllegalTraversalArguments)
-      lambda { @sweden.traverse.outgoing().to_a }.should raise_error(Neo4j::Relations::IllegalTraversalArguments)
+      lambda { @sweden.traverse.to_a }.should raise_error(Neo4j::Relationships::IllegalTraversalArguments)
+      lambda { @sweden.traverse.outgoing().to_a }.should raise_error(Neo4j::Relationships::IllegalTraversalArguments)
     end
 
     it "should work with two outgoing relationship types" do

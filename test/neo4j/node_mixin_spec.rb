@@ -3,6 +3,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
+require 'extensions/reindexer'
 
 
 
@@ -79,13 +80,13 @@ describe 'NodeMixin' do
       end
 
       index_node = Neo4j::IndexNode.instance
-      index_node.relations.outgoing(TestNode).should be_empty
+      index_node.relationships.outgoing(TestNode).should be_empty
 
       # when
       t = TestNode.new
       
       # then
-      nodes = index_node.relations.outgoing(TestNode).nodes
+      nodes = index_node.relationships.outgoing(TestNode).nodes
       nodes.to_a.size.should == 1
       nodes.should include(t)
     end
@@ -99,13 +100,13 @@ describe 'NodeMixin' do
       end
 
       index_node = Neo4j::IndexNode.instance
-      index_node.relations.outgoing(TestNode).should be_empty
+      index_node.relationships.outgoing(TestNode).should be_empty
 
       # when
       t = SubNode.new
 
       # then
-      nodes = index_node.relations.outgoing(TestNode).nodes
+      nodes = index_node.relationships.outgoing(TestNode).nodes
       nodes.to_a.size.should == 1
       nodes.should include(t)
       SubNode.root_class.should == TestNode
@@ -199,7 +200,7 @@ describe 'NodeMixin' do
   #
   describe 'Neo4j::Node#all' do
     before(:each)  do
-      Neo4j::IndexNode.instance.relations.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
+      Neo4j::IndexNode.instance.relationships.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
       undefine_class :TestNode  # must undefine this since each spec defines it
     end
 

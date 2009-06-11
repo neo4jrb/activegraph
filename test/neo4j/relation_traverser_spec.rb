@@ -7,7 +7,7 @@ require 'neo4j/spec_helper'
 
 
 
-describe "RelationTraverser" do
+describe "RelationshipTraverser" do
   before(:all) do
     start
   end
@@ -33,32 +33,32 @@ describe "RelationTraverser" do
       end
     end    
 
-    it "should relation?(:friends)==false when there are no friends" do
+    it "should relationship?(:friends)==false when there are no friends" do
       t = TestNode.new
-      t.relation?(:friends).should == false
+      t.relationship?(:friends).should == false
     end
 
-    it "should relation?(:friends)==true when there are is one friend" do
+    it "should relationship?(:friends)==true when there are is one friend" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      t.relation?(:friends).should == true
+      t.relationship?(:friends).should == true
     end
 
-    it "should relation?(:friends, :incoming) should return true/false if there are incoming friends" do
+    it "should relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      t.relation?(:friends, :incoming).should == false
-      t1.relation?(:friends, :incoming).should == true
+      t.relationship?(:friends, :incoming).should == false
+      t1.relationship?(:friends, :incoming).should == true
     end
 
-    it "should relation?(:friends, :incoming) should return true/false if there are incoming friends" do
+    it "should relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      t.relation?(:friends, :outgoing).should == true
-      t1.relation?(:friends, :outgoing).should == false
+      t.relationship?(:friends, :outgoing).should == true
+      t1.relationship?(:friends, :outgoing).should == false
     end
 
    
@@ -69,7 +69,7 @@ describe "RelationTraverser" do
       t1.friends << t2
 
       # when
-      outgoing = t1.relations.outgoing.to_a
+      outgoing = t1.relationships.outgoing.to_a
       
       # then
       outgoing.size.should == 1
@@ -84,7 +84,7 @@ describe "RelationTraverser" do
       t1.friends << t2
 
       # when
-      outgoing = t2.relations.incoming.to_a
+      outgoing = t2.relationships.incoming.to_a
 
       # then
       outgoing.size.should == 2 # 2 since we also have a relationship to ref node
@@ -98,8 +98,8 @@ describe "RelationTraverser" do
       t2 = TestNode.new
 
       # when and then
-      t2.relations.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
-      t2.relations.outgoing.to_a.size.should == 0
+      t2.relationships.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
+      t2.relationships.outgoing.to_a.size.should == 0
     end
 
     it "should make sure that incoming nodes are not found in outcoming nodes" do
@@ -109,8 +109,8 @@ describe "RelationTraverser" do
       t1.friends << t2
 
       # when and then
-      t1.relations.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
-      t2.relations.outgoing.to_a.size.should == 0
+      t1.relationships.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
+      t2.relationships.outgoing.to_a.size.should == 0
     end
 
 
@@ -121,8 +121,8 @@ describe "RelationTraverser" do
       t1.friends << t2
 
       # when and then
-      t1.relations.nodes.to_a.should include(t2)
-      t2.relations.nodes.to_a.should include(t1)
+      t1.relationships.nodes.to_a.should include(t2)
+      t2.relationships.nodes.to_a.should include(t1)
     end
 
     it "should find several both incoming and outgoing nodes" do
@@ -135,11 +135,11 @@ describe "RelationTraverser" do
       t1.friends << t3
 
       # when and then
-      t1.relations.nodes.to_a.should include(t2,t3)
-      t1.relations.outgoing.nodes.to_a.should include(t2,t3)      
-      t2.relations.incoming.nodes.to_a.should include(t1)      
-      t3.relations.incoming.nodes.to_a.should include(t1)      
-      t1.relations.nodes.to_a.size.should == 3 # since we also have a relationship to ref node
+      t1.relationships.nodes.to_a.should include(t2,t3)
+      t1.relationships.outgoing.nodes.to_a.should include(t2,t3)
+      t2.relationships.incoming.nodes.to_a.should include(t1)
+      t3.relationships.incoming.nodes.to_a.should include(t1)
+      t1.relationships.nodes.to_a.size.should == 3 # since we also have a relationship to ref node
     end
     
     it "should find incoming nodes of a specific type" do
@@ -152,9 +152,9 @@ describe "RelationTraverser" do
       t1.friends << t3
 
       # when and then
-      t1.relations.outgoing(:friends).nodes.to_a.should include(t2,t3)      
-      t2.relations.incoming(:friends).nodes.to_a.should include(t1)      
-      t3.relations.incoming(:friends).nodes.to_a.should include(t1)      
+      t1.relationships.outgoing(:friends).nodes.to_a.should include(t2,t3)
+      t2.relationships.incoming(:friends).nodes.to_a.should include(t1)
+      t3.relationships.incoming(:friends).nodes.to_a.should include(t1)
     end
   end
 

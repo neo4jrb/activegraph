@@ -34,21 +34,21 @@ describe 'ReferenceNode' do
     n.name = 'hoj'
 
     # then
-    Neo4j::IndexNode.instance.relations.nodes.should include(n)
-    Neo4j::IndexNode.instance.relations.to_a.size.should == 2
+    Neo4j::IndexNode.instance.relationships.nodes.should include(n)
+    Neo4j::IndexNode.instance.relationships.to_a.size.should == 2
   end
 
   it "has a reference to all created nodes" do
-    Neo4j::IndexNode.instance.relations.outgoing.to_a.should be_empty
+    Neo4j::IndexNode.instance.relationships.outgoing.to_a.should be_empty
     node1 = MyNode.new
     node2 = MyNode2.new
     node3 = MyNode2.new
 
     # then
-    Neo4j::IndexNode.instance.relations.outgoing(:MyNode).nodes.should include(node1)
-    Neo4j::IndexNode.instance.relations.outgoing(:MyNode2).nodes.should include(node2, node3)
-    Neo4j::IndexNode.instance.relations.outgoing(:MyNode).nodes.to_a.size.should == 1
-    Neo4j::IndexNode.instance.relations.outgoing(:MyNode2).nodes.to_a.size.should == 2
+    Neo4j::IndexNode.instance.relationships.outgoing(:MyNode).nodes.should include(node1)
+    Neo4j::IndexNode.instance.relationships.outgoing(:MyNode2).nodes.should include(node2, node3)
+    Neo4j::IndexNode.instance.relationships.outgoing(:MyNode).nodes.to_a.size.should == 1
+    Neo4j::IndexNode.instance.relationships.outgoing(:MyNode2).nodes.to_a.size.should == 2
 
     MyNode.all.nodes.to_a.size.should == 1
     MyNode2.all.nodes.to_a.size.should == 2

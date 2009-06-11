@@ -1,16 +1,16 @@
 module Neo4j
 
-  module Relations
+  module Relationships
 
     # Stores the relationship data for a Neo4j::NodeMixin class.
     #
     # :api: private
-    class RelationInfo
+    class RelationshipInfo
       attr_accessor :info
       def initialize
         @info = {}
         # set defaults
-        @info[:relation] = Relations::DynamicRelation
+        @info[:relationship] = Relationships::DynamicRelationship
         @info[:outgoing] = true
       end
     
@@ -38,8 +38,8 @@ module Neo4j
       end
     
     
-      def relation(rel_class)
-        @info[:relation] = rel_class
+      def relationship(rel_class)
+        @info[:relationship] = rel_class
         self
       end
     end

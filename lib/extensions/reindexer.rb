@@ -19,7 +19,7 @@ module Neo4j
       # :api: public
       def all
         index_node = IndexNode.instance
-        index_node.relations.outgoing(root_class)
+        index_node.relationships.outgoing(root_class)
       end
 
     end
@@ -46,7 +46,7 @@ module Neo4j
     #
     # :api: private
     def connect(node, type = node.class.root_class)
-      rtype = Neo4j::Relations::RelationshipType.instance(type)
+      rtype = Neo4j::Relationships::RelationshipType.instance(type)
       @internal_node.createRelationshipTo(node.internal_node, rtype)
       nil
     end
@@ -57,9 +57,9 @@ module Neo4j
     end
 
     def self.on_neo_started(neo_instance)
-      return if neo_instance.ref_node.relation?(:index_node)
+      return if neo_instance.ref_node.relationship?(:index_node)
       @index_node = IndexNode.new # cache this so we do not have to look it up always
-      neo_instance.ref_node.add_relation(@index_node, :index_node)
+      neo_instance.ref_node.add_relationship(@index_node, :index_node)
       Neo4j.event_handler.add(@index_node)
     end
 

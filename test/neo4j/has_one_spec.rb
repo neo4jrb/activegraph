@@ -63,10 +63,10 @@ describe "Neo4j::NodeMixin#has_one " do
     address = Address.new {|a| a.city = 'malmoe'; a.road = 'my road'}
 
     # when
-    dynamic_relation = address.people.new(person)
+    dynamic_relationship = address.people.new(person)
 
     # then
-    dynamic_relation.relationship_type.should == :address
+    dynamic_relationship.relationship_type.should == :address
   end
   
   it "should should return the object using the has_one accessor" do

@@ -28,9 +28,9 @@ module Neo4j
     end
 
     def self.on_neo_started(neo_instance)
-      return if neo_instance.ref_node.relation?(:tx_node_list)
+      return if neo_instance.ref_node.relationship?(:tx_node_list)
       @tx_node_list = TxNodeList.new # cache this so we do not have to look it up always
-      neo_instance.ref_node.add_relation(@tx_node_list, :tx_node_list)
+      neo_instance.ref_node.add_relationship(@tx_node_list, :tx_node_list)
       Neo4j.event_handler.add(@tx_node_list)
     end
 

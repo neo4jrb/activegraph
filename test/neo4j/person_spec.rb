@@ -86,7 +86,7 @@ describe "Person" do
     person1.friends << person2
 
     # when
-    person1.relations[person2].delete
+    person1.relationships[person2].delete
     
     # then
     person1.friends.to_a.should_not include(person2)

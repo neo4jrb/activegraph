@@ -1,5 +1,5 @@
 module Neo4j
-  module Relations
+  module Relationships
 
     class IllegalTraversalArguments < StandardError;
     end

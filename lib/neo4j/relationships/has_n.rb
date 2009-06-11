@@ -1,5 +1,5 @@
 module Neo4j
-  module Relations
+  module Relationships
 
     # Enables traversal of nodes of a specific type that one node has.
     # Used for traversing relationship of a specific type.
@@ -13,7 +13,7 @@ module Neo4j
         @node = node
         @type = RelationshipType.instance(type)
         @traverser = NodeTraverser.new(node.internal_node)
-        @info = node.class.relations_info[type.to_sym]
+        @info = node.class.relationships_info[type.to_sym]
         if @info[:outgoing]
           @traverser.outgoing(type)
         else
@@ -63,7 +63,7 @@ module Neo4j
       end
 
       # Creates a relationship instance between this and the other node.
-      # If a class for the relationship has not been specified it will be of type DynamicRelation.
+      # If a class for the relationship has not been specified it will be of type DynamicRelationship.
       #
       # :api: public
       def new(other)
@@ -73,7 +73,7 @@ module Neo4j
         r = Neo4j::Transaction.run {
           from.internal_node.createRelationshipTo(to.internal_node, @type)
         }
-        from.class.relations_info[@type.name.to_sym][:relation].new(r)
+        from.class.relationships_info[@type.name.to_sym][:relationship].new(r)
       end
 
 
@@ -100,8 +100,8 @@ module Neo4j
         from, to = @node, other
         from, to = to, from unless @info[:outgoing]
         r = from.internal_node.createRelationshipTo(to.internal_node, @type)
-        from.class.new_relation(@type.name, r)
-        from.class.indexer.on_relation_created(from, @type.name)
+        from.class.new_relationship(@type.name, r)
+        from.class.indexer.on_relationship_created(from, @type.name)
         self
       end
 

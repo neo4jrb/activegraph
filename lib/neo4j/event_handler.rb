@@ -4,6 +4,7 @@ module Neo4j
   class EventHandler
     def initialize
       @listeners = []
+      @filter_classes = []
     end
 
     def add(listener)
@@ -20,7 +21,6 @@ module Neo4j
     end
 
     def add_filter(filter_class)
-      @filter_classes ||= []
       @filter_classes << filter_class  unless @filter_classes.include?(filter_class)
     end
     

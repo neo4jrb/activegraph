@@ -1,9 +1,9 @@
 module Neo4j
-  module Relations
+  module Relationships
 
-    # Enables finding relations for one node
+    # Enables finding relationships for one node
     #
-    class RelationTraverser
+    class RelationshipTraverser
       include Enumerable
 
       attr_reader :internal_node
@@ -63,7 +63,7 @@ module Neo4j
       end
 
       def nodes
-        RelationsEnumeration.new(self)
+        RelationshipsEnumeration.new(self)
       end
 
       def iterator
@@ -73,28 +73,28 @@ module Neo4j
       end
 
       def to_s
-        "RelationTraverser [direction=#{@direction}, type=#{@type}]"
+        "RelationshipTraverser [direction=#{@direction}, type=#{@type}]"
       end
 
-      # Used from RelationTraverser when traversing nodes instead of relationships.
+      # Used from RelationshipTraverser when traversing nodes instead of relationships.
       #
-      class RelationsEnumeration
+      class RelationshipsEnumeration
         include Enumerable
 
-        def initialize(relations)
-          @relations = relations
+        def initialize(relationships)
+          @relationships = relationships
         end
 
         def first
-          iter = @relations.iterator
+          iter = @relationships.iterator
           return nil unless iter.hasNext()
           rel = Neo4j.instance.load_relationship(iter.next)
-          rel.other_node(@relations.internal_node)
+          rel.other_node(@relationships.internal_node)
         end
         
         def each
-          @relations.each do |relation|
-            yield relation.other_node(@relations.internal_node)
+          @relationships.each do |relationship|
+            yield relationship.other_node(@relationships.internal_node)
           end
         end
       end

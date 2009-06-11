@@ -25,7 +25,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relation_on_property(Company, 'employees', 'employed_by', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary')
   end
 
   it "should update index when salary changes on one employee" do
@@ -47,7 +47,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is created" do
+  it "should update index when the employee relationship is created" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -58,7 +58,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employed_by')
+    @employee_indexer.on_relationship_created(employee, 'employed_by')
 
     index.size.should == 1
     index[0][:id].should == company.neo_node_id
@@ -66,7 +66,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is deleted" do
+  it "should update index when the employee relationship is deleted" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -74,7 +74,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employed_by')
+    @employee_indexer.on_relationship_created(employee, 'employed_by')
 
     index.size.should == 0
   end
@@ -97,7 +97,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relation_on_property(Company, 'employees', 'employees', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary')
 
   end
 
@@ -141,7 +141,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is created" do
+  it "should update index when the employee relationship is created" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -152,7 +152,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employees')
+    @employee_indexer.on_relationship_created(employee, 'employees')
 
     index.size.should == 1
     index[0][:id].should == company.neo_node_id
@@ -160,7 +160,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is deleted" do
+  it "should update index when the employee relationship is deleted" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -168,7 +168,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employees')
+    @employee_indexer.on_relationship_created(employee, 'employees')
 
     index.size.should == 0
   end
@@ -190,7 +190,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
   def create_indexer
     Indexer.clear_all_instances
     indexer = Indexer.instance Person
-    indexer.add_index_in_relation_on_property(Person, 'friends', 'friends', 'age')
+    indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age')
     indexer
   end
 

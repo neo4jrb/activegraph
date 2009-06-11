@@ -1,6 +1,6 @@
 module Neo4j
 
-  module Relations
+  module Relationships
     class HasList
       include Enumerable
       extend Neo4j::TransactionalMixin
@@ -18,18 +18,18 @@ module Neo4j
       def <<(other)
         Neo4j::Transaction.run do
           # does node have a relationship ?
-          if (@node.relation?(@type))
+          if (@node.relationship?(@type))
             # get that relationship
-            first = @node.relations.outgoing(@type).first
+            first = @node.relationships.outgoing(@type).first
 
             # delete this relationship
             first.delete
             old_first = first.other_node(@node)
-            @node.add_relation(other, @type)
-            other.add_relation(old_first, @type)
+            @node.add_relationship(other, @type)
+            other.add_relationship(old_first, @type)
           else
             # the first node will be set
-            @node.add_relation(other, @type)
+            @node.add_relationship(other, @type)
           end
         end
       end

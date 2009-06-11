@@ -4,10 +4,10 @@ module Neo4j
   # A module that can be mixed in like a Neo4j::NodeMixin
   # It wraps the Neo4j Relationship class.
   #
-  module RelationMixin
+  module RelationshipMixin
     extend TransactionalMixin
 
-    # Initialize the Relation object with specified java org.neo4j.api.core.Relationship object
+    # Initialize the Relationship object with specified java org.neo4j.api.core.Relationship object
     # Expects at least one parameter.
     # 
     # ==== Parameters
@@ -29,7 +29,7 @@ module Neo4j
     def init_with_rel(node)
       @internal_r = node
       self.classname = self.class.to_s unless @internal_r.hasProperty("classname")
-      $NEO_LOGGER.debug {"loading relation '#{self.class.to_s}' id #{@internal_r.getId()}"}
+      $NEO_LOGGER.debug {"loading relationship '#{self.class.to_s}' id #{@internal_r.getId()}"}
     end
 
     # :api: public
@@ -73,8 +73,8 @@ module Neo4j
       @internal_r.delete
 
       # TODO not sure if we need to do it on both start and end node ...
-#      start_node.class.indexer.on_relation_deleted(start_node, type) unless start_node.nil?
-      end_node.class.indexer.on_relation_deleted(end_node, type) unless end_node.nil?
+#      start_node.class.indexer.on_relationship_deleted(start_node, type) unless start_node.nil?
+      end_node.class.indexer.on_relationship_deleted(end_node, type) unless end_node.nil?
     end
 
     def set_property(key, value)
@@ -99,7 +99,7 @@ module Neo4j
     end
 
 
-    def neo_relation_id
+    def neo_relationship_id
       @internal_r.getId()
     end
 

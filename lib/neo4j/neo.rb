@@ -162,11 +162,11 @@ module Neo4j
 
     # Loads a Neo relationship
     # If the neo property 'classname' to exist it will use that to create an instance of that class.
-    # Otherwise it will create an instance of Neo4j::Relations::DynamicRelation that represent 'rel'
+    # Otherwise it will create an instance of Neo4j::Relationships::DynamicRelationship that represent 'rel'
     #
     def load_relationship(rel)
       classname = rel.get_property('classname') if rel.has_property('classname')
-      classname = Neo4j::Relations::DynamicRelation.to_s if classname.nil?
+      classname = Neo4j::Relationships::DynamicRelationship.to_s if classname.nil?
       _load classname, rel
     end
 

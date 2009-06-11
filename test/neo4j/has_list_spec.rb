@@ -33,14 +33,14 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
 
   it "should contain items after append one item to a list (#<<)" do
     list = ListNode.new
-    list.relation?(:items).should be_false
+    list.relationship?(:items).should be_false
     list.items << XNode.new
-    list.relation?(:items).should be_true
+    list.relationship?(:items).should be_true
   end
 
   it "should contain two items after appending two items (#<<)" do
     list = ListNode.new
-    list.relation?(:items).should be_false
+    list.relationship?(:items).should be_false
     a = XNode.new
     a.name = 'a'
     list.items << a
@@ -49,8 +49,8 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     list.items << b
 
     # check what is connected to what, list -> b -> a
-    list.relations.outgoing(:items).nodes.first.should == b
-    b.relations.outgoing(:items).nodes.first.should == a
+    list.relationships.outgoing(:items).nodes.first.should == b
+    b.relationships.outgoing(:items).nodes.first.should == a
   end
 
   it "should be empty when its empty (#empty?)" do

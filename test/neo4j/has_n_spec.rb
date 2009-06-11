@@ -18,7 +18,7 @@ describe "Neo4j::NodeMixin#has_n " do
 
 
   # ----------------------------------------------------------------------------
-  # adding relations with <<
+  # adding relationships with <<
   #
 
   describe '<< operator' do
@@ -34,7 +34,7 @@ describe "Neo4j::NodeMixin#has_n " do
     end
 
 
-    it "should add a node to a relation" do
+    it "should add a node to a relationship" do
       t1 = TestNode.new
       t2 = TestNode.new
 
@@ -45,7 +45,7 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends.to_a.should include(t2)
     end
 
-    it "should add relations of different types to other nodes" do
+    it "should add relationships of different types to other nodes" do
       me = TestNode.new
       f1 = TestNode.new
       p1 = TestNode.new
@@ -163,7 +163,7 @@ describe "Neo4j::NodeMixin#has_n " do
       end
 
       class CustOrderRel
-        include Neo4j::RelationMixin
+        include Neo4j::RelationshipMixin
         property :my_prop
       end
 
@@ -171,7 +171,7 @@ describe "Neo4j::NodeMixin#has_n " do
         include Neo4j::NodeMixin
         property :age, :name
 
-        has_n(:orders).relation(CustOrderRel)
+        has_n(:orders).relationship(CustOrderRel)
       end
 
     end
@@ -206,23 +206,23 @@ describe "Neo4j::NodeMixin#has_n " do
       # given
       customer = Customer.new
       order = Order.new
-      relation = customer.orders.new(order) # another way of adding a relationship
+      relationship = customer.orders.new(order) # another way of adding a relationship
 
       # when
-      relation.my_prop = 'a property'
+      relationship.my_prop = 'a property'
 
       # then
-      relation.my_prop.should == 'a property'
+      relationship.my_prop.should == 'a property'
     end
 
-    it "should not contain the order when the customer-order relation has been deleted" do
+    it "should not contain the order when the customer-order relationship has been deleted" do
       # given
       customer = Customer.new
       order = Order.new
-      relation = customer.orders.new(order) # another way of adding a relationship
+      relationship = customer.orders.new(order) # another way of adding a relationship
 
       # when
-      relation.delete
+      relationship.delete
 
       # then
       customer.orders.to_a.should_not include(order)
@@ -247,16 +247,16 @@ describe "Neo4j::NodeMixin#has_n " do
   end
 
 
-  describe 'node1.relation_type.new(node2) (creating a new RelationMixin)' do
+  describe 'node1.relationship_type.new(node2) (creating a new RelationshipMixin)' do
     before(:all) do
-      class CustomerOrderRelation
-        include Neo4j::RelationMixin
+      class CustomerOrderRelationship
+        include Neo4j::RelationshipMixin
         property :prio
       end
 
       class Customer
         include Neo4j::NodeMixin
-        has_n(:orders).relation(CustomerOrderRelation)
+        has_n(:orders).relationship(CustomerOrderRelationship)
         has_n :friends
       end
 
@@ -266,7 +266,7 @@ describe "Neo4j::NodeMixin#has_n " do
     end
 
 
-    it "should return a RelationMixin of correct class" do
+    it "should return a RelationshipMixin of correct class" do
       # given
       c = Customer.new
       o = Order.new
@@ -275,10 +275,10 @@ describe "Neo4j::NodeMixin#has_n " do
       r = c.orders.new(o)
 
       # then
-      r.should be_kind_of(CustomerOrderRelation)
+      r.should be_kind_of(CustomerOrderRelationship)
     end
 
-    it "should return a RelationMixin of relationship type" do
+    it "should return a RelationshipMixin of relationship type" do
       # given
       c = Customer.new
       o = Order.new
@@ -302,10 +302,10 @@ describe "Neo4j::NodeMixin#has_n " do
 
       # then
       r.prio.should == 'important'
-      c.relations.outgoing(:orders)[o].prio.should == 'important'
+      c.relationships.outgoing(:orders)[o].prio.should == 'important'
     end
 
-    it "should be possible to read an unset property on the returned RelationMixin" do
+    it "should be possible to read an unset property on the returned RelationshipMixin" do
       # given
       c = Customer.new
       o = Order.new
@@ -315,7 +315,7 @@ describe "Neo4j::NodeMixin#has_n " do
       r.prio.should == nil
     end
 
-    it "should load the created RelationMixin when traversing the relationship" do
+    it "should load the created RelationshipMixin when traversing the relationship" do
       # given
       c = Customer.new
       o1 = Order.new
@@ -324,7 +324,7 @@ describe "Neo4j::NodeMixin#has_n " do
       c.orders << o1 << o2
 
       # when and then
-      c.relations.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelation) }
+      c.relationships.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelationship) }
     end
 
     it "can not have a relationship to a none Neo::Node" do

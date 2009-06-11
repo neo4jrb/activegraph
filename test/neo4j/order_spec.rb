@@ -42,7 +42,7 @@ describe "CustomerA,Order,Product" do
     end
 
     class OrderLine
-      include Neo4j::RelationMixin
+      include Neo4j::RelationshipMixin
       property :units
       property :unit_price
     end
@@ -50,7 +50,7 @@ describe "CustomerA,Order,Product" do
     class Order
       property :total_cost
       property :dispatched
-      has_n(:products).to(Product).relation(OrderLine)
+      has_n(:products).to(Product).relationship(OrderLine)
       has_one(:customer).to(CustomerA)
 
       index "customer.age"
@@ -87,12 +87,12 @@ describe "CustomerA,Order,Product" do
     stop
   end  
 
-  describe "create relation" do
+  describe "create relationship" do
     it "should allow to create a new dynamic relationship to an order from a customer instance" do
       c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
-      r.should be_kind_of(Neo4j::Relations::DynamicRelation)
+      r.should be_kind_of(Neo4j::Relationships::DynamicRelationship)
 
     end
 

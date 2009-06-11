@@ -245,7 +245,7 @@ module Neo4j
     #
     # :api: public
     def delete
-      relations.each {|r| r.delete}
+      relationships.each {|r| r.delete}
       @internal_node.delete
       self.class.indexer.delete_index(self)
     end
@@ -261,20 +261,20 @@ module Neo4j
     end
 
 
-    # Returns a Neo4j::Relations::RelationTraverser object for accessing relations from and to this node.
-    # The Neo4j::Relations::RelationTraverser is an Enumerable that returns Neo4j::RelationMixin objects.
+    # Returns a Neo4j::Relationships::RelationshipTraverser object for accessing relationships from and to this node.
+    # The Neo4j::Relationships::RelationshipTraverser is an Enumerable that returns Neo4j::RelationshipMixin objects.
     #
     # ==== See Also
-    # * Neo4j::Relations::RelationTraverser
-    # * Neo4j::RelationMixin
+    # * Neo4j::Relationships::RelationshipTraverser
+    # * Neo4j::RelationshipMixin
     #
     # ==== Example
     #
-    #   person_node.relations.outgoing(:friends).each { ... }
+    #   person_node.relationships.outgoing(:friends).each { ... }
     #
     # :api: public
-    def relations
-      Relations::RelationTraverser.new(@internal_node)
+    def relationships
+      Relationships::RelationshipTraverser.new(@internal_node)
     end
 
 
@@ -283,11 +283,11 @@ module Neo4j
     # Can be used at any time on any node.
     #
     # ==== Returns
-    # a Relationship object (see Neo4j::RelationMixin)  representing this created relationship
+    # a Relationship object (see Neo4j::RelationshipMixin)  representing this created relationship
     #
     # :api: public
-    def add_relation(other_node, type)
-      type = Relations::RelationshipType.instance(type.to_s)
+    def add_relationship(other_node, type)
+      type = Relationships::RelationshipType.instance(type.to_s)
       rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
       Neo4j.instance.load_relationship(rel)
     end
@@ -305,8 +305,8 @@ module Neo4j
     # true if one or more relationships exists for the given rel_name and dir
     #
     # :api: public
-    def relation?(rel_name, dir=:outgoing)
-      type = Relations::RelationshipType.instance(rel_name.to_s)
+    def relationship?(rel_name, dir=:outgoing)
+      type = Relationships::RelationshipType.instance(rel_name.to_s)
       java_dir =
               case dir
                 when :outgoing
@@ -322,11 +322,11 @@ module Neo4j
     end
 
 
-    # Returns a Neo4j::Relations::NodeTraverser object for traversing nodes from and to this node.
-    # The Neo4j::Relations::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
+    # Returns a Neo4j::Relationships::NodeTraverser object for traversing nodes from and to this node.
+    # The Neo4j::Relationships::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
     #
     # ==== See Also
-    # Neo4j::Relations::NodeTraverser
+    # Neo4j::Relationships::NodeTraverser
     #
     # ==== Example
     #
@@ -334,7 +334,7 @@ module Neo4j
     #
     # :api: public
     def traverse
-      Relations::NodeTraverser.new(@internal_node)
+      Relationships::NodeTraverser.new(@internal_node)
     end
 
 
@@ -348,7 +348,7 @@ module Neo4j
     end
 
 
-    transactional :property?, :set_property, :get_property, :remove_property, :delete, :add_relation
+    transactional :property?, :set_property, :get_property, :remove_property, :delete, :add_relationship
 
 
     #
@@ -358,7 +358,7 @@ module Neo4j
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
         const_set(:ROOT_CLASS, self)
-        const_set(:RELATIONS_INFO, {})
+        const_set(:RELATIONSHIPS_INFO, {})
         const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:ROOT_CLASS)
 
@@ -390,8 +390,8 @@ module Neo4j
       # Contains information of all relationships, name, type, and multiplicity
       #
       # :api: private
-      def relations_info
-        self::RELATIONS_INFO
+      def relationships_info
+        self::RELATIONSHIPS_INFO
       end
 
       # :api: private
@@ -542,7 +542,7 @@ module Neo4j
         rel_type_props.each do |rel_type_prop|
           rel_name, prop = rel_type_prop.to_s.split('.')
           index_property(rel_name) if prop.nil?
-          index_relation(rel_name, prop) unless prop.nil?
+          index_relationship(rel_name, prop) unless prop.nil?
         end
       end
 
@@ -559,7 +559,7 @@ module Neo4j
             indexer.remove_index_on_property(rel_name)
           else
             clazz, rel_type = rel_class_and_type_for(rel_name)
-            clazz.indexer.remove_index_in_relation_on_property(rel_type, prop)
+            clazz.indexer.remove_index_in_relationship_on_property(rel_type, prop)
           end
         end
       end
@@ -573,19 +573,19 @@ module Neo4j
 
 
       # :api: private
-      def index_relation(rel_name, prop)
+      def index_relationship(rel_name, prop)
         # find the trigger and updater classes and the rel_type of the given rel_name
-        trigger_clazz = relations_info[rel_name.to_sym][:class]
+        trigger_clazz = relationships_info[rel_name.to_sym][:class]
         trigger_clazz ||= self # if not defined in a has_n
 
         updater_clazz = self
 
-        rel_type = relations_info[rel_name.to_sym][:type]  # this or the other node we index ?
+        rel_type = relationships_info[rel_name.to_sym][:type]  # this or the other node we index ?
         rel_type ||= rel_name # if not defined (in a has_n) use the same name as the rel_name
 
         # add index on the trigger class and connect it to the updater_clazz
         # (a trigger may cause an update of the index using the Indexer specified on the updater class)
-        trigger_clazz.indexer.add_index_in_relation_on_property(updater_clazz, rel_name, rel_type, prop)
+        trigger_clazz.indexer.add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop)
       end
 
 
@@ -600,15 +600,15 @@ module Neo4j
       def has_one(rel_type)
 
         module_eval(%Q{def #{rel_type}=(value)
-                        r = Relations::HasN.new(self,'#{rel_type.to_s}')
+                        r = Relationships::HasN.new(self,'#{rel_type.to_s}')
                         r << value
                     end},  __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                        r = Relations::HasN.new(self,'#{rel_type.to_s}')
+                        r = Relationships::HasN.new(self,'#{rel_type.to_s}')
                         r.to_a[0]
                     end},  __FILE__, __LINE__)
-        relations_info[rel_type] = Relations::RelationInfo.new
+        relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
 
 
@@ -616,34 +616,34 @@ module Neo4j
       #
       # ==== Example
       #   class Order
-      #      has_n(:order_lines).to(Product).relation(OrderLine)
+      #      has_n(:order_lines).to(Product).relationship(OrderLine)
       #   end
       #
       # :api: public
       def has_n(rel_type)
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relations::HasN.new(self,'#{rel_type.to_s}', &block)
+                        Relationships::HasN.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
-        relations_info[rel_type] = Relations::RelationInfo.new
+        relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
 
 
       def has_list(rel_type)
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relations::HasList.new(self,'#{rel_type.to_s}', &block)
+                        Relationships::HasList.new(self,'#{rel_type.to_s}', &block)
                     end},  __FILE__, __LINE__)
-        relations_info[rel_type] = Relations::RelationInfo.new
+        relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
 
 
 
-      # Creates a new outgoing relation.
+      # Creates a new outgoing relationship.
       # 
       # :api: private
-      def new_relation(rel_name, internal_relation)
-        relations_info[rel_name.to_sym][:relation].new(internal_relation) # internal_relation is a java neo object
+      def new_relationship(rel_name, internal_relationship)
+        relationships_info[rel_name.to_sym][:relationship].new(internal_relationship) # internal_relationship is a java neo object
       end
 
 

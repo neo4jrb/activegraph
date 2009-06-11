@@ -15,19 +15,19 @@ require 'neo4j/config'
 
 # mixins
 require 'neo4j/mixins/transactional'
-require 'neo4j/mixins/relation'
+require 'neo4j/mixins/relationship'
 require 'neo4j/mixins/dynamic_accessor'
 require 'neo4j/mixins/node'
 
-# relations
-require 'neo4j/relations/relation_info'
-require 'neo4j/relations/dynamic_relation'
-require 'neo4j/relations/relations'
-require 'neo4j/relations/traversal_position'
-require 'neo4j/relations/has_n'
-require 'neo4j/relations/relation_traverser'
-require 'neo4j/relations/node_traverser'
-require 'neo4j/relations/has_list'
+# relationships
+require 'neo4j/relationships/relationship_info'
+require 'neo4j/relationships/dynamic_relationship'
+require 'neo4j/relationships/relationships'
+require 'neo4j/relationships/traversal_position'
+require 'neo4j/relationships/has_n'
+require 'neo4j/relationships/relationship_traverser'
+require 'neo4j/relationships/node_traverser'
+require 'neo4j/relationships/has_list'
 
 # neo4j
 require 'neo4j/indexer' # this will replace neo4j/events

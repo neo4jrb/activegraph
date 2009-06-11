@@ -91,7 +91,7 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
 Adding new types of properties and relationships can also be done without
-declaring those propertie/relationships (like the example above), see Neo4j::DynamicAccessorMixin,  or the [] and add_relation methods.
+declaring those propertie/relationships (like the example above), see Neo4j::DynamicAccessorMixin,  or the [] and add_relationship methods.
 
 By using the NodeMixin all instances of the Person class can now be stored in the Neo4j node space and
 be retrieved/queried by traversing the node space or performing Lucene queries.
@@ -130,7 +130,7 @@ A relationship can be added at any time on any node.
 
 Example:
 
-  person.add_relation(other_node, 'best_friend')
+  person.add_relationship(other_node, 'best_friend')
 
 
 === Finding Nodes and Queries
@@ -189,7 +189,7 @@ Example
 
 To delete the relationship between person and person2:
 
-  person.relations[person2].delete
+  person.relationships[person2].delete
 
 If a node is deleted then all its relationship will also be deleted
 Deleting a node is performed by using the delete method:
@@ -226,7 +226,7 @@ the Ruby classes Actor, Role and Movie.
 This is done by using the has_n class method:
 
       class Role
-        include Neo4j::RelationMixin
+        include Neo4j::RelationshipMixin
         # notice that neo4j relationships can also have properties
         property :name
       end
@@ -236,9 +236,9 @@ This is done by using the has_n class method:
 
         # The following line defines the acted_in relationship
         # using the following classes:
-        # Actor[Node] --(Role[Relation])--> Movie[Node]
+        # Actor[Node] --(Role[Relationship])--> Movie[Node]
         #
-        has_n(:acted_in).to(Movie).relation(Role)
+        has_n(:acted_in).to(Movie).relationship(Role)
       end
       
       class Movie
@@ -265,7 +265,7 @@ or you can also specify this relationship on the incoming node
 
 Example of accessing the Role relationship object between an Actor and a Movie
 
-      keanu_reeves.relations.outgoing(:acted_in)[matrix].name = 'neo'
+      keanu_reeves.relationships.outgoing(:acted_in)[matrix].name = 'neo'
 
 More information about neo4j can be found after the Lucene section below.
 
@@ -283,7 +283,7 @@ Lucene provides:
 
 In lucene everything is a Document. A document can represent anything textual:
 Word Document, DVD (the textual metadata only), or a Neo4j.rb node.
-A document is like a record or row in a relation database.
+A document is like a record or row in a relationship database.
 
 The following example shows how a document can be created by using the ''<<'' operator
 on the Lucene::Index class and found using the Lucene::Index#find method.
@@ -298,7 +298,7 @@ Example of how to write a document and find it:
     # just a key if index is kept in memory (see below)
     index = Index.new('var/myindex')  
 
-    # add one document (a document is like a record or row in a relation database)
+    # add one document (a document is like a record or row in a relationship database)
     index << {:id=>'1', :name=>'foo'}
 
     # write to the index file
@@ -668,7 +668,7 @@ Example
   Car.all   # will return all relationships from the reference node to car obejcts
   Volvo.all # will return the same as Car.all
 
-To return nodes (just like the relations method)
+To return nodes (just like the relationships method)
 
   Car.all.nodes    # => [c,v]
   Volvo.all.nodes  # => [c,v]
@@ -676,8 +676,8 @@ To return nodes (just like the relations method)
 
 === Relationship has_n and has_one
 
-Neo relationships are none symmetrical. That means that if A has a relation to B
-then it may not be true that B has a relation to A.
+Neo relationships are none symmetrical. That means that if A has a relationship to B
+then it may not be true that B has a relationship to A.
 
 Relationships can be declared by using the 'has_n' or 'has_one'
 Neo4j::NodeMixin class methods.
@@ -928,16 +928,16 @@ Example:
   p1 = Person.new
   p2 = Person.new
 
-  relation = p1.friends.new(p2)
+  relationship = p1.friends.new(p2)
 
   # set a property 'since' on this relationship bewteen p1 and p2
-  relation.since = 1992
+  relationship.since = 1992
 
 If a Relationship class has not been specified for a relationship then any properties
 can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
 
 If you instead want to use your own class for a relationship use the
-Neo4j::NodeMixin#has_n.relation method, example:
+Neo4j::NodeMixin#has_n.relationship method, example:
 
       class Role
         # This class can be used as the relationship between two nodes
@@ -949,32 +949,32 @@ Neo4j::NodeMixin#has_n.relation method, example:
       class Actor
         include Neo4j::NodeMixin
         # use the Role class above in the relationship between Actor and Movie
-        has_n(:acted_in).to(Movie).relation(Role)
+        has_n(:acted_in).to(Movie).relationship(Role)
       end
 
 
 === Finding Relationships
 
-The Neo4j::NodeMixin#relations method can be used to find incoming or outgoing relationship objects.
-Example of listing all types of outgoing (default) relation objects (of depth one) from the me node.
+The Neo4j::NodeMixin#relationships method can be used to find incoming or outgoing relationship objects.
+Example of listing all types of outgoing (default) relationship objects (of depth one) from the me node.
 
-  me.relations.each {|rel| ... }
+  me.relationships.each {|rel| ... }
 
 If we instead want to list the nodes that those relationships points to then the nodes method can be used.
 
-  me.relations.nodes.each {|rel| ... }
+  me.relationships.nodes.each {|rel| ... }
 
 Listing all incoming relationship obejcts of any relationship type:
 
-  me.relations.incoming.each { ... }
+  me.relationships.incoming.each { ... }
 
 Listing both incoming and outgoing relationship object of a specific type:
 
-  me.relations.both(:friends) { }
+  me.relationships.both(:friends) { }
 
 Finding one outgoing relationship of a specific type and node (you)
 
-  me.relations.outgoing(:friends)[you] # => [#<Neo4j::RelationMixin:0x134ae32]
+  me.relationships.outgoing(:friends)[you] # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
 
 ==== Finding Relationships Example
@@ -988,16 +988,16 @@ Example, given we have the two nodes with a relationship between them:
 
 Then we can find all incoming and outgoing relationships like this:
 
-  n1.relations.to_a # => [#<Neo4j::RelationMixin:0x134ae32]
+  n1.relationships.to_a # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
-A Neo4j::RelationMixin object represents a relationship between two nodes.
+A Neo4j::RelationshipMixin object represents a relationship between two nodes.
 
-  n1.relations[0].start_node # => n1
-  n1.relations[0].end_node # => n2
+  n1.relationships[0].start_node # => n1
+  n1.relationships[0].end_node # => n2
 
-A RelationMixin contains the relationship type which connects it connects two nodes with, example:
+A RelationshipMixin contains the relationship type which connects it connects two nodes with, example:
 
-  n1.relations[0].relationship_type # => :friends
+  n1.relationships[0].relationship_type # => :friends
 
 Relationships can also have properties just like a node (NodeMixin).
 
@@ -1005,45 +1005,45 @@ Relationships can also have properties just like a node (NodeMixin).
 
 If we are only interested in all incoming nodes, we can do
 
-  n2.relations.incoming # => [#<Neo4j::RelationMixin:0x134ae32]
+  n2.relationships.incoming # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
 Or outgoing:
 
-  n1.relations.outgoing # => [#<Neo4j::RelationMixin:0x134aea2]
+  n1.relationships.outgoing # => [#<Neo4j::RelationshipMixin:0x134aea2]
 
 To find a specific relationship use the [] operator:
 
-  n1.relations.outgoing[n2] = #<Neo4j::RelationMixin:0x134aea2
+  n1.relationships.outgoing[n2] = #<Neo4j::RelationshipMixin:0x134aea2
 
 Or which is better performance wise (since only friends relationships are being traversed):
 
-  n1.relations.outgoing(:friends)[n2] = #<Neo4j::RelationMixin:0x134aea2
+  n1.relationships.outgoing(:friends)[n2] = #<Neo4j::RelationshipMixin:0x134aea2
 
 === Deleting a relationship
 
-Use the Neo4j::RelationMixin#delete method.
+Use the Neo4j::RelationshipMixin#delete method.
 For example, to delete the relationship between n1 and n2 from the example above:
 
-    n1.relations.outgoing(:friends)[n2].delete
+    n1.relationships.outgoing(:friends)[n2].delete
 
 === Finding nodes in a relationship
 
 If you do not want those relationship object but instead want the nodes you can use the 'nodes' method
-in the Neo4j::RelationMixin object.
+in the Neo4j::RelationshipMixin object.
 
 For example:
 
-  n2.relations.incoming.nodes # => [n1]
+  n2.relationships.incoming.nodes # => [n1]
 
 === Finding outgoing/incoming nodes of a specific relationship type
 
 Let say we want to find who has my phone number and who consider me as a friend
 
   # who has my phone numbers
-  me.relations.incoming(:phone_numbers).nodes # => people with my phone numbers
+  me.relationships.incoming(:phone_numbers).nodes # => people with my phone numbers
 
   # who consider me as a friend
-  me.relations.incoming(:friends).nodes # => people with a friend relationship to me
+  me.relationships.incoming(:friends).nodes # => people with a friend relationship to me
 
 Remember that relationships are not symmetrical.
 Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#traverse method below.
@@ -1292,8 +1292,8 @@ Example:
 
     Neo4j.ref_node
 
-This node has a relationship to all created nodes.
-It is used internally to recreate an index or finding all nodes of a specific type.
+This node has a relationship to all created nodes. You can add relationships from this
+node to your nodes.
 
 === Performance Issues
 
@@ -1334,14 +1334,14 @@ Create model in movies/app/models
 actor.rb:
 
   class Role
-    include Neo4j::RelationMixin
+    include Neo4j::RelationshipMixin
     property :title, :character
   end
 
   class Actor
     include Neo4j::NodeMixin
     property :name, :phone, :salary
-    has_n(:acted_in).to(Movie).relation(Role)
+    has_n(:acted_in).to(Movie).relationship(Role)
     index :name
   end
 
