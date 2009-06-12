@@ -36,6 +36,7 @@ require 'neo4j/event_handler'
 require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/search_result'
+require 'neo4j/node'
 # require 'neo4j/tx_node_list'   - has to be included if we want this feature
 require 'neo4j/version'
 

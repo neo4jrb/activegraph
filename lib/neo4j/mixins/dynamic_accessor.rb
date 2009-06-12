@@ -5,6 +5,21 @@ module Neo4j
   #
   # :api: public
   module DynamicAccessorMixin
+
+    # Returns the given property
+    #
+    # :api: public
+    def [](name)
+      get_property(name.to_s)
+    end
+
+    # Sets the given property to a given value
+    #
+    # :api: public
+    def []=(name, value)
+      set_property(name.to_s, value)
+    end
+    
     #
     # A hook used to set and get undeclared properties
     #

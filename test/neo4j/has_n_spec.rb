@@ -6,7 +6,6 @@ require 'neo4j/spec_helper'
 
 
 
-
 describe "Neo4j::NodeMixin#has_n " do
   before(:all) do
     start

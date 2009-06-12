@@ -34,6 +34,11 @@ module Neo4j
       @listeners.each {|li| li.on_node_deleted(node) if li.respond_to?(:on_node_deleted)}
     end
 
+    def property_changed(node, key, old_value, new_value)
+      return if @filter_classes.include?(node.class)
+      @listeners.each {|li| li.on_property_changed(node, key, old_value, new_value) if li.respond_to?(:on_property_changed)}
+    end
+
     def tx_finished(tx)
       @listeners.each {|li| li.on_tx_finished(tx) if li.respond_to?(:on_tx_finished)}
     end

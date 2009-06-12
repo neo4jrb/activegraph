@@ -79,6 +79,8 @@ module Neo4j
     # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}
+      old_value = get_property(name)
+      
       if value.nil?
         remove_property(name)
       elsif self.class.marshal?(name)
@@ -90,12 +92,17 @@ module Neo4j
       end
 
       if (name != 'classname')  # do not want events on internal properties
-        self.class.indexer.on_property_changed(self, name)
+        self.class.indexer.on_property_changed(self, name)   # TODO reuse the event_handler instead !
+        Neo4j.event_handler.property_changed(self, name, old_value, value)
       end
     end
 
+
+    # Sets the given property to a given value
+    #
+    # :api: public
     def []=(name, value)
-      self.set_property(name.to_s, value)
+      set_property(name.to_s, value)
     end
 
     # Removes the property from this node.
@@ -136,6 +143,10 @@ module Neo4j
       end
     end
 
+
+    # Returns the given property
+    #
+    # :api: public
     def [](name)
       self.get_property(name.to_s)
     end
@@ -245,6 +256,7 @@ module Neo4j
     #
     # :api: public
     def delete
+      Neo4j.event_handler.node_deleted(self)
       relationships.each {|r| r.delete}
       @internal_node.delete
       self.class.indexer.delete_index(self)
