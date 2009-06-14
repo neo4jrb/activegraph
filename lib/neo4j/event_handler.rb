@@ -34,6 +34,16 @@ module Neo4j
       @listeners.each {|li| li.on_node_deleted(node) if li.respond_to?(:on_node_deleted)}
     end
 
+    def relationship_created(from_node, relationship_type, to_node)
+      return if @filter_classes.include?(from_node.class)
+      @listeners.each {|li| li.on_relationship_created(from_node, relationship_type, to_node) if li.respond_to?(:on_relationship_created)}
+    end
+
+    def relationship_deleted(from_node, relationship_type, to_node)
+      return if @filter_classes.include?(from_node.class)
+      @listeners.each {|li| li.on_relationship_deleted(from_node, relationship_type, to_node) if li.respond_to?(:on_relationship_deleted)}
+    end
+
     def property_changed(node, key, old_value, new_value)
       return if @filter_classes.include?(node.class)
       @listeners.each {|li| li.on_property_changed(node, key, old_value, new_value) if li.respond_to?(:on_property_changed)}
@@ -44,7 +54,7 @@ module Neo4j
     end
 
     def neo_started(neo_instance)
-      @listeners.each {|li| li.on_neo_started(neo_instance) if li.respond_to?(:on_neo_started)}
+      @listeners.each {|li|  li.on_neo_started(neo_instance)  if li.respond_to?(:on_neo_started)}
     end
 
     def neo_stopped(neo_instance)

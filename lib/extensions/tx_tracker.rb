@@ -84,7 +84,7 @@ module Neo4j
     def self.on_neo_started(neo_instance)
       return if neo_instance.ref_node.relationship?(:tx_node_list)
       @tx_node_list = TxNodeList.new # cache this so we do not have to look it up always
-      neo_instance.ref_node.add_relationship(@tx_node_list, :tx_node_list)
+      neo_instance.ref_node.relationships.outgoing(:tx_node_list) << @tx_node_list
       Neo4j.event_handler.add(@tx_node_list)
     end
 
@@ -130,7 +130,7 @@ module Neo4j
   Neo4j.event_handler.add(TxNodeList)
 
 # if neo is already run we have to let txnodelist have a chance to add it self
-  TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
+  # TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
 
 #  Undo the last transaction
 #

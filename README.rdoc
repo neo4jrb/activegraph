@@ -97,16 +97,20 @@ Example of creating a relationship
 
   node1 = Neo4j::Node.new
   node2 = Neo4j::Node.new
-  node1.add_relationship(node2, :friends)
+  node1.relationships.outgoing(:friends) << node2
 
 Example of getting relationships
 
-  node1.relationships.include?(node2) # => true - it implements enumerable and other methods
   node1.relationships.empty? # => false
+
+  # The relationships method returns an enumeration of relationship objects.
+  # The nodes method on the relationships returns the nodes instead.
+  node1.relationships.nodes.include?(node2) # => true
+  
   node1.relationships.first # => the first relationship this node1 has which is between node1 and node2
   node1.relationships.nodes.first # => node2
-  node1.relationships(:friends).first # => the first relationship of type :friends
-  
+  node1.relationships.outgoing(:friends).first # => the first relationship of type :friends
+
 Example of setting properties on relationships
 
   rel = node1.relationships(:friends).first
@@ -149,7 +153,8 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
 Adding new types of properties and relationships can also be done without
-declaring those propertie/relationships (like the example above), see Neo4j::DynamicAccessorMixin,  or the [] and add_relationship methods.
+declaring those propertie/relationships by using the operator '[]' on Neo4j::NodeMixin and the
+ '<<' on the Neo4j::Relationships::RelationshipTraverser.
 
 By using the NodeMixin all instances of the Person class can now be stored in the Neo4j node space and
 be retrieved/queried by traversing the node space or performing Lucene queries.

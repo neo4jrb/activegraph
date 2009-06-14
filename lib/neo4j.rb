@@ -21,8 +21,8 @@ require 'neo4j/mixins/node'
 
 # relationships
 require 'neo4j/relationships/relationship_info'
-require 'neo4j/relationships/dynamic_relationship'
-require 'neo4j/relationships/relationships'
+require 'neo4j/relationships/relationship'
+require 'neo4j/relationships/wrappers'
 require 'neo4j/relationships/traversal_position'
 require 'neo4j/relationships/has_n'
 require 'neo4j/relationships/relationship_traverser'

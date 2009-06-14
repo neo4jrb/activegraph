@@ -121,8 +121,8 @@ describe "RelationshipTraverser" do
       t1.friends << t2
 
       # when and then
-      t1.relationships.nodes.to_a.should include(t2)
-      t2.relationships.nodes.to_a.should include(t1)
+      t1.relationships.both.nodes.to_a.should include(t2)
+      t2.relationships.both.nodes.to_a.should include(t1)
     end
 
     it "should find several both incoming and outgoing nodes" do
@@ -135,11 +135,11 @@ describe "RelationshipTraverser" do
       t1.friends << t3
 
       # when and then
-      t1.relationships.nodes.to_a.should include(t2,t3)
-      t1.relationships.outgoing.nodes.to_a.should include(t2,t3)
-      t2.relationships.incoming.nodes.to_a.should include(t1)
-      t3.relationships.incoming.nodes.to_a.should include(t1)
-      t1.relationships.nodes.to_a.size.should == 3 # since we also have a relationship to ref node
+      t1.relationships.both.nodes.to_a.should include(t2,t3)
+      t1.relationships.both.outgoing.nodes.to_a.should include(t2,t3)
+      t2.relationships.both.incoming.nodes.to_a.should include(t1)
+      t3.relationships.both.incoming.nodes.to_a.should include(t1)
+      t1.relationships.both.nodes.to_a.size.should == 3 # since we also have a relationship to ref node
     end
     
     it "should find incoming nodes of a specific type" do

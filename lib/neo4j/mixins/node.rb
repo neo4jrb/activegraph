@@ -257,7 +257,7 @@ module Neo4j
     # :api: public
     def delete
       Neo4j.event_handler.node_deleted(self)
-      relationships.each {|r| r.delete}
+      relationships.both.each {|r| r.delete}
       @internal_node.delete
       self.class.indexer.delete_index(self)
     end
@@ -290,19 +290,6 @@ module Neo4j
     end
 
 
-    # Creates a not declared relationship between this node and the given other_node with the given relationship type
-    # Use this method if you do not want to declare the relationship with the class methods has_one or has_n.
-    # Can be used at any time on any node.
-    #
-    # ==== Returns
-    # a Relationship object (see Neo4j::RelationshipMixin)  representing this created relationship
-    #
-    # :api: public
-    def add_relationship(other_node, type)
-      type = Relationships::RelationshipType.instance(type.to_s)
-      rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
-      Neo4j.instance.load_relationship(rel)
-    end
 
     # Check if the given relationship exists
     # Returns true if there are one or more relationships from this node to other nodes
@@ -360,7 +347,7 @@ module Neo4j
     end
 
 
-    transactional :property?, :set_property, :get_property, :remove_property, :delete, :add_relationship
+    transactional :property?, :set_property, :get_property, :remove_property, :delete
 
 
     #

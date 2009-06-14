@@ -10,7 +10,7 @@ module Neo4j
 
       def initialize(internal_node)
         @internal_node = internal_node
-        @direction = org.neo4j.api.core.Direction::BOTH
+        @direction = org.neo4j.api.core.Direction::OUTGOING
       end
 
       def outgoing(type = nil)
@@ -31,6 +31,31 @@ module Neo4j
         self
       end
 
+
+      # Creates a not declared relationship between this node and the given other_node with the given relationship type
+      # Use this method if you do not want to declare the relationship with the class methods has_one or has_n.
+      # Can be used at any time on any node.
+      #
+      # Only supports outgoing relationships.
+      #
+      # ==== Example
+      #
+      #  node1 = Neo4j::Node.new
+      #  node2 = Neo4j::Node.new
+      #  node1.relationships.outgoing(:some_relationship_type) << node2
+      #
+      # ==== Returns
+      # a Relationship object (see Neo4j::RelationshipMixin)  representing this created relationship
+      #
+      # :api: public
+      def <<(other_node)
+        Transaction.run do
+          type = Relationships::RelationshipType.instance(@type.to_s)
+          rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
+          Neo4j.instance.load_relationship(rel)
+        end
+      end
+
       def empty?
         Neo4j::Transaction.run {!iterator.hasNext}
       end
@@ -49,7 +74,6 @@ module Neo4j
       def [](other_node)
         find {|r| r.end_node.neo_node_id == other_node.neo_node_id}
       end
-
 
 
       def each
@@ -91,7 +115,7 @@ module Neo4j
           rel = Neo4j.instance.load_relationship(iter.next)
           rel.other_node(@relationships.internal_node)
         end
-        
+
         def each
           @relationships.each do |relationship|
             yield relationship.other_node(@relationships.internal_node)
@@ -101,6 +125,6 @@ module Neo4j
 
     end
 
-  
+
   end
 end

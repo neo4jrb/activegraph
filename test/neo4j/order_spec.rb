@@ -92,7 +92,7 @@ describe "CustomerA,Order,Product" do
       c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
-      r.should be_kind_of(Neo4j::Relationships::DynamicRelationship)
+      r.should be_kind_of(Neo4j::Relationships::Relationship)
 
     end
 
@@ -101,9 +101,9 @@ describe "CustomerA,Order,Product" do
       o = Order.new
       r = c.orders.new(o)
 
-      r.foo_bar = "hej"
+      r[:foo_bar] = "hej"
 
-      r.foo_bar.should == "hej"
+      r[:foo_bar].should == "hej"
     end
 
     it "should allow to create a OrderLine relationship between an order and a product" do

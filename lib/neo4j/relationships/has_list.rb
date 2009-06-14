@@ -25,11 +25,11 @@ module Neo4j
             # delete this relationship
             first.delete
             old_first = first.other_node(@node)
-            @node.add_relationship(other, @type)
-            other.add_relationship(old_first, @type)
+            @node.relationships.outgoing(@type) << other
+            other.relationships.outgoing(@type) << old_first
           else
             # the first node will be set
-            @node.add_relationship(other, @type)
+            @node.relationships.outgoing(@type) << other
           end
         end
       end

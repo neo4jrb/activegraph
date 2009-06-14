@@ -63,7 +63,7 @@ module Neo4j
       end
 
       # Creates a relationship instance between this and the other node.
-      # If a class for the relationship has not been specified it will be of type DynamicRelationship.
+      # If a class for the relationship has not been specified it will be of type Relationship.
       #
       # :api: public
       def new(other)

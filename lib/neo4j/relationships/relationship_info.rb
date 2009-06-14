@@ -10,7 +10,7 @@ module Neo4j
       def initialize
         @info = {}
         # set defaults
-        @info[:relationship] = Relationships::DynamicRelationship
+        @info[:relationship] = Relationships::Relationship
         @info[:outgoing] = true
       end
     
