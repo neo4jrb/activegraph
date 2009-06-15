@@ -63,6 +63,11 @@ describe "CustomerA,Order,Product" do
       has_n(:orders).from(Order, :customer) # :zero_or_more, :orders, Order, :customer  # contains incoming relationship of type 'orders'
       has_n(:friends).to(CustomerA)
 
+      def init_node(name='hej', age=102)
+        self.name = name
+        self.age = age
+      end
+
       def to_s
         "CustomerA [name=#{name}]"
       end
@@ -77,17 +82,26 @@ describe "CustomerA,Order,Product" do
     end
   end
 
-  
+
   before(:each) do
     start
   end
 
- 
+
   after(:each) do
     stop
-  end  
+  end
 
   describe "create relationship" do
+
+    before(:each) do
+      Neo4j::Transaction.new
+    end
+
+    after(:each) do
+      Neo4j::Transaction.finish
+    end
+
     it "should allow to create a new dynamic relationship to an order from a customer instance" do
       c = CustomerA.new
       o = Order.new
@@ -114,147 +128,215 @@ describe "CustomerA,Order,Product" do
     end
 
   end
-  
+
   describe "#find" do
     it "should find one customers who has made two orders with a certain total cost" do
-      customer = CustomerA.new
-      order1 = Order.new
-      order1.total_cost = 100
-      order1.customer = customer
-  
-      order2 = Order.new
-      order2.total_cost = 42
-      order2.customer = customer
-  
-      r = CustomerA.find('orders.total_cost' => '100', 'orders.total_cost' => '42')
-      r.size.should == 1
-      r.should include(customer)
+      customer = nil
+      Neo4j::Transaction.run do
+        customer = CustomerA.new
+        order1 = Order.new
+        order1.total_cost = 100
+        order1.customer = customer
+
+        order2 = Order.new
+        order2.total_cost = 42
+        order2.customer = customer
+      end
+
+      Neo4j::Transaction.run do
+        r = CustomerA.find('orders.total_cost' => '100', 'orders.total_cost' => '42')
+        r.size.should == 1
+        r.should include(customer)
+      end
     end
-  
+
     it "should find two customers who has made two orders with a certain total cost" do
-      customer1 = CustomerA.new
-      order1 = Order.new
-      order1.total_cost = 100
-      order1.customer = customer1
-  
-      customer2 = CustomerA.new
-      order2 = Order.new
-      order2.total_cost = 42
-      order2.customer = customer2
-  
-      r = CustomerA.find('orders.total_cost' => 100)
-      r.size.should == 1
-      r.should include(customer1)
-  
-      r = CustomerA.find('orders.total_cost' => 42)
-      r.size.should == 1
-      r.should include(customer2)
+      customer1 = customer2 =  nil
+      Neo4j::Transaction.run do
+        customer1 = CustomerA.new
+        order1 = Order.new
+        order1.total_cost = 100
+        order1.customer = customer1
+
+        customer2 = CustomerA.new
+        order2 = Order.new
+        order2.total_cost = 42
+        order2.customer = customer2
+      end
+
+      Neo4j::Transaction.run do
+        r = CustomerA.find('orders.total_cost' => 100)
+        r.size.should == 1
+        r.should include(customer1)
+
+        r = CustomerA.find('orders.total_cost' => 42)
+        r.size.should == 1
+        r.should include(customer2)
+      end
     end
 
 
     it "should not find a customer with 1 order of a total cost of 200 if that order has been deleted" do
-      customer = CustomerA.new
-      order = Order.new
-      order.total_cost = '200'
-      order.customer = customer
-        
-      CustomerA.find('orders.total_cost' => '200').size.should == 1
+      order = nil
+      Neo4j::Transaction.run do
+        customer = CustomerA.new
+        order = Order.new
+        order.total_cost = '200'
+        order.customer = customer
+      end
+
+      Neo4j::Transaction.run do
+        CustomerA.find('orders.total_cost' => '200').size.should == 1
+      end
 
       # when
-      order.delete
-        
+      Neo4j::Transaction.run do
+        order.delete
+      end
+
       # then
-      CustomerA.find('orders.total_cost' => '200').size.should == 0
+      Neo4j::Transaction.run do
+        CustomerA.find('orders.total_cost' => '200').size.should == 0
+      end
     end
 
 
     it "should find customer who has a friends of age 30, setting relationship first and then age" do
-      c1 = CustomerA.new
-      c2 = CustomerA.new
-      c3 = CustomerA.new
-  
-      c1.friends << c2
-      c2.friends << c3
-      c3.friends << c1
-  
-      c1.age = 29
-      c2.age = 30
-      c3.age = 31
-  
-      res = CustomerA.find('friends.age' => 30)
-      res.size.should == 2
-      res.should include(c1, c3)
+      c1 = c2 = c3 = nil
+      Neo4j::Transaction.run do
+        c1 = CustomerA.new
+        c2 = CustomerA.new
+        c3 = CustomerA.new
+
+        c1.friends << c2
+        c2.friends << c3
+        c3.friends << c1
+
+        c1.age = 29
+        c2.age = 30
+        c3.age = 31
+      end
+
+      Neo4j::Transaction.run do
+        res = CustomerA.find('friends.age' => 30)
+        res.size.should == 2
+        res.should include(c1, c3)
+      end
     end
-  
-  
+
+
     it "should find customer who has a friend with age 30, setting age first and then relationship" do
-      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
-      c2 = CustomerA.new  {|n| n.name = 'c2'; n.age = 30}
-      c3 = CustomerA.new  {|n| n.name = 'c3'; n.age = 31}
-  
-      c1.friends << c2
-      c2.friends << c3
-      c3.friends << c1
-  
-      res = CustomerA.find('friends.age' => 30)
-      res.size.should == 2
-      res.should include(c1, c3)
+      c1 = c2 = c3 = nil
+      
+      Neo4j::Transaction.run do
+        c1 = CustomerA.new('c1', 29)
+        c2 = CustomerA.new('c2', 30)
+        c3 = CustomerA.new('c3', 31)
+
+        c1.friends << c2
+        c2.friends << c3
+        c3.friends << c1
+      end
+
+      Neo4j::Transaction.run do
+        res = CustomerA.find('friends.age' => 30)
+        res.size.should == 2
+        res.should include(c1, c3)
+      end
     end
-  
+
     it "should find all customer of age 30"  do
-      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
-      c2 = CustomerA.new  {|n| n.name = 'c2'; n.age = 30}
-      c3 = CustomerA.new  {|n| n.name = 'c3'; n.age = 30}
-  
-      c = CustomerA.find(:age => 30)
-      c.size.should == 2
-      c.should include(c2, c3)
+      c1 = c2 = c3 = nil
+      Neo4j::Transaction.run do
+        c1 = CustomerA.new('c1', 29)
+        c2 = CustomerA.new('c2', 30)
+        c3 = CustomerA.new('c3', 30)
+      end
+
+      Neo4j::Transaction.run do
+        c = CustomerA.find(:age => 30)
+        c.size.should == 2
+        c.should include(c2, c3)
+      end
     end
-  
-  
-  
+
+
+
     it "should not find a customer by name if the name has changed"  do
-      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
-  
-      c = CustomerA.find(:name => 'c1')
-      c.size.should == 1
-      c.should include(c1)
-  
+      c1 = Neo4j::Transaction.run do
+        CustomerA.new('c1', 29)
+      end
+
+      Neo4j::Transaction.run do
+        c = CustomerA.find(:name => 'c1')
+        c.size.should == 1
+        c.should include(c1)
+      end
+
+
       # when
-      c1.name = 'c2'
-  
+      Neo4j::Transaction.run do
+        c1.name = 'c2'
+      end
+
+
       # then
-      c = CustomerA.find(:name => 'c1')
-      c.size.should == 0
+      Neo4j::Transaction.run do
+        c = CustomerA.find(:name => 'c1')
+        c.size.should == 0
+      end
+
     end
-  
+
     it "should find a customer by the new name if the name has changed"  do
-      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
-  
-      c = CustomerA.find(:name => 'c1')
-      c.size.should == 1
-      c.should include(c1)
-  
+      c1 = Neo4j::Transaction.run do
+        CustomerA.new('c1', 29)
+      end
+
+      c = Neo4j::Transaction.run do
+        c = CustomerA.find(:name => 'c1')
+        c.size.should == 1
+        c.should include(c1)
+        c
+      end
+
+
       # when
-      c1.name = 'c2'
-  
+      Neo4j::Transaction.run do
+        c1.name = 'c2'
+      end
+
       # then
-      c = CustomerA.find(:name => 'c2')
-      c.size.should == 1
-      c.should include(c1)
+      Neo4j::Transaction.run do
+        c = CustomerA.find(:name => 'c2')
+        c.size.should == 1
+        c.should include(c1)
+      end
     end
-  
-  
-  
+
+
+
     it "should not find any customer if they all have been deleted"  do
-      c1 = CustomerA.new  {|n| n.name = 'c1'; n.age = 29}
-      c = CustomerA.find(:age => 29)
-      c.size.should == 1
-      c1.delete
-      c = CustomerA.find(:age => 29)
-      c.size.should == 0
+      c1 = Neo4j::Transaction.run do
+        CustomerA.new('c1', 29)
+      end
+
+      Neo4j::Transaction.run do
+        c = CustomerA.find(:age => 29)
+        c.size.should == 1
+      end
+
+      Neo4j::Transaction.run do
+        c1.delete
+      end
+
+      Neo4j::Transaction.run do
+        c = CustomerA.find(:age => 29)
+        c.size.should == 0
+      end
+
     end
-  
+
   end
 
 end

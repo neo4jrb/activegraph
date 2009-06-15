@@ -91,7 +91,7 @@ module Neo4j
     @event_handler ||= EventHandler.new
   end
 
-  
+
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files
@@ -100,6 +100,8 @@ module Neo4j
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
   class Neo
+
+    extend Neo4j::TransactionalMixin
 
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
@@ -114,7 +116,6 @@ module Neo4j
         Neo4j.event_handler.neo_started(self)
       end
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
-
     end
 
     #
@@ -139,10 +140,8 @@ module Neo4j
     # 
     def find_node(id)
       begin
-        Transaction.run do
-          neo_node = @neo.getNodeById(id)
-          load_node(neo_node)
-        end
+        neo_node = @neo.getNodeById(id)
+        load_node(neo_node)
       rescue org.neo4j.api.core.NotFoundException
         nil
       end
@@ -194,6 +193,7 @@ module Neo4j
       @neo.getConfig().getTxModule().getTxManager()
     end
 
+    transactional :find_node
 
   end
 end

@@ -75,12 +75,23 @@ a social network, a relationship type could be KNOWS. If a relationship of the t
 that probably represents two people that know each other. A lot of the semantics, the meaning, of a node space
 is encoded in the relationship types of the application. 
 
+=== Creating Nodes
+
 Example of creating a neo4j node:
 
   require "rubygems"
   require 'neo4j'
 
-  node = Neo4j::Node.new
+  Neo4j::Transaction.run do
+    node = Neo4j::Node.new
+  end
+
+=== Transactions
+
+Almost all Neo4j operation must be wrapped in a transaction as shown above.
+In the following examples we assume that the operations are inside an Neo4j transaction.
+
+=== Setting Properties
 
 Example of setting properties
 
@@ -90,16 +101,20 @@ Example of setting properties
   node[:hungry] = false
   node[4] = 3.14
 
+=== Getting Properties
 Example of getting properties
 
   node[:name] # => 'foo'
 
+
+=== Creating Relationships
 Example of creating a relationship
 
   node1 = Neo4j::Node.new
   node2 = Neo4j::Node.new
   node1.relationships.outgoing(:friends) << node2  # connects node1 to node2 with relationship type 'friends'
 
+=== Accessing Relationships
 Example of getting relationships
 
   node1.relationships.empty? # => false
@@ -113,12 +128,14 @@ Example of getting relationships
   node1.relationships.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
   node2.relationships.incoming(:friends).first # => a relationship object between node1 and node2
 
+=== Properties on Relationships
 Example of setting properties on relationships
 
   rel = node1.relationships(:friends).first
   rel[:since] = 1982
   node1.relationships.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
 
+=== The Node and NodeMixin
 Here is the complete implemenation of the Neo4j::Node class
 
   module Neo4j
@@ -624,10 +641,7 @@ Example of how declare a class that has this behaviour:
 
 === Create a Node
 
-If a block is provided then the creation of the instance will be performed in an
-transaction, see below for more information on transactions.
-
-  node = MyNode.new { }
+  node = MyNode.new
 
 === Delete a Node
 

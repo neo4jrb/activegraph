@@ -15,8 +15,7 @@ module Neo4j
     # 
     # :api: public
     def initialize(*args)
-      Transaction.run {init_with_rel(args[0])} unless Transaction.running?
-      init_with_rel(args[0])                   if Transaction.running?
+      init_with_rel(args[0])
 
       # must call super with no arguments so that chaining of initialize method will work
       super()
@@ -117,7 +116,7 @@ module Neo4j
       @internal_r.getId()
     end
 
-    transactional :property?, :set_property, :get_property, :delete
+    transactional :initialize, :property?, :set_property, :get_property, :delete
 
     #
     # Adds classmethods in the ClassMethods module

@@ -15,8 +15,8 @@ end
 
 describe 'ValueObjects' do
 
-  before(:all) { start }
-  after(:all) { stop }
+  before(:all) { start; Neo4j::Transaction.new }
+  after(:all) { stop; Neo4j::Transaction.finish }
 
 
   it "should value object created with new param should be anew record" do

@@ -6,13 +6,17 @@ require 'neo4j/spec_helper'
 
 describe "Readme Examples" do
 
-  #before(:all) do
-  #  stop
-  #end
-
   # Called after each example.
-  after(:all) do
-    stop
+  before(:all) do
+    start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
 
   it "should run: Example of setting properties" do
@@ -25,7 +29,7 @@ describe "Readme Examples" do
   it "should run: Example of getting properties" do
     node = Neo4j::Node.new
     node[:name] = 'foo'
-    node[:name].should == 'foo'  
+    node[:name].should == 'foo'
   end
 
   it "should run: Example of creating a relationship" do
@@ -38,7 +42,7 @@ describe "Readme Examples" do
     node1 = Neo4j::Node.new
     node2 = Neo4j::Node.new
     node1.relationships.outgoing(:friends) << node2
-    
+
     node1.relationships.nodes.include?(node2).should be_true # => true - it implements enumerable and other methods
     node1.relationships.empty?.should be_false # => false
     node1.relationships.first.should_not be_nil # => the first relationship this node1 has which is between node1 and node2

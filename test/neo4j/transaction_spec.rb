@@ -32,15 +32,20 @@ end
 #end
 
 describe "transaction rollback" do
-  before(:all) do start end
-  after(:all)  do stop  end
+  before(:all) do
+    start
+  end
+  after(:all)  do
+    stop
+  end
 
   it "should not change properties" do
-    node = Neo4j::Transaction.run { BaseNode.new {|n| n.foo = 'foo'} }
+    node = Neo4j::Transaction.run { b = BaseNode.new; b.foo = 'foo'; b }
 
     # when doing a rollback
     Neo4j::Transaction.run { |t|
       node.foo = "changed"
+      node.foo.should  == "changed"
       t.failure
     }
 
@@ -65,10 +70,12 @@ describe "When neo has been restarted" do
 
 
     it "should load node using its id" do
-      node = BaseNode.new {|n|
-        n.baaz = "hello"
+      node = nil
+      Neo4j::Transaction.run {
+        node = BaseNode.new
+        node.baaz =  "hello"
       }
-
+      
       Neo4j.stop
       Neo4j.start
 

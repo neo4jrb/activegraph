@@ -3,20 +3,70 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
-require 'extensions/reindexer'
+require 'neo4j/extensions/reindexer'
+
+
+
+class ReindexerTestNode
+  include Neo4j::NodeMixin
+  property :name, :age
+end
+
+class ReindexerTestNode2
+  include Neo4j::NodeMixin
+end
 
 describe "Reindexer (NodeMixin#all)" do
 
   before(:each)  do
     start
+    Neo4j.load_reindexer
+    Neo4j::Transaction.new
+
     Neo4j::IndexNode.instance.relationships.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
     undefine_class :TestNode  # must undefine this since each spec defines it
   end
 
   after(:each) do
+    Neo4j::Transaction.finish
     stop
   end
 
+  before(:all) do
+    Neo4j.event_handler.add(Neo4j::IndexNode) # incase it has been disabled by an RSpec
+  end
+  
+  after(:all) do
+    Neo4j.event_handler.remove(Neo4j::IndexNode) # avoid side effects on using this extension
+  end
+  
+
+  it "has a reference to a created node" do
+    #should only have a reference to the reference node
+    n = ReindexerTestNode.new
+    n.name = 'hoj'
+
+    # then
+    Neo4j::IndexNode.instance.relationships.nodes.should include(n)
+    Neo4j::IndexNode.instance.relationships.to_a.size.should == 1
+  end
+
+  it "has a reference to all created nodes" do
+    Neo4j::IndexNode.instance.relationships.outgoing.to_a.should be_empty
+    node1 = ReindexerTestNode.new
+    node2 = ReindexerTestNode2.new
+    node3 = ReindexerTestNode2.new
+
+    # then
+    Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode).nodes.should include(node1)
+    Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode2).nodes.should include(node2, node3)
+    Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode).nodes.to_a.size.should == 1
+    Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode2).nodes.to_a.size.should == 2
+
+    ReindexerTestNode.all.nodes.to_a.size.should == 1
+    ReindexerTestNode2.all.nodes.to_a.size.should == 2
+  end
+  
   it "should return all node instances" do
     class TestNode
       include Neo4j::NodeMixin

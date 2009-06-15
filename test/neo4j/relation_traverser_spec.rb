@@ -12,9 +12,15 @@ describe "RelationshipTraverser" do
     start
   end
 
-  after(:all) do
-    stop
-  end  
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
 
   
   
@@ -73,6 +79,7 @@ describe "RelationshipTraverser" do
       
       # then
       outgoing.size.should == 1
+      outgoing[0].should_not be_nil
       outgoing[0].end_node.should == t2
       outgoing[0].start_node.should == t1
     end
@@ -87,9 +94,9 @@ describe "RelationshipTraverser" do
       outgoing = t2.relationships.incoming.to_a
 
       # then
-      outgoing.size.should == 2 # 2 since we also have a relationship to ref node
-      outgoing[1].end_node.should == t2
-      outgoing[1].start_node.should == t1
+      outgoing.size.should == 1
+      outgoing[0].end_node.should == t2
+      outgoing[0].start_node.should == t1
     end
 
     it "should find no incoming or outgoing nodes when there are none" do
@@ -98,7 +105,7 @@ describe "RelationshipTraverser" do
       t2 = TestNode.new
 
       # when and then
-      t2.relationships.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
+      t2.relationships.incoming.to_a.size.should == 0 
       t2.relationships.outgoing.to_a.size.should == 0
     end
 
@@ -109,7 +116,7 @@ describe "RelationshipTraverser" do
       t1.friends << t2
 
       # when and then
-      t1.relationships.incoming.to_a.size.should == 1 # since we also have a relationship to ref node
+      t1.relationships.incoming.to_a.size.should == 0
       t2.relationships.outgoing.to_a.size.should == 0
     end
 
@@ -139,7 +146,7 @@ describe "RelationshipTraverser" do
       t1.relationships.both.outgoing.nodes.to_a.should include(t2,t3)
       t2.relationships.both.incoming.nodes.to_a.should include(t1)
       t3.relationships.both.incoming.nodes.to_a.should include(t1)
-      t1.relationships.both.nodes.to_a.size.should == 3 # since we also have a relationship to ref node
+      t1.relationships.both.nodes.to_a.size.should == 2
     end
     
     it "should find incoming nodes of a specific type" do

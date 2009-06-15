@@ -12,28 +12,32 @@ describe "NodeTraverser" do
     start
   end
 
-  after(:all) do
-    stop
-  end  
+  before(:each) do
+    Neo4j::Transaction.new
+  end
 
-  
-  
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+
+
   # ----------------------------------------------------------------------------
   #  traversing outgoing and incoming nodes
   #
-  
+
   describe 'traversing outgoing and incoming nodes' do
     before(:all) do
       undefine_class :TestNode  # make sure it is not already defined
-      
-      class TestNode 
+
+      class TestNode
         include Neo4j::NodeMixin
         has_n :friends
         has_n :parents
         property :name
       end
-    end    
-    
+    end
+
     it "should find all outgoing nodes" do
       # given
       t1 = TestNode.new
@@ -42,12 +46,12 @@ describe "NodeTraverser" do
 
       # when
       outgoing = t1.traverse.outgoing(:friends).to_a
-      
+
       # then
       outgoing.size.should == 1
       outgoing[0].should == t2
     end
-    
+
     it "should find all incoming nodes" do
       # given
       t1 = TestNode.new
@@ -100,29 +104,29 @@ describe "NodeTraverser" do
       t1 = TestNode.new
       t2 = TestNode.new
       t3 = TestNode.new
-            
+
       t1.friends << t2
       t1.friends << t3
 
       # when and then
-      t1.traverse.both(:friends).to_a.should include(t2,t3)
-      t1.traverse.outgoing(:friends).to_a.should include(t2,t3)
+      t1.traverse.both(:friends).to_a.should include(t2, t3)
+      t1.traverse.outgoing(:friends).to_a.should include(t2, t3)
       t2.traverse.incoming(:friends).to_a.should include(t1)
       t3.traverse.incoming(:friends).to_a.should include(t1)
       t1.traverse.both(:friends).to_a.size.should == 2
     end
-    
+
     it "should find incoming nodes of a specific type" do
       # given
       t1 = TestNode.new
       t2 = TestNode.new
       t3 = TestNode.new
-            
+
       t1.friends << t2
       t1.friends << t3
 
       # when and then
-      t1.traverse.outgoing(:friends).to_a.should include(t2,t3)
+      t1.traverse.outgoing(:friends).to_a.should include(t2, t3)
       t2.traverse.incoming(:friends).to_a.should include(t1)
       t3.traverse.incoming(:friends).to_a.should include(t1)
     end
@@ -162,7 +166,7 @@ describe "NodeTraverser" do
       # when and then
       t_outgoing = t.traverse.outgoing(:friends).depth(:all).to_a
       t_outgoing.size.should == 5
-      t_outgoing.should include(t1,t11, t111,t12,t2)
+      t_outgoing.should include(t1, t11, t111, t12, t2)
     end
 
     it "should find incoming nodes of depth 2" do
@@ -186,9 +190,12 @@ describe "NodeTraverser" do
 
     it "should find outgoing nodes using a filter function that will be evaluated in the context of the current node" do
       # given
-      a = TestNode.new {|n| n.name = 'a'}
-      b = TestNode.new {|n| n.name = 'b'}
-      c = TestNode.new {|n| n.name = 'c'}
+      a = TestNode.new
+      b = TestNode.new
+      c = TestNode.new
+      a.name = "a"
+      b.name = "b"
+      c.name = "c"
       a.friends << b << c
 
       # when
@@ -217,13 +224,19 @@ describe "NodeTraverser" do
         property :name
       end
 
-      # given
-      @a = TestNode.new {|n| n.name = 'a'}
-      @b = TestNode.new {|n| n.name = 'b'}
-      @c = TestNode.new {|n| n.name = 'c'}
-      @p = TestNode.new {|n| n.name = 'p'}
-      @a.friends << @b << @c
-      @a.parents << @p
+      Neo4j::Transaction.run do
+        # given
+        @a = TestNode.new
+        @b = TestNode.new
+        @c = TestNode.new
+        @p = TestNode.new
+        @a.name = 'a'
+        @b.name = 'b'
+        @c.name = 'c'
+        @p.name = 'p'
+        @a.friends << @b << @c
+        @a.parents << @p
+      end
     end
 
     it "should work with the TraversalPosition#current_node parameter" do
@@ -241,7 +254,7 @@ describe "NodeTraverser" do
 
       # then
       result.size.should == 2
-      result.should include(@b,@c)
+      result.should include(@b, @c)
     end
 
     it "should work with the TraversalPosition#last_relationship_traversed parameter" do
@@ -310,22 +323,25 @@ describe "NodeTraverser" do
 
       end
 
-      @europe = Location.create 'europe'
-      @sweden = Location.create 'sweden'
-      @denmark = Location.create 'denmark'
-      @malmoe = Location.create 'malmoe'
-      @stockholm = Location.create 'stockholm'
-      @europe.contains << @sweden << @denmark
-      @sweden.contains << @malmoe << @stockholm
+      Neo4j::Transaction.run do
+        @europe = Location.create 'europe'
+        @sweden = Location.create 'sweden'
+        @denmark = Location.create 'denmark'
+        @malmoe = Location.create 'malmoe'
+        @stockholm = Location.create 'stockholm'
+        @europe.contains << @sweden << @denmark
+        @sweden.contains << @malmoe << @stockholm
 
-      @sweden_trip = Trip.create 'See all of sweden in 14 days'
-      @city_tour = Trip.create 'The city tour specialist'
-      @malmoe_trip = Trip.create 'Malmoe city sightseeing by boat'
+        @sweden_trip = Trip.create 'See all of sweden in 14 days'
+        @city_tour = Trip.create 'The city tour specialist'
+        @malmoe_trip = Trip.create 'Malmoe city sightseeing by boat'
 
-      @sweden.trips << @sweden_trip
-      @malmoe.trips << @malmoe_trip
-      @malmoe.trips << @city_tour
-      @stockholm.trips << @city_tour # the same city tour is available both in malmoe and stockholm
+        @sweden.trips << @sweden_trip
+        @malmoe.trips << @malmoe_trip
+        @malmoe.trips << @city_tour
+        @stockholm.trips << @city_tour # the same city tour is available both in malmoe and stockholm
+      end
+
     end
 
     it "should raise an exception if no type of direction is specified for the traversal" do
@@ -370,5 +386,5 @@ describe "NodeTraverser" do
     end
 
   end
-  
+
 end

@@ -20,7 +20,6 @@ module Neo4j
 
     # Initialize the the neo node for this instance.
     # Will create a new transaction if one is not already running.
-    # If a block is given a new transaction will be created.
     # 
     # Does
     # * sets the neo property 'classname' to self.class.to_s
@@ -29,13 +28,11 @@ module Neo4j
     # :api: public
     def initialize(*args)
       # was a neo java node provided ?
-      Transaction.run do
-        if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
-          init_with_node(args[0])
-        else
-          init_without_node
-          yield self if block_given?
-        end
+      if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
+        init_with_node(args[0])
+      else
+        init_without_node
+        init_node(*args) if self.respond_to?(:init_node)
       end
       # must call super with no arguments so that chaining of initialize method will work
       super()
@@ -80,7 +77,7 @@ module Neo4j
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}
       old_value = get_property(name)
-      
+
       if value.nil?
         remove_property(name)
       elsif self.class.marshal?(name)
@@ -290,7 +287,6 @@ module Neo4j
     end
 
 
-
     # Check if the given relationship exists
     # Returns true if there are one or more relationships from this node to other nodes
     # with the given relationship.
@@ -347,7 +343,7 @@ module Neo4j
     end
 
 
-    transactional :property?, :set_property, :get_property, :remove_property, :delete
+    transactional :initialize, :property?, :set_property, :get_property, :remove_property, :delete
 
 
     #
@@ -564,7 +560,6 @@ module Neo4j
       end
 
 
-
       # :api: private
       def index_property(prop)
         indexer.add_index_on_property(prop)
@@ -635,7 +630,6 @@ module Neo4j
                     end},  __FILE__, __LINE__)
         relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
-
 
 
       # Creates a new outgoing relationship.

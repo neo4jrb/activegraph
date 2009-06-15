@@ -6,6 +6,7 @@ module Neo4j
   module TransactionalMixin
   
     def transactional(*methods)
+      return
 #      return unless (Neo4j::Config[:auto_tx])
       methods.each do |name|
         orig_name = (name.to_s == '<<') ? '_append' : "_original_#{name}"
