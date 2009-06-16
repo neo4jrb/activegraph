@@ -57,6 +57,7 @@ module Neo4j
 
     def undo_tx
       tx_node = tx_nodes.first
+      return if (tx_node.nil?)
       tracked_node_id = tx_node[:tracked_node_id]
 
       if (tx_node[:created])

@@ -16,7 +16,6 @@ module Neo4j
       #
       # :api: public
       def <<(other)
-        Neo4j::Transaction.run do
           # does node have a relationship ?
           if (@node.relationship?(@type))
             # get that relationship
@@ -31,35 +30,28 @@ module Neo4j
             # the first node will be set
             @node.relationships.outgoing(@type) << other
           end
-        end
       end
 
       # Returns true if the list is empty
       #
       # :api: public
       def empty?
-        Transaction.run do 
           !iterator.hasNext
-        end
       end
 
       def first
-        Transaction.run do
           iter = iterator
           return nil unless iter.hasNext
           n = iter.next
           Neo4j.load(n.get_id)
-        end
       end
 
       def each
-        Neo4j::Transaction.run do
           iter = iterator
           while (iter.hasNext) do
             n = iter.next
             yield Neo4j.load(n.get_id)
           end
-        end
       end
       def iterator
         stop_evaluator = org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
@@ -70,8 +62,9 @@ module Neo4j
         types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
         @node.internal_node.traverse(traverser_order, stop_evaluator,  returnable_evaluator, types_and_dirs.to_java(:object)).iterator
       end
+      
+      transactional :empty?, :<<
     end
-
 
 
   end

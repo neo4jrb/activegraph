@@ -52,7 +52,7 @@ end
 describe "Neo4j & Lucene Transaction Synchronization:" do
   before(:all) do
     start
-     Neo4j.load_reindexer
+    Neo4j.load_reindexer
     undefine_class :TestNode
     class TestNode
       include Neo4j::NodeMixin
@@ -127,7 +127,7 @@ end
 describe "A node with no lucene index" do
   before(:all) do
     start
-     Neo4j.load_reindexer
+    Neo4j.load_reindexer
     class TestNodeWithNoIndex
       include Neo4j::NodeMixin
     end
@@ -148,7 +148,7 @@ end
 describe "Find with sorting" do
   before(:all) do
     start
-     Neo4j.load_reindexer
+    Neo4j.load_reindexer
     undefine_class :Person7
     class Person7
       include Neo4j::NodeMixin
@@ -198,7 +198,7 @@ end
 describe "Find Nodes using Lucene and tokenized index" do
   before(:all) do
     start
-     Neo4j.load_reindexer
+    Neo4j.load_reindexer
     undefine_class :Person
     class Person
       include Neo4j::NodeMixin
@@ -276,7 +276,7 @@ end
 describe "Find nodes using Lucene" do
   before(:all) do
     start
-     Neo4j.load_reindexer
+    Neo4j.load_reindexer
     class TestNode
       include Neo4j::NodeMixin
       property :name, :age, :male, :height
@@ -370,8 +370,10 @@ describe "Find nodes using Lucene" do
     found.size.should == 1
 
     # when
-    TestNode.remove_index(:name)
-    TestNode.update_index
+    Neo4j::Transaction.run do
+      TestNode.remove_index(:name)
+      TestNode.update_index
+    end
 
     # then
     found = TestNode.find(:name => 'foo2')
@@ -382,7 +384,7 @@ describe "Find nodes using Lucene" do
     before(:each) do
       undefine_class :PersonNode
       start
-       Neo4j.load_reindexer
+      Neo4j.load_reindexer
       class PersonNode
         include Neo4j::NodeMixin
         property :name
@@ -416,7 +418,7 @@ describe "Find nodes using Lucene" do
     before(:each) do
       undefine_class :PersonNode
       start
-       Neo4j.load_reindexer
+      Neo4j.load_reindexer
       class PersonNode
         include Neo4j::NodeMixin
         property :name
