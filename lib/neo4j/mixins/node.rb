@@ -79,6 +79,7 @@ module Neo4j
     # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}      
+      return if name.to_s == 'id' # id is neo_node_id and cannot be changed
 
       if value.nil?
         remove_property(name)
@@ -223,7 +224,7 @@ module Neo4j
     #
     # :api: public
     def props
-      ret = {}
+      ret = {"id" => neo_node_id}
       iter = @internal_node.getPropertyKeys.iterator
       while (iter.hasNext) do
         key = iter.next
