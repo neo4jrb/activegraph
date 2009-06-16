@@ -122,10 +122,22 @@ module RestMixin
     end
 
     Sinatra::Application.get("/nodes/#{classname}/:id") do
+      Neo4j::Transaction.run {
+        content_type :json
+        node = Neo4j.load(params[:id])
+        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        node.props.to_json
+      }
+    end
+
+    Sinatra::Application.put("/nodes/#{classname}/:id") do
       content_type :json
+      body = request.body.read
+      data = JSON.parse(body)
       node = Neo4j.load(params[:id])
-      return 404, "Can't find node with id #{params[:id]}" if node.nil?
-      node.props.to_json
+      node.update(data)
+      response = node.props.to_json
+      response
     end
 
     Sinatra::Application.post("/nodes/#{classname}") do
@@ -133,6 +145,11 @@ module RestMixin
       data = JSON.parse(request.body.read)
       p.update(data)
       redirect "/nodes/#{classname}/#{p.neo_node_id.to_s}", 201 # created
+    end
+
+    Sinatra::Application.get("/nodes/#{classname}") do
+      content_type :json
+      c.all.map{|rel| rel.end_node.props}.to_json
     end
   end
 end
