@@ -34,7 +34,7 @@ module RestMixin
   Sinatra::Application.get("/relations/:id") do
     content_type :json
     Neo4j::Transaction.run do
-      rel = Neo4j.load_relationship(params[:id])
+      rel = Neo4j.load_relationship(params[:id].to_i)
       return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
       rel.props.to_json
     end
