@@ -70,8 +70,7 @@ module Neo4j
         from, to = @node, other
         from, to = to, from unless @info[:outgoing]
 
-        r = from.internal_node.createRelationshipTo(to.internal_node, @type)
-        from.class.relationships_info[@type.name.to_sym][:relationship].new(r)
+        from._create_relationship(@type.name, to)
       end
 
 
@@ -97,9 +96,7 @@ module Neo4j
       def <<(other)
         from, to = @node, other
         from, to = to, from unless @info[:outgoing]
-        r = from.internal_node.createRelationshipTo(to.internal_node, @type)
-        from.class.new_relationship(@type.name, r)
-        from.class.indexer.on_relationship_created(from, @type.name)
+        relationship = from._create_relationship(@type.name, to)
         self
       end
 

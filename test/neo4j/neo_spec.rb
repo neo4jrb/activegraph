@@ -79,4 +79,25 @@ describe Neo4j::Neo do
     end
   end
 
+
+  it "should find a given relationship by id" do
+    Neo4j::Transaction.run do
+      n1 = Neo4j::Node.new
+      n2 = Neo4j::Node.new
+      rel = n1.relationships.outgoing(:foo) << n2
+
+      r = Neo4j.load_relationship(rel.neo_relationship_id)
+
+      rel.should == r
+    end
+  end
+
+
+  it "should not find a given relationship by id that does not exist" do
+    Neo4j::Transaction.run do
+      n = Neo4j.load_relationship(101241)
+      n.should be_nil
+    end
+  end
+
 end

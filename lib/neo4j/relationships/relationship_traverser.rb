@@ -9,8 +9,9 @@ module Neo4j
 
       attr_reader :internal_node
 
-      def initialize(internal_node)
-        @internal_node = internal_node
+      def initialize(node)
+        @node = node
+        @internal_node = node.internal_node
         @direction = org.neo4j.api.core.Direction::OUTGOING
       end
 
@@ -50,9 +51,7 @@ module Neo4j
       #
       # :api: public
       def <<(other_node)
-        type = Relationships::RelationshipType.instance(@type.to_s)
-        rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
-        Neo4j.instance.load_relationship(rel)
+        @node._create_relationship(@type.to_s, other_node)
       end
 
       def empty?
