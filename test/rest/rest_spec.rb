@@ -170,6 +170,35 @@ END_OF_STRING
     status.should == 404
   end
 
+  it "should be possible to set all properties on PUT nodes/Person/<node_id>" do
+    # given
+    p = Person.new
+    p.name = 'sune123'
+
+    # when
+    data = {:name => 'blah', :dynamic_property => 'cool stuff'}
+    put "/nodes/Person/#{p.neo_node_id}", data.to_json
+
+    # then
+    status.should == 200
+    p.name.should == 'blah'
+    p.props['dynamic_property'].should == 'cool stuff'
+  end
+
+  it "should be possible to delete a node on DELETE nodes/Person/<node_id>" do
+    # given
+    p = Person.new
+    p.name = 'asdf'
+    id = p.neo_node_id
+
+    # when
+    delete "/nodes/Person/#{id}"
+
+    # then
+    status.should == 200
+    Neo4j.load(id).should be_nil
+  end
+
   it "should be possible to get a property on GET nodes/Person/<node_id>/<property_name>" do
     # given
     p = Person.new
@@ -197,5 +226,4 @@ END_OF_STRING
     status.should == 200
     p.name.should == 'new-name'
   end
-
 end

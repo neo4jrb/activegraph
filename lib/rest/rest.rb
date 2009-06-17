@@ -140,6 +140,13 @@ module RestMixin
       response
     end
 
+    Sinatra::Application.delete("/nodes/#{classname}/:id") do
+      node = Neo4j.load(params[:id])
+      return 404, "Can't find node with id #{params[:id]}" if node.nil?
+      node.delete
+      ""
+    end
+
     Sinatra::Application.post("/nodes/#{classname}") do
       p = c.new
       data = JSON.parse(request.body.read)
@@ -149,7 +156,15 @@ module RestMixin
 
     Sinatra::Application.get("/nodes/#{classname}") do
       content_type :json
-      c.all.map{|rel| rel.end_node.props}.to_json
+      Neo4j::Transaction.run {
+        resources = if params[:search].nil?
+          c.all.map{|rel| rel.end_node}
+        else
+          puts "Search string: #{params[:search]}"
+          c.find(params[:search])
+        end
+        resources.map{|res| res.props}.to_json
+      }
     end
   end
 end
