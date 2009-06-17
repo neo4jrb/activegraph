@@ -241,7 +241,17 @@ describe "Neo4j::Node#delete"  do
     Neo4j::Transaction.finish
   end
 
-  
+  it "should remove the node from the database" do
+    # given
+    node = Neo4j::Node.new
+    id = node.neo_node_id
+    
+    # when
+    node.delete
+    
+    # then
+    Neo4j.load(id).should == nil
+  end
 
   it "should delete all relationships as well" do
     # given
