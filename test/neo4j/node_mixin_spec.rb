@@ -157,6 +157,7 @@ describe 'NodeMixin#update' do
     t.update({:name=>'123', :oj=>'hoj'})
     t.name.should == '123'
     t.age.should == nil
+    t['oj'].should == 'hoj'
   end
 
   it "should be able to update a node by using a hash" do
