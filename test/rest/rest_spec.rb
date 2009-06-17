@@ -96,18 +96,34 @@ END_OF_STRING
   it "should create a relationship on POST /nodes/Person/friends" do
     adam = Person.new
     adam.name = 'adam'
-
     bertil = Person.new
     bertil.name = 'bertil'
-
+    bertil.friends << Person.new
 
     # when
     post "/nodes/Person/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
 
     # then
     status.should == 201
-    response.location.should == "/relations/2"
+    response.location.should == "/relations/1" # starts counting from 0
     adam.friends.should include(bertil)
+  end
+
+  it "should list related nodes on GET /nodes/Person/friends" do
+    adam = Person.new
+    adam.name = 'adam'
+    bertil = Person.new
+    bertil.name = 'bertil'
+    adam.friends << bertil
+
+    # when
+    get "/nodes/Person/#{adam.neo_node_id}/friends"
+
+    # then
+    status.should == 200
+    body = JSON.parse(response.body)
+    body.size.should == 1
+    body[0]['id'].should == bertil.neo_node_id
   end
 
   it "should be possible to load a relationship on GET /relations/<id>" do
@@ -175,6 +191,7 @@ END_OF_STRING
     # given
     p = Person.new
     p.name = 'sune123'
+    p[:some_property] = 'foo'
 
     # when
     data = {:name => 'blah', :dynamic_property => 'cool stuff'}
@@ -183,6 +200,7 @@ END_OF_STRING
     # then
     status.should == 200
     p.name.should == 'blah'
+    p.props['some_property'].should be_nil
     p.props['dynamic_property'].should == 'cool stuff'
   end
 
