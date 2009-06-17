@@ -277,6 +277,15 @@ describe "Neo4j::Node#props"  do
   after(:all) do
     stop
   end
+  
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+  
 
   it "should only contain id and classname on a node with no properties" do
     t1 = TestNode.new

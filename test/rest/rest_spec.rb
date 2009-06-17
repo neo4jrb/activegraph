@@ -1,7 +1,7 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
-require 'neo4j/auto_tx'
+require 'neo4j'
 require 'spec'
 
 require 'spec/interop/test'
@@ -29,6 +29,7 @@ describe 'Restful' do
 
   before(:each) do
     Neo4j.start
+    Neo4j::Transaction.new
     undefine_class :Person
     class Person
       include Neo4j::NodeMixin
@@ -40,6 +41,7 @@ describe 'Restful' do
   end
 
   after(:each) do
+    Neo4j::Transaction.finish
     Neo4j.stop
     FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
