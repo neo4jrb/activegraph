@@ -32,7 +32,16 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
    after(:each) do
      Neo4j::Transaction.finish
    end
- 
+
+
+  it "should impl. first method" do
+    list = ListNode.new
+    list.relationship?(:items).should be_false
+    node = XNode.new
+    list.items << node
+    list.items.first.should == node
+  end
+
 
   it "should contain items after append one item to a list (#<<)" do
     list = ListNode.new
@@ -52,8 +61,8 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     list.items << b
 
     # check what is connected to what, list -> b -> a
-    list.relationships.outgoing(:items).nodes.first.should == b
-    b.relationships.outgoing(:items).nodes.first.should == a
+    list.relationship(:items, :outgoing).end_node.should == b
+    b.relationship(:items, :outgoing).end_node.should == a
   end
 
   it "should be empty when its empty (#empty?)" do

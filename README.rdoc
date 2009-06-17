@@ -224,7 +224,8 @@ A relationship can be added at any time on any node.
 
 Example:
 
-  person.add_relationship(other_node, 'best_friend')
+  person.relationships.outgoing(:best_friends) << other_node
+  person.relationship(:best_friend).end_node # => other_node (if there is only one relationship of type 'best_friend' on person) 
 
 
 === Finding Nodes and Queries

@@ -31,6 +31,19 @@ module Neo4j
       return @query
     end
     
+
+    # Returns the first item in the search result
+    #
+    # :api: public
+    def first
+      return nil if empty?
+      self[0]
+    end
+
+    def empty?
+      size == 0
+    end
+
     def each
         hits.each do |doc|
           id = doc[:id]

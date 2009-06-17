@@ -7,6 +7,8 @@ module Neo4j
   module RelationshipMixin
     extend TransactionalMixin
 
+     attr_reader :internal_r
+
     # Initialize the Relationship object with specified java org.neo4j.api.core.Relationship object
     # Expects at least one parameter.
     # 
@@ -68,12 +70,14 @@ module Neo4j
     #
     # :api: public
     def delete
+      Neo4j.event_handler.relationship_deleted(self)
       type = @internal_r.getType().name()
       @internal_r.delete
 
       # TODO not sure if we need to do it on both start and end node ...
 #      start_node.class.indexer.on_relationship_deleted(start_node, type) unless start_node.nil?
       end_node.class.indexer.on_relationship_deleted(end_node, type) unless end_node.nil?
+
     end
 
     def set_property(key, value)
@@ -128,10 +132,27 @@ module Neo4j
     end
 
 
+    # Returns the unique relationship id.
+    # Can be used to load it with the Neo4j#load_relationship method
+    #
+    # :api: public
     def neo_relationship_id
       @internal_r.getId()
     end
 
+
+    def eql?(o)
+      o.kind_of?(RelationshipMixin) && o.internal_r == internal_r
+    end
+
+    def ==(o)
+      eql?(o)
+    end
+
+    def hash
+      internal_node.hashCode
+    end
+    
     transactional :initialize, :property?, :set_property, :get_property, :delete
 
     #

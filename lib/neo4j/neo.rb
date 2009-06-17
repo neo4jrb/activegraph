@@ -72,9 +72,9 @@ module Neo4j
   def self.running?
     ! @instance.nil?
   end
-  
-  # Return a Neo node.
-  # 
+
+  # Return a Neo4j node.
+  #
   # ==== Parameters
   # node_id<String, to_i>:: the unique neo id for one node
   # 
@@ -98,6 +98,22 @@ module Neo4j
   def self.load_relationship(rel_id)
     self.instance.find_relationship(rel_id.to_i)
   end
+
+  # Loads a Neo relationship.
+  # If the neo property 'classname' to exist it will use that to create an instance of that class.
+  # Otherwise it will create an instance of Neo4j::Relationships::Relationship that represent 'rel'
+  #
+  # ==== Parameters
+  # rel_id<String, to_i>:: the unique neo id for a relationship
+  #
+  # ==== Returns
+  # The relationship object that mixin the RelationshipMixin or nil
+  #
+  # :api: public
+  def self.load_relationship(rel_id)
+    self.instance.find_relationship(rel_id)
+  end
+
 
   # Returns the reference node, which is a "starting point" in the node space.
   #
@@ -169,7 +185,6 @@ module Neo4j
     end
 
 
-    #
     # Returns a NodeMixin object that has the given id or nil if it does not exist.
     # 
     def find_node(id)
@@ -181,17 +196,17 @@ module Neo4j
       end
     end
 
-    # Loads a Neo relationship
-    # Expects the neo property 'classname' to exist.
-    # That property is used to load the ruby instance
+    # Returns a NodeMixin object that has the given id or nil if it does not exist.
     #
-    # :api: private
     def find_relationship(id)
-      Transaction.run do
-        neo_node = @neo.getRelationshipById(id)
-        load_node(neo_node)
+      begin
+        neo_rel = @neo.getRelationshipById(id)
+        load_relationship(neo_rel)
+      rescue org.neo4j.api.core.NotFoundException
+        nil
       end
     end
+
 
     # Loads a Neo node
     # Expects the neo property 'classname' to exist.
