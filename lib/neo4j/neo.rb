@@ -76,7 +76,7 @@ module Neo4j
   #
   # :api: public
   def self.load_relationship(rel_id)
-    self.instance.find_relationship(rel_id)
+    self.instance.find_relationship(rel_id.to_i)
   end
 
 

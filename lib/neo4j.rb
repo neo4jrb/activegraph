@@ -9,7 +9,6 @@ require 'neo4j/jars'
 # lucene
 require 'lucene'
 
-
 # config
 require 'neo4j/config'
 

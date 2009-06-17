@@ -50,7 +50,6 @@ describe "TxTracker (TxNodeList)" do
     a = Neo4j::Transaction.run {  TxTestNode.new }
 
     tx_node = @tx_node_list.tx_nodes.first
-    puts "FIRST #{tx_node}"
     tx_node[:uuid].should == a[:uuid]
     tx_node[:created].should == true
   end
@@ -106,7 +105,6 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.new
     
     # when
-    puts "LOAD #{id} #{Neo4j.load(id)}"
     Neo4j.load(id.to_i).should be_nil
     Neo4j.undo_tx
 
