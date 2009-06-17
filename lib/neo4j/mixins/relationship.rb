@@ -89,6 +89,22 @@ module Neo4j
       @internal_r.getProperty(key)
     end
 
+    # Returns a hash of all properties.
+    #
+    # ==== Returns
+    # Hash:: property key and property value
+    #
+    # :api: public
+    def props
+      ret = {"id" => neo_relationship_id}
+      iter = @internal_r.getPropertyKeys.iterator
+      while (iter.hasNext) do
+        key = iter.next
+        ret[key] = @internal_r.getProperty(key)
+      end
+      ret
+    end
+
   # Returns the given property
     #
     # :api: public
