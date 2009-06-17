@@ -11,9 +11,14 @@ describe "Neo4j::NodeMixin#has_n " do
     start
   end
 
-  after(:all) do
-    stop
+  before(:each) do
+    Neo4j::Transaction.new
   end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
 
 
   # ----------------------------------------------------------------------------
@@ -76,13 +81,14 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends << t2 << t3
 
       # then t2 should be a friend of t1
-      t1.friends.to_a.should include(t2,t3)
+      t1.friends.to_a.should include(t2, t3)
     end
 
 
     it "should be allowed in subclasses" do
       undefine_class :SubNode  # make sure it is not already defined
-      class SubNode < TestNode; end
+      class SubNode < TestNode;
+      end
       sub = SubNode.new
       t = TestNode.new
       sub.friends << t
@@ -102,35 +108,37 @@ describe "Neo4j::NodeMixin#has_n " do
         has_n(:known_by).from(PersonNode, :friends)
       end
 
-      @n0 = PersonNode.new
-      @n1 = PersonNode.new
-      @n11 = PersonNode.new
-      @n111 = PersonNode.new
-      @n12 = PersonNode.new
-      @n112 = PersonNode.new
-      @n1121 = PersonNode.new
-      @n0.friends << @n1 << @n12
-      @n1.friends << @n11 << @n12
-      @n11.friends << @n111 << @n112
-      @n112.friends << @n1121
+      Neo4j::Transaction.run do
+        @n0 = PersonNode.new
+        @n1 = PersonNode.new
+        @n11 = PersonNode.new
+        @n111 = PersonNode.new
+        @n12 = PersonNode.new
+        @n112 = PersonNode.new
+        @n1121 = PersonNode.new
+        @n0.friends << @n1 << @n12
+        @n1.friends << @n11 << @n12
+        @n11.friends << @n111 << @n112
+        @n112.friends << @n1121
+      end
     end
 
     it "should work with outgoing nodes of depth 2" do
       nodes = @n1.friends.depth(2)
-      nodes.should include(@n11,@n12,@n112)
-      nodes.should_not include(@n0,@n1,@n1121)
+      nodes.should include(@n11, @n12, @n112)
+      nodes.should_not include(@n0, @n1, @n1121)
     end
 
     it "should work with outgoing nodes of depth 3" do
       nodes = @n1.friends.depth(3)
-      nodes.should include(@n11,@n12,@n112, @n1121)
-      nodes.should_not include(@n0,@n1)
+      nodes.should include(@n11, @n12, @n112, @n1121)
+      nodes.should_not include(@n0, @n1)
     end
 
     it "should work with outgoing nodes to the end of graph" do
       nodes = @n1.friends.depth(:all)
-      nodes.should include(@n11,@n12,@n112, @n1121)
-      nodes.should_not include(@n0,@n1)
+      nodes.should include(@n11, @n12, @n112, @n1121)
+      nodes.should_not include(@n0, @n1)
     end
 
     it "should work with incoming nodes of depth 2" do
@@ -153,12 +161,17 @@ describe "Neo4j::NodeMixin#has_n " do
     before(:all) do
       undefine_class :Customer, :Order, :CustOrderRel
 
-      class Customer; end
+      class Customer;
+      end
 
       class Order
         include Neo4j::NodeMixin
         property :date, :order_id
         has_one(:customer).from(Customer, :orders)
+
+        def to_s
+          "Order #{order_id}"
+        end
       end
 
       class CustOrderRel
@@ -231,11 +244,16 @@ describe "Neo4j::NodeMixin#has_n " do
 #      pending "filter not implemented yet, see ticket 17"
       # given
       customer = Customer.new
-      order1 = Order.new{|n| n.order_id = '1'}
-      order2 = Order.new{|n| n.order_id = '2'}
-      order3 = Order.new{|n| n.order_id = '3'}
+      order1 = Order.new
+      order2 = Order.new
+      order3 = Order.new
       customer.orders << order1 << order2 << order3
 
+      order1.order_id = '1'
+      order2.order_id = '2'
+      order3.order_id = '3'
+
+      customer.orders.each {|x| puts x}
       # when
       result = customer.orders{ order_id == '2'}.to_a
 

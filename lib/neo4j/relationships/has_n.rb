@@ -70,9 +70,7 @@ module Neo4j
         from, to = @node, other
         from, to = to, from unless @info[:outgoing]
 
-        r = Neo4j::Transaction.run {
-          from.internal_node.createRelationshipTo(to.internal_node, @type)
-        }
+        r = from.internal_node.createRelationshipTo(to.internal_node, @type)
         from.class.relationships_info[@type.name.to_sym][:relationship].new(r)
       end
 
@@ -106,7 +104,7 @@ module Neo4j
       end
 
 
-      transactional :<<
+      transactional :<<, :new
     end
 
   end

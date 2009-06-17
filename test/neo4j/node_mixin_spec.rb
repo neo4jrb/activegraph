@@ -11,10 +11,17 @@ require 'neo4j/spec_helper'
 #
 
 describe 'NodeMixin#initialize' do
-  before(:each)  do
-    stop
-    undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
+
+  before(:all) do
     start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
 
   it "should accept no arguments"  do
@@ -29,17 +36,22 @@ describe 'NodeMixin#initialize' do
     class TestNode2
       include Neo4j::NodeMixin
       attr_reader :foo
+      property :baaz
 
-      def initialize
+      def initialize(baaz)
+        super
         @foo = "bar"
+        self.baaz = baaz
       end
+
     end
 
     # when
-    n = TestNode2.new
+    n = TestNode2.new('hajhaj')
 
     # then
     n.foo.should == 'bar'
+    n[:baaz].should == 'hajhaj'
   end
 
 
@@ -71,6 +83,18 @@ end
 
 describe 'NodeMixin properties' do
 
+  before(:all) do
+    start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
   it "should behave like a hash" do
     n = Neo4j::Node.new
     n[:a] = 'a'
@@ -100,12 +124,18 @@ describe 'NodeMixin#update' do
       include Neo4j::NodeMixin
       property :name, :age
     end
+
+    start
   end
 
-  after(:all) do
-    stop
+  before(:each) do
+    Neo4j::Transaction.new
   end
-  
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
   it "should be able to update a node from a value obejct" do
     # given
     t = TestNode.new
@@ -146,14 +176,23 @@ end
 
 describe 'NodeMixin#equality (==)' do
 
-  after(:all) do
-    stop
-  end
-  
   before(:all) do
+    start
+    
     NODES = 5
     @nodes = []
-    NODES.times {@nodes << Neo4j::Node.new}
+    Neo4j::Transaction.run do
+      NODES.times { @nodes << Neo4j::Node.new}
+    end
+    
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
 
   it "should be == another node only if it has the same node id" do
@@ -179,9 +218,20 @@ end
 #
 
 describe "Neo4j::Node#delete"  do
-  after(:all) do
-    stop
+  before(:all) do
+    start
   end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+  
+
   it "should delete all relationships as well" do
     # given
     t1 = Neo4j::Node.new

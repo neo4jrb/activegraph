@@ -127,6 +127,10 @@ module Neo4j
       def failure?
         current.failure?
       end
+
+      def finish
+        current.finish if running?
+      end
     end
 
   

@@ -26,9 +26,13 @@ describe "Neo4j::NodeMixin#has_one " do
 
   end
 
-  after(:all) do
-    stop
-  end
+   before(:each) do
+     Neo4j::Transaction.new
+   end
+
+   after(:each) do
+     Neo4j::Transaction.finish
+   end
 
   it "should create a relationship with assignment like node1.rel = node2" do
     # given

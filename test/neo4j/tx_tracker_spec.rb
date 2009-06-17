@@ -3,7 +3,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
-require 'extensions/tx_tracker'
+require 'neo4j/extensions/tx_tracker'
 
 
 class TxTestNode
@@ -16,29 +16,62 @@ class TxTestNode
   end
 end
 
+
+describe "TxTracker (TxNodeList)" do
+  it "should set property 'tx_finished' on the last TxNode that was commited" do
+    stop
+    Neo4j.load_tx_tracker
+    Neo4j.start
+    @tx_node_list = Neo4j::TxNodeList.instance
+
+    Neo4j::Transaction.run do
+      TxTestNode.new.myid = '1'
+      TxTestNode.new.myid = '2'
+      TxTestNode.new.myid = '3'
+    end
+
+    Neo4j::Transaction.run do
+      first = @tx_node_list.tx_nodes.first
+      first[:tx_finished].should == true
+
+      second = @tx_node_list.tx_nodes.to_a[1]
+      second[:tx_finished].should be_nil
+
+      third = @tx_node_list.tx_nodes.to_a[2]
+      third[:tx_finished].should be_nil
+    end
+    stop
+  end
+
+end
+
 describe "TxTracker (TxNodeList)" do
 
 
   before(:all) do
-    Neo4j::Config[:track_tx] = true
+    Neo4j.start
+    Neo4j.load_tx_tracker
+    Neo4j::Transaction.new
+    @tx_node_list = Neo4j::TxNodeList.instance
   end
 
   before(:each) do
-    stop
-    start
-    @tx_node_list = Neo4j::TxNodeList.instance
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
 
   after(:all) do
     stop
-    Neo4j::Config[:track_tx] = false
 
     # it is only this this spec that tests the TxTracker extension - remove it
     Neo4j.event_handler.remove(Neo4j::TxNodeList)
   end
 
+
   it "should have a reference to the TxNodeList" do
-    puts "@tx_node_list= #{@tx_node_list.inspect}"
     @tx_node_list.should_not be_nil
   end
 
@@ -62,22 +95,6 @@ describe "TxTracker (TxNodeList)" do
     tx_node[:created].should == true
   end
 
-
-  it "should set property 'tx_finished' on the last TxNode that was commited" do
-    Neo4j::Transaction.run do
-      TxTestNode.new.myid = '1'
-      TxTestNode.new.myid = '2'
-      TxTestNode.new.myid = '3'
-    end
-    first = @tx_node_list.tx_nodes.first
-    first[:tx_finished].should == true
-
-    second = @tx_node_list.tx_nodes.to_a[1]
-    second[:tx_finished].should be_nil
-
-    third = @tx_node_list.tx_nodes.to_a[2]
-    third[:tx_finished].should be_nil
-  end
 
   it "should set property 'property_changed' when a node property is changed" do
     a = TxTestNode.new
@@ -122,7 +139,9 @@ describe "TxTracker (TxNodeList)" do
     # when
     Neo4j.load(id).should_not be_nil
     Neo4j.undo_tx
+    Neo4j::Transaction.finish
 
+    Neo4j::Transaction.new
     # then
     Neo4j.load(id).should be_nil
   end
@@ -134,11 +153,17 @@ describe "TxTracker (TxNodeList)" do
     Neo4j.load(id).should_not be_nil
 
     a.delete
+    Neo4j::Transaction.finish
+
+    Neo4j::Transaction.new
     Neo4j.load(id).should be_nil
 
     # when
     Neo4j.undo_tx
 
+    Neo4j::Transaction.finish
+
+    Neo4j::Transaction.new
     # then
     Neo4j.load(id).should be_nil
   end

@@ -32,7 +32,6 @@ module Neo4j
     end
     
     def each
-      Transaction.run do
         hits.each do |doc|
           id = doc[:id]
           node = Neo4j.instance.find_node(id.to_i)
@@ -40,15 +39,12 @@ module Neo4j
           raise LuceneIndexOutOfSyncException.new("lucene found node #{id} but it does not exist in neo") if node.nil?
           yield node
         end
-      end
     end
     
     def [](n)
       doc = hits[n]
-      Transaction.run do
         id = doc[:id]
         Neo4j.instance.find_node(id.to_i)
-      end
     end
     
     def sort_by(*fields)

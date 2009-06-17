@@ -22,75 +22,103 @@ describe "Person" do
 
   after(:all) do
     stop
-  end  
-  
+  end
+
   it "should be possible to create a new instance" do
-    person = Person.new
-    result = Neo4j.instance.find_node person.neo_node_id
-    result.should == person
+    person = Neo4j::Transaction.run do
+      Person.new
+    end
+
+    Neo4j::Transaction.run do
+      result = Neo4j.instance.find_node person.neo_node_id
+      result.should == person
+    end
+
   end
 
   it "should find persons who has friends with a specific age" do
-    me = Person.new
-    me.age = 10
-    you = Person.new
-    you.age = 20
+    me = nil
+    Neo4j::Transaction.run do
 
-    me.friends << you
-    
+      me = Person.new
+      me.age = 10
+      you = Person.new
+      you.age = 20
+
+      me.friends << you
+    end
+
     # when
-    res = Person.find('friends.age' => '20')
+    Neo4j::Transaction.run do
+      res = Person.find('friends.age' => '20')
 
-    # then
-    res.size.should == 1
-    res[0].should == me
+      # then
+      res.size.should == 1
+      res[0].should == me
+    end
   end
 
   it "should be possible to find it given its name" do
-    person1 = Person.new
-    person1.name = 'kalle'
-    person2 = Person.new
-    person2.name = "sune"
+    person1 = person2 = nil
+    Neo4j::Transaction.run do
+
+      person1 = Person.new
+      person1.name = 'kalle'
+      person2 = Person.new
+      person2.name = "sune"
+    end
 
     # when
-    result = Person.find(:name => 'kalle')
-    
-    # then
-    result.should include(person1)
-    result.should_not include(person2)
-    result.size.should == 1
+    Neo4j::Transaction.run do
+
+      result = Person.find(:name => 'kalle')
+
+      # then
+      result.should include(person1)
+      result.should_not include(person2)
+      result.size.should == 1
+    end
   end
-  
-  
+
+
   it "should be possible to add a friend" do
-    person1 = Person.new
-    person1.name = 'kalle'
-    
-    person2 = Person.new
-    person2.name = "sune"
-    
-    # when
-    person1.friends << person2
-    
-    # then
-    person1.friends.to_a.should include(person2)
+    person1 = person2 = nil
+    Neo4j::Transaction.run do
+      person1 = Person.new
+      person1.name = 'kalle'
+
+      person2 = Person.new
+      person2.name = "sune"
+
+      # when
+      person1.friends << person2
+    end
+
+
+    Neo4j::Transaction.run do
+      # then
+      person1.friends.to_a.should include(person2)
+    end
   end
 
 
   it "should be possible to remove a friend" do
-    # given
-    person1 = Person.new
-    person1.name = 'kalle'
-    person2 = Person.new
-    person2.name = "sune"
-    person1.friends << person2
+    person1 = person2 = nil
+    Neo4j::Transaction.run do
+      # given
+      person1 = Person.new
+      person1.name = 'kalle'
+      person2 = Person.new
+      person2.name = "sune"
+      person1.friends << person2
 
-    # when
-    person1.relationships[person2].delete
-    
-    # then
-    person1.friends.to_a.should_not include(person2)
+      # when
+      person1.relationships[person2].delete
+
+      # then
+      person1.friends.to_a.should_not include(person2)
+    end
   end
-  
+
 end
 

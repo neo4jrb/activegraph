@@ -27,6 +27,7 @@ It uses two powerful and mature java libraries:
 * Twitter - http://twitter.com/ronge
 * API Yard Documentation - http://neo4j.rubyforge.org/
 * Source repo - git://github.com/andreasronge/neo4j.git
+* Mailing list - https://lists.neo4j.org/mailman/listinfo/user
 
 === Presentation Materials and other URLs
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
@@ -75,12 +76,34 @@ a social network, a relationship type could be KNOWS. If a relationship of the t
 that probably represents two people that know each other. A lot of the semantics, the meaning, of a node space
 is encoded in the relationship types of the application. 
 
+=== Creating Nodes
+
 Example of creating a neo4j node:
 
   require "rubygems"
   require 'neo4j'
 
-  node = Neo4j::Node.new
+  Neo4j::Transaction.run do
+    node = Neo4j::Node.new
+  end
+
+=== Transactions
+
+Almost all Neo4j operation must be wrapped in a transaction as shown above.
+In the following examples we assume that the operations are inside an Neo4j transaction.
+Neo4j.rb supports auto commits without wrapping Neo4j operations in Neo4j::Transactions.
+To enable that require the file 'neo4j/auto_tx' instead of 'neo4j'
+
+Example
+
+  require 'neo4j/auto_tx'
+
+  # no need to wrap operations in Neo4j::Transaction.run do .. end
+  Node.new
+
+This feature should be used for testing and development purpose.
+
+=== Setting Properties
 
 Example of setting properties
 
@@ -90,16 +113,20 @@ Example of setting properties
   node[:hungry] = false
   node[4] = 3.14
 
+=== Getting Properties
 Example of getting properties
 
   node[:name] # => 'foo'
 
+
+=== Creating Relationships
 Example of creating a relationship
 
   node1 = Neo4j::Node.new
   node2 = Neo4j::Node.new
   node1.relationships.outgoing(:friends) << node2  # connects node1 to node2 with relationship type 'friends'
 
+=== Accessing Relationships
 Example of getting relationships
 
   node1.relationships.empty? # => false
@@ -113,12 +140,14 @@ Example of getting relationships
   node1.relationships.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
   node2.relationships.incoming(:friends).first # => a relationship object between node1 and node2
 
+=== Properties on Relationships
 Example of setting properties on relationships
 
   rel = node1.relationships(:friends).first
   rel[:since] = 1982
   node1.relationships.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
 
+=== The Node and NodeMixin
 Here is the complete implemenation of the Neo4j::Node class
 
   module Neo4j
@@ -624,10 +653,7 @@ Example of how declare a class that has this behaviour:
 
 === Create a Node
 
-If a block is provided then the creation of the instance will be performed in an
-transaction, see below for more information on transactions.
-
-  node = MyNode.new { }
+  node = MyNode.new
 
 === Delete a Node
 
@@ -1116,8 +1142,6 @@ Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#trave
 === Transactions
 
 All operations that work with the node space (even read operations) must be wrapped in a transaction.
-Luckly neo4j.rb will automatically create a transaction for those operation that needs it if one is not already provided.
-
 For example all get, set and find operations will start a new transaction if none is already not runnig (for that thread).
 
 If you want to perform a set of operation in a single transaction, use the Neo4j::Transaction.run method:
@@ -1129,21 +1153,8 @@ Example
     node2.bar = "hi"
   }
 
-There is also a TransactionalMixin that lets you declare which method should be wrapped inside a transaction.
-Example:
-
-  class Person
-    include Neo4j::NodeMixin
-    extend Neo4j::TransactionalMixin
-
-    property :name, :age
-
-    def do_stuff
-      # ... no transaction stuff needed to be written here.
-    end
-
-    transactional :do_stuff
-  end
+There is also a auto commit feature available which is enabled by requiring 'neo4j/auto_tx' instead of 'neo4j',
+see the three minutes tutorial above.
 
 ==== Rollback
 
@@ -1181,7 +1192,7 @@ For example to index the proeprties foo and bar
 
 Everytime a node of type SomeNode (or a subclass) is create, deleted or updated the lucene index of will be updated.
 
-=== Updating Lucene Index
+=== Reindexing
 
 Sometimes it's neccessarly to change the index of a class after alot of node instances already have been created.
 To delete an index use the class method 'remove_index'
@@ -1213,6 +1224,10 @@ In order to use the update_index method you must include the reindexer neo4j.rb 
 This extensions will keep a relationship to each created node so that it later can recreate
 the index by traversing those relationships.
 
+=== Updating Lucene Index
+
+The lucene index will be updated after the transaction commits. It is not possible to
+query for something that has been created inside the same transaction as where the query is performed.
                                                                        
 === Quering (using lucene)
 

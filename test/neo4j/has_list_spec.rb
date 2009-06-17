@@ -21,15 +21,18 @@ end
 
 describe "ListNode (Neo4j::NodeMixin#has_list)" do
 
-  # Called before each example.
-  before(:each) do
-    # Do nothing
-  end
+  before(:all) do
+     start
+   end
 
-  # Called after each example.
-  after(:each) do
-    # Do nothing
-  end
+   before(:each) do
+     Neo4j::Transaction.new
+   end
+
+   after(:each) do
+     Neo4j::Transaction.finish
+   end
+ 
 
   it "should contain items after append one item to a list (#<<)" do
     list = ListNode.new

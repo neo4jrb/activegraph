@@ -57,6 +57,7 @@ module Neo4j
 
     def undo_tx
       tx_node = tx_nodes.first
+      return if (tx_node.nil?)
       tracked_node_id = tx_node[:tracked_node_id]
 
       if (tx_node[:created])
@@ -125,9 +126,13 @@ module Neo4j
   end
 
 # Add this so it can add it self as listener
-  Neo4j.event_handler.add_filter(TxNode)
-  Neo4j.event_handler.add_filter(TxNodeCreated)
-  Neo4j.event_handler.add(TxNodeList)
+  def self.load_tx_tracker
+    Neo4j.event_handler.add_filter(TxNode)
+    Neo4j.event_handler.add_filter(TxNodeCreated)
+    Neo4j.event_handler.add(TxNodeList)
+
+    Neo4j::Transaction.run { TxNodeList.on_neo_started(Neo4j.instance) } if Neo4j.running?
+  end
 
 # if neo is already run we have to let txnodelist have a chance to add it self
   # TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
@@ -147,4 +152,7 @@ module Neo4j
 
     # if it does not exist we need to create a new node
   end
+
+  load_tx_tracker
+  
 end

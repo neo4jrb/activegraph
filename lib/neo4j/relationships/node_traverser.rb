@@ -8,6 +8,7 @@ module Neo4j
     # Contains state about one specific traversal to be performed.
     class NodeTraverser
       include Enumerable
+      extend TransactionalMixin
 
       attr_reader :internal_node
 
@@ -71,25 +72,21 @@ module Neo4j
       end
 
       def empty?
-        Neo4j::Transaction.run {!iterator.hasNext}
+        !iterator.hasNext
       end
 
       def first
-        Neo4j::Transaction.run do
-          iter = iterator
-          return nil unless iter.hasNext
-          n = iter.next
-          Neo4j.load(n.get_id)
-        end
+        iter = iterator
+        return nil unless iter.hasNext
+        n = iter.next
+        Neo4j.load(n.get_id)
       end
 
       def each
-        Neo4j::Transaction.run do
-          iter = iterator
-          while (iter.hasNext) do
-            n = iter.next
-            yield Neo4j.load(n.get_id)
-          end
+        iter = iterator
+        while (iter.hasNext) do
+          n = iter.next
+          yield Neo4j.load(n.get_id)
         end
       end
 
@@ -107,6 +104,8 @@ module Neo4j
         "NodeTraverser [direction=#{@direction}, type=#{@type}]"
       end
 
+
+      transactional :empty?, :first
     end
 
 

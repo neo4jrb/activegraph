@@ -5,6 +5,7 @@ module Neo4j
     #
     class RelationshipTraverser
       include Enumerable
+      extend TransactionalMixin
 
       attr_reader :internal_node
 
@@ -49,15 +50,13 @@ module Neo4j
       #
       # :api: public
       def <<(other_node)
-        Transaction.run do
-          type = Relationships::RelationshipType.instance(@type.to_s)
-          rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
-          Neo4j.instance.load_relationship(rel)
-        end
+        type = Relationships::RelationshipType.instance(@type.to_s)
+        rel = @internal_node.createRelationshipTo(other_node.internal_node, type)
+        Neo4j.instance.load_relationship(rel)
       end
 
       def empty?
-        Neo4j::Transaction.run {!iterator.hasNext}
+        !iterator.hasNext
       end
 
       # Return the first relationship or nil
@@ -77,12 +76,10 @@ module Neo4j
 
 
       def each
-        Neo4j::Transaction.run do
-          iter = iterator
-          while (iter.hasNext) do
-            n = iter.next
-            yield Neo4j.instance.load_relationship(n)
-          end
+        iter = iterator
+        while (iter.hasNext) do
+          n = iter.next
+          yield Neo4j.instance.load_relationship(n)
         end
       end
 
@@ -123,6 +120,7 @@ module Neo4j
         end
       end
 
+      transactional :empty?, :<<
     end
 
 

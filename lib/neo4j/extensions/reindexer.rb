@@ -13,7 +13,7 @@ module Neo4j
           n.update_index
         end
       end
-      
+
       # Returns node instances of this class.
       #
       # :api: public
@@ -78,6 +78,11 @@ module Neo4j
 
 
   # Add this so it can add it self as listener
-  Neo4j.event_handler.add(IndexNode)
+  def self.load_reindexer
+    Neo4j.event_handler.add(IndexNode)
+    # incase we already have started
+    Neo4j::Transaction.run { IndexNode.on_neo_started(Neo4j.instance) } if Neo4j.running?
+  end
 
+  load_reindexer
 end

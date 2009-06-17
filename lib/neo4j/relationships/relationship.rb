@@ -9,7 +9,6 @@ module Neo4j
     class Relationship
       extend Neo4j::TransactionalMixin
       include Neo4j::RelationshipMixin
-#      include Neo4j::DynamicAccessorMixin
     end
   end
 end

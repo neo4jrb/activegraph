@@ -11,36 +11,49 @@ $NEO_LOGGER.level = Logger::ERROR
 NEO_STORAGE = Dir::tmpdir + "/neo_storage"
 LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
 
+Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
+Lucene::Config[:store_on_file] = false
+Neo4j::Config[:storage_path] = NEO_STORAGE
 
 def delete_db
-  # make sure we finish all transactions
-  Neo4j::Transaction.current.finish if Neo4j::Transaction.running?
-
-  # delete all configuration
-  Lucene::Config.delete_all
-
   # delete db on filesystem
   FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
   FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
 end
 
+def reset_config
+  # reset configuration
+  Lucene::Config.delete_all
+  Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
+  Lucene::Config[:store_on_file] = false
+
+  Neo4j::Config.delete_all
+  Neo4j::Config[:storage_path] = NEO_STORAGE
+end
 
 def start
-  Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
-  Neo4j::Config[:storage_path] = NEO_STORAGE
+  # stop it - just in case
+  stop
 
-  # set default configuration
-  Lucene::Config[:store_on_file] = false
-  Neo4j::Config[:storage_path] = NEO_STORAGE
+  delete_db
 
+  reset_config
+  
   # start neo
+  Neo4j.event_handler.remove_all  # TODO need a nicer way to test extension - loading and unloading
   Neo4j.start
 end
 
 
 def stop
+  # make sure we finish all transactions
+  Neo4j::Transaction.finish if Neo4j::Transaction.running?
+  
   Neo4j.stop
+
   delete_db
+
+  reset_config
 end
 
 

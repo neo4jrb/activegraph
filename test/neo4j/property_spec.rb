@@ -7,6 +7,7 @@ require 'date'
 
 class MyPropertyData
   attr_accessor :x
+
   def initialize(x)
     @x = x
   end
@@ -22,8 +23,6 @@ describe 'NodeMixin having no properties' do
     end
   end
 
-
-  after(:all) { stop }
 
   it "should have no info about any properties" do
     MyNode.properties_info.should be_empty
@@ -53,8 +52,13 @@ describe 'NodeMixin having Date properties' do
     end
   end
 
+  before(:each) do
+    Neo4j::Transaction.new
+  end
 
-  after(:all) { stop }
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
 
   it "should know the type of declared properties" do
     MyNode.properties_info.size.should == 3
@@ -71,7 +75,7 @@ describe 'NodeMixin having Date properties' do
 
   it "should marshal Date properties" do
     n = MyNode.new
-    date = Date.new 2008,12,15
+    date = Date.new 2008, 12, 15
     n.since = date
     n.since.class.should == Date
     n.since.should == date
@@ -90,11 +94,16 @@ describe 'Neo4j::Node with properties of unknown type' do
       include Neo4j::NodeMixin
       property :fooz
     end
-    @node = MyNode.new
+    @node = Neo4j::Transaction.run { MyNode.new }
   end
 
+  before(:each) do
+    Neo4j::Transaction.new
+  end
 
-  after(:all) { stop }
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
 
   it "should have no type info" do
     MyNode.properties_info.size.should == 1
@@ -140,11 +149,16 @@ describe 'Neo4j::Node having a property of type Object' do
       property :stuff, :type => Object
       property :foo
     end
+    Neo4j::Transaction.new
 
     @node = Stuff.new
   end
 
-  after(:each) { stop }
+  after(:each) do
+    Neo4j::Transaction.finish
+    stop
+  end
+
 
   it "should know the type of the property" do
     Stuff.properties_info[:stuff].class.should == Hash
@@ -158,9 +172,9 @@ describe 'Neo4j::Node having a property of type Object' do
 
   it "should allow to set properties of type Array" do
     # when
-    array = [1,"2",3.14]
+    array = [1, "2", 3.14]
     @node.stuff = array
-    
+
     # then
     node = Neo4j.load(@node.neo_node_id)
     node.stuff.class == Array
@@ -190,6 +204,7 @@ end
 describe 'Neo4j properties' do
   before(:each) do
     start
+    Neo4j::Transaction.new
     undefine_class :TestNode  # make sure it is not already defined
     class TestNode
       include Neo4j::NodeMixin
@@ -198,12 +213,15 @@ describe 'Neo4j properties' do
     @node = TestNode.new
   end
 
-  after(:each) { stop }
-  
+  after(:each) do
+    Neo4j::Transaction.finish
+    stop
+  end
+
   it "should know which properties has been set" do
     @node.p1 = "val1"
     @node.p2 = "val2"
-  
+
     @node.props.should have_key('p1')
     @node.props.should have_key('p2')
   end
@@ -217,7 +235,7 @@ describe 'Neo4j properties' do
     TestNode.property?(:p3).should be_false
     TestNode.property?("ojojoj").should be_false
   end
-  
+
   it "should allow to get a property that has not been set" do
     @node.should_not be_property('p1')
     @node.p1.should be_nil
@@ -228,22 +246,22 @@ describe 'Neo4j properties' do
     @node.should respond_to(:neo_node_id)
     @node.neo_node_id.should be_kind_of(Fixnum)
   end
-  
+
   it "should have a property for the ruby class it represent" do
     @node.classname.should be == TestNode.to_s
   end
-  
+
   it "should allow to set any property" do
     # given
     @node.p1 = "first"
-  
+
     # when
     @node.p1 = "Changed it"
-  
+
     # then
     @node.p1.should =='Changed it'
   end
-  
+
   it "should allow to set properties to nil" do
     @node.p1 = nil
     @node.p1.should == nil
@@ -281,32 +299,32 @@ describe 'Neo4j properties' do
     @node.should_not be_property('p1')
     @node.p1.should be_nil
   end
-  
+
   it "should generated setter and getters methods" do
     # when
     p = TestNode.new {}
-  
+
     # then
-    p.methods.should include('p1','p2')
+    p.methods.should include('p1', 'p2')
     p.methods.should include("p1=", 'p2=')
   end
-  
+
   it "should automatically be defined on subclasses" do
     undefine_class :SubNode  # make sure it is not already defined
-  
+
     # given
     class SubNode < TestNode
       property :salary
     end
-  
+
     # when
     p = SubNode.new {}
-  
+
     # then
-    p.methods.should include("p1",'p2')
+    p.methods.should include("p1", 'p2')
     p.methods.should include("salary", "salary=")
   end
-  
-  
+
+
 
 end
