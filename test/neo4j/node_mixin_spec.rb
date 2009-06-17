@@ -156,6 +156,17 @@ describe 'NodeMixin' do
       t.age.should == 3
     end
 
+    it "should not allow the classname to be changed" do
+      t = TestNode.new
+      t.update({:classname => 'wrong'})
+      t.classname.should == 'TestNode'
+    end
+
+    it "should not allow the id to be changed" do
+      t = TestNode.new
+      t.update({:id => 987654321})
+      t.props['id'].should == t.neo_node_id
+    end
   end
   
 
@@ -286,7 +297,7 @@ describe "Neo4j::Node#delete"  do
 end
 
 # ----------------------------------------------------------------------------
-# delete
+# props
 #
 
 describe "Neo4j::Node#props"  do
@@ -305,20 +316,33 @@ describe "Neo4j::Node#props"  do
     stop
   end
 
-  it "should only contain classname on a node with no properties" do
+  it "should only contain id and classname on a node with no properties" do
     t1 = TestNode.new
     p = t1.props
+    p.keys.should include('id')
     p.keys.should include('classname')
-    p.keys.size.should == 1
+    p['id'].should == t1.neo_node_id
+    p['classname'].should == 'TestNode'
+    p.keys.size.should == 2
   end
 
-  it "should be okey to call props on a loaded node with no properties" do
+  it "should be okay to call props on a loaded node with no properties" do
     t1 = TestNode.new
     id = t1.neo_node_id
     t2 = Neo4j.load(id)
     p = t2.props
+    p.keys.should include('id')
     p.keys.should include('classname')
-    p.keys.size.should == 1
+    p.keys.size.should == 2
+  end
+
+  it "should return declared properties" do
+    t1 = TestNode.new
+    t1.name = 'abc'
+    t1.age = 3
+    p = t1.props
+    p['name'].should == 'abc'
+    p['age'].should == 3
   end
 
   it "should return undeclared properties" do

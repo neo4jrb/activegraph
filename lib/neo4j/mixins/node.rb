@@ -178,6 +178,7 @@ module Neo4j
     # :api: public
     def update(struct_or_hash)
       struct_or_hash.each_pair do |key,value|
+        next if %w(id classname).include? key.to_s # do not allow special properties to be mass assigned
         method = "#{key}=".to_sym
         self.send(method, value) if self.respond_to?(method)
       end
