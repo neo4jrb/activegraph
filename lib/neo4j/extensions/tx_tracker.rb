@@ -100,6 +100,7 @@ module Neo4j
         if (curr_node[:created])
           #node = Neo4j.load(tracked_neo_id)
           node = Neo4j.load_uuid(uuid)
+          raise "Can't undo created node of uuid: '#{uuid}'" if node.nil?
           node.delete
         elsif (curr_node[:deleted])
           classname =  curr_node[:tracked_classname]
@@ -205,6 +206,7 @@ module Neo4j
   # :api: public
   def self.load_uuid(uuid)
     txnode = TxNodeCreated.find(:uuid => uuid).first
+    return if txnode.nil?
     # does this node exist ?
     id = txnode[:tracked_neo_id]
     node = Neo4j.load(id)

@@ -77,7 +77,6 @@ describe 'NodeMixin#initialize' do
     node2 = TestNode4.new(node1.internal_node)
     node1.internal_node.should == node2.internal_node
   end
-
 end
 
 
@@ -167,6 +166,17 @@ describe 'NodeMixin#update' do
     t.age.should == 3
   end
 
+  it "should not allow the classname to be changed" do
+    t = TestNode.new
+    t.update({:classname => 'wrong'})
+    t.classname.should == 'TestNode'
+  end
+
+  it "should not allow the id to be changed" do
+    t = TestNode.new
+    t.update({:id => 987654321})
+    t.props['id'].should == t.neo_node_id
+  end
 end
 
 
@@ -247,5 +257,70 @@ describe "Neo4j::Node#delete"  do
   end
 end
 
+# ----------------------------------------------------------------------------
+# props
+#
 
+describe "Neo4j::Node#props"  do
+  before(:all) do
+    start
+    undefine_class :TestNode
+    class TestNode
+      include Neo4j::NodeMixin
+
+      property :name
+      property :age
+    end
+  end
+
+  after(:all) do
+    stop
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish    
+  end
+
+  it "should only contain id and classname on a node with no properties" do
+    t1 = TestNode.new
+    p = t1.props
+    p.keys.should include('id')
+    p.keys.should include('classname')
+    p['id'].should == t1.neo_node_id
+    p['classname'].should == 'TestNode'
+    p.keys.size.should == 2
+  end
+
+  it "should be okay to call props on a loaded node with no properties" do
+    t1 = TestNode.new
+    id = t1.neo_node_id
+    t2 = Neo4j.load(id)
+    p = t2.props
+    p.keys.should include('id')
+    p.keys.should include('classname')
+    p.keys.size.should == 2
+  end
+
+  it "should return declared properties" do
+    t1 = TestNode.new
+    t1.name = 'abc'
+    t1.age = 3
+    p = t1.props
+    p['name'].should == 'abc'
+    p['age'].should == 3
+  end
+
+  it "should return undeclared properties" do
+    t1 = TestNode.new
+    t1.set_property('hoj', 'koj')
+    p = t1.props
+    p.keys.should include('hoj')
+    p['hoj'].should == 'koj'
+  end
+
+end
 

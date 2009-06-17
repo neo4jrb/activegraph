@@ -76,6 +76,7 @@ module Neo4j
     # :api: public
     def set_property(name, value)
       $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}
+      return if name.to_s == 'id' # id is neo_node_id and cannot be changed TODO check this
       old_value = get_property(name)
 
       if value.nil?
@@ -191,8 +192,8 @@ module Neo4j
     # :api: public
     def update(struct_or_hash)
       struct_or_hash.each_pair do |key, value|
-        method = "#{key}=".to_sym
-        self.send(method, value) if self.respond_to?(method)
+        next if %w(id classname).include? key.to_s # do not allow special properties to be mass assigned
+        self[key] = value
       end
       self
     end
@@ -237,7 +238,7 @@ module Neo4j
     #
     # :api: public
     def props
-      ret = {}
+      ret = {"id" => neo_node_id}
       iter = @internal_node.getPropertyKeys.iterator
       while (iter.hasNext) do
         key = iter.next
