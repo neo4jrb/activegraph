@@ -1,13 +1,14 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
-require 'neo4j'
+require 'neo4j/auto_tx'
 require 'spec'
 
 require 'spec/interop/test'
 require 'sinatra/test'
 
 # TODO refactor, duplicated code in spec_helper
+require 'neo4j/spec_helper'
 
 require 'fileutils'
 require 'tmpdir'
@@ -113,9 +114,9 @@ END_OF_STRING
     adam = Person.new
     bertil = Person.new
     rel = adam.friends.new(bertil)
-    rel.foo = "bar"
+    rel.set_property("foo", "bar")
     # when
-    get "/relations/#{rel.neo_relation_id}"
+    get "/relations/#{rel.neo_relationship_id}"
 
     # then
     status.should == 200
