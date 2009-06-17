@@ -273,6 +273,9 @@ module Neo4j
     # Returns a Neo4j::Relationships::RelationshipTraverser object for accessing relationships from and to this node.
     # The Neo4j::Relationships::RelationshipTraverser is an Enumerable that returns Neo4j::RelationshipMixin objects.
     #
+    # ==== Returns
+    # A Neo4j::Relationships::RelationshipTraverser object 
+    #
     # ==== See Also
     # * Neo4j::Relationships::RelationshipTraverser
     # * Neo4j::RelationshipMixin
@@ -283,9 +286,34 @@ module Neo4j
     #
     # :api: public
     def relationships
-      Relationships::RelationshipTraverser.new(@internal_node)
+      Relationships::RelationshipTraverser.new(self)
     end
 
+
+    # Returns a single relationship or nil if none available.
+    # If there are more then one relationship of the given type it will raise an exception.
+    #
+    # ==== Parameters
+    # type<#to_s>:: the key and value to be set
+    # dir:: optional default :outgoing (either, :outgoing, :incoming, :both)
+    #
+    # ==== Returns
+    # An object that mixin the Neo4j::RelationshipMixin representing the given relationship type
+    #
+    # ==== See Also
+    # * JavaDoc for http://api.neo4j.org/current/org/neo4j/api/core/Node.html#getSingleRelationship(org.neo4j.api.core.RelationshipType,%20org.neo4j.api.core.Direction)
+    # * Neo4j::RelationshipMixin
+    #
+    # ==== Example
+    #
+    #   person_node.relationship(:address).end_node[:street]
+    # :api: public
+    def relationship(rel_name, dir=:outgoing)
+      java_dir = _to_java_direction(dir)
+      rel_type = Relationships::RelationshipType.instance(rel_name)
+      rel = @internal_node.getSingleRelationship(rel_type, java_dir)
+      Neo4j.load_relationship(rel.getId)
+    end
 
     # Check if the given relationship exists
     # Returns true if there are one or more relationships from this node to other nodes
@@ -298,10 +326,18 @@ module Neo4j
     #
     # ==== Returns
     # true if one or more relationships exists for the given rel_name and dir
+    # otherwise false
     #
     # :api: public
     def relationship?(rel_name, dir=:outgoing)
       type = Relationships::RelationshipType.instance(rel_name.to_s)
+      java_dir = _to_java_direction(dir)
+      @internal_node.hasRelationship(type, java_dir)
+    end
+
+
+    # :api: private
+    def _to_java_direction(dir)
       java_dir =
               case dir
                 when :outgoing
@@ -313,9 +349,25 @@ module Neo4j
                 else
                   raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
               end
-      @internal_node.hasRelationship(type, java_dir)
     end
 
+    # all creation of relationships uses this method
+    # triggers event handling
+    # :api: private
+    def _create_relationship(type, to)
+      java_type = Relationships::RelationshipType.instance(type)
+      java_relationship = internal_node.createRelationshipTo(to.internal_node, java_type)
+
+      relationship =
+              if (self.class.relationships_info[type.to_sym].nil?)
+                Relationships::Relationship.new(java_relationship)
+              else
+                self.class.relationships_info[type.to_sym][:relationship].new(java_relationship)
+              end
+      Neo4j.event_handler.relationship_created(relationship)
+      self.class.indexer.on_relationship_created(self, type)
+      relationship
+    end
 
     # Returns a Neo4j::Relationships::NodeTraverser object for traversing nodes from and to this node.
     # The Neo4j::Relationships::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
@@ -623,6 +675,12 @@ module Neo4j
       end
 
 
+
+      #  Specifies a relationship to a linked list of nodes.
+      #  Each list item class may (but not neccessarly) use the belongs_to_list
+      # in order to specify which ruby class should be loaded when a list item is loaded.
+      #
+      # :api: public
       def has_list(rel_type)
         module_eval(%Q{
                     def #{rel_type}(&block)
@@ -632,6 +690,14 @@ module Neo4j
       end
 
 
+      # Can be used together with the has_list to specify the ruby class of a list item.
+      #
+      # :api: public
+      def belongs_to_list(rel_type)
+        relationships_info[rel_type] = Relationships::RelationshipInfo.new
+      end
+
+      
       # Creates a new outgoing relationship.
       # 
       # :api: private
