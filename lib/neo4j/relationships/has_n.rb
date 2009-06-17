@@ -71,7 +71,7 @@ module Neo4j
         from, to = to, from unless @info[:outgoing]
 
         r = from.internal_node.createRelationshipTo(to.internal_node, @type)
-        from.class.relationships_info[@type.name.to_sym][:relationship].new(r)
+        from.class.new_relationship(@type.name, r)
       end
 
 
