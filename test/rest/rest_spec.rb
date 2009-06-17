@@ -23,16 +23,20 @@ Neo4j::Config[:storage_path] = NEO_STORAGE
 
 Sinatra::Application.set :environment, :test
 
-class Person
-  include Neo4j::NodeMixin
-  # by includeing the following mixin we will expose this node as a RESTful resource
-  include RestMixin
-  property :name
-  has_n :friends
-end
-
 describe 'Restful' do
   include Sinatra::Test
+
+  before(:each) do
+    Neo4j.start
+    undefine_class :Person
+    class Person
+      include Neo4j::NodeMixin
+      # by including the following mixin we will expose this node as a RESTful resource
+      include RestMixin
+      property :name
+      has_n :friends
+    end
+  end
 
   after(:each) do
     Neo4j.stop
