@@ -2,7 +2,6 @@ require 'thread'
 
 module Neo4j
 
-
   # Starts neo unless it is not already started.
   # Before using neo it has to be started and the location of the Neo database on the filesystem must
   # have been configured, Neo4j::Config[:storage_path].
@@ -17,7 +16,7 @@ module Neo4j
   # :api: public
   def self.start
     return if @instance
-    @instance = Neo.new 
+    @instance = Neo.new
     @instance.start
     at_exit do
       Neo4j.stop
@@ -114,6 +113,19 @@ module Neo4j
   end
 
 
+  # Returns an event handler.
+  # This event handler can be used for listen to event such as when the Neo4j is started/stopped or
+  # when a node is created/deleted, a property/relationship is changed.
+  #
+  # ==== Returns
+  # a Neo4j::EventHandler instance
+  #
+  # :api: public
+  def self.event_handler
+    @event_handler ||= EventHandler.new
+  end
+
+
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files
@@ -123,24 +135,21 @@ module Neo4j
   # 
   class Neo
 
+    extend Neo4j::TransactionalMixin
+
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node, :placebo_tx
+    attr_reader :ref_node
 
     def start
-      @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
+      @neo = org.neo4j.api.core.EmbeddedNeo.new(Config[:storage_path])
 
-      # get the placebo transaction
-      # the second time we create an transaction the placebo transaction will
-      # be returned from neo. We need to know if we are using real transaction or a placebo.
-      tx = begin_transaction
-      @placebo_tx = begin_transaction
-      tx.finish
-
-      Transaction.run { @ref_node = ReferenceNode.new(@neo.getReferenceNode()) }
+      Transaction.run do
+        @ref_node = ReferenceNode.new(@neo.getReferenceNode())
+        Neo4j.event_handler.neo_started(self)
+      end
       $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
-
     end
 
     #
@@ -159,21 +168,18 @@ module Neo4j
       @neo.begin_tx
     end
 
-    
+
     #
     # Returns a NodeMixin object that has the given id or nil if it does not exist.
     # 
-    def find_node(id) 
+    def find_node(id)
       begin
-        Transaction.run do
-          neo_node = @neo.getNodeById(id)
-          load_node(neo_node)
-        end
-      rescue org.neo4j.api.core.NotFoundException 
+        neo_node = @neo.getNodeById(id)
+        load_node(neo_node)
+      rescue org.neo4j.api.core.NotFoundException
         nil
       end
     end
-  
 
     # Loads a Neo relationship
     # Expects the neo property 'classname' to exist.
@@ -200,11 +206,11 @@ module Neo4j
 
     # Loads a Neo relationship
     # If the neo property 'classname' to exist it will use that to create an instance of that class.
-    # Otherwise it will create an instance of Neo4j::Relations::DynamicRelation that represent 'rel'
+    # Otherwise it will create an instance of Neo4j::Relationships::Relationship that represent 'rel'
     #
     def load_relationship(rel)
       classname = rel.get_property('classname') if rel.has_property('classname')
-      classname = Neo4j::Relations::DynamicRelation.to_s if classname.nil?
+      classname = Neo4j::Relationships::Relationship.to_s if classname.nil?
       _load classname, rel
     end
 
@@ -214,24 +220,26 @@ module Neo4j
       end
       clazz.new(node_or_relationship)
     end
-    
+
     #
     # Stop neo
     # Must be done before the program stops
     #
     def stop
       $NEO_LOGGER.info {"stop neo #{@neo}"}
-      @neo.shutdown  
+      Neo4j.event_handler.neo_stopped(self)
+      @neo.shutdown
       @neo = nil
+      @ref_node = nil
     end
 
 
-    
     def tx_manager
       @neo.getConfig().getTxModule().getTxManager()
     end
-    
-    
+
+    transactional :find_node
+
   end
 end
 

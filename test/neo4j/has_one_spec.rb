@@ -26,9 +26,13 @@ describe "Neo4j::NodeMixin#has_one " do
 
   end
 
-  after(:all) do
-    stop
-  end
+   before(:each) do
+     Neo4j::Transaction.new
+   end
+
+   after(:each) do
+     Neo4j::Transaction.finish
+   end
 
   it "should create a relationship with assignment like node1.rel = node2" do
     # given
@@ -63,10 +67,10 @@ describe "Neo4j::NodeMixin#has_one " do
     address = Address.new {|a| a.city = 'malmoe'; a.road = 'my road'}
 
     # when
-    dynamic_relation = address.people.new(person)
+    dynamic_relationship = address.people.new(person)
 
     # then
-    dynamic_relation.relationship_type.should == :address
+    dynamic_relationship.relationship_type.should == :address
   end
   
   it "should should return the object using the has_one accessor" do

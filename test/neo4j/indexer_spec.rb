@@ -11,6 +11,8 @@ include Neo4j
 describe Indexer, " given Employee.salary in employed_by Company is indexed" do
   before(:all) do
     undefine_class :Employee, :Company
+    start
+
     class Employee
       include Neo4j::NodeMixin
       property :salary
@@ -25,7 +27,16 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relation_on_property(Company, 'employees', 'employed_by', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary')
+  end
+
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
 
   it "should update index when salary changes on one employee" do
@@ -47,7 +58,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is created" do
+  it "should update index when the employee relationship is created" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -58,7 +69,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employed_by')
+    @employee_indexer.on_relationship_created(employee, 'employed_by')
 
     index.size.should == 1
     index[0][:id].should == company.neo_node_id
@@ -66,7 +77,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is deleted" do
+  it "should update index when the employee relationship is deleted" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -74,7 +85,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employed_by')
+    @employee_indexer.on_relationship_created(employee, 'employed_by')
 
     index.size.should == 0
   end
@@ -97,9 +108,18 @@ describe Indexer, " given employees.salary is indexed on Company" do
     Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relation_on_property(Company, 'employees', 'employees', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary')
 
   end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
 
   it "should include each employees salary in the company index" do
     employee1 = Employee.new
@@ -119,7 +139,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     index.size.should == 1
     index[0][:id].should == company.neo_node_id
     index[0][:'employees.salary'].size.should == 2
-    index[0][:'employees.salary'].should include(1,2)
+    index[0][:'employees.salary'].should include(1, 2)
   end
 
   it "should update index when salary changes on one employee" do
@@ -141,7 +161,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is created" do
+  it "should update index when the employee relationship is created" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -152,7 +172,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employees')
+    @employee_indexer.on_relationship_created(employee, 'employees')
 
     index.size.should == 1
     index[0][:id].should == company.neo_node_id
@@ -160,7 +180,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     index[0][:'employees.salary'].should include(10000)
   end
 
-  it "should update index when the employee relation is deleted" do
+  it "should update index when the employee relationship is deleted" do
     employee = Employee.new
     employee.salary = 10000
 
@@ -168,7 +188,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relation_created(employee, 'employees')
+    @employee_indexer.on_relationship_created(employee, 'employees')
 
     index.size.should == 0
   end
@@ -187,10 +207,19 @@ describe Indexer, " given friends.age is indexed on class Person" do
     end
   end
 
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
   def create_indexer
     Indexer.clear_all_instances
     indexer = Indexer.instance Person
-    indexer.add_index_in_relation_on_property(Person, 'friends', 'friends', 'age')
+    indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age')
     indexer
   end
 
@@ -202,7 +231,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
     node1.age = 42
 
     index = []
-    indexer = create_indexer 
+    indexer = create_indexer
     indexer.stub!(:lucene_index).and_return index
 
     # when
@@ -240,7 +269,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
     # then
     index_node2[:id].should == node2.neo_node_id
     index_node2[:'friends.age'].size.should == 2
-    index_node2[:'friends.age'].should include(42,44)
+    index_node2[:'friends.age'].should include(42, 44)
   end
 
 
@@ -263,8 +292,8 @@ describe Indexer, " given friends.age is indexed on class Person" do
 
     # find which index belongs to which node
     index.size.should == 2
-    index_node2,index_node3 = index
-    index_node2,index_node3 = index_node3,index_node2 unless index_node2[:id] == node2.neo_node_id
+    index_node2, index_node3 = index
+    index_node2, index_node3 = index_node3, index_node2 unless index_node2[:id] == node2.neo_node_id
 
     # then
     index_node2[:id].should == node2.neo_node_id

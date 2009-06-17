@@ -1,12 +1,14 @@
 module Neo4j
-  module Relations
+  module Relationships
 
-    class IllegalTraversalArguments < StandardError; end
-    
+    class IllegalTraversalArguments < StandardError;
+    end
+
     # Enables traversing nodes
     # Contains state about one specific traversal to be performed.
     class NodeTraverser
       include Enumerable
+      extend TransactionalMixin
 
       attr_reader :internal_node
 
@@ -44,7 +46,7 @@ module Neo4j
         @returnable_evaluator = ReturnableEvaluator.new proc
         self
       end
-      
+
       def outgoing(*types)
         types.each do |type|
           @types_and_dirs << RelationshipType.instance(type)
@@ -70,16 +72,21 @@ module Neo4j
       end
 
       def empty?
-        Neo4j::Transaction.run {!iterator.hasNext}
+        !iterator.hasNext
+      end
+
+      def first
+        iter = iterator
+        return nil unless iter.hasNext
+        n = iter.next
+        Neo4j.load(n.get_id)
       end
 
       def each
-        Neo4j::Transaction.run do
-          iter = iterator
-          while (iter.hasNext) do
-            n = iter.next
-            yield Neo4j.load(n.get_id)
-          end
+        iter = iterator
+        while (iter.hasNext) do
+          n = iter.next
+          yield Neo4j.load(n.get_id)
         end
       end
 
@@ -88,17 +95,19 @@ module Neo4j
         if @types_and_dirs.empty?
           raise IllegalTraversalArguments.new "Unknown type of relationship. Needs to know which type(s) of relationship in order to traverse. Please use the outgoing, incoming or both method."
         end
-        
+
         @internal_node.traverse(@traverser_order, @stop_evaluator,
-          @returnable_evaluator, @types_and_dirs.to_java(:object)).iterator
+                                @returnable_evaluator, @types_and_dirs.to_java(:object)).iterator
       end
 
       def to_s
         "NodeTraverser [direction=#{@direction}, type=#{@type}]"
       end
 
+
+      transactional :empty?, :first
     end
 
-  
+
   end
 end

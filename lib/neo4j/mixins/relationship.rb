@@ -4,10 +4,10 @@ module Neo4j
   # A module that can be mixed in like a Neo4j::NodeMixin
   # It wraps the Neo4j Relationship class.
   #
-  module RelationMixin
+  module RelationshipMixin
     extend TransactionalMixin
 
-    # Initialize the Relation object with specified java org.neo4j.api.core.Relationship object
+    # Initialize the Relationship object with specified java org.neo4j.api.core.Relationship object
     # Expects at least one parameter.
     # 
     # ==== Parameters
@@ -15,8 +15,7 @@ module Neo4j
     # 
     # :api: public
     def initialize(*args)
-      Transaction.run {init_with_rel(args[0])} unless Transaction.running?
-      init_with_rel(args[0])                   if Transaction.running?
+      init_with_rel(args[0])
 
       # must call super with no arguments so that chaining of initialize method will work
       super()
@@ -29,7 +28,7 @@ module Neo4j
     def init_with_rel(node)
       @internal_r = node
       self.classname = self.class.to_s unless @internal_r.hasProperty("classname")
-      $NEO_LOGGER.debug {"loading relation '#{self.class.to_s}' id #{@internal_r.getId()}"}
+      $NEO_LOGGER.debug {"loading relationship '#{self.class.to_s}' id #{@internal_r.getId()}"}
     end
 
     # :api: public
@@ -46,7 +45,9 @@ module Neo4j
 
     # :api: public
     def other_node(node)
-      id = @internal_r.getOtherNode(node).getId
+      neo_node = node
+      neo_node = node.internal_node if node.respond_to?(:internal_node)
+      id = @internal_r.getOtherNode(neo_node).getId
       Neo4j.instance.find_node id
     end
 
@@ -60,7 +61,7 @@ module Neo4j
     def relationship_type
       @internal_r.get_type.name.to_sym
     end
-    
+
 
     # Deletes the relationship between two nodes.
     # Will fire a RelationshipDeletedEvent on the start_node class.
@@ -71,12 +72,12 @@ module Neo4j
       @internal_r.delete
 
       # TODO not sure if we need to do it on both start and end node ...
-#      start_node.class.indexer.on_relation_deleted(start_node, type) unless start_node.nil?
-      end_node.class.indexer.on_relation_deleted(end_node, type) unless end_node.nil?
+#      start_node.class.indexer.on_relationship_deleted(start_node, type) unless start_node.nil?
+      end_node.class.indexer.on_relationship_deleted(end_node, type) unless end_node.nil?
     end
 
-    def set_property(key,value)
-      @internal_r.setProperty(key,value)
+    def set_property(key, value)
+      @internal_r.setProperty(key, value)
     end
 
     def property?(key)
@@ -88,6 +89,20 @@ module Neo4j
       @internal_r.getProperty(key)
     end
 
+  # Returns the given property
+    #
+    # :api: public
+    def [](name)
+      get_property(name.to_s)
+    end
+
+    # Sets the given property to a given value
+    #
+    # :api: public
+    def []=(name, value)
+      set_property(name.to_s, value)
+    end
+    
     def classname
       get_property('classname')
     end
@@ -97,27 +112,11 @@ module Neo4j
     end
 
 
-    def neo_relation_id
+    def neo_relationship_id
       @internal_r.getId()
     end
 
-    # Returns a hash of all properties.
-    #
-    # ==== Returns
-    # Hash:: property key and property value
-    #
-    # :api: public
-    def props # TODO duplicated code - node.rb
-      ret = {}
-      iter = @internal_r.getPropertyKeys.iterator
-      while (iter.hasNext) do
-        key = iter.next
-        ret[key] = @internal_r.getProperty(key)
-      end
-      ret
-    end
-
-    transactional :property?, :set_property, :get_property, :delete, :props
+    transactional :initialize, :property?, :set_property, :get_property, :delete
 
     #
     # Adds classmethods in the ClassMethods module

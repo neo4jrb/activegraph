@@ -1,6 +1,7 @@
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
-require "rubygems" 
-require "neo4j"
+#require "rubygems" 
+require "neo4j"                                                                                           
+require "neo4j/extensions/reindexer"
 require "model"
 
 Neo4j::Config[:storage_path] = DB_NEO_DIR
@@ -17,7 +18,7 @@ result.each {|x| puts x}
 
 willis = result[0]
 puts "#{willis} acted in:"
-willis.relations.outgoing.each {|r| puts r.to_s }
+willis.relationships.outgoing.each {|r| puts r.to_s }
 
 willis.acted_in.each { |movie| puts movie }
 

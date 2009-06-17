@@ -22,11 +22,16 @@ describe "Neo4j" do
     end
     res = Foo.find(:name => 'kalle')
     res.size.should == 0
-    f = Foo.new
-    f.name = 'kalle'
-    res = Foo.find(:name => 'kalle')
-    res.size.should == 1
-    res[0].name.should == 'kalle'
+    Neo4j::Transaction.run do
+      f = Foo.new
+      f.name = 'kalle'
+    end
+
+    Neo4j::Transaction.run do
+      res = Foo.find(:name => 'kalle')
+      res.size.should == 1
+      res[0].name.should == 'kalle'
+    end
   end
 end
 
@@ -38,13 +43,13 @@ describe Neo4j::Neo do
   after(:each) do
     stop
   end
-  
+
   it "should return a new neo instance if neo has been stopped" do
     x = Neo4j.instance
     Neo4j.stop
     Neo4j.instance.should_not == x
   end
- 
+
   it "should have a reference node" do
     ref_node = Neo4j.instance.ref_node
     ref_node.should_not be_nil
@@ -55,18 +60,23 @@ describe Neo4j::Neo do
     class TestNode
       include Neo4j::NodeMixin
     end
-    t1 = TestNode.new
+    Neo4j::Transaction.run do
+      t1 = TestNode.new
 
-    # when
-    t2 = Neo4j.instance.find_node(t1.neo_node_id)
+      # when
+      t2 = Neo4j.instance.find_node(t1.neo_node_id)
 
-    # then
-    t1.should == t2
+      # then
+      t1.should == t2
+    end
+
   end
 
   it "should not find a node that does not exist" do
-    n = Neo4j.instance.find_node(10)
-    n.should be_nil
+    Neo4j::Transaction.run do
+      n = Neo4j.instance.find_node(10)
+      n.should be_nil
+    end
   end
-  
+
 end

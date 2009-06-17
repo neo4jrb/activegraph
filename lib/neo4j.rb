@@ -12,29 +12,40 @@ require 'lucene'
 # restful
 require 'rest'
 
+# config
+require 'neo4j/config'
+
 # mixins
 require 'neo4j/mixins/transactional'
-require 'neo4j/mixins/relation'
+require 'neo4j/mixins/relationship'
 require 'neo4j/mixins/dynamic_accessor'
 require 'neo4j/mixins/node'
 
-# relations
-require 'neo4j/relations/relation_info'
-require 'neo4j/relations/dynamic_relation'
-require 'neo4j/relations/relations'
-require 'neo4j/relations/traversal_position'
-require 'neo4j/relations/has_n'
-require 'neo4j/relations/relation_traverser'
-require 'neo4j/relations/node_traverser'
+# relationships
+require 'neo4j/relationships/relationship_info'
+require 'neo4j/relationships/relationship'
+require 'neo4j/relationships/wrappers'
+require 'neo4j/relationships/traversal_position'
+require 'neo4j/relationships/has_n'
+require 'neo4j/relationships/relationship_traverser'
+require 'neo4j/relationships/node_traverser'
+require 'neo4j/relationships/has_list'
 
 # neo4j
-require 'neo4j/config'
 require 'neo4j/indexer' # this will replace neo4j/events
 require 'neo4j/neo'
+require 'neo4j/event_handler'
 require 'neo4j/reference_node'
 require 'neo4j/transaction'
 require 'neo4j/search_result'
+require 'neo4j/node'
+# require 'neo4j/tx_node_list'   - has to be included if we want this feature
 require 'neo4j/version'
+
+
+
+# TODO
+# require 'extensions/reindexer'
 
 
 

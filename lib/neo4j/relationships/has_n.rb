@@ -1,5 +1,5 @@
 module Neo4j
-  module Relations
+  module Relationships
 
     # Enables traversal of nodes of a specific type that one node has.
     # Used for traversing relationship of a specific type.
@@ -13,8 +13,7 @@ module Neo4j
         @node = node
         @type = RelationshipType.instance(type)
         @traverser = NodeTraverser.new(node.internal_node)
-        @info = node.class.relations_info[type.to_sym]
-
+        @info = node.class.relationships_info[type.to_sym]
         if @info[:outgoing]
           @traverser.outgoing(type)
         else
@@ -22,11 +21,10 @@ module Neo4j
           @type = RelationshipType.instance(other_class_type)
           @traverser.incoming(other_class_type)
         end
-
         @traverser.filter(&filter) unless filter.nil?
       end
 
-      
+
       # Sets the depth of the traversal.
       # Default is 1 if not specified.
       #
@@ -44,24 +42,36 @@ module Neo4j
         @traverser.depth(d)
         self
       end
-      
+
       def each(&block)
         @traverser.each(&block)
       end
 
 
+      # Returns true if there are no node in this type of relationship
+      #
+      # :api: public
+      def empty?
+        @traverser.empty?
+      end
+
+      # Return the first relationship or nil
+      #
+      # :api: public
+      def first
+        @traverser.empty?
+      end
+
       # Creates a relationship instance between this and the other node.
-      # If a class for the relationship has not been specified it will be of type DynamicRelation.
+      # If a class for the relationship has not been specified it will be of type Relationship.
       #
       # :api: public
       def new(other)
         from, to = @node, other
-        from,to = to,from unless @info[:outgoing]
+        from, to = to, from unless @info[:outgoing]
 
-        r = Neo4j::Transaction.run {
-          from.internal_node.createRelationshipTo(to.internal_node, @type)
-        }
-        from.class.relations_info[@type.name.to_sym][:relation].new(r)
+        r = from.internal_node.createRelationshipTo(to.internal_node, @type)
+        from.class.relationships_info[@type.name.to_sym][:relationship].new(r)
       end
 
 
@@ -86,20 +96,16 @@ module Neo4j
       # :api: public
       def <<(other)
         from, to = @node, other
-        from,to = to,from unless @info[:outgoing]
-
+        from, to = to, from unless @info[:outgoing]
         r = from.internal_node.createRelationshipTo(to.internal_node, @type)
-        from.class.new_relation(@type.name,r)
-
-        from.class.indexer.on_relation_created(from, @type.name)
-#        from.class.fire_event(RelationshipAddedEvent.new(from, to, @type.name, r.getId()))
-#        other.class.fire_event(RelationshipAddedEvent.new(to, from, @type.name, r.getId()))
+        from.class.new_relationship(@type.name, r)
+        from.class.indexer.on_relationship_created(from, @type.name)
         self
       end
 
 
-      transactional :<<
-      end
+      transactional :<<, :new
+    end
 
   end
 end

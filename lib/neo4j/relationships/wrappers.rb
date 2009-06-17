@@ -1,10 +1,10 @@
 #
 # This files contains common private classes that implements various Neo4j java interfaces.
-# This classes are only used inside this Relations module
+# This classes are only used inside this Relationships module
 #
 
 module Neo4j
-  module Relations
+  module Relationships
 
     # Wrapper for org.neo4j.api.core.ReturnableEvaluator
     #
@@ -31,13 +31,6 @@ module Neo4j
         # java does not treat nil as false so we need to do instead
         (result)? true : false
       end
-      
-      #       public boolean isReturnableNode( TraversalPosition position )
-      #     {
-      #         // Return nodes until we've reached 5 nodes or end of graph
-      #         return position.returnedNodesCount() < 5;
-      #     }
-
     end
 
     
@@ -84,7 +77,7 @@ module Neo4j
 
       def initialize(name)
         @name = name.to_s
-        raise ArgumentError.new("Expect type of relation to be a name of at least one character") if @name.empty?
+        raise ArgumentError.new("Expect type of relationship to be a name of at least one character") if @name.empty?
       end
 
     end

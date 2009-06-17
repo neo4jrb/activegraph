@@ -10,7 +10,7 @@ module Neo4j
     attr_reader :property_indexer # for testing purpose
     
     def initialize(indexed_class)
-      @relation_indexers = {}
+      @relationship_indexers = {}
       @property_indexer = PropertyIndexer.new
       @document_updaters = [@property_indexer]
       # the file name of the lucene index if kept on disk
@@ -58,14 +58,14 @@ module Neo4j
     end
 
     # :api: private
-    def add_index_in_relation_on_property(updater_clazz, rel_name, rel_type, prop)
-      unless relation_indexer_for?(rel_type.to_sym)
-        indexer = new_relation_indexer_for(rel_type.to_sym, rel_name.to_sym)
+    def add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop)
+      unless relationship_indexer_for?(rel_type.to_sym)
+        indexer = new_relationship_indexer_for(rel_type.to_sym, rel_name.to_sym)
         self.class.instance(updater_clazz).document_updaters << indexer
       end
 
       # TODO make sure the same index is not added twice
-      relation_indexer_for(rel_type.to_sym).properties << prop.to_sym
+      relationship_indexer_for(rel_type.to_sym).properties << prop.to_sym
     end
 
     # :api: private
@@ -97,33 +97,33 @@ module Neo4j
 
     # :api: private
     def on_property_changed(node, prop)
-      @relation_indexers.values.each {|indexer| indexer.on_property_changed(node, prop.to_sym)}
+      @relationship_indexers.values.each {|indexer| indexer.on_property_changed(node, prop.to_sym)}
       @property_indexer.on_property_changed(node,prop.to_sym)
     end
 
     # :api: private
-    def on_relation_created(node, rel_type)
-      @relation_indexers.values.each {|indexer| indexer.on_relation_created(node, rel_type.to_sym)}
+    def on_relationship_created(node, rel_type)
+      @relationship_indexers.values.each {|indexer| indexer.on_relationship_created(node, rel_type.to_sym)}
     end
 
     # :api: private
-    def on_relation_deleted(node, rel_type)
-      @relation_indexers.values.each {|indexer| indexer.on_relation_deleted(node, rel_type.to_sym)}
+    def on_relationship_deleted(node, rel_type)
+      @relationship_indexers.values.each {|indexer| indexer.on_relationship_deleted(node, rel_type.to_sym)}
     end
 
     # :api: private
-    def relation_indexer_for(rel_type)
-      @relation_indexers[rel_type.to_sym]
+    def relationship_indexer_for(rel_type)
+      @relationship_indexers[rel_type.to_sym]
     end
 
     # :api: private
-    def relation_indexer_for?(rel_type)
-      !relation_indexer_for(rel_type.to_sym).nil?
+    def relationship_indexer_for?(rel_type)
+      !relationship_indexer_for(rel_type.to_sym).nil?
     end
 
     # :api: private
-    def new_relation_indexer_for(rel_type, rel_name)
-      @relation_indexers[rel_type.to_sym] = RelationIndexer.new(rel_name.to_sym, rel_type.to_sym)
+    def new_relationship_indexer_for(rel_type, rel_name)
+      @relationship_indexers[rel_type.to_sym] = RelationshipIndexer.new(rel_name.to_sym, rel_type.to_sym)
     end
 
   end
@@ -149,15 +149,15 @@ module Neo4j
   end
 
 
-  # If node class A has a relation with type 'd' to node class B
+  # If node class A has a relationship with type 'd' to node class B
   #   A.x -d-> B.y  A.index d.y
-  # If property y on a B node changes then all its nodes in the relation 'd' will
-  # be reindexed.  Those nodes (which will be of type node class A) will use the same RelationIndexer to update the
+  # If property y on a B node changes then all its nodes in the relationship 'd' will
+  # be reindexed.  Those nodes (which will be of type node class A) will use the same RelationshipIndexer to update the
   # index document with key field 'd.y' and values of property y of all nodes in the
   # relationship 'd'
   # 
   # :api: private
-  class RelationIndexer
+  class RelationshipIndexer
     attr_reader :rel_type, :properties
     
     def initialize(rel_name, rel_type)
@@ -173,13 +173,13 @@ module Neo4j
     end
 
     # :api: private
-    def on_relation_deleted(node, rel_type)
+    def on_relationship_deleted(node, rel_type)
       Indexer.index(node) if @rel_type == rel_type
     end
 
     # :api: private
-    def on_relation_created(node, rel_type)
-      # make sure we're interested in indexing this relation
+    def on_relationship_created(node, rel_type)
+      # make sure we're interested in indexing this relationship
       if @rel_type == rel_type
         reindex_related_nodes(node)
         Indexer.index(node)
@@ -188,7 +188,7 @@ module Neo4j
 
     # :api: private
     def reindex_related_nodes(node)
-      related_nodes = node.relations.both(@rel_type).nodes
+      related_nodes = node.relationships.both(@rel_type).nodes
       related_nodes.each do |related_node|
         Indexer.index(related_node)
       end
@@ -201,8 +201,8 @@ module Neo4j
 
     # :api: private
     def update_document(document, node)
-      relations = node.relations.both(@rel_type).nodes
-      relations.each do |other_node|
+      relationships = node.relationships.both(@rel_type).nodes
+      relationships.each do |other_node|
         @properties.each do |p|
           index_key = index_key(p)
           document[index_key] ||= []

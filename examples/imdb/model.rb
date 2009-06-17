@@ -6,7 +6,7 @@ class Movie; end
 
 
 class Role
-  include Neo4j::RelationMixin
+  include Neo4j::RelationshipMixin
   property :title, :character
   
   def to_s
@@ -17,7 +17,7 @@ end
 class Actor
   include Neo4j::NodeMixin
   property :name
-  has_n(:acted_in).to(Movie).relation(Role)
+  has_n(:acted_in).to(Movie).relationship(Role)
   index :name, :tokenized => true
 
   def to_s

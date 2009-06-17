@@ -1,7 +1,7 @@
 module Lucene
   
   #
-  # A document is like a record or row in a relation database.
+  # A document is like a record or row in a relationship database.
   # Contains the field infos which can be used for type conversions or
   # specifying if the field should be stored or only searchable.
   # 

@@ -5,6 +5,9 @@ module Neo4j
   #
   # :api: public
   module DynamicAccessorMixin
+
+  
+    
     #
     # A hook used to set and get undeclared properties
     #

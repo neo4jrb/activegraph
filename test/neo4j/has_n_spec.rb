@@ -6,19 +6,23 @@ require 'neo4j/spec_helper'
 
 
 
-
 describe "Neo4j::NodeMixin#has_n " do
   before(:all) do
     start
   end
 
-  after(:all) do
-    stop
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
 
 
+
   # ----------------------------------------------------------------------------
-  # adding relations with <<
+  # adding relationships with <<
   #
 
   describe '<< operator' do
@@ -34,7 +38,7 @@ describe "Neo4j::NodeMixin#has_n " do
     end
 
 
-    it "should add a node to a relation" do
+    it "should add a node to a relationship" do
       t1 = TestNode.new
       t2 = TestNode.new
 
@@ -45,7 +49,7 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends.to_a.should include(t2)
     end
 
-    it "should add relations of different types to other nodes" do
+    it "should add relationships of different types to other nodes" do
       me = TestNode.new
       f1 = TestNode.new
       p1 = TestNode.new
@@ -77,13 +81,14 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends << t2 << t3
 
       # then t2 should be a friend of t1
-      t1.friends.to_a.should include(t2,t3)
+      t1.friends.to_a.should include(t2, t3)
     end
 
 
     it "should be allowed in subclasses" do
       undefine_class :SubNode  # make sure it is not already defined
-      class SubNode < TestNode; end
+      class SubNode < TestNode;
+      end
       sub = SubNode.new
       t = TestNode.new
       sub.friends << t
@@ -103,35 +108,37 @@ describe "Neo4j::NodeMixin#has_n " do
         has_n(:known_by).from(PersonNode, :friends)
       end
 
-      @n0 = PersonNode.new
-      @n1 = PersonNode.new
-      @n11 = PersonNode.new
-      @n111 = PersonNode.new
-      @n12 = PersonNode.new
-      @n112 = PersonNode.new
-      @n1121 = PersonNode.new
-      @n0.friends << @n1 << @n12
-      @n1.friends << @n11 << @n12
-      @n11.friends << @n111 << @n112
-      @n112.friends << @n1121
+      Neo4j::Transaction.run do
+        @n0 = PersonNode.new
+        @n1 = PersonNode.new
+        @n11 = PersonNode.new
+        @n111 = PersonNode.new
+        @n12 = PersonNode.new
+        @n112 = PersonNode.new
+        @n1121 = PersonNode.new
+        @n0.friends << @n1 << @n12
+        @n1.friends << @n11 << @n12
+        @n11.friends << @n111 << @n112
+        @n112.friends << @n1121
+      end
     end
 
     it "should work with outgoing nodes of depth 2" do
       nodes = @n1.friends.depth(2)
-      nodes.should include(@n11,@n12,@n112)
-      nodes.should_not include(@n0,@n1,@n1121)
+      nodes.should include(@n11, @n12, @n112)
+      nodes.should_not include(@n0, @n1, @n1121)
     end
 
     it "should work with outgoing nodes of depth 3" do
       nodes = @n1.friends.depth(3)
-      nodes.should include(@n11,@n12,@n112, @n1121)
-      nodes.should_not include(@n0,@n1)
+      nodes.should include(@n11, @n12, @n112, @n1121)
+      nodes.should_not include(@n0, @n1)
     end
 
     it "should work with outgoing nodes to the end of graph" do
       nodes = @n1.friends.depth(:all)
-      nodes.should include(@n11,@n12,@n112, @n1121)
-      nodes.should_not include(@n0,@n1)
+      nodes.should include(@n11, @n12, @n112, @n1121)
+      nodes.should_not include(@n0, @n1)
     end
 
     it "should work with incoming nodes of depth 2" do
@@ -154,16 +161,21 @@ describe "Neo4j::NodeMixin#has_n " do
     before(:all) do
       undefine_class :Customer, :Order, :CustOrderRel
 
-      class Customer; end
+      class Customer;
+      end
 
       class Order
         include Neo4j::NodeMixin
         property :date, :order_id
         has_one(:customer).from(Customer, :orders)
+
+        def to_s
+          "Order #{order_id}"
+        end
       end
 
       class CustOrderRel
-        include Neo4j::RelationMixin
+        include Neo4j::RelationshipMixin
         property :my_prop
       end
 
@@ -171,7 +183,7 @@ describe "Neo4j::NodeMixin#has_n " do
         include Neo4j::NodeMixin
         property :age, :name
 
-        has_n(:orders).relation(CustOrderRel)
+        has_n(:orders).relationship(CustOrderRel)
       end
 
     end
@@ -206,23 +218,23 @@ describe "Neo4j::NodeMixin#has_n " do
       # given
       customer = Customer.new
       order = Order.new
-      relation = customer.orders.new(order) # another way of adding a relationship
+      relationship = customer.orders.new(order) # another way of adding a relationship
 
       # when
-      relation.my_prop = 'a property'
+      relationship.my_prop = 'a property'
 
       # then
-      relation.my_prop.should == 'a property'
+      relationship.my_prop.should == 'a property'
     end
 
-    it "should not contain the order when the customer-order relation has been deleted" do
+    it "should not contain the order when the customer-order relationship has been deleted" do
       # given
       customer = Customer.new
       order = Order.new
-      relation = customer.orders.new(order) # another way of adding a relationship
+      relationship = customer.orders.new(order) # another way of adding a relationship
 
       # when
-      relation.delete
+      relationship.delete
 
       # then
       customer.orders.to_a.should_not include(order)
@@ -232,11 +244,16 @@ describe "Neo4j::NodeMixin#has_n " do
 #      pending "filter not implemented yet, see ticket 17"
       # given
       customer = Customer.new
-      order1 = Order.new{|n| n.order_id = '1'}
-      order2 = Order.new{|n| n.order_id = '2'}
-      order3 = Order.new{|n| n.order_id = '3'}
+      order1 = Order.new
+      order2 = Order.new
+      order3 = Order.new
       customer.orders << order1 << order2 << order3
 
+      order1.order_id = '1'
+      order2.order_id = '2'
+      order3.order_id = '3'
+
+      customer.orders.each {|x| puts x}
       # when
       result = customer.orders{ order_id == '2'}.to_a
 
@@ -247,16 +264,16 @@ describe "Neo4j::NodeMixin#has_n " do
   end
 
 
-  describe 'node1.relation_type.new(node2) (creating a new RelationMixin)' do
+  describe 'node1.relationship_type.new(node2) (creating a new RelationshipMixin)' do
     before(:all) do
-      class CustomerOrderRelation
-        include Neo4j::RelationMixin
+      class CustomerOrderRelationship
+        include Neo4j::RelationshipMixin
         property :prio
       end
 
       class Customer
         include Neo4j::NodeMixin
-        has_n(:orders).relation(CustomerOrderRelation)
+        has_n(:orders).relationship(CustomerOrderRelationship)
         has_n :friends
       end
 
@@ -266,7 +283,7 @@ describe "Neo4j::NodeMixin#has_n " do
     end
 
 
-    it "should return a RelationMixin of correct class" do
+    it "should return a RelationshipMixin of correct class" do
       # given
       c = Customer.new
       o = Order.new
@@ -275,10 +292,10 @@ describe "Neo4j::NodeMixin#has_n " do
       r = c.orders.new(o)
 
       # then
-      r.should be_kind_of(CustomerOrderRelation)
+      r.should be_kind_of(CustomerOrderRelationship)
     end
 
-    it "should return a RelationMixin of relationship type" do
+    it "should return a RelationshipMixin of relationship type" do
       # given
       c = Customer.new
       o = Order.new
@@ -302,10 +319,10 @@ describe "Neo4j::NodeMixin#has_n " do
 
       # then
       r.prio.should == 'important'
-      c.relations.outgoing(:orders)[o].prio.should == 'important'
+      c.relationships.outgoing(:orders)[o].prio.should == 'important'
     end
 
-    it "should be possible to read an unset property on the returned RelationMixin" do
+    it "should be possible to read an unset property on the returned RelationshipMixin" do
       # given
       c = Customer.new
       o = Order.new
@@ -315,7 +332,7 @@ describe "Neo4j::NodeMixin#has_n " do
       r.prio.should == nil
     end
 
-    it "should load the created RelationMixin when traversing the relationship" do
+    it "should load the created RelationshipMixin when traversing the relationship" do
       # given
       c = Customer.new
       o1 = Order.new
@@ -324,7 +341,7 @@ describe "Neo4j::NodeMixin#has_n " do
       c.orders << o1 << o2
 
       # when and then
-      c.relations.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelation) }
+      c.relationships.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelationship) }
     end
 
     it "can not have a relationship to a none Neo::Node" do

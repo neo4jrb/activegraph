@@ -1,5 +1,5 @@
 module Neo4j
-  module Relations
+  module Relationships
 
     # Wrapper for org.neo4j.api.core.TraversalPosition
     # See Javadoc for org.neo4j.api.core.TraversalPosition
@@ -24,8 +24,8 @@ module Neo4j
 
       # Return the last relationship traversed, may be nil.
       def last_relationship_traversed
-        relation = @traversal_position.lastRelationshipTraversed()
-        Neo4j.instance.load_relationship(relation) unless relation.nil?
+        relationship = @traversal_position.lastRelationshipTraversed()
+        Neo4j.instance.load_relationship(relationship) unless relationship.nil?
       end
 
       # Returns the current traversal depth.

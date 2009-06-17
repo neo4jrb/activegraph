@@ -6,262 +6,221 @@ require 'neo4j/spec_helper'
 
 
 
-describe 'NodeMixin' do
+# ----------------------------------------------------------------------------
+# initialize
+#
+
+describe 'NodeMixin#initialize' do
+
   before(:all) do
     start
   end
 
-  after(:all) do
-    stop
-  end  
- 
-  # ----------------------------------------------------------------------------
-  # initialize
-  #
-  
-  describe '#initialize' do
-    before(:each)  do
-      stop
-      undefine_class :TestNode, :SubNode  # must undefine this since each spec defines it
-    end
+  before(:each) do
+    Neo4j::Transaction.new
+  end
 
-    it "should accept no arguments"  do
-      class TestNode
-        include Neo4j::NodeMixin
-      end
-      TestNode.new
-    end
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
 
-    it "should allow to initialize itself"  do
-      # given an initialize method
-      class TestNode
-        include Neo4j::NodeMixin
-        attr_reader :foo 
-        def initialize
-          @foo = "bar"
-        end
-      end
-      
-      # when 
-      n = TestNode.new
-      
-      # then
-      n.foo.should == 'bar'
+  it "should accept no arguments"  do
+    class TestNode1
+      include Neo4j::NodeMixin
     end
-    
+    TestNode1.new
+  end
 
-    it "should allow arguments for the initialize method"  do
-      class TestNode
-        include Neo4j::NodeMixin
-        attr_reader :foo 
-        def initialize(value)
-          @foo = value
-        end
-      end
-      n = TestNode.new 'hi'
-      n.foo.should == 'hi'
-    end
-    
-    it "should allow to create a node from a native Neo Java object" do
-      class TestNode
-        include Neo4j::NodeMixin
-      end
-      
-      node1 = TestNode.new
-      node2 = TestNode.new(node1.internal_node)
-      node1.internal_node.should == node2.internal_node      
-    end
+  it "should allow to initialize itself"  do
+    # given an initialize method
+    class TestNode2
+      include Neo4j::NodeMixin
+      attr_reader :foo
+      property :baaz
 
-    it "should create a referense from the reference node root" do
-      class TestNode
-        include Neo4j::NodeMixin
+      def initialize(baaz)
+        super
+        @foo = "bar"
+        self.baaz = baaz
       end
 
-      ref_node = Neo4j.instance.ref_node
-      ref_node.relations.outgoing(TestNode).should be_empty
-
-      # when
-      t = TestNode.new
-      
-      # then
-      nodes = ref_node.relations.outgoing(TestNode).nodes
-      nodes.to_a.size.should == 1
-      nodes.should include(t)
     end
 
-    it "should create a referense from the reference node root for inherited classes" do
-      class TestNode
-        include Neo4j::NodeMixin
-      end
-      
-      class SubNode < TestNode
-      end
+    # when
+    n = TestNode2.new('hajhaj')
 
-      ref_node = Neo4j.instance.ref_node
-      ref_node.relations.outgoing(TestNode).should be_empty
-
-      # when
-      t = SubNode.new
-
-      # then
-      nodes = ref_node.relations.outgoing(TestNode).nodes
-      nodes.to_a.size.should == 1
-      nodes.should include(t)
-      SubNode.root_class.should == TestNode
-    end
+    # then
+    n.foo.should == 'bar'
+    n[:baaz].should == 'hajhaj'
   end
 
 
-  # ----------------------------------------------------------------------------
-  # update
-  #
+  it "should allow arguments for the initialize method"  do
+    class TestNode3
+      include Neo4j::NodeMixin
+      attr_reader :foo
 
-  describe '#update' do
-    before(:all)  do
-      undefine_class :TestNode
-      class TestNode
-        include Neo4j::NodeMixin
-        property :name, :age
+      def initialize(value)
+        @foo = value
       end
     end
-
-    it "should be able to update a node from a value obejct" do
-      # given
-      t = TestNode.new
-      t.name='kalle'
-      t.age=2
-      vo = t.value_object
-      t2 = TestNode.new
-      t2.name = 'foo'
-
-      # when
-      t2.update(vo)
-
-      # then
-      t2.name.should == 'kalle'
-      t2.age.should == 2
-    end
-
-    it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
-      t = TestNode.new
-      t.update({:name=>'123', :oj=>'hoj'})
-      t.name.should == '123'
-      t.age.should == nil
-    end
-
-    it "should be able to update a node by using a hash" do
-      t = TestNode.new
-      t.update({:name=>'andreas', :age=>3})
-      t.name.should == 'andreas'
-      t.age.should == 3
-    end
-
-    it "should not allow the classname to be changed" do
-      t = TestNode.new
-      t.update({:classname => 'wrong'})
-      t.classname.should == 'TestNode'
-    end
-
-    it "should not allow the id to be changed" do
-      t = TestNode.new
-      t.update({:id => 987654321})
-      t.props['id'].should == t.neo_node_id
-    end
+    n = TestNode3.new 'hi'
+    n.foo.should == 'hi'
   end
-  
 
-  # ----------------------------------------------------------------------------
-  # equality ==
-  #
-
-  describe 'equality (==)' do
-    
-    before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
-      class TestNode 
-        include Neo4j::NodeMixin
-      end
-      NODES = 5
-      @nodes = []
-      NODES.times {@nodes << TestNode.new}
+  it "should allow to create a node from a native Neo Java object" do
+    class TestNode4
+      include Neo4j::NodeMixin
     end
 
-    it "should be == another node only if it has the same node id" do
-      node = TestNode.new(@nodes[0].internal_node)
-      node.internal_node.should be_equal(@nodes[0].internal_node)
-      node.should == @nodes[0]
-      node.hash.should == @nodes[0].hash
-    end
-
-    it "should not be == another node only if it has not the same node id" do
-      node = TestNode.new(@nodes[1].internal_node)
-      node.internal_node.should_not be_equal(@nodes[0].internal_node)
-      node.should_not == @nodes[0]
-      node.hash.should_not == @nodes[0].hash
-    end
-    
-  end
-  
-
-
-  # ----------------------------------------------------------------------------
-  # all
-  #
-  describe 'Neo4j::Node#all' do
-    before(:each)  do
-      Neo4j.instance.ref_node.relations.each {|r| r.delete}
-      undefine_class :TestNode  # must undefine this since each spec defines it
-    end
-
-    it "should return all node instances" do
-      class TestNode
-        include Neo4j::NodeMixin
-      end
-
-      t1 = TestNode.new
-      t2 = TestNode.new
-
-      # when
-      TestNode.all.to_a.size.should == 2
-      TestNode.all.nodes.to_a.should include(t1)
-      TestNode.all.nodes.to_a.should include(t2)
-    end
-
-
-    it "should not return deleted node instances" do
-      class TestNode
-        include Neo4j::NodeMixin
-      end
-
-      t1 = TestNode.new
-      t2 = TestNode.new
-      TestNode.all.to_a.size.should == 2
-
-      # when
-      t1.delete
-      TestNode.all.to_a.size.should == 1
-      TestNode.all.nodes.to_a.should include(t2)
-    end
-
-    it "should return subclasses instances as well" do
-      class A
-        include Neo4j::NodeMixin
-      end
-
-      class B < A
-      end
-
-      # when
-      a = A.new
-      b = B.new
-
-      # then
-      A.all.to_a.size.should == 2
-      B.all.nodes.to_a.should include(a,b)
-    end
-
+    node1 = TestNode4.new
+    node2 = TestNode4.new(node1.internal_node)
+    node1.internal_node.should == node2.internal_node
   end
 end
+
+
+describe 'NodeMixin properties' do
+
+  before(:all) do
+    start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+  it "should behave like a hash" do
+    n = Neo4j::Node.new
+    n[:a] = 'a'
+    n[:a].should == 'a'
+    n['foo'] = 42
+    n['foo'].should == 42
+    n[34] = true
+    n[34].should == true
+  end
+
+  it "should allow to update properties" do
+    n = Neo4j::Node.new
+    n[:a] = 'a'
+    n[:a] = 'b'
+    n[:a].should == 'b'
+  end
+end
+
+# ----------------------------------------------------------------------------
+# update
+#
+
+describe 'NodeMixin#update' do
+
+  before(:all) do
+    class TestNode
+      include Neo4j::NodeMixin
+      property :name, :age
+    end
+
+    start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+  it "should be able to update a node from a value obejct" do
+    # given
+    t = TestNode.new
+    t[:name]='kalle'
+    t[:age]=2
+    vo = t.value_object
+    t2 = TestNode.new
+    t2[:name] = 'foo'
+
+    # when
+    t2.update(vo)
+
+    # then
+    t2[:name].should == 'kalle'
+    t2[:age].should == 2
+  end
+
+  it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
+    t = TestNode.new
+    t.update({:name=>'123', :oj=>'hoj'})
+    t.name.should == '123'
+    t.age.should == nil
+  end
+
+  it "should be able to update a node by using a hash" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.name.should == 'andreas'
+    t.age.should == 3
+  end
+
+  it "should not allow the classname to be changed" do
+    t = TestNode.new
+    t.update({:classname => 'wrong'})
+    t.classname.should == 'TestNode'
+  end
+
+  it "should not allow the id to be changed" do
+    t = TestNode.new
+    t.update({:id => 987654321})
+    t.props['id'].should == t.neo_node_id
+  end
+end
+
+
+# ----------------------------------------------------------------------------
+# equality ==
+#
+
+describe 'NodeMixin#equality (==)' do
+
+  before(:all) do
+    start
+    
+    NODES = 5
+    @nodes = []
+    Neo4j::Transaction.run do
+      NODES.times { @nodes << Neo4j::Node.new}
+    end
+    
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+  it "should be == another node only if it has the same node id" do
+    node = Neo4j::Node.new(@nodes[0].internal_node)
+    node.internal_node.should be_equal(@nodes[0].internal_node)
+    node.should == @nodes[0]
+    node.hash.should == @nodes[0].hash
+  end
+
+  it "should not be == another node only if it has not the same node id" do
+    node = Neo4j::Node.new(@nodes[1].internal_node)
+    node.internal_node.should_not be_equal(@nodes[0].internal_node)
+    node.should_not == @nodes[0]
+    node.hash.should_not == @nodes[0].hash
+  end
+
+end
+
 
 
 # ----------------------------------------------------------------------------
@@ -271,28 +230,30 @@ end
 describe "Neo4j::Node#delete"  do
   before(:all) do
     start
-    undefine_class :TestNode
-    class TestNode 
-      include Neo4j::NodeMixin
-      has_n :friends
-    end
+  end
 
+  before(:each) do
+    Neo4j::Transaction.new
   end
-    
-  after(:all) do
-    stop
+
+  after(:each) do
+    Neo4j::Transaction.finish
   end
+
   
+
   it "should delete all relationships as well" do
     # given
-    t1 = TestNode.new
-    t2 = TestNode.new { |n| n.friends << t1}
-      
+    t1 = Neo4j::Node.new
+    t2 = Neo4j::Node.new
+    t2.relationships.outgoing(:friends) << t1
+    t2.relationships.both(:friends).nodes.to_a.should include(t1)
+
     # when
     t1.delete
-    
+
     # then
-    t2.friends.to_a.should_not include(t1)      
+    t2.relationships.both(:friends).nodes.to_a.should_not include(t1)
   end
 end
 
