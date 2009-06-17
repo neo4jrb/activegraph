@@ -33,9 +33,11 @@ module RestMixin
 
   Sinatra::Application.get("/relations/:id") do
     content_type :json
-    rel = Neo4j.load_relationship(params[:id])
-    return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
-    rel.props.to_json
+    Neo4j::Transaction.run do
+      rel = Neo4j.load_relationship(params[:id])
+      return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
+      rel.props.to_json
+    end
   end
 
 
@@ -50,113 +52,130 @@ module RestMixin
     "http://#{host}:#{port}"
   end
 
+
   def self.included(c)
     classname = c.to_s
 
-    puts "Register Neo Node Class /nodes/#{classname}"
+    #puts "Register Neo Node Class /nodes/#{classname}"
 
 
     Sinatra::Application.get("/nodes/#{classname}/:id/traverse") do
       content_type :json
-      node = Neo4j.load(params[:id])
-      return 404, "Can't find node with id #{params[:id]}" if node.nil?
+      Neo4j::Transaction.run do
+        node = Neo4j.load(params[:id])
+        return 404, "Can't find node with id #{params[:id]}" if node.nil?
 
-      relation = params['relation']
-      depth = params['depth']
-      depth ||= 1
-      uris = node.traverse.outgoing(relation.to_sym).depth(depth.to_i).collect{|node| node._uri}
-      {'uri_list' => uris}.to_json
+        relation = params['relation']
+        depth = params['depth']
+        depth ||= 1
+        uris = node.traverse.outgoing(relation.to_sym).depth(depth.to_i).collect{|node| node._uri}
+        {'uri_list' => uris}.to_json
+      end
     end
 
 
     Sinatra::Application.get("/nodes/#{classname}/:id/:prop") do
       content_type :json
-      node = Neo4j.load(params[:id])
-      {params[:prop]=>node.get_property(params[:prop])}.to_json
+      Neo4j::Transaction.run do
+        node = Neo4j.load(params[:id])
+        {params[:prop]=>node.get_property(params[:prop])}.to_json
+      end
     end
 
 
     Sinatra::Application.post("/nodes/#{classname}/:id/:rel") do
       content_type :json
-      node = Neo4j.load(params[:id])
-      rel = params[:rel]
+      Neo4j::Transaction.run do
+        node = Neo4j.load(params[:id])
+        rel = params[:rel]
 
-      # does this relationship exist ?
-      if !node.class.relations_info.keys.include?(rel.to_sym)
-        return 409, "Can't add relation on '#{rel}' since it does not exist"
-      end
-      body = request.body.read
-      data = JSON.parse(body)
-      uri = data['uri']
-      match = URL_REGEXP.match(uri)
-      return 400, "Bad node uri '#{uri}'" if match.nil?
-      to_clazz, to_node_id = match[6].split('/')
+        # does this relationship exist ?
+        if !node.class.relationships_info.keys.include?(rel.to_sym)
+          return 409, "Can't add relation on '#{rel}' since it does not exist"
+        end
+        body = request.body.read
+        data = JSON.parse(body)
+        uri = data['uri']
+        match = URL_REGEXP.match(uri)
+        return 400, "Bad node uri '#{uri}'" if match.nil?
+        to_clazz, to_node_id = match[6].split('/')
 
-      other_node = Neo4j.load(to_node_id.to_i)
-      return 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
+        other_node = Neo4j.load(to_node_id.to_i)
+        return 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
 
-      if to_clazz != other_node.class.to_s
-        return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
-      end
+        if to_clazz != other_node.class.to_s
+          return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
+        end
 
-      rel_obj = node.instance_eval "#{rel}.new(other_node)" # TODO use send method instead
+        rel_obj = node.instance_eval "#{rel}.new(other_node)" # TODO use send method instead
 
-      return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
+        return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
       
-      # create URI
-      redirect "/relations/#{rel_obj.neo_relation_id.to_s}", 201 # created
+        # create URI
+        redirect "/relations/#{rel_obj.neo_relationship_id.to_s}", 201 # created
+      end
     end
 
 
 
     Sinatra::Application.put("/nodes/#{classname}/:id/:prop") do
       content_type :json
-      node = Neo4j.load(params[:id])
-      property = params[:prop]
-      body = request.body.read
-      data = JSON.parse(body)
-      value = data[property]
-      return 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
-      node.set_property(property, value)
-      200
+      Neo4j::Transaction.run do
+        node = Neo4j.load(params[:id])
+        property = params[:prop]
+        body = request.body.read
+        data = JSON.parse(body)
+        value = data[property]
+        return 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
+        node.set_property(property, value)
+        200
+      end
     end
 
     Sinatra::Application.get("/nodes/#{classname}/:id") do
-      Neo4j::Transaction.run {
-        content_type :json
+      content_type :json
+      Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
         return 404, "Can't find node with id #{params[:id]}" if node.nil?
         node.props.to_json
-      }
+      end
     end
 
     Sinatra::Application.put("/nodes/#{classname}/:id") do
       content_type :json
-      body = request.body.read
-      data = JSON.parse(body)
-      node = Neo4j.load(params[:id])
-      node.update(data)
-      response = node.props.to_json
-      response
+      Neo4j::Transaction.run do
+        body = request.body.read
+        data = JSON.parse(body)
+        node = Neo4j.load(params[:id])
+        node.update(data)
+        response = node.props.to_json
+        response
+      end
     end
 
     Sinatra::Application.delete("/nodes/#{classname}/:id") do
-      node = Neo4j.load(params[:id])
-      return 404, "Can't find node with id #{params[:id]}" if node.nil?
-      node.delete
-      ""
+      content_type :json
+      Neo4j::Transaction.run do
+        node = Neo4j.load(params[:id])
+        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        node.delete
+        ""
+      end
     end
 
     Sinatra::Application.post("/nodes/#{classname}") do
-      p = c.new
-      data = JSON.parse(request.body.read)
-      p.update(data)
-      redirect "/nodes/#{classname}/#{p.neo_node_id.to_s}", 201 # created
+      content_type :json
+      Neo4j::Transaction.run do
+        p = c.new
+        data = JSON.parse(request.body.read)
+        p.update(data)
+        redirect "/nodes/#{classname}/#{p.neo_node_id.to_s}", 201 # created
+      end
     end
 
     Sinatra::Application.get("/nodes/#{classname}") do
       content_type :json
-      Neo4j::Transaction.run {
+      Neo4j::Transaction.run do
         resources = if params[:search].nil?
           c.all.map{|rel| rel.end_node}
         else
@@ -164,7 +183,7 @@ module RestMixin
           c.find(params[:search])
         end
         resources.map{|res| res.props}.to_json
-      }
+      end
     end
   end
 end
