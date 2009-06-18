@@ -89,9 +89,9 @@ END_OF_STRING
 
 
   it "should know the URI of a RestPerson instance" do
-    RestPerson = RestPerson.new
+    p = RestPerson.new
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
-    RestPerson._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{RestPerson.neo_node_id}"
+    p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_node_id}"
   end
 
   it "should be possible to traverse a relationship on GET nodes/RestPerson/<id>/traverse?relation=friends&depth=1" do
@@ -123,7 +123,7 @@ END_OF_STRING
 
     bertil = RestPerson.new
     bertil.name = 'bertil'
-    bertil.friends << Person.new
+    bertil.friends << RestPerson.new
 
     # when
     post "/nodes/RestPerson/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
@@ -134,15 +134,15 @@ END_OF_STRING
     adam.friends.should include(bertil)
   end
 
-  it "should list related nodes on GET /nodes/Person/friends" do
-    adam = Person.new
+  it "should list related nodes on GET /nodes/RestPerson/friends" do
+    adam = RestPerson.new
     adam.name = 'adam'
-    bertil = Person.new
+    bertil = RestPerson.new
     bertil.name = 'bertil'
     adam.friends << bertil
 
     # when
-    get "/nodes/Person/#{adam.neo_node_id}/friends"
+    get "/nodes/RestPerson/#{adam.neo_node_id}/friends"
 
     # then
     status.should == 200
