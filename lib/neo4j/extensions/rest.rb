@@ -91,8 +91,9 @@ module RestMixin
 
     Sinatra::Application.post("/nodes/#{classname}/:id/:rel") do
       content_type :json
-      Neo4j::Transaction.run do
+      new_id = Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
+        return 404, "Can't find node with id #{params[:id]}" if node.nil?
         rel = params[:rel]
 
         # does this relationship exist ?
@@ -117,9 +118,9 @@ module RestMixin
 
         return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
 
-        # create URI
-        redirect "/relations/#{rel_obj.neo_relationship_id.to_s}", 201 # created
+        rel_obj.neo_relationship_id
       end
+      redirect "/relations/#{new_id}", 201 # created
     end
 
 
@@ -170,26 +171,21 @@ module RestMixin
 
     Sinatra::Application.post("/nodes/#{classname}") do
       content_type :json
-      Neo4j::Transaction.run do
+      new_id = Neo4j::Transaction.run do
         p = c.new
         data = JSON.parse(request.body.read)
-        puts "POST DATA #{data.inspect} TO #{p}"
+        #puts "POST DATA #{data.inspect} TO #{p}"
         p.update(data)
-        puts "POSTED #{p}"
-        redirect "/nodes/#{classname}/#{p.neo_node_id.to_s}", 201 # created
+        #puts "POSTED #{p}"
+        p.neo_node_id
       end
+      redirect "/nodes/#{classname}/#{new_id.to_s}", 201 # created
     end
 
     Sinatra::Application.get("/nodes/#{classname}") do
       content_type :json
       Neo4j::Transaction.run do
-        resources =
-                if params[:search].nil?
-                  c.all.map{|rel| rel.end_node}
-                else
-                  puts "Search string: #{params[:search]}"
-                  c.find(params[:search])
-                end
+        resources = c.find(params)
         resources.map{|res| res.props}.to_json
       end
     end

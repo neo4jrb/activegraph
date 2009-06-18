@@ -177,6 +177,21 @@ END_OF_STRING
     response.location.should == "/nodes/RestPerson/1"
   end
 
+  it "should persist a new RestPerson created by POST /nodes/RestPerson" do
+    data = { :name => 'kalle'}
+
+    # when
+    Neo4j::Transaction.finish # run the post outside of a transaction
+    Neo4j::Transaction.running?.should == false
+    post '/nodes/RestPerson', data.to_json
+    get response.location
+
+    # then
+    status.should == 200
+    body = JSON.parse(response.body)
+    body['name'].should == 'kalle'
+  end
+
   it "should be possible to follow the location HTTP header when creating a new RestPerson" do
     data = { :name => 'kalle'}
 
