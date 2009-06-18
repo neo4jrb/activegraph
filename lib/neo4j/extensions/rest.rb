@@ -34,7 +34,7 @@ module RestMixin
   Sinatra::Application.get("/relations/:id") do
     content_type :json
     Neo4j::Transaction.run do
-      rel = Neo4j.load_relationship(params[:id])
+      rel = Neo4j.load_relationship(params[:id].to_i)
       return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
       rel.props.to_json
     end
@@ -77,7 +77,14 @@ module RestMixin
       content_type :json
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
-        {params[:prop]=>node.get_property(params[:prop])}.to_json
+        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        prop = params[:prop].to_sym
+        if node.class.relationships_info.keys.include?(prop)
+          rels = node.send(prop) || []
+          rels.map{|rel| rel.props}.to_json
+        else
+          {prop => node.get_property(prop)}.to_json
+        end
       end
     end
 
@@ -106,7 +113,7 @@ module RestMixin
           return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
         end
 
-        rel_obj = node.instance_eval "#{rel}.new(other_node)" # TODO use send method instead
+        rel_obj = node.send(rel).new(other_node)
 
         return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
 
@@ -114,7 +121,6 @@ module RestMixin
         redirect "/relations/#{rel_obj.neo_relationship_id.to_s}", 201 # created
       end
     end
-
 
 
     Sinatra::Application.put("/nodes/#{classname}/:id/:prop") do
@@ -146,7 +152,7 @@ module RestMixin
         body = request.body.read
         data = JSON.parse(body)
         node = Neo4j.load(params[:id])
-        node.update(data)
+        node.update(data, true)
         response = node.props.to_json
         response
       end

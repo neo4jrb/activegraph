@@ -10,13 +10,14 @@ It provides:
 * Transaction with rollbacks support. 
 * Indexing and querying of ruby objects.
 * Can be used instead of ActiveRecord in Ruby on Rails or Merb
+* Can be accessible as REST resources.
 
 It uses two powerful and mature java libraries:
 * Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
 === Status
-* There are over 250 RSpecs.
+* There are over 300 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
 * Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
 * Has not been used in production yet (as far as I know).
@@ -41,9 +42,11 @@ It uses two powerful and mature java libraries:
 === Content
 This page contains the following information:
 * Installation guide
+* Three Minute Tutorial
 * Ten Minute Tutorial
 * Lucene API Documentation
 * Neo4j API Documentation
+* Extensions: REST
 * Ruby on Rails with Neo4j.rb
 
 == Installation
@@ -1387,11 +1390,25 @@ using ActiveMQ (see the cluster branch).
 Another solution might be to simply copy the master database (rsync ?) to the slaves.
 
 
+== Extension: REST
+
+There is an experimental REST extension to Neo4j.rb.
+It requires the following gems
+ * Sinatra >= 0.9.2
+ * Rack >= 1.0
+ * json-jruby > 1.1.6
+
+For testing it also needs:
+ * rack-test
+ 
+For more information see the test/rest/example.rb or the examples/admin.
+
+
 == Ruby on Rails with Neo4j.rb
 
 Neo4j.rb does work nicely with R&R.
 
-It has been verified on rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
+It has been verified on neo4j.rb 0.2.1 rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
 
 === Configuration
 

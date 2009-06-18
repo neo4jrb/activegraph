@@ -8,7 +8,6 @@ module Neo4j
   
     def transactional(*methods)
       return unless defined? NEO4J_AUTO_TX
-      puts "transactional:  #{methods.inspect}"
       methods.each do |name|
         orig_name = (name.to_s == '<<') ? '_append' : "_original_#{name}"
         self.send :alias_method, orig_name, name

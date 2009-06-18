@@ -182,6 +182,8 @@ module Neo4j
 
     #
     # Updates this node's properties by using the provided struct/hash.
+    # If strict is true, any properties present on the node but not present in
+    # the hash will be removed from the node.
     #
     # ==== Parameters
     # struct_or_hash<#each_pair>:: the key and value to be set
@@ -190,11 +192,19 @@ module Neo4j
     # self
     #
     # :api: public
-    def update(struct_or_hash)
+    def update(struct_or_hash, strict=false)
+      keys_to_delete = props.keys - %w(id classname) if strict
       struct_or_hash.each_pair do |key, value|
         next if %w(id classname).include? key.to_s # do not allow special properties to be mass assigned
-        self[key] = value
+        keys_to_delete.delete(key) if strict
+        method = "#{key}=".to_sym
+        if self.respond_to?(method)
+          self.send(method, value)
+        else
+          set_property(key.to_s, value)
+        end
       end
+      keys_to_delete.each{|key| remove_property(key) } if strict
       self
     end
 

@@ -38,7 +38,8 @@ Spec::Rake::SpecTask.new do |t|
   t.libs << "test"
   t.libs << "lib"
   #  t.rcov = true
-  t.spec_files = FileList['test/**/*_spec.rb']
+  # rest specs requires some other gems - see the rest_spec.rb file
+  t.spec_files = FileList['test/lucene/*_spec.rb'] + FileList['test/neo4j/*_spec.rb']
   t.spec_opts = ['--format specdoc', '--color']
   # t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
 end
