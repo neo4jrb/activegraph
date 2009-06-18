@@ -120,12 +120,8 @@ END_OF_STRING
   it "should create a relationship on POST /nodes/RestPerson/friends" do
     adam = RestPerson.new
     adam.name = 'adam'
-<<<<<<< HEAD:test/rest/rest_spec.rb
 
     bertil = RestPerson.new
-=======
-    bertil = Person.new
->>>>>>> restful:test/rest/rest_spec.rb
     bertil.name = 'bertil'
     bertil.friends << Person.new
 
@@ -134,11 +130,7 @@ END_OF_STRING
 
     # then
     status.should == 201
-<<<<<<< HEAD:test/rest/rest_spec.rb
-    response.location.should == "/relations/0" # TODO use uuid instead
-=======
-    response.location.should == "/relations/1" # starts counting from 0
->>>>>>> restful:test/rest/rest_spec.rb
+    response.location.should == "/relations/1" # starts counting from 0 -- TODO use uuid instead
     adam.friends.should include(bertil)
   end
 
@@ -233,12 +225,8 @@ END_OF_STRING
     # then
     status.should == 200
     p.name.should == 'blah'
-<<<<<<< HEAD:test/rest/rest_spec.rb
+    p[:some_property].should be_nil
     p[:dynamic_property].should == 'cool stuff'
-=======
-    p.props['some_property'].should be_nil
-    p.props['dynamic_property'].should == 'cool stuff'
->>>>>>> restful:test/rest/rest_spec.rb
   end
 
   it "should be possible to delete a node on DELETE nodes/RestPerson/<node_id>" do
