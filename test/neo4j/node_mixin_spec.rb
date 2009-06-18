@@ -157,6 +157,7 @@ describe 'NodeMixin#update' do
     t.update({:name=>'123', :oj=>'hoj'})
     t.name.should == '123'
     t.age.should == nil
+    t['oj'].should == 'hoj'
   end
 
   it "should be able to update a node by using a hash" do
@@ -240,7 +241,17 @@ describe "Neo4j::Node#delete"  do
     Neo4j::Transaction.finish
   end
 
-  
+  it "should remove the node from the database" do
+    # given
+    node = Neo4j::Node.new
+    id = node.neo_node_id
+    
+    # when
+    node.delete
+    
+    # then
+    Neo4j.load(id).should == nil
+  end
 
   it "should delete all relationships as well" do
     # given
@@ -276,6 +287,15 @@ describe "Neo4j::Node#props"  do
   after(:all) do
     stop
   end
+  
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+  
 
   before(:each) do
     Neo4j::Transaction.new

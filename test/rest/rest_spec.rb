@@ -120,18 +120,43 @@ END_OF_STRING
   it "should create a relationship on POST /nodes/RestPerson/friends" do
     adam = RestPerson.new
     adam.name = 'adam'
+<<<<<<< HEAD:test/rest/rest_spec.rb
 
     bertil = RestPerson.new
+=======
+    bertil = Person.new
+>>>>>>> restful:test/rest/rest_spec.rb
     bertil.name = 'bertil'
-
+    bertil.friends << Person.new
 
     # when
     post "/nodes/RestPerson/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
 
     # then
     status.should == 201
+<<<<<<< HEAD:test/rest/rest_spec.rb
     response.location.should == "/relations/0" # TODO use uuid instead
+=======
+    response.location.should == "/relations/1" # starts counting from 0
+>>>>>>> restful:test/rest/rest_spec.rb
     adam.friends.should include(bertil)
+  end
+
+  it "should list related nodes on GET /nodes/Person/friends" do
+    adam = Person.new
+    adam.name = 'adam'
+    bertil = Person.new
+    bertil.name = 'bertil'
+    adam.friends << bertil
+
+    # when
+    get "/nodes/Person/#{adam.neo_node_id}/friends"
+
+    # then
+    status.should == 200
+    body = JSON.parse(response.body)
+    body.size.should == 1
+    body[0]['id'].should == bertil.neo_node_id
   end
 
   it "should be possible to load a relationship on GET /relations/<id>" do
@@ -199,6 +224,7 @@ END_OF_STRING
     # given
     p = RestPerson.new
     p.name = 'sune123'
+    p[:some_property] = 'foo'
 
     # when
     data = {:name => 'blah', :dynamic_property => 'cool stuff'}
@@ -207,7 +233,12 @@ END_OF_STRING
     # then
     status.should == 200
     p.name.should == 'blah'
+<<<<<<< HEAD:test/rest/rest_spec.rb
     p[:dynamic_property].should == 'cool stuff'
+=======
+    p.props['some_property'].should be_nil
+    p.props['dynamic_property'].should == 'cool stuff'
+>>>>>>> restful:test/rest/rest_spec.rb
   end
 
   it "should be possible to delete a node on DELETE nodes/RestPerson/<node_id>" do
