@@ -248,6 +248,9 @@ describe "Neo4j::Node#delete"  do
     
     # when
     node.delete
+    Neo4j::Transaction.current.success # delete only takes effect when transaction has ended
+    Neo4j::Transaction.finish
+    Neo4j::Transaction.new
     
     # then
     Neo4j.load(id).should == nil

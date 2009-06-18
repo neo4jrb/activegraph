@@ -237,8 +237,10 @@ END_OF_STRING
 
     # when
     delete "/nodes/RestPerson/#{id}"
+    Neo4j::Transaction.current.success # delete only takes effect when transaction has ended
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
+
     # then
     status.should == 200
     Neo4j.load(id).should be_nil
