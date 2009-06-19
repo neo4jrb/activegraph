@@ -83,7 +83,7 @@ describe 'Restful' do
     class Person
       include Neo4j::NodeMixin
       # by including the following mixin we will expose this node as a RESTful resource
-      include RestMixin
+      include Neo4j::RestMixin
       property :name
       has_n :friends
     end
