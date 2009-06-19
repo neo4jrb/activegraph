@@ -35,7 +35,7 @@ module RestMixin
     content_type :json
     Neo4j::Transaction.run do
       rel = Neo4j.load_relationship(params[:id].to_i)
-      return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
+      error 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
       rel.props.to_json
     end
   end
@@ -62,7 +62,7 @@ module RestMixin
       content_type :json
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
-        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        error 404, "Can't find node with id #{params[:id]}" if node.nil?
 
         relation = params['relation']
         depth = params['depth']
@@ -77,7 +77,7 @@ module RestMixin
       content_type :json
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
-        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        error 404, "Can't find node with id #{params[:id]}" if node.nil?
         prop = params[:prop].to_sym
         if node.class.relationships_info.keys.include?(prop)
           rels = node.send(prop) || []
@@ -93,30 +93,30 @@ module RestMixin
       content_type :json
       new_id = Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
-        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        error 404, "Can't find node with id #{params[:id]}" if node.nil?
         rel = params[:rel]
 
         # does this relationship exist ?
         if !node.class.relationships_info.keys.include?(rel.to_sym)
-          return 409, "Can't add relation on '#{rel}' since it does not exist"
+          error 409, "Can't add relation on '#{rel}' since it does not exist"
         end
         body = request.body.read
         data = JSON.parse(body)
         uri = data['uri']
         match = URL_REGEXP.match(uri)
-        return 400, "Bad node uri '#{uri}'" if match.nil?
+        error 400, "Bad node uri '#{uri}'" if match.nil?
         to_clazz, to_node_id = match[6].split('/')
 
         other_node = Neo4j.load(to_node_id.to_i)
-        return 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
+        error 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
 
         if to_clazz != other_node.class.to_s
-          return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
+          error 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
         end
 
         rel_obj = node.send(rel).new(other_node)
 
-        return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
+        error 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
 
         rel_obj.neo_relationship_id
       end
@@ -132,7 +132,7 @@ module RestMixin
         body = request.body.read
         data = JSON.parse(body)
         value = data[property]
-        return 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
+        error 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
         node.set_property(property, value)
         200
       end
@@ -142,7 +142,7 @@ module RestMixin
       content_type :json
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
-        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        error 404, "Can't find node with id #{params[:id]}" if node.nil?
         node.props.to_json
       end
     end
@@ -163,7 +163,7 @@ module RestMixin
       content_type :json
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
-        return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        error 404, "Can't find node with id #{params[:id]}" if node.nil?
         node.delete
         ""
       end
