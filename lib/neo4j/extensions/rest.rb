@@ -206,13 +206,18 @@ module RestMixin
     def find(query=nil, &block)
       return super(query, &block) if query.nil? || query.kind_of?(String)
 
+      if query[:limit]
+        limit = query[:limit].split(/,/).map{|i| i.to_i}
+        limit.unshift(0) if limit.size == 1
+      end
+
       # Build search query
       results = if query[:search]
         super(query[:search])
       else
         search = {:classname => self.name}
         query.each_pair do |key, value|
-          search[key.to_sym] = value unless key.to_sym == :sort
+          search[key.to_sym] = value unless [:sort, :limit].include? key.to_sym
         end
         super(search)
       end
@@ -232,7 +237,12 @@ module RestMixin
         results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
       end
 
-      results
+      # Return only the requested subset of results (TODO: can this be done more efficiently within Lucene?)
+      if limit
+        (limit[0]...(limit[0]+limit[1])).map{|n| results[n] }
+      else
+        results
+      end
     end
   end
 

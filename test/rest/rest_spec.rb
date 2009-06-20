@@ -361,7 +361,7 @@ END_OF_STRING
     data[1]['name'].should == "p1"
   end
 
-  it "should treat GET /nodes/RestPerson?search=... as a Lucene query string" do
+  it "should treat GET /nodes/SomethingElse?search=... as a Lucene query string" do
     # given
     p1 = SomethingElse.new
     p1.name = 'the supplier'
@@ -378,5 +378,21 @@ END_OF_STRING
     data = JSON.parse(response.body)
     data.size.should == 1
     data[0]['name'].should == "the customer"
+  end
+
+  it "should return a subset of nodes on GET /nodes/RestPerson?limit=50,10" do
+    # given
+    100.times{|n| RestPerson.new.name = 'p' + sprintf('%02d', n) }
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson?sort=name,desc&limit=50,10"
+
+    # then
+    status.should == 200
+    data = JSON.parse(response.body)
+    data.size.should == 10
+    data.map{|p| p['name']}.should == %w(p49 p48 p47 p46 p45 p44 p43 p42 p41 p40)
   end
 end
