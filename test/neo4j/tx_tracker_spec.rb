@@ -20,13 +20,13 @@ end
 describe "TxTracker (TxNodeList)" do
 
 
-  before(:all) do
-    Neo4j.start
+  before(:each) do
+    start
     Neo4j.load_tx_tracker
     @tx_node_list = Neo4j::TxNodeList.instance
   end
 
-  after(:all) do
+  after(:each) do
     stop
   end
 
@@ -163,7 +163,6 @@ describe "TxTracker (TxNodeList)" do
 
 
   it "should undo a complete transaction" do
-    pending "Fails if the RSpecs are running in reverse order - fix it"
     @tx_node_list = Neo4j::TxNodeList.instance
 
     node1 = node2 = node3 = nil

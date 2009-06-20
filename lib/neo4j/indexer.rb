@@ -30,10 +30,6 @@ module Neo4j
       @instances.delete(clazz.root_class) unless @instances.nil?
     end
 
-    # only for testing purpose, e.g we need to redefine an existing class
-    def self.clear_all_instances
-      @instances = nil
-    end
 
     # (Re)index the given node
     # :api: private

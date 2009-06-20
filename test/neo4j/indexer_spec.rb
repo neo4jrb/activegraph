@@ -24,12 +24,16 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
       has_n(:employees).from(Employee, :employed_by)
     end
 
-    Indexer.clear_all_instances
+#    Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
     @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary')
   end
 
+  after(:all) do
+    Indexer.remove_instance Employee
+    Indexer.remove_instance Company
+  end
 
   before(:each) do
     Neo4j::Transaction.new
@@ -105,7 +109,8 @@ describe Indexer, " given employees.salary is indexed on Company" do
       has_n(:employees).to(Employee)
     end
 
-    Indexer.clear_all_instances
+    Indexer.remove_instance Employee
+    Indexer.remove_instance Company
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
     @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary')
@@ -217,7 +222,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
   end
 
   def create_indexer
-    Indexer.clear_all_instances
+    Indexer.remove_instance Person
     indexer = Indexer.instance Person
     indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age')
     indexer
@@ -325,7 +330,6 @@ describe Indexer, " given property foo is indexed" do
   before(:each) do
     @node_class = mock('nodeClass')
     @node_class.should_receive(:root_class).any_number_of_times.and_return("Foo")
-    Indexer.clear_all_instances
     @indexer = Indexer.instance @node_class
     @indexer.add_index_on_property('foo')
   end
