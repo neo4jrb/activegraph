@@ -40,7 +40,7 @@ describe 'Restful' do
     NEO_STORAGE = Dir::tmpdir + "/neo_storage"
     LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
     Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
-    Lucene::Config[:store_on_file] = false
+    Lucene::Config[:store_on_file] = true
     Neo4j::Config[:storage_path] = NEO_STORAGE
     FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
@@ -55,7 +55,16 @@ describe 'Restful' do
       # by including the following mixin we will expose this node as a RESTful resource
       include RestMixin
       property :name
+      index :name
       has_n :friends
+    end
+
+    undefine_class2 :SomethingElse
+    class SomethingElse
+      include Neo4j::NodeMixin
+      include RestMixin
+      property :name
+      index :name, :tokenized => true
     end
 
     Neo4j.start
@@ -287,5 +296,87 @@ END_OF_STRING
     # then
     status.should == 200
     p.name.should == 'new-name'
+  end
+
+  it "should return all nodes of that class type on GET /nodes/RestPerson" do
+    # given
+    p1 = RestPerson.new
+    p1.name = 'p1'
+    p2 = RestPerson.new
+    p2.name = 'p2'
+    e = SomethingElse.new
+    e.name = 'p3'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson"
+
+    # then
+    status.should == 200
+    data = JSON.parse(response.body)
+    data.size.should == 2
+    data.map{|p| p['name']}.should include("p1")
+    data.map{|p| p['name']}.should include("p2")
+  end
+
+  it "should search for exact property matches on GET /nodes/RestPerson?name=p" do
+    # given
+    p1 = RestPerson.new
+    p1.name = 'p'
+    p1_id = p1.neo_node_id
+    p2 = RestPerson.new
+    p2.name = 'p2'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson?name=p"
+
+    # then
+    status.should == 200
+    data = JSON.parse(response.body)
+    data.size.should == 1
+    data[0]['id'].should == p1_id
+    data[0]['name'].should == "p"
+  end
+
+  it "should sort by property value on GET /nodes/RestPerson?sort=name,desc" do
+    # given
+    p1 = RestPerson.new
+    p1.name = 'p1'
+    p2 = RestPerson.new
+    p2.name = 'p2'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson?sort=name,desc"
+
+    # then
+    status.should == 200
+    data = JSON.parse(response.body)
+    data.size.should == 2
+    data[0]['name'].should == "p2"
+    data[1]['name'].should == "p1"
+  end
+
+  it "should treat GET /nodes/RestPerson?search=... as a Lucene query string" do
+    # given
+    p1 = SomethingElse.new
+    p1.name = 'the supplier'
+    p2 = SomethingElse.new
+    p2.name = 'the customer'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/SomethingElse?search=name:cutsomer~" # typo to test fuzzy matching
+
+    # then
+    status.should == 200
+    data = JSON.parse(response.body)
+    data.size.should == 1
+    data[0]['name'].should == "the customer"
   end
 end

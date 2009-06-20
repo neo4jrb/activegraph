@@ -53,6 +53,9 @@ module RestMixin
 
 
   def self.included(c)
+    c.property :classname
+    c.index :classname # index classname so that we can search on it
+    c.extend ClassMethods
     classname = c.to_s
 
     #puts "Register Neo Node Class /nodes/#{classname}"
@@ -182,14 +185,57 @@ module RestMixin
       redirect "/nodes/#{classname}/#{new_id.to_s}", 201 # created
     end
 
+    # Allows searching for nodes (provided that they are indexed). Supports the following:
+    # <code>/nodes/classname?search=name:hello~</code>:: Lucene query string
+    # <code>/nodes/classname?name=hello</code>:: Exact match on property
+    # <code>/nodes/classname?sort=name,desc</code>:: Specify sorting order
     Sinatra::Application.get("/nodes/#{classname}") do
       content_type :json
       Neo4j::Transaction.run do
-        resources = c.find(params)
+        resources = c.find(params) # uses overridden find method -- see below
         resources.map{|res| res.props}.to_json
       end
     end
   end
+
+
+  # Overwrites class methods in NodeMixin when RestMixin is included.
+  module ClassMethods
+    # Overrides 'find' so that we can simply pass a query parameters object to it, and
+    # search resources accordingly.
+    def find(query=nil, &block)
+      return super(query, &block) if query.nil? || query.kind_of?(String)
+
+      # Build search query
+      results = if query[:search]
+        super(query[:search])
+      else
+        search = {:classname => self.name}
+        query.each_pair do |key, value|
+          search[key.to_sym] = value unless key.to_sym == :sort
+        end
+        super(search)
+      end
+
+      # Add sorting to the mix
+      if query[:sort]
+        last_field = nil
+        query[:sort].split(/,/).each do |field|
+          if %w(asc desc).include? field
+            results = results.sort_by(field == 'asc' ? Lucene::Asc[last_field] : Lucene::Desc[last_field])
+            last_field = nil
+          else
+            results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
+            last_field = field
+          end
+        end
+        results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
+      end
+
+      results
+    end
+  end
+
 
   class RestServer
     class << self
