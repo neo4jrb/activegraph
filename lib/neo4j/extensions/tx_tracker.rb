@@ -114,9 +114,9 @@ module Neo4j
           old_value = curr_node[:old_value]
           node[key] = old_value
         elsif (curr_node[:relationship_created])
-          # delete created relationship
-          relationship = Neo4j.load_relationship(tracked_neo_id)
-          relationship.delete
+          # delete created relationship - todo
+           relationship = Neo4j.load_relationship(tracked_neo_id)
+           relationship.delete # todo - check if this has already been deleted ?
         elsif (curr_node[:relationship_deleted])
           # recreate deleted relationship
           type = curr_node[:relationship_type]

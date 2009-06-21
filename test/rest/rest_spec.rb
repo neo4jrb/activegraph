@@ -1,21 +1,3 @@
-#####################################
-#
-# IMPORTANT
-#
-# This test requires the latest version from GITHUB of the 
-# rack-test 7ae931bb7c1d234a657fe7b32b562f4084696975 (from  Sat Jun 13 15:42:49 2009 -0400)
-# git clone git://github.com/brynary/rack-test.git
-# cd rack-test
-# rake install
-#
-# And the following GEMS:
-#   json-jruby (1.1.6)
-#   rack (1.0.0)
-#   rake (0.8.7)
-#   rspec (1.2.6)
-#   sinatra (0.9.2)
-
-
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
@@ -34,15 +16,10 @@ require 'fileutils'
 require 'tmpdir'
 
 # suppress all warnings
-$NEO_LOGGER.level = Logger::ERROR
-NEO_STORAGE = Dir::tmpdir + "/neo_storage"
-LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
-Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
-Lucene::Config[:store_on_file] = false
-Neo4j::Config[:storage_path] = NEO_STORAGE
+#$NEO_LOGGER.level = Logger::ERROR
 
 
-def undefine_class(*clazz_syms)
+def undefine_class2(*clazz_syms)
   clazz_syms.each do |clazz_sym|
     Object.instance_eval do
       begin
@@ -53,6 +30,7 @@ def undefine_class(*clazz_syms)
   end
 end
 
+                  
 
 Sinatra::Application.set :environment, :test
 
@@ -64,11 +42,10 @@ describe 'Restful' do
   end
 
   before(:all) do
-    debug_mode = true
     NEO_STORAGE = Dir::tmpdir + "/neo_storage"
     LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
     Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
-    Lucene::Config[:store_on_file] = false
+    Lucene::Config[:store_on_file] = true
     Neo4j::Config[:storage_path] = NEO_STORAGE
     FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
@@ -77,20 +54,31 @@ describe 'Restful' do
 
 
   before(:each) do
-    Neo4j.start
-    Neo4j::Transaction.new
-    undefine_class :Person
-    class Person
+    undefine_class2 :RestPerson
+    class RestPerson
       include Neo4j::NodeMixin
       # by including the following mixin we will expose this node as a RESTful resource
-      include Neo4j::RestMixin
+      include RestMixin
       property :name
+      index :name
       has_n :friends
     end
+
+    undefine_class2 :SomethingElse
+    class SomethingElse
+      include Neo4j::NodeMixin
+      include RestMixin
+      property :name
+      index :name, :tokenized => true
+    end
+
+    Neo4j.start
+    Neo4j::Transaction.new
   end
 
   after(:each) do
     Neo4j::Transaction.finish
+
     Neo4j.stop
     FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
     FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
@@ -102,58 +90,57 @@ class Foo
 include Neo4j::NodeMixin
 include RestMixin
 property :name
-puts "DEFINED KLASS"
 end
 END_OF_STRING
 
     # when
     post "/neo", code
-
+    
     # then
     last_response.status.should == 200
     (defined? Foo).should == "constant"
   end
 
 
-  it "should know the URI of a Person instance" do
-    person = Person.new
+  it "should know the URI of a RestPerson instance" do
+    p = RestPerson.new
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
-    person._uri.should == "http://0.0.0.0:#{port}/nodes/Person/#{person.neo_node_id}"
+    p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_node_id}"
   end
 
-  it "should be possible to traverse a relationship on GET nodes/Person/<id>/traverse?relation=friends&depth=1" do
-    adam = Person.new
+  it "should be possible to traverse a relationship on GET nodes/RestPerson/<id>/traverse?relation=friends&depth=1" do
+    adam = RestPerson.new
     adam.name = 'adam'
 
-    bertil = Person.new
+    bertil = RestPerson.new
     bertil.name = 'bertil'
 
-    carl = Person.new
+    carl = RestPerson.new
 
     adam.friends << bertil << carl
 
     # when
-    get "/nodes/Person/#{adam.neo_node_id}/traverse?relation=friends&depth=1"
+    get "/nodes/RestPerson/#{adam.neo_node_id}/traverse?relation=friends&depth=1"
 
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body['uri_list'].should_not be_nil
-    body['uri_list'][0].should == 'http://0.0.0.0:4567/nodes/Person/2'
-    body['uri_list'][1].should == 'http://0.0.0.0:4567/nodes/Person/3'
+    body['uri_list'][0].should == 'http://0.0.0.0:4567/nodes/RestPerson/2'
+    body['uri_list'][1].should == 'http://0.0.0.0:4567/nodes/RestPerson/3'
     body['uri_list'].size.should == 2
   end
-
-  it "should create a relationship on POST /nodes/Person/friends" do
-    adam = Person.new
+  
+  it "should create a relationship on POST /nodes/RestPerson/friends" do
+    adam = RestPerson.new
     adam.name = 'adam'
-    bertil = Person.new
-    bertil.name = 'bertil'
-    bertil.friends << Person.new
 
+    bertil = RestPerson.new
+    bertil.name = 'bertil'
+    bertil.friends << RestPerson.new
 
     # when
-    post "/nodes/Person/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
+    post "/nodes/RestPerson/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
 
     # then
     last_response.status.should == 201
@@ -161,15 +148,15 @@ END_OF_STRING
     adam.friends.should include(bertil)
   end
 
-  it "should list related nodes on GET /nodes/Person/friends" do
-    adam = Person.new
+  it "should list related nodes on GET /nodes/RestPerson/friends" do
+    adam = RestPerson.new
     adam.name = 'adam'
-    bertil = Person.new
+    bertil = RestPerson.new
     bertil.name = 'bertil'
     adam.friends << bertil
 
     # when
-    get "/nodes/Person/#{adam.neo_node_id}/friends"
+    get "/nodes/RestPerson/#{adam.neo_node_id}/friends"
 
     # then
     last_response.status.should == 200
@@ -179,8 +166,8 @@ END_OF_STRING
   end
 
   it "should be possible to load a relationship on GET /relations/<id>" do
-    adam = Person.new
-    bertil = Person.new
+    adam = RestPerson.new
+    bertil = RestPerson.new
     rel = adam.friends.new(bertil)
     rel.set_property("foo", "bar")
     # when
@@ -193,41 +180,54 @@ END_OF_STRING
   end
 
 
-  it "should create a new Person on POST /nodes/Person" do
+  it "should create a new RestPerson on POST /nodes/RestPerson" do
     data = { :name => 'kalle'}
 
     # when
-    post '/nodes/Person', data.to_json
+    post '/nodes/RestPerson', data.to_json
 
     # then
     last_response.status.should == 201
-    last_response.location.should == "/nodes/Person/1"
+    last_response.location.should == "/nodes/RestPerson/1"
   end
 
-  it "should be possible to follow the location HTTP header when creating a new Person" do
+  it "should persist a new RestPerson created by POST /nodes/RestPerson" do
     data = { :name => 'kalle'}
 
     # when
-    post '/nodes/Person', data.to_json
-    puts "LAST RESPONSE=" + last_response.status.to_s
-    puts "REPONSE #{last_response['Location']}"
+    Neo4j::Transaction.finish # run the post outside of a transaction
+    Neo4j::Transaction.running?.should == false
+    post '/nodes/RestPerson', data.to_json
     location = last_response["Location"]
-    # follow_redirect! does not work for 201 POST request with only Location header set
+    get location
 
     # then
-    get location
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body['name'].should == 'kalle'
   end
 
-  it "should find a Person on GET /nodes/Person/<neo_node_id>" do
+  it "should be possible to follow the location HTTP header when creating a new RestPerson" do
+    data = { :name => 'kalle'}
+
+    # when
+    post '/nodes/RestPerson', data.to_json
+    location = last_response["Location"]
+    get location
+
+    # then
+    last_response.status.should == 200
+    body = JSON.parse(last_response.body)
+    body['name'].should == 'kalle'
+  end
+
+  it "should find a RestPerson on GET /nodes/RestPerson/<neo_node_id>" do
     # given
-    p = Person.new
+    p = RestPerson.new
     p.name = 'sune'
 
     # when
-    get "/nodes/Person/#{p.neo_node_id}"
+    get "/nodes/RestPerson/#{p.neo_node_id}"
 
     # then
     last_response.status.should == 200
@@ -237,53 +237,53 @@ END_OF_STRING
   end
 
   it "should return a 404 if it can't find the node" do
-    get "/nodes/Person/742421"
+    get "/nodes/RestPerson/742421"
 
     # then
     last_response.status.should == 404
   end
 
-  it "should be possible to set all properties on PUT nodes/Person/<node_id>" do
+  it "should be possible to set all properties on PUT nodes/RestPerson/<node_id>" do
     # given
-    p = Person.new
+    p = RestPerson.new
     p.name = 'sune123'
     p[:some_property] = 'foo'
 
     # when
     data = {:name => 'blah', :dynamic_property => 'cool stuff'}
-    put "/nodes/Person/#{p.neo_node_id}", data.to_json
+    put "/nodes/RestPerson/#{p.neo_node_id}", data.to_json
 
     # then
     last_response.status.should == 200
     p.name.should == 'blah'
-    p.props['some_property'].should be_nil
-    p.props['dynamic_property'].should == 'cool stuff'
+    p[:some_property].should be_nil
+    p[:dynamic_property].should == 'cool stuff'
   end
 
-  it "should be possible to delete a node on DELETE nodes/Person/<node_id>" do
+  it "should be possible to delete a node on DELETE nodes/RestPerson/<node_id>" do
     # given
-    p = Person.new
+    p = RestPerson.new
     p.name = 'asdf'
     id = p.neo_node_id
 
     # when
-    delete "/nodes/Person/#{id}"
+    delete "/nodes/RestPerson/#{id}"
+    Neo4j::Transaction.current.success # delete only takes effect when transaction has ended
+    Neo4j::Transaction.finish
+    Neo4j::Transaction.new
 
     # then
     last_response.status.should == 200
-    # we have to finish the transaction before the node is actually deleted
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
     Neo4j.load(id).should be_nil
   end
 
-  it "should be possible to get a property on GET nodes/Person/<node_id>/<property_name>" do
+  it "should be possible to get a property on GET nodes/RestPerson/<node_id>/<property_name>" do
     # given
-    p = Person.new
+    p = RestPerson.new
     p.name = 'sune123'
 
     # when
-    get "/nodes/Person/#{p.neo_node_id}/name"
+    get "/nodes/RestPerson/#{p.neo_node_id}/name"
 
     # then
     last_response.status.should == 200
@@ -291,17 +291,115 @@ END_OF_STRING
     data['name'].should == 'sune123'
   end
 
-  it "should be possible to set a property on PUT nodes/Person/<node_id>/<property_name>" do
+  it "should be possible to set a property on PUT nodes/RestPerson/<node_id>/<property_name>" do
     # given
-    p = Person.new
+    p = RestPerson.new
     p.name = 'sune123'
 
     # when
     data = { :name => 'new-name'}
-    put "/nodes/Person/#{p.neo_node_id}/name", data.to_json
+    put "/nodes/RestPerson/#{p.neo_node_id}/name", data.to_json
 
     # then
     last_response.status.should == 200
     p.name.should == 'new-name'
+  end
+
+  it "should return all nodes of that class type on GET /nodes/RestPerson" do
+    # given
+    p1 = RestPerson.new
+    p1.name = 'p1'
+    p2 = RestPerson.new
+    p2.name = 'p2'
+    e = SomethingElse.new
+    e.name = 'p3'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson"
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data.size.should == 2
+    data.map{|p| p['name']}.should include("p1")
+    data.map{|p| p['name']}.should include("p2")
+  end
+
+  it "should search for exact property matches on GET /nodes/RestPerson?name=p" do
+    # given
+    p1 = RestPerson.new
+    p1.name = 'p'
+    p1_id = p1.neo_node_id
+    p2 = RestPerson.new
+    p2.name = 'p2'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson?name=p"
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data.size.should == 1
+    data[0]['id'].should == p1_id
+    data[0]['name'].should == "p"
+  end
+
+  it "should sort by property value on GET /nodes/RestPerson?sort=name,desc" do
+    # given
+    p1 = RestPerson.new
+    p1.name = 'p1'
+    p2 = RestPerson.new
+    p2.name = 'p2'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson?sort=name,desc"
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data.size.should == 2
+    data[0]['name'].should == "p2"
+    data[1]['name'].should == "p1"
+  end
+
+  it "should treat GET /nodes/SomethingElse?search=... as a Lucene query string" do
+    # given
+    p1 = SomethingElse.new
+    p1.name = 'the supplier'
+    p2 = SomethingElse.new
+    p2.name = 'the customer'
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/SomethingElse?search=name:cutsomer~" # typo to test fuzzy matching
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data.size.should == 1
+    data[0]['name'].should == "the customer"
+  end
+
+  it "should return a subset of nodes on GET /nodes/RestPerson?limit=50,10" do
+    # given
+    100.times{|n| RestPerson.new.name = 'p' + sprintf('%02d', n) }
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson?sort=name,desc&limit=50,10"
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data.size.should == 10
+    data.map{|p| p['name']}.should == %w(p49 p48 p47 p46 p45 p44 p43 p42 p41 p40)
   end
 end

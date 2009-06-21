@@ -197,12 +197,7 @@ module Neo4j
       struct_or_hash.each_pair do |key, value|
         next if %w(id classname).include? key.to_s # do not allow special properties to be mass assigned
         keys_to_delete.delete(key) if strict
-        method = "#{key}=".to_sym
-        if self.respond_to?(method)
-          self.send(method, value)
-        else
-          set_property(key.to_s, value)
-        end
+        self[key] = value
       end
       keys_to_delete.each{|key| remove_property(key) } if strict
       self
