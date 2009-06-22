@@ -7,30 +7,9 @@ require 'neo4j/extensions/rest'
 require 'spec'
 require 'spec/interop/test'
 require 'rack/test'
-
-
-# TODO refactor, duplicated code in spec_helper
-#require 'neo4j/spec_helper'
-
 require 'fileutils'
 require 'tmpdir'
 
-# suppress all warnings
-#$NEO_LOGGER.level = Logger::ERROR
-
-
-def undefine_class2(*clazz_syms)
-  clazz_syms.each do |clazz_sym|
-    Object.instance_eval do
-      begin
-        #Neo4j::Indexer.remove_instance const_get(clazz_sym)
-        remove_const clazz_sym
-      end if const_defined? clazz_sym
-    end
-  end
-end
-
-                  
 
 Sinatra::Application.set :environment, :test
 
@@ -54,24 +33,26 @@ describe 'Restful' do
 
 
   before(:each) do
-    undefine_class2 :RestPerson
     class RestPerson
       include Neo4j::NodeMixin
       # by including the following mixin we will expose this node as a RESTful resource
-      include RestMixin
+      include Neo4j::RestMixin
       property :name
       index :name
       has_n :friends
     end
 
-    undefine_class2 :SomethingElse
     class SomethingElse
       include Neo4j::NodeMixin
-      include RestMixin
+      include Neo4j::RestMixin
       property :name
       index :name, :tokenized => true
     end
 
+    class MyNode
+      include Neo4j::NodeMixin
+      include Neo4j::RestMixin
+    end
     Neo4j.start
     Neo4j::Transaction.new
   end
@@ -85,20 +66,22 @@ describe 'Restful' do
   end
 
   it "should support POST ruby code on /neo" do
+    (defined? FooRest).should_not == "constant"
+
     code = <<END_OF_STRING
-class Foo
+class FooRest
 include Neo4j::NodeMixin
-include RestMixin
+include Neo4j::RestMixin
 property :name
 end
 END_OF_STRING
 
     # when
     post "/neo", code
-    
+
     # then
     last_response.status.should == 200
-    (defined? Foo).should == "constant"
+    (defined? FooRest).should == "constant"
   end
 
 
@@ -108,7 +91,7 @@ END_OF_STRING
     p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_node_id}"
   end
 
-  it "should be possible to traverse a relationship on GET nodes/RestPerson/<id>/traverse?relation=friends&depth=1" do
+  it "should be possible to traverse a relationship on GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
     adam = RestPerson.new
     adam.name = 'adam'
 
@@ -120,7 +103,7 @@ END_OF_STRING
     adam.friends << bertil << carl
 
     # when
-    get "/nodes/RestPerson/#{adam.neo_node_id}/traverse?relation=friends&depth=1"
+    get "/nodes/RestPerson/#{adam.neo_node_id}/traverse?relationship=friends&depth=1"
 
     # then
     last_response.status.should == 200
@@ -130,8 +113,8 @@ END_OF_STRING
     body['uri_list'][1].should == 'http://0.0.0.0:4567/nodes/RestPerson/3'
     body['uri_list'].size.should == 2
   end
-  
-  it "should create a relationship on POST /nodes/RestPerson/friends" do
+
+  it "should create declared relationship on POST /nodes/RestPerson/friends" do
     adam = RestPerson.new
     adam.name = 'adam'
 
@@ -148,7 +131,23 @@ END_OF_STRING
     adam.friends.should include(bertil)
   end
 
-  it "should list related nodes on GET /nodes/RestPerson/friends" do
+  it "should create an undeclared relationship on POST /nodes/<classname>/<any relationship type>" do
+    # given two Nodes that has an undeclared relationship
+
+    node1 =MyNode.new
+    node2 = MyNode.new
+
+    puts "URI " + node1._uri_rel
+    # when
+    post "#{node1._uri_rel}/fooz", { :uri => node2._uri }.to_json
+
+    # then
+    last_response.status.should == 201
+#    last_response.location.should == "/relations/1" # starts counting from 0
+    node1.relationships.outgoing(:fooz).nodes.should include(node2)
+  end
+
+  it "should list related nodes on GET /nodes/RestPerson/<node_id>/friends" do
     adam = RestPerson.new
     adam.name = 'adam'
     bertil = RestPerson.new
@@ -165,23 +164,24 @@ END_OF_STRING
     body[0]['id'].should == bertil.neo_node_id
   end
 
-  it "should be possible to load a relationship on GET /relations/<id>" do
+  it "should be possible to load a relationship on GET /relationship/<id>" do
     adam = RestPerson.new
     bertil = RestPerson.new
     rel = adam.friends.new(bertil)
-    rel.set_property("foo", "bar")
+    rel[:foo] = 'bar'
+
     # when
-    get "/relations/#{rel.neo_relationship_id}"
+    get "/relationships/#{rel.neo_relationship_id}"
 
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['foo'].should == 'bar'
+    body['properties']['foo'].should == 'bar'
   end
 
 
   it "should create a new RestPerson on POST /nodes/RestPerson" do
-    data = { :name => 'kalle'}
+    data = {:properties => { :name => 'kalle'} }
 
     # when
     post '/nodes/RestPerson', data.to_json
@@ -192,7 +192,7 @@ END_OF_STRING
   end
 
   it "should persist a new RestPerson created by POST /nodes/RestPerson" do
-    data = { :name => 'kalle'}
+    data = {:properties => { :name => 'kalle'} }
 
     # when
     Neo4j::Transaction.finish # run the post outside of a transaction
@@ -204,11 +204,11 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['name'].should == 'kalle'
+    body['properties']['name'].should == 'kalle'
   end
 
-  it "should be possible to follow the location HTTP header when creating a new RestPerson" do
-    data = { :name => 'kalle'}
+  it "should have a location header in the response for a POST on /nodes/RestPerson" do
+    data = {:properties => { :name => 'kalle'} }
 
     # when
     post '/nodes/RestPerson', data.to_json
@@ -218,7 +218,7 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['name'].should == 'kalle'
+    body['properties']['name'].should == 'kalle'
   end
 
   it "should find a RestPerson on GET /nodes/RestPerson/<neo_node_id>" do
@@ -232,9 +232,29 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     data = JSON.parse(last_response.body)
-    data.should include("name")
-    data['name'].should == 'sune'
+    data['properties'].should include("name")
+    data['properties']['name'].should == 'sune'
   end
+
+
+  it "should contain hyperlinks to its relationships on found nodes" do
+    # given
+    n1 = MyNode.new
+    n2 = MyNode.new
+    n3 = MyNode.new
+
+    n1.relationships.outgoing(:type1) << n2
+    n1.relationships.outgoing(:type2) << n3
+
+    # when
+    get "/nodes/MyNode/#{n1.neo_node_id}"
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data['relationships'].should_not be_nil
+  end
+
 
   it "should return a 404 if it can't find the node" do
     get "/nodes/RestPerson/742421"
@@ -243,14 +263,14 @@ END_OF_STRING
     last_response.status.should == 404
   end
 
-  it "should be possible to set all properties on PUT nodes/RestPerson/<node_id>" do
+  it "should set all properties on PUT nodes/RestPerson/<node_id>" do
     # given
     p = RestPerson.new
     p.name = 'sune123'
     p[:some_property] = 'foo'
 
     # when
-    data = {:name => 'blah', :dynamic_property => 'cool stuff'}
+    data = {:properties => {:name => 'blah', :dynamic_property => 'cool stuff'} }
     put "/nodes/RestPerson/#{p.neo_node_id}", data.to_json
 
     # then
@@ -260,7 +280,7 @@ END_OF_STRING
     p[:dynamic_property].should == 'cool stuff'
   end
 
-  it "should be possible to delete a node on DELETE nodes/RestPerson/<node_id>" do
+  it "should delete a node on DELETE nodes/RestPerson/<node_id>" do
     # given
     p = RestPerson.new
     p.name = 'asdf'
@@ -277,7 +297,7 @@ END_OF_STRING
     Neo4j.load(id).should be_nil
   end
 
-  it "should be possible to get a property on GET nodes/RestPerson/<node_id>/<property_name>" do
+  it "should get property on GET nodes/RestPerson/<node_id>/<property_name>" do
     # given
     p = RestPerson.new
     p.name = 'sune123'
@@ -291,7 +311,7 @@ END_OF_STRING
     data['name'].should == 'sune123'
   end
 
-  it "should be possible to set a property on PUT nodes/RestPerson/<node_id>/<property_name>" do
+  it "should set property on PUT nodes/RestPerson/<node_id>/<property_name>" do
     # given
     p = RestPerson.new
     p.name = 'sune123'

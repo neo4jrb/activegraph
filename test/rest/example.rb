@@ -6,8 +6,8 @@
 # and  json-jruby (>=1.1.6) (or another compatible json gem)
 #
 
-
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 require 'neo4j'
 require 'neo4j/extensions/rest'
 
@@ -22,11 +22,23 @@ class Person
   include Neo4j::RestMixin
   property :name
   has_n :friends
+  index :name
 end
 
 Neo4j.start
 puts "-----------------------"
-Neo4j::Transaction.run { Person.new.name = "andreas"}
+Neo4j::Transaction.run do
+  a = Person.new
+  b = Person.new
+  c = Person.new
+  a.name = 'andreas'
+  b.name = 'kalle'
+  c.name = 'anders'
+  a.friends << b
+  a[:undeclared] = '123'
+  a[:foo] = 3.134
+  a.relationships.outgoing(:other) << c
+end
 
 puts "Created a person at URI http://localhost:9123/nodes/Person/1"
 Neo4j::RestServer.thread.join
