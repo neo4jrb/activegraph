@@ -253,7 +253,6 @@ describe "Neo4j::NodeMixin#has_n " do
       order2.order_id = '2'
       order3.order_id = '3'
 
-      customer.orders.each {|x| puts x}
       # when
       result = customer.orders{ order_id == '2'}.to_a
 

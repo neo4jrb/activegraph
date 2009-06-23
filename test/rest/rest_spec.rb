@@ -137,7 +137,6 @@ END_OF_STRING
     node1 =MyNode.new
     node2 = MyNode.new
 
-    puts "URI " + node1._uri_rel
     # when
     post "#{node1._uri_rel}/fooz", { :uri => node2._uri }.to_json
 
@@ -374,9 +373,11 @@ END_OF_STRING
     p1.name = 'p1'
     p2 = RestPerson.new
     p2.name = 'p2'
-    Neo4j::Transaction.current.success # ensure index gets updated
     Neo4j::Transaction.finish
 
+    Neo4j::Transaction.run {
+    Neo4j.load(2).should_not be_nil
+                            }
     # when
     get "/nodes/RestPerson?sort=name,desc"
 
@@ -394,8 +395,8 @@ END_OF_STRING
     p1.name = 'the supplier'
     p2 = SomethingElse.new
     p2.name = 'the customer'
-    Neo4j::Transaction.current.success # ensure index gets updated
     Neo4j::Transaction.finish
+    Neo4j::Transaction.new
 
     # when
     get "/nodes/SomethingElse?search=name:cutsomer~" # typo to test fuzzy matching

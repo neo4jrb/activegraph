@@ -35,7 +35,7 @@ module Neo4j
     content_type :json
     Neo4j::Transaction.run do
       rel = Neo4j.load_relationship(params[:id].to_i)
-      error 404, "Can't find relationship with id #{params[:id]}" if rel.nil?                                    -
+      return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
       {:properties => rel.props}.to_json
     end
   end
@@ -103,7 +103,7 @@ module Neo4j
         content_type :json
         Neo4j::Transaction.run do
           node = Neo4j.load(params[:id])
-          error 404, "Can't find node with id #{params[:id]}" if node.nil?
+          return 404, "Can't find node with id #{params[:id]}" if node.nil?
 
           relationship = params['relationship']
           depth = params['depth']
@@ -118,7 +118,7 @@ module Neo4j
         content_type :json
         Neo4j::Transaction.run do
           node = Neo4j.load(params[:id])
-          error 404, "Can't find node with id #{params[:id]}" if node.nil?
+          return 404, "Can't find node with id #{params[:id]}" if node.nil?
           prop = params[:prop].to_sym
           if node.class.relationships_info.keys.include?(prop)      # TODO looks weird, why this complicated
             rels = node.send(prop) || []
@@ -134,26 +134,26 @@ module Neo4j
         content_type :json
         new_id = Neo4j::Transaction.run do
           node = Neo4j.load(params[:id])
-          error 404, "Can't find node with id #{params[:id]}" if node.nil?
+          return 404, "Can't find node with id #{params[:id]}" if node.nil?
           rel = params[:rel]
 
           body = request.body.read
           data = JSON.parse(body)
           uri = data['uri']
           match = URL_REGEXP.match(uri)
-          error 400, "Bad node uri '#{uri}'" if match.nil?
+          return 400, "Bad node uri '#{uri}'" if match.nil?
           to_clazz, to_node_id = match[6].split('/')
 
           other_node = Neo4j.load(to_node_id.to_i)
-          error 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
+          return 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
 
           if to_clazz != other_node.class.to_s
-            error 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
+            return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
           end
 
           rel_obj = node.relationships.outgoing(rel) << other_node # node.send(rel).new(other_node)
 
-          error 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
+          return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
 
           rel_obj.neo_relationship_id
         end
@@ -169,7 +169,7 @@ module Neo4j
           body = request.body.read
           data = JSON.parse(body)
           value = data[property]
-          error 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
+          return 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
           node.set_property(property, value)
           200
         end
@@ -180,7 +180,7 @@ module Neo4j
 
         Neo4j::Transaction.run do
           node = Neo4j.load(params[:id])
-          error 404, "Can't find node with id #{params[:id]}" if node.nil?
+          return 404, "Can't find node with id #{params[:id]}" if node.nil?
           relationships = node.relationships.outgoing.inject({}) {|hash,v| hash[v.relationship_type.to_s] = "#{c._base_uri}/relationships/#{v.neo_relationship_id}"; hash }
           {:relationships => relationships, :properties => node.props}.to_json
         end
@@ -203,7 +203,7 @@ module Neo4j
         content_type :json
         Neo4j::Transaction.run do
           node = Neo4j.load(params[:id])
-          error 404, "Can't find node with id #{params[:id]}" if node.nil?
+          return 404, "Can't find node with id #{params[:id]}" if node.nil?
           node.delete
           ""
         end

@@ -111,7 +111,11 @@ describe 'Neo4j::Node with properties of unknown type' do
   end
 
   it "should raise an exeption if a property is not of type String,Boolean,Fixnum,Float,Array" do
-    lambda{ @node.fooz = MyPropertyData.new(98) }.should raise_error
+    lambda do
+       @node.fooz = MyPropertyData.new(98)
+    end.should raise_error
+    # since we caught this exception we have to roll it back
+    Neo4j::Transaction.failure
   end
 
   it "should allow to set properties of type Fixnum" do
@@ -150,6 +154,7 @@ describe 'Neo4j::Node having a property of type Object' do
       property :foo
     end
     Neo4j::Transaction.new
+
 
     @node = Stuff.new
   end

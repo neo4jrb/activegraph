@@ -104,7 +104,6 @@ module Neo4j
         begin
           tx = Neo4j::Transaction.new
           ret = yield tx
-          tx.success unless tx.failure?
         rescue Exception => e
           #$NEO_LOGGER.warn{e.backtrace.join("\n")}
           tx.failure
@@ -139,6 +138,15 @@ module Neo4j
         current.failure?
       end
 
+      # Finish the current transaction if it is running.
+      #
+      # See Neo4j::Transaction#failure
+      #
+      # :api: public
+      def failure
+        current.failure if running?
+      end
+
 
       # Finish the current transaction if it is running
       #
@@ -165,7 +173,7 @@ module Neo4j
     end
     
     def to_s
-      "Transaction: placebo: #{placebo?}, #{@id} failure: #{failure?}, running #{Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
+      "Transaction: placebo: #{placebo?}, #{@id} failure: #{failure?}, running #{Transaction.running?}, lucene: #{Lucene::Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
     end
 
 
@@ -204,7 +212,8 @@ module Neo4j
     # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
-      Neo4j.event_handler.tx_finished(self) unless @failure
+      Neo4j.event_handler.tx_finished(self) unless failure?
+      @neo_tx.success unless failure?
       @neo_tx.finish
       @neo_tx=nil
       Thread.current[:transaction] = nil
@@ -214,7 +223,7 @@ module Neo4j
 
         # mark lucene transaction for failure if the neo transaction fails
         Lucene::Transaction.current.failure if failure?
-        Lucene::Transaction.current.commit 
+        Lucene::Transaction.current.commit
       else
         $NEO_LOGGER.debug{"NO LUCENE TX running"}
       end

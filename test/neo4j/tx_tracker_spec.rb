@@ -105,38 +105,59 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.new
     
     # when
-    Neo4j.load(id.to_i).should be_nil
+    Neo4j.load(id.to_i).should_not be_nil # make sure it exists
     Neo4j.undo_tx
 
     # then
     Neo4j::Transaction.finish
 
+    # make sure it has been deleted
     Neo4j::Transaction.run { Neo4j.load(id).should == nil }
   end
 
 
-  it "should be possible to undo a transaction on node deleted" do
+  it "should undo create and delete of a node when Neo4j.undo_tx" do
+    # given, create and delete a node in the same transaction
     Neo4j::Transaction.new
     a = TxTestNode.new
     id = a.neo_node_id
-    Neo4j.load(id).should_not be_nil
-
     a.delete
     Neo4j::Transaction.finish
 
+    # when deleted
     Neo4j::Transaction.new
-    Neo4j.load(id).should be_nil
-
-    # when
+    Neo4j.load(id).should be_nil # make sure it is deleted
     Neo4j.undo_tx
-
     Neo4j::Transaction.finish
 
-    Neo4j::Transaction.new
     # then
+    Neo4j::Transaction.new
     Neo4j.load(id).should be_nil
     Neo4j::Transaction.finish
+  end
 
+  it "should undo delete node when Neo4j.undo_tx" do
+    # given, create a node
+    Neo4j::Transaction.new
+    a = TxTestNode.new
+    id = a.neo_node_id
+    Neo4j::Transaction.finish
+
+    # next transaction - delete it
+    Neo4j::Transaction.new
+    a.delete
+    Neo4j::Transaction.finish
+
+    # when deleted
+    Neo4j::Transaction.new
+    Neo4j.load(id).should be_nil # make sure it is deleted
+    Neo4j.undo_tx
+    Neo4j::Transaction.finish
+
+    # then
+    Neo4j::Transaction.new
+    Neo4j.load(id).should be_nil
+    Neo4j::Transaction.finish
   end
 
 
@@ -162,7 +183,7 @@ describe "TxTracker (TxNodeList)" do
   end
 
 
-  it "should undo a complete transaction" do
+  it "should undo setting properties" do
     @tx_node_list = Neo4j::TxNodeList.instance
 
     node1 = node2 = node3 = nil

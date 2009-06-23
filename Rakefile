@@ -4,11 +4,15 @@ require 'rubygems'
 require 'rake'
 require 'rake/clean'
 require 'rake/testtask'
-require 'rake/rdoctask'
-# require 'yard'
 require 'spec/version'
 require 'spec/rake/spectask'
 require 'rake/gempackagetask'
+begin
+  require 'hanna/rdoctask'
+  $HANNA_DEFINED = true
+rescue LoadError => load_error
+  require 'rake/rdoctask'
+end
 
 #require 'hoe'
 
@@ -47,8 +51,11 @@ end
 
 desc 'Generate RDoc'
 Rake::RDocTask.new do |rdoc|
-  rdoc.rdoc_dir = '../doc/output/rdoc'
-  rdoc.options << '--title' << 'Neo' << '--line-numbers' << '--inline-source' << '--main' << 'README.rdoc'
+#   rdoc -o doc --inline-source --format=html -T hanna
+  rdoc.rdoc_dir = './rdoc'
+  rdoc.options << '--title' << "Neo4j v#{Neo4j::VERSION}" << '--line-numbers' << '--inline-source' << '--main' << 'README.rdoc'
+  rdoc.options << '--webcvs=http://github.com/andreasronge/neo4j/tree/master/'
+  
   rdoc.rdoc_files.include('README.rdoc', 'CHANGELOG', 'lib/**/*.rb')
 end
 
@@ -60,7 +67,7 @@ end if defined? YARD
 
 desc 'Upload documentation to RubyForge.'
 task 'upload-docs' do
-  sh "scp -r doc/* " +
+  sh "scp -r rdoc/* " +
     "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
 end
 

@@ -26,7 +26,7 @@ It uses two powerful and mature java libraries:
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
 * Issue Tracking - http://neo4j.lighthouseapp.com
 * Twitter - http://twitter.com/ronge
-* API Yard Documentation - http://neo4j.rubyforge.org/
+* API Documentation - http://neo4j.rubyforge.org/
 * Source repo - git://github.com/andreasronge/neo4j.git
 * Mailing list - https://lists.neo4j.org/mailman/listinfo/user
 
@@ -38,8 +38,8 @@ It uses two powerful and mature java libraries:
 === Contributing
 
 Have you found a bug, need help or have a patch ?
-Just clone neo4j.rb and send me a pull request or email me 
-Do you need help - send me an email (andreas.ronge at gmail dot com)
+Just clone neo4j.rb and send me a pull request or email me.
+Do you need help - send me an email (andreas.ronge at gmail dot com).
 Please also check/add issues at lighthouse, http://neo4j.lighthouseapp.com
 
 === License
@@ -71,7 +71,6 @@ To install from the latest source:
 This has been verified to work on JRuby 1.3.0
 
 ==== Running all RSpecs
-[hoj:foo]
 
 To check that neo4j.rb is working:
 
