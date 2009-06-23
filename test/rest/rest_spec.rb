@@ -127,7 +127,7 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-    last_response.location.should == "/relations/1" # starts counting from 0
+    last_response.location.should == "/relationships/1" # starts counting from 0
     adam.friends.should include(bertil)
   end
 
@@ -187,7 +187,7 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-    last_response.location.should == "/nodes/RestPerson/1"
+    last_response.location.should == "http://0.0.0.0:4567/nodes/RestPerson/1"
   end
 
   it "should persist a new RestPerson created by POST /nodes/RestPerson" do
@@ -332,7 +332,6 @@ END_OF_STRING
     p2.name = 'p2'
     e = SomethingElse.new
     e.name = 'p3'
-    Neo4j::Transaction.current.success # ensure index gets updated
     Neo4j::Transaction.finish
 
     # when
