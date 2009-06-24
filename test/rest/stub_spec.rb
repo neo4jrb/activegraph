@@ -13,6 +13,7 @@ require 'tmpdir'
 
 Sinatra::Application.set :environment, :test
 
+
 module Neo4j
   module Rest
     module RestHttpMethods
@@ -33,11 +34,16 @@ module Neo4j
     end
   end
 
-  #module NodeMixin
-  #  remove_method :initialize
-  #
-  #end
+  class Node
+    include Neo4j::RestMixin
+  end
+
+  class ReferenceNode
+    include Neo4j::RestMixin    
+  end
+  
 end
+
 
 
 def reset_and_config_neo4j

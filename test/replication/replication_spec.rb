@@ -2,8 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/extensions/replication'
-require 'neo4j/extensions/rest'
+require 'neo4j/extensions/rest_master'
 
 require 'spec'
 require 'spec/interop/test'
@@ -33,6 +32,16 @@ module Neo4j
       end
     end
   end
+
+
+  class Node
+    include Neo4j::RestMixin
+  end
+
+  class ReferenceNode
+    include Neo4j::RestMixin
+  end
+  
 end
 
 

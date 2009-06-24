@@ -4,8 +4,8 @@ module Neo4j
 #
 # The following resources are created:
 #
-# <b>add new class</b>        <code>POST /neo</code> post ruby code of a neo4j node class
-# <b>node classes</b>         <code>GET /neo</code> - returns hyperlinks to /nodes/classname
+# <b>add new class</b>::      <code>POST /neo</code> post ruby code of a neo4j node class
+# <b>node classes</b>::       <code>GET /neo</code> - returns hyperlinks to /nodes/classname
 # <b>search nodes</b>::       <code>GET /nodes/classname?name=p</code>
 # <b>view all nodes</b>::     <code>GET /nodes/classname</code>
 # <b>update property</b>::    <code>PUT nodes/classname/id/property_name</code>
@@ -23,7 +23,8 @@ module Neo4j
 # <b>Lucene query string</b>::      <code>/nodes/classname?search=name:hello~</code>
 # <b>Exact match on property</b>::  <code>/nodes/classname?name=hello</code>
 # <b>Specify sorting order</b>::    <code>/nodes/classname?sort=name,desc</code>
-#
+# <b>Pagination (offset,num)</b>::  <code>/nodes/classname?limit=100,20</code>#
+# 
 # When create a new node  by posting to <code>/nodes/classname</code> a 201 will be return with the 'Location' header set to the
 # URI of the newly created node.
 #
@@ -34,6 +35,30 @@ module Neo4j
 #
   module RestMixin
 
+    def _uri
+      "#{Neo4j::Rest.base_uri}#{_uri_rel}"
+    end
+
+    def _uri_rel
+      clazz = self.class.root_class.to_s #.gsub(/::/, '-') TODO urlencoding
+      "/nodes/#{clazz}/#{neo_node_id}"
+    end
+    
+
+    # Called by the REST API if this node is accessed directly by ID. Any query parameters
+    # in the request are passed in a hash. For example if <code>GET /nodes/MyClass/1?foo=bar</code>
+    # is requested, <code>MyClass#accessed</code> is called with <code>{'foo' => 'bar'}</code>.
+    # By default this method does nothing, but model classes may override it to achieve specific
+    # behaviour.
+    def read(options={})
+    end
+
+    # Called by the REST API if this node is deleted. Any query parameters in the request are passed
+    # in a hash.
+    def delete(options={})
+      super()
+    end
+    
 
 
     def self.included(c)
@@ -61,7 +86,7 @@ module Neo4j
         return super(query, &block) if query.nil? || query.kind_of?(String)
 
         if query[:limit]
-          limit = query[:limit].split(/,/).map{|i| i.to_i}
+          limit = query[:limit].to_s.split(/,/).map{|i| i.to_i}
           limit.unshift(0) if limit.size == 1
         end
 

@@ -11,6 +11,12 @@ require 'fileutils'
 require 'tmpdir'
 
 
+module Neo4j
+  class ReferenceNode
+    include Neo4j::RestMixin
+  end
+end
+
 Sinatra::Application.set :environment, :test
 
 def reset_and_config_neo4j
@@ -167,7 +173,6 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-#    last_response.location.should == "/relations/1" # starts counting from 0
     node1.relationships.outgoing(:fooz).nodes.should include(node2)
   end
 

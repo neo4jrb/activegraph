@@ -3,7 +3,6 @@ require 'net/http'
 require 'thread'
 require 'json'
 #require 'sinatra/base'
-require 'neo4j/extensions/rest/node_mixin'
 require 'neo4j/extensions/rest/stubs'
 
 
@@ -17,17 +16,6 @@ module Neo4j
     end
   end
   
-  #class TxNode
-  #  include Neo4j::RestMixin
-  #end
-  #
-  #class TxNodeCreated
-  #  include Neo4j::RestMixin
-  #end
-  #
-  #class TxNodeList
-  #  include Neo4j::RestMixin
-  #end
 
   def self.replicate
     # TODO find uri from /neo instead 

@@ -17,6 +17,21 @@ module Neo4j
       end
     end
 
+
+    # Extracts query parameters from a URL; e.g. if <code>/resource?foo=bar</code> was requested,
+    # <code>{'foo' => 'bar'}</code> is returned.
+    def self.query_from_params(params)
+      query = nil
+      unless (params.nil?)
+        query = params.clone
+        query.delete('id')
+        query.delete('class')
+        query.delete('prop')
+        query.delete('rel')
+      end
+      query
+    end
+    
     # -------------------------------------------------------------------------
     # /neo
     # -------------------------------------------------------------------------
@@ -69,20 +84,15 @@ module Neo4j
     # <code>/nodes/classname?search=name:hello~</code>:: Lucene query string
     # <code>/nodes/classname?name=hello</code>:: Exact match on property
     # <code>/nodes/classname?sort=name,desc</code>:: Specify sorting order
+    # <code>/nodes/classname?limit=100,20</code>:: Specify offset and number of nodes (for pagination)
     Sinatra::Application.get("/nodes/:class") do
       content_type :json
       clazz = Neo4j::Rest.load_class(params[:class])
       return 404, "Can't find class '#{classname}'" if clazz.nil?
 
-      # remote param that are part of the path and not a query parameter
-      query = nil
-      unless (params.nil?)
-        query = params.clone
-        query.delete('class')
-      end
 
       Neo4j::Transaction.run do
-        resources = clazz.find(query) # uses overridden find method -- see below
+        resources = clazz.find(Neo4j::Rest.query_from_params(params)) # uses overridden find method -- see below
         resources.map{|res| res.props}.to_json
       end
     end
@@ -97,7 +107,7 @@ module Neo4j
         node = clazz.new
         data = JSON.parse(request.body.read)
         properties = data['properties']
-        node.update(properties)
+        node.update(properties, Neo4j::Rest.query_from_params(params))
         node._uri
       end
       redirect "#{uri}", 201 # created
@@ -114,6 +124,7 @@ module Neo4j
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
         return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        node.read(Neo4j::Rest.query_from_params(params))
         relationships = node.relationships.outgoing.inject({}) do |hash, v|
           type = v.relationship_type.to_s
           hash[type] ||= []
@@ -131,7 +142,7 @@ module Neo4j
         data = JSON.parse(body)
         properties = data['properties']
         node = Neo4j.load(params[:id])
-        node.update(properties, true)
+        node.update(properties, Neo4j::Rest.query_from_params(params).merge({:strict => true}))
         node.props.to_json
       end
     end
@@ -141,7 +152,7 @@ module Neo4j
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
         return 404, "Can't find node with id #{params[:id]}" if node.nil?
-        node.delete
+        node.delete(Neo4j::Rest.query_from_params(params))
         ""
       end
     end
@@ -196,8 +207,7 @@ module Neo4j
       end
     end
 
-
-    URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)$' #:nodoc:
+    URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+\/[\w\-\.]+)$' #:nodoc:
 
     Sinatra::Application.post("/nodes/:class/:id/:rel") do
       content_type :json
@@ -210,7 +220,9 @@ module Neo4j
         data = JSON.parse(body)
         uri = data['uri']
         match = URL_REGEXP.match(uri)
+        puts "URI '#{uri}' match #{match.nil?}"
         return 400, "Bad node uri '#{uri}'" if match.nil?
+        puts "MATCH ?"
         to_clazz, to_node_id = match[6].split('/')
 
         other_node = Neo4j.load(to_node_id.to_i)
