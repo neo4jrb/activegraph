@@ -178,6 +178,20 @@ describe 'NodeMixin#update' do
     t.update({:id => 987654321})
     t.props['id'].should == t.neo_node_id
   end
+
+  it "should remove attributes that are not mentioned if the strict option is set" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.update({:age=>4}, :strict => true)
+    t.name.should be_nil
+  end
+
+  it "should not remove attributes that are not mentioned if the strict option is not set" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.update({:age=>4})
+    t.name.should == 'andreas'
+  end
 end
 
 

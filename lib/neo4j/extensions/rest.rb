@@ -156,7 +156,7 @@ module RestMixin
         body = request.body.read
         data = JSON.parse(body)
         node = Neo4j.load(params[:id])
-        node.update(data, true)
+        node.update(data, params.merge({:strict => true}))
         response = node.props.to_json
         response
       end
@@ -178,7 +178,7 @@ module RestMixin
         p = c.new
         data = JSON.parse(request.body.read)
         #puts "POST DATA #{data.inspect} TO #{p}"
-        p.update(data)
+        p.update(data, params)
         #puts "POSTED #{p}"
         p.neo_node_id
       end
@@ -207,7 +207,7 @@ module RestMixin
       return super(query, &block) if query.nil? || query.kind_of?(String)
 
       if query[:limit]
-        limit = query[:limit].split(/,/).map{|i| i.to_i}
+        limit = query[:limit].to_s.split(/,/).map{|i| i.to_i}
         limit.unshift(0) if limit.size == 1
       end
 
