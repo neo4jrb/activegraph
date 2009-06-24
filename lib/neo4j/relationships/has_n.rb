@@ -59,7 +59,7 @@ module Neo4j
       #
       # :api: public
       def first
-        @traverser.empty?
+        @traverser.first
       end
 
       # Creates a relationship instance between this and the other node.
