@@ -134,7 +134,7 @@ module Neo4j
       Neo4j::Transaction.run do
         body = request.body.read
         data = JSON.parse(body)
-        properties = data['properties']
+        properties = data['properties'] || {}
         node = Neo4j.load(params[:id])
         node.update(properties, Neo4j::Rest.query_from_params(params).merge({:strict => true}))
         node.props.to_json
