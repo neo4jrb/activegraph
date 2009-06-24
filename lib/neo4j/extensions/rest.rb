@@ -24,6 +24,20 @@ module Neo4j
       end
     end
 
+    # Extracts query parameters from a URL; e.g. if <code>/resource?foo=bar</code> was requested,
+    # <code>{'foo' => 'bar'}</code> is returned.
+    def self.query_from_params(params)
+      query = nil
+      unless (params.nil?)
+        query = params.clone
+        query.delete('id')
+        query.delete('class')
+        query.delete('prop')
+        query.delete('rel')
+      end
+      query
+    end
+
     # -------------------------------------------------------------------------
     # /neo
     # -------------------------------------------------------------------------
@@ -70,20 +84,14 @@ module Neo4j
     # <code>/nodes/classname?search=name:hello~</code>:: Lucene query string
     # <code>/nodes/classname?name=hello</code>:: Exact match on property
     # <code>/nodes/classname?sort=name,desc</code>:: Specify sorting order
+    # <code>/nodes/classname?limit=100,20</code>:: Specify offset and number of nodes (for pagination)
     Sinatra::Application.get("/nodes/:class") do
       content_type :json
       clazz = Neo4j::Rest.load_class(params[:class])
       return 404, "Can't find class '#{classname}'" if clazz.nil?
 
-      # remote param that are part of the path and not a query parameter
-      query = nil
-      unless (params.nil?)
-        query = params.clone
-        query.delete('class')
-      end
-      
       Neo4j::Transaction.run do
-        resources = clazz.find(query) # uses overridden find method -- see below
+        resources = clazz.find(Neo4j::Rest.query_from_params(params)) # uses overridden find method -- see below
         resources.map{|res| res.props}.to_json
       end
     end
@@ -98,7 +106,7 @@ module Neo4j
         node = clazz.new
         data = JSON.parse(request.body.read)
         properties = data['properties']
-        node.update(properties)
+        node.update(properties, Neo4j::Rest.query_from_params(params))
         node._uri
       end
       redirect "#{uri}", 201 # created
@@ -115,6 +123,7 @@ module Neo4j
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
         return 404, "Can't find node with id #{params[:id]}" if node.nil?
+        node.read(Neo4j::Rest.query_from_params(params))
         relationships = node.relationships.outgoing.inject({}) {|hash, v| hash[v.relationship_type.to_s] = "#{Neo4j::Rest.base_uri}/relationships/#{v.neo_relationship_id}"; hash }
         {:relationships => relationships, :properties => node.props}.to_json
       end
@@ -127,7 +136,7 @@ module Neo4j
         data = JSON.parse(body)
         properties = data['properties']
         node = Neo4j.load(params[:id])
-        node.update(properties, :strict => true)
+        node.update(properties, Neo4j::Rest.query_from_params(params).merge({:strict => true}))
         node.props.to_json
       end
     end
@@ -137,7 +146,7 @@ module Neo4j
       Neo4j::Transaction.run do
         node = Neo4j.load(params[:id])
         return 404, "Can't find node with id #{params[:id]}" if node.nil?
-        node.delete
+        node.delete(Neo4j::Rest.query_from_params(params))
         ""
       end
     end
@@ -205,6 +214,7 @@ module Neo4j
         body = request.body.read
         data = JSON.parse(body)
         uri = data['uri']
+        puts "Matching uri: #{uri}"
         match = URL_REGEXP.match(uri)
         return 400, "Bad node uri '#{uri}'" if match.nil?
         to_clazz, to_node_id = match[6].split('/')
@@ -230,8 +240,8 @@ module Neo4j
   #
   # The following resources are created:
   #
-  # <b>add new class</b>        <code>POST /neo</code> post ruby code of a neo4j node class
-  # <b>node classes</b>         <code>GET /neo</code> - returns hyperlinks to /nodes/classname
+  # <b>add new class</b>::      <code>POST /neo</code> post ruby code of a neo4j node class
+  # <b>node classes</b>::       <code>GET /neo</code> - returns hyperlinks to /nodes/classname
   # <b>search nodes</b>::       <code>GET /nodes/classname?name=p</code>
   # <b>view all nodes</b>::     <code>GET /nodes/classname</code>
   # <b>update property</b>::    <code>PUT nodes/classname/id/property_name</code>
@@ -249,6 +259,7 @@ module Neo4j
   # <b>Lucene query string</b>::      <code>/nodes/classname?search=name:hello~</code>
   # <b>Exact match on property</b>::  <code>/nodes/classname?name=hello</code>
   # <b>Specify sorting order</b>::    <code>/nodes/classname?sort=name,desc</code>
+  # <b>Pagination (offset,num)</b>::  <code>/nodes/classname?limit=100,20</code>
   #
   # When create a new node  by posting to <code>/nodes/classname</code> a 201 will be return with the 'Location' header set to the
   # URI of the newly created node.
@@ -269,6 +280,19 @@ module Neo4j
       "#{self.class._uri_rel}/#{neo_node_id}"
     end
 
+    # Called by the REST API if this node is accessed directly by ID. Any query parameters
+    # in the request are passed in a hash. For example if <code>GET /nodes/MyClass/1?foo=bar</code>
+    # is requested, <code>MyClass#accessed</code> is called with <code>{'foo' => 'bar'}</code>.
+    # By default this method does nothing, but model classes may override it to achieve specific
+    # behaviour.
+    def read(options={})
+    end
+
+    # Called by the REST API if this node is deleted. Any query parameters in the request are passed
+    # in a hash.
+    def delete(options={})
+      super()
+    end
 
     def self.included(c)
       c.property :classname
