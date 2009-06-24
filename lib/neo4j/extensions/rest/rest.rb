@@ -51,7 +51,9 @@ module Neo4j
         html
       else
         content_type :json
-        {:classes => REST_NODE_CLASSES.keys, :ref_node => Neo4j.ref_node._uri}.to_json
+        # make it look like it was a node - todo maybe it should be a real Neo4j::Node ...
+        properties = {:classes => REST_NODE_CLASSES.keys, :ref_node => Neo4j.ref_node._uri}
+        {:properties => properties}.to_json
       end
     end
 

@@ -11,11 +11,6 @@ require 'fileutils'
 require 'tmpdir'
 
 
-module Neo4j
-  class ReferenceNode
-    include Neo4j::RestMixin
-  end
-end
 
 Sinatra::Application.set :environment, :test
 
@@ -100,7 +95,7 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['ref_node'].should == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0'
+    body['properties']['ref_node'].should == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0'
   end
 
   

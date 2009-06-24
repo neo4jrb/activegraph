@@ -80,6 +80,12 @@ describe 'Neo4j::Rest::RestStub' do
   end
 
 
+  it "should treat the /neo resource as a Node" do
+    stub = Neo4j::Rest::NodeStub.new("http://0.0.0.0:9123/neo")
+    stub[:ref_node].should == 'http://0.0.0.0:9123/nodes/Neo4j::ReferenceNode/0'
+  end
+
+
   it "should wrap a newly created node as a NodeStub object" do
     Neo4j::Transaction.new
     a = Neo4j::Node.new
