@@ -7,7 +7,7 @@ module Neo4j
 
 
   #
-  # Represent a node in the Neo4j space.
+  # Represents a node in the Neo4j space.
   # 
   # Is a wrapper around a Java neo node
   # 
@@ -24,6 +24,7 @@ module Neo4j
     # Does
     # * sets the neo property 'classname' to self.class.to_s
     # * creates a neo node java object (in @internal_node)
+    # * calls init_node if that is defined in the current class.
     #
     # :api: public
     def initialize(*args)
@@ -34,7 +35,7 @@ module Neo4j
         init_without_node
         init_node(*args) if self.respond_to?(:init_node)
       end
-      # must call super with no arguments so that chaining of initialize method will work
+      # must call super with no arguments so that chaining of the initialize method works
       super()
     end
 

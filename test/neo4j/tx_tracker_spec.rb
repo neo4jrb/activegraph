@@ -246,9 +246,10 @@ describe "TxTracker (TxNodeList)" do
     # when
     Neo4j::Transaction.run { Neo4j.undo_tx }
 
+
     # then
     # make sure relationship exists
-    Neo4j::Transaction.run { a.relationship?(:foobar).should be_true }
+    Neo4j::Transaction.run { puts "A=#{a}"; a.relationship?(:foobar).should be_true }
   end
 
 end

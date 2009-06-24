@@ -16,9 +16,10 @@ module Neo4j
 
     def on_node_created(node)
       tx = TxNodeCreated.new
-      uuid = create_uuid
+      uuid = Neo4j.create_uuid
       node[:uuid] = uuid   # TODO should use a better UUID
       tx[:tracked_neo_id] = node.neo_node_id
+      tx[:tracked_classname] = node.class.to_s
       tx[:created] = true
       tx[:uuid] = uuid
       tx_nodes << tx
@@ -52,83 +53,131 @@ module Neo4j
     end
 
     def on_relationship_created(relationship)
-      tx = TxNode.new
-      uuid = create_uuid
+      tx = TxRelationshipCreatedNode.new
+      uuid = Neo4j.create_uuid
       tx[:uuid] = uuid
       tx[:relationship_created] = true
       tx[:tracked_neo_id] = relationship.neo_relationship_id
+      tx[:start_node_uuid] = relationship.start_node[:uuid]
+      tx[:end_node_uuid] = relationship.end_node[:uuid]
+      relationship[:uuid] = uuid
       tx_nodes << tx
     end
 
 
     def on_relationship_deleted(relationship)
       tx = TxNode.new
-      uuid = create_uuid
+      uuid = Neo4j.create_uuid
       tx[:uuid] = uuid
       tx[:relationship_deleted] = true
       tx[:tracked_neo_id] = relationship.neo_relationship_id
       tx[:relationship_type] = relationship.relationship_type.to_s
-      tx[:start_node_id] = relationship.start_node.neo_node_id
-      tx[:end_node_id] = relationship.end_node.neo_node_id
+      tx[:start_node_uuid] = relationship.start_node[:uuid]
+      tx[:end_node_uuid] = relationship.end_node[:uuid]
 
       tx_nodes << tx
     end
 
-    def create_uuid
-      rand(100000000) # TODO a very bad UUID generator ...
+
+    # Return a list of TxNodes that belongs to the same transaction
+    # Will always include the specified from_tx_node
+    # It will follow the linked list of tx nodes until it founds a new transaction.
+    def tx_nodes_belonging_to_same_tx(from_tx_node)
+      nodes_in_same_tx = []
+      nodes_in_same_tx << from_tx_node  # always include the first one
+
+      # include all other nodes until we find a new transaction marker
+      curr_node = from_tx_node
+      while (curr_node.relationship?(:tx_nodes, :outgoing)) do
+        curr_node = curr_node.relationships.outgoing(:tx_nodes).first.end_node
+        break if curr_node[:tx_finished]
+        nodes_in_same_tx << curr_node
+      end
+      nodes_in_same_tx
+    end
+
+    def create_node(tx_node)
+      classname =  tx_node[:tracked_classname]
+      clazz = classname.split("::").inject(Kernel) do |container, name|
+        container.const_get(name.to_s)
+      end
+      node = clazz.new
+      uuid = tx_node[:uuid]
+      tx_node = Neo4j.find_tx_node(uuid)
+      tx_node[:uuid] = uuid
+      tx_node[:tracked_neo_id] = node.neo_node_id
+      node[:uuid] = uuid
+    end
+
+    def delete_node(tx_node)
+      uuid = tx_node[:uuid]
+      node = Neo4j.load_node_with_uuid(uuid)
+      node.delete
+    end
+
+    def undo_property_changed(tx_node)
+      uuid = tx_node[:uuid]
+      node = Neo4j.load_node_with_uuid(uuid)
+      key = tx_node[:key]
+      old_value = tx_node[:old_value]
+
+      node[key] = old_value
+    end
+
+    def redo_property_changed(tx_node)
+      uuid = tx_node[:uuid]
+      node = Neo4j.load_node_with_uuid(uuid)
+      key = tx_node[:key]
+      new_value = tx_node[:new_value]
+      node[key] = new_value
+    end
+
+    def create_relationship(tx_node)
+      # recreate deleted relationship
+      type = tx_node[:relationship_type]
+      start_node_uuid = tx_node[:start_node_uuid]
+      end_node_uuid = tx_node[:end_node_uuid]
+      start_node = Neo4j.load_node_with_uuid(start_node_uuid)
+      end_node = Neo4j.load_node_with_uuid(end_node_uuid)
+      start_node.relationships.outgoing(type) << end_node
+    end
+
+    def delete_relationship(tx_node)
+      relationship = Neo4j.load_relationship_with_uuid(tx_node[:uuid])
+      relationship.delete
     end
 
 
-    def undo_tx
-      first_node = tx_nodes.first
-      return if first_node.nil?
-
-      nodes_to_undo = []
-      nodes_to_undo << first_node  # always include the first one
-
-      # include all other nodes until we find a new transaction marker
-      curr_node = first_node
-      while (curr_node.relationship?(:tx_nodes, :outgoing)) do
-        curr_node = curr_node.relationship(:tx_nodes, :outgoing).end_node
-        break if curr_node[:tx_finished]
-        nodes_to_undo << curr_node
-      end
-
-      nodes_to_undo.each do |curr_node|
+    def redo_tx(from_tx_node)
+      nodes_to_redo = tx_nodes_belonging_to_same_tx(from_tx_node)
+      nodes_to_redo.reverse_each do |curr_node|
         tracked_neo_id = curr_node[:tracked_neo_id]  # TODO - remove
+
         uuid = curr_node[:uuid]
         if (curr_node[:created])
-          node = Neo4j.load_node_with_uuid(uuid)
-          raise "Can't undo created node of uuid: '#{uuid}'" if node.nil?
-          node.delete
-        elsif (curr_node[:deleted])
-          classname =  curr_node[:tracked_classname]
-          clazz = classname.split("::").inject(Kernel) do |container, name|
-            container.const_get(name.to_s)
-          end
-          node = clazz.new
-          uuid = curr_node[:uuid]
-          tx_node = Neo4j.find_tx_node(uuid)
-          tx_node[:uuid] = uuid
-          tx_node[:tracked_neo_id] = node.neo_node_id
-          node[:uuid] = uuid
+          create_node(curr_node)
         elsif (curr_node[:property_changed])
-          node = Neo4j.load(tracked_neo_id)
-          key = curr_node[:key]
-          old_value = curr_node[:old_value]
-          node[key] = old_value
+          redo_property_changed(curr_node)
+        end
+      end
+    end
+
+    def undo_tx(from_tx_node = tx_nodes.first)
+      return if from_tx_node.nil?
+
+      nodes_to_undo = tx_nodes_belonging_to_same_tx(from_tx_node)
+
+      nodes_to_undo.each do |curr_node|
+        if (curr_node[:created])
+          delete_node(curr_node)
+        elsif (curr_node[:deleted])
+          create_node(curr_node)
+        elsif (curr_node[:property_changed])
+          undo_property_changed(curr_node)
         elsif (curr_node[:relationship_created])
-          # delete created relationship - todo
-           relationship = Neo4j.load_relationship(tracked_neo_id)
-           relationship.delete # todo - check if this has already been deleted ?
+          delete_relationship(curr_node)
         elsif (curr_node[:relationship_deleted])
-          # recreate deleted relationship
-          type = curr_node[:relationship_type]
-          start_node_id = curr_node[:start_node_id]
-          end_node_id = curr_node[:end_node_id]
-          start_node = Neo4j.load(start_node_id)
-          end_node = Neo4j.load(end_node_id)
-          start_node.relationships.outgoing(type) << end_node
+          create_relationship(curr_node)
         end
       end
     end
@@ -158,26 +207,28 @@ module Neo4j
   end
 
 
-  class TxNode
+  # Keeps the uuid of created relationship in a lucene index
+  class TxRelationshipCreatedNode
     include Neo4j::NodeMixin
 
     belongs_to_list(:tx_nodes).relationship(TxNodeRelationship)
 
     property :uuid
+    index :uuid
 
     def to_s
-      "TxNode: " + props.inspect
+      "TxRelationshipCreatedNode: " + props.inspect
     end
   end
 
+
+  # Keeps the uuid of created nodes in a lucene index
   class TxNodeCreated
     include Neo4j::NodeMixin
 
     belongs_to_list(:tx_nodes).relationship(TxNodeRelationship)
 
     property :uuid
-    property :tracked_neo_id
-
     index :uuid
 
     def to_s
@@ -185,29 +236,51 @@ module Neo4j
     end
   end
 
-# Add this so it can add it self as listener
+
+  # Represent an events like property change
+  # Does not represend events for relationship and node creations
+  class TxNode
+    include Neo4j::NodeMixin
+
+    belongs_to_list(:tx_nodes).relationship(TxNodeRelationship)
+
+    def to_s
+      "TxNode: " + props.inspect
+    end
+  end
+
+
+
+  #-------------------------------------------------
+  # Neo4j Module Methods
+  #
+  #-------------------------------------------------
+
+
+  # Loads the tx tracker extension
   def self.load_tx_tracker
     Neo4j.event_handler.add_filter(TxNode)
     Neo4j.event_handler.add_filter(TxNodeCreated)
+    Neo4j.event_handler.add_filter(TxRelationshipCreatedNode)
+
     Neo4j.event_handler.add(TxNodeList)
     Neo4j.event_handler.add(TxNodeRelationship)
+    # if neo is already run we have to let txnodelist have a chance to add it self
+    # TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
     Neo4j::Transaction.run { TxNodeList.on_neo_started(Neo4j.instance) } if Neo4j.running?
   end
 
-# if neo is already run we have to let txnodelist have a chance to add it self
-  # TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
 
-#  Undo the last transaction
-#
-# :api: public
+  #  Undo the last transaction
+  #
+  # :api: public
   def self.undo_tx
     TxNodeList.instance.undo_tx
   end
 
 
   # Load a neo4j node given a cluster wide UUID (instead of neo_node_id)
-  # :nodoc:
-  # :api: private
+  # :api: public
   def self.load_node_with_uuid(uuid)
     txnode = find_tx_node(uuid)
     return if txnode.nil?
@@ -217,15 +290,31 @@ module Neo4j
   end
 
 
-  # :nodoc:
+  # Load a neo4j relatinship given a cluster wide UUID (instead of neo_node_id)
+  # :api: public
+  def self.load_relationship_with_uuid(uuid)
+    txnode = find_tx_relationship(uuid)
+    return if txnode.nil?
+    # does this node exist ?
+    id = txnode[:tracked_neo_id]
+    node = Neo4j.load_relationship(id)
+  end
+
+
   # :api: private
-  def self.find_tx_node(uuid)
+  def self.find_tx_node(uuid) # :nodoc:
     TxNodeCreated.find(:uuid => uuid).first
   end
 
-  # Create a new a neo4j node given a cluster wide UUID (instead of neo_node_id)
-  # :nodoc:
+
   # :api: private
+  def self.find_tx_relationship(uuid) # :nodoc:
+    TxRelationshipCreatedNode.find(:uuid => uuid).first
+  end
+
+# Create a new a neo4j node given a cluster wide UUID (instead of neo_node_id)
+# :nodoc:
+# :api: private
   def self.create_node_with_uuid(uuid)
     txnode = find_tx_node(uuid)
     return if txnode.nil?
@@ -234,6 +323,13 @@ module Neo4j
     node = Neo4j.load(id)
   end
 
-  load_tx_tracker
+
+# Generates a new unique uuid
+  def self.create_uuid
+    rand(100000000) # TODO a very bad UUID generator ...
+  end
+
+  Neo4j.load_tx_tracker
+
 
 end

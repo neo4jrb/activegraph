@@ -11,7 +11,21 @@ require 'fileutils'
 require 'tmpdir'
 
 
+module Neo4j
+  class ReferenceNode
+    include Neo4j::RestMixin
+  end
+end
+
 Sinatra::Application.set :environment, :test
+
+def reset_and_config_neo4j
+  Lucene::Config[:storage_path] = Dir::tmpdir + "/lucene"
+  Lucene::Config[:store_on_file] = true
+  Neo4j::Config[:storage_path] = Dir::tmpdir + "/neo_storage"
+  FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
+  FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
+end
 
 describe 'Restful' do
   include Rack::Test::Methods
@@ -21,13 +35,7 @@ describe 'Restful' do
   end
 
   before(:all) do
-    NEO_STORAGE = Dir::tmpdir + "/neo_storage"
-    LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
-    Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
-    Lucene::Config[:store_on_file] = true
-    Neo4j::Config[:storage_path] = NEO_STORAGE
-    FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
-    FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
+    reset_and_config_neo4j
     Neo4j.event_handler.remove_all
   end
 
@@ -85,13 +93,36 @@ END_OF_STRING
   end
 
 
+  it "should contain a reference to the ref_node on GET /neo" do
+    # when
+    get '/neo'
+
+    # then
+    last_response.status.should == 200
+    body = JSON.parse(last_response.body)
+    body['ref_node'].should == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0'
+  end
+
+  
+  it "should return the location of the reference node on GET /neo" do
+
+    # when
+    get '/neo'
+
+    # then
+    last_response.status.should == 200
+    body = JSON.parse(last_response.body)
+    puts "GOT BODY #{body.inspect}"
+    body['ref_node'] == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0' 
+  end
+  
   it "should know the URI of a RestPerson instance" do
     p = RestPerson.new
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
     p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_node_id}"
   end
 
-  it "should be possible to traverse a relationship on GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
+  it "should traverse a relationship on GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
     adam = RestPerson.new
     adam.name = 'adam'
 
@@ -142,7 +173,6 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-#    last_response.location.should == "/relations/1" # starts counting from 0
     node1.relationships.outgoing(:fooz).nodes.should include(node2)
   end
 
@@ -176,6 +206,8 @@ END_OF_STRING
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body['properties']['foo'].should == 'bar'
+    body['end_node']['uri'].should == 'http://0.0.0.0:4567/nodes/RestPerson/2'
+    body['start_node']['uri'].should == 'http://0.0.0.0:4567/nodes/RestPerson/1' 
   end
 
 
@@ -241,9 +273,11 @@ END_OF_STRING
     n1 = MyNode.new
     n2 = MyNode.new
     n3 = MyNode.new
+    n4 = MyNode.new
 
     n1.relationships.outgoing(:type1) << n2
     n1.relationships.outgoing(:type2) << n3
+    n1.relationships.outgoing(:type2) << n4
 
     # when
     get "/nodes/MyNode/#{n1.neo_node_id}"
@@ -252,6 +286,11 @@ END_OF_STRING
     last_response.status.should == 200
     data = JSON.parse(last_response.body)
     data['relationships'].should_not be_nil
+    data['relationships']['type1'].should_not be_nil
+    data['relationships']['type2'].should_not be_nil
+    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/1')
+    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/2')
+    data['relationships']['type1'].should include('http://0.0.0.0:4567/relationships/0')
   end
 
 
@@ -423,3 +462,45 @@ END_OF_STRING
     data.map{|p| p['name']}.should == %w(p49 p48 p47 p46 p45 p44 p43 p42 p41 p40)
   end
 end
+
+
+#describe 'Restful Hyperlinks between Neo4j resources' do
+#  include Rack::Test::Methods
+#
+#
+#  def app
+#    Sinatra::Application
+#  end
+#
+#  before(:all) do
+#    reset_and_config_neo4j
+#  end
+#
+#  after(:all) do
+#    Neo4j::Transaction.finish if Neo4j::Transaction.running?
+#    Neo4j.stop
+#  end
+#
+#
+#  it "should expose the TxNodeList as a REST Resource" do
+#    pending
+#    # navigate to reference node
+#    get '/nodes/Neo4j::ReferenceNode/0'
+#    body = JSON.parse(last_response.body)
+#
+#    # navigate to relationship tx_node_list
+#    get body['relationships']['tx_node_list']
+#    last_response.status.should == 200
+#    body = JSON.parse(last_response.body)
+#    body['end_node'].should_not be_nil
+#
+#    # navigate to end node of that relationship
+#    get body['end_node']['uri']
+#    last_response.status.should == 200
+#
+#    # we should now come to the TxNodeList
+#    body = JSON.parse(last_response.body)
+#    last_response.status.should == 200
+#    body['properties']['classname'].should == "Neo4j::TxNodeList"
+#  end
+#end
