@@ -202,7 +202,7 @@ module Neo4j
     end
 
 
-    URL_REGEXP = Regexp.new '((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)$' #:nodoc:
+    URL_REGEXP = Regexp.new '^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+\/[\w\-\.]+)$' #:nodoc:
 
     Sinatra::Application.post("/nodes/:class/:id/:rel") do
       content_type :json
@@ -214,7 +214,6 @@ module Neo4j
         body = request.body.read
         data = JSON.parse(body)
         uri = data['uri']
-        puts "Matching uri: #{uri}"
         match = URL_REGEXP.match(uri)
         return 400, "Bad node uri '#{uri}'" if match.nil?
         to_clazz, to_node_id = match[6].split('/')
