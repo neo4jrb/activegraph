@@ -255,19 +255,32 @@ describe "Neo4j::Node#delete"  do
     Neo4j::Transaction.finish
   end
 
-  it "should remove the node from the database" do
+  it "should remove the node from the database after the transaction finish" do
     # given
     node = Neo4j::Node.new
     id = node.neo_node_id
     
     # when
     node.delete
-    Neo4j::Transaction.current.success # delete only takes effect when transaction has ended
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
+
     
     # then
     Neo4j.load(id).should == nil
+  end
+
+
+  it "should not remove the node from the database if the transaction has not finish" do
+    # given
+    node = Neo4j::Node.new
+    id = node.neo_node_id
+
+    # when
+    node.delete
+
+    # then
+    Neo4j.load(id).should_not be_nil
   end
 
   it "should delete all relationships as well" do

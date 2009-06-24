@@ -89,8 +89,10 @@ module Neo4j
         @internal_node.set_property(name, value)
       end
 
-      self.class.indexer.on_property_changed(self, name)   # TODO reuse the event_handler instead !
-      Neo4j.event_handler.property_changed(self, name, old_value, value)
+      if (name != 'classname')  # do not want events on internal properties
+        self.class.indexer.on_property_changed(self, name)   # TODO reuse the event_handler instead !
+        Neo4j.event_handler.property_changed(self, name, old_value, value)
+      end
     end
 
 

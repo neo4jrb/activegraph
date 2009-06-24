@@ -75,7 +75,7 @@ module Neo4j
     end
 
     def create_uuid
-      rand(100000) # TODO a very bad UUID generator ...
+      rand(100000000) # TODO a very bad UUID generator ...
     end
 
 
@@ -98,8 +98,7 @@ module Neo4j
         tracked_neo_id = curr_node[:tracked_neo_id]  # TODO - remove
         uuid = curr_node[:uuid]
         if (curr_node[:created])
-          #node = Neo4j.load(tracked_neo_id)
-          node = Neo4j.load_uuid(uuid)
+          node = Neo4j.load_node_with_uuid(uuid)
           raise "Can't undo created node of uuid: '#{uuid}'" if node.nil?
           node.delete
         elsif (curr_node[:deleted])
@@ -108,15 +107,20 @@ module Neo4j
             container.const_get(name.to_s)
           end
           node = clazz.new
+          uuid = curr_node[:uuid]
+          tx_node = Neo4j.find_tx_node(uuid)
+          tx_node[:uuid] = uuid
+          tx_node[:tracked_neo_id] = node.neo_node_id
+          node[:uuid] = uuid
         elsif (curr_node[:property_changed])
           node = Neo4j.load(tracked_neo_id)
           key = curr_node[:key]
           old_value = curr_node[:old_value]
           node[key] = old_value
         elsif (curr_node[:relationship_created])
-          # delete created relationship
-          relationship = Neo4j.load_relationship(tracked_neo_id)
-          relationship.delete
+          # delete created relationship - todo
+           relationship = Neo4j.load_relationship(tracked_neo_id)
+           relationship.delete # todo - check if this has already been deleted ?
         elsif (curr_node[:relationship_deleted])
           # recreate deleted relationship
           type = curr_node[:relationship_type]
@@ -202,10 +206,28 @@ module Neo4j
 
 
   # Load a neo4j node given a cluster wide UUID (instead of neo_node_id)
-  #
-  # :api: public
-  def self.load_uuid(uuid)
-    txnode = TxNodeCreated.find(:uuid => uuid).first
+  # :nodoc:
+  # :api: private
+  def self.load_node_with_uuid(uuid)
+    txnode = find_tx_node(uuid)
+    return if txnode.nil?
+    # does this node exist ?
+    id = txnode[:tracked_neo_id]
+    node = Neo4j.load(id)
+  end
+
+
+  # :nodoc:
+  # :api: private
+  def self.find_tx_node(uuid)
+    TxNodeCreated.find(:uuid => uuid).first
+  end
+
+  # Create a new a neo4j node given a cluster wide UUID (instead of neo_node_id)
+  # :nodoc:
+  # :api: private
+  def self.create_node_with_uuid(uuid)
+    txnode = find_tx_node(uuid)
     return if txnode.nil?
     # does this node exist ?
     id = txnode[:tracked_neo_id]

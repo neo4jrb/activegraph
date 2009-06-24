@@ -30,7 +30,7 @@ module Neo4j
     class << self 
       
 
-      #
+      # :nodoc:
       # debugging method
       #
       def called
@@ -96,7 +96,7 @@ module Neo4j
       #
       # :api: public
       #
-      def run
+      def run   # :yield: block of code to run inside a transaction
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         ret = nil
@@ -104,7 +104,6 @@ module Neo4j
         begin
           tx = Neo4j::Transaction.new
           ret = yield tx
-          tx.success unless tx.failure?
         rescue Exception => e
           #$NEO_LOGGER.warn{e.backtrace.join("\n")}
           tx.failure
@@ -115,19 +114,43 @@ module Neo4j
         ret
       end  
 
-     
+
+      # Returns the current running transaction or nil
+      #
+      # :api: public
       def current
         Thread.current[:transaction]
       end
     
+
+      # Returns true if there is a transaction for the current thread
+      #
+      # :api: public
       def running?
         self.current != nil # && self.current.neo_tx != nil
       end
-    
+
+
+      # Returns true if the transaction has been marked for failure/rollback
+      #
+      # :api: public
       def failure?
         current.failure?
       end
 
+      # Finish the current transaction if it is running.
+      #
+      # See Neo4j::Transaction#failure
+      #
+      # :api: public
+      def failure
+        current.failure if running?
+      end
+
+
+      # Finish the current transaction if it is running
+      #
+      # :api: public
       def finish
         current.finish if running?
       end
@@ -150,18 +173,21 @@ module Neo4j
     end
     
     def to_s
-      "Transaction: placebo: #{placebo?}, #{@id} failure: #{failure?}, running #{Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
+      "Transaction: placebo: #{placebo?}, #{@id} failure: #{failure?}, running #{Transaction.running?}, lucene: #{Lucene::Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
     end
- 
 
+
+    # Returns true if the transaction will rollback
+    #
+    # :api: public
     def failure?
       @failure == true
     end
 
+    
 
     def placebo?
       false
-      #      self.class.placebo?(@neo_tx)
     end
 
     def create_placebo_tx_if_not_already_exists
@@ -186,17 +212,18 @@ module Neo4j
     # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
-      Neo4j.event_handler.tx_finished(self) unless @failure
+      Neo4j.event_handler.tx_finished(self) unless failure?
+      @neo_tx.success unless failure?
       @neo_tx.finish
       @neo_tx=nil
       Thread.current[:transaction] = nil
-      
+
       if Lucene::Transaction.running?
         $NEO_LOGGER.debug{"LUCENE TX running failure: #{failure?}"}
-        
+
         # mark lucene transaction for failure if the neo transaction fails
         Lucene::Transaction.current.failure if failure?
-        Lucene::Transaction.current.commit 
+        Lucene::Transaction.current.commit
       else
         $NEO_LOGGER.debug{"NO LUCENE TX running"}
       end

@@ -70,6 +70,7 @@ module Neo4j
     end
 
     def self.instance
+      Neo4j.start if @index_node.nil?
       @index_node
     end
 

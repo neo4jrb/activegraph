@@ -66,7 +66,6 @@ module Neo4j
 
 
     # Deletes the relationship between two nodes.
-    # Will fire a RelationshipDeletedEvent on the start_node class.
     #
     # :api: public
     def delete
@@ -77,7 +76,6 @@ module Neo4j
       # TODO not sure if we need to do it on both start and end node ...
 #      start_node.class.indexer.on_relationship_deleted(start_node, type) unless start_node.nil?
       end_node.class.indexer.on_relationship_deleted(end_node, type) unless end_node.nil?
-
     end
 
     def set_property(key, value)

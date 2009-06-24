@@ -53,6 +53,23 @@ describe "transaction rollback" do
     Neo4j::Transaction.run { node.foo.should == 'foo'   }
   end
 
+  it "should rollback a transaction when an exception is thrown"  do
+    node = Neo4j::Transaction.run { b = BaseNode.new; b.foo = 'foo'; b }
+
+    # when doing a rollback
+    lambda do
+      Neo4j::Transaction.run { |t|
+        node.foo = "changed"
+        node.foo.should  == "changed"
+        raise "BOOOM"
+      }
+    end.should raise_error
+    
+    # then
+    Neo4j::Transaction.run { node.foo.should == 'foo'   }
+
+  end
+
 end
 
 
@@ -75,7 +92,7 @@ describe "When neo has been restarted" do
         node = BaseNode.new
         node.baaz =  "hello"
       }
-      
+
       Neo4j.stop
       Neo4j.start
 
