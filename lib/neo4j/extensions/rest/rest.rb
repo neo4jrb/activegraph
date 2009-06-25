@@ -26,6 +26,8 @@ module Neo4j
       clazz = clazz.split("::").inject(Kernel) do |container, name|
         container.const_get(name.to_s)
       end
+    rescue NameError
+      raise Sinatra::NotFound
     end
 
 
@@ -226,7 +228,7 @@ module Neo4j
           prop = params[:prop].to_sym
           if node.class.relationships_info.keys.include?(prop)      # TODO looks weird, why this complicated
             rels = node.send(prop) || []
-            rels.map{|rel| rel.props}.to_json
+            (rels.respond_to?(:props) ? rels.props : rels.map{|rel| rel.props}).to_json
           else
             {prop => node.get_property(prop)}.to_json
           end

@@ -44,6 +44,13 @@ module Neo4j
       "/nodes/#{clazz}/#{neo_node_id}"
     end
     
+    def initialize(*args)
+      super
+      # Explicitly index the classname of a node (required for <code>GET /nodes/MyClass</code>
+      # Lucene search to work).
+      self.class.indexer.on_property_changed(self, 'classname')   # TODO reuse the event_handler instead !
+      Neo4j.event_handler.property_changed(self, 'classname', '', self.class.to_s)
+    end
 
     # Called by the REST API if this node is accessed directly by ID. Any query parameters
     # in the request are passed in a hash. For example if <code>GET /nodes/MyClass/1?foo=bar</code>
@@ -58,7 +65,6 @@ module Neo4j
     def delete(options={})
       super()
     end
-    
 
 
     def self.included(c)

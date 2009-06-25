@@ -50,6 +50,7 @@ describe 'Restful' do
       include Neo4j::RestMixin
       property :name
       index :name, :tokenized => true
+      has_one :best_friend
     end
 
     class MyNode
@@ -186,6 +187,22 @@ END_OF_STRING
     body = JSON.parse(last_response.body)
     body.size.should == 1
     body[0]['id'].should == bertil.neo_node_id
+  end
+
+  it "should return a single related node on GET /nodes/<classname>/<node_id>/<has_one_rel>" do
+    adam = SomethingElse.new
+    adam.name = 'adam'
+    bertil = RestPerson.new
+    bertil.name = 'bertil'
+    adam.best_friend = bertil
+
+    # when
+    get "/nodes/RestPerson/#{adam.neo_node_id}/best_friend"
+
+    # then
+    last_response.status.should == 200
+    body = JSON.parse(last_response.body)
+    body['id'].should == bertil.neo_node_id
   end
 
   it "should be possible to load a relationship on GET /relationship/<id>" do
@@ -455,6 +472,22 @@ END_OF_STRING
     data = JSON.parse(last_response.body)
     data.size.should == 10
     data.map{|p| p['name']}.should == %w(p49 p48 p47 p46 p45 p44 p43 p42 p41 p40)
+  end
+
+  it "should find nodes even if they have no properties" do
+    # given
+    id = RestPerson.new.neo_node_id
+    Neo4j::Transaction.current.success # ensure index gets updated
+    Neo4j::Transaction.finish
+
+    # when
+    get "/nodes/RestPerson"
+
+    # then
+    last_response.status.should == 200
+    data = JSON.parse(last_response.body)
+    data.size.should == 1
+    data[0]['id'].should == id
   end
 end
 
