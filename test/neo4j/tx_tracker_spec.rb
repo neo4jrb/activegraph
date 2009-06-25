@@ -121,7 +121,6 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.new
     a = TxTestNode.new
     id = a.neo_node_id
-    puts "DELETE #{a[:uuid]} id:#{a.neo_node_id}"
     a.delete
     Neo4j::Transaction.finish
 
@@ -250,7 +249,7 @@ describe "TxTracker (TxNodeList)" do
 
     # then
     # make sure relationship exists
-    Neo4j::Transaction.run { puts "A=#{a}"; a.relationship?(:foobar).should be_true }
+    Neo4j::Transaction.run { a.relationship?(:foobar).should be_true }
   end
 
 end

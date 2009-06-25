@@ -108,7 +108,6 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    puts "GOT BODY #{body.inspect}"
     body['ref_node'] == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0' 
   end
   

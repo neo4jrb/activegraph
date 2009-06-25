@@ -43,7 +43,7 @@ Spec::Rake::SpecTask.new do |t|
   t.libs << "lib"
   #  t.rcov = true
   # rest specs requires some other gems - see the rest_spec.rb file
-  t.spec_files = FileList['test/lucene/*_spec.rb'] + FileList['test/neo4j/*_spec.rb']
+  t.spec_files =  FileList['test/lucene/*_spec.rb'] + FileList['test/neo4j/*_spec.rb'] #  FileList['test/**/*_spec.rb']
   t.spec_opts = ['--format specdoc', '--color']
   # t.spec_opts = ['--format html:../doc/output/report.html'] #,'--backtrace']
 end
@@ -58,12 +58,6 @@ Rake::RDocTask.new do |rdoc|
   
   rdoc.rdoc_files.include('README.rdoc', 'CHANGELOG', 'lib/**/*.rb')
 end
-
-desc "Generated YARD documenation"
-YARD::Rake::YardocTask.new do |t|
-  t.files   = ['README.rdoc', 'CHANGELOG', 'lib/**/*.rb']   # optional
-  t.options << '-r README.rdoc'
-end if defined? YARD
 
 desc 'Upload documentation to RubyForge.'
 task 'upload-docs' do
@@ -102,7 +96,9 @@ spec = Gem::Specification.new do |s|
  
   s.required_ruby_version = ">= 1.8.4"
 
-  s.add_dependency("json_pure", ">=1.1.4")
+  # TODO add those dependencies when there is a new release of sinatra and rack-test (you need to build it your self if running neo4j-rest)
+  # s.add_dependency("json_jruby", ">=1.1.6")  rack 1.0.0   sinatra (0.10.1
+
 end
  
 Rake::GemPackageTask.new(spec) do |pkg|

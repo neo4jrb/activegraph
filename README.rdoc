@@ -26,7 +26,7 @@ It uses two powerful and mature java libraries:
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
 * Issue Tracking - http://neo4j.lighthouseapp.com
 * Twitter - http://twitter.com/ronge
-* API Documentation - http://neo4j.rubyforge.org/
+* API Documentation - http://neo4j.rubyforge.org/ (of the released version)
 * Source repo - git://github.com/andreasronge/neo4j.git
 * Mailing list - https://lists.neo4j.org/mailman/listinfo/user
 
@@ -1393,19 +1393,23 @@ in a singel transaction if possible for better performance.
 Updating a lucene index can be slow. A solution to this is to keep the index in memory instead of on disk.
 
 I'm currently looking at how to scale neo4j.rb by a simple master-slave cluster by
-using ActiveMQ (see the cluster branch).
-Another solution might be to simply copy the master database (rsync ?) to the slaves.
+using REST, see the REST extension below.
 
+== Extensions: Replication
+
+There is an experimental extension that makes it possible to replicate an neo4j database to another machine.
+For example how to use it see the test/replication/test_master.rb and test_slave.rb
+It has only been tested to work with a very simple node space.
 
 == Extension: REST
 
-There is an experimental REST extension to Neo4j.rb.
+There is an REST extension to Neo4j.rb.
 It requires the following gems
  * Sinatra > 0.9.2 (I can only get the example.rb running by building from the latest from github).
  * Rack >= 1.0
  * json-jruby >= 1.1.6
 
-For testing it also needs:
+For RSpec testing it also needs:
  * rack-test
  
 For more information see the test/rest/example.rb or the examples/admin or Neo4j::RestMixin.
@@ -1414,8 +1418,10 @@ For more information see the test/rest/example.rb or the examples/admin or Neo4j
 == Ruby on Rails with Neo4j.rb
 
 Neo4j.rb does work nicely with R&R.
+There are two ways to use neo4j.rb with rails - embedded or accessing it via REST.
 
-It has been verified on neo4j.rb 0.2.1 rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
+The following example demonstrate how to embed neo4j.rb with rails.
+It has been verified to work on neo4j.rb 0.2.1 rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
 
 === Configuration
 

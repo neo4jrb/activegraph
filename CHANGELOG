@@ -1,3 +1,24 @@
+== 0.3.0 / 2009-06-25
+* Neo4j should track node changes
+* RESTful support for lucene queries, sorting and paging
+* RESTful support for Relationships
+* RESTful support for Node and properties
+* Experimental support for Master-Slave	Replication via REST
+* RESTful Node representation should contain hyperlinks to relationships
+* Added some handy method like first and empty? on relationships
+* Use new neo4j: neo-1.0-b8
+* Add an event handler for create/delete nodes start/stop neo, update property/relationship
+* The NodeMixin should behave like a hash, added [] and []= methods
+* Support list topology - has_list and belongs_to_list Neo4j::NodeMixin Classmethods
+* Should be possible to add relationships without declaring them (Neo4j#relationships.outgoing(:friends) << node)
+* Neo4j extensions file structure, should be easy to create your own extensions
+* Rename relation to relationship
+* Auto Transaction is now optional
+* Setting Float properties fails under JRuby1.2.0
+* Bug: Indexing relationships does not work
+* Make the ReferenceNode include Neo4j::NodeMixin
+* Added handy Neo4j class that simply includes the Neo4j::NodeMixin
+
 == 0.2.1 / 2009-03-15
 * Refactoring of lucene indexing of the node space (28)
 * Fixed bug on Neo4j::Nodemixin#property? (#22)
