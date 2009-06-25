@@ -49,7 +49,8 @@ module Neo4j
       # Explicitly index the classname of a node (required for <code>GET /nodes/MyClass</code>
       # Lucene search to work).
       self.class.indexer.on_property_changed(self, 'classname')   # TODO reuse the event_handler instead !
-      Neo4j.event_handler.property_changed(self, 'classname', '', self.class.to_s)
+      # This caused the replication_spec.rb to fail
+     # Neo4j.event_handler.property_changed(self, 'classname', '', self.class.to_s)
     end
 
     # Called by the REST API if this node is accessed directly by ID. Any query parameters
