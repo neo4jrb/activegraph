@@ -85,6 +85,8 @@ module Neo4j
       def find(query=nil, &block)
         return super(query, &block) if query.nil? || query.kind_of?(String)
 
+        query = symbolize_keys(query)
+
         if query[:limit]
           limit = query[:limit].to_s.split(/,/).map{|i| i.to_i}
           limit.unshift(0) if limit.size == 1
@@ -122,6 +124,15 @@ module Neo4j
           (limit[0]...(limit[0]+limit[1])).map{|n| results[n] }
         else
           results
+        end
+      end
+
+      # :nodoc:
+      def symbolize_keys(hash)
+        # Borrowed from ActiveSupport
+        hash.inject({}) do |options, (key, value)|
+          options[(key.to_sym rescue key) || key] = value
+          options
         end
       end
     end
