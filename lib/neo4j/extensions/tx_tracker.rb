@@ -151,9 +151,6 @@ module Neo4j
     def redo_tx(from_tx_node)
       nodes_to_redo = tx_nodes_belonging_to_same_tx(from_tx_node)
       nodes_to_redo.reverse_each do |curr_node|
-        tracked_neo_id = curr_node[:tracked_neo_id]  # TODO - remove
-
-        uuid = curr_node[:uuid]
         if (curr_node[:created])
           create_node(curr_node)
         elsif (curr_node[:property_changed])
@@ -304,6 +301,11 @@ module Neo4j
   # :api: private
   def self.find_tx_node(uuid) # :nodoc:
     TxNodeCreated.find(:uuid => uuid).first
+    #if !found && tx_nodes   # TODO  !!!
+    #  nodes = tx_nodes_belonging_to_same_tx(tx_nodes)
+    #  # check if we have a resent not indexed uuid ...
+    #end
+    #found
   end
 
 

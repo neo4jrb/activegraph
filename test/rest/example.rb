@@ -41,7 +41,7 @@ Neo4j::Transaction.run do
 end
 
 puts "Created a person at URI http://localhost:9123/nodes/Person/1"
-Neo4j::RestServer.thread.join
+Neo4j::Rest::RestServer.thread.join
 
 #puts "HOST " + Sinatra::Application.host
 #Sinatra::Application.run! :port => 9123

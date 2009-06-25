@@ -33,7 +33,6 @@ module Neo4j
       class << self
         def get_request(resource, args = {})
           body = _get_request(resource, args)
-          puts "BODY #{body.inspect}"
           JSON.parse(body)
         end
 
@@ -42,10 +41,10 @@ module Neo4j
         end
 
         def _request(resource, method = :get, args = {})
-          puts "_REQUEST #{resource}"
           url = URI.parse(resource)
-          puts "URI #{url}"
-          puts "path #{url.path}"
+          host = url.host
+          host.sub!(/0\.0\.0\.0/, 'localhost')
+
           #if args
           #  url.query = args.map { |k, v| "%s=%s" % [URI.encode(k), URI.encode(v)] }.join("&")
           #end
@@ -60,9 +59,8 @@ module Neo4j
                       Net::HTTP::Post.new(url.path)
                   end
 
-          http = Net::HTTP.new(url.host, url.port)
+          http = Net::HTTP.new(host, url.port)
           res = http.start() { |conn| conn.request(req) }
-          puts "done request"
           res.body
         end
       end

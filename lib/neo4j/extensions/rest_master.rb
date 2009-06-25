@@ -24,4 +24,12 @@ module Neo4j
     include Neo4j::RestMixin
   end
 
+
+  # FOR TESTING PURPOSE ----
+  
+  class Node
+    include Neo4j::RestMixin # for making it easier to test    
+  end
+
+  Neo4j::Config[:storage_path] = 'tmp/master'
 end

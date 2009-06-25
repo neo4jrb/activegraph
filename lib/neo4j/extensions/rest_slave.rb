@@ -17,10 +17,11 @@ module Neo4j
   end
   
 
+  # TODO This is not working yet !
   def self.replicate
-    # TODO find uri from /neo instead 
-    uri = Neo4j::TxNodeList.instance._uri
-    tx_node_list = Neo4j::Rest::NodeStub.new(uri)
+    neo_master = Neo4j::Rest::NodeStub.new(Config[:master_neo4j_uri] + "/neo")
+    neo_ref_node = Neo4j::Rest::NodeStub.new(neo_master[:ref_node])
+    tx_node_list = neo_ref_node.relationships.outgoing(:tx_node_list).nodes.first
     tx_node = tx_node_list.relationships.outgoing(:tx_nodes).nodes.first
     Neo4j::Transaction.run do
       Neo4j::TxNodeList.instance.redo_tx(tx_node)

@@ -121,6 +121,7 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.new
     a = TxTestNode.new
     id = a.neo_node_id
+    puts "DELETE #{a[:uuid]} id:#{a.neo_node_id}"
     a.delete
     Neo4j::Transaction.finish
 
