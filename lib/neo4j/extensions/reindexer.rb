@@ -57,10 +57,14 @@ module Neo4j
     end
 
     def self.on_neo_started(neo_instance)
-      return if neo_instance.ref_node.relationship?(:index_node)
-      @index_node = IndexNode.new # cache this so we do not have to look it up always
-      neo_instance.ref_node.relationships.outgoing(:index_node) << @index_node
-      Neo4j.event_handler.add(@index_node)
+      if neo_instance.ref_node.relationship?(:index_node)
+        # we already have it, put it in instance variable so we do not have to look again
+        @index_node = neo_instance.ref_node.relationships.outgoing(:index_node).nodes.first
+      else
+        @index_node = IndexNode.new # cache this so we do not have to look it up always
+        neo_instance.ref_node.relationships.outgoing(:index_node) << @index_node
+        Neo4j.event_handler.add(@index_node)
+      end
     end
 
     def self.on_neo_stopped(neo_instance)
