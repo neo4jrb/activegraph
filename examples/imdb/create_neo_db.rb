@@ -2,6 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 
 require "rubygems" 
 require "neo4j"
+require "neo4j/extensions/reindexer"
 require "model"
 
 def parse_actors(file)

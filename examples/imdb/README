@@ -1,0 +1,5 @@
+Shows how to store and query a neo4j database
+
+
+1. Download the database type: ./install.sh
+2. Create the database: jruby create_neo_db.rb
