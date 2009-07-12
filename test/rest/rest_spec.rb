@@ -438,6 +438,14 @@ END_OF_STRING
     data[1]['name'].should == "p1"
   end
 
+  it "should not blow up when sorting when there is no data" do
+    # when
+    get "/nodes/RestPerson?sort=name"
+    # then
+    last_response.status.should == 200
+    JSON.parse(last_response.body).size.should == 0
+  end
+
   it "should treat GET /nodes/SomethingElse?search=... as a Lucene query string" do
     # given
     p1 = SomethingElse.new
