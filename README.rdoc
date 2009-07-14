@@ -1212,7 +1212,7 @@ To update an index use the class method 'update_index' which will update all alr
 Example
 
   require 'neo4j'
-  require 'neo4j/extensions/tx_tracker' # needed for the update_index method
+  require 'neo4j/extensions/reindexer' # needed for the update_index method
   class Person
     include Neo4j
     property :name, :age, :phone
