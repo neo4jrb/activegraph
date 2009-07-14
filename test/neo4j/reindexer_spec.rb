@@ -35,11 +35,11 @@ describe "Reindexer (NodeMixin#all)" do
   before(:all) do
     Neo4j.event_handler.add(Neo4j::IndexNode) # incase it has been disabled by an RSpec
   end
-  
+
   after(:all) do
     Neo4j.event_handler.remove(Neo4j::IndexNode) # avoid side effects on using this extension
   end
-  
+
 
   it "has a reference to a created node" do
     #should only have a reference to the reference node
@@ -66,7 +66,7 @@ describe "Reindexer (NodeMixin#all)" do
     ReindexerTestNode.all.nodes.to_a.size.should == 1
     ReindexerTestNode2.all.nodes.to_a.size.should == 2
   end
-  
+
   it "should return all node instances" do
     class TestNode
       include Neo4j::NodeMixin
@@ -153,3 +153,50 @@ describe "Reindexer (NodeMixin#all)" do
   end
 
 end
+
+
+
+describe "Reindex" do
+  it "should reindex nodes after the neo4j has restarted (lighthouse ticket #53)" do
+    Neo4j.load_reindexer # since a previous test might have unloaded this extension
+    
+    undefine_class :TestNode
+    class TestNode
+      include Neo4j::NodeMixin
+      property :name, :age
+      index :name
+    end
+
+    Neo4j::Transaction.new
+    Neo4j.start
+    t1 = TestNode.new
+    t1.name = 't1'
+    Neo4j::Transaction.finish
+
+
+    # make sure we can find it
+    Neo4j::Transaction.new
+    TestNode.all.nodes.to_a.should include(t1)
+    Neo4j::Transaction.finish
+
+    # now restart neo and check if neo4j still keep track of all created nodes
+    Neo4j.stop
+    Neo4j.start
+
+    # create another node check if still works
+    Neo4j::Transaction.new
+    Neo4j.start
+    t2 = TestNode.new
+    t2.name = 't2'
+    Neo4j::Transaction.finish
+
+
+    # make sure we can find it
+    Neo4j::Transaction.new
+    TestNode.all.nodes.to_a.should include(t2)
+    Neo4j::Transaction.finish
+
+  end
+end
+
+

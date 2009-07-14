@@ -63,8 +63,8 @@ module Neo4j
       else
         @index_node = IndexNode.new # cache this so we do not have to look it up always
         neo_instance.ref_node.relationships.outgoing(:index_node) << @index_node
-        Neo4j.event_handler.add(@index_node)
       end
+      Neo4j.event_handler.add(@index_node)
     end
 
     def self.on_neo_stopped(neo_instance)
