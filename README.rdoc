@@ -28,7 +28,7 @@ It uses two powerful and mature java libraries:
 * Twitter - http://twitter.com/ronge
 * API Documentation - http://neo4j.rubyforge.org/ (of the released version)
 * Source repo - git://github.com/andreasronge/neo4j.git
-* Mailing list - https://lists.neo4j.org/mailman/listinfo/user
+* Mailing list - neo4jrb@googlegroups.com
 
 === Presentation Materials and other URLs
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
