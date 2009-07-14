@@ -1420,35 +1420,28 @@ For more information see the test/rest/example.rb or the examples/admin or Neo4j
 Neo4j.rb does work nicely with R&R.
 There are two ways to use neo4j.rb with rails - embedded or accessing it via REST.
 
-The following example demonstrate how to embed neo4j.rb with rails.
-It has been verified to work on neo4j.rb 0.2.1 rail 2.2.2, JRuby 1.1.6 RC1, Glassfish 0.9.1.
-
-=== Configuration
-
-==== Install Neo4j.rb
-  gem install neo4j
-
-==== Install rails
-  gem install rails
-
-==== Create a rails project, movies
-  rails movies
+=== Embedded Rails
+A complete example of embedding neo4j with rails can be found http://github.com/andreasronge/neo4j-rails-example/tree/master
+(please fork and improve it).
 
 ==== Config rails
 Config rails to use Neo4j.rb instead of ActiveRecord, edit movies/config/environment.rb
 environment.rb:
+
   config.frameworks -= [ :active_record ] #, :active_resource, :action_mailer ]
-  config.gem "neo4j", :version => "0.0.7"
+  config.gem "neo4j", :version => "0.3.0"  # or the latest one
 
-==== Create Models
-Create model in movies/app/models
-actor.rb:
+If you need to reindex all nodes or use the Neo4j::NodeMixin#all method you must require the
+reindexer neo4j.rb extension. Add a require in the environment.rb file:
 
-  class Role
-    include Neo4j::RelationshipMixin
-    property :title, :character
-  end
+  require 'neo4j/extensions/reindexer'
 
+
+==== Models
+Create a new file for each neo4j node or relationship class
+Example for an Actor class create the file: app/models/actor.rb
+
+  # filename app/models/actor.rb
   class Actor
     include Neo4j::NodeMixin
     property :name, :phone, :salary
@@ -1456,18 +1449,9 @@ actor.rb:
     index :name
   end
 
-movie.rb:
-  class Movie
-    include Neo4j::NodeMixin
-    property :title
-    property :year
-
-    # defines a method for traversing incoming acted_in relationships from Actor
-    has_n(:actors).from(Actor, :acted_in)
-  end
-
 ==== Create RESTful routes
 Edit the config/routes.rb file
+Example:
 
   ActionController::Routing::Routes.draw do |map|
      map.resources :actors do |actor|
@@ -1477,56 +1461,14 @@ Edit the config/routes.rb file
 
 ==== Create Controllers
 
-Add the following controllers in app/controllers
-
-actors_controller.rb:
-
-    class ActorsController < ApplicationController
-      before_filter :find_actor, :only => [:show, :edit, :update, :destroy]
-
-      def index
-        @actors = Actor.all.nodes
-      end
-
-      def create
-        @actor = Actor.new
-        @actor.update(params[:actor])
-        flash[:notice] = 'Actor was successfully created.'
-        redirect_to(@actor)
-      end
-
-      def update
-        @actor.update(params[:actor])
-        flash[:notice] = 'Actor was successfully updated.'
-        redirect_to(@actor)
-      end
-
-      def destroy
-        @actor.delete
-        redirect_to(actors_url)
-      end
-
-
-      def edit
-      end
-
-      def show
-      end
-
-      def new
-        @actor = Actor.value_object.new
-      end
-
-      private
-      def find_actor
-        @actor = Neo4j.load(params[:id])
-      end
-    end
-
+Since all neo4j operations must be wrapped in a transaction add a around filter for all operations
+Example:
 
 acted_in_controller.rb:
 
     class ActedInController < ApplicationController
+      around_filter :neo_tx
+    
       def index
         @actor = Neo4j.load(params[:actor_id])
         @movies = @actor.acted_in.nodes
@@ -1562,6 +1504,14 @@ acted_in_controller.rb:
 
       def edit
         @movie = Neo4j.load(params[:id])
+      end
+
+      private
+
+      def neo_tx
+        Neo4j::Transaction.new
+        yield
+        Neo4j::Transaction.finish
       end
     end
 
