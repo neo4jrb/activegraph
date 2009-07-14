@@ -100,20 +100,18 @@ module Neo4j
         end
 
         # Build search query
-        results =
-                if query[:search]
-                  super(query[:search])
-                else
-                  search = {:classname => self.name}
-                  query.each_pair do |key, value|
-                    search[key.to_sym] = value unless [:sort, :limit].include? key.to_sym
-                  end
-                  super(search)
-                end
+        search = query[:search]
+        if search.nil?
+          search = {:classname => self.name}
+          query.each_pair do |key, value|
+            search[key.to_sym] = value unless [:sort, :limit].include? key.to_sym
+          end
+        end
 
         # Add sorting to the mix
         if query[:sort]
           last_field = nil
+          results = super(search)
           query[:sort].split(/,/).each do |field|
             if %w(asc desc).include? field
               results = results.sort_by(field == 'asc' ? Lucene::Asc[last_field] : Lucene::Desc[last_field])
@@ -124,6 +122,13 @@ module Neo4j
             end
           end
           results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
+          begin
+            results = results.to_a
+          rescue NativeException => e
+            results = super(search).to_a
+          end
+        else
+          results = super(search).to_a
         end
 
         # Return only the requested subset of results (TODO: can this be done more efficiently within Lucene?)
