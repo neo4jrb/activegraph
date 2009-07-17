@@ -91,6 +91,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -116,6 +118,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -136,6 +140,8 @@ module Neo4j
         redirect "#{uri}", 201 # created
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -162,6 +168,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -178,6 +186,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -192,6 +202,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -215,6 +227,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -235,6 +249,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -254,6 +270,8 @@ module Neo4j
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
 
@@ -290,6 +308,8 @@ module Neo4j
         redirect "/relationships/#{new_id}", 201 # created
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
+      rescue Exception => e
+        return 500, {'error' => $!, 'backtrace' => e.backtrace}.to_json
       end
     end
   end
