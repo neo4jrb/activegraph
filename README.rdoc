@@ -754,7 +754,10 @@ Only UTC timezone is allowed.
 === Finding all nodes
 
 To find all nodes of a specific type use the all method.
+
 Example
+
+  require 'neo4j/extensions/reindexer'
 
   class Car
     include Neo4j::Node
@@ -775,6 +778,11 @@ To return nodes (just like the relationships method)
   Car.all.nodes    # => [c,v]
   Volvo.all.nodes  # => [c,v]
 
+
+The reindexer extension that is used in the example above will for each created node create a relationship
+from the index node (Neo4j.ref_node.relationships.outgoing(:index_node)) to that new node.
+The all method use these relationships in order to return nodes of a certain class.
+The update_index method also uses this all method in order to update index for all nodes of a specific class.
 
 === Relationship has_n and has_one
 
