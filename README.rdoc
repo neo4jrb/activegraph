@@ -20,7 +20,6 @@ It uses two powerful and mature java libraries:
 * There are over 300 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
 * Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
-* Has not been used in production yet (as far as I know).
 
 === Project information
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
@@ -56,6 +55,13 @@ This page contains the following information:
 * Neo4j API Documentation
 * Extensions: REST (see Neo4j::RestMixin)
 * Ruby on Rails with Neo4j.rb
+
+There is also some complete examples in the example folder
+* admin - an uncomplete admin web gui for the Neo4j.rb/REST interface
+* railway - an example of a railway network application
+* imdb - an example of a neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
+* rest - an example how to expose neo4j nodes as REST resources
+* Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master
 
 == Installation
 
@@ -754,7 +760,10 @@ Only UTC timezone is allowed.
 === Finding all nodes
 
 To find all nodes of a specific type use the all method.
+
 Example
+
+  require 'neo4j/extensions/reindexer'
 
   class Car
     include Neo4j::Node
@@ -775,6 +784,11 @@ To return nodes (just like the relationships method)
   Car.all.nodes    # => [c,v]
   Volvo.all.nodes  # => [c,v]
 
+
+The reindexer extension that is used in the example above will for each created node create a relationship
+from the index node (Neo4j.ref_node.relationships.outgoing(:index_node)) to that new node.
+The all method use these relationships in order to return nodes of a certain class.
+The update_index method also uses this all method in order to update index for all nodes of a specific class.
 
 === Relationship has_n and has_one
 
