@@ -20,7 +20,6 @@ It uses two powerful and mature java libraries:
 * There are over 300 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
 * Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
-* Has not been used in production yet (as far as I know).
 
 === Project information
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
@@ -56,6 +55,13 @@ This page contains the following information:
 * Neo4j API Documentation
 * Extensions: REST (see Neo4j::RestMixin)
 * Ruby on Rails with Neo4j.rb
+
+There is also some complete examples in the example folder
+* admin - an uncomplete admin web gui for the Neo4j.rb/REST interface
+* railway - an example of a railway network application
+* imdb - an example of a neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
+* rest - an example how to expose neo4j nodes as REST resources
+* Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master
 
 == Installation
 

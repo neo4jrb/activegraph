@@ -1,5 +1,7 @@
 #####################################
 #
+# A simple example how to expose neo nodes as REST resources.
+#
 # IMPORTANT
 #
 # This example requires the latest version from GITHUB of the sinatra gem
