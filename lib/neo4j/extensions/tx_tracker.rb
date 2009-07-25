@@ -255,9 +255,13 @@ module Neo4j
     #
 
     def self.on_neo_started(neo_instance)
-      return if neo_instance.ref_node.relationship?(:tx_node_list)
-      @tx_node_list = TxNodeList.new # cache this so we do not have to look it up always
-      neo_instance.ref_node.relationships.outgoing(:tx_node_list) << @tx_node_list
+      # has the tx_node_list already been created ?
+      unless neo_instance.ref_node.relationship?(:tx_node_list)
+        # it does not exist - create it
+        neo_instance.ref_node.relationships.outgoing(:tx_node_list) << TxNodeList.new
+      end
+      # cache this so we do not have to look it up always
+      @tx_node_list = neo_instance.ref_node.relationships.outgoing(:tx_node_list).nodes.first 
       Neo4j.event_handler.add(@tx_node_list)
     end
 
@@ -269,6 +273,7 @@ module Neo4j
 
 
     def self.instance
+      Neo4j.start unless @tx_node_list
       @tx_node_list
     end
   end

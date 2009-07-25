@@ -53,7 +53,8 @@ This page contains the following information:
 * Ten Minute Tutorial
 * Lucene API Documentation
 * Neo4j API Documentation
-* Extensions: REST (see Neo4j::RestMixin)
+* Extension: REST (see Neo4j::RestMixin)
+* Extension: find_path
 * Ruby on Rails with Neo4j.rb
 
 There is also some complete examples in the example folder
@@ -1426,8 +1427,21 @@ It requires the following gems
 For RSpec testing it also needs:
  * rack-test
  
-For more information see the test/rest/example.rb or the examples/admin or Neo4j::RestMixin.
+For more information see the examples/rest/example.rb or the examples/admin or Neo4j::RestMixin.
 
+
+== Extension: find_path
+
+Extension which finds the shortest path (in terms of number of links) between
+two nodes. Use something like this:
+
+   require 'neo4j/extensions/find_path'
+   node1.traverse.both(:knows).depth(:all).path_to(node2)
+   # => [node1, node42, node1234, node256, node2]
+
+This extension is still rather experimental. The algorithm is based on the one
+used in the Neo4j Java IMDB example. For more information see Neo4j::Relationships::NodeTraverser#path_to
+or the RSpec find_path_spec.rb.
 
 == Ruby on Rails with Neo4j.rb
 
