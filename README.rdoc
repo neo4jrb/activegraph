@@ -228,7 +228,8 @@ a transaction.
 
 === Dynamic Properties
 Notice that it is not required to specify which attributes should be available on a node. Any attributes can be
-set using the [] operator.
+set using the [] operator. Declared properties set an expectation, not an requirement. It can be used for documenting your model objects and
+catching typos.
 
 Example:
 
@@ -1420,7 +1421,7 @@ It has only been tested to work with a very simple node space.
 
 There is an REST extension to Neo4j.rb.
 It requires the following gems
- * Sinatra > 0.9.2 (I can only get the example.rb running by building from the latest from github).
+ * Sinatra >= 0.9.4
  * Rack >= 1.0
  * json-jruby >= 1.1.6
 
@@ -1457,7 +1458,7 @@ Config rails to use Neo4j.rb instead of ActiveRecord, edit movies/config/environ
 environment.rb:
 
   config.frameworks -= [ :active_record ] #, :active_resource, :action_mailer ]
-  config.gem "neo4j", :version => "0.3.0"  # or the latest one
+  config.gem "neo4j", :version => "0.3.1"  # or the latest one
 
 If you need to reindex all nodes or use the Neo4j::NodeMixin#all method you must require the
 reindexer neo4j.rb extension. Add a require in the environment.rb file:
