@@ -20,12 +20,14 @@
 * Support list topology - has_list and belongs_to_list Neo4j::NodeMixin Classmethods
 * Should be possible to add relationships without declaring them (Neo4j#relationships.outgoing(:friends) << node)
 * Neo4j extensions file structure, should be easy to create your own extensions
-* Rename relation to relationship
+* Rename relation to relationship (Neo4j::Relations => Neo4j::Relationships, DynamicRelation => Relationship) [data incompatible change]
 * Auto Transaction is now optional
 * Setting Float properties fails under JRuby1.2.0
 * Bug: Indexing relationships does not work
 * Make the ReferenceNode include Neo4j::NodeMixin
 * Added handy Neo4j class that simply includes the Neo4j::NodeMixin
+* Neo4j::IndexNode now holds references to all nodes (Neo4j.ref_node -> Neo4j::IndexNode -> ...)
+
 
 == 0.2.1 / 2009-03-15
 * Refactoring of lucene indexing of the node space (28)
