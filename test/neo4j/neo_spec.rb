@@ -44,6 +44,67 @@ describe Neo4j::Neo do
     stop
   end
 
+  it "should return correct number of nodes when using Neo4j.number_of_nodes_in_use" do
+    # only reference node exists
+    Neo4j.number_of_nodes_in_use.should == 1
+
+    # when created a node
+    a = Neo4j::Transaction.run do
+      Neo4j::Node.new
+    end
+
+    Neo4j.number_of_nodes_in_use.should == 2
+
+    Neo4j::Transaction.run do
+      a.delete
+    end
+
+    Neo4j.number_of_nodes_in_use.should == 1
+  end
+                                         
+  it "should return correct number of properties when using Neo4j.number_of_properties_in_use" do
+    # only reference node exists
+    Neo4j.number_of_properties_in_use.should == 1
+
+    # when created a node
+    a = Neo4j::Transaction.run do
+      Neo4j.ref_node[:foo] = 'bar'
+    end
+
+    Neo4j.number_of_properties_in_use.should == 2
+
+    Neo4j::Transaction.run do
+      Neo4j.ref_node[:foo] = nil
+    end
+
+    Neo4j.number_of_properties_in_use.should == 1
+  end
+
+  it "should return correct number of properties when using Neo4j.number_of_relationships_in_use" do
+    # create two nodes that we can create relationships between
+    node1 = node2 = nil
+    Neo4j::Transaction.run do
+      node1 = Neo4j::Node.new
+      node2 = Neo4j::Node.new
+    end
+
+    Neo4j.number_of_relationships_in_use.should == 0
+
+    # when created a relationship
+    Neo4j::Transaction.run do
+      node1.relationships.outgoing(:baaz) << node2
+    end
+
+
+    Neo4j.number_of_relationships_in_use.should == 1
+
+    Neo4j::Transaction.run do
+      node1.relationships.outgoing(:baaz)[node2].delete
+    end
+
+    Neo4j.number_of_relationships_in_use.should == 0
+  end
+
   it "should return a new neo instance if neo has been stopped" do
     x = Neo4j.instance
     Neo4j.stop

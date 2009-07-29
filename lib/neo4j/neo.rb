@@ -107,6 +107,18 @@ module Neo4j
   end
 
 
+  def self.number_of_nodes_in_use
+    instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Node.java_class)
+  end
+
+  def self.number_of_relationships_in_use
+    instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Relationship.java_class)
+  end
+
+  def self.number_of_properties_in_use
+    instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.impl.nioneo.store.PropertyStore.java_class)
+  end
+
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files
@@ -121,7 +133,7 @@ module Neo4j
     #
     # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
     #
-    attr_reader :ref_node
+    attr_reader :ref_node, :neo
 
     def start
       @neo = org.neo4j.api.core.EmbeddedNeo.new(Config[:storage_path])
