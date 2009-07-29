@@ -778,7 +778,7 @@ Example
   v = Volvo.new
   c = Car.new
 
-  Car.all   # will return all relationships from the reference node to car obejcts
+  Car.all   # will return all relationships from the index node to car objects
   Volvo.all # will return the same as Car.all
 
 To return nodes (just like the relationships method)
@@ -1399,8 +1399,8 @@ Example:
 
     Neo4j.ref_node
 
-This node has a relationship to all created nodes. You can add relationships from this
-node to your nodes.
+This node can have a relationship to the index node (Neo4j::IndexNode), which has relationships to all created nodes. 
+You can add relationships from this node to your nodes.
 
 === Performance Issues
 
