@@ -57,7 +57,7 @@ This page contains the following information:
 * Extension: find_path
 * Ruby on Rails with Neo4j.rb
 
-There is also some complete examples in the example folder
+There are also some complete examples in the example folder
 * admin - an uncomplete admin web gui for the Neo4j.rb/REST interface
 * railway - an example of a railway network application
 * imdb - an example of a neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
@@ -189,7 +189,7 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
     include Neo4j::NodeMixin
 
     # define Neo4j properties
-    property :name, :salary.
+    property :name, :salary
 
     # define an one way relationship to any other node
     has_n :friends
@@ -204,8 +204,8 @@ Adding new types of properties and relationships can also be done without
 declaring those propertie/relationships by using the operator '[]' on Neo4j::NodeMixin and the
  '<<' on the Neo4j::Relationships::RelationshipTraverser.
 
-By using the NodeMixin all instances of the Person class can now be stored in the Neo4j node space and
-be retrieved/queried by traversing the node space or performing Lucene queries.
+By using the NodeMixin and by declaring properties and indices, all instances of the Person class can now be stored in 
+the Neo4j node space and be retrieved/queried by traversing the node space or performing Lucene queries.
 
 A lucene index will be updated when the name or salary property changes.
 The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
@@ -233,11 +233,14 @@ catching typos.
 
 Example:
 
-  person['a_not_defined_property'] = 'hello'
+  person['an_undefined_property'] = 'hello'
 
+So, why declare properties in the class at all?  By declaring a property in the class, you get the sexy dot notation.
+But also, if you declare a Lucene index on the declared property and update the value, then the Lucene index will 
+automatically be updated.  The property declaration is required before declaring an index on the property.
 
 === Dynamic Relationships
-Like dynamic properties, relationships does not have to be defined using has_n or has_one for a class.
+Like dynamic properties, relationships do not have to be defined using has_n or has_one for a class.  
 A relationship can be added at any time on any node.
 
 Example:
@@ -248,9 +251,12 @@ Example:
 
 === Finding Nodes and Queries
 
-There are three ways of finding/quering nodes in neo4j - by doing a traversal or by using lucene queries or using the
-unique neo4j id (Neo4j::NodeMixin#neo_node_id).
-When doing a traversal one start from a node and travers one or more relationships (one or more levels deep).
+There are three ways of finding/quering nodes in neo4j: 
+  1. by traversing the graph
+  2. by using lucene queries
+  3. using the unique neo4j id (Neo4j::NodeMixin#neo_node_id).
+
+When doing a traversal one start from a node and traverse one or more relationships (one or more levels deep).
 This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
 node from a lucene query.
 
@@ -790,11 +796,11 @@ To return nodes (just like the relationships method)
 The reindexer extension that is used in the example above will for each created node create a relationship
 from the index node (Neo4j.ref_node.relationships.outgoing(:index_node)) to that new node.
 The all method use these relationships in order to return nodes of a certain class.
-The update_index method also uses this all method in order to update index for all nodes of a specific class.
+The update_index method also uses this all method in order to update the index for all nodes of a specific class.
 
 === Relationship has_n and has_one
 
-Neo relationships are none symmetrical. That means that if A has a relationship to B
+Neo relationships are asymmetrical. That means that if A has a relationship to B
 then it may not be true that B has a relationship to A.
 
 Relationships can be declared by using the 'has_n' or 'has_one'
