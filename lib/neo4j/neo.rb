@@ -115,10 +115,27 @@ module Neo4j
     instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Relationship.java_class)
   end
 
-  def self.number_of_properties_in_use
+  # Total number of relationships, nodes and properties in use
+  def self.number_of_ids_in_use                                                                        
     instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.impl.nioneo.store.PropertyStore.java_class)
   end
 
+  def self.number_of_properties_in_use                
+    self.number_of_ids_in_use - self.number_of_relationships_in_use - self.number_of_nodes_in_use + 1
+  end
+
+  # Prints some info about the database
+  def self.info
+    puts "Neo4j version:                  #{Neo4j::VERSION}"
+    puts "Neo4j db running                #{self.running?}"
+    puts "number_of_nodes_in_use:         #{self.number_of_nodes_in_use}"
+    puts "number_of_relationships_in_use: #{self.number_of_relationships_in_use}"
+    puts "number_of_properties_in_use:    #{self.number_of_properties_in_use}"
+    puts "number_of_ids_in_use:           #{self.number_of_ids_in_use}"
+    puts "neo db storage location:        #{Neo4j::Config[:storage_path]}"
+    puts "lucene index storage location:  #{Lucene::Config[:storage_path]}"
+    puts "keep lucene index in memory:    #{!Lucene::Config[:store_on_file]}"
+  end
   #
   # Allows run and stop the Neo4j service
   # Contains global ćonstants such as location of the neo storage and index files

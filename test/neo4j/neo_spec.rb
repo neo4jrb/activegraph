@@ -80,6 +80,25 @@ describe Neo4j::Neo do
     Neo4j.number_of_properties_in_use.should == 1
   end
 
+  it "should only count properties using Neo4j.number_of_properties_in_use" do
+    # only reference node exists
+    node1 = node2 = nil
+    Neo4j::Transaction.run do
+      node1 = Neo4j::Node.new
+      node2 = Neo4j::Node.new
+    end
+    
+    Neo4j.number_of_properties_in_use.should == 1  # a bit weird, should be 3 since each node sets the classname property ...
+
+
+    Neo4j::Transaction.run do
+      node1.relationships.outgoing(:baaz) << node2
+      Neo4j::Node.new
+    end
+
+    Neo4j.number_of_properties_in_use.should == 1
+  end
+
   it "should return correct number of properties when using Neo4j.number_of_relationships_in_use" do
     # create two nodes that we can create relationships between
     node1 = node2 = nil
