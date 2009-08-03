@@ -116,7 +116,7 @@ Example
   require 'neo4j/auto_tx'
 
   # no need to wrap operations in Neo4j::Transaction.run do .. end
-  Node.new
+  Neo4j::Node.new
 
 This feature should be used for testing and development purpose.
 
@@ -160,7 +160,7 @@ Example of getting relationships
 === Properties on Relationships
 Example of setting properties on relationships
 
-  rel = node1.relationships(:friends).first
+  rel = node1.relationships.outgoing(:friends).first
   rel[:since] = 1982
   node1.relationships.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
 
@@ -189,7 +189,7 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
     include Neo4j::NodeMixin
 
     # define Neo4j properties
-    property :name, :salary
+    property :name, :salary, :age
 
     # define an one way relationship to any other node
     has_n :friends
@@ -201,14 +201,14 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
 Adding new types of properties and relationships can also be done without
-declaring those propertie/relationships by using the operator '[]' on Neo4j::NodeMixin and the
+declaring those properties/relationships by using the operator '[]' on Neo4j::NodeMixin and the
  '<<' on the Neo4j::Relationships::RelationshipTraverser.
 
 By using the NodeMixin and by declaring properties and indices, all instances of the Person class can now be stored in 
 the Neo4j node space and be retrieved/queried by traversing the node space or performing Lucene queries.
 
 A lucene index will be updated when the name or salary property changes.
-The salary of all friends are also indexed which means we can query for people who has friends with a certain salary.
+The salary of all friends are also indexed which means we can query for people who have friends with a certain salary.
 
 === Creating a node
 
@@ -222,9 +222,6 @@ Setting a property:
 
   person.name = 'kalle'
   person.salary  = 10000
-
-If a transaction is not specified then the operation will automatically be wrapped in
-a transaction.
 
 === Dynamic Properties
 Notice that it is not required to specify which attributes should be available on a node. Any attributes can be
@@ -256,7 +253,7 @@ There are three ways of finding/quering nodes in neo4j:
   2. by using lucene queries
   3. using the unique neo4j id (Neo4j::NodeMixin#neo_node_id).
 
-When doing a traversal one start from a node and traverse one or more relationships (one or more levels deep).
+When doing a traversal one starts from a node and traverses one or more relationships (one or more levels deep).
 This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
 node from a lucene query.
 
