@@ -43,15 +43,6 @@ module Neo4j
       clazz = self.class.root_class.to_s #.gsub(/::/, '-') TODO urlencoding
       "/nodes/#{clazz}/#{neo_node_id}"
     end
-    
-    def initialize(*args)
-      super
-      # Explicitly index the classname of a node (required for <code>GET /nodes/MyClass</code>
-      # Lucene search to work).
-      self.class.indexer.on_property_changed(self, 'classname')   # TODO reuse the event_handler instead !
-      # This caused the replication_spec.rb to fail
-     # Neo4j.event_handler.property_changed(self, 'classname', '', self.class.to_s)
-    end
 
     # Called by the REST API if this node is accessed directly by ID. Any query parameters
     # in the request are passed in a hash. For example if <code>GET /nodes/MyClass/1?foo=bar</code>
@@ -69,8 +60,6 @@ module Neo4j
 
 
     def self.included(c)
-      c.property :classname
-      c.index :classname # index classname so that we can search on it
       c.extend ClassMethods
       uri_rel = c._uri_rel
       # just for debugging and logging purpose so we know which classes uses this mixin, TODO - probablly not needed
@@ -94,49 +83,17 @@ module Neo4j
 
         query = symbolize_keys(query)
 
-        if query[:limit]
-          limit = query[:limit].to_s.split(/,/).map{|i| i.to_i}
-          limit.unshift(0) if limit.size == 1
-        end
+        if query[:search]
+          # Use Lucene
+          results = super(query[:search])
+          results = apply_lucene_sort(query[:sort], results).to_a rescue super(query[:search]).to_a
 
-        # Build search query
-        search = query[:search]
-        if search.nil?
-          search = {:classname => self.name}
-          query.each_pair do |key, value|
-            search[key.to_sym] = value unless [:sort, :limit].include? key.to_sym
-          end
-        end
-
-        # Add sorting to the mix
-        if query[:sort]
-          last_field = nil
-          results = super(search)
-          query[:sort].split(/,/).each do |field|
-            if %w(asc desc).include? field
-              results = results.sort_by(field == 'asc' ? Lucene::Asc[last_field] : Lucene::Desc[last_field])
-              last_field = nil
-            else
-              results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
-              last_field = field
-            end
-          end
-          results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
-          begin
-            results = results.to_a
-          rescue NativeException => e
-            results = super(search).to_a
-          end
         else
-          results = super(search).to_a
+          # Use traverser
+          results = apply_ruby_sort(query[:sort], apply_traverser_conditions(query))
         end
 
-        # Return only the requested subset of results (TODO: can this be done more efficiently within Lucene?)
-        if limit
-          (limit[0]...(limit[0]+limit[1])).map{|n| results[n] }
-        else
-          results
-        end
+        apply_limits(query[:limit], results)
       end
 
       # :nodoc:
@@ -147,6 +104,83 @@ module Neo4j
           options
         end
       end
+
+      protected
+
+      # Searches for nodes matching conditions by using a traverser.
+      def apply_traverser_conditions(query)
+        query = query.reject{|key, value| [:sort, :limit, :classname].include? key }
+
+        index_node = Neo4j::IndexNode.instance
+        raise 'Index node is nil. Make sure you have called Neo4j.load_reindexer' if index_node.nil?
+        traverser = index_node.traverse.outgoing(root_class)
+
+        traverser.filter do |position|
+          node = position.current_node
+          position.depth == 1 and
+            query.inject(true) do |meets_condition, (key, value)|
+              meets_condition && (node.send(key) == value)
+            end
+        end
+      end
+
+      # Sorts a list of results according to a string of comma-separated fieldnames (optionally
+      # with 'asc' or 'desc' thrown in). For use in cases where we don't go via Lucene.
+      def apply_ruby_sort(sort_string, results)
+        if sort_string
+          sort_fields = sort_string.to_s.split(/,/)
+          results.to_a.sort do |x,y|
+            catch(:item_order) do
+              sort_fields.each_index do |index|
+                field = sort_fields[index]
+                unless %w(asc desc).include?(field)
+                  item_order = if sort_fields[index + 1] == 'desc'
+                    (y.send(field) || '') <=> (x.send(field) || '')
+                  else
+                    (x.send(field) || '') <=> (y.send(field) || '')
+                  end
+                  throw :item_order, item_order unless item_order == 0
+                end
+              end
+              0
+            end
+          end
+        else
+          results.to_a
+        end
+      end
+
+      # Applies Lucene sort instructions to a Neo4j::SearchResult object.
+      def apply_lucene_sort(sort_string, results)
+        return results if sort_string.nil?
+        last_field = nil
+
+        sort_string.to_s.split(/,/).each do |field|
+          if %w(asc desc).include? field
+            results = results.sort_by(field == 'asc' ? Lucene::Asc[last_field] : Lucene::Desc[last_field])
+            last_field = nil
+          else
+            results = results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
+            last_field = field
+          end
+        end
+        results.sort_by(Lucene::Asc[last_field]) unless last_field.nil?
+        results
+      end
+
+      # Return only the requested subset of results for pagination
+      # (TODO: can this be done more efficiently within Lucene?)
+      def apply_limits(limit_string, results)
+        if limit_string
+          limit = limit_string.to_s.split(/,/).map{|i| i.to_i}
+          limit.unshift(0) if limit.size == 1
+
+          (limit[0]...(limit[0]+limit[1])).map{|n| results[n] }
+        else
+          results
+        end
+      end
+
     end
   end
 

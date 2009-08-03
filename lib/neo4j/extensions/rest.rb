@@ -9,6 +9,9 @@ require 'neo4j/extensions/rest/rest_mixin'
 require 'neo4j/extensions/rest/stubs'
 require 'neo4j/extensions/rest/server'
 
+# Provides Neo4j::NodeMixin::ClassMethods#all
+require 'neo4j/extensions/reindexer'
+
 
 module Neo4j
   # Make the ReferenceNode available as a REST resource

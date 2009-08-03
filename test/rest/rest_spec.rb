@@ -58,6 +58,7 @@ describe 'Restful' do
       include Neo4j::RestMixin
     end
     Neo4j.start
+    Neo4j.load_reindexer
     Neo4j::Transaction.new
   end
 
@@ -118,13 +119,14 @@ END_OF_STRING
   end
 
   it "should traverse a relationship on GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
-    adam = RestPerson.new
+    # the reference node has id = 0; the index node has id = 1
+    adam = RestPerson.new # neo_node_id = 2
     adam.name = 'adam'
 
-    bertil = RestPerson.new
+    bertil = RestPerson.new # neo_node_id = 3
     bertil.name = 'bertil'
 
-    carl = RestPerson.new
+    carl = RestPerson.new # neo_node_id = 4
 
     adam.friends << bertil << carl
 
@@ -135,8 +137,8 @@ END_OF_STRING
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body['uri_list'].should_not be_nil
-    body['uri_list'][0].should == 'http://0.0.0.0:4567/nodes/RestPerson/2'
-    body['uri_list'][1].should == 'http://0.0.0.0:4567/nodes/RestPerson/3'
+    body['uri_list'][0].should == 'http://0.0.0.0:4567/nodes/RestPerson/3' # bertil
+    body['uri_list'][1].should == 'http://0.0.0.0:4567/nodes/RestPerson/4' # carl
     body['uri_list'].size.should == 2
   end
 
@@ -153,7 +155,13 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-    last_response.location.should == "/relationships/1" # starts counting from 0
+    # rel ID 0 = reference node to index node
+    # rel ID 1 = index node to adam
+    # rel ID 2 = index node to bertil
+    # rel ID 3 = index node to unnamed
+    # rel ID 4 = bertil to unnamed
+    # rel ID 5 = adam to bertil (the one we just created)
+    last_response.location.should == "/relationships/5"
     adam.friends.should include(bertil)
   end
 
@@ -205,8 +213,9 @@ END_OF_STRING
   end
 
   it "should be possible to load a relationship on GET /relationship/<id>" do
-    adam = RestPerson.new
-    bertil = RestPerson.new
+    # the reference node has id = 0; the index node has id = 1
+    adam = RestPerson.new # neo_node_id = 2
+    bertil = RestPerson.new # neo_node_id = 3
     rel = adam.friends.new(bertil)
     rel[:foo] = 'bar'
 
@@ -217,8 +226,8 @@ END_OF_STRING
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body['properties']['foo'].should == 'bar'
-    body['end_node']['uri'].should == 'http://0.0.0.0:4567/nodes/RestPerson/2'
-    body['start_node']['uri'].should == 'http://0.0.0.0:4567/nodes/RestPerson/1' 
+    body['end_node']['uri'].should == 'http://0.0.0.0:4567/nodes/RestPerson/3' # bertil
+    body['start_node']['uri'].should == 'http://0.0.0.0:4567/nodes/RestPerson/2' # adam
   end
 
 
@@ -230,7 +239,7 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-    last_response.location.should == "http://0.0.0.0:4567/nodes/RestPerson/1"
+    last_response.location.should == "http://0.0.0.0:4567/nodes/RestPerson/2" # 0 is ref node, 1 is index node
   end
 
   it "should persist a new RestPerson created by POST /nodes/RestPerson" do
@@ -280,15 +289,15 @@ END_OF_STRING
 
 
   it "should contain hyperlinks to its relationships on found nodes" do
-    # given
-    n1 = MyNode.new
-    n2 = MyNode.new
-    n3 = MyNode.new
-    n4 = MyNode.new
+    # given         # rel ID 0: reference node -> index node
+    n1 = MyNode.new # rel ID 1: index -> n1
+    n2 = MyNode.new # rel ID 2: index -> n2
+    n3 = MyNode.new # rel ID 3: index -> n3
+    n4 = MyNode.new # rel ID 4: index -> n4
 
-    n1.relationships.outgoing(:type1) << n2
-    n1.relationships.outgoing(:type2) << n3
-    n1.relationships.outgoing(:type2) << n4
+    n1.relationships.outgoing(:type1) << n2 # rel ID 5
+    n1.relationships.outgoing(:type2) << n3 # rel ID 6
+    n1.relationships.outgoing(:type2) << n4 # rel ID 7
 
     # when
     get "/nodes/MyNode/#{n1.neo_node_id}"
@@ -299,9 +308,9 @@ END_OF_STRING
     data['relationships'].should_not be_nil
     data['relationships']['type1'].should_not be_nil
     data['relationships']['type2'].should_not be_nil
-    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/1')
-    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/2')
-    data['relationships']['type1'].should include('http://0.0.0.0:4567/relationships/0')
+    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/6')
+    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/7')
+    data['relationships']['type1'].should include('http://0.0.0.0:4567/relationships/5')
   end
 
 
