@@ -121,7 +121,7 @@ module Neo4j
   end
 
   def self.number_of_properties_in_use                
-    self.number_of_ids_in_use - self.number_of_relationships_in_use - self.number_of_nodes_in_use + 1
+    self.number_of_ids_in_use - self.number_of_relationships_in_use - self.number_of_nodes_in_use + 2
   end
 
   # Prints some info about the database
@@ -203,23 +203,20 @@ module Neo4j
 
 
     # Loads a Neo node
-    # Expects the neo property 'classname' to exist.
-    # That property is used to load the ruby instance
+    # If the neo property 'classname' does not exist then it will map the neo node to the ruby class Neo4j::Node
     #
     # :api: private
     def load_node(neo_node)
-      return nil unless neo_node.has_property('classname')
-      _load neo_node.get_property('classname'), neo_node
+      classname = neo_node.has_property('classname') ? neo_node.get_property('classname') : Neo4j::Node.to_s
+      _load classname, neo_node
     end
 
 
     # Loads a Neo relationship
-    # If the neo property 'classname' to exist it will use that to create an instance of that class.
-    # Otherwise it will create an instance of Neo4j::Relationships::Relationship that represent 'rel'
+    # If the neo property 'classname' it will create a ruby object of that type otherwise it create an Ruby object of class Neo4j::Relationships::Relationship
     #
     def load_relationship(rel)
-      classname = rel.get_property('classname') if rel.has_property('classname')
-      classname = Neo4j::Relationships::Relationship.to_s if classname.nil?
+      classname = rel.has_property('classname') ? rel.get_property('classname') : Neo4j::Relationships::Relationship.to_s
       _load classname, rel
     end
 

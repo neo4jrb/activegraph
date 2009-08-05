@@ -7,7 +7,7 @@ module Neo4j
   module RelationshipMixin
     extend TransactionalMixin
 
-     attr_reader :internal_r
+    attr_reader :internal_r
 
     # Initialize the Relationship object with specified java org.neo4j.api.core.Relationship object
     # Expects at least one parameter.
@@ -65,7 +65,7 @@ module Neo4j
     end
 
 
-    # Deletes the relationship between two nodes.
+    # Deletes this relationship.
     #
     # :api: public
     def delete
@@ -78,17 +78,53 @@ module Neo4j
       end_node.class.indexer.on_relationship_deleted(end_node, type) unless end_node.nil?
     end
 
+
+    # Sets a neo property on this relationship. This property does not have to be declared first.
+    # If the value of the property is nil the property will be removed.
+    #
+    # ==== Parameters
+    # name<String>:: the name of the property to be set
+    # value<Object>:: the value of the property to be set.
+    #
+    # :api: public
     def set_property(key, value)
-      @internal_r.setProperty(key, value)
+      if value.nil?
+        remove_property(key)
+      else
+        @internal_r.setProperty(key, value)
+      end
     end
 
+    # Checks if the given neo property exists.
+    #
+    # ==== Returns
+    # true if the property exists
+    #
+    # :api: public
     def property?(key)
       @internal_r.hasProperty(key)
     end
 
+    # Returns the value of the given neo property.
+    #
+    # ==== Returns
+    # the value of the property or nil if the property does not exist
+    #
+    # :api: public
     def get_property(key)
       return nil unless self.property?(key)
       @internal_r.getProperty(key)
+    end
+
+    # Removes the property from this relationship
+    # For more information see JavaDoc PropertyContainer#removeProperty
+    #
+    # ==== Returns
+    # true if the property was removed, false otherwise
+    #
+    # :api: public
+    def remove_property(name)
+      !@internal_r.removeProperty(name).nil?
     end
 
     # Returns a hash of all properties.
@@ -107,7 +143,8 @@ module Neo4j
       ret
     end
 
-  # Returns the given property
+    # Returns the given property
+    # Same as #get_property
     #
     # :api: public
     def [](name)
@@ -115,12 +152,13 @@ module Neo4j
     end
 
     # Sets the given property to a given value
+    # Same as #set_property
     #
     # :api: public
     def []=(name, value)
       set_property(name.to_s, value)
     end
-    
+
     def classname
       get_property('classname')
     end
@@ -167,7 +205,7 @@ module Neo4j
     def hash
       internal_node.hashCode
     end
-    
+
     transactional :initialize, :property?, :set_property, :get_property, :delete
 
     #

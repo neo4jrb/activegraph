@@ -45,7 +45,6 @@ module Neo4j
     # :api: private
     def init_with_node(node)
       @internal_node = node
-      self.classname = self.class.to_s unless @internal_node.hasProperty("classname")
       $NEO_LOGGER.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
     end
 
@@ -62,9 +61,6 @@ module Neo4j
 
     # Sets a neo property on this node. This property does not have to be declared first.
     # If the value of the property is nil the property will be removed.
-    #
-    # Runs in a new transaction if there is not one already running,
-    # otherwise it will run in the existing transaction.
     #
     # ==== Parameters
     # name<String>:: the name of the property to be set
@@ -97,7 +93,8 @@ module Neo4j
     end
 
 
-    # Sets the given property to a given value
+    # Sets the given property to a given value.
+    # Same as Neo4j::NodeMixin#set_property
     #
     # :api: public
     def []=(name, value)
@@ -132,7 +129,6 @@ module Neo4j
     # :api: public
     def get_property(name)
       $NEO_LOGGER.debug{"get property '#{name}'"}
-
       return nil if ! property?(name)
       value = @internal_node.get_property(name.to_s)
       if self.class.marshal?(name)

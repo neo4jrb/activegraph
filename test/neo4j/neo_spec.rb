@@ -180,4 +180,42 @@ describe Neo4j::Neo do
     end
   end
 
+  it "should load a node even if it does not have a classname property" do
+    Neo4j::Transaction.run do
+      n = Neo4j::Node.new
+      id = n.neo_node_id
+      Neo4j.load(id).should_not be_nil
+
+      # when classname property does not exist
+      n[:classname] = nil
+
+      # then it should be possible to load it again, default should be Neo4j::Node class
+      node = Neo4j.load(id)
+      node.should_not be_nil
+      node.should be_kind_of(Neo4j::Node)
+    end
+
+  end
+
+
+  it "should load a relationship even if it does not have a classname property" do
+    Neo4j::Transaction.run do
+      n1 = Neo4j::Node.new
+      n2 = Neo4j::Node.new
+      n1.relationships.outgoing(:foobaar) << n2
+      r = n1.relationships.outgoing(:foobaar).first
+      id = r.neo_relationship_id
+      Neo4j.load_relationship(id).should_not be_nil
+
+      # when classname property does not exist
+      r[:classname] = nil
+
+      # then it should be possible to load it again, default should be Neo4j::Node class
+      rel = Neo4j.load_relationship(id)
+      rel.should_not be_nil
+      rel.should be_kind_of(Neo4j::Relationships::Relationship)
+    end
+
+  end
+
 end
