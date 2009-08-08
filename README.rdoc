@@ -118,7 +118,7 @@ Example
   # no need to wrap operations in Neo4j::Transaction.run do .. end
   Neo4j::Node.new
 
-This feature should be used for testing and development purpose.
+This experimental feature should only be used for testing and development purpose.
 
 === Setting Properties
 

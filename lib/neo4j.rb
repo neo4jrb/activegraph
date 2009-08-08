@@ -17,6 +17,7 @@ require 'neo4j/mixins/transactional'
 require 'neo4j/mixins/relationship'
 require 'neo4j/mixins/dynamic_accessor'
 require 'neo4j/mixins/node'
+require 'neo4j/mixins/aggregate_node_mixin'
 
 # relationships
 require 'neo4j/relationships/relationship_info'

@@ -157,7 +157,7 @@ module Neo4j
     end
 
 
-    # Creates a struct class containig all properties of this class.
+    # Creates a struct class containing all properties of this class.
     # This value object can be used from Ruby on Rails RESTful routing.
     #
     # ==== Example
