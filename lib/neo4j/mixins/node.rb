@@ -45,7 +45,6 @@ module Neo4j
     # :api: private
     def init_with_node(node)
       @internal_node = node
-      $NEO_LOGGER.debug {"loading node '#{self.class.to_s}' node id #{@internal_node.getId()}"}
     end
 
     # Inits when no neo java node exists. Must create a new neo java node first.
@@ -55,7 +54,6 @@ module Neo4j
       @internal_node = Neo4j.instance.create_node
       self.classname = self.class.to_s
       Neo4j.event_handler.node_created(self)
-      $NEO_LOGGER.debug {"created new node '#{self.class.to_s}' node id: #{@internal_node.getId()}"}
     end
 
 
@@ -72,7 +70,6 @@ module Neo4j
     # 
     # :api: public
     def set_property(name, value)
-      $NEO_LOGGER.debug{"set property '#{name}'='#{value}'"}
       return if name.to_s == 'id' # id is neo_node_id and cannot be changed TODO check this
       old_value = get_property(name)
 
@@ -128,7 +125,6 @@ module Neo4j
     #
     # :api: public
     def get_property(name)
-      $NEO_LOGGER.debug{"get property '#{name}'"}
       return nil if ! property?(name)
       value = @internal_node.get_property(name.to_s)
       if self.class.marshal?(name)

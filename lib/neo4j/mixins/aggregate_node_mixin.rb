@@ -1,89 +1,210 @@
 module Neo4j
 
+  # By including this mixin you can create one or more aggregation node groups for your own node.
+  #
   module AggregateNodeMixin
 
-    # Create aggregated nodes for each unique group of nodes. Those aggregated nodes will be connected with unique relationship
-    # to this node and each given node.
-    #
-    #   This node that included the AggregateNodeMixin ---*> Unique Aggregated Nodes ---*> nodes (given)
-    #
+    # Creates aggregated nodes by grouping nodes by one or more property values.
+    # Raises an exception if the aggregation already exists.
+    # 
     # ==== Parameters
-    # nodes<Enumeration>:: the nodes that should be aggregated (could be created by Neo4j::NodeMixin#traverse)
+    #  aggregate_id:: the id of this aggregate. The class using this mixin may contain several different aggregations.
     #
-    # ==== Example
+    # ==== Returns
+    # an object that has the following methods
+    # * with(an enumeration) - specifies which nodes it should aggregate into groups of nodes
+    # * group_by(*keys) - specifies which property or properties values it should group by
+    # * group_each_by - same as group_by but instead of creating a unique group for all nodes it creates new groups for each given node.
+    # * execute - executes the aggregation, creates new nodes that groups the specified nodes
     #
-    #   class AgeGroupAggregateNode
+    # ==== Example - use the mixin
+    #
+    #   class MyAggregatedNode
     #      include Neo4j::NodeMixin
     #      include Neo4j::AggregateNodeMixin
     #   end
     #
+    # ==== Example - group by one property
     #
-    #   # I want to put people who knows me of depth 4 into age group 0-4, 5-9, 10-15 etc.. (weird example)
-    #   a = AgeGroupAggregateNode.new
-    #   a.aggregate(me.traverse.incoming(:friends).depth(4)).with_key(:age_group).of_unique_value{self[:age]/5}.execute
+    # Let say we have nodes with properties :colour and we want to create new nodes for each colour (like a pivot table in a spreadsheet).
     #
-    #   # traverse all people in age group 10-14
-    #   a.traverse_aggregate(:age_group, 3).to_a.
+    #   a = MyAggregatedNode.new
     #
-    #   # how many people of age 10-14 knows me ?
-    #   a.traverse_aggregate(:age_group, 3).to_a.
+    #   a.create_aggregate(:colour).with(enumeration of nodes we want to aggregate).group_by(:colour).execute
+    #
+    # The following node structure will be created:
+    #   AggregateNodeMixin --<colour>--> Aggregate_Node --<red/green/blue...>--*> Aggregated Node --<colour>--*>
+    #
+    # Print all groups, red, green, blue:
+    #   a.aggregate(:colour}.each{|n| puts n[:colour]}
+    #
+    #   a.aggregate(:colour).each {|group| group.aggregate(:red).each {|n| puts n} } # prints all nodes, group by :colour
+    #
+    #   # which is the same as
+    #   a.aggregate(:colour, :red).each {|node| puts node} # only prints nodes with colour property 'red'
+    #
+    # ==== Example - Aggregating Properties
+    #
+    # The aggregator also aggregate properties. If a property does not exist on an aggregated node it will traverse all nodes in its group and
+    # return an enumeration of its values. This work for both a specific aggregation group (e.g. aggregate node with colour red) as well as with
+    # all groups
+    #
+    # Get an enumeration of names of people having favorite colour 'red'
+    #
+    #   a.aggregate(:colour, :red)[:name].to_a => ['bertil', 'adam', 'adam']
+    #
+    # Get an enumeration of all names in all groups
+    #
+    #   a.aggregate(:colour, :red)[:name].to_a => ['bertil', 'adam', 'adam', 'andreas', ...]
+    #
+    # ==== Example - group by a property value which is transformed
+    #
+    #  Group by a age range, 0-4, 5-9, 10-14 etc...
+    #
+    #   a = MyAggregatedNode.new
+    #   a.create_aggregate(:age_groups).with(an enumeration of nodes).group_by(:age).of_value{|age| age / 5}.execute
+    #
+    #   # traverse all people in age group 10-14   (3 maps to range 10-14)
+    #   a.aggregate(:age_group, 3).each {|x| ...}
+    #
+    #   # traverse all groups
+    #   a.aggregate(:age_group).each {|x| ...}
+    #
+    #   # how many age groups are there ?
+    #   a.aggregate(:age_group).size
+    #
+    #   # how many people are in age group 10-14
+    #   a.aggregate(:age_group, 3).size
+    #
+    #   # which is same as
+    #   a.aggregate(:age_group).aggregate(3).size
     #
     # :api: public
+    def create_aggregate(aggregate_id)
+      raise "aggregation #{aggregate_id} already exists" unless aggregate(aggregate_id).nil?
+      agg_node = AggregatorNode.create(aggregate_id)
+      relationships.outgoing(aggregate_id) << agg_node
+      agg_node
+    end
+
+    # Returns an aggregation.
+    # See #create_aggregate for usage.
     #
-    def aggregate(nodes)
-      Aggregator.new(self, nodes)
+    # :api: public
+    def aggregate(aggregate_id, aggregate_group=nil)
+      aggregate_node = relationships.outgoing(aggregate_id).nodes.first
+      return if aggregate_node.nil?
+      return aggregate_node if aggregate_group.nil?
+      aggregate_node.aggregate(aggregate_group)
+    end
+  end
+
+  class AggregateGroupNode
+    include Neo4j::NodeMixin
+    include Enumerable
+
+    property :aggregate_id, :aggregate_group, :size
+
+    def self.create(aggregate_id, aggregate_group)
+      new_node = AggregateGroupNode.new
+      new_node.aggregate_id = aggregate_id.to_s
+      new_node.aggregate_group = aggregate_group.kind_of?(Symbol)? aggregate_group.to_s : aggregate_group
+      new_node.size = 0
+      new_node
     end
 
-    def traverse_aggregate(key, value)
-      return if relationships.outgoing(value).empty?
-      sub_aggregate = relationships.outgoing(value).nodes.first
-      sub_aggregate.relationships.outgoing(value).nodes
+    def each
+      relationships.outgoing.nodes.each { |n| yield n }
     end
 
-    def count(key, value)
-      return 0 if relationships.outgoing(value).empty?
-      relationships.outgoing(value).nodes.first[count_key(key)]
-    end
-
-    def count_key(key)
-      "count_#{key}".to_sym
+    def get_property(key)
+      value = super(key)
+      return value unless value.nil?
+      # traverse all sub nodes and get their properties
+      AggregatedProperties.new(relationships.outgoing.nodes, key)
     end
 
   end
 
-  class Aggregator
-    def initialize(aggregate_node, nodes)
-      @aggregate_node = aggregate_node
+  class AggregatedProperties
+    include Enumerable
+
+    def initialize(nodes, property)
       @nodes = nodes
+      @property = property
     end
 
-    def with_key(key)
-      @key = key.to_sym
-      self
+    def each
+      @nodes.each do |n|
+        v = n[@property]
+        if v.kind_of?(Enumerable)
+          v.each {|vv| yield vv}
+        else
+          yield v
+        end
+      end
+
     end
 
-    def of_unique_value(&block)
-      @identity_proc = block
-      self
+  end
+
+  class AggregatorNode
+    include Neo4j::NodeMixin
+    include Enumerable
+
+    property :aggregate_id, :size
+
+    def self.create(aggregate_id)
+      new_node = AggregatorNode.new
+      new_node.aggregate_id = aggregate_id.to_s
+      new_node.size = 0
+      new_node
     end
 
-    def count_key
-      @aggregate_node.count_key(@key)
+
+    def get_property(key)
+      value = super(key)
+      return value unless value.nil?
+      # traverse all sub nodes and get their properties
+      AggregatedProperties.new(relationships.outgoing.nodes, key)
     end
+
     
+    def aggregate(aggregate_group)
+      relationships.outgoing(aggregate_group).nodes.first
+    end
+
+    def with(nodes)
+      @nodes = nodes
+      self
+    end
+
+    def group_by(*keys)
+      @keys = keys
+      self
+    end
+
+    def each
+      relationships.outgoing.nodes.each {|n| yield n}
+    end
+
+    # Create a group key for given node
+    def group_key_of(node)
+      @keys.map{|key| node[key]}.join('_')
+    end
+
+
     def execute
       @nodes.each do |node|
-        value = node.instance_eval(&@identity_proc)
-        sub_aggregate = @aggregate_node.relationships.outgoing(value).nodes.first
-        if sub_aggregate.nil?
-          sub_aggregate = Neo4j::Node.new
-          sub_aggregate[@key] = value
-          @aggregate_node.relationships.outgoing(value) << sub_aggregate
-          sub_aggregate[count_key] = 0
+        group_key = group_key_of(node)
+        group_node = relationships.outgoing(group_key).nodes.first
+        if group_node.nil?
+          group_node = AggregateGroupNode.create(aggregate_id, group_key)
+          relationships.outgoing(group_key) << group_node
+          self.size += 1 # another group was created
         end
-
-        sub_aggregate[count_key] += 1
-        sub_aggregate.relationships.outgoing(value) << node
+        group_node.size += 1
+        group_node.relationships.outgoing(aggregate_id) << node
       end
     end
   end
