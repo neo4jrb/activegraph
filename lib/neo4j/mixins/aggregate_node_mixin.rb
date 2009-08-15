@@ -169,7 +169,7 @@ module Neo4j
       AggregatedProperties.new(relationships.outgoing.nodes, key)
     end
 
-    
+
     def aggregate(aggregate_group)
       relationships.outgoing(aggregate_group).nodes.first
     end
@@ -184,13 +184,30 @@ module Neo4j
       self
     end
 
+    def group_by_each(*keys)
+      # todo
+      self
+    end
+    
+    def map_value(&map_func)
+      @map_func = map_func
+      self
+    end
+
+
     def each
       relationships.outgoing.nodes.each {|n| yield n}
     end
 
     # Create a group key for given node
     def group_key_of(node)
-      @keys.map{|key| node[key]}.join('_')
+      if @map_func.nil?
+        @keys.map{|key| node[key]}.join('_')
+      else
+        args = @keys.map{|key| node[key]}
+        raise "Wrong number of argument of map_value function, expected #{args.size} args but it takes #{@map_func.arity} args" if @map_func.arity != args.size
+        @map_func.call(*args)
+      end
     end
 
 
