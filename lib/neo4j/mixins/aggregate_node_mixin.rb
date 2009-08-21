@@ -76,63 +76,59 @@ module Neo4j
   end
 
 
-  # A node including this mixin enables it to aggregate an enumeration of nodes into groups.
+  # Enables aggregation of an enumeration of nodes into groups.
   # Each group is a neo4j node which contains aggregated properties of the underlying nodes in that group.
   #
   # Notice that the AggregateNodeMixin#aggregate method takes an Ruby Enumeration of neo4j nodes.
   # That means that you can use for example the output from the Neo4j::NodeMixin#traverse as input to the aggregate method, or even
   # create aggregates over aggregates.
   #
-  # This mixin includes the Enumeration mixin.
+  # This mixin includes the Enumerable mixin.
   #
   # ==== Example - use the mixin
+  #
+  # Example how to create your own class that will provide aggregation of nodes.
   #
   #   class MyAggregatedNode
   #      include Neo4j::NodeMixin
   #      include Neo4j::AggregateNodeMixin
   #   end
   #
+  # This class can create group nodes that will be connected as outgoing relationships from it.
+  #
   # ==== Example - group by one property
   #
-  # Let say we have nodes with properties :colour and we want to create new nodes for each colour (like a pivot table in a spreadsheet).
+  # Let say we have nodes with properties :colour and we want to group them by colour:
   #
   #   a = MyAggregatedNode.new
   #
-  #   a.aggregate(enumeration of nodes we want to aggregate).group_by(:colour).execute
+  #   a.aggregate(nodes).group_by(:colour).execute
   #
   # The following node structure will be created:
-  #   AggregateNodeMixin --<red/green/blue...>--*> Aggregated Node --<colour>--*>
   #
-  # Print all groups, red, green, blue:
+  #   [node a]--<relationship type red|green|blue...>--*>[node groups]--<relationship type aggregate>--*>[node nodes]
+  #
+  # Print all three groups, one for each colour
   #
   #   a.each{|n| puts n[:colour]}
   #
-  # Only prints nodes with colour property 'red'
+  # Print all nodes belonging to one colour group:
   #
   #   a[:red].each {|node| puts node}
   #
   # ==== Example - Aggregating Properties
   #
-  # The aggregator also aggregate properties. If a property does not exist on an aggregated node it will traverse all nodes in its group and
-  # return an enumeration of its values. This work for both a specific aggregation group (e.g. aggregate node with colour red) as well as with
-  # all groups
+  # The aggregator also aggregate properties. If a property does not exist on an aggregated group it will traverse all nodes in its group and
+  # return an enumeration of its values.
   #
   # Get an enumeration of names of people having favorite colour 'red'
   #
   #   a.[:red][:name].to_a => ['bertil', 'adam', 'adam']
   #
-  # Set properties on a whole group (NOT IMPLEMENTED YET)
-  #
-  #   a[:red][:name] = 'foo'
-  #
-  # Copy properties from one group to another group (NOT IMPLEMENTED YET)
-  #
-  #   a[:red][:name] = a[:green][:name]  # group red will have the same name as in group green
-  #
-  #
   # ==== Example - group by a property value which is transformed
   #
-  #  Group by a age range, 0-4, 5-9, 10-14 etc...
+  #  Let say way want to have group which include a range of values.
+  #  Example - group by an age range, 0-4, 5-9, 10-14 etc...
   #
   #   a = MyAggregatedNode.new
   #   a.aggregate(an enumeration of nodes).group_by(:age).of_value{|age| age / 5}.execute
@@ -144,10 +140,10 @@ module Neo4j
   #   a.each {|x| ...}
   #
   #   # how many age groups are there ?
-  #   a.size
+  #   a.aggregate_size
   #
   #   # how many people are in age group 10-14
-  #   a[3].size
+  #   a[3].aggregate_size
   #
   # ==== Example - Group by several properties
   #
@@ -217,16 +213,6 @@ module Neo4j
   #
   #   Neo4j::Transaction.run { blue_node.delete }
   #   a['blue'].size = 0
-  #
-  # ==== Example - Moving/Coping aggregate groups
-  #
-  # Link two aggregated group (NOT IMPLEMENTED YET)
-  # Let say we have to aggregates, a and b
-  # Both a and b contains people grouped by favourit colour
-  #
-  #   a[:red] = b[:red]  # a[:red] will now reference the same nodes as b[:red]
-  #
-  #   a[:red] += b[:red] # a[:red] will have copies of the nodes in the b[:red] group
   #
   module AggregateNodeMixin
     include Neo4j::NodeMixin
