@@ -163,6 +163,25 @@ describe "RelationshipTraverser" do
       t2.relationships.incoming(:friends).nodes.to_a.should include(t1)
       t3.relationships.incoming(:friends).nodes.to_a.should include(t1)
     end
+
+    it "should allow to filter relationships" do
+      # given
+      t1 = TestNode.new
+      t2 = TestNode.new
+      t3 = TestNode.new
+      t1.relationships.outgoing(:foo) << t2
+      t1.relationships.outgoing(:foo) << t3
+      t1.relationships.outgoing(:foo)[t2][:colour] = 'blue'
+      t1.relationships.outgoing(:foo)[t3][:colour] = 'red'
+
+      # find all relationships with property colour == blue
+      t1.relationships.outgoing.filter{self[:colour] == 'blue'}.to_a.size.should == 1
+      t1.relationships.outgoing.filter{self[:colour] == 'blue'}.nodes.should include(t2)
+      t1.relationships.outgoing.filter{self[:colour] == 'red'}.to_a.size.should == 1
+      t1.relationships.outgoing.filter{self[:colour] == 'red'}.nodes.should include(t3)
+      t1.relationships.outgoing.filter{self[:colour] == 'black'}.to_a.should be_empty
+    end
+
   end
 
   

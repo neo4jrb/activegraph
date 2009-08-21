@@ -1022,12 +1022,12 @@ If the filter method takes one parameter then it will be given an object of type
 TraversalPosition which contains information about current node, how many nodes
 has been returned, depth etc.
 
-The information contained in the TraversalPostion can be used in order to decide if the node should included in the traversal search result.
+The information contained in the TraversalPostion can be used in order to decide if the node should be included in the traversal search result.
 If the provided block returns true then the node will be included in the search result.
 
 The filter function will not be evaluated in the context of the current node when this parameter is provided.
 
-The TraversalPosition is a wrapper of java interface TraversalPosition, see
+The TraversalPosition is a thin wrapper around the java interface TraversalPosition, see
 http://api.neo4j.org/current/org/neo4j/api/core/TraversalPosition.html
 
 For example if we only want to return the Trip objects in the example above:

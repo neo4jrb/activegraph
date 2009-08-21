@@ -27,6 +27,11 @@ module Neo4j
         self
       end
 
+      def filter(&filter_proc)
+        @filter_proc = filter_proc
+        self
+      end
+
       def  both(type = nil)
         @type = type
         @direction = org.neo4j.api.core.Direction::BOTH
@@ -78,7 +83,9 @@ module Neo4j
         iter = iterator
         while (iter.hasNext) do
           n = iter.next
-          yield Neo4j.instance.load_relationship(n)
+          rel = Neo4j.instance.load_relationship(n)
+          next if @filter_proc && !rel.instance_eval(&@filter_proc)
+          yield rel
         end
       end
 
