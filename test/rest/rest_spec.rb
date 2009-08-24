@@ -118,7 +118,7 @@ END_OF_STRING
     p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_node_id}"
   end
 
-  it "should traverse a relationship on GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
+  it "should traverse a relationship on depth 1 - e.g. GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
     # the reference node has id = 0; the index node has id = 1
     adam = RestPerson.new # neo_node_id = 2
     adam.name = 'adam'
@@ -142,6 +142,38 @@ END_OF_STRING
     body['uri_list'].size.should == 2
   end
 
+  it "should traverse a relationship depth all - e.g. GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=all" do
+    # the reference node has id = 0; the index node has id = 1
+    adam = RestPerson.new # neo_node_id = 2
+    adam.name = 'adam'
+
+    bertil = RestPerson.new # neo_node_id = 3
+    bertil.name = 'bertil'
+
+    carl = RestPerson.new # neo_node_id = 4
+
+    adam.friends << bertil
+    bertil.friends << carl
+    
+    # when
+    get "/nodes/RestPerson/#{adam.neo_node_id}/traverse?relationship=friends&depth=all"
+
+    # then
+    last_response.status.should == 200
+    body = JSON.parse(last_response.body)
+    body['uri_list'].should_not be_nil
+    body['uri_list'][0].should == 'http://0.0.0.0:4567/nodes/RestPerson/3' # bertil
+    body['uri_list'][1].should == 'http://0.0.0.0:4567/nodes/RestPerson/4' # carl
+    body['uri_list'].size.should == 2
+  end
+
+  it "should receive a 400 error code if the depth parameter is not an integer on the traverse resource" do
+    get "/nodes/RestPerson/#{RestPerson.new.neo_node_id}/traverse?relationship=friends&depth=oj"
+
+    # then
+    last_response.status.should == 400
+  end
+  
   it "should create declared relationship on POST /nodes/RestPerson/friends" do
     adam = RestPerson.new
     adam.name = 'adam'

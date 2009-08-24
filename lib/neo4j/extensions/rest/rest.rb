@@ -217,12 +217,17 @@ module Neo4j
       begin
         Neo4j::Transaction.run do
           node = Neo4j.load(params[:id])
-          return 404, "Can't find node with id #{params[:id]}" if node.nil?
+          return 404, {'error' => "Can't find node with id #{params[:id]}"}.to_json if node.nil?
 
           relationship = params['relationship']
-          depth = params['depth']
-          depth ||= 1
-          uris = node.traverse.outgoing(relationship.to_sym).depth(depth.to_i).collect{|node| node._uri}
+          depth = case params['depth']
+            when nil then 1
+            when 'all' then :all
+            else params['depth'].to_i
+          end
+          return 400, {'error' => "invalid depth parameter - must be an integer"}.to_json  if depth == 0
+          
+          uris = node.traverse.outgoing(relationship.to_sym).depth(depth).collect{|node| node._uri}
           {'uri_list' => uris}.to_json
         end
       rescue RestException => exception
