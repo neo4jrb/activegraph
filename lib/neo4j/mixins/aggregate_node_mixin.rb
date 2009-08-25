@@ -1,3 +1,5 @@
+require 'set'
+
 module Neo4j
 
   module NodeMixin
@@ -336,20 +338,21 @@ module Neo4j
 
     # Create a group key for given node
     def group_key_of(node)
-      if @map_func.nil?
-        @group_by.map{|key| node[key]}
-      else
-        args = @group_by.map{|key| node[key]}
-        raise "Wrong number of argument of map_value function, expected #{args.size} args but it takes #{@map_func.arity} args" if @map_func.arity != args.size
-        result = @map_func.call(*args)
-        result = [result] unless result.kind_of? Enumerable
+      values = @group_by.map{|key| node[key]}
+      if !@map_func.nil?
+        raise "Wrong number of argument of map_value function, expected #{values.size} args but it takes #{@map_func.arity} args" if @map_func.arity != values.size
+        values = @map_func.call(*values)
+        values = [values] unless values.kind_of? Enumerable
       end
+
+      # check all values and expand enumerable values
+      values.inject(Set.new) {|result, value| value.respond_to?(:to_a) ? result.merge(value.to_a) : result << value }.to_a
     end
 
     # Executes the DSL and creates the specified groups.
     def execute(nodes = @nodes)
       nodes.each do |node|
-        execute(node) if node.kind_of?(Enumerable)
+#        execute(node) if node.kind_of?(Enumerable)
 
         group_key = group_key_of(node)
 
@@ -360,8 +363,6 @@ module Neo4j
         group_key = [group_key.join('_')] unless @by_each
 
         group_key.each do |key|
-          puts "KEY #{key}" if @by_each
-          
           group_node = @base_node.relationships.outgoing(key).nodes.first
           if group_node.nil?
             group_node = AggregateGroupNode.create(key)
@@ -399,16 +400,13 @@ module Neo4j
       super(key)
       value = super(key)
       return value unless value.nil?
-#      puts "GET PROPERTY #{key} value nil on #{self.object_id}"
       # traverse all sub nodes and get their properties
       AggregatedProperties.new(relationships.outgoing.nodes, key)
     end
 
     def set_property(key, value)
       super key, value
-
       val = self.get_property(key)
-#       puts "SET PROPERTY #{key} value #{val} on #{self.object_id}"
     end
   end
 

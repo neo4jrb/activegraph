@@ -286,7 +286,7 @@ describe "Aggregate, append nodes" do
   end
 
   it "should not append a node to an aggregate if it already exist in the aggregate" do
-    pending "Not sure if we want that. Will get bad performance if we have to check it each time we add a node to a aggregate"
+   pending "Not sure if we want that. Will get bad performance if we have to check it each time we add a node to a aggregate"
     agg_node = MyAggregateNode.new
     agg_node.aggregate.group_by(:colour)
 
@@ -303,59 +303,80 @@ describe "Aggregate, append nodes" do
   end
 end
 
-describe "Aggregates, over another aggregate" do
-  before(:all) do
-    start
 
-    Neo4j::Transaction.new
-    @set1 = [Neo4j::Node.new, Neo4j::Node.new]
-    @set2 = [Neo4j::Node.new, Neo4j::Node.new]
-    @set1[0][:colour] = 'red'
-    @set1[1][:colour] = 'blue'
-
-    @set2[0][:colour] = 'red';  @set2[0][:age] = 1
-    @set2[1][:colour] = 'blue'; @set2[1][:age] = 2
-  end
-
-  after(:all) do
-    stop
-  end
-
-  it "should add node into existing groups using the << operator" do
-    agg1 = MyAggregateNode.new
-    agg2 = MyAggregateNode.new
-
-    agg1.aggregate(@set1).group_by(:colour).execute
-    agg2.aggregate(@set2).group_by(:age).execute
-
-    # when
-    agg1 << agg2
-
-    # then
-    agg1[:red].aggregate_size.should == 2
-    agg1[:red].should include(@set1[0], @set2[0])
-
-    agg1[:blue].aggregate_size.should == 2
-    agg1[:blue].should include(@set1[1], @set2[1])
-
-    @set2[0].relationships.incoming.nodes.each {|x| puts "OUTGOING #{x.props.inspect}"}
-  end
-
-end
-
-
+#
+#describe "Aggregates << another_aggregate" do
+#  before(:all) do
+#    start
+#
+#    Neo4j::Transaction.new
+#    @set1 = [Neo4j::Node.new, Neo4j::Node.new]
+#    @set2 = [Neo4j::Node.new, Neo4j::Node.new]
+#    @set1[0][:colour] = 'red'
+#    @set1[1][:colour] = 'blue'
+#
+#    @set2[0][:colour] = 'red';  @set2[0][:age] = 1
+#    @set2[1][:colour] = 'blue'; @set2[1][:age] = 2
+#  end
+#
+#  after(:all) do
+#    stop
+#  end
+#
+#  it "should add node into existing groups using the << operator" do
+#    pending "not sure how the << operator should work"
+#    agg1 = MyAggregateNode.new
+#    agg2 = MyAggregateNode.new
+#
+#    agg1.aggregate(@set1).group_by(:colour).execute
+#    agg2.aggregate(@set2).group_by(:age).execute
+#
+#    # when
+#    agg1 << agg2
+#
+#    # then
+#    agg1[:red].aggregate_size.should == 2
+#    agg1[:red].should include(@set1[0], @set2[0])
+#
+#    agg1[:blue].aggregate_size.should == 2
+#    agg1[:blue].should include(@set1[1], @set2[1])
+#
+#    @set2[0].relationships.incoming.nodes.each {|x| puts "OUTGOING #{x.props.inspect}"}
+#  end
+#
+#end
+#
+#
+#
+#
 describe "Aggregates, each node should know which aggregate(s) it belongs to" do
   before(:each) do
     start
 
     Neo4j::Transaction.new
-    @set1 = [Neo4j::Node.new, Neo4j::Node.new]
-    @set2 = [Neo4j::Node.new, Neo4j::Node.new]
-    @set1[0][:colour] = 'red'
-    @set1[1][:colour] = 'blue'
+    @set = []
+    4.times {@set << Neo4j::Node.new}
+    @set[0][:colour] = 'red';  @set[0][:name] = "a"
+    @set[1][:colour] = 'red';  @set[1][:name] = "b"
+    @set[2][:colour] = 'red';  @set[2][:name] = "c"
+    @set[3][:colour] = 'blue'; @set[3][:name] = "d"
 
-    @set2[0][:colour] = 'red';  @set2[0][:age] = 1 # belongs to two aggregates
-    @set2[1][:colour] = 'blue'; @set2[1][:age] = 2
+    
+
+    # aggreate first on name
+    @agg1 = MyAggregateNode.new
+    @agg1.aggregate(@set).group_by(:name).execute
+
+     #use this name aggregate and aggregate on colour
+     #
+     # agg1      set         agg2
+     #  a  --  @set[0] --+
+     #  b  --  @set[1] --+-- red
+     #  c  --  @set[2] --+
+     #  d  --  @set[3] ----  blue
+     #
+    @agg2 = MyAggregateNode.new
+    @agg2.aggregate(@set).group_by(:colour).execute
   end
 
   after(:each) do
@@ -363,32 +384,99 @@ describe "Aggregates, each node should know which aggregate(s) it belongs to" do
   end
 
   it "should know which aggregate it belongs to"  do
-    agg1 = MyAggregateNode.new
-    agg2 = MyAggregateNode.new
-    agg1.aggregate(@set1).group_by(:colour).execute
-    agg2.aggregate(@set2).group_by(:age).execute
-
-    @set2[0].aggregates.to_a.size.should == 1
-
-    agg1 << agg2
-    
-    @set2[0].aggregates.to_a.size.should == 2
-    @set2[0].aggregates.to_a.should include(agg1, agg2)
+    @set[0].aggregates.to_a.size.should == 2
+    @set[1].aggregates.to_a.size.should == 2
+    @set[0].aggregates.should include(@agg1, @agg2)
   end
 
   it "should know which aggregate group it belongs to" do
+    # set[0] should belong to group agg1[a] and agg2[red]
+    @set[0].aggregate_groups.to_a.size.should == 2
+    @set[0].aggregate_groups.should include(@agg1['a'], @agg2['red'])
+
+    # set[2] should belong to group agg1[c] and agg2[red]
+    @set[2].aggregate_groups.to_a.size.should == 2
+    @set[2].aggregate_groups.should include(@agg1['c'], @agg2['red'])
+
+    # set[3] should belong to group agg[d] and agg2[blue]
+    @set[3].aggregate_groups.to_a.size.should == 2
+    @set[3].aggregate_groups.should include(@agg1['d'], @agg2['blue'])
+  end
+
+end
+
+
+describe "Aggregates, over another aggregate" do
+  before(:each) do
+    start
+
+    Neo4j::Transaction.new
+    @set = []
+    4.times {@set << Neo4j::Node.new}
+    @set[0][:colour] = 'red';  @set[0][:name] = "a"
+    @set[1][:colour] = 'red';  @set[1][:name] = "b"
+    @set[2][:colour] = 'red';  @set[2][:name] = "c"
+    @set[3][:colour] = 'blue'; @set[3][:name] = "d"
+  end
+
+  after(:all) do
+    stop
+  end
+
+  it "should allow to aggregate aggregate groups" do
+    # given
+    # agg2     agg1      set
+    #       +-- a  --  @set[0]
+    # red --|-- b  --  @set[1]
+    #       +-- c  --  @set[2]
+    # blue ---- d  --  @set[3]
+    #
     agg1 = MyAggregateNode.new
+    agg1.aggregate(@set).group_by(:name).execute
+
+    # when
     agg2 = MyAggregateNode.new
-    agg1.aggregate(@set1).group_by(:colour).execute
-    agg2.aggregate(@set2).group_by(:age).execute
+    agg2.aggregate(agg1).group_by(:colour).execute
 
-    @set2[0].aggregate_groups.each {|x| puts x.props.inspect}
-    @set2[0].aggregate_groups.to_a.size.should == 1
+    # then
+    agg2.aggregate_size.should == 2
+    agg2['red'].aggregate_size.should == 3
+    agg2['red'].should include(agg1['a'], agg1['b'], agg1['c'])
 
-    agg1 << agg2
+    agg2['blue'].aggregate_size.should == 1
+    agg2['blue'].should include(agg1['d'])
+  end
 
-    @set2[0].aggregate_groups.to_a.size.should == 2
-    @set2[0].aggregate_groups.to_a.should include(agg1[:red], agg2[1])
+  it "should know which aggregate it belongs to"  do
+    agg1 = MyAggregateNode.new('agg1')
+    agg1.aggregate(@set).group_by(:name).execute
+
+    # when
+    agg2 = MyAggregateNode.new('agg2')
+    agg2.aggregate(agg1).group_by(:colour).execute
+
+    # then
+    agg1['a'].aggregates.to_a.size.should == 1
+    @set[0].aggregates.to_a.size.should == 1
+
+    @set[0].aggregates.to_a.should include(agg1)
+    agg1['a'].aggregates.to_a.should include(agg2)
+  end
+
+  it "should know which aggregate groups it belongs to"  do
+    agg1 = MyAggregateNode.new('agg1')
+    agg1.aggregate(@set).group_by(:name).execute
+
+    # when
+    agg2 = MyAggregateNode.new('agg2')
+    agg2.aggregate(agg1).group_by(:colour).execute
+
+    # then
+    agg1['a'].aggregate_groups.to_a.size.should == 1
+    @set[0].aggregate_groups.to_a.size.should == 1
+
+    @set[0].aggregate_groups.to_a.should include(agg1['a'])
+    agg1['a'].aggregate_groups.to_a.should include(agg2['red'])
   end
 
 end
