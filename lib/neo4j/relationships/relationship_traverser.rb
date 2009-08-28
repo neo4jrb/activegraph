@@ -64,7 +64,7 @@ module Neo4j
       end
 
       # Return the first relationship or nil
-      #
+      # TODO does not work together with filter, will be removed in JRuby 1.4 (not needed since it is included)
       def first
         iter = iterator
         return nil unless iter.hasNext
@@ -112,6 +112,7 @@ module Neo4j
           @relationships = relationships
         end
 
+        # TODO does not work together with filter, will be removed in JRuby 1.4 (not needed since it is included)
         def first
           iter = @relationships.iterator
           return nil unless iter.hasNext()

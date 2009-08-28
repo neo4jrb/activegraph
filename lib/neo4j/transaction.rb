@@ -65,8 +65,7 @@ module Neo4j
       
       # Runs a block in a Neo4j transaction
       #
-      # Most operations on neo requires an transaction. In Neo4j all read and write operations are
-      # wrapped automatically in an transaction. You will get much better performance if
+      # Most operations on neo requires an transaction. You will get much better performance if
       # one transaction is wrapped around several neo operation instead of running one transaction per
       # neo operation.
       # If one transaction is already running then a 'placebo' transaction will be created.

@@ -54,6 +54,15 @@ module Neo4j
     #
     # Is used in combination with the Neo4j::AggregateNodeMixin
     #
+    # ==== Parameters
+    #
+    # * group which aggregate group we want, default is :all - an enumeration of all groups will be return
+    #
+    #
+    # ==== Returns
+    # an enumeration of all groups that this node belongs to, or if the group parameter was used
+    # only the given group or nil if not found.
+    #
     # ==== Example
     #
     #   class MyNode
@@ -72,8 +81,9 @@ module Neo4j
     #
     #   node1.aggregate_groups.to_a # => [agg1[some_group], agg2[some_other_group]]
     #
-    def aggregate_groups
-      relationships.incoming(:aggregate).nodes
+    def aggregate_groups(group = :all)
+      return relationships.incoming(:aggregate).nodes if group == :all
+      relationships.incoming(:aggregate).filter{self[:aggregate_group] == group}.nodes.to_a[0]
     end
   end
 
@@ -199,22 +209,27 @@ module Neo4j
   #   a['green'][10] #=>[node3]
   #
   #
-  # ==== Example - Add and remove nodes by events (NOT IMPLEMENTED YET)
+  # ==== Example - Add and remove nodes by events
   #
   # We want to both create and delete nodes and the aggregates should be updated automatically
   # This is done by registering the aggregate dsl method as an event listener
   #
   # Here is an example that update the aggregate a on all nodes of type MyNode
   #   a = MyAggregatedNode.new
-  #   Neo4j.event_handler.add(a.aggregate(nodes).group_by(:colour).filter{|node| node.kind_of? MyNode})
+  #
+  #   # the aggreate will get notified when nodes of type MyNode get changed
+  #   a.aggregate(MyNode).group_by(:colour)
   #
   #   Neo4j::Transaction.run { blue_node = MyNode.new; a.colour = 'blue' }
   #   # then the aggregate will be updated automatically since it listen to property change events
   #   a['blue'].size = 1
   #   a['blue'].to_a[0] # => blue_node
   #
-  #   Neo4j::Transaction.run { blue_node.delete }
-  #   a['blue'].size = 0
+  #   blue_node[:colour] = 'red'
+  #   a['blue']     # => nil
+  #   a['red'].to_a # => [blue_node]  
+  #   blue_node.delete
+  #   a['red']      # => nil
   #
   module AggregateNodeMixin
     include Neo4j::NodeMixin
@@ -238,9 +253,9 @@ module Neo4j
     # * execute - executes the aggregation, creates new nodes that groups the specified nodes
     #
     # :api: public
-    def aggregate(nodes=nil)
+    def aggregate(nodes_or_filter=nil)
       self.aggregate_size ||= 0
-      @aggregator = AggregateDSL.new(self, nodes)
+      @aggregator = AggregateDSL.new(self, nodes_or_filter)
     end
 
     # Appends one or a whole enumeration of nodes to the existing aggregation.
@@ -314,10 +329,85 @@ module Neo4j
 
   # Used to create a DSL describing how to aggregate an enumeration of nodes
   class AggregateDSL
-    def initialize(base_node, nodes)
+    def initialize(base_node, nodes_or_filter)
       @base_node = base_node
-      @nodes = nodes
+      @by_each = false
+      if nodes_or_filter.kind_of?(Enumerable)
+        @nodes = nodes_or_filter
+      else
+        # Register with the Neo4j event handler
+        @filter = nodes_or_filter
+        Neo4j.event_handler.add(self)
+      end
     end
+
+
+    # Unregisters this aggregate so that it will not be nofitied any longer
+    # on Neo4j node events. Used when we create an aggregate that is registered
+    # with the Neo4j even listener by including a filter in the aggregate method
+    #
+    # ==== Example
+    # agg_reg = my_aggregate.aggregate(MyNode).group_by(:something)
+    # # add some MyNodes that my_aggregate will aggregate into groups
+    # MyNode.new # etc...
+    # # we now do not want to add more nodes using the aggregate above - unregister it
+    # agg_reg.unregister
+    # # no more nodes will be appended /deleted /modified in the my_aggregate.
+    #
+    def unregister
+      Neo4j.event_handler.remove(self)
+    end
+    
+    def to_s
+      "AggregateDSL group_by #{@group_by} each #{@by_each} filter #{!@filter.nil?} object_id: #{self.object_id}"
+    end
+
+
+    def on_node_deleted(node)
+      return if node.class != @filter
+      props = node.props
+      del_node = (props.keys - ['classname', 'id']).inject ({}){ |result, key| result.merge({key=> nil})}
+      on_changed(node, del_node, node)
+    end
+
+    def on_property_changed(node, prop_key, old_value, new_value)
+      return if node.class != @filter
+      return unless @group_by.include?(prop_key.to_sym)
+      old_node = node.props
+      old_node[prop_key] = old_value
+      on_changed(node, node, old_node)
+    end
+    
+    def on_changed(node, curr_node_values, old_node_values)
+      old_group_keys = group_key_of(old_node_values)
+      new_group_keys = group_key_of(curr_node_values)
+
+      # keys that are removed
+      removed = old_group_keys - new_group_keys
+
+      # find all incoming relationships with those names and delete them
+      removed.each do |key|
+        member_of = node.relationships.incoming(:aggregate).filter{self[:aggregate_group] == key}.to_a
+        raise "same group key used in several aggregate groups, strange #{member_of.size}" if member_of.size > 1
+        next if member_of.empty?
+        group_node = member_of[0].start_node
+        group_node.aggregate_size -= 1
+        member_of[0].delete
+
+        # should we delete the whole group
+        if (group_node.aggregate_size == 0)
+          # get the aggregate
+          group_node.relationships.incoming(key).nodes.each do |agg|
+            agg[:aggregate_size] -= 1
+          end
+          group_node.delete
+        end
+      end
+      # keys that are added
+      added = new_group_keys - old_group_keys
+      added.each { |key| create_group_for_node_and_key(node, key) }
+    end
+
 
     def group_by(*keys)
       @group_by = keys
@@ -338,7 +428,12 @@ module Neo4j
 
     # Create a group key for given node
     def group_key_of(node)
-      values = @group_by.map{|key| node[key]}
+      values = @group_by.map{|key| node[key.to_s]}
+
+      # are there any keys ?
+      return [] if values.to_s.empty?
+
+      # should we map the values ?
       if !@map_func.nil?
         raise "Wrong number of argument of map_value function, expected #{values.size} args but it takes #{@map_func.arity} args" if @map_func.arity != values.size
         values = @map_func.call(*values)
@@ -346,35 +441,32 @@ module Neo4j
       end
 
       # check all values and expand enumerable values
-      values.inject(Set.new) {|result, value| value.respond_to?(:to_a) ? result.merge(value.to_a) : result << value }.to_a
+      group_keys = values.inject(Set.new) {|result, value| value.respond_to?(:to_a) ? result.merge(value.to_a) : result << value }.to_a
+
+      # if we are not grouping by_each then there will only be one group_key - join it
+      group_keys = [group_keys] unless group_keys.respond_to?(:each)
+      group_keys
     end
 
     # Executes the DSL and creates the specified groups.
     def execute(nodes = @nodes)
       nodes.each do |node|
-#        execute(node) if node.kind_of?(Enumerable)
-
         group_key = group_key_of(node)
-
-        # check if it can be added to a group
-        next if group_key.nil? || group_key.to_s.empty?
-
-        # if we are not grouping by_each then there will only be one group_key - join it
-        group_key = [group_key.join('_')] unless @by_each
-
-        group_key.each do |key|
-          group_node = @base_node.relationships.outgoing(key).nodes.first
-          if group_node.nil?
-            group_node = AggregateGroupNode.create(key)
-            rel = @base_node.relationships.outgoing(key) << group_node
-            @base_node.aggregate_size += 1 # another group was created
-            rel[:aggregate_group] = key
-          end
-          group_node.aggregate_size += 1
-          rel = group_node.relationships.outgoing(:aggregate) << node
-          rel[:aggregate_group] = key
-        end
+        group_key.each { |key| create_group_for_node_and_key(node, key) } 
       end
+    end
+
+    def create_group_for_node_and_key(node, key)
+      group_node = @base_node.relationships.outgoing(key).nodes.first
+      if group_node.nil?
+        group_node = AggregateGroupNode.create(key)
+        rel = @base_node.relationships.outgoing(key) << group_node
+        @base_node.aggregate_size += 1 # another group was created
+        rel[:aggregate_group] = key
+      end
+      group_node.aggregate_size += 1
+      rel = group_node.relationships.outgoing(:aggregate) << node
+      rel[:aggregate_group] = key
     end
 
   end

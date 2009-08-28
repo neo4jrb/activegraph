@@ -10,6 +10,73 @@ class MyAggregateNode
   include Neo4j::AggregateNodeMixin
 end
 
+class MyNode
+  include Neo4j::NodeMixin
+end
+
+
+describe "Aggregate should notified updated on node events" do
+  before(:all) do
+    start
+    Neo4j::Transaction.new
+  end
+
+  after(:all) do
+    stop
+  end
+
+  it "should add nodes to the aggreate when a new node is created" do
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:city)
+    agg.aggregate_size.should == 0
+
+    # when
+    node = MyNode.new
+    node[:city] = 'malmoe'
+
+    # then
+    agg.aggregate_size.should == 1
+    agg['malmoe'].should include(node)
+
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+  it "should move aggregate group of a node when it changes a property" do
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:city)
+    node = MyNode.new
+    node[:city] = 'malmoe'
+    agg.aggregate_size.should == 1
+    agg['malmoe'].should include(node)
+
+    # when
+    node[:city] = 'stockholm'
+  
+    # then
+    agg.aggregate_size.should == 1
+    agg['malmoe'].should be_nil
+    agg['stockholm'].should include(node)
+    
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+  it "should delete nodes to the aggregate when a new node is created" do
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:city)
+    node = MyNode.new
+    node[:city] = 'malmoe'
+    agg.aggregate_size.should == 1
+
+    node.delete
+
+    agg.aggregate_size.should == 0
+    agg['malmoe'].should be_nil
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+end
+
+
 describe "Aggregated nodes grouped by one property (colour)" do
   before(:all) do
     start
@@ -121,33 +188,48 @@ describe "Aggregate nodes grouped by one each property" do
   end
 end
 
-describe "Aggregate people into age groups 0-4, 5-9, 10-14" do
-  before(:all) do
+describe "Aggregate grouped by one property" do
+  before(:each) do
     start
-    Neo4j::Transaction.run do
-      @people = []
-      6.times {@people << Neo4j::Node.new}
-      @people[0][:age] = 2
-      @people[1][:age] = 4
-      @people[2][:age] = 5
-      @people[3][:age] = 5
-      @people[4][:age] = 9
-      @people[5][:age] = 10
-      # group 0 (0-4) - two people
-      # group 1 (5-9) - three people
-      # group 2 (10-14) - one person
+    Neo4j::Transaction.new
+    @people = []
+    6.times {@people << Neo4j::Node.new}
+    @people[0][:age] = 2
+    @people[1][:age] = 4
+    @people[2][:age] = 5
+    @people[3][:age] = 5
+    @people[4][:age] = 9
+    @people[5][:age] = 10
+    # group 0 (0-4) - two people
+    # group 1 (5-9) - three people
+    # group 2 (10-14) - one person
 
-      Neo4j::Transaction.new
-      @aggregate_node = MyAggregateNode.new
-      @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}.execute
-    end
+    @aggregate_node = MyAggregateNode.new
   end
 
-  after(:all) do
+  after(:each) do
     stop
   end
 
-  it "should traverse all people in an age group" do
+  it "should allow to create several groups from the same property" do
+    # let say we both want to create groups young, old and groups for each age
+    # given
+    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| [age < 6 ? "young" : "old", age / 5]}.execute
+
+    # then
+    @aggregate_node['young'].should include(@people[0], @people[1],@people[2],@people[3])
+    @aggregate_node['old'].should include(@people[4], @people[5])
+
+    @aggregate_node[0].to_a.size.should == 2
+    @aggregate_node[2].to_a.size.should == 1
+    @aggregate_node[2].should include(@people[5])
+  end
+  
+  it "should allow to remap the group key" do
+    # Creates age group 0=0-4, 1=5-9, 2=10-14
+    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}.execute
+
+    # then
     @aggregate_node[0].should include(@people[0], @people[1])
     @aggregate_node[0].to_a.size.should == 2
     @aggregate_node[2].to_a.size.should == 1
@@ -155,7 +237,11 @@ describe "Aggregate people into age groups 0-4, 5-9, 10-14" do
   end
 
 
-  it "should count number of people in each age group" do
+  it "should have a counter for number of meber in each group" do
+    # Creates age group 0=0-4, 1=5-9, 2=10-14
+    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}.execute
+
+    # then
     @aggregate_node.aggregate_size.should == 3 # there are 3 groups, 0-4, 5-9, 10-14
     @aggregate_node[0].aggregate_size.should == 2
     @aggregate_node[1].aggregate_size.should == 3
@@ -286,7 +372,7 @@ describe "Aggregate, append nodes" do
   end
 
   it "should not append a node to an aggregate if it already exist in the aggregate" do
-   pending "Not sure if we want that. Will get bad performance if we have to check it each time we add a node to a aggregate"
+    pending "Not sure if we want that. Will get bad performance if we have to check it each time we add a node to a aggregate"
     agg_node = MyAggregateNode.new
     agg_node.aggregate.group_by(:colour)
 
@@ -304,51 +390,6 @@ describe "Aggregate, append nodes" do
 end
 
 
-#
-#describe "Aggregates << another_aggregate" do
-#  before(:all) do
-#    start
-#
-#    Neo4j::Transaction.new
-#    @set1 = [Neo4j::Node.new, Neo4j::Node.new]
-#    @set2 = [Neo4j::Node.new, Neo4j::Node.new]
-#    @set1[0][:colour] = 'red'
-#    @set1[1][:colour] = 'blue'
-#
-#    @set2[0][:colour] = 'red';  @set2[0][:age] = 1
-#    @set2[1][:colour] = 'blue'; @set2[1][:age] = 2
-#  end
-#
-#  after(:all) do
-#    stop
-#  end
-#
-#  it "should add node into existing groups using the << operator" do
-#    pending "not sure how the << operator should work"
-#    agg1 = MyAggregateNode.new
-#    agg2 = MyAggregateNode.new
-#
-#    agg1.aggregate(@set1).group_by(:colour).execute
-#    agg2.aggregate(@set2).group_by(:age).execute
-#
-#    # when
-#    agg1 << agg2
-#
-#    # then
-#    agg1[:red].aggregate_size.should == 2
-#    agg1[:red].should include(@set1[0], @set2[0])
-#
-#    agg1[:blue].aggregate_size.should == 2
-#    agg1[:blue].should include(@set1[1], @set2[1])
-#
-#    @set2[0].relationships.incoming.nodes.each {|x| puts "OUTGOING #{x.props.inspect}"}
-#  end
-#
-#end
-#
-#
-#
-#
 describe "Aggregates, each node should know which aggregate(s) it belongs to" do
   before(:each) do
     start
@@ -361,20 +402,20 @@ describe "Aggregates, each node should know which aggregate(s) it belongs to" do
     @set[2][:colour] = 'red';  @set[2][:name] = "c"
     @set[3][:colour] = 'blue'; @set[3][:name] = "d"
 
-    
+
 
     # aggreate first on name
     @agg1 = MyAggregateNode.new
     @agg1.aggregate(@set).group_by(:name).execute
 
-     #use this name aggregate and aggregate on colour
-     #
-     # agg1      set         agg2
-     #  a  --  @set[0] --+
-     #  b  --  @set[1] --+-- red
-     #  c  --  @set[2] --+
-     #  d  --  @set[3] ----  blue
-     #
+    #use this name aggregate and aggregate on colour
+    #
+    # agg1      set         agg2
+    #  a  --  @set[0] --+
+    #  b  --  @set[1] --+-- red
+    #  c  --  @set[2] --+
+    #  d  --  @set[3] ----  blue
+    #
     @agg2 = MyAggregateNode.new
     @agg2.aggregate(@set).group_by(:colour).execute
   end
@@ -403,8 +444,92 @@ describe "Aggregates, each node should know which aggregate(s) it belongs to" do
     @set[3].aggregate_groups.should include(@agg1['d'], @agg2['blue'])
   end
 
+  it "should find the group direct by node.aggregate_group(<group_name>)" do
+    @set[0].aggregate_groups('a').should == @agg1['a']
+    @set[2].aggregate_groups('c').should == @agg1['c']
+    @set[2].aggregate_groups('red').should == @agg2['red']
+  end
+
 end
 
+
+describe "Aggregates, the << operator" do
+  before(:each) do
+    start
+
+    Neo4j::Transaction.new
+    @set = []
+    4.times {@set << Neo4j::Node.new}
+    @set[0][:colour] = 'red';  @set[0][:name] = "a"
+    @set[1][:colour] = 'blue'; @set[1][:name] = "b"
+    @set[2][:colour] = 'red';  @set[2][:name] = "c"
+    @set[3][:colour] = 'blue'; @set[3][:name] = "d"
+
+    # given
+    # agg          set
+    # red --+--  @set[0]
+    #       |
+    #       +--  @set[2]
+    #
+    # blue  +--  @set[1]
+    #       |
+    #       +--  @set[3]
+    #
+    @agg = MyAggregateNode.new
+    @agg.aggregate(@set).group_by(:colour).execute
+  end
+
+  after(:all) do
+    stop
+  end
+
+
+  it "should allow to append one node to an existing aggregate group" do
+    new_node1 = Neo4j::Node.new
+    new_node1[:colour] = 'blue'
+
+    # when
+    @agg << new_node1
+
+    # then
+
+    @agg[:blue].aggregate_size.should == 3
+    @agg[:blue].should include(new_node1)
+  end
+
+
+  it "should allow to append one node to a new aggregate group" do
+    new_node1 = Neo4j::Node.new
+    new_node1[:colour] = 'black'
+
+    @agg.aggregate_size.should == 2 # only 
+
+    # when
+    @agg << new_node1
+
+    # then
+    @agg.aggregate_size.should == 3
+    @agg[:black].should include(new_node1)
+  end
+
+  it "should allow to append an enumeration of nodes" do
+    new_node1 = Neo4j::Node.new
+    new_node1[:colour] = 'black'
+    new_node2 = Neo4j::Node.new
+    new_node2[:colour] = 'red'
+
+    @agg.aggregate_size.should == 2 # only
+
+    # when
+    @agg << [new_node1, new_node2]
+
+    # then
+    @agg.aggregate_size.should == 3
+    @agg[:black].should include(new_node1)
+    @agg[:red].should include(new_node2)
+  end
+
+end
 
 describe "Aggregates, over another aggregate" do
   before(:each) do
