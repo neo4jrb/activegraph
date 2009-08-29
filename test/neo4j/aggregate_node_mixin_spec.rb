@@ -15,7 +15,7 @@ class MyNode
 end
 
 
-describe "Aggregate should notified updated on node events" do
+describe "Aggregates that are updated on event" do
   before(:all) do
     start
     Neo4j::Transaction.new
@@ -60,6 +60,72 @@ describe "Aggregate should notified updated on node events" do
     registration.unregister # so that this spec does not have any side effects
   end
 
+  it "should put a node into two groups when it is grouped by two properties" do
+    # given an aggregate with groups by two properties
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:city, :age)
+    node = MyNode.new
+
+    # when
+    node[:city] = 'malmoe'
+    node[:age] = 10
+
+    # then
+    agg.aggregate_size.should == 2
+    agg['malmoe'].should include(node)
+    agg[10].should include(node)
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+  it "should move group of a node when one property changes but keep the remaining groups" do
+    # given an aggregate with groups by two properties
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:city, :age)
+    node = MyNode.new
+    node[:city] = 'malmoe'
+    node[:age] = 10
+
+    # when
+    node[:age] = 7
+    
+    # then
+    agg.aggregate_size.should == 2
+    agg['malmoe'].should include(node)
+    agg[10].should be_nil
+    agg[7].should include(node)
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+  it "should work for several nodes" do
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:age)
+
+    # when
+    10.times {|i| node = MyNode.new; node[:age] = i}
+
+    # then
+    agg.aggregate_size.should == 10
+
+    10.times {|i| agg[i].to_a[0][:age].should == i}
+    10.times {|i| agg[i].aggregate_size.should == 1}
+
+
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+
+  it "should also work for map_value" do
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:age).map_value{|x| x * 2}
+
+    # when
+    node = MyNode.new; node[:age] = 10
+
+    # then
+    agg[20].should include(node)
+  end
+
+  
   it "should delete nodes to the aggregate when a new node is created" do
     agg = MyAggregateNode.new
     registration = agg.aggregate(MyNode).group_by(:city)
@@ -67,17 +133,71 @@ describe "Aggregate should notified updated on node events" do
     node[:city] = 'malmoe'
     agg.aggregate_size.should == 1
 
+    # when
     node.delete
 
+    # then
     agg.aggregate_size.should == 0
     agg['malmoe'].should be_nil
     registration.unregister # so that this spec does not have any side effects
   end
 
+
+  it "should allow to create several groups from the same property" do
+    # let say we both want to create groups young, old and groups for each age
+    # given
+    agg = MyAggregateNode.new
+    registration = agg.aggregate(MyNode).group_by(:age).map_value{|age| [age < 6 ? "young" : "old", age / 5]}
+
+    # when
+    young = MyNode.new
+    young[:age] = 4
+
+    old = MyNode.new
+    old[:age] = 40
+    
+    # then
+    agg["young"].should include(young)
+    agg["old"].should include(old)
+
+    # check age group (age / 5)
+    agg[0].should include(young)
+    agg[8].should include(old)
+
+    # there should be total 4 groups, young,old, 0 and 8
+    agg.aggregate_size.should == 4
+
+    registration.unregister # so that this spec does not have any side effects
+  end
+
+  it "should work with aggregates on aggregates" do
+    pending 
+    agg1 = MyAggregateNode.new
+    # create an aggrgeation of groups where members have the same latitude longitude integer values (to_i)
+    reg1 = agg1.aggregate(MyNode).group_by(:latitude, :longitude).map_value{|lat, lng| "#{lat.to_i}_#{lng.to_i}"}
+
+    # create another aggregation of groups where members have the same latitude longitude 1/10 value
+    agg2 = MyAggregateNode.new
+    reg2 = agg2.aggregate(agg1).group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*10).to_i}_#{(lng*10).to_i}"}
+
+    # put the aggregation group agg2 into aggregation group agg1
+
+    # when
+    n1 = MyNode.new; n1[:latitude] = 10.3; n1[:longitude] = 5.2
+
+    # then
+    agg2["10_5"]["103_52"].should include(n1)
+
+    # clean up
+    reg1.unregister # so that this spec does not have any side effects
+    reg2.unregister # so that this spec does not have any side effects
+  end
+
+
 end
 
 
-describe "Aggregated nodes grouped by one property (colour)" do
+describe "Aggregated nodes that are grouped by one property (colour)" do
   before(:all) do
     start
     Neo4j::Transaction.new
@@ -158,7 +278,7 @@ describe "Aggregated nodes grouped by one property (colour)" do
 end
 
 
-describe "Aggregate nodes grouped by one each property" do
+describe "Aggregate nodes that are grouped by each property" do
   before(:all) do
     start
     Neo4j::Transaction.new
@@ -168,7 +288,7 @@ describe "Aggregate nodes grouped by one each property" do
     stop
   end
 
-  it "should implement group_by_each" do
+  it "should create groups for each property value" do
     node1 = Neo4j::Node.new; node1[:colour] = 'red'; node1[:type] = 'A'
     node2 = Neo4j::Node.new; node2[:colour] = 'red'; node2[:type] = 'B'
 
@@ -188,7 +308,7 @@ describe "Aggregate nodes grouped by one each property" do
   end
 end
 
-describe "Aggregate grouped by one property" do
+describe "Aggregate that are grouped by one property" do
   before(:each) do
     start
     Neo4j::Transaction.new
