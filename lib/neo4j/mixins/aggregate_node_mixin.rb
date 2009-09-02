@@ -17,7 +17,7 @@ module Neo4j
 
       def each
         @node.relationships.incoming(:aggregate).nodes.each do |group|
-          yield group.relationships.incoming.nodes.first # there can't be more then one, each group belongs to one aggregate node
+          yield group.relationships.incoming.nodes.first
         end
       end
     end
@@ -114,7 +114,7 @@ module Neo4j
   #
   #   a = MyAggregatedNode.new
   #
-  #   a.aggregate(nodes).group_by(:colour).execute
+  #   a.aggregate(nodes).group_by(:colour)
   #
   # The following node structure will be created:
   #
@@ -143,7 +143,7 @@ module Neo4j
   #  Example - group by an age range, 0-4, 5-9, 10-14 etc...
   #
   #   a = MyAggregatedNode.new
-  #   a.aggregate(an enumeration of nodes).group_by(:age).of_value{|age| age / 5}.execute
+  #   a.aggregate(an enumeration of nodes).group_by(:age).of_value{|age| age / 5}
   #
   #   # traverse all people in age group 10-14   (3 maps to range 10-14)
   #   a[3].each {|x| ...}
@@ -168,7 +168,7 @@ module Neo4j
   #   node2 = Neo4j::Node.new; node2[:colour] = 'red'; node2[:type] = 'B'
   #
   #   agg_node = MyAggregateNode.new
-  #   agg_node.aggregate([node1, node2]).group_by_each(:colour, :type).execute
+  #   agg_node.aggregate([node1, node2]).group_by_each(:colour, :type)
   #
   #   # node1 is member of two groups, red and A
   #   node1.aggregate_groups.to_a # => [agg_node[:red], agg_node[:A]]
@@ -195,14 +195,14 @@ module Neo4j
   #
   #   a = MyAggregatedNode.new
   #   a.aggregate.group_by(:colour)
-  #   a << node1, node2
+  #   a << node1 << node2
   #
   #   b = MyAggregatedNode.new
   #   b.aggregate.group_by(:age)
   #   node3[:colour] = 'green'; node3[:age] = 10
   #   node4[:colour] = 'red';   node3[:age] = 11
   #
-  #   b << node3 <<node4
+  #   b << node3 << node4
   #
   #   a << b
   #
@@ -254,7 +254,8 @@ module Neo4j
     #
     # :api: public
     def aggregate(nodes_or_filter=nil)
-      self.aggregate_size ||= 0
+      # setting a property here using neo4j.rb might trigger events which we do not want
+      internal_node.set_property("aggregate_size", 0) unless internal_node.has_property("aggregate_size")
       @aggregator = AggregateDSL.new(self, nodes_or_filter)
     end
 
@@ -273,6 +274,7 @@ module Neo4j
     # self
     #
     def <<(node)
+#      @aggregator.execute if @aggregator
       if node.kind_of?(Enumerable)
         @aggregator.execute(node)
       else
@@ -285,23 +287,22 @@ module Neo4j
     # Checks if the given node is include in this aggregate
     #
     # ==== Returns
-    # true if it is
+    # true if the aggregate includes the given node.
     #
     # :api: public
     def include_node?(node)
       key = @aggregator.group_key_of(node)
-      group = get_group(key)
+      group = group_node(key)
       return false if group.nil?
       group.include?(node)
     end
-
 
     # Returns the group with the given key
     # If there is no group with that key it returns nil
     #
     # :api: public
-    def get_group(key)
-      # TODO check kind_of? since it might return the wrong node
+    def group_node(key)
+      @aggregator.execute if @aggregator
       relationships.outgoing(key).nodes.find{|n| n.kind_of? AggregateGroupNode}
     end
 
@@ -313,32 +314,47 @@ module Neo4j
     # that that relationships point to will be returned (as an Enumeration).
     # Otherwise, return the property of this node.
     #
+    # :api: private
     def get_property(key)
-      group_node = get_group(key)
-      return group_node unless group_node.nil?
+      node = group_node(key)
+      return node unless node.nil?
 
       super(key)
     end
 
 
     def each
-      relationships.outgoing.nodes.each {|n| yield n}
+      @aggregator.execute if @aggregator
+      relationships.outgoing.nodes.each {|n| yield n if n.kind_of? AggregateGroupNode}
     end
 
   end
 
   # Used to create a DSL describing how to aggregate an enumeration of nodes
+  #
+  # :api: public
   class AggregateDSL
-    def initialize(base_node, nodes_or_filter)
-      @base_node = base_node
+    attr_accessor :root_dsl
+
+    def initialize(root_node, dsl_nodes_or_filter)
+      @root_node = root_node
+      self.root_dsl = self #if not chained dsl then the root dsl is self
       @by_each = false
-      if nodes_or_filter.kind_of?(Enumerable)
-        @nodes = nodes_or_filter
-      else
+
+      if dsl_nodes_or_filter.kind_of?(AggregateDSL)
+        # we are chaining aggregates
+        @child_dsl = dsl_nodes_or_filter
+        @child_dsl.root_dsl = self  # the child has a pointer to the parent (todo parent or root ?)
+      elsif dsl_nodes_or_filter.kind_of?(Enumerable)
+        # we are aggregating an enumerable set of nodes
+        @nodes = dsl_nodes_or_filter
+      elsif (dsl_nodes_or_filter.kind_of?(Class) and dsl_nodes_or_filter.ancestors.include?(Neo4j::NodeMixin))
+        # We are listening for events on Neo4j nodes - that will be included in the aggregates
+        @filter = dsl_nodes_or_filter
         # Register with the Neo4j event handler
-        @filter = nodes_or_filter
         Neo4j.event_handler.add(self)
       end
+
     end
 
 
@@ -357,17 +373,18 @@ module Neo4j
     def unregister
       Neo4j.event_handler.remove(self)
     end
-    
+
     def to_s
-      "AggregateDSL group_by #{@group_by} each #{@by_each} filter #{!@filter.nil?} object_id: #{self.object_id}"
+      "AggregateDSL group_by #{@group_by} each #{@by_each} filter #{!@filter.nil?} object_id: #{self.object_id} child: #{!@child_dsl.nil?}"
     end
 
 
     def on_node_deleted(node)
       return if node.class != @filter
       props = node.props
+      # create a property hash with property keys and property nil values - all values are deleted 
       del_node = (props.keys - ['classname', 'id']).inject ({}){ |result, key| result.merge({key=> nil})}
-      on_changed(node, del_node, node)
+      root_dsl.on_changed(node, del_node, node)
     end
 
     def on_property_changed(node, prop_key, old_value, new_value)
@@ -375,9 +392,9 @@ module Neo4j
       return unless @group_by.include?(prop_key.to_sym)
       old_node = node.props
       old_node[prop_key] = old_value
-      on_changed(node, node, old_node)
+      root_dsl.on_changed(node, node, old_node)
     end
-    
+
     def on_changed(node, curr_node_values, old_node_values)
       old_group_keys = group_key_of(old_node_values)
       new_group_keys = group_key_of(curr_node_values)
@@ -405,28 +422,45 @@ module Neo4j
       end
       # keys that are added
       added = new_group_keys - old_group_keys
-      added.each { |key| create_group_for_node_and_key(node, key) }
+      root = self.root_dsl
+      root ||= self
+      added.each { |key| root.create_group_for_node_and_key(@root_node, node, key) }
     end
 
 
+    # Specifies which properties we should group on.
+    # All thos properties can be combined to create a new group.
+    #
+    # :api: public
     def group_by(*keys)
       @group_by = keys
       @by_each = false
       self
     end
 
+
+    # Specifies which properties we should group on.
+    # Each of those properties will generate new groups.
+    #
+    # :api: public
     def group_by_each(*keys)
       @group_by = keys
       @by_each = true
       self
     end
 
+
+    # Maps the values of the given properties (in group_by or group_by_each).
+    # If this method is not used the group name will be the same as the property value.
+    #
+    # :api: public
     def map_value(&map_func)
       @map_func = map_func
       self
     end
 
     # Create a group key for given node
+    # :api: private
     def group_key_of(node)
       values = @group_by.map{|key| node[key.to_s]}
 
@@ -440,6 +474,7 @@ module Neo4j
         values = [values] unless values.kind_of? Enumerable
       end
 
+
       # check all values and expand enumerable values
       group_keys = values.inject(Set.new) {|result, value| value.respond_to?(:to_a) ? result.merge(value.to_a) : result << value }.to_a
 
@@ -449,28 +484,62 @@ module Neo4j
     end
 
     # Executes the DSL and creates the specified groups.
+    # This method is not neccessarly to call, since it will automatically be called when needed.
+    #
+    # :api: public
     def execute(nodes = @nodes)
-      nodes.each do |node|
-        group_key = group_key_of(node)
-        group_key.each { |key| create_group_for_node_and_key(node, key) } 
+      return if nodes.nil?
+
+      # prevent execute to execute again with the same nodes
+      @nodes = nil
+
+      nodes.each { |node| root_dsl.create_groups(@root_node, node) }
+    end
+
+    # :api: private
+    def create_groups(parent, node)
+      group_key_of(node).each { |key| create_group_for_node_and_key(parent, node, key) }
+    end
+
+    # :api: private
+    def create_group_for_node_and_key(parent, node, key)
+      # find a group node for the given key
+      group_node =  parent.relationships.outgoing(key).nodes.find{|n| n.kind_of? AggregateGroupNode}
+
+      # if no group key is found create a new one
+      group_node ||= create_group_node(parent, key)
+
+      # check if it is the leaf node or not
+      if (@child_dsl)
+        # this is not the leaf aggregate dsl, let the child node add the node instaed
+        @child_dsl.create_groups(group_node, node)  # TODO
+      else
+        # this IS a leaf aggregate dsl, add node to the group
+        rel_type = node.kind_of?(AggregateGroupNode)? key : :aggregate
+        rel = group_node.relationships.outgoing(rel_type) << node
+        rel[:aggregate_group] = key
+        # increase the size counter on this group
+        group_node.aggregate_size += 1
       end
     end
 
-    def create_group_for_node_and_key(node, key)
-      group_node = @base_node.relationships.outgoing(key).nodes.first
-      if group_node.nil?
-        group_node = AggregateGroupNode.create(key)
-        rel = @base_node.relationships.outgoing(key) << group_node
-        @base_node.aggregate_size += 1 # another group was created
-        rel[:aggregate_group] = key
-      end
-      group_node.aggregate_size += 1
-      rel = group_node.relationships.outgoing(:aggregate) << node
+    # :api: private
+    def create_group_node(parent, key)
+      new_node = AggregateGroupNode.create(key)
+      rel = parent.relationships.outgoing(key) << new_node
+      parent.aggregate_size += 1 # another group was created
       rel[:aggregate_group] = key
+      new_node
     end
 
   end
 
+
+  # This is the group node. When a new aggregate group is created it will be of this type.
+  # Includes the Enumerable mixin in order to iterator over each node member in the group.
+  # Overrides [] and []= properties, so that we can access aggregated properties or relationships.
+  #
+  # :api: private
   class AggregateGroupNode
     include Neo4j::NodeMixin
     include Enumerable
@@ -488,10 +557,14 @@ module Neo4j
       relationships.outgoing.nodes.each { |n| yield n }
     end
 
+    # :api: private
     def get_property(key)
-      super(key)
       value = super(key)
       return value unless value.nil?
+
+      sub_group = relationships.outgoing(key).nodes.first
+      return sub_group unless sub_group.nil?
+
       # traverse all sub nodes and get their properties
       AggregatedProperties.new(relationships.outgoing.nodes, key)
     end
@@ -502,6 +575,10 @@ module Neo4j
     end
   end
 
+
+  # Used to aggregate property values.
+  #
+  # :api: private
   class AggregatedProperties
     include Enumerable
 

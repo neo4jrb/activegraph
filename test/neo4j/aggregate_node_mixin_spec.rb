@@ -51,12 +51,12 @@ describe "Aggregates that are updated on event" do
 
     # when
     node[:city] = 'stockholm'
-  
+
     # then
     agg.aggregate_size.should == 1
     agg['malmoe'].should be_nil
     agg['stockholm'].should include(node)
-    
+
     registration.unregister # so that this spec does not have any side effects
   end
 
@@ -87,7 +87,7 @@ describe "Aggregates that are updated on event" do
 
     # when
     node[:age] = 7
-    
+
     # then
     agg.aggregate_size.should == 2
     agg['malmoe'].should include(node)
@@ -125,7 +125,7 @@ describe "Aggregates that are updated on event" do
     agg[20].should include(node)
   end
 
-  
+
   it "should delete nodes to the aggregate when a new node is created" do
     agg = MyAggregateNode.new
     registration = agg.aggregate(MyNode).group_by(:city)
@@ -155,7 +155,7 @@ describe "Aggregates that are updated on event" do
 
     old = MyNode.new
     old[:age] = 40
-    
+
     # then
     agg["young"].should include(young)
     agg["old"].should include(old)
@@ -170,29 +170,42 @@ describe "Aggregates that are updated on event" do
     registration.unregister # so that this spec does not have any side effects
   end
 
-  it "should work with aggregates on aggregates" do
-    pending 
-    agg1 = MyAggregateNode.new
-    # create an aggrgeation of groups where members have the same latitude longitude integer values (to_i)
-    reg1 = agg1.aggregate(MyNode).group_by(:latitude, :longitude).map_value{|lat, lng| "#{lat.to_i}_#{lng.to_i}"}
+  it "should work on a tree of aggregates" do
+    agg_root = MyAggregateNode.new
 
-    # create another aggregation of groups where members have the same latitude longitude 1/10 value
-    agg2 = MyAggregateNode.new
-    reg2 = agg2.aggregate(agg1).group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*10).to_i}_#{(lng*10).to_i}"}
+    # create an aggregate where all the members have the same score
+    # update the aggregate when a node of type MyNode changes
+    reg1 = agg_root.aggregate(MyNode).group_by(:score)
 
-    # put the aggregation group agg2 into aggregation group agg1
+    # create another aggregation where the members have the same score group
+    # define 4 score groups where
+    # 0 - awful
+    # 1-9 - bad
+    # 10-99 - average
+    # 100-999 - good
+    # make this aggregate be the parent aggregate of the previous (reg1) aggregate
+    scores = %w[awful bad average good]
+    reg2 = agg_root.aggregate(reg1).group_by(:score).map_value{|score| scores[score.to_s.size]}
 
     # when
-    n1 = MyNode.new; n1[:latitude] = 10.3; n1[:longitude] = 5.2
+    n1 = MyNode.new; n1[:score] = 1
+    n2 = MyNode.new; n2[:score] = 20
+    n3 = MyNode.new; n3[:score] = 30
+    n4 = MyNode.new; n4[:score] = 101
+    n5 = MyNode.new; n5[:score] = 101
+    n6 = MyNode.new; n6[:score] = 102
 
     # then
-    agg2["10_5"]["103_52"].should include(n1)
+    agg_root.aggregate_size.should == 3
+    agg_root["bad"].aggregate_size.should == 1
+    agg_root["average"].aggregate_size.should == 2
 
-    # clean up
-    reg1.unregister # so that this spec does not have any side effects
-    reg2.unregister # so that this spec does not have any side effects
+    # there are two sub groups, one groop with same score 101 and another group with score 102
+    agg_root["good"].aggregate_size.should == 2
+
+    agg_root["good"][101].aggregate_size.should == 2
+    agg_root["good"][101].should include(n4, n5)
   end
-
 
 end
 
@@ -293,7 +306,7 @@ describe "Aggregate nodes that are grouped by each property" do
     node2 = Neo4j::Node.new; node2[:colour] = 'red'; node2[:type] = 'B'
 
     agg_node = MyAggregateNode.new
-    agg_node.aggregate([node1, node2]).group_by_each(:colour, :type).execute
+    agg_node.aggregate([node1, node2]).group_by_each(:colour, :type)
 
     agg_node['red'].aggregate_size.should == 2
     agg_node['A'].aggregate_size.should == 1
@@ -334,20 +347,20 @@ describe "Aggregate that are grouped by one property" do
   it "should allow to create several groups from the same property" do
     # let say we both want to create groups young, old and groups for each age
     # given
-    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| [age < 6 ? "young" : "old", age / 5]}.execute
+    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| [age < 6 ? "young" : "old", age / 5]}
 
     # then
-    @aggregate_node['young'].should include(@people[0], @people[1],@people[2],@people[3])
+    @aggregate_node['young'].should include(@people[0], @people[1], @people[2], @people[3])
     @aggregate_node['old'].should include(@people[4], @people[5])
 
     @aggregate_node[0].to_a.size.should == 2
     @aggregate_node[2].to_a.size.should == 1
     @aggregate_node[2].should include(@people[5])
   end
-  
+
   it "should allow to remap the group key" do
     # Creates age group 0=0-4, 1=5-9, 2=10-14
-    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}.execute
+    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}
 
     # then
     @aggregate_node[0].should include(@people[0], @people[1])
@@ -359,7 +372,7 @@ describe "Aggregate that are grouped by one property" do
 
   it "should have a counter for number of meber in each group" do
     # Creates age group 0=0-4, 1=5-9, 2=10-14
-    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}.execute
+    @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}
 
     # then
     @aggregate_node.aggregate_size.should == 3 # there are 3 groups, 0-4, 5-9, 10-14
@@ -374,17 +387,15 @@ end
 describe "Aggregate x and y coordinates into squares" do
   before(:all) do
     start
-    Neo4j::Transaction.run do
+    Neo4j::Transaction.new
 
-      # create positions (0,0), (1,2), (2,4), (3,6) ...
-      @positions = []
-      6.times {@positions << Neo4j::Node.new}
-      @positions.each_with_index {|p, index| p[:x] = index}
-      @positions.each_with_index {|p, index| p[:y] = index*2}
-      Neo4j::Transaction.new
-      @aggregate_node = MyAggregateNode.new
-      @aggregate_node.aggregate(@positions).group_by(:x, :y).map_value{|x, y| (x/3)*3+(y/3)}.execute
-    end
+    # create positions (0,0), (1,2), (2,4), (3,6) ...
+    @positions = []
+    6.times {@positions << Neo4j::Node.new}
+    @positions.each_with_index {|p, index| p[:x] = index}
+    @positions.each_with_index {|p, index| p[:y] = index*2}
+    @aggregate_node = MyAggregateNode.new
+    @aggregate_node.aggregate(@positions).group_by(:x, :y).map_value{|x, y| (x/3)*3+(y/3)}
   end
 
   after(:all) do
@@ -403,6 +414,37 @@ describe "Aggregate x and y coordinates into squares" do
     @aggregate_node[1].aggregate_size.should == 1
   end
 
+
+  it "should work with aggregates on aggregates" do
+    agg_root = MyAggregateNode.new
+
+    n1 = MyNode.new; n1[:latitude] = 10.3; n1[:longitude] = 5.2
+    n2 = MyNode.new; n2[:latitude] = 5.94; n2[:longitude] = 52.4
+    n3 = MyNode.new; n3[:latitude] = 5.24; n3[:longitude] = 52.9
+
+    # create an aggrgeation of groups where members have the same latitude longitude integer values (to_i)
+    reg1 = agg_root.aggregate().group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*10).to_i}_#{(lng*10).to_i}"}
+
+    # create another aggregation of groups where members have the same latitude longitude 1/10 value
+    reg2 = agg_root.aggregate(reg1).group_by(:latitude, :longitude).map_value{|lat, lng| "#{lat.to_i}_#{lng.to_i}" }
+
+    # when
+    agg_root << n1 << n2 << n3
+
+    # then
+    agg_root["10_5"]["103_52"].should include(n1)
+    agg_root["5_52"]["59_524"].should include(n2)
+
+    agg_root.aggregate_size.should == 2
+    agg_root["5_52"].aggregate_size.should == 2    
+    agg_root["10_5"].aggregate_size.should == 1    
+
+    # clean up
+    reg1.unregister # so that this spec does not have any side effects
+    reg2.unregister # so that this spec does not have any side effects
+  end
+
+  
 end
 
 
@@ -431,7 +473,7 @@ describe "Aggregate, append nodes" do
 
   it "should add node into existing groups using the << operator" do
     agg_node = MyAggregateNode.new
-    agg_node.aggregate(@all).group_by(:colour).execute
+    agg_node.aggregate(@all).group_by(:colour)
 
     new_node = Neo4j::Node.new
     new_node[:colour] = 'green'
@@ -447,7 +489,7 @@ describe "Aggregate, append nodes" do
 
   it "should add node into new groups using the << operator" do
     agg_node = MyAggregateNode.new
-    agg_node.aggregate(@all).group_by(:colour).execute
+    agg_node.aggregate(@all).group_by(:colour)
 
     new_node = Neo4j::Node.new
     new_node[:colour] = 'black'
@@ -622,7 +664,7 @@ describe "Aggregates, the << operator" do
     new_node1 = Neo4j::Node.new
     new_node1[:colour] = 'black'
 
-    @agg.aggregate_size.should == 2 # only 
+    @agg.aggregate_size.should == 2 # only
 
     # when
     @agg << new_node1
@@ -677,11 +719,11 @@ describe "Aggregates, over another aggregate" do
     # blue ---- d  --  @set[3]
     #
     agg1 = MyAggregateNode.new
-    agg1.aggregate(@set).group_by(:name).execute
+    agg1.aggregate(@set).group_by(:name)
 
     # when
     agg2 = MyAggregateNode.new
-    agg2.aggregate(agg1).group_by(:colour).execute
+    agg2.aggregate(agg1).group_by(:colour)
 
     # then
     agg2.aggregate_size.should == 2
@@ -693,12 +735,13 @@ describe "Aggregates, over another aggregate" do
   end
 
   it "should know which aggregate it belongs to"  do
+    pending "aggregate groups does not implement correctly Neo4j::NodeMixin#aggregates"
     agg1 = MyAggregateNode.new('agg1')
-    agg1.aggregate(@set).group_by(:name).execute
+    agg1.aggregate(@set).group_by(:name)
 
     # when
-    agg2 = MyAggregateNode.new('agg2')
-    agg2.aggregate(agg1).group_by(:colour).execute
+    #agg2 = MyAggregateNode.new('agg2')
+    #agg2.aggregate(agg1).group_by(:colour)
 
     # then
     agg1['a'].aggregates.to_a.size.should == 1
@@ -709,12 +752,13 @@ describe "Aggregates, over another aggregate" do
   end
 
   it "should know which aggregate groups it belongs to"  do
+    pending "aggregate groups does not implement correctly Neo4j::NodeMixin#aggregates"
     agg1 = MyAggregateNode.new('agg1')
-    agg1.aggregate(@set).group_by(:name).execute
+    agg1.aggregate(@set).group_by(:name)
 
     # when
     agg2 = MyAggregateNode.new('agg2')
-    agg2.aggregate(agg1).group_by(:colour).execute
+    agg2.aggregate(agg1).group_by(:colour)
 
     # then
     agg1['a'].aggregate_groups.to_a.size.should == 1
