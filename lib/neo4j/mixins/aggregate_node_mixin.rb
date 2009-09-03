@@ -159,16 +159,13 @@ module Neo4j
   #
   # ==== Example - Group by several properties
   #
-  # The group_by method takes one or more property keys which it combines into one group key.
-  # Each node that is included in an group_by aggregate will only be member of one aggregate group.
-  #
-  # By using the group_by_each method instead one node may be member in more then one aggregate group.
+  # The group_by method takes one or more property keys which it combines into one or more groups.
   #
   #   node1 = Neo4j::Node.new; node1[:colour] = 'red'; node1[:type] = 'A'
   #   node2 = Neo4j::Node.new; node2[:colour] = 'red'; node2[:type] = 'B'
   #
   #   agg_node = MyAggregateNode.new
-  #   agg_node.aggregate([node1, node2]).group_by_each(:colour, :type)
+  #   agg_node.aggregate([node1, node2]).group_by(:colour, :type)
   #
   #   # node1 is member of two groups, red and A
   #   node1.aggregate_groups.to_a # => [agg_node[:red], agg_node[:A]]
@@ -190,6 +187,32 @@ module Neo4j
   #   a << node1 << node2
   #
   # Notice that we do not need call the execute method. That method will be called each time we append nodes to the aggregate.
+  #
+  # ==== Example - trees of aggregates
+  #
+  # One example where this is needed is for having a tree structure of nodes with latitude and longitude grouped by a 'zoom' factor
+  #
+  # create an aggrgeation of groups where members have the same latitude longitude integer values (to_i)
+  #   reg1 = agg_root.aggregate().group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*1000).to_i}_#{(lng*1000).to_i}"}
+  #
+  # create another aggregation of groups where members have the same latitude longitude 1/10 value
+  #   reg2 = agg_root.aggregate(reg1).group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*100).to_i}_#{(lng*100).to_i" }
+  #
+  # Notice how the second aggreate uses the first aggregate (reg1). This will create the following structure with
+  # * node n1 - (latitude 42.1234 and longitude 12.1234) and
+  # * node n2 (latitude 42.1299 and longitude 12.1298)
+  # * node n3 (latitude 42.1333 and longitude 12.1298)
+  #
+  #                      Root agg_root
+  #                        |       |
+  #            Group 4212_1212   Group  4213_1212
+  #                  |                  |
+  #          Group 42123_12123   Group 42133_12129
+  #             |    |                  |
+  #            n1   n2                 n3
+  #
+  # When the nodes n1,n2,n3 are added to the agg_root, e.g:
+  #   agg_root << n1 << n2 << n3
   #
   # ==== Example - aggregating over another aggregation
   #
@@ -339,7 +362,6 @@ module Neo4j
     def initialize(root_node, dsl_nodes_or_filter)
       @root_node = root_node
       self.root_dsl = self #if not chained dsl then the root dsl is self
-      @by_each = false
 
       if dsl_nodes_or_filter.kind_of?(AggregateDSL)
         # we are chaining aggregates
@@ -375,7 +397,7 @@ module Neo4j
     end
 
     def to_s
-      "AggregateDSL group_by #{@group_by} each #{@by_each} filter #{!@filter.nil?} object_id: #{self.object_id} child: #{!@child_dsl.nil?}"
+      "AggregateDSL group_by #{@group_by} filter #{!@filter.nil?} object_id: #{self.object_id} child: #{!@child_dsl.nil?}"
     end
 
 
@@ -424,7 +446,7 @@ module Neo4j
       added = new_group_keys - old_group_keys
       root = self.root_dsl
       root ||= self
-      added.each { |key| root.create_group_for_node_and_key(@root_node, node, key) }
+      added.each { |key| root.create_group_for_key(@root_node, node, key) }
     end
 
 
@@ -434,18 +456,6 @@ module Neo4j
     # :api: public
     def group_by(*keys)
       @group_by = keys
-      @by_each = false
-      self
-    end
-
-
-    # Specifies which properties we should group on.
-    # Each of those properties will generate new groups.
-    #
-    # :api: public
-    def group_by_each(*keys)
-      @group_by = keys
-      @by_each = true
       self
     end
 
@@ -498,11 +508,11 @@ module Neo4j
 
     # :api: private
     def create_groups(parent, node)
-      group_key_of(node).each { |key| create_group_for_node_and_key(parent, node, key) }
+      group_key_of(node).each { |key| create_group_for_key(parent, node, key) }
     end
 
     # :api: private
-    def create_group_for_node_and_key(parent, node, key)
+    def create_group_for_key(parent, node, key)
       # find a group node for the given key
       group_node =  parent.relationships.outgoing(key).nodes.find{|n| n.kind_of? AggregateGroupNode}
 

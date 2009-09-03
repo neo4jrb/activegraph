@@ -306,7 +306,7 @@ describe "Aggregate nodes that are grouped by each property" do
     node2 = Neo4j::Node.new; node2[:colour] = 'red'; node2[:type] = 'B'
 
     agg_node = MyAggregateNode.new
-    agg_node.aggregate([node1, node2]).group_by_each(:colour, :type)
+    agg_node.aggregate([node1, node2]).group_by(:colour, :type)
 
     agg_node['red'].aggregate_size.should == 2
     agg_node['A'].aggregate_size.should == 1
