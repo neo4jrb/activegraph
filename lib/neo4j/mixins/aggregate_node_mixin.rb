@@ -401,30 +401,49 @@ module Neo4j
     end
 
 
-    def on_node_deleted(node)
-      return if node.class != @filter
-      props = node.props
-      # create a property hash with property keys and property nil values - all values are deleted 
-      del_node = (props.keys - ['classname', 'id']).inject ({}){ |result, key| result.merge({key=> nil})}
-      root_dsl.on_changed(node, del_node, node)
-    end
 
-    def on_property_changed(node, prop_key, old_value, new_value)
+    # called from neo4j event handler
+    # :api: private
+    def on_property_changed(node, prop_key, old_value, new_value) # :nodoc:
       return if node.class != @filter
       return unless @group_by.include?(prop_key.to_sym)
       old_node = node.props
       old_node[prop_key] = old_value
-      root_dsl.on_changed(node, node, old_node)
+      root_dsl.on_prop_added(node, node, old_node)
+      on_prop_deleted(node, node, old_node)
     end
 
-    def on_changed(node, curr_node_values, old_node_values)
+    # called from neo4j event handler
+    # :api: private
+    def on_node_deleted(node) # :nodoc:
+      return if node.class != @filter
+      member_of = node.relationships.incoming(:aggregate).filter{start_node.property? :aggregate_size}.to_a
+      return if member_of.empty?
+      group_node = member_of[0].start_node
+      group_node.aggregate_size -= 1
+
+      # should we delete the whole group ?
+      delete_group(group_node) if (group_node.aggregate_size == 0)
+    end
+
+    def delete_group(group_node)  # :nodoc:
+      # get parent aggregates and decrease the aggregate size
+      group_node.relationships.incoming.nodes.each do |parent_group|
+        next unless parent_group.respond_to? :aggregate_size
+        parent_group[:aggregate_size] -= 1
+        delete_group(parent_group) if parent_group[:aggregate_size] == 0
+      end
+      group_node.delete
+    end
+
+
+    def on_prop_deleted(node,curr_node_values, old_node_values)  # :nodoc:
       old_group_keys = group_key_of(old_node_values)
       new_group_keys = group_key_of(curr_node_values)
 
       # keys that are removed
       removed = old_group_keys - new_group_keys
 
-      # find all incoming relationships with those names and delete them
       removed.each do |key|
         member_of = node.relationships.incoming(:aggregate).filter{self[:aggregate_group] == key}.to_a
         raise "same group key used in several aggregate groups, strange #{member_of.size}" if member_of.size > 1
@@ -434,19 +453,18 @@ module Neo4j
         member_of[0].delete
 
         # should we delete the whole group
-        if (group_node.aggregate_size == 0)
-          # get the aggregate
-          group_node.relationships.incoming(key).nodes.each do |agg|
-            agg[:aggregate_size] -= 1
-          end
-          group_node.delete
-        end
+        delete_group(group_node) if (group_node.aggregate_size == 0)
       end
+
+    end
+
+    def on_prop_added(node, curr_node_values, old_node_values)  # :nodoc:
+      old_group_keys = group_key_of(old_node_values)
+      new_group_keys = group_key_of(curr_node_values)
+
       # keys that are added
       added = new_group_keys - old_group_keys
-      root = self.root_dsl
-      root ||= self
-      added.each { |key| root.create_group_for_key(@root_node, node, key) }
+      added.each { |key| root_dsl.create_group_for_key(@root_node, node, key) }
     end
 
 
@@ -508,11 +526,13 @@ module Neo4j
 
     # :api: private
     def create_groups(parent, node)
+ #     puts "create groups parent #{parent.props.inspect} #{node.props.inspect}"
       group_key_of(node).each { |key| create_group_for_key(parent, node, key) }
     end
 
     # :api: private
     def create_group_for_key(parent, node, key)
+#      puts "create_group_for_key #{key} parent #{parent} #{node.props.inspect}"
       # find a group node for the given key
       group_node =  parent.relationships.outgoing(key).nodes.find{|n| n.kind_of? AggregateGroupNode}
 
@@ -530,6 +550,7 @@ module Neo4j
         rel[:aggregate_group] = key
         # increase the size counter on this group
         group_node.aggregate_size += 1
+#        puts "  LEAF #{key} group_node #{group_node.props.inspect} node #{node.props.inspect}"
       end
     end
 
@@ -539,6 +560,7 @@ module Neo4j
       rel = parent.relationships.outgoing(key) << new_node
       parent.aggregate_size += 1 # another group was created
       rel[:aggregate_group] = key
+#      puts "  GROUP #{key} parent #{parent.props.inspect}  node #{new_node.props.inspect}"
       new_node
     end
 

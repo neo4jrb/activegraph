@@ -16,12 +16,12 @@ end
 
 
 describe "Aggregates that are updated on event" do
-  before(:all) do
+  before(:each) do
     start
     Neo4j::Transaction.new
   end
 
-  after(:all) do
+  after(:each) do
     stop
   end
 
@@ -169,7 +169,7 @@ describe "Aggregates that are updated on event" do
 
     registration.unregister # so that this spec does not have any side effects
   end
-
+  
   it "should work on a tree of aggregates" do
     agg_root = MyAggregateNode.new
 
@@ -205,6 +205,85 @@ describe "Aggregates that are updated on event" do
 
     agg_root["good"][101].aggregate_size.should == 2
     agg_root["good"][101].should include(n4, n5)
+  end
+
+  it "should work on a tree of aggregates when nodes are deleted" do
+    agg_root = MyAggregateNode.new
+
+    # create an aggregate where all the members have the same score
+    # update the aggregate when a node of type MyNode changes
+    reg1 = agg_root.aggregate(MyNode).group_by(:score)
+
+    # create another aggregation where the members have the same score group
+    # define 4 score groups where
+    # 0 - awful
+    # 1-9 - bad
+    # 10-99 - average
+    # 100-999 - good
+    # make this aggregate be the parent aggregate of the previous (reg1) aggregate
+    scores = %w[awful bad average good]
+    reg2 = agg_root.aggregate(reg1).group_by(:score).map_value{|score| scores[score.to_s.size]}
+
+    n1 = MyNode.new; n1[:score] = 1
+    n2 = MyNode.new; n2[:score] = 20
+    n3 = MyNode.new; n3[:score] = 30
+    n4 = MyNode.new; n4[:score] = 101
+    n5 = MyNode.new; n5[:score] = 101
+    n6 = MyNode.new; n6[:score] = 102
+
+    # when
+    n1.delete
+
+    # then
+    agg_root.aggregate_size.should == 2
+    agg_root["bad"].should be_nil
+    agg_root["average"].aggregate_size.should == 2
+
+    # there are two sub groups, one groop with same score 101 and another group with score 102
+    agg_root["good"].aggregate_size.should == 2
+    agg_root["good"][101].aggregate_size.should == 2
+    agg_root["good"][101].should include(n4, n5)
+  end
+
+
+  it "should work on a tree of aggregates when node property are changed" do
+    agg_root = MyAggregateNode.new
+
+    # create an aggregate where all the members have the same score
+    # update the aggregate when a node of type MyNode changes
+    reg1 = agg_root.aggregate(MyNode).group_by(:score)
+
+    # create another aggregation where the members have the same score group
+    # define 4 score groups where
+    # 0 - awful
+    # 1-9 - bad
+    # 10-99 - average
+    # 100-999 - good
+    # make this aggregate be the parent aggregate of the previous (reg1) aggregate
+    scores = %w[awful bad average good]
+    reg2 = agg_root.aggregate(reg1).group_by(:score).map_value{|score| scores[score.to_s.size]}
+
+    n1 = MyNode.new; n1[:score] = 1
+    n2 = MyNode.new; n2[:score] = 20
+    n3 = MyNode.new; n3[:score] = 30
+    n4 = MyNode.new; n4[:score] = 101
+    n5 = MyNode.new; n5[:score] = 101
+    n6 = MyNode.new; n6[:score] = 102
+    agg_root.aggregate_size.should == 3
+
+
+    # when
+    n1[:score] = 102
+
+    # then
+    agg_root.aggregate_size.should == 2
+    agg_root["bad"].should be_nil
+    agg_root["average"].aggregate_size.should == 2
+
+    # there are two sub groups, one groop with same score 101 and another group with score 102
+    agg_root["good"].aggregate_size.should == 2
+    agg_root["good"][102].aggregate_size.should == 2
+    agg_root["good"][102].should include(n6, n1)
   end
 
 end
@@ -436,15 +515,15 @@ describe "Aggregate x and y coordinates into squares" do
     agg_root["5_52"]["59_524"].should include(n2)
 
     agg_root.aggregate_size.should == 2
-    agg_root["5_52"].aggregate_size.should == 2    
-    agg_root["10_5"].aggregate_size.should == 1    
+    agg_root["5_52"].aggregate_size.should == 2
+    agg_root["10_5"].aggregate_size.should == 1
 
     # clean up
     reg1.unregister # so that this spec does not have any side effects
     reg2.unregister # so that this spec does not have any side effects
   end
 
-  
+
 end
 
 
@@ -736,12 +815,12 @@ describe "Aggregates, over another aggregate" do
 
   it "should know which aggregate it belongs to"  do
     pending "aggregate groups does not implement correctly Neo4j::NodeMixin#aggregates"
-    agg1 = MyAggregateNode.new('agg1')
+    agg1 = MyAggregateNode.new
     agg1.aggregate(@set).group_by(:name)
 
     # when
-    #agg2 = MyAggregateNode.new('agg2')
-    #agg2.aggregate(agg1).group_by(:colour)
+    agg2 = MyAggregateNode.new
+    agg2.aggregate(agg1).group_by(:colour)
 
     # then
     agg1['a'].aggregates.to_a.size.should == 1
@@ -753,7 +832,7 @@ describe "Aggregates, over another aggregate" do
 
   it "should know which aggregate groups it belongs to"  do
     pending "aggregate groups does not implement correctly Neo4j::NodeMixin#aggregates"
-    agg1 = MyAggregateNode.new('agg1')
+    agg1 = MyAggregateNode.new
     agg1.aggregate(@set).group_by(:name)
 
     # when
