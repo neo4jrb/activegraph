@@ -16,12 +16,27 @@ module Neo4j
       end
 
       def each
-        @node.relationships.incoming(:aggregate).nodes.each do |group|
-          yield group.relationships.incoming.nodes.first
+        # if node is an aggregate group then we should look for parent aggregates
+        if (@node.property?(:aggregate_group))
+          @node.relationships.incoming.nodes.each do |parent_group|
+            next unless parent_group.property?(:aggregate_size)
+            # if it has the property aggregate_group then it is a group node
+            if (parent_group.property?(:aggregate_group))
+              AggregateEnumeration.new(parent_group).each {|agg| yield agg}
+            else
+              # aggregate found
+              yield parent_group
+            end
+          end
+        else
+          # the given node (@node) is not a group, we guess it is an leaf in an aggregate
+          # get all the groups that this leaf belongs to and then those groups aggregate nodes
+          @node.relationships.incoming(:aggregate).nodes.each do |group|
+            AggregateEnumeration.new(group ).each {|agg| yield agg}
+          end
         end
       end
     end
-
 
 
     # Returns an enumeration of aggregates that this nodes belongs to.
@@ -85,6 +100,7 @@ module Neo4j
       return relationships.incoming(:aggregate).nodes if group == :all
       relationships.incoming(:aggregate).filter{self[:aggregate_group] == group}.nodes.to_a[0]
     end
+
   end
 
 
@@ -250,7 +266,7 @@ module Neo4j
   #
   #   blue_node[:colour] = 'red'
   #   a['blue']     # => nil
-  #   a['red'].to_a # => [blue_node]  
+  #   a['red'].to_a # => [blue_node]
   #   blue_node.delete
   #   a['red']      # => nil
   #
@@ -263,7 +279,7 @@ module Neo4j
 
     # Creates aggregated nodes by grouping nodes by one or more property values.
     # Raises an exception if the aggregation already exists.
-    # 
+    #
     # ==== Parameters
     # * aggregate(optional an enumeration) - specifies which nodes it should aggregate into groups of nodes
     #
@@ -401,7 +417,6 @@ module Neo4j
     end
 
 
-
     # called from neo4j event handler
     # :api: private
     def on_property_changed(node, prop_key, old_value, new_value) # :nodoc:
@@ -437,7 +452,7 @@ module Neo4j
     end
 
 
-    def on_prop_deleted(node,curr_node_values, old_node_values)  # :nodoc:
+    def on_prop_deleted(node, curr_node_values, old_node_values)  # :nodoc:
       old_group_keys = group_key_of(old_node_values)
       new_group_keys = group_key_of(curr_node_values)
 
@@ -526,7 +541,7 @@ module Neo4j
 
     # :api: private
     def create_groups(parent, node)
- #     puts "create groups parent #{parent.props.inspect} #{node.props.inspect}"
+      #     puts "create groups parent #{parent.props.inspect} #{node.props.inspect}"
       group_key_of(node).each { |key| create_group_for_key(parent, node, key) }
     end
 

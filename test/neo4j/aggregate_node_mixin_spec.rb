@@ -169,7 +169,7 @@ describe "Aggregates that are updated on event" do
 
     registration.unregister # so that this spec does not have any side effects
   end
-  
+
   it "should work on a tree of aggregates" do
     agg_root = MyAggregateNode.new
 
@@ -785,7 +785,7 @@ describe "Aggregates, over another aggregate" do
     @set[3][:colour] = 'blue'; @set[3][:name] = "d"
   end
 
-  after(:all) do
+  after(:each) do
     stop
   end
 
@@ -813,38 +813,20 @@ describe "Aggregates, over another aggregate" do
     agg2['blue'].should include(agg1['d'])
   end
 
-  it "should know which aggregate it belongs to"  do
-    pending "aggregate groups does not implement correctly Neo4j::NodeMixin#aggregates"
+  it "should know which aggregates it belongs to"  do
     agg1 = MyAggregateNode.new
     agg1.aggregate(@set).group_by(:name)
 
     # when
     agg2 = MyAggregateNode.new
-    agg2.aggregate(agg1).group_by(:colour)
+    agg2.aggregate(agg1).group_by(:colour).execute
 
     # then
-    agg1['a'].aggregates.to_a.size.should == 1
-    @set[0].aggregates.to_a.size.should == 1
-
+    @set[0].aggregates.to_a.size.should == 2
+    agg1['a'].aggregates.to_a.size.should == 2
+    #
     @set[0].aggregates.to_a.should include(agg1)
-    agg1['a'].aggregates.to_a.should include(agg2)
-  end
-
-  it "should know which aggregate groups it belongs to"  do
-    pending "aggregate groups does not implement correctly Neo4j::NodeMixin#aggregates"
-    agg1 = MyAggregateNode.new
-    agg1.aggregate(@set).group_by(:name)
-
-    # when
-    agg2 = MyAggregateNode.new('agg2')
-    agg2.aggregate(agg1).group_by(:colour)
-
-    # then
-    agg1['a'].aggregate_groups.to_a.size.should == 1
-    @set[0].aggregate_groups.to_a.size.should == 1
-
-    @set[0].aggregate_groups.to_a.should include(agg1['a'])
-    agg1['a'].aggregate_groups.to_a.should include(agg2['red'])
+    agg1['a'].aggregates.to_a.should include(agg1,agg2)
   end
 
 end
