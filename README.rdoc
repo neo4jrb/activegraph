@@ -223,7 +223,7 @@ Setting a property:
   person.name = 'kalle'
   person.salary  = 10000
 
-=== Dynamic Properties
+=== Properties and the [] operator
 Notice that it is not required to specify which attributes should be available on a node. Any attributes can be
 set using the [] operator. Declared properties set an expectation, not an requirement. It can be used for documenting your model objects and
 catching typos.
@@ -236,8 +236,8 @@ So, why declare properties in the class at all?  By declaring a property in the 
 But also, if you declare a Lucene index on the declared property and update the value, then the Lucene index will 
 automatically be updated.  The property declaration is required before declaring an index on the property.
 
-=== Dynamic Relationships
-Like dynamic properties, relationships do not have to be defined using has_n or has_one for a class.  
+=== Relationships
+Like properties, relationships do not have to be defined using has_n or has_one for a class.
 A relationship can be added at any time on any node.
 
 Example:
@@ -1055,7 +1055,7 @@ Example:
   relationship.since = 1992
 
 If a Relationship class has not been specified for a relationship then any properties
-can be set on the relationship. It has a default relationship class: Neo4j::DynamicRelation
+can be set on the relationship. It has a default relationship class: Neo4j::Relationships::Relationship
 
 If you instead want to use your own class for a relationship use the
 Neo4j::NodeMixin#has_n.relationship method, example:
