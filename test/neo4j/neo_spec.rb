@@ -61,7 +61,24 @@ describe Neo4j::Neo do
 
     Neo4j.number_of_nodes_in_use.should == 1
   end
-                                         
+
+  it "should return all nodes for Neo4j.all_nodes" do
+    Neo4j::Transaction.new
+    # given
+    nodes = []
+    Neo4j.all_nodes{|node| nodes << node}
+    nodes.size.should == 1 # only reference node should be there
+    nodes[0].should == Neo4j.ref_node
+
+    # when
+    n = Neo4j::Node.new
+
+    # then
+    nodes = []
+    Neo4j.all_nodes {|node| nodes << node}
+    nodes.size.should == 2
+    nodes.should include(n)
+  end
   it "should return correct number of properties when using Neo4j.number_of_properties_in_use" do
     # only reference node exists
     Neo4j.number_of_properties_in_use.should == 1

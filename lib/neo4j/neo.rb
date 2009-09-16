@@ -63,6 +63,20 @@ module Neo4j
     self.instance.find_node(node_id.to_i)
   end
 
+  # Returns all nodes in the node space.
+  # Expects a block that will be yield.
+  #
+  # ==== Example
+  #
+  #   Neo4j.all_nodes{|node| puts "Node id ${node.neo_node_id"}
+  #
+  # :api: public
+  def self.all_nodes
+    iter = instance.neo.all_nodes.iterator
+    while(iter.hasNext)
+      yield load(iter.next.get_id)
+    end
+  end
 
   # Loads a Neo relationship.
   # If the neo property 'classname' to exist it will use that to create an instance of that class.
