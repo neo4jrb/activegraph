@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'neo4j'
 require 'neo4j/extensions/rest'
 require 'neo4j/extensions/tx_tracker'

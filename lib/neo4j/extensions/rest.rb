@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'net/http'
 require 'thread'
 require 'json'
