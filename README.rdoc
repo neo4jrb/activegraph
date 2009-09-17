@@ -107,18 +107,20 @@ Example of creating a neo4j node:
 === Transactions
 
 Almost all Neo4j operation must be wrapped in a transaction as shown above.
-In the following examples we assume that the operations are inside an Neo4j transaction.
-Neo4j.rb supports auto commits without wrapping Neo4j operations in Neo4j::Transactions.
-To enable that require the file 'neo4j/auto_tx' instead of 'neo4j'
+In all the following examples we assume that the operations are inside an Neo4j transaction.
+There are two ways of creating transaction - in a block or the Transaction.new method
 
-Example
+Using a block:
 
-  require 'neo4j/auto_tx'
+  Neo4j::Transaction.run do
+    # neo4j operations goes here
+  end
 
-  # no need to wrap operations in Neo4j::Transaction.run do .. end
-  Neo4j::Node.new
+Using the Neo4j::Transaction#new and Neo4j::Transaction#finish methods:
 
-This experimental feature should only be used for testing and development purpose.
+  Neo4j::Transaction.new
+  # neo4j operations goes here
+  Neo4j::Transaction.finish
 
 === Setting Properties
 
@@ -202,7 +204,7 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
 Adding new types of properties and relationships can also be done without
 declaring those properties/relationships by using the operator '[]' on Neo4j::NodeMixin and the
- '<<' on the Neo4j::Relationships::RelationshipTraverser.
+'<<' on the Neo4j::Relationships::RelationshipTraverser.
 
 By using the NodeMixin and by declaring properties and indices, all instances of the Person class can now be stored in 
 the Neo4j node space and be retrieved/queried by traversing the node space or performing Lucene queries.
@@ -764,36 +766,11 @@ Only UTC timezone is allowed.
 
 === Finding all nodes
 
-To find all nodes of a specific type use the all method.
+To find all nodes use the Neo4j#all_nodes method.
 
 Example
 
-  require 'neo4j/extensions/reindexer'
-
-  class Car
-    include Neo4j::Node
-    property :wheels
-  end
-
-  class Volvo < Car
-  end
-
-  v = Volvo.new
-  c = Car.new
-
-  Car.all   # will return all relationships from the index node to car objects
-  Volvo.all # will return the same as Car.all
-
-To return nodes (just like the relationships method)
-
-  Car.all.nodes    # => [c,v]
-  Volvo.all.nodes  # => [c,v]
-
-
-The reindexer extension that is used in the example above will for each created node create a relationship
-from the index node (Neo4j.ref_node.relationships.outgoing(:index_node)) to that new node.
-The all method use these relationships in order to return nodes of a certain class.
-The update_index method also uses this all method in order to update the index for all nodes of a specific class.
+  Neo4j.all_nodes.each {|node| puts node}
 
 === Relationship has_n and has_one
 

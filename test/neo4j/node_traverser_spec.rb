@@ -239,7 +239,7 @@ describe "NodeTraverser" do
       end
     end
 
-    it "should work with the TraversalPosition#current_node parameter" do
+    it "should work with the TraversalPosition#current_node parameter for filter" do
       # when
       result = @a.traverse.outgoing(:friends).filter{|tp| tp.current_node.name == 'b'}.to_a
 
@@ -248,7 +248,7 @@ describe "NodeTraverser" do
       result.should include(@b)
     end
 
-    it "should work with the TraversalPosition#previous_node parameter" do
+    it "should work with the TraversalPosition#previous_node parameter for filter" do
       # when
       result = @a.traverse.outgoing(:friends).filter{|tp| tp.previous_node.name == 'a' unless tp.previous_node.nil?}.to_a
 
@@ -257,7 +257,7 @@ describe "NodeTraverser" do
       result.should include(@b, @c)
     end
 
-    it "should work with the TraversalPosition#last_relationship_traversed parameter" do
+    it "should work with the TraversalPosition#last_relationship_traversed parameter  for filter" do
       # when
       result = @a.traverse.outgoing(:friends, :parents).filter do |tp|
         tp.last_relationship_traversed.relationship_type == :parents unless tp.last_relationship_traversed.nil?
@@ -268,7 +268,7 @@ describe "NodeTraverser" do
       result.should include(@p)
     end
 
-    it "should work with the TraversalPosition#depth parameter" do
+    it "should work with the TraversalPosition#depth parameter  for filter" do
       # when
       result = @a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.depth == 0 }.to_a
 
@@ -277,12 +277,33 @@ describe "NodeTraverser" do
       result.should include(@a)
     end
 
-    it "should work with the TraversalPosition#returned_nodes_count parameter" do
+    it "should work with the TraversalPosition#returned_nodes_count parameter for filter" do
       # when
       result = @a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.returned_nodes_count < 2 }.to_a
 
       # then
       result.size.should == 2
+    end
+
+
+    it "should work with the TraversalPosition parameter for each_with_position" do
+      # when
+      a = Neo4j::Node.new; a[:name] = 'a'
+      b = Neo4j::Node.new; b[:name] = 'b'
+      c = Neo4j::Node.new; c[:name] = 'c'
+      d = Neo4j::Node.new; d[:name] = 'd'
+      a.relationships.outgoing(:baar) << b
+      a.relationships.outgoing(:baar) << c
+      b.relationships.outgoing(:baar) << d
+
+      name_depth = {}
+      a.traverse.outgoing(:baar).depth(:all).each_with_position { |node, tp| name_depth[node[:name]] = tp.depth }
+
+     # then
+      puts name_depth.inspect
+      name_depth['b'].should == 1
+      name_depth['c'].should == 1
+      name_depth['d'].should == 2
     end
 
   end

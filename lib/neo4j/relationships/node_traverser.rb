@@ -90,14 +90,32 @@ module Neo4j
         end
       end
 
-      def iterator
+      # Same as #each method but includes the TraversalPosition argument as a yield argument.
+      #
+      #
+      def each_with_position(&block)
+        traverser = create_traverser
+        iter = traverser.iterator
+        while (iter.hasNext) do
+          n = iter.next
+          tp = TraversalPosition.new(traverser.currentPosition())
+          block.call Neo4j.load(n.get_id), tp
+        end
+      end
+
+
+      def create_traverser
         # check that we know which type of relationship should be traversed
         if @types_and_dirs.empty?
           raise IllegalTraversalArguments.new "Unknown type of relationship. Needs to know which type(s) of relationship in order to traverse. Please use the outgoing, incoming or both method."
         end
 
         @internal_node.traverse(@traverser_order, @stop_evaluator,
-                                @returnable_evaluator, @types_and_dirs.to_java(:object)).iterator
+                                @returnable_evaluator, @types_and_dirs.to_java(:object))
+      end
+
+      def iterator
+        create_traverser.iterator
       end
 
       def to_s

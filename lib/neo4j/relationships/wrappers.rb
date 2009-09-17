@@ -28,7 +28,7 @@ module Neo4j
           eval_context.instance_eval(&@proc)
         end
 
-        # java does not treat nil as false so we need to do instead
+        # java does not treat nil as false so we need to do it instead
         (result)? true : false
       end
     end
