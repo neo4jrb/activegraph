@@ -157,7 +157,7 @@ module Neo4j
   # 
   # A wrapper class around org.neo4j.api.core.EmbeddedNeo
   # 
-  class Neo
+  class Neo #:nodoc:
 
     extend Neo4j::TransactionalMixin
 

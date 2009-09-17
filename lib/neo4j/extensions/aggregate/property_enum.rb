@@ -1,7 +1,7 @@
 # Used to aggregate property values.
 #
 # :api: private
-class Neo4j::Aggregate::PropertyEnum
+class Neo4j::Aggregate::PropertyEnum #:nodoc:
   include Enumerable
 
   def initialize(nodes, property)

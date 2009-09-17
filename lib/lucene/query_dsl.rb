@@ -1,6 +1,6 @@
 module Lucene
   
-  class Expression
+  class Expression #:nodoc:
     attr_accessor :left, :right, :op, :query
   
     def self.new_complete(left, op, right)

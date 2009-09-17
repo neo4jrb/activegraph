@@ -51,11 +51,11 @@ This page contains the following information:
 * Installation guide
 * Three Minute Tutorial
 * Ten Minute Tutorial
-* Lucene API Documentation
 * Neo4j API Documentation
 * Extension: REST (see Neo4j::RestMixin)
 * Extension: find_path
 * Ruby on Rails with Neo4j.rb
+* Lucene API Documentation
 
 There are also some complete examples in the example folder
 * admin - an uncomplete admin web gui for the Neo4j.rb/REST interface
@@ -386,239 +386,6 @@ Example of accessing the Role relationship object between an Actor and a Movie
       keanu_reeves.relationships.outgoing(:acted_in)[matrix].name = 'neo'
 
 More information about neo4j can be found after the Lucene section below.
-
-== The Lucene Module
-
-You can use this module without using the Neo4j module. 
-
-Lucene provides:
-* Flexible Queries - Phrases, Wildcards, Compound boolean expressions etc...
-* Field-specific Queries eg. title, artist, album
-* Sorting
-* Ranked Searching
-
-=== Lucene Document
-
-In lucene everything is a Document. A document can represent anything textual:
-Word Document, DVD (the textual metadata only), or a Neo4j.rb node.
-A document is like a record or row in a relationship database.
-
-The following example shows how a document can be created by using the ''<<'' operator
-on the Lucene::Index class and found using the Lucene::Index#find method.
-
-Example of how to write a document and find it:
-  
-    require 'lucene'
-
-    include Lucene
-
-    # the var/myindex parameter is either a path where to store the index or
-    # just a key if index is kept in memory (see below)
-    index = Index.new('var/myindex')  
-
-    # add one document (a document is like a record or row in a relationship database)
-    index << {:id=>'1', :name=>'foo'}
-
-    # write to the index file
-    index.commit
-
-    # find a document with name foo
-    # hits is a ruby Enumeration of documents
-    hits = index.find{name == 'foo'}
-
-    # show the id of the first document (document 0) found
-    # (the document contains all stored fields - see below)
-    hits[0][:id]   # => '1'    
-
-Notice that you have to call the commit method in order to update the index on the disk/RAM.
-By performing several update and delete operations before a commit will be much
-faster then performing commit after each operation. 
-
-=== Keep indexing on disk
-
-By default Neo4j::Lucene keeps indexes in memory. That means that when the application restarts
-the index will be gone and you have to reindex everything again.
-
-To keep indexes in memory:
-
-   Lucene::Config[:store_on_file] = true
-   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
-
-When creating a new index the location of the index will be the Lucene::Config[:storage_path] + index path
-Example:
-
-   Lucene::Config[:store_on_file] = true
-   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
-   index = Index.new('/foo/lucene')
-
-The example above will store the index at /home/neo/lucene-db/foo/lucene
-
-=== Indexing several values with the same key
-
-Let say a person can have several phone numbers. How do we index that ?
-
-  index << {:id=>'1', :name=>'adam', :phone => ['987-654', '1234-5678']}
-  
-
-=== Id field
-
-All Documents must have one id field. If one is not specified it is :id of type String.
-A different id can be specified using the field_infos id_field property on the index:
-
-  index = Index.new('some/path/to/the/index')
-  index.field_infos.id_field = :my_id
-
-To change the type of the my_id from String to a different type see below.
-
-=== Conversion of types
-
-Lucene.rb can handle type conversion for you. (The java lucene library stores all
-the fields as Strings)
-For example if you want the id field to be a fixnum
-
-    require 'lucene'
-    include Lucene
-
-    index = Index.new('var/myindex')  # store the index at dir: var/myindex
-    index.field_infos[:id][:type] = Fixnum    
-
-    index << {:id=>1, :name=>'foo'} # notice 1 is not a string now
-
-    index.commit
-
-    # find that document, hits is a ruby Enumeration of documents
-    hits = index.find(:name => 'foo') 
-
-    # show the id of the first document (document 0) found
-    # (the document contains all stored fields - see below)
-    doc[0][:id]   # => 1     
-
-If the field_info type parameter is not set then it has a default value of String.
-
-=== Storage of fields
-
-By default only the id field will be stored.
-That means that in the example above the :name field will not be included in the document.
-
-Example
-    doc = index.find('name' => 'foo') 
-    doc[:id]   # => 1     
-    doc[:name] # => nil
-
-Use the field info :store=true if you want a field to be stored in the index
-(otherwise it will only be searchable).
-
-Example
-
-    require 'lucene'
-    include Lucene
-
-    index = Index.new('var/myindex')  # store the index at dir: var/myindex
-    index.field_infos[:id][:type] = Fixnum    
-    index.field_infos[:name][:store] = true # store this field
-
-    index << {:id=>1, :name=>'foo'} # notice 1 is not a string now
-
-    index.commit
-
-    # find that document, hits is a ruby Enumeration of documents
-    hits = index.find('name' => 'foo') 
-
-    # let say hits only contains one document so we can use doc[0] for that one
-    # that document contains all stored fields (see below)
-    doc[0][:id]   # => 1     
-    doc[0][:name] # => 'foo'
-
-=== Setting field infos
-
-As shown above you can set field infos like this
-
-  index.field_infos[:id][:type] = Fixnum    
-
-Or you can set several properties like this:
-
-  index.field_infos[:id] = {:type => Fixnum, :store => true}    
-
-
-=== Simple Queries
-
-Lucene.rb support search in several fields:
-Example
-
-    # finds all document having both name 'foo' and age 42
-    hits = index.find('name' => 'foo', :age=>42)  
-
-Range queries
-
-    # finds all document having both name 'foo' and age between 3 and 30
-    hits = index.find('name' => 'foo', :age=>3..30)  
-
-=== Lucene Queries
-
-If the query is string then the string is a lucene query.
-
-  hits = index.find('name:foo')
-
-For more information see:
-http://lucene.apache.org/java/2_4_0/queryparsersyntax.html
-
-=== Advanced Queries (DSL)
-
-The queries above can also be written in a lucene.rb DSL:
-
-    hits = index.find { (name == 'andreas') & (foo == 'bar')}
-
-Expression with OR (|) is supported, example
-
-   # find all documents with name 'andreas' or age between 30 and 40
-    hits = index.find { (name == 'andreas') | (age == 30..40)}
-
-=== Sorting
-
-Sorting is specified by the 'sort_by' parameter
-Example
-
-  hits = index.find(:name => 'foo', :sort_by=>:category)
-
-To sort by several fields:
-
-  hits = index.find(:name => 'foo', :sort_by=>[:category, :country])
-
-Example sort order
-
-  hits = index.find(:name => 'foo', :sort_by=>[Desc[:category, :country], Asc[:city]])
-
-=== Thread-safety
-
-The Lucene::Index is thread safe.
-It guarantees that an index is not updated from two thread at the same time.
-
-
-=== Lucene Transactions
-
-Use the Lucene::Transaction in order to do atomic commits.
-By using a transaction you do not need to call the Index.commit method.
-
-Example:
-
-    Transaction.run do |t|
-      index = Index.new('var/index/foo')        
-      index << { id=>42, :name=>'andreas'}
-      t.failure  # rollback
-    end  
-    
-    result = index.find('name' => 'andreas')
-    result.size.should == 0
-
-You can find which documents are uncommited by using the uncommited index property.
-
-Example
-
-      index = Index.new('var/index/foo')        
-      index.uncommited #=> [document1, document2] 
-
-Notice that even if it looks like a new Index instance object was created the index.uncommited
-may return an not empty array. This is because Index.new is a singleton - a new instance object is not created.
 
 == The Neo4j Module
 
@@ -1579,3 +1346,236 @@ new.html.erb:
 
     <%= link_to 'Back', actors_path %>
 
+
+== The Lucene Module
+
+You can use this module without using the Neo4j module.
+
+Lucene provides:
+* Flexible Queries - Phrases, Wildcards, Compound boolean expressions etc...
+* Field-specific Queries eg. title, artist, album
+* Sorting
+* Ranked Searching
+
+=== Lucene Document
+
+In lucene everything is a Document. A document can represent anything textual:
+Word Document, DVD (the textual metadata only), or a Neo4j.rb node.
+A document is like a record or row in a relationship database.
+
+The following example shows how a document can be created by using the ''<<'' operator
+on the Lucene::Index class and found using the Lucene::Index#find method.
+
+Example of how to write a document and find it:
+
+    require 'lucene'
+
+    include Lucene
+
+    # the var/myindex parameter is either a path where to store the index or
+    # just a key if index is kept in memory (see below)
+    index = Index.new('var/myindex')
+
+    # add one document (a document is like a record or row in a relationship database)
+    index << {:id=>'1', :name=>'foo'}
+
+    # write to the index file
+    index.commit
+
+    # find a document with name foo
+    # hits is a ruby Enumeration of documents
+    hits = index.find{name == 'foo'}
+
+    # show the id of the first document (document 0) found
+    # (the document contains all stored fields - see below)
+    hits[0][:id]   # => '1'
+
+Notice that you have to call the commit method in order to update the index on the disk/RAM.
+By performing several update and delete operations before a commit will be much
+faster then performing commit after each operation.
+
+=== Keep indexing on disk
+
+By default Neo4j::Lucene keeps indexes in memory. That means that when the application restarts
+the index will be gone and you have to reindex everything again.
+
+To keep indexes in memory:
+
+   Lucene::Config[:store_on_file] = true
+   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+
+When creating a new index the location of the index will be the Lucene::Config[:storage_path] + index path
+Example:
+
+   Lucene::Config[:store_on_file] = true
+   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+   index = Index.new('/foo/lucene')
+
+The example above will store the index at /home/neo/lucene-db/foo/lucene
+
+=== Indexing several values with the same key
+
+Let say a person can have several phone numbers. How do we index that ?
+
+  index << {:id=>'1', :name=>'adam', :phone => ['987-654', '1234-5678']}
+
+
+=== Id field
+
+All Documents must have one id field. If one is not specified it is :id of type String.
+A different id can be specified using the field_infos id_field property on the index:
+
+  index = Index.new('some/path/to/the/index')
+  index.field_infos.id_field = :my_id
+
+To change the type of the my_id from String to a different type see below.
+
+=== Conversion of types
+
+Lucene.rb can handle type conversion for you. (The java lucene library stores all
+the fields as Strings)
+For example if you want the id field to be a fixnum
+
+    require 'lucene'
+    include Lucene
+
+    index = Index.new('var/myindex')  # store the index at dir: var/myindex
+    index.field_infos[:id][:type] = Fixnum
+
+    index << {:id=>1, :name=>'foo'} # notice 1 is not a string now
+
+    index.commit
+
+    # find that document, hits is a ruby Enumeration of documents
+    hits = index.find(:name => 'foo')
+
+    # show the id of the first document (document 0) found
+    # (the document contains all stored fields - see below)
+    doc[0][:id]   # => 1
+
+If the field_info type parameter is not set then it has a default value of String.
+
+=== Storage of fields
+
+By default only the id field will be stored.
+That means that in the example above the :name field will not be included in the document.
+
+Example
+    doc = index.find('name' => 'foo')
+    doc[:id]   # => 1
+    doc[:name] # => nil
+
+Use the field info :store=true if you want a field to be stored in the index
+(otherwise it will only be searchable).
+
+Example
+
+    require 'lucene'
+    include Lucene
+
+    index = Index.new('var/myindex')  # store the index at dir: var/myindex
+    index.field_infos[:id][:type] = Fixnum
+    index.field_infos[:name][:store] = true # store this field
+
+    index << {:id=>1, :name=>'foo'} # notice 1 is not a string now
+
+    index.commit
+
+    # find that document, hits is a ruby Enumeration of documents
+    hits = index.find('name' => 'foo')
+
+    # let say hits only contains one document so we can use doc[0] for that one
+    # that document contains all stored fields (see below)
+    doc[0][:id]   # => 1
+    doc[0][:name] # => 'foo'
+
+=== Setting field infos
+
+As shown above you can set field infos like this
+
+  index.field_infos[:id][:type] = Fixnum
+
+Or you can set several properties like this:
+
+  index.field_infos[:id] = {:type => Fixnum, :store => true}
+
+
+=== Simple Queries
+
+Lucene.rb support search in several fields:
+Example
+
+    # finds all document having both name 'foo' and age 42
+    hits = index.find('name' => 'foo', :age=>42)
+
+Range queries
+
+    # finds all document having both name 'foo' and age between 3 and 30
+    hits = index.find('name' => 'foo', :age=>3..30)
+
+=== Lucene Queries
+
+If the query is string then the string is a lucene query.
+
+  hits = index.find('name:foo')
+
+For more information see:
+http://lucene.apache.org/java/2_4_0/queryparsersyntax.html
+
+=== Advanced Queries (DSL)
+
+The queries above can also be written in a lucene.rb DSL:
+
+    hits = index.find { (name == 'andreas') & (foo == 'bar')}
+
+Expression with OR (|) is supported, example
+
+   # find all documents with name 'andreas' or age between 30 and 40
+    hits = index.find { (name == 'andreas') | (age == 30..40)}
+
+=== Sorting
+
+Sorting is specified by the 'sort_by' parameter
+Example
+
+  hits = index.find(:name => 'foo', :sort_by=>:category)
+
+To sort by several fields:
+
+  hits = index.find(:name => 'foo', :sort_by=>[:category, :country])
+
+Example sort order
+
+  hits = index.find(:name => 'foo', :sort_by=>[Desc[:category, :country], Asc[:city]])
+
+=== Thread-safety
+
+The Lucene::Index is thread safe.
+It guarantees that an index is not updated from two thread at the same time.
+
+
+=== Lucene Transactions
+
+Use the Lucene::Transaction in order to do atomic commits.
+By using a transaction you do not need to call the Index.commit method.
+
+Example:
+
+    Transaction.run do |t|
+      index = Index.new('var/index/foo')
+      index << { id=>42, :name=>'andreas'}
+      t.failure  # rollback
+    end
+
+    result = index.find('name' => 'andreas')
+    result.size.should == 0
+
+You can find which documents are uncommited by using the uncommited index property.
+
+Example
+
+      index = Index.new('var/index/foo')
+      index.uncommited #=> [document1, document2]
+
+Notice that even if it looks like a new Index instance object was created the index.uncommited
+may return an not empty array. This is because Index.new is a singleton - a new instance object is not created.

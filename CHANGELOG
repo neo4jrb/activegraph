@@ -1,3 +1,15 @@
+== 0.3.2 / 2009-09-17
+ * Added support for aggregating nodes (#65)
+ * Wrapped Neo4j GraphAlgo AllSimplePath (#70)
+ * Added traversal with traversal position (#71)
+ * Removed DynamicAccessors mixin, replaced by [] operator (#67)
+ * Impl Neo4j.all_nodes (#69)
+ * Upgrated Neo4j jar file to 1.0-b9
+ * The Neo4j#relationship method now allows a filter parameter (#66)
+ * Neo4j.rb now can read database not created by Neo4j.rb - does not require classname property (#63)
+ * REST - added an "all" value for the depth traversal query parameter (#62)
+ * REST - Performance improvments using the Rest Mixin (#60)
+
 == 0.3.1 / 2009-07-25
  * Feature, extension -	find path between given pair of nodes (#58)
  * Fix a messy exception on GET /nodes/UnknownClassName (#57)

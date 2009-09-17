@@ -9,7 +9,7 @@ module Neo4j
     # Wrapper for org.neo4j.api.core.ReturnableEvaluator
     #
     # :api: private
-    class ReturnableEvaluator
+    class ReturnableEvaluator #:nodoc:
       include org.neo4j.api.core.ReturnableEvaluator
 
       def initialize(proc)
@@ -38,7 +38,7 @@ module Neo4j
     # Used in the Neo4j Traversers.
     #
     # :api: private
-    class DepthStopEvaluator
+    class DepthStopEvaluator #:nodoc:
       include org.neo4j.api.core.StopEvaluator
 
       def initialize(depth)
@@ -55,7 +55,7 @@ module Neo4j
     # Each type is a singelton.
     # 
     # :api: private
-    class RelationshipType
+    class RelationshipType #:nodoc:
       include org.neo4j.api.core.RelationshipType
 
       @@names = {}

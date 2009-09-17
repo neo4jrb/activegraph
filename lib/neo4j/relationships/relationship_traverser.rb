@@ -105,7 +105,7 @@ module Neo4j
 
       # Used from RelationshipTraverser when traversing nodes instead of relationships.
       #
-      class RelationshipsEnumeration
+      class RelationshipsEnumeration #:nodoc:
         include Enumerable
 
         def initialize(relationships)

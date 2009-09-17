@@ -5,7 +5,7 @@ module Neo4j
   # 
   # There is one Indexer per Node root class.
   #
-  class Indexer
+  class Indexer  #:nodoc:
     attr_reader :document_updaters, :index_id
     attr_reader :property_indexer # for testing purpose
     
@@ -126,7 +126,7 @@ module Neo4j
 
 
   # :api: private
-  class PropertyIndexer
+  class PropertyIndexer #:nodoc:
     attr_reader :properties
 
     def initialize
@@ -153,7 +153,7 @@ module Neo4j
   # relationship 'd'
   # 
   # :api: private
-  class RelationshipIndexer
+  class RelationshipIndexer #:nodoc:
     attr_reader :rel_type, :properties
     
     def initialize(rel_name, rel_type)

@@ -246,7 +246,7 @@ module Neo4j
   # This class will do nothing when the finish method is called.
   # Finish will only be called when the 'real' transaction does it.
   #
-  class PlaceboTransaction < DelegateClass(Transaction)
+  class PlaceboTransaction < DelegateClass(Transaction)  #:nodoc:
     
     def initialize(tx)
       super(tx)

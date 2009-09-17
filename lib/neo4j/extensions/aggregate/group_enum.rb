@@ -3,7 +3,7 @@ module Neo4j::Aggregate
   # See Neo4j::NodeMixin#aggregates
   #
   # :api: private
-  class GroupEnum
+  class GroupEnum  #:nodoc:
     include Enumerable
 
     def initialize(node)

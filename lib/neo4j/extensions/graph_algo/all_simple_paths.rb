@@ -2,7 +2,7 @@ module Neo4j::GraphAlgo
   require 'neo4j/extensions/graph_algo/graph-algo-0.2-20090815.182816-1.jar'
 
 
-  class ListOfAlternatingNodesAndRelationships
+  class ListOfAlternatingNodesAndRelationships  #:nodoc:
     include Enumerable
 
     def initialize(list)
@@ -24,7 +24,7 @@ module Neo4j::GraphAlgo
     end
   end
 
-  class ListOfNodes
+  class ListOfNodes #:nodoc:
     include Enumerable
 
     def initialize(list)

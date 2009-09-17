@@ -5,7 +5,7 @@ module Neo4j::Aggregate
 # Overrides [] and []= properties, so that we can access aggregated properties or relationships.
 #
 # :api: private
-  class AggregateGroupNode
+  class AggregateGroupNode #:nodoc:
     include Neo4j::NodeMixin
     include Enumerable
 

@@ -9,7 +9,7 @@ module Lucene
   # 
   # Fields has default value IndexInfo::DEFAULTS.
   # 
-  class IndexInfo 
+  class IndexInfo #:nodoc: 
     DEFAULTS = FieldInfo.new({}).freeze
     
     attr_reader :infos, :path
