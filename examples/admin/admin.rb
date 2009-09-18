@@ -2,6 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 require 'neo4j'
 require 'rubygems'
 require 'sinatra/base'
+require 'neo4j/extensions/rest'
 #require 'sinatra'
 
 Sinatra::Application.set(:public, File.dirname(__FILE__) + "/public")
