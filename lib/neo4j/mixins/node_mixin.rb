@@ -299,7 +299,8 @@ module Neo4j
     # dir:: optional default :outgoing (either, :outgoing, :incoming, :both)
     #
     # ==== Returns
-    # An object that mixin the Neo4j::RelationshipMixin representing the given relationship type
+    # An object that mixins the Neo4j::RelationshipMixin representing the given relationship type or nil if there are no relationships.
+    # If there are more then one relationship it will raise an Exception (java exception of type org.neo4j.api.core.NotFoundException)
     #
     # ==== See Also
     # * JavaDoc for http://api.neo4j.org/current/org/neo4j/api/core/Node.html#getSingleRelationship(org.neo4j.api.core.RelationshipType,%20org.neo4j.api.core.Direction)
@@ -308,11 +309,13 @@ module Neo4j
     # ==== Example
     #
     #   person_node.relationship(:address).end_node[:street]
+    #
     # :api: public
     def relationship(rel_name, dir=:outgoing)
       java_dir = _to_java_direction(dir)
       rel_type = Relationships::RelationshipType.instance(rel_name)
       rel = @internal_node.getSingleRelationship(rel_type, java_dir)
+      return nil if rel.nil?
       Neo4j.load_relationship(rel.getId)
     end
 

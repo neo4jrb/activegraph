@@ -39,19 +39,19 @@ describe "RelationshipTraverser" do
       end
     end    
 
-    it "should relationship?(:friends)==false when there are no friends" do
+    it "Neo4j::relationship?(:friends)==false when there are no friends" do
       t = TestNode.new
       t.relationship?(:friends).should == false
     end
 
-    it "should relationship?(:friends)==true when there are is one friend" do
+    it "Neo4j::relationship?(:friends)==true when there are is one friend" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
       t.relationship?(:friends).should == true
     end
 
-    it "should relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
+    it "Neo4j::relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
@@ -59,7 +59,7 @@ describe "RelationshipTraverser" do
       t1.relationship?(:friends, :incoming).should == true
     end
 
-    it "should relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
+    it "Neo4j::relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
@@ -67,7 +67,26 @@ describe "RelationshipTraverser" do
       t1.relationship?(:friends, :outgoing).should == false
     end
 
-   
+    it "Neo4j::relationship should return nil when there are no relationships" do
+      t = TestNode.new
+      t.relationship(:friends, :outgoing).should be_nil
+    end
+
+    it "Neo4j::relationship should return relationship when there is ONE relationships" do
+      t = TestNode.new
+      t1 = TestNode.new
+      t.friends << t1
+      rel = t.relationship(:friends, :outgoing)
+      rel.start_node.should == t
+      rel.end_node.should == t1
+    end
+
+    it "Neo4j::relationship should raise an exception when there is more then ONE relationships" do
+      t = TestNode.new
+      t.friends << TestNode.new << TestNode.new
+      lambda { t.relationship(:friends, :outgoing) }.should raise_error
+    end
+
     it "should find all outgoing nodes" do
       # given
       t1 = TestNode.new
