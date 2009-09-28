@@ -26,6 +26,7 @@ require 'neo4j/relationships/has_n'
 require 'neo4j/relationships/relationship_traverser'
 require 'neo4j/relationships/node_traverser'
 require 'neo4j/relationships/has_list'
+require 'neo4j/relationships/list_node_mixin'
 
 # neo4j
 require 'neo4j/indexer' # this will replace neo4j/events
@@ -40,15 +41,10 @@ require 'neo4j/version'
 
 
 
-# TODO
-# require 'extensions/reindexer'
-
-
-
 # 
 # Set logger used by Neo4j
 # Need to be done first since loading the required files might use this logger
 #
 require 'logger'
-$NEO_LOGGER = Logger.new(STDOUT)
+$NEO_LOGGER = Logger.new(STDOUT)  # todo use a better logger
 $NEO_LOGGER.level = Logger::WARN

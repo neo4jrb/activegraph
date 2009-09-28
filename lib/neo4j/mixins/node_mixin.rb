@@ -83,8 +83,8 @@ module Neo4j
         @internal_node.set_property(name, value)
       end
 
-      if (name != 'classname')  # do not want events on internal properties
-        self.class.indexer.on_property_changed(self, name)   # TODO reuse the event_handler instead !
+      if (name != 'classname') # do not want events on internal properties
+        self.class.indexer.on_property_changed(self, name) # TODO reuse the event_handler instead !
         Neo4j.event_handler.property_changed(self, name, old_value, value)
       end
     end
@@ -211,7 +211,7 @@ module Neo4j
     end
 
 
-    # Same as neo_node_id but returns a String intead of a Fixnum.
+    # Same as neo_node_id but returns a String instead of a Fixnum.
     # Used by Ruby on Rails.
     #
     # :api: public
@@ -275,7 +275,7 @@ module Neo4j
     # The Neo4j::Relationships::RelationshipTraverser is an Enumerable that returns Neo4j::RelationshipMixin objects.
     #
     # ==== Returns
-    # A Neo4j::Relationships::RelationshipTraverser object 
+    # A Neo4j::Relationships::RelationshipTraverser object
     #
     # ==== See Also
     # * Neo4j::Relationships::RelationshipTraverser
@@ -323,7 +323,7 @@ module Neo4j
     # Returns true if there are one or more relationships from this node to other nodes
     # with the given relationship.
     # It will not return true only because the relationship is defined.
-    #  
+    #
     # ==== Parameters
     # rel_name<#to_s>:: the key and value to be set
     # dir:: optional default :outgoing (either, :outgoing, :incoming, :both)
@@ -342,17 +342,16 @@ module Neo4j
 
     # :api: private
     def _to_java_direction(dir)
-      java_dir =
-              case dir
-                when :outgoing
-                  org.neo4j.api.core.Direction::OUTGOING
-                when :incoming
-                  org.neo4j.api.core.Direction::INCOMING
-                when :both
-                  org.neo4j.api.core.Direction::BOTH
-                else
-                  raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
-              end
+      case dir
+        when :outgoing
+          org.neo4j.api.core.Direction::OUTGOING
+        when :incoming
+          org.neo4j.api.core.Direction::INCOMING
+        when :both
+          org.neo4j.api.core.Direction::BOTH
+        else
+          raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
+      end
     end
 
     # all creation of relationships uses this method
@@ -392,7 +391,7 @@ module Neo4j
     # Updates the index for this node.
     # This method will be automatically called when needed
     # (a property changed or a relationship was created/deleted)
-    # 
+    #
     # @api private
     def update_index
       self.class.indexer.index(self)
@@ -403,7 +402,7 @@ module Neo4j
 
 
     #
-    # Adds classmethods in the ClassMethods module
+    # Adds class methods in the ClassMethods module
     #
     def self.included(c)
       # all subclasses share the same index, declared properties and index_updaters
@@ -581,7 +580,7 @@ module Neo4j
       #     index :name
       #   end
       #
-      # :api: public     
+      # :api: public
       def index(*rel_type_props)
         if rel_type_props.size == 2 and rel_type_props[1].kind_of?(Hash)
           rel_type_props[1].each_pair do |key, value|
@@ -630,7 +629,7 @@ module Neo4j
 
         updater_clazz = self
 
-        rel_type = relationships_info[rel_name.to_sym][:type]  # this or the other node we index ?
+        rel_type = relationships_info[rel_name.to_sym][:type] # this or the other node we index ?
         rel_type ||= rel_name # if not defined (in a has_n) use the same name as the rel_name
 
         # add index on the trigger class and connect it to the updater_clazz
@@ -679,17 +678,18 @@ module Neo4j
       end
 
 
-
       #  Specifies a relationship to a linked list of nodes.
-      #  Each list item class may (but not neccessarly) use the belongs_to_list
+      #  Each list item class may (but not necessarily  use the belongs_to_list
       # in order to specify which ruby class should be loaded when a list item is loaded.
       #
       # :api: public
-      def has_list(rel_type)
+      def has_list(rel_type, params = {})
+        counter = params[:counter] == true
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relationships::HasList.new(self,'#{rel_type.to_s}', &block)
+                        Relationships::HasList.new(self,'#{rel_type.to_s}',#{counter}, &block)
                     end},  __FILE__, __LINE__)
+        Neo4j.event_handler.add Relationships::HasList
         relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
 
@@ -701,9 +701,9 @@ module Neo4j
         relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
 
-      
+
       # Creates a new outgoing relationship.
-      # 
+      #
       # :api: private
       def new_relationship(rel_name, internal_relationship)
         relationships_info[rel_name.to_sym][:relationship].new(internal_relationship) # internal_relationship is a java neo object
@@ -736,7 +736,7 @@ module Neo4j
       #
       # TODO: if the DynamicMixin is used it should return somthing more flexible
       # since we do not know which property a class has.
-      # 
+      #
       # @api private
       def create_value_class
         # the name of the class we want to create
