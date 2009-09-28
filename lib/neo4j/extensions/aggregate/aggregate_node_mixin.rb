@@ -11,22 +11,11 @@ module Neo4j::Aggregate
   #
   # This mixin includes the Enumerable mixin.
   #
-  # ==== Example - use the mixin
-  #
-  # Example how to create your own class that will provide aggregation of nodes.
-  #
-  #   class MyAggregatedNode
-  #      include Neo4j::NodeMixin
-  #      include Neo4j::Aggregate::NodeMixin
-  #   end
-  #
-  # This class can create group nodes that will be connected as outgoing relationships from it.
-  #
   # ==== Example - group by one property
   #
   # Let say we have nodes with properties :colour and we want to group them by colour:
   #
-  #   a = MyAggregatedNode.new
+  #   a = AggregateNode.new
   #
   #   a.aggregate(nodes).group_by(:colour)
   #
@@ -56,7 +45,7 @@ module Neo4j::Aggregate
   #  Let say way want to have group which include a range of values.
   #  Example - group by an age range, 0-4, 5-9, 10-14 etc...
   #
-  #   a = MyAggregatedNode.new
+  #   a = AggregateNode.new
   #   a.aggregate(an enumeration of nodes).group_by(:age).of_value{|age| age / 5}
   #
   #   # traverse all people in age group 10-14   (3 maps to range 10-14)
@@ -95,7 +84,7 @@ module Neo4j::Aggregate
   # The aggregate node mixin implements the << operator that allows you to append nodes to the aggregate and the
   # appended node will be put in the correct group.
   #
-  #   a = MyAggregatedNode.new
+  #   a = AggregateNode.new
   #   a.aggregate.group_by(:age).of_value{|age| age / 5}
   #
   #   a << node1 << node2
@@ -130,11 +119,11 @@ module Neo4j::Aggregate
   #
   # ==== Example - aggregating over another aggregation
   #
-  #   a = MyAggregatedNode.new
+  #   a = AggregateNode.new
   #   a.aggregate.group_by(:colour)
   #   a << node1 << node2
   #
-  #   b = MyAggregatedNode.new
+  #   b = AggregateNode.new
   #   b.aggregate.group_by(:age)
   #   node3[:colour] = 'green'; node3[:age] = 10
   #   node4[:colour] = 'red';   node3[:age] = 11
@@ -152,7 +141,7 @@ module Neo4j::Aggregate
   # This is done by registering the aggregate dsl method as an event listener
   #
   # Here is an example that update the aggregate a on all nodes of type MyNode
-  #   a = MyAggregatedNode.new
+  #   a = AggregateNode.new
   #
   #   # the aggreate will get notified when nodes of type MyNode get changed
   #   a.aggregate(MyNode).group_by(:colour)
@@ -242,7 +231,7 @@ module Neo4j::Aggregate
   #  a[:rev] => ["good", "good", "bad"]
   #  a[:rev]["good"] => 2
   #  a[:rev]["bad"] => 1
-  module NodeMixin
+  module AggregateNodeMixin
     include Neo4j::NodeMixin
     property :aggregate_size  # number of groups this aggregate contains
     include Enumerable
