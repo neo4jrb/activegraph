@@ -18,7 +18,8 @@ describe "Aggregates, on each node" do
     stop
   end
 
-  it "should create a new group for each node" do  
+  it "should create a new group for each node" do
+    pending "work in progress"
     nodes = []
     4.times {nodes << Neo4j::Node.new}
     nodes[0][:colour] = 'red';  nodes[0][:name] = "a"; nodes[0][:age] = 0
