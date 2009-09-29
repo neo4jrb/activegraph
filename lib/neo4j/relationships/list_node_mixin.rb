@@ -1,10 +1,40 @@
 module Neo4j::NodeMixin
 
+  # Returns true if this nodes belongs to a list of the given name
+  #
   def list?(list_name)
     regexp = Regexp.new "_list_#{list_name}"
     relationships.both.find { |rel| regexp.match(rel.relationship_type.to_s) } != nil
   end
 
+  # Returns one or more list of the given list_name and list_node.
+  # If the optional list_node parameter is given the specific list belonging to that list node will be returned (or nil)
+  # If only the list_name parameter is given the first list matching the given list_name will be returned.
+  # (There might be several list of the same name but from different list nodes.)
+  #
+  # ==== Returns
+  #
+  # The node but with the extra instance methods
+  # * next - the next node in the list
+  # * prev - the previous node in the list
+  # * head - the head node (the node that has the has_list method)
+  # * size (if the size optional parameter is given in the has_list class method)
+  #
+  # ==== Example
+  #  class Foo
+  #    include Neo4j::NodeMixin
+  #    has_list :baar
+  #  end
+  #
+  #  f = Foo.new
+  #  n1 = Neo4j::Node.new
+  #  n2 = Neo4j::Node.new
+  #  f.baar << n1 << n2
+  #
+  #  n2.list(:baar).next # => n1
+  #  n2.list(:baar).prev # => f
+  #  n2.list(:baar).head # => f
+  #
   def list(list_name, list_node = nil)
     if list_node
       list_id = "_list_#{list_name}_#{list_node.neo_node_id}"
@@ -17,6 +47,10 @@ module Neo4j::NodeMixin
   end
 
 
+  # Returns an array of lists with the given names that this nodes belongs to.
+  # Expects a block to yield for each found list
+  # That block will be given one parameter - the node with the extra method (see #list method)
+  #
   def lists(*list_names)
     list_names.collect! {|n| n.to_sym}
     

@@ -4,10 +4,11 @@ module Neo4j
     class HasList
       include Enumerable
       extend Neo4j::TransactionalMixin
+      attr_reader :relationship_type
 
       def initialize(node, list_name, counter, &filter)
         @node = node
-        @type = "_list_#{list_name}_#{node.neo_node_id}"
+        @relationship_type = "_list_#{list_name}_#{node.neo_node_id}"
         if (counter)
           @counter_id = "_#{list_name}_size".to_sym
         end
@@ -29,18 +30,18 @@ module Neo4j
       # :api: public
       def <<(other)
         # does node have a relationship ?
-        if (@node.relationship?(@type))
+        if (@node.relationship?(@relationship_type))
           # get that relationship
-          first = @node.relationships.outgoing(@type).first
+          first = @node.relationships.outgoing(@relationship_type).first
 
           # delete this relationship
           first.delete
           old_first = first.other_node(@node)
-          @node.relationships.outgoing(@type) << other
-          other.relationships.outgoing(@type) << old_first
+          @node.relationships.outgoing(@relationship_type) << other
+          other.relationships.outgoing(@relationship_type) << old_first
         else
           # the first node will be set
-          @node.relationships.outgoing(@type) << other
+          @node.relationships.outgoing(@relationship_type) << other
         end
         if @counter_id
           @node[@counter_id] ||= 0
@@ -58,8 +59,8 @@ module Neo4j
       end
 
       def first
-        return nil unless @node.relationship?(@type, :outgoing)
-        @node.relationship(@type, :outgoing).end_node
+        return nil unless @node.relationship?(@relationship_type, :outgoing)
+        @node.relationship(@relationship_type, :outgoing).end_node
       end
 
       def each
@@ -75,7 +76,7 @@ module Neo4j
         traverser_order = org.neo4j.api.core.Traverser::Order::BREADTH_FIRST
         returnable_evaluator = org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE
         types_and_dirs = []
-        types_and_dirs << RelationshipType.instance(@type)
+        types_and_dirs << RelationshipType.instance(@relationship_type)
         types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
         @node.internal_node.traverse(traverser_order, stop_evaluator,  returnable_evaluator, types_and_dirs.to_java(:object)).iterator
       end

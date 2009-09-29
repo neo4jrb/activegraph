@@ -17,7 +17,7 @@ module Neo4j
     def on_node_created(node)
       tx = TxNodeCreated.new
       uuid = Neo4j.create_uuid
-      node[:uuid] = uuid   # TODO should use a better UUID
+      node[:uuid] = uuid # TODO should use a better UUID
       tx[:tracked_neo_id] = node.neo_node_id
       tx[:tracked_classname] = node.class.to_s
       tx[:created] = true
@@ -41,7 +41,7 @@ module Neo4j
     end
 
     def on_property_changed(node, key, old_value, new_value)
-      return if "uuid" == key.to_s  # do not track uuid
+      return if "uuid" == key.to_s # do not track uuid
       tx = TxNode.new
       tx[:uuid] = node[:uuid]
       tx[:property_changed] = true
@@ -53,6 +53,8 @@ module Neo4j
     end
 
     def on_relationship_created(relationship)
+      # check so that it was no this method that caused this event
+      return if tx_nodes.relationship_type.to_sym == relationship.relationship_type.to_sym
       tx = TxRelationshipCreatedNode.new
       uuid = Neo4j.create_uuid
       tx[:uuid] = uuid
@@ -67,6 +69,8 @@ module Neo4j
 
 
     def on_relationship_deleted(relationship)
+      # check so that it was no this method that caused this event
+      return if tx_nodes.relationship_type.to_sym == relationship.relationship_type.to_sym
       tx = TxNode.new
       uuid = Neo4j.create_uuid
       tx[:uuid] = uuid
@@ -84,12 +88,14 @@ module Neo4j
     # It will follow the linked list of tx nodes until it founds a new transaction.
     def tx_nodes_belonging_to_same_tx(from_tx_node)
       nodes_in_same_tx = []
-      nodes_in_same_tx << from_tx_node  # always include the first one
+      nodes_in_same_tx << from_tx_node # always include the first one
 
       # include all other nodes until we find a new transaction marker
       curr_node = from_tx_node
-      while (curr_node.relationship?(:tx_nodes, :outgoing)) do
-        curr_node = curr_node.relationships.outgoing(:tx_nodes).first.end_node
+
+      while (true) do
+        curr_node = curr_node.list(:tx_nodes).next
+        break if curr_node.nil?
         break if curr_node[:tx_finished]
         nodes_in_same_tx << curr_node
       end
@@ -97,7 +103,7 @@ module Neo4j
     end
 
     def create_node(tx_node)
-      classname =  tx_node[:tracked_classname]
+      classname = tx_node[:tracked_classname]
       clazz = classname.split("::").inject(Kernel) do |container, name|
         container.const_get(name.to_s)
       end
@@ -231,12 +237,7 @@ module Neo4j
 
     # Find a TxNodeCreate node in the latest transaction with the given uuid
     def find_tx(value, key = :uuid) # :nodoc:
-      curr_node =  self
-      while (curr_node.relationship?(:tx_nodes, :outgoing)) do
-        curr_node = curr_node.relationships.outgoing(:tx_nodes).first.end_node
-        next if curr_node[:classname] != TxNodeCreated.to_s
-        return curr_node if value == curr_node[key]
-      end
+      tx_nodes.find {|node| node[:classname] == TxNodeCreated.to_s && node[key] == value}
     end
 
     # Create a new a neo4j node given a cluster wide UUID (instead of neo_node_id)
@@ -261,7 +262,7 @@ module Neo4j
         neo_instance.ref_node.relationships.outgoing(:tx_node_list) << TxNodeList.new
       end
       # cache this so we do not have to look it up always
-      @tx_node_list = neo_instance.ref_node.relationships.outgoing(:tx_node_list).nodes.first 
+      @tx_node_list = neo_instance.ref_node.relationships.outgoing(:tx_node_list).nodes.first
       Neo4j.event_handler.add(@tx_node_list)
     end
 
@@ -320,7 +321,6 @@ module Neo4j
       "TxNode: " + props.inspect
     end
   end
-
 
 
   #-------------------------------------------------

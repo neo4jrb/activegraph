@@ -729,13 +729,10 @@ module Neo4j
       end
 
 
-      # Creates a new value object class (a Struct) represeting this class.
+      # Creates a new value object class (a Struct) representing this class.
       #
       # The struct will have the Ruby on Rails method: model_name and
       # new_record? so that it can be used for restful routing.
-      #
-      # TODO: if the DynamicMixin is used it should return somthing more flexible
-      # since we do not know which property a class has.
       #
       # @api private
       def create_value_class
