@@ -19,7 +19,7 @@ module Neo4j
       # :api: public
       def all
         index_node = IndexNode.instance
-        index_node.relationships.outgoing(root_class)
+        index_node.relationships.outgoing(self)
       end
 
     end
@@ -53,7 +53,9 @@ module Neo4j
 
     def on_node_created(node)
       # we have to avoid connecting to our self
-      connect(node) unless self == node
+      unless self == node
+        node.class.ancestors.grep(Class).each{|p| connect(node, p) if p.respond_to?(:all)}
+      end
     end
 
     def self.on_neo_started(neo_instance)
