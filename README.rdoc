@@ -653,6 +653,44 @@ Example
   # prints first employee2 and then employee1
   company.employees.each {|employee| puts employee.name}
 
+If the optional parameter :size is given then the list will contain a size counter.
+
+Example
+
+  class Company
+    has_list :employees, :counter => true
+  end
+
+  company = Company.new
+  company.employees << employee1 << employee2
+  company.employees.size # => 2
+
+==== Deleted List Items
+
+The list will be updated if an item is deleted in a list.
+Example:
+
+  company = Company.new
+  company.employees << employee1 << employee2 << employee3
+  company.employees.size # => 3
+
+  employee2.delete
+
+  company.employees.to_a # => [employee1, employee3]
+  company.employees.size # => 2
+
+
+==== Memberships in lists
+
+ Each node in a list knows which lists it belongs to the next and previous item in the list
+ Example:
+
+   employee1.list(:employees).next # => employee2
+   employee2.list(:employees).next = Neo4j::Node.new
+   employee1.list(:employees).size # => 2 # the size counter is available if the :counter parameter is given as shown above
+
+
+(The list method takes an optional extra parameter - the list node. Needed if one node is member of more then one list with the same name).
 
 ==== Traversing Relationships
 

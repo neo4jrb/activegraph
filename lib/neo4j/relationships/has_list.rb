@@ -1,6 +1,10 @@
 module Neo4j
 
   module Relationships
+
+    # Provides appending and traversing nodes that are linked together in a list with
+    # relationships to the next list item.
+    #
     class HasList
       include Enumerable
       extend Neo4j::TransactionalMixin

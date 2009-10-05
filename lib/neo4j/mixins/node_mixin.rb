@@ -678,9 +678,52 @@ module Neo4j
       end
 
 
-      #  Specifies a relationship to a linked list of nodes.
-      #  Each list item class may (but not necessarily  use the belongs_to_list
+      # Specifies a relationship to a linked list of nodes.
+      # Each list item class may (but not necessarily  use the belongs_to_list
       # in order to specify which ruby class should be loaded when a list item is loaded.
+      #
+      # Example
+      #
+      #  class Company
+      #    has_list :employees
+      #  end
+      #
+      #  company = Company.new
+      #  company.employees << employee1 << employee2
+      #
+      #  # prints first employee2 and then employee1
+      #  company.employees.each {|employee| puts employee.name}
+      #
+      # ===== Size Counter
+      # If the optional parameter :size is given then the list will contain a size counter.
+      #
+      # Example
+      #
+      #  class Company
+      #    has_list :employees, :counter => true
+      #  end
+      #
+      #  company = Company.new
+      #  company.employees << employee1 << employee2
+      #  company.employees.size # => 2
+      #
+      # ==== Deleted List Items
+      #
+      # The list will be updated if an item is deleted in a list.
+      # Example:
+      #
+      #  company = Company.new
+      #  company.employees << employee1 << employee2 << employee3
+      #  company.employees.size # => 3
+      #
+      #  employee2.delete
+      #
+      #  company.employees.to_a # => [employee1, employee3]
+      #  company.employees.size # => 2
+      #
+      # ===== List Items Memberships
+      #
+      #  For deciding which lists a node belongs to see the Neo4j::NodeMixin#list method
       #
       # :api: public
       def has_list(rel_type, params = {})
