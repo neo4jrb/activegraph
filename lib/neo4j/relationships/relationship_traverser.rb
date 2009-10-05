@@ -56,7 +56,9 @@ module Neo4j
       #
       # :api: public
       def <<(other_node)
-        @node._create_relationship(@type.to_s, other_node)
+        source,target = @node, other_node
+        source,target = target,source if @direction == org.neo4j.api.core.Direction::INCOMING
+        source._create_relationship(@type.to_s, target)
       end
 
       def empty?

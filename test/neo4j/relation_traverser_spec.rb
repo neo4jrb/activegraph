@@ -43,7 +43,6 @@ describe Neo4j::Relationships::RelationshipTraverser do
   describe 'n1.relationships.incoming(:foo) << n2' do
 
     it "should append n2 as incoming node to n1" do
-      pending "see lighthouse ticket 80, http://neo4j.lighthouseapp.com/projects/15548-neo4j/tickets/80-n1relationshipsincomingfoo-n2-does-not-work-as-expected"
       n1 = Neo4j::Node.new
       n2 = Neo4j::Node.new
 
