@@ -19,7 +19,7 @@ describe "Aggregates, on each node" do
   end
 
   it "should create a new group for each node" do
-    pending "work in progress"
+    #pending "work in progress"
     nodes = []
     4.times {nodes << Neo4j::Node.new}
     nodes[0][:colour] = 'red';  nodes[0][:name] = "a"; nodes[0][:age] = 0
@@ -34,10 +34,8 @@ describe "Aggregates, on each node" do
     agg1.aggregate_each(nodes).group_by(:colour, :name).execute
 
     # then
-
     nodes[0].aggregate_groups.to_a.size.should == 1
     g1 = nodes[0].aggregate_groups.to_a[0]
-    puts "G1 = #{g1.inspect}"
     g1.should include('red', 'a')
     g1.to_a.size.should == 2
     g1[:age].should == 0 # group for @nodes[0]
@@ -45,11 +43,11 @@ describe "Aggregates, on each node" do
     agg1.should include(g1)
     agg1.to_a.size.should == 4
     agg1.aggregate_size.should == 4
-    agg1.each {|x| puts "VALUE #{x.props.inspect}"}
+    agg1.map{|group| group[:age]}.should include(0,1,2,3)
   end
 
   it "should delete group if the node is deleted" do
-    pending
+    pending "Need to fix lighthouse ticket 81 - Cascade delete on has_n, had_one and has_list first" 
 
     nodes = []
     4.times {nodes << Neo4j::Node.new}
@@ -58,8 +56,8 @@ describe "Aggregates, on each node" do
     nodes[2][:colour] = 'red';  nodes[2][:name] = "c"; nodes[2][:age] = 2
     nodes[3][:colour] = 'blue'; nodes[3][:name] = "d"; nodes[3][:age] = 3
 
-    agg1 = AggregateNode.new
-    agg1.aggregate_each(nodes).group_by(:colour, :name)
+    agg1 = AggregateEachNode.new
+    agg1.aggregate_each(nodes).group_by(:colour, :name).execute # TODO should not be needed to do execute
     agg1.to_a.size.should == 4
 
     # when
