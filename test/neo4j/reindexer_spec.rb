@@ -135,7 +135,7 @@ describe "Reindexer (NodeMixin#all)" do
     TestNode.all.nodes.to_a.should include(t2)
   end
 
-  it "should return subclasses instances as well" do
+  it "should return subclasses instances if subclassed" do
     class A
       include Neo4j::NodeMixin
     end
@@ -149,7 +149,9 @@ describe "Reindexer (NodeMixin#all)" do
 
     # then
     A.all.to_a.size.should == 2
-    B.all.nodes.to_a.should include(a, b)
+    A.all.nodes.to_a.should include(a, b)
+    B.all.to_a.size.should == 1
+    B.all.nodes.to_a.should include(b)
   end
 
 end
