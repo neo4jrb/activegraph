@@ -77,6 +77,16 @@ describe 'NodeMixin#initialize' do
     node2 = TestNode4.new(node1.internal_node)
     node1.internal_node.should == node2.internal_node
   end
+
+  it "should accept a block and pass self as parameter"  do
+    class TestNode5
+      include Neo4j::NodeMixin
+      property :foo
+    end
+
+    node1 = TestNode5.new {|n| n.foo = 'hi'}
+    node1.foo.should == 'hi'
+  end
 end
 
 

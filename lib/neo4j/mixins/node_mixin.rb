@@ -35,6 +35,7 @@ module Neo4j
         init_without_node
         init_node(*args) if self.respond_to?(:init_node)
       end
+      yield self if block_given?
       # must call super with no arguments so that chaining of the initialize method works
       super()
     end
