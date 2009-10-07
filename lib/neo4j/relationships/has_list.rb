@@ -10,12 +10,13 @@ module Neo4j
       extend Neo4j::TransactionalMixin
       attr_reader :relationship_type
 
-      def initialize(node, list_name, counter, &filter)
+      def initialize(node, list_name, counter, cascade_delete, &filter)
         @node = node
         @relationship_type = "_list_#{list_name}_#{node.neo_node_id}"
         if (counter)
           @counter_id = "_#{list_name}_size".to_sym
         end
+        @cascade_delete = cascade_delete if cascade_delete
       end
 
       def size
@@ -26,7 +27,7 @@ module Neo4j
       # called by the event handler
       def self.on_node_deleted(node) #:nodoc:
         # check if node is member of one or more lists
-        node.lists{|list_item| list_item.prev.next = list_item.next; list_item.size -= 1}
+        node.lists{|list_item| list_item.prev.next = list_item.next if list_item.prev; list_item.size -= 1}
       end
 
       # Appends one node to the end of the list
@@ -34,6 +35,7 @@ module Neo4j
       # :api: public
       def <<(other)
         # does node have a relationship ?
+        new_rel = []
         if (@node.relationship?(@relationship_type))
           # get that relationship
           first = @node.relationships.outgoing(@relationship_type).first
@@ -41,11 +43,18 @@ module Neo4j
           # delete this relationship
           first.delete
           old_first = first.other_node(@node)
-          @node.relationships.outgoing(@relationship_type) << other
-          other.relationships.outgoing(@relationship_type) << old_first
+          new_rel << (@node.relationships.outgoing(@relationship_type) << other)
+          new_rel << (other.relationships.outgoing(@relationship_type) << old_first)
         else
           # the first node will be set
-          @node.relationships.outgoing(@relationship_type) << other
+          new_rel << (@node.relationships.outgoing(@relationship_type) << other)
+        end
+
+        if @cascade_delete
+          # if cascade_delete_incoming only one node will be deleted, the node id is stored in that property
+          # if cascade_delete_outgoing all nodes will be deleted when
+          value = @cascade_delete == :_cascade_delete_outgoing ? true : @node.neo_node_id
+          new_rel.each {|rel| rel[@cascade_delete] = value}
         end
         if @counter_id
           @node[@counter_id] ||= 0

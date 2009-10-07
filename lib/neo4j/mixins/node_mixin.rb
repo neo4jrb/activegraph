@@ -256,7 +256,17 @@ module Neo4j
     # :api: public
     def delete
       Neo4j.event_handler.node_deleted(self)
-      relationships.both.each {|r| r.delete}
+      relationships.outgoing.each { |r| r.end_node.delete if r[:_cascade_delete_outgoing]}
+      
+      relationships.both.each do |r|
+        r.delete
+        if r[:_cascade_delete_incoming]
+          node_id = r[:_cascade_delete_incoming]
+          node = Neo4j.load(node_id)
+          found = node.relationships.both.find{|r| r[:_cascade_delete_incoming]}
+          node.delete unless found
+        end
+      end
       @internal_node.delete
       self.class.indexer.delete_index(self)
     end
@@ -729,9 +739,20 @@ module Neo4j
       # :api: public
       def has_list(rel_type, params = {})
         counter = params[:counter] == true
+        cascade_delete = case params[:cascade_delete]
+          when nil
+            "nil"
+          when :outgoing
+            ":_cascade_delete_outgoing"
+          when :incoming
+            ":_cascade_delete_incoming"
+          else
+            raise "Expected either :outgoing or :incoming cascade delete parameter for has list"
+        end
+
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relationships::HasList.new(self,'#{rel_type.to_s}',#{counter}, &block)
+                        Relationships::HasList.new(self,'#{rel_type.to_s}',#{counter},#{cascade_delete}, &block)
                     end},  __FILE__, __LINE__)
         Neo4j.event_handler.add Relationships::HasList
         relationships_info[rel_type] = Relationships::RelationshipInfo.new

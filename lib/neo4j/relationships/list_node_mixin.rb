@@ -93,7 +93,7 @@ module Neo4j::NodeMixin
         next_rel = relationships.outgoing(list_id).first
         # delete the relationship if exists
         next_rel.delete if (next_rel.nil?)
-        relationships.outgoing(list_id) << new_next
+        relationships.outgoing(list_id) << new_next unless new_next.nil?
         nil
       end
 
@@ -109,7 +109,7 @@ module Neo4j::NodeMixin
         prev_rel = relationships.incoming(list_id).first
         # delete the relationship if exists
         prev_rel.delete if (prev_rel.nil?)
-        relationships.outgoing(list_id) << new_prev
+        relationships.outgoing(list_id) << new_prev unless new_prev.nil?
         nil
       end
     end
