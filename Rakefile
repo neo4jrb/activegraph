@@ -108,55 +108,19 @@ Rake::GemPackageTask.new(spec) do |pkg|
 end
  
 # also keep the gemspec up to date each time we package a tarball or gem
-task :package => ['gem:update_gemspec']
-task :gem => ['gem:update_gemspec']
+#task :package => ['gem:update_gemspec']
+#task :gem => ['gem:update_gemspec']
  
 namespace :gem do
  
   desc "Run :package and install the .gem locally"
-  task :install => [:update_gemspec, :package] do
+  task :install => [:package] do
     sh %{gem install --local pkg/neo4j-#{spec.version}.gem --no-rdoc --no-ri}
   end
  
   desc "Run :clean and uninstall the .gem"
   task :uninstall => :clean do
-    sh %{sudo gem uninstall neo4j}
-  end
- 
-  # Thanks to the Merb project for this code.
-  desc "Update Github Gemspec"
-  task :update_gemspec do
-    skip_fields = %w(new_platform original_platform)
-    integer_fields = %w(specification_version)
- 
-    result = "# WARNING : RAKE AUTO-GENERATED FILE. DO NOT MANUALLY EDIT!\n"
-    result << "# LAST UPDATED : #{Time.now.to_s}\n#\n"
-    result << "# RUN : 'rake gem:update_gemspec'\n\n"
-    result << "Gem::Specification.new do |s|\n"
-    spec.instance_variables.each do |ivar|
-      value = spec.instance_variable_get(ivar)
-      name = ivar.split("@").last
-      next if skip_fields.include?(name) || value.nil? || value == "" || (value.respond_to?(:empty?) && value.empty?)
-      if name == "dependencies"
-        value.each do |d|
-          dep, *ver = d.to_s.split(" ")
-          result << " s.add_dependency #{dep.inspect}, #{ver.join(" ").inspect.gsub(/[()]/, "")}\n"
-        end
-      else
-        case value
-        when Array
-          value = name != "files" ? value.inspect : value.inspect.split(",").join(",\n")
-        when String
-          value = value.to_i if integer_fields.include?(name)
-          value = value.inspect
-        else
-          value = value.to_s.inspect
-        end
-        result << " s.#{name} = #{value}\n"
-      end
-    end
-    result << "end"
-    File.open(File.join(File.dirname(__FILE__), "#{spec.name}.gemspec"), "w"){|f| f << result}
+    sh %{gem uninstall neo4j}
   end
  
 end
