@@ -1156,6 +1156,19 @@ Neo4j supports full text search by setting the tokenized property to true on an 
     index comment, :tokenized => true
   end
 
+=== Keyword searches
+
+If we want to search for exact matches, for example languages codes like 'se', 'it' we must make sure
+that the lucene does not filters away stop words like 'it'
+
+   class LangCodes
+     include Neo4j::NodeMixin
+     property :code
+     index :code, :analyzer => :keyword
+   end
+
+By using the keyword analyzer (instead of the default StandardAnalyzer) we make sure that lucene index everything.
+For more info, see the Lucene chapter below.
 
 === Unmarshalling
 
@@ -1536,6 +1549,35 @@ As shown above you can set field infos like this
 Or you can set several properties like this:
 
   index.field_infos[:id] = {:type => Fixnum, :store => true}
+
+==== Tokenized
+
+Field infos can be used to specify if the
+If this value is not set then the entire content of the field will be considered as a single term.
+
+Example
+
+  index.field_infos[:text][:tokenized] = true
+
+If not specified it is set to 'false'
+
+==== Analyzer
+
+Field infos can also be used to set which analyzer should be used.
+If none is specified then the default analyzer - org.apache.lucene.analysis.standard.StandardAnalyzer (:standard) will be used.
+
+
+  index.field_infos[:code][:tokenized] = false
+  index.field_infos[:code][:analyzer] = :standard
+
+The following analyzer is supported
+ * :standard (default) - org.apache.lucene.analysis.standard.StandardAnalyzer
+ * :keyword - org.apache.lucene.analysis.KeywordAnalyzer
+ * :simple  - org.apache.lucene.analysis.SimpleAnalyzer
+ * :whitespace - org.apache.lucene.analysis.WhitespaceAnalyzer
+ * :stop       - org.apache.lucene.analysis.StopAnalyzer
+
+For more info, check the lucene documentation, http://lucene.apache.org/java/docs/
 
 
 === Simple Queries

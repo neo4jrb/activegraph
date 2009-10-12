@@ -185,7 +185,7 @@ describe "Find with sorting" do
   it "should not sort when not specified to do so" do
     persons = Person7.find(:city => 'malmoe')
     persons.size.should == 4
-    sorted =  persons[0] == @anders &&
+    sorted = persons[0] == @anders &&
             persons[1] == @andreas &&
             persons[2] == @kalle &&
             persons[3] == @sune
@@ -454,3 +454,48 @@ describe "Find nodes using Lucene" do
 
 end
 
+describe "NodeMixin#index - specifying index analyzer for lucene" do
+  before(:all) do
+    start
+  end
+
+  before(:all) do
+    stop
+  end
+
+
+  it "should allow to set a keyword analyzer" do
+    Neo4j::Transaction.new
+    
+    class NeoLang
+      include Neo4j::NodeMixin
+      property :code, :name, :available
+      index :code, :tokenized => true, :analyzer => :keyword
+      index :name, :tokenized => true
+      index :available, :tokenized => true
+
+      def to_s
+        "#{self.code}(#{self.name})"
+      end
+    end
+
+    node = NeoLang.new
+    node.code = 'en'
+    node.name = "en"
+
+    node = NeoLang.new
+    node.code = 'it'
+    node.name = "it"
+    node.available = 1
+
+    Neo4j::Transaction.finish
+    Neo4j::Transaction.new
+        
+    NeoLang.find(:code=>'en').should_not be_empty
+    NeoLang.find(:code=>'it').should_not be_empty
+    NeoLang.find("code:it").should_not be_empty
+    NeoLang.find("name:it").should be_empty
+    Neo4j::Transaction.finish
+    
+  end
+end

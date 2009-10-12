@@ -19,7 +19,7 @@ describe Index, '(one uncommited document)' do
   it "should be empty after clear" do
     # when 
     @index.clear
-    
+
     # then
     @index.uncommited.size.should == 0
   end
@@ -27,11 +27,11 @@ describe Index, '(one uncommited document)' do
   it "should be empty after commit" do
     # when 
     @index.commit
-    
+
     # then
     @index.uncommited.size.should == 0
   end
-  
+
   it "contains one uncommited document" do
     # then
     @index.uncommited.size.should == 1
@@ -45,13 +45,13 @@ describe Index, '(no uncommited documents)' do
   before(:each) do
     setup_lucene
     @index = Index.new 'myindex'
-    @index.clear    
+    @index.clear
   end
 
   it "has a to_s method with which says: index path and no uncommited documents" do
     @index.to_s.should == "Index [path: 'myindex', 0 documents]"
   end
-  
+
   it "has no uncommited documents" do
     @index.uncommited.size.should == 0
   end
@@ -62,7 +62,7 @@ describe Index, ".find (range)" do
   before(:each) do
     setup_lucene
     @index = Index.new('some_index')
-    @index.field_infos[:id][:type] = Fixnum    
+    @index.field_infos[:id][:type] = Fixnum
     @index.field_infos[:value][:type] = Fixnum
   end
 
@@ -77,12 +77,12 @@ describe Index, ".find (range)" do
 
     # when
     result = @index.find(:value => 2..4)
-    
+
     # then
-    result.size.should == 3    
+    result.size.should == 3
     result.should include(@docs[2], @docs[3], @docs[4])
   end
-  
+
   it "should find docs using an inclusive range query with padding 0's" do
     # given
     @index << {:id => 3, :value=>3}
@@ -95,12 +95,12 @@ describe Index, ".find (range)" do
 
     # when
     result = @index.find(:value => 30..35)
-    
+
     # then
-    result.size.should == 2    
+    result.size.should == 2
     result.should include(doc30, doc32)
   end
-  
+
 end
 
 
@@ -109,7 +109,7 @@ describe Index, ".find (with TOKENIZED index)" do
     setup_lucene
     @index = Index.new('my index')
     @index.field_infos[:name][:tokenized] = true
-    
+
     @index << {:id => "1", :name => 'hej hopp', :name2=>'hej hopp'}
     @index << {:id => "2", :name => 'hello world', :name2=>'hej hopp'}
     @index << {:id => "3", :name => 'hello there', :name2=>'hej hopp'}
@@ -124,8 +124,8 @@ describe Index, ".find (with TOKENIZED index)" do
   it "should find indexed documents using the tokenized field" do
     result = @index.find(:name=>"hello")
     result.size.should == 3
-    result.should include(@doc2,@doc3, @doc4)
-    
+    result.should include(@doc2, @doc3, @doc4)
+
     result = @index.find(:name=>"world")
     result.size.should == 1
     result.should include(@doc2)
@@ -134,9 +134,9 @@ describe Index, ".find (with TOKENIZED index)" do
   it "should find indexed documents using the tokenized field" do
     result = @index.find("name:he*")
     result.size.should == 4
-    result.should include(@doc1,@doc2, @doc3)
+    result.should include(@doc1, @doc2, @doc3)
   end
-  
+
   it "should not find stopwords like 'there'" do
     result = @index.find(:name=>"there")
     result.size.should == 0
@@ -163,14 +163,14 @@ describe Index, "#find (with string queries)" do
     @doc4 = @index.uncommited["4"]
     @index.commit
   end
-  
-  
+
+
   it "should find a doc by only using its id, index.find('1')" do
     r = @index.find("1")
     r.size.should == 1
     r.should include(@doc1)
   end
-  
+
   it "should find a doc with a specified field, index.find('name:\"name1\"')" do
     r = @index.find("name:'name2'")
     r.size.should == 1
@@ -186,9 +186,9 @@ describe Index, "#find (with string queries)" do
   it "should find handle OR queries" do
     r = @index.find('group:\"b\" OR name:\"name1\"')
     r.size.should == 2
-    r.should include(@doc3,@doc1)
+    r.should include(@doc3, @doc1)
   end
-  
+
 end
 
 
@@ -207,7 +207,7 @@ describe Index, ".find (exact match)" do
     @doc4 = @index.uncommited["4"]
     @index.commit
   end
-  
+
   it "should find indexed documents using the id field" do
     result = @index.find(:id=>"1")
     result.size.should == 1
@@ -218,7 +218,7 @@ describe Index, ".find (exact match)" do
     result = @index.find(:name=>"name1")
     result.size.should == 1
     result.should include(@doc1)
-    
+
     result = @index.find(:value=>1)
     result.size.should == 1
     result.should include(@doc1)
@@ -229,13 +229,13 @@ describe Index, ".find (exact match)" do
     result.should be_empty
   end
 
-  
+
   it "should find several documents having the same property" do
     result = @index.find(:value => 2)
     result.size.should == 2
-    result.should include(@doc2,@doc3)
+    result.should include(@doc2, @doc3)
   end
-  
+
   it "should find using several fields" do
     result = @index.find(:value => 2, :group => 'a')
     result.size.should == 1
@@ -246,7 +246,7 @@ describe Index, ".find (exact match)" do
     result = @index.find(:name => 'def')
     result.size.should == 1
     result.should include(@doc4)
-    
+
     result = @index.find(:name => '123')
     result.size.should == 1
     result.should include(@doc4)
@@ -254,18 +254,18 @@ describe Index, ".find (exact match)" do
     result = @index.find(:name => 'ojo')
     result.size.should == 0
   end
-  
+
   it "should return document containing the stored fields for that index" do
     # when
     result = @index.find(:id=>"1")
-    
+
     # then
     doc = result[0]
     doc.id.should == '1'
     doc[:name].should == 'name1'
     doc[:value].should be_nil # since its default FieldInfo has :store=>false
   end
-  
+
 end
 
 describe Index, "<< (add documents to be commited)" do
@@ -274,7 +274,7 @@ describe Index, "<< (add documents to be commited)" do
     @index = Index.new('myindex')
     @index.field_infos[:foo] = FieldInfo.new(:store => true)
   end
-  
+
   it "converts all fields into strings" do
     @index << {:id => 42, :foo => 1}
     @index.uncommited['42'][:foo].should == '1'
@@ -282,7 +282,7 @@ describe Index, "<< (add documents to be commited)" do
 
   it "can add several documents" do
     @index << {:id => "1", :foo => 'a'} << {:id => "2", :foo => 'b'}
-    
+
     # then
     @index.uncommited.size.should == 2
     @index.uncommited['1'][:foo].should == 'a'
@@ -290,8 +290,8 @@ describe Index, "<< (add documents to be commited)" do
   end
 
   it "can have several values for the same key" do
-    @index << {:id => 42, :name => ['foo','bar','baaz']}
-    @index.uncommited['42'][:name].should == ['foo','bar','baaz']
+    @index << {:id => 42, :name => ['foo', 'bar', 'baaz']}
+    @index.uncommited['42'][:name].should == ['foo', 'bar', 'baaz']
   end
 end
 
@@ -304,24 +304,24 @@ describe Index, ".id_field" do
     index = Index.new 'myindex'
     index.id_field.should == :id
   end
-  
+
   it "can have a specified one" do
     index = Index.new('myindex')
     index.field_infos.id_field = :my_id
     index.id_field.should == :my_id
   end
-  
+
   it "is used to find uncommited documents" do
     # given
     index = Index.new('myindex')
     index.field_infos.id_field = :my_id
     index << {:my_id => '123', :name=>"foo"}
-    
+
     # when then
     index.uncommited['123'][:name].should == 'foo'
   end
 
-  it "can be used to delete documents"  do
+  it "can be used to delete documents" do
     # given
     index = Index.new('myindex')
     index.field_infos.id_field = :my_id
@@ -329,15 +329,15 @@ describe Index, ".id_field" do
     index << {:my_id => 123, :name=>"foo"}
     index.commit
     index.find(:name=>'foo').should_not be_empty
-    
+
     # when delete it
     index.delete(123)
     index.commit
-    
+
     # then
     index.find(:name=>'foo').should be_empty
   end
-  
+
   it "must be included in all documents" do
     # given
     index = Index.new('myindex')
@@ -351,15 +351,15 @@ end
 
 describe Index, ".new" do
   it "should not create a new instance if one already exists (singelton)" do
-    index1 = Index.new($INDEX_DIR)  
-    index2 = Index.new($INDEX_DIR)  
+    index1 = Index.new($INDEX_DIR)
+    index2 = Index.new($INDEX_DIR)
     index1.object_id.should == index2.object_id
   end
-  
+
   it "should be possible to create a new instance even if one already exists" do
-    index1 = Index.new($INDEX_DIR)  
+    index1 = Index.new($INDEX_DIR)
     index1.clear
-    index2 = Index.new($INDEX_DIR)  
+    index2 = Index.new($INDEX_DIR)
     index1.object_id.should_not == index2.object_id
   end
 end
@@ -368,7 +368,7 @@ describe Index, ".field_infos" do
   before(:each) do
     setup_lucene
     @index = Index.new('myindex')
-    @index.clear    
+    @index.clear
   end
 
   it "has a default value for the id_field - store => true" do
@@ -382,33 +382,33 @@ describe Index, ".field_infos" do
 
   it "should use a default for unspecified type, for example all fields has default :type => String" do
     @index.field_infos[:value] = FieldInfo.new(:store => true, :foo => 1)
-    
+
     # should use default field info for unspecified
     @index.field_infos[:value][:type].should == String
   end
-  
+
   it "has a default that can be overridden" do
     # given
     @index.field_infos[:bar][:type] = Float
     # then
     @index.field_infos[:bar][:type].should == Float
     @index.field_infos[:id][:type].should == String
-    @index.field_infos[:name][:type].should == String    
+    @index.field_infos[:name][:type].should == String
   end
-  
+
   it "can be used to convert properties" do
     #given
     @index.field_infos[:bar][:store] = true
     @index.field_infos[:bar][:type] = Float
     @index.field_infos[:id][:type] = Fixnum
     @index.field_infos[:name][:store] = true
-    
+
     @index << {:id => 1, :bar => 3.14, :name => "andreas"}
     @index.commit
-    
+
     # when
     hits = @index.find(:name => 'andreas')
-    
+
     @index.field_infos[:id][:type].should == Fixnum
     # then
     hits.size.should == 1
@@ -423,7 +423,7 @@ describe Index, ".field_infos" do
     @index.field_infos[:since][:store] = true
     @index.field_infos[:since][:type] = Date
 
-    @index << {:id => 1, :since => Date.new(2008,3,26)}
+    @index << {:id => 1, :since => Date.new(2008, 3, 26)}
     @index.commit
 
     # when
@@ -442,7 +442,7 @@ describe Index, ".field_infos" do
     #given
     @index.field_infos[:since][:store] = true
     @index.field_infos[:since][:type] = DateTime
-    date = DateTime.new(2008,12,18,11,4,59)
+    date = DateTime.new(2008, 12, 18, 11, 4, 59)
     @index << {:id => 1, :since => date}
     @index.commit
 
@@ -482,17 +482,17 @@ describe Index, " when updating a document" do
     @index.find(:name => 'andreas').size.should == 0
   end
 
-  
+
   it "should not find the old field if the field has been changed" do
     # given
     @index << {:id => 'a', :name=>'andreas'}
     @index.commit
     @index.find(:name => 'andreas').should_not be_empty
-    
+
     # when it change
     @index << {:id => 'a', :name=>'foo'}
     @index.commit
-    
+
     # then it can not be found
     @index.find(:name => 'andreas').should be_empty
   end
@@ -502,20 +502,20 @@ describe Index, " when updating a document" do
     @index << {:id => 'a', :name=>'andreas'}
     @index.commit
     @index.find(:name => 'andreas').should_not be_empty
-    
+
     # when it is deleted
     @index.delete('a')
     @index.commit
-    
+
     # then it can not be found
     @index.find(:name => 'andreas').should be_empty
   end
-  
+
   it "should find documents that have the same properties" do
     # given
     @index << {:id => 'a', :name=>'bar'}
     @index << {:id => 'a.1', :name=>'bar'}
-    
+
     @index.commit
     res = @index.find(:name => 'bar')
     res.size.should == 2
@@ -536,11 +536,11 @@ describe Index, " when updating a document" do
 
     it "can find an index using a date" do
       #given
-      @index << {:id => 1, :since => Date.new(2008,4,26)}
+      @index << {:id => 1, :since => Date.new(2008, 4, 26)}
       @index.commit
 
       # when
-      hits = @index.find(:since => Date.new(2008,4,26))
+      hits = @index.find(:since => Date.new(2008, 4, 26))
 
       # then
       hits.size.should == 1
@@ -549,7 +549,7 @@ describe Index, " when updating a document" do
 
     it "can find an index using a Date range" do
       #given
-      @index << {:id => 1, :since => Date.new(2008,4,26)}
+      @index << {:id => 1, :since => Date.new(2008, 4, 26)}
       @index.commit
 
       # then
@@ -564,7 +564,7 @@ describe Index, " when updating a document" do
     it "can find an index using a DateTime range" do
       #given
       # only UTC times are supported 
-      @index << {:id => 1, :born => DateTime.civil(2008,4,26,15,58,02)}
+      @index << {:id => 1, :born => DateTime.civil(2008, 4, 26, 15, 58, 02)}
       @index.commit
 
       # then
@@ -585,3 +585,58 @@ describe Index, " when updating a document" do
   end
 end
 
+
+describe Index, " #analyzer" do
+  before(:each) do
+    setup_lucene
+    @index = Index.new('myindex')
+  end
+
+  it "should default to StandardAnalyzer" do
+#    @index.analyzer = :keyword
+
+    # given some a stop word
+    @index << {:id => 'a', :name=>'it'}
+    @index.commit
+
+    # then it should not found it with the standard default analyzer
+    @index.find("name:it").should be_empty
+  end
+
+  it "can be set to keyword analyzer for one field" do
+    @index.field_infos[:code][:analyzer] = :keyword
+
+    # given some a stop word
+    @index << {:id => 'a', :code=>'it'}
+    @index.commit
+
+    # then it should not found it with the standard default analyzer
+    @index.find("code:it").should_not be_empty
+  end
+
+
+  it "can be set to keyword analyzer for one field and simple analyzer for another field" do
+    @index.field_infos[:code][:analyzer] = :keyword
+    @index.field_infos[:w][:analyzer] = :whitespace
+    @index.field_infos[:w][:tokenized] = true
+
+    @index.field_infos[:s][:analyzer] = :simple
+    @index.field_infos[:s][:tokenized] = true
+
+    # given some a stop word
+    @index << {:id => 'a', :code=>'it', :w => "XY&Z Corporation - xyz@example.com", :s => "XY&Z Corporation - xyz@example.com"}
+    @index.commit
+
+    # then it should not found it with the standard default analyzer
+    @index.find("code:it").should_not be_empty
+    @index.find(:w => "Corporation").should_not be_empty
+    @index.find(:w => "corporation").should be_empty
+
+    @index.find(:w => "XY&Z").should_not be_empty
+    @index.find(:w => "XY").should be_empty
+
+    @index.find(:s => "XY&Z").should be_empty
+    @index.find(:s => "xy").should_not be_empty    
+  end
+
+end

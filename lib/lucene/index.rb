@@ -193,15 +193,11 @@ module Lucene
 
 
     #
-    # Delegetes to the IndexSearcher.find method
+    # Delegates to the IndexSearcher.find method
     #
     def find(*query, &block)
       # new method is a factory method, does not create if it already exists
       searcher = IndexSearcher.new(@index_info.storage)
-			
-      # check sorting parameters
-      query.last == :sort_by
-      query.find{|x| x == :sort_by}
 			
       if block.nil?
         case query.first
@@ -257,7 +253,7 @@ module Lucene
     private
     
     def update_documents
-      index_writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, org.apache.lucene.analysis.standard.StandardAnalyzer.new, ! exist?)
+      index_writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, @index_info.analyzer, ! exist?)
       @uncommited.each_value do |doc|
         # removes the document and adds it again
         doc.update(index_writer)
@@ -271,7 +267,7 @@ module Lucene
     def delete_documents
       return unless exist? # if no index exists then there is nothing to do
       
-      writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, org.apache.lucene.analysis.standard.StandardAnalyzer.new, false)
+      writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, @index_info.analyzer, false)
       id_field = @index_info.infos[@index_info.id_field]
       
       @deleted_ids.each do |id|

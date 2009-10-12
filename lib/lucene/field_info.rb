@@ -4,7 +4,7 @@ module Lucene
   class ConversionNotSupportedException < StandardError; end
 
   class FieldInfo 
-    DEFAULTS = {:store => false, :type => String}.freeze
+    DEFAULTS = {:store => false, :type => String, :analyzer => :standard}.freeze
     
     def initialize(values = {})
       @info = DEFAULTS.dup
@@ -110,10 +110,6 @@ module Lucene
         converted_value = convert_to_lucene(value)
         term = org.apache.lucene.index.Term.new(key.to_s, converted_value)
         org.apache.lucene.search.TermQuery.new(term)
-        #        pq = org.apache.lucene.search.PhraseQuery.new
-        #        pq.add(term)
-        #        pq.setSlop 3
-        #        pq
       end
     end
 

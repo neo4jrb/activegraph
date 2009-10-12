@@ -83,7 +83,7 @@ module Lucene
       lucene_query = case query
       when Array
         sort_by ||= query.last.delete(:sort_by) if query.last.kind_of?(Hash)
-        parser = org.apache.lucene.queryParser.QueryParser.new(field_info.id_field.to_s, org.apache.lucene.analysis.standard.StandardAnalyzer.new)
+        parser = org.apache.lucene.queryParser.QueryParser.new(field_info.id_field.to_s, field_info.analyzer)
         parser.parse(query.first)
       when Hash
         bquery = org.apache.lucene.search.BooleanQuery.new

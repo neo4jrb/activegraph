@@ -94,7 +94,40 @@ module Lucene
     def each_pair
       @infos.each_pair{|key,value| yield key,value}
     end
-    
+
+    def analyzer
+      # do all fields have the default value :standard analyzer ?
+      if @infos.values.find {|info| info[:analyzer] != :standard}
+        # no, one or more has set
+        wrapper = org.apache.lucene.analysis.PerFieldAnalyzerWrapper.new(org.apache.lucene.analysis.standard.StandardAnalyzer.new)
+        @infos.each_pair do |key,value|
+          case value[:analyzer]
+            when :keyword
+              wrapper.addAnalyzer(key.to_s, org.apache.lucene.analysis.KeywordAnalyzer.new)
+            when :standard
+              # default
+            when :simple
+              wrapper.addAnalyzer(key.to_s, org.apache.lucene.analysis.SimpleAnalyzer.new)
+            when :whitespace
+              wrapper.addAnalyzer(key.to_s, org.apache.lucene.analysis.WhitespaceAnalyzer.new)
+            when :stop
+              wrapper.addAnalyzer(key.to_s, org.apache.lucene.analysis.StopAnalyzer.new)
+            else
+              raise "Unknown analyzer, supports :keyword, :standard, :simple, :stop, :whitspace, got '#{value}' for field '#{key}'"
+          end
+        end
+        wrapper
+      else
+        # yes, all fields has standard analyzer
+        org.apache.lucene.analysis.standard.StandardAnalyzer.new
+      end
+    end
+
+    # Returns true if it has one or more tokenized fields
+    def tokenized?
+      @infos.values.find{|field_info| field_info.tokenized?}
+    end
+
     def [](key)
       k = key.to_sym
       $LUCENE_LOGGER.debug{"FieldInfos create new FieldInfo key '#{k}'"} if @infos[k].nil?
