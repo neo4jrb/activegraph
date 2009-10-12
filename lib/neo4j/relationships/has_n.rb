@@ -9,11 +9,13 @@ module Neo4j
       include Enumerable
       extend Neo4j::TransactionalMixin
 
-      def initialize(node, type, &filter)
+      def initialize(node, type, cascade_delete, &filter)
         @node = node
         @type = RelationshipType.instance(type)
         @traverser = NodeTraverser.new(node.internal_node)
         @info = node.class.relationships_info[type.to_sym]
+        @cascade_delete = cascade_delete
+
         if @info[:outgoing]
           @traverser.outgoing(type)
         else
@@ -22,6 +24,18 @@ module Neo4j
           @traverser.incoming(other_class_type)
         end
         @traverser.filter(&filter) unless filter.nil?
+      end
+
+
+      # called by the event handler
+      def self.on_node_deleted(node) #:nodoc:
+        if (@info[:outgoing])
+          node.relationship.outgoing.nodes.each {|n| n.delete}
+        elsif (@info[:incoming])
+          node.relationship.incoming.nodes.each {|n| n.delete}
+        else
+          node.relationship.both.nodes.each {|n| n.delete}
+        end
       end
 
 
@@ -97,6 +111,14 @@ module Neo4j
         from, to = @node, other
         from, to = to, from unless @info[:outgoing]
         relationship = from._create_relationship(@type.name, to)
+
+        if @cascade_delete
+          # the @node.neo_node_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
+          # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
+          # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
+          relationship[@cascade_delete] = @node.neo_node_id
+        end
+
         self
       end
 

@@ -51,10 +51,10 @@ module Neo4j
         end
 
         if @cascade_delete
-          # if cascade_delete_incoming only one node will be deleted, the node id is stored in that property
-          # if cascade_delete_outgoing all nodes will be deleted when
-          value = @cascade_delete == :_cascade_delete_outgoing ? true : @node.neo_node_id
-          new_rel.each {|rel| rel[@cascade_delete] = value}
+          # the @node.neo_node_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
+          # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
+          # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
+          new_rel.each {|rel| rel[@cascade_delete] = @node.neo_node_id}
         end
         if @counter_id
           @node[@counter_id] ||= 0

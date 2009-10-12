@@ -251,7 +251,6 @@ module Neo4j
 
     # Deletes this node.
     # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
-    # Runs in a new transaction if one is not already running.
     #
     # :api: public
     def delete
@@ -657,15 +656,15 @@ module Neo4j
       #   end
       #
       # :api: public
-      def has_one(rel_type)
-
+      def has_one(rel_type, params = {})
+        cascade_delete = cascade_delete_param(params)
         module_eval(%Q{def #{rel_type}=(value)
-                        r = Relationships::HasN.new(self,'#{rel_type.to_s}')
+                        r = Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete})
                         r << value
                     end},  __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                        r = Relationships::HasN.new(self,'#{rel_type.to_s}')
+                        r = Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete})
                         r.to_a[0]
                     end},  __FILE__, __LINE__)
         relationships_info[rel_type] = Relationships::RelationshipInfo.new
@@ -680,14 +679,28 @@ module Neo4j
       #   end
       #
       # :api: public
-      def has_n(rel_type)
+      def has_n(rel_type, params = {})
+        cascade_delete = cascade_delete_param(params)
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relationships::HasN.new(self,'#{rel_type.to_s}', &block)
+                        Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete}, &block)
                     end},  __FILE__, __LINE__)
         relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
 
+      def cascade_delete_param(params)
+        cascade_delete = case params[:cascade_delete]
+          when nil
+            "nil"
+          when :outgoing
+            ":_cascade_delete_outgoing"
+          when :incoming
+            ":_cascade_delete_incoming"
+          else
+            raise "Expected either :outgoing or :incoming cascade delete parameter for has list"
+        end
+        return cascade_delete
+      end
 
       # Specifies a relationship to a linked list of nodes.
       # Each list item class may (but not necessarily  use the belongs_to_list
@@ -739,17 +752,7 @@ module Neo4j
       # :api: public
       def has_list(rel_type, params = {})
         counter = params[:counter] == true
-        cascade_delete = case params[:cascade_delete]
-          when nil
-            "nil"
-          when :outgoing
-            ":_cascade_delete_outgoing"
-          when :incoming
-            ":_cascade_delete_incoming"
-          else
-            raise "Expected either :outgoing or :incoming cascade delete parameter for has list"
-        end
-
+        cascade_delete = cascade_delete_param(params)
         module_eval(%Q{
                     def #{rel_type}(&block)
                         Relationships::HasList.new(self,'#{rel_type.to_s}',#{counter},#{cascade_delete}, &block)

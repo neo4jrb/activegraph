@@ -17,7 +17,7 @@ It uses two powerful and mature java libraries:
 * Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
 
 === Status
-* There are over 300 RSpecs.
+* There are over 400 RSpecs.
 * Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
 * Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
 
@@ -679,7 +679,6 @@ Example:
   company.employees.to_a # => [employee1, employee3]
   company.employees.size # => 2
 
-
 ==== Memberships in lists
 
  Each node in a list knows which lists it belongs to the next and previous item in the list
@@ -692,7 +691,83 @@ Example:
 
 (The list method takes an optional extra parameter - the list node. Needed if one node is member of more then one list with the same name).
 
-==== Traversing Relationships
+=== Cascade delete
+
+The has_one, has_n and has_list all support cascade delete.
+There are two types of cascade delete - incoming and outgoing.
+For an outgoing cascade delete the members (of the has_one/has_n/has_list) will all be deleted when the
+'root' node is deleted. For incoming cascade the 'root' node will be deleted when all its member are deleted.
+
+Example, outgoing
+
+  class Person
+    include Neo4j::NodeMixin
+    has_list :phone_nbr, :cascade_delete => :outgoing
+  end
+
+  p = Person.new
+  phone1 = new Node.new
+  phone1[:number] = '+46123456789'
+  p.phone_nbr << phone1
+  p.phone_nbr << phone2
+
+  p.delete
+
+  # then phone1 and phone2 node will also be deleted.
+
+Example, incoming
+
+  class Phone
+    include Neo4j::NodeMixin
+    has_list :people # a list of people having this phone number
+  end
+
+  phone1 = Phone.new
+  p1 = Person.new
+  p2 = person.new
+  phone1.people << p1
+  phone1.people << p2
+
+  p1.delete
+  p2.delete
+
+  # then phone will be deleted
+
+
+=== Finding all nodes
+
+To find all nodes of a specific type use the all method.
+
+Example
+
+  require 'neo4j/extensions/reindexer'
+
+  class Car
+    include Neo4j::Node
+    property :wheels
+  end
+
+  class Volvo < Car
+  end
+
+  v = Volvo.new
+  c = Car.new
+
+  Car.all   # will return all relationships from the reference node to car obejcts
+  Volvo.all # will return the same as Car.all
+
+To return nodes (just like the relationships method)
+
+  Car.all.nodes    # => [c,v]
+  Volvo.all.nodes  # => [v]
+
+
+The reindexer extension that is used in the example above will for each created node create a relationship
+from the index node (Neo4j.ref_node.relationships.outgoing(:index_node)) to that new node.
+The all method use these relationships in order to return nodes of a certain class.
+The update_index method also uses this all method in order to update index for all nodes of a specific class.
+
+=== Traversing Relationships
 
 Each type of relationship has a method that returns an Enumerable object that enables you
 to traverse that type of relationship. 
