@@ -26,7 +26,6 @@ require 'neo4j/relationships/has_n'
 require 'neo4j/relationships/relationship_traverser'
 require 'neo4j/relationships/node_traverser'
 require 'neo4j/relationships/has_list'
-require 'neo4j/relationships/list_node_mixin'
 
 # neo4j
 require 'neo4j/indexer' # this will replace neo4j/events

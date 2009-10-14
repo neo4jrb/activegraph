@@ -17,6 +17,10 @@ module Neo4j
 
     extend TransactionalMixin
 
+    # --------------------------------------------------------------------------
+    # Initialization methods
+    #
+    
 
     # Initialize the the neo node for this instance.
     # Will create a new transaction if one is not already running.
@@ -57,6 +61,10 @@ module Neo4j
       Neo4j.event_handler.node_created(self)
     end
 
+
+    # --------------------------------------------------------------------------
+    # Property methods
+    #
 
     # Sets a neo property on this node. This property does not have to be declared first.
     # If the value of the property is nil the property will be removed.
@@ -174,7 +182,65 @@ module Neo4j
       vo
     end
 
+    # Returns an unique id
+    # Calls getId on the neo node java object
     #
+    # ==== Returns
+    # Fixnum:: the unique neo id of the node.
+    #
+    # :api: public
+    def neo_node_id
+      @internal_node.getId()
+    end
+
+
+    # Same as neo_node_id but returns a String instead of a Fixnum.
+    # Used by Ruby on Rails.
+    #
+    # :api: public
+    def to_param
+      neo_node_id.to_s
+    end
+
+    # Returns a hash of all properties.
+    #
+    # ==== Returns
+    # Hash:: property key and property value
+    #
+    # :api: public
+    def props
+      ret = {"id" => neo_node_id}
+      iter = @internal_node.getPropertyKeys.iterator
+      while (iter.hasNext) do
+        key = iter.next
+        ret[key] = @internal_node.getProperty(key)
+      end
+      ret
+    end
+
+
+    # --------------------------------------------------------------------------
+    # Equal and hash methods
+    #
+
+    def eql?(o)
+      o.kind_of?(NodeMixin) && o.internal_node == internal_node
+    end
+
+    def ==(o)
+      eql?(o)
+    end
+
+    def hash
+      internal_node.hashCode
+    end
+
+
+    # --------------------------------------------------------------------------
+    # Update and Delete methods
+    #
+
+
     # Updates this node's properties by using the provided struct/hash.
     # If the option <code>{:strict => true}</code> is given, any properties present on
     # the node but not present in the hash will be removed from the node.
@@ -199,56 +265,7 @@ module Neo4j
       self
     end
 
-
-    # Returns an unique id
-    # Calls getId on the neo node java object
-    #
-    # ==== Returns
-    # Fixnum:: the unique neo id of the node.
-    #
-    # :api: public
-    def neo_node_id
-      @internal_node.getId()
-    end
-
-
-    # Same as neo_node_id but returns a String instead of a Fixnum.
-    # Used by Ruby on Rails.
-    #
-    # :api: public
-    def to_param
-      neo_node_id.to_s
-    end
-
-    def eql?(o)
-      o.kind_of?(NodeMixin) && o.internal_node == internal_node
-    end
-
-    def ==(o)
-      eql?(o)
-    end
-
-    def hash
-      internal_node.hashCode
-    end
-
-    # Returns a hash of all properties.
-    #
-    # ==== Returns
-    # Hash:: property key and property value
-    #
-    # :api: public
-    def props
-      ret = {"id" => neo_node_id}
-      iter = @internal_node.getPropertyKeys.iterator
-      while (iter.hasNext) do
-        key = iter.next
-        ret[key] = @internal_node.getProperty(key)
-      end
-      ret
-    end
-
-
+    
     # Deletes this node.
     # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
     #
@@ -270,16 +287,19 @@ module Neo4j
       self.class.indexer.delete_index(self)
     end
 
-    # :api: private
-    def classname
-      get_property('classname')
+    # Updates the index for this node.
+    # This method will be automatically called when needed
+    # (a property changed or a relationship was created/deleted)
+    #
+    # @api private
+    def update_index
+      self.class.indexer.index(self)
     end
 
-    # :api: private
-    def classname=(value)
-      set_property('classname', value)
-    end
-
+    
+    # --------------------------------------------------------------------------
+    # Relationship methods
+    #
 
     # Returns a Neo4j::Relationships::RelationshipTraverser object for accessing relationships from and to this node.
     # The Neo4j::Relationships::RelationshipTraverser is an Enumerable that returns Neo4j::RelationshipMixin objects.
@@ -350,37 +370,6 @@ module Neo4j
     end
 
 
-    # :api: private
-    def _to_java_direction(dir)
-      case dir
-        when :outgoing
-          org.neo4j.api.core.Direction::OUTGOING
-        when :incoming
-          org.neo4j.api.core.Direction::INCOMING
-        when :both
-          org.neo4j.api.core.Direction::BOTH
-        else
-          raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
-      end
-    end
-
-    # all creation of relationships uses this method
-    # triggers event handling
-    # :api: private
-    def _create_relationship(type, to)
-      java_type = Relationships::RelationshipType.instance(type)
-      java_relationship = internal_node.createRelationshipTo(to.internal_node, java_type)
-
-      relationship =
-              if (self.class.relationships_info[type.to_sym].nil?)
-                Relationships::Relationship.new(java_relationship)
-              else
-                self.class.relationships_info[type.to_sym][:relationship].new(java_relationship)
-              end
-      Neo4j.event_handler.relationship_created(relationship)
-      self.class.indexer.on_relationship_created(self, type)
-      relationship
-    end
 
     # Returns a Neo4j::Relationships::NodeTraverser object for traversing nodes from and to this node.
     # The Neo4j::Relationships::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
@@ -398,23 +387,207 @@ module Neo4j
     end
 
 
-    # Updates the index for this node.
-    # This method will be automatically called when needed
-    # (a property changed or a relationship was created/deleted)
+    # --------------------------------------------------------------------------
+    # List methods
     #
-    # @api private
-    def update_index
-      self.class.indexer.index(self)
+
+
+    # Returns true if this nodes belongs to a list of the given name
+    #
+    def list?(list_name)
+      regexp = Regexp.new "_list_#{list_name}"
+      relationships.both.find { |rel| regexp.match(rel.relationship_type.to_s) } != nil
+    end
+
+    # Returns one or more list of the given list_name and list_node.
+    # If the optional list_node parameter is given the specific list belonging to that list node will be returned (or nil)
+    # If only the list_name parameter is given the first list matching the given list_name will be returned.
+    # (There might be several list of the same name but from different list nodes.)
+    #
+    # ==== Returns
+    #
+    # The node but with the extra instance methods
+    # * next - the next node in the list
+    # * prev - the previous node in the list
+    # * head - the head node (the node that has the has_list method)
+    # * size (if the size optional parameter is given in the has_list class method)
+    #
+    # ==== Example
+    #  class Foo
+    #    include Neo4j::NodeMixin
+    #    has_list :baar
+    #  end
+    #
+    #  f = Foo.new
+    #  n1 = Neo4j::Node.new
+    #  n2 = Neo4j::Node.new
+    #  f.baar << n1 << n2
+    #
+    #  n2.list(:baar).next # => n1
+    #  n2.list(:baar).prev # => f
+    #  n2.list(:baar).head # => f
+    #
+    def list(list_name, list_node = nil)
+      if list_node
+        list_id = "_list_#{list_name}_#{list_node.neo_node_id}"
+        add_list_item_methods(list_id, list_name, list_node)
+      else
+        list_items = []
+        lists(list_name) {|list_item| list_items << list_item}
+        list_items[0]
+      end
     end
 
 
+    # Returns an array of lists with the given names that this nodes belongs to.
+    # Expects a block to yield for each found list
+    # That block will be given one parameter - the node with the extra method (see #list method)
+    #
+    def lists(*list_names)
+      list_names.collect! {|n| n.to_sym}
+
+      relationships.both.inject({}) do |res, rel|
+        rel_type = rel.relationship_type.to_s
+        md = /_list_(\w*)_(\d*)/.match(rel_type)
+        next res if md.nil?
+        next res unless list_names.empty? || list_names.include?(md[1].to_sym)
+        res[rel_type] = [md[1], Neo4j.load(md[2].to_i)]
+        res
+      end.each_pair do |rel_id, list_name_and_head_node|
+        yield self.clone.add_list_item_methods(rel_id, list_name_and_head_node[0], list_name_and_head_node[1])
+      end
+    end
+
+
+    def add_list_item_methods(list_id, list_name, head_node) #:no_doc:
+      mod = Module.new do
+        define_method :head do
+          head_node
+        end
+
+        define_method :size do
+          head_node["_#{list_name}_size"] || 0
+        end
+
+        define_method :size= do |new_size|
+          head_node["_#{list_name}_size"] = new_size
+        end
+
+        define_method :next do
+          next_node = relationships.outgoing(list_id).nodes.first
+          return nil if next_node.nil?
+          next_node.add_list_item_methods(list_id, list_name, head_node)
+          next_node
+        end
+
+        define_method :next= do |new_next|
+          # does it have a next pointer ?
+          next_rel = relationships.outgoing(list_id).first
+          # delete the relationship if exists
+          next_rel.delete if (next_rel.nil?)
+          relationships.outgoing(list_id) << new_next unless new_next.nil?
+          nil
+        end
+
+        define_method :prev do
+          prev_node = relationships.incoming(list_id).nodes.first
+          return nil if prev_node.nil?
+          prev_node.add_list_item_methods(list_id, list_name, head_node)
+          prev_node
+        end
+
+        define_method :prev= do |new_prev|
+          # does it have a next pointer ?
+          prev_rel = relationships.incoming(list_id).first
+          # delete the relationship if exists
+          prev_rel.delete if (prev_rel.nil?)
+          relationships.outgoing(list_id) << new_prev unless new_prev.nil?
+          nil
+        end
+      end
+
+      self.extend mod
+    end
+
+    def add_list_head_methods(list_name) # :nodoc:
+      prop_name = "_#{list_name}_size".to_sym
+      mod = Module.new do
+        define_method :size do
+          self[prop_name] || 0
+        end
+
+        define_method :size= do |new_size|
+          self[prop_name]=new_size
+        end
+      end
+      self.extend mod
+    end
+
+
+    # --------------------------------------------------------------------------
+    # Private methods
+    #
+
+    # :api: private
+    def _to_java_direction(dir) # :nodoc:
+      case dir
+        when :outgoing
+          org.neo4j.api.core.Direction::OUTGOING
+        when :incoming
+          org.neo4j.api.core.Direction::INCOMING
+        when :both
+          org.neo4j.api.core.Direction::BOTH
+        else
+          raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
+      end
+    end
+
+    # all creation of relationships uses this method
+    # triggers event handling
+    # :api: private
+    def _create_relationship(type, to) # :nodoc:
+      java_type = Relationships::RelationshipType.instance(type)
+      java_relationship = internal_node.createRelationshipTo(to.internal_node, java_type)
+
+      relationship =
+              if (self.class.relationships_info[type.to_sym].nil?)
+                Relationships::Relationship.new(java_relationship)
+              else
+                self.class.relationships_info[type.to_sym][:relationship].new(java_relationship)
+              end
+      Neo4j.event_handler.relationship_created(relationship)
+      self.class.indexer.on_relationship_created(self, type)
+      relationship
+    end
+
+
+    # :api: private
+    def classname # :nodoc:
+      get_property('classname')
+    end
+
+    # :api: private
+    def classname=(value) # :nodoc:
+      set_property('classname', value)
+    end
+
+
+    
+    # --------------------------------------------------------------------------
+    # Transactional methods declaration
+    #
+    
     transactional :initialize, :property?, :set_property, :get_property, :remove_property, :delete
 
 
+    # --------------------------------------------------------------------------
+    # Hooks
     #
+
+
     # Adds class methods in the ClassMethods module
     #
-    def self.included(c)
+    def self.included(c)  # :nodoc:
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
         const_set(:ROOT_CLASS, self)
