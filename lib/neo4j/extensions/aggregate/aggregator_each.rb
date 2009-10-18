@@ -6,7 +6,7 @@ module Neo4j::Aggregate
     end
 
     # Specifies which properties we should group on.
-    # All thos properties can be combined to create a new group.
+    # All those properties can be combined to create a new group.
     #
     # :api: public
     def group_by(*keys)
@@ -17,12 +17,10 @@ module Neo4j::Aggregate
 
     def execute
       @nodes.each do |node|
-        puts "agg #{node}"
         group_node = GroupEachNode.new
         group_node.group_by = @group_by.join(',')
         group_node.aggregate = node
         @root_node.groups << group_node
-        puts "agg #{node} done"
       end
     end
   end

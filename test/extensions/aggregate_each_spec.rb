@@ -43,11 +43,14 @@ describe "Aggregates, on each node" do
     agg1.should include(g1)
     agg1.to_a.size.should == 4
     agg1.aggregate_size.should == 4
+    sum = agg1.inject([]) {|s,g| g.inject(s) {|ss,n| ss << n}}
+    puts "sum=#{sum.inspect}"
+    
     agg1.map{|group| group[:age]}.should include(0,1,2,3)
   end
 
   it "should delete group if the node is deleted" do
-    pending "Need to fix lighthouse ticket 81 - Cascade delete on has_n, had_one and has_list first" 
+#    pending "Need to fix lighthouse ticket 81 - Cascade delete on has_n, had_one and has_list first"
 
     nodes = []
     4.times {nodes << Neo4j::Node.new}
@@ -59,12 +62,20 @@ describe "Aggregates, on each node" do
     agg1 = AggregateEachNode.new
     agg1.aggregate_each(nodes).group_by(:colour, :name).execute # TODO should not be needed to do execute
     agg1.to_a.size.should == 4
+    agg1.aggregate_size.should == 4
 
     # when
-    nodes[2].delete
+    #nodes[2].delete
+    n = nodes[2].aggregate_groups.to_a[0]
+    n.delete
+
+    Neo4j::Transaction.finish
+    Neo4j::Transaction.new
 
     # then
+    agg1.each {|n| puts n}
     agg1.to_a.size.should == 3
+    agg1.aggregate_size.should == 3
   end
 
 

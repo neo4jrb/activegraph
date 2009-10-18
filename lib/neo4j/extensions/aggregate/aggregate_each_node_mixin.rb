@@ -4,7 +4,7 @@ module Neo4j::Aggregate
     include Neo4j::NodeMixin
     include Enumerable
 
-    has_list :groups, :counter => true
+    has_list :groups, :counter => true, :cascade_delete => :incoming
 
     def aggregate_size
       groups.size
