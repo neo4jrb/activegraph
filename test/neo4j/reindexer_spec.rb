@@ -3,7 +3,6 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
-require 'neo4j/extensions/reindexer'
 
 
 
@@ -33,11 +32,12 @@ describe "Reindexer (NodeMixin#all)" do
   end
 
   before(:all) do
-    Neo4j.event_handler.add(Neo4j::IndexNode) # incase it has been disabled by an RSpec
+    require 'neo4j/extensions/reindexer'
+    Neo4j.event_handler.add(Neo4j::IndexNode) # in case it has been disabled by an RSpec
   end
 
   after(:all) do
-    Neo4j.event_handler.remove(Neo4j::IndexNode) # avoid side effects on using this extension
+    Neo4j.event_handler.remove_all
   end
 
 
@@ -159,6 +159,14 @@ end
 
 
 describe "Reindex" do
+  before(:all) do
+    require 'neo4j/extensions/reindexer'
+  end
+  
+  after(:all) do
+    Neo4j.event_handler.remove_all
+  end
+  
   it "should reindex nodes after the neo4j has restarted (lighthouse ticket #53)" do
     Neo4j.load_reindexer # since a previous test might have unloaded this extension
     

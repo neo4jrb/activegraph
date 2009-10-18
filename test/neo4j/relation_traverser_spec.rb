@@ -142,7 +142,7 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when
-      outgoing = t2.relationships.incoming.to_a
+      outgoing = t2.relationships.incoming(:friends).to_a
 
       # then
       outgoing.size.should == 1
@@ -156,7 +156,7 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t2 = TestNode.new
 
       # when and then
-      t2.relationships.incoming.to_a.size.should == 0 
+      t2.relationships.incoming.to_a.size.should == 0
       t2.relationships.outgoing.to_a.size.should == 0
     end
 

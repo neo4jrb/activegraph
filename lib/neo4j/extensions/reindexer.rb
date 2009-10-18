@@ -87,7 +87,7 @@ module Neo4j
   # Add this so it can add it self as listener
   def self.load_reindexer
     Neo4j.event_handler.add(IndexNode)
-    # incase we already have started
+    # in case we already have started
     Neo4j::Transaction.run { IndexNode.on_neo_started(Neo4j.instance) } if Neo4j.running?
   end
 

@@ -40,7 +40,6 @@ def start
   reset_config
   
   # start neo
-  Neo4j.event_handler.remove_all  # TODO need a nicer way to test extension - loading and unloading
   Neo4j.start
 end
 

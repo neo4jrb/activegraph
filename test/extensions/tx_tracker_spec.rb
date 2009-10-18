@@ -3,26 +3,26 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/spec_helper'
-require 'neo4j/extensions/tx_tracker'
-
-
-class TxTestNode
-  include Neo4j::NodeMixin
-  property :myid
-
-
-  def to_s
-    "TxTestNode " + props.inspect
-  end
-end
 
 
 describe "TxTracker (TxNodeList)" do
 
+  before(:all) do
+    require 'neo4j/extensions/tx_tracker'
+
+    class TxTestNode
+      include Neo4j::NodeMixin
+      property :myid
+
+      def to_s
+        "TxTestNode " + props.inspect
+      end
+    end
+  end
 
   before(:each) do
     start
-    Neo4j.load_tx_tracker
+#    Neo4j.load_tx_tracker
     @tx_node_list = Neo4j::TxNodeList.instance
   end
 
@@ -30,6 +30,10 @@ describe "TxTracker (TxNodeList)" do
     stop
   end
 
+  after(:all) do
+    Neo4j.unload_tx_tracker
+#    Neo4j.event_handler.remove_all
+  end
 
   it "should have a reference to the TxNodeList" do
     @tx_node_list.should_not be_nil
@@ -47,7 +51,7 @@ describe "TxTracker (TxNodeList)" do
   end
 
   it "should set a UUID on the node and the TxNode and property created=true" do
-    a = Neo4j::Transaction.run {  TxTestNode.new }
+    a = Neo4j::Transaction.run { TxTestNode.new }
 
     tx_node = @tx_node_list.tx_nodes.first
     tx_node[:uuid].should == a[:uuid]
@@ -56,7 +60,7 @@ describe "TxTracker (TxNodeList)" do
 
 
   it "should set property 'property_changed' when a node property is changed" do
-    a =  Neo4j::Transaction.run { TxTestNode.new }
+    a = Neo4j::Transaction.run { TxTestNode.new }
     Neo4j::Transaction.run { a.myid = "hej" }
 
     first = @tx_node_list.tx_nodes.first
@@ -103,7 +107,7 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.finish
 
     Neo4j::Transaction.new
-    
+
     # when
     Neo4j.load(id.to_i).should_not be_nil # make sure it exists
     Neo4j.undo_tx

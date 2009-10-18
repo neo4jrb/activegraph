@@ -44,7 +44,6 @@ describe "Aggregates, on each node" do
     agg1.to_a.size.should == 4
     agg1.aggregate_size.should == 4
     sum = agg1.inject([]) {|s,g| g.inject(s) {|ss,n| ss << n}}
-    puts "sum=#{sum.inspect}"
     
     agg1.map{|group| group[:age]}.should include(0,1,2,3)
   end
@@ -73,7 +72,6 @@ describe "Aggregates, on each node" do
     Neo4j::Transaction.new
 
     # then
-    agg1.each {|n| puts n}
     agg1.to_a.size.should == 3
     agg1.aggregate_size.should == 3
   end

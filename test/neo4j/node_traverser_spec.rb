@@ -300,7 +300,6 @@ describe "NodeTraverser" do
       a.traverse.outgoing(:baar).depth(:all).each_with_position { |node, tp| name_depth[node[:name]] = tp.depth }
 
      # then
-      puts name_depth.inspect
       name_depth['b'].should == 1
       name_depth['c'].should == 1
       name_depth['d'].should == 2

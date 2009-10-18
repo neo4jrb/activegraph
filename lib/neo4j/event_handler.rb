@@ -23,7 +23,11 @@ module Neo4j
     def add_filter(filter_class)
       @filter_classes << filter_class  unless @filter_classes.include?(filter_class)
     end
-    
+
+    def remove_filter(filter_class)
+      @filter_classes.delete filter_class
+    end
+
     def node_created(node)
       return if @filter_classes.include?(node.class)
       @listeners.each {|li| li.on_node_created(node) if li.respond_to?(:on_node_created)}

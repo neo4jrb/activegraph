@@ -342,6 +342,14 @@ module Neo4j
     Neo4j::Transaction.run { TxNodeList.on_neo_started(Neo4j.instance) } if Neo4j.running?
   end
 
+  def self.unload_tx_tracker
+    Neo4j.event_handler.remove_filter(TxNode)
+    Neo4j.event_handler.remove_filter(TxNodeCreated)
+    Neo4j.event_handler.remove_filter(TxRelationshipCreatedNode)
+
+    Neo4j.event_handler.remove(TxNodeList)
+    Neo4j.event_handler.remove(TxNodeRelationship)
+  end
 
   #  Undo the last transaction
   #
