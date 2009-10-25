@@ -1,6 +1,9 @@
-DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
-DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")
+#DB_NEO_DIR = File.expand_path(File.dirname(__FILE__) + "/db/neo")
+#DB_LUCENE_DIR = File.expand_path(File.dirname(__FILE__) + "/db/lucene")
 
+require 'rubygems'
+require 'neo4j'
+require "neo4j/extensions/reindexer"
 
 class Movie; end
 

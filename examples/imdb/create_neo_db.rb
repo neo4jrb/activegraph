@@ -2,7 +2,6 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 
 require "rubygems" 
 require "neo4j"
-require "neo4j/extensions/reindexer"
 require "model"
 
 def parse_actors(file)
@@ -58,14 +57,12 @@ def parse_actors(file)
 end
 
 
-Neo4j::Config[:storage_path] = DB_NEO_DIR
+#Neo4j::Config[:storage_path] = DB_NEO_DIR
 Neo4j.start
 
 t1 = Time.now
 Neo4j::Transaction.run do
-
   parse_actors('data/test-actors.list')
-
 end
 
 # For me it takes 33.78 sec
