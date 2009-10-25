@@ -102,7 +102,7 @@ module Neo4j
     #
     # :api: public
     def property?(key)
-      @internal_r.hasProperty(key)
+      @internal_r.hasProperty(key.to_s)
     end
 
     # Returns the value of the given neo property.

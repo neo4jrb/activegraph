@@ -26,7 +26,7 @@ module Neo4j::Aggregate
     end
 
 
-    # Unregisters this aggregate so that it will not be nofitied any longer
+    # Unregisters this aggregate so that it will not be notified any longer
     # on Neo4j node events. Used when we create an aggregate that is registered
     # with the Neo4j even listener by including a filter in the aggregate method
     #
@@ -157,7 +157,7 @@ module Neo4j::Aggregate
     end
 
     # Executes the DSL and creates the specified groups.
-    # This method is not neccessarly to call, since it will automatically be called when needed.
+    # This method is not necessary to call, since it will automatically be called when needed.
     #
     # :api: public
     def execute(nodes = @nodes)
@@ -171,13 +171,11 @@ module Neo4j::Aggregate
 
     # :api: private
     def create_groups(parent, node)
-      #     puts "create groups parent #{parent.props.inspect} #{node.props.inspect}"
       group_key_of(node).each { |key| create_group_for_key(parent, node, key) }
     end
 
     # :api: private
     def create_group_for_key(parent, node, key)
-#      puts "create_group_for_key #{key} parent #{parent} #{node.props.inspect}"
       # find a group node for the given key
       group_node =  parent.relationships.outgoing(key).nodes.find{|n| n.kind_of? AggregateGroupNode}
 
@@ -186,7 +184,7 @@ module Neo4j::Aggregate
 
       # check if it is the leaf node or not
       if (@child_dsl)
-        # this is not the leaf aggregate dsl, let the child node add the node instaed
+        # this is not the leaf aggregate dsl, let the child node add the node instead
         @child_dsl.create_groups(group_node, node)  # TODO
       else
         # this IS a leaf aggregate dsl, add node to the group
@@ -195,7 +193,6 @@ module Neo4j::Aggregate
         rel[:aggregate_group] = key
         # increase the size counter on this group
         group_node.aggregate_size += 1
-#        puts "  LEAF #{key} group_node #{group_node.props.inspect} node #{node.props.inspect}"
       end
     end
 
@@ -205,7 +202,6 @@ module Neo4j::Aggregate
       rel = parent.relationships.outgoing(key) << new_node
       parent.aggregate_size += 1 # another group was created
       rel[:aggregate_group] = key
-#      puts "  GROUP #{key} parent #{parent.props.inspect}  node #{new_node.props.inspect}"
       new_node
     end
 

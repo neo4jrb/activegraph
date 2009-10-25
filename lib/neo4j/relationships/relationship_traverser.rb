@@ -9,10 +9,17 @@ module Neo4j
 
       attr_reader :internal_node
 
-      def initialize(node)
+      def initialize(node, direction = :outgoing)
         @node = node
         @internal_node = node.internal_node
-        @direction = org.neo4j.api.core.Direction::OUTGOING
+        case direction
+          when :outgoing
+            outgoing
+          when :incoming
+            incoming
+          when :both
+            both
+        end
       end
 
       def outgoing(type = nil)

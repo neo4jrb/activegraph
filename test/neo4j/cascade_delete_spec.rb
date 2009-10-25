@@ -354,3 +354,57 @@ describe "Cascade Delete For #hasOne" do
   end
 
 end
+
+describe "Cascade Delete chained" do
+  before(:all) do
+    start
+    Neo4j::Transaction.new
+  end
+
+  after(:all) do
+    stop
+  end
+  
+  it "should delete a chained relationship of cascaded objects" do
+    pending "Must avoid cascade delete when using the reindexer extension"
+    
+    # OrderStatus ---> Order ---*>OrderLine
+    class OrderLine
+      include Neo4j::NodeMixin
+    end
+
+    class OrderStatus
+      include Neo4j::NodeMixin
+      has_one :order, :cascade_delete => :incoming # delete the order status when the order is deleted
+    end
+
+    class Order
+      include Neo4j::NodeMixin
+      has_n :order_lines, :cascade_delete => :incoming # delete order when all its order_lines are deleted
+    end
+
+    # delete order when line1 and line2 is deleted
+    # delete order when all its relationships are deleted except cascade_delete incoming
+
+    line1 = OrderLine.new
+    line2 = OrderLine.new
+
+    order = Order.new
+    order.order_lines << line1
+    order.order_lines << line2
+
+    status = OrderStatus.new
+    status.order = order
+
+    # delete order when it has no more
+    # when
+    line1.delete
+    line2.delete
+
+    # then
+    Neo4j::Transaction.finish
+    Neo4j::Transaction.new
+    
+    Neo4j.load(status.neo_node_id).should be_nil
+  end
+end
