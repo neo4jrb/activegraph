@@ -20,7 +20,7 @@ module Neo4j
     # --------------------------------------------------------------------------
     # Initialization methods
     #
-    
+
 
     # Initialize the the neo node for this instance.
     # Will create a new transaction if one is not already running.
@@ -265,27 +265,34 @@ module Neo4j
       self
     end
 
-    
+
     # Deletes this node.
     # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
     #
     # :api: public
     def delete
       Neo4j.event_handler.node_deleted(self)
-      relationships.outgoing.each { |r| r.end_node.delete if r[:_cascade_delete_outgoing]}
-      
-      relationships.both.each do |r|
+
+      # delete outgoing relationships, and check for cascade delete
+      relationships.outgoing.each { |r| r.delete; r.end_node.delete if r[:_cascade_delete_outgoing]}
+
+      relationships.incoming.each do |r|
         r.delete
         if r[:_cascade_delete_incoming]
           node_id = r[:_cascade_delete_incoming]
           node = Neo4j.load(node_id)
-          found = node.relationships.both.find{|r| r[:_cascade_delete_incoming]}
-          node.delete unless found
+          # check node has no outgoing relationships
+          no_outgoing = node.relationships.outgoing.empty?
+          # check node has only incoming relationship with cascade_delete_incoming
+          no_incoming = node.relationships.incoming.find{|r| !r.property?(:_cascade_delete_incoming)}.nil?
+          # only cascade delete incoming if no outgoing and no incoming (exception cascade_delete_incoming) relationships
+          node.delete if no_outgoing and no_incoming
         end
       end
       @internal_node.delete
       self.class.indexer.delete_index(self)
     end
+
 
     # Updates the index for this node.
     # This method will be automatically called when needed
@@ -296,7 +303,6 @@ module Neo4j
       self.class.indexer.index(self)
     end
 
-    
     # --------------------------------------------------------------------------
     # Relationship methods
     #
@@ -316,8 +322,8 @@ module Neo4j
     #   person_node.relationships.outgoing(:friends).each { ... }
     #
     # :api: public
-    def relationships
-      Relationships::RelationshipTraverser.new(self)
+    def relationships(direction = :outgoing)
+      Relationships::RelationshipTraverser.new(self, direction)
     end
 
 
@@ -368,7 +374,6 @@ module Neo4j
       java_dir = _to_java_direction(dir)
       @internal_node.hasRelationship(type, java_dir)
     end
-
 
 
     # Returns a Neo4j::Relationships::NodeTraverser object for traversing nodes from and to this node.
@@ -523,6 +528,31 @@ module Neo4j
       self.extend mod
     end
 
+    # --------------------------------------------------------------------------
+    # Debug
+    #
+
+    def print(levels = 0, dir = :outgoing)
+      print_sub(0, levels, dir)
+    end
+
+    def print_sub(level, max_level, dir)
+      spaces = " " * level
+      node_desc = "#{spaces}#{classname} id=#{neo_node_id}"
+      props.each_pair {|key, value| next if %w[classname id].include?(key); node_desc << " #{key}='#{value}'"}
+      puts node_desc
+
+      if (level != max_level)
+        relationships(dir).each do |rel|
+          cascade_desc = ""
+          cascade_desc << "cascade in: #{rel[:_cascade_delete_incoming]}" if rel.property?(:_cascade_delete_incoming)
+          cascade_desc << "cascade out: #{rel[:_cascade_delete_outgoing]}" if rel.property?(:_cascade_delete_outgoing)
+          puts "#{spaces}rel dir: #{dir} type: '#{rel.relationship_type}' id: #{rel.neo_relationship_id} #{cascade_desc}"
+          rel.other_node(self).print_sub(level + 1, max_level, dir)
+        end
+      end
+    end
+
 
     # --------------------------------------------------------------------------
     # Private methods
@@ -572,11 +602,10 @@ module Neo4j
     end
 
 
-    
     # --------------------------------------------------------------------------
     # Transactional methods declaration
     #
-    
+
     transactional :initialize, :property?, :set_property, :get_property, :remove_property, :delete
 
 
@@ -587,7 +616,7 @@ module Neo4j
 
     # Adds class methods in the ClassMethods module
     #
-    def self.included(c)  # :nodoc:
+    def self.included(c) # :nodoc:
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
         const_set(:ROOT_CLASS, self)
@@ -834,6 +863,7 @@ module Neo4j
         module_eval(%Q{def #{rel_type}=(value)
                         r = Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete})
                         r << value
+                        r
                     end},  __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
