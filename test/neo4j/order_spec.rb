@@ -22,8 +22,12 @@ describe "CustomerA,Order,Product" do
   #   7. What is the mark-up on a certain P&roduct
 
 
+  after(:all) do
+    undefine_class :Order, :CustomerA, :Product, :OrderLine
+  end
+
   before(:all) do
-    undefine_class :Order, :CustomerA, :Product
+#    undefine_class :Order, :CustomerA, :Product
 
 
     class Order

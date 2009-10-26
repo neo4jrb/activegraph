@@ -18,8 +18,7 @@ It uses two powerful and mature java libraries:
 
 === Status
 * There are over 400 RSpecs.
-* Has been tested with a simple rails application, used Neo4j.rb instead of ActiveRecord
-* Has been load tested (loaded 18000 nodes and done queries/traversal in several threads.)
+* Has been tested with rails applications, used Neo4j.rb instead of ActiveRecord
 
 === Project information
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
@@ -32,7 +31,6 @@ It uses two powerful and mature java libraries:
 === Presentation Materials and other URLs
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
 * Neo4j wiki - http://wiki.neo4j.org/content/Main_Page (check the guidelines and domain modeling gallery pages)
-
 
 === Contributing
 
@@ -62,7 +60,7 @@ There are also some complete examples in the example folder
 * railway - an example of a railway network application
 * imdb - an example of a neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
 * rest - an example how to expose neo4j nodes as REST resources
-* Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master
+* Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master or http://github.com/sashaagafonoff/peoplemap
 
 == Installation
 

@@ -27,7 +27,7 @@ module Neo4j
 
     # only for testing purpose, e.g we need to redefine an existing class
     def self.remove_instance(clazz)
-      @instances.delete(clazz.root_class) unless @instances.nil?
+      @instances.delete(clazz.root_class) if !@instances.nil? && clazz.respond_to?(:root_class)
     end
 
 

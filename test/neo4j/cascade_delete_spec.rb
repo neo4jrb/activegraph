@@ -4,7 +4,6 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 require 'neo4j'
 require 'neo4j/spec_helper'
 
-
 describe "Cascade Delete for raw relationships" do
 
   before(:all) do
@@ -363,11 +362,10 @@ describe "Cascade Delete chained" do
 
   after(:all) do
     stop
+    undefine_class :OrderLine, :OrderStatus, :Order
   end
   
   it "should delete a chained relationship of cascaded objects" do
-    pending "Must avoid cascade delete when using the reindexer extension"
-    
     # OrderStatus ---> Order ---*>OrderLine
     class OrderLine
       include Neo4j::NodeMixin
