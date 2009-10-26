@@ -185,7 +185,7 @@ module Neo4j::Aggregate
       # check if it is the leaf node or not
       if (@child_dsl)
         # this is not the leaf aggregate dsl, let the child node add the node instead
-        @child_dsl.create_groups(group_node, node)  # TODO
+        @child_dsl.create_groups(group_node, node)  
       else
         # this IS a leaf aggregate dsl, add node to the group
         rel_type = node.kind_of?(AggregateGroupNode)? key : :aggregate

@@ -190,7 +190,7 @@ describe "Aggregates" do
       agg_root["bad"].aggregate_size.should == 1
       agg_root["average"].aggregate_size.should == 2
 
-      # there are two sub groups, one groop with same score 101 and another group with score 102
+      # there are two sub groups, one group with same score 101 and another group with score 102
       agg_root["good"].aggregate_size.should == 2
 
       agg_root["good"][101].aggregate_size.should == 2
@@ -280,7 +280,7 @@ describe "Aggregates" do
 
   end
 
-  describe "grouped by one property (colour)" do
+  describe "grouped by one property" do
     # Called before each example.
     before(:each) do
       @red=[]
@@ -336,7 +336,7 @@ describe "Aggregates" do
       names.should include('a', 'b', 'c', 'd')
     end
 
-    it "should not add nodes to the aggreation that does not have a group property" do
+    it "should not add nodes to the aggregation that does not have a group property" do
       # add a node that does not have the colour property
 
       @agg_node.to_a.size.should == 3
@@ -418,7 +418,7 @@ describe "Aggregates" do
     end
 
 
-    it "should have a counter for number of meber in each group" do
+    it "should have a counter for number of member in each group" do
       # Creates age group 0=0-4, 1=5-9, 2=10-14
       @registrations << @aggregate_node.aggregate(@people).group_by(:age).map_value{|age| age / 5}
 
@@ -561,23 +561,6 @@ describe "Aggregates" do
 
       # when
       agg_node.include_node?(new_node).should be_true
-    end
-
-    it "should not append a node to an aggregate if it already exist in the aggregate" do
-      pending "Not sure if we want that. Will get bad performance if we have to check it each time we add a node to a aggregate"
-      agg_node = AggregateNode.new
-      @registrations << agg_node.aggregate.group_by(:colour)
-
-      new_node = Neo4j::Node.new
-      new_node[:colour] = 'black'
-
-      # when
-      agg_node << new_node
-      agg_node << new_node
-
-      # then
-      agg_node[:black].aggregate_size.should == 1
-      agg_node[:black].should include(new_node)
     end
   end
 

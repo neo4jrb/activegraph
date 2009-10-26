@@ -6,7 +6,6 @@ module Neo4j::Aggregate
         Neo4j.event_handler.add(self)
         @filter = nodes_or_class
       end
-      puts "init aggregate_each root #{root_node.neo_node_id}"      
       @root_node = root_node
       @nodes = nodes_or_class
     end
@@ -34,8 +33,6 @@ module Neo4j::Aggregate
       return if node.class != @filter
       return unless @group_by.include?(prop_key.to_sym)
 
-      puts "on_property_changed node: #{node.neo_node_id} prop: #{prop_key} old: #{old_value} new: #{new_value}"
-
       # for each aggregate the node belongs to delete it
       # we have to first create it and then deleted, otherwise cascade delete will kick in
       group = node.aggregate_groups(@root_node.aggregate_id)
@@ -45,15 +42,6 @@ module Neo4j::Aggregate
 
       # delete this aggregate group if it exists
       group.delete if group
-
-#      puts "EXIT NODE CHANGED ===="
-#      puts "OUTGOING NODE"
-#      node.print 3, :outgoing
-#      puts "INCOMING NODE"
-#      node.print 3, :incoming
-#
-#      puts "ROOT NODE, OUTGOING"
-      @root_node.print 3, :outgoing
     end
 
     # Specifies which properties we should group on.
@@ -65,6 +53,10 @@ module Neo4j::Aggregate
       self
     end
 
+    def with(prop_key, &proc)
+      @with_proc = proc
+      @prop_key = prop_key
+    end
 
     def execute(nodes = @nodes)
       return unless nodes
@@ -72,13 +64,13 @@ module Neo4j::Aggregate
         group_node = GroupEachNode.new
         group_node.group_by = @group_by.join(',')
         group_node.aggregate = node
-        puts "  create rel between #{node.neo_node_id} and group_node #{group_node.neo_node_id}"
         rel = group_node.relationships.outgoing(:aggregate)[node]
-        puts "    found rel #{rel.neo_relationship_id}  agg_id: #{@root_node.aggregate_id.to_s} start: #{rel.start_node.neo_node_id}, end: #{rel.end_node.neo_node_id}"
         rel[:aggregate_group] = @root_node.aggregate_id.to_s
         @root_node.groups << group_node
-        puts "    created rel between root #{@root_node.neo_node_id} and #{group_node.neo_node_id}"
-#        group_node.print 3, :both
+        if @with_proc
+          val = group_node.inject(0) {|sum, val| next sum if val.nil?; @with_proc.call(sum, val, 0)}
+          group_node[@prop_key.to_s] = val
+        end
       end
       @nodes = nil # prevent it to run twice
     end
