@@ -3,7 +3,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
 require 'neo4j/extensions/graph_algo'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 
 include Neo4j
 

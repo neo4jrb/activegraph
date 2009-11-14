@@ -1,13 +1,27 @@
 module Neo4j::Aggregate
-  class AggregatorEach
-    def initialize(root_node, nodes_or_class)
+  class PropsAggregator
+    def initialize(root_node, agg_id)
+      @root_node = root_node
+      @agg_id = agg_id
+    end
 
+
+    def on(nodes_or_class)
       if (nodes_or_class.kind_of?(Class) and nodes_or_class.ancestors.include?(Neo4j::NodeMixin))
         Neo4j.event_handler.add(self)
         @filter = nodes_or_class
+        @nodes = nodes_or_class
+      elsif (!nodes_or_class.respond_to?(:each))
+        @nodes = [nodes_or_class]
+      else
+        @nodes = nodes_or_class
       end
-      @root_node = root_node
-      @nodes = nodes_or_class
+      self
+    end
+
+    def props(*properties)
+      @group_by = properties
+      self
     end
 
     # Unregisters this aggregate so that it will not be notified any longer
@@ -26,7 +40,6 @@ module Neo4j::Aggregate
       Neo4j.event_handler.remove(self)
     end
 
-    # http://www.2paths.com/2009/06/22/visualizing-semantic-data-using-javascript-and-the-html-canvas-element/
     # called from neo4j event handler
     # :api: private
     def on_property_changed(node, prop_key, old_value, new_value) # :nodoc:
@@ -35,7 +48,7 @@ module Neo4j::Aggregate
 
       # for each aggregate the node belongs to delete it
       # we have to first create it and then deleted, otherwise cascade delete will kick in
-      group = node.aggregate_groups(@root_node.aggregate_id)
+      group = node.aggregate_groups(@agg_id)
       
       # recreate the aggregate group
       execute([node])
@@ -44,14 +57,6 @@ module Neo4j::Aggregate
       group.delete if group
     end
 
-    # Specifies which properties we should group on.
-    # All those properties can be combined to create a new group.
-    #
-    # :api: public
-    def group_by(*keys)
-      @group_by = keys
-      self
-    end
 
     def with(prop_key, &proc)
       @with_proc = proc
@@ -61,11 +66,11 @@ module Neo4j::Aggregate
     def execute(nodes = @nodes)
       return unless nodes
       nodes.each do |node|
-        group_node = GroupEachNode.new
+        group_node = PropGroup.new
         group_node.group_by = @group_by.join(',')
         group_node.aggregate = node
         rel = group_node.relationships.outgoing(:aggregate)[node]
-        rel[:aggregate_group] = @root_node.aggregate_id.to_s
+        rel[:aggregate_group] = @agg_id
         @root_node.groups << group_node
         if @with_proc
           val = group_node.inject(0) {|sum, val| next sum if val.nil?; @with_proc.call(sum, val, 0)}

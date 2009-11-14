@@ -2,14 +2,22 @@ module Neo4j::Aggregate
 
 
 
-  # Enables aggregation of an enumeration of nodes into groups.
-  # Each group is a neo4j node which contains aggregated properties of the underlying nodes in that group.
+  # Enables aggregation of nodes into groups.
+  # An aggregation is a node which in contains group nodes.
+  # A group node aggregates the properties of the nodes that belongs to its group.
   #
-  # Notice that the AggregateNodeMixin#aggregate method takes an Ruby Enumeration of neo4j nodes.
-  # That means that you can use for example the output from the Neo4j::NodeMixin#traverse as input to the aggregate method, or even
+  # There are two ways of creating an aggregate.
+  # * Providing an enumeration of nodes.
+  # * Register a Node class. All nodes of this class will (can)  be part of the aggregate.
+  #
+  # One example of usage of providing an enumeration of nodes is by taking the output from
+  # the Neo4j::NodeMixin#traverse as input to the aggregate method, or even
   # create aggregates over aggregates.
   #
   # This mixin includes the Enumerable mixin.
+  #
+  # There is also a different aggregation which aggregates on properties
+  # instead of nodes - Neo4j::Aggregate::PropsAggregateMixin
   #
   # ==== Example - group by one property
   #
@@ -17,12 +25,9 @@ module Neo4j::Aggregate
   #
   #   a = AggregateNode.new
   #
-  #   a.aggregate(nodes).group_by(:colour)
+  #   a.aggregate(nodes).group_by(:colour).execute
   #
-  # The following node structure will be created:
-  #
-  #   [node a]--<relationship type red|green|blue...>--*>[node groups]--<relationship type aggregate>--*>[node nodes]
-  #
+  # The execute method is only needed when providing nodes (instead of a NodeClass) for the aggregate method.
   # Print all three groups, one for each colour
   #
   #   a.each{|n| puts n[:colour]}
@@ -38,7 +43,7 @@ module Neo4j::Aggregate
   #
   # Get an enumeration of names of people having favorite colour 'red'
   #
-  #   a.[:red][:name].to_a => ['bertil', 'adam', 'adam']
+  #   a[:red][:name].to_a => ['bertil', 'adam', 'adam']
   #
   # ==== Example - group by a property value which is transformed
   #
@@ -95,13 +100,13 @@ module Neo4j::Aggregate
   #
   # One example where this is needed is for having a tree structure of nodes with latitude and longitude grouped by a 'zoom' factor
   #
-  # create an aggrgeation of groups where members have the same latitude longitude integer values (to_i)
+  # create an aggregation of groups where members have the same latitude longitude integer values (to_i)
   #   reg1 = agg_root.aggregate().group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*1000).to_i}_#{(lng*1000).to_i}"}
   #
   # create another aggregation of groups where members have the same latitude longitude 1/10 value
   #   reg2 = agg_root.aggregate(reg1).group_by(:latitude, :longitude).map_value{|lat, lng| "#{(lat*100).to_i}_#{(lng*100).to_i" }
   #
-  # Notice how the second aggreate uses the first aggregate (reg1). This will create the following structure with
+  # Notice how the second aggregate uses the first aggregate (reg1). This will create the following structure with
   # * node n1 - (latitude 42.1234 and longitude 12.1234) and
   # * node n2 (latitude 42.1299 and longitude 12.1298)
   # * node n3 (latitude 42.1333 and longitude 12.1298)
@@ -117,28 +122,12 @@ module Neo4j::Aggregate
   # When the nodes n1,n2,n3 are added to the agg_root, e.g:
   #   agg_root << n1 << n2 << n3
   #
-  # ==== Example - aggregating over another aggregation
-  #
-  #   a = AggregateNode.new
-  #   a.aggregate.group_by(:colour)
-  #   a << node1 << node2
-  #
-  #   b = AggregateNode.new
-  #   b.aggregate.group_by(:age)
-  #   node3[:colour] = 'green'; node3[:age] = 10
-  #   node4[:colour] = 'red';   node3[:age] = 11
-  #
-  #   b << node3 << node4
-  #
-  #   a << b
-  #
-  #   a['green'][10] #=>[node3]
-  #
   #
   # ==== Example - Add and remove nodes by events
   #
   # We want to both create and delete nodes and the aggregates should be updated automatically
-  # This is done by registering the aggregate dsl method as an event listener
+  # This is done by providing a NodeClass for the aggregate method.
+  # (it registering the aggregate dsl method as an event listener
   #
   # Here is an example that update the aggregate a on all nodes of type MyNode
   #   a = AggregateNode.new
@@ -231,13 +220,24 @@ module Neo4j::Aggregate
   #  a[:rev] => ["good", "good", "bad"]
   #  a[:rev]["good"] => 2
   #  a[:rev]["bad"] => 1
-  module AggregateNodeMixin
+  module NodeAggregateMixin
     include Neo4j::NodeMixin
-    property :aggregate_size  # number of groups this aggregate contains
     include Enumerable
 
 
+    # The number of groups that this aggregate contains
+    def aggregate_size
+      internal_node.set_property("aggregate_size", 0) unless internal_node.has_property("aggregate_size")
+      self[:aggregate_size]
+    end
 
+
+    # Internal method - set the number of groups that this node contains
+    # We can then use this property instead of traversing and counting each node in order to find out how many groups there are. 
+    def aggregate_size=(value) # :nodoc:
+      self[:aggregate_size] = value
+    end
+    
     # Creates aggregated nodes by grouping nodes by one or more property values.
     # Raises an exception if the aggregation already exists.
     #
@@ -255,8 +255,7 @@ module Neo4j::Aggregate
     # :api: public
     def aggregate(nodes_or_filter=nil)
       # setting a property here using neo4j.rb might trigger events which we do not want
-      internal_node.set_property("aggregate_size", 0) unless internal_node.has_property("aggregate_size")
-      @aggregator = Aggregator.new(self, nodes_or_filter)
+      @aggregator = NodeAggregator.new(self, nodes_or_filter)
     end
 
     # Appends one or a whole enumeration of nodes to the existing aggregation.
@@ -303,7 +302,7 @@ module Neo4j::Aggregate
     # :api: public
     def group_node(key)
       @aggregator.execute if @aggregator
-      relationships.outgoing(key).nodes.find{|n| n.kind_of? AggregateGroupNode}
+      relationships.outgoing(key).nodes.find{|n| n.kind_of? NodeGroup}
     end
 
 
@@ -325,7 +324,7 @@ module Neo4j::Aggregate
 
     def each
       @aggregator.execute if @aggregator
-      relationships.outgoing.nodes.each {|n| yield n if n.kind_of? AggregateGroupNode}
+      relationships.outgoing.nodes.each {|n| yield n if n.kind_of? NodeGroup}
     end
 
   end
