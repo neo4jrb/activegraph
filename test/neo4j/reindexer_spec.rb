@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 
 
 

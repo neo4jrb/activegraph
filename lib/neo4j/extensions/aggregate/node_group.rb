@@ -5,14 +5,14 @@ module Neo4j::Aggregate
 # Overrides [] and []= properties, so that we can access aggregated properties or relationships.
 #
 # :api: private
-  class AggregateGroupNode #:nodoc:
+  class NodeGroup #:nodoc:
     include Neo4j::NodeMixin
     include Enumerable
 
     property :aggregate_group, :aggregate_size
 
     def self.create(aggregate_group)
-      new_node = AggregateGroupNode.new
+      new_node = NodeGroup.new
       new_node.aggregate_group = aggregate_group.kind_of?(Symbol)? aggregate_group.to_s : aggregate_group
       new_node.aggregate_size = 0
       new_node

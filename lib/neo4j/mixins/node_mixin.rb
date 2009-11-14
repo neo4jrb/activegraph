@@ -284,7 +284,7 @@ module Neo4j
           # check node has no outgoing relationships
           no_outgoing = node.relationships.outgoing.empty?
           # check node has only incoming relationship with cascade_delete_incoming
-          no_incoming = node.relationships.incoming.find{|r| !ignore_incoming_cascade_delete?(node, r)}.nil?
+          no_incoming = node.relationships.incoming.find{|r| !node.ignore_incoming_cascade_delete?(r)}.nil?
           # only cascade delete incoming if no outgoing and no incoming (exception cascade_delete_incoming) relationships
           node.delete if no_outgoing and no_incoming
         end
@@ -297,7 +297,7 @@ module Neo4j
     # Specifies which relationships should be ignored when trying to cascade delete a node.
     # If a node does not have any relationships (except those specified here to ignore) it will be cascade deleted
     #
-    def ignore_incoming_cascade_delete?(node, relationship)
+    def ignore_incoming_cascade_delete?(relationship)
       # ignore relationship with property _cascade_delete_incoming
       relationship.property?(:_cascade_delete_incoming)
     end

@@ -121,14 +121,15 @@ module Neo4j
           @relationships = relationships
         end
 
-        # TODO does not work together with filter, will be removed in JRuby 1.4 (not needed since it is included)
+        # TODO does not work together with filter
         def first
-          iter = @relationships.iterator
-          return nil unless iter.hasNext()
-          rel = Neo4j.instance.load_relationship(iter.next)
-          rel.other_node(@relationships.internal_node)
+          find {true}
         end
 
+        def empty?
+          first.nil?
+        end
+        
         def each
           @relationships.each do |relationship|
             yield relationship.other_node(@relationships.internal_node)

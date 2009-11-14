@@ -11,22 +11,19 @@ module Neo4j
     #
     #   class MyNode
     #      include Neo4j::NodeMixin
-    #      include Neo4j::AggregateNodeMixin
+    #      include Neo4j::NodeAggregateMixin
     #   end
     #
     #   agg1 = MyNode
-    #   agg1.aggregate(:colours).group_by(:colour)
+    #   agg1.aggregate([node1,node2]).group_by(:colour)
     #
     #   agg2 = MyNode
-    #   agg2.aggregate(:age).group_by(:age)
-    #
-    #   agg1 << node1
-    #   agg2 << node1
+    #   agg2.aggregate([node1,node2]).group_by(:age)
     #
     #   node1.aggregates.to_a # => [agg1, agg2]
     #
     def aggregates
-      Neo4j::Aggregate::GroupEnum.new(self)
+      Neo4j::Aggregate::AggregateEnum.new(self)
     end
 
     # Returns an enumeration of groups that this nodes belongs to.
