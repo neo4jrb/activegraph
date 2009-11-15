@@ -133,7 +133,7 @@ describe Neo4j::Aggregate::PropsAggregate do
 
       # then
       q1.should include("andreas", "blue", "kalle")
-      q1.to_a.size.should == 4
+      [*q1].size.should == 4
     end
 
     it "should allow to create different aggregate groups from the same aggregate node" do

@@ -43,7 +43,7 @@ module Neo4j::Aggregate
   #
   # Get an enumeration of names of people having favorite colour 'red'
   #
-  #   a[:red][:name].to_a => ['bertil', 'adam', 'adam']
+  #   [*a[:red][:name]] => ['bertil', 'adam', 'adam']
   #
   # ==== Example - group by a property value which is transformed
   #
@@ -76,7 +76,7 @@ module Neo4j::Aggregate
   #   agg_node.aggregate([node1, node2]).group_by(:colour, :type)
   #
   #   # node1 is member of two groups, red and A
-  #   node1.aggregate_groups.to_a # => [agg_node[:red], agg_node[:A]]
+  #   [*node1.aggregate_groups] # => [agg_node[:red], agg_node[:A]]
   #
   #   # group A contains node1
   #   agg_node[:A].include?(node1) # => true
@@ -138,11 +138,11 @@ module Neo4j::Aggregate
   #   Neo4j::Transaction.run { blue_node = MyNode.new; a.colour = 'blue' }
   #   # then the aggregate will be updated automatically since it listen to property change events
   #   a['blue'].size = 1
-  #   a['blue'].to_a[0] # => blue_node
+  #   [*a['blue']][0] # => blue_node
   #
   #   blue_node[:colour] = 'red'
   #   a['blue']     # => nil
-  #   a['red'].to_a # => [blue_node]
+  #   [*a['red']] # => [blue_node]
   #   blue_node.delete
   #   a['red']      # => nil
   #
@@ -150,7 +150,7 @@ module Neo4j::Aggregate
   # ===== TODO Only Aggregate ???
   #
   # a.aggregate([n1,n2])
-  # a.to_a => [n1, n2]
+  # [*a] => [n1, n2]
   #
   # OR without aggregate method
   # a << n1 << n2
@@ -167,9 +167,9 @@ module Neo4j::Aggregate
   #  n2 = [jan=>2, feb=>0, mars=>2, apr=>10, ...]
   #
   #  a.aggregate_each([n1,n2]).group(:jan,:feb,:mars).by(:q1)
-  #  a[:q1].to_a = [g1,g2]
+  #  [*a[:q1]] = [g1,g2]
   #  g1.props => [n1.neo_node_id, jan=>1, feb=>5, ..., dec=>]
-  #  g1.to_a => [1,5,2]
+  #  [*g1] => [1,5,2]
   #
   # ===== Example Group by Each  (2)
   #
@@ -179,10 +179,10 @@ module Neo4j::Aggregate
   #
   #  a.aggregate_each([n1,n2,n3]).group_by(:colour, :age)
   #  n1.aggregate_groups = [g1]
-  #  g1.to_a = ['red', 10]
-  #  a.to_a => [g1,g2,g3]
+  #  [*g1] = ['red', 10]
+  #  [*a] => [g1,g2,g3]
   #
-  #  g2.to_a = ['blue', 11]
+  #  [*g2] = ['blue', 11]
   #  g1.props => [
   #
   #
@@ -196,11 +196,11 @@ module Neo4j::Aggregate
   #  n1 = [jan=>1, feb=>5, mars=>2, apr=>10, ...]
   #  n2 = [jan=>2, feb=>0, mars=>2, apr=>10, ...]
   #
-  #  q1.to_a => [g1,g2]
-  #  g1.to_a => [1,5,2]
-  #  g2.to_a => [2,0,2]
+  #  [*q1] => [g1,g2]
+  #  [*g1] => [1,5,2]
+  #  [*g2] => [2,0,2]
   #
-  #  q2.to_a => [g3,g4]
+  #  [*q2] => [g3,g4]
   #  n1.aggregate_groups = [g1,g2]
   #  n1[:q1] => nil OR [1,5,2] ????
   #  a[:q1]  => [1,5,2,2,0,2]

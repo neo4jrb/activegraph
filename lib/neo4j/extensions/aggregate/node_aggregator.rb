@@ -89,7 +89,7 @@ module Neo4j::Aggregate
       removed = old_group_keys - new_group_keys
 
       removed.each do |key|
-        member_of = node.relationships.incoming(:aggregate).filter{self[:aggregate_group] == key}.to_a
+        member_of = [*node.relationships.incoming(:aggregate).filter{self[:aggregate_group] == key}]
         raise "same group key used in several aggregate groups, strange #{member_of.size}" if member_of.size > 1
         next if member_of.empty?
         group_node = member_of[0].start_node
@@ -148,7 +148,13 @@ module Neo4j::Aggregate
 
 
       # check all values and expand enumerable values
-      group_keys = values.inject(Set.new) {|result, value| value.respond_to?(:to_a) ? result.merge(value.to_a) : result << value }.to_a
+      group_keys = [*values.inject(Set.new) do |result, value| 
+        if value.respond_to?(:to_a) 
+          result.merge([*value]) 
+        else
+          result << value 
+        end
+      end]
 
       # if we are not grouping by_each then there will only be one group_key - join it
       group_keys = [group_keys] unless group_keys.respond_to?(:each)

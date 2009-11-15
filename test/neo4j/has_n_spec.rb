@@ -46,7 +46,7 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends << t2
 
       # then
-      t1.friends.to_a.should include(t2)
+      [*t1.friends].should include(t2)
     end
 
     it "should add relationships of different types to other nodes" do
@@ -57,10 +57,10 @@ describe "Neo4j::NodeMixin#has_n " do
       me.parents << p1
 
       # then
-      me.friends.to_a.should include(f1)
-      me.friends.to_a.size.should == 1
-      me.parents.to_a.should include(p1)
-      me.parents.to_a.size.should == 1
+      [*me.friends].should include(f1)
+      [*me.friends].size.should == 1
+      [*me.parents].should include(p1)
+      [*me.parents].size.should == 1
     end
 
     it "should be none symmetric (if a is friend to b then b does not have to be friend to a)" do
@@ -69,8 +69,8 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends << t2
 
       # then
-      t1.friends.to_a.should include(t2)
-      t2.friends.to_a.should_not include(t1)
+      [*t1.friends].should include(t2)
+      [*t2.friends].should_not include(t1)
     end
 
     it "should allow to chain << operations in one line" do
@@ -81,7 +81,7 @@ describe "Neo4j::NodeMixin#has_n " do
       t1.friends << t2 << t3
 
       # then t2 should be a friend of t1
-      t1.friends.to_a.should include(t2, t3)
+      [*t1.friends].should include(t2, t3)
     end
 
 
@@ -94,7 +94,7 @@ describe "Neo4j::NodeMixin#has_n " do
       sub.friends << t
 
       # then
-      sub.friends.to_a.should include(t)
+      [*sub.friends].should include(t)
     end
   end
 
@@ -144,15 +144,15 @@ describe "Neo4j::NodeMixin#has_n " do
     it "should work with incoming nodes of depth 2" do
       nodes = @n1.known_by.depth(2)
       nodes.should include(@n0)
-      nodes.to_a.size.should == 1
+      [*nodes].size.should == 1
 
       nodes = @n11.known_by.depth(2)
       nodes.should include(@n0, @n1)
-      nodes.to_a.size.should == 2
+      [*nodes].size.should == 2
 
       nodes = @n112.known_by.depth(2)
       nodes.should include(@n1, @n11)
-      nodes.to_a.size.should == 2
+      [*nodes].size.should == 2
     end
 
   end
@@ -197,8 +197,8 @@ describe "Neo4j::NodeMixin#has_n " do
       customer.orders << order
 
       # then
-      customer.orders.to_a.should include(order)
-      customer.orders.to_a.size == 1
+      [*customer.orders].should include(order)
+      [*customer.orders].size == 1
     end
 
     it "should allow to set the relationship on an incoming node" do
@@ -210,8 +210,8 @@ describe "Neo4j::NodeMixin#has_n " do
       order.customer = customer
 
       # then
-      customer.orders.to_a.should include(order)
-      customer.orders.to_a.size == 1
+      [*customer.orders].should include(order)
+      [*customer.orders].size == 1
     end
 
     it "should allow to set a property on the customer-order relationship" do
@@ -237,7 +237,7 @@ describe "Neo4j::NodeMixin#has_n " do
       relationship.delete
 
       # then
-      customer.orders.to_a.should_not include(order)
+      [*customer.orders].should_not include(order)
     end
 
     it "should find the order using a filter: customer.orders{ order_id == '2'}" do
@@ -254,7 +254,7 @@ describe "Neo4j::NodeMixin#has_n " do
       order3.order_id = '3'
 
       # when
-      result = customer.orders{ order_id == '2'}.to_a
+      result = [*customer.orders{ order_id == '2'}]
 
       # then
       result.should include(order2)

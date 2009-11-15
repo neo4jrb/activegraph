@@ -32,7 +32,7 @@ describe 'ReferenceNode' do
 
     # then
     Neo4j.ref_node.relationships.outgoing(:myfoo).nodes.should include(node)
-    Neo4j.ref_node.relationships.outgoing(:myfoo).to_a.size.should == 1    
+    [*Neo4j.ref_node.relationships.outgoing(:myfoo)].size.should == 1    
   end
 
 

@@ -38,8 +38,8 @@ describe "GraphAlgo.all_simple_path" do
   it "should contain Enumerable of Enumerable" do
     paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2)
     paths.size.should == 2
-    paths.to_a[0].should be_kind_of Enumerable
-    paths.to_a[1].should be_kind_of Enumerable
+    [*paths][0].should be_kind_of Enumerable
+    [*paths][1].should be_kind_of Enumerable
   end
 
   it "should contain Enumerable of Enumerable of alternating Relationship and Nodes" do
@@ -47,7 +47,7 @@ describe "GraphAlgo.all_simple_path" do
     node = true
     node_and_rel_ids = []
 
-    paths.to_a[0].each do | node_or_rel|
+    [*paths][0].each do | node_or_rel|
       if node
         node_or_rel.should be_kind_of Neo4j::Node
         node_and_rel_ids << node_or_rel.neo_node_id
@@ -67,7 +67,7 @@ describe "GraphAlgo.all_simple_path" do
   it "should contain Enumerable of Enumerable of only Nodes if as_nodes is given" do
     paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2).as_nodes
     node_ids = []
-    paths.to_a[0].each do | node|
+    [*paths][0].each do | node|
       node.should be_kind_of Neo4j::Node
       node_ids << node.neo_node_id
     end

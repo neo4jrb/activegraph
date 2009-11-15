@@ -135,7 +135,7 @@ describe 'Neo4j::Rest::RestStub' do
     Neo4j::Transaction.finish
 
     stub = Neo4j::Rest::NodeStub.new(a._uri)
-    nodes = stub.relationships.outgoing(:foo).nodes.to_a
+    nodes = [*stub.relationships.outgoing(:foo).nodes]
     nodes.size.should == 2
     nodes[0][:name].should == 'b'
     nodes[1][:name].should == 'c'

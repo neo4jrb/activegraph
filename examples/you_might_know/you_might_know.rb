@@ -9,7 +9,7 @@ include Neo4j
 # The idea of the solution presented here is to keep track of the features that are common in each branch of the traversal
 # and to stop when there is nothing in common any more or the maximum distance has been reached.
 def you_might_know(node, matches, max_distance)
-  buddies = node.relationships.both(:knows).nodes.to_a
+  buddies = [*node.relationships.both(:knows).nodes]
   find_friends(node, [node], matches, 1, max_distance, buddies)
 end
 

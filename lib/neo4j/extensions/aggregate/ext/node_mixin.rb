@@ -20,7 +20,7 @@ module Neo4j
     #   agg2 = MyNode
     #   agg2.aggregate([node1,node2]).group_by(:age)
     #
-    #   node1.aggregates.to_a # => [agg1, agg2]
+    #   [*node1.aggregates] # => [agg1, agg2]
     #
     def aggregates
       Neo4j::Aggregate::AggregateEnum.new(self)
@@ -55,11 +55,11 @@ module Neo4j
     #   agg1 << node1
     #   agg2 << node1
     #
-    #   node1.aggregate_groups.to_a # => [agg1[some_group], agg2[some_other_group]]
+    #   [*node1.aggregate_groups] # => [agg1[some_group], agg2[some_other_group]]
     #
     def aggregate_groups(group = :all)
       return relationships.incoming(:aggregate).nodes if group == :all
-      relationships.incoming(:aggregate).filter{self[:aggregate_group] == group.to_s}.nodes.to_a[0]
+      [*relationships.incoming(:aggregate).filter{self[:aggregate_group] == group.to_s}.nodes][0]
     end
 
   end
