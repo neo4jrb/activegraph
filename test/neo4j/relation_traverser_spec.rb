@@ -126,7 +126,7 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when
-      outgoing = t1.relationships.outgoing.to_a
+      outgoing = [*t1.relationships.outgoing]
       
       # then
       outgoing.size.should == 1
@@ -142,7 +142,7 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when
-      outgoing = t2.relationships.incoming(:friends).to_a
+      outgoing = [*t2.relationships.incoming(:friends)]
 
       # then
       outgoing.size.should == 1
@@ -156,8 +156,8 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t2 = TestNode.new
 
       # when and then
-      t2.relationships.incoming.to_a.size.should == 0
-      t2.relationships.outgoing.to_a.size.should == 0
+      [*t2.relationships.incoming].size.should == 0
+      [*t2.relationships.outgoing].size.should == 0
     end
 
     it "should make sure that incoming nodes are not found in outcoming nodes" do
@@ -167,8 +167,8 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when and then
-      t1.relationships.incoming.to_a.size.should == 0
-      t2.relationships.outgoing.to_a.size.should == 0
+      [*t1.relationships.incoming].size.should == 0
+      [*t2.relationships.outgoing].size.should == 0
     end
 
 
@@ -179,8 +179,8 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when and then
-      t1.relationships.both.nodes.to_a.should include(t2)
-      t2.relationships.both.nodes.to_a.should include(t1)
+      [*t1.relationships.both.nodes].should include(t2)
+      [*t2.relationships.both.nodes].should include(t1)
     end
 
     it "should find several both incoming and outgoing nodes" do
@@ -193,11 +193,11 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t3
 
       # when and then
-      t1.relationships.both.nodes.to_a.should include(t2,t3)
-      t1.relationships.both.outgoing.nodes.to_a.should include(t2,t3)
-      t2.relationships.both.incoming.nodes.to_a.should include(t1)
-      t3.relationships.both.incoming.nodes.to_a.should include(t1)
-      t1.relationships.both.nodes.to_a.size.should == 2
+      [*t1.relationships.both.nodes].should include(t2,t3)
+      [*t1.relationships.both.outgoing.nodes].should include(t2,t3)
+      [*t2.relationships.both.incoming.nodes].should include(t1)
+      [*t3.relationships.both.incoming.nodes].should include(t1)
+      [*t1.relationships.both.nodes].size.should == 2
     end
     
     it "should find incoming nodes of a specific type" do
@@ -210,9 +210,9 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t3
 
       # when and then
-      t1.relationships.outgoing(:friends).nodes.to_a.should include(t2,t3)
-      t2.relationships.incoming(:friends).nodes.to_a.should include(t1)
-      t3.relationships.incoming(:friends).nodes.to_a.should include(t1)
+      [*t1.relationships.outgoing(:friends).nodes].should include(t2,t3)
+      [*t2.relationships.incoming(:friends).nodes].should include(t1)
+      [*t3.relationships.incoming(:friends).nodes].should include(t1)
     end
 
     it "should allow to filter relationships" do
@@ -226,11 +226,11 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.relationships.outgoing(:foo)[t3][:colour] = 'red'
 
       # find all relationships with property colour == blue
-      t1.relationships.outgoing.filter{self[:colour] == 'blue'}.to_a.size.should == 1
+      [*t1.relationships.outgoing.filter{self[:colour] == 'blue'}].size.should == 1
       t1.relationships.outgoing.filter{self[:colour] == 'blue'}.nodes.should include(t2)
-      t1.relationships.outgoing.filter{self[:colour] == 'red'}.to_a.size.should == 1
+      [*t1.relationships.outgoing.filter{self[:colour] == 'red'}].size.should == 1
       t1.relationships.outgoing.filter{self[:colour] == 'red'}.nodes.should include(t3)
-      t1.relationships.outgoing.filter{self[:colour] == 'black'}.to_a.should be_empty
+      [*t1.relationships.outgoing.filter{self[:colour] == 'black'}].should be_empty
     end
 
   end

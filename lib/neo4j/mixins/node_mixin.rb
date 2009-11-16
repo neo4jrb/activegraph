@@ -876,7 +876,7 @@ module Neo4j
 
         module_eval(%Q{def #{rel_type}
                         r = Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete})
-                        r.to_a[0]
+                        [*r][0]
                     end},  __FILE__, __LINE__)
         relationships_info[rel_type] = Relationships::RelationshipInfo.new
       end
@@ -953,7 +953,7 @@ module Neo4j
       #
       #  employee2.delete
       #
-      #  company.employees.to_a # => [employee1, employee3]
+      #  [*company.employees] # => [employee1, employee3]
       #  company.employees.size # => 2
       #
       # ===== List Items Memberships

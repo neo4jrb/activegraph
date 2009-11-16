@@ -86,7 +86,7 @@ module Neo4j
         if query[:search]
           # Use Lucene
           results = super(query[:search])
-          results = apply_lucene_sort(query[:sort], results).to_a rescue super(query[:search]).to_a
+          results = [*apply_lucene_sort(query[:sort], results)] rescue [*super(query[:search])]
 
         else
           # Use traverser
@@ -129,7 +129,7 @@ module Neo4j
       def apply_ruby_sort(sort_string, results)
         if sort_string
           sort_fields = sort_string.to_s.split(/,/)
-          results.to_a.sort do |x,y|
+          [*results].sort do |x,y|
             catch(:item_order) do
               sort_fields.each_index do |index|
                 field = sort_fields[index]
@@ -146,7 +146,7 @@ module Neo4j
             end
           end
         else
-          results.to_a
+          [*results]
         end
       end
 

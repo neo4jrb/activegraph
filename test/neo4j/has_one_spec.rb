@@ -43,8 +43,8 @@ describe "Neo4j::NodeMixin#has_one " do
 
     # then
     person.address.should be_kind_of(Address)
-    person.address.people.to_a.size.should == 1
-    person.address.people.to_a.should include(person)
+    [*person.address.people].size.should == 1
+    [*person.address.people].should include(person)
   end
 
   it "should create a relationship with the new method, like node1.rel.new(node2)" do
@@ -57,8 +57,8 @@ describe "Neo4j::NodeMixin#has_one " do
 
     # then
     person.address.should be_kind_of(Address)
-    person.address.people.to_a.size.should == 1
-    person.address.people.to_a.should include(person)
+    [*person.address.people].size.should == 1
+    [*person.address.people].should include(person)
   end
 
   it "should create a relationship with correct relationship type" do

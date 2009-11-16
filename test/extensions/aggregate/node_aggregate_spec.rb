@@ -23,8 +23,8 @@ describe Neo4j::Aggregate::NodeGroup do
     group.relationships.outgoing(:foo) << node1
     group.relationships.outgoing(:foo) << node2
 
-    group[:name].to_a.should include('node1', 'node2')
-    group[:name].to_a.size.should == 2
+    [*group[:name]].should include('node1', 'node2')
+    [*group[:name]].size.should == 2
     Neo4j::Transaction.finish
   end
 end
@@ -424,14 +424,14 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       @all = @red + @blue + @green
       # create names a,b,c,d,a,b.c,d,a,b,c,d, ....
       names = []
-      4.times { names += ('a' .. 'd').to_a}
+      4.times { names += [*('a' .. 'd')]}
       @all.each {|n| n[:name] = names.pop}
       @agg_node = NodeAggregate.new
       @agg_node.aggregate(@all).group_by(:colour).execute
     end
 
     it "should create one group for each unique property value" do
-      @agg_node.to_a.size.should == 3
+      [*@agg_node].size.should == 3
     end
 
     it "should create groups with properties aggregate_group" do
@@ -450,21 +450,21 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
     end
 
     it "should aggregate properties on aggregated nodes, e.g find name of all people having favorite colour 'red'" do
-      names = @agg_node[:red][:name].to_a
+      names = [*@agg_node[:red][:name]]
       names.size.should == 5 # duplicated name 'd'
       names.should include('a', 'b', 'c', 'd')
     end
 
     it "should not add nodes to the aggregation that does not have a group property" do
       # add a node that does not have the colour property
-      @agg_node.to_a.size.should == 3
+      [*@agg_node].size.should == 3
       @agg_node[:red].aggregate_size.should == 5
       @agg_node[:blue].aggregate_size.should == 4
       @agg_node[:green].aggregate_size.should == 3
 
       @agg_node << Neo4j::Node.new
 
-      @agg_node.to_a.size.should == 3
+      [*@agg_node].size.should == 3
       @agg_node[:red].aggregate_size.should == 5
       @agg_node[:blue].aggregate_size.should == 4
       @agg_node[:green].aggregate_size.should == 3
@@ -488,8 +488,8 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       agg_node['B'].should include(node2)
       agg_node['red'].should include(node1, node2)
 
-      node1.aggregate_groups.to_a.size.should == 2
-      node2.aggregate_groups.to_a.size.should == 2
+      [*node1.aggregate_groups].size.should == 2
+      [*node2.aggregate_groups].size.should == 2
     end
   end
 
@@ -519,8 +519,8 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       @aggregate_node['young'].should include(@people[0], @people[1], @people[2], @people[3])
       @aggregate_node['old'].should include(@people[4], @people[5])
 
-      @aggregate_node[0].to_a.size.should == 2
-      @aggregate_node[2].to_a.size.should == 1
+      [*@aggregate_node[0]].size.should == 2
+      [*@aggregate_node[2]].size.should == 1
       @aggregate_node[2].should include(@people[5])
     end
 
@@ -530,8 +530,8 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
 
       # then
       @aggregate_node[0].should include(@people[0], @people[1])
-      @aggregate_node[0].to_a.size.should == 2
-      @aggregate_node[2].to_a.size.should == 1
+      [*@aggregate_node[0]].size.should == 2
+      [*@aggregate_node[2]].size.should == 1
       @aggregate_node[2].should include(@people[5])
     end
 

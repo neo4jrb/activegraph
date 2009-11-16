@@ -178,10 +178,10 @@ describe "TxTracker (TxNodeList)" do
       first = @tx_node_list.tx_nodes.first
       first[:tx_finished].should == true
 
-      second = @tx_node_list.tx_nodes.to_a[1]
+      second = [*@tx_node_list.tx_nodes][1]
       second[:tx_finished].should be_nil
 
-      third = @tx_node_list.tx_nodes.to_a[2]
+      third = [*@tx_node_list.tx_nodes][2]
       third[:tx_finished].should be_nil
     end
   end

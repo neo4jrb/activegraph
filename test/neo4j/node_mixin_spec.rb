@@ -298,13 +298,13 @@ describe "Neo4j::Node#delete"  do
     t1 = Neo4j::Node.new
     t2 = Neo4j::Node.new
     t2.relationships.outgoing(:friends) << t1
-    t2.relationships.both(:friends).nodes.to_a.should include(t1)
+    [*t2.relationships.both(:friends).nodes].should include(t1)
 
     # when
     t1.delete
 
     # then
-    t2.relationships.both(:friends).nodes.to_a.should_not include(t1)
+    [*t2.relationships.both(:friends).nodes].should_not include(t1)
   end
 end
 

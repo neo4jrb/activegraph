@@ -104,7 +104,7 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     node2.delete
 
     # then
-    list_node.items.to_a.size.should == 1
+    [*list_node.items].size.should == 1
   end
 
   it "should contain items after append one item to a list (#<<)" do
@@ -152,7 +152,7 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     list.items.should include(a)
     list.items.should include(b)
     list.items.should be_kind_of(Enumerable)
-    list.items.to_a.size.should == 2
+    [*list.items].size.should == 2
   end
 
 end

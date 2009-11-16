@@ -97,7 +97,7 @@ describe "Person" do
 
     Neo4j::Transaction.run do
       # then
-      person1.friends.to_a.should include(person2)
+      [*person1.friends].should include(person2)
     end
   end
 
@@ -116,7 +116,7 @@ describe "Person" do
       person1.relationships[person2].delete
 
       # then
-      person1.friends.to_a.should_not include(person2)
+      [*person1.friends].should_not include(person2)
     end
   end
 

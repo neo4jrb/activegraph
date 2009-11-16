@@ -33,7 +33,7 @@ describe Neo4j::NodeMixin do
       agg_node.aggregate([node]).group_by(:colour).execute
 
       node.aggregates.first.should == agg_node
-      node.aggregates.to_a.size.should == 1
+      [*node.aggregates].size.should == 1
     end
 
     it "returns two aggregates when one nodes belongs to two aggregates" do
@@ -47,7 +47,7 @@ describe Neo4j::NodeMixin do
       agg_node2.aggregate([node]).group_by(:colour).execute
 
       node.aggregates.should include(agg_node1, agg_node2)
-      node.aggregates.to_a.size.should == 2
+      [*node.aggregates].size.should == 2
     end
 
   end
@@ -65,7 +65,7 @@ describe Neo4j::NodeMixin do
 
       agg_node.aggregate([node]).group_by(:colour).execute
 
-      node.aggregate_groups.to_a.size.should == 1
+      [*node.aggregate_groups].size.should == 1
       node.aggregate_groups.first.should be_kind_of(Neo4j::Aggregate::NodeGroup)
     end
 
@@ -77,9 +77,9 @@ describe Neo4j::NodeMixin do
 
       agg_node.aggregate([node]).group_by(:colour, :name).execute
 
-      node.aggregate_groups.to_a.size.should == 2
-      node.aggregate_groups.to_a[0].should be_kind_of(Neo4j::Aggregate::NodeGroup)
-      node.aggregate_groups.to_a[1].should be_kind_of(Neo4j::Aggregate::NodeGroup)      
+      [*node.aggregate_groups].size.should == 2
+      [*node.aggregate_groups][0].should be_kind_of(Neo4j::Aggregate::NodeGroup)
+      [*node.aggregate_groups][1].should be_kind_of(Neo4j::Aggregate::NodeGroup)      
     end
 
     it "should return the given group if found" do

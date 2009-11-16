@@ -48,11 +48,11 @@ describe "Reindexer (NodeMixin#all)" do
 
     # then
     Neo4j::IndexNode.instance.relationships.nodes.should include(n)
-    Neo4j::IndexNode.instance.relationships.to_a.size.should == 1
+    [*Neo4j::IndexNode.instance.relationships].size.should == 1
   end
 
   it "has a reference to all created nodes" do
-    Neo4j::IndexNode.instance.relationships.outgoing.to_a.should be_empty
+    [*Neo4j::IndexNode.instance.relationships.outgoing].should be_empty
     node1 = ReindexerTestNode.new
     node2 = ReindexerTestNode2.new
     node3 = ReindexerTestNode2.new
@@ -60,11 +60,11 @@ describe "Reindexer (NodeMixin#all)" do
     # then
     Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode).nodes.should include(node1)
     Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode2).nodes.should include(node2, node3)
-    Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode).nodes.to_a.size.should == 1
-    Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode2).nodes.to_a.size.should == 2
+    [*Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode).nodes].size.should == 1
+    [*Neo4j::IndexNode.instance.relationships.outgoing(:ReindexerTestNode2).nodes].size.should == 2
 
-    ReindexerTestNode.all.nodes.to_a.size.should == 1
-    ReindexerTestNode2.all.nodes.to_a.size.should == 2
+    [*ReindexerTestNode.all.nodes].size.should == 1
+    [*ReindexerTestNode2.all.nodes].size.should == 2
   end
 
   it "should return all node instances" do
@@ -76,9 +76,9 @@ describe "Reindexer (NodeMixin#all)" do
     t2 = TestNode.new
 
     # when
-    TestNode.all.to_a.size.should == 2
-    TestNode.all.nodes.to_a.should include(t1)
-    TestNode.all.nodes.to_a.should include(t2)
+    [*TestNode.all].size.should == 2
+    [*TestNode.all.nodes].should include(t1)
+    [*TestNode.all.nodes].should include(t2)
   end
 
   it "should create a referense from the reference node root" do
@@ -94,7 +94,7 @@ describe "Reindexer (NodeMixin#all)" do
 
     # then
     nodes = index_node.relationships.outgoing(TestNode5).nodes
-    nodes.to_a.size.should == 1
+    [*nodes].size.should == 1
     nodes.should include(t)
   end
 
@@ -115,7 +115,7 @@ describe "Reindexer (NodeMixin#all)" do
 
     # then
     nodes = index_node.relationships.outgoing(TestNode6).nodes
-    nodes.to_a.size.should == 1
+    [*nodes].size.should == 1
     nodes.should include(t)
     SubNode6.root_class.should == TestNode6
   end
@@ -127,12 +127,12 @@ describe "Reindexer (NodeMixin#all)" do
 
     t1 = TestNode.new
     t2 = TestNode.new
-    TestNode.all.to_a.size.should == 2
+    [*TestNode.all].size.should == 2
 
     # when
     t1.delete
-    TestNode.all.to_a.size.should == 1
-    TestNode.all.nodes.to_a.should include(t2)
+    [*TestNode.all].size.should == 1
+    [*TestNode.all.nodes].should include(t2)
   end
 
   it "should return subclasses instances if subclassed" do
@@ -148,10 +148,10 @@ describe "Reindexer (NodeMixin#all)" do
     b = B.new
 
     # then
-    A.all.to_a.size.should == 2
-    A.all.nodes.to_a.should include(a, b)
-    B.all.to_a.size.should == 1
-    B.all.nodes.to_a.should include(b)
+    [*A.all].size.should == 2
+    [*A.all.nodes].should include(a, b)
+    [*B.all].size.should == 1
+    [*B.all.nodes].should include(b)
   end
 
 end
@@ -186,7 +186,7 @@ describe "Reindex" do
 
     # make sure we can find it
     Neo4j::Transaction.new
-    TestNode.all.nodes.to_a.should include(t1)
+    [*TestNode.all.nodes].should include(t1)
     Neo4j::Transaction.finish
 
     # now restart neo and check if neo4j still keep track of all created nodes
@@ -203,7 +203,7 @@ describe "Reindex" do
 
     # make sure we can find it
     Neo4j::Transaction.new
-    TestNode.all.nodes.to_a.should include(t2)
+    [*TestNode.all.nodes].should include(t2)
     Neo4j::Transaction.finish
 
   end
