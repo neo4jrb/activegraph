@@ -46,15 +46,8 @@ module Neo4j::Aggregate
       return if node.class != @filter
       return unless @group_by.include?(prop_key.to_sym)
 
-      # for each aggregate the node belongs to delete it
-      # we have to first create it and then deleted, otherwise cascade delete will kick in
-      group = node.aggregate_groups(@agg_id)
-      
       # recreate the aggregate group
       execute([node])
-
-      # delete this aggregate group if it exists
-      group.delete if group
     end
 
 
@@ -66,12 +59,15 @@ module Neo4j::Aggregate
     def execute(nodes = @nodes)
       return unless nodes
       nodes.each do |node|
-        group_node = PropGroup.new
-        group_node.group_by = @group_by.join(',')
-        group_node.aggregate = node
-        rel = group_node.relationships.outgoing(:aggregate)[node]
-        rel[:aggregate_group] = @agg_id
-        @root_node.groups << group_node
+        group_node = node.aggregate_groups(@agg_id)
+        if group_node.nil?
+          group_node = PropGroup.new
+          group_node.group_by = @group_by.join(',')
+          group_node.aggregate = node
+          rel = group_node.relationships.outgoing(:aggregate)[node]
+          rel[:aggregate_group] = @agg_id
+          @root_node.groups << group_node
+        end
         if @with_proc
           val = group_node.inject(0) {|sum, val| next sum if val.nil?; @with_proc.call(sum, val, 0)}
           group_node[@prop_key.to_s] = val

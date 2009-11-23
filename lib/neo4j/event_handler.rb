@@ -20,6 +20,11 @@ module Neo4j
       @listeners = []
     end
 
+    def print
+      puts "Listeners #{@listeners.size}"
+      @listeners.each {|li| puts "  Listener '#{li}'"}
+    end
+
     def add_filter(filter_class)
       @filter_classes << filter_class  unless @filter_classes.include?(filter_class)
     end

@@ -5,8 +5,6 @@ require 'neo4j'
 require 'spec_helper'
 
 
-
-
 describe Neo4j::Relationships::RelationshipTraverser do
   before(:all) do
     start

@@ -3,7 +3,6 @@ module Neo4j::Aggregate
   class PropGroup
     include Neo4j::NodeMixin
     include Enumerable
-#    alias :original_ignore_incoming_cascade_delete? :ignore_incoming_cascade_delete?
 
     has_one :aggregate, :cascade_delete => :incoming
     property :aggregate_group, :aggregate_size, :group_by
@@ -23,8 +22,8 @@ module Neo4j::Aggregate
     end
 
     def ignore_incoming_cascade_delete? (relationship)
-      return true if super(relationship) #original_ignore_incoming_cascade_delete?(node,relationship)
-      return true if relationship.start_node.kind_of?(Neo4j::Aggregate::PropsAggregate)
+      return true if super #original_ignore_incoming_cascade_delete?(node,relationship)
+      relationship.start_node.kind_of?(Neo4j::Aggregate::PropsAggregate)
     end
 
   end

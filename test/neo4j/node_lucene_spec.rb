@@ -12,7 +12,7 @@ describe "Neo4j-Lucene" do
 
   after(:all) do
     stop
-    Neo4j.event_handler.remove_all
+    Neo4j.unload_reindexer
   end
 
   describe "Neo4j.start" do
@@ -386,7 +386,6 @@ describe "Neo4j-Lucene" do
       before(:each) do
         undefine_class :PersonNode
         start
-        Neo4j.load_reindexer
         class PersonNode
           include Neo4j::NodeMixin
           property :name

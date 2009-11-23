@@ -1,13 +1,9 @@
 module Neo4j
 
   module NodeMixin
-    alias :old_ignore_incoming_cascade_delete? :ignore_incoming_cascade_delete?
-
-    def ignore_incoming_cascade_delete? (node, relationship)
-      return true if old_ignore_incoming_cascade_delete?(node,relationship)
-
+    def ignore_incoming_cascade_delete? (relationship)
       # if it's an index node relationship then it should be allowed to cascade delete the node
-      return relationship.other_node(node) == IndexNode.instance
+      return relationship.other_node(self) == IndexNode.instance
     end
 
     module ClassMethods
@@ -88,6 +84,10 @@ module Neo4j
       @index_node
     end
 
+    def self.instance?
+      !@index_node.nil?
+    end
+
     transactional :connect
   end
 
@@ -99,5 +99,11 @@ module Neo4j
     Neo4j::Transaction.run { IndexNode.on_neo_started(Neo4j.instance) } if Neo4j.running?
   end
 
+  def self.unload_reindexer
+    Neo4j.event_handler.remove(IndexNode)
+    Neo4j.event_handler.remove(IndexNode.instance) if IndexNode.instance?
+  end
+
+  
   load_reindexer
 end

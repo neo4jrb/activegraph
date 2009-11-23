@@ -19,9 +19,7 @@ describe "Reindexer (NodeMixin#all)" do
 
   before(:each)  do
     start
-    Neo4j.load_reindexer
     Neo4j::Transaction.new
-
     Neo4j::IndexNode.instance.relationships.each {|r| r.delete unless r.start_node == Neo4j.ref_node}
     undefine_class :TestNode  # must undefine this since each spec defines it
   end
@@ -33,11 +31,11 @@ describe "Reindexer (NodeMixin#all)" do
 
   before(:all) do
     require 'neo4j/extensions/reindexer'
-    Neo4j.event_handler.add(Neo4j::IndexNode) # in case it has been disabled by an RSpec
+    Neo4j.load_reindexer
   end
 
   after(:all) do
-    Neo4j.event_handler.remove_all
+    Neo4j.unload_reindexer
   end
 
 
@@ -160,16 +158,17 @@ end
 
 describe "Reindex" do
   before(:all) do
+    start
     require 'neo4j/extensions/reindexer'
-  end
-  
-  after(:all) do
-    Neo4j.event_handler.remove_all
-  end
-  
-  it "should reindex nodes after the neo4j has restarted (lighthouse ticket #53)" do
     Neo4j.load_reindexer # since a previous test might have unloaded this extension
-    
+  end
+
+  after(:all) do
+    Neo4j.unload_reindexer # since a previous test might have unloaded this extension
+    stop
+  end
+
+  it "should reindex nodes after the neo4j has restarted (lighthouse ticket #53)" do
     undefine_class :TestNode
     class TestNode
       include Neo4j::NodeMixin
@@ -205,7 +204,6 @@ describe "Reindex" do
     Neo4j::Transaction.new
     [*TestNode.all.nodes].should include(t2)
     Neo4j::Transaction.finish
-
   end
 end
 
