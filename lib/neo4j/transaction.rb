@@ -43,7 +43,7 @@ module Neo4j
       end 
 
       def placebo?(tx)
-        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeo$PlaceboTransaction'
+        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeoImpl$PlaceboTransaction'
       end
 
       # Creates a transaction. If one is already running then a 'placebo' transaction will be created instead.
@@ -106,7 +106,7 @@ module Neo4j
         rescue Exception => e
           #$NEO_LOGGER.warn{e.backtrace.join("\n")}
           tx.failure
-          raise  
+          raise e
         ensure
           tx.finish  
         end      
