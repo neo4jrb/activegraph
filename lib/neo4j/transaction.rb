@@ -106,7 +106,7 @@ module Neo4j
         rescue Exception => e
           #$NEO_LOGGER.warn{e.backtrace.join("\n")}
           tx.failure
-          raise e  
+          raise  
         ensure
           tx.finish  
         end      
