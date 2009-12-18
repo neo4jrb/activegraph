@@ -7,25 +7,28 @@ module Neo4j
     #
     # :api: public
     class TraversalPosition
-      def initialize(traversal_position)
+      def initialize(traversal_position, raw = false)
         @traversal_position = traversal_position
+        @raw = raw
       end
 
       # Return the current node.
       def current_node
-        Neo4j.load(@traversal_position.currentNode.getId)
+        Neo4j.load_node(@traversal_position.currentNode.getId, @raw)
       end
 
       # Returns the previous node, may be nil.
       def previous_node
         return nil if @traversal_position.previousNode.nil?
-        Neo4j.load(@traversal_position.previousNode.getId)
+        Neo4j.load_node(@traversal_position.previousNode.getId, @raw)
       end
 
       # Return the last relationship traversed, may be nil.
       def last_relationship_traversed
         relationship = @traversal_position.lastRelationshipTraversed()
-        Neo4j.instance.load_relationship(relationship) unless relationship.nil?
+        return nil if relationship.nil?
+        return relationship.wrapper unless @raw
+        relationship
       end
 
       # Returns the current traversal depth.

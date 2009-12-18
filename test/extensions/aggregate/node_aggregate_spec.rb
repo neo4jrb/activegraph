@@ -20,8 +20,8 @@ describe Neo4j::Aggregate::NodeGroup do
     node1 = Neo4j::Node.new{|n| n[:name] = 'node1'}
     node2 = Neo4j::Node.new{|n| n[:name] = 'node2'}
 
-    group.relationships.outgoing(:foo) << node1
-    group.relationships.outgoing(:foo) << node2
+    group.rels.outgoing(:foo) << node1
+    group.rels.outgoing(:foo) << node2
 
     [*group[:name]].should include('node1', 'node2')
     [*group[:name]].size.should == 2

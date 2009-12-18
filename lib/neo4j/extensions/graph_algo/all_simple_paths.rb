@@ -15,9 +15,9 @@ module Neo4j::GraphAlgo
       while (iter.hasNext)
         id = iter.next.getId
         if (node)
-          yield Neo4j.load(id)
+          yield Neo4j.load_node(id)
         else
-          yield Neo4j.load_relationship(id)
+          yield Neo4j.load_rel(id)
         end
         node = !node
       end
@@ -39,7 +39,7 @@ module Neo4j::GraphAlgo
       iter = @list.iterator
       while (iter.hasNext)
         n = iter.next
-        yield Neo4j.load(n.getId)
+        yield Neo4j.load_node(n.getId)
       end
     end
   end
@@ -72,7 +72,7 @@ module Neo4j::GraphAlgo
     end
 
     def paths
-      @paths ||= org.neo4j.graphalgo.AllSimplePaths.new(@from.internal_node, @to.internal_node, @depth, @direction, @types.to_java(:"org.neo4j.api.core.RelationshipType"))
+      @paths ||= org.neo4j.graphalgo.AllSimplePaths.new(@from._java_node, @to._java_node, @depth, @direction, @types.to_java(:"org.neo4j.api.core.RelationshipType"))
     end
 
     def from(f)

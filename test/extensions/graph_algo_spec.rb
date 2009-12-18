@@ -18,15 +18,15 @@ describe "GraphAlgo.all_simple_path" do
     @n4 = Node.new
     @n5 = Node.new
     @n6 = Node.new
-    @n1.relationships.outgoing(:knows) << @n2
-    @n1.relationships.outgoing(:knows) << @n3
-    @n1.relationships.outgoing(:knows) << @n4
+    @n1.rels.outgoing(:knows) << @n2
+    @n1.rels.outgoing(:knows) << @n3
+    @n1.rels.outgoing(:knows) << @n4
 
-    @n3.relationships.outgoing(:knows) << @n5
-    @n4.relationships.outgoing(:knows) << @n5
+    @n3.rels.outgoing(:knows) << @n5
+    @n4.rels.outgoing(:knows) << @n5
 
-    @n5.relationships.outgoing(:knows) << @n3
-    @n5.relationships.outgoing(:knows) << @n6
+    @n5.rels.outgoing(:knows) << @n3
+    @n5.rels.outgoing(:knows) << @n6
 
   end
 
@@ -49,29 +49,29 @@ describe "GraphAlgo.all_simple_path" do
 
     [*paths][0].each do | node_or_rel|
       if node
-        node_or_rel.should be_kind_of Neo4j::Node
-        node_and_rel_ids << node_or_rel.neo_node_id
+        node_or_rel.should be_kind_of org.neo4j.api.core.Node
+        node_and_rel_ids << node_or_rel.neo_id
       else
-        node_or_rel.should be_kind_of Neo4j::Relationships::Relationship
-        node_and_rel_ids << node_or_rel.neo_relationship_id
+        node_or_rel.should be_kind_of org.neo4j.api.core.Relationship
+        node_and_rel_ids << node_or_rel.neo_id
       end
       node = !node
     end
 
-    n1_n3 = @n1.relationships.outgoing(:knows)[@n3]
-    n3_n5 = @n3.relationships.outgoing(:knows)[@n5]
+    n1_n3 = @n1.rels.outgoing(:knows)[@n3]
+    n3_n5 = @n3.rels.outgoing(:knows)[@n5]
 
-    [@n1.neo_node_id, n1_n3.neo_relationship_id, @n3.neo_node_id, n3_n5.neo_relationship_id, @n5.neo_node_id].should == node_and_rel_ids
+    [@n1.neo_id, n1_n3.neo_id, @n3.neo_id, n3_n5.neo_id, @n5.neo_id].should == node_and_rel_ids
   end
 
   it "should contain Enumerable of Enumerable of only Nodes if as_nodes is given" do
     paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2).as_nodes
     node_ids = []
     [*paths][0].each do | node|
-      node.should be_kind_of Neo4j::Node
-      node_ids << node.neo_node_id
+      node.should be_kind_of org.neo4j.api.core.Node
+      node_ids << node.neo_id
     end
-    [@n1.neo_node_id, @n3.neo_node_id, @n5.neo_node_id].should == node_ids
+    [@n1.neo_id, @n3.neo_id, @n5.neo_id].should == node_ids
   end
 
   it "should take a depth parameter" do

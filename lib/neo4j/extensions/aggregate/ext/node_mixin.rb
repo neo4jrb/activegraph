@@ -58,8 +58,8 @@ module Neo4j
     #   [*node1.aggregate_groups] # => [agg1[some_group], agg2[some_other_group]]
     #
     def aggregate_groups(group = :all)
-      return relationships.incoming(:aggregate).nodes if group == :all
-      [*relationships.incoming(:aggregate).filter{self[:aggregate_group] == group.to_s}.nodes][0]
+      return rels.incoming(:aggregate).nodes if group == :all
+      [*rels.incoming(:aggregate).filter{self[:aggregate_group] == group.to_s}.nodes][0]
     end
 
   end

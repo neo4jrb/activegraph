@@ -122,24 +122,24 @@ describe 'Neo4j::Node with properties of unknown type' do
     # when
     @node.fooz = 42
     # then
-    Neo4j.load(@node.neo_node_id).fooz.should == 42
+    Neo4j.load_node(@node.neo_id).fooz.should == 42
   end
 
   it "should allow to set properties of type Float" do
     # when
     @node.fooz = 3.1415
     # then
-    Neo4j.load(@node.neo_node_id).fooz.should == 3.1415
+    Neo4j.load_node(@node.neo_id).fooz.should == 3.1415
   end
 
 
   it "should allow to set properties of type true and false" do
     @node.fooz = true
-    Neo4j.load(@node.neo_node_id).fooz.should == true
-    Neo4j.load(@node.neo_node_id).fooz.class.should == TrueClass
+    Neo4j.load_node(@node.neo_id).fooz.should == true
+    Neo4j.load_node(@node.neo_id).fooz.class.should == TrueClass
     @node.fooz = false
-    Neo4j.load(@node.neo_node_id).fooz.should == false
-    Neo4j.load(@node.neo_node_id).fooz.class.should == FalseClass
+    Neo4j.load_node(@node.neo_id).fooz.should == false
+    Neo4j.load_node(@node.neo_id).fooz.class.should == FalseClass
   end
 
 end
@@ -181,7 +181,7 @@ describe 'Neo4j::Node having a property of type Object' do
     @node.stuff = array
 
     # then
-    node = Neo4j.load(@node.neo_node_id)
+    node = Neo4j.load_node(@node.neo_id)
     node.stuff.class == Array
     node.stuff.should == array
     node.stuff.object_id.should_not == array.object_id
@@ -194,7 +194,7 @@ describe 'Neo4j::Node having a property of type Object' do
     @node.stuff = data
 
     # then
-    node = Neo4j.load(@node.neo_node_id)
+    node = Neo4j.load_node(@node.neo_id)
     node.stuff.class == MyPropertyData
     node.stuff.x.should == 98
     node.stuff.object_id.should_not == data.object_id
@@ -248,14 +248,11 @@ describe 'Neo4j properties' do
 
 
   it "should have a neo id property" do
-    @node.should respond_to(:neo_node_id)
-    @node.neo_node_id.should be_kind_of(Fixnum)
+    @node.should respond_to(:neo_id)
+    @node.neo_id.should be_kind_of(Fixnum)
   end
 
-  it "should have a property for the ruby class it represent" do
-    @node.classname.should be == TestNode.to_s
-  end
-
+  
   it "should allow to set any property" do
     # given
     @node.p1 = "first"
@@ -298,7 +295,7 @@ describe 'Neo4j properties' do
     @node.should be_property('p1')
 
     # when
-    @node.remove_property('p1')
+    @node.p1 = nil
 
     # then
     @node.should_not be_property('p1')

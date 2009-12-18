@@ -15,7 +15,7 @@ a = Neo4j::Node.new
 b = Neo4j::Node.new
 a[:name] = 'a'
 b[:name] = 'b'
-a.relationships.outgoing(:foo) << b
+a.rels.outgoing(:foo) << b
 
 Neo4j::Transaction.finish
 

@@ -27,11 +27,13 @@ describe "ListNode (Neo4j::NodeMixin#has_list) with a size counter" do
   end
 
   before(:each) do
+    start
     Neo4j::Transaction.new
   end
 
   after(:each) do
     Neo4j::Transaction.finish
+    stop
   end
 
   it "should have a size method" do
@@ -44,6 +46,27 @@ describe "ListNode (Neo4j::NodeMixin#has_list) with a size counter" do
     list.items.size.should == 0
   end
 
+#  it "test it" do
+#    node = Neo4j::Node.new
+#
+#    new_rel = []
+#    if (@node.rel?(:foo))
+#      # get that relationship
+#      first = @node.rels.outgoing(@relationship_type).first
+#
+#      # delete this relationship
+#      first.del
+#      old_first = first.other_node(@node)
+#      new_rel << (@node.rels.outgoing(@relationship_type) << other)
+#      new_rel << (other.rels.outgoing(@relationship_type) << old_first)
+#    else
+#      # the first node will be set
+#      new_rel << (@node.rels.outgoing(@relationship_type) << other)
+#
+#    node.lists{|list_item| list_item.prev.next = list_item.next if list_item.prev; list_item.size -= 1}
+#
+#  end
+  
   it "should increase when you append items to the list" do
     list = ListWithCounterNode.new
     list.items.size.should == 0
@@ -55,13 +78,14 @@ describe "ListNode (Neo4j::NodeMixin#has_list) with a size counter" do
 
   it "should decrease when you remove items from the list" do
     list_node = ListWithCounterNode.new
+    puts "list_node #{list_node.neo_id}"
     node1 = XNode.new
     node2 = XNode.new
     list_node.items << node1 << node2
     list_node.items.size.should == 2
 
     # when
-    node2.delete
+    node1.del
 
     # then
     list_node.items.size.should == 1
@@ -101,7 +125,7 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     list_node.items << node1 << node2
 
     # when
-    node2.delete
+    node2.del
 
     # then
     [*list_node.items].size.should == 1
@@ -125,6 +149,15 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     list_node.items << b
 
     # check what is connected to what, list -> b -> a
+    puts "LISTNODE"
+    list_node.print(4, :outgoing)
+
+    puts "B NODE OUTGOING"
+    b.print(4, :outgoing)
+
+    puts "B NODE INCOMING"
+    b.print(4, :incoming)
+
     list_node.list(:items).next.should == b
     b.list(:items).next.should == a
     b.list(:items).prev.should == list_node
@@ -207,10 +240,10 @@ describe "A node being member of two lists (Neo4j::NodeMixin#has_list)" do
     list2.list('item_a').size.should == 2
 
     # when
-    c.delete
+    c.del
 
     # then
-    c.lists {|list_item| fail} # not member of any lists
+    c.lists { fail } # not member of any lists
     list1.list('item_a').size.should == 1
     list2.list('item_a').size.should == 1
   end

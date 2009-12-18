@@ -37,7 +37,7 @@ module Neo4j
       query = nil
       unless (params.nil?)
         query = params.clone
-        query.delete('id')
+        query.delete('neo_id')
         query.delete('class')
         query.delete('prop')
         query.delete('rel')
@@ -72,14 +72,14 @@ module Neo4j
 
 
     # -------------------------------------------------------------------------
-    # /relationships/<id>
+    # /rels/<id>
     # -------------------------------------------------------------------------
 
-    Sinatra::Application.get("/relationships/:id") do
+    Sinatra::Application.get("/rels/:id") do
       content_type :json
       begin
         Neo4j::Transaction.run do
-          rel = Neo4j.load_relationship(params[:id].to_i)
+          rel = Neo4j.load_rel(params[:id].to_i)
           return 404, "Can't find relationship with id #{params[:id]}" if rel.nil?
           # include hyperlink to end_node if that has an _uri method
           end_node_hash = {:uri => rel.end_node._uri}
@@ -155,16 +155,16 @@ module Neo4j
 
       begin
         Neo4j::Transaction.run do
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           return 404, "Can't find node with id #{params[:id]}" if node.nil?
           node.read(Neo4j::Rest.query_from_params(params))
-          relationships = node.relationships.outgoing.inject({}) do |hash, v|
+          relationships = node.rels.outgoing.inject({}) do |hash, v|
             type = v.relationship_type.to_s
             hash[type] ||= []
-            hash[type] << "#{Neo4j::Rest.base_uri}/relationships/#{v.neo_relationship_id}"
+            hash[type] << "#{Neo4j::Rest.base_uri}/rels/#{v.neo_id}"
             hash
           end
-          {:relationships => relationships, :properties => node.props}.to_json
+          {:rels => relationships, :properties => node.props}.to_json
         end
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
@@ -180,7 +180,7 @@ module Neo4j
           body = request.body.read
           data = JSON.parse(body)
           properties = data['properties'] || {}
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           node.update(properties, Neo4j::Rest.query_from_params(params).merge({:strict => true}))
           node.props.to_json
         end
@@ -195,9 +195,9 @@ module Neo4j
       content_type :json
       begin
         Neo4j::Transaction.run do
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           return 404, "Can't find node with id #{params[:id]}" if node.nil?
-          node.delete(Neo4j::Rest.query_from_params(params))
+          node.del(Neo4j::Rest.query_from_params(params))
           ""
         end
       rescue RestException => exception
@@ -216,7 +216,7 @@ module Neo4j
       content_type :json
       begin
         Neo4j::Transaction.run do
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           return 404, {'error' => "Can't find node with id #{params[:id]}"}.to_json if node.nil?
 
           relationship = params['relationship']
@@ -242,14 +242,14 @@ module Neo4j
       content_type :json
       begin
         Neo4j::Transaction.run do
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           return 404, "Can't find node with id #{params[:id]}" if node.nil?
           prop = params[:prop].to_sym
           if node.class.relationships_info.keys.include?(prop)      # TODO looks weird, why this complicated
             rels = node.send(prop) || []
             (rels.respond_to?(:props) ? rels.props : rels.map{|rel| rel.props}).to_json
           else
-            {prop => node.get_property(prop)}.to_json
+            {prop => node[prop]}.to_json
           end
         end
       rescue RestException => exception
@@ -264,13 +264,13 @@ module Neo4j
       content_type :json
       begin
         Neo4j::Transaction.run do
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           property = params[:prop]
           body = request.body.read
           data = JSON.parse(body)
           value = data[property]
           return 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
-          node.set_property(property, value)
+          node[property] =  value
           200
         end
       rescue RestException => exception
@@ -286,7 +286,7 @@ module Neo4j
       content_type :json
       begin
         new_id = Neo4j::Transaction.run do
-          node = Neo4j.load(params[:id])
+          node = Neo4j.load_node(params[:id])
           return 404, "Can't find node with id #{params[:id]}" if node.nil?
           rel = params[:rel]
 
@@ -297,20 +297,20 @@ module Neo4j
           return 400, "Bad node uri '#{uri}'" if match.nil?
           to_clazz, to_node_id = match[6].split('/')
 
-          other_node = Neo4j.load(to_node_id.to_i)
+          other_node = Neo4j.load_node(to_node_id.to_i)
           return 400, "Unknown other node with id '#{to_node_id}'" if other_node.nil?
 
           if to_clazz != other_node.class.to_s
             return 400, "Wrong type id '#{to_node_id}' expected '#{to_clazz}' got '#{other_node.class.to_s}'"
           end
 
-          rel_obj = node.relationships.outgoing(rel) << other_node # node.send(rel).new(other_node)
+          rel_obj = node.add_rel(rel, other_node)
 
           return 400, "Can't create relationship to #{to_clazz}" if rel_obj.nil?
 
-          rel_obj.neo_relationship_id
+          rel_obj.neo_id
         end
-        redirect "/relationships/#{new_id}", 201 # created
+        redirect "/rels/#{new_id}", 201 # created
       rescue RestException => exception
         return exception.code, {'error' => $!}.to_json
       rescue Exception => e

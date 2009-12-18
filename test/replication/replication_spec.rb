@@ -75,7 +75,7 @@ describe 'Restful Navigation from /neo' do
   it "should have relationships from reference node to TxNodeList" do
     # when
     stub = Neo4j::Rest::NodeStub.new("http://0.0.0.0:9123/nodes/ReferenceNode/0")
-    stub.relationships.outgoing(:tx_node_list).nodes.first[:classname].should == "Neo4j::TxNodeList"
+    stub.rels.outgoing(:tx_node_list).nodes.first[:classname].should == "Neo4j::TxNodeList"
   end
 
   it "should create a relationship to TxNode from TxNodeList when a node is created" do
@@ -85,7 +85,7 @@ describe 'Restful Navigation from /neo' do
 
     uri = Neo4j::TxNodeList.instance._uri
     tx_node_list = Neo4j::Rest::NodeStub.new(uri)
-    tx_node = tx_node_list.relationships.outgoing(:tx_nodes).nodes.first
+    tx_node = tx_node_list.rels.outgoing(:tx_nodes).nodes.first
     tx_node[:classname].should == 'Neo4j::TxNodeCreated'
     tx_node[:created].should be_true
   end
@@ -100,7 +100,7 @@ describe 'Restful Navigation from /neo' do
     # create a pointer to this transaction
     uri = Neo4j::TxNodeList.instance._uri
     tx_node_list = Neo4j::Rest::NodeStub.new(uri)
-    tx_node = tx_node_list.relationships.outgoing(:tx_nodes).nodes.first
+    tx_node = tx_node_list.rels.outgoing(:tx_nodes).nodes.first
 
     puts "curr tx node #{tx_node.props.inspect} uuid #{uuid}"
     Neo4j::Transaction.run { a.delete }
@@ -113,8 +113,8 @@ describe 'Restful Navigation from /neo' do
     node = Neo4j.load_node_with_uuid(uuid)
     node.should_not be_nil
     node[:uuid].should == uuid
-    puts "GOT #{node.neo_node_id}"
-    node.neo_node_id.should_not == a.neo_node_id # make sure a new node was created (a duplicate of a)
+    puts "GOT #{node.neo_id}"
+    node.neo_id.should_not == a.neo_id # make sure a new node was created (a duplicate of a)
     node[:fooz].should == 'abc'
     Neo4j::Transaction.finish
   end
@@ -128,13 +128,13 @@ describe 'Restful Navigation from /neo' do
 
     uri = Neo4j::TxNodeList.instance._uri
     tx_node_list = Neo4j::Rest::NodeStub.new(uri)
-    tx_node = tx_node_list.relationships.outgoing(:tx_nodes).nodes.first
+    tx_node = tx_node_list.rels.outgoing(:tx_nodes).nodes.first
 
     Neo4j::Transaction.new
     Neo4j::TxNodeList.instance.redo_tx(tx_node)
     node = Neo4j.load_node_with_uuid(uuid)
     node[:uuid].should == uuid    # make sure it has the same uuid as the duplicated node
-    node.neo_node_id.should_not == a.neo_node_id # make sure a new node was created (a duplicate of a)
+    node.neo_id.should_not == a.neo_id # make sure a new node was created (a duplicate of a)
     Neo4j::Transaction.finish
   end
 

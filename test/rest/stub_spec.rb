@@ -93,13 +93,13 @@ describe 'Neo4j::Rest::RestStub' do
     Neo4j::Transaction.finish
 
     stub = Neo4j::Rest::NodeStub.new(a._uri)
-    stub[:id].should == a.neo_node_id
+    stub[:id].should == a.neo_id
     stub[:classname].should == "Neo4j::Node"
     stub[:name].should == 'kalle'
   end
 
 
-  it "should return all relationships on NodeStub#relationship" do
+  it "should return all rels on NodeStub#relationship" do
     Neo4j::Transaction.new
     a = Neo4j::Node.new
     a[:name] = 'a'
@@ -109,17 +109,17 @@ describe 'Neo4j::Rest::RestStub' do
     c[:name] = 'c'
     d = Neo4j::Node.new
     d[:name] = 'd'
-    a.relationships.outgoing(:foo) << b
-    a.relationships.outgoing(:foo) << c
-    a.relationships.outgoing(:bar) << d
+    a.rels.outgoing(:foo) << b
+    a.rels.outgoing(:foo) << c
+    a.rels.outgoing(:bar) << d
     Neo4j::Transaction.finish
 
     stub = Neo4j::Rest::NodeStub.new(a._uri)
-    stub.relationships.each {|r| r.should be_kind_of(Neo4j::Rest::RelationshipStub)}
+    stub.rels.each {|r| r.should be_kind_of(Neo4j::Rest::RelationshipStub)}
   end
 
 
-  it "should return only selected relationships on NodeStub#relationship.outgoing('type')" do
+  it "should return only selected rels on NodeStub#relationship.outgoing('type')" do
     Neo4j::Transaction.new
     a = Neo4j::Node.new
     a[:name] = 'a'
@@ -129,13 +129,13 @@ describe 'Neo4j::Rest::RestStub' do
     c[:name] = 'c'
     d = Neo4j::Node.new
     d[:name] = 'd'
-    a.relationships.outgoing(:foo) << b
-    a.relationships.outgoing(:foo) << c
-    a.relationships.outgoing(:bar) << d
+    a.rels.outgoing(:foo) << b
+    a.rels.outgoing(:foo) << c
+    a.rels.outgoing(:bar) << d
     Neo4j::Transaction.finish
 
     stub = Neo4j::Rest::NodeStub.new(a._uri)
-    nodes = [*stub.relationships.outgoing(:foo).nodes]
+    nodes = [*stub.rels.outgoing(:foo).nodes]
     nodes.size.should == 2
     nodes[0][:name].should == 'b'
     nodes[1][:name].should == 'c'
@@ -151,13 +151,13 @@ describe 'Neo4j::Rest::RestStub' do
     c[:name] = 'c'
     d = Neo4j::Node.new
     d[:name] = 'd'
-    a.relationships.outgoing(:foo) << b
-    a.relationships.outgoing(:foo) << c
-    a.relationships.outgoing(:bar) << d
+    a.rels.outgoing(:foo) << b
+    a.rels.outgoing(:foo) << c
+    a.rels.outgoing(:bar) << d
     Neo4j::Transaction.finish
 
     stub = Neo4j::Rest::NodeStub.new(a._uri)
-    stub.relationships.nodes.each {|r| r.should be_kind_of(Neo4j::Rest::NodeStub)}
+    stub.rels.nodes.each {|r| r.should be_kind_of(Neo4j::Rest::NodeStub)}
   end
 
 end

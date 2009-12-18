@@ -20,8 +20,8 @@ module Neo4j
   def self.replicate
     neo_master = Neo4j::Rest::NodeStub.new(Config[:master_neo4j_uri] + "/neo")
     neo_ref_node = Neo4j::Rest::NodeStub.new(neo_master[:ref_node])
-    tx_node_list = neo_ref_node.relationships.outgoing(:tx_node_list).nodes.first
-    tx_node = tx_node_list.relationships.outgoing(:tx_nodes).nodes.first
+    tx_node_list = neo_ref_node.rels.outgoing(:tx_node_list).nodes.first
+    tx_node = tx_node_list.rels.outgoing(:tx_nodes).nodes.first
     Neo4j::Transaction.run do
       Neo4j::TxNodeList.instance.redo_tx(tx_node)
     end

@@ -64,7 +64,7 @@ module Neo4j::Aggregate
           group_node = PropGroup.new
           group_node.group_by = @group_by.join(',')
           group_node.aggregate = node
-          rel = group_node.relationships.outgoing(:aggregate)[node]
+          rel = group_node.rels.outgoing(:aggregate)[node]
           rel[:aggregate_group] = @agg_id
           @root_node.groups << group_node
         end

@@ -62,6 +62,8 @@ There are also some complete examples in the example folder
 * rest - an example how to expose neo4j nodes as REST resources
 * Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master or http://github.com/sashaagafonoff/peoplemap
 
+For most of the examples there are RSpecs available, check the test/neo4j/readme_spec.rb file.
+
 == Installation
 
 To install it:
@@ -141,40 +143,28 @@ Example of creating a relationship
 
   node1 = Neo4j::Node.new
   node2 = Neo4j::Node.new
-  node1.relationships.outgoing(:friends) << node2  # connects node1 to node2 with relationship type 'friends'
+  node1.rels.outgoing(:friends) << node2
 
 === Accessing Relationships
 Example of getting relationships
 
-  node1.relationships.empty? # => false
+  node1.rels.empty? # => false
 
-  # The relationships method returns an enumeration of relationship objects.
+  # The rels method returns an enumeration of relationship objects.
   # The nodes method on the relationships returns the nodes instead.
-  node1.relationships.nodes.include?(node2) # => true
+  node1.rels.nodes.include?(node2) # => true
   
-  node1.relationships.first # => the first relationship this node1 has which is between node1 and node2 of any type
-  node1.relationships.nodes.first # => node2  first node of any relationship type
-  node1.relationships.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
-  node2.relationships.incoming(:friends).first # => a relationship object between node1 and node2
+  node1.rels.first # => the first relationship this node1 has which is between node1 and node2 of any type
+  node1.rels.nodes.first # => node2  first node of any relationship type
+  node1.rels.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
+  node2.rels.incoming(:friends).first # => a relationship object between node1 and node2
 
 === Properties on Relationships
 Example of setting properties on relationships
 
-  rel = node1.relationships.outgoing(:friends).first
+  rel = node1.rels.outgoing(:friends).first
   rel[:since] = 1982
-  node1.relationships.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
-
-=== The Node and NodeMixin
-Here is the complete implemenation of the Neo4j::Node class
-
-  module Neo4j
-    class Node
-      include Neo4j::NodeMixin
-    end
-  end
-
-In the next tutorial you will learn how to use this Neo4j::NodeMixin in your own domain model classes.
-
+  node1.rels.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
 
 == Ten Minute Tutorial
 
@@ -189,14 +179,13 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
     include Neo4j::NodeMixin
 
     # define Neo4j properties
-    property :name, :salary, :age
+    property :name, :salary, :age, :country
 
     # define an one way relationship to any other node
     has_n :friends
 
     # adds a lucene index on the following properties
-    index :name, :salary
-    index 'friends.age' # index each friend age as well
+    index :name, :salary, :age, :country
   end
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
@@ -208,7 +197,6 @@ By using the NodeMixin and by declaring properties and indices, all instances of
 the Neo4j node space and be retrieved/queried by traversing the node space or performing Lucene queries.
 
 A lucene index will be updated when the name or salary property changes.
-The salary of all friends are also indexed which means we can query for people who have friends with a certain salary.
 
 === Creating a node
 
@@ -242,8 +230,10 @@ A relationship can be added at any time on any node.
 
 Example:
 
-  person.relationships.outgoing(:best_friends) << other_node
-  person.relationship(:best_friend).end_node # => other_node (if there is only one relationship of type 'best_friend' on person) 
+  person.rels.outgoing(:best_friends) << other_node
+  person.rels.outgoing(:best_friends).first.end_node # => other_node (if there is only one relationship of type 'best_friend' on person)
+  # the line above can also be written as below - take the first outgoing relationship:
+  person.rel(:best_friends).end_node
 
 
 === Finding Nodes and Queries
@@ -251,7 +241,7 @@ Example:
 There are three ways of finding/quering nodes in neo4j: 
   1. by traversing the graph
   2. by using lucene queries
-  3. using the unique neo4j id (Neo4j::NodeMixin#neo_node_id).
+  3. using the unique neo4j id (Neo4j::NodeMixin#neo_id).
 
 When doing a traversal one starts from a node and traverses one or more relationships (one or more levels deep).
 This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
@@ -261,7 +251,7 @@ node from a lucene query.
 
 There are different ways to write lucene queries.
 Using a hash:
-  Person.find (:name => 'kalle', :age => 20..30)  # find people with name kalle and age between 20 and 30
+  Person.find (:name => 'kalle', :salary => 20000..30000)  # find people with name kalle and age between 20 and 30
 
 or using the lucene query language:
   
@@ -272,9 +262,9 @@ For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.
 
 === Sorting, example
 
-  Person.find(:name => 'kalle').sort_by(:salary)
-  Person.find(:name => 'kalle').sort_by(Desc[:salary], Asc[:country])
-  Person.find(:name => 'kalle').sort_by(Desc[:salary, :country])
+  Person.find(:age => 25).sort_by(:salary)
+  Person.find(:age => 25).sort_by(Lucene::Desc[:salary], Lucene::Asc[:country])
+  Person.find(:age => 25).sort_by(Lucene::Desc[:salary, :country])
 
 === Search Results
 
@@ -305,12 +295,12 @@ Example
 
 To delete the relationship between person and person2:
 
-  person.relationships[person2].delete
+  person.rels[person2].del
 
 If a node is deleted then all its relationship will also be deleted
 Deleting a node is performed by using the delete method:
 
-  person.delete
+  person.del
 
 === Node Traversals
 
@@ -440,6 +430,19 @@ Example of how declare a class that has this behaviour:
      include Neo4j::NodeMixin
   end
 
+
+=== Neo4j::Node
+
+If you do not need to map a node to a ruby instance you can simply use the Neo4j::Node object.
+
+Example:
+
+  node = Neo4j::Node.new
+  node[:name] = 'foo'
+
+The Neo4j::Node.new method actually returns a java object that implements the org.neo4j.api.core.Node interface.
+That java interface is extended with methods so it behavious almost like using the your own Ruby Neo4j::NodeMixin class.
+
 === Create a Node
 
   node = MyNode.new
@@ -451,9 +454,16 @@ The Neo4j::NodeMixin mixin defines a delete method that will delete the node and
 Example:
 
   node = MyNode.new
-  node.delete
+  node.del
 
 The node in the example above will be removed from the neo database on the filesystem and the lucene index
+
+==== Neo4j::Node#delete method
+
+Since one can both use the org.neo4j.api.core.Node directly or using the Neo4j::NodeMixin there might be a clash
+in method names.
+For example the method Neo4j::NodeMixin#del deletes the node and all its relationships.
+The org.neo4j.api.core.Node#delete (which is created by Neo4j::Node.new) will raise an exception if not all relationships are already deleted.
 
 === Node Properties
 
@@ -500,7 +510,7 @@ Example, to set a property to any type
   node = MyNode.new
   node.foo = [1,"3", 3.14]
 
-  Neo4j.load(node.neo_node_id).foo.class # => Array
+  Neo4j.load_node(node.neo_id).foo.class # => Array
 
 
 === Property of type Date and DateTime
@@ -1260,7 +1270,7 @@ Neo4j::Relationships::Relationship for relationship.
   f1 = Person.new {}
   
   # load the class again
-  f2 = Neo4j.load(foo.neo_node_id)
+  f2 = Neo4j.load_node(foo.neo_id)
   
   # f2 will now be new instance of Person, but will be == f1
   f1 == f2 # => true
@@ -1372,12 +1382,12 @@ acted_in_controller.rb:
       around_filter :neo_tx
     
       def index
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movies = @actor.acted_in.nodes
       end
 
       def create
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movie = Movie.new
         @movie.update(params[:movie])
         @actor.acted_in << @movie
@@ -1386,7 +1396,7 @@ acted_in_controller.rb:
       end
 
       def update
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movie = Movie.new
         @movie.update(params[:movie])
         @actor.acted_in.new @movie
@@ -1396,16 +1406,16 @@ acted_in_controller.rb:
       end
 
       def show
-        @movie = Neo4j.load(params[:id])
+        @movie = Neo4j.load_node(params[:id])
       end
 
       def new
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movie = Movie.value_object.new
       end
 
       def edit
-        @movie = Neo4j.load(params[:id])
+        @movie = Neo4j.load_node(params[:id])
       end
 
       private

@@ -9,13 +9,13 @@ include Neo4j
 # The idea of the solution presented here is to keep track of the features that are common in each branch of the traversal
 # and to stop when there is nothing in common any more or the maximum distance has been reached.
 def you_might_know(node, matches, max_distance)
-  buddies = [*node.relationships.both(:knows).nodes]
+  buddies = [*node.rels.both(:knows).nodes]
   find_friends(node, [node], matches, 1, max_distance, buddies)
 end
 
 def find_friends(root_node, path, matches, depth, max_distance, buddies)
   result = []
-  path.last.relationships.both(:knows).nodes.each do |node|
+  path.last.rels.both(:knows).nodes.each do |node|
     next if (depth > 1 && buddies.include?(node)) || path.include?(node)
     new_matches = matches.find_all{|feature| root_node[feature] == node[feature]}
     next if new_matches.empty?

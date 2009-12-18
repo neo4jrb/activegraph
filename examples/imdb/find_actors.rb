@@ -7,7 +7,6 @@ require "model"
 Neo4j.start
 Neo4j::Transaction.run do
   Actor.index :name, :tokenized => true
-  puts "REINDEX ACTORS"
   Actor.update_index
 end
 
@@ -23,7 +22,7 @@ Neo4j::Transaction.run do
 
   willis = result[0]
   puts "#{willis} acted in:"
-  willis.relationships.outgoing.each {|r| puts r.to_s }
+  willis.rels.outgoing.each {|r| puts r.to_s }
 
   willis.acted_in.each { |movie| puts movie }
 end

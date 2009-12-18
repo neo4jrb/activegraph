@@ -75,7 +75,7 @@ end
 
 describe "When neo has been restarted" do
 
-  describe Neo4j::Neo do
+  describe Neo4j do
     before(:all) do
       start
     end
@@ -96,7 +96,7 @@ describe "When neo has been restarted" do
       Neo4j.start
 
       Neo4j::Transaction.run {
-        node2 = Neo4j.instance.find_node(node.neo_node_id)
+        node2 = Neo4j.load_node(node.neo_id)
         node2[:baaz].should == "hello"
       }
     end

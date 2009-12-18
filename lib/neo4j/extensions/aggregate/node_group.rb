@@ -19,7 +19,7 @@ module Neo4j::Aggregate
     end
 
     def each
-      relationships.outgoing.nodes.each { |n| yield n }
+      rels.outgoing.nodes.each { |n| yield n }
     end
 
     # :api: private
@@ -27,11 +27,11 @@ module Neo4j::Aggregate
       value = super(key)
       return value unless value.nil?
 
-      sub_group = relationships.outgoing(key).nodes.first
+      sub_group = rels.outgoing(key).nodes.first
       return sub_group unless sub_group.nil?
 
       # traverse all sub nodes and get their properties
-      PropertyEnum.new(relationships.outgoing.nodes, key)
+      PropertyEnum.new(rels.outgoing.nodes, key)
     end
 
     def set_property(key, value)

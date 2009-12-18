@@ -18,16 +18,16 @@ def create_nodes
   node6 = Node.new; node6[:feat1] = 'a'; node6[:feat2] = 'b'; node6[:name] = 6
   node7 = Node.new; node7[:feat1] = 'a'; node7[:feat2] = 'b'; node7[:name] = 7
 
-  node1.relationships.outgoing(:knows) << node3
-  node2.relationships.outgoing(:knows) << node1
-  node2.relationships.outgoing(:knows) << node4
-  node3.relationships.outgoing(:knows) << node5
-  node3.relationships.outgoing(:knows) << node4
-  node3.relationships.outgoing(:knows) << node6
-  node4.relationships.outgoing(:knows) << node7
-  node5.relationships.outgoing(:knows) << node6
-  node5.relationships.outgoing(:knows) << node1
-  node6.relationships.outgoing(:knows) << node1
+  node1.rels.outgoing(:knows) << node3
+  node2.rels.outgoing(:knows) << node1
+  node2.rels.outgoing(:knows) << node4
+  node3.rels.outgoing(:knows) << node5
+  node3.rels.outgoing(:knows) << node4
+  node3.rels.outgoing(:knows) << node6
+  node4.rels.outgoing(:knows) << node7
+  node5.rels.outgoing(:knows) << node6
+  node5.rels.outgoing(:knows) << node1
+  node6.rels.outgoing(:knows) << node1
   
   [node1,node2,node3,node4,node5,node6,node7]
 end

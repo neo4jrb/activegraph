@@ -16,12 +16,12 @@ module Neo4j
       end
 
       def relationships
-        RelationshipTraverserStub.new(@json['relationships'])
+        RelationshipTraverserStub.new(@json['rels'])
       end
 
 
       def relationship?(type, dir=:outgoing)
-        relationships.relationship?(type, dir)
+        rels.rel?(type, dir)
       end
 
       def props
@@ -118,7 +118,7 @@ module Neo4j
                 end
 
         keys.each do |rel_type|
-          next unless relationship?(rel_type)
+          next unless rel?(rel_type)
           if @return_nodes
             @json[rel_type.to_s].each {|uri| yield RelationshipStub.new(uri).end_node}
           else

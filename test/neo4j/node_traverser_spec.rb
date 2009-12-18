@@ -44,6 +44,8 @@ describe "NodeTraverser" do
       t2 = TestNode.new
       t1.friends << t2
 
+      t1.traverse.outgoing(:friends)
+
       # when
       outgoing = [*t1.traverse.outgoing(:friends)]
 
@@ -292,12 +294,12 @@ describe "NodeTraverser" do
       b = Neo4j::Node.new; b[:name] = 'b'
       c = Neo4j::Node.new; c[:name] = 'c'
       d = Neo4j::Node.new; d[:name] = 'd'
-      a.relationships.outgoing(:baar) << b
-      a.relationships.outgoing(:baar) << c
-      b.relationships.outgoing(:baar) << d
+      a.rels.outgoing(:baar) << b
+      a.rels.outgoing(:baar) << c
+      b.rels.outgoing(:baar) << d
 
       name_depth = {}
-      a.traverse.outgoing(:baar).depth(:all).each_with_position { |node, tp| name_depth[node[:name]] = tp.depth }
+      a.outgoing(:baar).depth(:all).each_with_position { |node, tp| name_depth[node[:name]] = tp.depth }
 
      # then
       name_depth['b'].should == 1

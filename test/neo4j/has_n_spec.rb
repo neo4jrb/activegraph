@@ -234,7 +234,7 @@ describe "Neo4j::NodeMixin#has_n " do
       relationship = customer.orders.new(order) # another way of adding a relationship
 
       # when
-      relationship.delete
+      relationship.del
 
       # then
       [*customer.orders].should_not include(order)
@@ -318,7 +318,7 @@ describe "Neo4j::NodeMixin#has_n " do
 
       # then
       r.prio.should == 'important'
-      c.relationships.outgoing(:orders)[o].prio.should == 'important'
+      c.rels.outgoing(:orders)[o].prio.should == 'important'
     end
 
     it "should be possible to read an unset property on the returned RelationshipMixin" do
@@ -340,7 +340,7 @@ describe "Neo4j::NodeMixin#has_n " do
       c.orders << o1 << o2
 
       # when and then
-      c.relationships.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelationship) }
+      c.rels.outgoing(:orders).each {|r| r.should be_kind_of(CustomerOrderRelationship) }
     end
 
     it "can not have a relationship to a none Neo::Node" do

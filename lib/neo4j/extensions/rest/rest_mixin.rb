@@ -14,8 +14,8 @@ module Neo4j
 # <b>update properties</b>::  <code>PUT nodes/classname/node_id</code>
 # <b>view node</b>::          <code>GET /nodes/classname/id</code>
 # <b>create node</b>::        <code>POST /nodes/classname</code>
-# <b>view relationship</b>::  <code>GET /relationships/id</code>
-# <b>list relationships</b>:: <code>GET /nodes/classname/id/relationship-type</code>
+# <b>view relationship</b>::  <code>GET /rels/id</code>
+# <b>list rels</b>:: <code>GET /nodes/classname/id/relationship-type</code>
 # <b>add relationship</b>::   <code>POST /nodes/classname/id/relationship-type</code>
 # <b>traversal</b>::          <code>GET nodes/classname/id/traverse?relationship=relationship-type&depth=depth</code>
 #
@@ -30,7 +30,7 @@ module Neo4j
 #
 # The JSON representation of a node looks like this
 #
-#   {"relationships" : {"type1":"http://0.0.0.0:4567/relationships/0","type2":"http://0.0.0.0:4567/relationships/1"},
+#   {"rels" : {"type1":"http://0.0.0.0:4567/rels/0","type2":"http://0.0.0.0:4567/rels/1"},
 #    "properties" : {"id":1,"classname":"MyNode"}}
 #
   module RestMixin
@@ -41,7 +41,7 @@ module Neo4j
 
     def _uri_rel
       clazz = self.class.root_class.to_s #.gsub(/::/, '-') TODO urlencoding
-      "/nodes/#{clazz}/#{neo_node_id}"
+      "/nodes/#{clazz}/#{neo_id}"
     end
 
     # Called by the REST API if this node is accessed directly by ID. Any query parameters
@@ -54,7 +54,7 @@ module Neo4j
 
     # Called by the REST API if this node is deleted. Any query parameters in the request are passed
     # in a hash.
-    def delete(options={})
+    def del(options={})
       super()
     end
 

@@ -30,7 +30,7 @@ describe "Person" do
     end
 
     Neo4j::Transaction.run do
-      result = Neo4j.instance.find_node person.neo_node_id
+      result = Neo4j.load_node person.neo_id
       result.should == person
     end
 
@@ -113,7 +113,7 @@ describe "Person" do
       person1.friends << person2
 
       # when
-      person1.relationships[person2].delete
+      person1.rels[person2].delete
 
       # then
       [*person1.friends].should_not include(person2)

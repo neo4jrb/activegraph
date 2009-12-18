@@ -247,7 +247,7 @@ describe Neo4j::Aggregate::PropsAggregate do
       c1[:feb] = 200
       q1.should include(100, 200)
       q1.groups.size.should == 1
-      Neo4j.load(q1.neo_node_id).should_not be_nil
+      Neo4j.load_node(q1.neo_id).should_not be_nil
 
       # when
       c1.delete

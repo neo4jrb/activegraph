@@ -9,28 +9,28 @@ module Neo4j
   # Neo4j.start
   #
   # ==== Returns
-  # The neo instance
+  # Nil
   #
   # :api: public
   def self.start
-    return if @instance
-    @instance = Neo.new
-    @instance.start
+    return if running?
     at_exit do
       Neo4j.stop
     end
-    @instance
+    @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
+    @ref_node = Neo4j::Transaction.run do
+       ReferenceNode.new(@neo.getReferenceNode())
+    end
+
+    Neo4j::Transaction.run do
+      Neo4j.event_handler.neo_started(self)
+    end
+    nil
   end
 
-  # Return a started neo instance.
-  # It will be started if this has not already been done.
-  # 
-  # ==== Returns
-  # The neo instance
-  # 
-  # :api: public
   def self.instance
-    @instance ||= start
+    start unless running?
+    @neo
   end
 
   # Stops the current instance unless it is not started.
@@ -38,228 +38,141 @@ module Neo4j
   # 
   # :api: public
   def self.stop
-    @instance.stop unless @instance.nil?
-    @instance = nil
+    if running?
+      Neo4j::Transaction.finish # just in case
+      @neo.shutdown
+      Neo4j.event_handler.neo_stopped(self)
+    end
+    @neo = nil
   end
 
-  # 
+  #
   # Returns true if neo4j is running
   #
   # :api: public
   def self.running?
-    ! @instance.nil?
+    !@neo.nil?
+  end
+
+
+  # Create a Neo4j::Node
+  # This is the same as Neo4j::Node.new
+  #
+  def self.create_node
+    instance.createNode
   end
 
   # Return a Neo4j node.
   #
   # ==== Parameters
   # node_id<String, to_i>:: the unique neo id for one node
-  # 
+  # raw<true|false(default)> :: if the raw Java node object should be returned or the Ruby wrapped node. 
+  #
   # ==== Returns
-  # The node object (NodeMixin) or nil
+  # The node object or nil if not found
   # 
   # :api: public
-  def self.load(node_id)
-    self.instance.find_node(node_id.to_i)
+  def self.load_node(node_id, raw = false)
+    neo_node = @neo.getNodeById(node_id.to_i)
+    if (raw)
+      neo_node
+    else
+      neo_node.wrapper
+    end
+  rescue org.neo4j.api.core.NotFoundException
+    nil
   end
 
-  # Returns all nodes in the node space.
-  # Expects a block that will be yield.
+
+  # Return a Neo4j relationship.
   #
-  # ==== Example
+  # ==== Parameters
+  # rel_id<String, to_i>:: the unique neo id for one node
+  # raw<true|false(default)> :: if the raw Java relationship object should be returned or the Ruby wrapped node.
   #
-  #   Neo4j.all_nodes{|node| puts "Node id ${node.neo_node_id"}
+  # ==== Returns
+  # The node object or nil if not found
   #
   # :api: public
-  def self.all_nodes
-    iter = instance.neo.all_nodes.iterator
-    while(iter.hasNext)
-      yield load(iter.next.get_id)
+  def self.load_rel(rel_id, raw = false)
+    neo_rel = @neo.getRelationshipById(rel_id.to_i)
+    if (raw)
+      neo_rel
+    else
+      neo_rel.wrapper
+    end
+  rescue org.neo4j.api.core.NotFoundException
+    nil
+  end
+
+# Returns all nodes in the node space.
+# Expects a block that will be yield.
+#
+# ==== Parameters
+# raw<true|false(default)> :: if the raw Java node object should be returned or the Ruby wrapped node. 
+#
+# ==== Example
+#
+#   Neo4j.all_nodes{|node| puts "Node id ${node.neo_id"}
+#
+# :api: public
+  def self.all_nodes(raw = false)
+    iter = instance.all_nodes.iterator
+    while (iter.hasNext)
+      yield load_node(iter.next.neo_id, raw)
     end
   end
 
-  # Loads a Neo relationship.
-  # If the neo property 'classname' to exist it will use that to create an instance of that class.
-  # Otherwise it will create an instance of Neo4j::Relationships::Relationship that represent 'rel'
-  #
-  # ==== Parameters
-  # rel_id<String, to_i>:: the unique neo id for a relationship
-  #
-  # ==== Returns
-  # The relationship object that mixin the RelationshipMixin or nil
-  #
-  # :api: public
-  def self.load_relationship(rel_id)
-    self.instance.find_relationship(rel_id.to_i)
-  end
-
-
-  # Returns the reference node, which is a "starting point" in the node space.
-  #
-  # Usually, a client attaches relationships to this node that leads into various parts of the node space.
-  # For more information about common node space organizational patterns, see the design guide at http://neo4j.org/doc.
-  #
-  # ==== Returns
-  # The the ReferenceNode
-  #
-  # :api: public
+# Returns the reference node, which is a "starting point" in the node space.
+#
+# Usually, a client attaches relationships to this node that leads into various parts of the node space.
+# For more information about common node space organizational patterns, see the design guide at http://neo4j.org/doc.
+#
+# ==== Returns
+# The the ReferenceNode
+#
+# :api: public
   def self.ref_node
-    self.instance.ref_node
+    @ref_node
   end
 
 
-  # Returns an event handler.
-  # This event handler can be used for listen to event such as when the Neo4j is started/stopped or
-  # when a node is created/deleted, a property/relationship is changed.
-  #
-  # ==== Returns
-  # a Neo4j::EventHandler instance
-  #
-  # :api: public
+# Returns an event handler.
+# This event handler can be used for listen to event such as when the Neo4j is started/stopped or
+# when a node is created/deleted, a property/relationship is changed.
+#
+# ==== Returns
+# a Neo4j::EventHandler instance
+#
+# :api: public
   def self.event_handler
     @event_handler ||= EventHandler.new
   end
 
 
   def self.number_of_nodes_in_use
-    instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Node.java_class)
+    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Node.java_class)
   end
 
   def self.number_of_relationships_in_use
-    instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Relationship.java_class)
+    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Relationship.java_class)
   end
 
-  # Total number of relationships, nodes and properties in use
-  def self.number_of_ids_in_use                                                                        
-    instance.neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.impl.nioneo.store.PropertyStore.java_class)
+  def self.number_of_properties_in_use
+    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.impl.nioneo.store.PropertyStore.java_class)
   end
 
-  def self.number_of_properties_in_use                
-    self.number_of_ids_in_use - self.number_of_relationships_in_use - self.number_of_nodes_in_use + 2
-  end
-
-  # Prints some info about the database
+# Prints some info about the database
   def self.info
     puts "Neo4j version:                  #{Neo4j::VERSION}"
     puts "Neo4j db running                #{self.running?}"
     puts "number_of_nodes_in_use:         #{self.number_of_nodes_in_use}"
     puts "number_of_relationships_in_use: #{self.number_of_relationships_in_use}"
     puts "number_of_properties_in_use:    #{self.number_of_properties_in_use}"
-    puts "number_of_ids_in_use:           #{self.number_of_ids_in_use}"
     puts "neo db storage location:        #{Neo4j::Config[:storage_path]}"
     puts "lucene index storage location:  #{Lucene::Config[:storage_path]}"
     puts "keep lucene index in memory:    #{!Lucene::Config[:store_on_file]}"
   end
-  #
-  # Allows run and stop the Neo4j service
-  # Contains global ćonstants such as location of the neo storage and index files
-  # on the filesystem.
-  # 
-  # A wrapper class around org.neo4j.api.core.EmbeddedNeo
-  # 
-  class Neo #:nodoc:
 
-    extend Neo4j::TransactionalMixin
-
-    #
-    # ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode
-    #
-    attr_reader :ref_node, :neo
-
-    def start
-      @neo = org.neo4j.api.core.EmbeddedNeo.new(Config[:storage_path])
-
-      Transaction.run do
-        @ref_node = ReferenceNode.new(@neo.getReferenceNode())
-        Neo4j.event_handler.neo_started(self)
-      end
-      $NEO_LOGGER.info{ "Started neo. Database storage located at '#{@db_storage}'"}
-    end
-
-    #
-    # Create an internal neo node (returns a java object)
-    # Don't use this method - only for internal use.
-    #
-    def create_node
-      @neo.createNode
-    end
-
-    #
-    # Returns an internal neo transaction object.
-    # Don't use this method - only for internal use.
-    #
-    def begin_transaction
-      @neo.begin_tx
-    end
-
-
-    # Returns a NodeMixin object that has the given id or nil if it does not exist.
-    # 
-    def find_node(id)
-      begin
-        neo_node = @neo.getNodeById(id)
-        load_node(neo_node)
-      rescue org.neo4j.api.core.NotFoundException
-        nil
-      end
-    end
-
-    # Returns a NodeMixin object that has the given id or nil if it does not exist.
-    #
-    def find_relationship(id)
-      begin
-        neo_rel = @neo.getRelationshipById(id)
-        load_relationship(neo_rel)
-      rescue org.neo4j.api.core.NotFoundException
-        nil
-      end
-    end
-
-
-    # Loads a Neo node
-    # If the neo property 'classname' does not exist then it will map the neo node to the ruby class Neo4j::Node
-    #
-    # :api: private
-    def load_node(neo_node)
-      classname = neo_node.has_property('classname') ? neo_node.get_property('classname') : Neo4j::Node.to_s
-      _load classname, neo_node
-    end
-
-
-    # Loads a Neo relationship
-    # If the neo property 'classname' it will create a ruby object of that type otherwise it create an Ruby object of class Neo4j::Relationships::Relationship
-    #
-    def load_relationship(rel)
-      classname = rel.has_property('classname') ? rel.get_property('classname') : Neo4j::Relationships::Relationship.to_s
-      _load classname, rel
-    end
-
-    def _load(classname, node_or_relationship)
-      clazz = classname.split("::").inject(Kernel) do |container, name|
-        container.const_get(name.to_s)
-      end
-      clazz.new(node_or_relationship)
-    end
-
-    #
-    # Stop neo
-    # Must be done before the program stops
-    #
-    def stop
-      $NEO_LOGGER.info {"stop neo #{@neo}"}
-      Neo4j.event_handler.neo_stopped(self)
-      @neo.shutdown
-      @neo = nil
-      @ref_node = nil
-    end
-
-
-    def tx_manager
-      @neo.getConfig().getTxModule().getTxManager()
-    end
-
-    transactional :find_node
-
-  end
 end
 
