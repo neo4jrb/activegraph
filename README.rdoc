@@ -62,7 +62,7 @@ There are also some complete examples in the example folder
 * rest - an example how to expose neo4j nodes as REST resources
 * Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master or http://github.com/sashaagafonoff/peoplemap
 
-For most of the examples there are RSpecs available, check the test/neo4j/readme_spec.rb file.
+For most of the examples below there are RSpecs available, check the test/neo4j/readme_spec.rb file.
 
 == Installation
 
@@ -397,6 +397,23 @@ Before using Neo4j the location where the database is stored on disk should be c
 The neo4j configuration is kept in the Neo4j::Config class:
 
    Neo4j::Config[:storage_path] = '/home/neo/neodb'
+
+==== Accessing the Java Neo4j API
+
+You can access the org.neo4j.api.core.EmbeddedNeo class by
+
+  Neo4j.instance
+
+You can create org.neo4j.api.core.Node classes by
+
+  Neo4j::Node.new
+
+You can create a relationship of type org.neo4j.api.core.Relationship by
+
+  a = Neo4j::Node.new
+  b = Neo4j::Node.new
+  r = a.add_rel(:friends, b)
+  r.java_class # => class org.neo4j.impl.core.RelationshipProxy
 
 === Lucene Integration
 

@@ -41,7 +41,7 @@ module Neo4j::JavaPropertyMixin
       setProperty(k, value)
     end
 
-    if (@_wrapper and k[0] != '_') # do not want events on internal properties
+    if (@_wrapper and k[0,1] != '_') # do not want events on internal properties
       @_wrapper.class.indexer.on_property_changed(@_wrapper, k) if @_wrapper.class.respond_to? :indexer
       Neo4j.event_handler.property_changed(@_wrapper, k, old_value, value)
     end

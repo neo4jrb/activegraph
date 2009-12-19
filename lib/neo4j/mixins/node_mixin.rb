@@ -63,9 +63,9 @@ module Neo4j
     #
     # :api: private
     def init_without_node
-      @_java_node = Neo4j::Node.new
+      @_java_node = Neo4j.create_node
       @_java_node._wrapper = self
-      @_java_node['_classname'] = self.class.to_s
+      @_java_node[:_classname] = self.class.to_s
       Neo4j.event_handler.node_created(self)
     end
 

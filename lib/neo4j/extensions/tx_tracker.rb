@@ -145,7 +145,6 @@ module Neo4j
 
     def create_relationship(tx_node)
       # recreate deleted relationship
-
       type = tx_node[:relationship_type]
       start_node_uuid = tx_node[:start_node_uuid]
       end_node_uuid = tx_node[:end_node_uuid]
@@ -209,7 +208,7 @@ module Neo4j
       return if txnode.nil?
       # does this node exist ?
       id = txnode[:tracked_neo_id]
-      node = Neo4j.load_node(id)
+      Neo4j.load_node(id)
     end
 
 
@@ -243,7 +242,7 @@ module Neo4j
 
     # Find a TxNodeCreate node in the latest transaction with the given uuid
     def find_tx(value, key = :uuid) # :nodoc:
-      tx_nodes.find {|node| node[:classname] == TxNodeCreated.to_s && node[key] == value}
+      tx_nodes.find {|node| node[:_classname] == TxNodeCreated.to_s && node[key] == value}
     end
 
     # Create a new a neo4j node given a cluster wide UUID (instead of id)
@@ -254,7 +253,7 @@ module Neo4j
       return if txnode.nil?
       # does this node exist ?
       id = txnode[:tracked_neo_id]
-      node = Neo4j.load_node(id)
+      Neo4j.load_node(id)
     end
 
     #

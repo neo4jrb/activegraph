@@ -67,6 +67,7 @@ module Neo4j
       def new()
         node = Neo4j.create_node
         yield node if block_given?
+        Neo4j.event_handler.node_created(node)
         node
       end
     end

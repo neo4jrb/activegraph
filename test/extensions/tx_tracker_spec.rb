@@ -34,7 +34,7 @@ describe "TxTracker (TxNodeList)" do
 
   after(:all) do
     Neo4j.unload_tx_tracker
-#    Neo4j.event_handler.remove_all
+    stop
   end
 
   it "should have a reference to the TxNodeList" do
@@ -236,7 +236,7 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.run { Neo4j.load_rel(rel_id).should == nil }
   end
 
-  it "should undo delation of relationship" do
+  it "should undo deletion of relationship" do
     a = Neo4j::Transaction.run { Neo4j::Node.new}
     b = Neo4j::Transaction.run { Neo4j::Node.new}
     rel = Neo4j::Transaction.run { a.add_rel(:foobar, b)}
@@ -244,6 +244,7 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.run { a.rel?(:foobar).should be_true }
 
     # delete relationship
+    puts "-------------- DELETE REL !!!!!!!!!!!"
     Neo4j::Transaction.run { rel.del }
 
     # make sure it is deleted

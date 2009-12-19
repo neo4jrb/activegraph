@@ -10,7 +10,7 @@ module Neo4j
     #
     # :api: public
     def del
-      Neo4j.event_handler.relationship_deleted(self) if @_wrapper
+      Neo4j.event_handler.relationship_deleted(wrapper) 
       type = getType().name()
 
       delete
@@ -53,7 +53,6 @@ module Neo4j
     def relationship_type
       get_type.name.to_sym
     end
-
 
 
   end
