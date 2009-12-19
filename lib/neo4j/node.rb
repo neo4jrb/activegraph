@@ -12,7 +12,7 @@ module Neo4j
     #
     # :api: public
     def del
-      Neo4j.event_handler.node_deleted(self) 
+      Neo4j.event_handler.node_deleted(wrapper) 
 
       # delete outgoing relationships, and check for cascade delete
       rels.outgoing.each { |r| r.del; r.end_node.del if r[:_cascade_delete_outgoing]}
@@ -64,8 +64,10 @@ module Neo4j
 
   class Node
     class << self
-      def new
-        Neo4j.create_node
+      def new()
+        node = Neo4j.create_node
+        yield node if block_given?
+        node
       end
     end
   end

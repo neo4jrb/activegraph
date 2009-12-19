@@ -306,18 +306,15 @@ module Neo4j::Aggregate
     end
 
 
-    # Overrides the get_property method (which is used by [] operator)
-    # Do not use this method, use instead the [] operator.
+    # Overrides the [] method
     #
     # If there is a relationship of the given key, and that node is kind_of?
     # that that relationships point to will be returned (as an Enumeration).
     # Otherwise, return the property of this node.
     #
-    # :api: private
-    def get_property(key)
+    def [](key)
       node = group_node(key)
       return node unless node.nil?
-
       super(key)
     end
 

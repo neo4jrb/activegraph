@@ -19,7 +19,7 @@ module Neo4j
     end
     @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
     @ref_node = Neo4j::Transaction.run do
-       ReferenceNode.new(@neo.getReferenceNode())
+      ReferenceNode.new(@neo.getReferenceNode())
     end
 
     Neo4j::Transaction.run do
@@ -28,6 +28,9 @@ module Neo4j
     nil
   end
 
+  # Return the org.neo4j.api.core.EmbeddedNeo
+  #
+  #
   def self.instance
     start unless running?
     @neo

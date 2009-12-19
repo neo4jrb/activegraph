@@ -23,7 +23,7 @@ module Neo4j::Aggregate
     end
 
     # :api: private
-    def get_property(key)
+    def [](key)
       value = super(key)
       return value unless value.nil?
 
@@ -34,10 +34,10 @@ module Neo4j::Aggregate
       PropertyEnum.new(rels.outgoing.nodes, key)
     end
 
-    def set_property(key, value)
-      super key, value
-      val = self.get_property(key)
-    end
+#    def []=(key, value)
+#      super key, value
+#      self.get_property(key)
+#    end
   end
 
 end

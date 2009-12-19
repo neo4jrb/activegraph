@@ -62,6 +62,7 @@ module Neo4j::Aggregate
     # :api: private
     def on_node_deleted(node) # :nodoc:
       return if node.class != @filter
+#      node.print(:incoming, 2)
       node.rels.incoming(:aggregate).filter{start_node.property? :aggregate_size}.each do |group_rel|
         group_node = group_rel.start_node
         group_node.aggregate_size -= 1
@@ -77,7 +78,7 @@ module Neo4j::Aggregate
         parent_group[:aggregate_size] -= 1
         delete_group(parent_group) if parent_group[:aggregate_size] == 0
       end
-      group_node.delete
+      group_node.del
     end
 
 
@@ -194,7 +195,7 @@ module Neo4j::Aggregate
       else
         # this IS a leaf aggregate dsl, add node to the group
         rel_type = node.kind_of?(NodeGroup)? key : :aggregate
-        rel = group_node.rels.outgoing(rel_type) << node
+        rel = group_node.add_rel(rel_type, node)
         rel[:aggregate_group] = key
         # increase the size counter on this group
         group_node.aggregate_size += 1

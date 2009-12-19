@@ -135,7 +135,7 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       agg['malmoe'].should include(node)
 
       # when
-      node.delete
+      node.del
 
       # then
       agg['malmoe'].should be_nil
@@ -152,7 +152,7 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       agg['malmoe'].should include(node, node2)
 
       # when
-      node.delete
+      node.del
 
       # then
       agg['malmoe'].should include(node2)
@@ -210,7 +210,7 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       agg.aggregate_size.should == 2
 
       # delete
-      node.delete
+      node.del
 
       # then
       agg.aggregate_size.should == 0
@@ -234,7 +234,7 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       agg.aggregate_size.should == 2
 
       # delete
-      node.delete
+      node.del
 
       # then
       agg.aggregate_size.should == 1
@@ -351,7 +351,7 @@ describe Neo4j::Aggregate::NodeAggregateMixin do
       n6 = MyNode.new; n6[:score] = 102
 
       # when
-      n1.delete
+      n1.del
 
       # then
       agg_root.aggregate_size.should == 2
