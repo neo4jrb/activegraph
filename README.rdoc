@@ -156,7 +156,7 @@ Example of getting relationships
   
   node1.rels.first # => the first relationship this node1 has which is between node1 and node2 of any type
   node1.rels.nodes.first # => node2  first node of any relationship type
-  node1.rels.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
+  node2.rels.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
   node2.rels.incoming(:friends).first # => a relationship object between node1 and node2
 
 === Properties on Relationships
@@ -1759,3 +1759,4 @@ Example
 
 Notice that even if it looks like a new Index instance object was created the index.uncommited
 may return an not empty array. This is because Index.new is a singleton - a new instance object is not created.
+
