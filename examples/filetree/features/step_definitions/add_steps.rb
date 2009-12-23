@@ -14,39 +14,57 @@ After do
   stop
 end
 
-def createSubtree(parent, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
+def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
   currDepth = currDepth + 1
-  #puts 'current: ' + currDepth.to_s + '\tmax: ' + maxDepth.to_s
   if(currDepth>=maxDepth)
     return
   end
   
   for k in 1..Integer(filesPerFolder)
-    file = Neo4j::Node.new
-    file[:size] = filesize
-    file[:name] = "#{parent[:name]}/f#{k}"
-    parent.relationships.outgoing(:child) << file
+    props = java.util.HashMap.new
+    props.put('size',filesize)
+    props.put('name',"#{parent_props[:name]}/f#{k}")
+    #needed for JRuby compatibility
+    props.put('classname', Neo4j::Node.to_s)
+    file = batch_neo.createNode(props)
+    batch_neo.createRelationship( parent_props[:id], file, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
   end
   for k in 1..Integer(subfolders)
-    folder = Neo4j::Node.new
-    folder[:name] = "#{parent[:name]}/d#{k}"
-    parent.relationships.outgoing(:child) << folder
-    createSubtree(folder, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
+    props = java.util.HashMap.new
+    props.put('name',"#{parent_props[:name]}/d#{k}")
+    #needed for JRuby compatibility
+    props.put('classname', Neo4j::Node.to_s)
+    folder = batch_neo.createNode(props)
+    batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+    folder_props = {:name => props.get('name'),:id => folder}
+    createBatchSubtree(batch_neo, folder_props, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
   end
-  
 end
 
 
 When /^I create a filetree with (.*) files a (.*)kb and (\w+) subfolders in each folder, (\w+) times nested$/ do |filesPerFolder,filesize, nrSubfolders, timesNested|
   size = Integer(filesize)
+  fileRoot = nil
   Neo4j::Transaction.run do
     fileRoot = Neo4j::Node.new
     fileRoot[:name] = 'fileRoot'
     Neo4j.ref_node.relationships.outgoing(:files) << fileRoot
     #create the owning user of the top folders
     puts 'Created fileroot '
-    createSubtree(fileRoot, 0, Integer(filesPerFolder), Integer(filesize), Integer(nrSubfolders), Integer(timesNested))
   end
+  parent_props = {:name => fileRoot[:name], :id => fileRoot.internal_node.getId()}
+  #stop Neo4j Embedded
+  stop
+  #start batch inserter to speed things up
+  startTime = Time.now
+  batch_neo = org.neo4j.impl.batchinsert.BatchInserterImpl.new('db/neo', org.neo4j.impl.batchinsert.BatchInserterImpl.loadProperties('batch.props'))
+  createBatchSubtree(batch_neo, parent_props, 0, Integer(filesPerFolder), Integer(filesize), Integer(nrSubfolders), Integer(timesNested))
+  #shut down the batchinserter
+  batch_neo.shutdown
+  puts "Insert time: " + (Time.now-startTime).to_s
+  #start Embedded Neo4j again
+  Neo4j.start
+  
 end
 
 Then /^the total number of nodes in the db should be greater than (\w+)$/ do |totalFiles|
@@ -69,20 +87,6 @@ def calcTotalSize(folder)
   end
   return totSize
 end
-
-#class SizeEvaluator
-#  include org.neo4j.api.core.ReturnableEvaluator
-#  @totalSize = 0
-#  def isReturnableNode(position)
-#    node = position.currentNode()
-#    puts node
-#    if node.hasProperty('size')
-#      return true
-#    else
-#    end
-#    false
-#  end
-#end
 
 #this is about 8x faster - untweaked
 def calcSizeJava(node)
