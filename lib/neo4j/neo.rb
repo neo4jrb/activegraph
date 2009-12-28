@@ -1,8 +1,10 @@
 module Neo4j
 
-  # Starts neo unless it is not already started.
-  # Before using neo it has to be started and the location of the Neo database on the filesystem must
-  # have been configured, Neo4j::Config[:storage_path].
+  # Starts neo4j unless it is not already started.
+  # Before using neo4j it has to be started and the location of the Neo database on the file system must
+  # have been configured, Neo4j::Config[:storage_path]. You do not have to call this method since
+  # neo4j will be started automatically when needed.
+  # Registers an at_exit handler that stops neo4j (see Neo4j::stop)
   #
   # ==== Examples
   # Neo4j::Config[:storage_path] = '/var/neo4j-db'
@@ -37,8 +39,7 @@ module Neo4j
   end
 
   # Stops the current instance unless it is not started.
-  # This must be done in order to avoid corrupt neo database.
-  # 
+  #
   # :api: public
   def self.stop
     if running?

@@ -753,8 +753,8 @@ Example, incoming
   phone1.people << p1
   phone1.people << p2
 
-  p1.delete
-  p2.delete
+  p1.del
+  p2.del
 
   # then phone1 will be deleted
 
@@ -827,7 +827,7 @@ If the evaluation returns true the node will be included in the filter search re
 
 === Traversing Nodes
 
-The Neo4j::NodeMixin#traverse method is a more powerful method compared to the
+The Neo4j::NodeMixin#incoming and Neo4j::NodeMixin#outgoing method are a more powerful methods compared to the
 generated has_n and has_one methods. Unlike the generated methods it can
 traverse several relationship types at the same time. The types of relationships
 being traversed must therefore always be specified in the incoming, outgoing or both method.
@@ -841,7 +841,7 @@ If not specified, only one level is traversed.
 
 Example:
 
-  me.traverse.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
+  me.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
 
 ==== Traversing Nodes With Several Relationship Types
 
@@ -880,11 +880,11 @@ Example, given the following holiday trip domain:
 
 Then we can traverse both the contains and the trips relationship types.
 Example:
-  @sweden.traverse.outgoing(:contains, :trips).to_a # => [@malmoe, @stockholm, @sweden_trip]
+  @sweden.outgoing(:contains, :trips).to_a # => [@malmoe, @stockholm, @sweden_trip]
 
 It is also possible to traverse both incoming and outgoing relationships, example:
 
-  @sweden.traverse.outgoing(:contains, :trips).incoming(:contains).to_a # => [@malmoe, @stockholm, @sweden_trip, @europe]
+  @sweden.outgoing(:contains, :trips).incoming(:contains).to_a # => [@malmoe, @stockholm, @sweden_trip, @europe]
 
 ==== Traversing Nodes With a Filter
 
@@ -897,7 +897,7 @@ If the provided filter function does not take any parameter it will be evaluated
 of the current node being traversed.
 That means that one can writer filter functions like this:
 
-  @sweden.traverse.outgoing(:contains, :trips).filter { name == 'sweden' }
+  @sweden.outgoing(:contains, :trips).filter { name == 'sweden' }
 
 ==== Filtering: Using the TraversalPostion
 If the filter method takes one parameter then it will be given an object of type
@@ -916,7 +916,7 @@ For example if we only want to return the Trip objects in the example above:
 
   # notice how the tp (TraversalPosition) parameter is used in order to only
   # return nodes included in a 'trips' relationship.
-  traverser = @sweden.traverse.outgoing(:contains, :trips).filter do |tp|
+  traverser = @sweden.outgoing(:contains, :trips).filter do |tp|
     tp.last_relationship_traversed.relationship_type == :trips
   end
 
@@ -965,19 +965,19 @@ Example of listing all types of outgoing (default) relationship objects (of dept
 
 If we instead want to list the nodes that those relationships points to then the nodes method can be used.
 
-  me.relationships.nodes.each {|rel| ... }
+  me.rels.nodes.each {|rel| ... }
 
 Listing all incoming relationship objects of any relationship type:
 
-  me.relationships.incoming.each { ... }
+  me.rels.incoming.each { ... }
 
 Listing both incoming and outgoing relationship object of a specific type:
 
-  me.relationships.both(:friends) { }
+  me.rels.both(:friends) { }
 
 Finding one outgoing relationship of a specific type and node (you)
 
-  me.relationships.outgoing(:friends)[you] # => [#<Neo4j::RelationshipMixin:0x134ae32]
+  me.rels.outgoing(:friends)[you] # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
 
 ==== Finding Relationships Example
@@ -991,16 +991,16 @@ Example, given we have the two nodes with a relationship between them:
 
 Then we can find all incoming and outgoing relationships like this:
 
-  n1.relationships.to_a # => [#<Neo4j::RelationshipMixin:0x134ae32]
+  n1.rels.to_a # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
 A Neo4j::RelationshipMixin object represents a relationship between two nodes.
 
-  n1.relationships[0].start_node # => n1
-  n1.relationships[0].end_node # => n2
+  n1.rels[0].start_node # => n1
+  n1.rels[0].end_node # => n2
 
 A RelationshipMixin contains the relationship type which connects the two nodes
 
-  n1.relationships[0].relationship_type # => :friends
+  n1.rels[0].relationship_type # => :friends
 
 Relationships can also have properties just like a node (NodeMixin).
 
@@ -1008,26 +1008,26 @@ Relationships can also have properties just like a node (NodeMixin).
 
 If we are only interested in all incoming nodes, we can do
 
-  n2.relationships.incoming # => [#<Neo4j::RelationshipMixin:0x134aea2]
+  n2.rels.incoming # => [#<Neo4j::RelationshipMixin:0x134aea2]
 
 Or outgoing:
 
-  n1.relationships.outgoing # => [#<Neo4j::RelationshipMixin:0x134aea2]
+  n1.rels.outgoing # => [#<Neo4j::RelationshipMixin:0x134aea2]
 
 To find a specific relationship use the [] operator:
 
-  n1.relationships.outgoing[n2] = #<Neo4j::RelationshipMixin:0x134aea2
+  n1.rels.outgoing[n2] = #<Neo4j::RelationshipMixin:0x134aea2
 
 Or which is better performance wise (since only friends relationships are being traversed):
 
-  n1.relationships.outgoing(:friends)[n2] = #<Neo4j::RelationshipMixin:0x134aea2
+  n1.rels.outgoing(:friends)[n2] = #<Neo4j::RelationshipMixin:0x134aea2
 
 === Deleting a relationship
 
 Use the Neo4j::RelationshipMixin#delete method.
 For example, to delete the relationship between n1 and n2 from the example above:
 
-    n1.relationships.outgoing(:friends)[n2].delete
+    n1.rels.outgoing(:friends)[n2].delete
 
 === Finding nodes in a relationship
 
@@ -1036,17 +1036,17 @@ in the Neo4j::RelationshipMixin object.
 
 For example:
 
-  n2.relationships.incoming.nodes # => [n1]
+  n2.rels.incoming.nodes # => [n1]
 
 === Finding outgoing/incoming nodes of a specific relationship type
 
 Let say we want to find who has my phone number and who consider me as a friend
 
   # who has my phone numbers
-  me.relationships.incoming(:phone_numbers).nodes # => people with my phone numbers
+  me.rels.incoming(:phone_numbers).nodes # => people with my phone numbers
 
   # who consider me as a friend
-  me.relationships.incoming(:friends).nodes # => people with a friend relationship to me
+  me.rels.incoming(:friends).nodes # => people with a friend relationship to me
 
 Remember that relationships are not symmetrical.
 Notice that, there is also another way of finding nodes, see the Neo4j::NodeMixin#traverse method below.
@@ -1343,6 +1343,12 @@ two nodes. Use something like this:
 This extension is still rather experimental. The algorithm is based on the one
 used in the Neo4j Java IMDB example. For more information see Neo4j::Relationships::NodeTraverser#path_to
 or the RSpec find_path_spec.rb.
+
+== Extension: graph_algo
+
+This extension uses the Java Neo4j Graph Algo package - http://components.neo4j.org/graph-algo/
+Currently only the AllSimplePaths algorithm supported. If you want the
+other algorithms you either access the Java methods directly or write a new wrapper (like my AllSimplePath wrapper).
 
 == Ruby on Rails with Neo4j.rb
 
