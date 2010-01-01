@@ -1,4 +1,4 @@
-This is a small prototype for a typicla Graph use case: A file tree with sharing enabled folders and files. It even demonstrates some of the speed tradeoff of using the JRuby-like traversing facilities and the underlying Java Traverser API directly
+This is a small prototype for a typical graph use case: A file tree with sharing enabled folders and files. It even demonstrates some of the speed tradeoff of using the JRuby-like traversing facilities and the underlying Java Traverser API directly
 
 INSTALLATION
 

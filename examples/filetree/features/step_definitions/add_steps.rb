@@ -48,11 +48,11 @@ When /^I create a filetree with (.*) files a (.*)kb and (\w+) subfolders in each
   Neo4j::Transaction.run do
     fileRoot = Neo4j::Node.new
     fileRoot[:name] = 'fileRoot'
-    Neo4j.ref_node.relationships.outgoing(:files) << fileRoot
+    Neo4j.ref_node.rels.outgoing(:files) << fileRoot
     #create the owning user of the top folders
     puts 'Created fileroot '
   end
-  parent_props = {:name => fileRoot[:name], :id => fileRoot.internal_node.getId()}
+  parent_props = {:name => fileRoot[:name], :id => fileRoot._java_node.getId()}
   #stop Neo4j Embedded
   stop
   #start batch inserter to speed things up
@@ -78,7 +78,7 @@ end
 
 def calcTotalSize(folder)
   totSize = 0 
-  folder.relationships.outgoing(:child).nodes.each do |node|
+  folder.rels.outgoing(:child).nodes.each do |node|
     if(node[:size] != nil)
       totSize+=node[:size]
     else #this is a folder
@@ -90,7 +90,7 @@ end
 
 #this is about 8x faster - untweaked
 def calcSizeJava(node)
-  neoNode = node.internal_node
+  neoNode = node._java_node
   size = 0
   child = org.neo4j.api.core.DynamicRelationshipType.withName 'child'
   traverser = neoNode.traverse(org.neo4j.api.core.Traverser::Order::DEPTH_FIRST, 
@@ -107,7 +107,7 @@ end
 
 Then /^the total size of one top folder files should be (\w+) kb and response time less than (.*) s$/ do |totalSize, responseTime|
   Neo4j::Transaction.run do 
-    topFolder = Neo4j.ref_node.relationships.outgoing(:files).nodes.first
+    topFolder = Neo4j.ref_node.rels.outgoing(:files).nodes.first
     startTime = Time.now
     calcTotalSize(topFolder).should == Integer(totalSize)
     rTime = Time.new-startTime
