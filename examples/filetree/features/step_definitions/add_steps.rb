@@ -8,6 +8,7 @@ Sinatra::Application.set :environment, :test
 
 Before do
   start
+  Neo4j.info
 end
 
 After do
