@@ -21,8 +21,8 @@ module Neo4j
           return if @thread
 
           @thread = Thread.new do
-            puts "Start Restful server at port #{Config[:rest_port]}"
-            Sinatra::Application.run! :port => Config[:rest_port]
+            puts "Start Restful server at port #{Neo4j::Config[:rest_port]}"
+            Sinatra::Application.run! :port => Neo4j::Config[:rest_port]
           end
         end
 

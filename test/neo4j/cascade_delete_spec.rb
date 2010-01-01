@@ -21,49 +21,49 @@ describe "Cascade Delete for raw relationships" do
     c = Neo4j::Node.new {|n| n[:name] = 'c'}
     d = Neo4j::Node.new {|n| n[:name] = 'd'}
 
-    rel = a.relationships.outgoing(:foo) << b
+    rel = a.add_rel(:foo, b)
     rel[:_cascade_delete_outgoing] = true
 
-    rel2 = c.relationships.outgoing(:foo) << d
+    c.rels.outgoing(:foo) << d
 
     # when
-    b.delete
-    a.delete
+    b.del
+    a.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
-    Neo4j.load(a.neo_node_id).should be_nil
-    Neo4j.load(b.neo_node_id).should be_nil
-    Neo4j.load(c.neo_node_id).should_not be_nil
-    Neo4j.load(d.neo_node_id).should_not be_nil
+    Neo4j.load_node(a.neo_id).should be_nil
+    Neo4j.load_node(b.neo_id).should be_nil
+    Neo4j.load_node(c.neo_id).should_not be_nil
+    Neo4j.load_node(d.neo_id).should_not be_nil
   end
 
 
   it "should delete all outgoing nodes if relationship has property _cascade_delete_outgoing " do
-    a = Neo4j::Node.new {|n| n[:name] = 'a'}
-    b = Neo4j::Node.new {|n| n[:name] = 'b'}
-    c = Neo4j::Node.new {|n| n[:name] = 'c'}
-    d = Neo4j::Node.new {|n| n[:name] = 'd'}
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    c = Neo4j::Node.new
+    d = Neo4j::Node.new
 
-    rel = a.relationships.outgoing(:foo) << b
+    rel = a.add_rel(:foo, b)
     rel[:_cascade_delete_outgoing] = true
 
-    rel2 = b.relationships.outgoing(:foo) << c
+    rel2 = b.add_rel(:foo, c)
     rel2[:_cascade_delete_outgoing] = true
 
-    b.relationships.outgoing(:foo) << d
+    b.rels.outgoing(:foo) << d
 
     # when
-    a.delete
+    a.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(b.neo_node_id).should be_nil
-    Neo4j.load(c.neo_node_id).should be_nil
-    Neo4j.load(d.neo_node_id).should_not be_nil
+    Neo4j.load_node(b.neo_id).should be_nil
+    Neo4j.load_node(c.neo_id).should be_nil
+    Neo4j.load_node(d.neo_id).should_not be_nil
   end
 
   it "should delete node if it does not have relationships with property _cascade_delete_incoming" do
@@ -72,22 +72,22 @@ describe "Cascade Delete for raw relationships" do
     c = Neo4j::Node.new {|n| n[:name] = 'c'}
     d = Neo4j::Node.new {|n| n[:name] = 'd'}
 
-    (a.relationships.outgoing(:foo) << b)[:_cascade_delete_incoming] = a.neo_node_id
-    (a.relationships.outgoing(:foo) << c)[:_cascade_delete_incoming] = a.neo_node_id
+    a.add_rel(:foo, b)[:_cascade_delete_incoming] = a.neo_id
+    a.add_rel(:foo, c)[:_cascade_delete_incoming] = a.neo_id
 
-    b.relationships.outgoing(:foo) << d
+    b.rels.outgoing(:foo) << d
 
     # only when a's all incoming nodes are deleted
-    Neo4j.load(a.neo_node_id).should_not be_nil
-    b.delete
-    c.delete
-    d.delete
+    Neo4j.load_node(a.neo_id).should_not be_nil
+    b.del
+    c.del
+    d.del
 
     # then a will be deleted since it does not have any outgoing relationships with property _cascade_delete_incoming
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(a.neo_node_id).should be_nil
+    Neo4j.load_node(a.neo_id).should be_nil
   end
 end
 
@@ -115,14 +115,14 @@ describe "Cascade Delete For #hasList" do
     f.stuff << f2
 
     # when
-    f.delete
+    f.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f1.neo_node_id).should be_nil
-    Neo4j.load(f2.neo_node_id).should be_nil
+    Neo4j.load_node(f1.neo_id).should be_nil
+    Neo4j.load_node(f2.neo_id).should be_nil
   end
 
 
@@ -137,15 +137,15 @@ describe "Cascade Delete For #hasList" do
     fa.abc << fa1
 
     # when
-    fa.delete
+    fa.del
 
     # then
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(fa.neo_node_id).should be_nil
-    Neo4j.load(fa1.neo_node_id).should_not be_nil
+    Neo4j.load_node(fa.neo_id).should be_nil
+    Neo4j.load_node(fa1.neo_id).should_not be_nil
   end
 
   it "should not delete other list items for outgoing cascade delete" do
@@ -174,15 +174,15 @@ describe "Cascade Delete For #hasList" do
     fc.things << fc1
 
     # when
-    fa.delete
+    fa.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(fa1.neo_node_id).should be_nil
-    Neo4j.load(fb1.neo_node_id).should_not be_nil
-    Neo4j.load(fc1.neo_node_id).should_not be_nil
+    Neo4j.load_node(fa1.neo_id).should be_nil
+    Neo4j.load_node(fb1.neo_id).should_not be_nil
+    Neo4j.load_node(fc1.neo_id).should_not be_nil
   end
 
   it "should not delete all list members for outgoing cascade delete when one list item is deleted" do
@@ -198,13 +198,13 @@ describe "Cascade Delete For #hasList" do
     f.stuff << f2
 
     # when
-    f1.delete
+    f1.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f2.neo_node_id).should_not be_nil
+    Neo4j.load_node(f2.neo_id).should_not be_nil
   end
 
   it "should delete the list node for incoming cascade delete when all its list items has been deleted" do
@@ -221,14 +221,14 @@ describe "Cascade Delete For #hasList" do
 
 
     # when
-    f1.delete
-    f2.delete
+    f1.del
+    f2.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f.neo_node_id).should be_nil
+    Neo4j.load_node(f.neo_id).should be_nil
   end
 
 end
@@ -259,14 +259,14 @@ describe "Cascade Delete For #hasN" do
 
 
     # when
-    f.delete
+    f.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f1.neo_node_id).should be_nil
-    Neo4j.load(f2.neo_node_id).should be_nil
+    Neo4j.load_node(f1.neo_id).should be_nil
+    Neo4j.load_node(f2.neo_id).should be_nil
   end
 
 
@@ -284,15 +284,15 @@ describe "Cascade Delete For #hasN" do
 
 
     # when
-    f1.delete
-    f2.delete
+    f1.del
+    f2.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f.neo_node_id).should be_nil
-    Neo4j.load(f1.neo_node_id).should be_nil
+    Neo4j.load_node(f.neo_id).should be_nil
+    Neo4j.load_node(f1.neo_id).should be_nil
   end
 
 
@@ -322,13 +322,13 @@ describe "Cascade Delete For #hasOne" do
 
 
     # when
-    f.delete
+    f.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f1.neo_node_id).should be_nil
+    Neo4j.load_node(f1.neo_id).should be_nil
   end
 
 
@@ -343,13 +343,13 @@ describe "Cascade Delete For #hasOne" do
     f.thing = f1
 
     # when
-    f1.delete
+    f1.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    Neo4j.load(f.neo_node_id).should be_nil
+    Neo4j.load_node(f.neo_id).should be_nil
   end
 
 end
@@ -396,13 +396,13 @@ describe "Cascade Delete chained" do
 
     # delete order when it has no more
     # when
-    line1.delete
-    line2.delete
+    line1.del
+    line2.del
 
     # then
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
     
-    Neo4j.load(status.neo_node_id).should be_nil
+    Neo4j.load_node(status.neo_id).should be_nil
   end
 end

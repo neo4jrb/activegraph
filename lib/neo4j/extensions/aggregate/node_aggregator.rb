@@ -62,7 +62,8 @@ module Neo4j::Aggregate
     # :api: private
     def on_node_deleted(node) # :nodoc:
       return if node.class != @filter
-      node.relationships.incoming(:aggregate).filter{start_node.property? :aggregate_size}.each do |group_rel|
+#      node.print(:incoming, 2)
+      node.rels.incoming(:aggregate).filter{start_node.property? :aggregate_size}.each do |group_rel|
         group_node = group_rel.start_node
         group_node.aggregate_size -= 1
         # should we delete the whole group ?
@@ -72,12 +73,12 @@ module Neo4j::Aggregate
 
     def delete_group(group_node) # :nodoc:
       # get parent aggregates and decrease the aggregate size
-      group_node.relationships.incoming.nodes.each do |parent_group|
+      group_node.rels.incoming.nodes.each do |parent_group|
         next unless parent_group.respond_to? :aggregate_size
         parent_group[:aggregate_size] -= 1
         delete_group(parent_group) if parent_group[:aggregate_size] == 0
       end
-      group_node.delete
+      group_node.del
     end
 
 
@@ -89,7 +90,7 @@ module Neo4j::Aggregate
       removed = old_group_keys - new_group_keys
 
       removed.each do |key|
-        member_of = [*node.relationships.incoming(:aggregate).filter{self[:aggregate_group] == key}]
+        member_of = [*node.rels.incoming(:aggregate).filter{self[:aggregate_group] == key}]
         raise "same group key used in several aggregate groups, strange #{member_of.size}" if member_of.size > 1
         next if member_of.empty?
         group_node = member_of[0].start_node
@@ -182,7 +183,7 @@ module Neo4j::Aggregate
     # :api: private
     def create_group_for_key(parent, node, key)
       # find a group node for the given key
-      group_node = parent.relationships.outgoing(key).nodes.find{|n| n.kind_of? NodeGroup}
+      group_node = parent.rels.outgoing(key).nodes.find{|n| n.kind_of? NodeGroup}
 
       # if no group key is found create a new one
       group_node ||= create_group_node(parent, key)
@@ -194,7 +195,7 @@ module Neo4j::Aggregate
       else
         # this IS a leaf aggregate dsl, add node to the group
         rel_type = node.kind_of?(NodeGroup)? key : :aggregate
-        rel = group_node.relationships.outgoing(rel_type) << node
+        rel = group_node.add_rel(rel_type, node)
         rel[:aggregate_group] = key
         # increase the size counter on this group
         group_node.aggregate_size += 1
@@ -204,7 +205,7 @@ module Neo4j::Aggregate
     # :api: private
     def create_group_node(parent, key)
       new_node = NodeGroup.create(key)
-      rel = parent.relationships.outgoing(key) << new_node
+      rel = parent.add_rel(key, new_node)
       parent.aggregate_size += 1 # another group was created
       rel[:aggregate_group] = key
       new_node

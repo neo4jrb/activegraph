@@ -66,7 +66,7 @@ module Neo4j
 
     # :api: private
     def index(node)
-      document = {:id => node.neo_node_id }
+      document = {:id => node.neo_id }
 
       @document_updaters.each do |updater|
         updater.update_document(document, node)
@@ -77,7 +77,7 @@ module Neo4j
 
     # :api: private
     def delete_index(node)
-      lucene_index.delete(node.neo_node_id)
+      lucene_index.delete(node.neo_id)
     end
 
 
@@ -184,7 +184,7 @@ module Neo4j
 
     # :api: private
     def reindex_related_nodes(node)
-      related_nodes = node.relationships.both(@rel_type).nodes
+      related_nodes = node.rels.both(@rel_type).nodes
       related_nodes.each do |related_node|
         Indexer.index(related_node)
       end
@@ -197,7 +197,7 @@ module Neo4j
 
     # :api: private
     def update_document(document, node)
-      relationships = node.relationships.both(@rel_type).nodes
+      relationships = node.rels.both(@rel_type).nodes
       relationships.each do |other_node|
         @properties.each do |p|
           index_key = index_key(p)

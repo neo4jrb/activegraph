@@ -97,7 +97,7 @@ module Lucene
           # TODO reuse of error handling and logging
           $LUCENE_LOGGER.error{"Got exception #{ex}"}      
           ex.backtrace.each {|t| $LUCENE_LOGGER.error(t)}
-          raise ex
+          raise
         ensure
           tx.commit unless tx.rollback?
         end

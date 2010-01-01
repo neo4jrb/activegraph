@@ -3,15 +3,12 @@ module Neo4j
 
     # Enables finding relationships for one node
     #
-    class RelationshipTraverser
+    class RelationshipDSL
       include Enumerable
-      extend TransactionalMixin
-
-      attr_reader :internal_node
+      attr_reader :node
 
       def initialize(node, direction = :outgoing)
         @node = node
-        @internal_node = node.internal_node
         case direction
           when :outgoing
             outgoing
@@ -56,16 +53,17 @@ module Neo4j
       #
       #  node1 = Neo4j::Node.new
       #  node2 = Neo4j::Node.new
-      #  node1.relationships.outgoing(:some_relationship_type) << node2
+      #  node1.rels.outgoing(:some_relationship_type) << node2  << node3
       #
       # ==== Returns
-      # a Relationship object (see Neo4j::RelationshipMixin)  representing this created relationship
+      # self - so that the << can be chained
       #
       # :api: public
       def <<(other_node)
         source,target = @node, other_node
         source,target = target,source if @direction == org.neo4j.api.core.Direction::INCOMING
-        source._create_relationship(@type.to_s, target)
+        source.add_rel(@type, target)
+        self
       end
 
       def empty?
@@ -73,26 +71,22 @@ module Neo4j
       end
 
       # Return the first relationship or nil
-      # TODO does not work together with filter, will be removed in JRuby 1.4 (not needed since it is included)
       def first
-        iter = iterator
-        return nil unless iter.hasNext
-        return Neo4j.instance.load_relationship(iter.next)
+        find {true}
       end
 
       #
       # Returns the relationship object to the other node.
       #
       def [](other_node)
-        find {|r| r.end_node.neo_node_id == other_node.neo_node_id}
+        find {|r| r.end_node.neo_id == other_node.neo_id}
       end
 
 
       def each
         iter = iterator
         while (iter.hasNext) do
-          n = iter.next
-          rel = Neo4j.instance.load_relationship(n)
+          rel = iter.next.wrapper
           next if @filter_proc && !rel.instance_eval(&@filter_proc)
           yield rel
         end
@@ -104,15 +98,15 @@ module Neo4j
 
       def iterator
         # if type is nil then we traverse all relationship types of depth one
-        return @internal_node.getRelationships(@direction).iterator if @type.nil?
-        return @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
+        return @node.getRelationships(@direction).iterator if @type.nil?
+        return @node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
       end
 
       def to_s
-        "RelationshipTraverser [direction=#{@direction}, type=#{@type}]"
+        "RelationshipDSL [direction=#{@direction}, type=#{@type}]"
       end
 
-      # Used from RelationshipTraverser when traversing nodes instead of relationships.
+      # Used from RelationshipDSL when traversing nodes instead of relationships.
       #
       class RelationshipsEnumeration #:nodoc:
         include Enumerable
@@ -121,7 +115,6 @@ module Neo4j
           @relationships = relationships
         end
 
-        # TODO does not work together with filter
         def first
           find {true}
         end
@@ -132,12 +125,10 @@ module Neo4j
         
         def each
           @relationships.each do |relationship|
-            yield relationship.other_node(@relationships.internal_node)
+            yield relationship.getOtherNode(@relationships.node).wrapper
           end
         end
       end
-
-      transactional :empty?, :<<
     end
 
 

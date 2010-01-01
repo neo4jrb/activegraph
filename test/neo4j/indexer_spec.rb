@@ -57,7 +57,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @employee_indexer.on_property_changed(employee, 'salary')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -76,7 +76,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @employee_indexer.on_relationship_created(employee, 'employed_by')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -142,7 +142,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.index(company)
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 2
     index[0][:'employees.salary'].should include(1, 2)
   end
@@ -161,7 +161,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @employee_indexer.on_property_changed(employee, 'salary')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -180,7 +180,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @employee_indexer.on_relationship_created(employee, 'employees')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -243,7 +243,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
     indexer.on_property_changed(node1, 'age')
 
     index.size.should == 1
-    index[0][:id].should == node2.neo_node_id
+    index[0][:id].should == node2.neo_id
     index[0][:'friends.age'].size.should == 1
     index[0][:'friends.age'].should include(42)
   end
@@ -272,7 +272,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
     index_node2 = index[0]
 
     # then
-    index_node2[:id].should == node2.neo_node_id
+    index_node2[:id].should == node2.neo_id
     index_node2[:'friends.age'].size.should == 2
     index_node2[:'friends.age'].should include(42, 44)
   end
@@ -298,14 +298,14 @@ describe Indexer, " given friends.age is indexed on class Person" do
     # find which index belongs to which node
     index.size.should == 2
     index_node2, index_node3 = index
-    index_node2, index_node3 = index_node3, index_node2 unless index_node2[:id] == node2.neo_node_id
+    index_node2, index_node3 = index_node3, index_node2 unless index_node2[:id] == node2.neo_id
 
     # then
-    index_node2[:id].should == node2.neo_node_id
+    index_node2[:id].should == node2.neo_id
     index_node2[:'friends.age'].size.should == 1
     index_node2[:'friends.age'].should include(42)
 
-    index_node3[:id].should == node3.neo_node_id
+    index_node3[:id].should == node3.neo_id
     index_node2[:'friends.age'].size.should == 1
     index_node3[:'friends.age'].should include(42)
   end
@@ -338,7 +338,7 @@ describe Indexer, " given property foo is indexed" do
     # given and then
     node = mock('node')
     node.should_receive(:class).any_number_of_times.and_return(@node_class)
-    node.should_receive(:neo_node_id).and_return(42)
+    node.should_receive(:neo_id).and_return(42)
     node.should_receive(:foo).and_return("Hi")
 
     index = []

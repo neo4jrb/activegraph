@@ -5,7 +5,7 @@ require 'neo4j'
 require 'spec_helper'
 
 
-describe Neo4j::Relationships::RelationshipTraverser do
+describe Neo4j::Relationships::RelationshipDSL do
   before(:all) do
     start
   end
@@ -22,34 +22,34 @@ describe Neo4j::Relationships::RelationshipTraverser do
 
   
 
-  describe 'n1.relationships.outgoing(:foo) << n2' do
+  describe 'n1.rels.outgoing(:foo) << n2' do
 
     it "should append n2 as outgoing node from n1" do
       n1 = Neo4j::Node.new
       n2 = Neo4j::Node.new
 
       # when
-      n1.relationships.outgoing(:foo) << n2
+      n1.rels.outgoing(:foo) << n2
 
       # then
-      n1.relationships.outgoing.nodes.should include(n2)
-      n2.relationships.incoming.nodes.should include(n1)
+      n1.rels.outgoing.nodes.should include(n2)
+      n2.rels.incoming.nodes.should include(n1)
     end
 
   end
 
-  describe 'n1.relationships.incoming(:foo) << n2' do
+  describe 'n1.rels.incoming(:foo) << n2' do
 
     it "should append n2 as incoming node to n1" do
       n1 = Neo4j::Node.new
       n2 = Neo4j::Node.new
 
       # when
-      n1.relationships.incoming(:foo) << n2
+      n1.rels.incoming(:foo) << n2
 
       # then
-      n1.relationships.incoming.nodes.should include(n2)
-      n2.relationships.outgoing.nodes.should include(n1)
+      n1.rels.incoming.nodes.should include(n2)
+      n2.rels.outgoing.nodes.should include(n1)
     end
 
   end
@@ -69,52 +69,52 @@ describe Neo4j::Relationships::RelationshipTraverser do
       end
     end    
 
-    it "Neo4j::relationship?(:friends)==false when there are no friends" do
+    it "Neo4j::rel?(:friends)==false when there are no friends" do
       t = TestNode.new
-      t.relationship?(:friends).should == false
+      t.rel?(:friends).should == false
     end
 
-    it "Neo4j::relationship?(:friends)==true when there are is one friend" do
+    it "Neo4j::rel?(:friends)==true when there are is one friend" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      t.relationship?(:friends).should == true
+      t.rel?(:friends).should == true
     end
 
-    it "Neo4j::relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
+    it "Neo4j::rel?(:friends, :incoming) should return true/false if there are incoming friends" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      t.relationship?(:friends, :incoming).should == false
-      t1.relationship?(:friends, :incoming).should == true
+      t.rel?(:friends, :incoming).should == false
+      t1.rel?(:friends, :incoming).should == true
     end
 
-    it "Neo4j::relationship?(:friends, :incoming) should return true/false if there are incoming friends" do
+    it "Neo4j::rel?(:friends, :incoming) should return true/false if there are incoming friends" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      t.relationship?(:friends, :outgoing).should == true
-      t1.relationship?(:friends, :outgoing).should == false
+      t.rel?(:friends, :outgoing).should == true
+      t1.rel?(:friends, :outgoing).should == false
     end
 
-    it "Neo4j::relationship should return nil when there are no relationships" do
+    it "Neo4j::rel should return nil when there are no rels" do
       t = TestNode.new
-      t.relationship(:friends, :outgoing).should be_nil
+      t.rel(:friends, :outgoing).should be_nil
     end
 
-    it "Neo4j::relationship should return relationship when there is ONE relationships" do
+    it "Neo4j::rel should return relationship when there is ONE rels" do
       t = TestNode.new
       t1 = TestNode.new
       t.friends << t1
-      rel = t.relationship(:friends, :outgoing)
+      rel = t.rel(:friends, :outgoing)
       rel.start_node.should == t
       rel.end_node.should == t1
     end
 
-    it "Neo4j::relationship should raise an exception when there is more then ONE relationships" do
+    it "Neo4j::rel should raise an exception when there is more then ONE rels" do
       t = TestNode.new
       t.friends << TestNode.new << TestNode.new
-      lambda { t.relationship(:friends, :outgoing) }.should raise_error
+      lambda { t.rel(:friends, :outgoing) }.should raise_error
     end
 
     it "should find all outgoing nodes" do
@@ -124,7 +124,7 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when
-      outgoing = [*t1.relationships.outgoing]
+      outgoing = [*t1.rels.outgoing]
       
       # then
       outgoing.size.should == 1
@@ -140,7 +140,7 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when
-      outgoing = [*t2.relationships.incoming(:friends)]
+      outgoing = [*t2.rels.incoming(:friends)]
 
       # then
       outgoing.size.should == 1
@@ -154,8 +154,8 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t2 = TestNode.new
 
       # when and then
-      [*t2.relationships.incoming].size.should == 0
-      [*t2.relationships.outgoing].size.should == 0
+      [*t2.rels.incoming].size.should == 0
+      [*t2.rels.outgoing].size.should == 0
     end
 
     it "should make sure that incoming nodes are not found in outcoming nodes" do
@@ -165,8 +165,8 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when and then
-      [*t1.relationships.incoming].size.should == 0
-      [*t2.relationships.outgoing].size.should == 0
+      [*t1.rels.incoming].size.should == 0
+      [*t2.rels.outgoing].size.should == 0
     end
 
 
@@ -177,8 +177,8 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t2
 
       # when and then
-      [*t1.relationships.both.nodes].should include(t2)
-      [*t2.relationships.both.nodes].should include(t1)
+      [*t1.rels.both.nodes].should include(t2)
+      [*t2.rels.both.nodes].should include(t1)
     end
 
     it "should find several both incoming and outgoing nodes" do
@@ -191,11 +191,11 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t3
 
       # when and then
-      [*t1.relationships.both.nodes].should include(t2,t3)
-      [*t1.relationships.both.outgoing.nodes].should include(t2,t3)
-      [*t2.relationships.both.incoming.nodes].should include(t1)
-      [*t3.relationships.both.incoming.nodes].should include(t1)
-      [*t1.relationships.both.nodes].size.should == 2
+      [*t1.rels.both.nodes].should include(t2,t3)
+      [*t1.rels.both.outgoing.nodes].should include(t2,t3)
+      [*t2.rels.both.incoming.nodes].should include(t1)
+      [*t3.rels.both.incoming.nodes].should include(t1)
+      [*t1.rels.both.nodes].size.should == 2
     end
     
     it "should find incoming nodes of a specific type" do
@@ -208,27 +208,27 @@ describe Neo4j::Relationships::RelationshipTraverser do
       t1.friends << t3
 
       # when and then
-      [*t1.relationships.outgoing(:friends).nodes].should include(t2,t3)
-      [*t2.relationships.incoming(:friends).nodes].should include(t1)
-      [*t3.relationships.incoming(:friends).nodes].should include(t1)
+      [*t1.rels.outgoing(:friends).nodes].should include(t2,t3)
+      [*t2.rels.incoming(:friends).nodes].should include(t1)
+      [*t3.rels.incoming(:friends).nodes].should include(t1)
     end
 
-    it "should allow to filter relationships" do
+    it "should allow to filter rels" do
       # given
       t1 = TestNode.new
       t2 = TestNode.new
       t3 = TestNode.new
-      t1.relationships.outgoing(:foo) << t2
-      t1.relationships.outgoing(:foo) << t3
-      t1.relationships.outgoing(:foo)[t2][:colour] = 'blue'
-      t1.relationships.outgoing(:foo)[t3][:colour] = 'red'
+      t1.rels.outgoing(:foo) << t2
+      t1.rels.outgoing(:foo) << t3
+      t1.rels.outgoing(:foo)[t2][:colour] = 'blue'
+      t1.rels.outgoing(:foo)[t3][:colour] = 'red'
 
       # find all relationships with property colour == blue
-      [*t1.relationships.outgoing.filter{self[:colour] == 'blue'}].size.should == 1
-      t1.relationships.outgoing.filter{self[:colour] == 'blue'}.nodes.should include(t2)
-      [*t1.relationships.outgoing.filter{self[:colour] == 'red'}].size.should == 1
-      t1.relationships.outgoing.filter{self[:colour] == 'red'}.nodes.should include(t3)
-      [*t1.relationships.outgoing.filter{self[:colour] == 'black'}].should be_empty
+      [*t1.rels.outgoing.filter{self[:colour] == 'blue'}].size.should == 1
+      t1.rels.outgoing.filter{self[:colour] == 'blue'}.nodes.should include(t2)
+      [*t1.rels.outgoing.filter{self[:colour] == 'red'}].size.should == 1
+      t1.rels.outgoing.filter{self[:colour] == 'red'}.nodes.should include(t3)
+      [*t1.rels.outgoing.filter{self[:colour] == 'black'}].should be_empty
     end
 
   end

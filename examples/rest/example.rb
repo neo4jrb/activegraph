@@ -40,7 +40,7 @@ Neo4j::Transaction.run do
   a.friends << b
   a[:undeclared] = '123'
   a[:foo] = 3.134
-  a.relationships.outgoing(:other) << c
+  a.rels.outgoing(:other) << c
 end
 
 puts "Created a person at URI http://localhost:9123/nodes/Person/1"

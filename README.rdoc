@@ -12,9 +12,9 @@ It provides:
 * Can be used instead of ActiveRecord in Ruby on Rails or Merb
 * Can be accessible as REST resources.
 
-It uses two powerful and mature java libraries:
-* Neo4J (http://www.neo4j.org/) - for persistance and traversal of the graph
-* Lucene (http://lucene.apache.org/java/docs/index.html) for quering and indexing.
+It uses two powerful and mature Java libraries:
+* Neo4J (http://www.neo4j.org/) - for persistence and traversal of the graph
+* Lucene (http://lucene.apache.org/java/docs/index.html) for querying and indexing.
 
 === Status
 * There are over 400 RSpecs.
@@ -56,11 +56,13 @@ This page contains the following information:
 * Lucene API Documentation
 
 There are also some complete examples in the example folder
-* admin - an uncomplete admin web gui for the Neo4j.rb/REST interface
+* admin - an incomplete admin web gui for the Neo4j.rb/REST interface
 * railway - an example of a railway network application
-* imdb - an example of a neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
-* rest - an example how to expose neo4j nodes as REST resources
+* imdb - an example of a Neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
+* rest - an example how to expose Neo4j nodes as REST resources
 * Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master or http://github.com/sashaagafonoff/peoplemap
+
+For most of the examples below there are RSpecs available, check the test/neo4j/readme_spec.rb file.
 
 == Installation
 
@@ -93,7 +95,7 @@ is encoded in the relationship types of the application.
 
 === Creating Nodes
 
-Example of creating a neo4j node:
+Example of creating a Neo4j node:
 
   require "rubygems"
   require 'neo4j'
@@ -141,40 +143,28 @@ Example of creating a relationship
 
   node1 = Neo4j::Node.new
   node2 = Neo4j::Node.new
-  node1.relationships.outgoing(:friends) << node2  # connects node1 to node2 with relationship type 'friends'
+  node1.rels.outgoing(:friends) << node2
 
 === Accessing Relationships
 Example of getting relationships
 
-  node1.relationships.empty? # => false
+  node1.rels.empty? # => false
 
-  # The relationships method returns an enumeration of relationship objects.
+  # The rels method returns an enumeration of relationship objects.
   # The nodes method on the relationships returns the nodes instead.
-  node1.relationships.nodes.include?(node2) # => true
+  node1.rels.nodes.include?(node2) # => true
   
-  node1.relationships.first # => the first relationship this node1 has which is between node1 and node2 of any type
-  node1.relationships.nodes.first # => node2  first node of any relationship type
-  node1.relationships.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
-  node2.relationships.incoming(:friends).first # => a relationship object between node1 and node2
+  node1.rels.first # => the first relationship this node1 has which is between node1 and node2 of any type
+  node1.rels.nodes.first # => node2  first node of any relationship type
+  node2.rels.incoming(:friends).nodes.first # => node1  first node of relationship type 'friends'
+  node2.rels.incoming(:friends).first # => a relationship object between node1 and node2
 
 === Properties on Relationships
 Example of setting properties on relationships
 
-  rel = node1.relationships.outgoing(:friends).first
+  rel = node1.rels.outgoing(:friends).first
   rel[:since] = 1982
-  node1.relationships.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
-
-=== The Node and NodeMixin
-Here is the complete implemenation of the Neo4j::Node class
-
-  module Neo4j
-    class Node
-      include Neo4j::NodeMixin
-    end
-  end
-
-In the next tutorial you will learn how to use this Neo4j::NodeMixin in your own domain model classes.
-
+  node1.rels.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
 
 == Ten Minute Tutorial
 
@@ -189,14 +179,13 @@ The following example specifies how to map a Neo4j node to a Ruby Person instanc
     include Neo4j::NodeMixin
 
     # define Neo4j properties
-    property :name, :salary, :age
+    property :name, :salary, :age, :country
 
     # define an one way relationship to any other node
     has_n :friends
 
-    # adds a lucene index on the following properties
-    index :name, :salary
-    index 'friends.age' # index each friend age as well
+    # adds a Lucene index on the following properties
+    index :name, :salary, :age, :country
   end
 
 Neo properties and relationships are declared using the 'property' and 'has_n'/'has_one' NodeMixin class method.
@@ -207,8 +196,7 @@ declaring those properties/relationships by using the operator '[]' on Neo4j::No
 By using the NodeMixin and by declaring properties and indices, all instances of the Person class can now be stored in 
 the Neo4j node space and be retrieved/queried by traversing the node space or performing Lucene queries.
 
-A lucene index will be updated when the name or salary property changes.
-The salary of all friends are also indexed which means we can query for people who have friends with a certain salary.
+A Lucene index will be updated when the name or salary property changes.
 
 === Creating a node
 
@@ -242,28 +230,30 @@ A relationship can be added at any time on any node.
 
 Example:
 
-  person.relationships.outgoing(:best_friends) << other_node
-  person.relationship(:best_friend).end_node # => other_node (if there is only one relationship of type 'best_friend' on person) 
+  person.rels.outgoing(:best_friends) << other_node
+  person.rels.outgoing(:best_friends).first.end_node # => other_node (if there is only one relationship of type 'best_friends' on person)
+  # the line above can also be written as below - take the first outgoing relationship:
+  person.rel(:best_friends).end_node
 
 
 === Finding Nodes and Queries
 
-There are three ways of finding/quering nodes in neo4j: 
+There are three ways of finding/querying nodes in Neo4j: 
   1. by traversing the graph
-  2. by using lucene queries
-  3. using the unique neo4j id (Neo4j::NodeMixin#neo_node_id).
+  2. by using Lucene queries
+  3. using the unique neo4j id (Neo4j::NodeMixin#neo_id).
 
 When doing a traversal one starts from a node and traverses one or more relationships (one or more levels deep).
 This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
-node from a lucene query.
+node from a Lucene query.
 
 === Lucene Queries
 
-There are different ways to write lucene queries.
+There are different ways to write Lucene queries.
 Using a hash:
-  Person.find (:name => 'kalle', :age => 20..30)  # find people with name kalle and age between 20 and 30
+  Person.find (:name => 'kalle', :salary => 20000..30000)  # find people with name kalle and age between 20 and 30
 
-or using the lucene query language:
+or using the Lucene query language:
   
   Person.find("name:kalle AND salary:[10000 TO 30000]")
 
@@ -272,9 +262,9 @@ For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.
 
 === Sorting, example
 
-  Person.find(:name => 'kalle').sort_by(:salary)
-  Person.find(:name => 'kalle').sort_by(Desc[:salary], Asc[:country])
-  Person.find(:name => 'kalle').sort_by(Desc[:salary, :country])
+  Person.find(:age => 25).sort_by(:salary)
+  Person.find(:age => 25).sort_by(Lucene::Desc[:salary], Lucene::Asc[:country])
+  Person.find(:age => 25).sort_by(Lucene::Desc[:salary, :country])
 
 === Search Results
 
@@ -305,12 +295,12 @@ Example
 
 To delete the relationship between person and person2:
 
-  person.relationships[person2].delete
+  person.rels[person2].del
 
 If a node is deleted then all its relationship will also be deleted
 Deleting a node is performed by using the delete method:
 
-  person.delete
+  person.del
 
 === Node Traversals
 
@@ -394,29 +384,46 @@ It supports two different ways of retrieval/quering:
 
 === Start and Stop of the Neo4j
 
-Unlike the Java Neo4j implementation it is not neccessarly to start Neo4j.
+Unlike the Java Neo4j implementation it is not necessarily to start Neo4j.
 It will automatically be started when needed.
 It also uses a hook to automatically shutdown Neo4j.
-Shutdown of neo4j can also be done using the stop method, example:
+Shutdown of Neo4j can also be done using the stop method, example:
 
   Neo4j.stop
 
 ==== Neo4j Configuration
 
 Before using Neo4j the location where the database is stored on disk should be configured.
-The neo4j configuration is kept in the Neo4j::Config class:
+The Neo4j configuration is kept in the Neo4j::Config class:
 
    Neo4j::Config[:storage_path] = '/home/neo/neodb'
 
+==== Accessing the Java Neo4j API
+
+You can access the org.neo4j.api.core.EmbeddedNeo class by
+
+  Neo4j.instance
+
+You can create org.neo4j.api.core.Node classes by
+
+  Neo4j::Node.new
+
+You can create a relationship of type org.neo4j.api.core.Relationship by
+
+  a = Neo4j::Node.new
+  b = Neo4j::Node.new
+  r = a.add_rel(:friends, b)
+  r.java_class # => class org.neo4j.impl.core.RelationshipProxy
+
 === Lucene Integration
 
-Neo4j.rb uses the Lucene module. That means that the Neo4j::NodeMixin has method for
-both traversal and lucene queries/indexing.
+Neo4j.rb uses the Lucene module. That means that the Neo4j::NodeMixin has methods for
+both traversal and Lucene queries/indexing.
 
 ==== Lucene Configuration
 
-By default lucene indexes are kept in memory.
-Keeping index in memory will increase the performance of lucene operations (such as updating the index).
+By default Lucene indexes are kept in memory.
+Keeping index in memory will increase the performance of Lucene operations (such as updating the index).
 
 Example to configure Lucene to store indexes on disk instead
 
@@ -427,11 +434,11 @@ Example to configure Lucene to store indexes on disk instead
 
 If index is stored in memory then one needs to reindex all nodes when the application starts up again.
 
-   MyNode.update_index # will traverse all MyNode instances and (re)create the lucene index in memory.
+   MyNode.update_index # will traverse all MyNode instances and (re)create the Lucene index in memory.
 
 === Neo4j::NodeMixin
 
-Neo4j::NodeMixin is a mixin that lets instances to be stored as a node in the neo node space on disk.
+Neo4j::NodeMixin is a mixin that lets instances to be stored as a node in the Neo node space on disk.
 A node can have properties and relationships to other nodes.
 
 Example of how declare a class that has this behaviour:
@@ -439,6 +446,19 @@ Example of how declare a class that has this behaviour:
   class MyNode 
      include Neo4j::NodeMixin
   end
+
+
+=== Neo4j::Node
+
+If you do not need to map a node to a ruby instance you can simply use the Neo4j::Node object.
+
+Example:
+
+  node = Neo4j::Node.new
+  node[:name] = 'foo'
+
+The Neo4j::Node.new method actually returns a Java object that implements the org.neo4j.api.core.Node interface.
+That Java interface is extended with methods so it behaviors almost like using the your own Ruby Neo4j::NodeMixin class.
 
 === Create a Node
 
@@ -451,9 +471,16 @@ The Neo4j::NodeMixin mixin defines a delete method that will delete the node and
 Example:
 
   node = MyNode.new
-  node.delete
+  node.del
 
-The node in the example above will be removed from the neo database on the filesystem and the lucene index
+The node in the example above will be removed from the Neo database on the filesystem and the Lucene index
+
+==== Neo4j::Node#delete method
+
+Since one can both use the org.neo4j.api.core.Node directly or using the Neo4j::NodeMixin there might be a clash
+in method names.
+For example the method Neo4j::NodeMixin#del deletes the node and all its relationships.
+The org.neo4j.api.core.Node#delete (which is created by Neo4j::Node.new) will raise an exception if not all relationships are already deleted.
 
 === Node Properties
 
@@ -500,7 +527,7 @@ Example, to set a property to any type
   node = MyNode.new
   node.foo = [1,"3", 3.14]
 
-  Neo4j.load(node.neo_node_id).foo.class # => Array
+  Neo4j.load_node(node.neo_id).foo.class # => Array
 
 
 === Property of type Date and DateTime
@@ -585,7 +612,7 @@ Example:
   class Person
      include Neo4j::Node
      has_n :knows  # will generate a knows method for outgoing relationships
-     has_n(:known_by).from(:knows)  #  will generate a known_by method for incomming knows relationship
+     has_n(:known_by).from(:knows)  #  will generate a known_by method for incoming knows relationship
   end
 
 By doing this you can add a relationships on either the incoming or outgoing node.
@@ -620,7 +647,7 @@ Example of has_one: A person can have at most one Address
 
 In the example above we have Neo4j.rb will generate the following methods
 * in Person, the method ''address='' and ''address''
-* in Address, the traversal method ''people'' for  traversing incomming relationships from the Person node.
+* in Address, the traversal method ''people'' for  traversing incoming relationships from the Person node.
 
 Example of usage:
 
@@ -679,7 +706,7 @@ Example:
 
 ==== Memberships in lists
 
- Each node in a list knows which lists it belongs to the next and previous item in the list
+ Each node in a list knows which lists it belongs to, and the next and previous item in the list
  Example:
 
    employee1.list(:employees).next # => employee2
@@ -694,7 +721,7 @@ Example:
 The has_one, has_n and has_list all support cascade delete.
 There are two types of cascade delete - incoming and outgoing.
 For an outgoing cascade delete the members (of the has_one/has_n/has_list) will all be deleted when the
-'root' node is deleted. For incoming cascade the 'root' node will be deleted when all its member are deleted.
+'root' node is deleted. For incoming cascade the 'root' node will be deleted when all its members are deleted.
 
 Example, outgoing
 
@@ -726,10 +753,10 @@ Example, incoming
   phone1.people << p1
   phone1.people << p2
 
-  p1.delete
-  p2.delete
+  p1.del
+  p2.del
 
-  # then phone will be deleted
+  # then phone1 will be deleted
 
 
 === Finding all nodes
@@ -751,7 +778,7 @@ Example
   v = Volvo.new
   c = Car.new
 
-  Car.all   # will return all relationships from the reference node to car obejcts
+  Car.all   # will return all relationships from the reference node to car objects
   Volvo.all # will return the same as Car.all
 
 To return nodes (just like the relationships method)
@@ -771,7 +798,7 @@ Each type of relationship has a method that returns an Enumerable object that en
 to traverse that type of relationship. 
 
 For example the Person example above declares one relationship of type friends.
-You can traverse all Person's friend (depth 1 is default)
+You can traverse all Person's friends (depth 1 is default)
 
   f.friends.each { |n| puts n }
 
@@ -800,26 +827,26 @@ If the evaluation returns true the node will be included in the filter search re
 
 === Traversing Nodes
 
-The Neo4j::NodeMixin#traverse method is a more powerful method compared to the
-generated has_n and has_one methods. Unlike those generated method it can
+The Neo4j::NodeMixin#incoming and Neo4j::NodeMixin#outgoing method are a more powerful methods compared to the
+generated has_n and has_one methods. Unlike the generated methods it can
 traverse several relationship types at the same time. The types of relationships
 being traversed must therefore always be specified in the incoming, outgoing or both method.
-Those three methods can take one or more relationship types parameters
-if more then one type of relationship should be traversed.
+The three methods can take one or more relationship types parameters
+if more than one type of relationship should be traversed.
 
 ==== Traversing Nodes of Arbitrary Depth
 
-The depth method allows you to specify how deep the traverse should be.
-If not specified only one level traverse is done.
+The depth method allows you to specify how deep the traversal should be.
+If not specified, only one level is traversed.
 
 Example:
 
-  me.traverse.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
+  me.incoming(:friends).depth(4).each {} # => people with a friend relationship to me
 
 ==== Traversing Nodes With Several Relationship Types
 
-It is possible to traverse sevaral relationship types at the same type.
-The incoming, both and outgoing methods takes list of arguments.
+It is possible to traverse several relationship types at the same type.
+The incoming, both and outgoing methods takes a list of arguments.
 
 Example, given the following holiday trip domain:
 
@@ -851,26 +878,26 @@ Example, given the following holiday trip domain:
   @malmoe.trips << @city_tour
   @stockholm.trips << @city_tour # the same city tour is available both in malmoe and stockholm
 
-Then we can traverse both the contains and the trips relationship types
+Then we can traverse both the contains and the trips relationship types.
 Example:
-  @sweden.traverse.outgoing(:contains, :trips).to_a # => [@malmoe, @stockholm, @sweden_trip]
+  @sweden.outgoing(:contains, :trips).to_a # => [@malmoe, @stockholm, @sweden_trip]
 
 It is also possible to traverse both incoming and outgoing relationships, example:
 
-  @sweden.traverse.outgoing(:contains, :trips).incoming(:contains).to_a # => [@malmoe, @stockholm, @sweden_trip, @europe]
+  @sweden.outgoing(:contains, :trips).incoming(:contains).to_a # => [@malmoe, @stockholm, @sweden_trip, @europe]
 
 ==== Traversing Nodes With a Filter
 
 It's possible to filter which nodes should be returned from the traverser by
 using the filter function. This filter function will be evaluated differently
-depending on if it takes one argument or no arguments, see below.
+depending the number of arguments it takes, see below.
 
 ==== Filtering: Using Evaluation in the Context of the Current Node
-If the provided filter function does not take any parameter it will be evaluted in the context
+If the provided filter function does not take any parameter it will be evaluated in the context
 of the current node being traversed.
 That means that one can writer filter functions like this:
 
-  @sweden.traverse.outgoing(:contains, :trips).filter { name == 'sweden' }
+  @sweden.outgoing(:contains, :trips).filter { name == 'sweden' }
 
 ==== Filtering: Using the TraversalPostion
 If the filter method takes one parameter then it will be given an object of type
@@ -889,7 +916,7 @@ For example if we only want to return the Trip objects in the example above:
 
   # notice how the tp (TraversalPosition) parameter is used in order to only
   # return nodes included in a 'trips' relationship.
-  traverser = @sweden.traverse.outgoing(:contains, :trips).filter do |tp|
+  traverser = @sweden.outgoing(:contains, :trips).filter do |tp|
     tp.last_relationship_traversed.relationship_type == :trips
   end
 
@@ -906,7 +933,7 @@ Example:
 
   relationship = p1.friends.new(p2)
 
-  # set a property 'since' on this relationship bewteen p1 and p2
+  # set a property 'since' on this relationship between p1 and p2
   relationship.since = 1992
 
 If a Relationship class has not been specified for a relationship then any properties
@@ -938,19 +965,19 @@ Example of listing all types of outgoing (default) relationship objects (of dept
 
 If we instead want to list the nodes that those relationships points to then the nodes method can be used.
 
-  me.relationships.nodes.each {|rel| ... }
+  me.rels.nodes.each {|rel| ... }
 
-Listing all incoming relationship obejcts of any relationship type:
+Listing all incoming relationship objects of any relationship type:
 
-  me.relationships.incoming.each { ... }
+  me.rels.incoming.each { ... }
 
 Listing both incoming and outgoing relationship object of a specific type:
 
-  me.relationships.both(:friends) { }
+  me.rels.both(:friends) { }
 
 Finding one outgoing relationship of a specific type and node (you)
 
-  me.relationships.outgoing(:friends)[you] # => [#<Neo4j::RelationshipMixin:0x134ae32]
+  me.rels.outgoing(:friends)[you] # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
 
 ==== Finding Relationships Example
@@ -964,16 +991,16 @@ Example, given we have the two nodes with a relationship between them:
 
 Then we can find all incoming and outgoing relationships like this:
 
-  n1.relationships.to_a # => [#<Neo4j::RelationshipMixin:0x134ae32]
+  n1.rels.to_a # => [#<Neo4j::RelationshipMixin:0x134ae32]
 
 A Neo4j::RelationshipMixin object represents a relationship between two nodes.
 
-  n1.relationships[0].start_node # => n1
-  n1.relationships[0].end_node # => n2
+  n1.rels[0].start_node # => n1
+  n1.rels[0].end_node # => n2
 
-A RelationshipMixin contains the relationship type which connects it connects two nodes with, example:
+A RelationshipMixin contains the relationship type which connects the two nodes
 
-  n1.relationships[0].relationship_type # => :friends
+  n1.rels[0].relationship_type # => :friends
 
 Relationships can also have properties just like a node (NodeMixin).
 
@@ -981,53 +1008,53 @@ Relationships can also have properties just like a node (NodeMixin).
 
 If we are only interested in all incoming nodes, we can do
 
-  n2.relationships.incoming # => [#<Neo4j::RelationshipMixin:0x134ae32]
+  n2.rels.incoming # => [#<Neo4j::RelationshipMixin:0x134aea2]
 
 Or outgoing:
 
-  n1.relationships.outgoing # => [#<Neo4j::RelationshipMixin:0x134aea2]
+  n1.rels.outgoing # => [#<Neo4j::RelationshipMixin:0x134aea2]
 
 To find a specific relationship use the [] operator:
 
-  n1.relationships.outgoing[n2] = #<Neo4j::RelationshipMixin:0x134aea2
+  n1.rels.outgoing[n2] = #<Neo4j::RelationshipMixin:0x134aea2
 
 Or which is better performance wise (since only friends relationships are being traversed):
 
-  n1.relationships.outgoing(:friends)[n2] = #<Neo4j::RelationshipMixin:0x134aea2
+  n1.rels.outgoing(:friends)[n2] = #<Neo4j::RelationshipMixin:0x134aea2
 
 === Deleting a relationship
 
 Use the Neo4j::RelationshipMixin#delete method.
 For example, to delete the relationship between n1 and n2 from the example above:
 
-    n1.relationships.outgoing(:friends)[n2].delete
+    n1.rels.outgoing(:friends)[n2].delete
 
 === Finding nodes in a relationship
 
-If you do not want those relationship object but instead want the nodes you can use the 'nodes' method
+If you do not want the relationship object, but just the nodes you can use the 'nodes' method
 in the Neo4j::RelationshipMixin object.
 
 For example:
 
-  n2.relationships.incoming.nodes # => [n1]
+  n2.rels.incoming.nodes # => [n1]
 
 === Finding outgoing/incoming nodes of a specific relationship type
 
 Let say we want to find who has my phone number and who consider me as a friend
 
   # who has my phone numbers
-  me.relationships.incoming(:phone_numbers).nodes # => people with my phone numbers
+  me.rels.incoming(:phone_numbers).nodes # => people with my phone numbers
 
   # who consider me as a friend
-  me.relationships.incoming(:friends).nodes # => people with a friend relationship to me
+  me.rels.incoming(:friends).nodes # => people with a friend relationship to me
 
 Remember that relationships are not symmetrical.
-Notice there is also a otherway of finding nodes, see the Neo4j::NodeMixin#traverse method below.
+Notice that, there is also another way of finding nodes, see the Neo4j::NodeMixin#traverse method below.
 
 === Transactions
 
 All operations that work with the node space (even read operations) must be wrapped in a transaction.
-For example all get, set and find operations will start a new transaction if none is already not runnig (for that thread).
+For example all get, set and find operations will start a new transaction if none is already not running (for that thread).
 
 If you want to perform a set of operation in a single transaction, use the Neo4j::Transaction.run method:
 
@@ -1040,6 +1067,13 @@ Example
 
 There is also a auto commit feature available which is enabled by requiring 'neo4j/auto_tx' instead of 'neo4j',
 see the three minutes tutorial above.
+
+You can also run it without a block, like this:
+
+   transaction = Neo4j::Transaction.new
+   transaction.start
+   # do something
+   transaction.finish
 
 ==== Rollback
 
@@ -1057,17 +1091,10 @@ Example:
   }
 
 
-You can also run it without a block, like this:
-
-   transaction = Neo4j::Transaction.new
-   transaction.start
-   # do something
-   transaction.finish
-
 === Indexing
 
-Properties and relationships which should be indexed by lucene can be specified by the index class method.
-For example to index the proeprties foo and bar
+Properties and relationships which should be indexed by Lucene can be specified by the index class method.
+For example to index the properties foo and bar
 
   class SomeNode
      include Neo4j::NodeMixin
@@ -1075,15 +1102,15 @@ For example to index the proeprties foo and bar
      index :foo, :bar
   end
 
-Everytime a node of type SomeNode (or a subclass) is create, deleted or updated the lucene index of will be updated.
+Every time a node of type SomeNode (or a subclass) is created, deleted or updated the Lucene index will be updated.
 
 === Reindexing
 
-Sometimes it's neccessarly to change the index of a class after alot of node instances already have been created.
+Sometimes it's necessarily to change the index of a class after a lot of node instances already have been created.
 To delete an index use the class method 'remove_index'
-To update an index use the class method 'update_index' which will update all already created nodes in the neo database.
+To update an index use the class method 'update_index' which will update all already created nodes in the Neo database.
 
-Example
+Example:
 
   require 'neo4j'
   require 'neo4j/extensions/reindexer' # needed for the update_index method
@@ -1097,7 +1124,7 @@ Example
   Person.find (:name => 'andreas') # => [p1]
   Person.find (:phone => 123) # => []
 
-  # change index and reindex all person nodes already created in the neo database.
+  # change index and reindex all person nodes already created in the Neo database.
   Person.remove_index :name
   Person.index :phone  # add an index on phone
   Person.update_index
@@ -1106,17 +1133,17 @@ Example
   Person.find (:phone => 123) # => [p1]
 
 In order to use the update_index method you must include the reindexer neo4j.rb extension.
-This extensions will keep a relationship to each created node so that it later can recreate
+This extension will keep a relationship to each created node so that it later can recreate
 the index by traversing those relationships.
 
 === Updating Lucene Index
 
-The lucene index will be updated after the transaction commits. It is not possible to
+The Lucene index will be updated after the transaction commits. It is not possible to
 query for something that has been created inside the same transaction as where the query is performed.
                                                                        
-=== Quering (using lucene)
+=== Querying (using Lucene)
 
-You can declare properties to be indexed by lucene by the index method:
+You can declare properties to be indexed by Lucene by the index method:
 
 Example
 
@@ -1134,20 +1161,20 @@ Example
       Person.find(:name => 'foo', :age => 42) # => [node]
 
 The query parameter (like property on a Neo4j::NodeMixin) can be of type String, Fixnum, Float, boolean or Range.
-The query above can also be written in a lucene query DSL:
+The query above can also be written in a Lucene query DSL:
 
       Person.find{(name =='foo') & (age => 42)} # => [node]
 
-Or lucene query language:
+Or Lucene query language:
        
      Person.find("name:foo AND age:42")
 
-For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.html or the lucene module above.
+For more information see: http://lucene.apache.org/java/2_4_0/queryparsersyntax.html or the Lucene module above.
 
 
 === Indexing and Property Types
 
-In order to use range querie on numbers the property types must be converted.
+In order to use range query on numbers the property types must be converted.
 This is done by using the :type optional parameter:
 
   class Person
@@ -1156,14 +1183,14 @@ This is done by using the :type optional parameter:
     index :age, :type => Fixnum
   end
 
-By using :type => Fixnum the age will be padded with '0's (lucene only support string comparsion).
+By using :type => Fixnum the age will be padded with '0's (Lucene only support string comparison).
 
 Example, if the :type => Fixnum was not specified then
 
   p = Person.new {|n| n.age = 100 }
   Person.find(:age => 0..8) # => [p]
 
-=== Indexing and Quering Relationships
+=== Indexing and Querying Relationships
 
 The Neo4j::NodeMixin#index method can be used to index relationships to other classes.
 
@@ -1207,7 +1234,7 @@ Let's create a customer and one order for that customer
       cust.orders << order 
     end
 
-Now we can find both Orders with a total cost between 500 and 2000 and Customers with name 'kalle' using lucene
+Now we can find both Orders with a total cost between 500 and 2000 and Customers with name 'kalle' using Lucene
 
 Example:
 
@@ -1231,8 +1258,8 @@ Neo4j supports full text search by setting the tokenized property to true on an 
 
 === Keyword searches
 
-If we want to search for exact matches, for example languages codes like 'se', 'it' we must make sure
-that the lucene does not filters away stop words like 'it'
+If we want to search for exact matches, for example language codes like 'se', 'it' we must make sure
+that the Lucene does not filters away stop words like 'it'
 
    class LangCodes
      include Neo4j::NodeMixin
@@ -1240,12 +1267,12 @@ that the lucene does not filters away stop words like 'it'
      index :code, :analyzer => :keyword
    end
 
-By using the keyword analyzer (instead of the default StandardAnalyzer) we make sure that lucene index everything.
+By using the keyword analyzer (instead of the default StandardAnalyzer) we make sure that Lucene indexes everything.
 For more info, see the Lucene chapter below.
 
 === Unmarshalling
 
-The neo module will automatically unmarshalling nodes to the correct ruby class.
+The Neo module will automatically unmarshal nodes to the correct ruby class.
 It does this by reading the classname property and loading that ruby class with that node.
 If this classname property does not exist it will use the default Neo4j::Node for nodes and
 Neo4j::Relationships::Relationship for relationship.
@@ -1260,14 +1287,14 @@ Neo4j::Relationships::Relationship for relationship.
   f1 = Person.new {}
   
   # load the class again
-  f2 = Neo4j.load(foo.neo_node_id)
+  f2 = Neo4j.load_node(foo.neo_id)
   
   # f2 will now be new instance of Person, but will be == f1
   f1 == f2 # => true
 
 === Reference node
 
-There is one node that can always be find - the reference node, Neo4j::ReferenceNode.
+There is one node that can always be found - the reference node, Neo4j::ReferenceNode.
 Example:
 
     Neo4j.ref_node
@@ -1278,21 +1305,21 @@ You can add relationships from this node to your nodes.
 === Performance Issues
 
 It is recommended to wrap several Neo4j operations including read operations
-in a singel transaction if possible for better performance.
-Updating a lucene index can be slow. A solution to this is to keep the index in memory instead of on disk.
+in a singe transaction if possible for better performance.
+Updating a Lucene index can be slow. A solution to this is to keep the index in memory instead of on disk.
 
 I'm currently looking at how to scale neo4j.rb by a simple master-slave cluster by
 using REST, see the REST extension below.
 
 == Extensions: Replication
 
-There is an experimental extension that makes it possible to replicate an neo4j database to another machine.
+There is an experimental extension that makes it possible to replicate a Neo4j database to another machine.
 For example how to use it see the test/replication/test_master.rb and test_slave.rb
 It has only been tested to work with a very simple node space.
 
 == Extension: REST
 
-There is an REST extension to Neo4j.rb.
+There is a REST extension to Neo4j.rb.
 It requires the following gems
  * Sinatra >= 0.9.4
  * Rack >= 1.0
@@ -1317,13 +1344,19 @@ This extension is still rather experimental. The algorithm is based on the one
 used in the Neo4j Java IMDB example. For more information see Neo4j::Relationships::NodeTraverser#path_to
 or the RSpec find_path_spec.rb.
 
+== Extension: graph_algo
+
+This extension uses the Java Neo4j Graph Algo package - http://components.neo4j.org/graph-algo/
+Currently only the AllSimplePaths algorithm supported. If you want the
+other algorithms you either access the Java methods directly or write a new wrapper (like my AllSimplePath wrapper).
+
 == Ruby on Rails with Neo4j.rb
 
 Neo4j.rb does work nicely with R&R.
 There are two ways to use neo4j.rb with rails - embedded or accessing it via REST.
 
 === Embedded Rails
-A complete example of embedding neo4j with rails can be found http://github.com/andreasronge/neo4j-rails-example/tree/master
+A complete example of embedding Neo4j with rails can be found http://github.com/andreasronge/neo4j-rails-example/tree/master
 (please fork and improve it).
 
 ==== Config rails
@@ -1340,7 +1373,7 @@ reindexer neo4j.rb extension. Add a require in the environment.rb file:
 
 
 ==== Models
-Create a new file for each neo4j node or relationship class
+Create a new file for each Neo4j node or relationship class
 Example for an Actor class create the file: app/models/actor.rb
 
   # filename app/models/actor.rb
@@ -1363,7 +1396,7 @@ Example:
 
 ==== Create Controllers
 
-Since all neo4j operations must be wrapped in a transaction add a around filter for all operations
+Since all Neo4j operations must be wrapped in a transaction, add an around filter for all operations
 Example:
 
 acted_in_controller.rb:
@@ -1372,12 +1405,12 @@ acted_in_controller.rb:
       around_filter :neo_tx
     
       def index
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movies = @actor.acted_in.nodes
       end
 
       def create
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movie = Movie.new
         @movie.update(params[:movie])
         @actor.acted_in << @movie
@@ -1386,7 +1419,7 @@ acted_in_controller.rb:
       end
 
       def update
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movie = Movie.new
         @movie.update(params[:movie])
         @actor.acted_in.new @movie
@@ -1396,16 +1429,16 @@ acted_in_controller.rb:
       end
 
       def show
-        @movie = Neo4j.load(params[:id])
+        @movie = Neo4j.load_node(params[:id])
       end
 
       def new
-        @actor = Neo4j.load(params[:actor_id])
+        @actor = Neo4j.load_node(params[:actor_id])
         @movie = Movie.value_object.new
       end
 
       def edit
-        @movie = Neo4j.load(params[:id])
+        @movie = Neo4j.load_node(params[:id])
       end
 
       private
@@ -1483,8 +1516,8 @@ Lucene provides:
 
 === Lucene Document
 
-In lucene everything is a Document. A document can represent anything textual:
-Word Document, DVD (the textual metadata only), or a Neo4j.rb node.
+In Lucene everything is a Document. A document can represent anything textual:
+A Word Document, a DVD (the textual metadata only), or a Neo4j.rb node.
 A document is like a record or row in a relationship database.
 
 The following example shows how a document can be created by using the ''<<'' operator
@@ -1514,16 +1547,16 @@ Example of how to write a document and find it:
     # (the document contains all stored fields - see below)
     hits[0][:id]   # => '1'
 
-Notice that you have to call the commit method in order to update the index on the disk/RAM.
-By performing several update and delete operations before a commit will be much
-faster then performing commit after each operation.
+Notice that you have to call the commit method in order to update the index (both disk and in memory indexes).
+Performing several update and delete operations before a commit will give much
+better performance than committing after each operation.
 
 === Keep indexing on disk
 
 By default Neo4j::Lucene keeps indexes in memory. That means that when the application restarts
 the index will be gone and you have to reindex everything again.
 
-To keep indexes in memory:
+To store indexes on file:
 
    Lucene::Config[:store_on_file] = true
    Lucene::Config[:storage_path] => '/home/neo/lucene-db'
@@ -1539,14 +1572,14 @@ The example above will store the index at /home/neo/lucene-db/foo/lucene
 
 === Indexing several values with the same key
 
-Let say a person can have several phone numbers. How do we index that ?
+Let say a person can have several phone numbers. How do we index that?
 
   index << {:id=>'1', :name=>'adam', :phone => ['987-654', '1234-5678']}
 
 
 === Id field
 
-All Documents must have one id field. If one is not specified it is :id of type String.
+All Documents must have one id field. If an id is not specified, the default will be: :id of type String.
 A different id can be specified using the field_infos id_field property on the index:
 
   index = Index.new('some/path/to/the/index')
@@ -1556,9 +1589,9 @@ To change the type of the my_id from String to a different type see below.
 
 === Conversion of types
 
-Lucene.rb can handle type conversion for you. (The java lucene library stores all
+Lucene.rb can handle type conversion for you. (The Java Lucene library stores all
 the fields as Strings)
-For example if you want the id field to be a fixnum
+For example if you want the id field to be a Fixnum
 
     require 'lucene'
     include Lucene
@@ -1625,19 +1658,19 @@ Or you can set several properties like this:
 
 ==== Tokenized
 
-Field infos can be used to specify if the
+Field infos can be used to specify if the should be tokenized.
 If this value is not set then the entire content of the field will be considered as a single term.
 
 Example
 
   index.field_infos[:text][:tokenized] = true
 
-If not specified it is set to 'false'
+If not specified, the default is 'false'
 
 ==== Analyzer
 
 Field infos can also be used to set which analyzer should be used.
-If none is specified then the default analyzer - org.apache.lucene.analysis.standard.StandardAnalyzer (:standard) will be used.
+If none is specified, the default analyzer - org.apache.lucene.analysis.standard.StandardAnalyzer (:standard) will be used.
 
 
   index.field_infos[:code][:tokenized] = false
@@ -1650,25 +1683,25 @@ The following analyzer is supported
  * :whitespace - org.apache.lucene.analysis.WhitespaceAnalyzer
  * :stop       - org.apache.lucene.analysis.StopAnalyzer
 
-For more info, check the lucene documentation, http://lucene.apache.org/java/docs/
+For more info, check the Lucene documentation, http://lucene.apache.org/java/docs/
 
 
 === Simple Queries
 
 Lucene.rb support search in several fields:
-Example
+Example:
 
     # finds all document having both name 'foo' and age 42
     hits = index.find('name' => 'foo', :age=>42)
 
-Range queries
+Range queries:
 
     # finds all document having both name 'foo' and age between 3 and 30
     hits = index.find('name' => 'foo', :age=>3..30)
 
 === Lucene Queries
 
-If the query is string then the string is a lucene query.
+If the query is string then the string is a Lucene query.
 
   hits = index.find('name:foo')
 
@@ -1689,7 +1722,7 @@ Expression with OR (|) is supported, example
 === Sorting
 
 Sorting is specified by the 'sort_by' parameter
-Example
+Example:
 
   hits = index.find(:name => 'foo', :sort_by=>:category)
 
@@ -1697,14 +1730,14 @@ To sort by several fields:
 
   hits = index.find(:name => 'foo', :sort_by=>[:category, :country])
 
-Example sort order
+Example sort order:
 
   hits = index.find(:name => 'foo', :sort_by=>[Desc[:category, :country], Asc[:city]])
 
 === Thread-safety
 
 The Lucene::Index is thread safe.
-It guarantees that an index is not updated from two thread at the same time.
+It guarantees that an index is not updated from two threads at the same time.
 
 
 === Lucene Transactions
@@ -1723,12 +1756,13 @@ Example:
     result = index.find('name' => 'andreas')
     result.size.should == 0
 
-You can find which documents are uncommited by using the uncommited index property.
+You can find uncommitted documents with the uncommitted index property.
 
-Example
+Example:
 
       index = Index.new('var/index/foo')
       index.uncommited #=> [document1, document2]
 
-Notice that even if it looks like a new Index instance object was created the index.uncommited
-may return an not empty array. This is because Index.new is a singleton - a new instance object is not created.
+Notice that even if it looks like a new Index instance object was created the index.uncommitted
+may return a non-empty array. This is because Index.new is a singleton - a new instance object is not created.
+

@@ -188,7 +188,7 @@ module Lucene
     rescue => ex
       $LUCENE_LOGGER.error(ex)
       #      ex.backtrace.each{|x| $LUCENE_LOGGER.error(x)}
-      raise ex
+      raise
     end
 
 

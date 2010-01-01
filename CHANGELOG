@@ -1,3 +1,22 @@
+== 0.3.3 / 2009-11-25
+* Support for a counter property on has_lists (#75)
+* Support for Cascade delete. On has_n, had_one and has_list (#81)
+* NodeMixin#all should work with inheritance - Child classes should have a relationship of their own. (#64)
+* Support for other lucene analyzer then StandardAnalyzer (#87)
+* NodeMixin initialize should accept block like docs (#82)
+* Add incoming relationship should work as expected: n1.relationships.incoming(:foo) << n2 (#80)
+* Delete node from a has_list relationship should work as expected (#79)
+* Improve stacktraces (#94)
+* Removed sideeffect of rspecs (#90)
+* Add debug method on NodeMixin to print it self (#88)
+* Removed to_a method (#73)
+* Upgrade to neo4j-1.0b10 (#95)
+* Upgrade to lucene 2.9.0 (#83)
+* Refactoring: RSpecs (#74)
+* Refactoring: aggregate each, renamed to property aggregator (#72)
+* BugFix: neo4j gem cannot be built  from the source (#86)
+* BugFix: Neo4j::relationship should not raise Exception if there are no relationships (#78)
+
 == 0.3.2 / 2009-09-17
  * Added support for aggregating nodes (#65)
  * Wrapped Neo4j GraphAlgo AllSimplePath (#70)

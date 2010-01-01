@@ -8,18 +8,9 @@ require 'tmpdir'
 # suppress all warnings
 $NEO_LOGGER.level = Logger::ERROR
 
-NEO_STORAGE = Dir::tmpdir + "/neo_storage"
-LUCENE_INDEX_LOCATION = Dir::tmpdir + "/lucene"
+NEO_STORAGE = File.join(Dir::tmpdir, "/neo_storage")
+LUCENE_INDEX_LOCATION = File.join(Dir::tmpdir, "/lucene")
 
-Lucene::Config[:storage_path] = LUCENE_INDEX_LOCATION
-Lucene::Config[:store_on_file] = false
-Neo4j::Config[:storage_path] = NEO_STORAGE
-
-def delete_db
-  # delete db on filesystem
-  FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
-  FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
-end
 
 def reset_config
   # reset configuration
@@ -29,6 +20,14 @@ def reset_config
 
   Neo4j::Config.delete_all
   Neo4j::Config[:storage_path] = NEO_STORAGE
+end
+
+reset_config
+
+def delete_db
+  # delete db on filesystem
+  FileUtils.rm_rf Neo4j::Config[:storage_path]
+  FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
 end
 
 def start

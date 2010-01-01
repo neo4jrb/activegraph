@@ -106,11 +106,11 @@ describe "CustomerA,Order,Product" do
       Neo4j::Transaction.finish
     end
 
-    it "should allow to create a new dynamic relationship to an order from a customer instance" do
+     it "should allow to create a new dynamic relationship to an order from a customer instance" do
       c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
-      r.should be_kind_of(Neo4j::Relationships::Relationship)
+      r.should be_kind_of(org.neo4j.api.core.Relationship)
 
     end
 
@@ -195,7 +195,7 @@ describe "CustomerA,Order,Product" do
 
       # when
       Neo4j::Transaction.run do
-        order.delete
+        order.del
       end
 
       # then
@@ -331,7 +331,7 @@ describe "CustomerA,Order,Product" do
       end
 
       Neo4j::Transaction.run do
-        c1.delete
+        c1.del
       end
 
       Neo4j::Transaction.run do

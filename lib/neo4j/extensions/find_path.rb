@@ -14,7 +14,7 @@ module Neo4j
     class NodeTraverser
 
       attr_accessor :predecessor_map, :other_traverser, :returnable_evaluator
-      attr_writer :internal_node
+      attr_writer :_java_node
 
       # Finds a path by starting a breadth-first traverser from each end and stopping as soon
       # as the two meet. Keeps a hash of current_node -> previous_node which allows us to
@@ -22,9 +22,9 @@ module Neo4j
       # nodes constituting the path from +self+ to +other_node+ (inclusive), or +nil+ if no
       # path could be found.
       def path_to(other_node)
-        return [] if other_node.internal_node.getId == self.internal_node.getId
+        return [] if other_node._java_node.neo_id == self._java_node.neo_id
         self.other_traverser = clone
-        self.other_traverser.internal_node = other_node.internal_node
+        self.other_traverser._java_node = other_node._java_node
         self.other_traverser.other_traverser = self
         self.other_traverser.prepare_path_search
         self.other_traverser.swap_directions
@@ -55,7 +55,7 @@ module Neo4j
       # :nodoc:
       def prepare_path_search
         self.returnable_evaluator = FindPathEvaluator.new(self, returnable_evaluator)
-        self.predecessor_map = {Neo4j.load(internal_node.getId) => nil}
+        self.predecessor_map = {Neo4j.load_node(_java_node.neo_id) => nil}
       end
 
       # :nodoc:
@@ -99,8 +99,8 @@ module Neo4j
       def isReturnableNode(traversal_position)
         return false unless original_evaluator.isReturnableNode(traversal_position)
 
-        current  = Neo4j.load(traversal_position.current_node.getId)
-        previous = Neo4j.load(traversal_position.previous_node.getId) unless traversal_position.previous_node.nil?
+        current  = Neo4j.load_node(traversal_position.current_node.getId)
+        previous = Neo4j.load_node(traversal_position.previous_node.getId) unless traversal_position.previous_node.nil?
         traverser.predecessor_map[current] = previous
 
         if traverser.other_traverser.predecessor_map.include? current

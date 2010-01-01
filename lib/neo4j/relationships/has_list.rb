@@ -7,12 +7,11 @@ module Neo4j
     #
     class HasList
       include Enumerable
-      extend Neo4j::TransactionalMixin
       attr_reader :relationship_type
 
       def initialize(node, list_name, counter, cascade_delete, &filter)
         @node = node
-        @relationship_type = "_list_#{list_name}_#{node.neo_node_id}"
+        @relationship_type = "_list_#{list_name}_#{node.neo_id}"
         if (counter)
           @counter_id = "_#{list_name}_size".to_sym
         end
@@ -36,25 +35,25 @@ module Neo4j
       def <<(other)
         # does node have a relationship ?
         new_rel = []
-        if (@node.relationship?(@relationship_type))
+        if (@node.rel?(@relationship_type))
           # get that relationship
-          first = @node.relationships.outgoing(@relationship_type).first
+          first = @node.rels.outgoing(@relationship_type).first
 
           # delete this relationship
-          first.delete
+          first.del
           old_first = first.other_node(@node)
-          new_rel << (@node.relationships.outgoing(@relationship_type) << other)
-          new_rel << (other.relationships.outgoing(@relationship_type) << old_first)
+          new_rel << @node.add_rel(@relationship_type, other)
+          new_rel << other.add_rel(@relationship_type, old_first)
         else
           # the first node will be set
-          new_rel << (@node.relationships.outgoing(@relationship_type) << other)
+          new_rel << @node.add_rel(@relationship_type, other)
         end
 
         if @cascade_delete
-          # the @node.neo_node_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
+          # the @node.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
           # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
           # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
-          new_rel.each {|rel| rel[@cascade_delete] = @node.neo_node_id}
+          new_rel.each {|rel| rel[@cascade_delete] = @node.neo_id}
         end
         if @counter_id
           @node[@counter_id] ||= 0
@@ -72,15 +71,15 @@ module Neo4j
       end
 
       def first
-        return nil unless @node.relationship?(@relationship_type, :outgoing)
-        @node.relationship(@relationship_type, :outgoing).end_node
+        return nil unless @node.rel?(@relationship_type, :outgoing)
+        @node.rel(@relationship_type, :outgoing).end_node
       end
 
       def each
         iter = iterator
         while (iter.hasNext) do
           n = iter.next
-          yield Neo4j.load(n.get_id)
+          yield Neo4j.load_node(n.get_id)
         end
       end
 
@@ -91,11 +90,9 @@ module Neo4j
         types_and_dirs = []
         types_and_dirs << RelationshipType.instance(@relationship_type)
         types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
-        @node.internal_node.traverse(traverser_order, stop_evaluator,  returnable_evaluator, types_and_dirs.to_java(:object)).iterator
+        @node._java_node.traverse(traverser_order, stop_evaluator,  returnable_evaluator, types_and_dirs.to_java(:object)).iterator
       end
 
-
-      transactional :empty?, :<<, :first
     end
 
 

@@ -164,7 +164,7 @@ describe Neo4j::Aggregate::PropsAggregate do
       ag.aggregate(:tel).props(:phone, :mobile).on(node).execute
 
       # when
-      node.delete
+      node.del
 
       # then
       node.aggregate_groups(:name).should be_nil
@@ -247,10 +247,10 @@ describe Neo4j::Aggregate::PropsAggregate do
       c1[:feb] = 200
       q1.should include(100, 200)
       q1.groups.size.should == 1
-      Neo4j.load(q1.neo_node_id).should_not be_nil
+      Neo4j.load_node(q1.neo_id).should_not be_nil
 
       # when
-      c1.delete
+      c1.del
 
       # then
       q1.groups.size.should == 0

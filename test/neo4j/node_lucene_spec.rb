@@ -115,7 +115,7 @@ describe "Neo4j-Lucene" do
       TestNode.find(:name => 'remove').should include(n1)
 
       # when
-      Neo4j::Transaction.run { n1.delete }
+      Neo4j::Transaction.run { n1.del }
 
       # then
       TestNode.find(:name => 'remove').should_not include(n1)

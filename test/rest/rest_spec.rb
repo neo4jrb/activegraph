@@ -17,25 +17,27 @@ Sinatra::Application.set :environment, :test
 def reset_and_config_neo4j
   Lucene::Config[:storage_path] = Dir::tmpdir + "/lucene"
   Lucene::Config[:store_on_file] = true
+  Neo4j::Config[:rest_port] = 4567
   Neo4j::Config[:storage_path] = Dir::tmpdir + "/neo_storage"
   FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
   FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
 end
 
+include Rack::Test::Methods
+
 describe 'Restful' do
-  include Rack::Test::Methods
 
   def app
     Sinatra::Application
   end
 
-  before(:all) do
-    reset_and_config_neo4j
-    Neo4j.event_handler.remove_all
-  end
-
 
   before(:each) do
+    Neo4j.stop
+    reset_and_config_neo4j
+    Neo4j.start
+    Neo4j::Transaction.new
+    
     class RestPerson
       include Neo4j::NodeMixin
       # by including the following mixin we will expose this node as a RESTful resource
@@ -57,18 +59,8 @@ describe 'Restful' do
       include Neo4j::NodeMixin
       include Neo4j::RestMixin
     end
-    Neo4j.start
-    Neo4j.load_reindexer
-    Neo4j::Transaction.new
   end
 
-  after(:each) do
-    Neo4j::Transaction.finish
-
-    Neo4j.stop
-    FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
-    FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
-  end
 
   it "should support POST ruby code on /neo" do
     (defined? FooRest).should_not == "constant"
@@ -100,7 +92,7 @@ END_OF_STRING
     body['properties']['ref_node'].should == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0'
   end
 
-  
+
   it "should return the location of the reference node on GET /neo" do
 
     # when
@@ -109,29 +101,29 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['ref_node'] == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0' 
+    body['ref_node'] == 'http://0.0.0.0:4567/nodes/Neo4j::ReferenceNode/0'
   end
-  
+
   it "should know the URI of a RestPerson instance" do
     p = RestPerson.new
     port = Sinatra::Application.port # we do not know it since we have not started it - mocked
-    p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_node_id}"
+    p._uri.should == "http://0.0.0.0:#{port}/nodes/RestPerson/#{p.neo_id}"
   end
 
   it "should traverse a relationship on depth 1 - e.g. GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=1" do
     # the reference node has id = 0; the index node has id = 1
-    adam = RestPerson.new # neo_node_id = 2
+    adam = RestPerson.new # id = 2
     adam.name = 'adam'
 
-    bertil = RestPerson.new # neo_node_id = 3
+    bertil = RestPerson.new # id = 3
     bertil.name = 'bertil'
 
-    carl = RestPerson.new # neo_node_id = 4
+    carl = RestPerson.new # id = 4
 
     adam.friends << bertil << carl
 
     # when
-    get "/nodes/RestPerson/#{adam.neo_node_id}/traverse?relationship=friends&depth=1"
+    get "/nodes/RestPerson/#{adam.neo_id}/traverse?relationship=friends&depth=1"
 
     # then
     last_response.status.should == 200
@@ -144,19 +136,19 @@ END_OF_STRING
 
   it "should traverse a relationship depth all - e.g. GET nodes/RestPerson/<id>/traverse?relationship=friends&depth=all" do
     # the reference node has id = 0; the index node has id = 1
-    adam = RestPerson.new # neo_node_id = 2
+    adam = RestPerson.new # id = 2
     adam.name = 'adam'
 
-    bertil = RestPerson.new # neo_node_id = 3
+    bertil = RestPerson.new # id = 3
     bertil.name = 'bertil'
 
-    carl = RestPerson.new # neo_node_id = 4
+    carl = RestPerson.new # id = 4
 
     adam.friends << bertil
     bertil.friends << carl
-    
+
     # when
-    get "/nodes/RestPerson/#{adam.neo_node_id}/traverse?relationship=friends&depth=all"
+    get "/nodes/RestPerson/#{adam.neo_id}/traverse?relationship=friends&depth=all"
 
     # then
     last_response.status.should == 200
@@ -168,12 +160,12 @@ END_OF_STRING
   end
 
   it "should receive a 400 error code if the depth parameter is not an integer on the traverse resource" do
-    get "/nodes/RestPerson/#{RestPerson.new.neo_node_id}/traverse?relationship=friends&depth=oj"
+    get "/nodes/RestPerson/#{RestPerson.new.neo_id}/traverse?relationship=friends&depth=oj"
 
     # then
     last_response.status.should == 400
   end
-  
+
   it "should create declared relationship on POST /nodes/RestPerson/friends" do
     adam = RestPerson.new
     adam.name = 'adam'
@@ -183,7 +175,7 @@ END_OF_STRING
     bertil.friends << RestPerson.new
 
     # when
-    post "/nodes/RestPerson/#{adam.neo_node_id}/friends", { :uri => bertil._uri }.to_json
+    post "/nodes/RestPerson/#{adam.neo_id}/friends", { :uri => bertil._uri }.to_json
 
     # then
     last_response.status.should == 201
@@ -193,7 +185,7 @@ END_OF_STRING
     # rel ID 3 = index node to unnamed
     # rel ID 4 = bertil to unnamed
     # rel ID 5 = adam to bertil (the one we just created)
-    last_response.location.should == "/relationships/5"
+    last_response.location.should == "/rels/5"
     adam.friends.should include(bertil)
   end
 
@@ -208,7 +200,7 @@ END_OF_STRING
 
     # then
     last_response.status.should == 201
-    node1.relationships.outgoing(:fooz).nodes.should include(node2)
+    node1.rels.outgoing(:fooz).nodes.should include(node2)
   end
 
   it "should list related nodes on GET /nodes/RestPerson/<node_id>/friends" do
@@ -219,13 +211,13 @@ END_OF_STRING
     adam.friends << bertil
 
     # when
-    get "/nodes/RestPerson/#{adam.neo_node_id}/friends"
+    get "/nodes/RestPerson/#{adam.neo_id}/friends"
 
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body.size.should == 1
-    body[0]['id'].should == bertil.neo_node_id
+    body[0]['id'].should == bertil.neo_id
   end
 
   it "should return a single related node on GET /nodes/<classname>/<node_id>/<has_one_rel>" do
@@ -236,23 +228,23 @@ END_OF_STRING
     adam.best_friend = bertil
 
     # when
-    get "/nodes/RestPerson/#{adam.neo_node_id}/best_friend"
+    get "/nodes/RestPerson/#{adam.neo_id}/best_friend"
 
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['id'].should == bertil.neo_node_id
+    body['id'].should == bertil.neo_id
   end
 
-  it "should be possible to load a relationship on GET /relationship/<id>" do
+  it "should be possible to load a rels on GET /rels/<id>" do
     # the reference node has id = 0; the index node has id = 1
-    adam = RestPerson.new # neo_node_id = 2
-    bertil = RestPerson.new # neo_node_id = 3
+    adam = RestPerson.new # id = 2
+    bertil = RestPerson.new # id = 3
     rel = adam.friends.new(bertil)
     rel[:foo] = 'bar'
 
     # when
-    get "/relationships/#{rel.neo_relationship_id}"
+    get "/rels/#{rel.neo_id}"
 
     # then
     last_response.status.should == 200
@@ -304,13 +296,13 @@ END_OF_STRING
     body['properties']['name'].should == 'kalle'
   end
 
-  it "should find a RestPerson on GET /nodes/RestPerson/<neo_node_id>" do
+  it "should find a RestPerson on GET /nodes/RestPerson/<id>" do
     # given
     p = RestPerson.new
     p.name = 'sune'
 
     # when
-    get "/nodes/RestPerson/#{p.neo_node_id}"
+    get "/nodes/RestPerson/#{p.neo_id}"
 
     # then
     last_response.status.should == 200
@@ -327,22 +319,22 @@ END_OF_STRING
     n3 = MyNode.new # rel ID 3: index -> n3
     n4 = MyNode.new # rel ID 4: index -> n4
 
-    n1.relationships.outgoing(:type1) << n2 # rel ID 5
-    n1.relationships.outgoing(:type2) << n3 # rel ID 6
-    n1.relationships.outgoing(:type2) << n4 # rel ID 7
+    n1.rels.outgoing(:type1) << n2 # rel ID 5
+    n1.rels.outgoing(:type2) << n3 # rel ID 6
+    n1.rels.outgoing(:type2) << n4 # rel ID 7
 
     # when
-    get "/nodes/MyNode/#{n1.neo_node_id}"
+    get "/nodes/MyNode/#{n1.neo_id}"
 
     # then
     last_response.status.should == 200
     data = JSON.parse(last_response.body)
-    data['relationships'].should_not be_nil
-    data['relationships']['type1'].should_not be_nil
-    data['relationships']['type2'].should_not be_nil
-    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/6')
-    data['relationships']['type2'].should include('http://0.0.0.0:4567/relationships/7')
-    data['relationships']['type1'].should include('http://0.0.0.0:4567/relationships/5')
+    data['rels'].should_not be_nil
+    data['rels']['type1'].should_not be_nil
+    data['rels']['type2'].should_not be_nil
+    data['rels']['type2'].should include('http://0.0.0.0:4567/rels/6')
+    data['rels']['type2'].should include('http://0.0.0.0:4567/rels/7')
+    data['rels']['type1'].should include('http://0.0.0.0:4567/rels/5')
   end
 
 
@@ -361,7 +353,7 @@ END_OF_STRING
 
     # when
     data = {:properties => {:name => 'blah', :dynamic_property => 'cool stuff'} }
-    put "/nodes/RestPerson/#{p.neo_node_id}", data.to_json
+    put "/nodes/RestPerson/#{p.neo_id}", data.to_json
 
     # then
     last_response.status.should == 200
@@ -374,17 +366,17 @@ END_OF_STRING
     # given
     p = RestPerson.new
     p.name = 'asdf'
-    id = p.neo_node_id
+    id = p.neo_id
 
     # when
     delete "/nodes/RestPerson/#{id}"
     Neo4j::Transaction.current.success # delete only takes effect when transaction has ended
-    Neo4j::Transaction.finish
     Neo4j::Transaction.new
+    Neo4j::Transaction.finish
 
     # then
     last_response.status.should == 200
-    Neo4j.load(id).should be_nil
+    Neo4j::Transaction.run {Neo4j.load_node(id).should be_nil}
   end
 
   it "should get property on GET nodes/RestPerson/<node_id>/<property_name>" do
@@ -393,7 +385,7 @@ END_OF_STRING
     p.name = 'sune123'
 
     # when
-    get "/nodes/RestPerson/#{p.neo_node_id}/name"
+    get "/nodes/RestPerson/#{p.neo_id}/name"
 
     # then
     last_response.status.should == 200
@@ -408,7 +400,7 @@ END_OF_STRING
 
     # when
     data = { :name => 'new-name'}
-    put "/nodes/RestPerson/#{p.neo_node_id}/name", data.to_json
+    put "/nodes/RestPerson/#{p.neo_id}/name", data.to_json
 
     # then
     last_response.status.should == 200
@@ -440,7 +432,7 @@ END_OF_STRING
     # given
     p1 = RestPerson.new
     p1.name = 'p'
-    p1_id = p1.neo_node_id
+    p1_id = p1.neo_id
     p2 = RestPerson.new
     p2.name = 'p2'
     Neo4j::Transaction.current.success # ensure index gets updated
@@ -466,7 +458,7 @@ END_OF_STRING
     Neo4j::Transaction.finish
 
     Neo4j::Transaction.run {
-    Neo4j.load(2).should_not be_nil
+    Neo4j.load_node(2).should_not be_nil
                             }
     # when
     get "/nodes/RestPerson?sort=name,desc"
@@ -524,7 +516,7 @@ END_OF_STRING
 
   it "should find nodes even if they have no properties" do
     # given
-    id = RestPerson.new.neo_node_id
+    id = RestPerson.new.neo_id
     Neo4j::Transaction.current.success # ensure index gets updated
     Neo4j::Transaction.finish
 
@@ -565,7 +557,7 @@ end
 #    body = JSON.parse(last_response.body)
 #
 #    # navigate to relationship tx_node_list
-#    get body['relationships']['tx_node_list']
+#    get body['rels']['tx_node_list']
 #    last_response.status.should == 200
 #    body = JSON.parse(last_response.body)
 #    body['end_node'].should_not be_nil

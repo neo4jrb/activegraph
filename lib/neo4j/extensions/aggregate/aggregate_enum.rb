@@ -17,7 +17,7 @@ module Neo4j::Aggregate
     def each
       # if node is an aggregate group then we should look for parent aggregates
       if (@node.property?(:aggregate_group))
-        @node.relationships.incoming.nodes.each do |parent_group|
+        @node.rels.incoming.nodes.each do |parent_group|
           next unless parent_group.property?(:aggregate_size)
           # if it has the property aggregate_group then it is a group node
           if (parent_group.property?(:aggregate_group))
@@ -30,7 +30,7 @@ module Neo4j::Aggregate
       else
         # the given node (@node) is not a group, we guess it is an leaf in an aggregate
         # get all the groups that this leaf belongs to and then those groups aggregate nodes
-        @node.relationships.incoming(:aggregate).nodes.each do |group|
+        @node.rels.incoming(:aggregate).nodes.each do |group|
           AggregateEnum.new(group ).each {|agg| yield agg}
         end
       end

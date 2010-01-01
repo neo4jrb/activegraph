@@ -168,7 +168,7 @@ module Neo4j::Aggregate
   #
   #  a.aggregate_each([n1,n2]).group(:jan,:feb,:mars).by(:q1)
   #  [*a[:q1]] = [g1,g2]
-  #  g1.props => [n1.neo_node_id, jan=>1, feb=>5, ..., dec=>]
+  #  g1.props => [n1.neo_id, jan=>1, feb=>5, ..., dec=>]
   #  [*g1] => [1,5,2]
   #
   # ===== Example Group by Each  (2)
@@ -227,7 +227,7 @@ module Neo4j::Aggregate
 
     # The number of groups that this aggregate contains
     def aggregate_size
-      internal_node.set_property("aggregate_size", 0) unless internal_node.has_property("aggregate_size")
+      _java_node.set_property("aggregate_size", 0) unless _java_node.has_property("aggregate_size")
       self[:aggregate_size]
     end
 
@@ -302,29 +302,26 @@ module Neo4j::Aggregate
     # :api: public
     def group_node(key)
       @aggregator.execute if @aggregator
-      relationships.outgoing(key).nodes.find{|n| n.kind_of? NodeGroup}
+      rels.outgoing(key).nodes.find{|n| n.kind_of? NodeGroup}
     end
 
 
-    # Overrides the get_property method (which is used by [] operator)
-    # Do not use this method, use instead the [] operator.
+    # Overrides the [] method
     #
     # If there is a relationship of the given key, and that node is kind_of?
     # that that relationships point to will be returned (as an Enumeration).
     # Otherwise, return the property of this node.
     #
-    # :api: private
-    def get_property(key)
+    def [](key)
       node = group_node(key)
       return node unless node.nil?
-
       super(key)
     end
 
 
     def each
       @aggregator.execute if @aggregator
-      relationships.outgoing.nodes.each {|n| yield n if n.kind_of? NodeGroup}
+      rels.outgoing.nodes.each {|n| yield n if n.kind_of? NodeGroup}
     end
 
   end
