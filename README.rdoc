@@ -404,9 +404,15 @@ You can access the org.neo4j.api.core.EmbeddedNeo class by
 
   Neo4j.instance
 
-You can create org.neo4j.api.core.Node classes by
+You can create org.neo4j.api.core.Node classes and access their Node ID like
 
-  Neo4j::Node.new
+  node = Neo4j::Node.new
+  node_id = node._java_node.getId()
+
+To load a specific node by its ID, do
+  
+  node_id = 0 #reference node
+  ref_node = Neo4j.load_node(0)
 
 You can create a relationship of type org.neo4j.api.core.Relationship by
 
