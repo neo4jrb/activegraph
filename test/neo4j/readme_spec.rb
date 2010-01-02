@@ -243,7 +243,7 @@ describe "Readme Examples" do
       class Movie
 
       end
-      
+
       class Role
         include Neo4j::RelationshipMixin
         # notice that neo4j relationships can also have properties
@@ -270,7 +270,7 @@ describe "Readme Examples" do
       end
 
       keanu_reeves = Actor.new
-      matrix       = Movie.new
+      matrix = Movie.new
       keanu_reeves.acted_in << matrix
 
       keanu_reeves.acted_in.should include(matrix)
@@ -279,7 +279,7 @@ describe "Readme Examples" do
 #  (since we provided that information in the has_n methods).
 
       keanu_reeves2 = Actor.new
-      matrix2       = Movie.new
+      matrix2 = Movie.new
       matrix2.actors << keanu_reeves2
       keanu_reeves2.acted_in.should include(matrix2)
 
@@ -288,5 +288,123 @@ describe "Readme Examples" do
     end
   end
 
+  describe "The Neo4j Module" do
+    it "Start and Stop of the Neo4j" do
+      Neo4j.stop
+      Neo4j.start
+      Neo4j.stop
+    end
+
+    it "Neo4j Configuration" do
+      Neo4j::Config[:storage_path] = '/home/neo/neodb'
+      Neo4j.start
+      Neo4j.stop
+    end
+
+    it "Accessing the Java Neo4j API" do
+      Neo4j.instance.java_class.should == org.neo4j.api.core.EmbeddedNeo.java_class
+      Neo4j::Node.new.should be_kind_of(org.neo4j.api.core.Node)
+
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      r = a.add_rel(:friends, b)
+      r.should be_kind_of(org.neo4j.api.core.Relationship)
+    end
+
+    it "Node and Relationship Identity" do
+      id = Neo4j::Node.new.neo_id
+      Neo4j.load_node(id).should be_kind_of(org.neo4j.api.core.Node)
+
+      # And for relationships:
+
+      rel = Neo4j::Node.new.add_rel(:a_rel_type, Neo4j::Node.new)
+      id = rel.neo_id
+      # Load the node
+      Neo4j.load_rel(id).should be_kind_of(org.neo4j.api.core.Relationship)
+    end
+
+    it "Node Properties" do
+      class MyNode
+        include Neo4j::NodeMixin
+        property :foo, :bar
+      end
+
+      node = MyNode.new { |n|
+        n.foo = 123
+        n.bar = 3.14
+      }
+      node.foo.should == 123
+      # String, Fixnum, Float and true/false
+      node.foo = "String"
+      node.foo.should == "String"
+
+      node.foo = 3.14
+      node.foo.should == 3.14
+
+      node.foo = true
+      node.foo.should be_true
+    end
+
+    it "Property Types and Marshalling" do
+      class MyNode
+        include Neo4j::NodeMixin
+        property :foo, :type => Object
+      end
+
+
+      node = MyNode.new
+      node.foo = [1, "3", 3.14]
+
+      Neo4j.load_node(node.neo_id).foo.should be_kind_of(Array)
+    end
+
+    it "Property of type Date and DateTime" do
+      Neo4j::Transaction.finish # in this example we will handle the transactions our self
+
+      class MyNode
+        include Neo4j::NodeMixin
+        property :born, :type => Date
+        index :born, :type => Date
+      end
+
+
+      Neo4j::Transaction.run do
+        node = MyNode.new
+        node.born = Date.new 2008, 05, 06
+      end
+
+      Neo4j::Transaction.run do
+        born = MyNode.find("born:[20080427 TO 20100203]")[0].born
+        born.should be_kind_of(Date)
+        born.year.should == 2008
+      end
+
+#      Example of using DateTime queries:
+
+      class MyNode
+        include Neo4j::NodeMixin
+        property :since, :type => DateTime
+        index :since, :type => DateTime
+      end
+
+      Neo4j::Transaction.run do
+        node = MyNode.new
+        node.since = DateTime.civil 2008, 04, 27, 15, 25, 59
+      end
+
+      Neo4j::Transaction.run do
+        since =  MyNode.find("since:[200804271504 TO 201002031534]")[0].since
+        since.should be_kind_of(DateTime)
+        since.hour.should == 15
+      end
+    end
+
+    it "Finding all nodes" do
+      # should at least find the reference node
+      nodes = []
+      Neo4j.all_nodes{|node| nodes << node}
+      nodes.should include(Neo4j.ref_node)
+    end
+  end
 end
 

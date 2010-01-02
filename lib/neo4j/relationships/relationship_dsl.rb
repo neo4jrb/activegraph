@@ -8,6 +8,7 @@ module Neo4j
       attr_reader :node
 
       def initialize(node, direction = :outgoing)
+        @raw = false
         @node = node
         case direction
           when :outgoing
@@ -19,6 +20,12 @@ module Neo4j
         end
       end
 
+      # if raw == true then it will return raw Java object instead of wrapped JRuby object which can improve performance.
+      def raw(raw)
+        @raw = raw
+        self
+      end
+      
       def outgoing(type = nil)
         @type = type
         @direction = org.neo4j.api.core.Direction::OUTGOING
@@ -36,7 +43,7 @@ module Neo4j
         self
       end
 
-      def  both(type = nil)
+      def both(type = nil)
         @type = type
         @direction = org.neo4j.api.core.Direction::BOTH
         self
@@ -60,8 +67,8 @@ module Neo4j
       #
       # :api: public
       def <<(other_node)
-        source,target = @node, other_node
-        source,target = target,source if @direction == org.neo4j.api.core.Direction::INCOMING
+        source, target = @node, other_node
+        source, target = target, source if @direction == org.neo4j.api.core.Direction::INCOMING
         source.add_rel(@type, target)
         self
       end
@@ -86,14 +93,14 @@ module Neo4j
       def each
         iter = iterator
         while (iter.hasNext) do
-          rel = iter.next.wrapper
+          rel = @raw ? iter.next : iter.next.wrapper
           next if @filter_proc && !rel.instance_eval(&@filter_proc)
           yield rel
         end
       end
 
       def nodes
-        RelationshipsEnumeration.new(self)
+        RelationshipsEnumeration.new(self, @raw)
       end
 
       def iterator
@@ -111,8 +118,9 @@ module Neo4j
       class RelationshipsEnumeration #:nodoc:
         include Enumerable
 
-        def initialize(relationships)
+        def initialize(relationships, raw)
           @relationships = relationships
+          @raw = raw
         end
 
         def first
@@ -122,15 +130,18 @@ module Neo4j
         def empty?
           first.nil?
         end
-        
+
         def each
-          @relationships.each do |relationship|
-            yield relationship.getOtherNode(@relationships.node).wrapper
+          if @raw
+            @relationships.each { |relationship| yield relationship.getOtherNode(@relationships.node) }
+          else
+            @relationships.each { |relationship| yield relationship.getOtherNode(@relationships.node).wrapper }
           end
         end
+
+
       end
     end
-
 
   end
 end

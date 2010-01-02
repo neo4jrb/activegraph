@@ -54,6 +54,7 @@ module Neo4j::Aggregate
     def with(prop_key, &proc)
       @with_proc = proc
       @prop_key = prop_key
+      self
     end
 
     def execute(nodes = @nodes)

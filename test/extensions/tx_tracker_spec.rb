@@ -6,9 +6,9 @@ require 'spec_helper'
 
 
 describe "TxTracker (TxNodeList)" do
+  require 'neo4j/extensions/tx_tracker'
 
   before(:all) do
-    require 'neo4j/extensions/tx_tracker'
 
     class TxTestNode
       include Neo4j::NodeMixin
@@ -244,7 +244,6 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.run { a.rel?(:foobar).should be_true }
 
     # delete relationship
-    puts "-------------- DELETE REL !!!!!!!!!!!"
     Neo4j::Transaction.run { rel.del }
 
     # make sure it is deleted

@@ -298,9 +298,9 @@ describe Neo4j::Aggregate::PropsAggregate do
     it "should be possible to sum the values of a set of properties" do
       # given
       q1 = PropsAggregate.new(:q1)
-      q1.aggregate(:q1).on(Company).props(:jan, :feb, :mars).with(:sum){|sum, val, prev_val| sum + val - prev_val}
+      @registrations << q1.aggregate(:q1).on(Company).props(:jan, :feb, :mars).with(:sum){|sum, val, prev_val| sum + val - prev_val}
       q2 = PropsAggregate.new(:q2)
-      q2.aggregate(:q2).on(Company).props(:april, :may, :june).with(:sum){|sum, val, prev_val| sum + val - prev_val}
+      @registrations << q2.aggregate(:q2).on(Company).props(:april, :may, :june).with(:sum){|sum, val, prev_val| sum + val - prev_val}
 
       # when
       c1 = Company.new

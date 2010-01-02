@@ -404,15 +404,16 @@ You can access the org.neo4j.api.core.EmbeddedNeo class by
 
   Neo4j.instance
 
-You can create org.neo4j.api.core.Node classes and access their Node ID like
+You can create an org.neo4j.api.core.Node object by using the Neo4j::Node.new method (!)
 
-  node = Neo4j::Node.new
-  node_id = node._java_node.getId()
+  node = Neo4j::Node.new  # => an instance of org.neo4j.api.core.Node
 
-To load a specific node by its ID, do
+To load a specific node by its ID (see javadoc org.neo4j.api.core.Node.getId()), do
   
-  node_id = 0 #reference node
-  ref_node = Neo4j.load_node(0)
+  node_id = node.neo_id
+  ref_node = Neo4j.load_node(node_id)
+
+The neo_id method works both for the Neo4j::NodeMixin and for org.neo4j.api.core.Node java objects.
 
 You can create a relationship of type org.neo4j.api.core.Relationship by
 
@@ -481,12 +482,27 @@ Example:
 
 The node in the example above will be removed from the Neo database on the filesystem and the Lucene index
 
-==== Neo4j::Node#delete method
+==== Neo4j::Node#del method
 
 Since one can both use the org.neo4j.api.core.Node directly or using the Neo4j::NodeMixin there might be a clash
 in method names.
 For example the method Neo4j::NodeMixin#del deletes the node and all its relationships.
 The org.neo4j.api.core.Node#delete (which is created by Neo4j::Node.new) will raise an exception if not all relationships are already deleted.
+
+
+=== Node and Relationship Identity
+
+Each node has an unique identity (neo_id) which can be used for loading the node:
+
+  id = Neo4j::Node.new.neo_id
+  Neo4j.load_node(id) # will return the node that was created above
+
+And for relationships:
+
+  rel = Neo4j::Node.new.add_rel(:some_relationship_type, Neo4j::Node.new)
+  id = rel.neo_id
+  # Load the node
+  Neo4j.load_rel(id) # will return the relationship (rel) that was created above
 
 === Node Properties
 
@@ -542,12 +558,18 @@ Example of using Date queries:
 
   class MyNode
     include Neo4j::NodeMixin
-    property :since, :type => Date
-    index :since, :type => Date
+    property :born, :type => Date
+    index :born, :type => Date
   end
 
-  node.since = Date.new 2008,05,06
-  MyNode.find("born:[20080427 TO 20100203]")[0].since # => Date 2008,05,06
+  Neo4j::Transaction.run do
+    node = MyNode.new
+    node.born = Date.new 2008, 05, 06
+  end
+
+  Neo4j::Transaction.run do
+    MyNode.find("born:[20080427 TO 20100203]")[0].born # => Date
+  end
 
 Example of using DateTime queries:
 
@@ -557,10 +579,17 @@ Example of using DateTime queries:
     index :since, :type => DateTime
   end
 
-  node.since = DateTime.civil 2008,04,27,15,25,59
-  MyNode.find("since:[200804271504 TO 201002031534]")[0].since # => DateTime ...
+  Neo4j::Transaction.run do
+    node = MyNode.new
+    node.since = DateTime.civil 2008, 04, 27, 15, 25, 59
+  end
+
+  Neo4j::Transaction.run do
+    MyNode.find("since:[200804271504 TO 201002031534]")[0].since # => DateTime
+  end
 
 Only UTC timezone is allowed.
+Notice that the query must be performed in a new transaction.
 
 === Finding all nodes
 
@@ -568,7 +597,7 @@ To find all nodes use the Neo4j#all_nodes method.
 
 Example
 
-  Neo4j.all_nodes.each {|node| puts node}
+  Neo4j.all_nodes{|node| puts node}
 
 === Relationship has_n and has_one
 

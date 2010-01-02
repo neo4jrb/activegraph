@@ -123,7 +123,8 @@ module Neo4j
   def self.all_nodes(raw = false)
     iter = instance.all_nodes.iterator
     while (iter.hasNext)
-      yield load_node(iter.next.neo_id, raw)
+      id = iter.next.neo_id
+      yield self.load_node(id, raw) 
     end
   end
 

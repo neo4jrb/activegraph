@@ -21,6 +21,12 @@ module Neo4j
         @returnable_evaluator = org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE
       end
 
+      # if raw == true then it will return raw Java object instead of wrapped JRuby object which can improve performance.
+      def raw(raw)
+        @raw = raw
+        self
+      end
+
       # Sets the depth of the traversal.
       # Default is 1 if not specified.
       #
