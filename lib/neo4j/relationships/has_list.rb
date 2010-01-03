@@ -88,7 +88,7 @@ module Neo4j
         traverser_order = org.neo4j.api.core.Traverser::Order::BREADTH_FIRST
         returnable_evaluator = org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE
         types_and_dirs = []
-        types_and_dirs << RelationshipType.instance(@relationship_type)
+        types_and_dirs << org.neo4j.api.core.DynamicRelationshipType.withName(@relationship_type.to_s)
         types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
         @node._java_node.traverse(traverser_order, stop_evaluator,  returnable_evaluator, types_and_dirs.to_java(:object)).iterator
       end

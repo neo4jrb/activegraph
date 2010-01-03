@@ -16,7 +16,7 @@ module Neo4j::JavaRelationshipMixin
   #
   # :api: public
   def rel? (rel_name, dir=:outgoing)
-    type = Neo4j::Relationships::RelationshipType.instance(rel_name.to_s)
+    type = org.neo4j.api.core.DynamicRelationshipType.withName(rel_name.to_s) 
     java_dir = _to_java_direction(dir)
     hasRelationship(type, java_dir)
   end
@@ -65,7 +65,7 @@ module Neo4j::JavaRelationshipMixin
   # :api: public
   def rel(rel_name, dir=:outgoing, raw=false)
     java_dir = _to_java_direction(dir)
-    rel_type = Neo4j::Relationships::RelationshipType.instance(rel_name)
+    rel_type = org.neo4j.api.core.DynamicRelationshipType.withName(rel_name.to_s)
     rel = getSingleRelationship(rel_type, java_dir)
     return nil if rel.nil?
     return rel.wrapper unless raw
@@ -93,7 +93,7 @@ module Neo4j::JavaRelationshipMixin
   # all creation of relationships uses this method
   # :api: private
   def add_rel (type, to, raw = false) # :nodoc:
-    java_type = Neo4j::Relationships::RelationshipType.instance(type)
+    java_type = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s) 
     to_java_node = to.respond_to?(:_java_node) ? to._java_node : to
     java_rel = createRelationshipTo(to_java_node, java_type)
 

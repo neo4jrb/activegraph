@@ -164,8 +164,8 @@ describe Neo4j::Node do
     end
 
     it "should include (Enumerable#include) all org.neo4j.api.core.Relationship objects if there is no _classname property" do
-      rel1 = @node.createRelationshipTo(Neo4j::Node.new, Neo4j::Relationships::RelationshipType.instance('foo'))
-      rel2 = @node.createRelationshipTo(Neo4j::Node.new, Neo4j::Relationships::RelationshipType.instance('foo'))
+      rel1 = @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
+      rel2 = @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
 
       [*@node.rels.outgoing(:foo)].should include(rel1, rel2)
       [*@node.rels.outgoing(:foo)].size.should == 2
@@ -178,8 +178,8 @@ describe Neo4j::Node do
     end
 
     it ".first should return the first relationship" do
-      @node.createRelationshipTo(Neo4j::Node.new, Neo4j::Relationships::RelationshipType.instance('foo'))
-      @node.createRelationshipTo(Neo4j::Node.new, Neo4j::Relationships::RelationshipType.instance('foo'))
+      @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
+      @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
 
       # when
       actual = @node.rels.outgoing(:foo).first

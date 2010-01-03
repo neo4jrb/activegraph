@@ -56,7 +56,7 @@ module Neo4j
 
       def outgoing(*types)
         types.each do |type|
-          @types_and_dirs << RelationshipType.instance(type)
+          @types_and_dirs << org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s) 
           @types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
         end
         self
@@ -64,7 +64,7 @@ module Neo4j
 
       def incoming(*types)
         types.each do |type|
-          @types_and_dirs << RelationshipType.instance(type)
+          @types_and_dirs << org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
           @types_and_dirs << org.neo4j.api.core.Direction::INCOMING
         end
         self
@@ -72,7 +72,7 @@ module Neo4j
 
       def both(*types)
         types.each do |type|
-          @types_and_dirs << RelationshipType.instance(type)
+          @types_and_dirs << org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
           @types_and_dirs << org.neo4j.api.core.Direction::BOTH
         end
         self
@@ -88,10 +88,12 @@ module Neo4j
 
       def each
         iter = iterator
-        while (iter.hasNext) do
-          if @raw
+        if @raw
+          while (iter.hasNext) do
             yield iter.next
-          else
+          end
+        else
+          while (iter.hasNext) do
             yield iter.next.wrapper
           end
         end

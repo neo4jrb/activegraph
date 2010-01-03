@@ -10,7 +10,7 @@ module Neo4j
 
       def initialize(node, type, cascade_delete, &filter)
         @node = node
-        @type = RelationshipType.instance(type)
+        @type = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
         @traverser = NodeTraverser.new(node._java_node)
         @info = node.class.relationships_info[type.to_sym]
         @cascade_delete = cascade_delete
@@ -19,7 +19,7 @@ module Neo4j
           @traverser.outgoing(type)
         else
           other_class_type = @info[:type].to_s
-          @type = RelationshipType.instance(other_class_type)
+          @type = org.neo4j.api.core.DynamicRelationshipType.withName(other_class_type.to_s)
           @traverser.incoming(other_class_type)
         end
         @traverser.filter(&filter) unless filter.nil?

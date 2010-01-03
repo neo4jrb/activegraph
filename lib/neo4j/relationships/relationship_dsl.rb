@@ -106,7 +106,7 @@ module Neo4j
       def iterator
         # if type is nil then we traverse all relationship types of depth one
         return @node.getRelationships(@direction).iterator if @type.nil?
-        return @node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
+        return @node.getRelationships(org.neo4j.api.core.DynamicRelationshipType.withName(@type.to_s), @direction).iterator unless @type.nil?
       end
 
       def to_s

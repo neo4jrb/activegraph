@@ -91,19 +91,19 @@ module Neo4j::GraphAlgo
     end
 
     def both(*types)
-      types.each { |type| @types << Neo4j::Relationships::RelationshipType.instance(type)}
+      types.each { |type| @types << org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s) }
       @direction = org.neo4j.api.core.Direction::BOTH
       self
     end
 
     def outgoing(*types)
-      types.each { |type| @types << Neo4j::Relationships::RelationshipType.instance(type)}
+      types.each { |type| @types << org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s) }
       @direction = org.neo4j.api.core.Direction::OUTGOING
       self
     end
 
     def incoming(*types)
-      types.each { |type| @types << Neo4j::Relationships::RelationshipType.instance(type)}
+      types.each { |type| @types << org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s) }
       @direction = org.neo4j.api.core.Direction::INCOMING
       self
     end
