@@ -6,9 +6,9 @@ require 'spec_helper'
 
 
 describe "TxTracker (TxNodeList)" do
-  require 'neo4j/extensions/tx_tracker'
 
   before(:all) do
+    require 'neo4j/extensions/tx_tracker'
 
     class TxTestNode
       include Neo4j::NodeMixin

@@ -346,7 +346,7 @@ module Neo4j
     Neo4j.event_handler.add(TxNodeRelationship)
     # if neo is already run we have to let txnodelist have a chance to add it self
     # TxNodeList.on_neo_started(Neo4j.instance) if Neo4j.running?
-    Neo4j::Transaction.run { TxNodeList.on_neo_started(Neo4j.instance) } if Neo4j.running?
+    Neo4j::Transaction.run { TxNodeList.on_neo_started(Neo4j) } if Neo4j.running?
   end
 
   def self.unload_tx_tracker
