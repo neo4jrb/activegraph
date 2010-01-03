@@ -1,9 +1,10 @@
 module Neo4j
 
   module NodeMixin
+    alias_method :ignore_incoming_cascade_delete_orig?, :ignore_incoming_cascade_delete?
     def ignore_incoming_cascade_delete? (relationship)
       # if it's an index node relationship then it should be allowed to cascade delete the node
-      return relationship.other_node(self) == IndexNode.instance
+      ignore_incoming_cascade_delete_orig?(relationship) || relationship.other_node(self) == IndexNode.instance
     end
 
     module ClassMethods

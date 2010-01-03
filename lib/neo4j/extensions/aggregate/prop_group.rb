@@ -22,8 +22,7 @@ module Neo4j::Aggregate
     end
 
     def ignore_incoming_cascade_delete? (relationship)
-      return true if super #original_ignore_incoming_cascade_delete?(node,relationship)
-      relationship.start_node.kind_of?(Neo4j::Aggregate::PropsAggregate)
+      super || relationship.start_node.kind_of?(Neo4j::Aggregate::PropsAggregate)
     end
 
   end

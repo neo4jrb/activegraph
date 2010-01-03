@@ -366,12 +366,7 @@ describe "Cascade Delete chained" do
   end
   
   it "should delete a chained relationship of cascaded objects" do
-    pending "Does not work if RSpecs is run in reverse order"
     # OrderStatus ---> Order ---*>OrderLine
-    puts "--- should delete a chained relationship of cascaded objects"
-    Neo4j.event_handler.print
-    Neo4j.all_nodes{|node| puts node}
-
     class OrderLineX
       include Neo4j::NodeMixin
     end
