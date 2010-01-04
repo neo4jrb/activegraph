@@ -22,7 +22,7 @@ module Neo4j
       end
 
       # if raw == true then it will return raw Java object instead of wrapped JRuby object which can improve performance.
-      def raw(raw)
+      def raw(raw = true)
         @raw = raw
         self
       end
@@ -31,8 +31,8 @@ module Neo4j
       # Default is 1 if not specified.
       #
       # ==== Example
-      #  morpheus.traverse.outgoing(:friends).depth(:all).each { ... }
-      #  morpheus.traverse.outgoing(:friends).depth(3).each { ... }
+      #  morpheus.outgoing(:friends).depth(:all).each { ... }
+      #  morpheus.outgoing(:friends).depth(3).each { ... }
       #
       # ==== Arguments
       # d<Fixnum,Symbol>:: the depth or :all if traversing to the end of the network.

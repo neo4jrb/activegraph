@@ -92,14 +92,14 @@ module Neo4j
       # 
       #   n1 = Node.new # Node has declared having a friend type of relationship
       #   n2 = Node.new
-      #   n3 = NodeMixin.new
+      #   n3 = Node.new
       #
       #   n1 << n2 << n3
       #
       # This is the same as:
       #
-      #   n1.friends.new(n2)
-      #   n1.friends.new(n3)
+      #   n1.add_rel(:friends, n2)
+      #   n1.add_rel(:friends, n3)
       #
       # ==== Returns
       # self

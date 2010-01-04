@@ -25,16 +25,12 @@ def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, files
     props = java.util.HashMap.new
     props.put('size', filesize)
     props.put('name', "#{parent_props[:name]}/f#{k}")
-    #needed for JRuby compatibility
-    props.put('classname', Neo4j::Node.to_s)
     file = batch_neo.createNode(props)
     batch_neo.createRelationship( parent_props[:id], file, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
   end
   for k in 1..Integer(subfolders)
     props = java.util.HashMap.new
     props.put('name', "#{parent_props[:name]}/d#{k}")
-    #needed for JRuby compatibility
-    props.put('classname', Neo4j::Node.to_s)
     folder = batch_neo.createNode(props)
     batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
     folder_props = {:name => props.get('name'), :id => folder}
@@ -78,7 +74,7 @@ Then /^the total number of nodes in the db should be greater than (\w+)$/ do |to
 end
 
 def calcTotalSize(folder)
-  folder.outgoing(:child).raw(false).depth(:all).inject(0) {|sum, n| n.hasProperty('size') ? sum + n.getProperty('size') : sum}
+  folder.outgoing(:child).raw.depth(:all).inject(0) {|sum, n| n.hasProperty('size') ? sum + n.getProperty('size') : sum}
 #  traverser = folder.outgoing(:child).raw(true).depth(:all).iterator
 #  size = 0
 #  while traverser.hasNext()
@@ -116,7 +112,7 @@ Then /^the total size of one top folder files should be (\w+) kb and response ti
     calcSizeJava(topFolder).should == Integer(totalSize)
     rTime = Time.new-startTime
     puts "time java: " + (rTime).to_s
-#    rTime.should < Float(responseTime)
+    rTime.should < Float(responseTime)
 
     startTime = Time.now
     calcTotalSize(topFolder).should == Integer(totalSize)

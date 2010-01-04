@@ -7,10 +7,11 @@ module Neo4j
     # :api: private
     class RelationshipInfo #:nodoc:
       attr_accessor :info
+
       def initialize
         @info = {}
         # set defaults
-        @info[:relationship] = nil # Relationships::Relationship
+        @info[:relationship] = nil
         @info[:outgoing] = true
       end
     

@@ -393,7 +393,7 @@ describe "Readme Examples" do
       end
 
       Neo4j::Transaction.run do
-        since =  MyNode.find("since:[200804271504 TO 201002031534]")[0].since
+        since = MyNode.find("since:[200804271504 TO 201002031534]")[0].since
         since.should be_kind_of(DateTime)
         since.hour.should == 15
       end
@@ -404,6 +404,298 @@ describe "Readme Examples" do
       nodes = []
       Neo4j.all_nodes{|node| nodes << node}
       nodes.should include(Neo4j.ref_node)
+    end
+
+
+    it "has_n with unspecified to" do
+      class Person
+        include Neo4j::NodeMixin
+        has_n :knows # will generate a knows method for outgoing relationships
+      end
+
+#    The generated knows method will allow you to add new relationships, example:
+
+      me = Person.new
+      neo = Person.new
+      me.knows << neo # me knows neo but neo does not know me
+
+      #   You can add any object to the 'knows' relationship as long as it
+      #   includes the Neo4j::NodeMixin, example:
+
+      person = Person.new
+      another_node = Neo4j::Node.new
+      person.knows << another_node
+
+      person.knows.should include(another_node)
+    end
+
+    it "has_n - with specifying to" do
+      #  If you want to express that the relationship should point to a specific class
+      # use the 'to' method on the has_n method.
+
+      class Person2
+        include Neo4j::NodeMixin
+        has_n(:knows).to(Person)
+      end
+
+      person = Person2.new
+      another_node = Neo4j::Node.new
+      person.knows << another_node
+
+      person.knows.should include(another_node)
+    end
+
+    it "has_n - with specifying from" do
+      #It is also possible to generate methods for incoming relationships by using the
+      #'from' method on the has_n method.
+
+      #Example:
+      class Person3
+        include Neo4j::NodeMixin
+        has_n :knows # will generate a knows method for outgoing relationships
+        has_n(:known_by).from(:knows) #  will generate a known_by method for incoming knows relationship
+      end
+
+
+      person = Person3.new
+      other_person = Person3.new
+      person.knows << other_person
+
+      other_person.known_by.should include(person)
+
+      me = Person3.new
+      neo = Person3.new
+      neo.known_by << me # me knows neo but neo does not know me
+
+      me.knows.should include(neo)
+      neo.knows.should_not include(me)
+    end
+
+    it "Relationship has_one" do
+      class Address;
+      end
+      class Person4
+        include Neo4j::NodeMixin
+        has_one(:address).to(Address)
+      end
+
+      class Address
+        include Neo4j::NodeMixin
+        property :city, :road
+        has_n(:people).from(Person4, :address)
+      end
+
+      p = Person4.new
+      p.address = Address.new
+      p.address.city = 'malmoe'
+
+      p.address.people.should include(p)
+
+      a = Address.new {|n| n.city = 'malmoe'}
+      a.people << Person4.new
+      a.people.first.address.should == a
+    end
+
+
+    it "Relationship has_list" do
+      class Company
+        include Neo4j::NodeMixin
+        has_list :employees
+      end
+
+      company = Company.new
+      employee1 = Neo4j::Node.new
+      employee2 = Neo4j::Node.new
+      company.employees << employee1 << employee2
+
+      company.employees.should include(employee1, employee2)
+    end
+
+    it "Relationship has_list with counter" do
+      class Company2
+        include Neo4j::NodeMixin
+        has_list :employees, :counter => true
+      end
+
+      company = Company2.new
+      employee1 = Neo4j::Node.new
+      employee2 = Neo4j::Node.new
+      company.employees << employee1 << employee2
+      company.employees.size.should == 2
+    end
+
+    it "Deleted List Items" do
+      class Company3
+        include Neo4j::NodeMixin
+        has_list :employees, :counter => true
+      end
+
+      company = Company3.new
+      employee1 = Neo4j::Node.new
+      employee2 = Neo4j::Node.new
+      employee3 = Neo4j::Node.new
+      company.employees << employee1 << employee2 << employee3
+      company.employees.size.should == 3
+
+      employee2.del
+
+      company.employees.should include(employee1, employee3)
+      company.employees.size.should == 2
+    end
+
+    it "Memberships in lists" do
+      class Company4
+        include Neo4j::NodeMixin
+        has_list :employees, :counter => true
+      end
+      class Person5
+        include Neo4j::NodeMixin
+      end
+      company = Company4.new
+      employee1 = Neo4j::Node.new
+      employee2 = Neo4j::Node.new
+      employee3 = Neo4j::Node.new
+
+      company.employees << employee1 << employee2 << employee3
+
+      employee1.list(:employees).prev.should == employee2
+      employee2.list(:employees).next.should == employee1
+      employee1.list(:employees).size.should == 3
+    end
+
+    it "Cascade delete, outgoing" do
+      class Person6
+        include Neo4j::NodeMixin
+        has_list :phone_nbr, :cascade_delete => :outgoing
+      end
+
+      p = Person6.new
+      phone1 = Neo4j::Node.new
+      phone1[:number] = '+46123456789'
+      phone2 = Neo4j::Node.new
+      phone1_id = phone1.neo_id
+      phone2_id = phone2.neo_id
+      p.phone_nbr << phone1
+      p.phone_nbr << phone2
+
+      p.del
+
+      Neo4j.load_node(phone1_id).should_not be_nil
+      Neo4j.load_node(phone2_id).should_not be_nil
+
+      # then phone1 and phone2 node will also be deleted.
+      Neo4j::Transaction.finish
+      Neo4j::Transaction.new
+
+      Neo4j.load_node(phone1_id).should be_nil
+      Neo4j.load_node(phone2_id).should be_nil
+    end
+
+    it "Cascade delete, incoming" do
+      class Phone
+        include Neo4j::NodeMixin
+        has_list :people, :cascade_delete => :incoming # a list of people having this phone number
+      end
+
+      phone1 = Phone.new
+
+      p1 = Neo4j::Node.new
+      p2 = Neo4j::Node.new
+      phone1.people << p1
+      phone1.people << p2
+
+      p1.del
+      p2.del
+
+      Neo4j.load_node(phone1.neo_id).should_not be_nil
+
+      # then phone1 will be deleted
+      Neo4j::Transaction.finish
+      Neo4j::Transaction.new
+
+      Neo4j.load_node(phone1.neo_id).should be_nil
+    end
+
+    it "Finding all nodes" do
+      require 'neo4j/extensions/reindexer'
+      
+      class Car
+        include Neo4j::NodeMixin
+        property :wheels
+      end
+
+      class Volvo < Car
+      end
+
+      v = Volvo.new
+      c = Car.new
+
+      Car.all # will return all relationships from the reference node to car objects
+      Volvo.all # will return the same as Car.all
+
+#    To return nodes (just like the relationships method)
+
+      Car.all.nodes.should include(c, v) # => [c,v]
+      Volvo.all.nodes.should include(v) # => [v]
+      Volvo.all.nodes.should_not include(c)
+
+      Neo4j.unload_reindexer # so that this RSpec does not cause side effects on other RSpecs
+    end
+
+    it "Traversing Relationships" do
+      class Person7
+        include Neo4j::NodeMixin
+        has_n :friends
+      end
+
+      f = Person7.new
+      f1 = Person7.new
+      f2 = Person7.new
+      f.friends << f1 << f2
+      f11 = Person7.new
+      f1.friends << f11
+      f111 = Person7.new
+      f11.friends << f111
+
+      f.friends.should include(f1,f2)
+      f.friends.should_not include(f11, f111)
+      f.friends.depth(2).should include(f1, f2, f11)
+      f.friends.depth(2).should_not include(f111)
+      f.friends.depth(:all).should include(f1,f2,f11,f111)
+    end
+
+    it "Traversing Relationships: Filtering Nodes" do
+      class Person8
+        include Neo4j::NodeMixin
+        has_n :friends
+        property :name
+      end
+
+      n1 = Person8.new
+      n2 = Person8.new {|n| n.name = 'andreas'}
+      n3 = Person8.new
+      n1.friends << n2 << n3
+      n1.friends{ name == 'andreas' }.should include(n2)
+      n1.friends{ name == 'andreas' }.should_not include(n3)
+    end
+
+    it " Traversing Nodes of Arbitrary Depth" do
+      class Person9
+        include Neo4j::NodeMixin
+        has_n :friends
+      end
+
+      f = Person9.new
+      me = Person9.new
+      f2 = Person9.new
+      f.friends << me << f2
+      f11 = Person9.new
+      me.friends << f11
+      f111 = Person9.new
+      f11.friends << f111
+
+      me.incoming(:friends).depth(4).should include(f)
+      me.incoming(:friends).depth(4).should_not include(f11, f111)
     end
   end
 end

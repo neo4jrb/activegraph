@@ -21,7 +21,7 @@ module Neo4j
       end
 
       # if raw == true then it will return raw Java object instead of wrapped JRuby object which can improve performance.
-      def raw(raw)
+      def raw(raw = true)
         @raw = raw
         self
       end
