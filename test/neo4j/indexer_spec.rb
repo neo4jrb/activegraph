@@ -27,7 +27,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
 #    Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary', :employed_by)
   end
 
   after(:all) do
@@ -113,7 +113,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     Indexer.remove_instance Company
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary', "Employee#employees".to_sym)
 
   end
 
@@ -177,7 +177,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relationship_created(employee, 'employees')
+    @employee_indexer.on_relationship_created(employee, 'Employee#employees')
 
     index.size.should == 1
     index[0][:id].should == company.neo_id
@@ -224,7 +224,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
   def create_indexer
     Indexer.remove_instance Person
     indexer = Indexer.instance Person
-    indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age')
+    indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age', :friends)
     indexer
   end
 

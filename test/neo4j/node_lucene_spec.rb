@@ -145,9 +145,9 @@ describe "Neo4j-Lucene" do
         index :name
         index :city
 
-        def init_node(name, city)
-          self.name = name
-          self.city = city
+        def init_node(*args)
+          self.name = args[0]
+          self.city = args[1]
         end
       end
       Neo4j::Transaction.new

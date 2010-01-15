@@ -78,7 +78,6 @@ describe "ListNode (Neo4j::NodeMixin#has_list) with a size counter" do
 
   it "should decrease when you remove items from the list" do
     list_node = ListWithCounterNode.new
-    puts "list_node #{list_node.neo_id}"
     node1 = XNode.new
     node2 = XNode.new
     list_node.items << node1 << node2
@@ -149,15 +148,6 @@ describe "ListNode (Neo4j::NodeMixin#has_list)" do
     list_node.items << b
 
     # check what is connected to what, list -> b -> a
-    puts "LISTNODE"
-    list_node.print(4, :outgoing)
-
-    puts "B NODE OUTGOING"
-    b.print(4, :outgoing)
-
-    puts "B NODE INCOMING"
-    b.print(4, :incoming)
-
     list_node.list(:items).next.should == b
     b.list(:items).next.should == a
     b.list(:items).prev.should == list_node

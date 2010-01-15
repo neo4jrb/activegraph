@@ -1,40 +1,32 @@
 module Neo4j
   module Relationships
 
-    # Enables traversal of nodes of a specific type that one node has.
-    # Used for traversing relationship of a specific type.
-    # Neo4j::NodeMixin can declare
+    # Enables creating and traversal of nodes.
     #
     class HasN
       include Enumerable
 
-      def initialize(node, type, cascade_delete, &filter)
+      def initialize(node, dsl, &filter)
         @node = node
-        @type = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
         @traverser = NodeTraverser.new(node._java_node)
-        @info = node.class.relationships_info[type.to_sym]
-        @cascade_delete = cascade_delete
-
-        if @info[:outgoing]
-          @traverser.outgoing(type)
+        @outgoing = dsl.outgoing?
+        # returns the other DSL if it exists otherwise use this DSL for specifing incoming relationships
+        if @outgoing
+          @dsl = dsl
         else
-          other_class_type = @info[:type].to_s
-          @type = org.neo4j.api.core.DynamicRelationshipType.withName(other_class_type.to_s)
-          @traverser.incoming(other_class_type)
+          # which class specifies the incoming DSL ?
+          clazz = dsl.clazz || node.class
+          @dsl = clazz.decl_relationships[dsl.type]
+          raise "Unspecified outgoing relationship '#{dsl.type}' for incoming relationship '#{dsl.rel_id}' on class #{clazz}" if @dsl.nil?
         end
+
+        if  @outgoing
+          @traverser.outgoing(@dsl.namespace_type)
+        else
+          @traverser.incoming(@dsl.namespace_type)
+        end
+
         @traverser.filter(&filter) unless filter.nil?
-      end
-
-
-      # called by the event handler
-      def self.on_node_deleted(node) #:nodoc:
-        if (@info[:outgoing])
-          node.relationship.outgoing.nodes.each {|n| n.delete}
-        elsif (@info[:incoming])
-          node.relationship.incoming.nodes.each {|n| n.delete}
-        else
-          node.relationship.both.nodes.each {|n| n.delete}
-        end
       end
 
 
@@ -80,9 +72,7 @@ module Neo4j
       #
       # :api: public
       def new(other)
-        from, to = @node, other
-        from, to = to, from unless @info[:outgoing]
-        from.add_rel(@type.name, to)
+        create_rel(@node, other)
       end
 
 
@@ -106,18 +96,26 @@ module Neo4j
       #
       # :api: public
       def <<(other)
-        from, to = @node, other
-        from, to = to, from unless @info[:outgoing]
-        relationship = from.add_rel(@type.name, to)
+        create_rel(@node, other)
+        self
+      end
 
-        if @cascade_delete
-          # the @node.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
-          # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
-          # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
-          relationship[@cascade_delete] = @node.neo_id
+
+      def create_rel(node, other)
+        # If the are creating an incoming relationship we need to swap incoming and outgoing nodes
+        if @outgoing
+          from, to = node, other
+        else
+          from, to = other, node
         end
 
-        self
+        rel = from.add_rel(@dsl.namespace_type, to, @dsl.relationship_class)
+
+        # the from.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
+        # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
+        # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
+        rel[@dsl.cascade_delete_prop_name] = node.neo_id if @dsl.cascade_delete?
+        rel
       end
 
     end

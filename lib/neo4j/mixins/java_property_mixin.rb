@@ -121,6 +121,14 @@ module Neo4j::JavaPropertyMixin
   end
 
 
+  # Same as neo_id but returns a String instead of a Fixnum.
+  # Used by Ruby on Rails.
+  #
+  # :api: public
+  def to_param
+    neo_id.to_s
+  end
+  
   # Loads a Neo node wrapper if possible
   # If the neo property '_classname' does not exist then it will map the neo node to the ruby class Neo4j::Node
   def wrapper

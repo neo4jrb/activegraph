@@ -54,14 +54,14 @@ module Neo4j
     end
 
     # :api: private
-    def add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop)
-      unless relationship_indexer_for?(rel_type.to_sym)
-        indexer = new_relationship_indexer_for(rel_type.to_sym, rel_name.to_sym)
+    def add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop, namespace_type)
+      unless relationship_indexer_for?(namespace_type)
+        indexer = new_relationship_indexer_for(namespace_type, rel_name.to_sym)
         self.class.instance(updater_clazz).document_updaters << indexer
       end
 
       # TODO make sure the same index is not added twice
-      relationship_indexer_for(rel_type.to_sym).properties << prop.to_sym
+      relationship_indexer_for(namespace_type).properties << prop.to_sym
     end
 
     # :api: private

@@ -102,7 +102,6 @@ describe 'Restful Navigation from /neo' do
     tx_node_list = Neo4j::Rest::NodeStub.new(uri)
     tx_node = tx_node_list.rels.outgoing(:tx_nodes).nodes.first
 
-    puts "curr tx node #{tx_node.props.inspect} uuid #{uuid}"
     Neo4j::Transaction.run { a.delete }
     
     Neo4j::Transaction.new
@@ -113,7 +112,6 @@ describe 'Restful Navigation from /neo' do
     node = Neo4j.load_node_with_uuid(uuid)
     node.should_not be_nil
     node[:uuid].should == uuid
-    puts "GOT #{node.neo_id}"
     node.neo_id.should_not == a.neo_id # make sure a new node was created (a duplicate of a)
     node[:fooz].should == 'abc'
     Neo4j::Transaction.finish

@@ -5,15 +5,21 @@ module Neo4j
     REST_NODE_CLASSES = {}
 
     class RestException < StandardError
-      def code; 500; end
+      def code;
+        500;
+      end
     end
 
     class NotAllowed < RestException
-      def code; 403; end
+      def code;
+        403;
+      end
     end
 
     class Conflict < RestException
-      def code; 409; end
+      def code;
+        409;
+      end
     end
 
     def self.base_uri
@@ -44,7 +50,7 @@ module Neo4j
       end
       query
     end
-    
+
     # -------------------------------------------------------------------------
     # /neo
     # -------------------------------------------------------------------------
@@ -221,12 +227,15 @@ module Neo4j
 
           relationship = params['relationship']
           depth = case params['depth']
-            when nil then 1
-            when 'all' then :all
-            else params['depth'].to_i
+            when nil then
+              1
+            when 'all' then
+              :all
+            else
+              params['depth'].to_i
           end
-          return 400, {'error' => "invalid depth parameter - must be an integer"}.to_json  if depth == 0
-          
+          return 400, {'error' => "invalid depth parameter - must be an integer"}.to_json if depth == 0
+
           uris = node.traverse.outgoing(relationship.to_sym).depth(depth).collect{|node| node._uri}
           {'uri_list' => uris}.to_json
         end
@@ -240,13 +249,18 @@ module Neo4j
 
     Sinatra::Application.get("/nodes/:class/:id/:prop") do
       content_type :json
+
       begin
         Neo4j::Transaction.run do
           node = Neo4j.load_node(params[:id])
           return 404, "Can't find node with id #{params[:id]}" if node.nil?
           prop = params[:prop].to_sym
-          if node.class.relationships_info.keys.include?(prop)      # TODO looks weird, why this complicated
+          # check if prop is a relationship defined by has_n or has_one
+          if node.class.decl_relationships.keys.include?(prop)
+            # instead of returning properties return the relationship properties
             rels = node.send(prop) || []
+            # is it a has_n or has_one relationship ?
+            # if it is a has_n then return an array of properties of that relationship (can be a large json struct)
             (rels.respond_to?(:props) ? rels.props : rels.map{|rel| rel.props}).to_json
           else
             {prop => node[prop]}.to_json
@@ -270,7 +284,7 @@ module Neo4j
           data = JSON.parse(body)
           value = data[property]
           return 409, "Can't set property #{property} with JSON data '#{body}'" if value.nil?
-          node[property] =  value
+          node[property] = value
           200
         end
       rescue RestException => exception

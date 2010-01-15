@@ -282,9 +282,6 @@ describe "Readme Examples" do
       matrix2 = Movie.new
       matrix2.actors << keanu_reeves2
       keanu_reeves2.acted_in.should include(matrix2)
-
-# Example of accessing the Role relationship object between an Actor and a Movie
-      keanu_reeves.rels.outgoing(:acted_in)[matrix].name = 'neo'
     end
   end
 
@@ -407,7 +404,7 @@ describe "Readme Examples" do
     end
 
 
-    it "has_n with unspecified to" do
+    it "has_n" do
       class Person
         include Neo4j::NodeMixin
         has_n :knows # will generate a knows method for outgoing relationships
@@ -429,7 +426,7 @@ describe "Readme Examples" do
       person.knows.should include(another_node)
     end
 
-    it "has_n - with specifying to" do
+    it "has_n to an outgoing class" do
       #  If you want to express that the relationship should point to a specific class
       # use the 'to' method on the has_n method.
 
@@ -445,7 +442,7 @@ describe "Readme Examples" do
       person.knows.should include(another_node)
     end
 
-    it "has_n - with specifying from" do
+    it "has_n from an incoming class" do
       #It is also possible to generate methods for incoming relationships by using the
       #'from' method on the has_n method.
 
@@ -453,7 +450,7 @@ describe "Readme Examples" do
       class Person3
         include Neo4j::NodeMixin
         has_n :knows # will generate a knows method for outgoing relationships
-        has_n(:known_by).from(:knows) #  will generate a known_by method for incoming knows relationship
+        has_n(:known_by).from(Person3, :knows) #  will generate a known_by method for incoming knows relationship
       end
 
 
@@ -470,6 +467,34 @@ describe "Readme Examples" do
       me.knows.should include(neo)
       neo.knows.should_not include(me)
     end
+
+    it "has_n from an incoming class with 'namespace'" do
+      class Order;
+      end
+
+      class Product
+        include Neo4j::NodeMixin
+        has_n(:orders).to(Order)
+      end
+
+      class Order
+        include Neo4j::NodeMixin
+        has_n(:products).from(Product, :orders)
+      end
+
+      p = Product.new
+      o = Order.new
+      o.products << p
+      o.products.should include(p)
+      p.orders.should include(o)
+
+      p = Product.new
+      o = Order.new
+      p.orders << o
+      p.orders.should include(o)
+      o.products.should include(p)
+    end
+
 
     it "Relationship has_one" do
       class Address;
@@ -618,7 +643,8 @@ describe "Readme Examples" do
 
     it "Finding all nodes" do
       require 'neo4j/extensions/reindexer'
-      
+      Neo4j.load_reindexer # just if some other RSpecs as unloaded it ...
+
       class Car
         include Neo4j::NodeMixin
         property :wheels
@@ -657,11 +683,11 @@ describe "Readme Examples" do
       f111 = Person7.new
       f11.friends << f111
 
-      f.friends.should include(f1,f2)
+      f.friends.should include(f1, f2)
       f.friends.should_not include(f11, f111)
       f.friends.depth(2).should include(f1, f2, f11)
       f.friends.depth(2).should_not include(f111)
-      f.friends.depth(:all).should include(f1,f2,f11,f111)
+      f.friends.depth(:all).should include(f1, f2, f11, f111)
     end
 
     it "Traversing Relationships: Filtering Nodes" do
@@ -679,7 +705,7 @@ describe "Readme Examples" do
       n1.friends{ name == 'andreas' }.should_not include(n3)
     end
 
-    it " Traversing Nodes of Arbitrary Depth" do
+    it "Traversing Nodes of Arbitrary Depth" do
       class Person9
         include Neo4j::NodeMixin
         has_n :friends

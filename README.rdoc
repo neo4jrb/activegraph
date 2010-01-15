@@ -369,10 +369,6 @@ or you can also specify this relationship on the incoming node
       matrix       = Movie.new
       matrix.actors << keanu_reeves
 
-Example of accessing the Role relationship object between an Actor and a Movie
-
-      keanu_reeves.relationships.outgoing(:acted_in)[matrix].name = 'neo'
-
 More information about neo4j can be found after the Lucene section below.
 
 == The Neo4j Module
@@ -599,15 +595,15 @@ Example
 
   Neo4j.all_nodes{|node| puts node}
 
-=== Relationship has_n and has_one
+=== Declared Relationships
 
 Neo relationships are asymmetrical. That means that if A has a relationship to B
 then it may not be true that B has a relationship to A.
 
-Relationships can be declared by using the 'has_n' or 'has_one'
+Relationships can be declared by using the 'has_n', 'has_one' or 'has_list'
 Neo4j::NodeMixin class methods.
 
-==== has_n
+=== has_n
 
 The has_n Neo4j::NodeMixin class method creates a new instance method that can
 be used for both traversing and adding new objects to a specific relationship type.
@@ -634,6 +630,8 @@ includes the Neo4j::NodeMixin or is an org.neo4j.core.api.Node object, example:
 
   person.knows.include?(another_node) # => true
 
+==== has_n to an outgoing class
+
 If you want to express that the relationship should point to a specific class
 use the 'to' method on the has_n method.
 (It's still possible to add any nodes to the relationship - no validation is performed)
@@ -643,6 +641,21 @@ use the 'to' method on the has_n method.
      has_n(:knows).to(Person)
   end
 
+The difference between specifying a 'to' class and not doing that is that Neo4j.rb will create relationships of type
+'Person#knows'.
+
+Example:
+  a = Person.new
+  b = Neo4j::Node.new
+  a.knows << b
+
+  # is the same as
+  a.add_rel('Person#knows', b)
+
+The given class 'Person' will act like a name space for the relationship 'knows'.
+
+==== has_n from an incoming class
+
 It's also possible to generate methods for incoming relationships by using the
 'from' method on the has_n method.
 
@@ -650,10 +663,10 @@ Example:
   class Person
      include Neo4j::NodeMixin
      has_n :knows  # will generate a knows method for outgoing relationships
-     has_n(:known_by).from(:knows)  #  will generate a known_by method for incoming knows relationship
+     has_n(:known_by).from(Person, :knows)  #  will generate a known_by method for incoming knows relationship
   end
 
-ou can now find outgoing nodes using the 'knows' method and incoming relationships using the 'known_by' method.
+In the example above we can find outgoing nodes using the 'knows' method and incoming relationships using the 'known_by' method.
 
 Example:
 
@@ -681,7 +694,37 @@ This is the same as doing:
 
   me.knows << neo # me knows neo but neo does not know me
 
-==== Relationship has_one
+==== has_n from an incoming class with 'namespace'
+
+In the example above we only provided the parameter :knows for the from method. That means that incoming relationship of type 'knows' will
+be accessible with the known_by method.
+The following many-to-many example demonstrates how to specify a from class.
+
+  class Product
+    include Neo4j::NodeMixin
+    has_n(:orders).to(Order)
+  end
+
+  class Order
+    include Neo4j::NodeMixin
+    has_n(:products).from(Product, :orders)
+  end
+
+Then you can add an order on the Product object or add an Product on the Order object.
+
+  p = Product.new
+  o = Order.new
+  o.products << p
+
+Which is the same as
+
+  p = Product.new
+  o = Order.new
+  p.orders << o
+
+Notice that we must provide the class name of the from method since we use the 'namespace' Order for the outgoing orders relationship.
+
+=== Relationship has_one
 
 Example of has_one: A person can have at most one Address
 

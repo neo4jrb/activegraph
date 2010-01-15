@@ -7,6 +7,14 @@ require 'spec_helper'
 
 
 describe "Neo4j::NodeMixin#has_n " do
+  class ExA
+    include Neo4j::NodeMixin
+  end
+
+  class ExB
+    include Neo4j::NodeMixin
+  end
+
   before(:all) do
     start
   end
@@ -20,6 +28,55 @@ describe "Neo4j::NodeMixin#has_n " do
   end
 
 
+  describe "(rel).to(class)" do
+
+    it "should generate outgoing relationships with prefix 'class#rel'" do
+      # given
+      ExA.has_n(:foo).to(ExB)
+
+      # when
+      ex1 = ExA.new
+      ex1.foo << ExB.new
+
+      # then
+      ex1.rel?('ExB#foo').should be_true
+    end
+
+
+  end
+
+  describe "(rel).from(class)" do
+    it "should generate outgoing relationships with prefix 'class#rel' from the other node" do
+      # given
+      ExB.has_n(:baaz)
+      ExA.has_n(:baaz).from(ExB)
+
+      # when
+      a = ExA.new
+      b = ExB.new
+      a.baaz << b # add relationship on ExB to ExA !
+
+      # then
+      b.rel?('baaz').should be_true
+   end
+  end
+
+  describe "(rel).from(class, rel2)" do
+    it "should generate relationships with prefix 'class#rel2' from the other node" do
+      # given
+      ExB.has_n(:foobar)
+      ExA.has_n(:hoj).from(ExB, :foobar)
+
+      # when
+      a = ExA.new
+      b = ExB.new
+      a.hoj << b # add relationship on ExB to ExA !
+
+      # then
+      b.rel?('foobar').should be_true
+
+    end
+  end
 
   # ----------------------------------------------------------------------------
   # adding relationships with <<
@@ -104,7 +161,7 @@ describe "Neo4j::NodeMixin#has_n " do
       class PersonNode
         include Neo4j::NodeMixin
         property :name
-        has_n :friends
+        has_n(:friends).to(PersonNode)
         has_n(:known_by).from(PersonNode, :friends)
       end
 

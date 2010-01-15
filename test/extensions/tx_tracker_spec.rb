@@ -33,7 +33,7 @@ describe "TxTracker (TxNodeList)" do
   end
 
   after(:all) do
-    Neo4j.unload_tx_tracker
+    Neo4j.unload_tx_tracker if Neo4j.respond_to? :unload_tx_tracker
     stop
   end
 

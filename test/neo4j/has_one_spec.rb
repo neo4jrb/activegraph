@@ -70,7 +70,7 @@ describe "Neo4j::NodeMixin#has_one " do
     dynamic_relationship = address.people.new(person)
 
     # then
-    dynamic_relationship.relationship_type.should == :address
+    dynamic_relationship.relationship_type.should == :"Address#address"
   end
   
   it "should should return the object using the has_one accessor" do

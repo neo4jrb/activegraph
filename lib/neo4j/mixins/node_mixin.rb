@@ -1,22 +1,23 @@
 module Neo4j
 
 
-  #
   # Represents a node in the Neo4j space.
   # 
-  # Is a wrapper around a Java neo node
-  # 
+  # Is a wrapper around a Java Neo4j node (org.neo4j.api.core.Node)
+  # The following methods are delegated to the Java Neo4j Node:
+  #   []=, [], property?, props, update, neo_id, rels, rel?, to_param
+  #   rel, del, list?, list, lists, print, add_rel, outgoing, incoming,
+  #   next, prev, next=, prev=, head
+  #
+  #
+  # Those methods are defined in the mixins Neo4j::JavaPropertyMixin, Neo4j::JavaNodeMixin, Neo4j::JavaListMixin.
   #
   module NodeMixin
     extend Forwardable
 
-    def_delegators :@_java_node, :[]=, :[], :property?, :props, :update, :neo_id, :rels, :rel?,
+    def_delegators :@_java_node, :[]=, :[], :property?, :props, :update, :neo_id, :rels, :rel?, :to_param,
                    :rel, :del, :list?, :list, :lists, :print, :print_sub, :add_rel, :outgoing, :incoming,
-                   :add_list_item_methods, :next, :prev, :next=, :prev=, :head # used for has_list 
-
-
-    attr_reader :_java_node
-
+                   :add_list_item_methods, :next, :prev, :next=, :prev=, :head # used for has_list, defined in Neo4j::JavaListMixin
 
 
     # --------------------------------------------------------------------------
@@ -31,6 +32,24 @@ module Neo4j
     # * sets the neo property '_classname' to self.class.to_s
     # * creates a neo node java object (in @_java_node)
     # * calls init_node if that is defined in the current class.
+    #
+    # If you want to provide your own initialize method you should instead implement the
+    # method init_node method.
+    #
+    # Example:
+    #   class MyNode
+    #     include Neo4j::NodeMixin
+    #
+    #     def init_node(name, age)
+    #        self[:name] = name
+    #        self[:age] = age
+    #     end
+    #   end
+    #
+    #   node = MyNode('jimmy', 23)
+    #
+    # The init_node is only called when the node is constructed the first, unlike te initialize method which is used both for
+    # loading the node from the Neo4j database and creating the Ruby object.
     #
     # :api: public
     def initialize(*args)
@@ -50,11 +69,12 @@ module Neo4j
     # Inits this node with the specified java neo node
     #
     # :api: private
-    def init_with_node(java_node)
+    def init_with_node(java_node) # :nodoc:
       @_java_node = java_node
       java_node._wrapper=self
     end
 
+    # Returns the org.neo4j.api.core.Node wrapped object
     def _java_node
       @_java_node
     end
@@ -62,7 +82,7 @@ module Neo4j
     # Inits when no neo java node exists. Must create a new neo java node first.
     #
     # :api: private
-    def init_without_node
+    def init_without_node # :nodoc:
       @_java_node = Neo4j.create_node
       @_java_node._wrapper = self
       @_java_node[:_classname] = self.class.to_s
@@ -96,15 +116,6 @@ module Neo4j
     end
 
 
-    # Same as id but returns a String instead of a Fixnum.
-    # Used by Ruby on Rails.
-    #
-    # :api: public
-    def to_param
-      id.to_s
-    end
-
-
     # --------------------------------------------------------------------------
     # Equal and hash methods
     #
@@ -130,7 +141,7 @@ module Neo4j
     # Specifies which relationships should be ignored when trying to cascade delete a node.
     # If a node does not have any relationships (except those specified here to ignore) it will be cascade deleted
     #
-    def ignore_incoming_cascade_delete?(relationship)
+    def ignore_incoming_cascade_delete?(relationship) # :nodoc:
       # ignore relationship with property _cascade_delete_incoming
       relationship.property?(:_cascade_delete_incoming)
     end
@@ -140,7 +151,7 @@ module Neo4j
     # (a property changed or a relationship was created/deleted)
     #
     # @api private
-    def update_index
+    def update_index # :nodoc:
       self.class.indexer.index(self)
     end
 
@@ -171,9 +182,6 @@ module Neo4j
       end
 
     end
-
-             
-
 
 
     # --------------------------------------------------------------------------
@@ -206,7 +214,7 @@ module Neo4j
       # all subclasses share the same index, declared properties and index_updaters
       c.instance_eval do
         const_set(:ROOT_CLASS, self)
-        const_set(:RELATIONSHIPS_INFO, {})
+        const_set(:DECL_RELATIONSHIPS, {})
         const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:ROOT_CLASS)
 
@@ -227,11 +235,11 @@ module Neo4j
       #
 
       # :api: private
-      def root_class
+      def root_class # :nodoc:
         self::ROOT_CLASS
       end
 
-      def indexer
+      def indexer # :nodoc:
         Indexer.instance(root_class)
       end
 
@@ -239,12 +247,12 @@ module Neo4j
       # Contains information of all relationships, name, type, and multiplicity
       #
       # :api: private
-      def relationships_info
-        self::RELATIONSHIPS_INFO
+      def decl_relationships # :nodoc:
+        self::DECL_RELATIONSHIPS
       end
 
       # :api: private
-      def properties_info
+      def properties_info # :nodoc:
         self::PROPERTIES_INFO
       end
 
@@ -277,8 +285,8 @@ module Neo4j
       #
       #   class Foo
       #     include Neo4j::NodeMixin
-      #     property name, city # can set several properties in one go
-      #     property bar, :type => Object # allow serialization of any ruby object
+      #     property :name, :city # can set several properties in one go
+      #     property :bar, :type => Object # allow serialization of any ruby object
       #   end
       #
       #   f = Foo.new
@@ -396,44 +404,47 @@ module Neo4j
       end
 
 
-      # Remote one or more specified indexes.
-      # This indexes will not be updated anymore, old indexes will still exist
+      # Remove one or more specified indexes.
+      # Those indexes will not be updated anymore, old indexes will still exist
       # until the update_index method is called.
       #
       # :api: public
       def remove_index(*keys)
         keys.each do |key|
-          rel_name, prop = key.to_s.split('.')
-          if prop.nil?
-            indexer.remove_index_on_property(rel_name)
-          else
-            clazz, rel_type = rel_class_and_type_for(rel_name)
-            clazz.indexer.remove_index_in_relationship_on_property(rel_type, prop)
-          end
+          raise "Not implemented remove index on a relationship index" if key.to_s.include?('.')
+          indexer.remove_index_on_property(key)
         end
       end
 
 
       # :api: private
-      def index_property(prop)
+      def index_property(prop) # :nodoc:
         indexer.add_index_on_property(prop)
       end
 
 
       # :api: private
-      def index_relationship(rel_name, prop)
+      def index_relationship(rel_name, prop) # :nodoc:
         # find the trigger and updater classes and the rel_type of the given rel_name
-        trigger_clazz = relationships_info[rel_name.to_sym][:class]
+        trigger_clazz = decl_relationships[rel_name.to_sym].clazz
         trigger_clazz ||= self # if not defined in a has_n
 
         updater_clazz = self
 
-        rel_type = relationships_info[rel_name.to_sym][:type] # this or the other node we index ?
+        dsl = decl_relationships[rel_name.to_sym]
+        rel_type = dsl.type # this or the other node we index ?
         rel_type ||= rel_name # if not defined (in a has_n) use the same name as the rel_name
 
+        if dsl.outgoing?
+          namespace_type = dsl.namespace_type
+        else
+          clazz = dsl.clazz || node.class
+          namespace_type = clazz.decl_relationships[dsl.type].namespace_type
+        end
+        
         # add index on the trigger class and connect it to the updater_clazz
         # (a trigger may cause an update of the index using the Indexer specified on the updater class)
-        trigger_clazz.indexer.add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop)
+        trigger_clazz.indexer.add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop, namespace_type.to_sym)
       end
 
 
@@ -441,23 +452,26 @@ module Neo4j
       #
       # ==== Example
       #   class Order
-      #      has_one(:customer).of_class(Customer)
+      #      include Neo4j::NodeMixin      
+      #      has_one(:customer).to(Customer)
       #   end
       #
       # :api: public
       def has_one(rel_type, params = {})
-        cascade_delete = cascade_delete_param(params)
+        clazz = self
         module_eval(%Q{def #{rel_type}=(value)
-                        r = Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete})
+                        dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                        r = Relationships::HasN.new(self, dsl)
                         r << value
                         r
                     end},  __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                        r = Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete})
+                        dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                        r = Relationships::HasN.new(self, dsl)
                         [*r][0]
                     end},  __FILE__, __LINE__)
-        relationships_info[rel_type] = Relationships::RelationshipInfo.new
+        decl_relationships[rel_type.to_sym] = Relationships::DeclRelationshipDsl.new(rel_type, params)
       end
 
 
@@ -465,32 +479,21 @@ module Neo4j
       #
       # ==== Example
       #   class Order
+      #      include Neo4j::NodeMixin
       #      has_n(:order_lines).to(Product).relationship(OrderLine)
       #   end
       #
       # :api: public
       def has_n(rel_type, params = {})
-        cascade_delete = cascade_delete_param(params)
+        clazz = self
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relationships::HasN.new(self,'#{rel_type.to_s}', #{cascade_delete}, &block)
+                        dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                        Relationships::HasN.new(self, dsl, &block)
                     end},  __FILE__, __LINE__)
-        relationships_info[rel_type] = Relationships::RelationshipInfo.new
+        decl_relationships[rel_type.to_sym] = Relationships::DeclRelationshipDsl.new(rel_type, params)
       end
 
-      def cascade_delete_param(params)
-        cascade_delete = case params[:cascade_delete]
-          when nil
-            "nil"
-          when :outgoing
-            ":_cascade_delete_outgoing"
-          when :incoming
-            ":_cascade_delete_incoming"
-          else
-            raise "Expected either :outgoing or :incoming cascade delete parameter for has list"
-        end
-        return cascade_delete
-      end
 
       # Specifies a relationship to a linked list of nodes.
       # Each list item class may (but not necessarily  use the belongs_to_list
@@ -499,6 +502,7 @@ module Neo4j
       # Example
       #
       #  class Company
+      #    include Neo4j::NodeMixin
       #    has_list :employees
       #  end
       #
@@ -514,6 +518,7 @@ module Neo4j
       # Example
       #
       #  class Company
+      #    include Neo4j::NodeMixin
       #    has_list :employees, :counter => true
       #  end
       #
@@ -530,7 +535,7 @@ module Neo4j
       #  company.employees << employee1 << employee2 << employee3
       #  company.employees.size # => 3
       #
-      #  employee2.delete
+      #  employee2.del
       #
       #  [*company.employees] # => [employee1, employee3]
       #  company.employees.size # => 2
@@ -541,30 +546,23 @@ module Neo4j
       #
       # :api: public
       def has_list(rel_type, params = {})
-        counter = params[:counter] == true
-        cascade_delete = cascade_delete_param(params)
+        clazz = self
+        #(self.kind_of?(Module))? self : self.class
         module_eval(%Q{
                     def #{rel_type}(&block)
-                        Relationships::HasList.new(self,'#{rel_type.to_s}',#{counter},#{cascade_delete}, &block)
+                        dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                        Relationships::HasList.new(self, dsl, &block)
                     end},  __FILE__, __LINE__)
         Neo4j.event_handler.add Relationships::HasList
-        relationships_info[rel_type] = Relationships::RelationshipInfo.new
+        decl_relationships[rel_type.to_sym] = Relationships::DeclRelationshipDsl.new(rel_type, params)
       end
 
 
       # Can be used together with the has_list to specify the ruby class of a list item.
       #
       # :api: public
-      def belongs_to_list(rel_type)
-        relationships_info[rel_type] = Relationships::RelationshipInfo.new
-      end
-
-
-      # Creates a new outgoing relationship.
-      #
-      # :api: private
-      def new_relationship(rel_name, internal_relationship)
-        relationships_info[rel_name.to_sym][:relationship].new(internal_relationship) # internal_relationship is a java neo object
+      def belongs_to_list(rel_type, params = {})
+        decl_relationships[rel_type] = Relationships::DeclRelationshipDsl.new(rel_type, params)
       end
 
 
@@ -593,7 +591,7 @@ module Neo4j
       # new_record? so that it can be used for restful routing.
       #
       # @api private
-      def create_value_class
+      def create_value_class # :nodoc:
         # the name of the class we want to create
         name = "#{self.to_s}ValueObject".gsub("::", '_')
 

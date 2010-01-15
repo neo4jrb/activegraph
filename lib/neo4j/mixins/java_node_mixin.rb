@@ -1,4 +1,4 @@
-module Neo4j::JavaRelationshipMixin
+module Neo4j::JavaNodeMixin
 
 
   # Check if the given relationship exists
@@ -79,7 +79,6 @@ module Neo4j::JavaRelationshipMixin
   # ==== Parameters
   # type<#to_s>:: the relationship type between the nodes
   # to:: the other node
-  # raw<true|false (default):: if false return the ruby wrapped relationship object instead of the raw java neo4j obejct.
   #
   # ==== Returns
   # a Neo4j::Relationship object
@@ -92,21 +91,13 @@ module Neo4j::JavaRelationshipMixin
 
   # all creation of relationships uses this method
   # :api: private
-  def add_rel (type, to, raw = false) # :nodoc:
-    java_type = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s) 
-    to_java_node = to.respond_to?(:_java_node) ? to._java_node : to
-    java_rel = createRelationshipTo(to_java_node, java_type)
-
-    # should we wrap the relationship in a ruby object ?
-    if (@_wrapper and @_wrapper.class.relationships_info[type.to_sym] and @_wrapper.class.relationships_info[type.to_sym][:relationship])
-      rel = @_wrapper.class.relationships_info[type.to_sym][:relationship].new(java_rel)
-    else
-      rel = java_rel
-    end
-
+  def add_rel (type, to, rel_clazz = nil) # :nodoc:
+    java_type = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
+    java_rel = createRelationshipTo(to._java_node, java_type)
+    # check if we should create a wrapped Ruby Relationship class or use the raw java one.
+    rel = (rel_clazz.nil?) ?  java_rel : rel_clazz.new(java_rel)
     Neo4j.event_handler.relationship_created(rel)
     @_wrapper.class.indexer.on_relationship_created(@_wrapper, type) if @_wrapper
-    return rel.wrapper unless raw
     rel
   end
 
@@ -152,8 +143,8 @@ module Neo4j::JavaRelationshipMixin
   #
   # ==== Example
   #
-  #   person_node.outgoing(:friends).each { ... }
-  #   person_node.outgoing(:friends).raw(true).each { }
+  #   person_node.incoming(:friends).each { ... }
+  #   person_node.incoming(:friends).raw(true).each { }
   #
   # The raw false parameter means that the ruby wrapper object will not be loaded, instead the raw Java Neo4j object will be used,
   # it might improve the performance.
@@ -161,6 +152,61 @@ module Neo4j::JavaRelationshipMixin
   # :api: public
   def incoming(*args)
     Neo4j::Relationships::NodeTraverser.new(self).incoming(*args)
+  end
+
+
+  # Deletes this node.
+  # Deletes all relationships as well.
+  # Invoking any methods on this node after delete() has returned is invalid and may lead to unspecified behavior.
+  #
+  # :api: public
+  def del
+    Neo4j.event_handler.node_deleted(wrapper)
+
+    # delete outgoing relationships, and check for cascade delete
+    rels.outgoing.each { |r| r.del; r.end_node.del if r[:_cascade_delete_outgoing]}
+
+    rels.incoming.each do |r|
+      r.del
+      if r[:_cascade_delete_incoming]
+        node_id = r[:_cascade_delete_incoming]
+        node = Neo4j.load_node(node_id)
+        # check node has no outgoing relationships
+        no_outgoing = node.rels.outgoing.empty?
+        # check node has only incoming relationship with cascade_delete_incoming
+        no_incoming = node.rels.incoming.find{|r| !node.ignore_incoming_cascade_delete?(r)}.nil?
+        # only cascade delete incoming if no outgoing and no incoming (exception cascade_delete_incoming) relationships
+        node.del if no_outgoing and no_incoming
+      end
+    end
+    delete
+    @_wrapper.class.indexer.delete_index(self) if @_wrapper
+  end
+
+  # --------------------------------------------------------------------------
+  # Debug
+  #
+
+  # Used for debugging purpose, traverse the graph of given depth and direction and prints nodes and relationship information.
+  def print(levels = 0, dir = :outgoing)
+    print_sub(0, levels, dir)
+  end
+
+  def print_sub(level, max_level, dir) # :nodoc:
+    spaces = "  " * level
+    node_class = (self[:_classname].nil?) ? Neo4j::Node.to_s : self[:_classname]
+    node_desc = "#{spaces}neo_id=#{neo_id} #{node_class}"
+    props.each_pair {|key, value| next if %w[id].include?(key) or key.match(/^_/) ; node_desc << " #{key}='#{value}'"}
+    puts node_desc
+
+    if (level != max_level)
+      rels(dir).each do |rel|
+        cascade_desc = ""
+        cascade_desc << "cascade in: #{rel[:_cascade_delete_incoming]}" if rel.property?(:_cascade_delete_incoming)
+        cascade_desc << "cascade out: #{rel[:_cascade_delete_outgoing]}" if rel.property?(:_cascade_delete_outgoing)
+        rel.other_node(self).print_sub(level + 1, max_level, dir)
+      end
+    end
   end
 
 end

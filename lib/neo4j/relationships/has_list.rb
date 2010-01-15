@@ -5,23 +5,22 @@ module Neo4j
     # Provides appending and traversing nodes that are linked together in a list with
     # relationships to the next list item.
     #
-    class HasList
+    class HasList 
       include Enumerable
       attr_reader :relationship_type
 
-      def initialize(node, list_name, counter, cascade_delete, &filter)
+      def initialize(node, dsl, &filter)
         @node = node
-        @relationship_type = "_list_#{list_name}_#{node.neo_id}"
-        if (counter)
-          @counter_id = "_#{list_name}_size".to_sym
+        @relationship_type = "_list_#{dsl.type}_#{node.neo_id}"
+        if (dsl.counter?)
+          @counter_id = "_#{dsl.type}_size".to_sym
         end
-        @cascade_delete = cascade_delete if cascade_delete
+        @cascade_delete = dsl.cascade_delete_prop_name
       end
 
       def size
         @node[@counter_id] || 0
       end
-
 
       # called by the event handler
       def self.on_node_deleted(node) #:nodoc:
