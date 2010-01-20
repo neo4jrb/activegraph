@@ -15,9 +15,9 @@ module Neo4j
           @dsl = dsl
         else
           # which class specifies the incoming DSL ?
-          clazz = dsl.clazz || node.class
-          @dsl = clazz.decl_relationships[dsl.type]
-          raise "Unspecified outgoing relationship '#{dsl.type}' for incoming relationship '#{dsl.rel_id}' on class #{clazz}" if @dsl.nil?
+          clazz = dsl.to_class || node.class
+          @dsl = clazz.decl_relationships[dsl.to_type]
+          raise "Unspecified outgoing relationship '#{dsl.to_type}' for incoming relationship '#{dsl.rel_id}' on class #{clazz}" if @dsl.nil?
         end
 
         if  @outgoing

@@ -111,6 +111,10 @@ module Neo4j::JavaPropertyMixin
   end
 
 
+  def equal?(o)
+    eql?(o)
+  end
+  
   def eql?(o)
     return false unless o.respond_to?(:neo_id)
     o.neo_id == neo_id

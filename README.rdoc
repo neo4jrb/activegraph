@@ -85,7 +85,7 @@ To check that neo4j.rb is working:
   rake     # you may have to type jruby -S rake depending how you installed JRuby
 
 
-== Three Minute Tutorial
+= Three Minute Tutorial
 
 Neo node space consists of three basic elements: nodes, relationships that connect nodes and properties attached
 to both nodes and relationships. All relationships have a type, for example if the node space represents
@@ -126,6 +126,8 @@ Using the Neo4j::Transaction#new and Neo4j::Transaction#finish methods:
 
 Example of setting properties
 
+  Neo4j::Node.new :name=>'foo', :age=>123, :hungry => false, 4 => 3.14
+  # which is same as the following:
   node = Neo4j::Node.new
   node[:name] = 'foo'
   node[:age]  = 123
@@ -166,7 +168,7 @@ Example of setting properties on relationships
   rel[:since] = 1982
   node1.rels.first[:since] # => 1982 (there is only one relationship defined on node1 in this example)
 
-== Ten Minute Tutorial
+= Ten Minute Tutorial
 
 === Creating a Model
 
@@ -210,6 +212,11 @@ Setting a property:
 
   person.name = 'kalle'
   person.salary  = 10000
+
+You can also set this (or any property) when you create the node:
+
+   person = Person.new :name => 'kalle', :salary => 10000, :foo => 'bar'
+
 
 === Properties and the [] operator
 Notice that it is not required to specify which attributes should be available on a node. Any attributes can be
@@ -371,12 +378,7 @@ or you can also specify this relationship on the incoming node
 
 More information about neo4j can be found after the Lucene section below.
 
-== The Neo4j Module
-
-The Neo4j module is used to map Ruby objects to nodes and relationships in a network.
-It supports two different ways of retrieval/quering:
-* Neo4j traversal, Neo4j::NodeMixin#traverse (or Neo4j::NodeMixin#has_n)
-* Lucene indexes, Neo4j::NodeMixin#find
+= Neo4j API Documentation
 
 === Start and Stop of the Neo4j
 
@@ -914,7 +916,7 @@ If you want to find one node in a relationship you can use a filter.
 Example, let say we want to find a friend with name 'andreas'
 
   n1 = Person.new
-  n2 = Person.new {|n| n.name = 'andreas'}
+  n2 = Person.new :name => 'andreas'
   n3 = Person.new
   n1.friends << n2 << n3
   n1.friends{ name == 'andreas' }.to_a # => [n2]
@@ -1217,7 +1219,7 @@ Example:
     index :name, :age
   end
 
-  p1 = Person.new {|n| n.name = 'andreas'; n.phone = 123}
+  p1 = Person.new :name => 'andreas', :phone => 123
   Person.find (:name => 'andreas') # => [p1]
   Person.find (:phone => 123) # => []
 

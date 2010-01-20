@@ -29,8 +29,8 @@ module Neo4j
     # Will create a new transaction if one is not already running.
     # 
     # Does
-    # * sets the neo property '_classname' to self.class.to_s
-    # * creates a neo node java object (in @_java_node)
+    # * sets the neo4j property '_classname' to self.class.to_s
+    # * creates a neo4j node java object (in @_java_node)
     # * calls init_node if that is defined in the current class.
     #
     # If you want to provide your own initialize method you should instead implement the
@@ -51,15 +51,20 @@ module Neo4j
     # The init_node is only called when the node is constructed the first, unlike te initialize method which is used both for
     # loading the node from the Neo4j database and creating the Ruby object.
     #
-    # :api: public
     def initialize(*args)
       # was a neo java node provided ?
-      if args.length == 1 and args[0].kind_of?(org.neo4j.api.core.Node)
+      if args.length == 1 && args[0].kind_of?(org.neo4j.api.core.Node)
+        # yes, it was loaded from the database
         init_with_node(args[0])
       else
+        # no, it was created by the user, create a new neo4j node
         init_without_node
+        # does the class provide an initialization method ?
         init_node(*args) if self.respond_to?(:init_node)
+        # was the first argument a hash to initialize it ?
+        init_with_hash(args[0]) if args.length == 1 && args[0].respond_to?(:each_pair)
       end
+      # was a block given in order to initialize the neo4j node ?
       yield self if block_given?
       # must call super with no arguments so that chaining of the initialize method works
       super()
@@ -72,6 +77,10 @@ module Neo4j
     def init_with_node(java_node) # :nodoc:
       @_java_node = java_node
       java_node._wrapper=self
+    end
+
+    def init_with_hash(hash)
+      hash.each_pair{|k,v| self[k] = v}
     end
 
     # Returns the org.neo4j.api.core.Node wrapped object
@@ -120,6 +129,10 @@ module Neo4j
     # Equal and hash methods
     #
 
+    def equal?(o)
+      eql?(o)
+    end
+    
     def eql?(o)
       o.kind_of?(NodeMixin) && o._java_node == @_java_node
     end
@@ -426,20 +439,20 @@ module Neo4j
       # :api: private
       def index_relationship(rel_name, prop) # :nodoc:
         # find the trigger and updater classes and the rel_type of the given rel_name
-        trigger_clazz = decl_relationships[rel_name.to_sym].clazz
+        trigger_clazz = decl_relationships[rel_name.to_sym].to_class
         trigger_clazz ||= self # if not defined in a has_n
 
         updater_clazz = self
 
         dsl = decl_relationships[rel_name.to_sym]
-        rel_type = dsl.type # this or the other node we index ?
+        rel_type = dsl.to_type # this or the other node we index ?
         rel_type ||= rel_name # if not defined (in a has_n) use the same name as the rel_name
 
         if dsl.outgoing?
           namespace_type = dsl.namespace_type
         else
-          clazz = dsl.clazz || node.class
-          namespace_type = clazz.decl_relationships[dsl.type].namespace_type
+          clazz = dsl.to_class || node.class
+          namespace_type = clazz.decl_relationships[dsl.to_type].namespace_type
         end
         
         # add index on the trigger class and connect it to the updater_clazz

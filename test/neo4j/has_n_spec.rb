@@ -320,7 +320,7 @@ describe "Neo4j::NodeMixin#has_n " do
   end
 
 
-  describe 'node1.relationship_type.new(node2) (creating a new RelationshipMixin)' do
+  describe 'node1.<relationship_type>.new(node2) (creating a new RelationshipMixin)' do
     before(:all) do
       class CustomerOrderRelationship
         include Neo4j::RelationshipMixin

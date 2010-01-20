@@ -30,6 +30,11 @@ describe "Readme Examples" do
     end
 
     it "should run: Example of getting properties" do
+      n = Neo4j::Node.new :name=>'foo', :age=>123, :hungry => false, 4 => 3.14
+      n[:name].should == 'foo'
+      n[:hungry].should == false
+      n[4].should == 3.14
+      
       node = Neo4j::Node.new
       node[:name] = 'foo'
       node[:name].should == 'foo'
@@ -723,6 +728,48 @@ describe "Readme Examples" do
       me.incoming(:friends).depth(4).should include(f)
       me.incoming(:friends).depth(4).should_not include(f11, f111)
     end
-  end
-end
 
+    it "Traversing Nodes With Several Relationship Types" do
+      pending
+
+      class Location
+        include Neo4j::NodeMixin
+        has_n :contains
+        has_n :trips
+        property :name
+        index :name
+
+        # A Trip can be specific for one global area, such as "see all of sweden" or
+        # local such as a 'city tour of malmoe'
+        class Trip
+          include Neo4j::NodeMixin
+          property :name
+        end
+
+        # create all nodes
+        sweden = Location.new
+
+        # setup the relationship between all nodes
+
+        europe.contains << sweden << denmark
+        sweden.contains << malmoe << stockholm
+
+        sweden.trips << sweden_trip
+        malmoe.trips << malmoe_trip
+        malmoe.trips << city_tour
+        stockholm.trips << city_tour # the same city tour is available both in malmoe and stockholm
+
+#    Then we can traverse both the contains and the trips relationship types.
+#    Example:
+        sweden.outgoing(:contains, :trips).to_a # => [@malmoe, @stockholm, @sweden_trip]
+
+#    It is also possible to traverse both incoming and outgoing relationships, example:
+
+        sweden.outgoing(:contains, :trips).incoming(:contains).to_a # => [@malmoe, @stockholm, @sweden_trip, @europe]
+
+      end
+    end
+
+  end
+
+end

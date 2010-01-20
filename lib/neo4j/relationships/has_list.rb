@@ -11,9 +11,9 @@ module Neo4j
 
       def initialize(node, dsl, &filter)
         @node = node
-        @relationship_type = "_list_#{dsl.type}_#{node.neo_id}"
+        @relationship_type = "_list_#{dsl.to_type}_#{node.neo_id}"
         if (dsl.counter?)
-          @counter_id = "_#{dsl.type}_size".to_sym
+          @counter_id = "_#{dsl.to_type}_size".to_sym
         end
         @cascade_delete = dsl.cascade_delete_prop_name
       end

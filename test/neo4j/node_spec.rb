@@ -34,6 +34,17 @@ describe Neo4j::Node do
         Neo4j::Node.new
       end.should raise_error
     end
+
+    it "should take a hash argument setting its properties" do
+      Neo4j::Transaction.run do
+        # when
+        node = Neo4j::Node.new(:name => 'kalle', :age => 30)
+        # then
+        node[:name].should == 'kalle'
+        node[:age].should == 30
+      end
+
+    end
   end
 
   describe "#[key]" do
@@ -171,11 +182,6 @@ describe Neo4j::Node do
       [*@node.rels.outgoing(:foo)].size.should == 2
     end
 
-    it ".each{} should yield Neo4j::RelationshipMixin objects if there is a _classname property" do
-      pending
-      @node.add_rel(:foo, Neo4j::SomeNode.new)
-      @node.rels.outgoing(:foo).each {|r| r.should be_kind_of(Neo4j::RelationshipMixin)}
-    end
 
     it ".first should return the first relationship" do
       @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
@@ -254,7 +260,7 @@ describe Neo4j::Node do
     it "should delete the node" do
       id = @node.neo_id
       @node.del
-      
+
       # then
       Neo4j::Transaction.finish
       Neo4j::Transaction.new
@@ -291,4 +297,38 @@ describe Neo4j::Node do
     end
 
   end
+
+  describe '#equal' do
+
+    before(:all) do
+      start
+    end
+
+    before(:each) do
+      Neo4j::Transaction.new
+    end
+
+    after(:each) do
+      Neo4j::Transaction.finish
+    end
+
+    it "should be == another node only if it has the same node id" do
+      node1 = Neo4j::Node.new
+      node2 = Neo4j.load_node(node1.neo_id)
+      node2.should be_equal(node1)
+      node2.should == node1
+      node2.hash.should == node1.hash
+    end
+
+    it "should not be == another node only if it has not the same node id" do
+      node1 = Neo4j::Node.new
+
+      node2 = Neo4j::Node.new
+      node2.should_not be_equal(node1)
+      node2.should_not == node1
+      node2.hash.should_not == node1
+    end
+
+  end
+
 end

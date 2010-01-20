@@ -7,13 +7,13 @@ module Neo4j
     # :api: private
     class DeclRelationshipDsl #:nodoc:
 
-      attr_reader :type, :cascade_delete_prop_name, :counter, :rel_id
+      attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id
       CASCADE_DELETE_PROP_NAMES = { :outgoing => :_cascade_delete_outgoing, :incoming => :_cascade_delete_incoming}
 
       def initialize(rel_id, params)
         @outgoing = true
         @rel_id = rel_id
-        @type = rel_id
+        @to_type = rel_id
         @namespace_type = rel_id
         @cascade_delete_prop_name = CASCADE_DELETE_PROP_NAMES[params[:cascade_delete]]
         @counter = params[:counter] == true
@@ -21,10 +21,6 @@ module Neo4j
 
       def counter?
         @counter
-      end
-
-      def clazz
-        @class
       end
 
       def cascade_delete?
@@ -40,7 +36,7 @@ module Neo4j
       end
 
       def namespace_type
-        @class.nil? ? @type.to_s : "#{@class.to_s}##{@type.to_s}"
+        @to_class.nil? ? @to_type.to_s : "#{@to_class.to_s}##{@to_type.to_s}"
       end
 
 
@@ -51,13 +47,13 @@ module Neo4j
 
       def to(*args)
         @outgoing = true
-        @class, @type = class_and_type_from_args(args)
+        @to_class, @to_type = class_and_type_from_args(args)
         self
       end
 
       def from(*args) #(clazz, type)
         @outgoing = false
-        @class, @type = class_and_type_from_args(args)
+        @to_class, @to_type = class_and_type_from_args(args)
         self
       end
 
