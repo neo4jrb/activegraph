@@ -24,6 +24,7 @@ It uses two powerful and mature Java libraries:
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
 * Issue Tracking - http://neo4j.lighthouseapp.com
 * Twitter - http://twitter.com/ronge
+* IRC -  #neo4j @ irc.freenode.net
 * API Documentation - http://neo4j.rubyforge.org/ (of the released version)
 * Source repo - git://github.com/andreasronge/neo4j.git
 * Mailing list - http://groups.google.com/group/neo4jrb (neo4jrb@googlegroups.com)
@@ -398,27 +399,27 @@ The Neo4j configuration is kept in the Neo4j::Config class:
 
 ==== Accessing the Java Neo4j API
 
-You can access the org.neo4j.api.core.EmbeddedNeo class by
+You can access the org.neo4j.kernel.EmbeddedGraphDatabase class by
 
   Neo4j.instance
 
-You can create an org.neo4j.api.core.Node object by using the Neo4j::Node.new method (!)
+You can create an org.neo4j.graphdb.Node object by using the Neo4j::Node.new method (!)
 
-  node = Neo4j::Node.new  # => an instance of org.neo4j.api.core.Node
+  node = Neo4j::Node.new  # => an instance of org.neo4j.graphdb.Node
 
-To load a specific node by its ID (see javadoc org.neo4j.api.core.Node.getId()), do
+To load a specific node by its ID (see javadoc org.neo4j.graphdb.Node.getId()), do
   
   node_id = node.neo_id
   ref_node = Neo4j.load_node(node_id)
 
-The neo_id method works both for the Neo4j::NodeMixin and for org.neo4j.api.core.Node java objects.
+The neo_id method works both for the Neo4j::NodeMixin and for org.neo4j.graphdb.Node java objects.
 
-You can create a relationship of type org.neo4j.api.core.Relationship by
+You can create a relationship of type org.neo4j.graphdb.Relationship by
 
   a = Neo4j::Node.new
   b = Neo4j::Node.new
   r = a.add_rel(:friends, b)
-  r.java_class # => class org.neo4j.impl.core.RelationshipProxy
+  r.java_class # => class org.neo4j.kernel.impl.core.RelationshipProxy
 
 === Lucene Integration
 
@@ -462,7 +463,7 @@ Example:
   node = Neo4j::Node.new
   node[:name] = 'foo'
 
-The Neo4j::Node.new method actually returns a Java object that implements the org.neo4j.api.core.Node interface.
+The Neo4j::Node.new method actually returns a Java object that implements the org.neo4j.graphdb.Node interface.
 That Java interface is extended with methods so it behaviors almost like using the your own Ruby Neo4j::NodeMixin class.
 
 === Create a Node
@@ -482,10 +483,10 @@ The node in the example above will be removed from the Neo database on the files
 
 ==== Neo4j::Node#del method
 
-Since one can both use the org.neo4j.api.core.Node directly or using the Neo4j::NodeMixin there might be a clash
+Since one can both use the org.neo4j.graphdb.Node directly or using the Neo4j::NodeMixin there might be a clash
 in method names.
 For example the method Neo4j::NodeMixin#del deletes the node and all its relationships.
-The org.neo4j.api.core.Node#delete (which is created by Neo4j::Node.new) will raise an exception if not all relationships are already deleted.
+The org.neo4j.graphdb.Node#delete (which is created by Neo4j::Node.new) will raise an exception if not all relationships are already deleted.
 
 
 === Node and Relationship Identity

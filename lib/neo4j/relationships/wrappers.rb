@@ -6,11 +6,11 @@
 module Neo4j
   module Relationships
 
-    # Wrapper for org.neo4j.api.core.ReturnableEvaluator
+    # Wrapper for org.neo4j.graphdb.ReturnableEvaluator
     #
     # :api: private
     class ReturnableEvaluator #:nodoc:
-      include org.neo4j.api.core.ReturnableEvaluator
+      include org.neo4j.graphdb.ReturnableEvaluator
 
       def initialize(proc, raw = false)
         @proc = proc
@@ -35,12 +35,12 @@ module Neo4j
     end
 
     
-    # Wrapper for the neo4j org.neo4j.api.core.StopEvalutor interface.
+    # Wrapper for the neo4j org.neo4j.graphdb.StopEvalutor interface.
     # Used in the Neo4j Traversers.
     #
     # :api: private
     class DepthStopEvaluator #:nodoc:
-      include org.neo4j.api.core.StopEvaluator
+      include org.neo4j.graphdb.StopEvaluator
 
       def initialize(depth)
         @depth = depth

@@ -19,7 +19,7 @@ module Neo4j
     at_exit do
       Neo4j.stop
     end
-    @neo = org.neo4j.api.core.EmbeddedNeo.new(Neo4j::Config[:storage_path])
+    @neo = org.neo4j.kernel.EmbeddedGraphDatabase.new(Neo4j::Config[:storage_path])
     @ref_node = Neo4j::Transaction.run do
       ReferenceNode.new(@neo.getReferenceNode())
     end
@@ -30,7 +30,7 @@ module Neo4j
     nil
   end
 
-  # Return the org.neo4j.api.core.EmbeddedNeo
+  # Return the org.neo4j.kernel.EmbeddedGraphDatabase
   #
   #
   def self.instance
@@ -83,7 +83,7 @@ module Neo4j
     else
       neo_node.wrapper
     end
-  rescue org.neo4j.api.core.NotFoundException
+  rescue org.neo4j.graphdb.NotFoundException
     nil
   end
 
@@ -105,7 +105,7 @@ module Neo4j
     else
       neo_rel.wrapper
     end
-  rescue org.neo4j.api.core.NotFoundException
+  rescue org.neo4j.graphdb.NotFoundException
     nil
   end
 
@@ -156,15 +156,15 @@ module Neo4j
 
 
   def self.number_of_nodes_in_use
-    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Node.java_class)
+    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.graphdb.Node.java_class)
   end
 
   def self.number_of_relationships_in_use
-    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.api.core.Relationship.java_class)
+    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.graphdb.Relationship.java_class)
   end
 
-  def self.number_of_properties_in_use
-    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.impl.nioneo.store.PropertyStore.java_class)
+  def self.number_of_properties_in_use                                                                       
+    instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.kernel.impl.nioneo.store.PropertyStore.java_class)
   end
 
 # Prints some info about the database

@@ -49,7 +49,7 @@ module Neo4j
     #
     # :api: private
     def connect(node, type = node.class.root_class)
-      rtype = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
+      rtype = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
       @_java_node.createRelationshipTo(node._java_node, rtype)
       nil
     end

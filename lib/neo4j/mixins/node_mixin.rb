@@ -3,7 +3,7 @@ module Neo4j
 
   # Represents a node in the Neo4j space.
   # 
-  # Is a wrapper around a Java Neo4j node (org.neo4j.api.core.Node)
+  # Is a wrapper around a Java Neo4j node (org.neo4j.graphdb.Node)
   # The following methods are delegated to the Java Neo4j Node:
   #   []=, [], property?, props, update, neo_id, rels, rel?, to_param
   #   rel, del, list?, list, lists, print, add_rel, outgoing, incoming,
@@ -53,7 +53,7 @@ module Neo4j
     #
     def initialize(*args)
       # was a neo java node provided ?
-      if args.length == 1 && args[0].kind_of?(org.neo4j.api.core.Node)
+      if args.length == 1 && args[0].kind_of?(org.neo4j.graphdb.Node)
         # yes, it was loaded from the database
         init_with_node(args[0])
       else
@@ -83,7 +83,7 @@ module Neo4j
       hash.each_pair{|k,v| self[k] = v}
     end
 
-    # Returns the org.neo4j.api.core.Node wrapped object
+    # Returns the org.neo4j.graphdb.Node wrapped object
     def _java_node
       @_java_node
     end
@@ -205,11 +205,11 @@ module Neo4j
     def _to_java_direction(dir) # :nodoc:
       case dir
         when :outgoing
-          org.neo4j.api.core.Direction::OUTGOING
+          org.neo4j.graphdb.Direction::OUTGOING
         when :incoming
-          org.neo4j.api.core.Direction::INCOMING
+          org.neo4j.graphdb.Direction::INCOMING
         when :both
-          org.neo4j.api.core.Direction::BOTH
+          org.neo4j.graphdb.Direction::BOTH
         else
           raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
       end

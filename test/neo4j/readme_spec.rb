@@ -304,25 +304,25 @@ describe "Readme Examples" do
     end
 
     it "Accessing the Java Neo4j API" do
-      Neo4j.instance.java_class.should == org.neo4j.api.core.EmbeddedNeo.java_class
-      Neo4j::Node.new.should be_kind_of(org.neo4j.api.core.Node)
+      Neo4j.instance.java_class.should == org.neo4j.kernel.EmbeddedGraphDatabase.java_class
+      Neo4j::Node.new.should be_kind_of(org.neo4j.graphdb.Node)
 
       a = Neo4j::Node.new
       b = Neo4j::Node.new
       r = a.add_rel(:friends, b)
-      r.should be_kind_of(org.neo4j.api.core.Relationship)
+      r.should be_kind_of(org.neo4j.graphdb.Relationship)
     end
 
     it "Node and Relationship Identity" do
       id = Neo4j::Node.new.neo_id
-      Neo4j.load_node(id).should be_kind_of(org.neo4j.api.core.Node)
+      Neo4j.load_node(id).should be_kind_of(org.neo4j.graphdb.Node)
 
       # And for relationships:
 
       rel = Neo4j::Node.new.add_rel(:a_rel_type, Neo4j::Node.new)
       id = rel.neo_id
       # Load the node
-      Neo4j.load_rel(id).should be_kind_of(org.neo4j.api.core.Relationship)
+      Neo4j.load_rel(id).should be_kind_of(org.neo4j.graphdb.Relationship)
     end
 
     it "Node Properties" do

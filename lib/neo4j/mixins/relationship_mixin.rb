@@ -11,11 +11,11 @@ module Neo4j
 
     def_delegators :@_java_node, :[]=, :[], :property?, :props, :update, :neo_id, :del, :start_node, :end_node, :other_node, :relationship_type, :wrapper
 
-    # Initialize the Relationship object with specified java org.neo4j.api.core.Relationship object
+    # Initialize the Relationship object with specified java org.neo4j.graphdb.Relationship object
     # Expects at least one parameter.
     # 
     # ==== Parameters
-    # param1<org.neo4j.api.core.Relationship>:: the internal java relationship object
+    # param1<org.neo4j.graphdb.Relationship>:: the internal java relationship object
     # 
     # :api: public
     def initialize(*args)

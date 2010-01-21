@@ -43,8 +43,9 @@ module Neo4j
         res
       end
 
+
       def placebo?(tx)
-        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeoImpl$PlaceboTransaction'
+        tx.java_object.java_type == 'org.neo4j.kernel.EmbeddedGraphDbImpl$PlaceboTransaction'
       end
 
       # Creates a transaction. If one is already running then a 'placebo' transaction will be created instead.

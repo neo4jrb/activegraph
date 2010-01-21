@@ -62,10 +62,10 @@ module Neo4j
       def swap_directions
         @types_and_dirs = @types_and_dirs.map do |item|
           case item
-          when org.neo4j.api.core.Direction::INCOMING
-            org.neo4j.api.core.Direction::OUTGOING
-          when org.neo4j.api.core.Direction::OUTGOING
-            org.neo4j.api.core.Direction::INCOMING
+          when org.neo4j.graphdb.Direction::INCOMING
+            org.neo4j.graphdb.Direction::OUTGOING
+          when org.neo4j.graphdb.Direction::OUTGOING
+            org.neo4j.graphdb.Direction::INCOMING
           else
             item
           end
@@ -84,7 +84,7 @@ module Neo4j
 
 
     class FindPathEvaluator
-      include org.neo4j.api.core.ReturnableEvaluator
+      include org.neo4j.graphdb.ReturnableEvaluator
 
       attr_accessor :traverser, :original_evaluator, :found_path
 

@@ -1,8 +1,8 @@
 module Neo4j
   module Relationships
 
-    # Wrapper for org.neo4j.api.core.TraversalPosition
-    # See Javadoc for org.neo4j.api.core.TraversalPosition
+    # Wrapper for org.neo4j.graphdb.TraversalPosition
+    # See Javadoc for org.neo4j.graphdb.TraversalPosition
     # It can be used as a parameter in traversals filter functions.
     #
     # :api: public

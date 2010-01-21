@@ -3,7 +3,7 @@ module Neo4j
 
   # TODO split up PropertyMixin
 
-  org.neo4j.impl.core.RelationshipProxy.class_eval do
+  org.neo4j.kernel.impl.core.RelationshipProxy.class_eval do
     include Neo4j::JavaPropertyMixin
 
     # Deletes this relationship.
@@ -44,7 +44,7 @@ module Neo4j
 
 
     # Returns the neo relationship type that this relationship is used in.
-    # (see java API org.neo4j.api.core.Relationship#getType  and org.neo4j.api.core.RelationshipType)
+    # (see java API org.neo4j.graphdb.Relationship#getType  and org.neo4j.graphdb.RelationshipType)
     #
     # ==== Returns
     # Symbol

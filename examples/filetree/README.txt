@@ -8,10 +8,10 @@ Here is the Java version:
 
   neoNode = node._java_node
   size = 0
-  child = org.neo4j.api.core.DynamicRelationshipType.withName 'child'
-  traverser = neoNode.traverse(org.neo4j.api.core.Traverser::Order::DEPTH_FIRST,
-                               org.neo4j.api.core.StopEvaluator::END_OF_GRAPH,
-                               org.neo4j.api.core.ReturnableEvaluator::ALL, child, org.neo4j.api.core.Direction::OUTGOING )
+  child = org.neo4j.graphdb.DynamicRelationshipType.withName 'child'
+  traverser = neoNode.traverse(org.neo4j.graphdb.Traverser::Order::DEPTH_FIRST,
+                               org.neo4j.graphdb.StopEvaluator::END_OF_GRAPH,
+                               org.neo4j.graphdb.ReturnableEvaluator::ALL, child, org.neo4j.graphdb.Direction::OUTGOING )
   while traverser.hasNext()
     node = traverser.next
     if node.hasProperty('size')

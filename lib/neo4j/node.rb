@@ -1,6 +1,6 @@
 module Neo4j
 
-  org.neo4j.impl.core.NodeProxy.class_eval do
+  org.neo4j.kernel.impl.core.NodeProxy.class_eval do
     include Neo4j::JavaPropertyMixin
     include Neo4j::JavaNodeMixin
     include Neo4j::JavaListMixin
@@ -8,7 +8,7 @@ module Neo4j
 
   class Node
     class << self
-      # Returns a org.neo4j.api.core.Node java object (!)
+      # Returns a org.neo4j.graphdb.Node java object (!)
       def new(*args)
         node = Neo4j.create_node
         args[0].each_pair{|k,v| node[k] = v} if args.length == 1 && args[0].respond_to?(:each_pair)

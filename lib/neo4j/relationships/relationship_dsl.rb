@@ -28,13 +28,13 @@ module Neo4j
       
       def outgoing(type = nil)
         @type = type
-        @direction = org.neo4j.api.core.Direction::OUTGOING
+        @direction = org.neo4j.graphdb.Direction::OUTGOING
         self
       end
 
       def incoming(type = nil)
         @type = type
-        @direction = org.neo4j.api.core.Direction::INCOMING
+        @direction = org.neo4j.graphdb.Direction::INCOMING
         self
       end
 
@@ -45,7 +45,7 @@ module Neo4j
 
       def both(type = nil)
         @type = type
-        @direction = org.neo4j.api.core.Direction::BOTH
+        @direction = org.neo4j.graphdb.Direction::BOTH
         self
       end
 
@@ -68,7 +68,7 @@ module Neo4j
       # :api: public
       def <<(other_node)
         source, target = @node, other_node
-        source, target = target, source if @direction == org.neo4j.api.core.Direction::INCOMING
+        source, target = target, source if @direction == org.neo4j.graphdb.Direction::INCOMING
         source.add_rel(@type, target)
         self
       end
@@ -106,7 +106,7 @@ module Neo4j
       def iterator
         # if type is nil then we traverse all relationship types of depth one
         return @node.getRelationships(@direction).iterator if @type.nil?
-        return @node.getRelationships(org.neo4j.api.core.DynamicRelationshipType.withName(@type.to_s), @direction).iterator unless @type.nil?
+        return @node.getRelationships(org.neo4j.graphdb.DynamicRelationshipType.withName(@type.to_s), @direction).iterator unless @type.nil?
       end
 
       def to_s

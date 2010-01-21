@@ -26,13 +26,13 @@ def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, files
     props.put('size', filesize)
     props.put('name', "#{parent_props[:name]}/f#{k}")
     file = batch_neo.createNode(props)
-    batch_neo.createRelationship( parent_props[:id], file, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+    batch_neo.createRelationship( parent_props[:id], file, org.neo4j.graphdb.DynamicRelationshipType.withName('child'), nil)
   end
   for k in 1..Integer(subfolders)
     props = java.util.HashMap.new
     props.put('name', "#{parent_props[:name]}/d#{k}")
     folder = batch_neo.createNode(props)
-    batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+    batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.graphdb.DynamicRelationshipType.withName('child'), nil)
     folder_props = {:name => props.get('name'), :id => folder}
     createBatchSubtree(batch_neo, folder_props, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
   end
@@ -90,10 +90,10 @@ end
 def calcSizeJava(node)
   neoNode = node._java_node
   size = 0
-  child = org.neo4j.api.core.DynamicRelationshipType.withName 'child'
-  traverser = neoNode.traverse(org.neo4j.api.core.Traverser::Order::DEPTH_FIRST,
-                               org.neo4j.api.core.StopEvaluator::END_OF_GRAPH,
-                               org.neo4j.api.core.ReturnableEvaluator::ALL, child, org.neo4j.api.core.Direction::OUTGOING )
+  child = org.neo4j.graphdb.DynamicRelationshipType.withName 'child'
+  traverser = neoNode.traverse(org.neo4j.graphdb.Traverser::Order::DEPTH_FIRST,
+                               org.neo4j.graphdb.StopEvaluator::END_OF_GRAPH,
+                               org.neo4j.graphdb.ReturnableEvaluator::ALL, child, org.neo4j.graphdb.Direction::OUTGOING )
   while traverser.hasNext()
     node = traverser.next
     if node.hasProperty('size')

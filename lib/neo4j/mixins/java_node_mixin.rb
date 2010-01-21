@@ -16,7 +16,7 @@ module Neo4j::JavaNodeMixin
   #
   # :api: public
   def rel? (rel_name, dir=:outgoing)
-    type = org.neo4j.api.core.DynamicRelationshipType.withName(rel_name.to_s) 
+    type = org.neo4j.graphdb.DynamicRelationshipType.withName(rel_name.to_s)
     java_dir = _to_java_direction(dir)
     hasRelationship(type, java_dir)
   end
@@ -52,10 +52,10 @@ module Neo4j::JavaNodeMixin
   #
   # ==== Returns
   # An object that mixins the Neo4j::RelationshipMixin representing the given relationship type or nil if there are no relationships.
-  # If there are more then one relationship it will raise an Exception (java exception of type org.neo4j.api.core.NotFoundException)
+  # If there are more then one relationship it will raise an Exception (java exception of type org.neo4j.graphdb.NotFoundException)
   #
   # ==== See Also
-  # * JavaDoc for http://api.neo4j.org/current/org/neo4j/api/core/Node.html#getSingleRelationship(org.neo4j.api.core.RelationshipType,%20org.neo4j.api.core.Direction)
+  # * JavaDoc for http://api.neo4j.org/current/org/neo4j/api/core/Node.html#getSingleRelationship(org.neo4j.graphdb.RelationshipType,%20org.neo4j.graphdb.Direction)
   # * Neo4j::RelationshipMixin
   #
   # ==== Example
@@ -65,7 +65,7 @@ module Neo4j::JavaNodeMixin
   # :api: public
   def rel(rel_name, dir=:outgoing, raw=false)
     java_dir = _to_java_direction(dir)
-    rel_type = org.neo4j.api.core.DynamicRelationshipType.withName(rel_name.to_s)
+    rel_type = org.neo4j.graphdb.DynamicRelationshipType.withName(rel_name.to_s)
     rel = getSingleRelationship(rel_type, java_dir)
     return nil if rel.nil?
     return rel.wrapper unless raw
@@ -92,7 +92,7 @@ module Neo4j::JavaNodeMixin
   # all creation of relationships uses this method
   # :api: private
   def add_rel (type, to, rel_clazz = nil) # :nodoc:
-    java_type = org.neo4j.api.core.DynamicRelationshipType.withName(type.to_s)
+    java_type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
     java_rel = createRelationshipTo(to._java_node, java_type)
     # check if we should create a wrapped Ruby Relationship class or use the raw java one.
     rel = (rel_clazz.nil?) ?  java_rel : rel_clazz.new(java_rel)
@@ -105,11 +105,11 @@ module Neo4j::JavaNodeMixin
   def _to_java_direction(dir) # :nodoc:
     case dir
       when :outgoing
-        org.neo4j.api.core.Direction::OUTGOING
+        org.neo4j.graphdb.Direction::OUTGOING
       when :incoming
-        org.neo4j.api.core.Direction::INCOMING
+        org.neo4j.graphdb.Direction::INCOMING
       when :both
-        org.neo4j.api.core.Direction::BOTH
+        org.neo4j.graphdb.Direction::BOTH
       else
         raise "Unknown parameter: '#{dir}', only accept :outgoing, :incoming or :both"
     end

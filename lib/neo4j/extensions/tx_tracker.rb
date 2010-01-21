@@ -19,7 +19,7 @@ module Neo4j
       uuid = Neo4j.create_uuid
       node[:uuid] = uuid # TODO should use a better UUID
       tx[:tracked_neo_id] = node.neo_id
-      tx[:tracked_classname] = node.class.to_s unless node.kind_of?(org.neo4j.api.core.Node)
+      tx[:tracked_classname] = node.class.to_s unless node.kind_of?(org.neo4j.graphdb.Node)
       tx[:created] = true
       tx[:uuid] = uuid
       tx_nodes << tx
@@ -29,7 +29,7 @@ module Neo4j
       tx = TxNode.new
       tx[:uuid] = node[:uuid]
       tx[:deleted] = true
-      tx[:tracked_classname] = node.class.to_s unless node.kind_of?(org.neo4j.api.core.Node)
+      tx[:tracked_classname] = node.class.to_s unless node.kind_of?(org.neo4j.graphdb.Node)
       tx_nodes << tx
     end
 

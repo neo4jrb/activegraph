@@ -20,12 +20,12 @@ describe Neo4j::Node do
   end
 
   describe "#new" do
-    it "returns an instance of org.neo4j.api.core.Node" do
+    it "returns an instance of org.neo4j.graphdb.Node" do
       Neo4j::Transaction.run do
         # when
         node = Neo4j::Node.new
         # then
-        node.should be_kind_of(org.neo4j.api.core.Node)
+        node.should be_kind_of(org.neo4j.graphdb.Node)
       end
     end
 
@@ -174,9 +174,9 @@ describe Neo4j::Node do
       @node.rels.outgoing(:does_not_exit).each { fail "should not exist"}
     end
 
-    it "should include (Enumerable#include) all org.neo4j.api.core.Relationship objects if there is no _classname property" do
-      rel1 = @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
-      rel2 = @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
+    it "should include (Enumerable#include) all org.neo4j.graphdb.Relationship objects if there is no _classname property" do
+      rel1 = @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.graphdb.DynamicRelationshipType.withName('foo'))
+      rel2 = @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.graphdb.DynamicRelationshipType.withName('foo'))
 
       [*@node.rels.outgoing(:foo)].should include(rel1, rel2)
       [*@node.rels.outgoing(:foo)].size.should == 2
@@ -184,8 +184,8 @@ describe Neo4j::Node do
 
 
     it ".first should return the first relationship" do
-      @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
-      @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.api.core.DynamicRelationshipType.withName('foo'))
+      @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.graphdb.DynamicRelationshipType.withName('foo'))
+      @node.createRelationshipTo(Neo4j::Node.new, org.neo4j.graphdb.DynamicRelationshipType.withName('foo'))
 
       # when
       actual = @node.rels.outgoing(:foo).first

@@ -44,8 +44,8 @@ describe Neo4j do
   end
 
   describe "#instance" do
-    it "returns an instance of org.neo4j.api.core.EmbeddedNeo" do
-      Neo4j.instance.should be_kind_of(org.neo4j.api.core.EmbeddedNeo)
+    it "returns an instance of org.neo4j.kernel.EmbeddedGraphDatabase" do
+      Neo4j.instance.should be_kind_of(org.neo4j.kernel.EmbeddedGraphDatabase)
     end
 
     it "should start neo if it was not already started" do
@@ -59,9 +59,9 @@ describe Neo4j do
   end
 
   describe "#create_node" do
-    it "should return a java object implementing interface org.neo4j.api.core.Node" do
+    it "should return a java object implementing interface org.neo4j.graphdb.Node" do
       Neo4j::Transaction.run do
-        Neo4j.create_node.should be_kind_of(org.neo4j.api.core.Node)
+        Neo4j.create_node.should be_kind_of(org.neo4j.graphdb.Node)
       end
     end
 

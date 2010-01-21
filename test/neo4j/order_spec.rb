@@ -110,7 +110,7 @@ describe "CustomerA,Order,Product" do
       c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
-      r.should be_kind_of(org.neo4j.api.core.Relationship)
+      r.should be_kind_of(org.neo4j.graphdb.Relationship)
 
     end
 

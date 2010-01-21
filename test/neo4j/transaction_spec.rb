@@ -16,13 +16,13 @@ end
 #  after(:all)  do stop  end
 #
 #  it "should not change properties" do
-#    neo = org.neo4j.api.core.EmbeddedNeo.new '/var/tmp/neo4jtest'
+#    neo = org.neo4j.kernel.EmbeddedGraphDatabase.new '/var/tmp/neo4jtest'
 #    tx1 = neo.begin_tx
 #    tx2 = neo.begin_tx
 #    puts "TX1 " + tx1.java_object.java_type
 #    puts "TX2 " + tx2.java_object.java_type
-#    tx1.java_object.java_type.should == 'org.neo4j.api.core.EmbeddedNeo$TransactionImpl'
-#    tx2.java_object.java_type.should == 'org.neo4j.api.core.EmbeddedNeo$PlaceboTransaction'
+#    tx1.java_object.java_type.should == 'org.neo4j.kernel.EmbeddedGraphDatabase$TransactionImpl'
+#    tx2.java_object.java_type.should == 'org.neo4j.kernel.EmbeddedGraphDatabase$PlaceboTransaction'
 #    tx2.finish
 #    tx1.finish
 #    neo.shutdown

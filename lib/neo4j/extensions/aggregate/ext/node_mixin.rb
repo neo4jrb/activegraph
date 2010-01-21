@@ -1,4 +1,4 @@
-org.neo4j.impl.core.NodeProxy.class_eval do
+org.neo4j.kernel.impl.core.NodeProxy.class_eval do
 
   # Returns an enumeration of aggregates that this nodes belongs to.
   #
