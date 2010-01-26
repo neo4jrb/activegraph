@@ -58,6 +58,7 @@ Rake::RDocTask.new do |rdoc|
   rdoc.options << '--webcvs=http://github.com/andreasronge/neo4j/tree/master/'
   
   rdoc.rdoc_files.include('README.rdoc', 'CHANGELOG', 'lib/**/*.rb')
+  rdoc.rdoc_files.exclude('lib/neo4j/extensions')
 end
 
 desc 'Upload documentation to RubyForge.'

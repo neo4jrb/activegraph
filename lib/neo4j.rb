@@ -14,12 +14,12 @@ require 'lucene'
 require 'neo4j/config'
 
 # mixins
-require 'neo4j/mixins/relationship_mixin'
-require 'neo4j/mixins/node_mixin'
+require 'neo4j/mixins/java_relationship_mixin'
 require 'neo4j/mixins/java_property_mixin'
 require 'neo4j/mixins/java_node_mixin'
 require 'neo4j/mixins/java_list_mixin'
-
+require 'neo4j/mixins/relationship_mixin'
+require 'neo4j/mixins/node_mixin'
 
 # relationships
 require 'neo4j/relationships/decl_relationship_dsl'

@@ -1,3 +1,26 @@
+org.neo4j.kernel.impl.core.RelationshipProxy.class_eval do
+  include Neo4j::JavaPropertyMixin
+
+    def end_node  # duplicated code, needed for node_aggregate_spec - JRuby bug ?
+      id = getEndNode.getId
+      Neo4j.load_node(id)
+    end
+
+    def start_node # duplicated code, needed for node_aggregate_spec - JRuby bug ?
+      id = getStartNode.getId
+      Neo4j.load_node(id)
+    end
+
+    def other_node(node) # duplicated code, needed for node_aggregate_spec - JRuby bug ?
+      neo_node = node
+      neo_node = node._java_node if node.respond_to?(:_java_node)
+      id = getOtherNode(neo_node).getId
+      Neo4j.load_node(id)
+    end
+  
+end
+
+
 org.neo4j.kernel.impl.core.NodeProxy.class_eval do
 
   # Returns an enumeration of aggregates that this nodes belongs to.

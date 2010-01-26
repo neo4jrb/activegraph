@@ -40,7 +40,6 @@ module Neo4j
 
   # Stops the current instance unless it is not started.
   #
-  # :api: public
   def self.stop
     if running?
       Neo4j::Transaction.finish # just in case
@@ -53,7 +52,6 @@ module Neo4j
   #
   # Returns true if neo4j is running
   #
-  # :api: public
   def self.running?
     !@neo.nil?
   end
@@ -75,7 +73,6 @@ module Neo4j
   # ==== Returns
   # The node object or nil if not found
   # 
-  # :api: public
   def self.load_node(node_id, raw = false)
     neo_node = @neo.getNodeById(node_id.to_i)
     if (raw)

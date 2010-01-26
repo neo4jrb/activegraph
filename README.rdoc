@@ -96,7 +96,7 @@ is encoded in the relationship types of the application.
 
 === Creating Nodes
 
-Example of creating a Neo4j node:
+Example of creating a Neo4j::Node
 
   require "rubygems"
   require 'neo4j'
@@ -123,7 +123,7 @@ Using the Neo4j::Transaction#new and Neo4j::Transaction#finish methods:
   # neo4j operations goes here
   Neo4j::Transaction.finish
 
-=== Setting Properties
+=== Properties
 
 Example of setting properties
 
@@ -134,18 +134,16 @@ Example of setting properties
   node[:age]  = 123
   node[:hungry] = false
   node[4] = 3.14
-
-=== Getting Properties
-Example of getting properties
-
-  node[:name] # => 'foo'
-
+  node[:age] #  => 123
 
 === Creating Relationships
-Example of creating a relationship
+Example of creating an outgoing Neo4j::Relationship from node1 to node2 of type friends
 
   node1 = Neo4j::Node.new
   node2 = Neo4j::Node.new
+  Neo4j::Relationship.new(:friends, node1, node2)
+
+  # which is same as
   node1.rels.outgoing(:friends) << node2
 
 === Accessing Relationships
@@ -329,7 +327,7 @@ Traversing with a specific depth (depth 1 is default)
   person.friends{ salary == 10000}.depth(3).each { ... }
 
 There is also a more powerful method for traversing several relationships at
-the same time - Neo4j::NodeMixin#traverse, see below.
+the same time - Neo4j::NodeMixin#traverse, Neo4j::JavaNodeMixin#outgoing and Neo4j::JavaNodeMixin:incoming see below.
 
 === Example on Relationships
 
