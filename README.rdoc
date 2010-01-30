@@ -725,6 +725,31 @@ Which is the same as
 
 Notice that we must provide the class name of the from method since we use the 'namespace' Order for the outgoing orders relationship.
 
+==== Accessing Declared Relationships
+
+Neo4j.rb generates methods for accessing declared relationship.
+Example, let say that class Product declares a relationship 'order' to class Order.
+
+  class Product
+    include Neo4j::NodeMixin
+    has_n(:orders).to(Order)
+  end
+
+To access the relationships between Product and Order without specifying the 'Order#' namespace
+one can use the '<rel type>_rels' method.
+
+Example:
+
+  product = Product.new
+  order = Order.new
+  product.orders << order
+  prod_order_relationship = product.orders_rels.first
+  prod_order_relationship.start_node # => product
+  prod_order_relationship.end_node   # => order  
+
+For a has_one relationship the '<rel type>_rel' method will be generated instead.
+This work for both incoming and outgoing nodes.
+
 === Relationship has_one
 
 Example of has_one: A person can have at most one Address
