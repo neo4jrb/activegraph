@@ -93,7 +93,7 @@ describe "Neo4j::NodeMixin#has_n " do
         right_rel = @node.rel("ExB#foo")
 
         @node.foo_rels.should_not include(wrong_rel)
-        @node.foo_rels.should include(right_rel)        
+        @node.foo_rels.should include(right_rel)
       end
 
       it "should include all the relationships of the declared has_n type" do
@@ -112,11 +112,11 @@ describe "Neo4j::NodeMixin#has_n " do
   end
 
   describe "(rel).from(class)" do
-    it "should generate outgoing relationships with prefix 'class#rel' from the other node" do
-      # given
+    before(:each) do
       ExB.has_n(:baaz)
       ExA.has_n(:baaz).from(ExB)
-
+    end
+    it "should generate method 'rel' for outgoing relationships with no prefix from the other node" do
       # when
       a = ExA.new
       b = ExB.new
@@ -125,10 +125,20 @@ describe "Neo4j::NodeMixin#has_n " do
       # then
       b.rel?('baaz').should be_true
     end
+
+    it "should generate method 'rel'_rels returning incoming relationships" do
+      # when
+      a = ExA.new
+      b = ExB.new
+      a.baaz << b # add relationship on ExB to ExA !
+      [*a.baaz_rels].size.should == 1
+      rel = b.rel(:baaz)
+      a.baaz_rels.should include(rel)
+    end
   end
 
   describe "(rel).from(class, rel2)" do
-    it "should generate relationships with prefix 'class#rel2' from the other node" do
+    it "should generate relationships with no prefix from the other node" do
       # given
       ExB.has_n(:foobar)
       ExA.has_n(:hoj).from(ExB, :foobar)
@@ -140,7 +150,48 @@ describe "Neo4j::NodeMixin#has_n " do
 
       # then
       b.rel?('foobar').should be_true
+    end
+  end
 
+  describe "(rel).from(class) AND class has namespaced its relationship" do
+    before(:each) do
+      ExB.has_n(:baaz).to(ExA) # Add namespace ExA to the relationship
+      ExA.has_n(:baaz).from(ExB)
+    end
+    it "should generate method 'rel' for outgoing relationships WITH prefix from the other node" do
+      # when
+      a = ExA.new
+      b = ExB.new
+      a.baaz << b # add relationship on ExB to ExA !
+
+      # then
+      b.rel?('ExA#baaz').should be_true
+    end
+
+    it "should generate method 'rel'_rels returning incoming relationships" do
+      # when
+      a = ExA.new
+      b = ExB.new
+      a.baaz << b # add relationship on ExB to ExA !
+      [*a.baaz_rels].size.should == 1
+      rel = b.rel('ExA#baaz')
+      a.baaz_rels.should include(rel)
+    end
+  end
+
+  describe "(rel).from(class, rel2) and class has namespaced its relationship" do
+    it "should generate relationships WITH prefix from the other node" do
+      # given
+      ExB.has_n(:foobar).to(ExA) # add namespace ExA
+      ExA.has_n(:hoj).from(ExB, :foobar)
+
+      # when
+      a = ExA.new
+      b = ExB.new
+      a.hoj << b # add relationship on ExB to ExA !
+
+      # then
+      b.rel?('ExA#foobar').should be_true
     end
   end
 

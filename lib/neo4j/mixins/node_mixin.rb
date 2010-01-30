@@ -484,6 +484,14 @@ module Neo4j
                         r = Relationships::HasN.new(self, dsl)
                         [*r][0]
                     end},  __FILE__, __LINE__)
+
+        module_eval(%Q{
+                    def #{rel_type}_rel
+                        dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                        r = Relationships::HasN.new(self, dsl).rels
+                        [*r][0]
+          end}, __FILE__, __LINE__)
+
         decl_relationships[rel_type.to_sym] = Relationships::DeclRelationshipDsl.new(rel_type, params)
       end
 
@@ -506,9 +514,9 @@ module Neo4j
                     end},  __FILE__, __LINE__)
 
         module_eval(%Q{
-          def #{rel_type}_rels
-            dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
-            Neo4j::Relationships::RelationshipDSL.new(self._java_node, dsl.direction, dsl.namespace_type)
+                    def #{rel_type}_rels
+                        dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                        Relationships::HasN.new(self, dsl).rels
           end}, __FILE__, __LINE__)
 
         decl_relationships[rel_type.to_sym] = Relationships::DeclRelationshipDsl.new(rel_type, params)

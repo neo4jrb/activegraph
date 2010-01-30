@@ -30,6 +30,10 @@ module Neo4j
       end
 
 
+      def rels
+        Neo4j::Relationships::RelationshipDSL.new(@node._java_node, (@outgoing)? :outgoing : :incoming, @dsl.namespace_type)
+      end
+
       # Sets the depth of the traversal.
       # Default is 1 if not specified.
       #
