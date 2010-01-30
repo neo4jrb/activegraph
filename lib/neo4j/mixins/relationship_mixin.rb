@@ -31,6 +31,7 @@ module Neo4j
     # :api: private
     def init_with_rel(node)
       @_java_node = node
+      node._wrapper=self
       node[:_classname] = self.class.to_s unless node.property?(:_classname)
       $NEO_LOGGER.debug {"loading relationship '#{self.class.to_s}' id #{@_java_node.getId()}"}
     end

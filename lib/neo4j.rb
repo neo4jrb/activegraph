@@ -14,6 +14,8 @@ require 'lucene'
 require 'neo4j/config'
 
 # mixins
+require 'neo4j/mixins/property_class_methods'
+require 'neo4j/mixins/rel_class_methods'
 require 'neo4j/mixins/java_relationship_mixin'
 require 'neo4j/mixins/java_property_mixin'
 require 'neo4j/mixins/java_node_mixin'

@@ -1,14 +1,6 @@
 module Neo4j
 
-  module NodeMixin
-    alias_method :ignore_incoming_cascade_delete_orig?, :ignore_incoming_cascade_delete?
-    def ignore_incoming_cascade_delete? (relationship)
-      # if it's an index node relationship then it should be allowed to cascade delete the node
-      ignore_incoming_cascade_delete_orig?(relationship) || relationship.other_node(self) == IndexNode.instance
-    end
-
-    module ClassMethods
-
+  module PropertyClassMethods
       # Traverse all nodes and update the lucene index.
       # Can be used for example if it is neccessarly to change the index on a class
       #
@@ -26,8 +18,15 @@ module Neo4j
         index_node = IndexNode.instance
         index_node.rels.outgoing(self)
       end
-
+  end
+  
+  module NodeMixin
+    alias_method :ignore_incoming_cascade_delete_orig?, :ignore_incoming_cascade_delete?
+    def ignore_incoming_cascade_delete? (relationship)
+      # if it's an index node relationship then it should be allowed to cascade delete the node
+      ignore_incoming_cascade_delete_orig?(relationship) || relationship.other_node(self) == IndexNode.instance
     end
+
   end
 
 
