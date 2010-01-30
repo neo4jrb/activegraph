@@ -221,7 +221,10 @@ module Neo4j
     #
 
 
-    # Adds class methods in the ClassMethods module
+    # Adds class methods from
+    #
+    # * Neo4j::RelClassMethods
+    # * Neo4j::PropertyClassMethods
     #
     def self.included(c) # :nodoc:
       c.instance_eval do

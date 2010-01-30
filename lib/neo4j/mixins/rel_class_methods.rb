@@ -141,70 +141,8 @@ module Neo4j::RelClassMethods
     decl_relationships[rel_type] = Neo4j::Relationships::DeclRelationshipDsl.new(rel_type, params)
   end
 
-
-  # Finds all nodes of this type (and ancestors of this type) having
-  # the specified property values.
-  # See the lucene module for more information how to do a query.
-  #
-  # ==== Example
-  #   MyNode.find(:name => 'foo', :company => 'bar')
-  #
-  # Or using a DSL query (experimental)
-  #   MyNode.find{(name == 'foo') & (company == 'bar')}
-  #
-  # ==== Returns
-  # Neo4j::SearchResult
-  #
-  # :api: public
-  def find(query=nil, &block)
-    self.indexer.find(query, block)
-  end
-
-
-  # Creates a new value object class (a Struct) representing this class.
-  #
-  # The struct will have the Ruby on Rails method: model_name and
-  # new_record? so that it can be used for restful routing.
-  #
-  # @api private
-  def create_value_class # :nodoc:
-    # the name of the class we want to create
-    name = "#{self.to_s}ValueObject".gsub("::", '_')
-
-    # remove previous class if exists
-    Neo4j.instance_eval do
-      remove_const name
-    end if Neo4j.const_defined?(name)
-
-    # get the properties we want in the new class
-    props = self.properties_info.keys.map{|k| ":#{k}"}.join(',')
-    Neo4j.module_eval %Q[class #{name} < Struct.new(#{props}); end]
-
-    # get reference to the new class
-    clazz = Neo4j.const_get(name)
-
-    # make it more Ruby on Rails friendly - try adding model_name method
-    if self.respond_to?(:model_name)
-      model = self.model_name.clone
-      (
-      class << clazz;
-        self;
-      end).instance_eval do
-        define_method(:model_name) {model}
-      end
-    end
-
-    # by calling the _update method we change the state of the struct
-    # so that new_record returns false - Ruby on Rails
-    clazz.instance_eval do
-      define_method(:_update) do |hash|
-        @_updated = true
-        hash.each_pair {|key, value| self[key.to_sym] = value if members.include?(key.to_s) }
-      end
-      define_method(:new_record?) { ! defined?(@_updated) }
-    end
-
-    clazz
+  def indexer # :nodoc:
+    Neo4j::Indexer.instance(root_class) # create an indexer that search for nodes (and not relationships)
   end
 
 end

@@ -48,7 +48,6 @@ module Neo4j
       #  Neo4j::Relationship.new :friend, node1, node2
       #
       def new(type, from_node, to_node)
-
         from_node.add_rel(type, to_node)
       end
     end

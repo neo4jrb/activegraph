@@ -8,8 +8,9 @@ module Neo4j
   class SearchResult
     include Enumerable
 
-    def initialize(index, query, &block)
+    def initialize(index, query, query_for_nodes = true, &block)
       @query = query
+      @query_for_nodes = query_for_nodes # if we are searching for nodes or relationships
       @block = block
       @index = index
       @sort_by_fields = []
@@ -46,10 +47,11 @@ module Neo4j
 
     def each
       hits.each do |doc|
-        node = Neo4j.load_node(doc[:id])
+
+        node_or_rel =  @query_for_nodes ? Neo4j.load_node(doc[:id]) : Neo4j.load_rel(doc[:id])
         # can happen that another thread has deleted it
-        raise "lucene found node #{id} but it does not exist in neo" if node.nil?
-        yield node
+        raise "lucene found node/rel #{id} but it does not exist in neo" if node_or_rel.nil?
+        yield node_or_rel
       end
     end
 

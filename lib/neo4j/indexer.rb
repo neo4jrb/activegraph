@@ -9,8 +9,9 @@ module Neo4j
     attr_reader :document_updaters, :index_id
     attr_reader :property_indexer # for testing purpose
     
-    def initialize(indexed_class)
+    def initialize(indexed_class, query_for_nodes)
       @relationship_indexers = {}
+      @query_for_nodes = query_for_nodes
       @property_indexer = PropertyIndexer.new
       @document_updaters = [@property_indexer]
       # the file name of the lucene index if kept on disk
@@ -19,9 +20,9 @@ module Neo4j
 
     # Returns the Indexer for the given Neo4j::NodeMixin class
     # :api:private
-    def self.instance(clazz)
+    def self.instance(clazz, query_for_nodes = true)
       @instances ||= {}
-      @instances[clazz.root_class] ||= Indexer.new(clazz.root_class)
+      @instances[clazz.root_class] ||= Indexer.new(clazz.root_class, query_for_nodes)
       @instances[clazz.root_class]
     end
 
@@ -40,7 +41,7 @@ module Neo4j
 
     # :api: private
     def find(query,block)
-      SearchResult.new lucene_index, query, &block
+      SearchResult.new lucene_index, query, @query_for_nodes, &block
     end
 
     # :api: private
