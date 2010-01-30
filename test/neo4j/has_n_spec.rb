@@ -5,7 +5,6 @@ require 'neo4j'
 require 'spec_helper'
 
 
-
 describe "Neo4j::NodeMixin#has_n " do
   class ExA
     include Neo4j::NodeMixin
@@ -29,20 +28,87 @@ describe "Neo4j::NodeMixin#has_n " do
 
 
   describe "(rel).to(class)" do
-
-    it "should generate outgoing relationships with prefix 'class#rel'" do
+    before (:each) do
       # given
       ExA.has_n(:foo).to(ExB)
-
-      # when
-      ex1 = ExA.new
-      ex1.foo << ExB.new
-
-      # then
-      ex1.rel?('ExB#foo').should be_true
+      @node = ExA.new
     end
 
+    it "should generate method 'rel' for outgoing nodes in relationships with prefix 'class#rel'" do
+      @node.should respond_to(:foo)
+    end
 
+    describe "generated method 'rel'" do
+      it "should have an '<<' operator for adding outgoing nodes of relationship 'class#rel'" do
+        # when
+        @node.foo << Neo4j::Node.new # it does not have to be of the specified type ExB - no validation is performed
+
+        # then
+        @node.rel?('ExB#foo').should be_true
+      end
+
+      it "should be of type Enumerable" do
+        @node.foo.should be_kind_of(Enumerable)
+      end
+
+      it "should contain all nodes that has been added using the << operator" do
+        a = Neo4j::Node.new
+        b = Neo4j::Node.new
+        @node.foo << a << b
+
+        # then
+        @node.foo.should include(a, b)
+      end
+    end
+
+    it "should generate method 'rel'_rels" do
+      # then
+      @node.should respond_to(:foo_rels)
+    end
+
+    describe "generated method 'rel'_rels" do
+      it "should be of type Enumerable" do
+        @node.foo_rels.should be_kind_of(Enumerable)
+      end
+
+      it "should return the relationship between the nodes" do
+        a = Neo4j::Node.new
+        @node.foo << a
+
+        # then
+        [*@node.foo_rels].size.should == 1
+        rel = @node.foo_rels.first
+        rel.start_node.should == @node
+        rel.end_node.should == a
+      end
+
+      it "should only returns relationships to nodes of the correct relationship type" do
+        a = Neo4j::Node.new
+        @node.foo << a
+        @node.rels.outgoing(:baaz) << Neo4j::Node.new # make sure this relationship is not returned
+
+        # then
+        [*@node.foo_rels].size.should == 1
+        wrong_rel = @node.rel(:baaz)
+        right_rel = @node.rel("ExB#foo")
+
+        @node.foo_rels.should_not include(wrong_rel)
+        @node.foo_rels.should include(right_rel)        
+      end
+
+      it "should include all the relationships of the declared has_n type" do
+        a = Neo4j::Node.new
+        b = Neo4j::Node.new
+        c = Neo4j::Node.new
+        @node.foo << a << b << c
+        r_a = a.rel("ExB#foo", :incoming)
+        r_b = a.rel("ExB#foo", :incoming)
+        r_c = a.rel("ExB#foo", :incoming)
+
+        # then
+        @node.foo_rels.should include(r_a, r_b, r_c)
+      end
+    end
   end
 
   describe "(rel).from(class)" do
@@ -58,7 +124,7 @@ describe "Neo4j::NodeMixin#has_n " do
 
       # then
       b.rel?('baaz').should be_true
-   end
+    end
   end
 
   describe "(rel).from(class, rel2)" do
@@ -85,7 +151,7 @@ describe "Neo4j::NodeMixin#has_n " do
   describe '<< operator' do
 
     before(:all) do
-      undefine_class :TestNode  # make sure it is not already defined
+      undefine_class :TestNode # make sure it is not already defined
 
       class TestNode
         include Neo4j::NodeMixin
@@ -143,7 +209,7 @@ describe "Neo4j::NodeMixin#has_n " do
 
 
     it "should be allowed in subclasses" do
-      undefine_class :SubNode  # make sure it is not already defined
+      undefine_class :SubNode # make sure it is not already defined
       class SubNode < TestNode;
       end
       sub = SubNode.new

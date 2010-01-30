@@ -40,6 +40,10 @@ module Neo4j
       end
 
 
+      def direction
+        (outgoing?)? :outgoing : :incoming
+      end
+
       def outgoing?
         @outgoing
       end

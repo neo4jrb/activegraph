@@ -80,7 +80,7 @@ module Neo4j
     end
 
     def init_with_hash(hash)
-      hash.each_pair{|k,v| self[k] = v}
+      hash.each_pair{|k, v| self[k] = v}
     end
 
     # Returns the org.neo4j.graphdb.Node wrapped object
@@ -132,7 +132,7 @@ module Neo4j
     def equal?(o)
       eql?(o)
     end
-    
+
     def eql?(o)
       o.kind_of?(NodeMixin) && o._java_node == @_java_node
     end
@@ -454,7 +454,7 @@ module Neo4j
           clazz = dsl.to_class || node.class
           namespace_type = clazz.decl_relationships[dsl.to_type].namespace_type
         end
-        
+
         # add index on the trigger class and connect it to the updater_clazz
         # (a trigger may cause an update of the index using the Indexer specified on the updater class)
         trigger_clazz.indexer.add_index_in_relationship_on_property(updater_clazz, rel_name, rel_type, prop, namespace_type.to_sym)
@@ -504,6 +504,13 @@ module Neo4j
                         dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
                         Relationships::HasN.new(self, dsl, &block)
                     end},  __FILE__, __LINE__)
+
+        module_eval(%Q{
+          def #{rel_type}_rels
+            dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+            Neo4j::Relationships::RelationshipDSL.new(self._java_node, dsl.direction, dsl.namespace_type)
+          end}, __FILE__, __LINE__)
+
         decl_relationships[rel_type.to_sym] = Relationships::DeclRelationshipDsl.new(rel_type, params)
       end
 

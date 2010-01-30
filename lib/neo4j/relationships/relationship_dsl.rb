@@ -7,16 +7,18 @@ module Neo4j
       include Enumerable
       attr_reader :node
 
-      def initialize(node, direction = :outgoing)
-        @raw = false
+      def initialize(node, direction = :outgoing, type = nil)
+        @raw  = false
+        @type = type
         @node = node
+
         case direction
           when :outgoing
-            outgoing
+            outgoing(type)
           when :incoming
-            incoming
+            incoming(type)
           when :both
-            both
+            both(type)
         end
       end
 
