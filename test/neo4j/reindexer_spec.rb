@@ -79,6 +79,20 @@ describe "Reindexer (NodeMixin#all)" do
     [*TestNode.all.nodes].should include(t2)
   end
 
+  it "should return wrapped Ruby object and not native Neo4j Java Nodes" do
+    class TestNode
+      include Neo4j::NodeMixin
+    end
+
+    t1 = TestNode.new
+
+    # when
+    x = [*TestNode.all.nodes][0]
+    puts "X=#{x} inspect: #{x.props.inspect}"
+    x.should be_kind_of(TestNode)
+  end
+
+
   it "should create a referense from the reference node root" do
     class TestNode5
       include Neo4j::NodeMixin

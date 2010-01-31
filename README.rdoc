@@ -17,7 +17,7 @@ It uses two powerful and mature Java libraries:
 * Lucene (http://lucene.apache.org/java/docs/index.html) for querying and indexing.
 
 === Status
-* There are over 400 RSpecs.
+* There are over 500 RSpecs.
 * Has been tested with rails applications, used Neo4j.rb instead of ActiveRecord
 
 === Project information
