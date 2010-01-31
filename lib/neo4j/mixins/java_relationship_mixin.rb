@@ -26,11 +26,7 @@ module Neo4j::JavaRelationshipMixin
   # Returns the start node of this relationship
   def start_node
     id = getStartNode.getId
-    node = Neo4j.load_node(id)
-    puts "--LOADED NODE #{node.inspect}"
-    node
-#
-#    Neo4j.load_node(id)
+    Neo4j.load_node(id)
   end
 
   # A convenience operation that, given a node that is attached to this relationship, returns the other node.

@@ -3,6 +3,41 @@ module Neo4j
   org.neo4j.kernel.impl.core.RelationshipProxy.class_eval do
     include Neo4j::JavaPropertyMixin
     include Neo4j::JavaRelationshipMixin
+
+    # TODO DUPLICATED METHODS - end_node, start_node, other_node
+    # Why do I need to declare it here as well as in Neo4j::JavaRelationshipMixin ? JRuby Bug ?
+    # Maybe because we are overriding the getStartNode and getEndNode methods defined on the java object
+    # with start_node and end_node ?
+
+    # Returns the end node of this relationship
+    def end_node
+      id = getEndNode.getId
+      Neo4j.load_node(id)
+    end
+
+    # Returns the start node of this relationship
+    def start_node
+      id = getStartNode.getId
+      Neo4j.load_node(id)
+    end
+
+    # A convenience operation that, given a node that is attached to this relationship, returns the other node.
+    # For example if node is a start node, the end node will be returned, and vice versa.
+    # This is a very convenient operation when you're manually traversing the node space by invoking one of the #rels operations on node.
+    #
+    # This operation will throw a runtime exception if node is neither this relationship's start node nor its end node.
+    #
+    # ==== Example
+    # For example, to get the node "at the other end" of a relationship, use the following:
+    #   Node endNode = node.rel(:some_rel_type).other_node(node)
+    #
+    def other_node(node)
+      neo_node = node
+      neo_node = node._java_node if node.respond_to?(:_java_node)
+      id = getOtherNode(neo_node).getId
+      Neo4j.load_node(id)
+    end
+
   end
 
   #
@@ -29,6 +64,8 @@ module Neo4j
   #
   # Furthermore, Neo4j guarantees that a relationship is never "hanging freely,"
   #  i.e. start_node, end_node and other_node are guaranteed to always return valid, non-null nodes.
+  #
+  # See also the Neo4j::RelationshipMixin if you want to wrap a relationship with your own Ruby class.
   #
   class Relationship
     class << self

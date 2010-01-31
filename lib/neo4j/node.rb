@@ -16,6 +16,8 @@ module Neo4j
   # * Neo4j::JavaNodeMixin (operations that deal with properties
   # * Neo4j::JavaListMixin (operations that deals with list/timeline relationships)
   #
+  # See also the Neo4j::NodeMixin if you want to wrap a node with your own Ruby class.
+  #
   class Node
     class << self
       # Returns a org.neo4j.graphdb.Node java object (!)

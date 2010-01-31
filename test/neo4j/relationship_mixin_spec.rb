@@ -22,7 +22,7 @@ describe Neo4j::RelationshipMixin do
     @node_a = Neo4j::Node.new
     @node_b = Neo4j::Node.new
   end
-  
+
   after(:each) do
     Neo4j::Transaction.new
     stop
@@ -51,5 +51,23 @@ describe Neo4j::RelationshipMixin do
     res = MyRel.find(:foo => 'hello')
     res.size.should == 1
     res[0].should == rel
+  end
+
+  describe "#end_node and #start_node" do
+    before(:all) do
+      class MyNodeQ
+        include Neo4j::NodeMixin
+        property :name
+      end
+    end
+    it "should return the Ruby wrapped Neo4j node" do
+      node_end = MyNodeQ.new :name => 'jimmy'
+      node_start = Neo4j::Node.new :name => 'james'
+      rel = MyRel.new(:friends, node_start, node_end)
+
+      rel.end_node.should be_kind_of(MyNodeQ)
+      rel.end_node.name.should == 'jimmy'
+      rel.start_node[:name].should == 'james'
+    end
   end
 end
