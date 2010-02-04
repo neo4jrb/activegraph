@@ -95,8 +95,6 @@ module Neo4j
       # ==== Returns
       # The value of the evaluated provided block
       #
-      # :api: public
-      #
       def run # :yield: block of code to run inside a transaction
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
@@ -118,7 +116,6 @@ module Neo4j
 
       # Returns the current running transaction or nil
       #
-      # :api: public
       def current
         Thread.current[:transaction]
       end
@@ -126,7 +123,6 @@ module Neo4j
 
       # Returns true if there is a transaction for the current thread
       #
-      # :api: public
       def running?
         self.current != nil # && self.current.neo_tx != nil
       end
@@ -134,7 +130,6 @@ module Neo4j
 
       # Returns true if the transaction has been marked for failure/rollback
       #
-      # :api: public
       def failure?
         current.failure?
       end
@@ -143,15 +138,12 @@ module Neo4j
       #
       # See Neo4j::Transaction#failure
       #
-      # :api: public
       def failure
         current.failure if running?
       end
 
 
       # Finish the current transaction if it is running
-      #
-      # :api: public
       def finish
         current.finish if running?
       end
@@ -179,8 +171,6 @@ module Neo4j
 
 
     # Returns true if the transaction will rollback
-    #
-    # :api: public
     def failure?
       @failure == true
     end
@@ -190,15 +180,13 @@ module Neo4j
       false
     end
 
-    def create_placebo_tx_if_not_already_exists
+    def create_placebo_tx_if_not_already_exists # :nodoc:
       @placebo ||= PlaceboTransaction.new(self)
     end
 
 
     # Marks this transaction as successful, which means that it will be commited 
     # upon invocation of finish() unless failure()  has or will be invoked before then.
-    # 
-    # :api: public
     def success
       raise NotInTransactionError.new unless Transaction.running?
       $NEO_LOGGER.info{"success #{self.to_s}"}
@@ -209,7 +197,6 @@ module Neo4j
     # Commits or marks this transaction for rollback, depending on whether
     # success() or failure() has been previously invoked.
     #
-    # :api: public
     def finish
       raise NotInTransactionError.new unless Transaction.running?
       Neo4j.event_handler.tx_finished(self) unless failure?

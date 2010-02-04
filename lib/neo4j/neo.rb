@@ -14,7 +14,7 @@ module Neo4j
   # Nil
   #
   # :api: public
-  def self.start
+  def self.start(neo_instance=nil)
     return if running?
     at_exit do
       Neo4j.stop
@@ -72,7 +72,6 @@ module Neo4j
   #
   # ==== Returns
   # The node object or nil if not found
-  # 
   def self.load_node(node_id, raw = false)
     neo_node = @neo.getNodeById(node_id.to_i)
     if (raw)
@@ -94,7 +93,6 @@ module Neo4j
   # ==== Returns
   # The node object or nil if not found
   #
-  # :api: public
   def self.load_rel(rel_id, raw = false)
     neo_rel = @neo.getRelationshipById(rel_id.to_i)
     if (raw)
@@ -106,47 +104,44 @@ module Neo4j
     nil
   end
 
-# Returns all nodes in the node space.
-# Expects a block that will be yield.
-#
-# ==== Parameters
-# raw<true|false(default)> :: if the raw Java node object should be returned or the Ruby wrapped node. 
-#
-# ==== Example
-#
-#   Neo4j.all_nodes{|node| puts "Node id ${node.neo_id"}
-#
-# :api: public
+  # Returns all nodes in the node space.
+  # Expects a block that will be yield.
+  #
+  # ==== Parameters
+  # raw<true|false(default)> :: if the raw Java node object should be returned or the Ruby wrapped node.
+  #
+  # ==== Example
+  #
+  #   Neo4j.all_nodes{|node| puts "Node id ${node.neo_id"}
+  #
   def self.all_nodes(raw = false)
     iter = instance.all_nodes.iterator
     while (iter.hasNext)
       id = iter.next.neo_id
-      yield self.load_node(id, raw) 
+      yield self.load_node(id, raw)
     end
   end
 
-# Returns the reference node, which is a "starting point" in the node space.
-#
-# Usually, a client attaches relationships to this node that leads into various parts of the node space.
-# For more information about common node space organizational patterns, see the design guide at http://neo4j.org/doc.
-#
-# ==== Returns
-# The the ReferenceNode
-#
-# :api: public
+  # Returns the reference node, which is a "starting point" in the node space.
+  #
+  # Usually, a client attaches relationships to this node that leads into various parts of the node space.
+  # For more information about common node space organizational patterns, see the design guide at http://neo4j.org/doc.
+  #
+  # ==== Returns
+  # The the Neo4j::ReferenceNode
+  #
   def self.ref_node
     @ref_node
   end
 
 
-# Returns an event handler.
-# This event handler can be used for listen to event such as when the Neo4j is started/stopped or
-# when a node is created/deleted, a property/relationship is changed.
-#
-# ==== Returns
-# a Neo4j::EventHandler instance
-#
-# :api: public
+  # Returns an event handler.
+  # This event handler can be used for listen to event such as when the Neo4j is started/stopped or
+  # when a node is created/deleted, a property/relationship is changed.
+  #
+  # ==== Returns
+  # a Neo4j::EventHandler instance
+  #
   def self.event_handler
     @event_handler ||= EventHandler.new
   end
@@ -160,11 +155,11 @@ module Neo4j
     instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.graphdb.Relationship.java_class)
   end
 
-  def self.number_of_properties_in_use                                                                       
+  def self.number_of_properties_in_use
     instance.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(org.neo4j.kernel.impl.nioneo.store.PropertyStore.java_class)
   end
 
-# Prints some info about the database
+  # Prints some info about the database
   def self.info
     puts "Neo4j version:                  #{Neo4j::VERSION}"
     puts "Neo4j db running                #{self.running?}"

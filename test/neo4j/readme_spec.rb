@@ -216,7 +216,7 @@ describe "Readme Examples" do
       @person.friends.should include(person2)
 
       person3.del
-      @person.rels[person2].del
+      @person.friends_rels.first.del
 
       @person.friends.should_not include(person2)
 

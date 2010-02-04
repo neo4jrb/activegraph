@@ -3,14 +3,21 @@ module Neo4j
 
   # Represents a node in the Neo4j space.
   # 
-  # Is a wrapper around a Java Neo4j node (org.neo4j.graphdb.Node)
-  # The following methods are delegated to the Java Neo4j Node:
+  # Is a wrapper around a Java Neo4j::Node (org.neo4j.graphdb.Node)
+  # The following methods are delegated to the Java Neo4j::Node
   #   []=, [], property?, props, update, neo_id, rels, rel?, to_param
   #   rel, del, list?, list, lists, print, add_rel, outgoing, incoming,
   #   next, prev, next=, prev=, head
   #
+  # Those methods are defined in included mixins
+  # This mixin also include the class method in the
   #
-  # Those methods are defined in the mixins Neo4j::JavaPropertyMixin, Neo4j::JavaNodeMixin, Neo4j::JavaListMixin.
+  # === Included Mixins
+  # * Neo4j::JavaPropertyMixin - instance methods for properties
+  # * Neo4j::JavaNodeMixin - instance methods
+  # * Neo4j::JavaListMixin - instance methods for list methods
+  # * Neo4j::RelClassMethods - class methods for generating relationship accessors
+  # * Neo4j::PropertyClassMethods - class methods for generating property accessors
   #
   module NodeMixin
     extend Forwardable
@@ -36,7 +43,8 @@ module Neo4j
     # If you want to provide your own initialize method you should instead implement the
     # method init_node method.
     #
-    # Example:
+    # === Example
+    #
     #   class MyNode
     #     include Neo4j::NodeMixin
     #
@@ -47,6 +55,8 @@ module Neo4j
     #   end
     #
     #   node = MyNode('jimmy', 23)
+    #   # or also possible
+    #   node = MyNode :name => 'jimmy', :age => 12
     #
     # The init_node is only called when the node is constructed the first, unlike te initialize method which is used both for
     # loading the node from the Neo4j database and creating the Ruby object.
@@ -73,7 +83,6 @@ module Neo4j
 
     # Inits this node with the specified java neo node
     #
-    # :api: private
     def init_with_node(java_node) # :nodoc:
       @_java_node = java_node
       java_node._wrapper=self
@@ -90,7 +99,6 @@ module Neo4j
 
     # Inits when no neo java node exists. Must create a new neo java node first.
     #
-    # :api: private
     def init_without_node # :nodoc:
       @_java_node = Neo4j.create_node
       @_java_node._wrapper = self
@@ -117,7 +125,6 @@ module Neo4j
     # ==== Returns
     # a value object struct
     #
-    # :api: public
     def value_object
       vo = self.class.value_object.new
       vo._update(props)
@@ -163,7 +170,6 @@ module Neo4j
     # This method will be automatically called when needed
     # (a property changed or a relationship was created/deleted)
     #
-    # @api private
     def update_index # :nodoc:
       self.class.indexer.index(self)
     end
@@ -175,18 +181,14 @@ module Neo4j
     # Returns a Neo4j::Relationships::NodeTraverser object for traversing nodes from and to this node.
     # The Neo4j::Relationships::NodeTraverser is an Enumerable that returns Neo4j::NodeMixin objects.
     #
-    # ==== See Also
-    # Neo4j::Relationships::NodeTraverser
-    #
     # ==== Example
     #
     #   person_node.traverse.outgoing(:friends).each { ... }
-    #   person_node.traverse.outgoing(:friends).raw(true).each { }
+    #   person_node.traverse.outgoing(:friends).raw.each { }
     #
     # The raw false parameter means that the ruby wrapper object will not be loaded, instead the raw Java Neo4j object will be used,
     # it might improve the performance.
     #
-    # :api: public
     def traverse(*args)
       if args.empty?
         Neo4j::Relationships::NodeTraverser.new(self)
@@ -201,7 +203,6 @@ module Neo4j
     # Private methods
     #
 
-    # :api: private
     def _to_java_direction(dir) # :nodoc:
       case dir
         when :outgoing

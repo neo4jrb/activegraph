@@ -51,8 +51,8 @@ This page contains the following information:
 * Three Minute Tutorial
 * Ten Minute Tutorial
 * Neo4j API Documentation
-* Extension: REST (see Neo4j::RestMixin)
-* Extension: find_path
+* Extensions: REST (see Neo4j::RestMixin) and find_path
+* Performance issues
 * Ruby on Rails with Neo4j.rb
 * Lucene API Documentation
 
@@ -250,7 +250,7 @@ There are three ways of finding/querying nodes in Neo4j:
   3. using the unique neo4j id (Neo4j::NodeMixin#neo_id).
 
 When doing a traversal one starts from a node and traverses one or more relationships (one or more levels deep).
-This start node can be either the reference node which is always found (Neo4j.ref_node) or by finding a start
+This start node can be either the reference node which is always found (Neo4j#ref_node) or by finding a start
 node from a Lucene query.
 
 === Lucene Queries
@@ -284,6 +284,11 @@ Example of using the search result.
 
 === Creating a Relationships
 
+Since we declared a relationship in the example above with <tt>has_n :friends</tt> (see Neo4j::RelClassMethods#has_n) we
+can use the generated methods <tt>Person#friends</tt> and <tt>Person#friends_rels</tt>
+The <tt>friends_rels</tt> method is used to access relationships and the <tt>Person#friends</tt>
+method for accessing nodes.
+
 Adding a relationship between two nodes:
 
   person2 = Person.new
@@ -301,7 +306,7 @@ Example
 
 To delete the relationship between person and person2:
 
-  person.rels[person2].del
+  person.friends_rels.first.del
 
 If a node is deleted then all its relationship will also be deleted
 Deleting a node is performed by using the delete method:
@@ -601,13 +606,19 @@ Example
 Neo relationships are asymmetrical. That means that if A has a relationship to B
 then it may not be true that B has a relationship to A.
 
-Relationships can be declared by using the 'has_n', 'has_one' or 'has_list'
-Neo4j::NodeMixin class methods.
+Relationships can be declared by using 'has_n', 'has_one' or 'has_list' Neo4j::RelClassMethods methods (included in the Neo4j::NodeMixin).
+ 
+This methods generates accessor methods for relationships.
+By using those accessor methods we do no longer need to know which direction to navigate in the relationship.
+There are accessor methods for both relationships and nodes.
+
+The 'has_n', 'has_one' or 'has_list' Neo4j::RelClassMethods methods returns a Neo4j::Relationships::DeclRelationshipDsl.
 
 === has_n
 
-The has_n Neo4j::NodeMixin class method creates a new instance method that can
+The Neo4j::NodeMixin#has_n class method (see Neo4j::RelClassMethods#has_n) creates a new instance method that can
 be used for both traversing and adding new objects to a specific relationship type.
+The has_n method returns a DSL object Neo4j::Relationships::DeclRelationshipDsl 
 
 For example, let say that Person can have a relationship to any other node class with the type 'friends':
 
@@ -752,7 +763,7 @@ This work for both incoming and outgoing nodes.
 
 === Relationship has_one
 
-Example of has_one: A person can have at most one Address
+Example: A person can have at most one Address
 
       class Address; end
 
@@ -784,6 +795,8 @@ Or from the incoming ''address'' relationship
       a.people << Person.new
       a.people.first.address # => a
 
+For more documentation see the Neo4j::RelClassMethods#has_one.
+
 === Relationship has_list
 The has_n relationship will not maintain the order of when items are inserted to the relationship.
 If order should be preserved then use the has_list class method instead.
@@ -812,6 +825,8 @@ Example
   company = Company.new
   company.employees << employee1 << employee2
   company.employees.size # => 2
+
+For more documentation see the Neo4j::RelClassMethods#has_list.
 
 ==== Deleted List Items
 
@@ -911,7 +926,7 @@ To return nodes (just like the relationships method)
 
 
 The reindexer extension that is used in the example above will for each created node create a relationship
-from the index node (Neo4j.ref_node.relationships.outgoing(:index_node)) to that new node.
+from the index node (Neo4j#ref_node.relationships.outgoing(:index_node)) to that new node.
 The all method use these relationships in order to return nodes of a certain class.
 The update_index method also uses this all method in order to update index for all nodes of a specific class.
 
@@ -1425,14 +1440,20 @@ Example:
 This node can have a relationship to the index node (Neo4j::IndexNode), which has relationships to all created nodes. 
 You can add relationships from this node to your nodes.
 
-=== Performance Issues
+== Performance Issues
 
 It is recommended to wrap several Neo4j operations including read operations
 in a singe transaction if possible for better performance.
 Updating a Lucene index can be slow. A solution to this is to keep the index in memory instead of on disk.
 
-I'm currently looking at how to scale neo4j.rb by a simple master-slave cluster by
-using REST, see the REST extension below.
+Using raw java nodes (Neo4j::Node) and relationship (Neo4j::Relationship) will also increase performance.
+Here is an example how to traverse only using Java objects (instead of Ruby wrappers):
+
+ iter = folder.outgoing(:child_folders).raw(true).depth(:all).iterator
+ iter.hasNext()
+
+The example above gives you access to the raw Java iterator class  
+
 
 == Extensions: Replication
 

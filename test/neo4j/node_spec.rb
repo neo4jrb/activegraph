@@ -206,14 +206,14 @@ describe Neo4j::Node do
     after(:each) { Neo4j::Transaction.finish}
 
     it "should return an map containing only the key 'id' if there are no properties" do
-      @node.props.keys.should include('id')
+      @node.props.keys.should include('_neo_id')
       @node.props.size.should == 1
     end
 
     it "should return a map of properties + the id of the node" do
       @node[:foo] = 123
       @node[:bar] = "hej"
-      @node.props.keys.should include('id', 'foo', 'bar')
+      @node.props.keys.should include('_neo_id', 'foo', 'bar')
       @node.props.size.should == 3
       @node.props['foo'].should == 123
       @node.props['bar'].should == "hej"

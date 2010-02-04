@@ -1,8 +1,3 @@
-#
-# This files contains common private classes that implements various Neo4j java interfaces.
-# This classes are only used inside this Relationships module
-#
-
 module Neo4j
   module Relationships
 

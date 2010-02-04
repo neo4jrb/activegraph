@@ -10,14 +10,23 @@ module Neo4j::RelClassMethods
 
 
   # Specifies a relationship between two node classes.
+  # Generates assignment and accessor methods for the given relationship
   #
   # ==== Example
-  #   class Order
-  #      include Neo4j::NodeMixin
-  #      has_one(:customer).to(Customer)
+  #
+  #   class FileNode
+  #      include Ne4j::NodeMixin
+  #      has_one(:folder)
   #   end
   #
-  # :api: public
+  #   file = FileNode.new
+  #   file.folder = Neo4j::Node.new
+  #   file.folder # => the node above
+  #
+  # ==== Returns
+  #
+  # Neo4j::Relationships::DeclRelationshipDsl
+  #
   def has_one(rel_type, params = {})
     clazz = self
     module_eval(%Q{def #{rel_type}=(value)
@@ -45,14 +54,23 @@ module Neo4j::RelClassMethods
 
 
   # Specifies a relationship between two node classes.
+  # Generates assignment and accessor methods for the given relationship.
   #
   # ==== Example
-  #   class Order
-  #      include Neo4j::NodeMixin
-  #      has_n(:order_lines).to(Product).relationship(OrderLine)
+  #
+  #   class FolderNode
+  #      include Ne4j::NodeMixin
+  #      has_n(:files)
   #   end
   #
-  # :api: public
+  #   folder = FolderNode.new
+  #   folder.files << Neo4j::Node.new << Neo4j::Node.new
+  #   folder.files.inject {...}
+  #
+  # ==== Returns
+  #
+  # Neo4j::Relationships::DeclRelationshipDsl
+  #
   def has_n(rel_type, params = {})
     clazz = self
     module_eval(%Q{
@@ -75,7 +93,7 @@ module Neo4j::RelClassMethods
   # Each list item class may (but not necessarily  use the belongs_to_list
   # in order to specify which ruby class should be loaded when a list item is loaded.
   #
-  # Example
+  # ==== Example
   #
   #  class Company
   #    include Neo4j::NodeMixin

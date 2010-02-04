@@ -1,35 +1,43 @@
 module Neo4j::JavaPropertyMixin
 
+  # This is the property to use to map ruby classes to Neo4j Nodes
   CLASSNAME_PROPERTY = "_classname"
 
+  # Returns the unique id of this node.
+  # Ids are garbage collected over time so are only guaranteed to be unique at a specific set of time: if the node is deleted,
+  # it's likely that a new node at some point will get the old id. Note: this make node ids brittle as public APIs.
   def neo_id
     getId
   end
 
-  def _wrapper=(wrapper)
+  def _wrapper=(wrapper) # :nodoc:
     @_wrapper = wrapper
   end
 
   def _java_node
     self
   end
-  
+
+  # Returns true if this property container has a property accessible through the given key, false otherwise.
   def property?(key)
     has_property?(key.to_s)
   end
 
+  # Returns the given property if it exist or nil if it does not exist.
   def [](key)
     return unless property?(key)
     if @_wrapper and @_wrapper.class.marshal?(key)
-        Marshal.load(String.from_java_bytes(get_property(key.to_s)))
+      Marshal.load(String.from_java_bytes(get_property(key.to_s)))
     else
       get_property(key.to_s)
     end
   end
 
+  # Sets the given property to given value.
+  # Will generate an event if the property does not start with '_' (which could be an internal property, like _classname)
+  #
   def []=(key, value)
     k = key.to_s
-    return if k == 'id'
     old_value = self[key]
 
     if value.nil?
@@ -41,7 +49,7 @@ module Neo4j::JavaPropertyMixin
       setProperty(k, value)
     end
 
-    if (@_wrapper and k[0,1] != '_') # do not want events on internal properties
+    if (@_wrapper and k[0, 1] != '_') # do not want events on internal properties
       @_wrapper.class.indexer.on_property_changed(@_wrapper, k) if @_wrapper.class.respond_to? :indexer
       Neo4j.event_handler.property_changed(@_wrapper, k, old_value, value)
     end
@@ -50,6 +58,8 @@ module Neo4j::JavaPropertyMixin
 
 
   # Removes the property from this node.
+  # This is same as setting a property value to nil.
+  #
   # For more information see JavaDoc PropertyContainer#removeProperty
   #
   # ==== Example
@@ -59,9 +69,8 @@ module Neo4j::JavaPropertyMixin
   #   a[:foo] # => nil
   #
   # ==== Returns
-  # true if the property was removed, false otherwise
+  # <tt>true</tt> if the property was removed, <tt>false</tt> otherwise
   #
-  # :api: public
   def delete_property (name)
     removed = !removeProperty(name).nil?
     if (removed and @_wrapper and name[0] != '_') # do not want events on internal properties
@@ -73,11 +82,10 @@ module Neo4j::JavaPropertyMixin
   # Returns a hash of all properties.
   #
   # ==== Returns
-  # Hash:: property key and property value
+  # Hash:: property key and property value with the '_neo_id' as the neo_id
   #
-  # :api: public
   def props
-    ret = {"id" => getId()}
+    ret = {"_neo_id" => getId()}
     iter = getPropertyKeys.iterator
     while (iter.hasNext) do
       key = iter.next
@@ -100,9 +108,9 @@ module Neo4j::JavaPropertyMixin
   # :api: public
   def update(struct_or_hash, options={})
     strict = options[:strict]
-    keys_to_delete = props.keys - %w(id classname) if strict
+    keys_to_delete = props.keys - %w(_neo_id) if strict  # TODO can probably simply all this code a lot
     struct_or_hash.each_pair do |key, value|
-      next if %w(id classname).include? key.to_s # do not allow special properties to be mass assigned
+      next if %w(_neo_id).include? key.to_s # do not allow special properties to be mass assigned
       keys_to_delete.delete(key) if strict
       self[key] = value
     end
@@ -114,7 +122,7 @@ module Neo4j::JavaPropertyMixin
   def equal?(o)
     eql?(o)
   end
-  
+
   def eql?(o)
     return false unless o.respond_to?(:neo_id)
     o.neo_id == neo_id
@@ -132,7 +140,7 @@ module Neo4j::JavaPropertyMixin
   def to_param
     neo_id.to_s
   end
-  
+
   # Loads a Neo node wrapper if possible
   # If the neo property '_classname' does not exist then it will map the neo node to the ruby class Neo4j::Node
   def wrapper

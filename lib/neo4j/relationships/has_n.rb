@@ -2,11 +2,12 @@ module Neo4j
   module Relationships
 
     # Enables creating and traversal of nodes.
+    # Includes the Enumerable Mixin.
     #
     class HasN
       include Enumerable
 
-      def initialize(node, dsl, &filter)
+      def initialize(node, dsl, &filter) # :nodoc:
         @node = node
         @traverser = NodeTraverser.new(node._java_node)
         @outgoing = dsl.outgoing?
@@ -30,6 +31,12 @@ module Neo4j
       end
 
 
+      # Returns the relationships instead of the nodes.
+      #
+      # ==== Example
+      # # return the relationship objects between the folder and file nodes:
+      # folder.files.rels.each {|x| ...}
+      #
       def rels
         Neo4j::Relationships::RelationshipDSL.new(@node._java_node, (@outgoing)? :outgoing : :incoming, @dsl.namespace_type)
       end
@@ -52,29 +59,23 @@ module Neo4j
         self
       end
 
+      # Required by the Enumerable mixin.
       def each(&block)
         @traverser.each(&block)
       end
 
 
       # Returns true if there are no node in this type of relationship
-      #
-      # :api: public
       def empty?
         @traverser.empty?
       end
 
       # Return the first relationship or nil
-      #
-      # :api: public
       def first
         @traverser.first
       end
 
       # Creates a relationship instance between this and the other node.
-      # If a class for the relationship has not been specified it will be of type Relationship.
-      #
-      # :api: public
       def new(other)
         create_rel(@node, other)
       end
@@ -105,7 +106,7 @@ module Neo4j
       end
 
 
-      def create_rel(node, other)
+      def create_rel(node, other) # :nodoc:
         # If the are creating an incoming relationship we need to swap incoming and outgoing nodes
         if @outgoing
           from, to = node, other
