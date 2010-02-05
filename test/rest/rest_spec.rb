@@ -217,7 +217,7 @@ END_OF_STRING
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
     body.size.should == 1
-    body[0]['id'].should == bertil.neo_id
+    body[0]['_neo_id'].should == bertil.neo_id
   end
 
   it "should return a single related node on GET /nodes/<classname>/<node_id>/<has_one_rel>" do
@@ -233,7 +233,7 @@ END_OF_STRING
     # then
     last_response.status.should == 200
     body = JSON.parse(last_response.body)
-    body['id'].should == bertil.neo_id
+    body['_neo_id'].should == bertil.neo_id
   end
 
   it "should be possible to load a rels on GET /rels/<id>" do
@@ -445,7 +445,7 @@ END_OF_STRING
     last_response.status.should == 200
     data = JSON.parse(last_response.body)
     data.size.should == 1
-    data[0]['id'].should == p1_id
+    data[0]['_neo_id'].should == p1_id
     data[0]['name'].should == "p"
   end
 
@@ -527,7 +527,7 @@ END_OF_STRING
     last_response.status.should == 200
     data = JSON.parse(last_response.body)
     data.size.should == 1
-    data[0]['id'].should == id
+    data[0]['_neo_id'].should == id
   end
 end
 

@@ -1,38 +1,38 @@
 module Neo4j
 
-# Creates a number of resources for the class using this mixin.
-#
-# The following resources are created:
-#
-# <b>add new class</b>::      <code>POST /neo</code> post ruby code of a neo4j node class
-# <b>node classes</b>::       <code>GET /neo</code> - returns hyperlinks to /nodes/classname
-# <b>search nodes</b>::       <code>GET /nodes/classname?name=p</code>
-# <b>view all nodes</b>::     <code>GET /nodes/classname</code>
-# <b>update property</b>::    <code>PUT nodes/classname/id/property_name</code>
-# <b>view property</b>::      <code>GET nodes/classname/id/property_name</code>
-# <b>delete node</b>::        <code>DELETE nodes/classname/node_id</code>
-# <b>update properties</b>::  <code>PUT nodes/classname/node_id</code>
-# <b>view node</b>::          <code>GET /nodes/classname/id</code>
-# <b>create node</b>::        <code>POST /nodes/classname</code>
-# <b>view relationship</b>::  <code>GET /rels/id</code>
-# <b>list rels</b>:: <code>GET /nodes/classname/id/relationship-type</code>
-# <b>add relationship</b>::   <code>POST /nodes/classname/id/relationship-type</code>
-# <b>traversal</b>::          <code>GET nodes/classname/id/traverse?relationship=relationship-type&depth=depth</code>
-#
-# Also provides lucene queries
-# <b>Lucene query string</b>::      <code>/nodes/classname?search=name:hello~</code>
-# <b>Exact match on property</b>::  <code>/nodes/classname?name=hello</code>
-# <b>Specify sorting order</b>::    <code>/nodes/classname?sort=name,desc</code>
-# <b>Pagination (offset,num)</b>::  <code>/nodes/classname?limit=100,20</code>#
-# 
-# When create a new node  by posting to <code>/nodes/classname</code> a 201 will be return with the 'Location' header set to the
-# URI of the newly created node.
-#
-# The JSON representation of a node looks like this
-#
-#   {"rels" : {"type1":"http://0.0.0.0:4567/rels/0","type2":"http://0.0.0.0:4567/rels/1"},
-#    "properties" : {"id":1,"classname":"MyNode"}}
-#
+  # Creates a number of resources for the class using this mixin.
+  #
+  # The following resources are created:
+  #
+  # <b>add new class</b>::      <code>POST /neo</code> post ruby code of a neo4j node class
+  # <b>node classes</b>::       <code>GET /neo</code> - returns hyperlinks to /nodes/classname
+  # <b>search nodes</b>::       <code>GET /nodes/classname?name=p</code>
+  # <b>view all nodes</b>::     <code>GET /nodes/classname</code>
+  # <b>update property</b>::    <code>PUT nodes/classname/id/property_name</code>
+  # <b>view property</b>::      <code>GET nodes/classname/id/property_name</code>
+  # <b>delete node</b>::        <code>DELETE nodes/classname/node_id</code>
+  # <b>update properties</b>::  <code>PUT nodes/classname/node_id</code>
+  # <b>view node</b>::          <code>GET /nodes/classname/id</code>
+  # <b>create node</b>::        <code>POST /nodes/classname</code>
+  # <b>view relationship</b>::  <code>GET /rels/id</code>
+  # <b>list rels</b>:: <code>GET /nodes/classname/id/relationship-type</code>
+  # <b>add relationship</b>::   <code>POST /nodes/classname/id/relationship-type</code>
+  # <b>traversal</b>::          <code>GET nodes/classname/id/traverse?relationship=relationship-type&depth=depth</code>
+  #
+  # Also provides lucene queries
+  # <b>Lucene query string</b>::      <code>/nodes/classname?search=name:hello~</code>
+  # <b>Exact match on property</b>::  <code>/nodes/classname?name=hello</code>
+  # <b>Specify sorting order</b>::    <code>/nodes/classname?sort=name,desc</code>
+  # <b>Pagination (offset,num)</b>::  <code>/nodes/classname?limit=100,20</code>#
+  #
+  # When create a new node  by posting to <code>/nodes/classname</code> a 201 will be return with the 'Location' header set to the
+  # URI of the newly created node.
+  #
+  # The JSON representation of a node looks like this
+  #
+  #   {"rels" : {"type1":"http://0.0.0.0:4567/rels/0","type2":"http://0.0.0.0:4567/rels/1"},
+  #    "properties" : {"_neo_id":1,"_classname":"MyNode"}}
+  #
   module RestMixin
 
     def _uri

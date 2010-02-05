@@ -1,5 +1,9 @@
 module Neo4j
   module Rest
+    # A stub class that talk to a neo4j rest server.
+    # It behaves like a Neo4j::Node, but instead of actually performing operation
+    # it talks to the server over HTTP/JSON
+    #
     module RestStubMixin
       attr_accessor :json
 
@@ -29,7 +33,7 @@ module Neo4j
       end
     end
 
-    module RestHttpMethods
+    module RestHttpMethods # :nodoc:
       class << self
         def get_request(resource, args = {})
           body = _get_request(resource, args)
@@ -67,7 +71,7 @@ module Neo4j
     end
 
 
-    class RelationshipStub
+    class RelationshipStub # :nodoc:
       include RestStubMixin
 
       def start_node
@@ -128,6 +132,7 @@ module Neo4j
       end
     end
 
+    # A class that simply includes the RestStubMixin
     class NodeStub
       include RestStubMixin
     end

@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-#require 'neo4j/extensions/graph_algo'
+require 'neo4j/extensions/graph_algo'
 require 'spec_helper'
 
 include Neo4j
@@ -37,18 +37,14 @@ describe "GraphAlgo.all_simple_path" do
 
 
   it "should contain Enumerable of Enumerable" do
-    pending "GraphAlgo Java Jar not compatible with Neo4j 1.0 rc yet"
-
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2)
     paths.size.should == 2
     [*paths][0].should be_kind_of Enumerable
     [*paths][1].should be_kind_of Enumerable
   end
 
   it "should contain Enumerable of Enumerable of alternating Relationship and Nodes" do
-    pending "GraphAlgo Java Jar not compatible with Neo4j 1.0 rc yet"
-
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2)
     node = true
     node_and_rel_ids = []
 
@@ -70,9 +66,7 @@ describe "GraphAlgo.all_simple_path" do
   end
 
   it "should contain Enumerable of Enumerable of only Nodes if as_nodes is given" do
-    pending "GraphAlgo Java Jar not compatible with Neo4j 1.0 rc yet"
-
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2).as_nodes
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n5).depth(2).as_nodes
     node_ids = []
     [*paths][0].each do | node|
       node.should be_kind_of org.neo4j.graphdb.Node
@@ -82,41 +76,35 @@ describe "GraphAlgo.all_simple_path" do
   end
 
   it "should take a depth parameter" do
-    pending "GraphAlgo Java Jar not compatible with Neo4j 1.0 rc yet"
-
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(1)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(1)
     paths.size.should == 0
 
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(3)
     paths.size.should == 2
 
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(2)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(2)
     paths.size.should == 0
   end
 
   it "should take a incoming and outgoing parameter" do
-    pending "GraphAlgo Java Jar not compatible with Neo4j 1.0 rc yet"
-
-    paths = GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).outgoing(:knows).to(@n6).depth(3)
     paths.size.should == 2
 
-    paths = GraphAlgo.all_simple_paths.from(@n1).incoming(:knows).to(@n6).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).incoming(:knows).to(@n6).depth(3)
     paths.size.should == 0
 
-    paths = GraphAlgo.all_simple_paths.from(@n6).outgoing(:knows).to(@n1).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n6).outgoing(:knows).to(@n1).depth(3)
     paths.size.should == 0
 
-    paths = GraphAlgo.all_simple_paths.from(@n6).incoming(:knows).to(@n1).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n6).incoming(:knows).to(@n1).depth(3)
     paths.size.should == 2
   end
 
   it "should take a both parameter" do
-    pending "GraphAlgo Java Jar not compatible with Neo4j 1.0 rc yet"
-
-    paths = GraphAlgo.all_simple_paths.from(@n1).both(:knows).to(@n6).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n1).both(:knows).to(@n6).depth(3)
     paths.size.should == 3
 
-    paths = GraphAlgo.all_simple_paths.from(@n6).both(:knows).to(@n1).depth(3)
+    paths = Neo4j::GraphAlgo.all_simple_paths.from(@n6).both(:knows).to(@n1).depth(3)
     paths.size.should == 3
   end
 

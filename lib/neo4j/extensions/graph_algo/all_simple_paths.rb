@@ -1,8 +1,8 @@
 module Neo4j::GraphAlgo
-  require 'neo4j/extensions/graph_algo/graph-algo-0.2-20090815.182816-1.jar'
+  require 'neo4j/extensions/graph_algo/neo4j-graph-algo-0.3-20100202.170643-12.jar'
 
-
-  class ListOfAlternatingNodesAndRelationships  #:nodoc:
+                                                   
+  class ListOfAlternatingNodesAndRelationships #:nodoc:
     include Enumerable
 
     def initialize(list)
@@ -44,6 +44,18 @@ module Neo4j::GraphAlgo
     end
   end
 
+  # A Wrapper for some of the neo4j graphdb algorithms
+  #
+  # Currently only the AllSimplePaths is wrapped in Ruby.
+  #
+  # === Usage
+  #
+  #   found_nodes = GraphAlgo.all_simple_paths.from(node1).both(:knows).to(node7).depth(4).as_nodes
+  #
+  # === See also
+  # * JavaDoc: http://components.neo4j.org/graph-algo/apidocs/org/neo4j/graphalgo/AllSimplePaths.html
+  # * A complete example: http://github.com/andreasronge/neo4j/tree/master/examples/you_might_know/ 
+  #
   class AllSimplePaths
     include Enumerable
 

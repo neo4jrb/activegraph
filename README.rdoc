@@ -51,7 +51,7 @@ This page contains the following information:
 * Three Minute Tutorial
 * Ten Minute Tutorial
 * Neo4j API Documentation
-* Extensions: REST (see Neo4j::RestMixin) and find_path
+* Extensions: REST (see Neo4j::RestMixin) and find_path (Neo4j::GraphAlgo::AllSimplePaths)
 * Performance issues
 * Ruby on Rails with Neo4j.rb
 * Lucene API Documentation
@@ -245,9 +245,9 @@ Example:
 === Finding Nodes and Queries
 
 There are three ways of finding/querying nodes in Neo4j: 
-  1. by traversing the graph
-  2. by using Lucene queries
-  3. using the unique neo4j id (Neo4j::NodeMixin#neo_id).
+1. by traversing the graph
+2. by using Lucene queries
+3. using the unique neo4j id (Neo4j::NodeMixin#neo_id).
 
 When doing a traversal one starts from a node and traverses one or more relationships (one or more levels deep).
 This start node can be either the reference node which is always found (Neo4j#ref_node) or by finding a start

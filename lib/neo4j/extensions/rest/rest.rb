@@ -29,7 +29,7 @@ module Neo4j
     end
 
     def self.load_class(clazz)
-      clazz = clazz.split("::").inject(Kernel) do |container, name|
+      clazz.split("::").inject(Kernel) do |container, name|
         container.const_get(name.to_s)
       end
     rescue NameError

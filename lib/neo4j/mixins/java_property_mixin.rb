@@ -81,7 +81,7 @@ module Neo4j::JavaPropertyMixin
 
   # Returns a hash of all properties.
   #
-  # ==== Returns
+  # === Returns
   # Hash:: property key and property value with the '_neo_id' as the neo_id
   #
   def props
@@ -98,19 +98,18 @@ module Neo4j::JavaPropertyMixin
   # If the option <code>{:strict => true}</code> is given, any properties present on
   # the node but not present in the hash will be removed from the node.
   #
-  # ==== Parameters
-  # struct_or_hash<#each_pair>:: the key and value to be set
-  # options<Hash>:: further options defining the context of the update
+  # === Parameters
+  # struct_or_hash<#each_pair>:: the key and value to be set, should respond to 'each_pair'
+  # options:: further options defining the context of the update, should be a Hash
   #
-  # ==== Returns
+  # === Returns
   # self
   #
-  # :api: public
   def update(struct_or_hash, options={})
     strict = options[:strict]
-    keys_to_delete = props.keys - %w(_neo_id) if strict  # TODO can probably simply all this code a lot
+    keys_to_delete = props.keys - %w(_neo_id _classname) if strict  
     struct_or_hash.each_pair do |key, value|
-      next if %w(_neo_id).include? key.to_s # do not allow special properties to be mass assigned
+      next if %w(_neo_id _classname).include? key.to_s # do not allow special properties to be mass assigned
       keys_to_delete.delete(key) if strict
       self[key] = value
     end

@@ -3,7 +3,7 @@ module Neo4j
   module Rest
     # todo move inside namepace Rest
 
-    class RestServer
+    class RestServer #:nodoc:
       class << self
         attr_accessor :thread
 
