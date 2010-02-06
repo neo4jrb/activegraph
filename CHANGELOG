@@ -1,3 +1,14 @@
+== 0.4.0 / 2010-02-06
+* Performance improvements and Refactoring: Use and Extend Neo4j Java Classes (#97)
+* Support for Index and Declaration of Properties on Relationships (#91)
+* Upgrade to neo4j-1.0 rc (#100)
+* All internal properties should be prefix with a '_',0.4.0 (#105)
+* Generate relationship accessor methods for declared has_n and has_one relationships (#104)
+* New way of creating relationship - Neo4j::Relationship.new (#103)
+* Neo4j#init_node method should take one or more args (#98)
+* Namespaced relationships: has_one...from using the wrong has_n...to(#92)
+* Neo4j::NodeMixin and Neo4j::Node should allow a hash for initialization (#99)
+
 == 0.3.3 / 2009-11-25
 * Support for a counter property on has_lists (#75)
 * Support for Cascade delete. On has_n, had_one and has_list (#81)
@@ -18,24 +29,24 @@
 * BugFix: Neo4j::relationship should not raise Exception if there are no relationships (#78)
 
 == 0.3.2 / 2009-09-17
- * Added support for aggregating nodes (#65)
- * Wrapped Neo4j GraphAlgo AllSimplePath (#70)
- * Added traversal with traversal position (#71)
- * Removed DynamicAccessors mixin, replaced by [] operator (#67)
- * Impl Neo4j.all_nodes (#69)
- * Upgrated Neo4j jar file to 1.0-b9
- * The Neo4j#relationship method now allows a filter parameter (#66)
- * Neo4j.rb now can read database not created by Neo4j.rb - does not require classname property (#63)
- * REST - added an "all" value for the depth traversal query parameter (#62)
- * REST - Performance improvments using the Rest Mixin (#60)
+* Added support for aggregating nodes (#65)
+* Wrapped Neo4j GraphAlgo AllSimplePath (#70)
+* Added traversal with traversal position (#71)
+* Removed DynamicAccessors mixin, replaced by [] operator (#67)
+* Impl Neo4j.all_nodes (#69)
+* Upgrated Neo4j jar file to 1.0-b9
+* The Neo4j#relationship method now allows a filter parameter (#66)
+* Neo4j.rb now can read database not created by Neo4j.rb - does not require classname property (#63)
+* REST - added an "all" value for the depth traversal query parameter (#62)
+* REST - Performance improvments using the Rest Mixin (#60)
 
 == 0.3.1 / 2009-07-25
- * Feature, extension -	find path between given pair of nodes (#58)
- * Fix a messy exception on GET /nodes/UnknownClassName (#57)
- * Bug  - exception on GET /nodes/classname/rel if rel is a has_one relationship (#56)
- * Bug: GET /nodes/classname missing out nodes with no properties (#55)
- * Bug: Lucene sorting caused exception if there were no documents (#54)
- * Bug:	reindexer fails to connect nodes to the IndexNode (#53)
+* Feature, extension -	find path between given pair of nodes (#58)
+* Fix a messy exception on GET /nodes/UnknownClassName (#57)
+* Bug  - exception on GET /nodes/classname/rel if rel is a has_one relationship (#56)
+* Bug: GET /nodes/classname missing out nodes with no properties (#55)
+* Bug: Lucene sorting caused exception if there were no documents (#54)
+* Bug:	reindexer fails to connect nodes to the IndexNode (#53)
 
 == 0.3.0 / 2009-06-25
 * Neo4j should track node changes
