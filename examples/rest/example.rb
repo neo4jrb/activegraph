@@ -18,7 +18,6 @@ FileUtils.rm_rf Neo4j::Config[:storage_path]  # NEO_STORAGE
 FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
 
 
-# THIS DOES NOT WORK WITH SINATRA 0.9.2 but it works with the latest sinatra from github
 class Person
   include Neo4j::NodeMixin
   # by includeing the following mixin we will expose this node as a RESTful resource
@@ -31,20 +30,12 @@ end
 Neo4j.start
 puts "-----------------------"
 Neo4j::Transaction.run do
-  a = Person.new
-  b = Person.new
-  c = Person.new
-  a.name = 'andreas'
-  b.name = 'kalle'
-  c.name = 'anders'
+  a = Person.new :name => 'andreas', :foo => 'bar', :fav_number => 14
+  b = Person.new :name => 'kalle'
+  c = Person.new :name => 'anders'
   a.friends << b
-  a[:undeclared] = '123'
-  a[:foo] = 3.134
   a.rels.outgoing(:other) << c
+  puts "Created Nodes at URI:\n\t#{a._uri}\n\t#{b._uri}\n\t#{c._uri}"
 end
 
-puts "Created a person at URI http://localhost:9123/nodes/Person/1"
 Neo4j::Rest::RestServer.thread.join
-
-#puts "HOST " + Sinatra::Application.host
-#Sinatra::Application.run! :port => 9123

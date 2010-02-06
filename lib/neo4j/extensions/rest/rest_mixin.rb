@@ -1,5 +1,11 @@
 module Neo4j
 
+  org.neo4j.kernel.impl.core.NodeProxy.class_eval do
+    # See Neo4j::RestMixin#read
+    def read
+    end
+  end
+
   # Creates a number of resources for the class using this mixin.
   #
   # The following resources are created:
