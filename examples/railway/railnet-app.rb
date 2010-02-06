@@ -21,7 +21,7 @@ end
 def train_path(station, train)
  Neo4j::Transaction.run do
    station.traverse.outgoing(train).depth(:all).each do |station|
-     rel = station.relationship(train, dir = :incoming)
+     rel = station.rel(train, dir = :incoming)
      puts "#{rel.start_node[:name]} ##{rel.start_node.neo_id}" +
        " (departure: #{rel[:dep]})" +
        " - #{rel.end_node[:name]} ##{rel.end_node.neo_id}" +
