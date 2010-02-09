@@ -9,6 +9,7 @@ module Neo4j
   #
   class ReferenceNode
     include Neo4j::NodeMixin
+    include Neo4j::MigrationMixin
   end
 
 end
