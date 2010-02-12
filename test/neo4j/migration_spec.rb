@@ -119,6 +119,40 @@ describe "Neo4j#migrations" do
     Neo4j.db_version.should == 0
   end
 
+  it "should evaluate the up and down method in the context of the reference node" do
+    #More RDocs for Migrations [#108 state:open]
+    called_up = called_down = nil
+    Neo4j.migration 1, :create_articles do
+      up do
+        called_up = self
+      end
+      down do
+        called_down = self
+      end
+    end
+
+    # when starting
+    Neo4j.migrate! 1
+    called_up.should be_kind_of(Neo4j::ReferenceNode)
+    Neo4j.migrate! 0
+    called_down.should be_kind_of(Neo4j::ReferenceNode)
+  end
+
+  it "should run any migration when neo4j starts without needing to call Neo4j.migrate!" do
+    Neo4j.stop
+    called = false
+    Neo4j.migration 1, :create_articles do
+      up do
+        called = true
+      end
+      down do
+        raise
+      end
+    end
+
+    Neo4j.start
+    called.should == true
+  end
 
 end
 
@@ -127,7 +161,7 @@ describe Neo4j::MigrationMixin do
   before(:each) { start; Neo4j::Transaction.new }
   after(:each)  {  Neo4j.migrations.clear; Neo4j::Transaction.finish; stop }
 
-  
+
   class PersonInfo
     include Neo4j::NodeMixin
     include Neo4j::MigrationMixin

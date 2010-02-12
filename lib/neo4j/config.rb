@@ -2,18 +2,18 @@
 module Neo4j
 
 
+  # Keeps configuration for neo4j.
   #
-  # Keeps configuration for neo4j
-  # This code is copied from merb-core/config.rb.
+  # Neo4j::Config[:storage_path]:: is used for locating the neo4j database on the filesystem.
+  # Neo4j::Config[:rest_port]:: used by the REST extension for starting a web server on a port
   #
   class Config
+    # This code is copied from merb-core/config.rb.
     class << self
       # Returns the hash of default config values for neo4j
       #
       # ==== Returns
       # Hash:: The defaults for the config.
-      #
-      # :api: private
       def defaults
         @defaults ||= {
           :storage_path => 'tmp/neo4j',
@@ -34,8 +34,6 @@ module Neo4j
       #
       # ==== Returns
       # nil
-      #
-      # :api: public
       def use
         @configuration ||= {}
         yield @configuration
@@ -103,7 +101,6 @@ module Neo4j
       # ==== Returns
       # Object:: The value of the configuration parameter or the default.
       #
-      # :api: public
       def fetch(key, default)
         @configuration.fetch(key, default)
       end
@@ -113,7 +110,6 @@ module Neo4j
       # ==== Returns
       # The configuration as a hash.
       #
-      # :api: private
       def setup()
         @configuration = {}
         @configuration.merge!(defaults)

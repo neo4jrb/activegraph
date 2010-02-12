@@ -95,10 +95,8 @@ module Neo4j
       # ==== Returns
       # The value of the evaluated provided block
       #
-      def run # :yield: block of code to run inside a transaction
+      def run # :yield: transaction
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
-
-        ret = nil
 
         begin
           tx = Neo4j::Transaction.new

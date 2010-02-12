@@ -2,13 +2,60 @@ module Neo4j
 
   class << self
     extend Forwardable
-    
-    def_delegators :@ref_node,       :db_version,  :migrate!
-    def_delegators Neo4j::ReferenceNode, :migration,   :migrations
 
-#    def migration
-#      @ref_node.class.migration
-#    end
+    ##
+    # Returns the current version of the database.
+    # This version has been set by running one or more migrations.
+    # The version is stored on the reference node, with property 'db_version'
+    # (Delegates to the Reference Node that includes the MigrationMixin.)
+    #
+    # === See Also
+    # Neo4j::MigrationMixin#db_version
+    #
+    # :singleton-method: db_version
+
+    ##
+    # Force Neo4j.rb to perform migrations
+    #
+    # === See Also
+    # Neo4j::MigrationMixin#migrate!
+    #
+    # :singleton-method: migrate!
+
+    ##
+    # Specifies a single migration.
+    #
+    # === Example
+    # Notice that the reference node is the context in the up and down blocks.
+    #
+    #   Neo4j.migration 1, :create_articles do
+    #    up do
+    #      rels.outgoing(:colours) << Neo4j.new :colour => 'red'  << Neo4j.new :colour => 'blue'
+    #    end
+    #    down do
+    #      rels.outgoing(:colours).each {|n| n.del }
+    #    end
+    #  end
+    #
+    # === See Also
+    # Neo4j::MigrationMixin::ClassMethods#migration
+    # Neo4j::ReferenceNode
+    #
+    # :singleton-method: migration
+
+    ##
+    # Returns all migrations that has been defined.
+    #
+    # === See Also
+    # Neo4j::MigrationMixin::ClassMethods#migrations
+    #
+    # :singleton-method: migrations
+
+    def_delegators :@ref_node, :db_version, :migrate!
+    def_delegators Neo4j::ReferenceNode, :migration, :migrations
+
+
+
     # Starts neo4j unless it is not already started.
     # Before using neo4j it has to be started and the location of the Neo database on the file system must
     # have been configured, Neo4j::Config[:storage_path]. You do not have to call this method since
