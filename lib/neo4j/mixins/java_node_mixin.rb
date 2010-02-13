@@ -46,8 +46,8 @@ module Neo4j::JavaNodeMixin
   #
   # ==== Parameters
   # type<#to_s>:: the key and value to be set
-  # dir:: optional default :outgoing (either, :outgoing, :incoming, :both)
-  # raw<true|false (default):: optional, if false return the ruby wrapped relationship object instead of the raw java neo4j obejct.
+  # dir:: optional, default :outgoing (either, :outgoing, :incoming, :both)
+  # raw:: optional, true|false (false default). If false return the ruby wrapped relationship object instead of the raw java neo4j obejct.
 
   #
   # ==== Returns
@@ -60,9 +60,8 @@ module Neo4j::JavaNodeMixin
   #
   # ==== Example
   #
-  #   person_node.relationship(:address).end_node[:street]
+  #   person_node.rel(:address).end_node[:street]
   #
-  # :api: public
   def rel(rel_name, dir=:outgoing, raw=false)
     java_dir = _to_java_direction(dir)
     rel_type = org.neo4j.graphdb.DynamicRelationshipType.withName(rel_name.to_s)
@@ -77,8 +76,8 @@ module Neo4j::JavaNodeMixin
   # Will trigger a relationship_created event.
   #
   # ==== Parameters
-  # type<#to_s>:: the relationship type between the nodes
-  # to:: the other node
+  # type:: the relationship type between the nodes (respond_to :to_s)
+  # to:: the other node (Neo4j::Node || kind_of?(Neo4j::NodeMixin)
   #
   # ==== Returns
   # a Neo4j::Relationship object
@@ -90,7 +89,6 @@ module Neo4j::JavaNodeMixin
   #
 
   # all creation of relationships uses this method
-  # :api: private
   def add_rel (type, to, rel_clazz = nil) # :nodoc:
     java_type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
     java_rel = createRelationshipTo(to._java_node, java_type)
@@ -101,7 +99,6 @@ module Neo4j::JavaNodeMixin
     rel
   end
 
-  # :api: private
   def _to_java_direction(dir) # :nodoc:
     case dir
       when :outgoing
@@ -130,7 +127,6 @@ module Neo4j::JavaNodeMixin
   # The raw false parameter means that the ruby wrapper object will not be loaded, instead the raw Java Neo4j object will be used,
   # it might improve the performance.
   #
-  # :api: public
   def outgoing(*args)
     Neo4j::Relationships::NodeTraverser.new(self).outgoing(*args)
   end
@@ -149,7 +145,6 @@ module Neo4j::JavaNodeMixin
   # The raw false parameter means that the ruby wrapper object will not be loaded, instead the raw Java Neo4j object will be used,
   # it might improve the performance.
   #
-  # :api: public
   def incoming(*args)
     Neo4j::Relationships::NodeTraverser.new(self).incoming(*args)
   end

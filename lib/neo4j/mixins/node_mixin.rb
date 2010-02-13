@@ -66,13 +66,13 @@ module Neo4j
       if args.length == 1 && args[0].kind_of?(org.neo4j.graphdb.Node)
         # yes, it was loaded from the database
         init_with_node(args[0])
-      else
-        # no, it was created by the user, create a new neo4j node
-        init_without_node
+      elsif self.respond_to?(:init_node)
         # does the class provide an initialization method ?
-        init_node(*args) if self.respond_to?(:init_node)
-        # was the first argument a hash to initialize it ?
-        init_with_hash(args[0]) if args.length == 1 && args[0].respond_to?(:each_pair)
+        init_without_node({})
+        init_node(*args)
+      else
+        # no, but maybe it had a hash of properties to initialize it with, create node
+        init_without_node(args[0] || {})
       end
       # was a block given in order to initialize the neo4j node ?
       yield self if block_given?
@@ -97,10 +97,10 @@ module Neo4j
       @_java_node
     end
 
-    # Inits when no neo java node exists. Must create a new neo java node first.
+    # Creates a new node and initialize with given properties.
     #
-    def init_without_node # :nodoc:
-      @_java_node = Neo4j.create_node
+    def init_without_node(props) # :nodoc:
+      @_java_node = Neo4j.create_node props
       @_java_node._wrapper = self
       @_java_node[:_classname] = self.class.to_s
       Neo4j.event_handler.node_created(self)

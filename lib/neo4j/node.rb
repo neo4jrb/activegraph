@@ -38,8 +38,7 @@ module Neo4j
       #  Neo4j::Node.new :name => 'foo', :age => 100
       #
       def new(*args)
-        node = Neo4j.create_node
-        args[0].each_pair{|k,v| node[k] = v} if args.length == 1 && args[0].respond_to?(:each_pair)
+        node = Neo4j.create_node(args[0] || {})
         yield node if block_given?
         Neo4j.event_handler.node_created(node)
         node

@@ -45,7 +45,7 @@ module Neo4j
   #    rel.end_node   # => b
   #
   # Furthermore, Neo4j guarantees that a relationship is never "hanging freely,"
-  #  i.e. start_node, end_node and other_node are guaranteed to always return valid, non-null nodes.
+  # i.e. start_node, end_node and other_node are guaranteed to always return valid, non-null nodes.
   #
   # See also the Neo4j::RelationshipMixin if you want to wrap a relationship with your own Ruby class.
   #
@@ -64,16 +64,17 @@ module Neo4j
       # type :: the type of relationship
       # from_node :: the start node of this relationship
       # end_node  :: the end node of this relationship
+      # props :: optional properties for the created relationship
       #
       # === Returns
       # org.neo4j.graphdb.Relationship java object
       #
       # === Examples
       #
-      #  Neo4j::Relationship.new :friend, node1, node2
+      #  Neo4j::Relationship.new :friend, node1, node2, :since => '2001-01-02', :status => 'okey'
       #
-      def new(type, from_node, to_node)
-        from_node.add_rel(type, to_node)
+      def new(type, from_node, to_node, props={})
+        Neo4j.create_rel(type, from_node, to_node, props)
       end
     end
 

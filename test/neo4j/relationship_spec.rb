@@ -30,5 +30,18 @@ describe "Neo4j::Relationship" do
     end
   end
 
+  it "#initialize(:friends, node1, node2, :since => '2010', :statue => true) should set two properties on the new relationship" do
+      Neo4j::Transaction.run do
+        node1 = Neo4j::Node.new
+        node2 = Neo4j::Node.new
+
+        # when
+        rel = Neo4j::Relationship.new(:friend, node1, node2, :since => '2010', :status => true)
+
+        # then
+        rel[:since].should == '2010'
+        rel[:status].should be_true
+      end
+    end
 
 end

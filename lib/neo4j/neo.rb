@@ -113,10 +113,20 @@ module Neo4j
 
 
     # Create a Neo4j::Node
-    # This is the same as Neo4j::Node.new
-    #
-    def create_node
-      instance.createNode
+    # This is the same as Neo4j::Node.new.
+    # All nodes are created by this method
+    def create_node(props = {}) # :nodoc:
+      node = instance.createNode
+      props.each_pair{|k,v| node[k] = v}
+      node
+    end
+
+    # Creates a new Relationship
+    # All relationships are created by this method.
+    def create_rel(type, from_node, to_node, props) # :nodoc:
+      rel = from_node.add_rel(type, to_node)
+      props.each_pair {|k,v| rel[k] = v}
+      rel
     end
 
     # Return a Neo4j node.
