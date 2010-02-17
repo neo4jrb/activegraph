@@ -28,7 +28,6 @@ module Neo4j
     # from_node:: create relationship from this node
     # to:: create relationship to this node
     #
-    # :api: public
     def initialize(*args)
       if (args[0].kind_of?(Java::org.neo4j.graphdb.Relationship))
         init_with_rel(args[0])
@@ -48,9 +47,7 @@ module Neo4j
     # from_node:: create relationship from this node
     # to_node:: create relationship to this node
     def init_with_args(type, from_node, to_node)
-      # TODO duplicated code in Neo4j::NodeMixin#add_rel -> DRY
-      java_type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
-      @_java_node = from_node._java_node.createRelationshipTo(to_node._java_node, java_type)
+      @_java_node = Neo4j.create_rel(type, from_node, to_node)
       @_java_node._wrapper = self
       @_java_node[:_classname] = self.class.to_s
       Neo4j.event_handler.relationship_created(self)

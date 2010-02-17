@@ -47,7 +47,6 @@ module Neo4j
       # key<Object>:: The key to set the parameter for.
       # val<Object>:: The value of the parameter.
       #
-      # :api: public
       def []=(key, val)
         (@configuration ||= setup)[key] = val
       end
@@ -57,8 +56,6 @@ module Neo4j
       #
       # ==== Parameters
       # key<Object>:: The key of the config entry value we want
-      #
-      # :api: public
       #
       def [](key)
         (@configuration ||= setup)[key]
@@ -73,7 +70,6 @@ module Neo4j
       # ==== Returns
       # Object:: The value of the removed entry.
       #
-      # :api: public
       def delete(key)
         @configuration.delete(key)
       end
@@ -85,7 +81,6 @@ module Neo4j
       # ==== Returns
       # nil
       #
-      # :api: private
       def delete_all
         @configuration = nil
       end

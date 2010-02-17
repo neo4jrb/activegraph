@@ -123,7 +123,7 @@ module Neo4j
 
     # Creates a new Relationship
     # All relationships are created by this method.
-    def create_rel(type, from_node, to_node, props) # :nodoc:
+    def create_rel(type, from_node, to_node, props = {}) # :nodoc:
       rel = from_node.add_rel(type, to_node)
       props.each_pair {|k,v| rel[k] = v}
       rel

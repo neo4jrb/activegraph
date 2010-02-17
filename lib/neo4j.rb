@@ -36,6 +36,7 @@ require 'neo4j/relationships/has_list'
 # neo4j
 require 'neo4j/indexer'
 require 'neo4j/reference_node'
+require 'neo4j/batch_inserter'
 require 'neo4j/neo'
 require 'neo4j/event_handler'
 require 'neo4j/transaction'

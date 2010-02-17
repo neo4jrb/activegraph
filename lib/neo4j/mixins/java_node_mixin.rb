@@ -14,7 +14,6 @@ module Neo4j::JavaNodeMixin
   # true if one or more relationships exists for the given rel_name and dir
   # otherwise false
   #
-  # :api: public
   def rel? (rel_name, dir=:outgoing)
     type = org.neo4j.graphdb.DynamicRelationshipType.withName(rel_name.to_s)
     java_dir = _to_java_direction(dir)
@@ -36,7 +35,6 @@ module Neo4j::JavaNodeMixin
   #
   #   person_node.rels.outgoing(:friends).each { ... }
   #
-  # :api: public
   def rels(direction = :outgoing)
     Neo4j::Relationships::RelationshipDSL.new(self, direction)
   end
