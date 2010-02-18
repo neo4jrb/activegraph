@@ -62,19 +62,22 @@ module Neo4j
     # neo4j will be started automatically when needed.
     # Registers an at_exit handler that stops neo4j (see Neo4j::stop)
     #
+    # === Parameters
+    # neo_instance:: optional, an instance of org.neo4j.graphdb.GraphDatabaseService
+    #
     # === Examples
     # Neo4j::Config[:storage_path] = '/var/neo4j-db'
     # Neo4j.start
     #
     # === Returns
-    # Nil
+    # nil
     #
     def start(neo_instance=nil)
       return if running?
       at_exit do
         Neo4j.stop
       end
-      @neo = org.neo4j.kernel.EmbeddedGraphDatabase.new(Neo4j::Config[:storage_path])
+      @neo = neo_instance || org.neo4j.kernel.EmbeddedGraphDatabase.new(Neo4j::Config[:storage_path])
       @ref_node = Neo4j::Transaction.run do
         ReferenceNode.new(@neo.getReferenceNode())
       end
@@ -141,7 +144,7 @@ module Neo4j
       neo_node = @neo.getNodeById(node_id.to_i)
       if (raw)
         neo_node
-      else
+       else
         neo_node.wrapper
       end
     rescue org.neo4j.graphdb.NotFoundException

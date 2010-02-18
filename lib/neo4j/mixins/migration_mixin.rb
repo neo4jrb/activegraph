@@ -29,13 +29,17 @@ module Neo4j
     #
     def migrate!(to_version=nil, verbose = false)
       return if self.class.migrations.nil? || self.class.migrations.empty?
+
+
+      # which version should we go to if to_version was not provided ?
       to_version ||= self.class.migrations.keys.sort.reverse[0]
       puts "Migration: Curr ver #{db_version} need upgrade to version #{to_version}" if verbose
 
-      # going up or down ?
-      if (db_version == to_version)
-        puts "Already at version #{to_version}" if verbose
-      elsif (db_version < to_version)
+      # do we need to migrate ?
+      return if db_version == to_version
+
+      # ok, so we are running some migrations 
+      if (db_version < to_version)
         Migrator.upgrade( (db_version+1).upto(to_version).collect { |ver| self.class.migrations[ver] }, self, verbose )
       else
         Migrator.downgrade( db_version.downto(to_version+1).collect { |ver| self.class.migrations[ver] }, self, verbose )

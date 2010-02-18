@@ -88,10 +88,6 @@ module Neo4j
       java_node._wrapper=self
     end
 
-    def init_with_hash(hash)
-      hash.each_pair{|k, v| self[k] = v}
-    end
-
     # Returns the org.neo4j.graphdb.Node wrapped object
     def _java_node
       @_java_node
@@ -100,9 +96,9 @@ module Neo4j
     # Creates a new node and initialize with given properties.
     #
     def init_without_node(props) # :nodoc:
+      props[:_classname] = self.class.to_s
       @_java_node = Neo4j.create_node props
       @_java_node._wrapper = self
-      @_java_node[:_classname] = self.class.to_s
       Neo4j.event_handler.node_created(self)
     end
 
