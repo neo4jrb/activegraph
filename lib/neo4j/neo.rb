@@ -85,6 +85,8 @@ module Neo4j
       Neo4j::Transaction.run do
         Neo4j.event_handler.neo_started(self)
       end
+
+      Neo4j::Transaction.run { @ref_node.migrate!}
       nil
     end
 

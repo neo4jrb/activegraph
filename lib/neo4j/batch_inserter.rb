@@ -37,21 +37,19 @@ module Neo4j
   #
   class BatchInserter
 
+    # See class description for usage.
     #
-    # See class description
-    #
-    def initialize(storage_path = Neo4j::Config[:storage_path])  # :yields: batch_inserter
-      # Neo4j must not be running while using batch inserter, stop it just in case ...
-      Neo4j::Transaction.finish
-      Neo4j.stop
-
+    # === Parameters
+    # storage_path:: optional, the location of the neo4j dabase on file system, default Neo4j::Config[:storage_path]
+    # db_version:: optional, sets version number on reference node, default nil -> do not set this property
+    def initialize(storage_path = Neo4j::Config[:storage_path], db_version=nil)  # :yields: batch_inserter
       # create the batch inserter
       inserter = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new(storage_path)
-      
+
       # save original methods
       create_node_meth = Neo4j.method(:create_node)
       create_rel_meth  = Neo4j.method(:create_rel)
-      ref_node_meth    = Neo4j.method(:ref_node)
+      ref_node_meth    = Neo4j.method(:ref_node) 
       
       # replace methods
       neo4j_meta = (class << Neo4j; self; end)
@@ -74,6 +72,7 @@ module Neo4j
 
       begin                     
         yield inserter         
+        Neo4j.ref_node[:db_version] = db_version if db_version
       ensure
         inserter.shutdown
         # restore old methods
@@ -84,8 +83,22 @@ module Neo4j
         end
       end
     end
-  end
 
+    # This method is used if the batch inserter is used from the Migration API.
+    #
+    # === Parameters
+    # context:: the context on which the batch inserter code block is evaluated in, not used.
+    # version:: optional, if given then will set the property db_version on the context
+    def self.execute(context, version=nil, &block)
+      # Neo4j must not be running while using batch inserter, stop it just in case ...
+      Neo4j::Transaction.finish
+      Neo4j.stop
+
+      BatchInserter.new(Neo4j::Config[:storage_path], version, &block)
+
+      Neo4j.start
+    end
+  end
 
 end
 

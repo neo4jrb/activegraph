@@ -29,16 +29,16 @@ describe "Neo4j#migrations" do
   end
 
   it "should set the version on the ref node" do
+    Neo4j.stop
+
     Neo4j.migration 1, :create_articles do
       up do
       end
       down do
       end
     end
-
     # when starting
-    Neo4j.db_version.should == 0
-    Neo4j.migrate!
+    Neo4j.start
 
     # then
     Neo4j.db_version.should == 1
@@ -165,6 +165,7 @@ describe Neo4j::MigrationMixin do
   class PersonInfo
     include Neo4j::NodeMixin
     include Neo4j::MigrationMixin
+    include Neo4j::LazyMigrationMixin
     property :name
   end
 

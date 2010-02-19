@@ -1,5 +1,6 @@
 module Neo4j
 
+
   # By including this mixing on a node class one can add migrations to it.
   # Adds a db_version attribute on the class including this mixin.
   # 
@@ -9,12 +10,6 @@ module Neo4j
     #
     def db_version
       Neo4j::Transaction.run {self[:db_version] || 0}
-    end
-
-
-    def init_with_node(java_node) # :nodoc:
-      super # call Neo4j::NodeMixin#init_with_node
-      migrate! self.class.migrate_to # for lazy migrations
     end
 
 
@@ -38,13 +33,34 @@ module Neo4j
       # do we need to migrate ?
       return if db_version == to_version
 
-      # ok, so we are running some migrations 
+      # ok, so we are running some migrations
       if (db_version < to_version)
-        Migrator.upgrade( (db_version+1).upto(to_version).collect { |ver| self.class.migrations[ver] }, self, verbose )
+        upgrade( (db_version+1).upto(to_version).collect { |ver| self.class.migrations[ver] }, verbose )
       else
-        Migrator.downgrade( db_version.downto(to_version+1).collect { |ver| self.class.migrations[ver] }, self, verbose )
+        downgrade( db_version.downto(to_version+1).collect { |ver| self.class.migrations[ver] }, verbose )
       end
-      self[:db_version] = to_version
+    end
+
+    # Running the up method on the given migrations.
+    #
+    # === Parameters
+    # migrations:: an enumerable of Migration objects
+    def upgrade(migrations, verbose=false)
+      migrations.each do |m|
+        puts "Running upgrade migration #{m.version} - #{m.name}"  if verbose
+        m.up_migrator.execute(self, m.version, &m.up_block)
+      end
+    end
+
+    # Running the down method on the given migrations.
+    #
+    # === Parameters
+    # migrations:: an enumerable of Migration objects
+    def downgrade(migrations, verbose=false)
+      migrations.each do |m|
+        puts "Running downgrade migration #{m.version} - #{m.name}" if verbose
+        m.down_migrator.execute(self, m.version-1, &m.down_block)
+      end
     end
 
     def self.included(c) # :nodoc:
@@ -64,11 +80,14 @@ module Neo4j
       #     up { ... }
       #     down { ... }
       #   end
+      #  
+      # See the Neo4j::MigrationMixin::Migration which the DSL is evaluated in.
       #
-      #
-      def migration(number, name, &block)
+      def migration(version, name, &block)
         @migrations ||= {}
-        @migrations[number] = {:name => name, :block => block}
+        migration = Migration.new(version, name)
+        migration.instance_eval(&block)
+        @migrations[version] = migration
       end
 
       # This is used for lazy migration. It stores the version that we want to upgrade to but does not perform the migrations.
@@ -80,38 +99,59 @@ module Neo4j
       end
     end
 
-    # This is used as both the context for the Migration DSL and running the actual migrations.
-    class Migrator # :nodoc:
-      attr_reader :up_blocks, :down_blocks
+    # This is the context in which the Migrations DSL are evaluated in.
+    class Migration < Struct.new(:version, :name)
+      attr_reader :up_block, :down_block, :up_migrator, :down_migrator
 
-      def up(&block)
-        @up_blocks ||= []
-        @up_blocks << block
+      # Specifies a code block which is run when the migration is upgraded.
+      #
+      # === Parameters
+      # migrator:: Default Neo4j::MigrationMixin::Migrator - used to execute the block
+      def up(migrator = Migrator, &block)
+        @up_block = block
+        @up_migrator = migrator
       end
 
-      def down(&block)
-        @down_blocks ||= []
-        @down_blocks << block
+      # Specifies a code block which is run when the migration is upgraded.
+      #
+      # === Parameters
+      # migrator:: Default Neo4j::MigrationMixin::Migrator - used to execute the block
+      def down(migrator = Migrator, &block)
+        @down_block = block
+        @down_migrator = migrator
       end
 
-      class << self
-        def upgrade(migrations, node_context, verbose)
-          get_blocks(migrations, verbose).up_blocks.each {|block| node_context.instance_eval &block}
-        end
-
-        def downgrade(migrations, node_context, verbose)
-          get_blocks(migrations, verbose).down_blocks.each { |block| node_context.instance_eval &block}
-        end
-
-        def get_blocks(migrations, verbose)
-          context = Migrator.new
-          migrations.each {|m| puts "Running Migration #{m[:name]}" if verbose; context.instance_eval &m[:block]}
-          context
-        end
+      def to_s
+        "Migration version: #{version}, name: #{name}"
       end
     end
 
+    # Responsible for running a migration
+    class Migrator
+      class << self
+        # Runs given migration block. If successful it will set the property
+        # ':db_version' on the given context.
+        #
+        # === Parameters
+        # context:: the context on which the block is evaluated in
+        # version:: optional, if given then will set the property db_version on the context
+        def execute(context, version=nil, &block)
+          context.instance_eval &block
+          context[:db_version] = version if version
+        end
+      end
+    end
+  end
 
+
+  # Overrides the init method so that it will check if any migration is needed.
+  # Migration might take place when the node is loaded.
+  #
+  module LazyMigrationMixin
+    def init_with_node(java_node) # :nodoc:
+      super # call Neo4j::NodeMixin#init_with_node
+      migrate! self.class.migrate_to # for lazy migrations
+    end
   end
 end
 

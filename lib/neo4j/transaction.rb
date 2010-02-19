@@ -102,7 +102,8 @@ module Neo4j
           tx = Neo4j::Transaction.new
           ret = yield tx
         rescue Exception => bang
-          #$NEO_LOGGER.warn{e.backtrace.join("\n")}
+#          puts "BANG #{bang}"
+#          puts bang.backtrace.join("\n")
           tx.failure unless tx.nil?
           raise
         ensure
@@ -196,7 +197,7 @@ module Neo4j
     # success() or failure() has been previously invoked.
     #
     def finish
-      raise NotInTransactionError.new unless Transaction.running?
+      return unless Transaction.running?
       Neo4j.event_handler.tx_finished(self) unless failure?
       begin
         @neo_tx.success unless failure?
@@ -207,7 +208,6 @@ module Neo4j
       end
 
       Thread.current[:transaction] = nil
-
       if Lucene::Transaction.running?
         $NEO_LOGGER.debug{"LUCENE TX running failure: #{failure?}"}
 
@@ -221,8 +221,6 @@ module Neo4j
 
     # Marks this transaction as failed, which means that it will inexplicably
     # be rolled back upon invocation of finish().
-    #
-    # :api: public
     def failure
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.failure

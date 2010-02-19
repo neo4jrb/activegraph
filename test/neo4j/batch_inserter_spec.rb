@@ -61,20 +61,17 @@ describe Neo4j::BatchInserter do
   end
 
   it "should be possible to use together with Migrations" do
-    pending "Endless recursion since it will trigger running the migration again"
     Neo4j.migration 1, :first do
-      up do
-        puts "Create batch inserter" + caller.inspect
-        Neo4j::BatchInserter.new do 
-          Neo4j.ref_node[:first] = true
-        end
-        Neo4j.start
+      up(Neo4j::BatchInserter) do
+        Neo4j.ref_node[:first] = true
       end
+
       down do
         Neo4j.ref_node[:first] = nil
       end
     end
 
+    Neo4j.start
     Neo4j.migrate!
     
     Neo4j::Transaction.run do
