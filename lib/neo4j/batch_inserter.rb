@@ -1,16 +1,43 @@
 module Neo4j
 
-  class BatchItem < Struct.new(:neo_id, :inserter) # :nodoc:
-    attr_accessor :_wrapper
+  class BatchItem  # :nodoc:
+    attr_accessor :_wrapper, :neo_id
 
-    def []=(key, value)
+    include Neo4j::JavaPropertyMixin
+
+    def initialize(neo_id, inserter)
+      @neo_id = neo_id
+      @inserter = inserter
+    end
+
+    def getId(); neo_id end
+
+    def has_property?(key)
+      props.include?(key.to_s)
+    end
+
+    def get_property(key)
+      props[key]
+    end
+    
+    def props
       # not sure why I have to do it like this, Strange why I can't use the Java Hash ?
       # gets java.lang.UnsupportedOperationException: null, in java/util/AbstractMap.java:186:in `put'
-      java_props = inserter.getNodeProperties(neo_id)
+      java_props = @inserter.getNodeProperties(neo_id)
       ruby_props = {}
       java_props.keySet().each{|k| ruby_props[k] = java_props[k]}
+      ruby_props
+    end
+
+
+    def setProperty(key, value)
+      ruby_props = props
       ruby_props[key.to_s] = value
-      inserter.setNodeProperties(neo_id, ruby_props)
+      @inserter.setNodeProperties(neo_id, ruby_props)
+
+      if (wrapper_class and key[0, 1] != '_') # do not want events on internal properties
+        wrapper_class.indexer.on_property_changed(wrapper, key)
+      end
     end
   end
 
@@ -49,7 +76,8 @@ module Neo4j
       # save original methods
       create_node_meth = Neo4j.method(:create_node)
       create_rel_meth  = Neo4j.method(:create_rel)
-      ref_node_meth    = Neo4j.method(:ref_node) 
+      ref_node_meth    = Neo4j.method(:ref_node)
+      instance_meth    = Neo4j.method(:instance)
       
       # replace methods
       neo4j_meta = (class << Neo4j; self; end)
@@ -68,6 +96,9 @@ module Neo4j
         define_method(:ref_node) do 
           BatchItem.new(inserter.getReferenceNode, inserter)
         end
+        define_method(:instance) do
+          Neo4j::BatchInstance.new
+        end
       end
 
       begin                     
@@ -80,6 +111,7 @@ module Neo4j
           define_method(:create_node, create_node_meth)
           define_method(:create_rel, create_rel_meth)
           define_method(:ref_node, ref_node_meth)
+          define_method(:instance, instance_meth)
         end
       end
     end
@@ -100,6 +132,12 @@ module Neo4j
     end
   end
 
+  # Used instead of Neo4j.instance object - will happily accept any methods - like transaction methods.
+  class BatchInstance # :nodoc:
+    def method_missing(m, *args, &block)
+      return BatchInstance.new
+    end
+  end
 end
 
 

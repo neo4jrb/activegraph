@@ -7,12 +7,10 @@ module Neo4j::PropertyClassMethods
   # class and the child classes will 'inherit' those properties.
   #
 
-  # :api: private
   def root_class # :nodoc:
     self::ROOT_CLASS
   end
 
-  # :api: private
   def properties_info # :nodoc:
     self::PROPERTIES_INFO
   end
@@ -53,7 +51,6 @@ module Neo4j::PropertyClassMethods
   #   f = Foo.new
   #   f.bar = Baaz.new
   #
-  # :api: public
   def property(*props)
     if props.size == 2 and props[1].kind_of?(Hash)
       props[1].each_pair do |key, value|
@@ -95,7 +92,6 @@ module Neo4j::PropertyClassMethods
   # ==== Returns
   # true if the property will be marshalled, false otherwise
   #
-  # :api: public
   def marshal?(prop_name)
     return false if properties_info[prop_name.to_sym].nil?
     return false if properties_info[prop_name.to_sym][:type].nil?
@@ -112,7 +108,6 @@ module Neo4j::PropertyClassMethods
   # ==== Returns
   # true or false
   #
-  # :api: public
   def property?(prop_name)
     return false if properties_info[prop_name.to_sym].nil?
     properties_info[prop_name.to_sym][:defined] == true
@@ -131,7 +126,6 @@ module Neo4j::PropertyClassMethods
   # ==== Returns
   # Struct
   #
-  # :api: public
   def value_object
     @value_class ||= create_value_class
   end
@@ -148,7 +142,6 @@ module Neo4j::PropertyClassMethods
   #     index :name
   #   end
   #
-  # :api: public
   def index(*rel_type_props)
     if rel_type_props.size == 2 and rel_type_props[1].kind_of?(Hash)
       rel_type_props[1].each_pair do |key, value|
@@ -169,7 +162,6 @@ module Neo4j::PropertyClassMethods
   # Those indexes will not be updated anymore, old indexes will still exist
   # until the update_index method is called.
   #
-  # :api: public
   def remove_index(*keys)
     keys.each do |key|
       raise "Not implemented remove index on a relationship index" if key.to_s.include?('.')
@@ -178,13 +170,11 @@ module Neo4j::PropertyClassMethods
   end
 
 
-  # :api: private
   def index_property(prop) # :nodoc:
     indexer.add_index_on_property(prop)
   end
 
 
-  # :api: private
   def index_relationship(rel_name, prop) # :nodoc:
     # find the trigger and updater classes and the rel_type of the given rel_name
     trigger_clazz = decl_relationships[rel_name.to_sym].to_class
@@ -222,7 +212,6 @@ module Neo4j::PropertyClassMethods
   # ==== Returns
   # Neo4j::SearchResult
   #
-  # :api: public
   def find(query=nil, &block)
     self.indexer.find(query, block)
   end
@@ -233,7 +222,6 @@ module Neo4j::PropertyClassMethods
   # The struct will have the Ruby on Rails method: model_name and
   # new_record? so that it can be used for restful routing.
   #
-  # @api private
   def create_value_class # :nodoc:
     # the name of the class we want to create
     name = "#{self.to_s}ValueObject".gsub("::", '_')

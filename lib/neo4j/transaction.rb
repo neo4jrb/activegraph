@@ -188,7 +188,6 @@ module Neo4j
     # upon invocation of finish() unless failure()  has or will be invoked before then.
     def success
       raise NotInTransactionError.new unless Transaction.running?
-      $NEO_LOGGER.info{"success #{self.to_s}"}
       @neo_tx.success
     end
 
@@ -209,13 +208,9 @@ module Neo4j
 
       Thread.current[:transaction] = nil
       if Lucene::Transaction.running?
-        $NEO_LOGGER.debug{"LUCENE TX running failure: #{failure?}"}
-
         # mark lucene transaction for failure if the neo transaction fails
         Lucene::Transaction.current.failure if failure?
         Lucene::Transaction.current.commit
-      else
-        $NEO_LOGGER.debug{"NO LUCENE TX running"}
       end
     end
 

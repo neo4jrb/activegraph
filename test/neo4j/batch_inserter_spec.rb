@@ -33,7 +33,7 @@ describe Neo4j::BatchInserter do
     end
 
     c = nil
-    Neo4j::BatchInserter.new do |b|
+    Neo4j::BatchInserter.new do
       c = Foo.new :key1 => 'val1', :key2 => 'val2'
       c[:key3] = 'val3'
     end
@@ -47,6 +47,25 @@ describe Neo4j::BatchInserter do
     Neo4j::Transaction.finish
   end
 
+  it "should index with lucene" do
+    class Foo98
+      include Neo4j::NodeMixin
+      property :name
+      index :name
+    end
+
+    Neo4j::BatchInserter.new do
+      Neo4j::Transaction.new
+      foo = Foo98.new
+      foo.name = 'hej'
+      Neo4j::Transaction.finish
+    end
+
+    # Can we now find it ?
+    Neo4j.start
+    Foo98.find(:name => 'hej').size.should == 1
+  end
+  
   it "should expose the ReferenceNode object" do
     Neo4j::BatchInserter.new do |b|
      ref_node = Neo4j.ref_node
