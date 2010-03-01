@@ -9,6 +9,7 @@ It provides:
 * Fast traversal of relationships between nodes in a huge node space.
 * Transaction with rollbacks support. 
 * Indexing and querying of ruby objects.
+* Migration and BatchInserter support
 * Can be used instead of ActiveRecord in Ruby on Rails or Merb
 * Can be accessible as REST resources.
 
@@ -1452,8 +1453,98 @@ Here is an example how to traverse only using Java objects (instead of Ruby wrap
  iter = folder.outgoing(:child_folders).raw(true).depth(:all).iterator
  iter.hasNext()
 
-The example above gives you access to the raw Java iterator class  
+The example above gives you access to the raw Java iterator class.
+Another way to improve performance is to rewrite the performance critical part of your application in Java and access it from neo4j.rb in JRuby.
+Traversing in pure Java is of orders of magnitude faster then doing it in JRuby.
 
+== Migrations
+
+By using migrations you can keep the code and the database in sync. There are two types of migrations : none lazy and lazy.
+In a none lazy migration the database is upgraded/downgraded all at once, while in lazy migrations the node/relationship is only upgraded/downgraded
+when the node or relationship is loaded.
+
+=== None Lazy Migration
+
+Here is an example of a use case for this feature.
+Let say that we already have a database with nodes that have one property 'name'.
+Now we want to split that property into two properties: 'surname' and 'given_name'.
+We want to upgrade the database when it starts so we don't use the lazy migration feature.
+The neo database starts at version 0 by default.
+
+  Neo4j.migrate 1, "split name" do
+    up do
+     # find all people and change
+     Person.all.each {|p|
+       surname = self[:name].split[0]
+       given_name = self[:name].split[1]
+       delete_property(:name)
+     end
+
+    down do
+     Person.all.each {|p|
+       name = "#{self[:surname]} {self[:given_name]}"
+       delete_property(:surname)
+       delete_property(:given_name)
+     end
+    end
+  end
+
+If the code above has been loaded before the neo database starts it will automatically upgrade to version 1 (running all the migrations to the higest migration available).
+You can force the neo to go to a specific version by using Neo4j#migrate! method.
+
+=== Lazy Migration
+
+The example above can also be run as lazy migration. i.e. perform the upgrade/downgrade when the node is loaded instead of all at once.
+The following example demonstrates this feature:
+
+  Person.migration 1, :split_name do
+    up do
+      surname = self[:name].split[0]
+      given_name = self[:name].split[1]
+      delete_property(:name)
+    end
+
+    down do
+      name = "self[:given_name] #{self[:surname]}"
+      delete_property(:surname)
+      delete_property(:given_name)
+    end
+  end
+
+== Batch Insert
+
+Sometimes you need a fast way to insert a lot of data into the database without any transactional support.
+Neo4j.rb wrapps the Java BatchInserter API.
+
+ Neo4j::BatchInserter.new do |b|
+    a = Neo4j::Node.new :name => 'a'
+    b = Neo4j::Node.new :name => 'b'
+    c = Foo.new :key1 => 'val1', :key2 => 'val2'
+    Neo4j::Relationship.new(:friend, a, b, :since => '2001-01-01')
+  end
+
+Creating nodes and relationships inside the code block uses the batch inserter API. Only a limited set of the API for nodes and relationships are available
+inside the code block (e.g. traversing is not possible).
+
+If you need lucene indexing you have to wrap your code inside a transaction, since only when the transaction is finished the lucene database will be updated
+(the neo4j transaction is disabled). Example:
+
+  Neo4j::BatchInserter.new do
+    Neo4j::Transaction.new
+    foo = Foo98.new
+    foo.name = 'hej'
+    Neo4j::Transaction.finish  # update the lucene index, neo4j transaction is disabled here.
+  end
+
+To get even better insertion speed one can use the raw java Batch Inserter API: http://wiki.neo4j.org/content/Batch_Insert.
+
+Example:
+
+  Neo4j::BatchInserter.new do |b|
+    b.createNode({'name' => 'me'})
+  end
+
+Notice that the BatchInserter can be used together with Migrations.
 
 == Extensions: Replication
 
