@@ -9,6 +9,13 @@ describe Neo4j::BatchInserter do
   before(:all) { stop }
   after(:each) { stop }
 
+  it "should yield the Java Batch Inserter object" do
+    Neo4j::BatchInserter.new do |b|
+      b.should respond_to(:createNode)
+      b.should respond_to(:createRelationship)
+    end
+  end
+
   it "should accept Neo4j::Node.new and Neo4j::Relationship.new" do
     class Foo
       include Neo4j::NodeMixin

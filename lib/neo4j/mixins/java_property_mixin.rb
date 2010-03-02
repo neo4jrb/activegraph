@@ -135,7 +135,6 @@ module Neo4j::JavaPropertyMixin
   # Same as neo_id but returns a String instead of a Fixnum.
   # Used by Ruby on Rails.
   #
-  # :api: public
   def to_param
     neo_id.to_s
   end
@@ -152,7 +151,7 @@ module Neo4j::JavaPropertyMixin
     property?(CLASSNAME_PROPERTY)
   end
 
-  def wrapper_class
+  def wrapper_class  # :nodoc: 
     return nil unless wrapper?
     classname = get_property(CLASSNAME_PROPERTY)
     classname.split("::").inject(Kernel) do |container, name|

@@ -137,7 +137,7 @@ module Neo4j
         # version:: optional, if given then will set the property db_version on the context
         def execute(context, version=nil, &block)
           context.instance_eval &block
-          context[:db_version] = version if version
+          Neo4j::Transaction.run { context[:db_version] = version} if version
         end
       end
     end

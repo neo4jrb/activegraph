@@ -8,6 +8,11 @@ module Lucene
   # as specific configuration for each index (TODO).
   # This code is copied from merb-core/config.rb.
   #
+  # Contains three default configurations (Config.defaults)
+  # * :store_on_file:: default false, which will only keep the index in memory
+  # * :id_field:: default :id
+  # * :storage_path:: where the index is kept on file system if stored as a file (instead of just in memory)
+  #
   class Config
     class << self
       # Returns the hash of default config values for lucene.
@@ -15,7 +20,6 @@ module Lucene
       # ==== Returns
       # Hash:: The defaults for the config.
       #
-      # :api: private
       def defaults
         @defaults ||= {
           :store_on_file => false,
@@ -38,7 +42,6 @@ module Lucene
       # ==== Returns
       # nil
       #
-      # :api: public
       def use
         @configuration ||= {}
         yield @configuration
@@ -52,7 +55,6 @@ module Lucene
       # key<Object>:: The key to set the parameter for.
       # val<Object>:: The value of the parameter.
       #
-      # :api: public
       def []=(key, val)
         (@configuration ||= setup)[key] = val
       end
@@ -62,8 +64,6 @@ module Lucene
       #
       # ==== Parameters
       # key<Object>:: The key of the config entry value we want
-      #
-      # :api: public
       #
       def [](key)
         (@configuration ||= setup)[key]
@@ -78,7 +78,6 @@ module Lucene
       # ==== Returns
       # Object:: The value of the removed entry.
       #
-      # :api: public
       def delete(key)
         @configuration.delete(key)
       end
@@ -90,7 +89,6 @@ module Lucene
       # ==== Returns
       # nil
       #
-      # :api: private
       def delete_all
         @configuration = nil
         IndexInfo.delete_all
@@ -107,7 +105,6 @@ module Lucene
       # ==== Returns
       # Object:: The value of the configuration parameter or the default.
       #
-      # :api: public
       def fetch(key, default)
         @configuration.fetch(key, default)
       end
@@ -117,7 +114,6 @@ module Lucene
       # ==== Returns
       # The configuration as a hash.
       #
-      # :api: private
       def setup()
         @configuration = {}
         @configuration.merge!(defaults)
@@ -130,7 +126,6 @@ module Lucene
       # ==== Returns
       # Hash:: The config as a hash.
       #
-      # :api: public
       def to_hash
         @configuration
       end
@@ -140,7 +135,6 @@ module Lucene
       # ==== Returns
       # String:: The config as YAML.
       #
-      # :api: public
       def to_yaml
         require "yaml"
         @configuration.to_yaml

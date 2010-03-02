@@ -18,7 +18,7 @@ module Lucene
   # Represents a Lucene Index.
   # The index is written/updated only when the commit method is called.
   # This is done since writing to the index file should be done as a batch operation.
-  # (Performace will be bad otherwise).
+  # (Performance will be bad otherwise).
   #  
   class Index
     attr_reader :path, :uncommited
@@ -58,7 +58,6 @@ module Lucene
     # ==== Returns
     # Returns a new or an already existing Index
     #
-    # :api: public
     def self.new(path)
       # make sure no one modifies the index specified at given path
       lock(path).synchronize do
@@ -114,7 +113,6 @@ module Lucene
     # ==== Returns
     # Returns the index instance so that this method can be chained
     #
-    # :api: public
     def <<(key_values)
       doc = Document.new(field_infos, key_values)
       lock.synchronize do
@@ -252,7 +250,7 @@ module Lucene
     # 
     private
     
-    def update_documents
+    def update_documents # :nodoc:
       index_writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, @index_info.analyzer, ! exist?)
       @uncommited.each_value do |doc|
         # removes the document and adds it again
@@ -264,7 +262,7 @@ module Lucene
     end
 
 
-    def delete_documents
+    def delete_documents # :nodoc:
       return unless exist? # if no index exists then there is nothing to do
       
       writer = org.apache.lucene.index.IndexWriter.new(@index_info.storage, @index_info.analyzer, false)
