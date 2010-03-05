@@ -907,7 +907,7 @@ Example
   require 'neo4j/extensions/reindexer'
 
   class Car
-    include Neo4j::Node
+    include Neo4j::NodeMixin
     property :wheels
   end
 
