@@ -367,6 +367,53 @@ describe Indexer, " given property foo is indexed" do
 
 end
 
+describe Indexer, " given index is defined in a subclass" do
+  module IndexerExample
+    class Base
+      include Neo4j::NodeMixin
+
+      def init_node
+        time_now = Time.now
+
+        self[:created] = time_now
+
+      end
+
+      property :created, :type => Time
+      index :created
+    end
+
+    class Publication < Base
+      property :title, :content
+      index :title, :content
+    end
+
+    class Person < Base
+      property :name, :uri
+
+      has_n :publications
+
+      index :name
+    end
+
+  end
+
+  it "should not index a property that does not exist in the base class" do
+    Neo4j::Transaction.run do
+      person = IndexerExample::Person.new
+      doc = IndexerExample::Publication.new
+
+      person.name = 'Helio Miranda'
+
+      doc.title = 'Test Document'
+      doc.content = 'Test content'
+
+      person.publications << doc
+    end
+
+  end
+end
+
 
 
 

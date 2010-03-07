@@ -122,7 +122,8 @@ module Neo4j
     end
 
     def update_document(document, node)
-      @properties.each {|prop| document[prop.to_sym] = node.send(prop)}
+      # we have to check that the property exists since the index can be defined in a subclass
+      @properties.each {|prop| document[prop.to_sym] = node.send(prop) if node.respond_to?(prop)}
     end
   end
 
