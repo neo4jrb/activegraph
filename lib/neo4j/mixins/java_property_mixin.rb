@@ -111,7 +111,12 @@ module Neo4j::JavaPropertyMixin
     struct_or_hash.each_pair do |key, value|
       next if %w(_neo_id _classname).include? key.to_s # do not allow special properties to be mass assigned
       keys_to_delete.delete(key) if strict
-      self[key] = value
+      setter_meth = "#{key}=".to_sym
+      if @_wrapper && @_wrapper.respond_to?(setter_meth)
+        @_wrapper.send(setter_meth, value)
+      else
+        self[key] = value
+      end
     end
     keys_to_delete.each{|key| delete_property(key) } if strict
     self

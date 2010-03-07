@@ -327,6 +327,103 @@ describe 'Neo4j properties' do
     p.methods.should include("salary", "salary=")
   end
 
+end
 
 
+# ----------------------------------------------------------------------------
+# update
+#
+
+describe Neo4j::JavaPropertyMixin, "#update" do
+
+  before(:all) do
+    class TestNode
+      include Neo4j::NodeMixin
+      property :name, :age
+
+      def my_accessor
+        @my_accessor
+      end
+
+      def my_accessor=(val)
+        @my_accessor = val + 1
+      end
+    end
+
+    start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+  it "should be able to update a node from a value obejct" do
+    # given
+    t = TestNode.new
+    t[:name]='kalle'
+    t[:age]=2
+    vo = t.value_object
+    t2 = TestNode.new
+    t2[:name] = 'foo'
+
+    # when
+    t2.update(vo)
+
+    # then
+    t2[:name].should == 'kalle'
+    t2[:age].should == 2
+  end
+
+  it "should use your own setters method if it exists" do
+    t = TestNode.new
+    # when
+    t.update({ :my_accessor => 1})
+    # then
+    t.my_accessor.should == 2
+  end
+  
+  it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
+    t = TestNode.new
+    t.update({:name=>'123', :oj=>'hoj'})
+    t.name.should == '123'
+    t.age.should == nil
+    t['oj'].should == 'hoj'
+  end
+
+  it "should be able to update a node by using a hash" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.name.should == 'andreas'
+    t.age.should == 3
+  end
+
+  it "should not allow the classname to be changed" do
+    t = TestNode.new
+    t.update({:_classname => 'wrong'})
+    t[:_classname].should == 'TestNode'
+  end
+
+  it "should not allow the id to be changed" do
+    t = TestNode.new
+    t.update({:_neo_id => 987654321})
+    t.props['_neo_id'].should == t.neo_id
+  end
+
+  it "should remove attributes that are not mentioned if the strict option is set" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.update({:age=>4}, :strict => true)
+    t.name.should be_nil
+  end
+
+  it "should not remove attributes that are not mentioned if the strict option is not set" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.update({:age=>4})
+    t.name.should == 'andreas'
+  end
 end
