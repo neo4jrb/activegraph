@@ -114,18 +114,34 @@ describe "Neo4j::NodeMixin#has_one " do
     Neo4j::Transaction.finish
   end
 
-  it "should create a relationship with assignment like node1.rel = node2" do
+  it "should create a relationship with assignment, e.g. node1.address = node2" do
     # given
     person = Person.new
 
     # when
-    person.address = Address.new {|a| a.city = 'malmoe'; a.road = 'my road'}
+    person.address = Address.new :city => 'malmoe', :road => 'my road'
 
     # then
     person.address.should be_kind_of(Address)
     [*person.address.people].size.should == 1
     [*person.address.people].should include(person)
   end
+
+  it "should delete previous relationship with new one" do
+    # given
+    person = Person.new
+    address1 = Address.new :city => 'malmoe', :road => 'my road'
+    person.address = address1
+
+    # when
+    address2 = Address.new :city => 'stockholm', :road => 'new road'
+    person.address = address2
+
+    # then
+    [*person.rels.outgoing(:"Address#address")].size.should == 1
+    person.address.should == address2
+  end
+
 
   it "should create a relationship with the new method, like node1.rel.new(node2)" do
     # given

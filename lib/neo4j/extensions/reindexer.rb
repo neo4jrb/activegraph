@@ -4,7 +4,6 @@ module Neo4j
       # Traverse all nodes and update the lucene index.
       # Can be used for example if it is neccessarly to change the index on a class
       #
-      # :api: public
       def update_index
         all.nodes.each do |n|
           n.update_index
@@ -13,7 +12,6 @@ module Neo4j
 
       # Returns node instances of this class.
       #
-      # :api: public
       def all
         index_node = IndexNode.instance
         index_node.rels.outgoing(self)
