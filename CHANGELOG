@@ -1,3 +1,12 @@
+== 0.4.1 / 2010-03-11
+* Migrations (#108)
+* BatchInserter (#111)
+* Neo4j::Relationship.new should take a hash of properties (#110)
+* Upgrade to neo4j-1.0 (#114)
+* Bigfix: has_one should replace old relationship (#106)
+* Bugfix: custom accessors for NodeMixin#update (#113)
+* Bugfix: Indexed properties problem on extented ruby classes critical "properties indexer" (#112)
+
 == 0.4.0 / 2010-02-06
 * Performance improvements and Refactoring: Use and Extend Neo4j Java Classes (#97)
 * Support for Index and Declaration of Properties on Relationships (#91)
