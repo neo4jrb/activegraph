@@ -1,5 +1,5 @@
 module Neo4j::GraphAlgo
-  require 'neo4j/extensions/graph_algo/neo4j-graph-algo-0.3-20100202.170643-12.jar'
+  require 'neo4j/extensions/graph_algo/neo4j-graph-algo-0.3.jar'
 
                                                    
   class ListOfAlternatingNodesAndRelationships #:nodoc:
