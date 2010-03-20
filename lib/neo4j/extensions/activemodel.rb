@@ -3,10 +3,18 @@ require 'singleton'
 require 'neo4j'
 require 'active_model'
 
+
 module Neo4j::NodeMixin
   def to_model
     Neo4j::ActiveModel::ActiveModelFactory.instance.to_model(self)
   end
+
+  def attributes
+    attr = props
+    attr.keys.each {|k| attr.delete k if k[0] == ?_}
+    attr
+  end
+
 end
 
 module Neo4j::ActiveModel
