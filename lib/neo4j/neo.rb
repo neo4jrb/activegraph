@@ -66,8 +66,8 @@ module Neo4j
     # neo_instance:: optional, an instance of org.neo4j.graphdb.GraphDatabaseService
     #
     # === Examples
-    # Neo4j::Config[:storage_path] = '/var/neo4j-db'
-    # Neo4j.start
+    #   Neo4j::Config[:storage_path] = '/var/neo4j-db'
+    #   Neo4j.start
     #
     # === Returns
     # nil
@@ -137,11 +137,12 @@ module Neo4j
     # Return a Neo4j node.
     #
     # ==== Parameters
-    # node_id<String, to_i>:: the unique neo id for one node
-    # raw<true|false(default)> :: if the raw Java node object should be returned or the Ruby wrapped node.
+    # node_id:: the unique neo id for one node, should respond to 'to_i'
+    # raw:: if the raw Java node object should be returned or the Ruby wrapped node, default false.
     #
     # ==== Returns
     # The node object or nil if not found
+    #
     def load_node(node_id, raw = false)
       neo_node = @neo.getNodeById(node_id.to_i)
       if (raw)
