@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'singleton'
 require 'neo4j'
-require 'activemodel'
+require 'active_model'
 
 module Neo4j::NodeMixin
   def to_model
@@ -131,20 +131,20 @@ end
 
 
 
-class LintTest < ActiveModel::TestCase
-  include ActiveModel::Lint::Tests
-
-  class MyModel
-    include Neo4j::NodeMixin
-  end
-
-  def setup
-    @model = MyModel.new
-  end
-
-end
-
-require 'test/unit/ui/console/testrunner'
-Neo4j::Transaction.run do
-  Test::Unit::UI::Console::TestRunner.run(LintTest)
-end
+#class LintTest < ActiveModel::TestCase
+#  include ActiveModel::Lint::Tests
+#
+#  class MyModel
+#    include Neo4j::NodeMixin
+#  end
+#
+#  def setup
+#    @model = MyModel.new
+#  end
+#
+#end
+#
+#require 'test/unit/ui/console/testrunner'
+#Neo4j::Transaction.run do
+#  Test::Unit::UI::Console::TestRunner.run(LintTest)
+#end
