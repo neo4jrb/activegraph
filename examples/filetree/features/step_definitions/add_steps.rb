@@ -2,19 +2,19 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../support")
 require 'json'
 require 'rspec_helper'
 require 'neo4j'
- 
+
 Sinatra::Application.set :environment, :test
- 
- 
+
+
 Before do
   start
   Neo4j.info
 end
- 
+
 After do
   stop
 end
- 
+
 def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
   currDepth = currDepth + 1
   if(currDepth>=maxDepth)
@@ -28,7 +28,8 @@ def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, files
     #needed for JRuby compatibility
     props.put('classname', Neo4j::Node.to_s)
     file = batch_neo.createNode(props)
-    batch_neo.createRelationship( parent_props[:id], file, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+#     batch_neo.createRelationship( parent_props[:id], file, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+    batch_neo.createRelationship( parent_props[:id], file, org.neo4j.graphdb.DynamicRelationshipType.withName('child'), nil)
   end
   for k in 1..Integer(subfolders)
     props = java.util.HashMap.new
@@ -36,13 +37,14 @@ def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, files
     #needed for JRuby compatibility
     props.put('classname', Neo4j::Node.to_s)
     folder = batch_neo.createNode(props)
-    batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+#     batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
+    batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.graphdb.DynamicRelationshipType.withName('child'), nil)
     folder_props = {:name => props.get('name'),:id => folder}
     createBatchSubtree(batch_neo, folder_props, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
   end
 end
- 
- 
+
+
 When /^I create a filetree with (.*) files a (.*)kb and (\w+) subfolders in each folder, (\w+) times nested$/ do |filesPerFolder,filesize, nrSubfolders, timesNested|
   size = Integer(filesize)
   fileRoot = nil
@@ -58,7 +60,8 @@ When /^I create a filetree with (.*) files a (.*)kb and (\w+) subfolders in each
   stop
   #start batch inserter to speed things up
   startTime = Time.now
-  batch_neo = org.neo4j.impl.batchinsert.BatchInserterImpl.new('db/neo', org.neo4j.impl.batchinsert.BatchInserterImpl.loadProperties('batch.props'))
+#   batch_neo = org.neo4j.impl.batchinsert.BatchInserterImpl.new('db/neo', org.neo4j.impl.batchinsert.BatchInserterImpl.loadProperties('batch.props'))
+  batch_neo = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new('db/neo', org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.loadProperties('batch.props'))
   createBatchSubtree(batch_neo, parent_props, 0, Integer(filesPerFolder), Integer(filesize), Integer(nrSubfolders), Integer(timesNested))
   #shut down the batchinserter
   batch_neo.shutdown
@@ -67,7 +70,7 @@ When /^I create a filetree with (.*) files a (.*)kb and (\w+) subfolders in each
   Neo4j.start
   
 end
- 
+
 Then /^the total number of nodes in the db should be greater than (\w+)$/ do |totalFiles|
   Neo4j::Transaction.run do 
     tot = Neo4j.number_of_nodes_in_use
@@ -76,7 +79,7 @@ Then /^the total number of nodes in the db should be greater than (\w+)$/ do |to
     
   end
 end
- 
+
 def calcTotalSize(folder)
   totSize = 0 
   folder.rels.outgoing(:child).nodes.each do |node|
@@ -88,15 +91,19 @@ def calcTotalSize(folder)
   end
   return totSize
 end
- 
+
 #this is about 8x faster - untweaked
 def calcSizeJava(node)
   neoNode = node._java_node
   size = 0
-  child = org.neo4j.api.core.DynamicRelationshipType.withName 'child'
-  traverser = neoNode.traverse(org.neo4j.api.core.Traverser::Order::DEPTH_FIRST, 
-    org.neo4j.api.core.StopEvaluator::END_OF_GRAPH, 
-    org.neo4j.api.core.ReturnableEvaluator::ALL, child, org.neo4j.api.core.Direction::OUTGOING )
+#   child = org.neo4j.api.core.DynamicRelationshipType.withName 'child'
+  child = org.neo4j.graphdb.DynamicRelationshipType.withName 'child'
+#   traverser = neoNode.traverse(org.neo4j.api.core.Traverser::Order::DEPTH_FIRST, 
+#     org.neo4j.api.core.StopEvaluator::END_OF_GRAPH, 
+#     org.neo4j.api.core.ReturnableEvaluator::ALL, child, org.neo4j.api.core.Direction::OUTGOING )
+  traverser = neoNode.traverse(org.neo4j.graphdb.Traverser::Order::DEPTH_FIRST, 
+    org.neo4j.graphdb.StopEvaluator::END_OF_GRAPH, 
+    org.neo4j.graphdb.ReturnableEvaluator::ALL, child, org.neo4j.graphdb.Direction::OUTGOING )
   while traverser.hasNext()
     node = traverser.next
     if node.hasProperty('size')
@@ -105,7 +112,7 @@ def calcSizeJava(node)
   end
   size
 end
- 
+
 Then /^the total size of one top folder files should be (\w+) kb and response time less than (.*) s$/ do |totalSize, responseTime|
   Neo4j::Transaction.run do 
     topFolder = Neo4j.ref_node.rels.outgoing(:files).nodes.first
