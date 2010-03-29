@@ -28,7 +28,6 @@ def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, files
     #needed for JRuby compatibility
     props.put('classname', Neo4j::Node.to_s)
     file = batch_neo.createNode(props)
-#     batch_neo.createRelationship( parent_props[:id], file, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
     batch_neo.createRelationship( parent_props[:id], file, org.neo4j.graphdb.DynamicRelationshipType.withName('child'), nil)
   end
   for k in 1..Integer(subfolders)
@@ -37,7 +36,6 @@ def createBatchSubtree(batch_neo, parent_props, currDepth, filesPerFolder, files
     #needed for JRuby compatibility
     props.put('classname', Neo4j::Node.to_s)
     folder = batch_neo.createNode(props)
-#     batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.api.core.DynamicRelationshipType.withName('child'), nil)
     batch_neo.createRelationship(parent_props[:id], folder, org.neo4j.graphdb.DynamicRelationshipType.withName('child'), nil)
     folder_props = {:name => props.get('name'),:id => folder}
     createBatchSubtree(batch_neo, folder_props, currDepth, filesPerFolder, filesize, subfolders, maxDepth)
@@ -60,7 +58,6 @@ When /^I create a filetree with (.*) files a (.*)kb and (\w+) subfolders in each
   stop
   #start batch inserter to speed things up
   startTime = Time.now
-#   batch_neo = org.neo4j.impl.batchinsert.BatchInserterImpl.new('db/neo', org.neo4j.impl.batchinsert.BatchInserterImpl.loadProperties('batch.props'))
   batch_neo = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new('db/neo', org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.loadProperties('batch.props'))
   createBatchSubtree(batch_neo, parent_props, 0, Integer(filesPerFolder), Integer(filesize), Integer(nrSubfolders), Integer(timesNested))
   #shut down the batchinserter
@@ -92,15 +89,10 @@ def calcTotalSize(folder)
   return totSize
 end
 
-#this is about 8x faster - untweaked
 def calcSizeJava(node)
   neoNode = node._java_node
   size = 0
-#   child = org.neo4j.api.core.DynamicRelationshipType.withName 'child'
   child = org.neo4j.graphdb.DynamicRelationshipType.withName 'child'
-#   traverser = neoNode.traverse(org.neo4j.api.core.Traverser::Order::DEPTH_FIRST, 
-#     org.neo4j.api.core.StopEvaluator::END_OF_GRAPH, 
-#     org.neo4j.api.core.ReturnableEvaluator::ALL, child, org.neo4j.api.core.Direction::OUTGOING )
   traverser = neoNode.traverse(org.neo4j.graphdb.Traverser::Order::DEPTH_FIRST, 
     org.neo4j.graphdb.StopEvaluator::END_OF_GRAPH, 
     org.neo4j.graphdb.ReturnableEvaluator::ALL, child, org.neo4j.graphdb.Direction::OUTGOING )

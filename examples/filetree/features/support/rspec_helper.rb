@@ -17,12 +17,8 @@ end
 def reset_config
   # reset configuration
   Lucene::Config.delete_all
-  #Lucene::Config[:storage_path] = File.join(Dir::tmpdir, "ouchdb-lucene")
-  #Lucene::Config[:store_on_file] = false
   
   Neo4j::Config.delete_all
-  #Neo4j::Config[:storage_path] = File.join(Dir::tmpdir, "ouchdb-neo4j")
-  #puts Neo4j::Config[:storage_path]
   
   Neo4j::Config[:storage_path] = "db/neo"
   Lucene::Config[:storage_path] = 'db/lucene'
