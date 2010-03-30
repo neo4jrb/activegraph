@@ -98,6 +98,7 @@ module Neo4j
     def init_without_node(props) # :nodoc:
       props[:_classname] = self.class.to_s
       @_java_node = Neo4j.create_node props
+      update_index if props && !props.empty?
       @_java_node._wrapper = self
       Neo4j.event_handler.node_created(self)
     end
