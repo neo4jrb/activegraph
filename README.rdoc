@@ -438,7 +438,7 @@ Keeping index in memory will increase the performance of Lucene operations (such
 Example to configure Lucene to store indexes on disk instead
 
    Lucene::Config[:store_on_file] = true
-   Lucene::Config[:storage_path] => '/home/neo/lucene-db'
+   Lucene::Config[:storage_path] = '/home/neo/lucene-db'
 
 ==== Lucene Index in Memory
 
