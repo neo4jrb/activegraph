@@ -12,7 +12,6 @@ module Lucene
       @rollback = false
       @commited = false
       @indexes = {} # key is the path to index, value is the index instance
-      $LUCENE_LOGGER.debug{"Created lucene transaction"}
     end
 
     def to_s
@@ -26,13 +25,10 @@ module Lucene
     def commit
       if !@rollback
         @indexes.each_value do |index| 
-          $LUCENE_LOGGER.debug{"BEGIN: Commit index #{index} txt #{to_s}"}        
           index.commit
-          $LUCENE_LOGGER.debug{"END: Commited index #{index} txt #{to_s}"}
         end 
       end
       @commited = true
-      $LUCENE_LOGGER.error("Index was not removed from commited transaction: #{@indexes.inspect}") if !@indexes.empty? && !@rollback 
       @indexes.clear
       Thread.current[:lucene_transaction] = nil
     end

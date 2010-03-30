@@ -6,7 +6,9 @@ Neo4j.migration 2, "Index DB" do
     Neo4j::Transaction.run do
       puts "Creating lucene index ..."
       Actor.index :name, :tokenized => true
+      start = Time.new
       Actor.update_index
+      puts "Index speed #{Time.new - start} sec"
     end
     # only possible to access and query the index after the transaction commits
   end

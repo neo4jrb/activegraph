@@ -4,6 +4,7 @@ require 'lucene'
 require 'lucene/spec_helper'
 
 
+
 describe Index, '(one uncommited document)' do
   before(:each) do
     setup_lucene

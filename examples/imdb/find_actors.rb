@@ -21,6 +21,8 @@ require '1_create_neo_db'
 # just for fun I have two migrations - first one for importing the database and second for indexing it.
 require '2_index_db'
 
+puts "Neo4j Version #{Neo4j::VERSION}"
+
 def find_actor(name)
   Neo4j::Transaction.run do
     puts "Find all actors named #{name}"

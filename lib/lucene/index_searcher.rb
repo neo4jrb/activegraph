@@ -6,15 +6,14 @@ module Lucene
       # Specifies which fields should be sorted in ascending order
       #
       # ==== Parameters
-      # fields<Array>:: One or more fields to sort in ascending order
+      # fields:: One or more fields to sort in ascending order (Array)
       #
       # ==== Examples
-      # Asc[:name, :age]
+      #  Asc[:name, :age]
       #
       # ==== Returns
       # An array of sort fields
       #
-      # :api: public
       def [](*fields)
         fields.map{|x| org.apache.lucene.search.SortField.new(x.to_s)}
       end
@@ -26,15 +25,14 @@ module Lucene
       # Specifies which fields should be sorted in descending order
       #
       # ==== Block parameters
-      # fields<Array>:: One or more fields to sort in descending order
+      # fields:: One or more fields to sort in descending order (Array)
       #
       # ==== Examples
-      # Desc[:name, :age]
+      #  Desc[:name, :age]
       #
       # ==== Returns
       # An array of sort fields
       #
-      # :api: public
       def [](*fields)
         fields.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}
         #org.apache.lucene.search.Sort.new(values.map{|x| org.apache.lucene.search.SortField.new(x.to_s, true)}.to_java(:'org.apache.lucene.search.SortField'))
