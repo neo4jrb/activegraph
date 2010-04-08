@@ -1,3 +1,9 @@
+== 0.4.2 / 2010-04-08
+*  No index on properties for the initialize method bug (#116)
+*  Tidy up Thread Synchronization in Lucene wrapper - lucene indexing performance improvement (#117)
+*  Permission bug loading neo4j jar file (#118)
+*  Spike: Make NodeMixin ActiveModel complient - experimental (#115)
+
 == 0.4.1 / 2010-03-11
 * Migrations (#108)
 * BatchInserter (#111)

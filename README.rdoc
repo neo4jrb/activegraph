@@ -32,6 +32,7 @@ It uses two powerful and mature Java libraries:
 
 === Presentation Materials and other URLs
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
+* Nordic Ruby 2010 (upcoming May 21-23) http://nordicruby.org/speakers#user_29
 * Neo4j wiki - http://wiki.neo4j.org/content/Main_Page (check the guidelines and domain modeling gallery pages)
 
 === Contributing
@@ -63,6 +64,7 @@ There are also some complete examples in the example folder
 * imdb - an example of a Neo4j database consisting of movies, role and actors nodes/relationships (over 18000 nodes).
 * rest - an example how to expose Neo4j nodes as REST resources
 * Ruby on Rails - see http://github.com/andreasronge/neo4j-rails-example/tree/master or http://github.com/sashaagafonoff/peoplemap
+* Rails3/ActiveModel integration see: http://github.com/nicksieger/neo4j-rails
 
 For most of the examples below there are RSpecs available, check the test/neo4j/readme_spec.rb file.
 
