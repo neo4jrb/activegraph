@@ -69,27 +69,19 @@ describe Lucene::Transaction do
   end
     
     
-  it "should not find updated documents from a different thread/transaction" do
+  it "should not find uncommited documents for a different thread" do
     # given
     t1 = Thread.start do 
-      Lucene::Transaction.run do |t|
-        index = Index.new('var/index/foo')        
-        index << {:id => '1', :name => 'andreas'}
-        sleep(0.1)            
-      end  # when it commits&
+      Lucene::Transaction.new
+      index = Index.new('var/index/foo')
+      index << {:id => '1', :name => 'andreas'}
+      index = Index.new('var/index/foo')
+      index.uncommited['1'].should_not be_nil
     end
-      
-    # then
-    index = Index.new('var/index/foo')              
-    result = index.find(:name => 'andreas')
-    result.size.should == 0
+
     t1.join
-      
-    # t1 has not commited so we should find it
-    result = index.find(:name => 'andreas')
-    result.size.should == 1    
-    result[0][:id].should == '1'
-  
+    index = Index.new('var/index/foo')
+    index.uncommited['1'].should be_nil
   end
     
   it "should update an index from several threads" do

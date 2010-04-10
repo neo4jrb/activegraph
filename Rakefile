@@ -14,8 +14,6 @@ rescue LoadError => load_error
   require 'rake/rdoctask'
 end
 
-#require 'hoe'
-
 require 'lib/neo4j/version'
 
 GEM_NAME = 'neo4j'
@@ -24,18 +22,6 @@ GEM_VERSION =Neo4j::VERSION
 
 
 task :default => :spec
-#
-#Hoe.new(GEM_NAME, GEM_VERSION) do |p|
-#  p.rubyforge_name = GEM_NAME
-#  s.summary = PROJECT_SUMMARY
-#end
-
-
-desc "Flog all Ruby files in lib"
-task :flog do
-  system("find lib -name '*.rb' | xargs flog")
-end
-
 
 desc "spec"
 Spec::Rake::SpecTask.new do |t|
@@ -52,7 +38,6 @@ end
 
 desc 'Generate RDoc'
 Rake::RDocTask.new do |rdoc|
-#   rdoc -o doc --inline-source --format=html -T hanna
   rdoc.rdoc_dir = './rdoc'
   rdoc.options << '--title' << "Neo4j v#{Neo4j::VERSION}" << '--line-numbers' << '--inline-source' << '--main' << 'README.rdoc'
   rdoc.options << '--webcvs=http://github.com/andreasronge/neo4j/tree/master/'
@@ -75,7 +60,7 @@ end
 ##############################################################################
  
 # What files/dirs should 'rake clean' remove?
-CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png", 'var']
+CLEAN.include ["*.gem", "pkg", "rdoc", "coverage", "tools/*.png", 'var', '**/tmp']
  
 # The file list used to package tarballs, gems, and for generating the xmpp4r.gemspec.
 PKG_FILES = %w( LICENSE CHANGELOG README.rdoc Rakefile ) + Dir["{lib,test,examples}/**/*"]
@@ -110,10 +95,6 @@ Rake::GemPackageTask.new(spec) do |pkg|
   pkg.gem_spec = spec
   pkg.need_tar = true
 end
- 
-# also keep the gemspec up to date each time we package a tarball or gem
-#task :package => ['gem:update_gemspec']
-#task :gem => ['gem:update_gemspec']
  
 namespace :gem do
  

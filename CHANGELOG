@@ -1,3 +1,7 @@
+== 0.4.3 / 2010-04-10
+* Fixed .gitignore - make sure that we do not include unnecessarily files like neo4j databases. Release 0.4.2 contained test data.
+* Added synchronize around Index.new so that two thread can't modify the same index at the same time.
+
 == 0.4.2 / 2010-04-08
 *  No index on properties for the initialize method bug (#116)
 *  Tidy up Thread Synchronization in Lucene wrapper - lucene indexing performance improvement (#117)

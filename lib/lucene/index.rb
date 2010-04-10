@@ -64,14 +64,17 @@ module Lucene
     # Returns a new or an already existing Index
     #
     def self.new(path)
-      # create a new transaction if needed
-      Transaction.new unless Transaction.running?
+      # make sure no one modifies the index specified at given path
+      lock(path).synchronize do
+        # create a new transaction if needed
+        Transaction.new unless Transaction.running?
 
-      # create a new instance only if it does not already exist in the current transaction
-      unless Transaction.current.index?(path)
-        info = IndexInfo.instance(path)
-        index = super(path, info)
-        Transaction.current.register_index(path, index)
+        # create a new instance only if it does not already exist in the current transaction
+        unless Transaction.current.index?(path)
+          info = IndexInfo.instance(path)
+          index = super(path, info)
+          Transaction.current.register_index(path, index)
+        end
       end
       # return the index for the current transaction
       Transaction.current.index(path)
