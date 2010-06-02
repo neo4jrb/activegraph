@@ -88,7 +88,7 @@ module Neo4j
           BatchItem.new(id, inserter)
         end
         define_method(:create_rel) do |type, from_node, to_node, props|
-          props.each_pair{|k, v| props.delete(k); props[k.to_s] = v} if props
+          props = Hash[*props.map{|k, v| [k.to_s, v]}.flatten] if props
           java_type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
           id = inserter.createRelationship(from_node.neo_id, to_node.neo_id, java_type, props)
           BatchItem.new(id, inserter)
