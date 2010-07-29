@@ -135,9 +135,9 @@ module Neo4j
 
         def each
           if @raw
-            @relationships.each { |relationship| yield relationship.getOtherNode(@relationships.node) }
+            @relationships.each { |relationship| yield relationship.other_node(@relationships.node) }
           else
-            @relationships.each { |relationship| yield relationship.getOtherNode(@relationships.node).wrapper }
+            @relationships.each { |relationship| yield relationship.other_node(@relationships.node).wrapper }
           end
         end
 

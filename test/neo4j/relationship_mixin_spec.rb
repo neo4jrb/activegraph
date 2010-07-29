@@ -24,10 +24,18 @@ describe Neo4j::RelationshipMixin do
   end
 
   after(:each) do
-    Neo4j::Transaction.new
     stop
   end
 
+
+  it "should allow traversing nodes (e.g. node.rels.incoming ...)" do
+    # also see Lighthouse ticket 121 - Classes mixing in Neo4j::RelationshipMixin should respond to :getOtherNode
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    MyRel.new(:rel,a,b)
+    b.rels.incoming(:rel).nodes.first.should == a
+  end
+  
   it "should have a new method taking 3 arguments: type, from_node, to_node" do
     rel = MyRel.new(:friends, @node_a, @node_b)
     rel.should be_kind_of(MyRel)

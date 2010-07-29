@@ -104,6 +104,13 @@ module Neo4j
     end
 
 
+    # Since we sometimes don't know if we have a java node or a wrapped Ruby node we need this so that we
+    # always can call this method
+    def wrapper # :nodoc:
+      self
+    end
+
+
     # --------------------------------------------------------------------------
     # Property methods
     #
