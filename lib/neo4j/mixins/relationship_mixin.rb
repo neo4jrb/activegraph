@@ -16,14 +16,13 @@ module Neo4j
     # Expects at least one parameter.
     #
     # This method is used both when neo4j.rb loads relationships from the database as well as when
-    # a relationship is first created.
+    # a relationship is first created.  If you are only interested in when the relationship is created in the database
+    # see the #init_with_args (which you may want to override and call super on).
     #
-    # Method init_with_args are called if first argument is not kind of Java::org.neo4j.graphdb.Relationship
+    # ==== Parameters (when loading from DB)
+    # param1:: the internal java relationship object (org.neo4j.graphdb.Relationship)
     #
-    # ==== Parameters (loading from DB)
-    # param1<org.neo4j.graphdb.Relationship>:: the internal java relationship object
-    #
-    # ==== Parameters (creating new relationship
+    # ==== Parameters (when creating a new relationship in db)
     # type:: the key and value to be set
     # from_node:: create relationship from this node
     # to:: create relationship to this node
@@ -40,8 +39,10 @@ module Neo4j
     end
 
 
-    # Initialize this relationship with the given arguments
-
+    # Initialize this relationship with the given arguments.
+    # This method is only called when the relationship is created in the database
+    # (and not when it is loaded from the database).
+    #
     # ==== Parameters
     # type:: the key and value to be set
     # from_node:: create relationship from this node

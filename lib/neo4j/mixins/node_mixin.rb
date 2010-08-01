@@ -58,8 +58,9 @@ module Neo4j
     #   # or also possible
     #   node = MyNode :name => 'jimmy', :age => 12
     #
-    # The init_node is only called when the node is constructed the first, unlike te initialize method which is used both for
-    # loading the node from the Neo4j database and creating the Ruby object.
+    # The init_node is only called when the node is created in the database.
+    # The initialize method is used both for to purposes:
+    # loading an already existing node from the Neo4j database and creating a new node in the database.
     #
     def initialize(*args)
       # was a neo java node provided ?
