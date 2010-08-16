@@ -26,6 +26,23 @@ describe "Neo4j-Lucene" do
     end
 
     after(:each) { stop }
+
+    it "should allow to set an indexed property to nil" do 
+# see http://github.com/andreasronge/neo4j/issues#issue/4
+      Neo4j::Transaction.run do
+        t = TestNode.new
+        t.name = 'hello'
+      end
+
+      Neo4j::Transaction.new
+      t2 = TestNode.find(:name => 'hello')[0]
+      t2.name = nil #should not raise an exception
+      Neo4j::Transaction.finish
+
+      Neo4j::Transaction.new
+      t2 = TestNode.find(:name => 'hello').should be_empty
+      Neo4j::Transaction.finish
+    end
     
     it "should keep index on filesystem if specifed" do
       Lucene::Config[:store_on_file] = true

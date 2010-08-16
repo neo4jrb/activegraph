@@ -74,7 +74,7 @@ module Neo4j::JavaPropertyMixin
   def delete_property (name)
     removed = !removeProperty(name).nil?
     if (removed and @_wrapper and name[0] != '_') # do not want events on internal properties
-      @_wrapper.class.indexer.on_property_changed(self, name)
+      @_wrapper.class.indexer.on_property_changed(@_wrapper, name)
     end
     removed
   end
