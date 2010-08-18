@@ -70,16 +70,25 @@ For most of the examples below there are RSpecs available, check the test/neo4j/
 
 == Installation
 
-To install it:
+==== Install JRuby
+The easiest way to install JRuby is by using RVM, see http://rvm.beginrescueend.com. Otherwise check: http://kenai.com/projects/jruby/pages/GettingStarted#Installing_JRuby  
+
+==== Install the Neo4j Gem
 
   jruby -S gem install neo4j
+
+If you are using RVM
+
+  gem install neo4j
+
+==== Install from GitHub
 
 To install from the latest source:
   git clone git://github.com/andreasronge/neo4j.git
   cd neo4j
   rake gem:install
 
-This has been verified to work on JRuby 1.4.0
+This has been verified to work on JRuby 1.4.0 and JRuby 1.5.0
 
 ==== Running all RSpecs
 
