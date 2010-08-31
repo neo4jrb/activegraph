@@ -142,6 +142,23 @@ describe "Neo4j::NodeMixin#has_one " do
     person.address.should == address2
   end
 
+  it "should not delete the previous node when a new one is set, only the relationship" do
+    # http://github.com/andreasronge/neo4j/issues#issue/5
+   person = Person.new
+
+   address = Address.new
+   a_id = address.neo_id
+   person.address = address
+   Neo4j.load_node(a_id).should_not be_nil
+  
+   # when 
+   person.address = Address.new
+   Neo4j::Transaction.finish
+   Neo4j::Transaction.new
+
+   # then
+   Neo4j.load_node(a_id).should_not be_nil
+  end
 
   it "should create a relationship with the new method, like node1.rel.new(node2)" do
     # given

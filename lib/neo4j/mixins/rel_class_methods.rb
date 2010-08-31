@@ -32,7 +32,7 @@ module Neo4j::RelClassMethods
     module_eval(%Q{def #{rel_type}=(value)
                     dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
                     r = Neo4j::Relationships::HasN.new(self, dsl)
-                    r.each {|n| n.del} # delete previous relationships, only one can exist
+                    r.rels.each {|n| n.del} # delete previous relationships, only one can exist
                     r << value
                     r
                 end},  __FILE__, __LINE__)
