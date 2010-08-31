@@ -1,3 +1,6 @@
+== 0.4.6 / 2010-08-31
+* Bug fix: Using a has_one - should only delete the relationship to the old node, NOT delete the old node (#123)
+
 == 0.4.5 / 2010-08-18
 * Bug fix: When setting an indexed property = nil, raises an undefined method "root_class" exception (#122)
 
