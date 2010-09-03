@@ -25,8 +25,9 @@ module Neo4j
       nil
     end
 
-    def self.exist?(node_id, instance = Neo4j.instance)
-      self.load(node_id, instance) != nil
+    def self.exist?(node_or_node_id, instance = Neo4j.instance)
+      id = node_or_node_id.respond_to?(:id)? node_or_node_id.id : node_or_node_id
+      self.load(id, instance) != nil
     end
   end
 end
