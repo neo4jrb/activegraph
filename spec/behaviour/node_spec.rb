@@ -70,7 +70,7 @@ describe Neo4j::Node do
 
   describe "Relationships" do
     it "creates an outgoing relationship with #outgoing(:friends) << other_node" do
-      pending
+    #  pending
       Neo4j::Transaction.new
       a = Neo4j::Node.new
       other_node = Neo4j::Node.new

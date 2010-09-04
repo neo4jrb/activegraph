@@ -1,36 +1,86 @@
 module Neo4j
 
 
+  module Equal
+    def equal?(o)
+      eql?(o)
+    end
+
+    def eql?(o)
+      return false unless o.respond_to?(:id)
+      o.id == id
+    end
+
+    def ==(o)
+      eql?(o)
+    end
+  end
 
   module Property
 
-# Returns true if this property container has a property accessible through the given key, false otherwise.
     def property?(key)
       has_property?(key.to_s)
     end
 
-    # Returns the given property if it exist or nil if it does not exist.
     def [](key)
       return unless property?(key)
       get_property(key.to_s)
     end
 
-    # Sets the given property to given value.
-    # Will generate an event if the property does not start with '_' (which could be an internal property, like _classname)
-    #
     def []=(key, value)
       k = key.to_s
       if value.nil?
         delete_property(k)
       else
-#        value = java.lang.Double.new(value) if value.is_a? Float
         setProperty(k, value)
       end
     end
   end
 
+  class NodeTraverser
+    include Enumerable
+
+    def initialize(from, type, dir)
+      @type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
+      @from = from
+      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new
+      @td.breadth_first()
+      @td.relationships(@type)
+    end
+
+    def <<(other_node)
+      @from.create_relationship_to(other_node, @type)
+    end
+
+    def first
+      find { true }
+    end
+
+    def each
+      iter = iterator
+      while (iter.hasNext) do
+        yield iter.next
+      end
+    end
+
+    def iterator
+      iter = @td.traverse(@from).nodes.iterator
+      iter.next if iter.hasNext # don't include the first node'
+      iter
+    end
+  end
+
+  module Relationship
+    def outgoing(type)
+      NodeTraverser.new(self, type, :outgoing)
+    end
+  end
+
+
   org.neo4j.kernel.impl.core.NodeProxy.class_eval do
     include Neo4j::Property
+    include Neo4j::Relationship
+    include Neo4j::Equal
   end
 
 
