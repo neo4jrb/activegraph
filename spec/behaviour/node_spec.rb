@@ -66,4 +66,21 @@ describe Neo4j::Node do
       Neo4j::Transaction.finish
     end
   end
+
+
+  describe "Relationships" do
+    it "creates an outgoing relationship with #outgoing(:friends) << other_node" do
+      pending
+      Neo4j::Transaction.new
+      a = Neo4j::Node.new
+      other_node = Neo4j::Node.new
+
+      # when
+      a.outgoing(:friends) << other_node
+
+      # then
+      a.outgoing(:friends).first.should == other_node
+      Neo4j::Transaction.finish
+    end
+  end
 end

@@ -1,7 +1,7 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
 
-require "rspec-apigen/version"
+require "neo4j/version"
 
 
 desc "clean all, delete all files that are not in git"
@@ -12,13 +12,13 @@ end
 
 desc "create the gemspec"
 task :build => :clean_all do
-  system "gem build rspec-apigen.gemspec"
+  system "gem build neo4j.gemspec"
 end
  
 desc "release gem to gemcutter"
 task :release => :build do
   assert_committed
-  system "gem push rspec-apigen-#{RSpec::ApiGen::VERSION}.gem"
+  system "gem push neo4j-#{Neo4j::VERSION}.gem"
 end
 
 def assert_committed

@@ -77,9 +77,12 @@ To install it:
 To install from the latest source:
   git clone git://github.com/andreasronge/neo4j.git
   cd neo4j
-  rake gem:install
+  gem install bundler # only needed for development
+  bundle install # to install all test dependencies needed for development
+  gem build rspec-apigen.gemspec
+  gem install neo4j-x.y.z.gem
 
-This has been verified to work on JRuby 1.4.0
+This has been verified to work on JRuby 1.5.2
 
 ==== Running all RSpecs
 
