@@ -1,15 +1,4 @@
-begin
-  require "bundler/setup"
-rescue Exception => e
-  if defined? Bundler
-    puts "Type 'bundle install' to download the required gem(s)"
-  else
-    puts "Please install bundler version > 1.0.0 and type 'bundle install'"
-  end
-  raise e
-end
-
-
+#  require "bundler/setup"
 require 'rspec'
 require 'rspec-apigen'
 

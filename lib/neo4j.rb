@@ -60,8 +60,11 @@ module Neo4j
       puts "rollback"
     end
 
-    def index(field, props = {:fulltext => false})
-      @fields[field.to_s] = props
+    def index(field, props)
+      # the key is just the field if the node we want to index is not using the class mapping (NodeMixin)
+      # otherwise we use both the class and the field as a key
+      key = (props && props[:class]) ? "#{props[:class]}:#{field}" : field.to_s
+      @fields[key] = props || {}
     end
 
     def rm_index(field)
@@ -70,17 +73,30 @@ module Neo4j
 
     # void afterCommit(TransactionData data, T state)
     def before_commit(data)
-      data.assigned_node_properties.each {|tx_data| update_index(tx_data) if @fields[tx_data.key]}
+      data.assigned_node_properties.each {|tx_data| update_index(tx_data) if trigger_update?(tx_data)}
+    end
+
+    def index_key_for(field, node)
+      return field unless node.property?(:_classname)
+      # get root node
+      clazz = Neo4j::Node.to_class(node[:_classname])
+      "#{clazz::ROOT_CLASS}:#{field}"
+    end
+
+    def trigger_update?(tx_data)
+      key = index_key_for(tx_data.key, tx_data.entity)
+      @fields[key]
     end
 
     def update_index(tx_data)
       node = tx_data.entity
+      key = index_key_for(tx_data.key, node)
 
       # delete old index if it had a previous value
-      node.rm_index(tx_data.key) unless tx_data.previously_commited_value.nil?
+      node.rm_index(key) unless tx_data.previously_commited_value.nil?
 
       # add index
-      node.index(tx_data.key)
+      node.index(key, node[tx_data.key])
     end
   end
 
@@ -106,8 +122,8 @@ module Neo4j
       @graph.begin_tx
     end
 
-    def index(field)
-      @lucene_sync.index(field)
+    def index(field, props = nil)
+      @lucene_sync.index(field, props)
     end
 
     def rm_index(field)

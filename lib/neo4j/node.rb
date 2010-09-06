@@ -34,11 +34,13 @@ module Neo4j
       def load(node_id, db = Neo4j.db)
         node = db.graph.get_node_by_id(node_id.to_i)
         return node unless node.property?(:_classname)
-        classname = node[:_classname]
-        clazz = classname.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
-        clazz.new(node)
+        to_class(node[:_classname]).new(node)
       rescue org.neo4j.graphdb.NotFoundException
         nil
+      end
+
+      def to_class(class_name)
+        class_name.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
       end
 
       def exist?(node_or_node_id, db = Neo4j.db)
@@ -52,8 +54,8 @@ module Neo4j
 
       # Adds a global index. Will use the event framework in order to keep the property in sync with
       # the lucene database
-      def index(field, db=Neo4j.db)
-        db.index(field)
+      def index(field, props=nil, db=Neo4j.db)
+        db.index(field, props)
       end
 
       def rm_index(field, db=Neo4j.db)

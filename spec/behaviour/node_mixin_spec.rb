@@ -6,10 +6,8 @@ describe Neo4j::NodeMixin do
 
   class MyNode
     include Neo4j::NodeMixin
-
     property :name
     property :city
-    index :city
   end
 
 #  subject do
@@ -25,11 +23,12 @@ describe Neo4j::NodeMixin do
 
   before(:each) do
     Neo4j::Transaction.new
+    # make sure we clean up after each test
+    MyNode.index(:city)
   end
 
   after(:each) do
-    # make sure we clean up after each test
-    Neo4j::Node.rm_index(:city) # Hmm
+    MyNode.rm_index(:city)
     Neo4j::Transaction.finish
   end
 
@@ -54,7 +53,7 @@ describe Neo4j::NodeMixin do
     Neo4j::Transaction.finish
     Neo4j::Transaction.new
 
-    MyNode.find('malmoe').first.should == n
+    MyNode.find(:city, 'malmoe').first.should == n
   end
 
 
@@ -65,8 +64,11 @@ describe Neo4j::NodeMixin do
     Neo4j::Transaction.new
 
     n[:city] = 'stockholm'
-    MyNode.find('malmoe').first.should_not == n
-    MyNode.find('stockholm').first.should == n
+    Neo4j::Transaction.finish
+    Neo4j::Transaction.new
+
+    MyNode.find(:city, 'malmoe').first.should_not == n
+    MyNode.find(:city, 'stockholm').first.should == n
   end
 
 end
