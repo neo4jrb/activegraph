@@ -1,6 +1,15 @@
 module Neo4j
 
 
+  # See http://wiki.neo4j.org/content/Indexing_with_IndexService
+  module Index
+    def index(field, db=Neo4j.db)
+      db.lucene.index(self, field.to_s, self[field])
+    end
+
+  end
+
+
   module Equal
     def equal?(o)
       eql?(o)
@@ -32,7 +41,7 @@ module Neo4j
       if value.nil?
         delete_property(k)
       else
-        setProperty(k, value)
+        set_property(k, value)
       end
     end
   end
@@ -65,7 +74,8 @@ module Neo4j
 
     def iterator
       iter = @td.traverse(@from).nodes.iterator
-      iter.next if iter.hasNext # don't include the first node'
+      iter.next if iter.hasNext
+      # don't include the first node'
       iter
     end
   end
@@ -81,38 +91,45 @@ module Neo4j
     include Neo4j::Property
     include Neo4j::Relationship
     include Neo4j::Equal
+    include Neo4j::Index
   end
 
 
   class Node
-    def self.new(*args)
-      # creates a new node using the default db instance when given no args
 
-      # the first argument can be an hash of properties to set
-      props = args[0].respond_to?(:each_pair) && args[0]
+    class << self
+      def new(*args)
+        # creates a new node using the default db instance when given no args
 
-      # a db instance can be given, is the first argument if that was not a hash, or otherwise the second
-      instance = (!props && args[0]) || args[1]
-      create(props, instance)
-    end
+        # the first argument can be an hash of properties to set
+        props = args[0].respond_to?(:each_pair) && args[0]
 
-    def self.create(props, instance)
-      db = instance || Neo4j.instance
-      node = db.create_node
-      props.each_pair { |k, v| node.set_property(k.to_s, v) } if props
-      node
-    end
+        # a db instance can be given, is the first argument if that was not a hash, or otherwise the second
+        db = (!props && args[0]) || args[1] || Neo4j.db
+        create(props, db)
+      end
+
+      def create(props, db = Neo4j.db)
+        node = db.graph.create_node
+        props.each_pair { |k, v| node.set_property(k.to_s, v) } if props
+        node
+      end
 
 
-    def self.load(node_id, instance = Neo4j.instance)
-      instance.get_node_by_id(node_id.to_i)
-    rescue org.neo4j.graphdb.NotFoundException
-      nil
-    end
+      def load(node_id, db = Neo4j.db)
+        db.graph.get_node_by_id(node_id.to_i)
+      rescue org.neo4j.graphdb.NotFoundException
+        nil
+      end
 
-    def self.exist?(node_or_node_id, instance = Neo4j.instance)
-      id = node_or_node_id.respond_to?(:id) ? node_or_node_id.id : node_or_node_id
-      self.load(id, instance) != nil
+      def exist?(node_or_node_id, db = Neo4j.db)
+        id = node_or_node_id.respond_to?(:id) ? node_or_node_id.id : node_or_node_id
+        load(id, db) != nil
+      end
+
+      def find(field, query, db=Neo4j.db)
+        db.lucene.get_nodes(field.to_s, query)
+      end
     end
   end
 end
