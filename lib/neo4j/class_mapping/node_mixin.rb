@@ -99,6 +99,7 @@ module Neo4j
       end unless c.const_defined?(:DECL_RELATIONSHIPS)
 
       c.extend Neo4j::PropertyClassMethods
+      c.extend Neo4j::IndexClassMethods
     end
 
   end

@@ -79,22 +79,6 @@ module Neo4j::PropertyClassMethods
   end
 
 
-  # Creates a struct class containig all properties of this class.
-  #
-  # ==== Example
-  #
-  # h = Person.value_object.new
-  # h.name    # => nil
-  # h.name='kalle'
-  # h[:name]   # => 'kalle'
-  #
-  # ==== Returns
-  # Struct
-  #
-  def value_object
-    @value_class ||= create_value_class
-  end
-
   # Index a property or a relationship.
   #
   # ==== Example
@@ -125,10 +109,7 @@ module Neo4j::PropertyClassMethods
   # until the update_index method is called.
   #
   def remove_index(*keys)
-    keys.each do |key|
-      raise "Not implemented remove index on a relationship index" if key.to_s.include?('.')
-      indexer.remove_index_on_property(key)
-    end
+    keys.each { |key| indexer.remove_index_on_property(key) }
   end
 
 

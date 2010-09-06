@@ -2,10 +2,6 @@ module Neo4j
 
 
 
-
-
-
-
   org.neo4j.kernel.impl.core.NodeProxy.class_eval do
     include Neo4j::Property
     include Neo4j::Relationship

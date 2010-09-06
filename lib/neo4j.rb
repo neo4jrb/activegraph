@@ -17,6 +17,7 @@ require 'neo4j/relationship'
 require 'neo4j/node'
 require 'neo4j/class_mapping/node_mixin'
 require 'neo4j/class_mapping/property_class_methods'
+require 'neo4j/class_mapping/index_class_methods'
 
 module Neo4j
 
