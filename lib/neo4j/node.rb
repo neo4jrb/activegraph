@@ -1,95 +1,9 @@
 module Neo4j
 
 
-  # See http://wiki.neo4j.org/content/Indexing_with_IndexService
-  module Index
-    def index(field, db=Neo4j.db)
-      db.lucene.index(self, field.to_s, self[field])
-    end
-
-    def rm_index(field, db=Neo4j.db)
-      db.lucene.remove_index(self, field.to_s)
-    end
-
-  end
 
 
-  module Equal
-    def equal?(o)
-      eql?(o)
-    end
 
-    def eql?(o)
-      return false unless o.respond_to?(:id)
-      o.id == id
-    end
-
-
-    def ==(o)
-      eql?(o)
-    end
-  end
-
-  module Property
-
-    def property?(key)
-      has_property?(key.to_s)
-    end
-
-    def [](key)
-      return unless property?(key)
-      get_property(key.to_s)
-    end
-
-    def []=(key, value)
-      k = key.to_s
-      if value.nil?
-        delete_property(k)
-      else
-        set_property(k, value)
-      end
-    end
-  end
-
-  class NodeTraverser
-    include Enumerable
-
-    def initialize(from, type, dir)
-      @type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
-      @from = from
-      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new
-      @td.breadth_first()
-      @td.relationships(@type)
-    end
-
-    def <<(other_node)
-      @from.create_relationship_to(other_node, @type)
-    end
-
-    def first
-      find { true }
-    end
-
-    def each
-      iter = iterator
-      while (iter.hasNext) do
-        yield iter.next
-      end
-    end
-
-    def iterator
-      iter = @td.traverse(@from).nodes.iterator
-      iter.next if iter.hasNext
-      # don't include the first node'
-      iter
-    end
-  end
-
-  module Relationship
-    def outgoing(type)
-      NodeTraverser.new(self, type, :outgoing)
-    end
-  end
 
 
   org.neo4j.kernel.impl.core.NodeProxy.class_eval do

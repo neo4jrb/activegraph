@@ -2,14 +2,19 @@ include Java
 
 require 'forwardable'
 
-require 'neo4j/neo4j-kernel-1.1.jar'
-require 'neo4j/geronimo-jta_1.1_spec-1.1.1.jar'
-require 'neo4j/lucene-core-2.9.2.jar'
-require 'neo4j/neo4j-index-1.1.jar'
+require 'neo4j/jars/neo4j-kernel-1.1.jar'
+require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
+require 'neo4j/jars/lucene-core-2.9.2.jar'
+require 'neo4j/jars/neo4j-index-1.1.jar'
 
-require 'neo4j/node'
-require 'neo4j/transaction'
 require 'neo4j/version'
+require 'neo4j/equal'
+require 'neo4j/index'
+require 'neo4j/node_traverser'
+require 'neo4j/property'
+require 'neo4j/transaction'
+require 'neo4j/relationship'
+require 'neo4j/node'
 require 'neo4j/class_mapping/node_mixin'
 require 'neo4j/class_mapping/property_class_methods'
 
