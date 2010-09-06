@@ -34,6 +34,47 @@ module Neo4j
     end
   end
 
+
+  class LuceneSynchronizer
+    include org.neo4j.graphdb.event.TransactionEventHandler
+
+    def initialize
+      @fields = {}
+    end
+
+    def after_commit(data, state)
+      #puts "before commit"
+    end
+
+    def after_rollback(data, state)
+      puts "rollback"
+    end
+
+    def index(field, props = {:fulltext => false})
+      @fields[field.to_s] = props
+    end
+
+    def rm_index(field)
+      @fields.delete(field.to_s)
+    end
+
+    # void afterCommit(TransactionData data, T state)
+    def before_commit(data)
+      data.assigned_node_properties.each {|tx_data| update_index(tx_data) if @fields[tx_data.key]}
+    end
+
+    def update_index(tx_data)
+      node = tx_data.entity
+
+      # delete old index if it had a previous value
+      node.rm_index(tx_data.key) unless tx_data.previously_commited_value.nil?
+
+      # add index
+      node.index(tx_data.key)
+    end
+  end
+
+
   class Database
     attr_reader :config, :graph, :lucene, :lucene_fulltext
 
@@ -41,6 +82,8 @@ module Neo4j
       @config = config
       @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(@config[:storage_path])
       @lucene =  org.neo4j.index.lucene.LuceneIndexService.new(@graph)
+      @lucene_sync = LuceneSynchronizer.new
+      @graph.register_transaction_event_handler(@lucene_sync)
     end
 
 
@@ -51,6 +94,15 @@ module Neo4j
 
     def begin_tx
       @graph.begin_tx
+    end
+
+    def index(field)
+      @lucene_sync.index(field)
+    end
+
+    def rm_index(field)
+      @lucene_sync.rm_index(field)
+      @lucene.remove_index(field.to_s)
     end
   end
 

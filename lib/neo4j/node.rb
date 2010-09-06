@@ -7,6 +7,10 @@ module Neo4j
       db.lucene.index(self, field.to_s, self[field])
     end
 
+    def rm_index(field, db=Neo4j.db)
+      db.lucene.remove_index(self, field.to_s)
+    end
+
   end
 
 
@@ -129,6 +133,16 @@ module Neo4j
 
       def find(field, query, db=Neo4j.db)
         db.lucene.get_nodes(field.to_s, query)
+      end
+
+      # Adds a global index. Will use the event framework in order to keep the property in sync with
+      # the lucene database
+      def index(field, db=Neo4j.db)
+        db.index(field)
+      end
+
+      def rm_index(field, db=Neo4j.db)
+        db.rm_index(field)
       end
     end
   end
