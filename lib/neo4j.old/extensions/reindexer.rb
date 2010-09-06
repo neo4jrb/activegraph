@@ -2,7 +2,7 @@ module Neo4j
 
   module PropertyClassMethods
       # Traverse all nodes and update the lucene index.
-      # Can be used for example if it is neccessarly to change the index on a class
+      # Can be used for example if it's' necessary to change the index on a class
       #
       def update_index
         all.nodes.each do |n|

@@ -24,6 +24,7 @@ module Neo4j
       o.id == id
     end
 
+
     def ==(o)
       eql?(o)
     end
@@ -121,7 +122,11 @@ module Neo4j
 
 
       def load(node_id, db = Neo4j.db)
-        db.graph.get_node_by_id(node_id.to_i)
+        node = db.graph.get_node_by_id(node_id.to_i)
+        return node unless node.property?(:_classname)
+        classname = node[:_classname]
+        clazz = classname.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
+        clazz.new(node)
       rescue org.neo4j.graphdb.NotFoundException
         nil
       end

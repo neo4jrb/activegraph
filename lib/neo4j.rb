@@ -1,5 +1,7 @@
 include Java
 
+require 'forwardable'
+
 require 'neo4j/neo4j-kernel-1.1.jar'
 require 'neo4j/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/lucene-core-2.9.2.jar'
@@ -8,6 +10,8 @@ require 'neo4j/neo4j-index-1.1.jar'
 require 'neo4j/node'
 require 'neo4j/transaction'
 require 'neo4j/version'
+require 'neo4j/class_mapping/node_mixin'
+require 'neo4j/class_mapping/property_class_methods'
 
 module Neo4j
 
