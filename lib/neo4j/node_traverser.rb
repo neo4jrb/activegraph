@@ -10,18 +10,21 @@ module Neo4j
                when :both  then org.neo4j.graphdb.Direction::BOTH
                when :incoming then org.neo4j.graphdb.Direction::INCOMING
                else raise "unknown direction '#{dir}', expects :outgoing, :incoming or :both"
-      end
-      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first().relationships(@type, @dir).
-              prune(org.neo4j.kernel.Traversal.pruneAfterDepth( 1 ) )
+             end
+      @depth = 1
+      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first().relationships(@type, @dir)
     end
 
 
     def <<(other_node)
+      raise "Only allowed to create outgoing relationships, please add it on the other node if you want to create an incoming relationship" unless @dir == org.neo4j.graphdb.Direction::OUTGOING
       @from.create_relationship_to(other_node, @type)
     end
 
-    def first
-      find { true }
+
+    def depth(d)
+      @depth = d
+      self
     end
 
     def each
@@ -32,6 +35,7 @@ module Neo4j
     end
 
     def iterator
+      @td = @td.prune(org.neo4j.kernel.Traversal.pruneAfterDepth( @depth ) )
       iter = @td.traverse(@from).nodes.iterator
       iter.next if iter.hasNext
       # don't include the first node'
