@@ -2,9 +2,14 @@ module Neo4j
   class RelationshipTraverser
     include Enumerable
 
-    def initialize(node, type)
+    def initialize(node, types)
       @node = node
-      @type = type && org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
+      if types.size > 1
+        @types = types.inject([]) {|result, type| result << org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)}.to_java(:'org.neo4j.graphdb.RelationshipType')
+      elsif types.size == 1
+        @type = org.neo4j.graphdb.DynamicRelationshipType.withName(types[0].to_s)
+      end
+
       both # return both incoming and outgoing relationship by default
     end
 
@@ -16,23 +21,37 @@ module Neo4j
     end
 
     def iterator
-      if @type
+      if @types
+       @node.get_relationships(@types).iterator
+      elsif @type
         @node.get_relationships(@type, @dir).iterator
       else
         @node.get_relationships(@dir).iterator
       end
+
+
+      #if @type
+      #  @node.get_relationships(@type, @dir).iterator
+      #else
+      #  @node.get_relationships(@dir).iterator
+      #end
     end
 
     def both
       @dir = org.neo4j.graphdb.Direction::BOTH
+      self
     end
 
     def incoming
+      raise "Not allowed calling incoming when finding several relationships types" if @types
       @dir = org.neo4j.graphdb.Direction::INCOMING
+      self
     end
 
     def outgoing
+      raise "Not allowed calling outgoing when finding several relationships types" if @types
       @dir = org.neo4j.graphdb.Direction::OUTGOING
+      self
     end
 
   end
@@ -43,7 +62,7 @@ module Neo4j
       NodeTraverser.new(self, type, :outgoing)
     end
 
-    def rels(type=nil)
+    def rels(*type)
       RelationshipTraverser.new(self, type)
     end
 

@@ -120,7 +120,7 @@ describe Neo4j::Node do
       nodes.should_not include(a,c,e)
     end
 
-    it "#rels(:friends) should return both incoming and outgoing relationship of given type of depth one" do
+    it "#rels(:friends) should return both incoming and outgoing relationships of given type of depth one" do
       # given
       a,b,c,d,e = create_nodes
 
@@ -133,6 +133,41 @@ describe Neo4j::Node do
       nodes.should include(b,c)
       nodes.should_not include(a,d,e)
     end
+
+    it "#rels(:friends).outgoing should return only outgoing relationships of given type of depth one" do
+      # given
+      a,b,c,d,e = create_nodes
+
+      # when
+      rels = [*b.rels(:friends).outgoing]
+
+      # then
+      rels.size.should == 1
+      nodes = rels.collect{|r| r.end_node}
+      nodes.should include(c)
+      nodes.should_not include(a,b,d,e)
+    end
+
+    it "#rels(:friends,:work) should return both incoming and outgoing relationships of given types of depth one" do
+      # given
+      a,b,c,d,e = create_nodes
+
+      # when
+      rels = [*b.rels(:friends,:work)]
+
+      # then
+      rels.size.should == 4
+      nodes = rels.collect{|r| r.end_node}
+      nodes.should include(b,c,d)
+      nodes.should_not include(a,e)
+    end
+
+    it "#rels(:friends,:work).outgoing/incomingshould raise exception" do
+      node = Neo4j::Node.new
+      expect{ node.rels(:friends, :work).outgoing }.to raise_error
+      expect{ node.rels(:friends, :work).incoming }.to raise_error
+    end
+
 
     it "traversing new api" do
       pending
