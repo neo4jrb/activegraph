@@ -82,5 +82,23 @@ describe Neo4j::Node do
       a.outgoing(:friends).first.should == other_node
       Neo4j::Transaction.finish
     end
+
+    it "traversing new api" do
+      pending
+      node.both(:friends)
+      node.rels(:friends).nodes {|x|}
+
+      node.outgoing(:friends)
+      node.rels(:friends).outgoing.nodes {|x|}
+
+      node.rels(:friends).each {|x|}
+      node.rels(:friends).outgoing.each {|x|}
+      node.rels.each {|x|}
+      node.rels.outgoing.nodes.each {|x|}
+
+
+    end
+
   end
+
 end

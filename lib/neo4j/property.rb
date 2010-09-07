@@ -13,7 +13,7 @@ module Neo4j
     def []=(key, value)
       k = key.to_s
       if value.nil?
-        delete_property(k)
+        remove_property(k)
       else
         set_property(k, value)
       end

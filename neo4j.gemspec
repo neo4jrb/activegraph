@@ -20,6 +20,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = %w( README.rdoc )
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
   s.required_ruby_version = ">= 1.8.4"
-  s.add_development_dependency "rspec-apigen", ">= 0.0.3"
+  s.add_development_dependency "rspec-apigen", ">= 0.0.4"
 
 end

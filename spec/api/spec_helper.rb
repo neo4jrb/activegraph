@@ -16,6 +16,10 @@ class DummyNode
   def set_property(p,v)
     @props[p] = v
   end
+
+  def property?(p)
+    !@props[p].nil?
+  end
 end
 
 
