@@ -2,19 +2,31 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__))
 require 'spec_helper'
 
 describe Neo4j::Node do
-  before(:all) { FileUtils.rm_rf Neo4j.config[:storage_path]; FileUtils.mkdir_p(Neo4j.config[:storage_path]) }
-  after(:all) { Neo4j.shutdown }
+  before(:all) do
+    FileUtils.rm_rf Neo4j.config[:storage_path]
+    FileUtils.mkdir_p(Neo4j.config[:storage_path])
+  end
+
+  after(:all) do
+    Neo4j.shutdown
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
 
   describe "Create" do
     it "created node should exist in db after transaction finish" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       Neo4j::Transaction.finish
       Neo4j::Node.should exist(new_node)
     end
 
     it "created node should exist in db before transaction finish" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       Neo4j::Node.should exist(new_node)
       Neo4j::Transaction.finish
@@ -23,55 +35,66 @@ describe Neo4j::Node do
 
   describe "Properties" do
     it "set and get String properties with the [] operator" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       new_node[:key] = 'myvalue'
       new_node[:key].should == 'myvalue'
-      Neo4j::Transaction.finish
     end
 
     it "set and get Fixnum properties with the [] operator" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       new_node[:key] = 42
       new_node[:key].should == 42
-      Neo4j::Transaction.finish
     end
 
 
     it "set and get Float properties with the [] operator" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       new_node[:key] = 3.1415
       new_node[:key].should == 3.1415
-      Neo4j::Transaction.finish
     end
 
     it "set and get Boolean properties with the [] operator" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       new_node[:key] = true
       new_node[:key].should == true
       new_node[:key] = false
       new_node[:key].should == false
-      Neo4j::Transaction.finish
     end
 
 
     it "set and get properties with the [] operator and String key" do
-      Neo4j::Transaction.new
       new_node = Neo4j::Node.new
       new_node["a"] = 'foo'
       new_node["a"].should == 'foo'
-      Neo4j::Transaction.finish
     end
   end
 
 
   describe "Relationships" do
-    it "creates an outgoing relationship with #outgoing(:friends) << other_node" do
-    #  pending
-      Neo4j::Transaction.new
+
+    def create_nodes
+      #
+      #  a --friend--> b  --friend--> c
+      #                |              ^
+      #                |              |
+      #                +--- work -----+
+      #                |
+      #                +--- work ---> d  --- work --> e
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      c = Neo4j::Node.new
+      d = Neo4j::Node.new
+      e = Neo4j::Node.new
+      a.outgoing(:friends) << b
+      b.outgoing(:friends) << c
+      b.outgoing(:work) << c
+      b.outgoing(:work) << d
+      d.outgoing(:work) << e
+      [a,b,c,d,e]
+    end
+
+
+    it "#outgoing(:friends) << other_node creates an outgoing relationship of type :friends" do
       a = Neo4j::Node.new
       other_node = Neo4j::Node.new
 
@@ -80,13 +103,47 @@ describe Neo4j::Node do
 
       # then
       a.outgoing(:friends).first.should == other_node
-      Neo4j::Transaction.finish
+    end
+
+    it "#outgoing(type) should only return outgoing nodes of the given type of depth one" do
+      a,b,c,d = create_nodes
+      b.outgoing(:work).should include(c,d)
+      [*b.outgoing(:work)].size.should == 2
+    end
+
+    it "#rels should return both incoming and outgoing relationship of any type of depth one" do
+      a,b,c,d,e = create_nodes
+#      [a,b,c,d,e].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
+      [*b.rels].size.should == 4
+      nodes = b.rels.collect{|r| r.end_node}
+      nodes.should include(b,d)
+      nodes.should_not include(a,c,e)
+    end
+
+    it "#rels(:friends) should return both incoming and outgoing relationship of given type of depth one" do
+      # given
+      a,b,c,d,e = create_nodes
+
+      # when
+      rels = [*b.rels(:friends)]
+
+      # then
+      rels.size.should == 2
+      nodes = rels.collect{|r| r.end_node}
+      nodes.should include(b,c)
+      nodes.should_not include(a,d,e)
     end
 
     it "traversing new api" do
       pending
       node.both(:friends)
       node.rels(:friends).nodes {|x|}
+
+
+      #node.rels(:friends, :work).outgoing
+      node.rels(:friends).outgoing.nodes << Node.new # deprecated
+      node.outgoing(:friends) << Node.new
+
 
       node.outgoing(:friends)
       node.rels(:friends).outgoing.nodes {|x|}

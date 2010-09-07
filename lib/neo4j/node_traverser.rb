@@ -3,12 +3,18 @@ module Neo4j
     include Enumerable
 
     def initialize(from, type, dir)
-      @type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
       @from = from
-      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new
-      @td.breadth_first()
-      @td.relationships(@type)
+      @type = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
+      @dir = case dir
+               when :outgoing  then org.neo4j.graphdb.Direction::OUTGOING
+               when :both  then org.neo4j.graphdb.Direction::BOTH
+               when :incoming then org.neo4j.graphdb.Direction::INCOMING
+               else raise "unknown direction '#{dir}', expects :outgoing, :incoming or :both"
+      end
+      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first().relationships(@type, @dir).
+              prune(org.neo4j.kernel.Traversal.pruneAfterDepth( 1 ) )
     end
+
 
     def <<(other_node)
       @from.create_relationship_to(other_node, @type)
