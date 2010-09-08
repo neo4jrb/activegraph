@@ -32,11 +32,11 @@ module Neo4j::Mapping
   #
   class DeclRelationshipDsl
 
-    attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id
+    attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id, :direction
     CASCADE_DELETE_PROP_NAMES = {:outgoing => :_cascade_delete_outgoing, :incoming => :_cascade_delete_incoming}
 
     def initialize(rel_id, params)
-      @outgoing = true
+      @direction = :outgoing
       @rel_id = rel_id
       @to_type = rel_id
       @namespace_type = rel_id
@@ -89,7 +89,7 @@ module Neo4j::Mapping
     #  folder.files << FileNode.new
     #
     def to(*args)
-      @outgoing = true
+      @direction = :outgoing
       @to_class, @to_type = class_and_type_from_args(args)
       self
     end
@@ -114,7 +114,7 @@ module Neo4j::Mapping
     #
     def from(*args)
       #(clazz, type)
-      @outgoing = false
+      @direction = :incoming
       @to_class, @to_type = class_and_type_from_args(args)
       self
     end

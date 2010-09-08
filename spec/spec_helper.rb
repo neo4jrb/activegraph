@@ -4,7 +4,7 @@ require 'rspec-apigen'
 require 'fileutils'
 require 'tmpdir'
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "..", "lib")
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
 require 'neo4j'
 
@@ -20,23 +20,40 @@ class DummyNode
   def set_property(p, v)
     @props[p] = v
   end
+
+   def property?(p)
+    !@props[p].nil?
+  end
 end
 
 RSpec.configure do |c|
+#  c.filter = { :type => :integration}
+
   c.before(:all, :type => :integration) do
-    FileUtils.rm_rf Neo4j.config[:storage_path]
-    FileUtils.mkdir_p(Neo4j.config[:storage_path])
+    # looks like there is a bug in rspec - this will prevent before all being called twice (sometimes)
+#    unless @before_all
+      FileUtils.rm_rf Neo4j.config[:storage_path]
+      FileUtils.mkdir_p(Neo4j.config[:storage_path])
+#    end
+    @before_all = true
   end
 
   c.after(:all, :type => :integration) do
+    @before_all = false
+
     Neo4j.shutdown
+    FileUtils.rm_rf Neo4j.config[:storage_path]
   end
 
   c.before(:each, :type => :integration) do
-    Neo4j::Transaction.new
+    unless @before_each
+      Neo4j::Transaction.new
+    end
+    @before_each = true
   end
 
   c.after(:each, :type => :integration) do
+    @before_each = false
     Neo4j::Transaction.finish
   end
 

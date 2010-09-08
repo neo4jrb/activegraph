@@ -20,6 +20,8 @@ require 'neo4j/node'
 require 'neo4j/mapping/property_class_methods'
 require 'neo4j/mapping/index_class_methods'
 require 'neo4j/mapping/relationship_class_methods'
+require 'neo4j/mapping/decl_relationship_dsl'
+require 'neo4j/mapping/has_n'
 require 'neo4j/mapping/node_mixin'
 require 'neo4j/node_mixin'
 

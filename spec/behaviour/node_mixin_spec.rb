@@ -1,5 +1,4 @@
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__))
-require 'spec_helper'
+require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::NodeMixin, :type=> :integration do
@@ -12,12 +11,10 @@ describe Neo4j::NodeMixin, :type=> :integration do
 
 
   before(:each) do
-    puts "CREATE INDEX"
     MyNode.index(:city)  # TODO
   end
 
   after(:each) do
-    puts "REMOVE INDEX"
     MyNode.rm_index(:city)     # TODO
   end
 

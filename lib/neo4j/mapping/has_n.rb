@@ -20,7 +20,7 @@ module Neo4j
           raise "Unspecified outgoing relationship '#{dsl.to_type}' for incoming relationship '#{dsl.rel_id}' on class #{clazz}" if @dsl.nil?
         end
 
-        @traverser = Neo4j::NodeTraverser.new(node._java_node, @direction, @dsl.namespace_type)
+        @traverser = Neo4j::NodeTraverser.new(node._java_node, @dsl.namespace_type, @direction)
       end
 
 
@@ -101,7 +101,8 @@ module Neo4j
           from, to = other, node
         end
 
-        rel = from.add_rel(@dsl.namespace_type, to, @dsl.relationship_class)
+        rel = from.outgoing(@dsl.namespace_type) << to
+        # rel[_classname] =  @dsl.relationship_class # TODO
 
         # the from.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
         # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted

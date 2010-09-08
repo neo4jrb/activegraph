@@ -1,5 +1,4 @@
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__))
-require 'spec_helper'
+require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::Node do
 
