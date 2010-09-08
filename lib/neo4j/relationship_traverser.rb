@@ -2,17 +2,17 @@ module Neo4j
 
   class RelationshipTraverser
     include Enumerable
+    include ToJava
 
-    def initialize(node, types)
+    def initialize(node, types, dir)
       @node = node
       if types.size > 1
         @types = types.inject([]) { |result, type| result << org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s) }.to_java(:'org.neo4j.graphdb.RelationshipType')
       elsif types.size == 1
-        @type = org.neo4j.graphdb.DynamicRelationshipType.withName(types[0].to_s)
+        @type = type_to_java(types[0])
       end
 
-      both
-      # return both incoming and outgoing relationship by default
+      @dir = dir_to_java(dir)
     end
 
     def each
@@ -33,19 +33,19 @@ module Neo4j
     end
 
     def both
-      @dir = org.neo4j.graphdb.Direction::BOTH
+      @dir = dir_to_java(:both)
       self
     end
 
     def incoming
       raise "Not allowed calling incoming when finding several relationships types" if @types
-      @dir = org.neo4j.graphdb.Direction::INCOMING
+      @dir = dir_to_java(:incoming)
       self
     end
 
     def outgoing
       raise "Not allowed calling outgoing when finding several relationships types" if @types
-      @dir = org.neo4j.graphdb.Direction::OUTGOING
+      @dir = dir_to_java(:outgoing)
       self
     end
 

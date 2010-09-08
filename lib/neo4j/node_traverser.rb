@@ -1,6 +1,6 @@
 module Neo4j
 
-  class PruneEvaluator
+  class PruneEvaluator  # :nodoc:
     include org.neo4j.graphdb.traversal.PruneEvaluator
     def initialize(proc)
       @proc = proc
@@ -11,7 +11,7 @@ module Neo4j
     end
   end
 
-  class FilterPredicate
+  class FilterPredicate # :nodoc:
     include org.neo4j.helpers.Predicate
     def initialize(proc)
       @proc = proc
@@ -30,6 +30,7 @@ module Neo4j
 
   class NodeTraverser
     include Enumerable
+    include ToJava
 
     def initialize(from, type, dir)
       @from  = from
@@ -40,18 +41,6 @@ module Neo4j
     end
 
 
-    def type_to_java(type)
-      org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
-    end
-
-    def dir_to_java(dir)
-      case dir
-        when :outgoing then org.neo4j.graphdb.Direction::OUTGOING
-        when :both     then org.neo4j.graphdb.Direction::BOTH
-        when :incoming then org.neo4j.graphdb.Direction::INCOMING
-        else raise "unknown direction '#{dir}', expects :outgoing, :incoming or :both"
-      end
-    end
 
     def <<(other_node)
       raise "Only allowed to create outgoing relationships, please add it on the other node if you want to create an incoming relationship" unless @dir == org.neo4j.graphdb.Direction::OUTGOING

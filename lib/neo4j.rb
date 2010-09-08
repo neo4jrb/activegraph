@@ -7,6 +7,7 @@ require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/lucene-core-2.9.2.jar'
 require 'neo4j/jars/neo4j-index-1.1.jar'
 
+require 'neo4j/to_java'
 require 'neo4j/version'
 require 'neo4j/equal'
 require 'neo4j/index'

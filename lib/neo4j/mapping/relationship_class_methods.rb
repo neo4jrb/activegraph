@@ -21,23 +21,23 @@ module Neo4j::Mapping
     #
     # ==== Returns
     #
-    # Neo4j::DeclRelationshipDsl
+    # Neo4j::Mapping::DeclRelationshipDsl
     #
     def has_n(rel_type, params = {})
       clazz = self
       module_eval(%Q{
                 def #{rel_type}(&block)
                     dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
-                    Neo4j::HasN.new(self, dsl, &block)
+                    Neo4j::Mapping::HasN.new(self, dsl, &block)
                 end}, __FILE__, __LINE__)
 
       module_eval(%Q{
                 def #{rel_type}_rels
                     dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
-                    Neo4j::Relationships::HasN.new(self, dsl).rels
+                    Neo4j::Mapping::HasN.new(self, dsl).rels
       end}, __FILE__, __LINE__)
 
-      decl_relationships[rel_type.to_sym] = Neo4j::DeclRelationshipDsl.new(rel_type, params)
+      decl_relationships[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
     end
 
   end

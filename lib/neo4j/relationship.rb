@@ -15,7 +15,7 @@ module Neo4j
     end
 
     def rels(*type)
-      RelationshipTraverser.new(self, type)
+      RelationshipTraverser.new(self, type, :both)
     end
 
   end
