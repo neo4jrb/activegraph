@@ -20,6 +20,7 @@ require 'neo4j/transaction'
 require 'neo4j/node_relationship'
 require 'neo4j/relationship'
 require 'neo4j/node'
+require 'neo4j/config'
 require 'neo4j/mapping/property_class_methods'
 require 'neo4j/mapping/index_class_methods'
 require 'neo4j/mapping/relationship_class_methods'
@@ -30,26 +31,24 @@ require 'neo4j/node_mixin'
 
 module Neo4j
 
-  DEFAULT_CONFIG = {:storage_path => 'tmp/neo4j'}
-
   class << self
 
-    def start(new_instance=nil)
-      @instance = new_instance if new_instance
-      instance
+    def start(this_db=nil)
+      @db = this_db if this_db
+      db
     end
 
     def db
-      @db ||= Database.new(config)
-    end
-
-    def config()
-      @config ||= DEFAULT_CONFIG.clone
+      @db ||= Database.new
     end
 
     def shutdown(this_db = @db)
       this_db.shutdown if this_db
       @db = nil if this_db == @db
+    end
+
+    def ref_node(this_db = db)
+      db.graph.reference_node
     end
   end
 

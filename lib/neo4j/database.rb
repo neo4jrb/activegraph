@@ -1,10 +1,10 @@
 module Neo4j
   class Database
-    attr_reader :config, :graph, :lucene, :lucene_fulltext
+    attr_reader :graph, :lucene, :lucene_fulltext
 
-    def initialize(config)
-      @config = config
-      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(@config[:storage_path])
+    def initialize()
+      puts "START DB #{Config[:storage_path]}"
+      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
       @lucene =  org.neo4j.index.lucene.LuceneIndexService.new(@graph)
       @lucene_sync = LuceneSynchronizer.new
       @graph.register_transaction_event_handler(@lucene_sync)

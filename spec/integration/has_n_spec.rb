@@ -2,7 +2,6 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::NodeMixin, "#has_n", :type => :integration do
 
-
   it "operator << adds nodes to the declared relationship" do
     p1 = Person.new
     p2 = Person.new
