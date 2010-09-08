@@ -1,4 +1,4 @@
-module Neo4j
+module Neo4j::Mapping
 
   module NodeMixin
     extend Forwardable
@@ -98,8 +98,9 @@ module Neo4j
         const_set(:PROPERTIES_INFO, {})
       end unless c.const_defined?(:DECL_RELATIONSHIPS)
 
-      c.extend Neo4j::PropertyClassMethods
-      c.extend Neo4j::IndexClassMethods
+      c.extend Neo4j::Mapping::PropertyClassMethods
+      c.extend Neo4j::Mapping::IndexClassMethods
+      c.extend Neo4j::Mapping::RelationshipClassMethods
     end
 
   end

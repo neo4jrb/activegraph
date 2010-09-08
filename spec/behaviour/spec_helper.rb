@@ -1,12 +1,12 @@
 #require "bundler/setup"
 require 'rspec'
 require 'rspec-apigen'
+require 'fileutils'
+require 'tmpdir'
 
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "..", "lib")
 
 require 'neo4j'
-require 'fileutils'
-require 'tmpdir'
 
 Neo4j.config[:storage_path] = File.join(Dir::tmpdir, 'neo4j-rspec')
 

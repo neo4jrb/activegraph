@@ -1,6 +1,7 @@
 #  require "bundler/setup"
 require 'rspec'
 require 'rspec-apigen'
+require 'fileutils'
 
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "..", "lib")
 

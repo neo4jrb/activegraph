@@ -16,9 +16,11 @@ require 'neo4j/property'
 require 'neo4j/transaction'
 require 'neo4j/relationship'
 require 'neo4j/node'
-require 'neo4j/class_mapping/node_mixin'
-require 'neo4j/class_mapping/property_class_methods'
-require 'neo4j/class_mapping/index_class_methods'
+require 'neo4j/mapping/property_class_methods'
+require 'neo4j/mapping/index_class_methods'
+require 'neo4j/mapping/relationship_class_methods'
+require 'neo4j/mapping/node_mixin'
+require 'neo4j/node_mixin'
 
 module Neo4j
 
