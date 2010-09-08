@@ -151,6 +151,29 @@ describe Neo4j::Node do
       [*b.both(:friends)].size.should == 2
     end
 
+    it "#outgoing and #incoming can be combined to traverse several relationship types" do
+      a,b,c,d,e = create_nodes
+      [a,b,c,d,e].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
+      nodes = [*b.incoming(:friends).outgoing(:work)]
+      nodes.should include(a,c,d)
+      nodes.should_not include(b,e)
+    end
+
+
+    it "#prune takes a block with parameter of type Java::org.neo4j.graphdb.Path" do
+      a, b, c, d, e = create_nodes
+      b.outgoing(:friends).depth(4).prune{|path| path.should be_kind_of(Java::org.neo4j.graphdb.Path); false}.each {|x| puts x}
+    end
+
+    it "#prune, if it returns true the traversal will be 'cut off' that path" do
+      a, b, c, d, e = create_nodes
+      [a,b,c,d,e].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
+
+
+      [*b.outgoing(:work).depth(4).prune{|path| true}].size.should == 2
+      b.outgoing(:work).depth(4).prune{|path| true}.should include(c,d)
+    end
+
     it "#rels should return both incoming and outgoing relationship of any type of depth one" do
       a,b,c,d,e = create_nodes
 #      [a,b,c,d,e].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
@@ -223,6 +246,8 @@ describe Neo4j::Node do
       expect{ node.rels(:friends, :work).incoming }.to raise_error
     end
 
+
   end
+
 
 end
