@@ -11,16 +11,32 @@ module Neo4j
     end
   end
 
+  class FilterPredicate
+    include org.neo4j.helpers.Predicate
+    def initialize(proc)
+      @proc = proc
+    end
+
+    def include_start_node
+      @include_start_node = true
+    end
+
+    def accept(path)
+      return false if @include_start_node && path.length == 0
+      @proc.call(path)
+    end
+  end
+
 
   class NodeTraverser
     include Enumerable
 
     def initialize(from, type, dir)
-      @from = from
-      @type = type_to_java(type)
-      @dir = dir_to_java(dir)
+      @from  = from
+      @type  = type_to_java(type)
+      @dir   = dir_to_java(dir)
       @depth = 1
-      @td = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first().relationships(@type, @dir)
+      @td    = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first().relationships(@type, @dir)
     end
 
 
@@ -58,8 +74,21 @@ module Neo4j
       self
     end
 
+    def filter(&block)
+      # we keep a reference to filter predicate since only one filter is allowed and we might want to modify it
+      @filter_predicate = FilterPredicate.new(block)
+      @td = @td.filter(@filter_predicate)
+      self
+    end
+
+    # Sets depth, if :all then it will traverse any depth
     def depth(d)
       @depth = d
+      self
+    end
+
+    def include_start_node
+      @include_start_node = true
       self
     end
 
@@ -71,11 +100,15 @@ module Neo4j
     end
 
     def iterator
-      @td = @td.prune(org.neo4j.kernel.Traversal.pruneAfterDepth( @depth ) )
-      iter = @td.traverse(@from).nodes.iterator
-      iter.next if iter.hasNext
-      # don't include the first node'
-      iter
+      unless @include_start_node
+        if @filter_predicate
+          @filter_predicate.include_start_node
+        else
+          @td = @td.filter(org.neo4j.kernel.Traversal.return_all_but_start_node)
+        end
+      end
+      @td = @td.prune(org.neo4j.kernel.Traversal.pruneAfterDepth( @depth ) ) unless @depth == :all
+      @td.traverse(@from).nodes.iterator
     end
   end
 
