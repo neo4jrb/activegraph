@@ -63,7 +63,6 @@ module Neo4j
     end
 
     def after_rollback(data, state)
-      puts "rollback"
     end
 
     def index(field, props)

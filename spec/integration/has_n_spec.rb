@@ -21,6 +21,18 @@ describe Neo4j::NodeMixin, "#has_n", :type => :integration do
     p1.outgoing(:friends).should include(p2)
   end
 
+  it "operator << can be chained (<< n1 << n2)" do
+    p1 = Person.new
+    p2 = Person.new
+    p3 = Person.new
+
+    # when
+    p1.friends << p2 << p3
+
+    # then
+    p1.outgoing(:friends).should include(p2,p3)
+  end
+
   it "returns an Enumerable nodes of the declared relationship type" do
     p1 = Person.new
     p2 = Person.new
