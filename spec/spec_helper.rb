@@ -4,27 +4,20 @@ require 'rspec-apigen'
 require 'fileutils'
 require 'tmpdir'
 
+
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
 require 'neo4j'
 
+
+# load all fixture classes
+fixture_path = File.join(File.dirname(__FILE__), 'fixture')
+Dir.entries(fixture_path).find_all{|f| f =~ /\.rb$/}.each do |file|
+  require File.join(fixture_path,file)
+end
+
 Neo4j.config[:storage_path] = File.join(Dir::tmpdir, 'neo4j-rspec')
 
-class DummyNode
-  attr_accessor :props
-
-  def initialize
-    @props = {}
-  end
-
-  def set_property(p, v)
-    @props[p] = v
-  end
-
-   def property?(p)
-    !@props[p].nil?
-  end
-end
 
 RSpec.configure do |c|
 #  c.filter = { :type => :integration}

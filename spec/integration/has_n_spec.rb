@@ -2,13 +2,6 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::NodeMixin, "#has_n", :type => :integration do
 
-  class Person
-    include Neo4j::NodeMixin
-    property :name
-    property :city
-
-    has_n :friends
-  end
 
   it "operator << adds nodes to the declared relationship" do
     p1 = Person.new
@@ -41,4 +34,5 @@ describe Neo4j::NodeMixin, "#has_n", :type => :integration do
     # when and then
     p1.friends.should include(p2)
   end
+
 end

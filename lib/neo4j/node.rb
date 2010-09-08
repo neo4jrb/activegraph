@@ -4,7 +4,7 @@ module Neo4j
 
   org.neo4j.kernel.impl.core.NodeProxy.class_eval do
     include Neo4j::Property
-    include Neo4j::Relationship
+    include Neo4j::NodeRelationship
     include Neo4j::Equal
     include Neo4j::Index
   end
@@ -30,13 +30,15 @@ module Neo4j
         node
       end
 
-
       def load(node_id, db = Neo4j.db)
-        node = db.graph.get_node_by_id(node_id.to_i)
-        return node unless node.property?(:_classname)
-        to_class(node[:_classname]).new(node)
+        load_wrapper(db.graph.get_node_by_id(node_id.to_i))
       rescue org.neo4j.graphdb.NotFoundException
         nil
+      end
+
+      def load_wrapper(node)
+        return node unless node.property?(:_classname)
+        to_class(node[:_classname]).new(node)
       end
 
       def to_class(class_name)
