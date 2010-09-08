@@ -11,7 +11,9 @@ require 'neo4j/to_java'
 require 'neo4j/version'
 require 'neo4j/equal'
 require 'neo4j/index'
+require 'neo4j/lucene_synchronizer'
 require 'neo4j/relationship_traverser'
+require 'neo4j/database'
 require 'neo4j/node_traverser'
 require 'neo4j/property'
 require 'neo4j/transaction'
@@ -50,94 +52,6 @@ module Neo4j
       @db = nil if this_db == @db
     end
   end
-
-
-  class LuceneSynchronizer
-    include org.neo4j.graphdb.event.TransactionEventHandler
-
-    def initialize
-      @fields = {}
-    end
-
-    def after_commit(data, state)
-      #puts "before commit"
-    end
-
-    def after_rollback(data, state)
-    end
-
-    def index(field, props)
-      # the key is just the field if the node we want to index is not using the class mapping (NodeMixin)
-      # otherwise we use both the class and the field as a key
-      key = (props && props[:class]) ? "#{props[:class]}:#{field}" : field.to_s
-      @fields[key] = props || {}
-    end
-
-    def rm_index(field)
-      @fields.delete(field.to_s)
-    end
-
-    # void afterCommit(TransactionData data, T state)
-    def before_commit(data)
-      data.assigned_node_properties.each {|tx_data| update_index(tx_data) if trigger_update?(tx_data)}
-    end
-
-    def index_key_for(field, node)
-      return field unless node.property?(:_classname)
-      # get root node
-      clazz = Neo4j::Node.to_class(node[:_classname])
-      "#{clazz::ROOT_CLASS}:#{field}"
-    end
-
-    def trigger_update?(tx_data)
-      key = index_key_for(tx_data.key, tx_data.entity)
-      @fields[key]
-    end
-
-    def update_index(tx_data)
-      node = tx_data.entity
-      key = index_key_for(tx_data.key, node)
-
-      # delete old index if it had a previous value
-      node.rm_index(key) unless tx_data.previously_commited_value.nil?
-
-      # add index
-      node.index(key, node[tx_data.key])
-    end
-  end
-
-
-  class Database
-    attr_reader :config, :graph, :lucene, :lucene_fulltext
-
-    def initialize(config)
-      @config = config
-      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(@config[:storage_path])
-      @lucene =  org.neo4j.index.lucene.LuceneIndexService.new(@graph)
-      @lucene_sync = LuceneSynchronizer.new
-      @graph.register_transaction_event_handler(@lucene_sync)
-    end
-
-
-    def shutdown
-      @graph.shutdown
-      @lucene.shutdown
-    end
-
-    def begin_tx
-      @graph.begin_tx
-    end
-
-    def index(field, props = nil)
-      @lucene_sync.index(field, props)
-    end
-
-    def rm_index(field)
-      @lucene_sync.rm_index(field)
-      @lucene.remove_index(field.to_s)
-    end
-  end
-
 
 
 end
