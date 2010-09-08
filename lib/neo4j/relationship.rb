@@ -47,8 +47,8 @@ module Neo4j
   # See also the Neo4j::RelationshipMixin if you want to wrap a relationship with your own Ruby class.
   #
   # === Included Mixins
-  # * Neo4j::JavaPropertyMixin
-  # * Neo4j::JavaRelationshipMixin
+  # * Neo4j::Property
+  # * Neo4j::Equal
   #
   # (Those mixin are actually not included in the Neo4j::Relationship but instead directly included in the java class org.neo4j.kernel.impl.core.RelationshipProxy)
   #
@@ -71,7 +71,9 @@ module Neo4j
       #  Neo4j::Relationship.new :friend, node1, node2, :since => '2001-01-02', :status => 'okey'
       #
       def new(type, from_node, to_node, props={})
-        Neo4j.create_rel(type, from_node, to_node, props)
+        rel = from_node.outgoing(type) << to_node
+        props.each_pair {|k,v| rel[k] = v}
+        rel
       end
     end
 
