@@ -2,7 +2,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__))
 require 'spec_helper'
 
 
-describe Neo4j::NodeMixin do
+describe Neo4j::NodeMixin, :type=> :integration do
 
   class MyNode
     include Neo4j::NodeMixin
@@ -10,26 +10,15 @@ describe Neo4j::NodeMixin do
     property :city
   end
 
-#  subject do
-#    MyNode.new
-#  end
-
-  before(:all) do
-      FileUtils.rm_rf Neo4j.config[:storage_path]
-      FileUtils.mkdir_p(Neo4j.config[:storage_path])
-  end
-
-  after(:all) { Neo4j.shutdown }
 
   before(:each) do
-    Neo4j::Transaction.new
-    # make sure we clean up after each test
-    MyNode.index(:city)
+    puts "CREATE INDEX"
+    MyNode.index(:city)  # TODO
   end
 
   after(:each) do
-    MyNode.rm_index(:city)
-    Neo4j::Transaction.finish
+    puts "REMOVE INDEX"
+    MyNode.rm_index(:city)     # TODO
   end
 
 

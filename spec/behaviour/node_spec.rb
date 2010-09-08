@@ -1,23 +1,7 @@
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__))
 require 'spec_helper'
 
-describe Neo4j::Node do
-  before(:all) do
-    FileUtils.rm_rf Neo4j.config[:storage_path]
-    FileUtils.mkdir_p(Neo4j.config[:storage_path])
-  end
-
-  after(:all) do
-    Neo4j.shutdown
-  end
-
-  before(:each) do
-    Neo4j::Transaction.new
-  end
-
-  after(:each) do
-    Neo4j::Transaction.finish
-  end
+describe Neo4j::Node, :type => :integration do
 
   describe "Create" do
     it "created node should exist in db after transaction finish" do

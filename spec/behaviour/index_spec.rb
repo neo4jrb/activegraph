@@ -2,18 +2,10 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__))
 require 'spec_helper'
 
 
-describe Neo4j::Node, "Index" do
-  before(:all) { FileUtils.rm_rf Neo4j.config[:storage_path]; FileUtils.mkdir_p(Neo4j.config[:storage_path]) }
-  after(:all) { Neo4j.shutdown }
-
-  before(:each) do
-    Neo4j::Transaction.new
-  end
-
+describe Neo4j::Node, "Index", :type => :integration do
   after(:each) do
     # make sure we clean up after each test
     Neo4j::Node.rm_index(:name)
-    Neo4j::Transaction.finish
   end
 
   it "create index on a node" do

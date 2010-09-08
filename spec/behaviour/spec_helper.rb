@@ -12,29 +12,34 @@ Neo4j.config[:storage_path] = File.join(Dir::tmpdir, 'neo4j-rspec')
 
 class DummyNode
   attr_accessor :props
+
   def initialize
     @props = {}
   end
 
-  def set_property(p,v)
+  def set_property(p, v)
     @props[p] = v
   end
 end
 
+RSpec.configure do |c|
+  c.before(:all, :type => :integration) do
+    FileUtils.rm_rf Neo4j.config[:storage_path]
+    FileUtils.mkdir_p(Neo4j.config[:storage_path])
+  end
 
-RSpec::Matchers.define :node_exist do |node|
-  match do |employee|
-    employee.reports_to?(boss)
+  c.after(:all, :type => :integration) do
+    Neo4j.shutdown
   end
-  failure_message_for_should do |employee|
-    "expected the team run by #{boss} to include #{employee}"
+
+  c.before(:each, :type => :integration) do
+    Neo4j::Transaction.new
   end
-  failure_message_for_should_not do |employee|
-    "expected the team run by #{boss} to exclude #{employee}"
+
+  c.after(:each, :type => :integration) do
+    Neo4j::Transaction.finish
   end
-  description do
-    "expected a member of the team run by #{boss}"
-  end
+
 end
 
 
