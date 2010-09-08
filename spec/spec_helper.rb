@@ -14,42 +14,30 @@ begin
   require 'neo4j'
 
 
-# load all fixture classes
+  # load all fixture classes
   fixture_path = File.join(File.dirname(__FILE__), 'fixture')
   Dir.entries(fixture_path).find_all { |f| f =~ /\.rb$/ }.each do |file|
     require File.join(fixture_path, file)
   end
 
-#Neo4j::Config[:storage_path] = File.join(Dir::tmpdir, 'neo4j-rspec')
-
 
   RSpec.configure do |c|
 #  c.filter = { :type => :integration}
     c.before(:all, :type => :integration) do
-      # looks like there is a bug in rspec - this will prevent before all being called twice (sometimes)
-#    unless @before_all
       FileUtils.rm_rf Neo4j::Config[:storage_path]
       FileUtils.mkdir_p(Neo4j::Config[:storage_path])
-#    end
-      @before_all = true
     end
 
     c.after(:all, :type => :integration) do
-      @before_all = false
-
       Neo4j.shutdown
       FileUtils.rm_rf Neo4j::Config[:storage_path]
     end
 
     c.before(:each, :type => :integration) do
-      unless @before_each
-        Neo4j::Transaction.new
-      end
-      @before_each = true
+      Neo4j::Transaction.new
     end
 
     c.after(:each, :type => :integration) do
-      @before_each = false
       Neo4j::Transaction.finish
     end
   end

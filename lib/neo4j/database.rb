@@ -3,7 +3,6 @@ module Neo4j
     attr_reader :graph, :lucene, :lucene_fulltext
 
     def initialize()
-      puts "START DB #{Config[:storage_path]}"
       @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
       @lucene =  org.neo4j.index.lucene.LuceneIndexService.new(@graph)
       @lucene_sync = LuceneSynchronizer.new
