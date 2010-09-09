@@ -1,7 +1,7 @@
 include Java
 
+require 'enumerator'
 require 'forwardable'
-
 require 'neo4j/jars/neo4j-kernel-1.1.jar'
 require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/lucene-core-2.9.2.jar'
@@ -29,6 +29,10 @@ require 'neo4j/mapping/has_n'
 require 'neo4j/mapping/node_mixin'
 require 'neo4j/node_mixin'
 
+
+# hmm, looks like Enumerator have been moved in some ruby versions
+Enumerator = Enumerable::Enumerator unless defined? Enumerator
+
 module Neo4j
 
   class << self
@@ -50,7 +54,13 @@ module Neo4j
     def ref_node(this_db = db)
       db.graph.reference_node
     end
+
+    # Returns an Enumerable object for all nodes in the database
+    def all_nodes(this_db = db)
+
+      Enumerator.new(this_db, :each_node)
+      #Enumerator.new(this_db, :each_node)
+    end
+
   end
-
-
 end

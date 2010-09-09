@@ -27,6 +27,14 @@ module Neo4j
       @lucene_sync.rm_index(field)
       @lucene.remove_index(field.to_s)
     end
+
+    def each_node
+      iter = @graph.all_nodes.iterator
+      while (iter.hasNext)
+        yield Node.load_wrapper(iter.next)
+      end
+    end
+
   end
 
 end
