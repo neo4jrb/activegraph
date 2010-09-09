@@ -24,7 +24,8 @@ describe Neo4j do
 
   it "#all_nodes returns a Enumerable of all nodes in the graph database " do
     # given created three nodes in a clean database
-    create_new_storage('tmp/foo')
+    new_location =   File.join(Dir.tmpdir, 'neo4j-rspec-tests2')
+    create_new_storage(new_location)
     created_nodes = Neo4j::Transaction.run { 3.times.map{ Neo4j::Node.new.id }}
 
     # when
@@ -37,11 +38,12 @@ describe Neo4j do
   end
 
   it "is possible to configure a new location of the database on the filesystem" do
-    create_new_storage('tmp/foo')
+    new_location =   File.join(Dir.tmpdir, 'neo4j-rspec-tests3')
+    create_new_storage(new_location)
 
     Neo4j::Transaction.new
     Neo4j::Node.new
-    File.should exist('tmp/foo')
+    File.should exist(new_location)
     Neo4j::Transaction.finish
   end
 end

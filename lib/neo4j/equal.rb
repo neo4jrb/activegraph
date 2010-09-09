@@ -5,8 +5,8 @@ module Neo4j
     end
 
     def eql?(o)
-      return false unless o.respond_to?(:id)
-      o.id == id
+      return false unless o.respond_to?(:getId)
+      o.getId == getId
     end
 
 

@@ -3,7 +3,7 @@ module Neo4j::Mapping
   module NodeMixin
     extend Forwardable
 
-    def_delegators :@_java_node, :[]=, :[], :property?, :props, :update, :neo_id, :rels, :rel?, :to_param,
+    def_delegators :@_java_node, :[]=, :[], :property?, :props, :update, :id, :getId, :rels, :rel?, :to_param,
                    :rel, :del, :list?, :list, :lists, :print, :print_sub, :add_rel, :outgoing, :incoming,
                    :add_list_item_methods, :next, :prev, :next=, :prev=, :head,
                    :equal?, :eql?, :==

@@ -20,6 +20,8 @@ begin
     require File.join(fixture_path, file)
   end
 
+  # set database storage location
+  Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
 
   RSpec.configure do |c|
 #  c.filter = { :type => :integration}
