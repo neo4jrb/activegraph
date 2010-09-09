@@ -11,6 +11,12 @@ module Neo4j
       tx.finish
     end
 
+    def self.failure(instance = Neo4j.db)
+      tx = Thread.current[id_for_instance(instance)]
+      return unless tx
+      tx.failure
+    end
+
     def self.id_for_instance(instance)
       "tx#{instance.object_id}".to_sym
     end

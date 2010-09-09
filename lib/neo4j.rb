@@ -29,6 +29,13 @@ require 'neo4j/mapping/has_n'
 require 'neo4j/mapping/node_mixin'
 require 'neo4j/node_mixin'
 
+# rails
+require 'rails/railtie'
+require 'active_model'
+require 'neo4j/rails/transaction_management'
+require 'neo4j/rails/railtie'
+require 'neo4j/rails/activemodel'
+
 
 # hmm, looks like Enumerator have been moved in some ruby versions
 Enumerator = Enumerable::Enumerator unless defined? Enumerator

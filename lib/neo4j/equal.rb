@@ -9,9 +9,12 @@ module Neo4j
       o.getId == getId
     end
 
-
     def ==(o)
       eql?(o)
+    end
+
+    def neo_id
+      getId
     end
   end
 

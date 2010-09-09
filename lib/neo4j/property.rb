@@ -1,6 +1,22 @@
 module Neo4j
   module Property
 
+    def props
+      ret = {"_neo_id" => getId()}
+      iter = getPropertyKeys.iterator
+      while (iter.hasNext) do
+        key = iter.next
+        ret[key] = getProperty(key)
+      end
+      ret
+    end
+
+    def attributes
+      attr = props
+      attr.keys.each {|k| attr.delete k if k[0] == ?_}
+      attr
+    end
+
     def property?(key)
       has_property?(key.to_s)
     end
