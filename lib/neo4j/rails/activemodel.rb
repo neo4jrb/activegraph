@@ -6,11 +6,8 @@ class Neo4j::ActiveModel
 
 
   def method_missing(method_id, *args, &block)
-    puts "missing #{method_id}"
     if !self.class.attribute_methods_generated?
-      puts " define it and try again"
       self.class.define_attribute_methods([:name, :age])
-      puts " try"
       send(method_id, *args, &block)
     end
   end
@@ -19,9 +16,7 @@ class Neo4j::ActiveModel
     key = key.to_s
     unless key[0] == ?_
       old_value = self.send(:[], key)
-      puts "CHANGED #{old_value} #{new_value}"
       attribute_will_change!(key) unless old_value == new_value
-      #self._orig_name=val
     end
     super
   end
