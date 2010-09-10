@@ -9,7 +9,7 @@ module Neo4j::Mapping
     # Generates assignment and accessor methods for the given relationship.
     #
     # ==== Example
-    #
+    #                                                  uts
     #   class FolderNode
     #      include Ne4j::NodeMixin
     #      has_n(:files)

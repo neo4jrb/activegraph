@@ -3,8 +3,4 @@ class ActivePerson < Neo4j::ActiveModel
   property :name, :age
   alias_method :_orig_name=, :name=
 
-  def save
-    @previously_changed = changes
-    @changed_attributes.clear
-  end
 end

@@ -50,8 +50,8 @@ module Neo4j
         load(id, db) != nil
       end
 
-      def find(field, query, db=Neo4j.db)
-        db.lucene.get_nodes(field.to_s, query)
+      def find(field, query, props=nil, db=Neo4j.db)
+        db.find(field.to_s, query, props)
       end
 
       # Adds a global index. Will use the event framework in order to keep the property in sync with
@@ -60,8 +60,8 @@ module Neo4j
         db.index(field, props)
       end
 
-      def rm_index(field, db=Neo4j.db)
-        db.rm_index(field)
+      def rm_index(field, props=nil, db=Neo4j.db)
+        db.rm_index(field, props)
       end
     end
   end

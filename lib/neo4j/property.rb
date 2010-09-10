@@ -2,14 +2,19 @@ module Neo4j
   module Property
 
     def props
-      ret = {"_neo_id" => getId()}
+      ret = {"_neo_id" => neo_id}
       iter = getPropertyKeys.iterator
       while (iter.hasNext) do
         key = iter.next
-        ret[key] = getProperty(key)
+        ret[key] = get_property(key)
       end
       ret
     end
+
+    def neo_id
+      getId
+    end
+
 
     def attributes
       attr = props

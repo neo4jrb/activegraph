@@ -13,9 +13,6 @@ module Neo4j
       eql?(o)
     end
 
-    def neo_id
-      getId
-    end
   end
 
 end

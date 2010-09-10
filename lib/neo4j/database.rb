@@ -19,13 +19,16 @@ module Neo4j
       @graph.begin_tx
     end
 
-    def index(field, props = nil)
+    def find(field, query, props)
+       @lucene_sync.find(@lucene, field, query, props)
+    end
+
+    def index(field, props)
       @lucene_sync.index(field, props)
     end
 
-    def rm_index(field)
-      @lucene_sync.rm_index(field)
-      @lucene.remove_index(field.to_s)
+    def rm_index(field, props)
+      @lucene_sync.rm_index(@lucene, field, props)
     end
 
     def each_node
