@@ -1,7 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::ActiveModel, "value" do
-
   it "validation works on the created value object" do
     v = ActivePerson.value
     v.should_not be_valid
@@ -38,7 +37,6 @@ end
 describe Neo4j::ActiveModel, :type => :integration do
 
   it "#save should validate the model and return true if it was valid" do
-
     # option 1 - save calls valid? and finish the transaction if valid
     p = ActivePerson.new
     p.save.should be_false
@@ -66,8 +64,7 @@ describe Neo4j::ActiveModel, :type => :integration do
     p.name = 'kalle'
     p.should be_changed
     p.attribute_changed?('name').should == true
-    pending "ActiveModel::Dirty does almost work - name_change does work"
-    p.name_change.should == 'kalle'
+    p.name_change.should == [nil, 'kalle']
     p.name_was.should == nil
     p.name_changed?.should be_true
     p.name_was.should == nil

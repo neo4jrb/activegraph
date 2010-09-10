@@ -45,8 +45,38 @@ class Neo4j::ActiveModel
     unless key[0] == ?_
       old_value = self.send(:[], key)
       attribute_will_change!(key) unless old_value == new_value
+      #changed_attributes[key] = new_value unless old_value == new_value
     end
     super
+  end
+
+  def attribute_will_change!(attr)
+    begin
+      value = __send__(:[], attr)
+      value = value.duplicable? ? value.clone : value
+    rescue TypeError, NoMethodError
+    end
+    changed_attributes[attr] = value
+  end
+
+
+  def read_attribute_for_validation(key)
+    self[key]
+  end
+
+  def attributes=(attrs)
+    attrs.each do |k,v|
+      if respond_to?("#{k}=")
+        send("#{k}=", v)
+      else
+        self[k] = v
+      end
+    end
+  end
+
+  def update_attributes(attributes)
+    self.attributes = attributes
+    save
   end
 
   # Handle Model.find(params[:id])
