@@ -104,6 +104,26 @@ describe Neo4j::Node, :type => :integration do
       expect { a.both(:friends) << other_node }.to raise_error
     end
 
+    it "#both returns all outgoing nodes of any type" do
+      a,b,c,d = create_nodes
+      b.both.should include(a,c,d)
+      [*b.both].size.should == 3
+    end
+
+    it "#incoming returns all incoming nodes of any type" do
+      pending
+      a,b,c,d = create_nodes
+      #b.incoming.should include(...)
+      #[*b.incoming].size.should == .
+    end
+
+    it "#outgoing returns all outgoing nodes of any type" do
+      pending
+      a,b,c,d = create_nodes
+      #b.outgoing.should include()
+      #[*b.outgoing].size.should == ..
+    end
+
     it "#outgoing(type) should only return outgoing nodes of the given type of depth one" do
       a,b,c,d = create_nodes
       b.outgoing(:work).should include(c,d)
@@ -143,6 +163,7 @@ describe Neo4j::Node, :type => :integration do
 
     it "#both(type) should return both incoming and outgoing nodes of the given type of depth one" do
       a,b,c,d = create_nodes
+#      [a,b,c,d].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
       b.both(:friends).should include(a,c)
       [*b.both(:friends)].size.should == 2
     end

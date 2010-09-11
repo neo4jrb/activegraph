@@ -32,12 +32,10 @@ module Neo4j
     include Enumerable
     include ToJava
 
-    def initialize(from, type, dir)
+    def initialize(from)
       @from  = from
-      @type  = type_to_java(type)
-      @dir   = dir_to_java(dir)
       @depth = 1
-      @td    = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first().relationships(@type, @dir)
+      @td    = org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl.new.breadth_first()
     end
 
 
@@ -47,13 +45,24 @@ module Neo4j
       @from.create_relationship_to(other_node, @type)
     end
 
+    def both(type)
+      @type  = type_to_java(type) if type
+      @dir   = dir_to_java(:both)
+      @td = @td.relationships(type_to_java(type), @dir)
+      self
+    end
+
     def outgoing(type)
-      @td = @td.relationships(type_to_java(type), dir_to_java(:outgoing))
+      @type  = type_to_java(type) if type
+      @dir   = dir_to_java(:outgoing)
+      @td = @td.relationships(type_to_java(type), @dir)
       self
     end
 
     def incoming(type)
-      @td = @td.relationships(type_to_java(type), dir_to_java(:incoming))
+      @type  = type_to_java(type) if type
+      @dir   = dir_to_java(:incoming)
+      @td = @td.relationships(type_to_java(type), @dir)
       self
     end
 

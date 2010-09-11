@@ -2,16 +2,28 @@ module Neo4j
 
 
   module NodeRelationship
-    def outgoing(type)
-      NodeTraverser.new(self, type, :outgoing)
+    def outgoing(type=nil)
+      if type
+        NodeTraverser.new(self).outgoing(type)
+      else
+        NodeTraverser.new(self)
+      end
     end
 
-    def incoming(type)
-      NodeTraverser.new(self, type, :incoming)
+    def incoming(type=nil)
+      if type
+        NodeTraverser.new(self).incoming(type)
+      else
+        NodeTraverser.new(self)
+      end
     end
 
-    def both(type)
-      NodeTraverser.new(self, type, :both)
+    def both(type=nil)
+      if type
+        NodeTraverser.new(self).both(type)
+      else
+        NodeTraverser.new(self) # default is both
+      end
     end
 
     def rels(*type)
