@@ -38,6 +38,8 @@ module Neo4j
 
       def load(node_id, db = Neo4j.db)
         load_wrapper(db.graph.get_node_by_id(node_id.to_i))
+      rescue java.lang.IllegalStateException
+        nil # the node has been deleted
       rescue org.neo4j.graphdb.NotFoundException
         nil
       end

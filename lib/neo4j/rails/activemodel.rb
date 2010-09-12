@@ -33,6 +33,10 @@ class Neo4j::ActiveModel
     self.neo_id
   end
 
+  def to_param
+    neo_id.to_s
+  end
+
   def method_missing(method_id, *args, &block)
     if !self.class.attribute_methods_generated?
       self.class.define_attribute_methods(self.class.properties_info.keys)

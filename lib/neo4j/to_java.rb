@@ -1,5 +1,6 @@
 module Neo4j
   module ToJava
+
     def type_to_java(type)
       org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
     end

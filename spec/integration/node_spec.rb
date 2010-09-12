@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::Node, :type => :transactional do
 
-  describe "Create" do
+  describe "#new" do
     it "created node should exist in db after transaction finish" do
       new_node = Neo4j::Node.new
       Neo4j::Transaction.finish
@@ -16,27 +16,50 @@ describe Neo4j::Node, :type => :transactional do
     end
   end
 
-  describe "Properties" do
-    it "set and get String properties with the [] operator" do
+  describe "#del" do
+    it "deletes the node - does not exist after the transaction finish" do
+      new_node = Neo4j::Node.new
+      new_node.del
+      Neo4j::Transaction.finish
+      Neo4j::Node.should_not exist(new_node.id)
+    end
+
+    it "deletes the node - does not exist before the transaction finish" do
+      new_node = Neo4j::Node.new
+      id = new_node.id
+      new_node.del
+      Neo4j::Node.should_not exist(id)
+    end
+
+    it "modify an deleted node will raise en exception" do
+      new_node = Neo4j::Node.new
+      new_node.del
+      expect { Neo4j::Transaction.run{ new_node[:foo] = 'bar'}}.to raise_error
+    end
+
+  end
+
+  describe "#[] and #[]=" do
+    it "set and get String properties" do
       new_node = Neo4j::Node.new
       new_node[:key] = 'myvalue'
       new_node[:key].should == 'myvalue'
     end
 
-    it "set and get Fixnum properties with the [] operator" do
+    it "set and get Fixnum properties" do
       new_node = Neo4j::Node.new
       new_node[:key] = 42
       new_node[:key].should == 42
     end
 
 
-    it "set and get Float properties with the [] operator" do
+    it "set and get Float properties" do
       new_node = Neo4j::Node.new
       new_node[:key] = 3.1415
       new_node[:key].should == 3.1415
     end
 
-    it "set and get Boolean properties with the [] operator" do
+    it "set and get Boolean properties" do
       new_node = Neo4j::Node.new
       new_node[:key] = true
       new_node[:key].should == true
@@ -45,12 +68,33 @@ describe Neo4j::Node, :type => :transactional do
     end
 
 
-    it "set and get properties with the [] operator and String key" do
+    it "set and get properties with a String key" do
       new_node = Neo4j::Node.new
       new_node["a"] = 'foo'
       new_node["a"].should == 'foo'
     end
+
+    it "deletes the property if value is nil" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = 'myvalue'
+      new_node.property?(:key).should be_true
+      Neo4j::Transaction.finish
+      Neo4j::Transaction.new
+      new_node[:key] = nil
+      new_node.property?(:key).should be_false
+    end
+
   end
+
+  describe "#update" do
+    it "updates properties" do
+      new_node = Neo4j::Node.new
+      new_node.update :name => 'foo', :age => 123
+      new_node[:name].should == 'foo'
+      new_node[:age].should == 123
+    end
+  end
+
 
 
   describe "Relationships" do
@@ -76,6 +120,17 @@ describe Neo4j::Node, :type => :transactional do
       [a,b,c,d,e]
     end
 
+
+    it "#rel? returns true if there are any relationship" do
+      a = Neo4j::Node.new
+      a.rel?.should be_false
+      a.outgoing(:foo) << Neo4j::Node.new
+      a.rel?.should be_true
+      a.rel?(:bar).should be_false
+      a.rel?(:foo).should be_true
+      a.rel?(:foo, :incoming).should be_false
+      a.rel?(:foo, :outgoing).should be_true
+    end
 
     it "#outgoing(:friends) << other_node creates an outgoing relationship of type :friends" do
       a = Neo4j::Node.new
