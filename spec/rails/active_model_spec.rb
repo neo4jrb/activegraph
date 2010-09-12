@@ -34,7 +34,7 @@ describe Neo4j::ActiveModel, "new" do
 
 end
 
-describe Neo4j::ActiveModel, :type => :integration do
+describe Neo4j::ActiveModel, :type => :transactional do
 
   it "#save should validate the model and return true if it was valid" do
     # option 1 - save calls valid? and finish the transaction if valid
@@ -73,15 +73,16 @@ describe Neo4j::ActiveModel, :type => :integration do
     p.name_change.should == ['kalle', 'andreas']
     p.save
     p.should_not be_changed
-
-  #   person.name = 'Bob'
-  #   person.changed?       # => true
-  #   person.name_changed?  # => true
-  #   person.name_was       # => 'Uncle Bob'
-  #   person.name_change    # => ['Uncle Bob', 'Bob']
-  #   person.name = 'Bill'
-  #   person.name_change    # => ['Uncle Bob', 'Bill']
-
   end
 end
+
+#describe Neo4j::Model, "lint" do
+#  before :each do
+#    @model = Neo4j::Model.new
+#  end
+#
+#  include_tests ActiveModel::Lint::Tests
+#end
+
+
 

@@ -3,7 +3,7 @@ module Neo4j
     include org.neo4j.graphdb.event.TransactionEventHandler
 
     def initialize
-      @fields = {}
+      @@fields ||= {}
     end
 
     def after_commit(data, state)
@@ -23,13 +23,13 @@ module Neo4j
       # otherwise we use both the class and the field as a key
       #(props && props[:class]) ? "#{props[:class]}:#{field}" : field.to_s
       key = index_key(field, props)
-      @fields[key] = props || {}
+      @@fields[key] = props || {}
     end
 
     def rm_index(lucene, field, props)
       key = index_key(field, props)
       lucene.remove_index(key)
-      @fields.delete(key)
+      @@fields.delete(key)
     end
 
     # void afterCommit(TransactionData data, T state)
@@ -51,15 +51,15 @@ module Neo4j
 
     def trigger_update?(tx_data)
       key = index_key_for_node(tx_data.key, tx_data.entity)
-#      puts "trigger update #{tx_data.key} with key #{key} YES: #{@fields[key]}"
-      @fields[key]
+#      puts "trigger update #{tx_data.key} with key #{key} YES: #{@@fields[key].inspect} fields: #{@fields.inspect} id: #{self.object_id}"
+      @@fields[key]
     end
 
 
     def update_index(tx_data)
       node = tx_data.entity
       key = index_key_for_node(tx_data.key, node)
-      puts "update index '#{key}' value:#{node[tx_data.key]}"
+#      puts "update index '#{key}' value:#{node[tx_data.key]}"
 
       # delete old index if it had a previous value
       node.rm_index(key) unless tx_data.previously_commited_value.nil?

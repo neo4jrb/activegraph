@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::Transaction, :type => :integration do
+describe Neo4j::Transaction, :type => :transactional do
 
   it "#run runs the provided block in an transaction" do
     # make sure we don't already have one running transaction'

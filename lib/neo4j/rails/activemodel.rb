@@ -91,7 +91,11 @@ class Neo4j::ActiveModel
     @changed_attributes.clear
     if valid?
       # if we are trying to save a value then we should create a real node
-      @_java_node = Neo4j::Node.new(props) unless persisted?
+      unless persisted?
+        node = Neo4j::Node.new(props)
+        init_on_load(node)
+        init_on_create
+      end
       true
     end
   end
@@ -112,6 +116,15 @@ class Neo4j::ActiveModel
 
   def new_record?()
     @_new_record
+  end
+
+  def del
+    @_deleted = true
+    super
+  end
+
+  def destroy
+    del
   end
 
   def destroyed?()

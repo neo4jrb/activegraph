@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::Node, :type => :integration do
+describe Neo4j::Node, :type => :transactional do
 
   describe "Create" do
     it "created node should exist in db after transaction finish" do

@@ -7,6 +7,11 @@ module Neo4j
     include Neo4j::NodeRelationship
     include Neo4j::Equal
     include Neo4j::Index
+
+    def del
+      rels.each {|r| r.del}
+      delete
+    end
   end
 
 

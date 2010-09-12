@@ -15,7 +15,6 @@ module Neo4j
       getId
     end
 
-
     def attributes
       attr = props
       attr.keys.each {|k| attr.delete k if k[0] == ?_}

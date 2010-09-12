@@ -4,6 +4,10 @@ module Neo4j
     include Neo4j::Property
     include Neo4j::Equal
 
+    def del
+      delete
+    end
+
     def end_node # :nodoc:
       Neo4j::Node.load_wrapper(getEndNode)
     end

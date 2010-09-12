@@ -24,22 +24,22 @@ begin
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
 
   RSpec.configure do |c|
-#  c.filter = { :type => :integration}
-    c.before(:all, :type => :integration) do
+#  c.filter = { :type => :transactional}
+    c.before(:all, :type => :transactional) do
       FileUtils.rm_rf Neo4j::Config[:storage_path]
       FileUtils.mkdir_p(Neo4j::Config[:storage_path])
     end
 
-    c.after(:all, :type => :integration) do
+    c.after(:all, :type => :transactional) do
       Neo4j.shutdown
       FileUtils.rm_rf Neo4j::Config[:storage_path]
     end
 
-    c.before(:each, :type => :integration) do
+    c.before(:each, :type => :transactional) do
       Neo4j::Transaction.new
     end
 
-    c.after(:each, :type => :integration) do
+    c.after(:each, :type => :transactional) do
       Neo4j::Transaction.finish
     end
   end

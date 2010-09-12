@@ -1,7 +1,7 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
-describe Neo4j::Node, "index", :type => :integration do
+describe Neo4j::Node, "index", :type => :transactional do
   it "can index and search on two properties" do
     pending
     c = Company.new(:name => 'jayway', :revenue => 1234)
@@ -11,7 +11,7 @@ describe Neo4j::Node, "index", :type => :integration do
   end
 end
 
-describe Neo4j::Node, "index", :type => :integration do
+describe Neo4j::Node, "index", :type => :transactional do
   after(:each) do
     # make sure we clean up after each test
     Neo4j::Node.rm_index(:name)

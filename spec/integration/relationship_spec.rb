@@ -1,7 +1,7 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
-describe Neo4j::Relationship, :type=> :integration do
+describe Neo4j::Relationship, :type=> :transactional do
   it "#end_node, #start_node and #other_node should return Ruby wrapped object" do
     p1 = SimpleNode.new
     p2 = SimpleNode.new
