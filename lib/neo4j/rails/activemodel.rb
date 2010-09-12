@@ -1,4 +1,9 @@
 class Neo4j::ActiveModel
+
+  class << self
+    alias_method :orig_new, :new
+  end
+
   include Neo4j::NodeMixin
   extend ActiveModel::Naming
   include ActiveModel::Validations
@@ -13,10 +18,9 @@ class Neo4j::ActiveModel
     end
   end
 
-  def init_on_create(props)
+  def init_on_create(*props)
     # :nodoc:
-    @_java_node = Neo4j::Node.new(props)
-    puts "init on create #{self.class.name}"
+    @_java_node = Neo4j::Node.new(*props)
     @_new_record = true
     self[:_classname] = self.class.name
   end
@@ -77,25 +81,6 @@ class Neo4j::ActiveModel
     save
   end
 
-  # Handle Model.find(params[:id])
-  def self.find(*args)
-    if args.length == 1 && String === args[0] && args[0].to_i != 0
-      load(*args)
-    else
-      super
-    end
-  end
-
-  def self.load(*ids)
-    result = ids.map { |id| Neo4j::Node.load(id) }
-    if ids.length == 1
-      result.first
-    else
-      result
-    end
-  end
-
-
   def delete
     super
     @_deleted = true
@@ -139,6 +124,14 @@ class Neo4j::ActiveModel
   # --------------------------------------
 
   class << self
+    # returns a value object instead of creating a new node
+    def new(*args)
+      value = Neo4j::Value.new(*args)
+      wrapped = self.orig_new
+      wrapped.init_on_load(value)
+      wrapped
+    end
+
 
     # Handle Model.find(params[:id])
     def find(*args)
@@ -158,15 +151,6 @@ class Neo4j::ActiveModel
       end
     end
 
-    # Returns a value object,
-    # This is a bit the same as the ActiveRecord#new method which does not create the node
-    #
-    def value(*args)
-      value = Neo4j::Value.new(*args)
-      obj = self.new(value)
-      obj.init_node(*args) if obj.respond_to?(:init_node)
-      obj
-    end
   end
 
 end

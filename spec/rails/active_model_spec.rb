@@ -1,26 +1,26 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::ActiveModel, "value" do
+describe Neo4j::ActiveModel, "new" do
   it "validation works on the created value object" do
-    v = ActivePerson.value
+    v = ActivePerson.new
     v.should_not be_valid
     v.name = 'andreas'
     v.should be_valid
   end
 
   it "can be initialize just like the #new" do
-    v = ActivePerson.value(:name => 'andreas')
+    v = ActivePerson.new(:name => 'andreas')
     v.should be_valid
   end
 
   it "save should raise an exception if not run in an transaction" do
-    v = ActivePerson.value(:name => 'andreas')
+    v = ActivePerson.new(:name => 'andreas')
     expect { v.save }.to raise_error
   end
 
 
   it "save should create a new node when run in a transaction" do
-    v = ActivePerson.value(:name => 'andreas')
+    v = ActivePerson.new(:name => 'andreas')
     Neo4j::Transaction.new
     v.save
     Neo4j::Node.should exist(v)
@@ -28,7 +28,7 @@ describe Neo4j::ActiveModel, "value" do
   end
 
   it "has nil as id befored saved" do
-    v = ActivePerson.value(:name => 'andreas')
+    v = ActivePerson.new(:name => 'andreas')
     v.neo_id.should == nil
   end
 
@@ -38,13 +38,13 @@ describe Neo4j::ActiveModel, :type => :integration do
 
   it "#save should validate the model and return true if it was valid" do
     # option 1 - save calls valid? and finish the transaction if valid
-    p = ActivePerson.new
+    p = ActivePerson.create
     p.save.should be_false
   end
 
 
   it "Active Model validation should work" do
-    p = ActivePerson.new
+    p = ActivePerson.create
     p.should_not be_valid
     p.errors.keys[0].should == :name
     p.name = 'andreas'
@@ -54,12 +54,12 @@ describe Neo4j::ActiveModel, :type => :integration do
 
 
   it "find('42') should return node with id 42" do
-    p = ActivePerson.new
+    p = ActivePerson.create
     ActivePerson.find(p.neo_id.to_s).should == p
   end
 
   it "implements the ActiveModel::Dirty interface" do
-    p = ActivePerson.new
+    p = ActivePerson.create
     p.should_not be_changed
     p.name = 'kalle'
     p.should be_changed

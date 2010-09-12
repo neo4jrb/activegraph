@@ -79,5 +79,58 @@ module Neo4j::Mapping
       properties_info[prop_name.to_sym][:defined] == true
     end
 
+
+    def load
+      # TODO
+      node = db.graph.get_node_by_id(node_id.to_i)
+      clazz = Neo4j::Node.to_class(node[:_classname])
+      raise "Expected classname #{self} got #{clazz}" if clazz != self
+    end
+
+    def load_wrapper(node, db = Neo4j.db)
+      wrapped_node = self.new
+      wrapped_node.init_on_load(node)
+      wrapped_node
+    end
+
+
+    # Creates a new node or loads an already existing Neo4j node.
+    #
+    # Does
+    # * sets the neo4j property '_classname' to self.class.to_s
+    # * creates a neo4j node java object (in @_java_node)
+    # * calls init_node if that is defined in the current class.
+    #
+    # If you want to provide your own initialize method you should instead implement the
+    # method init_node method.
+    #
+    # === Example
+    #
+    #   class MyNode
+    #     include Neo4j::NodeMixin
+    #
+    #     def init_node(name, age)
+    #        self[:name] = name
+    #        self[:age] = age
+    #     end
+    #   end
+    #
+    #   node = MyNode.new('jimmy', 23)
+    #   # notice the following is still possible:
+    #   node = MyNode :name => 'jimmy', :age => 12
+    #
+    # The init_node is only called when the node is created in the database.
+    # The initialize method is used both for to purposes:
+    # loading an already existing node from the Neo4j database and creating a new node in the database.
+    #
+    def new(*args)
+      node = Neo4j::Node.create
+      wrapped_node = super
+      wrapped_node.init_on_load(node)
+      wrapped_node.init_on_create(*args)
+      wrapped_node
+    end
+
+    alias_method :create, :new
   end
 end

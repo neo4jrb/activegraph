@@ -13,22 +13,23 @@ module Neo4j
   class Node
 
     class << self
-      def new(*args)
-        # creates a new node using the default db instance when given no args
 
+      # Creates a new node using the default db instance when given no args
+      # Same as Neo4j::Node#create
+      def new(*args)
         # the first argument can be an hash of properties to set
         props = args[0].respond_to?(:each_pair) && args[0]
 
         # a db instance can be given, is the first argument if that was not a hash, or otherwise the second
         db = (!props && args[0]) || args[1] || Neo4j.db
-        create(props, db)
-      end
 
-      def create(props, db = Neo4j.db)
         node = db.graph.create_node
         props.each_pair { |k, v| node.set_property(k.to_s, v) } if props
         node
       end
+
+      # create is the same as new
+      alias_method :create, :new
 
       def load(node_id, db = Neo4j.db)
         load_wrapper(db.graph.get_node_by_id(node_id.to_i))
@@ -38,7 +39,7 @@ module Neo4j
 
       def load_wrapper(node)
         return node unless node.property?(:_classname)
-        to_class(node[:_classname]).new(node)
+        to_class(node[:_classname]).load_wrapper(node)
       end
 
       def to_class(class_name)

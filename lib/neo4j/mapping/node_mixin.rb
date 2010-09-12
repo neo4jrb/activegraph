@@ -14,57 +14,6 @@ module Neo4j::Mapping
     #
 
 
-    # Creates a new node or loads an already existing Neo4j node.
-    #
-    # Does
-    # * sets the neo4j property '_classname' to self.class.to_s
-    # * creates a neo4j node java object (in @_java_node)
-    # * calls init_node if that is defined in the current class.
-    #
-    # If you want to provide your own initialize method you should instead implement the
-    # method init_node method.
-    #
-    # === Example
-    #
-    #   class MyNode
-    #     include Neo4j::NodeMixin
-    #
-    #     def init_node(name, age)
-    #        self[:name] = name
-    #        self[:age] = age
-    #     end
-    #   end
-    #
-    #   node = MyNode('jimmy', 23)
-    #   # notice the following is still possible:
-    #   node = MyNode :name => 'jimmy', :age => 12
-    #
-    # The init_node is only called when the node is created in the database.
-    # The initialize method is used both for to purposes:
-    # loading an already existing node from the Neo4j database and creating a new node in the database.
-    #
-    def initialize(*args)
-      # was a neo java node provided ?
-      if args.length == 1 && args[0].kind_of?(org.neo4j.graphdb.Node)
-        # yes, only initialize the ruby wrapper - do not create the node
-        init_on_load(args[0])
-      else
-        # no, a new node should be create
-
-        # init node and set the _classname property
-        init_on_create(args[0])
-
-        # has the Ruby wrapper defined an init_node method ?
-        init_node(*args) if self.respond_to?(:init_node)
-      end
-
-      # was a block given in order to initialize the neo4j node ?
-      yield self if block_given?
-      # must call super with no arguments so that chaining of the initialize method works
-      super()
-    end
-
-
     # Init this node with the specified java neo node
     #
     def init_on_load(java_node) # :nodoc:
@@ -74,8 +23,7 @@ module Neo4j::Mapping
 
     # Creates a new node and initialize with given properties.
     #
-    def init_on_create(props) # :nodoc:
-      @_java_node = Neo4j::Node.new(props)
+    def init_on_create(*) # :nodoc:
       self[:_classname] = self.class.to_s
     end
 
