@@ -1,4 +1,3 @@
-
 class Neo4j::ActiveModel
   include Neo4j::NodeMixin
   extend ActiveModel::Naming
@@ -14,7 +13,8 @@ class Neo4j::ActiveModel
     end
   end
 
-  def init_on_create(props) # :nodoc:
+  def init_on_create(props)
+    # :nodoc:
     @_java_node = Neo4j::Node.new(props)
     puts "init on create #{self.class.name}"
     @_new_record = true
@@ -25,14 +25,12 @@ class Neo4j::ActiveModel
   #
   # --------------------------------------
 
- # def id
- #   self.neo_id
- # end
+  def id
+    self.neo_id
+  end
 
   def method_missing(method_id, *args, &block)
     if !self.class.attribute_methods_generated?
-      puts "DEFINED #{self.class.properties_info.keys}"
-      #self.class.define_attribute_methods([:name, :age])
       self.class.define_attribute_methods(self.class.properties_info.keys)
       # try again
       send(method_id, *args, &block)
@@ -65,7 +63,7 @@ class Neo4j::ActiveModel
   end
 
   def attributes=(attrs)
-    attrs.each do |k,v|
+    attrs.each do |k, v|
       if respond_to?("#{k}=")
         send("#{k}=", v)
       else

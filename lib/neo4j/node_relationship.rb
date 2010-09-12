@@ -6,6 +6,7 @@ module Neo4j
       if type
         NodeTraverser.new(self).outgoing(type)
       else
+        raise "not implemented yet"
         NodeTraverser.new(self)
       end
     end
@@ -14,6 +15,7 @@ module Neo4j
       if type
         NodeTraverser.new(self).incoming(type)
       else
+        raise "not implemented yet"
         NodeTraverser.new(self)
       end
     end

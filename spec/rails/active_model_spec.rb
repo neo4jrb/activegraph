@@ -69,6 +69,8 @@ describe Neo4j::ActiveModel, :type => :integration do
     p.name_changed?.should be_true
     p.name_was.should == nil
 
+    p.name = 'andreas'
+    p.name_change.should == ['kalle', 'andreas']
     p.save
     p.should_not be_changed
 
