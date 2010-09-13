@@ -25,7 +25,6 @@ describe Neo4j::Node, "index", :type => :transactional do
     new_node.index(:name)
 
     # then
-    puts "FIND IT"
     Neo4j::Node.find(:name, 'Andreas Ronge').first.should == new_node
   end
 
@@ -78,4 +77,6 @@ describe Neo4j::Node, "index", :type => :transactional do
     Neo4j::Node.find(:name, 'lala').first.should == new_node
     Neo4j::Node.find(:name, 'Kalle Kula').first.should_not == new_node
   end
+
+  it "when a property is deleted the node should not be found"
 end

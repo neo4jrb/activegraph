@@ -35,6 +35,7 @@ module Neo4j
     # void afterCommit(TransactionData data, T state)
     def before_commit(data)
       data.assigned_node_properties.each { |tx_data| update_index(tx_data) if trigger_update?(tx_data) }
+      # TODO delete index if property is deleted
     end
 
     def index_key_for_node(field, node)

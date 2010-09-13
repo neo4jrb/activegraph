@@ -19,6 +19,10 @@ module Neo4j
       @graph.begin_tx
     end
 
+    def event_handler
+      @event_handler ||= @graph.register_transaction_event_handler(EventHandler.new)
+    end
+
     def find(field, query, props)
        @lucene_sync.find(@lucene, field, query, props)
     end

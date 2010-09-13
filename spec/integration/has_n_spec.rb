@@ -34,6 +34,15 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     p1.friends.should include(p2)
   end
 
+  it "returns an Enumerable nodes with real Ruby wrapped classes" do
+    p1 = Person.new
+    p2 = Person.new
+    p1.outgoing(:friends) << p2
+
+    # when and then
+    p1.friends.first.class.should == Person
+  end
+
   it "generates a 'type'_rels method for traversing relationships" do
     p1 = Person.new
     p2 = Neo4j::Node.new
