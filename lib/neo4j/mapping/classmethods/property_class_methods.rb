@@ -125,12 +125,13 @@ module Neo4j::Mapping
     #
     def new(*args)
       node = Neo4j::Node.create
-      wrapped_node = super
+      wrapped_node = super()
       wrapped_node.init_on_load(node)
       wrapped_node.init_on_create(*args)
       wrapped_node
     end
 
     alias_method :create, :new
+
   end
 end

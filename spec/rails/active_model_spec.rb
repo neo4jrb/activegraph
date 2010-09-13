@@ -76,13 +76,6 @@ describe Neo4j::ActiveModel, :type => :transactional do
   end
 end
 
-#describe Neo4j::Model, "lint" do
-#  before :each do
-#    @model = Neo4j::Model.new
-#  end
-#
-#  include_tests ActiveModel::Lint::Tests
-#end
 
 
 

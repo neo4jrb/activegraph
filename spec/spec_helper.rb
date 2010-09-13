@@ -7,7 +7,7 @@ begin
   require 'rspec-apigen'
   require 'fileutils'
   require 'tmpdir'
-
+  require 'rspec-rails-matchers'
 
   $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
@@ -24,6 +24,7 @@ begin
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
 
   RSpec.configure do |c|
+
 #  c.filter = { :type => :transactional}
     c.before(:all, :type => :transactional) do
       FileUtils.rm_rf Neo4j::Config[:storage_path]
@@ -44,6 +45,20 @@ begin
     end
   end
 
+
+  module TempModel
+    @@_counter = 1
+    def self.set(klass)
+      name = "Model_#{@@_counter}"
+      @@_counter += 1
+      const_set(name,klass)
+      klass
+    end
+  end
+
+  def model_subclass(&block)
+    TempModel.set(Class.new(Neo4j::Model, &block))
+  end
 end unless @_neo4j_rspec_loaded
 
 

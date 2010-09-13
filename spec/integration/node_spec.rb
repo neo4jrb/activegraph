@@ -14,6 +14,13 @@ describe Neo4j::Node, :type => :transactional do
       Neo4j::Node.should exist(new_node)
       Neo4j::Transaction.finish
     end
+
+    it "initialize it with the given hash of properties" do
+      new_node = Neo4j::Node.new :name => 'my name', :age => 42
+      new_node[:name].should == 'my name'
+      new_node[:age].should == 42
+    end
+
   end
 
   describe "#del" do

@@ -14,6 +14,12 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   end
 
 
+  it "#new :name => 'foo' ..." do
+    n = SimpleNode.new :name => 'foo', :bar => 'bar'
+    n.name.should == 'foo'
+    n[:bar].should == 'bar'
+
+  end
   it "#[] and #[]= read and sets a neo4j property" do
     n = SimpleNode.new
     n.name = 'kalle'

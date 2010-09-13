@@ -8,6 +8,8 @@ class Neo4j::ActiveModel
   extend ActiveModel::Naming
   include ActiveModel::Validations
   include ActiveModel::Dirty
+  extend ActiveModel::Callbacks
+  define_model_callbacks :create, :save, :update, :destroy
 
   class RecordInvalidError < RuntimeError
     attr_reader :record
@@ -18,15 +20,23 @@ class Neo4j::ActiveModel
     end
   end
 
-  def init_on_create(*props)
-    # :nodoc:
-    @_java_node = Neo4j::Node.new(*props)
-    @_new_record = true
-    self[:_classname] = self.class.name
+  # --------------------------------------
+  # Initialize
+  # --------------------------------------
+
+  def initialize(*)
+  end
+
+  def init_on_create(*args) # :nodoc:
+    puts "init_on_create #{args.inspect}"
+    _run_create_callbacks do
+      @_new_record = true
+      super
+    end
   end
 
   # --------------------------------------
-  #
+  # Identity
   # --------------------------------------
 
   def id
@@ -34,8 +44,19 @@ class Neo4j::ActiveModel
   end
 
   def to_param
-    neo_id.to_s
+    persisted? ?  neo_id.to_s : nil
   end
+
+  # Returns an Enumerable of all (primary) key attributes
+  # or nil if model.persisted? is false
+  def to_key
+    persisted? ?  [:id] : nil
+  end
+
+
+  # --------------------------------------
+  # enables ActiveModel::Dirty and Validation
+  # --------------------------------------
 
   def method_missing(method_id, *args, &block)
     if !self.class.attribute_methods_generated?
@@ -85,33 +106,42 @@ class Neo4j::ActiveModel
     save
   end
 
+  # --------------------------------------
+  # CRUD
+  # --------------------------------------
+
   def delete
     super
     @_deleted = true
   end
 
   def save
-    @previously_changed = changes
-    @changed_attributes.clear
     if valid?
       # if we are trying to save a value then we should create a real node
-      unless persisted?
+      if persisted?
+        _run_update_callbacks do
+          @previously_changed = changes
+          @changed_attributes.clear
+        end
+      else
         node = Neo4j::Node.new(props)
         init_on_load(node)
         init_on_create
+        @previously_changed = changes
+        @changed_attributes.clear
       end
       true
     end
+  end
+
+  def save!
+    raise RecordInvalidError.new(self) unless save
   end
 
   # In neo4j all object are automatically persisted in the database when created (but the Transaction might get rollback)
   # Only the Neo4j::Value object will never exist in the database
   def persisted?
     !_java_node.kind_of?(Neo4j::Value)
-  end
-
-  def save!
-    raise RecordInvalidError.new(self) unless save
   end
 
   def to_model
@@ -128,7 +158,7 @@ class Neo4j::ActiveModel
   end
 
   def destroy
-    del
+    _run_update_callbacks { del }
   end
 
   def destroyed?()
@@ -168,25 +198,11 @@ class Neo4j::ActiveModel
       end
     end
 
+    def create!(*args)
+      model = create(*args)
+      raise RecordInvalidError.new(model) unless model.valid?
+      model
+    end
   end
 
 end
-
-
-#class LintTest < ActiveModel::TestCase
-#  include ActiveModel::Lint::Tests
-#
-#  class MyModel
-#    include Neo4j::NodeMixin
-#  end
-#
-#  def setup
-#    @model = MyModel.new
-#  end
-#
-#end
-#
-#require 'test/unit/ui/console/testrunner'
-#Neo4j::Transaction.run do
-#  Test::Unit::UI::Console::TestRunner.run(LintTest)
-#end
