@@ -150,6 +150,18 @@ describe Neo4j::Node, :type => :transactional do
       a.outgoing(:friends).first.should == other_node
     end
 
+    it "#outgoing(:friends) << b << c creates an outgoing relationship of type :friends" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      c = Neo4j::Node.new
+
+      # when
+      a.outgoing(:friends) << b << c
+
+      # then
+      a.outgoing(:friends).should include(b,c)
+    end
+
     it "#incoming(:friends) << other_node should raise an exception" do
       a = Neo4j::Node.new
       other_node = Neo4j::Node.new

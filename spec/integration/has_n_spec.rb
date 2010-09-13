@@ -34,4 +34,16 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     p1.friends.should include(p2)
   end
 
+  it "generates a 'type'_rels method for traversing relationships" do
+    p1 = Person.new
+    p2 = Neo4j::Node.new
+    p3 = Neo4j::Node.new
+    p1.outgoing(:friends) << p2 << p3
+
+    [*p1.friends_rels].size.should == 2
+    n = p1.friends_rels.map {|r| r.end_node}
+    n.size.should == 2
+    n.should include(p2)
+    n.should include(p3)
+  end
 end

@@ -99,10 +99,14 @@ class Neo4j::ActiveModel
         self[k] = v
       end
     end
-  end
+    end
 
+
+  # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
+  # If the saving fails because of a connection or remote service error, an exception will be raised.
+  # If saving fails because the resource is invalid then false will be returned.
   def update_attributes(attributes)
-    self.attributes = attributes
+    update(attributes) # TODO !!!
     save
   end
 

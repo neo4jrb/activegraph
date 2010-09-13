@@ -57,7 +57,7 @@ begin
   end
 
   def model_subclass(&block)
-    TempModel.set(Class.new(Neo4j::Model, &block))
+    TempModel.set(Class.new(Neo4j::ActiveModel, &block))
   end
 end unless @_neo4j_rspec_loaded
 

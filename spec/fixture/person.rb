@@ -4,4 +4,6 @@ class Person
   property :city
 
   has_n :friends
+  has_one :address
+
 end

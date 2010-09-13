@@ -49,6 +49,7 @@ module Neo4j
     def <<(other_node)
       raise "Only allowed to create outgoing relationships, please add it on the other node if you want to create an incoming relationship" unless @dir == org.neo4j.graphdb.Direction::OUTGOING
       @from.create_relationship_to(other_node, @type)
+      self
     end
 
     def both(type)
