@@ -75,7 +75,7 @@ module Neo4j
       #  Neo4j::Relationship.new :friend, node1, node2, :since => '2001-01-02', :status => 'okey'
       #
       def new(type, from_node, to_node, props={})
-        rel = from_node.outgoing(type) << to_node
+        rel = from_node.outgoing(type).new(to_node)
         props.each_pair {|k,v| rel[k] = v}
         rel
       end

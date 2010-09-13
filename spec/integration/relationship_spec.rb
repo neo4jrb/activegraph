@@ -44,4 +44,12 @@ describe Neo4j::Relationship, :type=> :transactional do
     rel[:since].should == 1998
     rel[:colour].should == 'blue'
   end
+
+  it "#outgoing(:friends).new(other) creates a new relationship between self and other node" do
+    p1 = Neo4j::Node.new
+    p2 = Neo4j::Node.new
+    rel = p1.outgoing(:foo).new(p2)
+    p1.outgoing(:foo).first.should == p2
+    rel.should be_kind_of(org.neo4j.graphdb.Relationship)
+  end
 end
