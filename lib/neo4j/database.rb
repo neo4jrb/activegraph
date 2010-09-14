@@ -1,26 +1,38 @@
 module Neo4j
   class Database
-    attr_reader :graph, :lucene, :lucene_fulltext
+    attr_reader :graph, :lucene, :lucene_fulltext, :event_handler
 
     def initialize()
-      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
-      @lucene =  org.neo4j.index.lucene.LuceneIndexService.new(@graph)
-      @lucene_sync = LuceneSynchronizer.new
-      @graph.register_transaction_event_handler(@lucene_sync)
+      @event_handler = EventHandler.new
+      @lucene_sync   = LuceneSynchronizer.new
     end
 
 
+    def start
+      @running = true
+      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
+      @lucene =  org.neo4j.index.lucene.LuceneIndexService.new(@graph)
+      @graph.register_transaction_event_handler(@lucene_sync)
+      @graph.register_transaction_event_handler(@event_handler)
+      @event_handler.neo4j_started(self)
+    end
+
     def shutdown
+      puts "SHUT DOWN #{caller.inspect}"
+      @running = false
+      @graph.unregister_transaction_event_handler(@lucene_sync)
+      @graph.unregister_transaction_event_handler(@event_handler)
+      @event_handler.neo4j_shutdown(self)
       @graph.shutdown
       @lucene.shutdown
     end
 
-    def begin_tx
-      @graph.begin_tx
+    def running?
+      @running
     end
 
-    def event_handler
-      @event_handler ||= @graph.register_transaction_event_handler(EventHandler.new)
+    def begin_tx
+      @graph.begin_tx
     end
 
     def find(field, query, props)

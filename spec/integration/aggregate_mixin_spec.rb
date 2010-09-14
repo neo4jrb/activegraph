@@ -13,12 +13,16 @@ describe Neo4j::AggregateMixin, :type => :transactional do
   end
 
   it "ascsa" do
-    eh = Neo4j.db.event_handler
-    puts "EH = #{eh}"
+    pending
+    eh = Neo4j.started_db.event_handler
+    User.should respond_to(:all)
     a = User.new
     b = User.new
+    puts "FINISH TX"
     Neo4j::Transaction.finish
+    puts "NEW TX"
     Neo4j::Transaction.new
+    User.all.should include(a,b)
     #User.all.should include(a,b)
   end
 end

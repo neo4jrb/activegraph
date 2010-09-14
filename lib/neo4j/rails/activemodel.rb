@@ -28,7 +28,6 @@ class Neo4j::ActiveModel
   end
 
   def init_on_create(*args) # :nodoc:
-    puts "init_on_create #{args.inspect}"
     _run_create_callbacks do
       @_new_record = true
       super

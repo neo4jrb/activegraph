@@ -87,7 +87,7 @@ module Neo4j::Mapping
       raise "Expected classname #{self} got #{clazz}" if clazz != self
     end
 
-    def load_wrapper(node, db = Neo4j.db)
+    def load_wrapper(node, db = Neo4j.started_db)
       wrapped_node = self.new
       wrapped_node.init_on_load(node)
       wrapped_node

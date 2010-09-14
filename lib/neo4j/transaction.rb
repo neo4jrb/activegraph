@@ -1,17 +1,17 @@
 module Neo4j
   class Transaction
-    def self.new(instance = Neo4j.db)
+    def self.new(instance = Neo4j.started_db)
       Thread.current[id_for_instance(instance)] = instance.begin_tx
     end
 
-    def self.finish(instance = Neo4j.db)
+    def self.finish(instance = Neo4j.started_db)
       tx = Thread.current[id_for_instance(instance)]
       return unless tx
       tx.success
       tx.finish
     end
 
-    def self.failure(instance = Neo4j.db)
+    def self.failure(instance = Neo4j.started_db)
       tx = Thread.current[id_for_instance(instance)]
       return unless tx
       tx.failure
