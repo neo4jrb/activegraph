@@ -6,8 +6,14 @@ module Neo4j::Mapping
           clazz = clazz.to_s
           @aggregates ||= {}
           @aggregates[clazz] ||= {}
-          @aggregates[clazz][:field] = field
-          @aggregates[clazz][:block] = block
+          filter = block.nil? ? Proc.new{|*| true} : block
+          @aggregates[clazz][field] = filter
+        end
+
+        def fields_for(clazz)
+          clazz = clazz.to_s
+          return [] if @aggregates.nil? || @aggregates[clazz].nil?
+          @aggregates[clazz].keys
         end
 
         def delete(clazz)
@@ -45,12 +51,37 @@ module Neo4j::Mapping
           Neo4j.ref_node.outgoing(clazz).first
         end
 
-        def on_node_created(node)
+        def on_node_created2222(node)
           return unless trigger?(node)
           agg_node = aggregate_for(node[:_classname])
           agg_node.outgoing(:_class_aggregate) << node
         end
 
+        def on_property_changed(node, key, old_value, new_value)
+          puts "on_property_changed #{node.id} key: #{key} old: #{old_value} new:#{new_value}"
+          return unless trigger?(node)
+          clazz = node[:_classname]
+          return if @aggregates[clazz].nil?
+          agg_node = aggregate_for(node[:_classname])
+          @aggregates[clazz].each_pair do |field, filter|
+            puts "  check #{field} with filter #{filter}"
+            if filter.call(node)
+              # is this node already included ?
+              if !node.rel?(field)
+                agg_node.outgoing(field) << node
+                puts "  ADD outgoing done for node #{node.neo_id} field: #{field}"
+              else
+                puts "  already exist"
+              end
+
+              # new aggregate
+            else
+              # remove old ?
+              puts "  remove old #{field} for #{node.neo_id}  field: #{node[field]}"
+              node.rels(field).incoming.each { |x| x.del; puts "DELETE #{x}" } # TODO
+            end
+          end
+        end
       end
     end
 
@@ -81,7 +112,7 @@ module Neo4j::Mapping
 
         singelton.send(:define_method, name) do
           n = Aggregates.aggregate_for(self)
-          n.outgoing(:_class_aggregate) if n
+          n.outgoing(name) if n
         end
 
         Aggregates.add(self, name, &block)
@@ -89,9 +120,13 @@ module Neo4j::Mapping
 
       # This is typically used for RSpecs to clean up aggregate nodes created by the #aggregate method.
       # It also remove the given class method.
-      def delete_aggregate(name)
-#      singelton = class << self; self; end
-#      singelton.send(:remove_method, name)
+      def delete_aggregates
+        singelton = class << self; self;  end
+        puts "delete agg #{self}"
+        Aggregates.fields_for(self).each do |name|
+          puts "delete method #{name}"
+          singelton.send(:remove_method, name)
+        end
         Aggregates.delete(self)
       end
     end
