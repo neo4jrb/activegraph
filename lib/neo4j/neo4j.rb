@@ -38,7 +38,6 @@ module Neo4j
 
     def shutdown(this_db = @db)
       this_db.shutdown if this_db
-      @db = nil if this_db == @db
     end
 
     def ref_node(this_db = self.started_db)
