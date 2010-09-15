@@ -22,7 +22,7 @@ describe Neo4j::ActiveModel, "new"  do
   end
 
   it "should fail to save new model without a transaction" do
-    lambda { @model.save }.should raise_error
+    expect { @model.save }.to raise_error
   end
 end
 
@@ -81,11 +81,8 @@ describe Neo4j::ActiveModel, "find", :type => :transactional do
     @model.flavour = "vanilla"
     #@model.save
 
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
-    puts "--------------- FIND IT"
+    new_tx
     IceCream.find(:flavour, "vanilla").to_a.should include(@model)
-    puts "------------------ ?"
   end
 end
 
@@ -104,17 +101,9 @@ describe Neo4j::ActiveModel, "destroy", :type => :transactional do
 
   it "should remove the model from the database" do
     id = @model.neo_id
-    puts "DESTROY ? "
-#    Neo4j::Transaction.new
-    #Neo4j::Transaction.run { @model.destroy }
     @model.destroy
-    Neo4j::Transaction.finish
-
-    puts "---------- id: #{id} -"
-    Neo4j::Transaction.new
-    #Neo4j::Transaction.run { Neo4j::Node.load(id).should be_nil }
+    new_tx
     Neo4j::Node.load(id).should be_nil
-    Neo4j::Transaction.finish
   end
 end
 
@@ -125,13 +114,12 @@ describe Neo4j::ActiveModel, "create", :type => :transactional do
   end
 
   it "should accept attributes to be set" do
-    puts "---XXXXXXXXX--------"
     model = Neo4j::ActiveModel.create :name => "Nick"
     model[:name].should == "Nick"
   end
 
   it "bang version should raise an exception if save returns false" do
-    lambda { IceCream.create! }.should raise_error(Neo4j::ActiveModel::RecordInvalidError)
+    expect { IceCream.create! }.to raise_error(Neo4j::ActiveModel::RecordInvalidError)
   end
 
   it "should run before and after create callbacks" do
@@ -149,7 +137,6 @@ describe Neo4j::ActiveModel, "create", :type => :transactional do
       end
     end
     model = klass.create!
-    puts "----------"
     model.created.should_not be_nil
     model.saved.should_not be_nil
   end

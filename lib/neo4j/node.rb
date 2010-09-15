@@ -8,9 +8,15 @@ module Neo4j
     include Neo4j::Equal
     include Neo4j::Index
 
+    # Delete the node and all its relationship
     def del
-      rels.each {|r| r.del}
+      rels.each {|r| r.delete}
       delete
+    end
+
+    # returns true if the node exists in the database
+    def exist?
+      Neo4j::Node.exist?(self)
     end
   end
 

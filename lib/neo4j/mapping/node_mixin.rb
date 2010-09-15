@@ -43,11 +43,15 @@ module Neo4j::Mapping
         # these constants are used in the Neo4j::RelClassMethods and Neo4j::PropertyClassMethods
         # they are defined here since they should only be defined once -
         # all subclasses share the same index, declared properties and index_updaters
-        const_set(:ROOT_CLASS, self)
-        const_set(:DECL_RELATIONSHIPS, {})
-        const_set(:PROPERTIES_INFO, {})
-      end unless c.const_defined?(:DECL_RELATIONSHIPS)
-
+        unless c.const_defined?(:DECL_RELATIONSHIPS)
+          const_set(:ROOT_CLASS, self)
+          const_set(:DECL_RELATIONSHIPS, {})
+          const_set(:PROPERTIES_INFO, {})
+        end
+        class << self
+          alias_method :orig_new, :new
+        end
+      end
       c.extend Neo4j::Mapping::PropertyClassMethods
       c.extend Neo4j::Mapping::IndexClassMethods
       c.extend Neo4j::Mapping::RelationshipClassMethods

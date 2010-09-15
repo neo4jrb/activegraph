@@ -32,6 +32,10 @@ module Neo4j
       end
     end
 
+    def size
+      [*self].size
+    end
+
     def both
       @dir = dir_to_java(:both)
       self

@@ -1,24 +1,26 @@
 module Neo4j
+  #
+  # All modifying operations that work with the node space must be wrapped in a transaction. Transactions are thread confined.
+  # Neo4j does not implement true nested transaction, instead it uses flat nested transactions
+  # see http://wiki.neo4j.org/content/Flat_nested_transactions
+  #
   class Transaction
+
+    # Starts a new Neo4j Transaction
+    # Returns a Java Neo4j Transaction object
+    # See http://api.neo4j.org/current/org/neo4j/graphdb/Transaction.html
+    #
+    # Example:
+    #  tx = Neo4j::Transaction.new
+    #  # modify something
+    #  tx.success
+    #  tx.finish
+
     def self.new(instance = Neo4j.started_db)
-      Thread.current[id_for_instance(instance)] = instance.begin_tx
-    end
-
-    def self.finish(instance = Neo4j.started_db)
-      tx = Thread.current[id_for_instance(instance)]
-      return unless tx
-      tx.success
-      tx.finish
-    end
-
-    def self.failure(instance = Neo4j.started_db)
-      tx = Thread.current[id_for_instance(instance)]
-      return unless tx
-      tx.failure
-    end
-
-    def self.id_for_instance(instance)
-      "tx#{instance.object_id}".to_sym
+      @counter ||= 0
+      @counter += 1
+      puts "Running tx #{@counter}"
+      instance.begin_tx
     end
 
     # Runs a block in a Neo4j transaction
@@ -63,6 +65,7 @@ module Neo4j
         raise
       ensure
         tx.finish unless tx.nil?
+        @counter -= 1
       end
       ret
     end

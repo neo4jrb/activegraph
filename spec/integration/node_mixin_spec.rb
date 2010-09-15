@@ -20,8 +20,9 @@ describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
   it "#index can use an index from a base class" do
     empl = Employee.new(:name => 'ronge', :employee_id => 123)
     empl[:name].should == 'ronge'
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
+
+    new_tx
+
     Employee.find(:name, 'ronge').first.should == empl
     Employee.find(:employee_id, 123).first.should == empl
   end
@@ -73,8 +74,8 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   it "#index should add an index" do
     n = SimpleNode.new
     n[:city] = 'malmoe'
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
+
+    new_tx
 
     SimpleNode.find(:city, 'malmoe').first.should == n
   end
@@ -83,12 +84,12 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   it "#index should keep the index in sync with the property value" do
     n = SimpleNode.new
     n[:city] = 'malmoe'
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
+
+    new_tx
 
     n[:city] = 'stockholm'
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
+
+    new_tx
 
     SimpleNode.find(:city, 'malmoe').first.should_not == n
     SimpleNode.find(:city, 'stockholm').first.should == n

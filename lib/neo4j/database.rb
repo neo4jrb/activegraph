@@ -18,7 +18,6 @@ module Neo4j
     end
 
     def shutdown
-      puts "SHUT DOWN #{caller.inspect}"
       @running = false
       @graph.unregister_transaction_event_handler(@lucene_sync)
       @graph.unregister_transaction_event_handler(@event_handler)

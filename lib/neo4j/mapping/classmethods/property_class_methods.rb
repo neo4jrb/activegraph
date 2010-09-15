@@ -88,7 +88,7 @@ module Neo4j::Mapping
     end
 
     def load_wrapper(node, db = Neo4j.started_db)
-      wrapped_node = self.new
+      wrapped_node = self.orig_new  # avoid creating a new node, only a Ruby Object
       wrapped_node.init_on_load(node)
       wrapped_node
     end

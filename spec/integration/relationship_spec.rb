@@ -52,4 +52,5 @@ describe Neo4j::Relationship, :type=> :transactional do
     p1.outgoing(:foo).first.should == p2
     rel.should be_kind_of(org.neo4j.graphdb.Relationship)
   end
+
 end

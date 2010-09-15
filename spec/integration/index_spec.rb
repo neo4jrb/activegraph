@@ -52,7 +52,6 @@ describe Neo4j::Node, "index", :type => :transactional do
 
     new_node[:name] = 'lala'
     new_node.index(:name)
-#    Neo4j::Transaction.finish
 
     # then
     Neo4j::Node.find(:name, 'lala').first.should == new_node
@@ -65,13 +64,12 @@ describe Neo4j::Node, "index", :type => :transactional do
 
     new_node = Neo4j::Node.new
     new_node[:name] = 'Kalle Kula'
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
+
+    new_tx
 
     new_node[:name] = 'lala'
 
-    Neo4j::Transaction.finish
-    Neo4j::Transaction.new
+    new_tx
 
     # then
     Neo4j::Node.find(:name, 'lala').first.should == new_node

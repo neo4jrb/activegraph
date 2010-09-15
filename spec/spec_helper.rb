@@ -13,6 +13,22 @@ begin
 
   require 'neo4j'
 
+  def rm_db_storage
+    puts "Neo4j::Config[:storage_path]=#{Neo4j::Config[:storage_path]}"
+    FileUtils.rm_rf Neo4j::Config[:storage_path]
+  end
+
+  def finish_tx
+    return unless @tx
+    @tx.success
+    @tx.finish
+    @tx = nil
+  end
+
+  def new_tx
+    finish_tx if @tx
+    @tx = Neo4j::Transaction.new
+  end
 
   # load all fixture classes
   fixture_path = File.join(File.dirname(__FILE__), 'fixture')
@@ -27,21 +43,22 @@ begin
 
 #  c.filter = { :type => :transactional}
     c.before(:all, :type => :transactional) do
-      FileUtils.rm_rf Neo4j::Config[:storage_path]
-      FileUtils.mkdir_p(Neo4j::Config[:storage_path])
+      rm_db_storage
     end
 
     c.after(:all, :type => :transactional) do
       Neo4j.shutdown
-      FileUtils.rm_rf Neo4j::Config[:storage_path]
+      rm_db_storage
     end
 
     c.before(:each, :type => :transactional) do
-      Neo4j::Transaction.new
+      new_tx
     end
 
     c.after(:each, :type => :transactional) do
-      Neo4j::Transaction.finish
+      @tx.finish if @tx
+      @tx = nil
+      #Neo4j::Transaction.finish
     end
   end
 

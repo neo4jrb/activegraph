@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::ActiveModel, "new" do
+  after(:each) {finish_tx}
   it "validation works on the created value object" do
     v = ActivePerson.new
     v.should_not be_valid
@@ -21,10 +22,9 @@ describe Neo4j::ActiveModel, "new" do
 
   it "save should create a new node when run in a transaction" do
     v = ActivePerson.new(:name => 'andreas')
-    Neo4j::Transaction.new
+    new_tx
     v.save
     Neo4j::Node.should exist(v)
-    Neo4j::Transaction.finish
   end
 
   it "has nil as id befored saved" do

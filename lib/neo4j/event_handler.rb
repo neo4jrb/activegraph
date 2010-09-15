@@ -6,7 +6,6 @@ module Neo4j
 
     def initialize
       @listeners = []
-      @filter_classes = []
     end
 
 
@@ -26,7 +25,6 @@ module Neo4j
 
     def add(listener)
       @listeners << listener unless @listeners.include?(listener)
-      add_filter(listener) # the listener do not want to get events on it self
     end
 
     def remove(listener)
@@ -42,19 +40,6 @@ module Neo4j
       @listeners.each_key {|li| puts "  Listener '#{li}'"}
     end
 
-    def add_filter(filter_class)
-      @filter_classes << filter_class  unless @filter_classes.include?(filter_class)
-    end
-
-    def remove_filter(filter_class)
-      @filter_classes.delete filter_class
-    end
-
-    def filter_on?(node_or_rel)
-      node_or_rel.property?(:_classname) && @filter_classes.include?(node_or_rel[:_classname])
-    end
-
-
     def neo4j_started(db)
       @listeners.each { |li| li.on_neo4j_started(db) if li.respond_to?(:on_neo4j_started) }
     end
@@ -64,30 +49,24 @@ module Neo4j
     end
 
     def node_created(node)
-      return if filter_on?(node)
       @listeners.each {|li| li.on_node_created(node) if li.respond_to?(:on_node_created)}
     end
 
     def node_deleted(node)
-      return if filter_on?(node)
       @listeners.each {|li| li.on_node_deleted(node) if li.respond_to?(:on_node_deleted)}
     end
 
     def relationship_created(relationship)
-      return if filter_on?(relationship)
       @listeners.each {|li| li.on_relationship_created(relationship) if li.respond_to?(:on_relationship_created)}
     end
 
     def relationship_deleted(relationship)
-      return if filter_on?(relationship)
       @listeners.each {|li| li.on_relationship_deleted(relationship) if li.respond_to?(:on_relationship_deleted)}
     end
 
     def property_changed(node, key, old_value, new_value)
-      return if filter_on?(node)
       @listeners.each {|li| li.on_property_changed(node, key, old_value, new_value) if li.respond_to?(:on_property_changed)}
     end
-
 
     # TODO
     def tx_finished(tx)
