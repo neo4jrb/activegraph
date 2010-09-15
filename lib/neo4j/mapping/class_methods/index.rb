@@ -1,6 +1,6 @@
-module Neo4j
-  module Mapping
-    module IndexClassMethods
+module Neo4j::Mapping
+  module ClassMethods
+    module Index
       def index(field, props = {})
         props[:prefix] = index_prefix
         Neo4j::Node.index(field, props)

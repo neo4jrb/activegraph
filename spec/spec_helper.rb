@@ -14,7 +14,7 @@ begin
   require 'neo4j'
 
   def rm_db_storage
-    puts "Neo4j::Config[:storage_path]=#{Neo4j::Config[:storage_path]}"
+#    puts "Neo4j::Config[:storage_path]=#{Neo4j::Config[:storage_path]}"
     FileUtils.rm_rf Neo4j::Config[:storage_path]
   end
 

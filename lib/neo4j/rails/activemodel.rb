@@ -1,9 +1,5 @@
 class Neo4j::ActiveModel
 
-  class << self
-    alias_method :orig_new, :new
-  end
-
   include Neo4j::NodeMixin
   extend ActiveModel::Naming
   include ActiveModel::Validations

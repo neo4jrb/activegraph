@@ -52,9 +52,10 @@ module Neo4j::Mapping
           alias_method :orig_new, :new
         end
       end
-      c.extend Neo4j::Mapping::PropertyClassMethods
-      c.extend Neo4j::Mapping::IndexClassMethods
-      c.extend Neo4j::Mapping::RelationshipClassMethods
+      c.extend ClassMethods::Property
+      c.extend ClassMethods::Index
+      c.extend ClassMethods::Relationship
+      c.extend ClassMethods::Aggregate
     end
 
   end

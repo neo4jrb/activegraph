@@ -17,9 +17,6 @@ module Neo4j
     #  tx.finish
 
     def self.new(instance = Neo4j.started_db)
-      @counter ||= 0
-      @counter += 1
-      puts "Running tx #{@counter}"
       instance.begin_tx
     end
 
@@ -65,7 +62,6 @@ module Neo4j
         raise
       ensure
         tx.finish unless tx.nil?
-        @counter -= 1
       end
       ret
     end

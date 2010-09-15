@@ -3,11 +3,10 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 class User
   include Neo4j::NodeMixin
-  extend Neo4j::AggregateMixin  # TODO this should be automaticlly included in NodeMixin
 end
 
 
-describe "Neo4j::AggregateMixin" do
+describe "Neo4j::Node#aggregate" do
 
 
   before(:all) do
