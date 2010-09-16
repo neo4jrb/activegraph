@@ -51,15 +51,6 @@ module Neo4j::Mapping
           Neo4j.ref_node.outgoing(clazz).first
         end
 
-        def on_node_created2222(node)
-          return unless trigger?(node)
-          agg_node = aggregate_for(node[:_classname])
-          agg_node.outgoing(:_class_aggregate) << node
-        end
-
-        def on_node_deleted(node,props)
-          #todo
-        end
 
         def on_property_changed(node, key, old_value, new_value)
 #          puts "on_property_changed #{node.id} key: #{key} old: #{old_value} new:#{new_value}"
