@@ -5,6 +5,9 @@ class User
   include Neo4j::NodeMixin
 end
 
+class NewsStory
+ include Neo4j::NodeMixin
+end
 
 
 describe "Neo4j::Node#aggregate" do
@@ -15,10 +18,15 @@ describe "Neo4j::Node#aggregate" do
     User.aggregate :all
     User.aggregate(:old) { |node| node[:age] > 10 }
     User.aggregate(:young) { |node| node[:age]  < 5 }
+
+    NewsStory.aggregate :all
+    NewsStory.aggregate(:featured) { |node| node[:featured] == true }
+    NewsStory.aggregate(:embargoed) { |node| node[:publish_date] > 2010 }
+
   end
 #
   after(:all) do
-    Neo4j::Transaction.run { User.delete_aggregates }
+    Neo4j::Transaction.run { User.delete_aggregates; NewsStory.delete_aggregates }
     Neo4j.shutdown
     rm_db_storage
   end
@@ -38,6 +46,17 @@ describe "Neo4j::Node#aggregate" do
     User.old.should_not include(b)
     User.young.should include(b)
   end
+
+  it "aggregate only instances of the given class (no side effects)" do
+    User.new :age => 25
+    User.new :age => 4
+    lambda {new_tx}.should_not change(NewsStory.all, :size)
+
+    NewsStory.new :featured => true, :publish_date => 2011
+    lambda {new_tx}.should_not change(User.all, :size)
+  end
+
+
 
   it "remove nodes from aggregate group when a property change" do
     a = User.new :age => 25
