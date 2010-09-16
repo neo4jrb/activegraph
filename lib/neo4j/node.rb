@@ -10,7 +10,7 @@ module Neo4j
 
     # Delete the node and all its relationship
     def del
-      rels.each {|r| r.delete}
+      rels.each {|r| r.del}
       delete
     end
 

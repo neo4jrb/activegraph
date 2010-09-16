@@ -101,6 +101,10 @@ module Neo4j
       self
     end
 
+    def size
+      [*self].size
+    end
+
     def each
       iter = iterator
       while (iter.hasNext) do

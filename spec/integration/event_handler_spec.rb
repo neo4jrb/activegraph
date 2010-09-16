@@ -10,7 +10,7 @@ describe Neo4j::EventHandler, :type => :transactional do
     singelton.send(:define_method, meth) do |*args|
       @args ||= []
       @args << args
-      block.call(args[0]) if block
+      block.call(*args) if block
     end
 
     singelton.send(:define_method, "args") do
@@ -24,7 +24,7 @@ describe Neo4j::EventHandler, :type => :transactional do
     end
 
     singelton.send(:define_method, :calls) do
-      @args.size
+      @args.nil? ? 0 : @args.size
     end
 
     Neo4j.event_handler.add @rec
@@ -57,6 +57,17 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.arg0.should include(node2)
   end
 
+  it "#on_node_deleted will receive an hash of all properties the node had before it was deleted" do
+    rec = event_receiver(:on_node_deleted)
+    node1 = Neo4j::Node.new :name => 'node1', :age => 42
+    new_tx
+    node1.del
+    finish_tx
+    rec.calls.should == 1
+    rec.arg0.should include(node1)
+    rec.arg1[0].should == {'name' => 'node1', 'age' => 42}
+  end
+
   it "in callbacks it is possible to modify any nodes" do
     node1 = Neo4j::Node.new
     node2 = Neo4j::Node.new
@@ -64,7 +75,7 @@ describe Neo4j::EventHandler, :type => :transactional do
     node1.outgoing(:foo) << node2
     new_tx
 
-    event_receiver(:on_property_changed) do |node|
+    event_receiver(:on_property_changed) do |node,*|
       node2.del
       node[:foo] = '123'
     end

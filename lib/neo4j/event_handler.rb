@@ -18,9 +18,16 @@ module Neo4j
     def before_commit(data)
       data.created_nodes.each{|node| node_created(node)}
       data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.deleted_nodes.each { |node| node_deleted(node)}
+      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) unless data.deleted_nodes.include?(tx_data.entity) }
+      data.deleted_nodes.each { |node| node_deleted(node, deleted_properties_for(node,data))}
       # TODO Add relationship properties callbacks
+    end
+
+    def deleted_properties_for(node, data)
+      data.removed_node_properties.find_all{|tx_data| tx_data.entity == node}.inject({}) do |memo, tx_data|
+        memo[tx_data.key] = tx_data.previously_commited_value
+        memo
+      end
     end
 
     def add(listener)
@@ -52,8 +59,8 @@ module Neo4j
       @listeners.each {|li| li.on_node_created(node) if li.respond_to?(:on_node_created)}
     end
 
-    def node_deleted(node)
-      @listeners.each {|li| li.on_node_deleted(node) if li.respond_to?(:on_node_deleted)}
+    def node_deleted(node,old_properties)
+      @listeners.each {|li| li.on_node_deleted(node,old_properties) if li.respond_to?(:on_node_deleted)}
     end
 
     def relationship_created(relationship)

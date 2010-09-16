@@ -18,7 +18,7 @@ describe "Neo4j::Node#aggregate" do
 #
   after(:all) do
     Neo4j::Transaction.run { User.delete_aggregates }
-    finish_tx
+#    finish_tx
     Neo4j.shutdown
     rm_db_storage
   end
@@ -33,7 +33,16 @@ describe "Neo4j::Node#aggregate" do
     User.all.should include(b)
     User.old.should include(a)
     User.old.should_not include(b)
+    User.all.size.should == 2
+    User.old.size.should == 1
+    new_tx
+    b.del
+    finish_tx
+    #Neo4j::Transaction.run {Neo4j.all_nodes.each {|n| puts " found #{n.neo_id}"}}
   end
 
+  it "remove nodes from aggregate group when a property change" do
+
+  end
 end
 

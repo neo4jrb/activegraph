@@ -5,7 +5,7 @@ module Neo4j::Mapping
 
     def_delegators :@_java_node, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
                    :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both,
-                   :equal?, :eql?, :==
+                   :equal?, :eql?, :==, :exist?
 
 
     # --------------------------------------------------------------------------

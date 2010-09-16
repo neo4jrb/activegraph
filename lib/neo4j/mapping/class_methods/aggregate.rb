@@ -57,8 +57,12 @@ module Neo4j::Mapping
           agg_node.outgoing(:_class_aggregate) << node
         end
 
+        def on_node_deleted(node,props)
+          #todo
+        end
+
         def on_property_changed(node, key, old_value, new_value)
-          puts "on_property_changed #{node.id} key: #{key} old: #{old_value} new:#{new_value}"
+#          puts "on_property_changed #{node.id} key: #{key} old: #{old_value} new:#{new_value}"
           return unless trigger?(node)
           clazz = node[:_classname]
           return if @aggregates[clazz].nil?
@@ -66,8 +70,10 @@ module Neo4j::Mapping
           @aggregates[clazz].each_pair do |field, filter|
             puts "  check #{field} with filter #{filter}"
             if filter.call(node)
+              puts "  filter return true"
               # is this node already included ?
               if !node.rel?(field)
+                puts "   Add on #{agg_node.neo_id}"
                 agg_node.outgoing(field) << node
                 puts "  ADD outgoing done for node #{node.neo_id} field: #{field}"
               else
@@ -77,8 +83,8 @@ module Neo4j::Mapping
               # new aggregate
             else
               # remove old ?
-              puts "  remove old #{field} for #{node.neo_id}  field: #{node[field]}"
-              node.rels(field).incoming.each { |x| x.del; puts "DELETE #{x}" } # TODO
+              puts "  remove old #{field} for #{node.neo_id}" #  field: #{node[field]}"
+              node.rels(field).incoming.each { |x| x.del } # TODO
             end
           end
         end
