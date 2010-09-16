@@ -13,8 +13,12 @@ module Neo4j
 
   class FilterPredicate # :nodoc:
     include org.neo4j.helpers.Predicate
-    def initialize(proc)
-      @proc = proc
+    def initialize
+      @procs = []
+    end
+
+    def add(proc)
+      @procs << proc
     end
 
     def include_start_node
@@ -23,7 +27,9 @@ module Neo4j
 
     def accept(path)
       return false if @include_start_node && path.length == 0
-      @proc.call(path)
+      # find the first filter which returns false
+      # if not found then we will accept this path
+      @procs.find {|p| !p.call(path)}.nil?
     end
   end
 
@@ -77,6 +83,12 @@ module Neo4j
       self
     end
 
+    def filter_method(name, &proc)
+      # add method name
+      singelton = class << self; self; end
+      singelton.send(:define_method, name) {filter &proc}
+      self
+    end
 
     def prune(&block)
       @td = @td.prune(PruneEvaluator.new(block))
@@ -85,7 +97,8 @@ module Neo4j
 
     def filter(&block)
       # we keep a reference to filter predicate since only one filter is allowed and we might want to modify it
-      @filter_predicate = FilterPredicate.new(block)
+      @filter_predicate ||= FilterPredicate.new
+      @filter_predicate.add(block)
       @td = @td.filter(@filter_predicate)
       self
     end

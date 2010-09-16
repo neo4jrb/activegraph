@@ -49,9 +49,7 @@ describe Neo4j::Node, :type => :transactional do
       a = Neo4j::Node.new
       new_tx
       id = a.neo_id
-      puts "delete id #{id}"
       x = Neo4j::Node.load(id)
-      puts "got #{x} id:#{x.neo_id}"
       x.del
     end
 
@@ -140,11 +138,11 @@ describe Neo4j::Node, :type => :transactional do
       #                +--- work -----+
       #                |
       #                +--- work ---> d  --- work --> e
-      a = Neo4j::Node.new
-      b = Neo4j::Node.new
-      c = Neo4j::Node.new
-      d = Neo4j::Node.new
-      e = Neo4j::Node.new
+      a = Neo4j::Node.new :name => 'a'
+      b = Neo4j::Node.new :name => 'b'
+      c = Neo4j::Node.new :name => 'c'
+      d = Neo4j::Node.new :name => 'd'
+      e = Neo4j::Node.new :name => 'e'
       a.outgoing(:friends) << b
       b.outgoing(:friends) << c
       b.outgoing(:work) << c
@@ -284,7 +282,6 @@ describe Neo4j::Node, :type => :transactional do
     it "#prune, if it returns true the traversal will be 'cut off' that path" do
       a, b, c, d, e = create_nodes
 
-
       [*b.outgoing(:work).depth(4).prune{|path| true}].size.should == 2
       b.outgoing(:work).depth(4).prune{|path| true}.should include(c,d)
     end
@@ -304,6 +301,14 @@ describe Neo4j::Node, :type => :transactional do
       nodes.should include(e)
     end
 
+    it "#filter accept several filters which all must return true in order to include the node in the traversal result" do
+      a, b, c, d, e = create_nodes
+      nodes = [*b.outgoing(:work).depth(4).filter{|path| %w[c d].include?(path.end_node[:name]) }.
+              filter{|path| %w[d e].include?(path.end_node[:name]) }]
+      nodes.should include(d)
+      nodes.should_not include(e)
+      nodes.size.should == 1
+    end
 
     it "#rels should return both incoming and outgoing relationship of any type of depth one" do
       a,b,c,d,e = create_nodes

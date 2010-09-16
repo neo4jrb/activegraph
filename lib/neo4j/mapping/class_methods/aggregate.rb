@@ -20,17 +20,17 @@ module Neo4j::Mapping
           clazz = clazz.to_s
           # delete the aggregate node if found
           if Neo4j.ref_node.rel?(clazz)
-            Neo4j.ref_node.outgoing(clazz).each { |n| puts "delete rel #{n.neo_id}"; n.del }
+            Neo4j.ref_node.outgoing(clazz).each { |n| n.del }
           end
           @aggregates.delete(clazz) if @aggregates
         end
 
-        def on_neo4j_started(db)
+        def on_neo4j_started(*)
           create_aggregates if @aggregates
         end
 
         def create_aggregates
-          @aggregates.each_pair do |clazz, agg_data|
+          @aggregates.each_key do |clazz|
             # check if aggregate nodes exist, if note create them
             if !Neo4j.ref_node.rel?(clazz)
               Neo4j::Transaction.run do
@@ -53,29 +53,19 @@ module Neo4j::Mapping
 
 
         def on_property_changed(node, key, old_value, new_value)
-#          puts "on_property_changed #{node.id} key: #{key} old: #{old_value} new:#{new_value}"
           return unless trigger?(node)
           clazz = node[:_classname]
           return if @aggregates[clazz].nil?
           agg_node = aggregate_for(node[:_classname])
           @aggregates[clazz].each_pair do |field, filter|
-            puts "  check #{field} with filter #{filter}"
             if filter.call(node)
-              puts "  filter return true"
               # is this node already included ?
               if !node.rel?(field)
-                puts "   Add on #{agg_node.neo_id}"
                 agg_node.outgoing(field) << node
-                puts "  ADD outgoing done for node #{node.neo_id} field: #{field}"
-              else
-                puts "  already exist"
               end
-
-              # new aggregate
             else
               # remove old ?
-              puts "  remove old #{field} for #{node.neo_id}" #  field: #{node[field]}"
-              node.rels(field).incoming.each { |x| x.del } # TODO
+              node.rels(field).incoming.each { |x| x.del }
             end
           end
         end
@@ -108,8 +98,15 @@ module Neo4j::Mapping
         end
 
         singelton.send(:define_method, name) do
-          n = Aggregates.aggregate_for(self)
-          n.outgoing(name) if n
+          agg_node = Aggregates.aggregate_for(self)
+          raise "no aggregate node for #{name}  on #{self}" if agg_node.nil?
+          traversal = agg_node.outgoing(name) # TODO possible to cache this object
+          Aggregates.fields_for(self).each do |filter_name|
+            traversal.filter_method(filter_name) do |path|
+              path.end_node.rel?(filter_name, :incoming)
+            end
+          end
+          traversal
         end
 
         Aggregates.add(self, name, &block)
@@ -119,9 +116,7 @@ module Neo4j::Mapping
       # It also remove the given class method.
       def delete_aggregates
         singelton = class << self; self;  end
-        puts "delete agg #{self}"
         Aggregates.fields_for(self).each do |name|
-          puts "delete method #{name}"
           singelton.send(:remove_method, name)
         end
         Aggregates.delete(self)

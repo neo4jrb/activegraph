@@ -35,7 +35,22 @@ describe "Neo4j::Node#aggregate" do
 
   after(:each) { finish_tx }
 
-  it "aggregate properties" do
+  it "generate accessor methods for traversing the aggregate group" do
+    User.should respond_to(:all)
+    User.should respond_to(:old)
+    User.should respond_to(:young)
+    NewsStory.should respond_to(:all)
+    NewsStory.should respond_to(:featured)
+    NewsStory.should respond_to(:embargoed)
+  end
+
+  it "generate chained method on node traversal objects" do
+    User.all.should respond_to(:old)
+    User.old.should respond_to(:all)
+  end
+
+
+  it "aggregate each changed node" do
     a = User.new :age => 25
     b = User.new :age => 4
     lambda {finish_tx}.should change(User.all, :size).by(2)
@@ -56,6 +71,29 @@ describe "Neo4j::Node#aggregate" do
     lambda {new_tx}.should_not change(User.all, :size)
   end
 
+
+  it "can chain aggregates" do
+    a = NewsStory.new :publish_date => 2011, :featured => true
+    b = NewsStory.new :publish_date => 2011, :featured => false
+    c = NewsStory.new :publish_date => 2009, :featured => true
+    finish_tx
+
+    NewsStory.embargoed.should include(a)
+    NewsStory.embargoed.should include(b)
+    NewsStory.embargoed.should_not include(c)
+
+    NewsStory.featured.should include(a)
+    NewsStory.featured.should_not include(b)
+    NewsStory.featured.should include(c)
+
+    NewsStory.featured.embargoed.should include(a)
+    NewsStory.featured.embargoed.should_not include(b)
+    NewsStory.featured.embargoed.should_not include(c)
+
+    NewsStory.all.featured.embargoed.should include(a)
+    NewsStory.all.featured.embargoed.should_not include(b)
+    NewsStory.all.featured.embargoed.should_not include(c)
+  end
 
 
   it "remove nodes from aggregate group when a property change" do
