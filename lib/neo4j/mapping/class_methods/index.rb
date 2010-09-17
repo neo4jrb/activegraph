@@ -1,22 +1,19 @@
 module Neo4j::Mapping
   module ClassMethods
     module Index
-      def index(field, props = {})
-        props[:prefix] = index_prefix
-        Neo4j::Node.index(field, props)
+      def index(field, config = {})
+        Neo4j::Node.index(field, config, index_name)
       end
 
-      def find(field, query, props = {})
-        props[:prefix] = index_prefix
-        Neo4j::Node.find(field, query, props)
+      def find(field, query, config = {})
+        Neo4j::Node.find(field, query, config, index_name)
       end
 
-      def rm_index(field, props = {})
-        props[:prefix] = index_prefix
-        Neo4j::Node.rm_index(field, props)
+      def rm_index(field, config = {})
+        Neo4j::Node.rm_index(field, config, index_name)
       end
 
-      def index_prefix
+      def index_name
         root_class
       end
     end

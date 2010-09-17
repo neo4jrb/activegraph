@@ -2,6 +2,7 @@ module Neo4j::Mapping
 
   module NodeMixin
     extend Forwardable
+    include Neo4j::Index
 
     def_delegators :@_java_node, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
                    :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both,
@@ -53,10 +54,18 @@ module Neo4j::Mapping
         end
       end
       c.extend ClassMethods::Property
-      c.extend ClassMethods::Index
       c.extend ClassMethods::Relationship
       c.extend ClassMethods::Aggregate
+      c.extend Neo4j::Index::ClassMethods
+      def c.inherited(subclass)
+        puts "new subclass #{subclass} !!!!!!!"
+        subclass.indexer = Neo4j::Index::Indexer.new(subclass)
+        super
+      end
+      c.indexer = Neo4j::Index::Indexer.new(c)
+
     end
+
 
   end
 end

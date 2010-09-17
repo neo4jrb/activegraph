@@ -7,9 +7,10 @@ require 'date'
 
 require 'neo4j/jars/neo4j-kernel-1.1.jar'
 require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
-require 'neo4j/jars/lucene-core-2.9.2.jar'
-require 'neo4j/jars/neo4j-index-1.1.jar'
-
+#require 'neo4j/jars/lucene-core-2.9.2.jar'
+require 'neo4j/jars/lucene-core-3.0.1.jar'
+#require 'neo4j/jars/neo4j-index-1.1.jar'
+require 'neo4j/jars/neo4j-lucene-index-0.1-20100916.085626-67.jar'
 require 'neo4j/to_java'
 require 'neo4j/version'
 require 'neo4j/equal'

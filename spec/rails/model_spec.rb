@@ -82,7 +82,7 @@ describe Neo4j::ActiveModel, "find", :type => :transactional do
     #@model.save
 
     new_tx
-    IceCream.find(:flavour, "vanilla").to_a.should include(@model)
+    IceCream.find("flavour: vanilla").to_a.should include(@model)
   end
 end
 

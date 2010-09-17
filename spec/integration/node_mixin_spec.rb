@@ -8,8 +8,10 @@ describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
   end
 
   after(:each) do
-    Employee.rm_index(:employee_id)
-    Person.rm_index(:name)
+    Employee.clear_index
+    Employee.unregister_index
+    Person.clear_index
+    Person.unregister_index
   end
 
   it "#new" do
@@ -23,8 +25,8 @@ describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
 
     new_tx
 
-    Employee.find(:name, 'ronge').first.should == empl
-    Employee.find(:employee_id, 123).first.should == empl
+    Employee.find('name: ronge').first.should == empl
+    Employee.find('employee_id: 123').first.should == empl
   end
 
   it "#has_n can use baseclass definition" do
@@ -46,7 +48,8 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   end
 
   after(:each) do
-    SimpleNode.rm_index(:city)     # TODO
+    SimpleNode.clear_index
+    SimpleNode.unregister_index     # TODO
   end
 
 
@@ -77,7 +80,7 @@ describe Neo4j::NodeMixin, :type=> :transactional do
 
     new_tx
 
-    SimpleNode.find(:city, 'malmoe').first.should == n
+    SimpleNode.find('city: malmoe').first.should == n
   end
 
 
@@ -91,8 +94,8 @@ describe Neo4j::NodeMixin, :type=> :transactional do
 
     new_tx
 
-    SimpleNode.find(:city, 'malmoe').first.should_not == n
-    SimpleNode.find(:city, 'stockholm').first.should == n
+    SimpleNode.find('city: malmoe').first.should_not == n
+    SimpleNode.find('city: stockholm').first.should == n
   end
 
 

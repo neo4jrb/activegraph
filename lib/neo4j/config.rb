@@ -16,6 +16,9 @@ module Neo4j
       def defaults
         @defaults ||= {
           :storage_path => 'tmp/neo4j',
+          :lucene => {
+                  :fulltext => org.neo4j.index.impl.lucene.LuceneIndexProvider::FULLTEXT_CONFIG,
+                  :exact => org.neo4j.index.impl.lucene.LuceneIndexProvider::EXACT_CONFIG}
         }
       end
 
@@ -115,7 +118,6 @@ module Neo4j
       # ==== Returns
       # Hash:: The config as a hash.
       #
-      # :api: public
       def to_hash
         @configuration
       end
@@ -125,7 +127,6 @@ module Neo4j
       # ==== Returns
       # String:: The config as YAML.
       #
-      # :api: public
       def to_yaml
         require "yaml"
         @configuration.to_yaml

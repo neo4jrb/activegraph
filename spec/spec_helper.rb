@@ -47,7 +47,9 @@ begin
     end
 
     c.after(:all, :type => :transactional) do
+      puts "shutdown"
       Neo4j.shutdown
+      puts "did shutdown"
       rm_db_storage
     end
 

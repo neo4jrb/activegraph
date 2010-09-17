@@ -18,10 +18,21 @@ module Neo4j
     def exist?
       Neo4j::Node.exist?(self)
     end
+
+    # provide a hook for ruby class mapping
+    def wrapped_entity
+      self
+    end
+
+    def self.indexer
+      puts "OJOJOJOJO"
+      Neo4j::Node.indexer
+    end
   end
 
 
   class Node
+    extend Neo4j::Index::ClassMethods
 
     class << self
 
@@ -64,19 +75,6 @@ module Neo4j
         load(id, db) != nil
       end
 
-      def find(field, query, props=nil, db=Neo4j.started_db)
-        db.find(field.to_s, query, props)
-      end
-
-      # Adds a global index. Will use the event framework in order to keep the property in sync with
-      # the lucene database
-      def index(field, props=nil, db = Neo4j.default_db)
-        db.index(field, props)
-      end
-
-      def rm_index(field, props=nil, db=Neo4j.default_db)
-        db.rm_index(field, props)
-      end
     end
   end
 end
