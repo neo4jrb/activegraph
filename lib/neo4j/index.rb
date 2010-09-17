@@ -38,17 +38,25 @@ module Neo4j
 
     class Indexer
       DEFAULT_INDEX_NAME = 'Neo4j::Node'  # if a node does not have a _classname property use this index
+      attr_reader :index_name
 
       def initialize(clazz)
+        @@index_names ||= []
         @index_name = clazz.to_s
+        raise "already created index for #{clazz}" if @@index_names.include?(@index_name)
+        @@index_names << @index_name
+
         @indexes = {}  # key = type, value = java neo4j index
         @field_types = {}  # key = field, value = type (e.g. :exact or :fulltext)
       end
 
       #  add an index on a field that will be automatically updated by events.
       def index(field, type)
+        puts "add index #{@index_name} field #{field} type #{type}"
         @field_types[field.to_s] = type
+        puts "fields #{@field_types.inspect}"
         # register with the event handler unless we haven't done this yet
+
         Neo4j.default_db.lucene.register(self) unless Neo4j.default_db.lucene.registered?(self)
       end
 
@@ -57,12 +65,13 @@ module Neo4j
       end
 
       def rm_index(entity, field, value)
+        puts "remove entity #{entity}, #{field}, #{value}"
         index_for_field(field).remove(entity, field, value)
       end
 
       def find(query, type)
         index = index_for_type(type)
-        raise "no index #{@index_name} of type #{type} defined (query: '#{query}')" if index.nil?
+        raise "no index #{@index_name} of type #{type} defined ('#{@indexes.inspect}')" if index.nil?
         index.query(query)
       end
 
@@ -88,11 +97,10 @@ module Neo4j
       def index_for_field(field)
         type = @field_types[field]
         @indexes[type] ||= create_index_with(type)
-        @indexes[type]
       end
 
       def index_for_type(type)
-        @indexes[type]
+        @indexes[type] ||= create_index_with(type)
       end
 
       def lucene_config(type)
@@ -108,7 +116,7 @@ module Neo4j
         db=Neo4j.started_db
         index_config = lucene_config(type) #LUCENE_CONFIG[type.to_sym] # Neo4j::Config[:lucene][type.to_sym]
         raise "no lucene configuration of type '#{type}' available" if index_config.nil?
-        db.lucene.provider.node_index(@index_name, index_config)
+        db.lucene.provider.node_index("#{@index_name}-#{type}", index_config)
       end
 
       def trigger?(p_entry)
@@ -116,6 +124,10 @@ module Neo4j
         node = p_entry.entity
         class_name = node.has_property('_classname') ? node.getProperty('_classname') : DEFAULT_INDEX_NAME
         class_name == @index_name && @field_types.include?(p_entry.key)
+      end
+
+      def trigger_remove?(p_entry)
+        false
       end
 
       def update(p_entry)
@@ -127,7 +139,10 @@ module Neo4j
       end
 
       def remove(p_entry)
-        puts "TODO !"
+        node = p_entry.entity
+        puts "remove #{node.neo_id}"
+        rm_index(node, p_entry.key, p_entry.previously_commited_value)
+        puts "removed done"
       end
 
     end

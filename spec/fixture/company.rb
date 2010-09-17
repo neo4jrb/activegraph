@@ -5,6 +5,6 @@ class Company
   property :revenue
   has_n :employees
 
-  index :name, :type => :fulltext
+  index :name
   index :revenue
 end

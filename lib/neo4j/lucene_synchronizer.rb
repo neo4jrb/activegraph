@@ -20,16 +20,16 @@ module Neo4j
         @indexers.each {|indexer| indexer.update(p_entry) if indexer.trigger?(p_entry)}
       end
 
-      # TODO
-
-#      tx_data.assigned_node_properties.each do |p_entry|
-#        @indexers.each {|indexer| indexer.remove(p_entry) if indexer.trigger?(p_entry)}
+      # TODO THIS WILL FAIL THE AGGREGATE SPEC
+#      tx_data.removed_node_properties.each do |p_entry|
+#       @indexers.each {|indexer| indexer.remove(p_entry) if indexer.trigger?(p_entry)}
 #      end
     end
 
     def register(indexer)
       raise "already registered indexer #{indexer}" if registered?(indexer)
       @indexers << indexer
+      puts "REGISTERED INDEXER '#{indexer.index_name}'"
     end
 
     def registered?(indexer)

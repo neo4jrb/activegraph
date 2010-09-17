@@ -18,7 +18,7 @@ module Neo4j
     def before_commit(data)
       data.created_nodes.each{|node| node_created(node)}
       data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) unless data.deleted_nodes.include?(tx_data.entity) }
+      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_nodes.include?(tx_data.entity) }
       data.deleted_nodes.each { |node| node_deleted(node, deleted_properties_for(node,data))}
       # TODO Add relationship properties callbacks
     end

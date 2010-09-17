@@ -4,7 +4,6 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 describe Neo4j::Node, "index", :type => :transactional do
 
   it "can index and search on two properties" do
-    pending "should work now"
     c = Company.new(:name => 'jayway', :revenue => 1234)
     new_tx
     Company.find('name:"jayway" AND revenue: "1234"').should include(c)
@@ -64,7 +63,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
 
-  it "updates an index automatically when it's registered" do
+  it "updates an index automatically when a property changes" do
     Neo4j::Node.index :name
 
     new_node = Neo4j::Node.new
@@ -81,5 +80,23 @@ describe Neo4j::Node, "index", :type => :transactional do
     Neo4j::Node.find('name: "Kalle Kula"').first.should_not == new_node
   end
 
-  it "when a property is deleted the node should not be found"
+  it "deleting an indexed property should not be found" do
+    puts "add index"
+#    Neo4j::Node.index :name
+    puts " done"
+    new_node = Neo4j::Node.new :name => 'andreas'
+    #new_node.add_index 'name', 'andreas'
+    new_tx
+
+#    Neo4j::Node.find('name: andreas').first.should == new_node
+
+    # when deleting an indexed property
+    new_node = Neo4j::Node.load(new_node.neo_id)
+    #puts "new_node #{new_node.neo_id}"
+    #new_node[:name] = nil
+    #new_node.removeProperty('name')
+    new_tx
+    #Neo4j::Node.find('name: andreas').first.should_not == new_node
+  end
+
 end
