@@ -44,6 +44,15 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.calls.should == 2
   end
 
+  it "#on_property_changed is not called when a node is created" do
+    rec = event_receiver(:on_property_changed)
+
+    Neo4j::Node.new
+    Neo4j::Node.new
+    finish_tx
+    rec.calls.should == 0
+  end
+
   it "#on_node_deleted is called once every time a node is deleted" do
     rec = event_receiver(:on_node_deleted)
     node1 = Neo4j::Node.new
@@ -55,6 +64,15 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.calls.should == 2
     rec.arg0.should include(node1)
     rec.arg0.should include(node2)
+  end
+
+  it "#on_property_changed will not be called when a node is deleted" do
+    rec = event_receiver(:on_property_changed)
+    node1 = Neo4j::Node.new
+    new_tx
+    node1.del
+    finish_tx
+    rec.calls.should == 0
   end
 
   it "#on_node_deleted will receive an hash of all properties the node had before it was deleted" do

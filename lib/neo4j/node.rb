@@ -25,7 +25,6 @@ module Neo4j
     end
 
     def self.indexer
-      puts "OJOJOJOJO"
       Neo4j::Node.indexer
     end
   end

@@ -22,11 +22,13 @@ describe "Neo4j::Node#aggregate" do
     NewsStory.aggregate :all
     NewsStory.aggregate(:featured) { |node| node[:featured] == true }
     NewsStory.aggregate(:embargoed) { |node| node[:publish_date] > 2010 }
-
   end
-#
+
   after(:all) do
-    Neo4j::Transaction.run { User.delete_aggregates; NewsStory.delete_aggregates }
+    new_tx
+    User.delete_aggregates
+    NewsStory.delete_aggregates
+    finish_tx
     Neo4j.shutdown
     rm_db_storage
   end

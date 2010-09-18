@@ -52,12 +52,8 @@ module Neo4j
 
       #  add an index on a field that will be automatically updated by events.
       def index(field, type)
-        puts "add index #{@index_name} field #{field} type #{type}"
         @field_types[field.to_s] = type
-        puts "fields #{@field_types.inspect}"
-        # register with the event handler unless we haven't done this yet
-
-        Neo4j.default_db.lucene.register(self) unless Neo4j.default_db.lucene.registered?(self)
+        Neo4j.default_db.event_handler.add(self)
       end
 
       def add_index(entity, field, value)
@@ -65,7 +61,6 @@ module Neo4j
       end
 
       def rm_index(entity, field, value)
-        puts "remove entity #{entity}, #{field}, #{value}"
         index_for_field(field).remove(entity, field, value)
       end
 
@@ -93,7 +88,6 @@ module Neo4j
         end
       end
 
-
       def index_for_field(field)
         type = @field_types[field]
         @indexes[type] ||= create_index_with(type)
@@ -116,35 +110,35 @@ module Neo4j
         db=Neo4j.started_db
         index_config = lucene_config(type) #LUCENE_CONFIG[type.to_sym] # Neo4j::Config[:lucene][type.to_sym]
         raise "no lucene configuration of type '#{type}' available" if index_config.nil?
-        db.lucene.provider.node_index("#{@index_name}-#{type}", index_config)
+        db.lucene.node_index("#{@index_name}-#{type}", index_config)
       end
 
-      def trigger?(p_entry)
-        # trigger if it's the right index and we have an index on the field that was changed
-        node = p_entry.entity
-        class_name = node.has_property('_classname') ? node.getProperty('_classname') : DEFAULT_INDEX_NAME
-        class_name == @index_name && @field_types.include?(p_entry.key)
+
+      # ------------------------------------------------------------------
+      # Event Handling
+
+      def trigger?(classname)
+        @index_name == classname || (classname.nil? && @index_name == 'Neo4j::Node')
       end
 
-      def trigger_remove?(p_entry)
-        false
+      def on_node_created(node)
+        return unless trigger?(node['_classname'])
+        @field_types.keys.each {|field| add_index(node, field, node[field])}
       end
 
-      def update(p_entry)
-        node = p_entry.entity
-        rm_index(node, p_entry.key, p_entry.previously_commited_value) if p_entry.previously_commited_value
+      def on_node_deleted(node, old_props)
+        return unless trigger?(old_props['_classname'])
+        @field_types.keys.each {|field| rm_index(node, field, old_props[field])}
+      end
+
+      def on_property_changed(node, field, old_val, new_val)
+        return unless trigger?(node[:_classname]) && @field_types.include?(field)
+
+        rm_index(node, field, old_val) if old_val
 
         # add index
-        add_index(node, p_entry.key, p_entry.value)
+        add_index(node, field, new_val) if new_val
       end
-
-      def remove(p_entry)
-        node = p_entry.entity
-        puts "remove #{node.neo_id}"
-        rm_index(node, p_entry.key, p_entry.previously_commited_value)
-        puts "removed done"
-      end
-
     end
 
   end

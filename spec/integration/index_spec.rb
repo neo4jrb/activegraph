@@ -63,13 +63,14 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
 
-  it "updates an index automatically when a property changes" do
-    Neo4j::Node.index :name
+  # FUNKAR
 
+  it "updates an index automatically when a property changes" do
     new_node = Neo4j::Node.new
     new_node[:name] = 'Kalle Kula'
 
     new_tx
+    Neo4j::Node.find('name: "Kalle Kula"').first.should == new_node
 
     new_node[:name] = 'lala'
 
@@ -81,22 +82,15 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "deleting an indexed property should not be found" do
-    puts "add index"
-#    Neo4j::Node.index :name
-    puts " done"
     new_node = Neo4j::Node.new :name => 'andreas'
-    #new_node.add_index 'name', 'andreas'
     new_tx
 
-#    Neo4j::Node.find('name: andreas').first.should == new_node
+    Neo4j::Node.find('name: andreas').first.should == new_node
 
     # when deleting an indexed property
-    new_node = Neo4j::Node.load(new_node.neo_id)
-    #puts "new_node #{new_node.neo_id}"
-    #new_node[:name] = nil
-    #new_node.removeProperty('name')
+    new_node[:name] = nil
     new_tx
-    #Neo4j::Node.find('name: andreas').first.should_not == new_node
+    Neo4j::Node.find('name: andreas').first.should_not == new_node
   end
 
 end

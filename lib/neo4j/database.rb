@@ -4,22 +4,19 @@ module Neo4j
 
     def initialize()
       @event_handler = EventHandler.new
-      @lucene        = LuceneSynchronizer.new
     end
 
 
     def start
       @running = true
       @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
-      @lucene.provider = org.neo4j.index.impl.lucene.LuceneIndexProvider.new(@graph)
-      @graph.register_transaction_event_handler(@lucene)
+      @lucene = org.neo4j.index.impl.lucene.LuceneIndexProvider.new(@graph)
       @graph.register_transaction_event_handler(@event_handler)
       @event_handler.neo4j_started(self)
     end
 
     def shutdown
       @running = false
-      @graph.unregister_transaction_event_handler(@lucene)
       @graph.unregister_transaction_event_handler(@event_handler)
       @event_handler.neo4j_shutdown(self)
       @graph.shutdown
