@@ -1,6 +1,6 @@
 module Neo4j::Aggregate
 
-  # Aggregates properties on one or more nodes.
+  # Rules properties on one or more nodes.
   # Can also be used to apply functions (e.g. sum/average) on a set of properties.
   #
   module PropsAggregateMixin

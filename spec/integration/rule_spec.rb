@@ -10,27 +10,27 @@ class NewsStory
 end
 
 
-describe "Neo4j::Node#aggregate", :type => :transactional do
+describe "Neo4j::Node#rule", :type => :transactional do
 
 
   before(:all) do
     rm_db_storage
-    User.aggregate :all
-    User.aggregate(:old) { |node| node[:age] > 10 }
-    User.aggregate(:young) { |node| node[:age]  < 5 }
+    User.rule :all
+    User.rule(:old) { |node| node[:age] > 10 }
+    User.rule(:young) { |node| node[:age]  < 5 }
 
-    NewsStory.aggregate :all
-    NewsStory.aggregate(:featured) { |node| node[:featured] == true }
-    NewsStory.aggregate(:embargoed) { |node| node[:publish_date] > 2010 }
+    NewsStory.rule :all
+    NewsStory.rule(:featured) { |node| node[:featured] == true }
+    NewsStory.rule(:embargoed) { |node| node[:publish_date] > 2010 }
   end
 
   after(:all) do
     new_tx
-    User.delete_aggregates
-    NewsStory.delete_aggregates
+    User.delete_rules
+    NewsStory.delete_rules
   end
 
-  it "generate accessor methods for traversing the aggregate group" do
+  it "generate accessor methods for traversing the rule group" do
     User.should respond_to(:all)
     User.should respond_to(:old)
     User.should respond_to(:young)
@@ -45,7 +45,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
   end
 
 
-  it "aggregate each changed node" do
+  it "rule each changed node" do
     a = User.new :age => 25
     b = User.new :age => 4
     lambda {finish_tx}.should change(User.all, :size).by(2)
@@ -57,7 +57,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
     User.young.should include(b)
   end
 
-  it "aggregate only instances of the given class (no side effects)" do
+  it "rule only instances of the given class (no side effects)" do
     User.new :age => 25
     User.new :age => 4
     lambda {new_tx}.should_not change(NewsStory.all, :size)
@@ -67,7 +67,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
   end
 
 
-  it "can chain aggregates" do
+  it "can chain rules" do
     a = NewsStory.new :publish_date => 2011, :featured => true
     b = NewsStory.new :publish_date => 2011, :featured => false
     c = NewsStory.new :publish_date => 2009, :featured => true
@@ -91,7 +91,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
   end
 
 
-  it "remove nodes from aggregate group when a property change" do
+  it "remove nodes from rule group when a property change" do
     a = User.new :age => 25
     new_tx
     User.old.should include(a)
@@ -103,7 +103,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
     User.old.should_not include(a)
   end
 
-  it "move aggregate group when property change" do
+  it "move rule group when property change" do
     a = User.new :age => 25
     new_tx
     User.old.should include(a)
@@ -116,7 +116,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
     User.young.should include(a)
   end
 
-  it "keep in the same aggregate group when property change" do
+  it "keep in the same rule group when property change" do
     a = User.new :age => 25
     new_tx
 
@@ -128,7 +128,7 @@ describe "Neo4j::Node#aggregate", :type => :transactional do
     User.young.should_not include(a)
   end
 
-  it "remove node from aggregate group when node is deleted" do
+  it "remove node from rule group when node is deleted" do
     a = User.new :age => 25
     new_tx
 

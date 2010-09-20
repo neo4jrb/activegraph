@@ -1,37 +1,37 @@
 module Neo4j::Mapping
   module ClassMethods
-    class Aggregates
+    class Rules
       class << self
         def add(clazz, field, &block)
           clazz = clazz.to_s
-          @aggregates ||= {}
-          @aggregates[clazz] ||= {}
+          @rules ||= {}
+          @rules[clazz] ||= {}
           filter = block.nil? ? Proc.new{|*| true} : block
-          @aggregates[clazz][field] = filter
+          @rules[clazz][field] = filter
         end
 
         def fields_for(clazz)
           clazz = clazz.to_s
-          return [] if @aggregates.nil? || @aggregates[clazz].nil?
-          @aggregates[clazz].keys
+          return [] if @rules.nil? || @rules[clazz].nil?
+          @rules[clazz].keys
         end
 
         def delete(clazz)
           clazz = clazz.to_s
-          # delete the aggregate node if found
+          # delete the rule node if found
           if Neo4j.ref_node.rel?(clazz)
             Neo4j.ref_node.outgoing(clazz).each { |n| n.del }
           end
-          @aggregates.delete(clazz) if @aggregates
+          @rules.delete(clazz) if @rules
         end
 
         def on_neo4j_started(*)
-          create_aggregates if @aggregates
+          create_rules if @rules
         end
 
-        def create_aggregates
-          @aggregates.each_key do |clazz|
-            # check if aggregate nodes exist, if note create them
+        def create_rules
+          @rules.each_key do |clazz|
+            # check if rule nodes exist, if note create them
             if !Neo4j.ref_node.rel?(clazz)
               Neo4j::Transaction.run do
                 node = Neo4j::Node.new
@@ -44,10 +44,10 @@ module Neo4j::Mapping
 
 
         def trigger?(node)
-          @aggregates && node.property?(:_classname) && @aggregates.include?(node[:_classname])
+          @rules && node.property?(:_classname) && @rules.include?(node[:_classname])
         end
 
-        def aggregate_for(clazz)
+        def rule_for(clazz)
           Neo4j.ref_node.outgoing(clazz).first
         end
 
@@ -55,9 +55,9 @@ module Neo4j::Mapping
         def on_property_changed(node, key, old_value, new_value)
           return unless trigger?(node)
           clazz = node[:_classname]
-          return if @aggregates[clazz].nil?
-          agg_node = aggregate_for(node[:_classname])
-          @aggregates[clazz].each_pair do |field, filter|
+          return if @rules[clazz].nil?
+          agg_node = rule_for(node[:_classname])
+          @rules[clazz].each_pair do |field, filter|
             if filter.call(node)
               # is this node already included ?
               if !node.rel?(field)
@@ -75,14 +75,14 @@ module Neo4j::Mapping
 
     module Aggregate
 
-      # Creates an aggregate node attached to the Neo4j.ref_node
-      # Can be used to aggregate all instances of a specific Ruby class.
+      # Creates an rule node attached to the Neo4j.ref_node
+      # Can be used to rule all instances of a specific Ruby class.
       #
       # Example of usage:
       #   class Person
       #     include Neo4j
-      #     aggregate :all
-      #     aggregate :young { self[:age] < 10 }
+      #     rule :all
+      #     rule :young { self[:age] < 10 }
       #   end
       #
       #   p1 = Person.new :age => 5
@@ -92,16 +92,16 @@ module Neo4j::Mapping
       #   Person.all    # =>  [p1,p2,p3]
       #   Person.young  # =>  [p1,p2]
       #
-      def aggregate(name, &block)
+      def rule(name, &block)
         singelton = class << self;
           self;
         end
 
         singelton.send(:define_method, name) do
-          agg_node = Aggregates.aggregate_for(self)
-          raise "no aggregate node for #{name}  on #{self}" if agg_node.nil?
+          agg_node = Rules.rule_for(self)
+          raise "no rule node for #{name}  on #{self}" if agg_node.nil?
           traversal = agg_node.outgoing(name) # TODO possible to cache this object
-          Aggregates.fields_for(self).each do |filter_name|
+          Rules.fields_for(self).each do |filter_name|
             traversal.filter_method(filter_name) do |path|
               path.end_node.rel?(filter_name, :incoming)
             end
@@ -109,20 +109,20 @@ module Neo4j::Mapping
           traversal
         end
 
-        Aggregates.add(self, name, &block)
+        Rules.add(self, name, &block)
       end
 
-      # This is typically used for RSpecs to clean up aggregate nodes created by the #aggregate method.
+      # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
       # It also remove the given class method.
-      def delete_aggregates
+      def delete_rules
         singelton = class << self; self;  end
-        Aggregates.fields_for(self).each do |name|
+        Rules.fields_for(self).each do |name|
           singelton.send(:remove_method, name)
         end
-        Aggregates.delete(self)
+        Rules.delete(self)
       end
     end
 
-    Neo4j.unstarted_db.event_handler.add(Aggregates)
+    Neo4j.unstarted_db.event_handler.add(Rules)
   end
 end

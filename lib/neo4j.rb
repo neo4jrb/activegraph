@@ -34,7 +34,7 @@ require 'neo4j/mapping/decl_relationship_dsl'
 require 'neo4j/mapping/has_n'
 require 'neo4j/mapping/node_mixin'
 require 'neo4j/node_mixin'
-require 'neo4j/mapping/class_methods/aggregate'
+require 'neo4j/mapping/class_methods/rule'
 
 # rails
 require 'rails/railtie'
