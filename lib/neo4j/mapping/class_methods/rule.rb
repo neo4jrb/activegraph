@@ -91,12 +91,14 @@ module Neo4j::Mapping
       #   Neo4j::Transaction.finish
       #   Person.all    # =>  [p1,p2,p3]
       #   Person.young  # =>  [p1,p2]
+      #   p1.young?    # => true
       #
       def rule(name, &block)
         singelton = class << self;
           self;
         end
 
+        # define class methods
         singelton.send(:define_method, name) do
           agg_node = Rules.rule_for(self)
           raise "no rule node for #{name}  on #{self}" if agg_node.nil?
@@ -107,6 +109,11 @@ module Neo4j::Mapping
             end
           end
           traversal
+        end
+
+        # define instance methods
+        self.send(:define_method, "#{name}?") do
+          instance_eval &block
         end
 
         Rules.add(self, name, &block)

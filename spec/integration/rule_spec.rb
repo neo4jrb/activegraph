@@ -14,7 +14,6 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
 
   before(:all) do
-    rm_db_storage
     User.rule :all
     User.rule(:old) { |node| node[:age] > 10 }
     User.rule(:young) { |node| node[:age]  < 5 }
@@ -28,6 +27,23 @@ describe "Neo4j::Node#rule", :type => :transactional do
     new_tx
     User.delete_rules
     NewsStory.delete_rules
+    finish_tx
+  end
+
+
+  it "generate instance method: <rule_name>? for each rule" do
+    young = User.new :age => 2
+    young.should respond_to(:old?)
+    young.should respond_to(:young?)
+    young.should respond_to(:all?)
+  end
+
+  it "instance method <rule_name>?  return true if the rule evaluates to true" do
+    young = User.new :age => 2
+    old = User.new :age => 20
+
+    young.should be_young
+    old.should be_old
   end
 
   it "generate accessor methods for traversing the rule group" do
