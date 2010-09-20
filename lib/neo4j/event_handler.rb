@@ -72,7 +72,6 @@ module Neo4j
     end
 
     def property_changed(node, key, old_value, new_value)
-      puts "property_changed #{node.neo_id} #{key}"
       @listeners.each {|li| li.on_property_changed(node, key, old_value, new_value) if li.respond_to?(:on_property_changed)}
     end
 

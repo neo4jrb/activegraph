@@ -1,4 +1,3 @@
-puts "EMPLOYEE"
 class Employee < Person
   property :employee_id
 
@@ -9,4 +8,3 @@ class Employee < Person
     Neo4j::Index::Indexer.new(Person)
   end
 end
-puts "EMPLOYEE DONE"

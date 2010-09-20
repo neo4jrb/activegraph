@@ -47,9 +47,7 @@ begin
     end
 
     c.after(:all, :type => :transactional) do
-      puts "shutdown"
       Neo4j.shutdown
-      puts "did shutdown"
       rm_db_storage
     end
 
@@ -58,9 +56,7 @@ begin
     end
 
     c.after(:each, :type => :transactional) do
-      @tx.finish if @tx
-      @tx = nil
-      #Neo4j::Transaction.finish
+      finish_tx
     end
   end
 
@@ -79,14 +75,4 @@ begin
     TempModel.set(Class.new(Neo4j::ActiveModel, &block))
   end
 end unless @_neo4j_rspec_loaded
-
-
-# http://blog.davidchelimsky.net/2010/07/01/rspec-2-documentation/
-# http://asciicasts.com/episodes/157-rspec-matchers-macros
-#http://kpumuk.info/ruby-on-rails/my-top-7-rspec-best-practices/
-# http://eggsonbread.com/2010/03/28/my-rspec-best-practices-and-tips/
-# http://www.slideshare.net/gsterndale/straight-up-rspec
-#org.neo4j.kernel.impl.core.NodeProxy.class_eval do
-#end
-
 

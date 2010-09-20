@@ -58,11 +58,10 @@ module Neo4j::Mapping
       c.extend ClassMethods::Aggregate
       c.extend Neo4j::Index::ClassMethods
       def c.inherited(subclass)
-        puts "new subclass #{subclass} !!!!!!!"
-        subclass.indexer = Neo4j::Index::Indexer.new(subclass)
+        subclass.indexer subclass
         super
       end
-      c.indexer = Neo4j::Index::Indexer.new(c)
+      c.indexer c
 
     end
 

@@ -1,43 +1,32 @@
 module Neo4j
 
   module Index
-    def add_index(field, value=self[field], indexer = self.class.indexer)
-      indexer.add_index(wrapped_entity, field.to_s, value)
+    def add_index(field, value=self[field])
+      self.class.add_index(wrapped_entity, field.to_s, value)
     end
 
-    def rm_index(field, value=self[field], indexer = self.class.indexer)
-      indexer.rm_index(wrapped_entity, field.to_s, value)
+    def rm_index(field, value=self[field])
+      self.class.rm_index(wrapped_entity, field.to_s, value)
     end
 
     module ClassMethods
-      def indexer=(indexer)
-        @indexer = indexer
-      end
+      extend Forwardable
 
-      def indexer
-        @indexer ||= Indexer.new(Neo4j::Node)
-      end
+      def_delegators :@indexer, :index, :find, :index?, :index_type?, :clear_index_type, :rm_index_type, :add_index, :rm_index
 
-      def index(field, conf = {})
-        indexer.index(field, conf[:type] || :exact)
-      end
-
-      def find(query, type = :exact)
-        indexer.find(query, type)
-      end
-
-      # clear the index of given type. if type == nil then clear all types of indexes
-      def clear_index(type = nil)
-        indexer.clear(type)
-      end
-
-      def unregister_index(type = nil)
-        indexer.unregister_index(type)
+      def indexer(clazz)
+        @@indexers ||= {}
+        if @@indexers.include?(clazz)
+          # we want to reuse an existing index
+          @indexer = @@indexers[clazz]
+        else
+          @indexer = Indexer.new(clazz)
+          @@indexers[clazz] = @indexer
+        end
       end
     end
 
     class Indexer
-      DEFAULT_INDEX_NAME = 'Neo4j::Node'  # if a node does not have a _classname property use this index
       attr_reader :index_name
 
       def initialize(clazz)
@@ -51,9 +40,18 @@ module Neo4j
       end
 
       #  add an index on a field that will be automatically updated by events.
-      def index(field, type)
+      def index(field, conf = {})
+        type = conf[:type] || :exact
         @field_types[field.to_s] = type
         Neo4j.default_db.event_handler.add(self)
+      end
+
+      def index?(field)
+        @field_types.include?(field.to_s)
+      end
+
+      def index_type?(type)
+        @field_types.values.include?(type)
       end
 
       def add_index(entity, field, value)
@@ -64,27 +62,30 @@ module Neo4j
         index_for_field(field).remove(entity, field, value)
       end
 
-      def find(query, type)
+      def find(query, type = :exact)
         index = index_for_type(type)
-        raise "no index #{@index_name} of type #{type} defined ('#{@indexes.inspect}')" if index.nil?
         index.query(query)
       end
 
       # clears the index, if no type is provided clear all types of indexes
-      def clear(type)
+      def clear_index_type(type=nil)
         if type
-          index_for_type(type).clear
+          raise "can't clear index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
+          @indexes[type] && @indexes[type].clear
         else
           @indexes.each_value{|index| index.clear}
         end
       end
 
-      def unregister_index(type)
+      def rm_index_type(type=nil)
         if type
-          @indexes.delete type
-        else
+          raise "can't remove index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
+          @field_types.delete_if{|k,v| v == type}
+          @indexes[type] && @indexes[type].clear
           @field_types.delete_if {|k,v| v == type}
+        else
           @indexes.each_value{|index| index.clear}
+          @field_types.clear
         end
       end
 
@@ -123,7 +124,7 @@ module Neo4j
 
       def on_node_created(node)
         return unless trigger?(node['_classname'])
-        @field_types.keys.each {|field| add_index(node, field, node[field])}
+        @field_types.keys.each {|field| add_index(node, field, node[field]) if node.property?(field)}
       end
 
       def on_node_deleted(node, old_props)

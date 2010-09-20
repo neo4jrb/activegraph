@@ -30,7 +30,7 @@ describe Neo4j::Node do
         graph_db.should_receive(:create_node).and_return(fixtures[:new_node])
         db = double("Database")
         db.should_receive(:graph).and_return(graph_db)
-        Neo4j.stub!(:db).and_return(db)
+        Neo4j.stub!(:started_db).and_return(db)
       end
       Return  do
         it ("a new node"){ should == fixtures[:new_node]}
@@ -46,7 +46,7 @@ describe Neo4j::Node do
         graph_db.should_receive(:create_node).and_return(fixtures[:new_node])
         db = double("Database")
         db.should_receive(:graph).and_return(graph_db)
-        Neo4j.stub!(:db).and_return(db)
+        Neo4j.stub!(:started_db).and_return(db)
         arg.hash = {:name => 'andreas', :colour => 'blue'}
       end
       Return  do

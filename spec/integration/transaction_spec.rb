@@ -31,10 +31,8 @@ describe Neo4j::Transaction do
       Neo4j::Node.new
     end
     id = a.neo_id
-    puts "delete id #{id}"
     Neo4j::Transaction.run do
       x = Neo4j::Node.load(id)
-      puts "got #{x} id:#{x.neo_id}"
       x.del
     end
   end

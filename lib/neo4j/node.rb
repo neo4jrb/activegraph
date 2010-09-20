@@ -24,8 +24,14 @@ module Neo4j
       self
     end
 
-    def self.indexer
-      Neo4j::Node.indexer
+    # Returns which ruby class wraps this node instance
+    # Returns the _classname property if
+    def wrapped_class
+      # TODO
+    end
+
+    def class
+      Neo4j::Node
     end
   end
 
@@ -33,7 +39,10 @@ module Neo4j
   class Node
     extend Neo4j::Index::ClassMethods
 
+    self.indexer self
+
     class << self
+
 
       # Creates a new node using the default db instance when given no args
       # Same as Neo4j::Node#create

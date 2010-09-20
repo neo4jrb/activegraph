@@ -2,11 +2,32 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::Node, "index", :type => :transactional do
+  class Vehicle
+    include Neo4j::NodeMixin
+    index :wheels
+  end
+
+  class Car < Vehicle
+    indexer Vehicle # use the same indexer as Vehicle, get index on wheels
+    index :brand
+  end
+
+  after(:each) do
+    # make sure we clean up after each test
+    Vehicle.clear_index_type
+  end
 
   it "can index and search on two properties" do
     c = Company.new(:name => 'jayway', :revenue => 1234)
     new_tx
     Company.find('name:"jayway" AND revenue: "1234"').should include(c)
+  end
+
+  it "can use the same index for a subclass" do
+    pending
+    volvo = Car.new(:brand => 'volvo', :wheels => 4)
+    new_tx
+    Car.find('brand: volvo').first.should == volvo
   end
 end
 
@@ -17,8 +38,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
   after(:each) do
     # make sure we clean up after each test
-    Neo4j::Node.clear_index
-    Neo4j::Node.unregister_index
+    Neo4j::Node.rm_index_type(:exact)
   end
 
   it "create index on a node" do
@@ -31,6 +51,24 @@ describe Neo4j::Node, "index", :type => :transactional do
     # then
     Neo4j::Node.find("name: andreas").get_single.should == new_node
   end
+
+
+  it "#rm_index_type unregisters the index from the eventhandler and clear the index" do
+    new_node = Neo4j::Node.new :name => 'andreas'
+    new_node.add_index(:name)
+
+    # when
+    Neo4j::Node.rm_index_type(:exact)
+
+    # then
+    Neo4j::Node.find("name: andreas").first.should_not == new_node
+    Neo4j::Node.index_type?(:exact).should be_false
+    Neo4j::Node.index?(:name).should be_false
+
+    # clean up
+    Neo4j::Node.index(:name)
+  end
+
 
   it "does not remove old index when a property is reindexed" do
     new_node = Neo4j::Node.new

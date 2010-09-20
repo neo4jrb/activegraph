@@ -10,7 +10,7 @@ class NewsStory
 end
 
 
-describe "Neo4j::Node#aggregate" do
+describe "Neo4j::Node#aggregate", :type => :transactional do
 
 
   before(:all) do
@@ -28,14 +28,7 @@ describe "Neo4j::Node#aggregate" do
     new_tx
     User.delete_aggregates
     NewsStory.delete_aggregates
-    finish_tx
-    Neo4j.shutdown
-    rm_db_storage
   end
-
-  before(:each) { new_tx }
-
-  after(:each) { finish_tx }
 
   it "generate accessor methods for traversing the aggregate group" do
     User.should respond_to(:all)

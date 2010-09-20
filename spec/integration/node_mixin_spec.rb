@@ -8,13 +8,13 @@ describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
   end
 
   after(:each) do
-    Employee.clear_index
-    Employee.unregister_index
-    Person.clear_index
-    Person.unregister_index
+    Employee.clear_index_type
+    Employee.rm_index_type
+    Person.clear_index_type
+    Person.rm_index_type
   end
 
-  it "#new" do
+  it "#new creates node and set properties with given hash" do
     empl = Employee.new(:name => 'andreas', :employee_id => 123)
     empl[:name].should == 'andreas'
   end
@@ -48,13 +48,13 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   end
 
   after(:each) do
-    SimpleNode.clear_index
-    SimpleNode.unregister_index     # TODO
+    SimpleNode.clear_index_type
+    SimpleNode.rm_index_type     # TODO
   end
 
 
 
-  it "#new :name => 'foo' ..." do
+  it "#new :name => 'foo' initialize the node with given property hash" do
     n = SimpleNode.new :name => 'foo', :bar => 'bar'
     n.name.should == 'foo'
     n[:bar].should == 'bar'

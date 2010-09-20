@@ -34,6 +34,7 @@ describe Neo4j::Node, :type => :transactional do
       new_node = Neo4j::Node.new
       new_node.del
       expect { new_node[:foo] = 'bar'}.to raise_error
+      expect { finish_tx }.to raise_error
     end
 
     it "update and then delete the same node in one transaction is okey" do
