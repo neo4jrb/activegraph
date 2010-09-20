@@ -72,7 +72,7 @@ module Neo4j
       # clears the index, if no type is provided clear all types of indexes
       def clear_index_type(type=nil)
         if type
-          raise "can't clear index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
+          #raise "can't clear index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
           @indexes[type] && @indexes[type].clear
         else
           @indexes.each_value{|index| index.clear}
@@ -81,12 +81,9 @@ module Neo4j
 
       def rm_index_type(type=nil)
         if type
-          raise "can't remove index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
-          @field_types.delete_if{|k,v| v == type}
-          @indexes[type] && @indexes[type].clear
+          #raise "can't remove index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
           @field_types.delete_if {|k,v| v == type}
         else
-          @indexes.each_value{|index| index.clear}
           @field_types.clear
         end
       end
@@ -121,7 +118,7 @@ module Neo4j
       end
 
       def trigger?(classname)
-        @triggered_by.include?(classname.nil? ? 'Neo4j::Node' : classname)
+        @triggered_by.include?(classname || 'Neo4j::Node')
       end
 
       def on_node_created(node)
@@ -130,8 +127,8 @@ module Neo4j
       end
 
       def on_node_deleted(node, old_props)
-        return unless trigger?(old_props['_classname'])
-        @field_types.keys.each {|field| rm_index(node, field, old_props[field])}
+        return unless @triggered_by.include?(old_props['_classname'] || 'Neo4j::Node')
+        @field_types.keys.each {|field| rm_index(node, field, old_props[field]) if old_props[field]}
       end
 
       def on_property_changed(node, field, old_val, new_val)

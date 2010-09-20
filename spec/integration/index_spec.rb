@@ -91,8 +91,12 @@ describe Neo4j::Node, "index", :type => :transactional do
 
   after(:each) do
     # make sure we clean up after each test
-    Neo4j::Node.rm_index_type(:exact)
-    Neo4j::Node.rm_index_type(:fulltext)
+    Neo4j::Transaction.run do
+      Neo4j::Node.clear_index_type :exact
+      Neo4j::Node.clear_index_type :fulltext
+    end
+    Neo4j::Node.rm_index_type :exact
+    Neo4j::Node.rm_index_type :fulltext
   end
 
   it "create index on a node" do
@@ -110,11 +114,10 @@ describe Neo4j::Node, "index", :type => :transactional do
   it "create index on a node with a given type (e.g. fulltext)" do
     new_node = Neo4j::Node.new
     new_node[:description] = 'hej'
-#    new_node[:name] = 'hej'
 
     puts "new_node #{new_node.neo_id}"
+
     # when
-    #new_tx
     new_node.add_index(:description)
 
     # then
@@ -122,12 +125,24 @@ describe Neo4j::Node, "index", :type => :transactional do
     #Neo4j::Node.find('name: "hej"').get_single.should == new_node
   end
 
-  it "#rm_index_type unregisters the index from the eventhandler and clear the index" do
+  it "#clear_index_type clears the index" do
     new_node = Neo4j::Node.new :name => 'andreas'
     new_node.add_index(:name)
 
     # when
+    Neo4j::Node.clear_index_type(:exact)
+
+    # then
+    Neo4j::Node.find("name: andreas").first.should_not == new_node
+  end
+
+  it "#rm_index_type will make the index not updated when transaction finishes" do
+    new_node = Neo4j::Node.new :name => 'andreas'
+    Neo4j::Node.find("name: andreas").first.should_not == new_node
+
+    # when
     Neo4j::Node.rm_index_type(:exact)
+    finish_tx
 
     # then
     Neo4j::Node.find("name: andreas").first.should_not == new_node
@@ -175,6 +190,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
     new_tx
     Neo4j::Node.find('name: "Kalle Kula"').first.should == new_node
+    Neo4j::Node.find('name: lala').first.should_not == new_node
 
     new_node[:name] = 'lala'
 
@@ -198,14 +214,13 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "deleting the node deletes its index" do
-    pending
     new_node = Neo4j::Node.new :name => 'andreas'
     new_tx
     Neo4j::Node.find('name: andreas').first.should == new_node
 
     # when
     new_node.del
-    new_tx
+    finish_tx
 
     # then
     Neo4j::Node.find('name: andreas').first.should_not == new_node
