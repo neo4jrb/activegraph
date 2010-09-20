@@ -2,31 +2,9 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
-  before(:each) do
-    Employee.index(:employee_id)
-    Employee.index(:name)
-  end
-
-  after(:each) do
-    Employee.clear_index_type
-    Employee.rm_index_type
-    Person.clear_index_type
-    Person.rm_index_type
-  end
-
   it "#new creates node and set properties with given hash" do
     empl = Employee.new(:name => 'andreas', :employee_id => 123)
     empl[:name].should == 'andreas'
-  end
-
-  it "#index can use an index from a base class" do
-    empl = Employee.new(:name => 'ronge', :employee_id => 123)
-    empl[:name].should == 'ronge'
-
-    new_tx
-
-    Employee.find('name: ronge').first.should == empl
-    Employee.find('employee_id: 123').first.should == empl
   end
 
   it "#has_n can use baseclass definition" do
@@ -40,8 +18,6 @@ end
 
 
 describe Neo4j::NodeMixin, :type=> :transactional do
-
-
 
   before(:each) do
     SimpleNode.index(:city)  # TODO

@@ -108,8 +108,7 @@ module Neo4j
 
       def create_index_with(type)
         db=Neo4j.started_db
-        index_config = lucene_config(type) #LUCENE_CONFIG[type.to_sym] # Neo4j::Config[:lucene][type.to_sym]
-        raise "no lucene configuration of type '#{type}' available" if index_config.nil?
+        index_config = lucene_config(type)
         db.lucene.node_index("#{@index_name}-#{type}", index_config)
       end
 

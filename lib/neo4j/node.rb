@@ -24,12 +24,6 @@ module Neo4j
       self
     end
 
-    # Returns which ruby class wraps this node instance
-    # Returns the _classname property if
-    def wrapped_class
-      # TODO
-    end
-
     def class
       Neo4j::Node
     end
