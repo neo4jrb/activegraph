@@ -24,7 +24,6 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "can use the same index for a subclass" do
-    pending
     volvo = Car.new(:brand => 'volvo', :wheels => 4)
     new_tx
     Car.find('brand: volvo').first.should == volvo

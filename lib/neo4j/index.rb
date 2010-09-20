@@ -19,6 +19,7 @@ module Neo4j
         if @@indexers.include?(clazz)
           # we want to reuse an existing index
           @indexer = @@indexers[clazz]
+          @indexer.include_trigger(self)
         else
           @indexer = Indexer.new(clazz)
           @@indexers[clazz] = @indexer
@@ -37,6 +38,7 @@ module Neo4j
 
         @indexes = {}  # key = type, value = java neo4j index
         @field_types = {}  # key = field, value = type (e.g. :exact or :fulltext)
+        @triggered_by = clazz.to_s
       end
 
       #  add an index on a field that will be automatically updated by events.
@@ -99,12 +101,9 @@ module Neo4j
       end
 
       def lucene_config(type)
-        # TODO by some weired reason we can't but this in a hash
-        case type.to_sym
-          when :exact then org.neo4j.index.impl.lucene.LuceneIndexProvider::EXACT_CONFIG
-          when :fulltext then org.neo4j.index.impl.lucene.LuceneIndexProvider::FULLTEXT_CONFIG
-          else raise "unknown lucene type #{type}"
-        end
+        conf = Neo4j::Config[:lucene][type.to_sym]
+        raise "unknown lucene type #{type}" unless conf
+        conf
       end
 
       def create_index_with(type)
@@ -118,8 +117,12 @@ module Neo4j
       # ------------------------------------------------------------------
       # Event Handling
 
+      def include_trigger(clazz)
+         @triggered_by << clazz.to_s  unless @triggered_by.include?(clazz.to_s)
+      end
+
       def trigger?(classname)
-        @index_name == classname || (classname.nil? && @index_name == 'Neo4j::Node')
+        @triggered_by.include?(classname.nil? ? 'Neo4j::Node' : classname)
       end
 
       def on_node_created(node)
