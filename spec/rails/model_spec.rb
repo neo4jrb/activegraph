@@ -2,17 +2,18 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
-class IceCream < Neo4j::ActiveModel
+class IceCream < Neo4j::Model
   property :flavour
   index :flavour
+  rule(:all)
   validates_presence_of :flavour
 end
 
-describe Neo4j::ActiveModel, :type => :transactional do
+describe Neo4j::Model, :type => :transactional do
 
   describe "new" do
     before :each do
-      @model = Neo4j::ActiveModel.new
+      @model = Neo4j::Model.new
     end
     subject { @model }
 
@@ -31,12 +32,12 @@ describe Neo4j::ActiveModel, :type => :transactional do
 
   describe "load" do
     before :each do
-      @model = Neo4j::ActiveModel.create
+      @model = Neo4j::Model.create
       @model.save
     end
 
     it "should load a previously stored node" do
-      result = Neo4j::ActiveModel.load(@model.id)
+      result = Neo4j::Model.load(@model.id)
       result.should == @model
       result.should be_persisted
     end
@@ -54,7 +55,6 @@ describe Neo4j::ActiveModel, :type => :transactional do
     end
 
     it "should not save the model if it is invalid" do
-      pending
       model = IceCream.new
       model.save.should_not be_true
       model.should_not be_valid
@@ -68,8 +68,10 @@ describe Neo4j::ActiveModel, :type => :transactional do
   describe "find" do
 
     it "should load all nodes of that type from the database" do
-      pending
-      IceCream.all.should include(@model)
+      model = IceCream.create :flavour => 'vanilla'
+      finish_tx
+
+      IceCream.all.should include(model)
     end
 
     it "should find a model by one of its attributes" do
@@ -83,7 +85,7 @@ describe Neo4j::ActiveModel, :type => :transactional do
 
   describe "destroy" do
     before :each do
-      @model = Neo4j::ActiveModel.create
+      @model = Neo4j::Model.create
     end
 
     it "should remove the model from the database" do
@@ -96,17 +98,17 @@ describe Neo4j::ActiveModel, :type => :transactional do
 
   describe "create" do
     it "should save the model and return it" do
-      model = Neo4j::ActiveModel.create
+      model = Neo4j::Model.create
       model.should be_persisted
     end
 
     it "should accept attributes to be set" do
-      model = Neo4j::ActiveModel.create :name => "Nick"
+      model = Neo4j::Model.create :name => "Nick"
       model[:name].should == "Nick"
     end
 
     it "bang version should raise an exception if save returns false" do
-      expect { IceCream.create! }.to raise_error(Neo4j::ActiveModel::RecordInvalidError)
+      expect { IceCream.create! }.to raise_error(Neo4j::Model::RecordInvalidError)
     end
 
     it "should run before and after create callbacks" do
@@ -134,7 +136,7 @@ describe Neo4j::ActiveModel, :type => :transactional do
   describe "update_attributes" do
     #insert_dummy_model
     it "should save the attributes" do
-      model = Neo4j::ActiveModel.new
+      model = Neo4j::Model.new
       model.update_attributes(:a => 1, :b => 2).should be_true
       model[:a].should == 1
       model[:b].should == 2
@@ -152,4 +154,11 @@ describe Neo4j::ActiveModel, :type => :transactional do
     end
   end
 
+  # def find
+  #  person = Person.find(:asdas) {|hits| hits.first }
+  #  Person.find(req
+
+  # def clean
+  #   @hits.close if @hits
+  # end
 end

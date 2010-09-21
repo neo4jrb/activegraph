@@ -2,6 +2,15 @@ module Neo4j
 
   class << self
 
+
+    # Start Neo4j using the default database.
+    # This is not required since the database will be started automatically when it is used.
+    #
+    def start
+      default_db
+    end
+
+
     # sets the default database to use
     def default_db=(my_db)
       @db = my_db

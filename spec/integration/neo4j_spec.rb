@@ -7,6 +7,7 @@ describe Neo4j do
 
 
   after(:each) do
+    finish_tx
     Neo4j.shutdown
     FileUtils.rm_rf Neo4j::Config[:storage_path]
   end
@@ -21,23 +22,23 @@ describe Neo4j do
     Neo4j.ref_node.should be_kind_of(Java::org.neo4j.graphdb.Node)
   end
 
-  it "#ref_node, can relationship to this node" do
-    a,b = nil
-    Neo4j::Transaction.run do
-      a = Neo4j::Node.new
-      b = Neo4j::Node.new
-      a.outgoing(:jo) << b
-      Neo4j.ref_node.outgoing(:skoj) << a << b
-    end
-    Neo4j.ref_node.rels.size.should == 2
-    Neo4j::Transaction.run { a.del; b.del;  Neo4j.ref_node.rels.size.should == 0 }
+  it "#ref_node, can have relationship to this node" do
+    new_tx
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    a.outgoing(:jo) << b
+    lambda {Neo4j.ref_node.outgoing(:skoj) << a << b}.should change(Neo4j.ref_node.rels, :size).by(2)
+
+    lambda {a.del; b.del}.should change(Neo4j.ref_node.rels, :size).by(-2)
   end
+
 
   it "#all_nodes returns a Enumerable of all nodes in the graph database " do
     # given created three nodes in a clean database
     new_location =   File.join(Dir.tmpdir, 'neo4j-rspec-tests2')
     create_new_storage(new_location)
-    created_nodes = Neo4j::Transaction.run { 3.times.map{ Neo4j::Node.new.id }}
+    new_tx
+    created_nodes = 3.times.map{ Neo4j::Node.new.id }
 
     # when
     found_nodes = Neo4j.all_nodes.map {|node| node.id}
@@ -45,7 +46,6 @@ describe Neo4j do
     # then
     found_nodes.should include(*created_nodes)
     found_nodes.should include(Neo4j.ref_node.id)
-    found_nodes.size.should == 4
   end
 
   it "is possible to configure a new location of the database on the filesystem" do

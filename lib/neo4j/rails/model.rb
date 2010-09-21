@@ -1,9 +1,8 @@
-class Neo4j::ActiveModel
-
+class Neo4j::Model
   include Neo4j::NodeMixin
-  extend ActiveModel::Naming
   include ActiveModel::Validations
   include ActiveModel::Dirty
+  extend ActiveModel::Naming
   extend ActiveModel::Callbacks
   define_model_callbacks :create, :save, :update, :destroy
 
@@ -184,7 +183,11 @@ class Neo4j::ActiveModel
       if args.length == 1 && String === args[0] && args[0].to_i != 0
         load(*args)
       else
-        super
+        hits = super
+        # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
+        Thread.current[:neo4j_lucene_connection] ||= []
+        Thread.current[:neo4j_lucene_connection] << hits
+        hits
       end
     end
 

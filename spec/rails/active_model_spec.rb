@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::ActiveModel, "new" do
+describe Neo4j::Model, "new" do
   after(:each) {finish_tx}
   it "validation works on the created value object" do
     v = ActivePerson.new
@@ -34,7 +34,7 @@ describe Neo4j::ActiveModel, "new" do
 
 end
 
-describe Neo4j::ActiveModel, :type => :transactional do
+describe Neo4j::Model, :type => :transactional do
 
   it "#save should validate the model and return true if it was valid" do
     # option 1 - save calls valid? and finish the transaction if valid

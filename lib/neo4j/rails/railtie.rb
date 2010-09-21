@@ -3,7 +3,7 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     initializer "neo4j.tx" do |app|
-      app.config.middleware.use Neo4j::Rails::TransactionManagement
+      app.config.middleware.use Neo4j::Rails::LuceneConnectionCloser
     end
 
     # Starting Neo after :load_config_initializers allows apps to
