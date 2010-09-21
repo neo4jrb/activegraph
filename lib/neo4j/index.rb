@@ -14,7 +14,10 @@ module Neo4j
 
       def_delegators :@indexer, :index, :find, :index?, :index_type?, :clear_index_type, :rm_index_type, :add_index, :rm_index
 
+      # Sets which indexer should be used for the given class.
+      # Returns the old one if there was an old indexer.
       def indexer(clazz)
+        old = @indexer
         @@indexers ||= {}
         if @@indexers.include?(clazz)
           # we want to reuse an existing index
@@ -24,6 +27,7 @@ module Neo4j
           @indexer = Indexer.new(clazz)
           @@indexers[clazz] = @indexer
         end
+        old
       end
     end
 
@@ -31,10 +35,7 @@ module Neo4j
       attr_reader :index_name
 
       def initialize(clazz)
-        @@index_names ||= []
         @index_name = clazz.to_s
-        raise "already created index for #{clazz}" if @@index_names.include?(@index_name)
-        @@index_names << @index_name
 
         @indexes = {}  # key = type, value = java neo4j index
         @field_types = {}  # key = field, value = type (e.g. :exact or :fulltext)
@@ -66,7 +67,17 @@ module Neo4j
 
       def find(query, type = :exact)
         index = index_for_type(type)
-        index.query(query)
+        hits = index.query(query)
+        if block_given?
+          begin
+            ret = yield hits
+          ensure
+            hits.close if hits
+          end
+          ret
+        else
+          hits
+        end
       end
 
       # clears the index, if no type is provided clear all types of indexes
