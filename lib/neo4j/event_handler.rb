@@ -20,6 +20,8 @@ module Neo4j
       data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
       data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_nodes.include?(tx_data.entity) }
       data.deleted_nodes.each { |node| node_deleted(node, deleted_properties_for(node,data))}
+      data.created_relationships.each {|rel| relationship_created(rel)}
+      data.deleted_relationships.each {|rel| relationship_deleted(rel)}
       # TODO Add relationship properties callbacks
     end
 

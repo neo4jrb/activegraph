@@ -130,4 +130,38 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.arg3.should == %w[a_node1 a_node2 a_bar2]
   end
 
+
+  it "#on_relationship_created is called every time a relationship is created" do
+    node1 = Neo4j::Node.new
+    node2 = Neo4j::Node.new
+
+    rel = Neo4j::Relationship.new(:friends, node1, node2)
+
+    rec = event_receiver(:on_relationship_created)
+    Neo4j.event_handler.add rec
+
+    new_tx
+
+    rec.calls.should == 1
+    rec.arg0.should include(rel)
+  end
+
+  it "#on_relationship_deleted is called every time a relationship is deleted" do
+    node1 = Neo4j::Node.new
+    node2 = Neo4j::Node.new
+    rel = Neo4j::Relationship.new(:friends, node1, node2)
+
+    new_tx
+    rec = event_receiver(:on_relationship_deleted)
+    Neo4j.event_handler.add rec
+
+    # when
+    rel.del
+    finish_tx
+
+    # then
+    rec.calls.should == 1
+    rec.arg0.should include(rel)
+  end
+
 end
