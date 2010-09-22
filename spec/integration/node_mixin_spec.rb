@@ -38,8 +38,12 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   end
   it "#[] and #[]= read and sets a neo4j property" do
     n = SimpleNode.new
+    n.should respond_to(:name)
+    n.should respond_to(:city)
     n.name = 'kalle'
     n.name.should == 'kalle'
+    n.city = 'malmoe'
+    n.city.should == 'malmoe'
   end
 
 

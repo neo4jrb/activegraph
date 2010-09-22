@@ -35,10 +35,6 @@ module Neo4j::Mapping
       @_java_node
     end
 
-    def id
-      @_java_node.id
-    end
-
     def self.included(c) # :nodoc:
       c.instance_eval do
         # these constants are used in the Neo4j::RelClassMethods and Neo4j::PropertyClassMethods

@@ -57,8 +57,8 @@ module Neo4j::Mapping
           clazz = node[:_classname]
           return if @rules[clazz].nil?
           agg_node = rule_for(node[:_classname])
-          @rules[clazz].each_pair do |field, filter|
-            if filter.call(node)
+          @rules[clazz].each_pair do |field, rule|
+            if run_rule(rule, node)
               # is this node already included ?
               if !node.rel?(field)
                 agg_node.outgoing(field) << node
@@ -67,6 +67,15 @@ module Neo4j::Mapping
               # remove old ?
               node.rels(field).incoming.each { |x| x.del }
             end
+          end
+        end
+
+        def run_rule(rule, node)
+          if rule.arity != 1
+            wrapper = Neo4j::Node.load_wrapper(node)
+            wrapper.instance_eval(&rule)
+          else
+            rule.call(node)
           end
         end
       end

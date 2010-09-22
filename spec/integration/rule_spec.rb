@@ -1,8 +1,8 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-
 class User
   include Neo4j::NodeMixin
+  property :age
 end
 
 class NewsStory
@@ -10,13 +10,14 @@ class NewsStory
 end
 
 
+
 describe "Neo4j::Node#rule", :type => :transactional do
 
 
   before(:all) do
     User.rule :all
-    User.rule(:old) { |node| node[:age] > 10 }
-    User.rule(:young) { |node| node[:age]  < 5 }
+    User.rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
+    User.rule(:young) { |node| node[:age]  < 5 }  # for testing using native java neo4j node
 
     NewsStory.rule :all
     NewsStory.rule(:featured) { |node| node[:featured] == true }

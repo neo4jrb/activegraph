@@ -7,3 +7,5 @@ class Person
   has_one :address
 
 end
+
+
