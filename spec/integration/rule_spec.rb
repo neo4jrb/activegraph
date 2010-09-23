@@ -6,7 +6,8 @@ class User
 end
 
 class NewsStory
- include Neo4j::NodeMixin
+  include Neo4j::NodeMixin
+  has_n :readers
 end
 
 
@@ -17,11 +18,13 @@ describe "Neo4j::Node#rule", :type => :transactional do
   before(:all) do
     User.rule :all
     User.rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
-    User.rule(:young) { |node| node[:age]  < 5 }  # for testing using native java neo4j node
+    User.rule(:young, :trigger => :readers) { |node| node[:age]  < 5 }  # for testing using native java neo4j node
 
     NewsStory.rule :all
     NewsStory.rule(:featured) { |node| node[:featured] == true }
     NewsStory.rule(:embargoed) { |node| node[:publish_date] > 2010 }
+    # young readers for only young readers - find first person which is not young, if not found then the story has only young readers
+    NewsStory.rule(:young_readers) { !readers.find{|user| !user.young?}}
   end
 
   after(:all) do
@@ -153,6 +156,47 @@ describe "Neo4j::Node#rule", :type => :transactional do
     lambda { a.del; finish_tx }.should change(User.all, :size).by(-1)
     User.all.should_not include(a)
     User.old.should_not include(a)
+  end
+
+  it "add nodes to rule group when a relationship is created" do
+    user = User.new :age => 2
+    story = NewsStory.new :featured => true, :publish_date => 2009
+    story.readers << user
+
+    finish_tx
+
+    NewsStory.young_readers.should include(story)
+  end
+
+  it "add nodes to rule group when a related node updates its property (trigger_rules)" do
+    user = User.new :age => 200
+    story = NewsStory.new :featured => true, :publish_date => 2009
+    story.readers << user
+
+    new_tx
+    NewsStory.young_readers.should_not include(story)
+
+    user[:age] = 2
+    finish_tx
+
+    NewsStory.young_readers.should include(story)
+  end
+
+
+  it "add nodes to rule group when a related node is deleted (trigger_rules)" do
+    user = User.new :age => 2
+    story = NewsStory.new :featured => true, :publish_date => 2009
+    story.readers << user
+
+    new_tx
+    NewsStory.young_readers.should include(story)
+
+    user.del
+    User.new :age => 2
+
+    finish_tx
+
+    NewsStory.young_readers.should include(story)
   end
 
 end

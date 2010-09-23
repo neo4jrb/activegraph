@@ -77,7 +77,6 @@ describe Neo4j::Model, :type => :transactional do
     it "should find a model by one of its attributes" do
       model = IceCream.create
       model.flavour = "vanilla"
-      #@model.save
       finish_tx
       IceCream.find("flavour: vanilla").to_a.should include(model)
     end
@@ -154,11 +153,4 @@ describe Neo4j::Model, :type => :transactional do
     end
   end
 
-  # def find
-  #  person = Person.find(:asdas) {|hits| hits.first }
-  #  Person.find(req
-
-  # def clean
-  #   @hits.close if @hits
-  # end
 end

@@ -2,12 +2,24 @@ module Neo4j::Mapping
   module ClassMethods
     class Rules
       class << self
-        def add(clazz, field, &block)
+        def add(clazz, field, props, &block)
           clazz = clazz.to_s
           @rules ||= {}
           @rules[clazz] ||= {}
-          filter = block.nil? ? Proc.new{|*| true} : block
+          filter = block.nil? ? Proc.new { |*| true } : block
           @rules[clazz][field] = filter
+          @triggers ||= {}
+          @triggers[clazz] ||= {}
+          trigger = props[:trigger].nil? ? [] : props[:trigger]
+          @triggers[clazz][field] = trigger.respond_to?(:each) ? trigger : [trigger]
+        end
+
+        def trigger_other_rules(node, field)
+          clazz = node[:_classname]
+          rel_types = @triggers[clazz][field]
+          rel_types.each do |rel_type|
+            node.incoming(rel_type).each { |n| n.trigger_rules }
+          end
         end
 
         def fields_for(clazz)
@@ -31,7 +43,7 @@ module Neo4j::Mapping
 
         def create_rules
           @rules.each_key do |clazz|
-            # check if rule nodes exist, if note create them
+            # check if rule nodes exist, if not create them
             if !Neo4j.ref_node.rel?(clazz)
               Neo4j::Transaction.run do
                 node = Neo4j::Node.new
@@ -52,20 +64,35 @@ module Neo4j::Mapping
         end
 
 
-        def on_property_changed(node, key, old_value, new_value)
-          return unless trigger?(node)
+        def on_relationship_created(rel)
+          trigger_start_node = trigger?(rel.start_node)
+          trigger_end_node   = trigger?(rel.end_node)
+          # end or start node must be triggered by this event
+          return unless trigger_start_node || trigger_end_node
+          on_property_changed(trigger_start_node ? rel.start_node : rel.end_node)
+        end
+
+
+        def on_property_changed(node, *)
+          trigger_rules(node) if trigger?(node)
+        end
+
+        def trigger_rules(node)
           clazz = node[:_classname]
           return if @rules[clazz].nil?
+
           agg_node = rule_for(node[:_classname])
           @rules[clazz].each_pair do |field, rule|
             if run_rule(rule, node)
               # is this node already included ?
               if !node.rel?(field)
                 agg_node.outgoing(field) << node
+                trigger_other_rules(node, field)
               end
             else
               # remove old ?
               node.rels(field).incoming.each { |x| x.del }
+              trigger_other_rules(node, field)
             end
           end
         end
@@ -82,7 +109,7 @@ module Neo4j::Mapping
     end
 
 
-    module Aggregate
+    module Rule
 
       # Creates an rule node attached to the Neo4j.ref_node
       # Can be used to rule all instances of a specific Ruby class.
@@ -102,7 +129,7 @@ module Neo4j::Mapping
       #   Person.young  # =>  [p1,p2]
       #   p1.young?    # => true
       #
-      def rule(name, &block)
+      def rule(name, props = {}, &block)
         singelton = class << self;
           self;
         end
@@ -125,18 +152,25 @@ module Neo4j::Mapping
           instance_eval &block
         end
 
-        Rules.add(self, name, &block)
+        Rules.add(self, name, props, &block)
       end
 
       # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
       # It also remove the given class method.
       def delete_rules
-        singelton = class << self; self;  end
+        singelton = class << self;
+          self;
+        end
         Rules.fields_for(self).each do |name|
           singelton.send(:remove_method, name)
         end
         Rules.delete(self)
       end
+
+      def trigger_rules(node)
+        Rules.trigger_rules(node)
+      end
+
     end
 
     Neo4j.unstarted_db.event_handler.add(Rules)

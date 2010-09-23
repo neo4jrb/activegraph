@@ -6,7 +6,7 @@ module Neo4j::Mapping
 
     def_delegators :@_java_node, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
                    :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both,
-                   :equal?, :eql?, :==, :exist?
+                   :equal?, :eql?, :==, :exist?, :getRelationships
 
 
     # --------------------------------------------------------------------------
@@ -35,6 +35,11 @@ module Neo4j::Mapping
       @_java_node
     end
 
+    def trigger_rules
+      self.class.trigger_rules(self)
+    end
+
+
     def self.included(c) # :nodoc:
       c.instance_eval do
         # these constants are used in the Neo4j::RelClassMethods and Neo4j::PropertyClassMethods
@@ -45,13 +50,14 @@ module Neo4j::Mapping
           const_set(:DECL_RELATIONSHIPS, {})
           const_set(:PROPERTIES_INFO, {})
         end
+
         class << self
           alias_method :orig_new, :new
         end
       end
       c.extend ClassMethods::Property
       c.extend ClassMethods::Relationship
-      c.extend ClassMethods::Aggregate
+      c.extend ClassMethods::Rule
       c.extend Neo4j::Index::ClassMethods
       def c.inherited(subclass)
         subclass.indexer subclass

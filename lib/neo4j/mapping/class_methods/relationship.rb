@@ -2,8 +2,7 @@ module Neo4j::Mapping
   module ClassMethods
 
     module Relationship
-      def decl_relationships
-        # :nodoc:
+      def decl_relationships # :nodoc:
         self::DECL_RELATIONSHIPS
       end
 

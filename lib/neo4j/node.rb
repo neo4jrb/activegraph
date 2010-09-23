@@ -23,6 +23,13 @@ module Neo4j
     def wrapped_entity
       self
     end
+    
+    # Loads the Ruby wrapper for this node 
+    # If there is no _classname property for this node then it will simply return itself.
+    # Same as Neo4j::Node.load_wrapper(node)
+    def wrapper
+      self.class.load_wrapper(self)
+    end
 
     def class
       Neo4j::Node

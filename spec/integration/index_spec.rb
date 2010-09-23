@@ -21,29 +21,31 @@ describe Neo4j::Node, "index", :type => :transactional do
   it "can index and search on two properties if index has the same type" do
     c = Vehicle.new(:wheels => 4, :colour => 'blue')
     new_tx
+    Vehicle.find('wheels:"4" AND colour: "blue"').first.should be_kind_of(Vehicle)
+    Car.find('wheels:"4" AND colour: "blue"').first.should be_kind_of(Vehicle)
     Vehicle.find('wheels:"4" AND colour: "blue"').should include(c)
   end
 
   it "can not found if searching on two indexes of different type" do
     c = Vehicle.new(:brand => 'Saab Automobile AB', :wheels => 4, :colour => 'blue')
     new_tx
-    Vehicle.find('brand: "Saab"', :fulltext).should include(c)
-    Vehicle.find('brand:"Saab" AND wheels: "4"', :exact).should_not include(c)
+    Vehicle.find('brand: "Saab"', :type => :fulltext).should include(c)
+    Vehicle.find('brand:"Saab" AND wheels: "4"', :type => :exact).should_not include(c)
   end
 
   it "can use the same index for a subclass" do
     bike = Vehicle.new(:brand => 'monark', :wheels => 2)
     volvo = Car.new(:brand => 'volvo', :wheels => 4)
     new_tx
-    Car.find('brand: volvo', :fulltext).first.should == volvo
-    Car.find('wheels: 4', :exact).first.should == volvo
-    Vehicle.find('brand: monark', :fulltext).first.should == bike
+    Car.find('brand: volvo', :type => :fulltext).first.should == volvo
+    Car.find('wheels: 4', :type => :exact).first.should == volvo
+    Vehicle.find('brand: monark', :type => :fulltext).first.should == bike
     Car.find('wheels: 2').first.should == bike  # this is strange but this is the way it works for now
   end
 
   it "returns an empty Enumerable if not found" do
     Car.find('wheels: 999').first.should be_nil
-    [*Car.find('wheels: 999')].should be_empty
+    Car.find('wheels: 999').should be_empty
   end
 
   it "will remove the index when the node is deleted" do
@@ -101,7 +103,7 @@ describe Neo4j::Node, "index", :type => :transactional do
     new_node.add_index(:name)
 
     # then
-    Neo4j::Node.find("name: andreas").get_single.should == new_node
+    Neo4j::Node.find("name: andreas", :wrapped => false).get_single.should == new_node
   end
 
 
@@ -109,15 +111,26 @@ describe Neo4j::Node, "index", :type => :transactional do
     new_node = Neo4j::Node.new
     new_node[:description] = 'hej'
 
-    puts "new_node #{new_node.neo_id}"
-
     # when
     new_node.add_index(:description)
 
     # then
-    Neo4j::Node.find('description: "hej"', :fulltext).get_single.should == new_node
+    Neo4j::Node.find('description: "hej"', :type => :fulltext, :wrapped => false).get_single.should == new_node
     #Neo4j::Node.find('name: "hej"').get_single.should == new_node
   end
+
+  it "can find several nodes with the same index" do
+    thing1 = Neo4j::Node.new :name => 'thing'
+    thing2 = Neo4j::Node.new :name => 'thing'
+    thing3 = Neo4j::Node.new :name => 'thing'
+
+    finish_tx
+
+    Neo4j::Node.find("name: thing", :wrapped => true).should include(thing1)
+    Neo4j::Node.find("name: thing", :wrapped => true).should include(thing2)
+    Neo4j::Node.find("name: thing", :wrapped => true).should include(thing3)
+  end
+
 
   it "#clear_index_type clears the index" do
     new_node = Neo4j::Node.new :name => 'andreas'
@@ -246,7 +259,7 @@ describe Neo4j::Node, "index", :type => :transactional do
     hits.should_receive(:close)
     hits.should_receive(:first).and_return("found_node")
     #puts "FIND IT first #{hits.first}"
-    found_node = Neo4j::Node.find('name: andreas') {|h| h.first}
+    found_node = Neo4j::Node.find('name: andreas', :wrapped => false) {|h| h.first}
     found_node.should == 'found_node'
 
     # restore
@@ -263,7 +276,7 @@ describe Neo4j::Node, "index", :type => :transactional do
     old_indexer = Neo4j::Node.instance_eval { @indexer}
     Neo4j::Node.instance_eval { @indexer = indexer}
     hits.should_receive(:close)
-    expect {Neo4j::Node.find('name: andreas') {|h| raise "oops"}}.to raise_error
+    expect {Neo4j::Node.find('name: andreas', :wrapped => false) {|h| raise "oops"}}.to raise_error
 
 
     # restore

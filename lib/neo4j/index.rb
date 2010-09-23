@@ -31,6 +31,36 @@ module Neo4j
       end
     end
 
+    class WrappedQuery
+      include Enumerable
+
+      def initialize(index, query)
+        @index = index
+        @query = query
+      end
+
+      def each
+        hits.each{|n| yield n.wrapper}
+      end
+
+      def close
+        @hits.close if @hits
+      end
+
+      def empty?
+        hits.size == 0
+      end
+
+      def size
+        hits.size
+      end
+
+      def hits
+        @hits ||= @index.query(@query)
+      end
+
+    end
+
     class Indexer
       attr_reader :index_name
 
@@ -65,18 +95,20 @@ module Neo4j
         index_for_field(field).remove(entity, field, value)
       end
 
-      def find(query, type = :exact)
+      def find(query, params = {})
+        type = params[:type] || :exact
         index = index_for_type(type)
-        hits = index.query(query)
+        query = (params[:wrapped].nil? || params[:wrapped]) ? WrappedQuery.new(index, query) : index.query(query)
+
         if block_given?
           begin
-            ret = yield hits
+            ret = yield query
           ensure
-            hits.close if hits
+            query.close
           end
           ret
         else
-          hits
+          query
         end
       end
 
