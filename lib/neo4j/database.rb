@@ -13,6 +13,7 @@ module Neo4j
       @lucene = org.neo4j.index.impl.lucene.LuceneIndexProvider.new(@graph)
       @graph.register_transaction_event_handler(@event_handler)
       @event_handler.neo4j_started(self)
+      at_exit { shutdown }
     end
 
     def shutdown
