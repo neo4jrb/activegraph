@@ -59,6 +59,12 @@ module Neo4j
         @hits ||= @index.query(@query)
       end
 
+      def sort_by(*sort_fields)
+        java_sort_fields = sort_fields.collect {|field| org.apache.lucene.search.SortField.new(field.to_s, org.apache.lucene.search.SortField::STRING, false)}
+        sort = org.apache.lucene.search.Sort.new(*java_sort_fields)
+        @query =  org.neo4j.index.impl.lucene.QueryContext.new(@query).sort(sort)
+        self
+      end
     end
 
     class Indexer

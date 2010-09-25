@@ -82,6 +82,7 @@ end
 describe Neo4j::Node, "index", :type => :transactional do
   before(:each) do
     Neo4j::Node.index(:name)  # default :exact
+    Neo4j::Node.index(:age)  # default :exact
     Neo4j::Node.index(:description, :type => :fulltext)
   end
 
@@ -93,6 +94,38 @@ describe Neo4j::Node, "index", :type => :transactional do
     end
     Neo4j::Node.rm_index_type :exact
     Neo4j::Node.rm_index_type :fulltext
+  end
+
+
+  it "#sort_by(:field) sorts the given field as strings in ascending order " do
+    Neo4j::Node.new :name => 'pelle@gmail.com'
+    Neo4j::Node.new :name => 'gustav@gmail.com'
+    Neo4j::Node.new :name => 'andreas@gmail.com'
+    Neo4j::Node.new :name => 'örjan@gmail.com'
+
+    new_tx
+
+    result = Neo4j::Node.find('name: *@gmail.com').sort_by(:name)
+
+    # then
+    emails = result.collect {|x| x[:name]}
+    emails.should == %w[andreas@gmail.com gustav@gmail.com pelle@gmail.com örjan@gmail.com]
+  end
+
+  it "#sort_by(:field1, field2) sorts the given field as strings in ascending order " do
+    n0 = Neo4j::Node.new :name => 'andreas@gmail.com', :age => 1
+    n1 = Neo4j::Node.new :name => 'pelle@gmail.com', :age => 4
+    n2 = Neo4j::Node.new :name => 'pelle@gmail.com', :age => 2
+    n3 = Neo4j::Node.new :name => 'pelle@gmail.com', :age => 3
+    n4 = Neo4j::Node.new :name => 'örjan@gmail.com', :age => 5
+
+    new_tx
+
+    result = Neo4j::Node.find('name: *@gmail.com').sort_by(:name, :age)
+
+    # then
+    ages = result.collect {|x| x[:age]}
+    ages.should == [1,2,3,4,5]
   end
 
   it "create index on a node" do

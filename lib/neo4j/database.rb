@@ -8,19 +8,21 @@ module Neo4j
 
 
     def start
-      @running = true
       @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
       @lucene = org.neo4j.index.impl.lucene.LuceneIndexProvider.new(@graph)
       @graph.register_transaction_event_handler(@event_handler)
+      @running = true
       @event_handler.neo4j_started(self)
       at_exit { shutdown }
     end
 
     def shutdown
-      @running = false
-      @graph.unregister_transaction_event_handler(@event_handler)
-      @event_handler.neo4j_shutdown(self)
+      if @running
+        @graph.unregister_transaction_event_handler(@event_handler)
+        @event_handler.neo4j_shutdown(self)
+      end
       @graph.shutdown
+      @running = false
     end
 
     def running?
