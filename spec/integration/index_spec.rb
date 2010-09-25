@@ -40,7 +40,7 @@ describe Neo4j::Node, "index", :type => :transactional do
     Car.find('brand: volvo', :type => :fulltext).first.should == volvo
     Car.find('wheels: 4', :type => :exact).first.should == volvo
     Vehicle.find('brand: monark', :type => :fulltext).first.should == bike
-    Car.find('wheels: 2').first.should == bike  # this is strange but this is the way it works for now
+    Car.find('wheels: 2').first.should == bike # this is strange but this is the way it works for now
   end
 
   it "returns an empty Enumerable if not found" do
@@ -66,7 +66,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
   it "should work when inserting a lot of data in a single transaction" do
     # Much much fast doing inserting in one transaction
-   100.times do |x|
+    100.times do |x|
       Neo4j::Node.new
       Car.new(:brand => 'volvo', :wheels => x)
     end
@@ -81,8 +81,8 @@ end
 
 describe Neo4j::Node, "index", :type => :transactional do
   before(:each) do
-    Neo4j::Node.index(:name)  # default :exact
-    Neo4j::Node.index(:age)  # default :exact
+    Neo4j::Node.index(:name) # default :exact
+    Neo4j::Node.index(:age) # default :exact
     Neo4j::Node.index(:description, :type => :fulltext)
   end
 
@@ -97,35 +97,64 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
 
-  it "#sort_by(:field) sorts the given field as strings in ascending order " do
+  it "#asc(:field) sorts the given field as strings in ascending order " do
     Neo4j::Node.new :name => 'pelle@gmail.com'
     Neo4j::Node.new :name => 'gustav@gmail.com'
     Neo4j::Node.new :name => 'andreas@gmail.com'
     Neo4j::Node.new :name => 'örjan@gmail.com'
 
     new_tx
-
-    result = Neo4j::Node.find('name: *@gmail.com').sort_by(:name)
+    result = Neo4j::Node.find('name: *@gmail.com').asc(:name)
 
     # then
-    emails = result.collect {|x| x[:name]}
+    emails = result.collect { |x| x[:name] }
     emails.should == %w[andreas@gmail.com gustav@gmail.com pelle@gmail.com örjan@gmail.com]
   end
 
-  it "#sort_by(:field1, field2) sorts the given field as strings in ascending order " do
-    n0 = Neo4j::Node.new :name => 'andreas@gmail.com', :age => 1
-    n1 = Neo4j::Node.new :name => 'pelle@gmail.com', :age => 4
-    n2 = Neo4j::Node.new :name => 'pelle@gmail.com', :age => 2
-    n3 = Neo4j::Node.new :name => 'pelle@gmail.com', :age => 3
-    n4 = Neo4j::Node.new :name => 'örjan@gmail.com', :age => 5
+  it "#desc(:field) sorts the given field as strings in desc order " do
+    Neo4j::Node.new :name => 'pelle@gmail.com'
+    Neo4j::Node.new :name => 'gustav@gmail.com'
+    Neo4j::Node.new :name => 'andreas@gmail.com'
+    Neo4j::Node.new :name => 'örjan@gmail.com'
+
+    new_tx
+    result = Neo4j::Node.find('name: *@gmail.com').desc(:name)
+
+    # then
+    emails = result.collect { |x| x[:name] }
+    emails.should == %w[örjan@gmail.com pelle@gmail.com gustav@gmail.com andreas@gmail.com ]
+  end
+
+  it "#asc(:field1,field2) sorts the given field as strings in ascending order " do
+    Neo4j::Node.new :name => 'örjan@gmail.com', :age => 3
+    Neo4j::Node.new :name => 'pelle@gmail.com', :age => 2
+    Neo4j::Node.new :name => 'pelle@gmail.com', :age => 4
+    Neo4j::Node.new :name => 'pelle@gmail.com', :age => 1
+    Neo4j::Node.new :name => 'andreas@gmail.com', :age => 5
 
     new_tx
 
-    result = Neo4j::Node.find('name: *@gmail.com').sort_by(:name, :age)
+    result = Neo4j::Node.find('name: *@gmail.com').asc(:name, :age)
 
     # then
-    ages = result.collect {|x| x[:age]}
-    ages.should == [1,2,3,4,5]
+    ages = result.collect { |x| x[:age] }
+    ages.should == [5, 1, 2, 4, 3]
+  end
+
+  it "#asc(:field1).desc(:field2) sort the given field both ascending and descending orders" do
+    Neo4j::Node.new :name => 'örjan@gmail.com', :age => 3
+    Neo4j::Node.new :name => 'pelle@gmail.com', :age => 2
+    Neo4j::Node.new :name => 'pelle@gmail.com', :age => 4
+    Neo4j::Node.new :name => 'pelle@gmail.com', :age => 1
+    Neo4j::Node.new :name => 'andreas@gmail.com', :age => 5
+
+    new_tx
+
+    result = Neo4j::Node.find('name: *@gmail.com').asc(:name).desc(:age)
+
+    # then
+    ages = result.collect { |x| x[:age] }
+    ages.should == [5, 4, 2, 1, 3]
   end
 
   it "create index on a node" do
@@ -287,16 +316,16 @@ describe Neo4j::Node, "index", :type => :transactional do
     indexer.should_receive(:index_for_type).and_return(index)
     hits = double('hits')
     index.should_receive(:query).and_return(hits)
-    old_indexer = Neo4j::Node.instance_eval { @indexer}
-    Neo4j::Node.instance_eval { @indexer = indexer}
+    old_indexer = Neo4j::Node.instance_eval { @indexer }
+    Neo4j::Node.instance_eval { @indexer = indexer }
     hits.should_receive(:close)
     hits.should_receive(:first).and_return("found_node")
     #puts "FIND IT first #{hits.first}"
-    found_node = Neo4j::Node.find('name: andreas', :wrapped => false) {|h| h.first}
+    found_node = Neo4j::Node.find('name: andreas', :wrapped => false) { |h| h.first }
     found_node.should == 'found_node'
 
     # restore
-    Neo4j::Node.instance_eval { @indexer = old_indexer}
+    Neo4j::Node.instance_eval { @indexer = old_indexer }
   end
 
 
@@ -306,14 +335,14 @@ describe Neo4j::Node, "index", :type => :transactional do
     indexer.should_receive(:index_for_type).and_return(index)
     hits = double('hits')
     index.should_receive(:query).and_return(hits)
-    old_indexer = Neo4j::Node.instance_eval { @indexer}
-    Neo4j::Node.instance_eval { @indexer = indexer}
+    old_indexer = Neo4j::Node.instance_eval { @indexer }
+    Neo4j::Node.instance_eval { @indexer = indexer }
     hits.should_receive(:close)
-    expect {Neo4j::Node.find('name: andreas', :wrapped => false) {|h| raise "oops"}}.to raise_error
+    expect { Neo4j::Node.find('name: andreas', :wrapped => false) { |h| raise "oops" } }.to raise_error
 
 
     # restore
-    Neo4j::Node.instance_eval { @indexer = old_indexer}
+    Neo4j::Node.instance_eval { @indexer = old_indexer }
   end
 
 end

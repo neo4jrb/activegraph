@@ -56,14 +56,28 @@ module Neo4j
       end
 
       def hits
-        @hits ||= @index.query(@query)
+        @hits ||= perform_query
       end
 
-      def sort_by(*sort_fields)
-        java_sort_fields = sort_fields.collect {|field| org.apache.lucene.search.SortField.new(field.to_s, org.apache.lucene.search.SortField::STRING, false)}
-        sort = org.apache.lucene.search.Sort.new(*java_sort_fields)
-        @query =  org.neo4j.index.impl.lucene.QueryContext.new(@query).sort(sort)
+      def desc(*fields)
+        @order = fields.inject(@order || {}){|memo, field| memo[field] = true; memo}
         self
+      end
+
+      def asc(*fields)
+        @order = fields.inject(@order || {}){|memo, field| memo[field] = false; memo}
+        self
+      end
+
+      def perform_query
+        if @order
+          java_sort_fields = @order.keys.inject([]) do |memo, field|
+            memo << org.apache.lucene.search.SortField.new(field.to_s, org.apache.lucene.search.SortField::STRING, @order[field])
+          end
+          sort = org.apache.lucene.search.Sort.new(*java_sort_fields)
+          @query = org.neo4j.index.impl.lucene.QueryContext.new(@query).sort(sort)
+        end
+        @index.query(@query)
       end
     end
 
