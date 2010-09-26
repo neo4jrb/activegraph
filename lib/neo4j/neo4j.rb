@@ -4,10 +4,11 @@ module Neo4j
 
 
     # Start Neo4j using the default database.
-    # This is not required since the database will be started automatically when it is used.
+    # This is usally not required since the database will be started automatically when it is used.
     #
     def start
-      default_db
+      db = default_db
+      db.start unless db.running?
     end
 
 
@@ -21,7 +22,7 @@ module Neo4j
       @db ||= Database.new
     end
 
-    # Returns a started db instance
+    # Returns a started db instance. Starts it if's not running.
     def started_db
       db = default_db
       db.start unless db.running?
