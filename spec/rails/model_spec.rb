@@ -28,6 +28,39 @@ describe Neo4j::Model, :type => :transactional do
       finish_tx
       expect { @model.save }.to raise_error
     end
+
+    it "validation is performed" do
+      v = IceCream.new
+      v.should_not be_valid
+      v.flavour = 'vanilla'
+      v.should be_valid
+    end
+
+    it "validation is performed after save" do
+      v = IceCream.new(:flavour => 'vanilla')
+      v.save
+      v.should be_valid
+    end
+
+
+    it "accepts a hash of properties which will be validated" do
+      v = IceCream.new(:flavour => 'vanilla')
+      v.should be_valid
+    end
+
+
+    it "save should create a new node when run in a transaction" do
+      v = ActivePerson.new(:flavour => 'q')
+      v.save
+      new_tx
+      Neo4j::Node.should exist(v)
+    end
+
+    it "has nil as id befored saved" do
+      v = ActivePerson.new(:name => 'andreas')
+      v.neo_id.should == nil
+    end
+
   end
 
   describe "load" do
@@ -63,6 +96,39 @@ describe Neo4j::Model, :type => :transactional do
       model.id.should be_nil
     end
 
+    it "validates the model and return true if it was valid" do
+      model = IceCream.create
+      model.save.should be_false
+    end
+
+
+    it "the validation method 'errors' returns the validation errors" do
+      p = IceCream.create
+      p.should_not be_valid
+      p.errors.keys[0].should == :flavour
+      p.flavour = 'vanilla'
+      p.should be_valid
+      p.errors.size.should == 0
+    end
+
+
+    it "implements the ActiveModel::Dirty interface" do
+      p = ActivePerson.create
+      p.should_not be_changed
+      p.name = 'kalle'
+      p.should be_changed
+      p.attribute_changed?('name').should == true
+      p.name_change.should == [nil, 'kalle']
+      p.name_was.should == nil
+      p.name_changed?.should be_true
+      p.name_was.should == nil
+
+      p.name = 'andreas'
+      p.name_change.should == ['kalle', 'andreas']
+      p.save
+      p.should_not be_changed
+    end
+
   end
 
   describe "find" do
@@ -70,9 +136,14 @@ describe Neo4j::Model, :type => :transactional do
     it "should load all nodes of that type from the database" do
       model = IceCream.create :flavour => 'vanilla'
       finish_tx
-
       IceCream.all.should include(model)
     end
+
+    it "should find the node given it's id" do
+      model = IceCream.create
+      IceCream.find(model.neo_id.to_s).should == model
+    end
+
 
     it "should find a model by one of its attributes" do
       model = IceCream.create
@@ -130,10 +201,31 @@ describe Neo4j::Model, :type => :transactional do
       model.created.should_not be_nil
       model.saved.should_not be_nil
     end
+
+    it "should run before and after save callbacks" do
+      klass = model_subclass do
+        property :created
+        before_save :timestamp
+
+        def timestamp
+          self.created = "yes"
+        end
+
+        after_save :mark_saved
+        attr_reader :saved
+
+        def mark_saved
+          @saved = true
+        end
+      end
+      model = klass.create!
+      model.created.should_not be_nil
+      model.saved.should_not be_nil
+    end
+
   end
 
   describe "update_attributes" do
-    #insert_dummy_model
     it "should save the attributes" do
       model = Neo4j::Model.new
       model.update_attributes(:a => 1, :b => 2).should be_true
@@ -151,6 +243,54 @@ describe Neo4j::Model, :type => :transactional do
       model.update_attributes(:name => nil).should be_false
       model.reload.name.should == "vanilla"
     end
+  end
+
+
+  describe "attr_accessible" do
+    before(:all) do
+      @klass = model_subclass do
+        attr_accessor :name, :credit_rating
+        attr_protected :credit_rating
+      end
+    end
+    it "given attributes are sanitized before assignment in method: attributes" do
+      customer = @klass.new
+      customer.attributes = {"name" => "David", "credit_rating" => "Excellent"}
+      customer.name.should == 'David'
+      customer.credit_rating.should be_nil
+
+      customer.credit_rating= "Average"
+      customer.credit_rating.should == 'Average'
+    end
+
+    it "given attributes are sanitized before assignment in method: new" do
+      customer = @klass.new("name" => "David", "credit_rating" => "Excellent")
+      customer.name.should == 'David'
+      customer.credit_rating.should be_nil
+
+      customer.credit_rating= "Average"
+      customer.credit_rating.should == 'Average'
+    end
+
+    it "given attributes are sanitized before assignment in method: create" do
+      customer = @klass.create("name" => "David", "credit_rating" => "Excellent")
+      customer.name.should == 'David'
+      customer.credit_rating.should be_nil
+
+      customer.credit_rating= "Average"
+      customer.credit_rating.should == 'Average'
+    end
+
+    it "given attributes are sanitized before assignment in method: update_attributes" do
+      customer = @klass.new
+      customer.update_attributes("name" => "David", "credit_rating" => "Excellent")
+      customer.name.should == 'David'
+      customer.credit_rating.should be_nil
+
+      customer.credit_rating= "Average"
+      customer.credit_rating.should == 'Average'
+    end
+
   end
 
 end

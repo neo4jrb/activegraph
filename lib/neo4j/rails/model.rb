@@ -2,6 +2,7 @@ class Neo4j::Model
   include Neo4j::NodeMixin
   include ActiveModel::Validations
   include ActiveModel::Dirty
+  include ActiveModel::MassAssignmentSecurity
   extend ActiveModel::Naming
   extend ActiveModel::Callbacks
   define_model_callbacks :create, :save, :update, :destroy
@@ -23,9 +24,12 @@ class Neo4j::Model
   end
 
   def init_on_create(*args) # :nodoc:
-    _run_create_callbacks do
-      @_new_record = true
-      super
+    _run_save_callbacks do
+      _run_create_callbacks do
+        @_new_record = true
+        super
+        self.attributes=args[0] if args[0].respond_to?(:each_pair)
+      end
     end
   end
 
@@ -48,10 +52,7 @@ class Neo4j::Model
   end
 
 
-  # --------------------------------------
   # enables ActiveModel::Dirty and Validation
-  # --------------------------------------
-
   def method_missing(method_id, *args, &block)
     if !self.class.attribute_methods_generated?
       self.class.define_attribute_methods(self.class.properties_info.keys)
@@ -85,28 +86,25 @@ class Neo4j::Model
     self[key]
   end
 
-  def attributes=(attrs)
-    attrs.each do |k, v|
+  def attributes=(values)
+    sanitize_for_mass_assignment(values).each do |k, v|
       if respond_to?("#{k}=")
         send("#{k}=", v)
       else
         self[k] = v
       end
     end
-    end
+  end
 
 
   # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
   # If the saving fails because of a connection or remote service error, an exception will be raised.
   # If saving fails because the resource is invalid then false will be returned.
   def update_attributes(attributes)
-    update(attributes) # TODO !!!
+    self.attributes=attributes
     save
   end
 
-  # --------------------------------------
-  # CRUD
-  # --------------------------------------
 
   def delete
     super
@@ -171,9 +169,10 @@ class Neo4j::Model
   class << self
     # returns a value object instead of creating a new node
     def new(*args)
-      value = Neo4j::Value.new(*args)
+      value = Neo4j::Value.new
       wrapped = self.orig_new
       wrapped.init_on_load(value)
+      wrapped.attributes=args[0] if args[0].respond_to?(:each_pair)
       wrapped
     end
 
