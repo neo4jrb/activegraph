@@ -24,15 +24,21 @@ class Neo4j::Model
   end
 
   def init_on_create(*args) # :nodoc:
+    if Neo4j::Rails::Transaction.running?
+      super()
+      init_on_create_in_tx(*args)
+    else
+      Neo4j::Rails::Transaction.run { super(); init_on_create_in_tx(*args) }
+    end
+  end
+
+  def init_on_create_in_tx(*args)
     _run_save_callbacks do
       _run_create_callbacks do
-        @_new_record = true
-        super
         self.attributes=args[0] if args[0].respond_to?(:each_pair)
       end
     end
   end
-
   # --------------------------------------
   # Identity
   # --------------------------------------
@@ -101,10 +107,22 @@ class Neo4j::Model
   # If the saving fails because of a connection or remote service error, an exception will be raised.
   # If saving fails because the resource is invalid then false will be returned.
   def update_attributes(attributes)
+    Neo4j::Rails::Transaction.running? ? update_attributes_in_tx(attributes): Neo4j::Rails::Transaction.run { update_attributes_in_tx(attributes) }
+  end
+
+  def update_attributes_in_tx(attributes)
     self.attributes=attributes
     save
   end
 
+  def update_attributes!(attributes)
+    Neo4j::Rails::Transaction.running? ? update_attributes_in_tx!(attributes): Neo4j::Rails::Transaction.run { update_attributes_in_tx!(attributes) }
+  end
+
+  def update_attributes_in_tx!(attributes)
+    self.attributes=attributes
+    save!
+  end
 
   def delete
     super
@@ -114,24 +132,38 @@ class Neo4j::Model
   def save
     if valid?
       # if we are trying to save a value then we should create a real node
-      if persisted?
-        _run_update_callbacks do
-          @previously_changed = changes
-          @changed_attributes.clear
-        end
-      else
-        node = Neo4j::Node.new(props)
-        init_on_load(node)
-        init_on_create
-        @previously_changed = changes
-        @changed_attributes.clear
-      end
+      Neo4j::Rails::Transaction.running? ? save_in_tx : Neo4j::Rails::Transaction.run { save_in_tx }
       true
+    else
+      # if not valid we should rollback the transaction if there is one
+      # so that the changes does not take place.
+      # no point failing the transaction if we have not already persisted it since it will then
+      # not be persisted
+      Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running? && persisted?
+      false
     end
   end
 
+  def save_in_tx
+    if persisted?
+      # already existing node - so we are updating it
+      _run_update_callbacks do
+        @previously_changed = changes
+        @changed_attributes.clear
+      end
+    else
+      # we are creating a new node
+      node = Neo4j::Node.new(props)
+      init_on_load(node)
+      init_on_create
+      @previously_changed = changes
+      @changed_attributes.clear
+    end
+
+  end
+
   def save!
-    raise RecordInvalidError.new(self) unless save
+  raise RecordInvalidError.new(self) unless save
   end
 
   # In neo4j all object are automatically persisted in the database when created (but the Transaction might get rollback)
@@ -145,7 +177,7 @@ class Neo4j::Model
   end
 
   def new_record?()
-    @_new_record
+    _java_node.kind_of?(Neo4j::Value)
   end
 
   def del
@@ -154,7 +186,7 @@ class Neo4j::Model
   end
 
   def destroy
-    _run_update_callbacks { del }
+     Neo4j::Rails::Transaction.running? ? _run_update_callbacks { del } : Neo4j::Rails::Transaction.run { _run_update_callbacks { del } }
   end
 
   def destroyed?()
@@ -199,10 +231,18 @@ class Neo4j::Model
       end
     end
 
+    def create(*)
+      Neo4j::Rails::Transaction.running? ? super : Neo4j::Rails::Transaction.run { super }
+    end
+
     def create!(*args)
       model = create(*args)
       raise RecordInvalidError.new(model) unless model.valid?
       model
+    end
+
+    def transaction(&block)
+      Neo4j::Rails::Transaction.run &block
     end
   end
 

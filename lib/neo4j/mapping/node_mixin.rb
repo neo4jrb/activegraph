@@ -44,7 +44,7 @@ module Neo4j::Mapping
       c.instance_eval do
         # these constants are used in the Neo4j::RelClassMethods and Neo4j::PropertyClassMethods
         # they are defined here since they should only be defined once -
-        # all subclasses share the same index, declared properties and index_updaters
+        # all subclasses share the same index and declared properties
         unless c.const_defined?(:DECL_RELATIONSHIPS)
           const_set(:ROOT_CLASS, self)
           const_set(:DECL_RELATIONSHIPS, {})
@@ -64,9 +64,6 @@ module Neo4j::Mapping
         super
       end
       c.indexer c
-
     end
-
-
   end
 end

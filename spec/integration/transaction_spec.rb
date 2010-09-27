@@ -26,15 +26,32 @@ describe Neo4j::Transaction do
   end
 
 
-  it "ha" do
+  it "#success, if not called the node will node be updated" do
     a = Neo4j::Transaction.run do
-      Neo4j::Node.new
+      Neo4j::Node.new :name => 'andreas'
     end
     id = a.neo_id
-    Neo4j::Transaction.run do
-      x = Neo4j::Node.load(id)
-      x.del
+    tx = Neo4j::Transaction.new
+    a2 = Neo4j::Node.load(id)
+    a2[:name] = 'kalle'
+    a2[:name].should == 'kalle'
+    tx.finish
+    a2[:name].should == 'andreas'
+  end
+
+  it "#failure, if called the node will node be updated, even if #success if called" do
+    a = Neo4j::Transaction.run do
+      Neo4j::Node.new :name => 'andreas'
     end
+    id = a.neo_id
+    tx = Neo4j::Transaction.new
+    a2 = Neo4j::Node.load(id)
+    a2[:name] = 'kalle'
+    a2[:name].should == 'kalle'
+    tx.success
+    tx.failure
+    tx.finish
+    a2[:name].should == 'andreas'
   end
 
 

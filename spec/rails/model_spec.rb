@@ -9,7 +9,16 @@ class IceCream < Neo4j::Model
   validates_presence_of :flavour
 end
 
-describe Neo4j::Model, :type => :transactional do
+describe Neo4j::Model do
+
+  before(:all) do
+    rm_db_storage
+  end
+
+  after(:all) do
+    Neo4j.shutdown
+    rm_db_storage
+  end
 
   describe "new" do
     before :each do
@@ -24,12 +33,7 @@ describe Neo4j::Model, :type => :transactional do
       @model["fur"].should == "none"
     end
 
-    it "should fail to save new model without a transaction" do
-      finish_tx
-      expect { @model.save }.to raise_error
-    end
-
-    it "validation is performed" do
+    it "validation is performed when properties are changed" do
       v = IceCream.new
       v.should_not be_valid
       v.flavour = 'vanilla'
@@ -49,45 +53,50 @@ describe Neo4j::Model, :type => :transactional do
     end
 
 
-    it "save should create a new node when run in a transaction" do
-      v = ActivePerson.new(:flavour => 'q')
+    it "save should create a new node" do
+      v = IceCream.new(:flavour => 'q')
       v.save
-      new_tx
       Neo4j::Node.should exist(v)
     end
 
     it "has nil as id befored saved" do
-      v = ActivePerson.new(:name => 'andreas')
-      v.neo_id.should == nil
+      v = IceCream.new(:flavour => 'andreas')
+      v.id.should == nil
     end
 
   end
 
   describe "load" do
-    before :each do
-      @model = Neo4j::Model.create
-      @model.save
-    end
-
     it "should load a previously stored node" do
-      result = Neo4j::Model.load(@model.id)
-      result.should == @model
+      model = Neo4j::Model.create
+      result = Neo4j::Model.load(model.id)
+      result.should == model
       result.should be_persisted
     end
   end
 
 
   describe "save" do
-    it "should store the model in the database" do
+    it "stores a new model in the database" do
       model = IceCream.new
       model.flavour = "vanilla"
       model.save
       model.should be_persisted
       IceCream.load(model.id).should == model
-      finish_tx
     end
 
-    it "should not save the model if it is invalid" do
+    it "stores a created and modified model in the database" do
+      model = nil
+      IceCream.transaction do
+        model = IceCream.create
+        model.flavour = "vanilla"
+        model.save
+      end
+      model.should be_persisted
+      IceCream.load(model.id).should == model
+    end
+
+    it "does not save the model if it is invalid" do
       model = IceCream.new
       model.save.should_not be_true
       model.should_not be_valid
@@ -96,46 +105,62 @@ describe Neo4j::Model, :type => :transactional do
       model.id.should be_nil
     end
 
-    it "validates the model and return true if it was valid" do
-      model = IceCream.create
-      model.save.should be_false
+    it "new_record? is false before saved and true after saved (if saved was successful)" do
+      model = IceCream.new(:flavour => 'vanilla')
+      model.should be_new_record
+      model.save.should be_true
+      model.should_not be_new_record
     end
 
+    it "does not modify the attributes if validation fails when run in a transaction" do
+      model = IceCream.create(:flavour => 'vanilla')
 
+      IceCream.transaction do
+        model.flavour = nil
+        model.flavour.should be_nil
+        model.should_not be_valid
+        model.save
+      end
+
+      model.flavour.should == 'vanilla'
+    end
+  end
+
+
+  describe "error" do
     it "the validation method 'errors' returns the validation errors" do
-      p = IceCream.create
+      p = IceCream.new
       p.should_not be_valid
       p.errors.keys[0].should == :flavour
       p.flavour = 'vanilla'
       p.should be_valid
       p.errors.size.should == 0
     end
+  end
 
+  describe "ActiveModel::Dirty" do
 
-    it "implements the ActiveModel::Dirty interface" do
-      p = ActivePerson.create
+    it "implements attribute_changed?, _change, _changed, _was, _changed? methods" do
+      p = IceCream.new
       p.should_not be_changed
-      p.name = 'kalle'
+      p.flavour = 'kalle'
       p.should be_changed
-      p.attribute_changed?('name').should == true
-      p.name_change.should == [nil, 'kalle']
-      p.name_was.should == nil
-      p.name_changed?.should be_true
-      p.name_was.should == nil
+      p.attribute_changed?('flavour').should == true
+      p.flavour_change.should == [nil, 'kalle']
+      p.flavour_was.should == nil
+      p.flavour_changed?.should be_true
+      p.flavour_was.should == nil
 
-      p.name = 'andreas'
-      p.name_change.should == ['kalle', 'andreas']
+      p.flavour = 'andreas'
+      p.flavour_change.should == ['kalle', 'andreas']
       p.save
       p.should_not be_changed
     end
-
   end
 
   describe "find" do
-
     it "should load all nodes of that type from the database" do
       model = IceCream.create :flavour => 'vanilla'
-      finish_tx
       IceCream.all.should include(model)
     end
 
@@ -146,9 +171,7 @@ describe Neo4j::Model, :type => :transactional do
 
 
     it "should find a model by one of its attributes" do
-      model = IceCream.create
-      model.flavour = "vanilla"
-      finish_tx
+      model = IceCream.create(:flavour => 'vanilla')
       IceCream.find("flavour: vanilla").to_a.should include(model)
     end
   end
@@ -161,7 +184,6 @@ describe Neo4j::Model, :type => :transactional do
     it "should remove the model from the database" do
       id = @model.neo_id
       @model.destroy
-      new_tx
       Neo4j::Node.load(id).should be_nil
     end
   end
@@ -234,14 +256,13 @@ describe Neo4j::Model, :type => :transactional do
     end
 
     it "should not update the model if it is invalid" do
-      pending "reload not implemented yet"
       klass = model_subclass do
         property :name
         validates_presence_of :name
       end
       model = klass.create!(:name => "vanilla")
       model.update_attributes(:name => nil).should be_false
-      model.reload.name.should == "vanilla"
+      model.name.should == "vanilla"
     end
   end
 
@@ -290,7 +311,27 @@ describe Neo4j::Model, :type => :transactional do
       customer.credit_rating= "Average"
       customer.credit_rating.should == 'Average'
     end
-
   end
-
 end
+#
+#(-) save
+#
+#(-) valid
+#
+#(1) before_validation
+#
+#(-) validate
+#
+#(2) after_validation
+#
+#(3) before_save
+#
+#(4) before_create
+#
+#(-) create
+#
+#(5) after_create
+#
+#(6) after_save
+#
+#(7) after_commit
