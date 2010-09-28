@@ -229,6 +229,7 @@ describe Neo4j::Model do
 
         def timestamp
           self.created = "yes"
+          fail "Expected new record" unless new_record?
         end
 
         after_create :mark_saved
@@ -236,6 +237,7 @@ describe Neo4j::Model do
 
         def mark_saved
           @saved = true
+          fail "Expected new record" unless new_record?
         end
       end
       model = klass.create!
@@ -250,16 +252,42 @@ describe Neo4j::Model do
 
         def timestamp
           self.created = "yes"
+          fail "Expected new record" unless new_record?
         end
 
         after_save :mark_saved
         attr_reader :saved
 
         def mark_saved
+          fail "Expected new record" unless new_record?
           @saved = true
         end
       end
       model = klass.create!
+      model.created.should_not be_nil
+      model.saved.should_not be_nil
+    end
+
+    it "should run before and after new & save callbacks" do
+      klass = model_subclass do
+        property :created
+        before_save :timestamp
+
+        def timestamp
+          self.created = "yes"
+          fail "Expected new record" unless new_record?
+        end
+
+        after_save :mark_saved
+        attr_reader :saved
+
+        def mark_saved
+          fail "Expected new record" unless new_record?
+          @saved = true
+        end
+      end
+      model = klass.new
+      model.save
       model.created.should_not be_nil
       model.saved.should_not be_nil
     end

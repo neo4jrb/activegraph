@@ -127,6 +127,7 @@ class Neo4j::Model
       else
         Neo4j::Rails::Transaction.run { _run_save_callbacks { save_in_tx } }
       end
+      @_created_record = false
       true
     else
       # if not valid we should rollback the transaction so that the changes does not take place.
@@ -145,7 +146,7 @@ class Neo4j::Model
     end
 
     if  new_record?
-      _run_create_callbacks { @_created_record = false; clear_changes }
+      _run_create_callbacks { clear_changes }
     else
       _run_update_callbacks { clear_changes }
     end
