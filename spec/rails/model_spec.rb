@@ -88,7 +88,7 @@ describe Neo4j::Model do
     it "stores a created and modified model in the database" do
       model = nil
       IceCream.transaction do
-        model = IceCream.create
+        model = IceCream.new
         model.flavour = "vanilla"
         model.save
       end
@@ -165,7 +165,7 @@ describe Neo4j::Model do
     end
 
     it "should find the node given it's id" do
-      model = IceCream.create
+      model = IceCream.create(:flavour => 'thing')
       IceCream.find(model.neo_id.to_s).should == model
     end
 
@@ -189,6 +189,20 @@ describe Neo4j::Model do
   end
 
   describe "create" do
+
+    it "if failed since saved returned false it should fail the whole transaction it is part of" do
+      illegal_icecream = valid_icecream = nil
+      IceCream.transaction do
+        valid_icecream   = IceCream.create(:flavour => 'vanilla')
+        illegal_icecream = IceCream.create(:flavour => nil)
+      end
+
+      # then
+      Neo4j::Node.load(illegal_icecream.neo_id).should be_nil
+      valid_icecream.should_not exist
+      illegal_icecream.should_not exist
+    end
+
     it "should save the model and return it" do
       model = Neo4j::Model.create
       model.should be_persisted
@@ -201,6 +215,11 @@ describe Neo4j::Model do
 
     it "bang version should raise an exception if save returns false" do
       expect { IceCream.create! }.to raise_error(Neo4j::Model::RecordInvalidError)
+    end
+
+    it "bang version should NOT raise an exception" do
+      icecream = IceCream.create! :flavour => 'vanilla'
+      icecream.flavour.should == 'vanilla'
     end
 
     it "should run before and after create callbacks" do
@@ -266,6 +285,29 @@ describe Neo4j::Model do
     end
   end
 
+  describe "properties" do
+    it "not required to run in a transaction (will create one)" do
+      cream = IceCream.create :flavour => 'x'
+      cream.flavour = 'vanilla'
+
+      cream.flavour.should == 'vanilla'
+      cream.should exist
+    end
+
+    it "should reuse the same transaction - not create a new one if one is already available" do
+      cream = nil
+      IceCream.transaction do
+        cream = IceCream.create :flavour => 'x'
+        cream.flavour = 'vanilla'
+        cream.should exist
+
+        # create an icecream that will rollback the transaction
+        IceCream.create
+      end
+
+      cream.should_not exist
+    end
+  end
 
   describe "attr_accessible" do
     before(:all) do

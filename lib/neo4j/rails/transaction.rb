@@ -39,7 +39,7 @@ module Neo4j
 
         def finish
           tx = Thread.current[:neo4j_transaction]
-          tx.success unless Thread.current[:neo4j_transaction_fail]
+          tx.success unless fail?
           tx.finish
           Thread.current[:neo4j_transaction] = nil
           Thread.current[:neo4j_transaction_fail] = nil
