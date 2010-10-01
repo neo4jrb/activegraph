@@ -3,9 +3,14 @@ class Neo4j::Model
   include ActiveModel::Validations
   include ActiveModel::Dirty
   include ActiveModel::MassAssignmentSecurity
+
   extend ActiveModel::Naming
   extend ActiveModel::Callbacks
+  extend Neo4j::Validations::ClassMethods
   define_model_callbacks :create, :save, :update, :destroy
+
+
+  UniquenessValidator = Neo4j::Validations::UniquenessValidator
 
   class RecordInvalidError < RuntimeError
     attr_reader :record

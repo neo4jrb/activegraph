@@ -337,6 +337,37 @@ describe Neo4j::Model do
     end
   end
 
+  describe "Neo4j::UniquenessValidator" do
+    before(:all) do
+      class ValidThing < Neo4j::Model
+        index :email
+        validates :email, :uniqueness => true
+      end
+      @klass = ValidThing
+    end
+
+    it "have correct kind" do
+      Neo4j::Validations::UniquenessValidator.kind.should == :uniqueness
+    end
+    it "should not allow to create two nodes with unique fields" do
+      a = @klass.create(:email => 'abc')
+      b = @klass.new(:email => 'abc')
+
+      b.save.should be_false
+      b.errors.size.should == 1
+    end
+
+    it "should not allow to create two nodes with not unique fields" do
+      @klass.create(:email => 'abc')
+      b = @klass.new(:email => 'ab')
+
+      b.save.should be_true
+      b.errors.size.should == 0
+    end
+
+  end
+
+
   describe "attr_accessible" do
     before(:all) do
       @klass = model_subclass do
@@ -383,25 +414,3 @@ describe Neo4j::Model do
     end
   end
 end
-#
-#(-) save
-#
-#(-) valid
-#
-#(1) before_validation
-#
-#(-) validate
-#
-#(2) after_validation
-#
-#(3) before_save
-#
-#(4) before_create
-#
-#(-) create
-#
-#(5) after_create
-#
-#(6) after_save
-#
-#(7) after_commit

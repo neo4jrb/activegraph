@@ -12,7 +12,7 @@ module Neo4j
     module ClassMethods
       extend Forwardable
 
-      def_delegators :@indexer, :index, :find, :index?, :index_type?, :clear_index_type, :rm_index_type, :add_index, :rm_index
+      def_delegators :@indexer, :index, :find, :index?, :index_type?, :clear_index_type, :rm_index_type, :add_index, :rm_index, :index_type_for
 
       # Sets which indexer should be used for the given class.
       # Returns the old one if there was an old indexer.
@@ -101,6 +101,11 @@ module Neo4j
 
       def index?(field)
         @field_types.include?(field.to_s)
+      end
+
+      def index_type_for(field)
+        return nil unless index?(field)
+        @field_types[field.to_s]
       end
 
       def index_type?(type)
