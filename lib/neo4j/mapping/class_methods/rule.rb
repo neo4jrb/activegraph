@@ -5,6 +5,11 @@ module Neo4j::Mapping
         def add(clazz, field, props, &block)
           clazz = clazz.to_s
           @rules ||= {}
+          # was there no ruls for this class AND is neo4j running ?
+          if !@rules.include?(clazz) && Neo4j.running?
+            # maybe Neo4j was started first and the rules was added later. Create rule nodes now
+            create_rule_node_for(clazz)
+          end
           @rules[clazz] ||= {}
           filter = block.nil? ? Proc.new { |*| true } : block
           @rules[clazz][field] = filter
@@ -38,22 +43,18 @@ module Neo4j::Mapping
         end
 
         def on_neo4j_started(*)
-          create_rules if @rules
+          @rules.each_key { |clazz| create_rule_node_for(clazz) } if @rules
         end
 
-        def create_rules
-          @rules.each_key do |clazz|
-            # check if rule nodes exist, if not create them
-            if !Neo4j.ref_node.rel?(clazz)
-              Neo4j::Transaction.run do
-                node = Neo4j::Node.new
-                Neo4j.ref_node.outgoing(clazz) << node
-                node
-              end
+        def create_rule_node_for(clazz)
+          if !Neo4j.ref_node.rel?(clazz)
+            Neo4j::Transaction.run do
+              node = Neo4j::Node.new
+              Neo4j.ref_node.outgoing(clazz) << node
+              node
             end
           end
         end
-
 
         def trigger?(node)
           @rules && node.property?(:_classname) && @rules.include?(node[:_classname])
