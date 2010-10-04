@@ -2,25 +2,6 @@ module Neo4j::Mapping
   module ClassMethods
     module Property
 
-      #
-      # Access to class constants.
-      # These properties are shared by the class and its siblings.
-      # For example that means that we can specify properties for a parent
-      # class and the child classes will 'inherit' those properties.
-      #
-
-      def root_class # :nodoc:
-        self::ROOT_CLASS
-      end
-
-      def properties_info # :nodoc:
-        self::PROPERTIES_INFO
-      end
-
-
-      # ------------------------------------------------------------------------
-
-
       # Generates accessor method and sets configuration for Neo4j node properties.
       # The generated accessor is a simple wrapper around the #[] and
       # #[]= operators.
@@ -43,16 +24,16 @@ module Neo4j::Mapping
         if props.size == 2 and props[1].kind_of?(Hash)
           props[1].each_pair do |key, value|
             pname = props[0].to_sym
-            properties_info[pname] ||= {}
-            properties_info[pname][key] = value
+            _decl_props[pname] ||= {}
+            _decl_props[pname][key] = value
           end
           props = props[0..0]
         end
 
         props.each do |prop|
           pname = prop.to_sym
-          properties_info[pname] ||= {}
-          properties_info[pname][:defined] = true
+          _decl_props[pname] ||= {}
+          _decl_props[pname][:defined] = true
 
           define_method(pname) do
             self[pname]
@@ -76,8 +57,8 @@ module Neo4j::Mapping
       # true or false
       #
       def property?(prop_name)
-        return false if properties_info[prop_name.to_sym].nil?
-        properties_info[prop_name.to_sym][:defined] == true
+        return false if _decl_props[prop_name.to_sym].nil?
+        _decl_props[prop_name.to_sym][:defined] == true
       end
 
 
@@ -89,7 +70,8 @@ module Neo4j::Mapping
       end
 
       def load_wrapper(node, db = Neo4j.started_db)
-        wrapped_node = self.orig_new # avoid creating a new node, only a Ruby Object
+        wrapped_node = self.orig_new # avo
+        #id creating a new node, only a Ruby Object
         wrapped_node.init_on_load(node)
         wrapped_node
       end

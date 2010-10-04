@@ -12,10 +12,6 @@ module Neo4j::Mapping
       def rm_index(field, config = {})
         Neo4j::Node.rm_index(field, config, index_name)
       end
-
-      def index_name
-        root_class
-      end
     end
   end
 end

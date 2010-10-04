@@ -350,16 +350,16 @@ describe Neo4j::Model do
       Neo4j::Validations::UniquenessValidator.kind.should == :uniqueness
     end
     it "should not allow to create two nodes with unique fields" do
-      a = @klass.create(:email => 'abc')
-      b = @klass.new(:email => 'abc')
+      a = @klass.create(:email => 'abc@se.com')
+      b = @klass.new(:email => 'abc@se.com')
 
       b.save.should be_false
       b.errors.size.should == 1
     end
 
     it "should not allow to create two nodes with not unique fields" do
-      @klass.create(:email => 'abc')
-      b = @klass.new(:email => 'ab')
+      @klass.create(:email => 'abc@gmail.copm')
+      b = @klass.new(:email => 'ab@gmail.com')
 
       b.save.should be_true
       b.errors.size.should == 0

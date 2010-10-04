@@ -2,9 +2,6 @@ module Neo4j::Mapping
   module ClassMethods
 
     module Relationship
-      def decl_relationships # :nodoc:
-        self::DECL_RELATIONSHIPS
-      end
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship.
@@ -28,17 +25,17 @@ module Neo4j::Mapping
         clazz = self
         module_eval(%Q{
                 def #{rel_type}(&block)
-                    dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
                     Neo4j::Mapping::HasN.new(self, dsl, &block)
                 end}, __FILE__, __LINE__)
 
         module_eval(%Q{
                 def #{rel_type}_rels
-                    dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
                     Neo4j::Mapping::HasN.new(self, dsl).rels
       end}, __FILE__, __LINE__)
 
-        decl_relationships[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
+        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
       end
 
 
@@ -67,7 +64,7 @@ module Neo4j::Mapping
 
 
         module_eval(%Q{def #{rel_type}=(value)
-                    dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
                     r = Neo4j::Mapping::HasN.new(self, dsl)
                     r.rels.each {|n| n.del} # delete previous relationships, only one can exist
                     r << value
@@ -75,19 +72,19 @@ module Neo4j::Mapping
                 end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                    dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
                     r = Neo4j::Mapping::HasN.new(self, dsl)
                     [*r][0]
                 end}, __FILE__, __LINE__)
 
         module_eval(%Q{
                 def #{rel_type}_rel
-                    dsl = #{clazz}.decl_relationships[:'#{rel_type.to_s}']
+                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
                     r = Neo4j::Mapping::HasN.new(self, dsl).rels
                     [*r][0]
       end}, __FILE__, __LINE__)
 
-        decl_relationships[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
+        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
       end
 
     end

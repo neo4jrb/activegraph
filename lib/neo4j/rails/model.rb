@@ -56,7 +56,7 @@ class Neo4j::Model
   # enables ActiveModel::Dirty and Validation
   def method_missing(method_id, *args, &block)
     if !self.class.attribute_methods_generated?
-      self.class.define_attribute_methods(self.class.properties_info.keys)
+      self.class.define_attribute_methods(self.class._decl_props.keys)
       # try again
       send(method_id, *args, &block)
     end

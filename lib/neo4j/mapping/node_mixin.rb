@@ -42,28 +42,22 @@ module Neo4j::Mapping
 
     def self.included(c) # :nodoc:
       c.instance_eval do
-        # these constants are used in the Neo4j::RelClassMethods and Neo4j::PropertyClassMethods
-        # they are defined here since they should only be defined once -
-        # all subclasses share the same index and declared properties
-        unless c.const_defined?(:DECL_RELATIONSHIPS)
-          const_set(:ROOT_CLASS, self)
-          const_set(:DECL_RELATIONSHIPS, {})
-          const_set(:PROPERTIES_INFO, {})
-        end
-
         class << self
           alias_method :orig_new, :new
         end
       end
+      c.extend ClassMethods::Root
       c.extend ClassMethods::Property
       c.extend ClassMethods::Relationship
       c.extend ClassMethods::Rule
       c.extend Neo4j::Index::ClassMethods
       def c.inherited(subclass)
         subclass.indexer subclass
+        subclass.root_class subclass
         super
       end
       c.indexer c
+      c.root_class c
     end
   end
 end
