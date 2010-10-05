@@ -14,9 +14,20 @@ module Neo4j
 
       def_delegators :@indexer, :index, :find, :index?, :index_type?, :clear_index_type, :rm_index_type, :add_index, :rm_index, :index_type_for, :index_name
 
-      # Sets which indexer should be used for the given class.
+
+      # Sets which indexer should be used for the given node class
       # Returns the old one if there was an old indexer.
-      def indexer(clazz)
+      def node_indexer(clazz)
+        indexer(clazz, :node)
+      end
+
+      # Sets which indexer should be used for the given relationship class
+      # Returns the old one if there was an old indexer.
+      def rel_indexer(clazz)
+        indexer(clazz, :rel)
+      end
+
+      def indexer(clazz, type)  #:nodoc:
         old = @indexer
         @@indexers ||= {}
         if @@indexers.include?(clazz)
@@ -24,7 +35,7 @@ module Neo4j
           @indexer = @@indexers[clazz]
           @indexer.include_trigger(self)
         else
-          @indexer = Indexer.new(clazz)
+          @indexer = Indexer.new(clazz, type)
           @@indexers[clazz] = @indexer
         end
         old
@@ -84,8 +95,11 @@ module Neo4j
     class Indexer
       attr_reader :index_name
 
-      def initialize(clazz)
+      def initialize(clazz, type)
         @index_name = clazz.to_s
+
+        # do we want to index nodes or relationships ?
+        @type = type
 
         @indexes = {}  # key = type, value = java neo4j index
         @field_types = {}  # key = field, value = type (e.g. :exact or :fulltext)
@@ -174,7 +188,11 @@ module Neo4j
       def create_index_with(type)
         db=Neo4j.started_db
         index_config = lucene_config(type)
-        db.lucene.node_index("#{@index_name}-#{type}", index_config)
+        if @type == :node
+          db.lucene.node_index("#{@index_name}-#{type}", index_config)
+        else
+          db.lucene.relationship_index("#{@index_name}-#{type}", index_config)
+        end
       end
 
 
@@ -186,7 +204,7 @@ module Neo4j
       end
 
       def trigger?(classname)
-        @triggered_by.include?(classname || 'Neo4j::Node')
+        @triggered_by.include?(classname || (@type==:node ? 'Neo4j::Node' : 'Neo4j::Relationship'))
       end
 
       def on_node_created(node)
@@ -195,7 +213,7 @@ module Neo4j
       end
 
       def on_node_deleted(node, old_props)
-        return unless @triggered_by.include?(old_props['_classname'] || 'Neo4j::Node')
+        return unless trigger?(old_props['_classname'])
         @field_types.keys.each {|field| rm_index(node, field, old_props[field]) if old_props[field]}
       end
 
@@ -207,6 +225,22 @@ module Neo4j
         # add index
         add_index(node, field, new_val) if new_val
       end
+
+      def on_rel_property_changed(rel, field, old_val, new_val)
+        # works exactly like for nodes
+        on_property_changed(rel, field, old_val, new_val)
+      end
+
+      def on_relationship_created(rel)
+        # works exactly like for nodes
+        on_node_created(rel)
+      end
+
+      def on_relationship_deleted(rel, old_props)
+        # works exactly like for nodes
+        on_node_deleted(rel, old_props)
+      end
+
     end
 
   end

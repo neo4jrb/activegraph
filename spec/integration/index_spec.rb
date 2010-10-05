@@ -8,7 +8,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   class Car < Vehicle
-    indexer Vehicle # use the same indexer as Vehicle, get index on wheels
+    node_indexer Vehicle # use the same indexer as Vehicle, get index on wheels
     index :brand, :type => :fulltext
     index :colour
   end
@@ -77,6 +77,46 @@ describe Neo4j::Node, "index", :type => :transactional do
       Car.find("wheels: #{x}").first.should_not be_nil
     end
   end
+end
+
+describe Neo4j::Relationship, "index", :type => :transactional do
+  before(:each) do
+    Neo4j::Relationship.index(:strength) # default :exact
+  end
+
+  after(:each) do
+    # make sure we clean up after each test
+    Neo4j::Transaction.run do
+      Neo4j::Relationship.clear_index_type :exact
+      Neo4j::Relationship.clear_index_type :fulltext
+    end
+    Neo4j::Relationship.rm_index_type :strength
+  end
+
+  it "can index when Neo4j::Relationship are created , just like nodes" do
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    r = Neo4j::Relationship.new(:friends, a, b)
+    r[:strength] = 'strong'
+    finish_tx
+    Neo4j::Relationship.find('strength: strong').first.should == r
+  end
+
+  it "can remove index when Neo4j::Relationship is deleted, just like nodes" do
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    r = Neo4j::Relationship.new(:friends, a, b)
+    r[:strength] = 'weak'
+    new_tx
+    r2 = Neo4j::Relationship.find('strength: weak').first
+    r2.should == r
+
+    r2.del
+    finish_tx
+
+    Neo4j::Relationship.find('strength: weak').should be_empty
+  end
+
 end
 
 describe Neo4j::Node, "index", :type => :transactional do
@@ -311,7 +351,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "will automatically close the connection if a block was provided with the find method" do
-    indexer = Neo4j::Index::Indexer.new('mocked-indexer')
+    indexer = Neo4j::Index::Indexer.new('mocked-indexer', :node)
     index = double('index')
     indexer.should_receive(:index_for_type).and_return(index)
     hits = double('hits')
@@ -320,7 +360,6 @@ describe Neo4j::Node, "index", :type => :transactional do
     Neo4j::Node.instance_eval { @indexer = indexer }
     hits.should_receive(:close)
     hits.should_receive(:first).and_return("found_node")
-    #puts "FIND IT first #{hits.first}"
     found_node = Neo4j::Node.find('name: andreas', :wrapped => false) { |h| h.first }
     found_node.should == 'found_node'
 
@@ -330,7 +369,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
 
   it "will automatically close the connection even if the block provided raises an exception" do
-    indexer = Neo4j::Index::Indexer.new('mocked-indexer')
+    indexer = Neo4j::Index::Indexer.new('mocked-indexer', :node)
     index = double('index')
     indexer.should_receive(:index_for_type).and_return(index)
     hits = double('hits')

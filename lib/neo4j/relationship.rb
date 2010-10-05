@@ -79,9 +79,14 @@ module Neo4j
   # (Those mixin are actually not included in the Neo4j::Relationship but instead directly included in the java class org.neo4j.kernel.impl.core.RelationshipProxy)
   #
   class Relationship
+    extend Neo4j::Index::ClassMethods
+
+    self.rel_indexer self
+
     class << self
       include Neo4j::Load
       include Neo4j::ToJava
+
 
       # Returns a org.neo4j.graphdb.Relationship java object (!)
       # Will trigger a event that the relationship was created.

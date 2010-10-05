@@ -55,12 +55,12 @@ module Neo4j::Mapping
       c.extend Neo4j::Index::ClassMethods
 
       def c.inherited(subclass)
-        subclass.indexer subclass
+        subclass.node_indexer subclass
         subclass.root_class subclass
         super
       end
 
-      c.indexer c
+      c.node_indexer c
       c.root_class c
     end
   end

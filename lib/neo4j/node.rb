@@ -45,7 +45,7 @@ module Neo4j
   class Node
     extend Neo4j::Index::ClassMethods
 
-    self.indexer self
+    self.node_indexer self
 
     class << self
       include Neo4j::Load

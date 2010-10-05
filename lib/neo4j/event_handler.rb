@@ -21,12 +21,20 @@ module Neo4j
       data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_nodes.include?(tx_data.entity) }
       data.deleted_nodes.each { |node| node_deleted(node, deleted_properties_for(node,data))}
       data.created_relationships.each {|rel| relationship_created(rel)}
-      data.deleted_relationships.each {|rel| relationship_deleted(rel)}
-      # TODO Add relationship properties callbacks
+      data.deleted_relationships.each {|rel| relationship_deleted(rel, deleted_rel_properties_for(rel, data))}
+      data.assigned_relationship_properties.each { |tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
+      data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_relationships.include?(tx_data.entity) }
     end
 
     def deleted_properties_for(node, data)
       data.removed_node_properties.find_all{|tx_data| tx_data.entity == node}.inject({}) do |memo, tx_data|
+        memo[tx_data.key] = tx_data.previously_commited_value
+        memo
+      end
+    end
+
+    def deleted_rel_properties_for(rel, data)
+      data.removed_relationship_properties.find_all{|tx_data| tx_data.entity == rel}.inject({}) do |memo, tx_data|
         memo[tx_data.key] = tx_data.previously_commited_value
         memo
       end
@@ -69,15 +77,19 @@ module Neo4j
       @listeners.each {|li| li.on_relationship_created(relationship) if li.respond_to?(:on_relationship_created)}
     end
 
-    def relationship_deleted(relationship)
-      @listeners.each {|li| li.on_relationship_deleted(relationship) if li.respond_to?(:on_relationship_deleted)}
+    def relationship_deleted(relationship, old_props)
+      @listeners.each {|li| li.on_relationship_deleted(relationship, old_props) if li.respond_to?(:on_relationship_deleted)}
     end
 
     def property_changed(node, key, old_value, new_value)
       @listeners.each {|li| li.on_property_changed(node, key, old_value, new_value) if li.respond_to?(:on_property_changed)}
     end
 
-    # TODO
+    def rel_property_changed(rel, key, old_value, new_value)
+      @listeners.each {|li| li.on_rel_property_changed(rel, key, old_value, new_value) if li.respond_to?(:on_rel_property_changed)}
+    end
+
+    # TODO ?
     def tx_finished(tx)
       @listeners.each {|li| li.on_tx_finished(tx) if li.respond_to?(:on_tx_finished)}
     end

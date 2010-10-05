@@ -111,5 +111,49 @@ describe Neo4j::RelationshipMixin, :type=> :transactional do
     rel.start_node.should == actor
   end
 
+  it "can find by using lucene" do
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    f = Friend.new(:friends, a, b)
+    f.since = '2000'
+    finish_tx
+
+    Friend.find('since: 2000').first.should == f
+  end
+
+  it "can not find it with lucene if it was deleted" do
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    f = Friend.new(:friends, a, b)
+    f.since = '2001'
+    new_tx
+    found = Friend.find('since: 2001').first
+    found.should == f
+
+    # when
+    found.del
+    finish_tx
+
+    # then
+    Friend.find('since: 2001').should be_empty
+  end
+
+  it "can not find it with indexed property was changed" do
+    a = Neo4j::Node.new
+    b = Neo4j::Node.new
+    f = Friend.new(:friends, a, b)
+    f.since = '2002'
+    new_tx
+    found = Friend.find('since: 2002').first
+    found.should == f
+
+    # when
+    found.since = 2003
+    finish_tx
+
+    # then
+    Friend.find('since: 2002').should be_empty
+    Friend.find('since: 2003').first.should == found
+  end
 
 end
