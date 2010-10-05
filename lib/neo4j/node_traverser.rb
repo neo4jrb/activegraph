@@ -121,7 +121,7 @@ module Neo4j
     def each
       iter = iterator
       while (iter.hasNext) do
-        yield Neo4j::Node.load_wrapper(iter.next)
+        yield Neo4j::Node.wrapper(iter.next)
       end
     end
 

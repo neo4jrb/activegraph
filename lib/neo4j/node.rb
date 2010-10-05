@@ -19,16 +19,21 @@ module Neo4j
       Neo4j::Node.exist?(self)
     end
 
-    # provide a hook for ruby class mapping
+    # same as _java_node
+    # Used so that we have same method for both relationship and nodes
     def wrapped_entity
       self
     end
     
     # Loads the Ruby wrapper for this node 
     # If there is no _classname property for this node then it will simply return itself.
-    # Same as Neo4j::Node.load_wrapper(node)
+    # Same as Neo4j::Node.wrapper(node)
     def wrapper
-      self.class.load_wrapper(self)
+      self.class.wrapper(self)
+    end
+
+    def _java_node
+      self
     end
 
     def class
@@ -43,7 +48,7 @@ module Neo4j
     self.indexer self
 
     class << self
-
+      include Neo4j::Load
 
       # Creates a new node using the default db instance when given no args
       # Same as Neo4j::Node#create
@@ -63,26 +68,13 @@ module Neo4j
       alias_method :create, :new
 
       def load(node_id, db = Neo4j.started_db)
-        load_wrapper(db.graph.get_node_by_id(node_id.to_i))
+        wrapper(db.graph.get_node_by_id(node_id.to_i))
       rescue java.lang.IllegalStateException
         nil # the node has been deleted
       rescue org.neo4j.graphdb.NotFoundException
         nil
       end
 
-      def load_wrapper(node)
-        return node unless node.property?(:_classname)
-        to_class(node[:_classname]).load_wrapper(node)
-      end
-
-      def to_class(class_name)
-        class_name.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
-      end
-
-      def exist?(node_or_node_id, db = Neo4j.started_db)
-        id = node_or_node_id.kind_of?(Fixnum) ?  node_or_node_id : node_or_node_id.id
-        load(id, db) != nil
-      end
 
     end
   end

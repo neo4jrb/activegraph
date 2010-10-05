@@ -100,7 +100,7 @@ module Neo4j::Mapping
 
         def run_rule(rule, node)
           if rule.arity != 1
-            wrapper = Neo4j::Node.load_wrapper(node)
+            wrapper = Neo4j::Node.wrapper(node)
             wrapper.instance_eval(&rule)
           else
             rule.call(node)

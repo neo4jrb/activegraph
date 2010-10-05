@@ -9,18 +9,40 @@ module Neo4j
     end
 
     def end_node # :nodoc:
-      Neo4j::Node.load_wrapper(getEndNode)
+      getEndNode.wrapper
     end
 
     def start_node # :nodoc:
-      Neo4j::Node.load_wrapper(getStartNode)
+      getStartNode.wrapper
     end
 
     def other_node(node) # :nodoc:
-      java_node  = node.respond_to?(:_java_node)? node._java_node : node
-      other_node = getOtherNode(java_node)
-      Neo4j::Node.load_wrapper(other_node)
+      getOtherNode(node._java_node).wrapper
     end
+
+
+    # same as _java_rel
+    # Used so that we have same method for both relationship and nodes
+    def wrapped_entity
+      self
+    end
+
+    def _java_rel
+      self
+    end
+
+    # Loads the Ruby wrapper for this node
+    # If there is no _classname property for this node then it will simply return itself.
+    # Same as Neo4j::Node.load_wrapper(node)
+    def wrapper
+      self.class.wrapper(self)
+    end
+
+
+    def class
+      Neo4j::Relationship
+    end
+
   end
 
   #
@@ -58,6 +80,9 @@ module Neo4j
   #
   class Relationship
     class << self
+      include Neo4j::Load
+      include Neo4j::ToJava
+
       # Returns a org.neo4j.graphdb.Relationship java object (!)
       # Will trigger a event that the relationship was created.
       #
@@ -74,11 +99,24 @@ module Neo4j
       #
       #  Neo4j::Relationship.new :friend, node1, node2, :since => '2001-01-02', :status => 'okey'
       #
-      def new(type, from_node, to_node, props={})
-        rel = from_node.outgoing(type).new(to_node)
-        props.each_pair {|k,v| rel[k] = v}
+      def new(type, from_node, to_node, props=nil)
+        java_type = type_to_java(type)
+        rel = from_node._java_node.create_relationship_to(to_node._java_node, java_type)
+        props.each_pair {|k,v| rel[k] = v} if props
         rel
       end
+
+      # create is the same as new
+      alias_method :create, :new
+
+      def load(rel_id, db = Neo4j.started_db)
+        wrapper(db.graph.get_relationship_by_id(rel_id.to_i))
+      rescue java.lang.IllegalStateException
+        nil # the node has been deleted
+      rescue org.neo4j.graphdb.NotFoundException
+        nil
+      end
+
     end
 
   end

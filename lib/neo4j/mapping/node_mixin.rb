@@ -26,7 +26,7 @@ module Neo4j::Mapping
     def init_on_create(*args) # :nodoc:
       self[:_classname] = self.class.to_s
       if args[0].respond_to?(:each_pair)
-         args[0].each_pair { |k, v| @_java_node.set_property(k.to_s, v) }
+        args[0].each_pair { |k, v| @_java_node.set_property(k.to_s, v) }
       end
     end
 
@@ -46,16 +46,20 @@ module Neo4j::Mapping
           alias_method :orig_new, :new
         end
       end
+
       c.extend ClassMethods::Root
       c.extend ClassMethods::Property
+      c.extend ClassMethods::InitNode
       c.extend ClassMethods::Relationship
       c.extend ClassMethods::Rule
       c.extend Neo4j::Index::ClassMethods
+
       def c.inherited(subclass)
         subclass.indexer subclass
         subclass.root_class subclass
         super
       end
+
       c.indexer c
       c.root_class c
     end

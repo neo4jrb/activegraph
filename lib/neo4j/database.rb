@@ -37,7 +37,7 @@ module Neo4j
     def each_node
       iter = @graph.all_nodes.iterator
       while (iter.hasNext)
-        yield Node.load_wrapper(iter.next)
+        yield Node.wrapper(iter.next)
       end
     end
 

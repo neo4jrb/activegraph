@@ -6,6 +6,7 @@ module Neo4j
     #
     class HasN
       include Enumerable
+      include ToJava
 
       def initialize(node, dsl) # :nodoc:
         @node = node
@@ -64,6 +65,7 @@ module Neo4j
 
 
       # Creates a relationship instance between this and the other node.
+      # Returns the relationship object
       def new(other)
         create_rel(@node, other)
       end
@@ -78,11 +80,6 @@ module Neo4j
       #   n3 = Node.new
       #
       #   n1 << n2 << n3
-      #
-      # This is the same as:
-      #
-      #   n1.add_rel(:friends, n2)
-      #   n1.add_rel(:friends, n3)
       #
       # ==== Returns
       # self
@@ -101,14 +98,16 @@ module Neo4j
           from, to = other, node
         end
 
-        rel = from.outgoing(@dsl.namespace_type) << to
-        # rel[_classname] =  @dsl.relationship_class # TODO
+        java_type = type_to_java(@dsl.namespace_type)
+        rel = from._java_node.create_relationship_to(to._java_node, java_type)
+        rel[:_classname] =  @dsl.relationship_class.to_s if @dsl.relationship_class
 
+        # TODO - not implemented yet
         # the from.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
         # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
         # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
-        rel[@dsl.cascade_delete_prop_name] = node.neo_id if @dsl.cascade_delete?
-        rel
+        #rel[@dsl.cascade_delete_prop_name] = node.neo_id if @dsl.cascade_delete?
+        rel.wrapper
       end
 
     end

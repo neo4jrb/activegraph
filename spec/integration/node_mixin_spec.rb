@@ -36,6 +36,14 @@ describe Neo4j::NodeMixin, :type=> :transactional do
     n[:bar].should == 'bar'
 
   end
+
+  it "#init_on_create is called when node is created and can be used to initialize it" do
+    n = NodeWithInitializer.new('kalle', 'malmoe')
+    n.name.should == 'kalle'
+    n.city.should == 'malmoe'
+  end
+
+
   it "#[] and #[]= read and sets a neo4j property" do
     n = SimpleNode.new
     n.should respond_to(:name)
