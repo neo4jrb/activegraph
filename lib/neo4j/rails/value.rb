@@ -44,13 +44,17 @@ module Neo4j
     end
 
     def save_nested(root_node)
+      valid = true
       @rels.each_pair do |type, rel|
         rel.each do |new_node|
           if new_node.save
             root_node.outgoing(type) << new_node
+          else
+            valid = false
           end
         end
       end
+      valid
     end
 
     class OutgoingRels
@@ -65,6 +69,12 @@ module Neo4j
 
       def each
         @nodes.each {|n| yield n}
+      end
+
+      def is_a?(type)
+        # ActionView requires this for nested attributes to work
+        return true if Array == type
+        super
       end
     end
 

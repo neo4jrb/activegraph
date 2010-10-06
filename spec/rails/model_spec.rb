@@ -452,11 +452,13 @@ describe Neo4j::Model do
       suger.neo_id.should_not be_nil
       icecream.ingrediences.should include(suger, butter)
       icecream.outgoing(:ingrediences).should include(suger, butter)
+      icecream.outgoing(:ingrediences).first.should be_kind_of(Ingredience)
 
       # make sure the nested nodes were properly saved
       ice = IceCream.load(icecream.neo_id)
       ice.ingrediences.should include(suger, butter)
       ice.outgoing(:ingrediences).should include(suger, butter)
+      ice.outgoing(:ingrediences).first.should be_kind_of(Ingredience)
     end
 
     it "should not save nested nodes if it was not valid" do
@@ -477,5 +479,16 @@ describe Neo4j::Model do
       suger.neo_id.should == nil
    end
 
+    it "should return false if one of the nested nodes is invalid when saving all of them" do
+      icecream1  = Ingredience.new :name => 'suger'
+      # create a model object that is invalid and make it a nested node of icecream1
+      icecream2 = IceCream.new # not valid
+
+      # when
+      icecream1.outgoing(:related_icecreams) << icecream2
+
+      # then
+      icecream1.save.should be_false
+    end
   end
 end

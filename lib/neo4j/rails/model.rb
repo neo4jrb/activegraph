@@ -83,7 +83,7 @@ class Neo4j::Model
 
 
   def read_attribute_for_validation(key)
-    respond_to?(key)? send(key) : self[key]
+    respond_to?(key) ? send(key) : self[key]
   end
 
   def attributes=(values)
@@ -125,12 +125,13 @@ class Neo4j::Model
   end
 
   def save
-    if valid?
+    valid = valid?
+    if valid
       # if we are trying to save a value then we should create a real node
       if Neo4j::Rails::Transaction.running?
         _run_save_callbacks { save_in_tx }
       else
-        Neo4j::Rails::Transaction.run { _run_save_callbacks { save_in_tx } }
+        Neo4j::Rails::Transaction.run { _run_save_callbacks { valid = save_in_tx } }
       end
       @_created_record = false
       true
@@ -140,13 +141,15 @@ class Neo4j::Model
       Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running? && !_java_node.kind_of?(Neo4j::Value)
       false
     end
+    valid
   end
 
   def save_in_tx
+    valid = true
 #    _run_save_callbacks do
     if _java_node.kind_of?(Neo4j::Value)
       node = Neo4j::Node.new(props)
-      _java_node.save_nested(node)
+      valid = _java_node.save_nested(node)
       init_on_load(node)
       init_on_create
     end
@@ -156,6 +159,7 @@ class Neo4j::Model
     else
       _run_update_callbacks { clear_changes }
     end
+    valid
   end
 
   def clear_changes
@@ -208,21 +212,26 @@ class Neo4j::Model
       wrapped.init_on_load(value)
       wrapped.attributes=args[0] if args[0].respond_to?(:each_pair)
 
-      meta = class << wrapped; self; end
-
       wrapped.class._decl_rels.each_pair do |field, dsl|
-        meta.send(:define_method, field) do
-          value.outgoing(dsl.namespace_type)
-        end if dsl.direction == :outgoing
 
-        meta.send(:define_method, field) do
-          # TODO
-          raise "NOT IMPLEMENTED FOR #new method, please create a new model with the create method instead"
-        end if dsl.direction == :incoming
+        meta = class << wrapped;
+          self;
+        end
+
+        wrapped.class._decl_rels.each_pair do |field, dsl|
+          meta.send(:define_method, field) do
+            value.outgoing(dsl.namespace_type)
+          end if dsl.direction == :outgoing
+
+          meta.send(:define_method, field) do
+            # TODO
+            raise "NOT IMPLEMENTED FOR #new method, please create a new model with the create method instead"
+          end if dsl.direction == :incoming
+        end
       end
+
       wrapped
     end
-
 
     # Handle Model.find(params[:id])
     def find(*args)
@@ -270,6 +279,29 @@ class Neo4j::Model
     def transaction(&block)
       Neo4j::Rails::Transaction.run &block
     end
+
+    def accepts_nested_attributes_for(*attr_names)
+      attr_names.each do |association_name|
+        rel = self._decl_rels[association_name.to_sym]
+        raise "No relationship declared with has_n or has_one with type #{association_name}" unless rel
+        to_class = rel.to_class
+        raise "Can't use accepts_nested_attributes_for(#{association_name}) since it has not defined which class it has a relationship to, use has_n(#{association_name}).to(MyOtherClass)" unless to_class
+        type = rel.namespace_type
+
+        class_eval <<-eoruby, __FILE__, __LINE__ + 1
+              if method_defined?(:#{association_name}_attributes=)
+                remove_method(:#{association_name}_attributes=)
+              end
+              def #{association_name}_attributes=(attributes)
+                attributes.values.each do |attr|
+                  outgoing('#{type}') << #{to_class}.new(attr)
+                end
+              end
+        eoruby
+      end
+    end
+
   end
 
 end
+
