@@ -2,10 +2,16 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
+class Ingredience < Neo4j::Model
+  property :name
+end
+
 class IceCream < Neo4j::Model
   property :flavour
   index :flavour
   rule(:all)
+  has_n :ingrediences
+
   validates_presence_of :flavour
 end
 
@@ -412,5 +418,64 @@ describe Neo4j::Model do
       customer.credit_rating= "Average"
       customer.credit_rating.should == 'Average'
     end
+  end
+
+  describe "nested attributes" do
+    it "adding nodes to a has_n method created with the #new method" do
+      icecream = IceCream.new
+      suger = Ingredience.new :name => 'suger'
+      icecream.ingrediences << suger
+      icecream.ingrediences.should include(suger)
+      icecream.outgoing(:ingrediences).should include(suger)
+    end
+
+    it "adding nodes using outgoing should work for models created with the #new method" do
+      icecream = IceCream.new
+      suger = Ingredience.new :name => 'suger'
+      icecream.outgoing(:ingrediences) << suger
+      icecream.outgoing(:ingrediences).should include(suger)
+      icecream.ingrediences.should include(suger)
+    end
+
+    it "saving the node should create all the nested nodes" do
+      icecream = IceCream.new(:flavour => 'vanilla')
+      suger  = Ingredience.new :name => 'suger'
+      butter = Ingredience.new :name => 'butter'
+
+      icecream.ingrediences << suger << butter
+      icecream.ingrediences.should include(suger, butter)
+
+      suger.neo_id.should == nil
+      icecream.save.should be_true
+
+      # then
+      suger.neo_id.should_not be_nil
+      icecream.ingrediences.should include(suger, butter)
+      icecream.outgoing(:ingrediences).should include(suger, butter)
+
+      # make sure the nested nodes were properly saved
+      ice = IceCream.load(icecream.neo_id)
+      ice.ingrediences.should include(suger, butter)
+      ice.outgoing(:ingrediences).should include(suger, butter)
+    end
+
+    it "should not save nested nodes if it was not valid" do
+      icecream = IceCream.new # not valid
+      suger  = Ingredience.new :name => 'suger'
+      butter = Ingredience.new :name => 'butter'
+
+      icecream.ingrediences << suger << butter
+      icecream.ingrediences.should include(suger, butter)
+
+      suger.neo_id.should == nil
+      icecream.save.should be_false
+
+      # then
+      icecream.ingrediences.should include(suger, butter)
+      icecream.outgoing(:ingrediences).should include(suger, butter)
+
+      suger.neo_id.should == nil
+   end
+
   end
 end

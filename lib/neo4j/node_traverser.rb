@@ -51,6 +51,9 @@ module Neo4j
     end
 
 
+    def to_s
+      "NodeTraverser [from: #{@from.neo_id} depth: #{@depth} type: #{@type} dir:#{@dir}"
+    end
 
     def <<(other_node)
       new(other_node)
@@ -121,7 +124,7 @@ module Neo4j
     def each
       iter = iterator
       while (iter.hasNext) do
-        yield Neo4j::Node.wrapper(iter.next)
+        yield iter.next.wrapper
       end
     end
 

@@ -146,6 +146,7 @@ class Neo4j::Model
 #    _run_save_callbacks do
     if _java_node.kind_of?(Neo4j::Value)
       node = Neo4j::Node.new(props)
+      _java_node.save_nested(node)
       init_on_load(node)
       init_on_create
     end
@@ -206,6 +207,19 @@ class Neo4j::Model
       wrapped = self.orig_new
       wrapped.init_on_load(value)
       wrapped.attributes=args[0] if args[0].respond_to?(:each_pair)
+
+      meta = class << wrapped; self; end
+
+      wrapped.class._decl_rels.each_pair do |field, dsl|
+        meta.send(:define_method, field) do
+          value.outgoing(dsl.namespace_type)
+        end if dsl.direction == :outgoing
+
+        meta.send(:define_method, field) do
+          # TODO
+          raise "NOT IMPLEMENTED FOR #new method, please create a new model with the create method instead"
+        end if dsl.direction == :incoming
+      end
       wrapped
     end
 
