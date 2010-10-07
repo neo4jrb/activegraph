@@ -35,7 +35,7 @@ module Neo4j::Mapping
                     Neo4j::Mapping::HasN.new(self, dsl).rels
       end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
+        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, false, params)
       end
 
 
@@ -84,7 +84,7 @@ module Neo4j::Mapping
                     [*r][0]
       end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, params)
+        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, true, params)
       end
 
     end

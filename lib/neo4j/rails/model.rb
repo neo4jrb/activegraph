@@ -39,7 +39,7 @@ class Neo4j::Model
   # --------------------------------------
 
   def id
-    self.neo_id
+    neo_id.nil? ? nil : neo_id.to_s
   end
 
   def to_param
@@ -118,6 +118,39 @@ class Neo4j::Model
     save!
   end
 
+  def update_nested_attributes(rel_type, clazz, id, attr)
+    puts "update_nested_attributes #{rel_type} clazz: #{clazz} id: #{id}, attr:#{attr.inspect}, has_one #{has_one}"
+    if new?
+      puts "  NEW !"
+      outgoing(rel_type)<<clazz.new(attr)
+    else
+      # we have a node that was created with the #create method - has real relationships
+      # does it contain the given nested attr
+      puts "  id = #{id}"
+      puts "HAS OUTGOING"
+      # if id == nil  then we are looking in a has_one relatinship
+      if id.nil?
+        found = outgoing(rel_type).first
+      else
+        # this is a has_n relationship, find which one we want to update
+        outgoing(rel_type).each { |x| puts x.id }
+        found = outgoing(rel_type).find { |n| n.id == id }
+      end
+      puts "  found #{found}"
+      if found
+        # it already exist, so update that one then
+        found.update_attributes_in_tx(attr)
+      else
+        # does not exist, create a new one
+        new_node = clazz.new(attr)
+        saved = new_node.save
+        outgoing(rel_type) << new_node if saved
+      end
+    end
+
+
+  end
+
   def delete
     super
     @_deleted = true
@@ -183,7 +216,11 @@ class Neo4j::Model
   # Returns true if this object hasn’t been saved yet — that is, a record for the object doesn’t exist yet; otherwise, returns false.
   def new_record?()
     # it is new if the model has been created with either the new or create method
-    _java_node.kind_of?(Neo4j::Value) || @_created_record == true
+    new? || @_created_record == true
+  end
+
+  def new?
+    _java_node.kind_of?(Neo4j::Value)
   end
 
   def del
@@ -220,7 +257,11 @@ class Neo4j::Model
 
         wrapped.class._decl_rels.each_pair do |field, dsl|
           meta.send(:define_method, field) do
-            value.outgoing(dsl.namespace_type)
+            if new?
+              value.outgoing(dsl.namespace_type)
+            else
+              self.outgoing(dsl.namespace_type)
+            end
           end if dsl.direction == :outgoing
 
           meta.send(:define_method, field) do
@@ -281,20 +322,31 @@ class Neo4j::Model
     end
 
     def accepts_nested_attributes_for(*attr_names)
+      allow_destroy = if attr_names[-1].is_a?(Hash)
+                        args = attr_names.pop
+                        args[:allow_destroy]
+                      end
+
+      puts "ARGS = #{args}"
       attr_names.each do |association_name|
         rel = self._decl_rels[association_name.to_sym]
         raise "No relationship declared with has_n or has_one with type #{association_name}" unless rel
         to_class = rel.to_class
         raise "Can't use accepts_nested_attributes_for(#{association_name}) since it has not defined which class it has a relationship to, use has_n(#{association_name}).to(MyOtherClass)" unless to_class
         type = rel.namespace_type
+        has_one = rel.has_one?
 
         class_eval <<-eoruby, __FILE__, __LINE__ + 1
               if method_defined?(:#{association_name}_attributes=)
                 remove_method(:#{association_name}_attributes=)
               end
               def #{association_name}_attributes=(attributes)
-                attributes.values.each do |attr|
-                  outgoing('#{type}') << #{to_class}.new(attr)
+                if #{has_one}
+                  update_nested_attributes('#{type}', #{to_class}, nil, attributes)
+                else
+                  attributes.each_pair do |key, attr|
+                    update_nested_attributes('#{type}', #{to_class}, key, attr)
+                  end
                 end
               end
         eoruby

@@ -35,13 +35,18 @@ module Neo4j::Mapping
     attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id, :direction
     CASCADE_DELETE_PROP_NAMES = {:outgoing => :_cascade_delete_outgoing, :incoming => :_cascade_delete_incoming}
 
-    def initialize(rel_id, params)
+    def initialize(rel_id, has_one, params)
       @direction = :outgoing
       @rel_id = rel_id
       @to_type = rel_id
+      @has_one = has_one
       @namespace_type = rel_id
       @cascade_delete_prop_name = CASCADE_DELETE_PROP_NAMES[params[:cascade_delete]]
       @counter = params[:counter] == true
+    end
+
+    def has_one?
+      @has_one
     end
 
     # If a counter was specified in the dsl for counting number of nodes in this relationship.

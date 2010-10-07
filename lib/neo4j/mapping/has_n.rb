@@ -25,6 +25,13 @@ module Neo4j
       end
 
 
+      # Pretend we are an array - this is neccessarly for Rails actionpack/actionview/formhelper to work with this
+      def is_a?(type)
+        # ActionView requires this for nested attributes to work
+        return true if Array == type
+        super
+      end
+
       # Returns the relationships instead of the nodes.
       #
       # ==== Example

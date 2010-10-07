@@ -71,6 +71,10 @@ module Neo4j
         @nodes.each {|n| yield n}
       end
 
+      def empty?
+        @nodes.empty?
+      end
+
       def is_a?(type)
         # ActionView requires this for nested attributes to work
         return true if Array == type

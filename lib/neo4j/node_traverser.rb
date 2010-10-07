@@ -121,6 +121,10 @@ module Neo4j
       [*self].size
     end
 
+    def empty?
+      first == nil
+    end
+
     def each
       iter = iterator
       while (iter.hasNext) do

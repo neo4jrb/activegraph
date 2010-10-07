@@ -10,7 +10,8 @@ class IceCream < Neo4j::Model
   property :flavour
   index :flavour
   rule(:all)
-  has_n :ingrediences
+  has_n(:ingrediences).to(Ingredience)
+  accepts_nested_attributes_for :ingrediences
 
   validates_presence_of :flavour
 end
@@ -426,7 +427,6 @@ describe Neo4j::Model do
       suger = Ingredience.new :name => 'suger'
       icecream.ingrediences << suger
       icecream.ingrediences.should include(suger)
-      icecream.outgoing(:ingrediences).should include(suger)
     end
 
     it "adding nodes using outgoing should work for models created with the #new method" do
@@ -434,7 +434,6 @@ describe Neo4j::Model do
       suger = Ingredience.new :name => 'suger'
       icecream.outgoing(:ingrediences) << suger
       icecream.outgoing(:ingrediences).should include(suger)
-      icecream.ingrediences.should include(suger)
     end
 
     it "saving the node should create all the nested nodes" do
@@ -451,14 +450,12 @@ describe Neo4j::Model do
       # then
       suger.neo_id.should_not be_nil
       icecream.ingrediences.should include(suger, butter)
-      icecream.outgoing(:ingrediences).should include(suger, butter)
-      icecream.outgoing(:ingrediences).first.should be_kind_of(Ingredience)
+      icecream.ingrediences.first.should be_kind_of(Ingredience)
 
       # make sure the nested nodes were properly saved
       ice = IceCream.load(icecream.neo_id)
       ice.ingrediences.should include(suger, butter)
-      ice.outgoing(:ingrediences).should include(suger, butter)
-      ice.outgoing(:ingrediences).first.should be_kind_of(Ingredience)
+      icecream.ingrediences.first.should be_kind_of(Ingredience)
     end
 
     it "should not save nested nodes if it was not valid" do
@@ -474,7 +471,6 @@ describe Neo4j::Model do
 
       # then
       icecream.ingrediences.should include(suger, butter)
-      icecream.outgoing(:ingrediences).should include(suger, butter)
 
       suger.neo_id.should == nil
    end
@@ -490,5 +486,55 @@ describe Neo4j::Model do
       # then
       icecream1.save.should be_false
     end
+
+    it "can be created with update_attributes" do
+      icecream = IceCream.new(:flavour => 'vanilla')
+      attr = {:ingrediences_attributes => { '0' => {'name' => 'salt'} } }
+
+      # when
+      icecream.update_attributes( attr )
+
+      # then
+      icecream.ingrediences.should_not be_empty
+      icecream.ingrediences.first[:name].should == 'salt'
+      icecream.ingrediences.first._java_node.should respond_to(:java_class)
+    end
+
+    it "can be updated with update_attributes" do
+      flour = Ingredience.new(:name => 'flour')
+      icecream = IceCream.new(:flavour => 'vanilla')
+      icecream.ingrediences << flour
+      icecream.save
+
+      # see what neo id it got
+      id = icecream.ingrediences.first.neo_id
+      puts "GOT ID #{id}"
+      attr = {:ingrediences_attributes => { id.to_s => {'name' => 'egg'} } }
+
+      # when
+      icecream.update_attributes( attr )
+
+      # then
+      icecream.ingrediences.size.should == 1
+      icecream.ingrediences.first[:name].should == 'egg'
+      icecream.ingrediences.first._java_node.should respond_to(:java_class)
+    end
+
+    it "create one-to-one " do
+      params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+      member = Member.create(params[:member])
+      member.avatar.icon.should == 'smiling'
+    end
+
+    it "it also allows you to update the avatar through the member:" do
+      params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+      member = Member.create(params[:member])
+
+      params = {:member => {:avatar_attributes => {:id => member.avator.id, :icon => 'sad'}}}
+      member.update_attributes params[:member]
+      member.avatar.icon.should == 'sad'
+    end
+
+    # "phones_attributes"=>{"0"=>{"number"=>"4242123", "type"=>"work", "id"=>"5"}}}, "commit"=>"Update Profile", "id"=>"4"
   end
 end
