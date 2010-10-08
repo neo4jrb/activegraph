@@ -499,6 +499,17 @@ describe Neo4j::Model do
         member.avatar.should be_nil
       end
 
+      it "create one-to-one  - when you add the _destroy key of value '0' to the attributes hash you will NOT destroy the associated model" do
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+        member = Member.create(params[:member])
+        member.avatar.should_not be_nil
+
+        # when
+        member.avatar_attributes = {:id => member.avator.id, :_destroy => '0'}
+        member.save
+        member.avatar.should_not be_nil
+      end
+
       it "create one-to_many - You can now set or update attributes on an associated post model through the attribute hash" do
         # For each hash that does not have an id key a new record will be instantiated, unless the hash also contains a _destroy key that evaluates to true.
         params = {:member => {

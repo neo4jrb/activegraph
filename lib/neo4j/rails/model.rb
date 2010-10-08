@@ -132,7 +132,8 @@ class Neo4j::Model
               end
 
       # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
-      destroy = attr[:_destroy]
+      destroy = attr[:_destroy] && attr[:_destroy] != '0'
+
       if found
         if destroy
           found.destroy if allow_destroy
