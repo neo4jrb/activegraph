@@ -121,6 +121,12 @@ module Neo4j
       [*self].size
     end
 
+    alias_method :length, :size
+
+    def [](index)
+      each_with_index {|node,i| break node if index == i}
+    end
+
     def empty?
       first == nil
     end

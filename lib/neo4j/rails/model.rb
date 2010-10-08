@@ -7,6 +7,8 @@ class Neo4j::Model
   extend ActiveModel::Naming
   extend ActiveModel::Callbacks
   extend Neo4j::Validations::ClassMethods
+  extend Neo4j::TxMethods
+
   define_model_callbacks :create, :save, :update, :destroy
 
 
@@ -30,6 +32,7 @@ class Neo4j::Model
 
   def init_on_create(*args) # :nodoc:
     super()
+    puts "init on create #{args.inspect}"
     self.attributes=args[0] if args[0].respond_to?(:each_pair)
     @_created_record = true
   end
@@ -89,6 +92,7 @@ class Neo4j::Model
   def attributes=(values)
     sanitize_for_mass_assignment(values).each do |k, v|
       if respond_to?("#{k}=")
+        puts "SEND #{k}= value: #{v.inspect}"
         send("#{k}=", v)
       else
         self[k] = v
@@ -98,53 +102,64 @@ class Neo4j::Model
 
 
   # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
-  # If the saving fails because of a connection or remote service error, an exception will be raised.
   # If saving fails because the resource is invalid then false will be returned.
   def update_attributes(attributes)
-    Neo4j::Rails::Transaction.running? ? update_attributes_in_tx(attributes) : Neo4j::Rails::Transaction.run { update_attributes_in_tx(attributes) }
-  end
-
-  def update_attributes_in_tx(attributes)
     self.attributes=attributes
     save
   end
 
   def update_attributes!(attributes)
-    Neo4j::Rails::Transaction.running? ? update_attributes_in_tx!(attributes) : Neo4j::Rails::Transaction.run { update_attributes_in_tx!(attributes) }
-  end
-
-  def update_attributes_in_tx!(attributes)
     self.attributes=attributes
     save!
   end
 
-  def update_nested_attributes(rel_type, clazz, id, attr)
-    puts "update_nested_attributes #{rel_type} clazz: #{clazz} id: #{id}, attr:#{attr.inspect}, has_one #{has_one}"
+  def update_nested_attributes(rel_type, clazz, has_one, attr, options)
+    allow_destroy,reject_if = [options[:allow_destroy], options[:reject_if]] if options
+
+    puts "update_nested_attributes #{rel_type} clazz: #{clazz} attr:#{attr.inspect}, has_one #{has_one}"
+    puts "allow_destroy=#{allow_destroy}, reject_if=#{reject_if}"
+
     if new?
+      # We are updating a node that was created with the 'new' method.
+      # The relationship will only be kept in the Value object.
       puts "  NEW !"
-      outgoing(rel_type)<<clazz.new(attr)
+      #  check :reject_if proc to silently ignore any new record hashes if they fail to pass your criteria
+      outgoing(rel_type)<<clazz.new(attr) unless reject_if && reject_if.call(attr)
     else
-      # we have a node that was created with the #create method - has real relationships
-      # does it contain the given nested attr
-      puts "  id = #{id}"
-      puts "HAS OUTGOING"
-      # if id == nil  then we are looking in a has_one relatinship
-      if id.nil?
+      # We have a node that was created with the #create method - has real Neo4j relationships
+
+      # Are we updating an has_n or has_one relationship ?
+      if has_one
+         # id == nil that means we have a has_one relationship
         found = outgoing(rel_type).first
       else
+        # do we have an ID ?
+        id = attr[:id]
         # this is a has_n relationship, find which one we want to update
         outgoing(rel_type).each { |x| puts x.id }
-        found = outgoing(rel_type).find { |n| n.id == id }
+        found = id && outgoing(rel_type).find { |n| n.id == id }
       end
       puts "  found #{found}"
+
+      # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
+      destroy = attr[:_destroy]
       if found
-        # it already exist, so update that one then
-        found.update_attributes_in_tx(attr)
-      else
+        if destroy
+          puts "DELETE IT"
+          found.destroy if allow_destroy
+        else
+          # it already exist, so update that one then
+          found.update_attributes_in_tx(attr)
+        end
+      elsif !destroy # ignore if destroy key is found
         # does not exist, create a new one
+        reject = reject_if && reject_if.call(attr)
+        puts "REJECT #{reject} reject_if: #{reject_if} attr: #{attr}"
+        unless reject
         new_node = clazz.new(attr)
         saved = new_node.save
         outgoing(rel_type) << new_node if saved
+          end
       end
     end
 
@@ -161,11 +176,7 @@ class Neo4j::Model
     valid = valid?
     if valid
       # if we are trying to save a value then we should create a real node
-      if Neo4j::Rails::Transaction.running?
-        _run_save_callbacks { save_in_tx }
-      else
-        Neo4j::Rails::Transaction.run { _run_save_callbacks { valid = save_in_tx } }
-      end
+      valid = _run_save_callbacks { create_or_update_node }
       @_created_record = false
       true
     else
@@ -177,9 +188,8 @@ class Neo4j::Model
     valid
   end
 
-  def save_in_tx
+  def create_or_update_node
     valid = true
-#    _run_save_callbacks do
     if _java_node.kind_of?(Neo4j::Value)
       node = Neo4j::Node.new(props)
       valid = _java_node.save_nested(node)
@@ -229,19 +239,22 @@ class Neo4j::Model
   end
 
   def destroy
-    Neo4j::Rails::Transaction.running? ? _run_update_callbacks { del } : Neo4j::Rails::Transaction.run { _run_update_callbacks { del } }
+    _run_update_callbacks { del }
   end
 
   def destroyed?()
     @_deleted
   end
 
+  tx_methods :destroy, :create_or_update_node, :update_attributes, :update_attributes!
 
   # --------------------------------------
   # Class Methods
   # --------------------------------------
 
   class << self
+    extend Neo4j::TxMethods
+
     # returns a value object instead of creating a new node
     def new(*args)
       value = Neo4j::Value.new
@@ -265,8 +278,7 @@ class Neo4j::Model
           end if dsl.direction == :outgoing
 
           meta.send(:define_method, field) do
-            # TODO
-            raise "NOT IMPLEMENTED FOR #new method, please create a new model with the create method instead"
+            raise "NOT IMPLEMENTED #{field} (incoming relationship) FOR #new method, please create a new model with the create method instead"
           end if dsl.direction == :incoming
         end
       end
@@ -300,34 +312,28 @@ class Neo4j::Model
     alias_method :_orig_create, :create
 
     def create(*)
-      Neo4j::Rails::Transaction.running? ? create_in_tx(super) : Neo4j::Rails::Transaction.run { create_in_tx(super) }
-    end
-
-    def create!(*args)
-      Neo4j::Rails::Transaction.running? ? create_in_tx!(_orig_create(*args)) : Neo4j::Rails::Transaction.run { create_in_tx!(_orig_create(*args)) }
-    end
-
-    def create_in_tx(model)
+      model = super
       model.save
       model
     end
 
-    def create_in_tx!(model)
+    def create!(*args)
+      model = _orig_create(*args)
       model.save!
       model
     end
+
+    tx_methods :create, :create!
+
 
     def transaction(&block)
       Neo4j::Rails::Transaction.run &block
     end
 
     def accepts_nested_attributes_for(*attr_names)
-      allow_destroy = if attr_names[-1].is_a?(Hash)
-                        args = attr_names.pop
-                        args[:allow_destroy]
-                      end
+      options = attr_names.pop if attr_names[-1].is_a?(Hash)
+      puts "options = #{options}"
 
-      puts "ARGS = #{args}"
       attr_names.each do |association_name|
         rel = self._decl_rels[association_name.to_sym]
         raise "No relationship declared with has_n or has_one with type #{association_name}" unless rel
@@ -336,20 +342,50 @@ class Neo4j::Model
         type = rel.namespace_type
         has_one = rel.has_one?
 
-        class_eval <<-eoruby, __FILE__, __LINE__ + 1
-              if method_defined?(:#{association_name}_attributes=)
-                remove_method(:#{association_name}_attributes=)
+        send(:define_method, "#{association_name}_attributes=") do |attributes|
+          puts "ATTRIBUTES #{attributes} in #{association_name}_attributes="
+          if has_one
+            update_nested_attributes(type, to_class, true, attributes, options)
+          else
+            puts "ATTRIBUTES HAS MANY"
+            if attributes.is_a?(Array)
+              attributes.each do |attr|
+                update_nested_attributes(type, to_class, false, attr, options)
               end
-              def #{association_name}_attributes=(attributes)
-                if #{has_one}
-                  update_nested_attributes('#{type}', #{to_class}, nil, attributes)
-                else
-                  attributes.each_pair do |key, attr|
-                    update_nested_attributes('#{type}', #{to_class}, key, attr)
-                  end
-                end
+            else
+              attributes.each_value do |attr|
+                update_nested_attributes(type, to_class, false, attr, options)
               end
-        eoruby
+            end
+          end
+        end
+        tx_methods("#{association_name}_attributes=")
+
+
+#        class_eval <<-eoruby, __FILE__, __LINE__ + 1
+#              if method_defined?(:#{association_name}_attributes=)
+#                remove_method(:#{association_name}_attributes=)
+#              end
+#              def #{association_name}_attributes=(attributes)
+#                if #{has_one}
+#                  update_nested_attributes('#{type}', #{to_class}, true, attributes)
+#                else
+#                  puts "ATTRIBUTES"
+#                  puts attributes.inspect
+#                  if attributes.is_a?(Array)
+#                    attributes.each do |attr|
+#                      update_nested_attributes('#{type}', #{to_class}, false, attr)
+#                    end
+#                  else
+#                    attributes.each_value do |attr|
+#                      update_nested_attributes('#{type}', #{to_class}, false, attr)
+#                    end
+#                  end
+#                end
+#              end
+#        eoruby
+#
+#        tx_methods("#{association_name}_attributes=")
       end
     end
 

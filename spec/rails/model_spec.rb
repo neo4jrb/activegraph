@@ -487,54 +487,101 @@ describe Neo4j::Model do
       icecream1.save.should be_false
     end
 
-    it "can be created with update_attributes" do
-      icecream = IceCream.new(:flavour => 'vanilla')
-      attr = {:ingrediences_attributes => { '0' => {'name' => 'salt'} } }
+#    it "can be created with update_attributes" do
+#      icecream = IceCream.new(:flavour => 'vanilla')
+#      attr = {:ingrediences_attributes => { '0' => {'name' => 'salt'} } }
+#
+#      # when
+#      icecream.update_attributes( attr )
+#
+#      # then
+#      icecream.ingrediences.should_not be_empty
+#      icecream.ingrediences.first[:name].should == 'salt'
+#      icecream.ingrediences.first._java_node.should respond_to(:java_class)
+#    end
+#
+#    it "can be updated with update_attributes" do
+#      flour = Ingredience.new(:name => 'flour')
+#      icecream = IceCream.new(:flavour => 'vanilla')
+#      icecream.ingrediences << flour
+#      icecream.save
+#
+#      # see what neo id it got
+#      id = icecream.ingrediences.first.neo_id
+#      puts "GOT ID #{id}"
+#      attr = {:ingrediences_attributes => { '14' => {:id => id, 'name' => 'egg'} } }
+#
+#      # when
+#      icecream.update_attributes( attr )
+#
+#      # then
+#      icecream.ingrediences.size.should == 1
+#      icecream.ingrediences.first[:name].should == 'egg'
+#      icecream.ingrediences.first._java_node.should respond_to(:java_class)
+#    end
 
-      # when
-      icecream.update_attributes( attr )
+    describe "accepts_nested_attributes_for" do
+      it "create one-to-one " do
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+        member = Member.create(params[:member])
+        member.avatar.icon.should == 'smiling'
+      end
 
-      # then
-      icecream.ingrediences.should_not be_empty
-      icecream.ingrediences.first[:name].should == 'salt'
-      icecream.ingrediences.first._java_node.should respond_to(:java_class)
-    end
+      it "create one-to-one  - it also allows you to update the avatar through the member:" do
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+        member = Member.create(params[:member])
 
-    it "can be updated with update_attributes" do
-      flour = Ingredience.new(:name => 'flour')
-      icecream = IceCream.new(:flavour => 'vanilla')
-      icecream.ingrediences << flour
-      icecream.save
+        params = {:member => {:avatar_attributes => {:id => member.avator.id, :icon => 'sad'}}}
+        member.update_attributes params[:member]
+        member.avatar.icon.should == 'sad'
+      end
 
-      # see what neo id it got
-      id = icecream.ingrediences.first.neo_id
-      puts "GOT ID #{id}"
-      attr = {:ingrediences_attributes => { id.to_s => {'name' => 'egg'} } }
+      it "create one-to-one  - when you add the _destroy key to the attributes hash, with a value that evaluates to true, you will destroy the associated model" do
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+        member = Member.create(params[:member])
+        member.avatar.should_not be_nil
 
-      # when
-      icecream.update_attributes( attr )
+        # when
+        member.avatar_attributes = {:id => member.avator.id, :_destroy => '1'}
+        member.save
+        member.avatar.should be_nil
+      end
 
-      # then
-      icecream.ingrediences.size.should == 1
-      icecream.ingrediences.first[:name].should == 'egg'
-      icecream.ingrediences.first._java_node.should respond_to(:java_class)
-    end
+      it "create one-to_many - You can now set or update attributes on an associated post model through the attribute hash" do
+        # For each hash that does not have an id key a new record will be instantiated, unless the hash also contains a _destroy key that evaluates to true.
+        params = {:member => {
+                :name => 'joe', :posts_attributes => [
+                        {:title => 'Kari, the awesome Ruby documentation browser!'},
+                        {:title => 'The egalitarian assumption of the modern citizen'},
+                        {:title => '', :_destroy => '1'} # this will be ignored
+                ]
+        }}
 
-    it "create one-to-one " do
-      params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
-      member = Member.create(params[:member])
-      member.avatar.icon.should == 'smiling'
-    end
+        member = Member.create(params[:member])
+        member.posts.size.should == 2
+        member.posts.first.title.should == 'Kari, the awesome Ruby documentation browser!'
+        member.posts[1].title.should == 'The egalitarian assumption of the modern citizen'
+      end
 
-    it "it also allows you to update the avatar through the member:" do
-      params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
-      member = Member.create(params[:member])
 
-      params = {:member => {:avatar_attributes => {:id => member.avator.id, :icon => 'sad'}}}
-      member.update_attributes params[:member]
-      member.avatar.icon.should == 'sad'
+      it ":reject_if proc will silently ignore any new record hashes if they fail to pass your criteria." do
+        params = {:member => {
+                :name => 'joe', :valid_posts_attributes => [
+                        {:title => 'Kari, the awesome Ruby documentation browser!'},
+                        {:title => 'The egalitarian assumption of the modern citizen'},
+                        {:title => ''} # this will be ignored because of the :reject_if proc
+                ]
+        }}
+
+        member = Member.create(params[:member])
+        member.valid_posts.length.should == 2
+        member.valid_posts.first.title.should == 'Kari, the awesome Ruby documentation browser!'
+        member.valid_posts[1].title.should == 'The egalitarian assumption of the modern citizen'
+      end
     end
 
     # "phones_attributes"=>{"0"=>{"number"=>"4242123", "type"=>"work", "id"=>"5"}}}, "commit"=>"Update Profile", "id"=>"4"
   end
+
+
 end

@@ -42,6 +42,7 @@ require 'neo4j/mapping/class_methods/rule'
 # rails
 require 'rails/railtie'
 require 'active_model'
+require 'neo4j/rails/tx_methods'
 require 'neo4j/rails/transaction'
 require 'neo4j/rails/railtie'
 require 'neo4j/rails/validations/uniqueness'

@@ -24,6 +24,15 @@ module Neo4j
         @traverser = Neo4j::NodeTraverser.new(node._java_node, @dsl.namespace_type, @direction)
       end
 
+      def size
+        [*self].size
+      end
+
+      alias_method :length, :size
+
+      def [](index)
+        each_with_index {|node,i| break node if index == i}
+      end
 
       # Pretend we are an array - this is neccessarly for Rails actionpack/actionview/formhelper to work with this
       def is_a?(type)
@@ -50,7 +59,7 @@ module Neo4j
       #  morpheus.friends.depth(3).each { ... }
       #  
       # ==== Arguments
-      # d<Fixnum,Symbol>:: the depth or :all if traversing to the end of the network.
+      # d:: the depth or :all if traversing to the end of the network (symbol or fixnum)
       # ==== Return
       # self
       # 
