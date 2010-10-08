@@ -9,10 +9,16 @@ end
 class Member < Neo4j::Model
   has_n(:posts).to(Post)
   has_n(:valid_posts).to(Post)
+  has_n(:valid_posts2).to(Post)
 
   has_one(:avatar).to(Avator)
   accepts_nested_attributes_for :avatar, :allow_destroy => true
   accepts_nested_attributes_for :posts
   accepts_nested_attributes_for :valid_posts, :reject_if => proc { |attributes| attributes[:title].blank? }
+  accepts_nested_attributes_for :valid_posts2, :reject_if => :reject_posts
+
+  def reject_posts(attributed)
+    attributed[:title].blank?
+  end
 
 end

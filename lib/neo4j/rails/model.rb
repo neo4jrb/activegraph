@@ -32,7 +32,6 @@ class Neo4j::Model
 
   def init_on_create(*args) # :nodoc:
     super()
-    puts "init on create #{args.inspect}"
     self.attributes=args[0] if args[0].respond_to?(:each_pair)
     @_created_record = true
   end
@@ -92,7 +91,6 @@ class Neo4j::Model
   def attributes=(values)
     sanitize_for_mass_assignment(values).each do |k, v|
       if respond_to?("#{k}=")
-        puts "SEND #{k}= value: #{v.inspect}"
         send("#{k}=", v)
       else
         self[k] = v
@@ -116,54 +114,47 @@ class Neo4j::Model
   def update_nested_attributes(rel_type, clazz, has_one, attr, options)
     allow_destroy,reject_if = [options[:allow_destroy], options[:reject_if]] if options
 
-    puts "update_nested_attributes #{rel_type} clazz: #{clazz} attr:#{attr.inspect}, has_one #{has_one}"
-    puts "allow_destroy=#{allow_destroy}, reject_if=#{reject_if}"
-
     if new?
       # We are updating a node that was created with the 'new' method.
       # The relationship will only be kept in the Value object.
-      puts "  NEW !"
-      #  check :reject_if proc to silently ignore any new record hashes if they fail to pass your criteria
-      outgoing(rel_type)<<clazz.new(attr) unless reject_if && reject_if.call(attr)
+      outgoing(rel_type)<<clazz.new(attr) unless reject_if?(reject_if,attr)
     else
       # We have a node that was created with the #create method - has real Neo4j relationships
-
-      # Are we updating an has_n or has_one relationship ?
-      if has_one
-         # id == nil that means we have a has_one relationship
-        found = outgoing(rel_type).first
-      else
-        # do we have an ID ?
-        id = attr[:id]
-        # this is a has_n relationship, find which one we want to update
-        outgoing(rel_type).each { |x| puts x.id }
-        found = id && outgoing(rel_type).find { |n| n.id == id }
-      end
-      puts "  found #{found}"
+      # does it exist ?
+      found = if has_one
+                # id == nil that means we have a has_one relationship
+                outgoing(rel_type).first
+              else
+                # do we have an ID ?
+                id = attr[:id]
+                # this is a has_n relationship, find which one we want to update
+                id && outgoing(rel_type).find { |n| n.id == id }
+              end
 
       # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
       destroy = attr[:_destroy]
       if found
         if destroy
-          puts "DELETE IT"
           found.destroy if allow_destroy
         else
-          # it already exist, so update that one then
-          found.update_attributes_in_tx(attr)
+          found.update_attributes_in_tx(attr) # it already exist, so update that one
         end
-      elsif !destroy # ignore if destroy key is found
-        # does not exist, create a new one
-        reject = reject_if && reject_if.call(attr)
-        puts "REJECT #{reject} reject_if: #{reject_if} attr: #{attr}"
-        unless reject
+      elsif !destroy && !reject_if?(reject_if,attr)
         new_node = clazz.new(attr)
         saved = new_node.save
         outgoing(rel_type) << new_node if saved
-          end
       end
     end
+  end
 
-
+  def reject_if?(proc_or_symbol, attr)
+    return false if proc_or_symbol.nil?
+    if proc_or_symbol.is_a?(Symbol)
+      meth = method(proc_or_symbol)
+      meth.arity == 0 ? meth.call : meth.call(attr)
+    else
+      proc_or_symbol.call(attr)
+    end
   end
 
   def delete
@@ -332,7 +323,6 @@ class Neo4j::Model
 
     def accepts_nested_attributes_for(*attr_names)
       options = attr_names.pop if attr_names[-1].is_a?(Hash)
-      puts "options = #{options}"
 
       attr_names.each do |association_name|
         rel = self._decl_rels[association_name.to_sym]
@@ -343,11 +333,9 @@ class Neo4j::Model
         has_one = rel.has_one?
 
         send(:define_method, "#{association_name}_attributes=") do |attributes|
-          puts "ATTRIBUTES #{attributes} in #{association_name}_attributes="
           if has_one
             update_nested_attributes(type, to_class, true, attributes, options)
           else
-            puts "ATTRIBUTES HAS MANY"
             if attributes.is_a?(Array)
               attributes.each do |attr|
                 update_nested_attributes(type, to_class, false, attr, options)
@@ -360,32 +348,6 @@ class Neo4j::Model
           end
         end
         tx_methods("#{association_name}_attributes=")
-
-
-#        class_eval <<-eoruby, __FILE__, __LINE__ + 1
-#              if method_defined?(:#{association_name}_attributes=)
-#                remove_method(:#{association_name}_attributes=)
-#              end
-#              def #{association_name}_attributes=(attributes)
-#                if #{has_one}
-#                  update_nested_attributes('#{type}', #{to_class}, true, attributes)
-#                else
-#                  puts "ATTRIBUTES"
-#                  puts attributes.inspect
-#                  if attributes.is_a?(Array)
-#                    attributes.each do |attr|
-#                      update_nested_attributes('#{type}', #{to_class}, false, attr)
-#                    end
-#                  else
-#                    attributes.each_value do |attr|
-#                      update_nested_attributes('#{type}', #{to_class}, false, attr)
-#                    end
-#                  end
-#                end
-#              end
-#        eoruby
-#
-#        tx_methods("#{association_name}_attributes=")
       end
     end
 

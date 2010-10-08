@@ -2,20 +2,6 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
-class Ingredience < Neo4j::Model
-  property :name
-end
-
-class IceCream < Neo4j::Model
-  property :flavour
-  index :flavour
-  rule(:all)
-  has_n(:ingrediences).to(Ingredience)
-  accepts_nested_attributes_for :ingrediences
-
-  validates_presence_of :flavour
-end
-
 describe Neo4j::Model do
 
   before(:all) do
@@ -477,7 +463,6 @@ describe Neo4j::Model do
 
     it "should return false if one of the nested nodes is invalid when saving all of them" do
       icecream1  = Ingredience.new :name => 'suger'
-      # create a model object that is invalid and make it a nested node of icecream1
       icecream2 = IceCream.new # not valid
 
       # when
@@ -486,39 +471,6 @@ describe Neo4j::Model do
       # then
       icecream1.save.should be_false
     end
-
-#    it "can be created with update_attributes" do
-#      icecream = IceCream.new(:flavour => 'vanilla')
-#      attr = {:ingrediences_attributes => { '0' => {'name' => 'salt'} } }
-#
-#      # when
-#      icecream.update_attributes( attr )
-#
-#      # then
-#      icecream.ingrediences.should_not be_empty
-#      icecream.ingrediences.first[:name].should == 'salt'
-#      icecream.ingrediences.first._java_node.should respond_to(:java_class)
-#    end
-#
-#    it "can be updated with update_attributes" do
-#      flour = Ingredience.new(:name => 'flour')
-#      icecream = IceCream.new(:flavour => 'vanilla')
-#      icecream.ingrediences << flour
-#      icecream.save
-#
-#      # see what neo id it got
-#      id = icecream.ingrediences.first.neo_id
-#      puts "GOT ID #{id}"
-#      attr = {:ingrediences_attributes => { '14' => {:id => id, 'name' => 'egg'} } }
-#
-#      # when
-#      icecream.update_attributes( attr )
-#
-#      # then
-#      icecream.ingrediences.size.should == 1
-#      icecream.ingrediences.first[:name].should == 'egg'
-#      icecream.ingrediences.first._java_node.should respond_to(:java_class)
-#    end
 
     describe "accepts_nested_attributes_for" do
       it "create one-to-one " do
@@ -580,7 +532,49 @@ describe Neo4j::Model do
       end
     end
 
-    # "phones_attributes"=>{"0"=>{"number"=>"4242123", "type"=>"work", "id"=>"5"}}}, "commit"=>"Update Profile", "id"=>"4"
+    it ":reject_if also accepts a symbol for using methods" do
+      params = {:member => {
+              :name => 'joe', :valid_posts2_attributes => [
+                      {:title => 'Kari, the awesome Ruby documentation browser!'},
+                      {:title => 'The egalitarian assumption of the modern citizen'},
+                      {:title => ''} # this will be ignored because of the :reject_if proc
+              ]
+      }}
+
+      member = Member.create(params[:member])
+      member.valid_posts2.length.should == 2
+      member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
+      member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
+    end
+
+
+    it "If the hash contains an id key that matches an already associated record, the matching record will be modified:" do
+      params = {:member => {
+              :name => 'joe', :posts_attributes => [
+                      {:title => 'Kari, the awesome Ruby documentation browser!'},
+                      {:title => 'The egalitarian assumption of the modern citizen'},
+                      {:title => '', :_destroy => '1'} # this will be ignored
+              ]
+      }}
+
+      member = Member.create(params[:member])
+
+      # when
+      id1 = member.posts[0].id
+      id2 = member.posts[1].id
+
+      member.attributes = {
+              :name => 'Joe',
+              :posts_attributes => [
+                      {:id => id1, :title => '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'},
+                      {:id => id2, :title => '[UPDATED] other post'}
+              ]
+      }
+
+      # then
+      member.posts.first.title.should == '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'
+      member.posts[1].title.should == '[UPDATED] other post'
+    end
   end
 
 
