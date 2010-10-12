@@ -67,7 +67,6 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     google.employees << p1
 
     # then
-    puts "GET EMPLOYEED BY"
     p1.employed_by.size.should == 2
     p2.employed_by.size.should == 1
     p1.employed_by.should include(jayway, google)

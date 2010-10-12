@@ -40,6 +40,10 @@ module Neo4j::Mapping
     end
 
 
+    def wrapper
+      self
+    end
+
     def self.included(c) # :nodoc:
       c.instance_eval do
         class << self
