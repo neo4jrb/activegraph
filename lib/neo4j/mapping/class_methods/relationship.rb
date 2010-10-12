@@ -2,6 +2,7 @@ module Neo4j::Mapping
   module ClassMethods
 
     module Relationship
+      include Neo4j::ToJava
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship.
@@ -24,9 +25,9 @@ module Neo4j::Mapping
       def has_n(rel_type, params = {})
         clazz = self
         module_eval(%Q{
-                def #{rel_type}(&block)
+                def #{rel_type}
                     dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                    Neo4j::Mapping::HasN.new(self, dsl, &block)
+                    Neo4j::Mapping::HasN.new(self, dsl)
                 end}, __FILE__, __LINE__)
 
         module_eval(%Q{
@@ -61,28 +62,25 @@ module Neo4j::Mapping
       #
       def has_one(rel_type, params = {})
         clazz = self
-
-
         module_eval(%Q{def #{rel_type}=(value)
-                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                    r = Neo4j::Mapping::HasN.new(self, dsl)
-                    r.rels.each {|n| n.del} # delete previous relationships, only one can exist
-                    r << value
-                    r
-                end}, __FILE__, __LINE__)
+                  dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  rel = dsl.single_relationship(self)
+                  rel.del unless rel.nil?
+                  dsl.create_relationship_to(self, value)
+              end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                    r = Neo4j::Mapping::HasN.new(self, dsl)
-                    [*r][0]
-                end}, __FILE__, __LINE__)
+                  dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  dsl.single_relationship(self)
+              end}, __FILE__, __LINE__)
 
+        # TODO
         module_eval(%Q{
-                def #{rel_type}_rel
-                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                    r = Neo4j::Mapping::HasN.new(self, dsl).rels
-                    [*r][0]
-      end}, __FILE__, __LINE__)
+              def #{rel_type}_rel
+                  dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  r = Neo4j::Mapping::HasN.new(self, dsl).rels
+                  [*r][0]
+    end}, __FILE__, __LINE__)
 
         _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, true, params)
       end

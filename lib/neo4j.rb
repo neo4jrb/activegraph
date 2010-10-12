@@ -46,9 +46,12 @@ require 'neo4j/rails/tx_methods'
 require 'neo4j/rails/transaction'
 require 'neo4j/rails/railtie'
 require 'neo4j/rails/validations/uniqueness'
+#require 'neo4j/rails/relationship'
 require 'neo4j/rails/model'
 require 'neo4j/rails/value'
 require 'neo4j/rails/lucene_connection_closer'
+
+require 'neo4j/model'
 
 
 

@@ -55,4 +55,24 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     n.should include(p2)
     n.should include(p3)
   end
+
+  it "can navigate a incoming relationship (has_n(:employed_by).from(Company, :employees))" do
+    p1 = Person.new
+    p2 = Person.new
+
+    jayway = Company.new
+    jayway.employees << p1 << p2
+
+    google = Company.new
+    google.employees << p1
+
+    # then
+    puts "GET EMPLOYEED BY"
+    p1.employed_by.size.should == 2
+    p2.employed_by.size.should == 1
+    p1.employed_by.should include(jayway, google)
+    p2.employed_by.should include(jayway)
+    jayway.employees.should include(p1, p2)
+    google.employees.should include(p1)
+  end
 end

@@ -1,16 +1,13 @@
-module Neo4j
+module Neo4j::Rails
 
   class Value
     include Neo4j::Property
     include org.neo4j.graphdb.Node
 
-    def initialize(*args)
-      # the first argument can be an hash of properties to set
+    def initialize(wrapper)
+      @wrapper = wrapper
       @props = {}
-      if args[0].respond_to?(:each_pair)
-        args[0].each_pair { |k, v| set_property(k.to_s, v) }
-      end
-      @rels = {}  # a hash of all relationship with key type
+      @outgoing_rels = {}  # a hash of all relationship with key type
     end
 
     # override Neo4j::Property#props
@@ -20,6 +17,23 @@ module Neo4j
 
     def getId
       nil
+    end
+
+
+    def create_relationship_to(other_java_node, java_type)
+      outgoing(java_type.name).new(other_java_node)
+    end
+
+    def getSingleRelationship(type, dir)
+      # TODO incoming not implemented, needed ?
+      @outgoing_rels[type.name] && @outgoing_rels[type.name].rels.first
+    end
+
+    def getRelationships(*args)
+      type = args[0].name
+      outgoing = @outgoing_rels[type]
+      return [] unless outgoing
+      outgoing.rels
     end
 
     # Pretend this object is a Java Node
@@ -39,16 +53,22 @@ module Neo4j
       @props.delete(key)
     end
 
+    def wrapper
+      @wrapper
+    end
+
     def outgoing(type)
-      @rels[type.to_sym] ||= OutgoingRels.new
+      @outgoing_rels[type.to_s] ||= OutgoingRels.new(self)
     end
 
     def save_nested(root_node)
       valid = true
-      @rels.each_pair do |type, rel|
+      @outgoing_rels.each_pair do |type, rel|
         rel.each do |new_node|
-          if new_node.save
-            root_node.outgoing(type) << new_node
+          wrapper = new_node.respond_to?(:wrapper) ? new_node.wrapper : new_node
+          if wrapper.save
+            puts "NEW RELATIONSHIP OF TYPE #{type} from #{root_node} to #{new_node}"
+            root_node.outgoing(type) << wrapper
           else
             valid = false
           end
@@ -57,22 +77,55 @@ module Neo4j
       valid
     end
 
+    class Relationship
+      include org.neo4j.graphdb.Relationship
+      attr_reader :end_node, :start_node
+
+      def initialize(from, to)
+        @end_node = to
+        @start_node = from
+      end
+
+      def wrapper
+        self
+      end
+
+      def getOtherNode(other)
+        other == @end_node ? @start_node : @end_node
+      end
+    end
+
+
     class OutgoingRels
       include Enumerable
-      def initialize
-        @nodes = []
+      attr_reader :rels
+
+      def initialize(start_node)
+        @rels = []
+        @start_node = start_node
       end
 
       def <<(other)
-        @nodes << other
+        new(other)
+        self
+      end
+
+      def new(other)
+        new_rel = Relationship.new(@start_node, other)
+        @rels << new_rel
+        new_rel
       end
 
       def each
-        @nodes.each {|n| yield n}
+        @rels.each {|n| yield n.end_node}
+      end
+
+      def clear
+        @rels.clear
       end
 
       def empty?
-        @nodes.empty?
+        @rels.empty?
       end
 
       def is_a?(type)

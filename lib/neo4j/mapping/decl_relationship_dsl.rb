@@ -31,6 +31,7 @@ module Neo4j::Mapping
   # <b>File#folder</b> ::       for accessing nodes from relationship 'files' from the outgoing Folder node
   #
   class DeclRelationshipDsl
+    include Neo4j::ToJava
 
     attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id, :direction
     CASCADE_DELETE_PROP_NAMES = {:outgoing => :_cascade_delete_outgoing, :incoming => :_cascade_delete_incoming}
@@ -75,6 +76,41 @@ module Neo4j::Mapping
       @to_class.nil? ? @to_type.to_s : "#{@to_class.to_s}##{@to_type.to_s}"
     end
 
+    def each_node(node, direction, &block)
+      type = type_to_java(namespace_type)
+      dir  = dir_to_java(direction)
+      node._java_node.getRelationships(type, dir).each do |rel|
+        other = rel.getOtherNode(node).wrapper
+        block.call other
+      end
+    end
+
+    def single_relationship(node)
+      type = type_to_java(namespace_type)
+      dir  = dir_to_java(@direction)
+      rel = node._java_node.getSingleRelationship(type, dir)
+      rel.nil? ? nil : rel.end_node.wrapper
+    end
+
+    def create_relationship_to(node, other)
+      # If the are creating an incoming relationship we need to swap incoming and outgoing nodes
+      if @direction == :outgoing
+        from, to = node, other
+      else
+        from, to = other, node
+      end
+
+      java_type = type_to_java(namespace_type)
+      rel = from._java_node.create_relationship_to(to._java_node, java_type)
+      rel[:_classname] =  relationship_class.to_s if relationship_class
+
+      # TODO - not implemented yet
+      # the from.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
+      # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
+      # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
+      #rel[@dsl.cascade_delete_prop_name] = node.neo_id if @dsl.cascade_delete?
+      rel.wrapper
+    end
 
     # Specifies an outgoing relationship.
     # The name of the outgoing class will be used as a prefix for the relationship used.

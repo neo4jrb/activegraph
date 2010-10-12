@@ -1,4 +1,4 @@
-class Avator < Neo4j::Model
+class Avatar < Neo4j::Model
   property :icon
 end
 
@@ -11,7 +11,10 @@ class Member < Neo4j::Model
   has_n(:valid_posts).to(Post)
   has_n(:valid_posts2).to(Post)
 
-  has_one(:avatar).to(Avator)
+  has_one(:avatar).to(Avatar)
+
+  has_one(:thing)
+
   accepts_nested_attributes_for :avatar, :allow_destroy => true
   accepts_nested_attributes_for :posts
   accepts_nested_attributes_for :valid_posts, :reject_if => proc { |attributes| attributes[:title].blank? }

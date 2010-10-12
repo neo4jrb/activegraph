@@ -16,10 +16,7 @@ module Neo4j
     end
 
     def each
-      iter = iterator
-      while (iter.hasNext) do
-        yield iter.next.wrapper
-      end
+      iterator.each {|i| yield i.wrapper}
     end
 
     def iterator
