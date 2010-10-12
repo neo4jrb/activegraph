@@ -17,10 +17,19 @@ class Actor
   has_n(:acted_in).to(Movie).relationship(Role)
 end
 
+
+class Director
+  include Neo4j::NodeMixin
+  property :name
+  has_n(:directed).to(Movie)
+end
+
 class Movie
   include Neo4j::NodeMixin
   property :title
   property :year
+
+  has_one(:director).from(Director, :directed)
 
   # defines a method for traversing incoming acted_in relationships from Actor
   has_n(:actors).from(Actor, :acted_in)

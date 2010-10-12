@@ -11,15 +11,7 @@ module Neo4j
       def initialize(node, dsl) # :nodoc:
         @node = node
         @direction = dsl.direction
-        # returns the other DSL if it exists otherwise use this DSL for specifying incoming relationships
-        if @direction == :outgoing
-          @dsl = dsl
-        else
-          # which class specifies the incoming DSL ?
-          clazz = dsl.to_class || node.class
-          @dsl = clazz._decl_rels[dsl.to_type]
-          raise "Unspecified outgoing relationship '#{dsl.to_type}' for incoming relationship '#{dsl.rel_id}' on class #{clazz}" if @dsl.nil?
-        end
+        @dsl = @direction == :outgoing ? dsl : dsl.incoming_dsl(node)
       end
 
       def to_s

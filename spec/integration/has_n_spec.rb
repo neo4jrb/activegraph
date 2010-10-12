@@ -74,4 +74,18 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     jayway.employees.should include(p1, p2)
     google.employees.should include(p1)
   end
+
+  it "has_one/has_n: one-to-many, e.g. director --directed -*> movie" do
+    lucas = Director.new :name => 'George Lucas'
+    star_wars_4 = Movie.new :title => 'Star Wars Episode IV: A New Hope', :year => 1977
+    star_wars_3 = Movie.new :title => "Star Wars Episode III: Revenge of the Sith", :year => 2005
+    lucas.directed << star_wars_3 << star_wars_4
+
+    # then
+    lucas.directed.should include(star_wars_3, star_wars_4)
+    lucas.outgoing("Movie#directed").should include(star_wars_3, star_wars_4)
+    star_wars_3.incoming("Movie#directed").should include(lucas)
+    star_wars_3.director.should == lucas
+    star_wars_4.director.should == lucas
+  end
 end

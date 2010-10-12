@@ -67,7 +67,6 @@ module Neo4j::Rails
         rel.each do |new_node|
           wrapper = new_node.respond_to?(:wrapper) ? new_node.wrapper : new_node
           if wrapper.save
-            puts "NEW RELATIONSHIP OF TYPE #{type} from #{root_node} to #{new_node}"
             root_node.outgoing(type) << wrapper
           else
             valid = false
@@ -90,9 +89,11 @@ module Neo4j::Rails
         self
       end
 
-      def getOtherNode(other)
+      def other_node(other)
         other == @end_node ? @start_node : @end_node
       end
+
+      alias_method :getOtherNode, :other_node
     end
 
 

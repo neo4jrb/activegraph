@@ -85,11 +85,23 @@ module Neo4j::Mapping
       end
     end
 
-    def single_relationship(node)
+    def incoming?
+      @direction == :incoming
+    end
+
+    def incoming_dsl(node)
+      # which class specifies the incoming DSL ?
+      clazz = to_class || node.class
+      dsl = clazz._decl_rels[to_type]
+      raise "Unspecified outgoing relationship '#{to_type}' for incoming relationship '#{rel_id}' on class #{clazz}" if dsl.nil?
+      dsl
+    end
+
+    def single_relationship(node, dir)
       type = type_to_java(namespace_type)
-      dir  = dir_to_java(@direction)
+      dir  = dir_to_java(dir)
       rel = node._java_node.getSingleRelationship(type, dir)
-      rel.nil? ? nil : rel.end_node.wrapper
+      rel.nil? ? nil : rel.other_node(node).wrapper
     end
 
     def create_relationship_to(node, other)

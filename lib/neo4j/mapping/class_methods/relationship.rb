@@ -64,14 +64,18 @@ module Neo4j::Mapping
         clazz = self
         module_eval(%Q{def #{rel_type}=(value)
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                  rel = dsl.single_relationship(self)
+                  dir = dsl.direction
+                  dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
+                  rel = dsl.single_relationship(self, dir)
                   rel.del unless rel.nil?
                   dsl.create_relationship_to(self, value)
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                  dsl.single_relationship(self)
+                  dir = dsl.direction
+                  dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
+                  dsl.single_relationship(self, dir)
               end}, __FILE__, __LINE__)
 
         # TODO
