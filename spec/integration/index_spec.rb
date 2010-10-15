@@ -18,6 +18,24 @@ describe Neo4j::Node, "index", :type => :transactional do
     Vehicle.clear_index_type
   end
 
+  it "can be shared between two Ruby classes" do
+    pelle = Person.new :name => 'pelle'
+    phone = Phone.new :phone=>'1234'
+    pelle.phone = phone
+
+    new_tx
+
+    phone = Person.find('phone: 1234').first
+    phone.should_not be_nil
+    phone.should be_kind_of(Person)
+    phone.name.should == 'pelle'
+
+    phone1 = Person.find('name: "pelle" AND phone: "1234"').first
+    phone1.should_not be_nil
+    phone1.neo_id.should == phone.neo_id
+  end
+
+
   it "can index and search on two properties if index has the same type" do
     c = Vehicle.new(:wheels => 4, :colour => 'blue')
     new_tx
@@ -356,8 +374,8 @@ describe Neo4j::Node, "index", :type => :transactional do
     indexer.should_receive(:index_for_type).and_return(index)
     hits = double('hits')
     index.should_receive(:query).and_return(hits)
-    old_indexer = Neo4j::Node.instance_eval { @indexer }
-    Neo4j::Node.instance_eval { @indexer = indexer }
+    old_indexer = Neo4j::Node._indexer
+    Neo4j::Node.instance_eval { @_indexer = indexer }
     hits.should_receive(:close)
     hits.should_receive(:first).and_return("found_node")
     found_node = Neo4j::Node.find('name: andreas', :wrapped => false) { |h| h.first }
@@ -374,8 +392,8 @@ describe Neo4j::Node, "index", :type => :transactional do
     indexer.should_receive(:index_for_type).and_return(index)
     hits = double('hits')
     index.should_receive(:query).and_return(hits)
-    old_indexer = Neo4j::Node.instance_eval { @indexer }
-    Neo4j::Node.instance_eval { @indexer = indexer }
+    old_indexer = Neo4j::Node.instance_eval { @_indexer }
+    Neo4j::Node.instance_eval { @_indexer = indexer }
     hits.should_receive(:close)
     expect { Neo4j::Node.find('name: andreas', :wrapped => false) { |h| raise "oops" } }.to raise_error
 

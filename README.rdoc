@@ -9,17 +9,17 @@ It uses two powerful and mature Java libraries:
 * {Neo4J}[http://www.neo4j.org] - for persistence and traversal of the graph
 * {Lucene}[http://lucene.apache.org/java/docs/index.html] for querying and indexing.
 
-=== Why a Graph Database ?
+=== Why Neo4j.rb or a Graph Database ?
 
-Here are some of the major benefits of neo4j.rb
+Here are some of the major benefits of Neo4j.rb
 
 * Domain Modeling - use the language of a graph (nodes/relationship/properties) to express your domain !
   * Schema Less and Efficient storage of Semi Structured Information
-  * No O/R mismatch - very natural to map a graph to an Object Oriented language like Ruby.
+  * No {O/R mismatch}[http://en.wikipedia.org/wiki/Object-relational_impedance_mismatch] - very natural to map a graph to an Object Oriented language like Ruby.
 * {Performance}[http://www.oscon.com/oscon2009/public/schedule/detail/8364]
 * Embedded Database - no database tier, easier to install, test, deploy and configure. It is run in the same process as your application.
 * Express Queries as Traversals
-  * Fast deep traversal instead of slow SQL queries that span many table joins (SQL JOIN)
+  * Fast deep traversal instead of slow SQL queries that span many table joins.
   * Very natural to express graph related problem with traversals (recommendation engine, find shortest parth etc..)
 * Seamless integration with Ruby on Rails.
 * ACID Transaction with rollbacks support.
@@ -68,7 +68,7 @@ Example of mapping a ruby class to a node and delaring properties and relationsh
 
 Example of using Neo4j with Rails 3 (ActiveModel)
 
-  class User
+  class User < Neo4j::Model
     attr_accessor :password
     attr_accessible :email, :password, :password_confirmation, :pending_account
 
@@ -88,18 +88,17 @@ Example of using Neo4j with Rails 3 (ActiveModel)
     ...
   end
 
-=== Project information
-* GitHub - http://github.com/andreasronge/neo4j/tree/master
-* Issue Tracking - http://neo4j.lighthouseapp.com
-* Twitter - http://twitter.com/ronge
-* IRC -  #neo4j @ irc.freenode.net
-* Source repo - git://github.com/andreasronge/neo4j.git
-* Mailing list - http://groups.google.com/group/neo4jrb (neo4jrb@googlegroups.com)
-
 === Presentation Materials and other URLs
-* Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
-* Nordic Ruby 2010 (upcoming May 21-23) http://nordicruby.org/speakers#user_29
-* \Neo4j wiki - http://wiki.neo4j.org/content/Main_Page (check the guidelines and domain modeling gallery pages)
+* {Intoduction to Neo4j.rb}[http://www.slideshare.net/andreasronge/neo4jrb]
+* {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
+* {Neo4j wiki, check the guidelines and domain modeling gallery pages}[http://wiki.neo4j.org/content/Main_Page]
+
+=== Project information
+* {GitHub}[http://github.com/andreasronge/neo4j/tree/master]
+* {Lighthouse Issue Tracking}[http://neo4j.lighthouseapp.com]
+* {Twitter}[http://twitter.com/ronge]
+* IRC -  #neo4j @ irc.freenode.net
+* {Mailing list, neo4jrb@googlegroups.com}[http://groups.google.com/group/neo4jrb]
 
 === Contributing
 

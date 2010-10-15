@@ -9,8 +9,9 @@ class Person
 
   has_n :friends
   has_one :address
-
+  has_one :phone
   has_n(:employed_by).from(Company, :employees)
+  index :name
 end
 
 
