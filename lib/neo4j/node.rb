@@ -42,16 +42,52 @@ module Neo4j
   end
 
 
+  # A node in the graph with properties and relationships to other entities.
+  # Along with relationships, nodes are the core building blocks of the Neo4j data representation model.
+  # Node has three major groups of operations: operations that deal with relationships, operations that deal with properties and operations that traverse the node space.
+  # The property operations give access to the key-value property pairs.
+  # Property keys are always strings. Valid property value types are the primitives(<tt>String</tt>, <tt>Fixnum</tt>, <tt>Float</tt>, <tt>Boolean</tt>), and arrays of those primitives.
+  #
+  # === Instance Methods form Included Mixins
+  # * Neo4j::Property - methods that deal with properties
+  # * Neo4j::NodeRelationship methods for relationship
+  # * Neo4j::Equal equality operators: <tt>eql?</tt>, <tt>equal</tt>, <tt>==</tt>
+  # * Neo4j::Index lucene index methods, like indexing a node
+  #
+  # === Class Methods from Included Mixins
+  # * Neo4j::Index::ClassMethods lucene index class methods, like find
+  # * Neo4j::Load - methods for loading a node
+  #
+  # See also the Neo4j::NodeMixin if you want to wrap a node with your own Ruby class.
+  #
   class Node
     extend Neo4j::Index::ClassMethods
+    extend Neo4j::Load
 
     self.node_indexer self
 
     class << self
-      include Neo4j::Load
 
-      # Creates a new node using the default db instance when given no args
-      # Same as Neo4j::Node#create
+      # Returns a new neo4j Node.
+      # The return node is actually an Java obejct of type org.neo4j.graphdb.Node java object
+      # which has been extended (see the included mixins for Neo4j::Node).
+      #
+      # The created node will have a unique id - Neo4j::Property#neo_id
+      #
+      # ==== Parameters
+      # *args :: a hash of properties to initialize the node with or nil
+      #
+      # ==== Returns
+      # org.neo4j.graphdb.Node java object
+      #
+      # ==== Examples
+      #
+      #  Neo4j::Transaction.run do
+      #    Neo4j::Node.new
+      #    Neo4j::Node.new :name => 'foo', :age => 100
+      #  end
+      #
+      #
       def new(*args)
         # the first argument can be an hash of properties to set
         props = args[0].respond_to?(:each_pair) && args[0]
@@ -67,6 +103,12 @@ module Neo4j
       # create is the same as new
       alias_method :create, :new
 
+      # Loads a node or wrapped node given a native java node or an id.
+      # If there is a Ruby wrapper for the node then it will create a Ruby object that will
+      # wrap the java node (see Neo4j::NodeMixin).
+      #
+      # If the node does not exist it will return nil
+      #
       def load(node_id, db = Neo4j.started_db)
         wrapper(db.graph.get_node_by_id(node_id.to_i))
       rescue java.lang.IllegalStateException
@@ -74,7 +116,6 @@ module Neo4j
       rescue org.neo4j.graphdb.NotFoundException
         nil
       end
-
 
     end
   end

@@ -1,27 +1,92 @@
-= Neo4j.rb
+== Welcome to Neo4j.rb
 
 Neo4j.rb is a graph database for JRuby.
 
-
- 
-It provides:
-* Mapping of ruby objects to nodes in networks rather than in tables.
-* Dynamic, and schema-free - no need to declare nodes/properties/relationships in advance.
-* Storage of ruby object to a file system.
-* Fast traversal of relationships between nodes in a huge node space.
-* Transaction with rollbacks support. 
-* Indexing and querying of ruby objects.
-* Migration and BatchInserter support
-* Can be used instead of ActiveRecord in Ruby on Rails or Merb
-* Can be accessible as REST resources.
+You can think of \Neo4j as a high-performance graph engine with all the features of a mature and robust database.
+The programmer works with an object-oriented, flexible network structure rather than with strict and static tables — yet enjoys all the benefits of a fully transactional, enterprise-strength database.
 
 It uses two powerful and mature Java libraries:
-* Neo4J (http://www.neo4j.org/) - for persistence and traversal of the graph
-* Lucene (http://lucene.apache.org/java/docs/index.html) for querying and indexing.
+* {Neo4J}[http://www.neo4j.org] - for persistence and traversal of the graph
+* {Lucene}[http://lucene.apache.org/java/docs/index.html] for querying and indexing.
+
+=== Why a Graph Database ?
+
+Here are some of the major benefits of neo4j.rb
+
+* Domain Modeling - use the language of a graph (nodes/relationship/properties) to express your domain !
+  * Schema Less and Efficient storage of Semi Structured Information
+  * No O/R mismatch - very natural to map a graph to an Object Oriented language like Ruby.
+* {Performance}[http://www.oscon.com/oscon2009/public/schedule/detail/8364]
+* Embedded Database - no database tier, easier to install, test, deploy and configure. It is run in the same process as your application.
+* Express Queries as Traversals
+  * Fast deep traversal instead of slow SQL queries that span many table joins (SQL JOIN)
+  * Very natural to express graph related problem with traversals (recommendation engine, find shortest parth etc..)
+* Seamless integration with Ruby on Rails.
+* ACID Transaction with rollbacks support.
 
 === Documentation
-* Wiki: http://github.com/andreasronge/neo4j/wiki
-* API Documentation - http://neo4j.rubyforge.org/ (of the released version)
+
+* {Documentation and Getting Started with Neo4j}[http://github.com/andreasronge/neo4j/wiki]
+* {API Documentation (released version)}[http://neo4j.rubyforge.org]
+
+=== Some Examples
+
+==== Neo4j::Node
+
+Example of creating a Neo4j::Node
+
+  require "rubygems"
+  require 'neo4j'
+
+  Neo4j::Transaction.run do
+    node = Neo4j::Node.new :name => 'andreas'
+    node.outgoing(:friends) << Neo4j::Node.new :name => 'peter'
+    node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
+  end
+
+==== Neo4j::Mapping::NodeMixin
+
+Example of mapping a ruby class to a node and delaring properties and relationships and lucene index.
+
+  class Person
+    include Neo4j::NodeMixin
+    property :name
+    property :city
+
+    has_n :friends
+    has_one :address
+    index :name
+  end
+
+  # assume we have an transaction already running
+  andreas = Person.new :name => 'andreas'
+  andreas.friends << Person.new :name => 'peter'
+  andreas.friends.each {|person| puts "name #{person.name}" }
+  Person.find("name: andreas").first.name # => 'andreas'
+
+==== Neo4j::Rails::Model
+
+Example of using Neo4j with Rails 3 (ActiveModel)
+
+  class User
+    attr_accessor :password
+    attr_accessible :email, :password, :password_confirmation, :pending_account
+
+    after_save   :encrypt_password
+
+    email_regex = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
+
+    validates :email, :presence => true,:format   => { :with => email_regex }
+    validates :email, :uniqueness => true, :unless => :pending_account?
+    accepts_nested_attributes_for :avatar, :allow_destroy => true
+
+    property :email
+    index :email
+
+    has_one(:avatar).to(Avator)
+
+    ...
+  end
 
 === Project information
 * GitHub - http://github.com/andreasronge/neo4j/tree/master
@@ -34,7 +99,7 @@ It uses two powerful and mature Java libraries:
 === Presentation Materials and other URLs
 * Ruby Manor 2008 - Jonathan Conway: http://jaikoo.com/assets/presentations/neo4j.pdf
 * Nordic Ruby 2010 (upcoming May 21-23) http://nordicruby.org/speakers#user_29
-* Neo4j wiki - http://wiki.neo4j.org/content/Main_Page (check the guidelines and domain modeling gallery pages)
+* \Neo4j wiki - http://wiki.neo4j.org/content/Main_Page (check the guidelines and domain modeling gallery pages)
 
 === Contributing
 
@@ -46,4 +111,4 @@ Please also check/add issues at lighthouse, http://neo4j.lighthouseapp.com
 === License
 * Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
 * Lucene -  Apache, see http://lucene.apache.org/java/docs/features.html
-* Neo4j - Dual free software/commercial license, see http://neo4j.org/
+* \Neo4j - Dual free software/commercial license, see http://neo4j.org/

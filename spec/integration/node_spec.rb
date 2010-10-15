@@ -133,23 +133,29 @@ describe Neo4j::Node, :type => :transactional do
 
     def create_nodes
       #
-      #  a --friend--> b  --friend--> c
+      #                f
+      #                ^
+      #              friends
+      #                |
+      #  a --friends-> b  --friends--> c
       #                |              ^
       #                |              |
-      #                +--- work -----+
+      #                +--- work  -----+
       #                |
-      #                +--- work ---> d  --- work --> e
+      #                +--- work  ---> d  --- work --> e
       a = Neo4j::Node.new :name => 'a'
       b = Neo4j::Node.new :name => 'b'
       c = Neo4j::Node.new :name => 'c'
       d = Neo4j::Node.new :name => 'd'
       e = Neo4j::Node.new :name => 'e'
+      f = Neo4j::Node.new :name => 'f'
       a.outgoing(:friends) << b
       b.outgoing(:friends) << c
       b.outgoing(:work) << c
       b.outgoing(:work) << d
       d.outgoing(:work) << e
-      [a,b,c,d,e]
+      b.outgoing(:friends) << f
+      [a,b,c,d,e,f]
     end
 
 
@@ -204,9 +210,9 @@ describe Neo4j::Node, :type => :transactional do
     end
 
     it "#both returns all outgoing nodes of any type" do
-      a,b,c,d = create_nodes
-      b.both.should include(a,c,d)
-      [*b.both].size.should == 3
+      a,b,c,d,e,f = create_nodes
+      b.both.should include(a,c,d,f)
+      [*b.both].size.should == 4
     end
 
     it "#incoming returns all incoming nodes of any type" do
@@ -227,6 +233,13 @@ describe Neo4j::Node, :type => :transactional do
       a,b,c,d = create_nodes
       b.outgoing(:work).should include(c,d)
       [*b.outgoing(:work)].size.should == 2
+    end
+
+    it "#outgoing(type1).outgoing(type2) should return outgoing nodes of the given types" do
+      a,b,c,d,e,f = create_nodes
+      nodes = b.outgoing(:work).outgoing(:friends)
+      nodes.should include(c,d,f)
+      nodes.size.should == 3
     end
 
     it "#outgoing(type).depth(4) should only return outgoing nodes of the given type and depth" do
@@ -261,10 +274,10 @@ describe Neo4j::Node, :type => :transactional do
     end
 
     it "#both(type) should return both incoming and outgoing nodes of the given type of depth one" do
-      a,b,c,d = create_nodes
+      a,b,c,d,e,f = create_nodes
 #      [a,b,c,d].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
-      b.both(:friends).should include(a,c)
-      [*b.both(:friends)].size.should == 2
+      b.both(:friends).should include(a,c,f)
+      [*b.both(:friends)].size.should == 3
     end
 
     it "#outgoing and #incoming can be combined to traverse several relationship types" do
@@ -312,38 +325,38 @@ describe Neo4j::Node, :type => :transactional do
     end
 
     it "#rels should return both incoming and outgoing relationship of any type of depth one" do
-      a,b,c,d,e = create_nodes
-      [*b.rels].size.should == 4
-      nodes = b.rels.collect{|r| r.end_node}
-      nodes.should include(b,d)
-      nodes.should_not include(a,c,e)
+      a,b,c,d,e,f = create_nodes
+      b.rels.size.should == 5
+      nodes = b.rels.collect{|r| r.other_node(b)}
+      nodes.should include(a,c,d,f)
+      nodes.should_not include(e)
     end
 
     it "#rels(:friends) should return both incoming and outgoing relationships of given type of depth one" do
       # given
-      a,b,c,d,e = create_nodes
+      a,b,c,d,e,f = create_nodes
 
       # when
       rels = [*b.rels(:friends)]
 
       # then
-      rels.size.should == 2
+      rels.size.should == 3
       nodes = rels.collect{|r| r.end_node}
-      nodes.should include(b,c)
+      nodes.should include(b,c,f)
       nodes.should_not include(a,d,e)
     end
 
     it "#rels(:friends).outgoing should return only outgoing relationships of given type of depth one" do
       # given
-      a,b,c,d,e = create_nodes
+      a,b,c,d,e,f = create_nodes
 
       # when
       rels = [*b.rels(:friends).outgoing]
 
       # then
-      rels.size.should == 1
+      rels.size.should == 2
       nodes = rels.collect{|r| r.end_node}
-      nodes.should include(c)
+      nodes.should include(c,f)
       nodes.should_not include(a,b,d,e)
     end
 
@@ -364,16 +377,16 @@ describe Neo4j::Node, :type => :transactional do
 
     it "#rels(:friends,:work) should return both incoming and outgoing relationships of given types of depth one" do
       # given
-      a,b,c,d,e = create_nodes
+      a,b,c,d,e,f = create_nodes
 
       # when
       rels = [*b.rels(:friends,:work)]
 
       # then
-      rels.size.should == 4
-      nodes = rels.collect{|r| r.end_node}
-      nodes.should include(b,c,d)
-      nodes.should_not include(a,e)
+      rels.size.should == 5
+      nodes = rels.collect{|r| r.other_node(b)}
+      nodes.should include(a,c,d,f)
+      nodes.should_not include(b,e)
     end
 
     it "#rels(:friends,:work).outgoing/incoming should raise exception" do

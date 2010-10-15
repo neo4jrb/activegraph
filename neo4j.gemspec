@@ -22,9 +22,6 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ">= 1.8.7"
   s.add_dependency("activemodel", ["~> 3.0.0"])
   s.add_dependency("railties", ["~> 3.0.0"])
-  s.add_development_dependency "rspec-apigen", ">= 0.0.4"
-  s.add_development_dependency "rspec", ">= 2.0.0.beta.20"
-  s.add_development_dependency "rspec-rails-matchers", "= 0.2.1"
 
 #  s.add_development_dependency "rspec-unit", ">= 0.0.1"
 end

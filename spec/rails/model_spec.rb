@@ -421,7 +421,6 @@ describe Neo4j::Model do
       icecream = IceCream.new
       suger = Ingredience.new :name => 'suger'
       icecream.ingrediences << suger
-      icecream.outgoing(:'Ingredience#ingrediences').each {|x| puts "X=#{x}"}
       icecream.ingrediences.should include(suger)
     end
 

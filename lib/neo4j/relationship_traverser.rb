@@ -15,6 +15,16 @@ module Neo4j
       @dir = dir_to_java(dir)
     end
 
+    def to_s
+      if @type
+        "#{self.class} [type: #{@type} dir:#{@dir}]"
+      elsif @types
+        "#{self.class} [types: #{@types.join(',')} dir:#{@dir}]"
+      else
+        "#{self.class} [types: ANY dir:#{@dir}]"
+      end
+    end
+
     def each
       iterator.each {|i| yield i.wrapper}
     end
