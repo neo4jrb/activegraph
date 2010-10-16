@@ -382,7 +382,7 @@ describe Neo4j::Node, "index", :type => :transactional do
     found_node.should == 'found_node'
 
     # restore
-    Neo4j::Node.instance_eval { @indexer = old_indexer }
+    Neo4j::Node.instance_eval { @_indexer = old_indexer }
   end
 
 
@@ -399,7 +399,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
 
     # restore
-    Neo4j::Node.instance_eval { @indexer = old_indexer }
+    Neo4j::Node.instance_eval { @_indexer = old_indexer }
   end
 
 end

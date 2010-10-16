@@ -37,7 +37,6 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   end
 
   it "#init_on_create is called when node is created and can be used to initialize it" do
-    pending "FIXME - NOT WORKING TOGETHER WITH index_spec.rb"
     n = NodeWithInitializer.new('kalle', 'malmoe')
     n.name.should == 'kalle'
     n.city.should == 'malmoe'
