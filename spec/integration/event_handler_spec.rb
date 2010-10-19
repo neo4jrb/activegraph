@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::EventHandler, :type => :transactional do
   def event_receiver(meth, &block)
-    @rec = Object.new
+    @rec      = Object.new
     singelton = class << @rec;
       self;
     end
@@ -31,10 +31,10 @@ describe Neo4j::EventHandler, :type => :transactional do
     @rec
   end
 
-  after(:each) {Neo4j.event_handler.remove(@rec) if @rec}
+  after(:each) { Neo4j.event_handler.remove(@rec) if @rec }
 
   it "#on_node_created is called once every time a node is created" do
-    rec = event_receiver(:on_node_created)
+    rec   = event_receiver(:on_node_created)
 
     node1 = Neo4j::Node.new
     node2 = Neo4j::Node.new
@@ -43,6 +43,7 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.arg0.should include(node2)
     rec.calls.should == 2
   end
+
 
   it "#on_property_changed is not called when a node is created" do
     rec = event_receiver(:on_property_changed)
@@ -54,7 +55,7 @@ describe Neo4j::EventHandler, :type => :transactional do
   end
 
   it "#on_node_deleted is called once every time a node is deleted" do
-    rec = event_receiver(:on_node_deleted)
+    rec   = event_receiver(:on_node_deleted)
     node1 = Neo4j::Node.new
     node2 = Neo4j::Node.new
     new_tx
@@ -67,7 +68,7 @@ describe Neo4j::EventHandler, :type => :transactional do
   end
 
   it "#on_property_changed will not be called when a node is deleted" do
-    rec = event_receiver(:on_property_changed)
+    rec   = event_receiver(:on_property_changed)
     node1 = Neo4j::Node.new
     new_tx
     node1.del
@@ -76,7 +77,7 @@ describe Neo4j::EventHandler, :type => :transactional do
   end
 
   it "#on_node_deleted will receive an hash of all properties the node had before it was deleted" do
-    rec = event_receiver(:on_node_deleted)
+    rec   = event_receiver(:on_node_deleted)
     node1 = Neo4j::Node.new :name => 'node1', :age => 42
     new_tx
     node1.del
@@ -87,13 +88,13 @@ describe Neo4j::EventHandler, :type => :transactional do
   end
 
   it "in callbacks it is possible to modify any nodes" do
-    node1 = Neo4j::Node.new
-    node2 = Neo4j::Node.new
+    node1        = Neo4j::Node.new
+    node2        = Neo4j::Node.new
 
     node1.outgoing(:foo) << node2
     new_tx
 
-    event_receiver(:on_property_changed) do |node,*|
+    event_receiver(:on_property_changed) do |node, *|
       node2.del
       node[:foo] = '123'
     end
@@ -106,21 +107,21 @@ describe Neo4j::EventHandler, :type => :transactional do
   end
 
   it "#on_property_changed is called once every time a node is deleted" do
-    node1 = Neo4j::Node.new
-    node2 = Neo4j::Node.new
+    node1        = Neo4j::Node.new
+    node2        = Neo4j::Node.new
     node1[:name] = 'node1'
-    node1[:foo] = 'bar1'
+    node1[:foo]  = 'bar1'
     node2[:name] = 'node2'
-    node2[:foo] = 'bar2'
+    node2[:foo]  = 'bar2'
 
     new_tx
 
-    rec = event_receiver(:on_property_changed)
+    rec          = event_receiver(:on_property_changed)
     Neo4j.event_handler.add rec
 
     node1[:name] = 'a_node1'
     node2[:name] = 'a_node2'
-    node2[:foo] = 'a_bar2'
+    node2[:foo]  = 'a_bar2'
     finish_tx
     rec.calls.should == 3
     rec.arg0.should include(node1)
@@ -135,9 +136,9 @@ describe Neo4j::EventHandler, :type => :transactional do
     node1 = Neo4j::Node.new
     node2 = Neo4j::Node.new
 
-    rel = Neo4j::Relationship.new(:friends, node1, node2)
+    rel   = Neo4j::Relationship.new(:friends, node1, node2)
 
-    rec = event_receiver(:on_relationship_created)
+    rec   = event_receiver(:on_relationship_created)
     Neo4j.event_handler.add rec
 
     new_tx
@@ -149,10 +150,10 @@ describe Neo4j::EventHandler, :type => :transactional do
   it "#on_relationship_deleted is called every time a relationship is deleted" do
     node1 = Neo4j::Node.new
     node2 = Neo4j::Node.new
-    rel = Neo4j::Relationship.new(:friends, node1, node2)
+    rel   = Neo4j::Relationship.new(:friends, node1, node2)
 
     new_tx
-    rec = event_receiver(:on_relationship_deleted)
+    rec   = event_receiver(:on_relationship_deleted)
     Neo4j.event_handler.add rec
 
     # when

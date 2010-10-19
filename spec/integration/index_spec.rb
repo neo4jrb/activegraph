@@ -1,40 +1,85 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
+describe "shared index", :type => :transactional do
+  it "simple test"  do
+    Person.new :name => 'pelle'
+    new_tx
 
-describe Neo4j::Node, "index", :type => :transactional do
-  class Vehicle
-    include Neo4j::NodeMixin
-    index :wheels
+    p = Person.find('name: pelle').first
+    p.should_not be_nil
+    p[:name] = 'sune'
+    new_tx
+    p = Person.find('name: sune').first
+    p.should_not be_nil
+
+    p.del
+    new_tx
+
+    p = Person.find('name: sune').first
+    p.should be_nil
   end
 
-  class Car < Vehicle
-    node_indexer Vehicle # use the same indexer as Vehicle, get index on wheels
-    index :brand, :type => :fulltext
-    index :colour
-  end
-
-  after(:each) do
-    # make sure we clean up after each test (enough to clean Vehicle since they share index)
-    Vehicle.clear_index_type
-  end
-
-  it "can be shared between two Ruby classes" do
+  it "when a related node is created it should update the other nodes index" do
     pelle = Person.new :name => 'pelle'
-    phone = Phone.new :phone=>'1234'
-    pelle.phone = phone
+    phone = Phone.new :phone_number => '1234'
+    pelle.home_phone = phone
+    #phone.phone_number = '1234'
 
     new_tx
 
-    phone = Person.find('phone: 1234').first
+    phone = Person.find('name: pelle').first
     phone.should_not be_nil
     phone.should be_kind_of(Person)
     phone.name.should == 'pelle'
 
-    phone1 = Person.find('name: "pelle" AND phone: "1234"').first
+    phone1 = Person.find('name: "pelle" AND phone_number: "1234"').first
     phone1.should_not be_nil
-    phone1.neo_id.should == phone.neo_id
+    phone1.should be_kind_of(Person)
+    phone1.neo_id.should == pelle.neo_id
   end
 
+
+  it "when a related node is deleted it should be deleted from other nodes index" do
+    pelle = Person.new :name => 'foobar'
+    phone = Phone.new :phone_number=>'4242'
+    pelle.home_phone = phone
+
+    new_tx
+    Person.find('name: "foobar" AND phone_number: "4242"').first.should_not be_nil
+
+    # when
+    phone.del
+
+    new_tx
+
+    Person.find('name: "foobar" AND phone_number: "4242"').first.should be_nil
+  end
+
+  it "when a related node relationship is deleted it should be deleted from other nodes index" do
+    pelle = Person.new :name => 'foobar'
+    phone = Phone.new :phone_number=>'4242'
+    pelle.home_phone = phone
+
+    new_tx
+    Person.find('name: "foobar" AND phone_number: "4242"').first.should_not be_nil
+
+    # when
+    pelle.home_phone = nil
+    pelle.home_phone.should be_nil
+
+
+    new_tx
+
+    Person.find('name: "foobar" AND phone_number: "4242"').first.should be_nil
+  end
+
+end
+
+describe Neo4j::Node, "index", :type => :transactional do
+  after(:each) do
+    # make sure we clean up after each test (enough to clean Vehicle since they share index)
+    Vehicle.clear_index_type
+  end
 
   it "can index and search on two properties if index has the same type" do
     c = Vehicle.new(:wheels => 4, :colour => 'blue')

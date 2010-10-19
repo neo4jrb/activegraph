@@ -68,7 +68,7 @@ module Neo4j::Mapping
                   dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
                   rel = dsl.single_relationship(self, dir)
                   rel.del unless rel.nil?
-                  dsl.create_relationship_to(self, value)
+                  dsl.create_relationship_to(self, value) if value
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}

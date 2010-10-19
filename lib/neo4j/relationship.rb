@@ -4,6 +4,11 @@ module Neo4j
     include Neo4j::Property
     include Neo4j::Equal
 
+    alias_method :_end_node, :getEndNode
+    alias_method :_start_node, :getStartNode
+    alias_method :_other_node, :getOtherNode
+
+
     def del
       delete
     end
@@ -38,6 +43,10 @@ module Neo4j
       self.class.wrapper(self)
     end
 
+
+    def type
+      getType().name()
+    end
 
     def class
       Neo4j::Relationship

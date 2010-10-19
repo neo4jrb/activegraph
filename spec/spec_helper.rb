@@ -14,8 +14,8 @@ begin
   require 'neo4j'
 
   def rm_db_storage
-#    puts "Neo4j::Config[:storage_path]=#{Neo4j::Config[:storage_path]}"
     FileUtils.rm_rf Neo4j::Config[:storage_path]
+    raise "Can't delete db" if File.exist?(Neo4j::Config[:storage_path])
   end
 
   def finish_tx
@@ -43,7 +43,9 @@ begin
 
 #  c.filter = { :type => :transactional}
     c.before(:all, :type => :transactional) do
+      Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
       rm_db_storage
+      Neo4j.unstarted_db.start
     end
 
     c.after(:all, :type => :transactional) do

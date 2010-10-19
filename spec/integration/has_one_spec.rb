@@ -43,4 +43,27 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
     person.address_rel.end_node.should == a
   end
 
+
+  it "has one to one - can navigate either way" do
+    pending
+    kalle = Person.new :name => 'kalle'
+    phone = Phone.new :phone_number => '1234'
+    kalle.home_phone = phone
+
+    #then
+    kalle.home_phone.should == phone
+    phone.person.should == kalle
+
+
+    # And the other way
+
+    sune = Person.new :name => 'sune'
+    phone2 = Phone.new :phone_number => '2222'
+    phone.person = sune
+
+    #then
+    kalle.home_phone.should == phone2
+    phone.person.should == sune
+
+  end
 end

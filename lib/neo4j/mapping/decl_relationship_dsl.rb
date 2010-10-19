@@ -89,7 +89,7 @@ module Neo4j::Mapping
       @direction == :incoming
     end
 
-    def incoming_dsl(node)
+    def incoming_dsl(node=nil)
       # which class specifies the incoming DSL ?
       clazz = to_class || node.class
       dsl = clazz._decl_rels[to_type]
