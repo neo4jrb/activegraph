@@ -41,16 +41,6 @@ module Neo4j
       end
 
 
-      # Returns the relationships instead of the nodes.
-      #
-      # ==== Example
-      # # return the relationship objects between the folder and file nodes:
-      # folder.files.rels.each {|x| ...}
-      #
-      def rels
-        Neo4j::RelationshipTraverser.new(@node._java_node, [@dsl.namespace_type], @direction)
-      end
-
       # Returns true if there are no node in this type of relationship
       def empty?
         first != nil

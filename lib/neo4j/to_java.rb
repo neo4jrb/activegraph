@@ -15,3 +15,17 @@ module Neo4j
     end
   end
 end
+
+
+org.neo4j.kernel.impl.core.IntArrayIterator.class_eval do
+  def each_wrapped
+    while(hasNext())
+      yield self.next().wrapper
+    end
+  end
+
+  def wrapped
+    Enumerator.new(self, :each_wrapped)
+  end
+
+end

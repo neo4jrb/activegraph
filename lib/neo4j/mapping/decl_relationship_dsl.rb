@@ -97,11 +97,22 @@ module Neo4j::Mapping
       dsl
     end
 
+    def single_node(node, dir)
+      rel = single_relationship(node, dir)
+      rel && rel.other_node(node).wrapper
+    end
+
     def single_relationship(node, dir)
       type = type_to_java(namespace_type)
       dir  = dir_to_java(dir)
       rel = node._java_node.getSingleRelationship(type, dir)
-      rel.nil? ? nil : rel.other_node(node).wrapper
+      rel && rel.wrapper
+    end
+
+    def all_relationships(node, dir)
+      type = type_to_java(namespace_type)
+      dir  = dir_to_java(dir)
+      node._java_node.getRelationships(type, dir)
     end
 
     def create_relationship_to(node, other)

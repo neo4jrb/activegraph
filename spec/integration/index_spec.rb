@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe "shared index", :type => :transactional do
+describe "shared index - one to one", :type => :transactional do
   it "simple test"  do
     Person.new :name => 'pelle'
     new_tx
@@ -39,13 +39,27 @@ describe "shared index", :type => :transactional do
   end
 
 
+  it "when a new relationship is created between two nodes" do
+    pelle = Person.new :name => 'foobar2'
+    phone = Phone.new :phone_number=>'4243'
+
+    new_tx
+
+    # when
+    pelle.home_phone = phone
+    new_tx
+
+    # then
+    Person.find('name: "foobar2" AND phone_number: "4243"').first.should_not be_nil
+  end
+
   it "when a related node is deleted it should be deleted from other nodes index" do
-    pelle = Person.new :name => 'foobar'
+    pelle = Person.new :name => 'foobar0'
     phone = Phone.new :phone_number=>'4242'
     pelle.home_phone = phone
 
     new_tx
-    Person.find('name: "foobar" AND phone_number: "4242"').first.should_not be_nil
+    Person.find('name: "foobar0" AND phone_number: "4242"').first.should_not be_nil
 
     # when
     phone.del
@@ -56,24 +70,75 @@ describe "shared index", :type => :transactional do
   end
 
   it "when a related node relationship is deleted it should be deleted from other nodes index" do
-    pelle = Person.new :name => 'foobar'
-    phone = Phone.new :phone_number=>'4242'
+    pelle = Person.new :name => 'foobar1'
+    phone = Phone.new :phone_number=>'4243'
+
     pelle.home_phone = phone
 
     new_tx
-    Person.find('name: "foobar" AND phone_number: "4242"').first.should_not be_nil
+    Person.find('phone_number: "4243"').first.should_not be_nil
 
     # when
     pelle.home_phone = nil
     pelle.home_phone.should be_nil
 
-
     new_tx
 
-    Person.find('name: "foobar" AND phone_number: "4242"').first.should be_nil
+    Person.find('name: "foobar1" AND phone_number: "4243"').first.should be_nil
   end
 
 end
+
+
+describe "shared index - many to many", :type => :transactional do
+  after(:each) { Actor.clear_index_type(:fulltext)}
+
+  it "when a related node is created it should update the other nodes index" do
+    keanu = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+  end
+
+
+  it "when a related node is connected it should update the other nodes index" do
+    keanu = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed = Movie.new :title => 'speed'
+    new_tx
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+  end
+
+  it "when a related node is deleted it should remove the indexes" do
+    pending
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    # when
+    keanu.acted_in_rels.each {|r| r.del}
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should be_nil
+    Actor.find('title: speed', :type => :fulltext).first.should be_nil
+  end
+
+
+end
+
 
 describe Neo4j::Node, "index", :type => :transactional do
   after(:each) do
@@ -448,3 +513,4 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
 end
+

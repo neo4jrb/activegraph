@@ -41,7 +41,7 @@ module Neo4j
       def remove_index_on_fields(node, props, tx_data)
         @field_types.keys.each { |field| rm_index(node, field, props[field]) if props[field] }
         # for each via relationship delete it
-        @via_relationships.each_pair do |field, dsl|
+        @via_relationships.each_value do |dsl|
           rel_type = dsl.incoming_dsl.namespace_type
           to_class = dsl.to_class
 
@@ -57,16 +57,45 @@ module Neo4j
         end
       end
 
+      def update_on_deleted_relationship(relationship)
+        rel_type = relationship.rel_type
+        end_node = relationship._end_node
+        # find which via relationship match rel_type
+        @via_relationships.each_pair do |field, dsl|
+          to_class = dsl.to_class
+          type     = dsl.incoming_dsl.namespace_type
+          if type == rel_type
+            val        = end_node[field]
+            start_node = relationship._start_node
+            to_class._indexer.update_index_on(start_node, field, val, nil)
+          end
+        end
+      end
+
+      def update_on_new_relationship(relationship)
+        rel_type = relationship.rel_type
+        end_node = relationship._end_node
+        # find which via relationship match rel_type
+        @via_relationships.each_pair do |field, dsl|
+          to_class = dsl.to_class
+          type     = dsl.incoming_dsl.namespace_type
+          if type == rel_type
+            val   = end_node[field]
+            start_node = relationship._start_node
+            to_class._indexer.update_index_on(start_node, field, nil, val)
+          end
+        end
+      end
+
       def update_index_on(node, field, old_val, new_val)
         if @via_relationships.include?(field)
           dsl = @via_relationships[field]
-          rel_type = dsl.incoming_dsl.namespace_type
           to_class = dsl.to_class
-          node.rels(rel_type).incoming.each do |rel|
+
+          dsl.incoming_dsl.all_relationships(node, :incoming).each do |rel|
             other = rel._start_node
             to_class._indexer.update_index_on(other, field, old_val, new_val)
           end
-
         elsif @field_types.include?(field)
           rm_index(node, field, old_val) if old_val
 

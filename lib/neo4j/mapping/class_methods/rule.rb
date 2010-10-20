@@ -65,7 +65,7 @@ module Neo4j::Mapping
         end
 
 
-        def on_relationship_created(rel)
+        def on_relationship_created(rel, *)
           trigger_start_node = trigger?(rel.start_node)
           trigger_end_node   = trigger?(rel.end_node)
           # end or start node must be triggered by this event

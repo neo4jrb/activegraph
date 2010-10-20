@@ -15,6 +15,8 @@ class Actor
   # Actor[Node] --(Role[Relationship])--> Movie[Node]
   #
   has_n(:acted_in).to(Movie).relationship(Role)
+
+  index :name, :type => :fulltext
 end
 
 
@@ -33,4 +35,6 @@ class Movie
 
   # defines a method for traversing incoming acted_in relationships from Actor
   has_n(:actors).from(Actor, :acted_in)
+
+  index :title, :via => :actors, :type => :fulltext
 end

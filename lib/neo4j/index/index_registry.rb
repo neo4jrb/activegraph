@@ -35,12 +35,31 @@ module Neo4j
           on_property_changed(rel, field, old_val, new_val)
         end
 
-        def on_relationship_created(rel)
-          on_node_created(rel)
+        def on_relationship_created(rel, tx_data)
+          on_node_created(rel) # We treat relationships just like nodes
+          end_node = rel._end_node
+          # if end_node was created in this transaction then it will be handled in on_property_changed
+          created = tx_data.created_nodes.find{|n| n.neo_id == end_node.neo_id}
+          unless created
+            indexer = find_by_class(end_node['_classname'])
+            indexer && indexer.update_on_new_relationship(rel)
+          end
         end
 
         def on_relationship_deleted(rel, old_props, tx_data)
-          on_node_deleted(rel, old_props,tx_data)
+          on_node_deleted(rel, old_props, tx_data)
+
+          # if only the relationship has been deleted then we have to remove the index
+          # if both the relationship and the node has been deleted then the index will be removed in the
+          # on_node_deleted callback
+          end_node = rel._end_node
+          deleted = tx_data.deleted_nodes.find{|n| n.neo_id == end_node.neo_id}
+          unless deleted
+            indexer = find_by_class(end_node['_classname'])
+            indexer && indexer.update_on_deleted_relationship(rel)
+          end
+
+
         end
       end
     end

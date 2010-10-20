@@ -44,7 +44,14 @@ module Neo4j
     end
 
 
-    def type
+    # Returns the relationship name
+    #
+    # ====Example
+    #   a = Neo4j::Node.new
+    #   a.outgoing(:friends) << Neo4j::Node.new
+    #   a.rels.first.rel_type # => 'friends'
+    #
+    def rel_type
       getType().name()
     end
 
