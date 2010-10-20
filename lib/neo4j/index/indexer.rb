@@ -92,7 +92,7 @@ module Neo4j
           dsl = @via_relationships[field]
           to_class = dsl.to_class
 
-          dsl.incoming_dsl.all_relationships(node, :incoming).each do |rel|
+          dsl.all_relationships(node).each do |rel|
             other = rel._start_node
             to_class._indexer.update_index_on(other, field, old_val, new_val)
           end

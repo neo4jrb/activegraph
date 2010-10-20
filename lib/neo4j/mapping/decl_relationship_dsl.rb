@@ -89,33 +89,37 @@ module Neo4j::Mapping
       @direction == :incoming
     end
 
-    def incoming_dsl(node=nil)
-      # which class specifies the incoming DSL ?
-      clazz = to_class || node.class
-      dsl = clazz._decl_rels[to_type]
-      raise "Unspecified outgoing relationship '#{to_type}' for incoming relationship '#{rel_id}' on class #{clazz}" if dsl.nil?
+    def incoming_dsl
+      dsl = to_class._decl_rels[to_type]
+      raise "Unspecified outgoing relationship '#{to_type}' for incoming relationship '#{rel_id}' on class #{to_class}" if dsl.nil?
       dsl
     end
 
-    def single_node(node, dir)
-      rel = single_relationship(node, dir)
+    def single_node(node)
+      rel = single_relationship(node)
       rel && rel.other_node(node).wrapper
     end
 
-    def single_relationship(node, dir)
-      type = type_to_java(namespace_type)
-      dir  = dir_to_java(dir)
-      rel = node._java_node.getSingleRelationship(type, dir)
+    def single_relationship(node)
+      dir = direction
+      dsl = incoming? ? incoming_dsl : self
+
+      type     = type_to_java(dsl.namespace_type)
+      java_dir = dir_to_java(dir)
+      rel = node._java_node.getSingleRelationship(type, java_dir)
       rel && rel.wrapper
     end
 
-    def all_relationships(node, dir)
-      type = type_to_java(namespace_type)
-      dir  = dir_to_java(dir)
+    def all_relationships(node)
+      dsl = incoming? ? incoming_dsl : self
+      type = type_to_java(dsl.namespace_type)
+      dir  = dir_to_java(direction)
       node._java_node.getRelationships(type, dir)
     end
 
     def create_relationship_to(node, other)
+      dsl = incoming? ? incoming_dsl : self
+
       # If the are creating an incoming relationship we need to swap incoming and outgoing nodes
       if @direction == :outgoing
         from, to = node, other
@@ -123,9 +127,10 @@ module Neo4j::Mapping
         from, to = other, node
       end
 
-      java_type = type_to_java(namespace_type)
+      java_type = type_to_java(dsl.namespace_type)
+
       rel = from._java_node.create_relationship_to(to._java_node, java_type)
-      rel[:_classname] =  relationship_class.to_s if relationship_class
+      rel[:_classname] =  dsl.relationship_class.to_s if dsl.relationship_class
 
       # TODO - not implemented yet
       # the from.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.

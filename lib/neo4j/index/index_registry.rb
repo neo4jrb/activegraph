@@ -12,13 +12,6 @@ module Neo4j
           @@indexers[classname]
         end
 
-        def on_node_created(node)
-#          puts "IndexerRegistry: on_node_created #{node}"
-#          indexer = find_by_class(node['_classname'])
-#          puts "indexer=#{indexer}"
-#          indexer.add_index_on_all_fields(node) if indexer
-        end
-
         def on_node_deleted(node, old_props, tx_data)
           indexer = find_by_class(old_props['_classname'] || node.class.to_s)
           indexer && indexer.remove_index_on_fields(node, old_props, tx_data)
@@ -36,7 +29,6 @@ module Neo4j
         end
 
         def on_relationship_created(rel, tx_data)
-          on_node_created(rel) # We treat relationships just like nodes
           end_node = rel._end_node
           # if end_node was created in this transaction then it will be handled in on_property_changed
           created = tx_data.created_nodes.find{|n| n.neo_id == end_node.neo_id}

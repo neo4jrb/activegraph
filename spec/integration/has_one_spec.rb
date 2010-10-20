@@ -4,20 +4,20 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
 
 
   it "assignment operator '=' creates a relationship" do
-    person = Person.new
-    a = Neo4j::Node.new
+    person         = Person.new
+    a              = Neo4j::Node.new
     person.address = a
     person.outgoing(:address).first.should == a
   end
 
 
   it "assignment operator '=' creates a relationship and deletes any previous relationship" do
-    person = Person.new
-    a = Neo4j::Node.new
+    person         = Person.new
+    a              = Neo4j::Node.new
     person.address = a
     a.incoming(:address).first.should == person
 
-    b = Neo4j::Node.new
+    b              = Neo4j::Node.new
     person.address = b
 
     # then
@@ -27,43 +27,32 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
   end
 
   it "create an accessor method named 'type' which return the other node" do
-    person = Person.new
-    a = Neo4j::Node.new
+    person         = Person.new
+    a              = Neo4j::Node.new
     person.address = a
     person.address.should == a
   end
 
   it "create an accessor method named 'type'_rel which return the relationship between the two nodes (or nil if none)" do
-    person = Person.new
+    person         = Person.new
     person.address_rel.should == nil
 
-    a = Neo4j::Node.new
+    a              = Neo4j::Node.new
     person.address = a
 
     person.address_rel.end_node.should == a
   end
 
 
-  it "has one to one - can navigate either way" do
-    pending
-    kalle = Person.new :name => 'kalle'
-    phone = Phone.new :phone_number => '1234'
-    kalle.home_phone = phone
-
-    #then
-    kalle.home_phone.should == phone
-    phone.person.should == kalle
-
-
+  it "has one to one - can add a relationship on an incoming rel type" do
     # And the other way
+    sune            = Person.new :name => 'sune'
+    sunes_phone     = Phone.new :phone_number => '2222'
 
-    sune = Person.new :name => 'sune'
-    phone2 = Phone.new :phone_number => '2222'
-    phone.person = sune
+    sunes_phone.person = sune  # same as sune.home_phone = sunes_phone
 
     #then
-    kalle.home_phone.should == phone2
-    phone.person.should == sune
-
+    sune.home_phone.should == sunes_phone
+    sunes_phone.person.should == sune
   end
 end

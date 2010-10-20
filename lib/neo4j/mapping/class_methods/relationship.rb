@@ -33,9 +33,7 @@ module Neo4j::Mapping
         module_eval(%Q{
                 def #{rel_type}_rels
                     dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                    dir = dsl.direction
-                    dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
-                    dsl.all_relationships(self, dir).wrapped
+                    dsl.all_relationships(self).wrapped
                 end}, __FILE__, __LINE__)
 
         _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, false, params)
@@ -66,27 +64,21 @@ module Neo4j::Mapping
         clazz = self
         module_eval(%Q{def #{rel_type}=(value)
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                  dir = dsl.direction
-                  dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
-                  rel = dsl.single_relationship(self, dir)
+                  rel = dsl.single_relationship(self)
                   rel.del unless rel.nil?
                   dsl.create_relationship_to(self, value) if value
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                  dir = dsl.direction
-                  dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
-                  dsl.single_node(self, dir)
+                  dsl.single_node(self)
               end}, __FILE__, __LINE__)
 
         # TODO
         module_eval(%Q{
               def #{rel_type}_rel
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                  dir = dsl.direction
-                  dsl = dsl.incoming? ? dsl.incoming_dsl(self) : dsl
-                  dsl.single_relationship(self, dir)
+                  dsl.single_relationship(self)
     end}, __FILE__, __LINE__)
 
         _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, true, params)

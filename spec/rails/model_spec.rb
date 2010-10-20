@@ -4,15 +4,6 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::Model do
 
-  before(:all) do
-    rm_db_storage
-  end
-
-  after(:all) do
-    Neo4j.shutdown
-    rm_db_storage
-  end
-
   describe "new" do
     before :each do
       @model = Neo4j::Model.new

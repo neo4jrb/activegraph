@@ -11,7 +11,7 @@ module Neo4j
       def initialize(node, dsl) # :nodoc:
         @node = node
         @direction = dsl.direction
-        @dsl = @direction == :outgoing ? dsl : dsl.incoming_dsl(node)
+        @dsl = @direction == :outgoing ? dsl : dsl.incoming_dsl
       end
 
       def to_s

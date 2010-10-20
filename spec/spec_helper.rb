@@ -39,20 +39,11 @@ begin
   # set database storage location
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
 
+  rm_db_storage
+
   RSpec.configure do |c|
 
 #  c.filter = { :type => :transactional}
-    c.before(:all, :type => :transactional) do
-      Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
-      rm_db_storage
-      Neo4j.unstarted_db.start
-    end
-
-    c.after(:all, :type => :transactional) do
-      Neo4j.shutdown
-      rm_db_storage
-    end
-
     c.before(:each, :type => :transactional) do
       new_tx
     end
