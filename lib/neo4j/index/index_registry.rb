@@ -2,6 +2,11 @@ module Neo4j
   module Index
     class IndexerRegistry #:nodoc:
       class << self
+
+        def clear_all_indexes
+          @@indexers.values.each {|i| i.clear_index_type}
+        end
+
         def create_for(this_clazz, using_other_clazz, type)
           @@indexers ||= {}
           @@indexers[this_clazz.to_s] = @@indexers[using_other_clazz.to_s] || Indexer.new(this_clazz, type)
@@ -50,8 +55,6 @@ module Neo4j
             indexer = find_by_class(end_node['_classname'])
             indexer && indexer.update_on_deleted_relationship(rel)
           end
-
-
         end
       end
     end

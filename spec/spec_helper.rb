@@ -8,6 +8,7 @@ begin
   require 'fileutils'
   require 'tmpdir'
   require 'rspec-rails-matchers'
+  require 'benchmark'
 
   $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
@@ -43,8 +44,13 @@ begin
 
   RSpec.configure do |c|
 
-#  c.filter = { :type => :transactional}
+#  c.filter = { :type => :problem}
     c.before(:each, :type => :transactional) do
+
+      new_tx
+      Neo4j._all_nodes.each { |n| n.del unless n == Neo4j.ref_node }
+      new_tx
+      Neo4j::Index::IndexerRegistry.clear_all_indexes
       new_tx
     end
 

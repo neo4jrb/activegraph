@@ -34,6 +34,9 @@ describe "Neo4j::Node#rule", :type => :transactional do
     finish_tx
   end
 
+  before(:each) do
+    Neo4j::Mapping::ClassMethods::Rules.on_neo4j_started
+  end
 
   it "generate instance method: <rule_name>? for each rule" do
     young = User.new :age => 2

@@ -59,6 +59,11 @@ module Neo4j
       Enumerator.new(this_db, :each_node)
     end
 
+    # Same as #all_nodes but does not return wrapped nodes.
+    def _all_nodes(this_db = self.started_db)
+      Enumerator.new(this_db, :_each_node)
+    end
+
     def event_handler(this_db = default_db)
       this_db.event_handler
     end

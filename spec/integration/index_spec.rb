@@ -1,151 +1,7 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe "shared index - one to one", :type => :transactional do
-  it "simple test"  do
-    Person.new :name => 'pelle'
-    new_tx
-
-    p = Person.find('name: pelle').first
-    p.should_not be_nil
-    p[:name] = 'sune'
-    new_tx
-    p = Person.find('name: sune').first
-    p.should_not be_nil
-
-    p.del
-    new_tx
-
-    p = Person.find('name: sune').first
-    p.should be_nil
-  end
-
-  it "when a related node is created it should update the other nodes index" do
-    pelle = Person.new :name => 'pelle'
-    phone = Phone.new :phone_number => '1234'
-    pelle.home_phone = phone
-    #phone.phone_number = '1234'
-
-    new_tx
-
-    phone = Person.find('name: pelle').first
-    phone.should_not be_nil
-    phone.should be_kind_of(Person)
-    phone.name.should == 'pelle'
-
-    phone1 = Person.find('name: "pelle" AND phone_number: "1234"').first
-    phone1.should_not be_nil
-    phone1.should be_kind_of(Person)
-    phone1.neo_id.should == pelle.neo_id
-  end
-
-
-  it "when a new relationship is created between two nodes" do
-    pelle = Person.new :name => 'foobar2'
-    phone = Phone.new :phone_number=>'4243'
-
-    new_tx
-
-    # when
-    pelle.home_phone = phone
-    new_tx
-
-    # then
-    Person.find('name: "foobar2" AND phone_number: "4243"').first.should_not be_nil
-  end
-
-  it "when a related node is deleted it should be deleted from other nodes index" do
-    pelle = Person.new :name => 'foobar0'
-    phone = Phone.new :phone_number=>'4242'
-    pelle.home_phone = phone
-
-    new_tx
-    Person.find('name: "foobar0" AND phone_number: "4242"').first.should_not be_nil
-
-    # when
-    phone.del
-
-    new_tx
-
-    Person.find('name: "foobar" AND phone_number: "4242"').first.should be_nil
-  end
-
-  it "when a related node relationship is deleted it should be deleted from other nodes index" do
-    pelle = Person.new :name => 'foobar1'
-    phone = Phone.new :phone_number=>'4243'
-
-    pelle.home_phone = phone
-
-    new_tx
-    Person.find('phone_number: "4243"').first.should_not be_nil
-
-    # when
-    pelle.home_phone = nil
-    pelle.home_phone.should be_nil
-
-    new_tx
-
-    Person.find('name: "foobar1" AND phone_number: "4243"').first.should be_nil
-  end
-
-end
-
-
-describe "shared index - many to many", :type => :transactional do
-  after(:each) { Actor.clear_index_type(:fulltext)}
-
-  it "when a related node is created it should update the other nodes index" do
-    keanu = Actor.new :name => 'Keanu Reeves'
-    matrix = Movie.new :title => 'matrix'
-    speed = Movie.new :title => 'speed'
-    keanu.acted_in << matrix << speed
-    new_tx
-
-    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
-    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
-    Actor.find('title: speed', :type => :fulltext).first.should == keanu
-  end
-
-
-  it "when a related node is connected it should update the other nodes index" do
-    keanu = Actor.new :name => 'Keanu Reeves'
-    matrix = Movie.new :title => 'matrix'
-    speed = Movie.new :title => 'speed'
-    new_tx
-    keanu.acted_in << matrix << speed
-    new_tx
-
-    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
-    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
-    Actor.find('title: speed', :type => :fulltext).first.should == keanu
-  end
-
-  it "when a related node is deleted it should remove the indexes" do
-    pending
-    keanu  = Actor.new :name => 'Keanu Reeves'
-    matrix = Movie.new :title => 'matrix'
-    speed  = Movie.new :title => 'speed'
-    keanu.acted_in << matrix << speed
-    new_tx
-
-    # when
-    keanu.acted_in_rels.each {|r| r.del}
-    new_tx
-
-    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
-    Actor.find('title: matrix', :type => :fulltext).first.should be_nil
-    Actor.find('title: speed', :type => :fulltext).first.should be_nil
-  end
-
-
-end
-
 
 describe Neo4j::Node, "index", :type => :transactional do
-  after(:each) do
-    # make sure we clean up after each test (enough to clean Vehicle since they share index)
-    Vehicle.clear_index_type
-  end
-
   it "can index and search on two properties if index has the same type" do
     c = Vehicle.new(:wheels => 4, :colour => 'blue')
     new_tx
@@ -162,8 +18,10 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "can use the same index for a subclass" do
-    bike = Vehicle.new(:brand => 'monark', :wheels => 2)
+    bike  = Vehicle.new(:brand => 'monark', :wheels => 2)
     volvo = Car.new(:brand => 'volvo', :wheels => 4)
+
+    # then
     new_tx
     Car.find('brand: volvo', :type => :fulltext).first.should == volvo
     Car.find('wheels: 4', :type => :exact).first.should == volvo
@@ -214,29 +72,25 @@ describe Neo4j::Relationship, "index", :type => :transactional do
 
   after(:each) do
     # make sure we clean up after each test
-    Neo4j::Transaction.run do
-      Neo4j::Relationship.clear_index_type :exact
-      Neo4j::Relationship.clear_index_type :fulltext
-    end
     Neo4j::Relationship.rm_index_type :strength
   end
 
   it "can index when Neo4j::Relationship are created , just like nodes" do
-    a = Neo4j::Node.new
-    b = Neo4j::Node.new
-    r = Neo4j::Relationship.new(:friends, a, b)
+    a            = Neo4j::Node.new
+    b            = Neo4j::Node.new
+    r            = Neo4j::Relationship.new(:friends, a, b)
     r[:strength] = 'strong'
     finish_tx
     Neo4j::Relationship.find('strength: strong').first.should == r
   end
 
   it "can remove index when Neo4j::Relationship is deleted, just like nodes" do
-    a = Neo4j::Node.new
-    b = Neo4j::Node.new
-    r = Neo4j::Relationship.new(:friends, a, b)
+    a            = Neo4j::Node.new
+    b            = Neo4j::Node.new
+    r            = Neo4j::Relationship.new(:friends, a, b)
     r[:strength] = 'weak'
     new_tx
-    r2 = Neo4j::Relationship.find('strength: weak').first
+    r2           = Neo4j::Relationship.find('strength: weak').first
     r2.should == r
 
     r2.del
@@ -256,10 +110,6 @@ describe Neo4j::Node, "index", :type => :transactional do
 
   after(:each) do
     # make sure we clean up after each test
-    Neo4j::Transaction.run do
-      Neo4j::Node.clear_index_type :exact
-      Neo4j::Node.clear_index_type :fulltext
-    end
     Neo4j::Node.rm_index_type :exact
     Neo4j::Node.rm_index_type :fulltext
   end
@@ -305,7 +155,7 @@ describe Neo4j::Node, "index", :type => :transactional do
     result = Neo4j::Node.find('name: *@gmail.com').asc(:name, :age)
 
     # then
-    ages = result.collect { |x| x[:age] }
+    ages   = result.collect { |x| x[:age] }
     ages.should == [5, 1, 2, 4, 3]
   end
 
@@ -321,12 +171,12 @@ describe Neo4j::Node, "index", :type => :transactional do
     result = Neo4j::Node.find('name: *@gmail.com').asc(:name).desc(:age)
 
     # then
-    ages = result.collect { |x| x[:age] }
+    ages   = result.collect { |x| x[:age] }
     ages.should == [5, 4, 2, 1, 3]
   end
 
   it "create index on a node" do
-    new_node = Neo4j::Node.new
+    new_node        = Neo4j::Node.new
     new_node[:name] = 'andreas'
 
     # when
@@ -338,7 +188,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
 
   it "create index on a node with a given type (e.g. fulltext)" do
-    new_node = Neo4j::Node.new
+    new_node               = Neo4j::Node.new
     new_node[:description] = 'hej'
 
     # when
@@ -392,7 +242,7 @@ describe Neo4j::Node, "index", :type => :transactional do
 
 
   it "does not remove old index when a property is reindexed" do
-    new_node = Neo4j::Node.new
+    new_node        = Neo4j::Node.new
     new_node[:name] = 'Kalle Kula'
     new_node.add_index(:name)
 
@@ -406,7 +256,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "#rm_index removes an index" do
-    new_node = Neo4j::Node.new
+    new_node        = Neo4j::Node.new
     new_node[:name] = 'Kalle Kula'
     new_node.add_index(:name)
 
@@ -422,7 +272,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "updates an index automatically when a property changes" do
-    new_node = Neo4j::Node.new
+    new_node        = Neo4j::Node.new
     new_node[:name] = 'Kalle Kula'
 
     new_tx
@@ -439,7 +289,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "deleting an indexed property should not be found" do
-    new_node = Neo4j::Node.new :name => 'andreas'
+    new_node        = Neo4j::Node.new :name => 'andreas'
     new_tx
 
     Neo4j::Node.find('name: andreas').first.should == new_node
@@ -464,13 +314,13 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "both deleting a property and deleting the node should work" do
-    new_node = Neo4j::Node.new :name => 'andreas', :age => 21
+    new_node        = Neo4j::Node.new :name => 'andreas', :age => 21
     new_tx
     Neo4j::Node.find('name: andreas').first.should == new_node
 
     # when
     new_node[:name] = nil
-    new_node[:age] = nil
+    new_node[:age]  = nil
     new_node.del
     finish_tx
 
@@ -479,16 +329,16 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 
   it "will automatically close the connection if a block was provided with the find method" do
-    indexer = Neo4j::Index::Indexer.new('mocked-indexer', :node)
-    index = double('index')
+    indexer     = Neo4j::Index::Indexer.new('mocked-indexer', :node)
+    index       = double('index')
     indexer.should_receive(:index_for_type).and_return(index)
-    hits = double('hits')
+    hits        = double('hits')
     index.should_receive(:query).and_return(hits)
     old_indexer = Neo4j::Node._indexer
     Neo4j::Node.instance_eval { @_indexer = indexer }
     hits.should_receive(:close)
     hits.should_receive(:first).and_return("found_node")
-    found_node = Neo4j::Node.find('name: andreas', :wrapped => false) { |h| h.first }
+    found_node  = Neo4j::Node.find('name: andreas', :wrapped => false) { |h| h.first }
     found_node.should == 'found_node'
 
     # restore
@@ -497,10 +347,10 @@ describe Neo4j::Node, "index", :type => :transactional do
 
 
   it "will automatically close the connection even if the block provided raises an exception" do
-    indexer = Neo4j::Index::Indexer.new('mocked-indexer', :node)
-    index = double('index')
+    indexer     = Neo4j::Index::Indexer.new('mocked-indexer', :node)
+    index       = double('index')
     indexer.should_receive(:index_for_type).and_return(index)
-    hits = double('hits')
+    hits        = double('hits')
     index.should_receive(:query).and_return(hits)
     old_indexer = Neo4j::Node.instance_eval { @_indexer }
     Neo4j::Node.instance_eval { @_indexer = indexer }

@@ -1,15 +1,13 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::Transaction do
+describe Neo4j::Transaction, :type => :transactional do
 
-  before(:all) { rm_db_storage }
-  after(:all) { Neo4j.shutdown }
+  before(:each) { finish_tx}
 
   it "#run runs the provided block in an transaction" do
     node =  Neo4j::Transaction.run { Neo4j::Node.new }
     node.should exist
   end
-
 
   it "#run should rollback the transaction if an exception is raised" do
     node = nil

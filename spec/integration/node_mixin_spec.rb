@@ -24,7 +24,6 @@ describe Neo4j::NodeMixin, :type=> :transactional do
   end
 
   after(:each) do
-    SimpleNode.clear_index_type
     SimpleNode.rm_index_type     # TODO
   end
 

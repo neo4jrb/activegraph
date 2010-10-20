@@ -4,6 +4,15 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::Model do
 
+  before(:each) do
+    new_tx
+    Neo4j._all_nodes.each {|n| n.del unless n == Neo4j.ref_node}
+    new_tx
+    Neo4j::Mapping::ClassMethods::Rules.on_neo4j_started
+    Neo4j::Index::IndexerRegistry.clear_all_indexes
+    finish_tx
+  end
+
   describe "new" do
     before :each do
       @model = Neo4j::Model.new

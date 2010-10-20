@@ -1,0 +1,213 @@
+require File.join(File.dirname(__FILE__), '..', 'spec_helper')
+
+
+describe "shared index - many to many", :type => :transactional do
+  it "when a related node is created it should update the other nodes index" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+  end
+
+
+  it "when a related node is connected it should update the other nodes index" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    new_tx
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+  end
+
+  it "when all related node is deleted it should remove the indexes" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    # when
+    keanu.acted_in_rels.each { |r| r.del }
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should be_nil
+    Actor.find('title: speed', :type => :fulltext).first.should be_nil
+  end
+
+  it "when one related node is deleted it should remove the indexes" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    # when, delete the matrix relationship
+    matrix.rels.first.del
+
+    keanu.acted_in_rels.each { |r| puts "Acted in #{r.end_node}" }
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should be_nil
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+  end
+
+  it "when a new related node is added the old should still be searchable" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << speed
+    new_tx
+
+    matrix = Movie.new :title => 'matrix'
+    keanu.acted_in << matrix
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+  end
+
+  it "when a indexed node is deleted then all the related indexes should also be deleted" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    speed  = Movie.new :title => 'speed'
+    matrix = Movie.new :title => 'matrix'
+
+    new_tx
+    keanu.acted_in << speed << matrix
+    new_tx
+
+    keanu.del
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should be_nil
+    Actor.find('title: matrix', :type => :fulltext).first.should be_nil
+    Actor.find('title: speed', :type => :fulltext).first.should be_nil
+  end
+
+  it "when indexed node is deleted then other node indexes should not be deleted" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    speed  = Movie.new :title => 'speed'
+    matrix = Movie.new :title => 'matrix'
+
+    fishburne = Actor.new :name => 'Laurence Fishburne'
+    keanu.acted_in << speed << matrix
+    fishburne.acted_in << matrix
+
+    new_tx
+
+    search = [*Actor.find('title: matrix', :type => :fulltext)]
+    search.should include(keanu, fishburne)
+    search.size.should == 2
+
+    # when deleting keanu
+    keanu.del
+    new_tx
+
+    # then we still should find fishburne
+    search = [*Actor.find('title: matrix', :type => :fulltext)]
+    search.should include(fishburne)
+    search.size.should == 1
+  end
+
+end
+
+describe "shared index - one to one", :type => :transactional do
+
+  it "simple test" do
+
+    Person.new :name => 'pelle'
+    new_tx
+
+    p        = Person.find('name: pelle').first
+    p.should_not be_nil
+    p[:name] = 'sune'
+    new_tx
+    p        = Person.find('name: sune').first
+    p.should_not be_nil
+
+    p.del
+    new_tx
+
+    p        = Person.find('name: sune').first
+    p.should be_nil
+  end
+
+  it "when a related node is created it should update the other nodes index" do
+    pelle            = Person.new :name => 'pelle'
+    phone            = Phone.new :phone_number => '1234'
+    pelle.home_phone = phone
+    #phone.phone_number = '1234'
+
+    new_tx
+
+    phone            = Person.find('name: pelle').first
+    phone.should_not be_nil
+    phone.should be_kind_of(Person)
+    phone.name.should == 'pelle'
+
+    phone1           = Person.find('name: "pelle" AND phone_number: "1234"').first
+    phone1.should_not be_nil
+    phone1.should be_kind_of(Person)
+    phone1.neo_id.should == pelle.neo_id
+  end
+
+
+  it "when a new relationship is created between two nodes" do
+    pelle            = Person.new :name => 'foobar2'
+    phone            = Phone.new :phone_number=>'4243'
+
+    new_tx
+
+    # when
+    pelle.home_phone = phone
+    new_tx
+
+    # then
+    Person.find('name: "foobar2" AND phone_number: "4243"').first.should_not be_nil
+  end
+
+  it "when a related node is deleted it should be deleted from other nodes index" do
+    pelle            = Person.new :name => 'foobar0'
+    phone            = Phone.new :phone_number=>'4242'
+    pelle.home_phone = phone
+
+    new_tx
+    Person.find('name: "foobar0" AND phone_number: "4242"').first.should_not be_nil
+
+    # when
+    phone.del
+
+    new_tx
+
+    Person.find('name: "foobar" AND phone_number: "4242"').first.should be_nil
+  end
+
+  it "when a related node relationship is deleted it should be deleted from other nodes index" do
+    pelle            = Person.new :name => 'foobar1'
+    phone            = Phone.new :phone_number=>'4243'
+
+    pelle.home_phone = phone
+
+    new_tx
+    Person.find('phone_number: "4243"').first.should_not be_nil
+
+    # when
+    pelle.home_phone = nil
+    pelle.home_phone.should be_nil
+
+    new_tx
+
+    Person.find('name: "foobar1" AND phone_number: "4243"').first.should be_nil
+  end
+
+end
