@@ -37,4 +37,5 @@ class Movie
   has_n(:actors).from(Actor, :acted_in)
 
   index :title, :via => :actors, :type => :fulltext
+  index :title, :type => :fulltext
 end

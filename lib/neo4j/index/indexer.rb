@@ -1,6 +1,6 @@
 module Neo4j
   module Index
-    class Indexer
+    class Indexer #:nodoc:
       attr_reader :indexer_for
 
       def initialize(clazz, type)
@@ -19,66 +19,65 @@ module Neo4j
         "Indexer @#{object_id} [index_for:#{@indexer_for}, field_types=#{@field_types.keys.join(', ')}, via=#{@via_relationships.inspect}]"
       end
 
-      #  add an index on a field that will be automatically updated by events.
+      #  add an index on a field so that it will be automatically updated by neo4j events.
       def index(field, conf = {})
         if conf[:via]
           rel_dsl = @indexer_for._decl_rels[conf[:via]]
+          raise "No relationship defined for '#{conf[:via]}'. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]} <-- error. Define it with a has_one or has_n" unless rel_dsl
+          raise "Only incoming relationship are possible to define index on. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]}" unless rel_dsl.incoming?
           via_indexer = rel_dsl.to_class._indexer
-          raise "No relationship defined for '#{conf[:via]}'. Check class '#{@indexer_for}': index #{field}, via=#{conf[:via]} <-- error. Define it with a has_one or has_n" unless rel_dsl
+
           field = field.to_s
           @via_relationships[field] = rel_dsl
           conf.delete :via # avoid endless recursion
           via_indexer.index(field, conf)
         else
+          raise "Already defined an (via?) index on #{field}, Using the same index for from two classes ? Check index :#{field}, :via => :#{@indexer_for}" if @field_types[field.to_s]
           @field_types[field.to_s] = conf[:type] || :exact
         end
-      end
-
-      def add_index_on_all_fields(node)
-        @field_types.keys.each { |field| add_index(node, field, node[field]) if node.property?(field) }
       end
 
       def remove_index_on_fields(node, props, tx_data)
         @field_types.keys.each { |field| rm_index(node, field, props[field]) if props[field] }
         # remove all via indexed fields
         @via_relationships.each_value do |dsl|
-          rel_type = dsl.incoming_dsl.namespace_type
-          to_class = dsl.to_class
-
+          indexer = dsl.to_class._indexer
           tx_data.deleted_relationships.each do |rel|
             start_node = rel._start_node
             next if node != rel._end_node
-            to_class._indexer.remove_index_on_fields(start_node, props, tx_data)
+            indexer.remove_index_on_fields(start_node, props, tx_data)
           end
         end
       end
 
       def update_on_deleted_relationship(relationship)
-        rel_type = relationship.rel_type
-        end_node = relationship._end_node
-        # find which via relationship match rel_type
-        @via_relationships.each_pair do |field, dsl|
-          to_class = dsl.to_class
-          type     = dsl.incoming_dsl.namespace_type
-          if type == rel_type
-            val        = end_node[field]
-            start_node = relationship._start_node
-            to_class._indexer.update_index_on(start_node, field, val, nil)
-          end
-        end
+        update_on_relationship(relationship, false)
       end
 
       def update_on_new_relationship(relationship)
+        update_on_relationship(relationship, true)
+      end
+
+      def update_on_relationship(relationship, is_created)
         rel_type = relationship.rel_type
         end_node = relationship._end_node
         # find which via relationship match rel_type
         @via_relationships.each_pair do |field, dsl|
-          to_class = dsl.to_class
-          type     = dsl.incoming_dsl.namespace_type
-          if type == rel_type
-            val   = end_node[field]
-            start_node = relationship._start_node
-            to_class._indexer.update_index_on(start_node, field, nil, val)
+          # have we declared an index on this changed relationship ?
+          next unless dsl.incoming_dsl.namespace_type == rel_type
+
+          # yes, so find the node and value we should update the index on
+          val        = end_node[field]
+          start_node = relationship._start_node
+
+          # find the indexer to use
+          indexer   = dsl.to_class._indexer
+
+          # is the relationship created or deleted ?
+          if is_created
+            indexer.update_index_on(start_node, field, nil, val)
+          else
+            indexer.update_index_on(start_node, field, val, nil)
           end
         end
       end
@@ -92,10 +91,10 @@ module Neo4j
             other = rel._start_node
             to_class._indexer.update_index_on(other, field, old_val, new_val)
           end
-        elsif @field_types.include?(field)
-          rm_index(node, field, old_val) if old_val
+        end
 
-          # add index
+        if @field_types.include?(field)
+          rm_index(node, field, old_val) if old_val
           add_index(node, field, new_val) if new_val
         end
       end
@@ -150,7 +149,6 @@ module Neo4j
 
       def rm_index_type(type=nil)
         if type
-          #raise "can't remove index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
           @field_types.delete_if { |k, v| v == type }
         else
           @field_types.clear

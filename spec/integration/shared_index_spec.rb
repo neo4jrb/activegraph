@@ -15,6 +15,21 @@ describe "shared index - many to many", :type => :transactional do
   end
 
 
+  it "you can have both a shared index (via) and a none shared index on the same class" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+    new_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('title: matrix', :type => :fulltext).first.should == keanu
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+
+    Movie.find('title: matrix', :type => :fulltext).first.should == matrix
+    Movie.find('title: speed', :type => :fulltext).first.should == speed
+  end
+
   it "when a related node is connected it should update the other nodes index" do
     keanu  = Actor.new :name => 'Keanu Reeves'
     matrix = Movie.new :title => 'matrix'

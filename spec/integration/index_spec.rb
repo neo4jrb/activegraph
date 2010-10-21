@@ -67,6 +67,7 @@ end
 
 describe Neo4j::Relationship, "index", :type => :transactional do
   before(:each) do
+    Neo4j::Relationship.rm_index_type
     Neo4j::Relationship.index(:strength) # default :exact
   end
 
