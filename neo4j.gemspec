@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.description = <<-EOF
 You can think of Neo4j as a high-performance graph engine with all the features of a mature and robust database.
 The programmer works with an object-oriented, flexible network structure rather than with strict and static tables — yet enjoys all the benefits of a fully transactional, enterprise-strength database.
-It comes included the the Apache Lucene document database.
+It comes included with the Apache Lucene document database.
 EOF
 
   s.require_path = 'lib'
