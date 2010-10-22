@@ -8,5 +8,5 @@ group 'test' do
   gem "horo", ">= 1.0.2"
   gem "rspec-apigen", ">= 0.0.4"
   gem "rspec", ">= 2.0.0"
-  gem "rspec-rails-matchers", "= 0.2.1"
+  gem "rspec-rails-matchers", ">= 0.2.1"
 end
