@@ -1,7 +1,7 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
-#require 'rake'
-#require 'rdoc/task'
+require 'rake'
+require 'rdoc/task'
 
 require "neo4j/version"
 
