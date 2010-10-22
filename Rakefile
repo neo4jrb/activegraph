@@ -24,7 +24,6 @@ end
 
 desc "release gem to gemcutter"
 task :release => [:check_commited, :build] do
-  assert_committed
   system "gem push neo4j-#{Neo4j::VERSION}.gem"
 end
 
