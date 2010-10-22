@@ -49,7 +49,7 @@ module Neo4j::Mapping
         class << self
           alias_method :orig_new, :new
         end
-      end
+      end unless c.respond_to?(:orig_new)
 
       c.extend ClassMethods::Root
       c.extend ClassMethods::Property

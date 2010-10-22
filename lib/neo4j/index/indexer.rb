@@ -147,6 +147,12 @@ module Neo4j
         end
       end
 
+      def on_neo4j_shutdown
+        # Since we might start the database again we must make sure that we don't keep any references to
+        # an old lucene index service.
+        @indexes.clear
+      end
+
       def rm_index_type(type=nil)
         if type
           @field_types.delete_if { |k, v| v == type }

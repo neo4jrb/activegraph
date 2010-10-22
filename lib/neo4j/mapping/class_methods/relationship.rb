@@ -74,7 +74,6 @@ module Neo4j::Mapping
                   dsl.single_node(self)
               end}, __FILE__, __LINE__)
 
-        # TODO
         module_eval(%Q{
               def #{rel_type}_rel
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']

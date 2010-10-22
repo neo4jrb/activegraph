@@ -1,8 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::Transaction, :type => :transactional do
-
-  before(:each) { finish_tx}
+describe Neo4j::Transaction, :type => :clean_db do
 
   it "#run runs the provided block in an transaction" do
     node =  Neo4j::Transaction.run { Neo4j::Node.new }

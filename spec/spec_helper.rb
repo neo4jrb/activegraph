@@ -44,9 +44,8 @@ begin
 
   RSpec.configure do |c|
 
-#  c.filter = { :type => :problem}
+  #c.filter = { :type => :problem}
     c.before(:each, :type => :transactional) do
-
       new_tx
       Neo4j._all_nodes.each { |n| n.del unless n == Neo4j.ref_node }
       new_tx
@@ -57,6 +56,19 @@ begin
     c.after(:each, :type => :transactional) do
       finish_tx
     end
+
+    c.before(:all, :type => :clean_db) do
+      finish_tx
+      Neo4j.shutdown
+      rm_db_storage
+      Neo4j.start
+    end
+
+    c.after(:all, :type => :clean_db) do
+      Neo4j.shutdown
+      rm_db_storage
+    end
+
   end
 
 

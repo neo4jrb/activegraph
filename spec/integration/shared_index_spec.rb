@@ -1,6 +1,37 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
+describe "shared index - complex scenarios", :type => :transactional do
+
+  it "a contact is member of a contact list" do
+    andreas = User.new('andreas', 'ronge', 'malmoe')
+    petter  = User.new('petter', 'petterson', 'malmoe')
+
+    petter.contact.users << andreas
+    andreas.contact.users << petter
+
+    finish_tx
+
+#    puts "Andreas Address List:"
+#    andreas.contacts.each {|x| puts "  #{x}"}
+    andreas.contacts.should include(petter.contact)
+    petter.contact.users.should include(andreas)
+
+#    puts "Petter Address List:"
+#    petter.contacts.each {|x| puts "  #{x}"}
+
+    # Find everybody who knows someone living in malmoe ?
+    Contact.find("city: malmoe").first.should_not be_nil
+    Contact.find("city: malmoe").should include(andreas.contact, petter.contact)
+
+    # Find all people andreas knows living in malmo
+    Contact.find("user_id: #{andreas.user_id}").size.should == 1
+    result = [*Contact.find("user_id: #{andreas.user_id} AND city: malmoe")]
+    result.size.should == 1
+    result.should include(petter.contact)
+  end
+end
+
 describe "shared index - many to many", :type => :transactional do
   it "when a related node is created it should update the other nodes index" do
     keanu  = Actor.new :name => 'Keanu Reeves'
@@ -36,7 +67,7 @@ describe "shared index - many to many", :type => :transactional do
     speed  = Movie.new :title => 'speed'
     new_tx
     keanu.acted_in << matrix << speed
-    new_tx
+    finish_tx
 
     Actor.find('name: keanu', :type => :fulltext).first.should == keanu
     Actor.find('title: matrix', :type => :fulltext).first.should == keanu
@@ -52,7 +83,7 @@ describe "shared index - many to many", :type => :transactional do
 
     # when
     keanu.acted_in_rels.each { |r| r.del }
-    new_tx
+    finish_tx
 
     Actor.find('name: keanu', :type => :fulltext).first.should == keanu
     Actor.find('title: matrix', :type => :fulltext).first.should be_nil
@@ -69,8 +100,7 @@ describe "shared index - many to many", :type => :transactional do
     # when, delete the matrix relationship
     matrix.rels.first.del
 
-    keanu.acted_in_rels.each { |r| puts "Acted in #{r.end_node}" }
-    new_tx
+    finish_tx
 
     Actor.find('name: keanu', :type => :fulltext).first.should == keanu
     Actor.find('title: matrix', :type => :fulltext).first.should be_nil
@@ -102,7 +132,7 @@ describe "shared index - many to many", :type => :transactional do
     new_tx
 
     keanu.del
-    new_tx
+    finish_tx
 
     Actor.find('name: keanu', :type => :fulltext).first.should be_nil
     Actor.find('title: matrix', :type => :fulltext).first.should be_nil
@@ -126,7 +156,7 @@ describe "shared index - many to many", :type => :transactional do
 
     # when deleting keanu
     keanu.del
-    new_tx
+    finish_tx
 
     # then we still should find fishburne
     search = [*Actor.find('title: matrix', :type => :fulltext)]
@@ -151,7 +181,7 @@ describe "shared index - one to one", :type => :transactional do
     p.should_not be_nil
 
     p.del
-    new_tx
+    finish_tx
 
     p        = Person.find('name: sune').first
     p.should be_nil
@@ -163,7 +193,7 @@ describe "shared index - one to one", :type => :transactional do
     pelle.home_phone = phone
     #phone.phone_number = '1234'
 
-    new_tx
+    finish_tx
 
     phone            = Person.find('name: pelle').first
     phone.should_not be_nil
@@ -185,7 +215,7 @@ describe "shared index - one to one", :type => :transactional do
 
     # when
     pelle.home_phone = phone
-    new_tx
+    finish_tx
 
     # then
     Person.find('name: "foobar2" AND phone_number: "4243"').first.should_not be_nil
@@ -202,7 +232,7 @@ describe "shared index - one to one", :type => :transactional do
     # when
     phone.del
 
-    new_tx
+    finish_tx
 
     Person.find('name: "foobar" AND phone_number: "4242"').first.should be_nil
   end
@@ -220,7 +250,7 @@ describe "shared index - one to one", :type => :transactional do
     pelle.home_phone = nil
     pelle.home_phone.should be_nil
 
-    new_tx
+    finish_tx
 
     Person.find('name: "foobar1" AND phone_number: "4243"').first.should be_nil
   end

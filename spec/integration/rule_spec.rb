@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-class User
+class Reader
   include Neo4j::NodeMixin
   property :age
 end
@@ -16,9 +16,9 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
 
   before(:all) do
-    User.rule :all
-    User.rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
-    User.rule(:young, :trigger => :readers) { |node| node[:age]  < 5 }  # for testing using native java neo4j node
+    Reader.rule :all
+    Reader.rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
+    Reader.rule(:young, :trigger => :readers) { |node| node[:age]  < 5 }  # for testing using native java neo4j node
 
     NewsStory.rule :all
     NewsStory.rule(:featured) { |node| node[:featured] == true }
@@ -29,7 +29,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
   after(:all) do
     new_tx
-    User.delete_rules
+    Reader.delete_rules
     NewsStory.delete_rules
     finish_tx
   end
@@ -39,54 +39,54 @@ describe "Neo4j::Node#rule", :type => :transactional do
   end
 
   it "generate instance method: <rule_name>? for each rule" do
-    young = User.new :age => 2
+    young = Reader.new :age => 2
     young.should respond_to(:old?)
     young.should respond_to(:young?)
     young.should respond_to(:all?)
   end
 
   it "instance method <rule_name>?  return true if the rule evaluates to true" do
-    young = User.new :age => 2
-    old = User.new :age => 20
+    young = Reader.new :age => 2
+    old = Reader.new :age => 20
 
     young.should be_young
     old.should be_old
   end
 
   it "generate accessor methods for traversing the rule group" do
-    User.should respond_to(:all)
-    User.should respond_to(:old)
-    User.should respond_to(:young)
+    Reader.should respond_to(:all)
+    Reader.should respond_to(:old)
+    Reader.should respond_to(:young)
     NewsStory.should respond_to(:all)
     NewsStory.should respond_to(:featured)
     NewsStory.should respond_to(:embargoed)
   end
 
   it "generate chained method on node traversal objects" do
-    User.all.should respond_to(:old)
-    User.old.should respond_to(:all)
+    Reader.all.should respond_to(:old)
+    Reader.old.should respond_to(:all)
   end
 
 
   it "rule each changed node" do
-    a = User.new :age => 25
-    b = User.new :age => 4
-    lambda {finish_tx}.should change(User.all, :size).by(2)
+    a = Reader.new :age => 25
+    b = Reader.new :age => 4
+    lambda {finish_tx}.should change(Reader.all, :size).by(2)
 
-    User.all.should include(a)
-    User.all.should include(b)
-    User.old.should include(a)
-    User.old.should_not include(b)
-    User.young.should include(b)
+    Reader.all.should include(a)
+    Reader.all.should include(b)
+    Reader.old.should include(a)
+    Reader.old.should_not include(b)
+    Reader.young.should include(b)
   end
 
   it "rule only instances of the given class (no side effects)" do
-    User.new :age => 25
-    User.new :age => 4
+    Reader.new :age => 25
+    Reader.new :age => 4
     lambda {new_tx}.should_not change(NewsStory.all, :size)
 
     NewsStory.new :featured => true, :publish_date => 2011
-    lambda {new_tx}.should_not change(User.all, :size)
+    lambda {new_tx}.should_not change(Reader.all, :size)
   end
 
 
@@ -115,54 +115,54 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
 
   it "remove nodes from rule group when a property change" do
-    a = User.new :age => 25
+    a = Reader.new :age => 25
     new_tx
-    User.old.should include(a)
+    Reader.old.should include(a)
 
     # now, change age so that it does not belong to the group 'old'
     a[:age] = 8
-    lambda {finish_tx}.should change(User.old, :size).by(-1)
+    lambda {finish_tx}.should change(Reader.old, :size).by(-1)
 
-    User.old.should_not include(a)
+    Reader.old.should_not include(a)
   end
 
   it "move rule group when property change" do
-    a = User.new :age => 25
+    a = Reader.new :age => 25
     new_tx
-    User.old.should include(a)
+    Reader.old.should include(a)
 
     # now, change age so that it does not belong to the group 'old'
     a[:age] = 3
-    lambda { finish_tx }.should change(User.young, :size).by(+1)
+    lambda { finish_tx }.should change(Reader.young, :size).by(+1)
 
-    User.old.should_not include(a)
-    User.young.should include(a)
+    Reader.old.should_not include(a)
+    Reader.young.should include(a)
   end
 
   it "keep in the same rule group when property change" do
-    a = User.new :age => 25
+    a = Reader.new :age => 25
     new_tx
 
     # now, change age so that it does still belong to same group 'old'
     a[:age] = 20
-    lambda { finish_tx }.should_not change(User.old, :size)
+    lambda { finish_tx }.should_not change(Reader.old, :size)
 
-    User.old.should include(a)
-    User.young.should_not include(a)
+    Reader.old.should include(a)
+    Reader.young.should_not include(a)
   end
 
   it "remove node from rule group when node is deleted" do
-    a = User.new :age => 25
+    a = Reader.new :age => 25
     new_tx
 
     # now, delete it
-    lambda { a.del; finish_tx }.should change(User.all, :size).by(-1)
-    User.all.should_not include(a)
-    User.old.should_not include(a)
+    lambda { a.del; finish_tx }.should change(Reader.all, :size).by(-1)
+    Reader.all.should_not include(a)
+    Reader.old.should_not include(a)
   end
 
   it "add nodes to rule group when a relationship is created" do
-    user = User.new :age => 2
+    user = Reader.new :age => 2
     story = NewsStory.new :featured => true, :publish_date => 2009
     story.readers << user
 
@@ -172,7 +172,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
   end
 
   it "add nodes to rule group when a related node updates its property (trigger_rules)" do
-    user = User.new :age => 200
+    user = Reader.new :age => 200
     story = NewsStory.new :featured => true, :publish_date => 2009
     story.readers << user
 
@@ -187,7 +187,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
 
   it "add nodes to rule group when a related node is deleted (trigger_rules)" do
-    user = User.new :age => 2
+    user = Reader.new :age => 2
     story = NewsStory.new :featured => true, :publish_date => 2009
     story.readers << user
 
@@ -195,7 +195,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
     NewsStory.young_readers.should include(story)
 
     user.del
-    User.new :age => 2
+    Reader.new :age => 2
 
     finish_tx
 

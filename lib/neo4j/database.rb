@@ -20,8 +20,11 @@ module Neo4j
       if @running
         @graph.unregister_transaction_event_handler(@event_handler)
         @event_handler.neo4j_shutdown(self)
+        @graph.shutdown
+        @graph = nil
+        @lucene = nil
       end
-      @graph.shutdown
+
       @running = false
     end
 

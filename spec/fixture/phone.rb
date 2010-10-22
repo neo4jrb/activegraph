@@ -9,7 +9,6 @@ class Person
 end
 
 class Phone
-  include Neo4j::NodeMixin
   property :phone_number
   has_one(:person).from(Person, :home_phone)
 

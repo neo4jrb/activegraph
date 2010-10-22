@@ -2,16 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
-describe Neo4j::Model do
-
-  before(:each) do
-    new_tx
-    Neo4j._all_nodes.each {|n| n.del unless n == Neo4j.ref_node}
-    new_tx
-    Neo4j::Mapping::ClassMethods::Rules.on_neo4j_started
-    Neo4j::Index::IndexerRegistry.clear_all_indexes
-    finish_tx
-  end
+describe Neo4j::Model, :type => :clean_db do
 
   describe "new" do
     before :each do
@@ -360,6 +351,11 @@ describe Neo4j::Model do
 
   end
 
+  describe "attr_accessible2" do
+    it "Does things" do
+
+    end
+  end
 
   describe "attr_accessible" do
     before(:all) do
@@ -368,6 +364,7 @@ describe Neo4j::Model do
         attr_protected :credit_rating
       end
     end
+
     it "given attributes are sanitized before assignment in method: attributes" do
       customer = @klass.new
       customer.attributes = {"name" => "David", "credit_rating" => "Excellent"}

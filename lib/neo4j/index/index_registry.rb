@@ -45,7 +45,6 @@ module Neo4j
 
         def on_relationship_deleted(rel, old_props, tx_data)
           on_node_deleted(rel, old_props, tx_data)
-
           # if only the relationship has been deleted then we have to remove the index
           # if both the relationship and the node has been deleted then the index will be removed in the
           # on_node_deleted callback
@@ -55,6 +54,10 @@ module Neo4j
             indexer = find_by_class(end_node['_classname'])
             indexer && indexer.update_on_deleted_relationship(rel)
           end
+        end
+
+        def on_neo4j_shutdown(*)
+          @@indexers.each_value {|indexer| indexer.on_neo4j_shutdown}
         end
       end
     end

@@ -10,7 +10,6 @@ module Neo4j
       extend ActiveModel::Callbacks
       extend Neo4j::Validations::ClassMethods
       extend TxMethods
-#      extend ClassMethods::Relationship
 
       define_model_callbacks :create, :save, :update, :destroy
 
