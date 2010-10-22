@@ -61,16 +61,16 @@ module Neo4j::Mapping
         end
 
         def rule_for(clazz)
-          Neo4j.ref_node.outgoing(clazz).first
+          Neo4j.ref_node._rel(:outgoing, clazz)._end_node
         end
 
 
         def on_relationship_created(rel, *)
-          trigger_start_node = trigger?(rel.start_node)
-          trigger_end_node   = trigger?(rel.end_node)
+          trigger_start_node = trigger?(rel._start_node)
+          trigger_end_node   = trigger?(rel._end_node)
           # end or start node must be triggered by this event
           return unless trigger_start_node || trigger_end_node
-          on_property_changed(trigger_start_node ? rel.start_node : rel.end_node)
+          on_property_changed(trigger_start_node ? rel._start_node : rel._end_node)
         end
 
 
@@ -100,8 +100,7 @@ module Neo4j::Mapping
 
         def run_rule(rule, node)
           if rule.arity != 1
-            wrapper = Neo4j::Node.wrapper(node)
-            wrapper.instance_eval(&rule)
+            node.wrapper.instance_eval(&rule)
           else
             rule.call(node)
           end

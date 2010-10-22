@@ -21,8 +21,10 @@ describe "shared index - complex scenarios", :type => :transactional do
 #    petter.contacts.each {|x| puts "  #{x}"}
 
     # Find everybody who knows someone living in malmoe ?
-    Contact.find("city: malmoe").first.should_not be_nil
-    Contact.find("city: malmoe").should include(andreas.contact, petter.contact)
+    result = [*Contact.find("city: malmoe")] #.first.should_not be_nil
+    result.should_not be_empty
+    result.should include(andreas.contact)
+    result.should include(petter.contact)
 
     # Find all people andreas knows living in malmo
     Contact.find("user_id: #{andreas.user_id}").size.should == 1

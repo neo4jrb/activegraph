@@ -14,7 +14,7 @@ module Neo4j
     # Checks if the given node or node id exists in the database.
     def exist?(node_or_node_id, db = Neo4j.started_db)
       id = node_or_node_id.kind_of?(Fixnum) ?  node_or_node_id : node_or_node_id.id
-      load(id, db) != nil
+      _load(id, db) != nil
     end
   end
 end

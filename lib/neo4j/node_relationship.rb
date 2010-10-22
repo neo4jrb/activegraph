@@ -90,6 +90,27 @@ module Neo4j
     end
 
 
+    # Returns the only relationship of a given type and direction that is attached to this node, or null.
+    # This is a convenience method that is used in the commonly occuring situation where a node has exactly zero or
+    # one relationships of a given type and direction to another node.
+    # Typically this invariant is maintained by the rest of the code: if at any time more than one such relationships
+    # exist, it is a fatal error that should generate an unchecked exception. This method reflects that semantics and
+    # returns either:
+    #
+    # * nil if there are zero relationships of the given type and direction,
+    # * the relationship if there's exactly one, or
+    # * raise an exception in all other cases.
+    def rel(dir, type)
+      result = _rel(dir, type)
+      result && result.wrapper
+    end
+
+    # Same as rel but does not return a ruby wrapped object but instead returns the Java object.
+    def _rel(dir, type)
+      get_single_relationship(type_to_java(type), dir_to_java(dir))
+    end
+
+    # Returns the raw java neo4j relationship object.
     def rels_raw(dir=:both, *types)
       if types.size > 1
         java_types = types.inject([]) { |result, type| result << type_to_java(type) }.to_java(:'org.neo4j.graphdb.RelationshipType')

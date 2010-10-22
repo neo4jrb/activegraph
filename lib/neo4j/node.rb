@@ -110,7 +110,15 @@ module Neo4j
       # If the node does not exist it will return nil
       #
       def load(node_id, db = Neo4j.started_db)
-        wrapper(db.graph.get_node_by_id(node_id.to_i))
+        node = _load(node_id, db)
+        return nil if node.nil?
+        node.wrapper
+      end
+
+      # Same as load but does not return the node as a wrapped Ruby object.
+      #
+      def _load(node_id, db)
+        db.graph.get_node_by_id(node_id.to_i)
       rescue java.lang.IllegalStateException
         nil # the node has been deleted
       rescue org.neo4j.graphdb.NotFoundException

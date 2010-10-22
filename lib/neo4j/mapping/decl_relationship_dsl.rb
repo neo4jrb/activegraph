@@ -103,11 +103,7 @@ module Neo4j::Mapping
     def single_relationship(node)
       dir = direction
       dsl = incoming? ? incoming_dsl : self
-
-      type     = type_to_java(dsl.namespace_type)
-      java_dir = dir_to_java(dir)
-      rel = node._java_node.getSingleRelationship(type, java_dir)
-      rel && rel.wrapper
+      node._java_node.rel(dir, dsl.namespace_type)
     end
 
     def all_relationships(node)

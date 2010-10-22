@@ -24,9 +24,9 @@ module Neo4j::Rails
       outgoing(java_type.name).new(other_java_node)
     end
 
-    def getSingleRelationship(type, dir)
+    def rel(dir, type)
       # TODO incoming not implemented, needed ?
-      @outgoing_rels[type.name] && @outgoing_rels[type.name].rels.first
+      @outgoing_rels[type.to_s] && @outgoing_rels[type.to_s].rels.first
     end
 
     def getRelationships(*args)

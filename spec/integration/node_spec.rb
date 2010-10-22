@@ -24,9 +24,11 @@ describe Neo4j::Node, :type => :transactional do
       Neo4j::Node.should_not exist(new_node.id)
     end
 
-    it "deletes the node - does not exist before the transaction finish" do
+    it "deletes the node - does exist before the transaction finish but not after" do
       new_node = Neo4j::Node.new
       new_node.del
+      new_node.should exist
+      finish_tx
       new_node.should_not exist
     end
 
@@ -395,6 +397,27 @@ describe Neo4j::Node, :type => :transactional do
       expect{ node.rels(:friends, :work).incoming }.to raise_error
     end
 
+    it "#rel returns a single relationship if there is only one relationship" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      rel = Neo4j::Relationship.new(:friend, a, b)
+      a.rel(:outgoing, :friend).should == rel
+    end
+
+    it "#rel returns nil if there is no relationship" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      a.rel(:outgoing, :friend).should be_nil
+    end
+
+    it "#rel should raise an exception if there are more then one relationship" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      c = Neo4j::Node.new
+      Neo4j::Relationship.new(:friend, a, b)
+      Neo4j::Relationship.new(:friend, a, c)
+      expect { a.rel(:outgoing, :friend)}.to raise_error
+    end
 
   end
 
