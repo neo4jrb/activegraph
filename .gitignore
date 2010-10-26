@@ -5,3 +5,9 @@ nbproject
 .idea
 
 .rvmrc
+
+# kate, jedit
+*~
+
+# neo4j
+tmp
