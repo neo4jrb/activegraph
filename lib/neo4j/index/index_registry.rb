@@ -9,8 +9,9 @@ module Neo4j
 
         def create_for(this_clazz, using_other_clazz, type)
           @@indexers ||= {}
-          @@indexers[this_clazz.to_s] = @@indexers[using_other_clazz.to_s] || Indexer.new(this_clazz, type)
-          @@indexers[this_clazz.to_s]
+	  index = Indexer.new(this_clazz, type)
+	  index.inherit_fields_from(@@indexers[using_other_clazz.to_s])
+          @@indexers[this_clazz.to_s] = index
         end
 
         def find_by_class(classname)
