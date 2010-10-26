@@ -2,6 +2,7 @@ module Neo4j
   module Rails
     class Model
       include Neo4j::NodeMixin
+      include ActiveModel::Serializers::Xml
       include ActiveModel::Validations
       include ActiveModel::Dirty
       include ActiveModel::MassAssignmentSecurity
@@ -13,7 +14,8 @@ module Neo4j
 
       define_model_callbacks :create, :save, :update, :destroy
 
-
+      rule :all
+      
       UniquenessValidator = Neo4j::Validations::UniquenessValidator
 
       class RecordInvalidError < RuntimeError
@@ -35,7 +37,6 @@ module Neo4j
       def init_on_create(*args) # :nodoc:
         super()
         self.attributes=args[0] if args[0].respond_to?(:each_pair)
-        @_created_record = true
       end
 
       # --------------------------------------
@@ -119,7 +120,7 @@ module Neo4j
         if new?
           # We are updating a node that was created with the 'new' method.
           # The relationship will only be kept in the Value object.
-          outgoing(rel_type)<<clazz.new(attr) unless reject_if?(reject_if, attr)
+          outgoing(rel_type) << clazz.new(attr) unless reject_if?(reject_if, attr) || (allow_destroy && attr[:_destroy] && attr[:_destroy] != '0')
         else
           # We have a node that was created with the #create method - has real Neo4j relationships
           # does it exist ?
@@ -167,43 +168,53 @@ module Neo4j
       end
 
       def save
-        valid = valid?
-        if valid
-          # if we are trying to save a value then we should create a real node
-          valid = _run_save_callbacks { create_or_update_node }
-          @_created_record = false
-          true
-        else
-          # if not valid we should rollback the transaction so that the changes does not take place.
-          # no point failing the transaction if we have created a model with 'new'
-          Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running? && !_java_node.kind_of?(Neo4j::Rails::Value)
-          false
-        end
-        valid
+	_run_save_callbacks do
+	  if create_or_update_node
+	    true
+	  else
+	    # if not valid we should rollback the transaction so that the changes does not take place.
+	    # no point failing the transaction if we have created a model with 'new'
+	    Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running? #&& !_java_node.kind_of?(Neo4j::Rails::Value)
+	    false
+	  end
+	end
       end
 
       def create_or_update_node
-        valid = true
-        if _java_node.kind_of?(Neo4j::Rails::Value)
-          node = Neo4j::Node.new(props)
-          valid = _java_node.save_nested(node)
-          init_on_load(node)
-          init_on_create
-        end
-
-        if  new_record?
-          _run_create_callbacks { clear_changes }
-        else
-          _run_update_callbacks { clear_changes }
-        end
-        valid
+	if valid?(:save)
+	  if new_record?
+	    _run_create_callbacks do
+	      if valid?(:create)
+		node = Neo4j::Node.new(props)
+		return false unless _java_node.save_nested(node)
+		init_on_load(node)
+		init_on_create
+		clear_changes
+		true
+	      end
+	    end
+	  else
+	    _run_update_callbacks do
+	      if valid?(:update)
+		clear_changes
+		true
+	      end
+	    end
+	  end
+	end
       end
 
       def clear_changes
         @previously_changed = changes
         @changed_attributes.clear
       end
-
+      
+      def reload(options = nil)
+	clear_changes
+	attributes = self.class.load(self.id.to_s).attributes
+	self
+      end
+      
       def save!
         raise RecordInvalidError.new(self) unless save
       end
@@ -217,15 +228,11 @@ module Neo4j
         self
       end
 
-      # Returns true if this object hasn’t been saved yet — that is, a record for the object doesn’t exist yet; otherwise, returns false.
-      def new_record?()
-        # it is new if the model has been created with either the new or create method
-        new? || @_created_record == true
-      end
-
       def new?
         _java_node.kind_of?(Neo4j::Rails::Value)
       end
+      
+      alias :new_record? :new?
 
       def del
         @_deleted = true
@@ -258,18 +265,31 @@ module Neo4j
           wrapped
         end
 
+	# Behave like ActiveModel
+        def all_with_args(*args)
+	  if args.empty?
+	    all_without_args
+	  else
+	    hits = find_without_checking_for_id(*args)
+	    # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
+	    Thread.current[:neo4j_lucene_connection] ||= []
+	    Thread.current[:neo4j_lucene_connection] << hits
+	    hits
+	  end
+        end
+	
+	alias_method_chain :all, :args
+        
         # Handle Model.find(params[:id])
-        def find(*args)
-          if args.length == 1 && String === args[0] && args[0].to_i != 0
+        def find_with_checking_for_id(*args)
+	  if args.length == 1 && String === args[0] && args[0].to_i != 0
             load(*args)
           else
-            hits = super
-            # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
-            Thread.current[:neo4j_lucene_connection] ||= []
-            Thread.current[:neo4j_lucene_connection] << hits
-            hits
+            all_with_args(*args).first
           end
         end
+        
+        alias_method_chain :find, :checking_for_id
 
         def load(*ids)
           result = ids.map { |id| Neo4j::Node.load(id) }
@@ -283,16 +303,12 @@ module Neo4j
 
         alias_method :_orig_create, :create
 
-        def create(*)
-          model = super
-          model.save
-          model
+        def create(*args)
+          new(*args).tap { |o| o.save }
         end
 
         def create!(*args)
-          model = _orig_create(*args)
-          model.save!
-          model
+	  new(*args).tap { |o| o.save! }
         end
 
         tx_methods :create, :create!
@@ -338,4 +354,3 @@ module Neo4j
 
   end
 end
-

@@ -16,7 +16,7 @@ class Member < Neo4j::Model
   has_one(:thing)
 
   accepts_nested_attributes_for :avatar, :allow_destroy => true
-  accepts_nested_attributes_for :posts
+  accepts_nested_attributes_for :posts, :allow_destroy => true
   accepts_nested_attributes_for :valid_posts, :reject_if => proc { |attributes| attributes[:title].blank? }
   accepts_nested_attributes_for :valid_posts2, :reject_if => :reject_posts
 

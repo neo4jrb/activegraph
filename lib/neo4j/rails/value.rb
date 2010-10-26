@@ -75,6 +75,11 @@ module Neo4j::Rails
       end
       valid
     end
+    
+    # this node doesn't exist in the DB yet
+    def exist?
+      false
+    end
 
     class Relationship
       include org.neo4j.graphdb.Relationship

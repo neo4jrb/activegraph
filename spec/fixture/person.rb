@@ -3,7 +3,7 @@ class Company
 end
 
 class Person
-#  include Neo4j::NodeMixin
+  include Neo4j::NodeMixin
   property :name
   property :city
 

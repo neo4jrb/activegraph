@@ -156,7 +156,7 @@ describe Neo4j::Model, :type => :clean_db do
 
     it "should find a model by one of its attributes" do
       model = IceCream.create(:flavour => 'vanilla')
-      IceCream.find("flavour: vanilla").to_a.should include(model)
+      IceCream.find("flavour: vanilla").should == model
     end
   end
 
@@ -221,7 +221,6 @@ describe Neo4j::Model, :type => :clean_db do
 
         def mark_saved
           @saved = true
-          fail "Expected new record" unless new_record?
         end
       end
       model = klass.create!
@@ -243,7 +242,6 @@ describe Neo4j::Model, :type => :clean_db do
         attr_reader :saved
 
         def mark_saved
-          fail "Expected new record" unless new_record?
           @saved = true
         end
       end
@@ -266,7 +264,6 @@ describe Neo4j::Model, :type => :clean_db do
         attr_reader :saved
 
         def mark_saved
-          fail "Expected new record" unless new_record?
           @saved = true
         end
       end
@@ -341,11 +338,11 @@ describe Neo4j::Model, :type => :clean_db do
       b.errors.size.should == 1
     end
 
-    it "should not allow to create two nodes with not unique fields" do
+    it "should allow to create two nodes with not unique fields" do
       @klass.create(:email => 'abc@gmail.copm')
       b = @klass.new(:email => 'ab@gmail.com')
 
-      b.save.should be_true
+      b.save.should_not be_false
       b.errors.size.should == 0
     end
 
