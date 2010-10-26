@@ -1,7 +1,7 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
-describe Neo4j::Node, "index", :type => :transactional do
+describe Neo4j::Node, "find", :type => :transactional do
   it "can index and search on two properties if index has the same type" do
     c = Vehicle.new(:wheels => 4, :colour => 'blue')
     new_tx
@@ -65,7 +65,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   end
 end
 
-describe Neo4j::Relationship, "index", :type => :transactional do
+describe Neo4j::Relationship, "find", :type => :transactional do
   before(:each) do
     Neo4j::Relationship.rm_index_type
     Neo4j::Relationship.index(:strength) # default :exact
