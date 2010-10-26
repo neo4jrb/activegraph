@@ -59,8 +59,14 @@ module Neo4j::Mapping
       c.extend Neo4j::Index::ClassMethods
 
       def c.inherited(subclass)
-        subclass.node_indexer subclass
-        subclass.root_class subclass
+	subclass.root_class subclass
+	
+        # inherit the index properties
+	subclass.node_indexer self
+	
+	# inherit the rules too
+	subclass.inherit_rules_from self
+	
         super
       end
 
