@@ -18,13 +18,22 @@ module Neo4j::Mapping
           trigger = props[:trigger].nil? ? [] : props[:trigger]
           @triggers[clazz][field] = trigger.respond_to?(:each) ? trigger : [trigger]
         end
+	
+	def inherit(parent_class, subclass)
+	  # copy all the rules
+	  @rules[parent_class.to_s].each_pair do |field, filter|
+	    subclass.rule field, &filter
+	  end if @rules[parent_class.to_s]
+	end
 
-        def trigger_other_rules(node, field)
-          clazz = node[:_classname]
-          rel_types = @triggers[clazz][field]
-          rel_types.each do |rel_type|
-            node.incoming(rel_type).each { |n| n.trigger_rules }
-          end
+        def trigger_other_rules(node)
+	  clazz = node[:_classname]
+	  @rules[clazz].keys.each do |field|
+	    rel_types = @triggers[clazz][field]
+	    rel_types.each do |rel_type|
+	      node.incoming(rel_type).each { |n| n.trigger_rules }
+	    end
+	  end
         end
 
         def fields_for(clazz)
@@ -61,12 +70,17 @@ module Neo4j::Mapping
         end
 
         def rule_for(clazz)
-          Neo4j.ref_node._rel(:outgoing, clazz)._end_node
+	  if Neo4j.ref_node.rel?(clazz)
+	    Neo4j.ref_node._rel(:outgoing, clazz)._end_node
+	  else
+	    # this should be called if the rule node gets deleted
+	    create_rule_node_for(clazz)
+	  end
         end
 
 
         def on_relationship_created(rel, *)
-          trigger_start_node = trigger?(rel._start_node)
+	  trigger_start_node = trigger?(rel._start_node)
           trigger_end_node   = trigger?(rel._end_node)
           # end or start node must be triggered by this event
           return unless trigger_start_node || trigger_end_node
@@ -75,28 +89,52 @@ module Neo4j::Mapping
 
 
         def on_property_changed(node, *)
-          trigger_rules(node) if trigger?(node)
+	  trigger_rules(node) if trigger?(node)
         end
 
         def trigger_rules(node)
-          clazz = node[:_classname]
-          return if @rules[clazz].nil?
+          trigger_rules_for_class(node, node[:_classname])
+	  trigger_other_rules(node)
+        end
+	
+	def trigger_rules_for_class(node, clazz)
+	  return if @rules[clazz].nil?
 
-          agg_node = rule_for(node[:_classname])
+          agg_node = rule_for(clazz)
           @rules[clazz].each_pair do |field, rule|
             if run_rule(rule, node)
               # is this node already included ?
-              if !node.rel?(field)
+	      unless connected?(field, agg_node, node)
                 agg_node.outgoing(field) << node
-                trigger_other_rules(node, field)
               end
             else
               # remove old ?
-              node.rels(field).incoming.each { |x| x.del }
-              trigger_other_rules(node, field)
+	      break_connection(field, agg_node, node)
             end
           end
-        end
+	  
+	  # recursively add relationships for all the parent classes with rules that also pass for this node
+	  if clazz = eval("#{clazz}.superclass")
+	    trigger_rules_for_class(node, clazz.to_s)
+	  end
+	end
+	
+	# work out if two nodes are connected by a particular relationship
+	# uses the end_node to start with because it's more likely to have less relationships to go through
+	# (just the number of superclasses it has really)
+	def connected?(relationship, start_node, end_node)
+	  end_node.incoming(relationship).each do |n|
+	    return true if n == start_node
+	  end
+	  false
+	end
+	
+	# sever a direct one-to-one relationship if it exists
+	def break_connection(relationship, start_node, end_node)
+	  end_node.rels(relationship).incoming.each do |r|
+	    return r.del if r.start_node == start_node
+	  end
+	end
 
         def run_rule(rule, node)
           if rule.arity != 1
@@ -130,10 +168,10 @@ module Neo4j::Mapping
       #   p1.young?    # => true
       #
       def rule(name, props = {}, &block)
-        singelton = class << self;
+	singelton = class << self;
           self;
         end
-
+	
         # define class methods
         singelton.send(:define_method, name) do
           agg_node = Rules.rule_for(self)
@@ -145,16 +183,20 @@ module Neo4j::Mapping
             end
           end
           traversal
-        end
+        end unless respond_to?(name)
 
         # define instance methods
         self.send(:define_method, "#{name}?") do
           instance_eval &block
-        end
+	end
 
         Rules.add(self, name, props, &block)
       end
-
+      
+      def inherit_rules_from(clazz)
+	Rules.inherit(clazz, self)
+      end
+      
       # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
       # It also remove the given class method.
       def delete_rules
