@@ -2,19 +2,19 @@ module Neo4j
   module Validations
     class UniquenessValidator < ActiveModel::EachValidator
       def initialize(options)
-        super(options.reverse_merge(:case_sensitive => true))
+	super(options.reverse_merge(:case_sensitive => true))
+      end
+	     
+      def setup(klass)
+	@attributes.each do |attribute|
+	  if klass.index_type_for(attribute) != :exact
+	    raise "Can't validate property #{attribute} on class #{klass} since there is no :exact lucene index on that property"
+	  end
+	end
       end
 
       def validate_each(record, attribute, value)
-        clazz = record.class
-
-        # TODO is it possible to move this to setup instead so that we don't have to do this always ?
-        if clazz.index_type_for(attribute) != :exact
-          raise "Can't validate property #{attribute} on class #{clazz} since there is no :exact lucene index on that property"
-        end
-
-        query = "#{attribute}: #{value}"
-        if !clazz.find(query).empty?
+	if record.class.find("#{attribute}: #{value}")
           record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
         end
       end
