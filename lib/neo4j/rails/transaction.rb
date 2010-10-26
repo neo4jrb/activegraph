@@ -52,13 +52,14 @@ module Neo4j
         def run
           begin
             new
-            yield
+            ret = yield
           rescue
             fail
             raise
           ensure
             finish
           end
+	  ret
         end
       end
     end
