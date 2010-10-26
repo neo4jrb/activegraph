@@ -3,6 +3,7 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
+  require 'ruby-debug'
   require 'rspec'
   require 'rspec-apigen'
   require 'fileutils'
@@ -31,16 +32,15 @@ begin
     @tx = Neo4j::Transaction.new
   end
 
+  # Requires supporting ruby files with custom matchers and macros, etc,
+  # in spec/support/ and its subdirectories.
+  Dir["spec/support/**/*.rb"].each {|f| require f}
+
   # load all fixture classes
-  fixture_path = File.join(File.dirname(__FILE__), 'fixture')
-  Dir.entries(fixture_path).find_all { |f| f =~ /\.rb$/ }.each do |file|
-    require File.join(fixture_path, file)
-  end
+  Dir["spec/fixture/**/*.rb"].each {|f| require f}
 
   # set database storage location
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
-
-  rm_db_storage
 
   RSpec.configure do |c|
 
@@ -57,18 +57,25 @@ begin
       finish_tx
     end
 
-    c.before(:all, :type => :clean_db) do
+    c.before(:all) do
       finish_tx
       Neo4j.shutdown
       rm_db_storage
       Neo4j.start
     end
 
-    c.after(:all, :type => :clean_db) do
+    c.after(:all) do
       Neo4j.shutdown
-      rm_db_storage
+      #rm_db_storage
     end
-
+    
+    c.before(:each) do
+      Neo4j::Transaction.run do
+	Neo4j.all_nodes.each do |n|
+	  n.del unless n.neo_id == 0
+	end
+      end
+    end
   end
 
 
@@ -77,13 +84,19 @@ begin
     def self.set(klass)
       name = "Model_#{@@_counter}"
       @@_counter += 1
-      const_set(name,klass)
+      klass.class_eval <<-RUBY
+	def self.to_s
+	  "#{name}"
+	end
+      RUBY
+      Kernel.const_set(name,klass)
       klass
     end
   end
 
   def model_subclass(&block)
-    TempModel.set(Class.new(Neo4j::Model, &block))
+    klass = Class.new(Neo4j::Model, &block)
+    TempModel.set(klass)
   end
 end unless @_neo4j_rspec_loaded
 
