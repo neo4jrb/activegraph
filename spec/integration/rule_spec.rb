@@ -3,40 +3,36 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 class Reader
   include Neo4j::NodeMixin
   property :age
+  
+  rule :all
+  rule(:old) { age > 10 } 						# for testing evaluation in the context of a wrapped ruby object
+  rule(:young, :trigger => :readers) { |node| node[:age]  < 5 }  	# for testing using native java neo4j node
+end
+
+class MaleReader < Reader
+  property :sex
+end
+
+class FastReader < Reader
+  property :reading_speed
+  
+  rule(:all) { reading_speed > 1 }
 end
 
 class NewsStory
   include Neo4j::NodeMixin
   has_n :readers
+  
+  rule :all
+  rule(:featured) { |node| node[:featured] == true }
+  rule(:embargoed) { |node| node[:publish_date] > 2010 }
+  # young readers for only young readers - find first person which is not young, if not found then the story has only young readers
+  rule(:young_readers) { !readers.find{|user| !user.young?}}
 end
 
 
 
 describe "Neo4j::Node#rule", :type => :transactional do
-
-
-  before(:all) do
-    Reader.rule :all
-    Reader.rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
-    Reader.rule(:young, :trigger => :readers) { |node| node[:age]  < 5 }  # for testing using native java neo4j node
-
-    NewsStory.rule :all
-    NewsStory.rule(:featured) { |node| node[:featured] == true }
-    NewsStory.rule(:embargoed) { |node| node[:publish_date] > 2010 }
-    # young readers for only young readers - find first person which is not young, if not found then the story has only young readers
-    NewsStory.rule(:young_readers) { !readers.find{|user| !user.young?}}
-  end
-
-  after(:all) do
-    new_tx
-    Reader.delete_rules
-    NewsStory.delete_rules
-    finish_tx
-  end
-
-  before(:each) do
-    Neo4j::Mapping::ClassMethods::Rules.on_neo4j_started
-  end
 
   it "generate instance method: <rule_name>? for each rule" do
     young = Reader.new :age => 2
@@ -201,6 +197,64 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
     NewsStory.young_readers.should include(story)
   end
-
+  
+  context "when extended" do
+    subject { @subject }
+    
+    before(:each) do
+      new_tx
+      @subject = MaleReader.new
+      @subject.age = 25
+      finish_tx
+    end
+    
+    it "should be included in Reader#old" do
+      Reader.old.should include(subject)
+    end
+    
+    it "should be included in MaleReader#old" do
+      MaleReader.old.should include(subject)
+    end
+    
+    it "should not be included after age change" do
+      new_tx
+      subject.age = 8
+      finish_tx
+      MaleReader.old.should_not include(subject)
+      Reader.old.should_not include(subject)
+    end
+  end
+  
+  context "when extended and overwriting a rule" do
+    subject { @subject}
+    
+    before(:each) do
+      new_tx
+      @subject = FastReader.new
+      @subject.age = 25
+      @subject.reading_speed = 0
+      finish_tx
+    end
+    
+    it "should be included in Reader#all" do
+      Reader.all.should include(subject)
+    end
+    
+    it "should not be included in FastReader#all" do
+      FastReader.all.should_not include(subject)
+    end
+    
+    context "after changing reading speed" do
+      before(:each) { new_tx; subject.reading_speed = 2; finish_tx }
+      
+      it "should be included in Reader#all" do
+	Reader.all.should include(subject)
+      end
+      
+      it "should be included in FastReader#all" do
+	FastReader.all.should include(subject)
+      end
+    end
+  end
 end
 
