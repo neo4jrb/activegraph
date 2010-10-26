@@ -21,6 +21,10 @@ module Neo4j
         hits.size == 0
       end
 
+      def [](index)
+        each_with_index {|node,i| break node if index == i}
+      end
+
       def size
         hits.size
       end

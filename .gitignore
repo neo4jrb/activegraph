@@ -11,3 +11,5 @@ nbproject
 
 # neo4j
 tmp
+
+.bundle

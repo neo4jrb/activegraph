@@ -1,0 +1,3 @@
+source :gemcutter
+
+gem 'neo4j', :path => "../.."
