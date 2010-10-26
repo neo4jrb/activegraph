@@ -171,7 +171,7 @@ end
 describe "shared index - one to one", :type => :transactional do
 
   it "simple test" do
-
+    debugger
     Person.new :name => 'pelle'
     new_tx
 

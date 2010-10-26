@@ -3,21 +3,28 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::Node, "index", :type => :transactional do
   it "can index and search on two properties if index has the same type" do
-    c = Vehicle.new(:wheels => 4, :colour => 'blue')
+    c = Car.new(:wheels => 4, :colour => 'blue')
     new_tx
-    Vehicle.find('wheels:"4" AND colour: "blue"').first.should be_kind_of(Vehicle)
     Car.find('wheels:"4" AND colour: "blue"').first.should be_kind_of(Vehicle)
-    Vehicle.find('wheels:"4" AND colour: "blue"').should include(c)
+    Car.find('wheels:"4" AND colour: "blue"').first.should be_kind_of(Car)
+    Car.find('wheels:"4" AND colour: "blue"').should include(c)
   end
 
   it "can not found if searching on two indexes of different type" do
-    c = Vehicle.new(:brand => 'Saab Automobile AB', :wheels => 4, :colour => 'blue')
+    c = Car.new(:brand => 'Saab Automobile AB', :wheels => 4, :colour => 'blue')
     new_tx
-    Vehicle.find('brand: "Saab"', :type => :fulltext).should include(c)
-    Vehicle.find('brand:"Saab" AND wheels: "4"', :type => :exact).should_not include(c)
+    Car.find('brand: "Saab"', :type => :fulltext).should include(c)
+    Car.find('brand:"Saab" AND wheels: "4"', :type => :exact).should_not include(c)
   end
 
-  it "can use the same index for a subclass" do
+  it "does allow superclass searching on a subclass" do
+    c = Car.new(:wheels => 4, :colour => 'blue')
+    new_tx
+    Car.find('wheels: 4').first.should == c
+    Vehicle.find('wheels: 4').first.should == c
+  end
+  
+  it "doesn't use the same index for a subclass" do
     bike  = Vehicle.new(:brand => 'monark', :wheels => 2)
     volvo = Car.new(:brand => 'volvo', :wheels => 4)
 
@@ -25,8 +32,8 @@ describe Neo4j::Node, "index", :type => :transactional do
     new_tx
     Car.find('brand: volvo', :type => :fulltext).first.should == volvo
     Car.find('wheels: 4', :type => :exact).first.should == volvo
-    Vehicle.find('brand: monark', :type => :fulltext).first.should == bike
-    Car.find('wheels: 2').first.should == bike # this is strange but this is the way it works for now
+    Vehicle.find('wheels: 2').first.should == bike
+    Car.find('wheels: 2').first.should be_nil
   end
 
   it "returns an empty Enumerable if not found" do
@@ -37,7 +44,7 @@ describe Neo4j::Node, "index", :type => :transactional do
   it "will remove the index when the node is deleted" do
     c = Car.new(:brand => 'Saab Automobile AB', :wheels => 4, :colour => 'blue')
     new_tx
-    Vehicle.find('wheels:"4" AND colour: "blue"').should include(c)
+    Vehicle.find('wheels:"4"').should include(c)
 
     # when
     c.del
