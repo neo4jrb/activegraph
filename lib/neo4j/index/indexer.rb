@@ -87,12 +87,15 @@ module Neo4j
           dsl = @via_relationships[field]
           to_class = dsl.to_class
 
-          dsl.all_relationships(node).each do |rel|
+          dsl._all_relationships(node).each do |rel|
             other = rel._start_node
-            to_class._indexer.update_index_on(other, field, old_val, new_val)
+            to_class._indexer.update_single_index_on(other, field, old_val, new_val)
           end
         end
+        update_single_index_on(node, field, old_val, new_val)
+      end
 
+      def update_single_index_on(node, field, old_val, new_val)
         if @field_types.include?(field)
           rm_index(node, field, old_val) if old_val
           add_index(node, field, new_val) if new_val
