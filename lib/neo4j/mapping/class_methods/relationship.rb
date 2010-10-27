@@ -33,10 +33,10 @@ module Neo4j::Mapping
         module_eval(%Q{
                 def #{rel_type}_rels
                     dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-                    dsl.all_relationships(self).wrapped
+                    dsl.all_relationships(self)
                 end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, false, params)
+        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, false, clazz, params)
       end
 
 
@@ -80,7 +80,7 @@ module Neo4j::Mapping
                   dsl.single_relationship(self)
     end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, true, params)
+        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, true, clazz, params)
       end
 
     end

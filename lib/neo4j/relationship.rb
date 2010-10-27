@@ -153,6 +153,7 @@ module Neo4j
       def _load(rel_id, db)
         rel = db.graph.get_relationship_by_id(rel_id.to_i)
         rel.hasProperty('_classname')  # since we want a IllegalStateException which is otherwise not triggered
+        rel
       rescue java.lang.IllegalStateException
         nil # the node has been deleted
       rescue org.neo4j.graphdb.NotFoundException

@@ -8,6 +8,7 @@ class Person
   property :city
 
   has_n :friends
+  has_n(:friend_by).from(:friends)
   has_one :address
   has_n(:employed_by).from(Company, :employees)
   index :name

@@ -127,6 +127,15 @@ describe Neo4j::Node, :type => :transactional do
       new_node[:name].should == 'foo'
       new_node[:age].should == 123
     end
+
+    it "updated properties will exist for a loaded node before the transaction commits" do
+      new_node = Neo4j::Node.new
+      new_node[:name] = 'abc'
+      new_tx
+      new_node[:name] = '123'
+      node = Neo4j::Node.load(new_node.neo_id)
+      node[:name].should == '123'
+    end
   end
 
 
@@ -417,6 +426,47 @@ describe Neo4j::Node, :type => :transactional do
       Neo4j::Relationship.new(:friend, a, b)
       Neo4j::Relationship.new(:friend, a, c)
       expect { a.rel(:outgoing, :friend)}.to raise_error
+    end
+
+    it "#rels returns a RelationshipTraverser which can filter which relationship it should return by specifying #to_other" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      c = Neo4j::Node.new
+      r1 = Neo4j::Relationship.new(:friend, a, b)
+      Neo4j::Relationship.new(:friend, a, c)
+
+      a.rels.to_other(b).size.should == 1
+      a.rels.to_other(b).should include(r1)
+    end
+
+    it "#rels returns an RelationshipTraverser which provides a method for deleting all the relationships" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      c = Neo4j::Node.new
+      r1 = Neo4j::Relationship.new(:friend, a, b)
+      r2 = Neo4j::Relationship.new(:friend, a, c)
+
+      a.rel?(:friend).should be_true
+      a.rels.del
+      a.rel?(:friend).should be_false
+      new_tx
+      r1.exist?.should be_false
+      r2.exist?.should be_false
+    end
+
+    it "#rels returns an RelationshipTraverser with methods #del and #to_other which can be combined to only delete a subset of the relationships" do
+      a = Neo4j::Node.new
+      b = Neo4j::Node.new
+      c = Neo4j::Node.new
+      r1 = Neo4j::Relationship.new(:friend, a, b)
+      r2 = Neo4j::Relationship.new(:friend, a, c)
+      r1.exist?.should be_true
+      r2.exist?.should be_true
+
+      a.rels.to_other(c).del
+      new_tx
+      r1.exist?.should be_true
+      r2.exist?.should be_false
     end
 
   end

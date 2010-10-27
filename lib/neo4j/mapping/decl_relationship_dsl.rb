@@ -34,37 +34,25 @@ module Neo4j::Mapping
     include Neo4j::ToJava
 
     attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id, :direction
-    CASCADE_DELETE_PROP_NAMES = {:outgoing => :_cascade_delete_outgoing, :incoming => :_cascade_delete_incoming}
 
-    def initialize(rel_id, has_one, params)
+    def initialize(rel_id, has_one, to_class, params)
       @direction = :outgoing
       @rel_id = rel_id
       @to_type = rel_id
       @has_one = has_one
       @namespace_type = rel_id
-      @cascade_delete_prop_name = CASCADE_DELETE_PROP_NAMES[params[:cascade_delete]]
-      @counter = params[:counter] == true
+      @to_class = to_class
     end
 
     def has_one?
       @has_one
     end
 
-    # If a counter was specified in the dsl for counting number of nodes in this relationship.
-    #
-    def counter?
-      @counter
-    end
-
-    # If cascade delete was specified for this relationship
-    #
-    def cascade_delete?
-      !@cascade_delete_prop_name.nil?
-    end
-
     def class_and_type_from_args(args) # :nodoc:
       if (args.size > 1)
         return args[0], args[1]
+      elsif (Symbol === args[0])
+        return @to_class, args[0]
       else
         return args[0], @rel_id
       end
@@ -73,7 +61,7 @@ module Neo4j::Mapping
 
     # The actual relationship type that this DSL will use
     def namespace_type
-      @to_class.nil? ? @to_type.to_s : "#{@to_class.to_s}##{@to_type.to_s}"
+      @namespace_type
     end
 
     def each_node(node, direction, &block)
@@ -90,7 +78,7 @@ module Neo4j::Mapping
     end
 
     def incoming_dsl
-      dsl = to_class._decl_rels[to_type]
+      dsl = @to_class._decl_rels[to_type]
       raise "Unspecified outgoing relationship '#{to_type}' for incoming relationship '#{rel_id}' on class #{to_class}" if dsl.nil?
       dsl
     end
@@ -106,11 +94,16 @@ module Neo4j::Mapping
       node._java_node.rel(dir, dsl.namespace_type)
     end
 
-    def all_relationships(node)
+    def _all_relationships(node)
       dsl = incoming? ? incoming_dsl : self
       type = type_to_java(dsl.namespace_type)
       dir  = dir_to_java(direction)
       node._java_node.getRelationships(type, dir)
+    end
+
+    def all_relationships(node)
+      dsl = incoming? ? incoming_dsl : self
+      Neo4j::RelationshipTraverser.new(node._java_node, [dsl.namespace_type], direction)
     end
 
     def create_relationship_to(node, other)
@@ -156,6 +149,7 @@ module Neo4j::Mapping
     def to(*args)
       @direction = :outgoing
       @to_class, @to_type = class_and_type_from_args(args)
+      @namespace_type = "#{@to_class.to_s}##{@to_type.to_s}"
       self
     end
 
