@@ -43,7 +43,7 @@ module Neo4j
 
       # Returns true if there are no node in this type of relationship
       def empty?
-        first != nil
+        first == nil
       end
 
 
