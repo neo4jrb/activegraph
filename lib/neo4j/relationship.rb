@@ -36,6 +36,12 @@ module Neo4j
       self
     end
 
+
+    # Returns true if the relationship exists
+    def exist?
+      Neo4j::Relationship.exist?(self)
+    end
+
     # Loads the Ruby wrapper for this node
     # If there is no _classname property for this node then it will simply return itself.
     # Same as Neo4j::Node.load_wrapper(node)
@@ -130,8 +136,23 @@ module Neo4j
       # create is the same as new
       alias_method :create, :new
 
+      # Loads a relationship or wrapped relationship given a native java relationship or an id.
+      # If there is a Ruby wrapper for the node then it will create a Ruby object that will
+      # wrap the java node (see Neo4j::RelationshipMixin).
+      #
+      # If the relationship does not exist it will return nil
+      #
       def load(rel_id, db = Neo4j.started_db)
-        wrapper(db.graph.get_relationship_by_id(rel_id.to_i))
+        rel = _load(rel_id, db)
+        return nil if rel.nil?
+        rel.wrapper
+      end
+
+      # Same as load but does not return the node as a wrapped Ruby object.
+      #
+      def _load(rel_id, db)
+        rel = db.graph.get_relationship_by_id(rel_id.to_i)
+        rel.hasProperty('_classname')  # since we want a IllegalStateException which is otherwise not triggered
       rescue java.lang.IllegalStateException
         nil # the node has been deleted
       rescue org.neo4j.graphdb.NotFoundException
