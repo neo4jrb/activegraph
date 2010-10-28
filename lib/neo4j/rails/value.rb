@@ -1,24 +1,17 @@
 module Neo4j::Rails
 
   class Value
-    include Neo4j::Property
+    include Properties
     include org.neo4j.graphdb.Node
 
     def initialize(wrapper)
       @wrapper = wrapper
-      @props = {}
       @outgoing_rels = {}  # a hash of all relationship with key type
-    end
-
-    # override Neo4j::Property#props
-    def props
-      @props
     end
 
     def getId
       nil
     end
-
 
     def create_relationship_to(other_java_node, java_type)
       outgoing(java_type.name).new(other_java_node)
@@ -36,23 +29,6 @@ module Neo4j::Rails
       outgoing.rels
     end
 
-    # Pretend this object is a Java Node
-    def has_property?(key)
-      !@props[key].nil?
-    end
-
-    def set_property(key,value)
-      @props[key] = value
-    end
-
-    def get_property(key)
-      @props[key]
-    end
-
-    def remove_property(key)
-      @props.delete(key)
-    end
-
     def wrapper
       @wrapper
     end
@@ -64,10 +40,11 @@ module Neo4j::Rails
     def save_nested(root_node)
       valid = true
       @outgoing_rels.each_pair do |type, rel|
-        rel.each do |new_node|
-          wrapper = new_node.respond_to?(:wrapper) ? new_node.wrapper : new_node
+        rel.each_with_index do |new_node, i|
+        	wrapper = new_node.respond_to?(:wrapper) ? new_node.wrapper : new_node
           if wrapper.save
-            root_node.outgoing(type) << wrapper
+            new_rel = Neo4j::Relationship.new(type.to_sym, root_node, wrapper)
+            rel.rels[i].props.each_pair { |property, value| new_rel[property] = value }
           else
             valid = false
           end
@@ -82,7 +59,9 @@ module Neo4j::Rails
     end
 
     class Relationship
-      include org.neo4j.graphdb.Relationship
+    	include org.neo4j.graphdb.Relationship
+      include Properties
+      
       attr_reader :end_node, :start_node
 
       def initialize(from, to)
