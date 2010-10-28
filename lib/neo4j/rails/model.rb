@@ -168,53 +168,53 @@ module Neo4j
       end
 
       def save
-	_run_save_callbacks do
-	  if create_or_update_node
-	    true
-	  else
-	    # if not valid we should rollback the transaction so that the changes does not take place.
-	    # no point failing the transaction if we have created a model with 'new'
-	    Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running? #&& !_java_node.kind_of?(Neo4j::Rails::Value)
-	    false
-	  end
-	end
+        _run_save_callbacks do
+          if create_or_update_node
+            true
+          else
+            # if not valid we should rollback the transaction so that the changes does not take place.
+            # no point failing the transaction if we have created a model with 'new'
+            Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running? #&& !_java_node.kind_of?(Neo4j::Rails::Value)
+            false
+          end
+        end
       end
 
       def create_or_update_node
-	if valid?(:save)
-	  if new_record?
-	    _run_create_callbacks do
-	      if valid?(:create)
-		node = Neo4j::Node.new(props)
-		return false unless _java_node.save_nested(node)
-		init_on_load(node)
-		init_on_create
-		clear_changes
-		true
-	      end
-	    end
-	  else
-	    _run_update_callbacks do
-	      if valid?(:update)
-		clear_changes
-		true
-	      end
-	    end
-	  end
-	end
+        if valid?(:save)
+          if new_record?
+            _run_create_callbacks do
+              if valid?(:create)
+                node = Neo4j::Node.new(props)
+                return false unless _java_node.save_nested(node)
+                init_on_load(node)
+                init_on_create
+                clear_changes
+                true
+              end
+            end
+          else
+            _run_update_callbacks do
+              if valid?(:update)
+                clear_changes
+                true
+              end
+            end
+          end
+        end
       end
 
       def clear_changes
         @previously_changed = changes
         @changed_attributes.clear
       end
-      
+
       def reload(options = nil)
-	clear_changes
-	attributes = self.class.load(self.id.to_s).attributes
-	self
+        clear_changes
+        attributes = self.class.load(self.id.to_s).attributes
+        self
       end
-      
+
       def save!
         raise RecordInvalidError.new(self) unless save
       end
@@ -265,30 +265,30 @@ module Neo4j
           wrapped
         end
 
-	# Behave like ActiveModel
+	      # Behave like ActiveModel
         def all_with_args(*args)
-	  if args.empty?
-	    all_without_args
-	  else
-	    hits = find_without_checking_for_id(*args)
-	    # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
-	    Thread.current[:neo4j_lucene_connection] ||= []
-	    Thread.current[:neo4j_lucene_connection] << hits
-	    hits
-	  end
+          if args.empty?
+            all_without_args
+          else
+            hits                                     = find_without_checking_for_id(*args)
+            # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
+            Thread.current[:neo4j_lucene_connection] ||= []
+            Thread.current[:neo4j_lucene_connection] << hits
+            hits
+          end
         end
-	
-	alias_method_chain :all, :args
+
+        alias_method_chain :all, :args
         
         # Handle Model.find(params[:id])
         def find_with_checking_for_id(*args)
-	  if args.length == 1 && String === args[0] && args[0].to_i != 0
+          if args.length == 1 && String === args[0] && args[0].to_i != 0
             load(*args)
           else
             all_with_args(*args).first
           end
         end
-        
+
         alias_method_chain :find, :checking_for_id
 
         def load(*ids)
@@ -308,7 +308,7 @@ module Neo4j
         end
 
         def create!(*args)
-	  new(*args).tap { |o| o.save! }
+          new(*args).tap { |o| o.save! }
         end
 
         tx_methods :create, :create!

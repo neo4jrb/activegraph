@@ -93,7 +93,7 @@ describe IceLolly do
       end
       
       it "should respond to class.all" do
-	subject.class.respond_to?(:all)
+	      subject.class.respond_to?(:all)
       end
       
       it "should respond to class#all(:flavour => 'vanilla')" do
@@ -101,7 +101,7 @@ describe IceLolly do
       end
       
       it "should also be included in the rules for the parent class" do
-	subject.class.superclass.all.to_a.should include(subject)
+	      subject.class.superclass.all.to_a.should include(subject)
       end
       
       context "and then made invalid" do
