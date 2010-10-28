@@ -3,8 +3,4 @@ class Employee < Person
 
   has_n :contracts
 
-  # TODO
-  def indexer
-    Neo4j::Index::Indexer.new(Person)
-  end
 end

@@ -54,7 +54,7 @@ module Neo4j
 
     def print
       puts "Listeners #{@listeners.size}"
-      @listeners.each_key {|li| puts "  Listener '#{li}'"}
+      @listeners.each {|li| puts "  Listener '#{li}'"}
     end
 
     def neo4j_started(db)
