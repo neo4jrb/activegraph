@@ -37,7 +37,7 @@ module Neo4j::Mapping
     CASCADE_DELETE_PROP_NAMES = {:outgoing => :_cascade_delete_outgoing, :incoming => :_cascade_delete_incoming}
 
     def initialize(rel_id, has_one, params)
-      @direction = :outgoing
+      @direction = has_one && params[:direction] && params[:direction] == :incoming ? :incoming : :outgoing
       @rel_id = rel_id
       @to_type = rel_id
       @has_one = has_one
@@ -90,7 +90,12 @@ module Neo4j::Mapping
     end
 
     def incoming_dsl
-      dsl = to_class._decl_rels[to_type]
+    	if to_class.respond_to?(:_decl_rels)
+    		dsl = to_class._decl_rels[to_type]
+    	else
+    		dsl = @direction == :incoming ? self : nil
+    	end
+    	
       raise "Unspecified outgoing relationship '#{to_type}' for incoming relationship '#{rel_id}' on class #{to_class}" if dsl.nil?
       dsl
     end
