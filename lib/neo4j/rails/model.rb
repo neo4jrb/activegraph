@@ -57,7 +57,6 @@ module Neo4j
         persisted? ? [:id] : nil
       end
 
-
       # enables ActiveModel::Dirty and Validation
       def method_missing(method_id, *args, &block)
         if !self.class.attribute_methods_generated?
@@ -100,7 +99,6 @@ module Neo4j
           end
         end
       end
-
 
       # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
       # If saving fails because the resource is invalid then false will be returned.
@@ -161,12 +159,6 @@ module Neo4j
         end
       end
 
-      def delete
-        super
-        @_deleted = true
-        @_persisted = false
-      end
-
       def save
 	_run_save_callbacks do
 	  if create_or_update_node
@@ -210,9 +202,8 @@ module Neo4j
       end
       
       def reload(options = nil)
-	clear_changes
-	attributes = self.class.load(self.id.to_s).attributes
-	self
+				clear_changes
+				reload_from_database or set_deleted_properties and return self
       end
       
       def save!
@@ -234,14 +225,19 @@ module Neo4j
       
       alias :new_record? :new?
 
-      def del
-        @_deleted = true
-        super
+      def ==(other)
+      	new? ? self.__id__ == other.__id__ : @_java_node == (other)
       end
 
-      def destroy
-        _run_update_callbacks { del }
+      def del_with_wrapper
+        _run_destroy_callbacks do 
+        	del_without_wrapper
+        	set_deleted_properties
+				end
       end
+      
+      alias_method_chain :del, :wrapper
+      alias :destroy :del_with_wrapper
 
       def destroyed?()
         @_deleted
@@ -265,24 +261,24 @@ module Neo4j
           wrapped
         end
 
-	# Behave like ActiveModel
+        # Behave like ActiveModel
         def all_with_args(*args)
-	  if args.empty?
-	    all_without_args
-	  else
-	    hits = find_without_checking_for_id(*args)
-	    # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
-	    Thread.current[:neo4j_lucene_connection] ||= []
-	    Thread.current[:neo4j_lucene_connection] << hits
-	    hits
-	  end
+					if args.empty?
+						all_without_args
+					else
+						hits = find_without_checking_for_id(*args)
+						# We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
+						Thread.current[:neo4j_lucene_connection] ||= []
+						Thread.current[:neo4j_lucene_connection] << hits
+						hits
+					end
         end
 	
-	alias_method_chain :all, :args
+        alias_method_chain :all, :args
         
         # Handle Model.find(params[:id])
         def find_with_checking_for_id(*args)
-	  if args.length == 1 && String === args[0] && args[0].to_i != 0
+        	if args.length == 1 && String === args[0] && args[0].to_i != 0
             load(*args)
           else
             all_with_args(*args).first
@@ -300,7 +296,6 @@ module Neo4j
           end
         end
 
-
         alias_method :_orig_create, :create
 
         def create(*args)
@@ -308,11 +303,10 @@ module Neo4j
         end
 
         def create!(*args)
-	  new(*args).tap { |o| o.save! }
+        	new(*args).tap { |o| o.save! }
         end
 
         tx_methods :create, :create!
-
 
         def transaction(&block)
           Neo4j::Rails::Transaction.run &block
@@ -347,10 +341,20 @@ module Neo4j
             tx_methods("#{association_name}_attributes=")
           end
         end
-
       end
-
+      
+      private
+      def reload_from_database
+      	if reloaded = self.class.load(self.id.to_s)
+					attributes = reloaded.attributes
+				end
+			end
+			
+      def set_deleted_properties
+      	@_deleted = true
+				@_persisted = false
+				@_java_node = Neo4j::Rails::Value.new(self)
+			end
     end
-
   end
 end
