@@ -59,7 +59,7 @@ module Neo4j
           ensure
             finish
           end
-	  ret
+          	ret
         end
       end
     end
