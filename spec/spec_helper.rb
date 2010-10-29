@@ -71,9 +71,9 @@ begin
     
     c.before(:each) do
       Neo4j::Transaction.run do
-	Neo4j._all_nodes.each do |n|
-	  n.del unless n.neo_id == Neo4j.ref_node
-	end
+				Neo4j._all_nodes.each do |n|
+					n.del unless n == Neo4j.ref_node
+				end
       end
     end
   end
