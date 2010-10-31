@@ -3,7 +3,7 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
-  require 'ruby-debug'
+  #require 'ruby-debug'
   require 'rspec'
   require 'rspec-apigen'
   require 'fileutils'
@@ -47,24 +47,31 @@ begin
   #c.filter = { :type => :problem}
     c.before(:each, :type => :transactional) do
       new_tx
-      Neo4j._all_nodes.each { |n| n.del unless n == Neo4j.ref_node }
-      new_tx
-      Neo4j::Index::IndexerRegistry.clear_all_indexes
-      new_tx
     end
 
     c.after(:each, :type => :transactional) do
       finish_tx
+      Neo4j::Transaction.run do
+        Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
+      end
+    end
+
+    c.after(:each) do
+      finish_tx
+      Neo4j::Transaction.run do
+        Neo4j._all_nodes.each { |n| n.del unless n == Neo4j.ref_node }
+      end
     end
 
     c.before(:all) do
-      finish_tx
-      Neo4j.shutdown
-      rm_db_storage
+    	finish_tx
+    	Neo4j.shutdown
+    	rm_db_storage
       Neo4j.start
     end
 
     c.after(:all) do
+      finish_tx
       Neo4j.shutdown
       rm_db_storage
     end
@@ -81,15 +88,16 @@ begin
 
   module TempModel
     @@_counter = 1
+
     def self.set(klass)
-      name = "Model_#{@@_counter}"
+      name       = "Model_#{@@_counter}"
       @@_counter += 1
       klass.class_eval <<-RUBY
-	def self.to_s
-	  "#{name}"
-	end
+				def self.to_s
+					"#{name}"
+				end
       RUBY
-      Kernel.const_set(name,klass)
+      Kernel.const_set(name, klass)
       klass
     end
   end

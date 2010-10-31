@@ -5,27 +5,27 @@ module Neo4j
 
       def initialize(clazz, type)
         # part of the unique name of the index
-        @indexer_for = clazz
+        @indexer_for       = clazz
 
         # do we want to index nodes or relationships ?
-        @type = type
+        @type              = type
 
-        @indexes = {} # key = type, value = java neo4j index
-        @field_types = {} # key = field, value = type (e.g. :exact or :fulltext)
+        @indexes           = {} # key = type, value = java neo4j index
+        @field_types       = {} # key = field, value = type (e.g. :exact or :fulltext)
         @via_relationships = {} # key = field, value = relationship
-	
-	# to enable subclass indexing to work properly, store a list of parent indexers and
-	# whenever an operation is performed on this one, perform it on all
-	@parent_indexers = []
+
+        # to enable subclass indexing to work properly, store a list of parent indexers and
+        # whenever an operation is performed on this one, perform it on all
+        @parent_indexers   = []
       end
-      
+
       def inherit_fields_from(parent_index)
-	return unless parent_index
-	@field_types.reverse_merge!(parent_index.field_types) if parent_index.respond_to?(:field_types)
-	@via_relationships.reverse_merge!(parent_index.via_relationships) if parent_index.respond_to?(:via_relationships)
-	@parent_indexers << parent_index
+        return unless parent_index
+        @field_types.reverse_merge!(parent_index.field_types) if parent_index.respond_to?(:field_types)
+        @via_relationships.reverse_merge!(parent_index.via_relationships) if parent_index.respond_to?(:via_relationships)
+        @parent_indexers << parent_index
       end
-      
+
       def to_s
         "Indexer @#{object_id} [index_for:#{@indexer_for}, field_types=#{@field_types.keys.join(', ')}, via=#{@via_relationships.inspect}]"
       end
@@ -43,7 +43,7 @@ module Neo4j
           conf.delete :via # avoid endless recursion
           via_indexer.index(field, conf)
         else
-          raise "Already defined an (via?) index on #{field}, Using the same index for from two classes ? Check index :#{field}, :via => :#{@indexer_for}" if @field_types[field.to_s]
+#          raise "Already defined an (via?) index on #{field}, Using the same index for from two classes ? Check index :#{field}, :via => :#{@indexer_for}" if @field_types[field.to_s]
           @field_types[field.to_s] = conf[:type] || :exact
         end
       end
@@ -98,12 +98,15 @@ module Neo4j
           dsl = @via_relationships[field]
           to_class = dsl.to_class
 
-          dsl.all_relationships(node).each do |rel|
+          dsl._all_relationships(node).each do |rel|
             other = rel._start_node
-            to_class._indexer.update_index_on(other, field, old_val, new_val)
+            to_class._indexer.update_single_index_on(other, field, old_val, new_val)
           end
         end
+        update_single_index_on(node, field, old_val, new_val)
+      end
 
+      def update_single_index_on(node, field, old_val, new_val)
         if @field_types.include?(field)
           rm_index(node, field, old_val) if old_val
           add_index(node, field, new_val) if new_val
@@ -124,17 +127,15 @@ module Neo4j
       end
 
       def add_index(entity, field, value)
-	return false unless @field_types.has_key?(field)
+       	return false unless @field_types.has_key?(field)
         index_for_field(field.to_s).add(entity, field, value)
-	
-	@parent_indexers.each { |i| i.add_index(entity, field, value) }
+      	@parent_indexers.each { |i| i.add_index(entity, field, value) }
       end
 
       def rm_index(entity, field, value)
-	return false unless @field_types.has_key?(field)
+        return false unless @field_types.has_key?(field)
         index_for_field(field).remove(entity, field, value)
-	
-	@parent_indexers.each { |i| i.rm_index(entity, field, value) }
+        @parent_indexers.each { |i| i.rm_index(entity, field, value) }
       end
 
       def find(query, params = {})

@@ -76,14 +76,14 @@ Example of using Neo4j with Rails 3 (ActiveModel)
 
     email_regex = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
 
-    validates :email, :presence => true,:format   => { :with => email_regex }
-    validates :email, :uniqueness => true, :unless => :pending_account?
-    accepts_nested_attributes_for :avatar, :allow_destroy => true
-
     property :email
     index :email
 
     has_one(:avatar).to(Avator)
+
+    validates :email, :presence => true,:format   => { :with => email_regex }
+    validates :email, :uniqueness => true, :unless => :pending_account?
+    accepts_nested_attributes_for :avatar, :allow_destroy => true
 
     ...
   end

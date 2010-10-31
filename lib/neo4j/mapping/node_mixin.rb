@@ -6,7 +6,7 @@ module Neo4j::Mapping
 
     def_delegators :@_java_node, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
                    :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both,
-                   :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :rels_raw, :rel
+                   :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel
 
 
     # --------------------------------------------------------------------------
@@ -59,14 +59,14 @@ module Neo4j::Mapping
       c.extend Neo4j::Index::ClassMethods
 
       def c.inherited(subclass)
-	subclass.root_class subclass
-	
+        subclass.root_class subclass
+
         # inherit the index properties
-	subclass.node_indexer self
-	
-	# inherit the rules too
-	subclass.inherit_rules_from self
-	
+        subclass.node_indexer self
+
+        # inherit the rules too
+        subclass.inherit_rules_from self
+
         super
       end
 

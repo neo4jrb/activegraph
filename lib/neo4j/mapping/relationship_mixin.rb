@@ -5,7 +5,7 @@ module Neo4j::Mapping
     include Neo4j::Index
 
     def_delegators :@_java_rel, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :to_param, :getId,
-                   :equal?, :eql?, :==, :delete, :getStartNode, :getEndNode, :getOtherNode
+                   :equal?, :eql?, :==, :delete, :getStartNode, :getEndNode, :getOtherNode, :exist?
 
 
 
@@ -59,7 +59,7 @@ module Neo4j::Mapping
     end
 
     def exist?
-      Neo4j::Relationship.load(neo_id) != nil
+      Neo4j::Relationship.exist?(self)
     end
 
     # A convenience operation that, given a node that is attached to this relationship, returns the other node.

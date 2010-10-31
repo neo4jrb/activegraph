@@ -111,7 +111,7 @@ module Neo4j
     end
 
     # Returns the raw java neo4j relationship object.
-    def rels_raw(dir=:both, *types)
+    def _rels(dir=:both, *types)
       if types.size > 1
         java_types = types.inject([]) { |result, type| result << type_to_java(type) }.to_java(:'org.neo4j.graphdb.RelationshipType')
         get_relationships(java_types)

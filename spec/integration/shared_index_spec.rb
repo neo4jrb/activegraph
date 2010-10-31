@@ -109,6 +109,32 @@ describe "shared index - many to many", :type => :transactional do
     Actor.find('title: speed', :type => :fulltext).first.should == keanu
   end
 
+  it "when one related node is updated it should update the indexes" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    matrix = Movie.new :title => 'matrix'
+    speed  = Movie.new :title => 'speed'
+    keanu.acted_in << matrix << speed
+
+    fishburne = Actor.new :name => 'Laurence Fishburne'
+    fishburne.acted_in << matrix
+
+    new_tx
+
+    [*Actor.find('title: matrix', :type => :fulltext)].should include(keanu, fishburne)
+    [*Actor.find('title: something', :type => :fulltext)].should be_empty
+
+    # when, delete the matrix relationship
+    matrix[:title] = 'something'
+
+    finish_tx
+
+    Actor.find('name: keanu', :type => :fulltext).first.should == keanu
+    Actor.find('name: Laurence', :type => :fulltext).first.should == fishburne
+    Actor.find('title: matrix', :type => :fulltext).should be_empty
+    Actor.find('title: speed', :type => :fulltext).first.should == keanu
+    [*Actor.find('title: something', :type => :fulltext)].should include(keanu, fishburne)
+  end
+
   it "when a new related node is added the old should still be searchable" do
     keanu  = Actor.new :name => 'Keanu Reeves'
     speed  = Movie.new :title => 'speed'

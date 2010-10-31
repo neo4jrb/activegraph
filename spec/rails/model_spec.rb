@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
-describe Neo4j::Model, :type => :clean_db do
+describe Neo4j::Model do
 
   describe "new" do
     before :each do
