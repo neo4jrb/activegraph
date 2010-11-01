@@ -56,13 +56,6 @@ begin
       end
     end
 
-    c.after(:each) do
-      finish_tx
-      Neo4j::Transaction.run do
-        Neo4j._all_nodes.each { |n| n.del unless n == Neo4j.ref_node }
-      end
-    end
-
     c.before(:all) do
     	finish_tx
     	Neo4j.shutdown
@@ -77,6 +70,7 @@ begin
     end
     
     c.before(:each) do
+    	finish_tx
       Neo4j::Transaction.run do
 				Neo4j._all_nodes.each do |n|
 					n.del unless n == Neo4j.ref_node

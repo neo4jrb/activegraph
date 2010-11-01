@@ -38,6 +38,8 @@ describe Neo4j::Model do
   it_should_behave_like "a creatable model"
   it_should_behave_like "a destroyable model"
   it_should_behave_like "an updatable model"
+  
+  pending "A test for method not found errors"
 end
 
 describe IceLolly do
