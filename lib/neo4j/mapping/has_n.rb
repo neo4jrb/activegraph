@@ -68,7 +68,11 @@ module Neo4j
       # self
       #
       def <<(other)
-        @dsl.create_relationship_to(@node, other)
+      	if @direction == :incoming && @dsl.direction == :outgoing
+      		@dsl.create_relationship_to(other, @node)
+      	else
+      		@dsl.create_relationship_to(@node, other)
+      	end
         self
       end
     end
