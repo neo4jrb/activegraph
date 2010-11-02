@@ -3,7 +3,7 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
-  #require 'ruby-debug'
+  require 'ruby-debug'
   require 'rspec'
   require 'rspec-apigen'
   require 'fileutils'
@@ -45,17 +45,6 @@ begin
   RSpec.configure do |c|
 
   #c.filter = { :type => :problem}
-    c.before(:each, :type => :transactional) do
-      new_tx
-    end
-
-    c.after(:each, :type => :transactional) do
-      finish_tx
-      Neo4j::Transaction.run do
-        Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
-      end
-    end
-
     c.before(:all) do
     	finish_tx
     	Neo4j.shutdown
@@ -70,12 +59,19 @@ begin
     end
     
     c.before(:each) do
-    	finish_tx
-      Neo4j::Transaction.run do
-				Neo4j._all_nodes.each do |n|
-					n.del unless n == Neo4j.ref_node
-				end
-      end
+    	new_tx
+      Neo4j._all_nodes.each do |n|
+				n.del unless n == Neo4j.ref_node
+			end
+			finish_tx
+    end
+    
+    c.before(:each, :type => :transactional) do
+    	new_tx
+    end
+
+    c.after(:each, :type => :transactional) do
+      finish_tx
     end
   end
 
