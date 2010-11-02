@@ -3,7 +3,7 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
-  require 'ruby-debug'
+  #require 'ruby-debug'
   require 'rspec'
   require 'rspec-apigen'
   require 'fileutils'
