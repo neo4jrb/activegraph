@@ -1,3 +1,10 @@
+PATH
+  remote: /home/andreas/projects/neo4j
+  specs:
+    neo4j (1.0.0.beta.16)
+      activemodel (>= 3.0.0)
+      railties (>= 3.0.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -21,9 +28,6 @@ GEM
     erubis (2.6.6)
       abstract (>= 1.0.0)
     i18n (0.4.2)
-    neo4j (1.0.0.beta.16)
-      activemodel (>= 3.0.0)
-      railties (>= 3.0.0)
     rack (1.2.1)
     rack-mount (0.6.13)
       rack (>= 1.0.0)
@@ -42,4 +46,4 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  neo4j (= 1.0.0.beta.16)
+  neo4j!
