@@ -1,0 +1,16 @@
+<h1>New <%= singular_name.titleize %></h1>
+
+<%% form_for(@<%= singular_name %>) do |f| %>
+
+<% for attribute in attributes -%>
+  <p>
+    <%%= f.label :<%= attribute.name %> %><br />
+    <%%= f.<%= attribute.field_type %> :<%= attribute.name %> %>
+  </p>
+<% end -%>
+  <p>
+    <%%= f.submit 'Create' %>
+  </p>
+<%% end %>
+
+<%%= link_to 'Back', <%= plural_name.titleize %>_path %>

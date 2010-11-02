@@ -1,0 +1,19 @@
+Usage:
+
+  rails generate neo4j:scaffold model_name [property:type, property:type]
+
+Description:
+
+  Scaffolds a Neo4j resource from model to controller, views and routes. The 
+  resource is ready to use as a starting point for your Neo4jr based application.
+
+  Attribute pairs define property names type should be property for the standard types
+  supported by Neo4j e.g. string
+
+  If you want to remove all the generated files, run
+
+      'rails destroy neo4j:scaffold ModelName'
+
+Example:
+
+    `rails generate neo4j:scaffold purchase order_id:integer amount:decimal`
