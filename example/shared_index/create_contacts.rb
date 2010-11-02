@@ -29,7 +29,7 @@ Neo4j.start
 
 new_tx
 
-SIZE = 10000
+SIZE = 100
 @users = []
 
 

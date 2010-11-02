@@ -87,6 +87,11 @@ describe Neo4j::Node, :type => :transactional do
       new_node[:key].should == 42
     end
 
+    it "set and get Fixnum properties" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = %w[a b c]
+      new_node[:key].should == %w[a b c]
+    end
 
     it "set and get Float properties" do
       new_node = Neo4j::Node.new

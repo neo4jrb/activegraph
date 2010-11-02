@@ -5,7 +5,6 @@ begin
   #require "bundler/setup"
   #require 'ruby-debug'
   require 'rspec'
-  require 'rspec-apigen'
   require 'fileutils'
   require 'tmpdir'
   require 'rspec-rails-matchers'
@@ -34,10 +33,10 @@ begin
 
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
-  Dir["spec/support/**/*.rb"].each {|f| require f}
+  Dir["#{File.dirname(__FILE__)}/spec/support/**/*.rb"].each {|f| require f}
 
   # load all fixture classes
-  Dir["spec/fixture/**/*.rb"].each {|f| require f}
+  Dir["#{File.dirname(__FILE__)}/fixture/**/*.rb"].each {|f| require f}
 
   # set database storage location
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')

@@ -1,0 +1,8 @@
+To run this example, make sure you have installed JRuby (easiest with RVM) and 
+have installed bundler (gem install bundler).
+
+Type:
+1. bundle
+2. ruby simple.rb
+
+

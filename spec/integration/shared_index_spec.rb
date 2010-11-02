@@ -32,6 +32,20 @@ describe "shared index - complex scenarios", :type => :transactional do
     result.size.should == 1
     result.should include(petter.contact)
   end
+
+  it "a user can have several contacts" do
+    users = []
+    users <<  User.new('andreas', 'ronge', 'malmoe')
+    users <<  User.new('andreas', 'ronge', 'malmoe')
+    users[0].contact.users << users[1]
+    finish_tx
+
+    puts "find #{users[0].neo_id}"
+    found = [*Contact.find("user_id: #{users[1].neo_id}")]
+    #found = [*Contact.find("user_id: #{users[0].neo_id} AND city: malmoe")]
+    found.should_not be_empty
+    puts "FOUND #{found.join(', ')}"
+  end
 end
 
 describe "shared index - many to many", :type => :transactional do
@@ -197,7 +211,6 @@ end
 describe "shared index - one to one", :type => :transactional do
 
   it "simple test" do
-    debugger
     Person.new :name => 'pelle'
     new_tx
 
