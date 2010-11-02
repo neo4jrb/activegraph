@@ -156,12 +156,14 @@ module Neo4j
       end
 
       # clears the index, if no type is provided clear all types of indexes
-      def clear_index_type(type=nil)
+      def delete_index_type(type=nil)
         if type
           #raise "can't clear index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
-          @indexes[type] && @indexes[type].clear
+          @indexes[type] && @indexes[type].delete
+          @indexes[type] = nil
         else
-          @indexes.each_value { |index| index.clear }
+          @indexes.each_value { |index| index.delete }
+          @indexes.clear
         end
       end
 
@@ -171,7 +173,7 @@ module Neo4j
         @indexes.clear
       end
 
-      def rm_index_type(type=nil)
+      def rm_field_type(type=nil)
         if type
           @field_types.delete_if { |k, v| v == type }
         else
@@ -198,9 +200,9 @@ module Neo4j
         db=Neo4j.started_db
         index_config = lucene_config(type)
         if @type == :node
-          db.lucene.node_index("#{@indexer_for}-#{type}", index_config)
+          db.lucene.for_nodes("#{@indexer_for}-#{type}", index_config)
         else
-          db.lucene.relationship_index("#{@indexer_for}-#{type}", index_config)
+          db.lucene.for_relationships("#{@indexer_for}-#{type}", index_config)
         end
       end
 

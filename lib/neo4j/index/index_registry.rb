@@ -3,14 +3,14 @@ module Neo4j
     class IndexerRegistry #:nodoc:
       class << self
 
-        def clear_all_indexes
-          @@indexers.values.each {|i| i.clear_index_type}
+        def delete_all_indexes
+          @@indexers.values.each {|i| i.delete_index_type}
         end
 
         def create_for(this_clazz, using_other_clazz, type)
-          @@indexers ||= {}
-	  index = Indexer.new(this_clazz, type)
-	  index.inherit_fields_from(@@indexers[using_other_clazz.to_s])
+          @@indexers                  ||= {}
+          index                       = Indexer.new(this_clazz, type)
+          index.inherit_fields_from(@@indexers[using_other_clazz.to_s])
           @@indexers[this_clazz.to_s] = index
         end
 

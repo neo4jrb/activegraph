@@ -1,8 +1,19 @@
 To run this example, make sure you have installed JRuby (easiest with RVM) and 
 have installed bundler (gem install bundler).
 
-Type:
-1. bundle
-2. ruby simple.rb
+
+To run some examples from the wiki, type
+  bundle
+  ruby simple.rb
+
+There is also other script for adding person nodes and finding them.
+  ruby add.rb <name> <salary>
+  ruby find.rb <key> <value>
+
+And to list all nodes in the system
+  ruby all.rb
+
+
+
 
 

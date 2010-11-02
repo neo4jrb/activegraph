@@ -9,7 +9,7 @@ module Neo4j
 
     def start
       @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
-      @lucene = org.neo4j.index.impl.lucene.LuceneIndexProvider.new(@graph)
+      @lucene =  @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
       @graph.register_transaction_event_handler(@event_handler)
       @running = true
       @event_handler.neo4j_started(self)
@@ -18,12 +18,6 @@ module Neo4j
 
     def shutdown
       if @running
-        # since we might keep a reference to indexes we must clear them so
-        # that we can start neo4j with a fresh new lucene indexes
-        Neo4j::Transaction.run do
-          Neo4j::Index::IndexerRegistry.clear_all_indexes
-        end
-
         @graph.unregister_transaction_event_handler(@event_handler)
         @event_handler.neo4j_shutdown(self)
         @graph.shutdown

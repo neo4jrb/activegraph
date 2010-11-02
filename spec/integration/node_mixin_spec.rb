@@ -20,11 +20,11 @@ end
 describe Neo4j::NodeMixin, :type=> :transactional do
 
   before(:each) do
-    SimpleNode.index(:city)  # TODO
+    SimpleNode.index(:city)  
   end
 
   after(:each) do
-    SimpleNode.rm_index_type     # TODO
+    SimpleNode.rm_field_type(:city)
   end
 
 

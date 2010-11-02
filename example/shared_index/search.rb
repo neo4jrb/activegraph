@@ -15,12 +15,16 @@ end
 
 def search_random
   100.times do
-    id          =(rand * 100).to_int
-    s           = all_contacts_for(id)
+    # first find a user
+    user_id          =(rand * SIZE).to_int
+    s           = all_contacts_for(user_id)
+    puts "Found #{user_id} #{s.join(', ')}"
     @count_hits += s.size # not thread safe, I know
 #    puts "HIT #{s[42]}" if s
   end
 end
+
+Neo4j.start
 
 puts "warm up"
 

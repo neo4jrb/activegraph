@@ -17,8 +17,8 @@ module Neo4j
         @defaults ||= {
           :storage_path => 'tmp/neo4j',
           :lucene => {
-                  :fulltext => org.neo4j.index.impl.lucene.LuceneIndexProvider::FULLTEXT_CONFIG,
-                  :exact => org.neo4j.index.impl.lucene.LuceneIndexProvider::EXACT_CONFIG}
+                  :fulltext =>  {"provider" => "lucene", "type" => "fulltext" },
+                  :exact =>  {"provider" => "lucene", "type" => "exact" }}
         }
       end
 

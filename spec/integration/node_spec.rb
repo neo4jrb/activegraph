@@ -87,7 +87,8 @@ describe Neo4j::Node, :type => :transactional do
       new_node[:key].should == 42
     end
 
-    it "set and get Fixnum properties" do
+    it "set and get Array properties" do
+      pending "Not implemented yet"
       new_node = Neo4j::Node.new
       new_node[:key] = %w[a b c]
       new_node[:key].should == %w[a b c]

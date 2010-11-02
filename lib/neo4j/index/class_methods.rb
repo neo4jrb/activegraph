@@ -18,7 +18,7 @@ module Neo4j
       # :singleton-method: find
 
 
-      def_delegators :@_indexer, :index, :find, :index?, :index_type?, :clear_index_type, :rm_index_type, :add_index, :rm_index, :index_type_for, :index_name
+      def_delegators :@_indexer, :index, :find, :index?, :index_type?, :delete_index_type, :rm_field_type, :add_index, :rm_index, :index_type_for, :index_name
 
 
       # Sets which indexer should be used for the given node class.
