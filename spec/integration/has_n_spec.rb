@@ -80,6 +80,19 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     p3.friend_by_rels.to_other(p1).size.should == 1
     p3.friend_by_rels.to_other(p1).map { |r| r.start_node }.should include(p1)
   end
+  
+  it "can add nodes to an incoming relationship" do
+  	p1 = Person.new
+  	p2 = Person.new
+  	p3 = Person.new
+  	p2.friend_by << p1
+  	p1.friends << p3
+  	
+  	p1.friends.size.should == 2
+  	p1.friends.should include(p2, p3)
+  	p2.friend_by.should include(p1)
+  	p3.friend_by.should include(p1)
+  end
 
   it "method 'type'_rels returns an RelationshipTraverser which has a method for deleting all relationships" do
     p1 = Person.new

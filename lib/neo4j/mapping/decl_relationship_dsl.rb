@@ -107,14 +107,14 @@ module Neo4j::Mapping
     end
 
     def create_relationship_to(node, other)
-      dsl = incoming? ? incoming_dsl : self
-
-      # If the are creating an incoming relationship we need to swap incoming and outgoing nodes
-      if @direction == :outgoing
-        from, to = node, other
-      else
-        from, to = other, node
-      end
+    	if incoming?
+    		# If we are creating an incoming relationship, we need to swap incoming and outgoing nodes
+    		dsl = incoming_dsl
+    		from, to = other, node
+    	else
+    		dsl = self
+    		from, to = node, other
+    	end
 
       java_type = type_to_java(dsl.namespace_type)
 
