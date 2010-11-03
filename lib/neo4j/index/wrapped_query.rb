@@ -36,7 +36,6 @@ module Neo4j
       end
 
       def between(lower, upper)
-
         raise "Expected a symbol. Syntax for range queries example: index(:weight).between(a,b)" unless Symbol === @query
         raise "Can't only do range queries on Neo4j::NodeMixin, Neo4j::Model, Neo4j::RelationshipMixin" unless @decl_props
         type = @decl_props[@query] && @decl_props[@query][:type] 
@@ -44,17 +43,12 @@ module Neo4j
         if type != String
           raise "find(#{@query}).between(#{lower}, #{upper}) to allowed since #{lower} is not a Float or Fixnum" if lower === Float or lower === Fixnum
           raise "find(#{@query}).between(#{lower}, #{upper}) to allowed since #{upper} is not a Float or Fixnum" if upper === Float or upper === Fixnum
-          puts "type=#{type} NUmeric #{lower}/#{lower.class} upper #{upper}/#{upper.class}"
           @query = org.apache.lucene.search.NumericRangeQuery.new_double_range(@query.to_s, lower, upper, false, false)
         else
           raise "find(#{@query}).between(#{lower}, #{upper}) to allowed since #{lower} is not a String" if lower === String
           raise "find(#{@query}).between(#{lower}, #{upper}) to allowed since #{upper} is not a String" if upper === String
-
-          puts "TERM RANGE"
           @query = org.apache.lucene.search.TermRangeQuery.new(@query.to_s, lower, upper, false, false)
         end
-
-        puts "GOT RANGE #{@query}"
         self
       end
 
@@ -75,7 +69,6 @@ module Neo4j
       end
 
       def build_and_query(query)
-        puts "LEFT AND QUERY #{@left_and_query}"
         left_query = @left_and_query.build_query
         and_query  = org.apache.lucene.search.BooleanQuery.new
         and_query.add(left_query, org.apache.lucene.search.BooleanClause::Occur::MUST)
@@ -121,9 +114,7 @@ module Neo4j
       end
 
       def perform_query
-        q = build_query
-        puts "query = '#{@query} built #{q}'"
-        @index.query(q)
+        @index.query(build_query)
       end
     end
   end

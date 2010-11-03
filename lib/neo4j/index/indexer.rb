@@ -134,7 +134,6 @@ module Neo4j
 
         type = @decl_props && @decl_props[field.to_sym] && @decl_props[field.to_sym][:type]
         if type
-          puts "Index with type #{type} on #{field} value #{value}, #{String != type}"
           raise "Can't index #{type} with value #{value} since it is not a #{type}" unless type === value
           value = if String != type
                     org.neo4j.index.impl.lucene.ValueContext.new(value).indexNumeric
