@@ -128,6 +128,22 @@ module Neo4j
 
       def add_index(entity, field, value)
        	return false unless @field_types.has_key?(field)
+
+        # we might need to know what type the properties are when indexing and querying
+        @decl_props ||= @indexer_for.respond_to?(:_decl_props) && @indexer_for._decl_props
+
+        type = @decl_props && @decl_props[field.to_sym] && @decl_props[field.to_sym][:type]
+        if type
+          puts "Index with type #{type} on #{field} value #{value}, #{String != type}"
+          raise "Can't index #{type} with value #{value} since it is not a #{type}" unless type === value
+          value = if String != type
+                    org.neo4j.index.impl.lucene.ValueContext.new(value).indexNumeric
+                  else
+                    org.neo4j.index.impl.lucene.ValueContext.new(value)
+                  end
+
+        end
+
         index_for_field(field.to_s).add(entity, field, value)
       	@parent_indexers.each { |i| i.add_index(entity, field, value) }
       end
@@ -139,9 +155,11 @@ module Neo4j
       end
 
       def find(query, params = {})
-        type = params[:type] || :exact
-        index = index_for_type(type)
-        query = (params[:wrapped].nil? || params[:wrapped]) ? WrappedQuery.new(index, query) : index.query(query)
+        # we might need to know what type the properties are when indexing and querying
+        @decl_props ||= @indexer_for.respond_to?(:_decl_props) && @indexer_for._decl_props
+
+        index = index_for_type(params[:type] || :exact)
+        query = (params[:wrapped].nil? || params[:wrapped]) ? WrappedQuery.new(index, @decl_props, query) : index.query(query)
 
         if block_given?
           begin
@@ -155,7 +173,7 @@ module Neo4j
         end
       end
 
-      # clears the index, if no type is provided clear all types of indexes
+      # delete the index, if no type is provided clear all types of indexes
       def delete_index_type(type=nil)
         if type
           #raise "can't clear index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
@@ -169,7 +187,7 @@ module Neo4j
 
       def on_neo4j_shutdown
         # Since we might start the database again we must make sure that we don't keep any references to
-        # an old lucene index service.
+        # an old lucene index in memory.
         @indexes.clear
       end
 

@@ -1,6 +1,10 @@
 class Vehicle
   include Neo4j::NodeMixin
   index :wheels
+  property :name, :type => String
+  property :weight, :type => Float
+  index :weight
+  index :name
 end
 
 class Car < Vehicle

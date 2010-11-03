@@ -1,7 +1,90 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
-describe Neo4j::Node, "find", :type => :transactional do
+describe Neo4j::NodeMixin, "find", :type => :transactional do
+
+  context "hash queries, find(hash)" do
+    before(:each) do
+      @bike = Vehicle.new(:name => 'bike', :wheels => 2)
+      @car = Vehicle.new(:name => 'car', :wheels => 4)
+      @old_bike = Vehicle.new(:name => 'old bike', :wheels => 2)
+      new_tx
+    end
+
+    it "find(:name => 'bike', :wheels => 2)" do
+      pending
+      result = [*Vehicle.find(:name => 'bike', :wheels => 2)]
+      result.size.should == 1
+      result.should include(@bike)
+    end
+  end
+
+  context "range queries, index :name, :type => String" do
+    before(:each) do
+      @bike = Vehicle.new(:name => 'bike')
+      @car = Vehicle.new(:name => 'car')
+      @old_bike = Vehicle.new(:name => 'old bike')
+      new_tx
+    end
+
+    it "find(:name).between('f', 'q')" do
+      result = [*Vehicle.find(:name).between('f', 'q')]
+      result.should include(@old_bike)
+      result.size.should == 1
+    end
+
+    it "find(:name).between(5.0, 10.0).asc(:name)" do
+      result = [*Vehicle.find(:name).between('a', 'z').asc(:name)]
+      result.size.should == 3
+      result.should == [@bike, @car, @old_bike]
+    end
+
+    it "find(:name).between(5.0, 10.0).desc(:name)" do
+      result = [*Vehicle.find(:name).between('a', 'z').desc(:name)]
+      result.size.should == 3
+      result.should == [@old_bike, @car, @bike]
+    end
+  end
+
+  context "range queries, index :weight, :type => Float" do
+    before(:each) do
+      @bike = Vehicle.new(:name => 'bike', :weight => 9.23)
+      @car = Vehicle.new(:name => 'car', :weight => 1042.99)
+      @old_bike = Vehicle.new(:name => 'old bike', :weight => 21.42)
+      new_tx
+    end
+    it "find(:weight).between(5.0, 10.0)" do
+      result = [*Vehicle.find(:weight).between(5.0, 10.0)]
+      result.should include(@bike)
+      result.size.should == 1
+    end
+
+    it "find(:weight).between(5.0, 10.0).asc(:weight)" do
+      result = [*Vehicle.find(:weight).between(1.0, 10000.0).asc(:weight)]
+      result.should == [@bike, @old_bike, @car]
+      result.size.should == 3
+    end
+
+    it "find(:weight).between(5.0, 10.0).desc(:weight)" do
+      result = [*Vehicle.find(:weight).between(1.0, 10000.0).desc(:weight)]
+      result.should == [@car, @old_bike, @bike]
+      result.size.should == 3
+    end
+
+    it "find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')" do
+      result = [*Vehicle.find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')]
+      puts "FOUND RESULT #{result.join(', ')}"
+    end
+    
+    it "find('weight:[5.0 TO 10.0]')" do
+      pending "Does not work"
+      result = [*Vehicle.find('weight:[5.0 TO 10.0]')]
+      puts "RESULT #{result.inspect}"
+      result.size.should == 1
+      result.should include(@bike)
+    end
+  end
+
   it "can index and search on two properties if index has the same type" do
     c = Car.new(:wheels => 4, :colour => 'blue')
     new_tx
@@ -111,7 +194,7 @@ describe Neo4j::Relationship, "find", :type => :transactional do
 
 end
 
-describe Neo4j::Node, "index", :type => :transactional do
+describe Neo4j::Node, "find", :type => :transactional do
   before(:each) do
     Neo4j::Node.index(:name) # default :exact
     Neo4j::Node.index(:age) # default :exact
