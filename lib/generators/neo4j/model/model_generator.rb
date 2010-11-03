@@ -3,8 +3,6 @@ require File.join(File.dirname(__FILE__), '..', '..', 'neo4j.rb')
 class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base
 	argument :attributes, :type => :array, :default => [], :banner => "field:type field:type"
 	
-	#hook_for :orm, :required => true
-	
 	check_class_collision
 	
 	class_option :timestamps, :type => :boolean
