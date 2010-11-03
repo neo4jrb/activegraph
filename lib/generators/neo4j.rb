@@ -51,8 +51,14 @@ module Rails
   module Generators
     class GeneratedAttribute #:nodoc:
       def type_class
-        return 'DateTime' if type.to_s == 'datetime'
-        return ":#{type}"
+      	case type.to_s.downcase
+					when 'datetime' 										then 'DateTime'
+					when 'date' 												then 'Date'
+					when 'text' 												then 'String'
+					when 'integer', 'number', 'fixnum' 	then 'Fixnum'
+					when 'float' 												then 'Float'
+					else 'String'
+      	end
       end
     end
   end
