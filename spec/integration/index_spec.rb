@@ -12,11 +12,22 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
     end
 
     it "find(:name => 'bike', :wheels => 2)" do
-      pending
       result = [*Vehicle.find(:name => 'bike', :wheels => 2)]
       result.size.should == 1
       result.should include(@bike)
     end
+
+    it "find({}) should return nothing" do
+      result = [*Vehicle.find({})]
+      result.size.should == 0
+    end
+
+    it "find(:name => 'bike').and(:wheels => 2) should return same thing as find(:name => 'bike', :wheels => 2)" do
+      result = [*Vehicle.find(:name => 'bike').and(:wheels => 2)]
+      result.size.should == 1
+      result.should include(@bike)
+    end
+
   end
 
   context "range queries, index :name, :type => String" do

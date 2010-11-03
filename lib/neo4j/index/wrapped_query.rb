@@ -3,7 +3,8 @@ module Neo4j
 
     class WrappedQuery
       include Enumerable
-      attr_accessor :left_and_query
+      attr_accessor :left_and_query, :left_or_query
+      
       def initialize(index, decl_props, query)
         @index = index
         @query = query
@@ -73,37 +74,49 @@ module Neo4j
         self
       end
 
+      def build_and_query(query)
+        puts "LEFT AND QUERY #{@left_and_query}"
+        left_query = @left_and_query.build_query
+        and_query  = org.apache.lucene.search.BooleanQuery.new
+        and_query.add(left_query, org.apache.lucene.search.BooleanClause::Occur::MUST)
+        and_query.add(query, org.apache.lucene.search.BooleanClause::Occur::MUST)
+        and_query
+      end
+
+      def build_sort_query(query)
+        java_sort_fields = @order.keys.inject([]) do |memo, field|
+          decl_type = @decl_props && @decl_props[field] && @decl_props[field][:type]
+          type      = case
+                        when Float == decl_type
+                          org.apache.lucene.search.SortField::DOUBLE
+                        when Fixnum == decl_type
+                          org.apache.lucene.search.SortField::LONG
+                        else
+                          org.apache.lucene.search.SortField::STRING
+                      end
+          memo << org.apache.lucene.search.SortField.new(field.to_s, type, @order[field])
+        end
+        sort             = org.apache.lucene.search.Sort.new(*java_sort_fields)
+        org.neo4j.index.impl.lucene.QueryContext.new(query).sort(sort)
+      end
+
+      def build_hash_query(query)
+        and_query  = org.apache.lucene.search.BooleanQuery.new
+
+        query.each_pair do |key, value|
+          raise "Only String values valid in find(hash) got :#{key} => #{value} which is not a String" if !value.is_a?(String) && @decl_props[key] && @decl_props[key][:type] != String
+          term = org.apache.lucene.index.Term.new(key.to_s, value.to_s)
+          term_query = org.apache.lucene.search.TermQuery.new(term)
+          and_query.add(term_query, org.apache.lucene.search.BooleanClause::Occur::MUST)
+        end
+        and_query
+      end
+      
       def build_query
-        query = if @left_and_query
-                  puts "LEFT AND QUERY #{@left_and_query}"
-                  left_query = @left_and_query.build_query
-                  occur      = org.apache.lucene.search.BooleanClause::Occur::MUST
-                  and_query  = org.apache.lucene.search.BooleanQuery.new
-                  and_query.add(left_query, occur)
-                  and_query.add(@query, occur)
-                  and_query
-                else
-                  @query
-                end
-
-
-        query = begin
-          java_sort_fields = @order.keys.inject([]) do |memo, field|
-            decl_type = @decl_props && @decl_props[field] && @decl_props[field][:type]
-            type      = case
-                          when Float == decl_type
-                            org.apache.lucene.search.SortField::DOUBLE
-                          when Fixnum == decl_type
-                            org.apache.lucene.search.SortField::LONG
-                          else
-                            org.apache.lucene.search.SortField::STRING
-                        end
-            memo << org.apache.lucene.search.SortField.new(field.to_s, type, @order[field])
-          end
-          sort             = org.apache.lucene.search.Sort.new(*java_sort_fields)
-          org.neo4j.index.impl.lucene.QueryContext.new(query).sort(sort)
-        end if @order
-
+        query = @query
+        query = build_hash_query(query) if Hash === query
+        query = build_and_query(query) if @left_and_query
+        query = build_sort_query(query) if @order
         query
       end
 
