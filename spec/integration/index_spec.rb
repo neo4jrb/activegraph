@@ -84,7 +84,8 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
 
     it "find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')" do
       result = [*Vehicle.find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')]
-      puts "FOUND RESULT #{result.join(', ')}"
+      result.size.should == 2
+      result.should include(@bike, @car)
     end
     
     it "find('weight:[5.0 TO 10.0]')" do

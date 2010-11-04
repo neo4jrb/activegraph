@@ -1,9 +1,9 @@
 module Neo4j
   module Index
-    class Indexer #:nodoc:
+    class Indexer 
       attr_reader :indexer_for, :field_types, :via_relationships
 
-      def initialize(clazz, type)
+      def initialize(clazz, type) #:nodoc:
         # part of the unique name of the index
         @indexer_for       = clazz
 
@@ -19,7 +19,7 @@ module Neo4j
         @parent_indexers   = []
       end
 
-      def inherit_fields_from(parent_index)
+      def inherit_fields_from(parent_index) #:nodoc:
         return unless parent_index
         @field_types.reverse_merge!(parent_index.field_types) if parent_index.respond_to?(:field_types)
         @via_relationships.reverse_merge!(parent_index.via_relationships) if parent_index.respond_to?(:via_relationships)
@@ -30,7 +30,53 @@ module Neo4j
         "Indexer @#{object_id} [index_for:#{@indexer_for}, field_types=#{@field_types.keys.join(', ')}, via=#{@via_relationships.inspect}]"
       end
 
-      #  add an index on a field so that it will be automatically updated by neo4j events.
+      # Add an index on a field so that it will be automatically updated by neo4j transactional events.
+      #
+      # The index method takes an optional configuration hash which allows you to:
+      #
+      # === Add an index on an a property
+      #
+      # Example:
+      #   class Person
+      #     include Neo4j::NodeMixin
+      #     index :name
+      #   end
+      #
+      # When the property name is changed/deleted or the node created it will keep the lucene index in sync.
+      # You can then perform a lucene query like this: Person.find('name: andreas')
+      #'
+      # === Add index on other nodes.
+      #
+      # Example:
+      #
+      #   class Person
+      #     include Neo4j::NodeMixin
+      #     has_n(:friends).to(Contact)
+      #     has_n(:known_by).from(:friends)
+      #     index :user_id, :via => :known_by
+      #   end
+      #
+      # Notice that you *must* specify an incoming relationship with the via key, as shown above.
+      # In the example above an index <tt>user_id</tt> will be added to all Person nodes which has a <tt>friends</tt> relationship
+      # that person with that user_id. This allows you to do lucene queries on your friends properties.
+      #
+      # === Set the type value to index
+      # By default all values will be indexed as Strings.
+      # If you want for example to do a numerical range query you must tell Neo4j.rb to index it as a numeric value.
+      # You do that with the key <tt>type</tt>
+      #
+      # Example:
+      #   class Person
+      #     include Neo4j::NodeMixin
+      #     index :weight, :type => Float
+      #   end
+      #
+      # Supported values for <tt>:type</tt> is <tt>String</tt>, <tt>Float</tt> and <tt>Fixnum</tt>
+      #
+      # === For more information
+      # * See Neo4j::Index::LuceneQuery
+      # * See #find
+      #
       def index(field, conf = {})
         if conf[:via]
           rel_dsl = @indexer_for._decl_rels[conf[:via]]
@@ -48,7 +94,7 @@ module Neo4j
         end
       end
 
-      def remove_index_on_fields(node, props, tx_data)
+      def remove_index_on_fields(node, props, tx_data) #:nodoc:
         @field_types.keys.each { |field| rm_index(node, field, props[field]) if props[field] }
         # remove all via indexed fields
         @via_relationships.each_value do |dsl|
@@ -61,15 +107,15 @@ module Neo4j
         end
       end
 
-      def update_on_deleted_relationship(relationship)
+      def update_on_deleted_relationship(relationship) #:nodoc:
         update_on_relationship(relationship, false)
       end
 
-      def update_on_new_relationship(relationship)
+      def update_on_new_relationship(relationship) #:nodoc:
         update_on_relationship(relationship, true)
       end
 
-      def update_on_relationship(relationship, is_created)
+      def update_on_relationship(relationship, is_created) #:nodoc:
         rel_type = relationship.rel_type
         end_node = relationship._end_node
         # find which via relationship match rel_type
@@ -93,7 +139,7 @@ module Neo4j
         end
       end
 
-      def update_index_on(node, field, old_val, new_val)
+      def update_index_on(node, field, old_val, new_val) #:nodoc:
         if @via_relationships.include?(field)
           dsl = @via_relationships[field]
           to_class = dsl.to_class
@@ -106,26 +152,35 @@ module Neo4j
         update_single_index_on(node, field, old_val, new_val)
       end
 
-      def update_single_index_on(node, field, old_val, new_val)
+      def update_single_index_on(node, field, old_val, new_val) #:nodoc:
         if @field_types.include?(field)
           rm_index(node, field, old_val) if old_val
           add_index(node, field, new_val) if new_val
         end
       end
 
+      # Returns true if there is an index on the given field.
+      #
       def index?(field)
         @field_types.include?(field.to_s)
       end
 
-      def index_type_for(field)
+      # Returns the type of index for the given field (e.g. :exact or :fulltext)
+      #
+      def index_type_for(field) #:nodoc:
         return nil unless index?(field)
         @field_types[field.to_s]
       end
 
+      # Returns true if there is an index of the given type defined.
       def index_type?(type)
         @field_types.values.include?(type)
       end
 
+      # Adds an index on the given entity
+      # This is normally not needed since you can instead declare an index which will automatically keep
+      # the lucene index in sync. See #index
+      #
       def add_index(entity, field, value)
        	return false unless @field_types.has_key?(field)
 
@@ -147,18 +202,44 @@ module Neo4j
       	@parent_indexers.each { |i| i.add_index(entity, field, value) }
       end
 
+      # Removes an index on the given entity
+      # This is normally not needed since you can instead declare an index which will automatically keep
+      # the lucene index in sync. See #index
+      #
       def rm_index(entity, field, value)
         return false unless @field_types.has_key?(field)
         index_for_field(field).remove(entity, field, value)
         @parent_indexers.each { |i| i.rm_index(entity, field, value) }
       end
 
+      # Performs a Lucene Query.
+      #
+      # In order to use this you have to declare an index on the fields first, see #index.
+      # Notice that you should close the lucene query after the query has been executed.
+      # You can do that either by provide an block or calling the Neo4j::Index::LuceneQuery#close
+      # method. When performing queries from Ruby on Rails you do not need this since it will be automatically closed
+      # (by Rack).
+      #
+      # === Example, with a block
+      #   
+      #   Person.find('name: kalle') {|query| puts "#{[*query].join(', )"}
+      #
+      # ==== Example
+      #
+      #   query = Person.find('name: kalle')
+      #   puts "First item #{query.first}"
+      #   query.close
+      #
+      # === Return Value
+      # It will return a Neo4j::Index::LuceneQuery object
+      #
+      #
       def find(query, params = {})
         # we might need to know what type the properties are when indexing and querying
         @decl_props ||= @indexer_for.respond_to?(:_decl_props) && @indexer_for._decl_props
 
         index = index_for_type(params[:type] || :exact)
-        query = (params[:wrapped].nil? || params[:wrapped]) ? WrappedQuery.new(index, @decl_props, query) : index.query(query)
+        query = (params[:wrapped].nil? || params[:wrapped]) ? LuceneQuery.new(index, @decl_props, query) : index.query(query)
 
         if block_given?
           begin
@@ -184,12 +265,14 @@ module Neo4j
         end
       end
 
-      def on_neo4j_shutdown
+      def on_neo4j_shutdown #:nodoc:
         # Since we might start the database again we must make sure that we don't keep any references to
         # an old lucene index in memory.
         @indexes.clear
       end
 
+      # Removes the cached lucene index, can be useful for some RSpecs which needs to restart the Neo4j.
+      #
       def rm_field_type(type=nil)
         if type
           @field_types.delete_if { |k, v| v == type }
@@ -198,22 +281,22 @@ module Neo4j
         end
       end
 
-      def index_for_field(field)
+      def index_for_field(field) #:nodoc:
         type = @field_types[field]
         @indexes[type] ||= create_index_with(type)
       end
 
-      def index_for_type(type)
+      def index_for_type(type) #:nodoc:
         @indexes[type] ||= create_index_with(type)
       end
 
-      def lucene_config(type)
+      def lucene_config(type) #:nodoc:
         conf = Neo4j::Config[:lucene][type.to_sym]
         raise "unknown lucene type #{type}" unless conf
         conf
       end
 
-      def create_index_with(type)
+      def create_index_with(type) #:nodoc:
         db=Neo4j.started_db
         index_config = lucene_config(type)
         if @type == :node

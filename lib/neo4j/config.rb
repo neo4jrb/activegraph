@@ -2,9 +2,12 @@
 module Neo4j
 
 
-  # Keeps configuration for neo4j.
+  # == Keeps configuration for neo4j.
   #
-  # Neo4j::Config[:storage_path]:: is used for locating the neo4j database on the filesystem.
+  # The most important configuration is <tt>Neo4j::Config[:storage_path]</tt> which is used to
+  # locate where the neo4j database is stored on the filesystem.
+  # If this directory is empty then a new database will be created, otherwise it will use the
+  # database from that directory.
   #
   class Config
     # This code is copied from merb-core/config.rb.
@@ -45,8 +48,8 @@ module Neo4j
       # Set the value of a config entry.
       #
       # ==== Parameters
-      # key<Object>:: The key to set the parameter for.
-      # val<Object>:: The value of the parameter.
+      # key:: The key to set the parameter for.
+      # val:: The value of the parameter.
       #
       def []=(key, val)
         (@configuration ||= setup)[key] = val
@@ -56,7 +59,7 @@ module Neo4j
       # Gets the the value of a config entry
       #
       # ==== Parameters
-      # key<Object>:: The key of the config entry value we want
+      # key:: The key of the config entry value we want
       #
       def [](key)
         (@configuration ||= setup)[key]
@@ -69,7 +72,7 @@ module Neo4j
       # key<Object>:: The key of the parameter to delete.
       #
       # ==== Returns
-      # Object:: The value of the removed entry.
+      # The value of the removed entry.
       #
       def delete(key)
         @configuration.delete(key)
@@ -90,12 +93,11 @@ module Neo4j
       # Retrieve the value of a config entry, returning the provided default if the key is not present
       #
       # ==== Parameters
-      # key<Object>:: The key to retrieve the parameter for.
-      # default<Object>::
-      # The default value to return if the parameter is not set.
+      # key:: The key to retrieve the parameter for.
+      # default::The default value to return if the parameter is not set.
       #
       # ==== Returns
-      # Object:: The value of the configuration parameter or the default.
+      # The value of the configuration parameter or the default.
       #
       def fetch(key, default)
         @configuration.fetch(key, default)
@@ -116,7 +118,7 @@ module Neo4j
       # Returns the configuration as a hash.
       #
       # ==== Returns
-      # Hash:: The config as a hash.
+      # The config as a hash.
       #
       def to_hash
         @configuration
@@ -125,7 +127,7 @@ module Neo4j
       # Returns the config as YAML.
       #
       # ==== Returns
-      # String:: The config as YAML.
+      # The config as YAML.
       #
       def to_yaml
         require "yaml"

@@ -1,5 +1,5 @@
 module Neo4j
-  class Database
+  class Database #:nodoc:
     attr_reader :graph, :lucene, :event_handler
 
     def initialize()

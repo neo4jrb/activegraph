@@ -6,6 +6,7 @@ module Neo4j::Mapping
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship.
+      # Both incoming and outgoing relationships can be declared, see Neo4j::Mapping::DeclRelationshipDsl
       #
       # ==== Example
       #
@@ -43,6 +44,7 @@ module Neo4j::Mapping
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship
       # Old relationship is deleted when a new relationship is assigned.
+      # Both incoming and outgoing relationships can be declared, see Neo4j::Mapping::DeclRelationshipDsl
       #
       # ==== Example
       #
@@ -58,7 +60,7 @@ module Neo4j::Mapping
       #
       # ==== Returns
       #
-      # Neo4j::Relationships::DeclRelationshipDsl
+      # Neo4j::Mapping::DeclRelationshipDsl
       #
       def has_one(rel_type, params = {})
         clazz = self

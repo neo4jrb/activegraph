@@ -1,7 +1,37 @@
 module Neo4j
   module Index
-
-    class WrappedQuery
+    # == LuceneQuery
+    #
+    # This object is returned when you call the #find method on the Node, Relationship.
+    # The actual query is not executed until the first item is requested.
+    #
+    # You can perform a query in many different ways:
+    #
+    # === By Hash
+    #
+    # Example:
+    #  Person.find(:name => 'foo', :age => 3)
+    #
+    # === By Range
+    #
+    # Example:
+    #  Person.find(:age).between(15,35)
+    #
+    # === By Lucene Query Syntax
+    #
+    # Example
+    #  Car.find('wheels:"4" AND colour: "blue")
+    #
+    # For more information about the syntax see http://lucene.apache.org/java/3_0_2/queryparsersyntax.html
+    #
+    # ==== By Compound Queries
+    #
+    # You can combine several queries by <tt>AND</tt>ing those together.
+    #
+    # Example:
+    #   Vehicle.find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')
+    #
+    class LuceneQuery
       include Enumerable
       attr_accessor :left_and_query, :left_or_query
       
@@ -53,7 +83,7 @@ module Neo4j
       end
 
       def and(query2)
-        new_query = WrappedQuery.new(@index, @decl_props, query2)
+        new_query = LuceneQuery.new(@index, @decl_props, query2)
         new_query.left_and_query = self
         new_query
       end

@@ -15,7 +15,6 @@ module Neo4j
     #  # modify something
     #  tx.success
     #  tx.finish
-
     def self.new(instance = Neo4j.started_db)
       instance.begin_tx
     end

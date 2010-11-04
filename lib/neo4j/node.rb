@@ -58,7 +58,7 @@ module Neo4j
   # * Neo4j::Index::ClassMethods lucene index class methods, like find
   # * Neo4j::Load - methods for loading a node
   #
-  # See also the Neo4j::NodeMixin if you want to wrap a node with your own Ruby class.
+  # See also the Neo4j::NodeMixin (Neo4j::Mapping::NodeMixin) if you want to wrap a node with your own Ruby class.
   #
   class Node
     extend Neo4j::Index::ClassMethods

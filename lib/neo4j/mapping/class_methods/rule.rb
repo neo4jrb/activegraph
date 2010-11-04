@@ -1,39 +1,43 @@
 module Neo4j::Mapping
   module ClassMethods
+    # Holds all defined rules and trigger them when an event is received.
+    #
+    # See Rule
+    # 
     class Rules
       class << self
         def add(clazz, field, props, &block)
-          clazz = clazz.to_s
-          @rules ||= {}
+          clazz                   = clazz.to_s
+          @rules                  ||= {}
           # was there no ruls for this class AND is neo4j running ?
           if !@rules.include?(clazz) && Neo4j.running?
             # maybe Neo4j was started first and the rules was added later. Create rule nodes now
             create_rule_node_for(clazz)
           end
-          @rules[clazz] ||= {}
-          filter = block.nil? ? Proc.new { |*| true } : block
-          @rules[clazz][field] = filter
-          @triggers ||= {}
-          @triggers[clazz] ||= {}
-          trigger = props[:trigger].nil? ? [] : props[:trigger]
+          @rules[clazz]           ||= {}
+          filter                  = block.nil? ? Proc.new { |*| true } : block
+          @rules[clazz][field]    = filter
+          @triggers               ||= {}
+          @triggers[clazz]        ||= {}
+          trigger                 = props[:trigger].nil? ? [] : props[:trigger]
           @triggers[clazz][field] = trigger.respond_to?(:each) ? trigger : [trigger]
         end
-	
-	def inherit(parent_class, subclass)
-	  # copy all the rules
-	  @rules[parent_class.to_s].each_pair do |field, filter|
-	    subclass.rule field, &filter
-	  end if @rules[parent_class.to_s]
-	end
+
+        def inherit(parent_class, subclass)
+          # copy all the rules
+          @rules[parent_class.to_s].each_pair do |field, filter|
+            subclass.rule field, &filter
+          end if @rules[parent_class.to_s]
+        end
 
         def trigger_other_rules(node)
-	  clazz = node[:_classname]
-	  @rules[clazz].keys.each do |field|
-	    rel_types = @triggers[clazz][field]
-	    rel_types.each do |rel_type|
-	      node.incoming(rel_type).each { |n| n.trigger_rules }
-	    end
-	  end
+          clazz = node[:_classname]
+          @rules[clazz].keys.each do |field|
+            rel_types = @triggers[clazz][field]
+            rel_types.each do |rel_type|
+              node.incoming(rel_type).each { |n| n.trigger_rules }
+            end
+          end
         end
 
         def fields_for(clazz)
@@ -70,17 +74,17 @@ module Neo4j::Mapping
         end
 
         def rule_for(clazz)
-	  if Neo4j.ref_node.rel?(clazz)
-	    Neo4j.ref_node._rel(:outgoing, clazz)._end_node
-	  else
-	    # this should be called if the rule node gets deleted
-	    create_rule_node_for(clazz)
-	  end
+          if Neo4j.ref_node.rel?(clazz)
+            Neo4j.ref_node._rel(:outgoing, clazz)._end_node
+          else
+            # this should be called if the rule node gets deleted
+            create_rule_node_for(clazz)
+          end
         end
 
 
         def on_relationship_created(rel, *)
-	  trigger_start_node = trigger?(rel._start_node)
+          trigger_start_node = trigger?(rel._start_node)
           trigger_end_node   = trigger?(rel._end_node)
           # end or start node must be triggered by this event
           return unless trigger_start_node || trigger_end_node
@@ -89,52 +93,52 @@ module Neo4j::Mapping
 
 
         def on_property_changed(node, *)
-	  trigger_rules(node) if trigger?(node)
+          trigger_rules(node) if trigger?(node)
         end
 
         def trigger_rules(node)
           trigger_rules_for_class(node, node[:_classname])
-	  trigger_other_rules(node)
+          trigger_other_rules(node)
         end
-	
-	def trigger_rules_for_class(node, clazz)
-	  return if @rules[clazz].nil?
+
+        def trigger_rules_for_class(node, clazz)
+          return if @rules[clazz].nil?
 
           agg_node = rule_for(clazz)
           @rules[clazz].each_pair do |field, rule|
             if run_rule(rule, node)
               # is this node already included ?
-	      unless connected?(field, agg_node, node)
+              unless connected?(field, agg_node, node)
                 agg_node.outgoing(field) << node
               end
             else
               # remove old ?
-	      break_connection(field, agg_node, node)
+              break_connection(field, agg_node, node)
             end
           end
-	  
-	  # recursively add relationships for all the parent classes with rules that also pass for this node
-	  if clazz = eval("#{clazz}.superclass")
-	    trigger_rules_for_class(node, clazz.to_s)
-	  end
-	end
-	
-	# work out if two nodes are connected by a particular relationship
-	# uses the end_node to start with because it's more likely to have less relationships to go through
-	# (just the number of superclasses it has really)
-	def connected?(relationship, start_node, end_node)
-	  end_node.incoming(relationship).each do |n|
-	    return true if n == start_node
-	  end
-	  false
-	end
-	
-	# sever a direct one-to-one relationship if it exists
-	def break_connection(relationship, start_node, end_node)
-	  end_node.rels(relationship).incoming.each do |r|
-	    return r.del if r.start_node == start_node
-	  end
-	end
+
+          # recursively add relationships for all the parent classes with rules that also pass for this node
+          if clazz = eval("#{clazz}.superclass")
+            trigger_rules_for_class(node, clazz.to_s)
+          end
+        end
+
+        # work out if two nodes are connected by a particular relationship
+        # uses the end_node to start with because it's more likely to have less relationships to go through
+        # (just the number of superclasses it has really)
+        def connected?(relationship, start_node, end_node)
+          end_node.incoming(relationship).each do |n|
+            return true if n == start_node
+          end
+          false
+        end
+
+        # sever a direct one-to-one relationship if it exists
+        def break_connection(relationship, start_node, end_node)
+          end_node.rels(relationship).incoming.each do |r|
+            return r.del if r.start_node == start_node
+          end
+        end
 
         def run_rule(rule, node)
           if rule.arity != 1
@@ -147,6 +151,75 @@ module Neo4j::Mapping
     end
 
 
+    # Allows you to group nodes by providing a rule.
+    #
+    # === Example, finding all nodes of a certain class
+    # Just add a rule without a code block, then all nodes of that class will be grouped under the given key (<tt>all</tt>
+    # for the example below).
+    #
+    #   class Person
+    #     include Neo4j::NodeMixin
+    #     rule :all
+    #   end
+    #
+    # Then you can get all the nodes of type Person (and siblings) by
+    #   Person.all.each {|x| ...}
+    #
+    # === Example, finding all nodes with a given condition on a property
+    #
+    #   class Person
+    #     include Neo4j::NodeMixin
+    #     property :age
+    #     rule(:old) { age > 10 }
+    #   end
+    #
+    #  Now we can find all nodes with a property <tt>age</tt> above 10.
+    #
+    # === Chain Rules
+    #
+    #   class NewsStory
+    #     include Neo4j::NodeMixin
+    #     has_n :readers
+    #     rule(:featured) { |node| node[:featured] == true }
+    #     rule(:young_readers) { !readers.find{|user| !user.young?}}
+    #   end
+    #
+    # You can combine two rules. Let say you want to find all stories which are featured and has young readers:
+    #   NewsStory.featured.young_readers.each {...}
+    #
+    # === Trigger Other Rules
+    # You can let one rule trigger another rule.
+    # Let say you have readers of some magazine and want to know if the magazine has old or young readers.
+    # So when a reader change from young to old you want to trigger all the magazine that he reads (a but stupid example)
+    #
+    # Example
+    #   class Reader
+    #     include Neo4j::NodeMixin
+    #     property :age
+    #     rule(:young, :trigger => :readers) { age < 15 }
+    #   end
+    #
+    #   class NewsStory
+    #     include Neo4j::NodeMixin
+    #     has_n :readers
+    #     rule(:young_readers) { !readers.find{|user| !user.young?}}
+    #   end
+    #
+    # === Performance Considerations
+    # If you have many rules and many updates this can be a bit slow.
+    # In order to speed it up somewhat you can use the raw java node object instead by providing an argument in your block.
+    #
+    # Example:
+    #
+    #   class Person
+    #     include Neo4j::NodeMixin
+    #     property :age
+    #     rule(:old) {|node| node[:age] > 10 }
+    #   end
+    #
+    # === Thread Safe ?
+    # Not sure...
+    #
     module Rule
 
       # Creates an rule node attached to the Neo4j.ref_node
@@ -168,13 +241,13 @@ module Neo4j::Mapping
       #   p1.young?    # => true
       #
       def rule(name, props = {}, &block)
-	singelton = class << self;
+        singelton = class << self;
           self;
         end
-	
+
         # define class methods
         singelton.send(:define_method, name) do
-          agg_node = Rules.rule_for(self)
+          agg_node  = Rules.rule_for(self)
           raise "no rule node for #{name}  on #{self}" if agg_node.nil?
           traversal = agg_node.outgoing(name) # TODO possible to cache this object
           Rules.fields_for(self).each do |filter_name|
@@ -188,15 +261,15 @@ module Neo4j::Mapping
         # define instance methods
         self.send(:define_method, "#{name}?") do
           instance_eval &block
-	end
+        end
 
         Rules.add(self, name, props, &block)
       end
-      
+
       def inherit_rules_from(clazz)
-	Rules.inherit(clazz, self)
+        Rules.inherit(clazz, self)
       end
-      
+
       # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
       # It also remove the given class method.
       def delete_rules
@@ -209,6 +282,8 @@ module Neo4j::Mapping
         Rules.delete(self)
       end
 
+      # Force to trigger the rules.
+      # You don't normally need that since it will be done automatically.
       def trigger_rules(node)
         Rules.trigger_rules(node)
       end

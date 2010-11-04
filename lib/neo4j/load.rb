@@ -1,6 +1,7 @@
 module Neo4j
 
-  # Module used to load both Nodes and Relationship from the database
+  # === Mixin responsible for loading Ruby wrappers for Neo4j Nodes and Relationship.
+  #
   module Load
     def wrapper(node) # :nodoc:
       return node unless node.property?(:_classname)
@@ -11,7 +12,7 @@ module Neo4j
       class_name.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
     end
 
-    # Checks if the given node or node id exists in the database.
+    # Checks if the given entity (node/relationship) or entity id (#neo_id) exists in the database.
     def exist?(node_or_node_id, db = Neo4j.started_db)
       id = node_or_node_id.kind_of?(Fixnum) ?  node_or_node_id : node_or_node_id.id
       _load(id, db) != nil

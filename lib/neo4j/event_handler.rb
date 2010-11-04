@@ -1,6 +1,30 @@
 module Neo4j
 
-  # Handles events like a new node is created or deleted
+  # == Handles Transactional Events
+  #
+  # You can use this to receive event before the transaction commits.
+  # The following events are supported:
+  # * <tt>on_neo4j_started</tt>
+  # * <tt>on_neo4j_shutdown</tt>
+  # * <tt>on_node_created</tt>
+  # * <tt>on_node_deleted</tt>
+  # * <tt>on_relationship_created</tt>
+  # * <tt>on_relationship_deleted</tt>
+  # * <tt>on_property_changed</tt>
+  # * <tt>on_rel_property_changed</tt>
+  #
+  # === Usage
+  #
+  #   class MyListener
+  #     def on_node_deleted(node, old_props, tx_data)
+  #     end
+  #   end
+  #
+  #   # to add an listener without starting neo4j:
+  #   Neo4j.unstarted_db.event_handler.add(MyListener.new)
+  #
+  # You only need to implement the methods that you need.
+  #
   class EventHandler
     include org.neo4j.graphdb.event.TransactionEventHandler
 
@@ -87,19 +111,6 @@ module Neo4j
 
     def rel_property_changed(rel, key, old_value, new_value)
       @listeners.each {|li| li.on_rel_property_changed(rel, key, old_value, new_value) if li.respond_to?(:on_rel_property_changed)}
-    end
-
-    # TODO ?
-    def tx_finished(tx)
-      @listeners.each {|li| li.on_tx_finished(tx) if li.respond_to?(:on_tx_finished)}
-    end
-
-    def neo_started(neo_instance)
-      @listeners.each {|li|  li.on_neo_started(neo_instance)  if li.respond_to?(:on_neo_started)}
-    end
-
-    def neo_stopped(neo_instance)
-      @listeners.each {|li| li.on_neo_stopped(neo_instance) if li.respond_to?(:on_neo_stopped)}
     end
   end
 end

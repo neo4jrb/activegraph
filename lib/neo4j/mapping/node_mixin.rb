@@ -1,5 +1,24 @@
 module Neo4j::Mapping
 
+  # This Mixin is used to wrap Neo4j Java Nodes in Ruby objects.
+  # It includes the Neo4j::Index module and forwards a number of method to the raw Java node which
+  # intern includes a number of mixins, see below.
+  #
+  # === Instance Mixins
+  # * Neo4j::Index
+  # * Neo4j::Property
+  # * Neo4j::NodeRelationship
+  # * Neo4j::Equal
+  # * Neo4j::Index
+  #
+  # === Class Mixins
+  # * Neo4j::Mapping::ClassMethods::Root
+  # * Neo4j::Mapping::ClassMethods::Property
+  # * Neo4j::Mapping::ClassMethods::InitNode
+  # * Neo4j::Mapping::ClassMethods::Relationship
+  # * Neo4j::Mapping::ClassMethods::Rule
+  # * Neo4j::Index::ClassMethods
+  #
   module NodeMixin
     extend Forwardable
     include Neo4j::Index
@@ -22,6 +41,7 @@ module Neo4j::Mapping
 
 
     # Creates a new node and initialize with given properties.
+    # You can override this to provide your own initialization.
     #
     def init_on_create(*args) # :nodoc:
       self[:_classname] = self.class.to_s
