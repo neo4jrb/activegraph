@@ -7,3 +7,6 @@ nbproject
 .rvmrc
 .bundle
 tmp
+
+# jedit
+*~

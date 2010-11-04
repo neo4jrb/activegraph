@@ -76,7 +76,6 @@ module Neo4j::Mapping
         return false if _decl_props[prop_name.to_sym].nil?
         _decl_props[prop_name.to_sym][:defined] == true
       end
-
     end
   end
 end

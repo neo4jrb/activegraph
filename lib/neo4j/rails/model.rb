@@ -2,6 +2,7 @@ module Neo4j
   module Rails
     class Model
       include Neo4j::NodeMixin
+      
       include ActiveModel::Serializers::Xml
       include ActiveModel::Validations
       include ActiveModel::Dirty
@@ -10,12 +11,14 @@ module Neo4j
       extend ActiveModel::Naming
       extend ActiveModel::Callbacks
       extend Neo4j::Validations::ClassMethods
+      
+      include Finders													# ActiveRecord style find
+      extend Mapping::ClassMethods::Property	# allows some additional options on the #property class method
+      
       extend TxMethods
 
       define_model_callbacks :create, :save, :update, :destroy
 
-      rule :all
-      
       UniquenessValidator = Neo4j::Validations::UniquenessValidator
 
       class RecordInvalidError < RuntimeError
@@ -259,41 +262,6 @@ module Neo4j
           wrapped.init_on_load(value)
           wrapped.attributes=args[0] if args[0].respond_to?(:each_pair)
           wrapped
-        end
-
-        # Behave like ActiveModel
-        def all_with_args(*args)
-					if args.empty?
-						all_without_args
-					else
-						hits = find_without_checking_for_id(*args)
-						# We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
-						Thread.current[:neo4j_lucene_connection] ||= []
-						Thread.current[:neo4j_lucene_connection] << hits
-						hits
-					end
-        end
-	
-        alias_method_chain :all, :args
-        
-        # Handle Model.find(params[:id])
-        def find_with_checking_for_id(*args)
-        	if args.length == 1 && String === args[0] && args[0].to_i != 0
-            load(*args)
-          else
-            all_with_args(*args).first
-          end
-        end
-
-        alias_method_chain :find, :checking_for_id
-
-        def load(*ids)
-          result = ids.map { |id| Neo4j::Node.load(id) }
-          if ids.length == 1
-            result.first
-          else
-            result
-          end
         end
 
         alias_method :_orig_create, :create
