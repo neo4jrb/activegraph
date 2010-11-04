@@ -1,7 +1,7 @@
 module Neo4j::Rails
 
   class Value
-    include Properties
+    include ValueProperties
     include org.neo4j.graphdb.Node
 
     def initialize(wrapper)
@@ -60,7 +60,7 @@ module Neo4j::Rails
 
     class Relationship
     	include org.neo4j.graphdb.Relationship
-      include Properties
+      include ValueProperties
       
       attr_reader :end_node, :start_node
 

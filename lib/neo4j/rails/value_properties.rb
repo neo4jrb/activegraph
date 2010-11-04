@@ -1,7 +1,7 @@
+# provide some properties before we have a real node or relationship
 module Neo4j
 	module Rails
-    # provide some properties before we have a real node or relationship
-		module Properties # :nodoc:
+		module ValueProperties
 			include Neo4j::Property
 			
 			# override Neo4j::Property#props
