@@ -73,7 +73,7 @@ module Neo4j
     end
 
     # Sets the property of this node.
-    # Property keys are always strings. Valid property value types are the primitives(<tt>String</tt>, <tt>Fixnum</tt>, <tt>Float</tt>, <tt>Boolean</tt>), and arrays of those primitives.
+    # Property keys are always strings. Valid property value types are the primitives(<tt>String</tt>, <tt>Fixnum</tt>, <tt>Float</tt>, <tt>Boolean</tt>).
     #
     def []=(key, value)
       k = key.to_s

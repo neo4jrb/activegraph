@@ -15,13 +15,13 @@ Here are some of the major benefits of Neo4j.rb
 
 * Domain Modeling - use the language of a graph (nodes/relationship/properties) to express your domain !
   * Schema Less and Efficient storage of Semi Structured Information
-  * No {O/R mismatch}[http://en.wikipedia.org/wiki/Object-relational_impedance_mismatch] - very natural to map a graph to an Object Oriented language like Ruby.
+  * No {O/R mismatch}[http://en.wikipedia.org/wiki/Object-relational_impedance_mismatch] - very natural to map a graph to an \Object Oriented language like Ruby.
 * {Performance}[http://www.oscon.com/oscon2009/public/schedule/detail/8364]
 * Embedded Database - no database tier, easier to install, test, deploy and configure. It is run in the same process as your application.
 * Express Queries as Traversals
   * Fast deep traversal instead of slow SQL queries that span many table joins.
   * Very natural to express graph related problem with traversals (recommendation engine, find shortest parth etc..)
-* Seamless integration with Ruby on Rails.
+* Seamless integration with Ruby on \Rails.
 * ACID Transaction with rollbacks support.
 
 === Documentation

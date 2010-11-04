@@ -7,17 +7,17 @@ module Neo4j
     #
     # You can perform a query in many different ways:
     #
-    # === By Hash
+    # ==== By Hash
     #
     # Example:
     #  Person.find(:name => 'foo', :age => 3)
     #
-    # === By Range
+    # ==== By Range
     #
     # Example:
     #  Person.find(:age).between(15,35)
     #
-    # === By Lucene Query Syntax
+    # ==== By Lucene Query Syntax
     #
     # Example
     #  Car.find('wheels:"4" AND colour: "blue")
@@ -30,6 +30,10 @@ module Neo4j
     #
     # Example:
     #   Vehicle.find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')
+    #
+    # === See Also
+    # * Neo4j::Index::Indexer#index
+    # * Neo4j::Index::Indexer#find - which returns an LuceneQuery
     #
     class LuceneQuery
       include Enumerable

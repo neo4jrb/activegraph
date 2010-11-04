@@ -34,11 +34,12 @@ module Neo4j
       #   class Phone
       #      include Neo4j::NodeMixin
       #      property :phone
-      #      index :phone, :indexer => Person, :via => proc{|node| node.incoming(:phone).first}
+      #      node_indexer Contact  # put index on the Contact class instead
+      #      index :phone
       #   end
       #
       #   # Find an contact with a phone number, this works since they share the same index
-      #   Contact.find('phone: 12345 AND name: 'pelle'')
+      #   Contact.find('phone: 12345').first #=> a phone object !
       #
       # ==== Returns
       # The indexer that should be used to index the given class

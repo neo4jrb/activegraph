@@ -2,7 +2,13 @@ module Neo4j
   module Mapping
 
     # Enables creating and traversal of nodes.
+    #
     # Includes the Enumerable Mixin.
+    # The Neo4j::Mapping::ClassMethods::Relationship#has_n and Neo4j::Mapping::ClassMethods::Relationship#one
+    # methods returns an object of this type.
+    #
+    # ==== See Also
+    # Neo4j::Mapping::ClassMethods::Relationship
     #
     class HasN
       include Enumerable

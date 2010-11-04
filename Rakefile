@@ -30,11 +30,11 @@ end
 desc "Generate documentation for Neo4j.rb"
 RDoc::Task.new do |rdoc|
   rdoc.rdoc_dir = 'doc/rdoc'
-  rdoc.title    = "Neo4j.rb Documentation #{Neo4j::VERSION}"
+  rdoc.title    = "Neo4j.rb #{Neo4j::VERSION}"
+  rdoc.options << '--webcvs=http://github.com/andreasronge/neo4j/tree/master/'
   rdoc.options << '-f' << 'horo'
   rdoc.options << '-c' << 'utf-8'
   rdoc.options << '-m' << 'README.rdoc'
-
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
@@ -45,3 +45,10 @@ Rake::TestTask.new(:test_generators) do |test|
   test.pattern = 'test/**/*_test.rb'
   test.verbose = true
 end
+
+desc 'Upload documentation to RubyForge.'
+task 'upload-docs' do
+  sh "scp -r doc/rdoc/* " +
+    "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
+end
+
