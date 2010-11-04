@@ -1,5 +1,16 @@
-#prepend_file 'Gemfile', 
-gsub_file 'Gemfile', /gem 'sql.*/, 'gem "neo4j", "1.0.0.beta.17"'
+NEO4J_VERSION = "1.0.0.beta.17"
+
+gsub_file 'Gemfile', /gem 'sql.*/, "gem 'neo4j', '#{NEO4J_VERSION}'"
+
+dev_gems = <<END
+
+
+group :development do
+  gem 'rspec-rails'
+end
+
+END
+inject_into_file 'Gemfile', dev_gems, :after => "#{NEO4J_VERSION}'"
 
 gsub_file 'config/application.rb', "require 'rails/all'", <<END
 require "action_controller/railtie"

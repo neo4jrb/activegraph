@@ -35,7 +35,7 @@ class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
 	end
 
 	def update_attributes(params=nil)
-		"#{name}.update(#{params})"
+		"#{name}.update_attributes(#{params})"
 	end
 
 	def errors

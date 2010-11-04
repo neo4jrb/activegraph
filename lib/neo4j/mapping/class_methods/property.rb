@@ -6,7 +6,23 @@ module Neo4j::Mapping
       # The generated accessor is a simple wrapper around the #[] and
       # #[]= operators.
       #
+      # ==== Types
       # If a property is set to nil the property will be removed.
+      # A property can be of any primitive type (Boolean, String, Fixnum, Float) and does not
+      # even have to be the same.
+      #
+      # Example:
+      #   class Foo
+      #     include Neo4j::NodeMixin
+      #     property :age
+      #   end
+      #
+      # Example:
+      #   foo = Foo.new
+      #   foo.age = "hej" # first set it to string
+      #   foo.age = 42  # change it to a Fixnum
+      #
+      # However, you can specify an type for the index, see Neo4j::Index::Indexer#index
       #
       # ==== Example
       #   class Baaz; end
