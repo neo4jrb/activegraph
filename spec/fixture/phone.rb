@@ -1,7 +1,7 @@
 # forward declaration
-#class Person
-#  include Neo4j::NodeMixin
-#end
+class Person
+  include Neo4j::NodeMixin
+end
 
 class Phone
   include Neo4j::NodeMixin
