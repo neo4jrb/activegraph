@@ -51,28 +51,12 @@ module Neo4j::Mapping
           _decl_props[pname] ||= {}
 
           define_method(pname) do
-            # TODO inheritance, should check self.class.superclass if self.class._decl_props[pname] is nil
-            # TODO refactoring and DRY
-            if self.class._decl_props[pname] && self.class._decl_props[pname][:type]
-              type      = self.class._decl_props[pname][:type]
-              converter = Neo4j::Config[:converters][type]
-              value = converter.to_ruby(self[pname]) if converter
-              value || self[pname]
-            else
-              self[pname]
-            end
+            Neo4j::TypeConverters.to_ruby(self.class, pname, self[pname])
           end
 
           name = (pname.to_s() +"=").to_sym
           define_method(name) do |value|
-            # TODO inheritance, should check self.class.superclass if self.class._decl_props[pname] is nil
-            # TODO refactoring and DRY
-            if self.class._decl_props[pname] && self.class._decl_props[pname][:type]
-              type      = self.class._decl_props[pname][:type]
-              converter = Neo4j::Config[:converters][type]
-              value = converter.to_java(value) if converter
-            end
-            self[pname] = value
+            self[pname] = Neo4j::TypeConverters.to_java(self.class, pname, value)
           end
         end
       end

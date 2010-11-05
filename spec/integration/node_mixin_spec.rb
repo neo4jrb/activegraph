@@ -110,6 +110,7 @@ describe Neo4j::NodeMixin, :type=> :transactional do
       new_tx
       found = [*@clazz.find(:born).between(Date.today-2, Date.today)]
       found.size.should == 1
+      found.should include(v)
     end
   end
 

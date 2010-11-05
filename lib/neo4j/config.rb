@@ -2,12 +2,18 @@
 module Neo4j
 
 
-  # == Keeps configuration for neo4j.
+  # == Keeps configuration for neo4j
   #
   # The most important configuration is <tt>Neo4j::Config[:storage_path]</tt> which is used to
   # locate where the neo4j database is stored on the filesystem.
   # If this directory is empty then a new database will be created, otherwise it will use the
   # database from that directory.
+  #
+  # ==== Default Configurations
+  # * <tt>:storage_path</tt> :: default <tt>tmp/neo4j</tt> where the database is stored
+  # * <tt>:timestamps</tt> :: default <tt>true</tt> for Rails Neo4j::Model - if timestamps should be used when saving the model
+  # * <tt>:lucene</tt> :: default hash keys: <tt>:fulltext</tt>, <tt>:exact</tt> configuration how the lucene index is stored
+  # * <tt>:converters</tt> :: which converts should be used before writing and reading to neo4j, see Neo4j::TypeConverters
   #
   class Config
     # This code is copied from merb-core/config.rb.
@@ -19,6 +25,7 @@ module Neo4j
       def defaults
         @defaults ||= {
           :storage_path => 'tmp/neo4j',
+          :timestamps => true,
           :lucene => {
                   :fulltext =>  {"provider" => "lucene", "type" => "fulltext" },
                   :exact =>  {"provider" => "lucene", "type" => "exact" }}
@@ -29,11 +36,11 @@ module Neo4j
       # Yields the configuration.
       #
       # ==== Block parameters
-      # c<Hash>:: The configuration parameters.
+      # c :: The configuration parameters, a hash.
       #
       # ==== Examples
       # Neo4j::Config.use do |config|
-      # config[:storage_path] = '/var/neo4j'
+      #   config[:storage_path] = '/var/neo4j'
       # end
       #
       # ==== Returns
@@ -48,8 +55,8 @@ module Neo4j
       # Set the value of a config entry.
       #
       # ==== Parameters
-      # key:: The key to set the parameter for.
-      # val:: The value of the parameter.
+      # key :: The key to set the parameter for.
+      # val :: The value of the parameter.
       #
       def []=(key, val)
         (@configuration ||= setup)[key] = val

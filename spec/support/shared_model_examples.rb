@@ -174,6 +174,34 @@ share_examples_for "an updatable model" do
   end
 end
 
+share_examples_for "an timestamped model" do
+  context "when created" do
+    before { subject.save! }
+
+    it "updated_at is nil" do
+      subject.updated_at.should == nil
+    end
+
+    it "created_at is set to DateTime.now" do
+      subject.created_at.class.should == DateTime
+      subject.created_at.day == DateTime.now.day
+    end
+
+  end
+
+  context "when updated" do
+    before { subject.save! }
+    
+    it "created_at is not changed" do
+      lambda { subject.update_attributes!(:a => 1, :b => 2) }.should_not change(subject, :created_at)
+    end
+    
+    it "should have altered the updated_at property" do
+      lambda { subject.update_attributes!(:a => 1, :b => 2) }.should change(subject, :updated_at)
+    end
+  end
+end
+
 share_examples_for "a non-updatable model" do
   context "then" do
     it "shouldn't update" do

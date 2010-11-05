@@ -91,8 +91,8 @@ begin
     end
   end
 
-  def model_subclass(&block)
-    klass = Class.new(Neo4j::Model, &block)
+  def model_subclass(base_class = Neo4j::Model, &block)
+    klass = block ? Class.new(base_class, &block) : Class.new(base_class)
     TempModel.set(klass)
   end
 
