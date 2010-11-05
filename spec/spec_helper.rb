@@ -95,5 +95,13 @@ begin
     klass = Class.new(Neo4j::Model, &block)
     TempModel.set(klass)
   end
+
+  def tmp_node_mixin(&block)
+    klass = Class.new
+    TempModel.set(klass)
+    klass.send(:include, Neo4j::NodeMixin)
+    klass.class_eval &block
+    klass
+  end
 end unless @_neo4j_rspec_loaded
 

@@ -49,14 +49,29 @@ module Neo4j::Mapping
         props.each do |prop|
           pname = prop.to_sym
           _decl_props[pname] ||= {}
-          _decl_props[pname][:defined] = true
 
           define_method(pname) do
-            self[pname]
+            # TODO inheritance, should check self.class.superclass if self.class._decl_props[pname] is nil
+            # TODO refactoring and DRY
+            if self.class._decl_props[pname] && self.class._decl_props[pname][:type]
+              type      = self.class._decl_props[pname][:type]
+              converter = Neo4j::Config[:converters][type]
+              value = converter.to_ruby(self[pname]) if converter
+              value || self[pname]
+            else
+              self[pname]
+            end
           end
 
           name = (pname.to_s() +"=").to_sym
           define_method(name) do |value|
+            # TODO inheritance, should check self.class.superclass if self.class._decl_props[pname] is nil
+            # TODO refactoring and DRY
+            if self.class._decl_props[pname] && self.class._decl_props[pname][:type]
+              type      = self.class._decl_props[pname][:type]
+              converter = Neo4j::Config[:converters][type]
+              value = converter.to_java(value) if converter
+            end
             self[pname] = value
           end
         end

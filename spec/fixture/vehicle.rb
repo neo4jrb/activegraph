@@ -1,6 +1,7 @@
 class Vehicle
   include Neo4j::NodeMixin
   index :wheels
+  property :built_date, :type => Date
   property :name, :type => String
   property :weight, :type => Float
   index :weight

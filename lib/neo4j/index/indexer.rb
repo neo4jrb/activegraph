@@ -63,15 +63,16 @@ module Neo4j
       # === Set the type value to index
       # By default all values will be indexed as Strings.
       # If you want for example to do a numerical range query you must tell Neo4j.rb to index it as a numeric value.
-      # You do that with the key <tt>type</tt>
+      # You do that with the key <tt>type</tt> on the property.
       #
       # Example:
       #   class Person
       #     include Neo4j::NodeMixin
-      #     index :weight, :type => Float
+      #     property :weight, :type => Float
+      #     index :weight
       #   end
       #
-      # Supported values for <tt>:type</tt> is <tt>String</tt>, <tt>Float</tt> and <tt>Fixnum</tt>
+      # Supported values for <tt>:type</tt> is <tt>String</tt>, <tt>Float</tt>, <tt>Date</tt>, <tt>DateTime</tt> and <tt>Fixnum</tt>
       #
       # === For more information
       # * See Neo4j::Index::LuceneQuery
@@ -189,13 +190,11 @@ module Neo4j
 
         type = @decl_props && @decl_props[field.to_sym] && @decl_props[field.to_sym][:type]
         if type
-          raise "Can't index #{type} with value #{value} since it is not a #{type}" unless type === value
           value = if String != type
                     org.neo4j.index.impl.lucene.ValueContext.new(value).indexNumeric
                   else
                     org.neo4j.index.impl.lucene.ValueContext.new(value)
                   end
-
         end
 
         index_for_field(field.to_s).add(entity, field, value)
