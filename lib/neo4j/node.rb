@@ -96,7 +96,7 @@ module Neo4j
         db = (!props && args[0]) || args[1] || Neo4j.started_db
 
         node = db.graph.create_node
-        props.each_pair { |k, v| node.set_property(k.to_s, v) } if props
+        props.each_pair { |k, v| node[k]= v } if props
         node
       end
 

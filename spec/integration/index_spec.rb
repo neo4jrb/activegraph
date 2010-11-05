@@ -3,6 +3,53 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::NodeMixin, "find", :type => :transactional do
 
+  context "on arrays of properties" do
+    before(:all) do
+      @clazz = tmp_node_mixin do
+        property :items
+        index :items
+      end
+    end
+
+    it "should index all values in the array" do
+      node = @clazz.new :items => %w[hej hopp oj]
+      new_tx
+      result = @clazz.find('items: hej')
+      result.size.should == 1
+      result.should include(node)
+
+      result = @clazz.find('items: hopp')
+      result.size.should == 1
+      result.should include(node)
+
+      result = @clazz.find('items: oj')
+      result.size.should == 1
+      result.should include(node)
+    end
+
+    it "when an item in the array is removed it should not be found" do
+      node = @clazz.new :items => %w[hej hopp oj]
+      new_tx
+      #node.items.delete('hopp') # does not work
+      node.items = %w[hej oj]
+      new_tx
+
+      result = @clazz.find('items: hej')
+      result.size.should == 1
+      result.should include(node)
+
+      result = @clazz.find('items: hopp')
+      result.size.should == 0
+
+      result = @clazz.find('items: oj')
+      result.size.should == 1
+      result.should include(node)
+    end          
+
+
+  end
+
+
   context "hash queries, find(hash)" do
     before(:each) do
       @bike = Vehicle.new(:name => 'bike', :wheels => 2)

@@ -87,13 +87,6 @@ describe Neo4j::Node, :type => :transactional do
       new_node[:key].should == 42
     end
 
-    it "set and get Array properties" do
-      pending "Not implemented yet"
-      new_node = Neo4j::Node.new
-      new_node[:key] = %w[a b c]
-      new_node[:key].should == %w[a b c]
-    end
-
     it "set and get Float properties" do
       new_node = Neo4j::Node.new
       new_node[:key] = 3.1415
@@ -162,6 +155,17 @@ describe Neo4j::Node, :type => :transactional do
       0.should == size
     end
 
+    it "is not possible to delete or add an item in the array" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = %w[a b c]
+      new_tx
+      new_node[:key].delete('b')
+      new_tx
+      new_node[:key][0].should == 'a'
+      new_node[:key][1].should == 'b'
+      new_node[:key][2].should == 'c'
+    end
+    
     it "does not allow to store an array of different value types" do
       new_node = Neo4j::Node.new
       expect { new_node[:key] = [true, "hej", 42] }.to raise_error
