@@ -108,7 +108,6 @@ describe Neo4j::Node, :type => :transactional do
       new_node[:key].should == false
     end
 
-
     it "set and get properties with a String key" do
       new_node = Neo4j::Node.new
       new_node["a"] = 'foo'
@@ -124,6 +123,56 @@ describe Neo4j::Node, :type => :transactional do
       new_node.property?(:key).should be_false
     end
 
+    it "allow to store array of Fixnum values" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = [1,2,3]
+      new_node[:key][0].should == 1
+      new_node[:key][1].should == 2
+      new_node[:key][2].should == 3      
+    end
+
+    it "allow to store array of String values" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = %w[a b c]
+      new_node[:key][0].should == 'a'
+      new_node[:key][1].should == 'b'
+      new_node[:key][2].should == 'c'
+    end
+
+    it "allow to store array of Float values" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = [1.2, 3.14, 998.32]
+      new_node[:key][0].should == 1.2
+      new_node[:key][1].should == 3.14
+      new_node[:key][2].should == 998.32
+    end
+
+    it "allow to store array of boolean values" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = [true, false, true]
+      new_node[:key][0].should == true
+      new_node[:key][1].should == false
+      new_node[:key][2].should == true
+    end
+
+    it "allow to store empty array " do
+      new_node = Neo4j::Node.new
+      new_node[:key] = []
+      size = new_node[:key].size
+      0.should == size
+    end
+
+    it "does not allow to store an array of different value types" do
+      new_node = Neo4j::Node.new
+      expect { new_node[:key] = [true, "hej", 42] }.to raise_error
+    end
+
+    it "is possible to change type of array if all items are of same type" do
+      new_node = Neo4j::Node.new
+      new_node[:key] = [1, 2, 3]
+      expect { new_node[:key] = %w[a, b, c] }.to_not raise_error
+    end
+    
   end
 
   describe "#update" do

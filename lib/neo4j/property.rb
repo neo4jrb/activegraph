@@ -69,20 +69,39 @@ module Neo4j
     # Returns the value of the given key or nil if the property does not exist.
     def [](key)
       return unless property?(key)
-      get_property(key.to_s)
+      val = get_property(key.to_s)
+      val.class.superclass == ArrayJavaProxy ? val.to_a : val
     end
 
     # Sets the property of this node.
-    # Property keys are always strings. Valid property value types are the primitives(<tt>String</tt>, <tt>Fixnum</tt>, <tt>Float</tt>, <tt>Boolean</tt>).
+    # Property keys are always strings. Valid property value types are the primitives(<tt>String</tt>, <tt>Fixnum</tt>, <tt>Float</tt>, <tt>Boolean</tt>) or array of those primitives.
+    # *Notice* that the values in the array must be of the same type.
     #
     def []=(key, value)
       k = key.to_s
       if value.nil?
         remove_property(k)
+      elsif (Array === value)
+        case value[0]
+          when NilClass
+            set_property(k, [].to_java(:string))
+          when String
+            set_property(k, value.to_java(:string))
+          when Float
+            set_property(k, value.to_java(:double))
+          when FalseClass, TrueClass
+            set_property(k, value.to_java(:boolean))
+          when Fixnum
+            set_property(k, value.to_java(:long))
+          when Boolean
+            set_property(k, value.to_java(:boolean))
+          else
+            raise "Not allowed to store array with value #{value[0]} type #{value[0].class}"
+        end
       else
         set_property(k, value)
       end
     end
-  end
 
+  end
 end

@@ -10,10 +10,10 @@ module Neo4j
   # database from that directory.
   #
   # ==== Default Configurations
-  # * <tt>:storage_path</tt> :: default <tt>tmp/neo4j</tt> where the database is stored
-  # * <tt>:timestamps</tt> :: default <tt>true</tt> for Rails Neo4j::Model - if timestamps should be used when saving the model
-  # * <tt>:lucene</tt> :: default hash keys: <tt>:fulltext</tt>, <tt>:exact</tt> configuration how the lucene index is stored
-  # * <tt>:converters</tt> :: which converts should be used before writing and reading to neo4j, see Neo4j::TypeConverters
+  # <tt>:storage_path</tt>::   default <tt>tmp/neo4j</tt> where the database is stored
+  # <tt>:timestamps</tt>::     default <tt>true</tt> for Rails Neo4j::Model - if timestamps should be used when saving the model
+  # <tt>:lucene</tt>::         default hash keys: <tt>:fulltext</tt>, <tt>:exact</tt> configuration how the lucene index is stored
+  # <tt>:converters</tt>::     defines which converters should be used before writing and reading to neo4j, see Neo4j::TypeConverters
   #
   class Config
     # This code is copied from merb-core/config.rb.
