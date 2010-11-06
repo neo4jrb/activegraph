@@ -26,8 +26,8 @@ Here are some of the major benefits of Neo4j.rb
 
 === Documentation
 
-* {Documentation and Getting Started with Neo4j}[http://github.com/andreasronge/neo4j/wiki]
 * {API Documentation}[http://neo4j.rubyforge.org]
+* {Documentation and Getting Started with Neo4j}[http://neo4j.rubyforge.org/guides/index.html]
 
 === Some Examples
 
