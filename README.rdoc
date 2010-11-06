@@ -100,6 +100,15 @@ Example of creating an Neo4j Application from scratch:
  rails s
  open a webbrowser: http://localhost:3000/users
 
+You may get an error message "ERROR IOError: Connection reset by peer"
+using WEBrick (it still works). This error message is not shown when running
+the application with {Tomcat/Trinidad}[https://github.com/calavera/trinidad]
+
+To run it with Tomcat
+  
+  gem install trinidad
+  trinidad
+
 
 === Presentation Materials and other URLs
 * {Intoduction to Neo4j.rb}[http://www.slideshare.net/andreasronge/neo4jrb]
