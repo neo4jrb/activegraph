@@ -27,7 +27,7 @@ Here are some of the major benefits of Neo4j.rb
 === Documentation
 
 * {Documentation and Getting Started with Neo4j}[http://github.com/andreasronge/neo4j/wiki]
-* {API Documentation (released version)}[http://neo4j.rubyforge.org]
+* {API Documentation}[http://neo4j.rubyforge.org]
 
 === Some Examples
 
@@ -87,6 +87,19 @@ Example of using Neo4j with Rails 3 (ActiveModel)
 
     ...
   end
+
+==== Generate a Rails Application
+
+Example of creating an Neo4j Application from scratch:
+
+ gem install rails
+ rails new myapp -m http://andreasronge.github.com/rails3.rb
+ cd myapp
+ bundle
+ rails generate scaffold User name:string email:string
+ rails s
+ open a webbrowser: http://localhost:3000/users
+
 
 === Presentation Materials and other URLs
 * {Intoduction to Neo4j.rb}[http://www.slideshare.net/andreasronge/neo4jrb]
