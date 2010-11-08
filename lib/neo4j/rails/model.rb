@@ -72,16 +72,6 @@ module Neo4j
         end
       end
 
-      # redefine this methods so that ActiveModel::Dirty will work
-      def []=(key, new_value)
-        key = key.to_s
-        unless key[0] == ?_
-          old_value = self.send(:[], key)
-          attribute_will_change!(key) unless old_value == new_value
-        end
-        Neo4j::Rails::Transaction.running? ? super : Neo4j::Rails::Transaction.run { super }
-      end
-
       def attribute_will_change!(attr)
         begin
           value = __send__(:[], attr)
