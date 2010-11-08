@@ -109,6 +109,16 @@ share_examples_for "an unsaveable model" do
       subject.id.should be_nil
     end
   end
+  
+  context "without validation" do
+  	it "should save ok" do
+  		subject.save(:validate => false).should == true
+  	end
+  	
+  	it "shouldn't cause an exception while saving" do
+  		lambda { subject.save!(:validate => false) }.should_not raise_error
+  	end
+  end
 end
 
 share_examples_for "a destroyable model" do

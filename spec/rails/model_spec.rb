@@ -318,7 +318,7 @@ describe Neo4j::Model do
     end
   end
 
-  describe "Neo4j::UniquenessValidator" do
+  describe "Neo4j::Rails::Validations::UniquenessValidator" do
     before(:all) do
       class ValidThing < Neo4j::Model
         index :email
@@ -328,7 +328,7 @@ describe Neo4j::Model do
     end
 
     it "have correct kind" do
-      Neo4j::Validations::UniquenessValidator.kind.should == :uniqueness
+      Neo4j::Rails::Validations::UniquenessValidator.kind.should == :uniqueness
     end
     it "should not allow to create two nodes with unique fields" do
       a = @klass.create(:email => 'abc@se.com')
