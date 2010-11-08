@@ -14,11 +14,14 @@ module Neo4j
       include Neo4j::Rails::Validations
       extend 	Neo4j::Rails::Validations::ClassMethods
       
-      include Finders													# ActiveRecord style find
-      extend Mapping::ClassMethods::Property	# allows some additional options on the #property class method
+      include Finders						# ActiveRecord style find
+      include Mapping::Property	# allows some additional options on the #property class method
       
       extend TxMethods
 
+      class_inheritable_hash :attribute_defaults
+      self.attribute_defaults = {}
+      
       define_model_callbacks :create, :save, :update, :destroy
 
       class RecordInvalidError < RuntimeError
@@ -248,7 +251,7 @@ module Neo4j
         @_deleted
       end
 
-      tx_methods :destroy, :create_or_update_node, :update_attributes, :update_attributes!
+      tx_methods :destroy, :create_or_update_node, :update_nested_attributes
 
       # --------------------------------------
       # Class Methods
@@ -262,7 +265,7 @@ module Neo4j
           wrapped = self.orig_new
           value = Neo4j::Rails::Value.new(wrapped)
           wrapped.init_on_load(value)
-          wrapped.attributes=args[0] if args[0].respond_to?(:each_pair)
+          wrapped.attributes = initial_attributes(*args)
           wrapped
         end
 
@@ -275,8 +278,6 @@ module Neo4j
         def create!(*args)
         	new(*args).tap { |o| o.save! }
         end
-
-        tx_methods :create, :create!
 
         def transaction(&block)
           Neo4j::Rails::Transaction.run &block
@@ -308,8 +309,12 @@ module Neo4j
                 end
               end
             end
-            tx_methods("#{association_name}_attributes=")
           end
+        end
+        
+        protected
+        def initial_attributes(*args)
+        	args.first.is_a?(Hash) ? args.first.reverse_merge(attribute_defaults) : attribute_defaults
         end
       end
       
