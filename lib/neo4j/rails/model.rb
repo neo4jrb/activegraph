@@ -155,9 +155,9 @@ module Neo4j
         end
       end
 
-      def save
+      def save(*args)
         _run_save_callbacks do
-          if create_or_update_node
+          if create_or_update_node(*args)
             true
           else
             # if not valid we should rollback the transaction so that the changes does not take place.
@@ -168,11 +168,13 @@ module Neo4j
         end
       end
 
-      def create_or_update_node
-        if valid?(:save)
+      def create_or_update_node(options = {})
+      	options.reverse_merge!({ :validate => true })
+      	
+      	if options[:validate] == false || valid?(:save)
           if new_record?
             _run_create_callbacks do
-              if valid?(:create)
+              if options[:validate] == false || valid?(:create)
                 node = Neo4j::Node.new(props)
                 return false unless _java_node.save_nested(node)
                 init_on_load(node)
@@ -184,7 +186,7 @@ module Neo4j
             end
           else
             _run_update_callbacks do
-              if valid?(:update)
+              if options[:validate] == false || valid?(:update)
                 clear_changes
                 self.updated_at = DateTime.now if Neo4j::Config[:timestamps] && respond_to?(:updated_at)
                 true
@@ -204,8 +206,8 @@ module Neo4j
 				reload_from_database or set_deleted_properties and return self
       end
       
-      def save!
-        raise RecordInvalidError.new(self) unless save
+      def save!(*args)
+        raise RecordInvalidError.new(self) unless save(*args)
       end
 
       # Returns if the record is persisted, i.e. it’s not a new record and it was not destroyed
@@ -241,7 +243,7 @@ module Neo4j
         @_deleted
       end
 
-      tx_methods :destroy, :create_or_update_node, :update_nested_attributes
+      tx_methods :destroy, :create_or_update_node, :update_attributes, :update_attributes!, :update_nested_attributes
 
       # --------------------------------------
       # Class Methods
