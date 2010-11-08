@@ -1,8 +1,10 @@
 module Neo4j
 	module Rails
 		module Mapping
-			module ClassMethods
-				module Property
+			module Property
+				extend ActiveSupport::Concern
+				
+				module ClassMethods
 					# Handle some additional options for the property
 					#
 					# Set a default - 							:default => "default"
@@ -15,11 +17,10 @@ module Neo4j
 					
 					protected
 					def handle_property_options_for(property)
-            options = _decl_props[property.to_sym]
-
-						# TODO: Write the code that handles default property values
-						#self[property] = options[:default] if options[:default]
-						validates(property, :nil => options[:null] == false ? false : true) if options.has_key?(:null)
+						options = _decl_props[property.to_sym]
+		
+						write_inheritable_attribute(:attribute_defaults, property => options[:default]) if options[:default]
+						validates(property, :non_nil => true) if options.has_key?(:null) && options[:null] == false
 						validates(property, :length => { :maximum => options[:limit] }) if options[:limit]
 					end
 				end

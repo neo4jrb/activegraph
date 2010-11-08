@@ -75,7 +75,7 @@ end
 
 describe DefaultProperty do
 	context "when the property isn't set" do
-		pending "should have the default" do
+		it "should have the default" do
 			subject.default.should == "Test"
 		end
 	end
