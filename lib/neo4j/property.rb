@@ -27,8 +27,9 @@ module Neo4j
     #
     def attributes
       attr = props
-      attr.keys.each { |k| attr.delete k if k[0] == ?_ }
-      attr
+      ret = {}
+      attr.each_pair { |k, v| ret[k] = wrapper.respond_to?(k) ? wrapper.send(k) : v unless k.to_s[0] == ?_ }
+      ret
     end
 
     # Checks if the given key exist as a property.

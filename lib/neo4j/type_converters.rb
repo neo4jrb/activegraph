@@ -40,13 +40,29 @@ module Neo4j
         end
       end
     end
+    
+    class TimeConverter
+    	class << self
+    		# Converts the given DateTime (UTC) value to an Fixnum.
+        # Only utc times are supported !
+        def to_java(value)
+          return nil if value.nil?
+          value.utc.to_i
+        end
+
+        def to_ruby(value)
+          return nil if value.nil?
+          Time.at(value).utc
+        end
+    	end
+    end
 
     # Converts the given value to a Java type by using the registered converters.
     # It just looks at the class of the given value and will convert it if there is a converter
     # registered (in Neo4j::Config) for this value.
     def self.convert(value)
       type      = value.class
-      converter = Neo4j::Config[:converters][type]
+      converter = Neo4j.converters[type]
       return value unless converter
       converter.to_java(value)
     end
@@ -56,7 +72,7 @@ module Neo4j
     def self.to_java(clazz, key, value)
       type = clazz._decl_props[key] && clazz._decl_props[key][:type]
       if type
-        converter = Neo4j::Config[:converters][type]
+        converter = Neo4j.converters[type]
         converter ? converter.to_java(value) : value
       elsif clazz.superclass != Object
         to_java(clazz.superclass, key, value)
@@ -70,7 +86,7 @@ module Neo4j
     def self.to_ruby(clazz, key, value)
       type = clazz._decl_props[key] && clazz._decl_props[key][:type]
       if type
-        converter = Neo4j::Config[:converters][type]
+        converter = Neo4j.converters[type]
         converter ? converter.to_ruby(value) : value
       elsif clazz.superclass != Object
         to_ruby(clazz.superclass, key, value)
@@ -78,7 +94,5 @@ module Neo4j
         value
       end
     end
-
-    Neo4j::Config[:converters] = {Date => DateConverter, DateTime => DateTimeConverter}
   end
 end

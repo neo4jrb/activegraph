@@ -25,12 +25,12 @@ describe "finders" do
 		# find by id
 		it { should == FindableModel.find(subject.id) }
 		it { should == FindableModel.find(subject.id.to_i) }
-		it { should == FindableModel.find(:id => subject.id)
-		it { should == FindableModel.find(:id => subject.id.to_i)
-		it { should == FindableModel.find(:first, :id => subject.id)
-		it { should == FindableModel.find(:first, :id => subject.id.to_i)
-		it { should == FindableModel.find(:first, :conditions => { :id => subject.id })
-		it { should == FindableModel.find(:first, :conditions => { :id => subject.id.to_i })
+		it { should == FindableModel.find(:id => subject.id) }
+		it { should == FindableModel.find(:id => subject.id.to_i) }
+		it { should == FindableModel.find(:first, :id => subject.id) }
+		it { should == FindableModel.find(:first, :id => subject.id.to_i) }
+		it { should == FindableModel.find(:first, :conditions => { :id => subject.id }) }
+		it { should == FindableModel.find(:first, :conditions => { :id => subject.id.to_i }) }
 		
 		it { should == FindableModel.find(:first, "name: \"Test 2\"") }
 		it { should == FindableModel.find(:first, { :name => "Test 2" }) }
