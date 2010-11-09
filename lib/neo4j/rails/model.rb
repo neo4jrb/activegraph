@@ -69,21 +69,15 @@ module Neo4j
           self.class.define_attribute_methods(self.class._decl_props.keys)
           # try again
           send(method_id, *args, &block)
+        elsif property?(method_id)
+        	send(:[], method_id)
+        else
+        	super
         end
       end
-
-      def attribute_will_change!(attr)
-        begin
-          value = __send__(:[], attr)
-          value = value.duplicable? ? value.clone : value
-        rescue TypeError, NoMethodError
-        end
-        changed_attributes[attr] = value
-      end
-
 
       def read_attribute_for_validation(key)
-        respond_to?(key) ? send(key) : self[key]
+        send(key)
       end
 
       def attributes=(values)
@@ -243,7 +237,8 @@ module Neo4j
         @_deleted
       end
 
-      tx_methods :destroy, :create_or_update_node, :update_attributes, :update_attributes!, :update_nested_attributes
+      # TODO: []= shouldn't need to be in a transaction because it shouldn't update the DB.  Need to refactor the @_java_node handling stuff if we want that to be the case though
+      tx_methods :destroy, :create_or_update_node, :[]=, :update_attributes, :update_attributes!, :update_nested_attributes
 
       # --------------------------------------
       # Class Methods

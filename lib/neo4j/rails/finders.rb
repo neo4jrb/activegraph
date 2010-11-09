@@ -74,8 +74,17 @@ module Neo4j
 						_all
 					else
 						args = normalize_args(*args)
-						find_with_indexer(*args)
+						# handle the special case of a search by id
+						if args.first.is_a?(Hash) && args.first[:id]
+							[find_with_ids(args.first[:id])].flatten
+						else
+							find_with_indexer(*args)
+						end
 					end
+				end
+				
+				def first(*args)
+					all(*args).first
 				end
 				
 				protected
@@ -83,10 +92,6 @@ module Neo4j
 					if ((args.first.is_a?(String) || args.first.is_a?(Integer)) && args.first.to_i > 0)
 						load(*args.map { |p| p.to_i })
 					end
-				end
-				
-				def first(*args)
-					all(*args).first
 				end
 				
 				def find_with_indexer(*args)

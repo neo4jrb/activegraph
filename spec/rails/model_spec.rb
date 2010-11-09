@@ -129,7 +129,7 @@ describe Neo4j::Model do
       p.should_not be_changed
       p.flavour = 'kalle'
       p.should be_changed
-      p.attribute_changed?('flavour').should == true
+      p.flavour_changed?.should == true
       p.flavour_change.should == [nil, 'kalle']
       p.flavour_was.should == nil
       p.flavour_changed?.should be_true
@@ -490,7 +490,7 @@ describe Neo4j::Model do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
         member = Member.create(params[:member])
 
-        params = {:member => {:avatar_attributes => {:id => member.avator.id, :icon => 'sad'}}}
+        params = {:member => {:avatar_attributes => {:id => member.avatar.id, :icon => 'sad'}}}
         member.update_attributes params[:member]
         member.avatar.icon.should == 'sad'
       end
@@ -501,7 +501,7 @@ describe Neo4j::Model do
         member.avatar.should_not be_nil
 
         # when
-        member.avatar_attributes = {:id => member.avator.id, :_destroy => '1'}
+        member.avatar_attributes = {:id => member.avatar.id, :_destroy => '1'}
         member.save
         member.avatar.should be_nil
       end
@@ -512,7 +512,7 @@ describe Neo4j::Model do
         member.avatar.should_not be_nil
 
         # when
-        member.avatar_attributes = {:id => member.avator.id, :_destroy => '0'}
+        member.avatar_attributes = {:id => member.avatar.id, :_destroy => '0'}
         member.save
         member.avatar.should_not be_nil
       end

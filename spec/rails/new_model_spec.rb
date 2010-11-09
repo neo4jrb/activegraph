@@ -68,7 +68,7 @@ describe IceLolly do
       it { should == subject.class.find('flavour: vanilla') }
       
       it "should render as XML" do
-        subject.to_xml.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ice-lolly>\n  <flavour>vanilla</flavour>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n  <new-attribute type=\"yaml\" nil=\"true\"></new-attribute>\n  <created>yep</created>\n</ice-lolly>\n"
+        subject.to_xml.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ice-lolly>\n  <flavour>vanilla</flavour>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n  <new-attribute>newun</new-attribute>\n  <created>yep</created>\n</ice-lolly>\n"
       end
       
       it "should be able to modify one of its named attributes" do
@@ -114,6 +114,7 @@ describe IceLolly do
         it "should have the same attribute values after an unsuccessful update" do
           subject.update_attributes(:flavour => "fish")
           subject.reload.flavour.should == "vanilla"
+          subject.reload.required_on_update.should_not be_nil
         end
       end
     end
