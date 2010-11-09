@@ -46,7 +46,7 @@ module Neo4j::Mapping
     def init_on_create(*args) # :nodoc:
       self[:_classname] = self.class.to_s
       if args[0].respond_to?(:each_pair)
-        args[0].each_pair { |k, v| @_java_node.set_property(k.to_s, v) }
+        args[0].each_pair { |k, v| respond_to?("#{k}=")? self.send("#{k}=", v) : @_java_node[k] = v }
       end
     end
 

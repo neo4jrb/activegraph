@@ -3,6 +3,53 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::NodeMixin, "find", :type => :transactional do
 
+  context "on arrays of properties" do
+    before(:all) do
+      @clazz = tmp_node_mixin do
+        property :items
+        index :items
+      end
+    end
+
+    it "should index all values in the array" do
+      node = @clazz.new :items => %w[hej hopp oj]
+      new_tx
+      result = @clazz.find('items: hej')
+      result.size.should == 1
+      result.should include(node)
+
+      result = @clazz.find('items: hopp')
+      result.size.should == 1
+      result.should include(node)
+
+      result = @clazz.find('items: oj')
+      result.size.should == 1
+      result.should include(node)
+    end
+
+    it "when an item in the array is removed it should not be found" do
+      node = @clazz.new :items => %w[hej hopp oj]
+      new_tx
+      #node.items.delete('hopp') # does not work
+      node.items = %w[hej oj]
+      new_tx
+
+      result = @clazz.find('items: hej')
+      result.size.should == 1
+      result.should include(node)
+
+      result = @clazz.find('items: hopp')
+      result.size.should == 0
+
+      result = @clazz.find('items: oj')
+      result.size.should == 1
+      result.should include(node)
+    end          
+
+
+  end
+
+
   context "hash queries, find(hash)" do
     before(:each) do
       @bike = Vehicle.new(:name => 'bike', :wheels => 2)
@@ -31,70 +78,130 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
   end
 
   context "range queries, index :name, :type => String" do
+    before(:all) do
+      @clazz = tmp_node_mixin do
+        property :name, :type => String
+        index :name
+      end
+    end
+
     before(:each) do
-      @bike = Vehicle.new(:name => 'bike')
-      @car = Vehicle.new(:name => 'car')
-      @old_bike = Vehicle.new(:name => 'old bike')
+      @bike = @clazz.new(:name => 'bike')
+      @car = @clazz.new(:name => 'car')
+      @old_bike = @clazz.new(:name => 'old bike')
       new_tx
     end
 
     it "find(:name).between('f', 'q')" do
-      result = [*Vehicle.find(:name).between('f', 'q')]
+      result = [*@clazz.find(:name).between('f', 'q')]
       result.should include(@old_bike)
       result.size.should == 1
     end
 
     it "find(:name).between(5.0, 10.0).asc(:name)" do
-      result = [*Vehicle.find(:name).between('a', 'z').asc(:name)]
+      result = [*@clazz.find(:name).between('a', 'z').asc(:name)]
       result.size.should == 3
       result.should == [@bike, @car, @old_bike]
     end
 
     it "find(:name).between(5.0, 10.0).desc(:name)" do
-      result = [*Vehicle.find(:name).between('a', 'z').desc(:name)]
+      result = [*@clazz.find(:name).between('a', 'z').desc(:name)]
       result.size.should == 3
       result.should == [@old_bike, @car, @bike]
     end
   end
 
-  context "range queries, index :weight, :type => Float" do
+  context "range queries, index :weight; property :weight, :type => Float" do
+    before(:all) do
+      @clazz = tmp_node_mixin do
+        property :weight, :type => Float
+        index :weight
+        index :name
+      end
+    end
+
     before(:each) do
-      @bike = Vehicle.new(:name => 'bike', :weight => 9.23)
-      @car = Vehicle.new(:name => 'car', :weight => 1042.99)
-      @old_bike = Vehicle.new(:name => 'old bike', :weight => 21.42)
+      @bike = @clazz.new(:name => 'bike', :weight => 9.23)
+      @car = @clazz.new(:name => 'car', :weight => 1042.99)
+      @old_bike = @clazz.new(:name => 'old bike', :weight => 21.42)
       new_tx
     end
+
     it "find(:weight).between(5.0, 10.0)" do
-      result = [*Vehicle.find(:weight).between(5.0, 10.0)]
+      result = [*@clazz.find(:weight).between(5.0, 10.0)]
       result.should include(@bike)
       result.size.should == 1
     end
 
     it "find(:weight).between(5.0, 10.0).asc(:weight)" do
-      result = [*Vehicle.find(:weight).between(1.0, 10000.0).asc(:weight)]
+      result = [*@clazz.find(:weight).between(1.0, 10000.0).asc(:weight)]
       result.should == [@bike, @old_bike, @car]
       result.size.should == 3
     end
 
     it "find(:weight).between(5.0, 10.0).desc(:weight)" do
-      result = [*Vehicle.find(:weight).between(1.0, 10000.0).desc(:weight)]
+      result = [*@clazz.find(:weight).between(1.0, 10000.0).desc(:weight)]
       result.should == [@car, @old_bike, @bike]
       result.size.should == 3
     end
 
     it "find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')" do
-      result = [*Vehicle.find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')]
+      result = [*@clazz.find(:weight).between(5.0, 100000.0).and(:name).between('a', 'd')]
+      result.size.should == 2
+      result.should include(@bike, @car)
+    end
+
+    it "find('weight:[5.0 TO 10.0]')" do
+      pending "Does not work"
+      result = [*@clazz.find('weight:[5.0 TO 10.0]')]
+      result.size.should == 1
+      result.should include(@bike)
+    end
+  end
+
+  context "range queries, index :items; property :items, :type => Fixnum" do
+    before(:all) do
+      @clazz = tmp_node_mixin do
+        property :items, :type => Fixnum
+        index :items
+        index :name
+      end
+    end
+
+    before(:each) do
+      @bike = @clazz.new(:name => 'bike', :items => 9)
+      @car = @clazz.new(:name => 'car', :items => 1042)
+      @old_bike = @clazz.new(:name => 'old bike', :items => 21)
+      new_tx
+    end
+
+    it "find(:items).between(5, 10)" do
+      @bike.items.should == 9
+      @bike.items.class.should == Fixnum
+      @bike._java_node.get_property('items').class.should == Fixnum
+      result = [*@clazz.find(:items).between(5, 10)]
+      result.should include(@bike)
+      result.size.should == 1
+    end
+
+    it "find(:items).between(5, 10).asc(:items)" do
+      result = [*@clazz.find(:items).between(1, 10000).asc(:items)]
+      result.should == [@bike, @old_bike, @car]
+      result.size.should == 3
+    end
+
+    it "find(:items).between(5, 10).desc(:items)" do
+      result = [*@clazz.find(:items).between(1, 10000).desc(:items)]
+      result.should == [@car, @old_bike, @bike]
+      result.size.should == 3
+    end
+
+    it "find(:items).between(5, 100000).and(:name).between('a', 'd')" do
+      result = [*@clazz.find(:items).between(5, 100000).and(:name).between('a', 'd')]
       result.size.should == 2
       result.should include(@bike, @car)
     end
     
-    it "find('weight:[5.0 TO 10.0]')" do
-      pending "Does not work"
-      result = [*Vehicle.find('weight:[5.0 TO 10.0]')]
-      puts "RESULT #{result.inspect}"
-      result.size.should == 1
-      result.should include(@bike)
-    end
   end
 
   it "can index and search on two properties if index has the same type" do

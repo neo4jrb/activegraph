@@ -49,15 +49,14 @@ module Neo4j::Mapping
         props.each do |prop|
           pname = prop.to_sym
           _decl_props[pname] ||= {}
-          _decl_props[pname][:defined] = true
 
           define_method(pname) do
-            self[pname]
+            Neo4j::TypeConverters.to_ruby(self.class, pname, self[pname])
           end
 
           name = (pname.to_s() +"=").to_sym
           define_method(name) do |value|
-            self[pname] = value
+            self[pname] = Neo4j::TypeConverters.to_java(self.class, pname, value)
           end
         end
       end

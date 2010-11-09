@@ -91,9 +91,17 @@ begin
     end
   end
 
-  def model_subclass(&block)
-    klass = Class.new(Neo4j::Model, &block)
+  def model_subclass(base_class = Neo4j::Model, &block)
+    klass = block ? Class.new(base_class, &block) : Class.new(base_class)
     TempModel.set(klass)
+  end
+
+  def tmp_node_mixin(&block)
+    klass = Class.new
+    TempModel.set(klass)
+    klass.send(:include, Neo4j::NodeMixin)
+    klass.class_eval &block
+    klass
   end
 end unless @_neo4j_rspec_loaded
 

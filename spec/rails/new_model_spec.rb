@@ -141,6 +141,30 @@ describe IceLolly do
   end
 end
 
+describe "A Timestamped Model" do
+  subject do
+    @clazz = model_subclass do
+      property :updated_at, :type => DateTime
+      property :created_at, :type => DateTime
+    end
+    @clazz.new
+  end
+  it_should_behave_like "an timestamped model"
+end
+
+describe "An inherited Timestamped Model" do
+  subject do
+    @base_clazz = model_subclass do
+      property :updated_at, :type => DateTime
+      property :created_at, :type => DateTime
+    end
+
+    @sub_clazz = model_subclass(@base_clazz)
+    @sub_clazz.new
+  end
+  it_should_behave_like "an timestamped model"
+end
+
 describe "ExtendedIceLolly" do
   context "when valid" do
     subject { ExtendedIceLolly.new(:flavour => "vanilla", :required_on_create => "true", :required_on_update => "true") }

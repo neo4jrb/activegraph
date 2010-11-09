@@ -181,6 +181,7 @@ module Neo4j
                 return false unless _java_node.save_nested(node)
                 init_on_load(node)
                 init_on_create
+                self.created_at = DateTime.now if Neo4j::Config[:timestamps] && respond_to?(:created_at)
                 clear_changes
                 true
               end
@@ -189,6 +190,7 @@ module Neo4j
             _run_update_callbacks do
               if valid?(:update)
                 clear_changes
+                self.updated_at = DateTime.now if Neo4j::Config[:timestamps] && respond_to?(:updated_at)
                 true
               end
             end
