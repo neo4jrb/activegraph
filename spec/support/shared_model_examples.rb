@@ -102,7 +102,6 @@ share_examples_for "an unsaveable model" do
   context "after attempted save" do
     before { subject.save }
     
-    it { should_not be_valid }
     it { should_not be_persisted }
     
     it "should have a nil id after save" do

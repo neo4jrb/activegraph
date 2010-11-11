@@ -25,7 +25,10 @@ module Neo4j
 						options = _decl_props[property.to_sym]
 		
 						write_inheritable_attribute(:attribute_defaults, property => options[:default]) if options[:default]
-						validates(property, :non_nil => true) if options.has_key?(:null) && options[:null] == false
+            if options.has_key?(:null) && options[:null] == false
+              validates(property, :non_nil => true, :on => :create)
+              validates(property, :non_nil => true, :on => :update)
+            end
 						validates(property, :length => { :maximum => options[:limit] }) if options[:limit]
 					end
 				end

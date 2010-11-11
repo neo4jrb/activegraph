@@ -29,6 +29,8 @@ describe RequiredProperty do
 	it_should_behave_like "an unsaveable model"
 	it_should_behave_like "an uncreatable model"
 	it_should_behave_like "a non-updatable model"
+
+  it { should be_valid } # even though it won't save, it should be a valid model.  It's only after save that it should be invalid
 	
 	context "when valid" do
 		before(:each) do
@@ -94,14 +96,14 @@ describe DefaultProperty do
 end
 
 describe LotsaProperties do
-	it "should have 2 callbacks" do
-		subject.class._validate_callbacks.size.should == 2
+	it "should have 3 callbacks" do
+		subject.class._validate_callbacks.size.should == 3
 	end
 end
 
 describe DateProperties do
 	before(:each) do
-		#subject.time = @time = Time.now
+		subject.time = @time = Time.now
 		subject.date_time = @date_time = Time.now
 		subject.created_on = @date = Date.today
 	end
@@ -128,7 +130,7 @@ describe DateProperties do
 		subject.date_time.should be_a(DateTime)
 	end
 	
-	pending "should have the correct time" do
+	it "should have the correct time" do
 		subject.time.to_s.should == @time.to_s
 		subject.time.should be_a(Time)
 	end
