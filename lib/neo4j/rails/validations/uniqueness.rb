@@ -1,6 +1,8 @@
 module Neo4j
 	module Rails
 		module Validations
+			extend ActiveSupport::Concern
+			
 			class UniquenessValidator < ActiveModel::EachValidator
 				def initialize(options)
 					super(options.reverse_merge(:case_sensitive => true))
