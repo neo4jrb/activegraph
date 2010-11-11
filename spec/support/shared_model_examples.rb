@@ -47,7 +47,9 @@ share_examples_for "a saveable model" do
       it { should be_valid }
       
       it { should == subject.class.find(subject.id.to_s) }
-      it { should == subject.class.all.to_a[0] }
+      it "should be included in all" do
+        subject.class.all.to_a.should include(subject)
+      end
     end
   end
   

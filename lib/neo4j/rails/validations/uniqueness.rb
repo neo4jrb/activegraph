@@ -15,8 +15,11 @@ module Neo4j
 				end
 	
 				def validate_each(record, attribute, value)
-					if record.class.find("#{attribute}: \"#{value}\"")
-						record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
+					record.class.all("#{attribute}: \"#{value}\"").each do |rec|
+            if rec.id != record.id # it doesn't count if we find ourself!
+              record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
+              break
+            end
 					end
 				end
 			end
