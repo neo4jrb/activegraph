@@ -29,13 +29,13 @@ module Neo4j
           
           # TODO: Just pickup all converter classes that are in the Neo4j::TypeConverters module?
           :converters => { 	Date 			=> Neo4j::TypeConverters::DateConverter, 
-          									DateTime 	=> Neo4j::TypeConverters::DateTimeConverter,
-          									Time 			=> Neo4j::TypeConverters::TimeConverter
+                            DateTime 	=> Neo4j::TypeConverters::DateTimeConverter,
+                            Time 			=> Neo4j::TypeConverters::TimeConverter
           								},
           								
           :lucene => {
                   :fulltext =>  {"provider" => "lucene", "type" => "fulltext" },
-                  :exact =>  {"provider" => "lucene", "type" => "exact" }}
+                  :exact    =>  {"provider" => "lucene", "type" => "exact" }}
         }
       end
 
