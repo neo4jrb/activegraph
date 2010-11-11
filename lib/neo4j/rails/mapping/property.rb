@@ -5,8 +5,13 @@ module Neo4j
 				extend ActiveSupport::Concern
 					
 				def []=(key, value)
-					attribute_will_change!(key.to_s) if self[key.to_s] != value
-					super
+					# TODO: Remove this hack with a more ActiveRecord-like solution
+					if persisted?
+						Neo4j::Transaction.run { super }
+					else
+						attribute_will_change!(key.to_s) if self[key.to_s] != value
+						super
+					end
 				end
 				
 				module ClassMethods
@@ -24,8 +29,8 @@ module Neo4j
 					def handle_property_options_for(property)
 						options = _decl_props[property.to_sym]
 		
-						write_inheritable_attribute(:attribute_defaults, property => options[:default]) if options[:default]
-            if options.has_key?(:null) && options[:null] == false
+						attribute_defaults[property] = options[:default] if options.has_key?(:default)
+            if options.has_key?(:null) && options[:null] === false
               validates(property, :non_nil => true, :on => :create)
               validates(property, :non_nil => true, :on => :update)
             end

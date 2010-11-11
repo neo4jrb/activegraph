@@ -1,27 +1,35 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 class RequiredProperty < Neo4j::Rails::Model
-	property :required, :null => false
+	property :required,       :null => false
 end
 
 class LengthProperty < Neo4j::Rails::Model
-	property :length, :limit => 128
+	property :length,         :limit => 128
 end
 
 class DefaultProperty < Neo4j::Rails::Model
-	property :default, :default => "Test"
+	property :default,        :default => "Test"
+	property :false_property, :default => false
 end
 
 class LotsaProperties < Neo4j::Rails::Model
-	property :required, :null => false
-	property :length, :limit => 128
+	property :required,       :null => false
+	property :length,         :limit => 128
 	property :nothing
 end
 
 class DateProperties < Neo4j::Rails::Model
-	property :date_time, 	:type => DateTime
-	property :created_on, :type => Date
-	property :time, 			:type => Time
+	property :date_time, 	    :type => DateTime
+	property :created_on,     :type => Date
+	property :time,           :type => Time
+end
+
+class ProtectedProperties < Neo4j::Rails::Model
+	property :name
+	property :admin, :default => false
+
+	attr_accessible :name
 end
 
 describe RequiredProperty do
@@ -30,8 +38,6 @@ describe RequiredProperty do
 	it_should_behave_like "an uncreatable model"
 	it_should_behave_like "a non-updatable model"
 
-  it { should be_valid } # even though it won't save, it should be a valid model.  It's only after save that it should be invalid
-	
 	context "when valid" do
 		before(:each) do
 			subject.required = "true"
@@ -85,6 +91,7 @@ describe DefaultProperty do
 	context "when the property isn't set" do
 		it "should have the default" do
 			subject.default.should == "Test"
+			subject.false_property.should === false
 		end
 	end
 	
@@ -133,5 +140,55 @@ describe DateProperties do
 	it "should have the correct time" do
 		subject.time.to_s.should == @time.to_s
 		subject.time.should be_a(Time)
+	end
+end
+
+describe ProtectedProperties do
+	context "with mass-assignment of protected properties" do
+		subject do
+			@p ||= ProtectedProperties.create!(:name => "Ben", :admin => true)
+			@p.admin
+		end
+		
+		it { should === false }
+	end
+	
+	context "with mass-assignment of select properties" do
+		subject do
+			@p ||= ProtectedProperties.create!(:name => "Ben")
+			@p.admin
+		end
+		
+		it { should === false }
+	end
+	
+	context "when set without the safeguard" do
+		subject do
+			@p ||= ProtectedProperties.create!(:name => "Ben")
+			@p.send(:attributes=, { :admin => true }, false)
+			@p.admin
+		end
+		
+		it { should == true }
+	end
+	
+	context "when setting using attributes=" do
+		subject do
+			@p ||= ProtectedProperties.create!
+			@p.attributes = { :name => "Ben", :admin => true }
+			@p.admin
+		end
+		
+		it { should === false }
+	end
+	
+	context "when set using the single assignment" do
+		subject do
+			@p ||= ProtectedProperties.create!
+			@p.admin = true
+			@p.admin
+		end
+		
+		it { should == true }
 	end
 end
