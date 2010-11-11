@@ -1,0 +1,7 @@
+en:
+  active_model:
+    errors:
+      models:
+        attributes:
+          nil:
+            "Can't be nil"
