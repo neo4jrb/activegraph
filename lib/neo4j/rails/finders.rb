@@ -87,6 +87,11 @@ module Neo4j
 					all(*args).first
 				end
 				
+				def last(*args)
+					a = all(*args)
+					a.empty? ? nil : a[a.size - 1]
+				end
+				
 				protected
 				def find_with_ids(*args)
 					if ((args.first.is_a?(String) || args.first.is_a?(Integer)) && args.first.to_i > 0)
