@@ -41,7 +41,7 @@ module Neo4j
       # Returns an Enumerable of all (primary) key attributes
       # or nil if model.persisted? is false
       def to_key
-        persisted? ? [:id] : nil
+        persisted? ? [id] : nil
       end
 
       # enables ActiveModel::Dirty and Validation

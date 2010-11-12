@@ -65,8 +65,7 @@ require 'neo4j/rails/value'
 require 'neo4j/rails/lucene_connection_closer'
 
 require 'neo4j/model'
-
-
+require 'orm_adapter/adapters/neo4j'
 
 # hmm, looks like Enumerator have been moved in some ruby versions
 Enumerator = Enumerable::Enumerator unless defined? Enumerator
