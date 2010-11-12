@@ -12,12 +12,6 @@ module Neo4j
 			def save(options={})
 				perform_validations(options) ? super : false
 			end
-	
-			# Attempts to save the record just like Model#save but will raise a RecordInvalid exception instead of returning false
-			# if the record is not valid.
-			def save!(options={})
-				perform_validations(options) ? super : raise(RecordInvalid.new(self))
-			end
 			
 			def valid?(context = nil)
 				context ||= (new_record? ? :create : :update)
