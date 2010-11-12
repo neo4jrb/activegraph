@@ -66,4 +66,6 @@ describe "finders" do
 	def it_should_be_included_in(array)
 		array.should include(subject)
 	end
+	
+	pending "A test for Neo4j::Rails::Model#last"
 end
