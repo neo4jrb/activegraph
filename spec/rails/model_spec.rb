@@ -158,6 +158,13 @@ describe Neo4j::Model do
       model = IceCream.create(:flavour => 'vanilla')
       IceCream.find("flavour: vanilla").should == model
     end
+    
+    it "should only find two by same attribute" do
+      m1 = IceCream.create(:flavour => 'vanilla')
+      m2 = IceCream.create(:flavour => 'vanilla')
+      m3 = IceCream.create(:flavour => 'fish')
+      IceCream.all("flavour: vanilla").size.should == 2
+    end
   end
 
   describe "destroy" do
