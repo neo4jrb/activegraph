@@ -9,9 +9,9 @@ module Neo4j
 				end
 	
 				def setup(klass)
-					@attributes.each do |attribute|
+					klass._decl_props.each_key do |attribute|
 						if klass.index_type_for(attribute) != :exact
-							raise "Can't validate property #{attribute} on class #{klass} since there is no :exact lucene index on that property or the index declaration #{attribute} comes after the validation declaration in #{klass} (try to move it before the validation rules)"
+							raise "Can't validate property #{attribute.inspect} on class #{klass} since there is no :exact lucene index on that property or the index declaration #{attribute} comes after the validation declaration in #{klass} (try to move it before the validation rules)"
 						end
 					end
 				end

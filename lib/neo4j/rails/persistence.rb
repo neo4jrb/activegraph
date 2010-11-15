@@ -5,27 +5,21 @@ module Neo4j
 			
 			included do
 				extend TxMethods
-				tx_methods :destroy, :create, :update, :update_attributes, :update_attributes!, :update_nested_attributes
+				tx_methods :destroy, :create, :update, :update_nested_attributes
 			end
 
-			class RecordInvalidError < RuntimeError
-        attr_reader :record
-
-        def initialize(record)
-          @record = record
-          super(@record.errors.full_messages.join(", "))
-        end
-      end
-      
-      def init_on_create(*args) # :nodoc:
-        super()
-        self.attributes=args[0] if args[0].respond_to?(:each_pair)
-      end
-      
+			# Persist the object to the database.  Validations and Callbacks are included
+			# by default but validation can be disabled by passing :validate => false
+			# to #save.
       def save(*)
       	create_or_update
       end
       
+      # Persist the object to the database.  Validations and Callbacks are included
+			# by default but validation can be disabled by passing :validate => false
+			# to #save!.
+			#
+			# Raises a RecordInvalidError if there is a problem duruing save.
       def save!(*args)
 				unless save(*args)
 					raise RecordInvalidError.new(self)
@@ -40,15 +34,25 @@ module Neo4j
 			# * Updates all the attributes that are dirty in this object.
 			#
 			def update_attribute(name, value)
-				send("#{name}=", value)
+				respond_to?("#{name}=") ? send("#{name}=", value) : self[name] = value
 				save(:validate => false)
 			end
 			
+			# Removes the node from Neo4j and freezes the object.
 			def destroy
-				del
+				del unless new_record?
+				set_deleted_properties
+				freeze
+			end
+			
+			# Same as #destroy but doesn't run destroy callbacks and doesn't freeze
+			# the object
+			def delete
+				del unless new_record?
 				set_deleted_properties
 			end
 			
+			# Returns true if the object was destroyed.
 			def destroyed?()
         @_deleted
       end
@@ -56,17 +60,20 @@ module Neo4j
 			# Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
       # If saving fails because the resource is invalid then false will be returned.
       def update_attributes(attributes)
-        self.attributes=attributes
+        self.attributes = attributes
         save
       end
 
+      # Same as #update_attributes, but raises an exception if saving fails.
       def update_attributes!(attributes)
-        self.attributes=attributes
+        self.attributes = attributes
         save!
       end
 			
+      # Reload the object from the DB.
 			def reload(options = nil)
 				clear_changes
+				reset_attributes
 				reload_from_database or set_deleted_properties and return self
       end
       
@@ -75,17 +82,22 @@ module Neo4j
         !new_record? && !destroyed?
       end
       
-      def new?
-        _java_node.kind_of?(Neo4j::Rails::Value)
+      # Returns true if the record hasn't been saved to Neo4j yet.
+      def new_record?
+        _java_node.nil?
       end
       
-      alias :new_record? :new?
+      alias :new? :new_record?
 			
 			module ClassMethods
+				# Initialize a model and set a bunch of attributes at the same time.  Returns
+				# the object whether saved successfully or not.
 				def create(*args)
 					new(*args).tap {|o| o.save }
 				end
 				
+				# Same as #create, but raises an error if there is a problem during save.
+				# Returns the object whether saved successfully or not.
 				def create!(*args)
 					new(*args).tap {|o| o.save! }
 				end
@@ -98,35 +110,86 @@ module Neo4j
 			end
 			
 			def update
+				write_changed_attributes
+				update_timestamp
 				clear_changes
-				self.updated_at = DateTime.now if Neo4j::Config[:timestamps] && respond_to?(:updated_at)
 				true
 			end
 			
 			def create
-				node = Neo4j::Node.new(props)
-				unless _java_node.save_nested(node)
-					Neo4j::Rails::Transaction.fail
-					false
-				else
-					init_on_load(node)
-					init_on_create
-					self.created_at = DateTime.now if Neo4j::Config[:timestamps] && respond_to?(:created_at)
-					clear_changes
-					true
-				end
+				node = Neo4j::Node.new
+				#unless _java_node.save_nested(node)
+				#	Neo4j::Rails::Transaction.fail
+				#	false
+				#else
+				init_on_load(node)
+				init_on_create(@properties)
+				clear_changes
+				true
+			end
+			
+			def init_on_create(*args)
+				self["_classname"] = self.class.to_s
+				write_changed_attributes
+				create_timestamp
+			end
+			
+			def reset_attributes
+				@properties = {}
+				send(:attributes=, attribute_defaults, false)
 			end
 			
 			def reload_from_database
-      	if reloaded = self.class.load(self.id.to_s)
-					attributes = reloaded.attributes
+      	if reloaded = self.class.load(id)
+					send(:attributes=, reloaded.attributes, false)
 				end
 			end
 			
       def set_deleted_properties
       	@_deleted = true
 				@_persisted = false
-				@_java_node = Neo4j::Rails::Value.new(self)
+				@_java_node = nil
+			end
+			
+			# Write attributes to the Neo4j DB only if they're altered
+			def write_changed_attributes
+				@properties.each do |attribute, value|
+					write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
+				end
+			end
+			
+			# Set the timestamps for this model if timestamps is set to true in the config
+			# and the model is set up with the correct property name, e.g.:
+			#
+			#   class Trackable < Neo4j::Rails::Model
+			#     property :updated_at, :type => DateTime
+			#   end
+			def update_timestamp
+				write_date_or_timestamp(:updated_at) if Neo4j::Config[:timestamps] && respond_to?(:updated_at)
+			end
+			
+			# Set the timestamps for this model if timestamps is set to true in the config
+			# and the model is set up with the correct property name, e.g.:
+			#
+			#   class Trackable < Neo4j::Rails::Model
+			#     property :created_at, :type => DateTime
+			#   end
+			def create_timestamp
+				write_date_or_timestamp(:created_at) if Neo4j::Config[:timestamps] && respond_to?(:created_at)
+			end
+			
+			# Write the timestamp as a Date, DateTime or Time depending on the property type
+			def write_date_or_timestamp(attribute)
+				value = case self.class._decl_props[attribute][:type]
+				when Time
+					Time.now
+				when Date
+					Date.today
+				else
+					DateTime.now
+				end
+				
+				write_attribute(attribute, value)
 			end
 			
 			def update_nested_attributes(rel_type, clazz, has_one, attr, options)
@@ -163,6 +226,16 @@ module Neo4j
             saved = new_node.save
             outgoing(rel_type) << new_node if saved
           end
+        end
+      end
+      
+      public
+      class RecordInvalidError < RuntimeError
+        attr_reader :record
+
+        def initialize(record)
+          @record = record
+          super(@record.errors.full_messages.join(", "))
         end
       end
 		end

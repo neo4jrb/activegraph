@@ -4,7 +4,7 @@ module Neo4j
 			include ActiveModel::Validations
 			
 			def read_attribute_for_validation(key)
-				send(key)
+				respond_to?(key) ? send(key) : self[key]
 			end
 			
 			# The validation process on save can be skipped by passing false. The regular Model#save method is

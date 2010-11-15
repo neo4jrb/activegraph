@@ -3,32 +3,21 @@ module Neo4j
     class Model
       include Neo4j::NodeMixin
       
-      include ActiveModel::Serializers::Xml
-      include ActiveModel::Dirty
-      include ActiveModel::MassAssignmentSecurity
-
       extend ActiveModel::Naming
       
-      include Persistence
-      include Validations
-      include Callbacks
-      
-      include Finders						# ActiveRecord style find
+      include Persistence				# handles how to save, create and update the model
+      include Attributes				# handles how to save and retrieve attributes
       include Mapping::Property	# allows some additional options on the #property class method
+      include Serialization			# enable to_xml and to_json
+      include Validations				# enable validations
+      include Callbacks					# enable callbacks
+      include Finders						# ActiveRecord style find
       
-      class_inheritable_hash :attribute_defaults
-      self.attribute_defaults = {}
-      
-      # --------------------------------------
-      # Initialize
-      # --------------------------------------
-
-      def initialize(*)
+      # Initialize a Node with a set of properties (or empty if nothing is passed)
+      def initialize(attributes = {})
+      	reset_attributes
+        self.attributes = attributes
       end
-
-      # --------------------------------------
-      # Identity
-      # --------------------------------------
 
       def id
         neo_id.nil? ? nil : neo_id.to_s
@@ -44,24 +33,6 @@ module Neo4j
         persisted? ? [id] : nil
       end
 
-      # enables ActiveModel::Dirty and Validation
-      def method_missing(method_id, *args, &block)
-        if !self.class.attribute_methods_generated?
-          self.class.define_attribute_methods(self.class._decl_props.keys)
-          # try again
-          send(method_id, *args, &block)
-        elsif property?(method_id)
-        	send(:[], method_id)
-        else
-        	super
-        end
-      end
-
-      def attributes=(attributes, guard_protected_attributes = true)
-      	attributes = sanitize_for_mass_assignment(attributes) if guard_protected_attributes
-        attributes.each { |k, v| respond_to?(k) ? send("#{k}=", v) : self[k] = v }
-      end
-
       def reject_if?(proc_or_symbol, attr)
         return false if proc_or_symbol.nil?
         if proc_or_symbol.is_a?(Symbol)
@@ -70,11 +41,6 @@ module Neo4j
         else
           proc_or_symbol.call(attr)
         end
-      end
-
-      def clear_changes
-        @previously_changed = changes
-        @changed_attributes.clear
       end
 
       def to_model
@@ -86,20 +52,13 @@ module Neo4j
       end
       
       # --------------------------------------
-      # Class Methods
+      # Public Class Methods
       # --------------------------------------
-
       class << self
-        # returns a value object instead of creating a new node
-        def new(attributes = {})
-          wrapped = self.orig_new
-          value = Neo4j::Rails::Value.new(wrapped)
-          wrapped.init_on_load(value)
-          wrapped.send(:attributes=, attribute_defaults, false)
-          wrapped.attributes = attributes
-          wrapped
-        end
-
+        # NodeMixin overwrites the #new class method but it saves it as orig_new
+        # Here, we just get it back to normal
+        alias :new :orig_new
+        
         def transaction(&block)
           Neo4j::Rails::Transaction.run &block
         end
