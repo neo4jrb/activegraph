@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    neo4j (1.0.0.beta.17)
+    neo4j (1.0.0.beta.19)
       activemodel (>= 3.0.0)
       railties (>= 3.0.0)
 
@@ -31,6 +31,7 @@ GEM
     horo (1.0.2)
       rdoc (~> 2.5)
     i18n (0.4.2)
+    orm_adapter (0.0.3)
     rack (1.2.1)
     rack-mount (0.6.13)
       rack (>= 1.0.0)
@@ -47,8 +48,6 @@ GEM
       rspec-core (~> 2.0.1)
       rspec-expectations (~> 2.0.1)
       rspec-mocks (~> 2.0.1)
-    rspec-apigen (0.0.4)
-      rspec (>= 2.0.0.beta.20)
     rspec-core (2.0.1)
     rspec-expectations (2.0.1)
       diff-lcs (>= 1.1.2)
@@ -70,11 +69,11 @@ DEPENDENCIES
   activemodel (>= 3.0.0)
   horo (>= 1.0.2)
   neo4j!
+  orm_adapter
   railties (>= 3.0.0)
   rake (>= 0.8.7)
   rdoc (>= 2.5.10)
   rspec (>= 2.0.0)
-  rspec-apigen (>= 0.0.4)
   rspec-rails-matchers (>= 0.2.1)
   ruby-debug-base
   ruby-debug-ide
