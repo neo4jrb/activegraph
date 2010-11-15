@@ -70,12 +70,10 @@ module Neo4j
     # Converts the given property (key, value) to Java by using configuration from the given class.
     # If no Converter is defined for this value then it simply returns the given value.
     def self.to_java(clazz, key, value)
-      type = clazz._decl_props[key] && clazz._decl_props[key][:type]
+      type = clazz._decl_props[key.to_sym] && clazz._decl_props[key.to_sym][:type]
       if type
         converter = Neo4j.converters[type]
         converter ? converter.to_java(value) : value
-      elsif clazz.superclass != Object
-        to_java(clazz.superclass, key, value)
       else
         value
       end
@@ -84,12 +82,10 @@ module Neo4j
     # Converts the given property (key, value) to Ruby by using configuration from the given class.
     # If no Converter is defined for this value then it simply returns the given value.
     def self.to_ruby(clazz, key, value)
-      type = clazz._decl_props[key] && clazz._decl_props[key][:type]
+      type = clazz._decl_props[key.to_sym] && clazz._decl_props[key.to_sym][:type]
       if type
         converter = Neo4j.converters[type]
         converter ? converter.to_ruby(value) : value
-      elsif clazz.superclass != Object
-        to_ruby(clazz.superclass, key, value)
       else
         value
       end

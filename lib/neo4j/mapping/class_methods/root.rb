@@ -1,16 +1,17 @@
+require 'active_support/core_ext/class/subclasses'
+
 module Neo4j::Mapping
   module ClassMethods
     # Used to hold information about which relationships and properties has been declared.
     module Root
       #attr_reader :_decl_rels, :_decl_props
-
+      
       def root_class(clazz)
         @@_all_decl_rels  ||= {}
         @@_all_decl_props ||= {}
         @@_all_decl_rels[clazz] ||= {}
-        @@_all_decl_props[clazz] ||= {}
+        @@_all_decl_props[self] = _decl_props
         @_decl_rels  = @@_all_decl_rels[clazz]
-        @_decl_props = @@_all_decl_props[clazz]
       end
 
 
@@ -18,12 +19,6 @@ module Neo4j::Mapping
       def _decl_rels
         @@_all_decl_rels[self] ||= {}
         @_decl_props = @@_all_decl_rels[self]
-      end
-
-      # a hash of all properties which has been declared with <tt>property</tt> using the Neo4j::Mapping::ClassMethods::Property
-      def _decl_props
-        @@_all_decl_props[self] ||= {}
-        @_decl_props = @@_all_decl_props[self]
       end
 
     end
