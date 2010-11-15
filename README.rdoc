@@ -39,8 +39,8 @@ Example of creating a Neo4j::Node
   require 'neo4j'
 
   Neo4j::Transaction.run do
-    node = Neo4j::Node.new :name => 'andreas'
-    node.outgoing(:friends) << Neo4j::Node.new :name => 'peter'
+    node = Neo4j::Node.new (:name => 'andreas')
+    node.outgoing(:friends) << Neo4j::Node.new (:name => 'peter')
     node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
   end
 
@@ -59,8 +59,8 @@ Example of mapping a ruby class to a node and delaring properties and relationsh
   end
 
   # assume we have an transaction already running
-  andreas = Person.new :name => 'andreas'
-  andreas.friends << Person.new :name => 'peter'
+  andreas = Person.new (:name => 'andreas')
+  andreas.friends << Person.new (:name => 'peter')
   andreas.friends.each {|person| puts "name #{person.name}" }
   Person.find("name: andreas").first.name # => 'andreas'
 
