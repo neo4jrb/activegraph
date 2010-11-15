@@ -32,6 +32,10 @@ module Neo4j
       end
     end
 
+    def empty?
+      first == nil
+    end
+    
     def iterator
       if @types
         @node.get_relationships(@types).iterator

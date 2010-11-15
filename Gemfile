@@ -11,6 +11,6 @@ group 'test' do
   gem "test-unit"
 end
 
-gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"
-gem 'ruby-debug-base' if RUBY_VERSION.include? "1.8"
-gem "ruby-debug-ide"
+#gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"
+#gem 'ruby-debug-base' if RUBY_VERSION.include? "1.8"
+#gem "ruby-debug-ide"

@@ -2,13 +2,27 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
+
+  before(:all) do
+    person_class = create_node_mixin do
+      property :name
+      has_n :friends
+      index :name
+    end
+
+    @employee_class = create_node_mixin_subclass(person_class) do
+      property :employee_id
+      has_n :contracts
+    end
+  end
+
   it "#new creates node and set properties with given hash" do
-    empl = Employee.new(:name => 'andreas', :employee_id => 123)
+    empl = @employee_class.new(:name => 'andreas', :employee_id => 123)
     empl[:name].should == 'andreas'
   end
 
   it "#has_n can use baseclass definition" do
-    empl = Employee.new
+    empl = @employee_class.new
     node =  Neo4j::Node.new
     empl.friends << node
     empl.friends.should include(node)
@@ -86,7 +100,7 @@ describe Neo4j::NodeMixin, :type=> :transactional do
 
   context "property :born => Date" do
     before(:all) do
-      @clazz = tmp_node_mixin do
+      @clazz = create_node_mixin do
         property :born, :type => Date
         index :born
       end
@@ -117,7 +131,7 @@ describe Neo4j::NodeMixin, :type=> :transactional do
 
   context "property :since => DateTime" do
     before(:all) do
-      @clazz = tmp_node_mixin do
+      @clazz = create_node_mixin do
         property :since, :type => DateTime
         index :since
       end

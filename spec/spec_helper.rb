@@ -78,8 +78,7 @@ begin
   module TempModel
     @@_counter = 1
 
-    def self.set(klass)
-      name       = "Model_#{@@_counter}"
+    def self.set(klass, name="Model_#{@@_counter}")
       @@_counter += 1
       klass.class_eval <<-RUBY
 	def self.to_s
@@ -91,17 +90,34 @@ begin
     end
   end
 
-  def model_subclass(base_class = Neo4j::Model, &block)
+  def create_model(base_class = Neo4j::Model, &block)
     klass = block ? Class.new(base_class, &block) : Class.new(base_class)
     TempModel.set(klass)
   end
 
-  def tmp_node_mixin(&block)
-    klass = Class.new
+  def create_node_mixin_subclass(parent_clazz = Object, &block)
+    klass = Class.new(parent_clazz)
     TempModel.set(klass)
     klass.send(:include, Neo4j::NodeMixin)
     klass.class_eval &block
     klass
   end
+
+  def create_node_mixin(name=nil, &block)
+    klass = Class.new
+    name.nil? ? TempModel.set(klass) : TempModel.set(klass, name)
+    klass.send(:include, Neo4j::NodeMixin)
+    klass.class_eval &block if block
+    klass
+  end
+
+  def create_rel_mixin(name=nil, &block)
+    klass = Class.new
+    name.nil? ? TempModel.set(klass) : TempModel.set(klass, name)
+    klass.send(:include, Neo4j::RelationshipMixin)
+    klass.class_eval &block if block
+    klass
+  end
+
 end unless @_neo4j_rspec_loaded
 

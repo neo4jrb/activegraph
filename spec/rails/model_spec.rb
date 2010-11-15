@@ -207,7 +207,7 @@ describe Neo4j::Model do
     end
 
     it "should run before and after create callbacks" do
-      klass = model_subclass do
+      klass = create_model do
         property :created
         before_create :timestamp
 
@@ -229,7 +229,7 @@ describe Neo4j::Model do
     end
 
     it "should run before and after save callbacks" do
-      klass = model_subclass do
+      klass = create_model do
         property :created
         before_save :timestamp
 
@@ -251,7 +251,7 @@ describe Neo4j::Model do
     end
 
     it "should run before and after new & save callbacks" do
-      klass = model_subclass do
+      klass = create_model do
         property :created
         before_save :timestamp
 
@@ -284,7 +284,7 @@ describe Neo4j::Model do
     end
 
     it "should not update the model if it is invalid" do
-      klass = model_subclass do
+      klass = create_model do
         property :name
         validates_presence_of :name
       end
@@ -356,7 +356,7 @@ describe Neo4j::Model do
 
   describe "attr_accessible" do
     before(:all) do
-      @klass = model_subclass do
+      @klass = create_model do
         attr_accessor :name, :credit_rating
         attr_protected :credit_rating
       end

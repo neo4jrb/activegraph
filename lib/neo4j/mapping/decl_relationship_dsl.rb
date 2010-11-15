@@ -33,39 +33,26 @@ module Neo4j::Mapping
   class DeclRelationshipDsl
     include Neo4j::ToJava
 
-    attr_reader :to_type, :to_class, :cascade_delete_prop_name, :counter, :rel_id, :direction
+    attr_reader :target_class, :direction, :rel_type
 
-    def initialize(rel_id, has_one, to_class, params)
-      @direction = :outgoing
-      @rel_id = rel_id
-      @to_type = rel_id
-      @has_one = has_one
-      @namespace_type = rel_id
-      @to_class = to_class
+    def initialize(method_id, has_one, target_class, params)
+      @direction    = :outgoing
+      @method_id    = method_id
+      @has_one      = has_one
+      @rel_type     = method_id
+      @target_class = target_class
+    end
+
+    def to_s
+      "DeclRelationshipDsl #{object_id} dir: #{@direction} rel_id: #{@method_id}, rel_type: #{@rel_type}, target_class:#{@target_class} rel_class:#{@relationship}"
     end
 
     def has_one?
       @has_one
     end
 
-    def class_and_type_from_args(args) # :nodoc:
-      if (args.size > 1)
-        return args[0], args[1]
-      elsif (Symbol === args[0])
-        return @to_class, args[0]
-      else
-        return args[0], @rel_id
-      end
-    end
-
-
-    # The actual relationship type that this DSL will use
-    def namespace_type
-      @namespace_type
-    end
-
-    def each_node(node, direction, &block)
-      type = type_to_java(namespace_type)
+    def each_node(node, direction, &block) #:nodoc:
+      type = type_to_java(rel_type)
       dir  = dir_to_java(direction)
       node._java_node.getRelationships(type, dir).each do |rel|
         other = rel.getOtherNode(node).wrapper
@@ -73,59 +60,35 @@ module Neo4j::Mapping
       end
     end
 
-    def incoming?
+    def incoming? #:nodoc:
       @direction == :incoming
     end
 
-    def incoming_dsl
-      dsl = @to_class._decl_rels[to_type]
-      raise "Unspecified outgoing relationship '#{to_type}' for incoming relationship '#{rel_id}' on class #{to_class}" if dsl.nil?
-      dsl
-    end
-
-    def single_node(node)
+    def single_node(node) #:nodoc:
       rel = single_relationship(node)
       rel && rel.other_node(node).wrapper
     end
 
-    def single_relationship(node)
-      dir = direction
-      dsl = incoming? ? incoming_dsl : self
-      node._java_node.rel(dir, dsl.namespace_type)
+    def single_relationship(node) #:nodoc:
+      node._java_node.rel(direction, rel_type)
     end
 
-    def _all_relationships(node)
-      dsl = incoming? ? incoming_dsl : self
-      type = type_to_java(dsl.namespace_type)
+    def _all_relationships(node) #:nodoc:
+      type = type_to_java(rel_type)
       dir  = dir_to_java(direction)
       node._java_node.getRelationships(type, dir)
     end
 
-    def all_relationships(node)
-      dsl = incoming? ? incoming_dsl : self
-      Neo4j::RelationshipTraverser.new(node._java_node, [dsl.namespace_type], direction)
+    def all_relationships(node) #:nodoc:
+      Neo4j::RelationshipTraverser.new(node._java_node, [rel_type], direction)
     end
 
-    def create_relationship_to(node, other)
-    	if incoming?
-    		# If we are creating an incoming relationship, we need to swap incoming and outgoing nodes
-    		dsl = incoming_dsl
-    		from, to = other, node
-    	else
-    		dsl = self
-    		from, to = node, other
-    	end
+    def create_relationship_to(node, other) # :nodoc: 
+      from, to = incoming? ? [other, node] : [node, other]
+      java_type = type_to_java(rel_type)
 
-      java_type = type_to_java(dsl.namespace_type)
-
-      rel = from._java_node.create_relationship_to(to._java_node, java_type)
-      rel[:_classname] =  dsl.relationship_class.to_s if dsl.relationship_class
-
-      # TODO - not implemented yet
-      # the from.neo_id is only used for cascade_delete_incoming since that node will be deleted when all the list items has been deleted.
-      # if cascade_delete_outgoing all nodes will be deleted when the root node is deleted
-      # if cascade_delete_incoming then the root node will be deleted when all root nodes' outgoing nodes are deleted
-      #rel[@dsl.cascade_delete_prop_name] = node.neo_id if @dsl.cascade_delete?
+      rel       = from._java_node.create_relationship_to(to._java_node, java_type)
+      rel[:_classname] = relationship_class.to_s if relationship_class
       rel.wrapper
     end
 
@@ -148,33 +111,74 @@ module Neo4j::Mapping
     #
     def to(*args)
       @direction = :outgoing
-      @to_class, @to_type = class_and_type_from_args(args)
-      @namespace_type = "#{@to_class.to_s}##{@to_type.to_s}"
+
+      if (args.size > 1)
+        raise "only one argument expected - the class of the node this relationship points to, got #{args.inspect}"
+      elsif (Class === args[0])
+        # handle e.g. has_n(:friends).to(class)
+        @target_class = args[0]
+        @rel_type     = "#{@target_class}##{@method_id}"
+      else
+        raise "Expected a class for, got #{args[0]}"
+      end
       self
     end
 
     # Specifies an incoming relationship.
     # Will use the outgoing relationship given by the from class.
     #
-    # ==== Example
+    # ==== Example, with prefix FileNode
     #   class FolderNode
     #     include Neo4j::NodeMixin
     #     has_n(:files).to(FileNode)
     #   end
     #
-    #  class FileNode
-    #    include Neo4j::NodeMixin
-    #    has_one(:folder).from(FileNode, :files)
-    #  end
+    #   class FileNode
+    #     include Neo4j::NodeMixin
+    #     # will only traverse any incoming relationship of type files from node FileNode
+    #     has_one(:folder).from(FileNode, :files)
+    #   end
     #
-    #  file = FileNode.new
-    #  # create an outgoing relationship of type 'FileNode#files' from folder node to file
-    #  file.folder = FolderNode.new
+    #   file = FileNode.new
+    #   # create an outgoing relationship of type 'FileNode#files' from folder node to file (FileNode is the prefix).
+    #   file.folder = FolderNode.new
+    #
+    # ==== Example, without prefix
+    #
+    #   class FolderNode
+    #     include Neo4j::NodeMixin
+    #     has_n(:files)
+    #   end
+    #
+    #   class FileNode
+    #     include Neo4j::NodeMixin
+    #     has_one(:folder).from(:files)  # will traverse any incoming relationship of type files
+    #   end
+    #
+    #   file = FileNode.new
+    #   # create an outgoing relationship of type 'FileNode#files' from folder node to file
+    #   file.folder = FolderNode.new
+    #
     #
     def from(*args)
-      #(clazz, type)
       @direction = :incoming
-      @to_class, @to_type = class_and_type_from_args(args)
+
+      if (args.size > 1)
+        # handle specified (prefixed) relationship, e.g. has_n(:known_by).from(clazz, :type)
+        @rel_type       = "#{@target_class}##{args[1]}"
+        @target_class   = args[0]
+        other_class_dsl = @target_class._decl_rels[args[1]]
+        if other_class_dsl
+          @relationship = other_class_dsl.relationship_class
+        else
+          puts "WARNING: Unknown outgoing relationship #{args[1]} on #{@target_class}"
+        end
+      elsif (Symbol === args[0])
+        # handle unspecified (unprefixed) relationship, e.g. has_n(:known_by).from(:type)
+        @rel_type = args[0]
+      else
+        raise "Expected a symbol for, got #{args[0]}"
+      end
       self
     end
 

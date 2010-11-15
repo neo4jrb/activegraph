@@ -263,12 +263,15 @@ describe Neo4j::Node, :type => :transactional do
       a.outgoing(:friends).should include(b,c)
     end
 
-    it "#incoming(:friends) << other_node should raise an exception" do
+    it "#incoming(:friends) << other_node should add an incoming relationship" do
       a = Neo4j::Node.new
       other_node = Neo4j::Node.new
 
       # when
-      expect { a.incoming(:friends) << other_node }.to raise_error
+      a.incoming(:friends) << other_node
+
+      # then
+      a.incoming(:friends).first.should == other_node
     end
 
     it "#both(:friends) << other_node should raise an exception" do

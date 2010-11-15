@@ -5,7 +5,7 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
 
   context "on arrays of properties" do
     before(:all) do
-      @clazz = tmp_node_mixin do
+      @clazz = create_node_mixin do
         property :items
         index :items
       end
@@ -79,7 +79,7 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
 
   context "range queries, index :name, :type => String" do
     before(:all) do
-      @clazz = tmp_node_mixin do
+      @clazz = create_node_mixin do
         property :name, :type => String
         index :name
       end
@@ -113,7 +113,7 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
 
   context "range queries, index :weight; property :weight, :type => Float" do
     before(:all) do
-      @clazz = tmp_node_mixin do
+      @clazz = create_node_mixin do
         property :weight, :type => Float
         index :weight
         index :name
@@ -161,7 +161,7 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
 
   context "range queries, index :items; property :items, :type => Fixnum" do
     before(:all) do
-      @clazz = tmp_node_mixin do
+      @clazz = create_node_mixin do
         property :items, :type => Fixnum
         index :items
         index :name

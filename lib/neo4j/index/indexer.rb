@@ -83,7 +83,7 @@ module Neo4j
           rel_dsl = @indexer_for._decl_rels[conf[:via]]
           raise "No relationship defined for '#{conf[:via]}'. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]} <-- error. Define it with a has_one or has_n" unless rel_dsl
           raise "Only incoming relationship are possible to define index on. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]}" unless rel_dsl.incoming?
-          via_indexer = rel_dsl.to_class._indexer
+          via_indexer = rel_dsl.target_class._indexer
 
           field = field.to_s
           @via_relationships[field] = rel_dsl
@@ -99,7 +99,7 @@ module Neo4j
         @field_types.keys.each { |field| rm_index(node, field, props[field]) if props[field] }
         # remove all via indexed fields
         @via_relationships.each_value do |dsl|
-          indexer = dsl.to_class._indexer
+          indexer = dsl.target_class._indexer
           tx_data.deleted_relationships.each do |rel|
             start_node = rel._start_node
             next if node != rel._end_node
@@ -122,14 +122,14 @@ module Neo4j
         # find which via relationship match rel_type
         @via_relationships.each_pair do |field, dsl|
           # have we declared an index on this changed relationship ?
-          next unless dsl.incoming_dsl.namespace_type == rel_type
+          next unless dsl.rel_type == rel_type
 
           # yes, so find the node and value we should update the index on
           val        = end_node[field]
           start_node = relationship._start_node
 
           # find the indexer to use
-          indexer   = dsl.to_class._indexer
+          indexer   = dsl.target_class._indexer
 
           # is the relationship created or deleted ?
           if is_created
@@ -143,11 +143,11 @@ module Neo4j
       def update_index_on(node, field, old_val, new_val) #:nodoc:
         if @via_relationships.include?(field)
           dsl = @via_relationships[field]
-          to_class = dsl.to_class
+          target_class = dsl.target_class
 
           dsl._all_relationships(node).each do |rel|
             other = rel._start_node
-            to_class._indexer.update_single_index_on(other, field, old_val, new_val)
+            target_class._indexer.update_single_index_on(other, field, old_val, new_val)
           end
         end
         update_single_index_on(node, field, old_val, new_val)

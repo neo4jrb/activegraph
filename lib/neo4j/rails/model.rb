@@ -276,22 +276,22 @@ module Neo4j
           attr_names.each do |association_name|
             rel = self._decl_rels[association_name.to_sym]
             raise "No relationship declared with has_n or has_one with type #{association_name}" unless rel
-            to_class = rel.to_class
-            raise "Can't use accepts_nested_attributes_for(#{association_name}) since it has not defined which class it has a relationship to, use has_n(#{association_name}).to(MyOtherClass)" unless to_class
-            type = rel.namespace_type
+            target_class = rel.target_class
+            raise "Can't use accepts_nested_attributes_for(#{association_name}) since it has not defined which class it has a relationship to, use has_n(#{association_name}).to(MyOtherClass)" unless target_class
+            type = rel.rel_type
             has_one = rel.has_one?
 
             send(:define_method, "#{association_name}_attributes=") do |attributes|
               if has_one
-                update_nested_attributes(type, to_class, true, attributes, options)
+                update_nested_attributes(type, target_class, true, attributes, options)
               else
                 if attributes.is_a?(Array)
                   attributes.each do |attr|
-                    update_nested_attributes(type, to_class, false, attr, options)
+                    update_nested_attributes(type, target_class, false, attr, options)
                   end
                 else
                   attributes.each_value do |attr|
-                    update_nested_attributes(type, to_class, false, attr, options)
+                    update_nested_attributes(type, target_class, false, attr, options)
                   end
                 end
               end

@@ -40,11 +40,9 @@ describe "shared index - complex scenarios", :type => :transactional do
     users[0].contact.users << users[1]
     finish_tx
 
-    puts "find #{users[0].neo_id}"
     found = [*Contact.find("user_id: #{users[1].neo_id}")]
     #found = [*Contact.find("user_id: #{users[0].neo_id} AND city: malmoe")]
     found.should_not be_empty
-    puts "FOUND #{found.join(', ')}"
   end
 end
 

@@ -17,11 +17,11 @@ module Neo4j
       def initialize(node, dsl) # :nodoc:
         @node = node
         @direction = dsl.direction
-        @dsl = @direction == :outgoing ? dsl : dsl.incoming_dsl
+        @dsl = dsl
       end
 
       def to_s
-        "HasN [#@direction, #{@node.neo_id} #{@dsl.namespace_type}]"
+        "HasN [#@direction, id: #{@node.neo_id} type: #{@dsl.rel_type} dsl:#{@dsl}]"
       end
 
       def size
@@ -74,11 +74,7 @@ module Neo4j
       # self
       #
       def <<(other)
-      	if @direction == :incoming && @dsl.direction == :outgoing
-      		@dsl.create_relationship_to(other, @node)
-      	else
-      		@dsl.create_relationship_to(@node, other)
-      	end
+        @dsl.create_relationship_to(@node, other)
         self
       end
     end

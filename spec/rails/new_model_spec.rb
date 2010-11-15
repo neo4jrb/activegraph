@@ -112,6 +112,7 @@ describe IceLolly do
         end
         
         it "should have the same attribute values after an unsuccessful update" do
+          pending
           subject.update_attributes(:flavour => "fish")
           subject.reload.flavour.should == "vanilla"
           subject.reload.required_on_update.should_not be_nil
@@ -144,7 +145,7 @@ end
 
 describe "A Timestamped Model" do
   subject do
-    @clazz = model_subclass do
+    @clazz = create_model do
       property :updated_at, :type => DateTime
       property :created_at, :type => DateTime
     end
@@ -155,12 +156,12 @@ end
 
 describe "An inherited Timestamped Model" do
   subject do
-    @base_clazz = model_subclass do
+    @base_clazz = create_model do
       property :updated_at, :type => DateTime
       property :created_at, :type => DateTime
     end
 
-    @sub_clazz = model_subclass(@base_clazz)
+    @sub_clazz = create_model(@base_clazz)
     @sub_clazz.new
   end
   it_should_behave_like "an timestamped model"
