@@ -89,6 +89,11 @@ end
 
 describe DefaultProperty do
 	context "when the property isn't set" do
+		it "should have the default in #attributes" do
+			subject.attributes.should include("default")
+			subject.attributes["default"].should == "Test"
+		end
+		
 		it "should have the default" do
 			subject.default.should == "Test"
 			subject.false_property.should === false
@@ -98,6 +103,12 @@ describe DefaultProperty do
 	context "when the property is set" do
 		it "shouldn't have the default" do
 			subject.class.new(:default => "Changed").default.should == "Changed"
+		end
+		
+		it "shouldn't have the default on reload" do
+			c = subject.class.create!(:default => "Changed")
+			c.default.should == "Changed"
+			c.class.find(c.id).default.should == "Changed"
 		end
 	end
 end

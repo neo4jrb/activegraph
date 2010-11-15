@@ -53,7 +53,7 @@ module Neo4j
 				if @properties.has_key?(key)
 					@properties[key]
 				else
-					@properties[key] = read_attribute(key)
+					@properties[key] = (persisted? && _java_node.has_property?(key)) ? read_attribute(key) : attribute_defaults[key]
 				end
 			end
 			

@@ -130,13 +130,13 @@ module Neo4j
 			
 			def init_on_create(*args)
 				self["_classname"] = self.class.to_s
+				write_default_attributes
 				write_changed_attributes
 				create_timestamp
 			end
 			
 			def reset_attributes
 				@properties = {}
-				send(:attributes=, attribute_defaults, false)
 			end
 			
 			def reload_from_database
@@ -149,6 +149,13 @@ module Neo4j
       	@_deleted = true
 				@_persisted = false
 				@_java_node = nil
+			end
+			
+			# Ensure any defaults are stored in the DB
+			def write_default_attributes
+				attribute_defaults.each do |attribute, value|
+					write_attribute(attribute, value) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
+				end
 			end
 			
 			# Write attributes to the Neo4j DB only if they're altered

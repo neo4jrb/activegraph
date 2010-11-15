@@ -27,7 +27,7 @@ module Neo4j
 					end
 					
 					def handle_property_options_for(property, options)
-						attribute_defaults[property] = options[:default] if options.has_key?(:default)
+						attribute_defaults[property.to_s] = options[:default] if options.has_key?(:default)
             if options.has_key?(:null) && options[:null] === false
               validates(property, :non_nil => true, :on => :create)
               validates(property, :non_nil => true, :on => :update)
