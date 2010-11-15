@@ -3,7 +3,7 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
-  #require 'ruby-debug'
+  require 'ruby-debug'
   require 'rspec'
   require 'fileutils'
   require 'tmpdir'
@@ -36,7 +36,7 @@ begin
   Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
   # load all fixture classes
-  Dir["#{File.dirname(__FILE__)}/fixture/**/*.rb"].each {|f| require f}
+  #Dir["#{File.dirname(__FILE__)}/fixture/**/*.rb"].each {|f| require f}
 
   # set database storage location
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')

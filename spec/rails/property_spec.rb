@@ -111,7 +111,7 @@ end
 describe DateProperties do
 	before(:each) do
 		subject.time = @time = Time.now
-		subject.date_time = @date_time = Time.now
+		subject.date_time = @date_time = DateTime.now
 		subject.created_on = @date = Date.today
 	end
 	
@@ -122,24 +122,34 @@ describe DateProperties do
 	it_should_behave_like "a destroyable model"
 	it_should_behave_like "an updatable model"
 	
-	it "should have the correct date" do
-		subject.created_on.should == @date
-		subject.created_on.should be_a(Time)
-	end
+	context "After save and reload" do
+		subject do
+			@time ||= Time.now
+			@date_time ||= DateTime.now
+			@date ||= Date.today
+			dp = DateProperties.create!(:time => @time, :date_time => @date_time, :created_on => @date)
+			DateProperties.find(dp.id)
+		end
 		
-	it "should have the correct date_time" do
-		subject.date_time.year.should == @date_time.year
-		subject.date_time.month.should == @date_time.month
-		subject.date_time.day.should == @date_time.day
-		subject.date_time.hour.should == @date_time.hour
-		subject.date_time.min.should == @date_time.min
-		subject.date_time.sec.should == @date_time.sec
-		subject.date_time.should be_a(DateTime)
-	end
-	
-	it "should have the correct time" do
-		subject.time.to_s.should == @time.to_s
-		subject.time.should be_a(Time)
+		it "should have the correct date" do
+			subject.created_on.should == @date
+			subject.created_on.should be_a(Date)
+		end
+			
+		it "should have the correct date_time" do
+			subject.date_time.year.should == @date_time.year
+			subject.date_time.month.should == @date_time.month
+			subject.date_time.day.should == @date_time.day
+			subject.date_time.hour.should == @date_time.hour
+			subject.date_time.min.should == @date_time.min
+			subject.date_time.sec.should == @date_time.sec
+			subject.date_time.should be_a(DateTime)
+		end
+		
+		it "should have the correct time" do
+			subject.time.to_s.should == @time.to_s
+			subject.time.should be_a(Time)
+		end
 	end
 end
 
