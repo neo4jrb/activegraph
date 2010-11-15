@@ -27,7 +27,7 @@ module Neo4j
 				alias_method_chain :write_attribute, :type_conversion
 				
 				# whenever we refer to [] or []=. use our local properties store
-				alias_method :[],  :read_attribute_from_cache
+				alias_method :[],  :read_local_property
 				alias_method :[]=, :write_local_property
 				
 				private :read_attribute_without_type_conversion
@@ -48,7 +48,7 @@ module Neo4j
 			
 			# Returns the locally stored value for the key or retrieves the value from
 			# the DB if we don't have one
-			def read_attribute_from_cache(key)
+			def read_local_property(key)
 				key = key.to_s
 				if @properties.has_key?(key)
 					@properties[key]
