@@ -267,7 +267,9 @@ module Neo4j
         end
 
         def transaction(&block)
-          Neo4j::Rails::Transaction.run &block
+          Neo4j::Rails::Transaction.run do |tx|
+            block.call(tx)
+          end 
         end
 
         def accepts_nested_attributes_for(*attr_names)

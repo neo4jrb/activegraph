@@ -60,6 +60,27 @@ describe Neo4j::Model do
   end
 
 
+  describe "transaction" do
+    it "runs a block in a transaction" do
+      id = IceCream.transaction do
+        a = IceCream.create :flavour => 'vanilla'
+        a.ingrediences << Neo4j::Node.new
+        a.id
+      end
+      IceCream.load(id).should_not be_nil
+    end
+
+    it "takes a 'tx' parameter that can be used to rollback the transaction" do
+      id = IceCream.transaction do |tx|
+        a = IceCream.create :flavour => 'vanilla'
+        a.ingrediences << Neo4j::Node.new
+        tx.fail
+        a.id
+      end
+      IceCream.load(id).should be_nil
+    end
+  end
+
   describe "save" do
     it "stores a new model in the database" do
       model = IceCream.new
@@ -70,12 +91,9 @@ describe Neo4j::Model do
     end
 
     it "stores a created and modified model in the database" do
-      model = nil
-      IceCream.transaction do
-        model = IceCream.new
-        model.flavour = "vanilla"
-        model.save
-      end
+      model = IceCream.new
+      model.flavour = "vanilla"
+      model.save
       model.should be_persisted
       IceCream.load(model.id).should == model
     end
