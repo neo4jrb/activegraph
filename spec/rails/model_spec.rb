@@ -100,13 +100,19 @@ describe Neo4j::Model do
       model = IceCream.create(:flavour => 'vanilla')
 
       IceCream.transaction do
+      	model.flavour = "horse"
+      	model.should be_valid
+      	model.save
+      	
         model.flavour = nil
         model.flavour.should be_nil
         model.should_not be_valid
         model.save
+        
+        Neo4j::Rails::Transaction.fail
       end
 
-      model.flavour.should == 'vanilla'
+      model.reload.flavour.should == 'vanilla'
     end
   end
 
@@ -173,19 +179,6 @@ describe Neo4j::Model do
   end
 
   describe "create" do
-
-    it "if failed since saved returned false it should fail the whole transaction it is part of" do
-      illegal_icecream = valid_icecream = nil
-      IceCream.transaction do
-        valid_icecream   = IceCream.create(:flavour => 'vanilla')
-        illegal_icecream = IceCream.create(:flavour => nil)
-      end
-
-      # then
-      Neo4j::Node.load(illegal_icecream.neo_id).should be_nil
-      valid_icecream.should_not exist
-      illegal_icecream.should_not exist
-    end
 
     it "should save the model and return it" do
       model = Neo4j::Model.create
@@ -290,7 +283,7 @@ describe Neo4j::Model do
       end
       model = klass.create!(:name => "vanilla")
       model.update_attributes(:name => nil).should be_false
-      model.name.should == "vanilla"
+      model.reload.name.should == "vanilla"
     end
   end
 
@@ -310,8 +303,8 @@ describe Neo4j::Model do
         cream.flavour = 'vanilla'
         cream.should exist
 
-        # create an icecream that will rollback the transaction
-        IceCream.create
+        # rollback the transaction
+        Neo4j::Rails::Transaction.fail
       end
 
       cream.should_not exist
@@ -401,7 +394,7 @@ describe Neo4j::Model do
     end
   end
 
-  describe "nested attributes, has_one, has_n" do
+  pending "nested attributes, has_one, has_n" do
     it "add nodes to a has_one method with the #new method without transaction" do
       member = Member.new
       avatar = Avatar.new
@@ -464,7 +457,7 @@ describe Neo4j::Model do
       suger.neo_id.should == nil
    end
 
-    it "should return false if one of the nested nodes is invalid when saving all of them" do
+   it "should return false if one of the nested nodes is invalid when saving all of them" do
       icecream1  = Ingredience.new :name => 'suger'
       icecream2 = IceCream.new # not valid
 
@@ -475,7 +468,7 @@ describe Neo4j::Model do
       icecream1.save.should be_false
     end
 
-    describe "accepts_nested_attributes_for" do
+    it "accepts_nested_attributes_for" do
       it "create one-to-one " do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
         member = Member.create(params[:member])

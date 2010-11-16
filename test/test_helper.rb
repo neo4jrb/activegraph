@@ -4,7 +4,6 @@ require 'test/unit'
 require 'rails/all'
 require 'rails/generators'
 require 'rails/generators/test_case'
-#require 'ruby-debug'
 
 class TestApp < Rails::Application
   config.root = File.dirname(__FILE__)

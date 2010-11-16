@@ -22,16 +22,13 @@ module Neo4j
 				alias_method :read_attribute,  :[]
 				alias_method :write_attribute, :[]=
 					
-				# wrap the original read/write in type conversion
-				alias_method_chain :read_attribute, :type_conversion
-				alias_method_chain :write_attribute, :type_conversion
+				# wrap the read/write in type conversion
+				alias_method_chain :read_local_property, :type_conversion
+				alias_method_chain :write_local_property, :type_conversion
 				
 				# whenever we refer to [] or []=. use our local properties store
 				alias_method :[],  :read_local_property
 				alias_method :[]=, :write_local_property
-				
-				private :read_attribute_without_type_conversion
-				private :write_attribute_without_type_conversion
 			end
 			
 			# The behaviour of []= changes with a Rails Model, where nothing gets written
@@ -110,7 +107,12 @@ module Neo4j
 			def property?(name)
 				@properties.keys.include?(name) ||
 				self.class._decl_props.map { |k| k.to_s }.include?(name) ||
-				super
+				begin
+					super
+				rescue org.neo4j.graphdb.NotFoundException
+					set_deleted_properties
+					nil
+				end
 			end
 			
 			# Return true if method_name is the name of an appropriate attribute
@@ -139,15 +141,14 @@ module Neo4j
 				end
 			end
 			
-			private
 			# Wrap the getter in a conversion from Java to Ruby
-			def read_attribute_with_type_conversion(attribute)
-				Neo4j::TypeConverters.to_ruby(self.class, attribute, read_attribute_without_type_conversion(attribute))
+			def read_local_property_with_type_conversion(property)
+				Neo4j::TypeConverters.to_ruby(self.class, property, read_local_property_without_type_conversion(property))
 			end
 			
 			# Wrap the setter in a conversion from Ruby to Java
-			def write_attribute_with_type_conversion(attribute, value)
-				write_attribute_without_type_conversion(attribute, Neo4j::TypeConverters.to_java(self.class, attribute, value))
+			def write_local_property_with_type_conversion(property, value)
+				write_local_property_without_type_conversion(property, Neo4j::TypeConverters.to_java(self.class, property, value))
 			end
 		end
 	end

@@ -1,3 +1,7 @@
+require 'active_support/core_ext/time/calculations'
+require 'active_support/core_ext/date/calculations'
+require 'active_support/core_ext/date_time/calculations'
+
 share_examples_for "a new model" do
   context "when unsaved" do
     it { should_not be_persisted }
@@ -125,12 +129,19 @@ end
 share_examples_for "a destroyable model" do
   context "when saved" do
     before :each do
-      subject.save
+      subject.save!
+      @other = subject.class.load(subject.id)
+      subject.destroy
     end
     
+    it { should be_frozen }
+    
     it "should remove the model from the database" do
-      subject.destroy
       subject.class.load(subject.id).should be_nil
+    end
+    
+    it "should also be frozen in @other" do
+    	@other.should be_frozen
     end
   end
 end
@@ -185,23 +196,35 @@ share_examples_for "an updatable model" do
   end
 end
 
-share_examples_for "an timestamped model" do
-  context "when created" do
-    before { subject.save! }
-
-    it "updated_at is nil" do
-      subject.updated_at.should == nil
+share_examples_for "a non-updatable model" do
+  context "then" do
+    it "shouldn't update" do
+      subject.update_attributes({ :a => 3 }).should_not be_true
     end
-
-    it "created_at is set to DateTime.now" do
-      subject.created_at.class.should == DateTime
-      subject.created_at.day == DateTime.now.day
-    end
-
   end
+end
 
-  context "when updated" do
-    before { subject.save! }
+share_examples_for "a timestamped model" do
+	before do
+		# stub these out so they return the same values all the time
+		@time = Time.now
+		@tomorrow = Time.now.tomorrow
+		Time.stub!(:now).and_return(@time)
+		subject.save!
+	end
+    
+	it "should have set updated_at" do
+		subject.updated_at.to_i.should == Time.now.to_i
+	end
+
+	it "should have set created_at" do
+		subject.created_at.to_i == Time.now.to_i
+	end
+	
+	context "when updated" do
+    before(:each) do
+    	Time.stub!(:now).and_return(@tomorrow)
+    end
     
     it "created_at is not changed" do
       lambda { subject.update_attributes!(:a => 1, :b => 2) }.should_not change(subject, :created_at)
@@ -209,14 +232,6 @@ share_examples_for "an timestamped model" do
     
     it "should have altered the updated_at property" do
       lambda { subject.update_attributes!(:a => 1, :b => 2) }.should change(subject, :updated_at)
-    end
-  end
-end
-
-share_examples_for "a non-updatable model" do
-  context "then" do
-    it "shouldn't update" do
-      subject.update_attributes({ :a => 3 }).should_not be_true
     end
   end
 end

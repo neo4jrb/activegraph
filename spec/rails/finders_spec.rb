@@ -18,6 +18,18 @@ describe "finders" do
 		FindableModel.find.should be_a(FindableModel)
 		FindableModel.find(:first).should be_a(FindableModel)
 	end
+	
+	context "anomalous cases" do
+		it "should return all when args normalises down to nothing" do
+			subject.class.all(:conditions => {}).to_a.should == subject.class.all.to_a
+			subject.class.first(:conditions => {}).should == subject.class.first
+		end
+		
+		it "should ignore order (for now)" do
+			subject.class.all(:conditions => { :name => "Test 2" }, :order => "name").first.should == @test_2
+			subject.class.first(:conditions => { :name => "Test 2" }, :order => "name").should == @test_2
+		end
+	end
 		
 	context "for single records" do
 		subject { @test_2 }

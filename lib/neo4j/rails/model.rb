@@ -3,16 +3,6 @@ module Neo4j
     class Model
       include Neo4j::NodeMixin
       
-      extend ActiveModel::Naming
-      
-      include Persistence				# handles how to save, create and update the model
-      include Attributes				# handles how to save and retrieve attributes
-      include Mapping::Property	# allows some additional options on the #property class method
-      include Serialization			# enable to_xml and to_json
-      include Validations				# enable validations
-      include Callbacks					# enable callbacks
-      include Finders						# ActiveRecord style find
-      
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(attributes = {})
       	reset_attributes
@@ -92,6 +82,19 @@ module Neo4j
           end
         end
       end
+    end
+    
+    Model.class_eval do
+    	extend ActiveModel::Translation
+      
+      include Persistence				# handles how to save, create and update the model
+      include Attributes				# handles how to save and retrieve attributes
+      include Mapping::Property	# allows some additional options on the #property class method
+      include Serialization			# enable to_xml and to_json
+      include Timestamps				# handle created_at, updated_at timestamp properties
+      include Validations				# enable validations
+      include Callbacks					# enable callbacks
+      include Finders						# ActiveRecord style find
     end
   end
 end

@@ -31,13 +31,31 @@ class ExtendedIceLolly < IceLolly
   property :extended_property
 end
 
-describe Neo4j::Model do
+describe Neo4j::Rails::Model do
   it_should_behave_like "a new model"
   it_should_behave_like "a loadable model"
   it_should_behave_like "a saveable model"
   it_should_behave_like "a creatable model"
   it_should_behave_like "a destroyable model"
   it_should_behave_like "an updatable model"
+  
+  context "when there's lots of them" do
+  	before(:each) do
+  		subject.class.create!
+  		subject.class.create!
+  		subject.class.create!
+  	end
+  	
+  	it "should be possible to #count" do
+  		Neo4j::Rails::Model.count.should == 3
+  	end
+  	
+  	it "should be possible to #destroy_all" do
+  		Neo4j::Rails::Model.all.to_a.size.should == 3
+  		Neo4j::Rails::Model.destroy_all
+  		Neo4j::Rails::Model.all.to_a.should be_empty
+  	end
+  end
 end
 
 describe IceLolly do
@@ -176,27 +194,3 @@ describe ExtendedIceLolly do
     end
   end
 end
-
-#describe "A Timestamped Model" do
-#  subject do
-#    @clazz = model_subclass do
-#      property :updated_at, :type => DateTime
-#      property :created_at, :type => DateTime
-#    end
-#    @clazz.new
-#  end
-#  it_should_behave_like "an timestamped model"
-#end
-
-#describe "An inherited Timestamped Model" do
-#  subject do
-#    @base_clazz = model_subclass do
-#      property :updated_at, :type => DateTime
-#      property :created_at, :type => DateTime
-#    end
-
-#    @sub_clazz = model_subclass(@base_clazz)
-#    @sub_clazz.new
-#  end
-#  it_should_behave_like "an timestamped model"
-#end

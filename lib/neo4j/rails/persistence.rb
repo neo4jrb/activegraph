@@ -40,8 +40,7 @@ module Neo4j
 			
 			# Removes the node from Neo4j and freezes the object.
 			def destroy
-				del unless new_record?
-				set_deleted_properties
+				delete
 				freeze
 			end
 			
@@ -74,7 +73,11 @@ module Neo4j
 			def reload(options = nil)
 				clear_changes
 				reset_attributes
-				reload_from_database or set_deleted_properties and return self
+				unless reload_from_database
+					set_deleted_properties
+					freeze
+				end
+				self
       end
       
       # Returns if the record is persisted, i.e. it’s not a new record and it was not destroyed
@@ -88,6 +91,17 @@ module Neo4j
       end
       
       alias :new? :new_record?
+      
+      # Freeze the properties hash.
+			def freeze
+				@properties.freeze; self
+			end
+			
+			# Returns +true+ if the properties hash has been frozen.
+			def frozen?
+				reload
+				@properties.frozen?
+			end
 			
 			module ClassMethods
 				# Initialize a model and set a bunch of attributes at the same time.  Returns
@@ -101,17 +115,28 @@ module Neo4j
 				def create!(*args)
 					new(*args).tap {|o| o.save! }
 				end
+				
+				# Destroy each node in turn.  Runs the destroy callbacks for each node.
+				def destroy_all
+					all.each do |n|
+						n.destroy
+					end
+				end
 			end
 			
 			protected
 			def create_or_update
 				result = persisted? ? update : create
-				result != false
+				unless result != false
+					Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
+					false
+				else
+					true
+				end
 			end
 			
 			def update
 				write_changed_attributes
-				update_timestamp
 				clear_changes
 				true
 			end
@@ -132,7 +157,6 @@ module Neo4j
 				self["_classname"] = self.class.to_s
 				write_default_attributes
 				write_changed_attributes
-				create_timestamp
 			end
 			
 			def reset_attributes
@@ -143,6 +167,7 @@ module Neo4j
       	if reloaded = self.class.load(id)
 					send(:attributes=, reloaded.attributes, false)
 				end
+				reloaded
 			end
 			
       def set_deleted_properties
@@ -154,7 +179,7 @@ module Neo4j
 			# Ensure any defaults are stored in the DB
 			def write_default_attributes
 				attribute_defaults.each do |attribute, value|
-					write_attribute(attribute, value) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
+					write_attribute(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
 				end
 			end
 			
@@ -163,40 +188,6 @@ module Neo4j
 				@properties.each do |attribute, value|
 					write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
 				end
-			end
-			
-			# Set the timestamps for this model if timestamps is set to true in the config
-			# and the model is set up with the correct property name, e.g.:
-			#
-			#   class Trackable < Neo4j::Rails::Model
-			#     property :updated_at, :type => DateTime
-			#   end
-			def update_timestamp
-				write_date_or_timestamp(:updated_at) if Neo4j::Config[:timestamps] && respond_to?(:updated_at)
-			end
-			
-			# Set the timestamps for this model if timestamps is set to true in the config
-			# and the model is set up with the correct property name, e.g.:
-			#
-			#   class Trackable < Neo4j::Rails::Model
-			#     property :created_at, :type => DateTime
-			#   end
-			def create_timestamp
-				write_date_or_timestamp(:created_at) if Neo4j::Config[:timestamps] && respond_to?(:created_at)
-			end
-			
-			# Write the timestamp as a Date, DateTime or Time depending on the property type
-			def write_date_or_timestamp(attribute)
-				value = case self.class._decl_props[attribute][:type]
-				when Time
-					Time.now
-				when Date
-					Date.today
-				else
-					DateTime.now
-				end
-				
-				write_attribute(attribute, value)
 			end
 			
 			def update_nested_attributes(rel_type, clazz, has_one, attr, options)

@@ -3,6 +3,7 @@ source :gemcutter
 gemspec
 
 gem "orm_adapter"
+gem "rails", "3.0.1"
 
 group 'test' do
   gem "rake", ">= 0.8.7"

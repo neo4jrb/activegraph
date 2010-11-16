@@ -3,7 +3,6 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
-  require 'ruby-debug'
   require 'rspec'
   require 'fileutils'
   require 'tmpdir'
@@ -31,12 +30,15 @@ begin
     @tx = Neo4j::Transaction.new
   end
 
+  # ensure the translations get picked up for tests
+  I18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', 'config', 'locales', '*.{rb,yml}')]
+  
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
   # load all fixture classes
-  #Dir["#{File.dirname(__FILE__)}/fixture/**/*.rb"].each {|f| require f}
+  Dir["#{File.dirname(__FILE__)}/fixture/**/*.rb"].each {|f| require f}
 
   # set database storage location
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
@@ -91,8 +93,9 @@ begin
     end
   end
 
-  def model_subclass(base_class = Neo4j::Model, &block)
-    klass = block ? Class.new(base_class, &block) : Class.new(base_class)
+  def model_subclass(base_class = Neo4j::Rails::Model, &block)
+  	klass = Class.new(base_class)
+    klass.class_eval(&block) if block_given? 
     TempModel.set(klass)
   end
 

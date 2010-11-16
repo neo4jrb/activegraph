@@ -11,6 +11,7 @@ end
 class DefaultProperty < Neo4j::Rails::Model
 	property :default,        :default => "Test"
 	property :false_property, :default => false
+	property :date_property,  :default => Time.now, :type => Time
 end
 
 class LotsaProperties < Neo4j::Rails::Model
@@ -21,7 +22,7 @@ end
 
 class DateProperties < Neo4j::Rails::Model
 	property :date_time, 	    :type => DateTime
-	property :created_on,     :type => Date
+	property :date_property,  :type => Date
 	property :time,           :type => Time
 end
 
@@ -92,12 +93,17 @@ describe DefaultProperty do
 		it "should have the default in #attributes" do
 			subject.attributes.should include("default")
 			subject.attributes["default"].should == "Test"
+			subject.attributes["false_property"].should === false
+			subject.attributes["date_property"].should be_a(Time)
 		end
 		
 		it "should have the default" do
 			subject.default.should == "Test"
 			subject.false_property.should === false
+			subject.date_property.should be_a(Time)
 		end
+		
+		it_should_behave_like "a saveable model"
 	end
 	
 	context "when the property is set" do
@@ -121,9 +127,9 @@ end
 
 describe DateProperties do
 	before(:each) do
-		subject.time = @time = Time.now
-		subject.date_time = @date_time = DateTime.now
-		subject.created_on = @date = Date.today
+		subject.time 				= @time 			= Time.now
+		subject.date_time 	= @date_time 	= DateTime.now
+		subject.date_property 	= @date 			= Date.today
 	end
 	
 	it_should_behave_like "a new model"
@@ -133,18 +139,23 @@ describe DateProperties do
 	it_should_behave_like "a destroyable model"
 	it_should_behave_like "an updatable model"
 	
+	it "should give back the correct type even before it is saved" do
+		subject.time = subject.date_property
+		subject.time.is_a?(Time)
+	end
+	
 	context "After save and reload" do
 		subject do
-			@time ||= Time.now
-			@date_time ||= DateTime.now
-			@date ||= Date.today
-			dp = DateProperties.create!(:time => @time, :date_time => @date_time, :created_on => @date)
+			@time 			||= Time.now
+			@date_time 	||= DateTime.now
+			@date 			||= Date.today
+			dp = DateProperties.create!(:time => @time, :date_time => @date_time, :date_property => @date)
 			DateProperties.find(dp.id)
 		end
 		
 		it "should have the correct date" do
-			subject.created_on.should == @date
-			subject.created_on.should be_a(Date)
+			subject.date_property.should == @date
+			subject.date_property.should be_a(Time)
 		end
 			
 		it "should have the correct date_time" do
