@@ -9,7 +9,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base
 	class_option :parent,     :type => :string, :desc => "The parent class for the generated model"
 	
 	def create_model_file
-		template "model.rb", File.join('app/models', "#{singular_name}.rb")
+		template "model.erb", File.join('app/models', "#{singular_name}.rb")
 	end
 	
 	protected
@@ -27,11 +27,11 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base
 	
 	def timestamp_statements
 		%q{
-property :created_at, DateTime
-# property :created_on, Date
+  property :created_at, DateTime
+  # property :created_on, Date
 
-property :updated_at, DateTime
-# property :updated_on, Date
+  property :updated_at, DateTime
+  # property :updated_on, Date
 }            
 	end
 	
