@@ -58,14 +58,17 @@ require 'neo4j/rails/validations/uniqueness'
 require 'neo4j/rails/validations/non_nil'
 require 'neo4j/rails/finders'
 require 'neo4j/rails/mapping/property'
+require 'neo4j/rails/validations'
+require 'neo4j/rails/callbacks'
+require 'neo4j/rails/timestamps'
+require 'neo4j/rails/serialization'
+require 'neo4j/rails/attributes'
+require 'neo4j/rails/persistence'
 require 'neo4j/rails/model'
-require 'neo4j/rails/value_properties'
-require 'neo4j/rails/value'
 require 'neo4j/rails/lucene_connection_closer'
 
 require 'neo4j/model'
-
-
+require 'orm_adapter/adapters/neo4j'
 
 # hmm, looks like Enumerator have been moved in some ruby versions
 Enumerator = Enumerable::Enumerator unless defined? Enumerator

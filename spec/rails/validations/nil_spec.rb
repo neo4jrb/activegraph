@@ -12,9 +12,15 @@ describe NilTest do
 		it_should_behave_like "an unsaveable model"
 		it_should_behave_like "an uncreatable model"
 		it_should_behave_like "a non-updatable model"
+		
 		it "should have errors on the property after save" do
-			subject.save
+			subject.should_not be_valid
 			subject.errors[:the_property].should_not be_empty
+		end
+		
+		it "should have the right tranlsation" do
+			subject.valid?
+			subject.errors[:the_property].should include("can't be nil")
 		end
 	end
 	

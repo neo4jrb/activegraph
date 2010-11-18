@@ -1,6 +1,8 @@
 module Neo4j
 	module Rails
 		module Validations
+			extend ActiveSupport::Concern
+			
 			class UniquenessValidator < ActiveModel::EachValidator
 				def initialize(options)
 					super(options.reverse_merge(:case_sensitive => true))
@@ -9,14 +11,18 @@ module Neo4j
 				def setup(klass)
 					@attributes.each do |attribute|
 						if klass.index_type_for(attribute) != :exact
-							raise "Can't validate property #{attribute} on class #{klass} since there is no :exact lucene index on that property or the index declaration #{attribute} comes after the validation declaration in #{klass} (try to move it before the validation rules)"
+							raise "Can't validate property #{attribute.inspect} on class #{klass} since there is no :exact lucene index on that property or the index declaration #{attribute} comes after the validation declaration in #{klass} (try to move it before the validation rules)"
 						end
 					end
 				end
 	
 				def validate_each(record, attribute, value)
-					if record.class.find("#{attribute}: \"#{value}\"")
-						record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
+					return if options[:allow_blank] && value.blank?
+					record.class.all("#{attribute}: \"#{value}\"").each do |rec|
+            if rec.id != record.id # it doesn't count if we find ourself!
+              record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
+              break
+            end
 					end
 				end
 			end

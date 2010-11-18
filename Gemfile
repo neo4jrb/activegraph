@@ -2,6 +2,8 @@ source :gemcutter
 
 gemspec
 
+gem "orm_adapter"
+
 group 'test' do
   gem "rake", ">= 0.8.7"
   gem "rdoc", ">= 2.5.10"

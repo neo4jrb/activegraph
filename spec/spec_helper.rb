@@ -3,7 +3,6 @@ begin
   @_neo4j_rspec_loaded = true
 
   #require "bundler/setup"
-  #require 'ruby-debug'
   require 'rspec'
   require 'fileutils'
   require 'tmpdir'
@@ -31,6 +30,9 @@ begin
     @tx = Neo4j::Transaction.new
   end
 
+  # ensure the translations get picked up for tests
+  I18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', 'config', 'locales', '*.{rb,yml}')]
+  
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
@@ -78,7 +80,8 @@ begin
   module TempModel
     @@_counter = 1
 
-    def self.set(klass, name="Model_#{@@_counter}")
+    def self.set(klass, name=nil)
+      name ||= "Model_#{@@_counter}"
       @@_counter += 1
       klass.class_eval <<-RUBY
 	def self.to_s
@@ -105,7 +108,7 @@ begin
 
   def create_node_mixin(name=nil, &block)
     klass = Class.new
-    name.nil? ? TempModel.set(klass) : TempModel.set(klass, name)
+    TempModel.set(klass, name)
     klass.send(:include, Neo4j::NodeMixin)
     klass.class_eval &block if block
     klass
@@ -113,7 +116,7 @@ begin
 
   def create_rel_mixin(name=nil, &block)
     klass = Class.new
-    name.nil? ? TempModel.set(klass) : TempModel.set(klass, name)
+    TempModel.set(klass, name)
     klass.send(:include, Neo4j::RelationshipMixin)
     klass.class_eval &block if block
     klass

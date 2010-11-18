@@ -69,11 +69,11 @@ module Neo4j
         end
         
 				def all(*args)
+					args = normalize_args(*args)
 					if args.empty?
 						# use the _all rule to recover all the stored instances of this node
 						_all
 					else
-						args = normalize_args(*args)
 						# handle the special case of a search by id
 						if args.first.is_a?(Hash) && args.first[:id]
 							[find_with_ids(args.first[:id])].flatten
@@ -85,6 +85,15 @@ module Neo4j
 				
 				def first(*args)
 					all(*args).first
+				end
+				
+				def last(*args)
+					a = all(*args)
+					a.empty? ? nil : a[a.size - 1]
+				end
+				
+				def count
+					all.size
 				end
 				
 				protected
@@ -106,10 +115,14 @@ module Neo4j
 					options = args.extract_options!
 					
 					if options.present?
+						
+						# TODO: Handle order
+						options.delete(:order)
+						
 						if options[:conditions]
-							args << options[:conditions]
+							args << options[:conditions] if options[:conditions].present?
 						else
-							args << options
+							args << options if options.present?
 						end
 					end
 					args

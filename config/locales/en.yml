@@ -1,0 +1,5 @@
+en:
+  errors:
+    messages:
+      nil: "can't be nil"
+      taken: "has already been taken"

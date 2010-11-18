@@ -49,6 +49,7 @@ module Neo4j::Mapping
         props.each do |prop|
           pname = prop.to_sym
           _decl_props[pname] ||= {}
+          _decl_props[pname][:defined] = true
 
           define_method(pname) do
             Neo4j::TypeConverters.to_ruby(self.class, pname, self[pname])

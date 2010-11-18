@@ -1,3 +1,5 @@
+require "active_support/core_ext/module/delegation"
+
 module Neo4j::Mapping
 
   # This Mixin is used to wrap Neo4j Java Nodes in Ruby objects.
@@ -25,12 +27,12 @@ module Neo4j::Mapping
   # * Neo4j::Index::ClassMethods
   #
   module NodeMixin
-    extend Forwardable
     include Neo4j::Index
 
-    def_delegators :@_java_node, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
-                   :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both,
-                   :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel
+    delegate :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
+             :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both,
+             :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel, 
+             :to => :@_java_node, :allow_nil => true 
 
 
     # --------------------------------------------------------------------------
@@ -77,6 +79,9 @@ module Neo4j::Mapping
         end
       end unless c.respond_to?(:orig_new)
 
+      c.class_inheritable_hash :_decl_props
+      c._decl_props ||= {}
+      
       c.extend ClassMethods::Root
       c.extend ClassMethods::Property
       c.extend ClassMethods::InitNode
