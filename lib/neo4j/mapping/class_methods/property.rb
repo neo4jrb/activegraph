@@ -9,7 +9,8 @@ module Neo4j::Mapping
       # ==== Types
       # If a property is set to nil the property will be removed.
       # A property can be of any primitive type (Boolean, String, Fixnum, Float) and does not
-      # even have to be the same.
+      # even have to be the same. Arrays of primitive types is also supported. Array values must
+      # be of the same type and are mutable, e.g. you have to create a new array if you want to change one value.
       #
       # Example:
       #   class Foo
@@ -24,17 +25,17 @@ module Neo4j::Mapping
       #
       # However, you can specify an type for the index, see Neo4j::Index::Indexer#index
       #
-      # ==== Example
-      #   class Baaz; end
+      # ==== Conversions
+      #
+      # It is possible to do conversions between types in order to support none primitive types
+      # Example:
       #
       #   class Foo
       #     include Neo4j::NodeMixin
-      #     property :name, :city # can set several properties in one go
-      #     property :bar
+      #     property :since, :type => DateTime  # will be converted into a fixnum
       #   end
       #
-      #   f = Foo.new
-      #   f.bar = Baaz.new
+      # You can write your own converter and register it in the Neo4j::Config.
       #
       def property(*props)
         if props.size == 2 and props[1].kind_of?(Hash)

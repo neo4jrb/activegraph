@@ -94,8 +94,10 @@ begin
   end
 
   def create_model(base_class = Neo4j::Model, &block)
-    klass = block ? Class.new(base_class, &block) : Class.new(base_class)
+    klass = Class.new(base_class)
     TempModel.set(klass)
+    klass.class_eval &block if block
+    klass
   end
 
   def create_node_mixin_subclass(parent_clazz = Object, &block)

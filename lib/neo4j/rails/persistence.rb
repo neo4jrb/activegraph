@@ -70,16 +70,17 @@ module Neo4j
       end
 			
       # Reload the object from the DB.
-			def reload(options = nil)
-				clear_changes
-				reset_attributes
-				unless reload_from_database
-					set_deleted_properties
-					freeze
-				end
-				self
+      def reload(options = nil)
+        clear_changes
+        clear_relationships
+        reset_attributes
+        unless reload_from_database
+          set_deleted_properties
+          freeze
+        end
+        self
       end
-      
+
       # Returns if the record is persisted, i.e. it’s not a new record and it was not destroyed
       def persisted?
         !new_record? && !destroyed?
@@ -96,119 +97,138 @@ module Neo4j
 			def freeze
 				@properties.freeze; self
 			end
-			
-			# Returns +true+ if the properties hash has been frozen.
-			def frozen?
-				reload
-				@properties.frozen?
-			end
-			
-			module ClassMethods
-				# Initialize a model and set a bunch of attributes at the same time.  Returns
-				# the object whether saved successfully or not.
-				def create(*args)
-					new(*args).tap {|o| o.save }
-				end
-				
-				# Same as #create, but raises an error if there is a problem during save.
-				# Returns the object whether saved successfully or not.
-				def create!(*args)
-					new(*args).tap {|o| o.save! }
-				end
-				
-				# Destroy each node in turn.  Runs the destroy callbacks for each node.
-				def destroy_all
-					all.each do |n|
-						n.destroy
-					end
-				end
-			end
-			
-			protected
-			def create_or_update
-				result = persisted? ? update : create
-				unless result != false
-					Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
-					false
-				else
-					true
-				end
-			end
-			
-			def update
-				write_changed_attributes
-				clear_changes
-				true
-			end
-			
-			def create
-				node = Neo4j::Node.new
-				#unless _java_node.save_nested(node)
-				#	Neo4j::Rails::Transaction.fail
-				#	false
-				#else
-				init_on_load(node)
-				init_on_create(@properties)
-				clear_changes
-				true
-			end
-			
-			def init_on_create(*args)
-				self["_classname"] = self.class.to_s
-				write_default_attributes
-				write_changed_attributes
-			end
-			
-			def reset_attributes
-				@properties = {}
-			end
-			
-			def reload_from_database
-      	if reloaded = self.class.load(id)
-					send(:attributes=, reloaded.attributes, false)
-				end
-				reloaded
-			end
-			
+
+      # Returns +true+ if the properties hash has been frozen.
+      def frozen?
+        reload
+        @properties.frozen?
+      end
+
+      module ClassMethods
+        # Initialize a model and set a bunch of attributes at the same time.  Returns
+        # the object whether saved successfully or not.
+        def create(*args)
+          new(*args).tap { |o| o.save }
+        end
+
+        # Same as #create, but raises an error if there is a problem during save.
+        # Returns the object whether saved successfully or not.
+        def create!(*args)
+          new(*args).tap { |o| o.save! }
+        end
+
+        # Destroy each node in turn.  Runs the destroy callbacks for each node.
+        def destroy_all
+          all.each do |n|
+            n.destroy
+          end
+        end
+      end
+
+      protected
+      def create_or_update
+        result = persisted? ? update : create
+        unless result != false
+          Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
+          false
+        else
+          true
+        end
+      end
+
+      def update
+        write_changed_attributes
+        clear_changes
+        clear_relationships
+        true
+      end
+
+      def create
+        node = Neo4j::Node.new
+        #unless _java_node.save_nested(node)
+        #	Neo4j::Rails::Transaction.fail
+        #	false
+        #else
+        init_on_load(node)
+        init_on_create
+        clear_changes
+        clear_relationships
+        true
+      end
+
+      def init_on_create(*)
+        self["_classname"] = self.class.to_s
+        write_default_attributes
+        write_changed_attributes
+        write_changed_relationships
+      end
+
+      def reset_attributes
+        @properties = {}
+      end
+
+      def reload_from_database
+        if reloaded = self.class.load(id)
+          send(:attributes=, reloaded.attributes, false)
+        end
+        reloaded
+      end
+
       def set_deleted_properties
-      	@_deleted = true
-				@_persisted = false
-				@_java_node = nil
-			end
-			
-			# Ensure any defaults are stored in the DB
-			def write_default_attributes
-				attribute_defaults.each do |attribute, value|
-					write_attribute(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
-				end
-			end
-			
-			# Write attributes to the Neo4j DB only if they're altered
-			def write_changed_attributes
-				@properties.each do |attribute, value|
-					write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
-				end
-			end
-			
-			def update_nested_attributes(rel_type, clazz, has_one, attr, options)
+        @_deleted   = true
+        @_persisted = false
+        @_java_node = nil
+      end
+
+      # Ensure any defaults are stored in the DB
+      def write_default_attributes
+        attribute_defaults.each do |attribute, value|
+          write_attribute(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
+        end
+      end
+
+      # Write attributes to the Neo4j DB only if they're altered
+      def write_changed_attributes
+        @properties.each do |attribute, value|
+          write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
+        end
+      end
+
+      def _add_relationship(rel_type, attr)
+        clazz = self.class._decl_rels[rel_type.to_sym].target_class
+        node  = clazz.new(attr)
+        if respond_to?("#{rel_type}=")
+          send("#{rel_type}=", node)
+        elsif respond_to?("#{rel_type}")
+          has_n = send("#{rel_type}")
+          has_n << node
+        else
+          raise "oops #{rel_type}"
+        end
+      end
+
+      def _find_node(rel_type, id)
+        if respond_to?("#{rel_type}=")
+          send("#{rel_type}")
+        elsif respond_to?("#{rel_type}")
+          has_n = send("#{rel_type}")
+          has_n.find { |n| n.id == id }
+        else
+          raise "oops #{rel_type}"
+        end
+      end
+
+      def update_nested_attributes(rel_type, attr, options)
         allow_destroy, reject_if = [options[:allow_destroy], options[:reject_if]] if options
 
         if new?
           # We are updating a node that was created with the 'new' method.
           # The relationship will only be kept in the Value object.
-          outgoing(rel_type) << clazz.new(attr) unless reject_if?(reject_if, attr) || (allow_destroy && attr[:_destroy] && attr[:_destroy] != '0')
+          _add_relationship(rel_type, attr) unless reject_if?(reject_if, attr) || (allow_destroy && attr[:_destroy] && attr[:_destroy] != '0')
         else
           # We have a node that was created with the #create method - has real Neo4j relationships
           # does it exist ?
-          found = if has_one
-            # id == nil that means we have a has_one relationship
-                    outgoing(rel_type).first
-                  else
-                    # do we have an ID ?
-                    id = attr[:id]
-                    # this is a has_n relationship, find which one we want to update
-                    id && outgoing(rel_type).find { |n| n.id == id }
-                  end
+          found   = _find_node(rel_type, attr[:id])
 
           # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
           destroy = attr[:_destroy] && attr[:_destroy] != '0'
@@ -217,16 +237,14 @@ module Neo4j
             if destroy
               found.destroy if allow_destroy
             else
-              found.update_attributes_in_tx(attr) # it already exist, so update that one
+              found.update_attributes(attr) # it already exist, so update that one
             end
           elsif !destroy && !reject_if?(reject_if, attr)
-            new_node = clazz.new(attr)
-            saved = new_node.save
-            outgoing(rel_type) << new_node if saved
+            _add_relationship(rel_type, attr)
           end
         end
       end
-      
+
       public
       class RecordInvalidError < RuntimeError
         attr_reader :record

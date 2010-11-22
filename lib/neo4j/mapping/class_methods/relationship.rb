@@ -27,7 +27,8 @@ module Neo4j::Mapping
         clazz = self
         module_eval(%Q{
                 def #{rel_type}
-                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+#                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                    dsl = _decl_rels_for('#{rel_type}'.to_sym)
                     Neo4j::Mapping::HasN.new(self, dsl)
                 end}, __FILE__, __LINE__)
 
@@ -65,14 +66,16 @@ module Neo4j::Mapping
       def has_one(rel_type, params = {})
         clazz = self
         module_eval(%Q{def #{rel_type}=(value)
-                  dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  #dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  dsl = _decl_rels_for(:#{rel_type})
                   rel = dsl.single_relationship(self)
                   rel.del unless rel.nil?
                   dsl.create_relationship_to(self, value) if value
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                  dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  #dsl = #{clazz}._decl_rels[:#{rel_type}]
+                  dsl = _decl_rels_for(:#{rel_type})
                   dsl.single_node(self)
               end}, __FILE__, __LINE__)
 

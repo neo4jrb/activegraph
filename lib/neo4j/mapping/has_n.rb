@@ -21,7 +21,7 @@ module Neo4j
       end
 
       def to_s
-        "HasN [#@direction, id: #{@node.neo_id} type: #{@dsl.rel_type} dsl:#{@dsl}]"
+        "HasN [#@direction, id: #{@node.neo_id} type: #{@dsl && @dsl.rel_type} dsl:#{@dsl}]"
       end
 
       def size

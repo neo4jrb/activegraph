@@ -6,6 +6,7 @@ module Neo4j
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(attributes = {})
       	reset_attributes
+        clear_relationships
         self.attributes = attributes
       end
 
@@ -59,28 +60,29 @@ module Neo4j
           options = attr_names.pop if attr_names[-1].is_a?(Hash)
 
           attr_names.each do |association_name|
+            # Do some validation that we have defined the relationships we want to nest
             rel = self._decl_rels[association_name.to_sym]
             raise "No relationship declared with has_n or has_one with type #{association_name}" unless rel
-            target_class = rel.target_class
-            raise "Can't use accepts_nested_attributes_for(#{association_name}) since it has not defined which class it has a relationship to, use has_n(#{association_name}).to(MyOtherClass)" unless target_class
-            type = rel.rel_type
-            has_one = rel.has_one?
+            raise "Can't use accepts_nested_attributes_for(#{association_name}) since it has not defined which class it has a relationship to, use has_n(#{association_name}).to(MyOtherClass)" unless rel.target_class
 
-            send(:define_method, "#{association_name}_attributes=") do |attributes|
-              if has_one
-                update_nested_attributes(type, target_class, true, attributes, options)
-              else
+            if rel.has_one?
+              send(:define_method, "#{association_name}_attributes=") do |attributes|
+                update_nested_attributes(association_name.to_sym, attributes, options)
+              end
+            else
+              send(:define_method, "#{association_name}_attributes=") do |attributes|
                 if attributes.is_a?(Array)
                   attributes.each do |attr|
-                    update_nested_attributes(type, target_class, false, attr, options)
+                    update_nested_attributes(association_name.to_sym, attr, options)
                   end
                 else
                   attributes.each_value do |attr|
-                    update_nested_attributes(type, target_class, false, attr, options)
+                    update_nested_attributes(association_name.to_sym, attr, options)
                   end
                 end
               end
             end
+
           end
         end
       end
@@ -97,6 +99,7 @@ module Neo4j
       include Validations				# enable validations
       include Callbacks					# enable callbacks
       include Finders						# ActiveRecord style find
+      include Relationships     # for none persisted relationships
     end
   end
 end

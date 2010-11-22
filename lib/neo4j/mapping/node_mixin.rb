@@ -67,6 +67,10 @@ module Neo4j::Mapping
     end
 
 
+    def _decl_rels_for(rel_type)
+      self.class._decl_rels[rel_type]
+    end
+    
     def wrapper
       self
     end
@@ -81,8 +85,10 @@ module Neo4j::Mapping
 
       c.class_inheritable_hash :_decl_props
       c._decl_props ||= {}
-      
-      c.extend ClassMethods::Root
+
+      c.class_inheritable_hash :_decl_rels
+      c._decl_rels ||= {}
+
       c.extend ClassMethods::Property
       c.extend ClassMethods::InitNode
       c.extend ClassMethods::Relationship
@@ -91,8 +97,6 @@ module Neo4j::Mapping
       c.extend Neo4j::Index::ClassMethods
 
       def c.inherited(subclass)
-        subclass.root_class subclass
-
         # inherit the index properties
         subclass.node_indexer self
 
@@ -103,7 +107,6 @@ module Neo4j::Mapping
       end
 
       c.node_indexer c
-      c.root_class c
     end
   end
 end

@@ -368,12 +368,6 @@ describe Neo4j::Model do
 
   end
 
-  describe "attr_accessible2" do
-    it "Does things" do
-
-    end
-  end
-
   describe "attr_accessible" do
     before(:all) do
       @klass = create_model do
@@ -421,8 +415,58 @@ describe Neo4j::Model do
     end
   end
 
-  pending "nested attributes, has_one, has_n" do
-    it "add nodes to a has_one method with the #new method without transaction" do
+  describe "has_one, has_n, incoming" do
+    before(:all) do
+      item = create_model do
+        property :name
+        validates :name, :presence => true
+        def to_s
+          "Item #{name} class: #{self.class}"
+        end
+      end
+
+      @order = create_model do
+        property :name
+        has_n(:items).to(item)
+        validates :name, :presence => true
+        def to_s
+          "Order #{name} class: #{self.class}"
+        end
+      end
+
+      @item = item # used as closure
+      @item.has_n(:orders).from(@order, :items)
+    end
+
+    it "add nodes without save should only store it in memory" do
+      order = @order.new :name => 'order'
+      item =  @item.new :name => 'item'
+
+      # then
+      item.orders << order
+      item.orders.should include(order)
+      Neo4j.all_nodes.should_not include(item)
+      Neo4j.all_nodes.should_not include(order)
+    end
+
+    it "add nodes with save should store it in db" do
+      order = @order.new :name => 'order'
+      item  = @item.new :name => 'item'
+
+      # then
+      item.orders << order
+      item.orders.should include(order)
+      item.save
+      Neo4j.all_nodes.should include(item)
+      Neo4j.all_nodes.should include(order)
+      item.reload
+      item.orders.should include(order)
+    end
+
+  end  
+
+  describe "has_one, has_n, outgoing" do
+    it "add nodes to a has_one method with the #new method" do
       member = Member.new
       avatar = Avatar.new
       member.avatar = avatar
@@ -431,7 +475,7 @@ describe Neo4j::Model do
       member.avatar.id.should_not be_nil
     end
 
-    it "adding nodes to a has_n method created with the #new method without transaction" do
+    it "adding nodes to a has_n method created with the #new method" do
       icecream = IceCream.new
       suger = Ingredience.new :name => 'suger'
       icecream.ingrediences << suger
@@ -485,17 +529,99 @@ describe Neo4j::Model do
    end
 
    it "should return false if one of the nested nodes is invalid when saving all of them" do
-      icecream1  = Ingredience.new :name => 'suger'
+      suger  = Ingredience.new :name => 'suger'
       icecream2 = IceCream.new # not valid
 
       # when
-      icecream1.outgoing(:related_icecreams) << icecream2
+      suger.outgoing(:related_icecreams) << icecream2
 
       # then
-      icecream1.save.should be_false
+      suger.save.should be_false
     end
 
-    it "accepts_nested_attributes_for" do
+    it "errors should contain aggregated errors if one of the nested nodes is invalid when saving all of them" do
+       suger  = Ingredience.new :name => 'suger'
+       icecream2 = IceCream.new # not valid
+
+       # when
+       suger.outgoing(:related_icecreams) << icecream2
+
+       # then
+       suger.save
+       suger.errors[:related_icecreams].first.should include(:flavour)
+     end
+
+    describe "nested nodes two level deep" do
+      before(:all) do
+        @clazz = create_model do
+          property :name
+          has_n :knows
+          validates :name, :presence => true
+        end
+      end
+
+      it "when one nested node is invalid it should not save any nodes" do
+        jack  = @clazz.new(:name => 'jack')
+        carol = @clazz.new(:name => 'carol')
+        bob   = @clazz.new # invalid
+
+        jack.knows << carol
+        carol.knows << bob
+        jack.knows << bob
+
+        lambda do
+          jack.save.should be_false
+        end.should_not change([*Neo4j.all_nodes], :size)
+
+        finish_tx
+        Neo4j.all_nodes.should_not include(jack)
+        Neo4j.all_nodes.should_not include(bob)
+        Neo4j.all_nodes.should_not include(carol)
+      end
+
+      it "when one nested node is invalid it should not update any nodes" do
+        jack  = @clazz.new(:name => 'jack')
+        carol = @clazz.new(:name => 'carol')
+        bob   = @clazz.new # invalid
+
+        jack.knows << carol
+        jack.save! # save all
+
+        # when
+        jack.name = 'changed'
+        jack.knows << bob # invalid
+
+        # then
+        jack.save.should be_false
+        jack.knows.should include(carol)
+        jack.knows.should include(bob)
+        jack.reload
+        jack.knows.should include(carol)
+        jack.knows.should_not include(bob)
+        jack.name.should == 'jack'
+      end
+
+      it "only when all nested nodes are valid all the nodes will be saved" do
+        jack  = @clazz.new(:name => 'jack')
+        carol = @clazz.new(:name => 'carol')
+        bob   = @clazz.new(:name => 'bob')
+
+        jack.knows << carol
+        carol.knows << bob
+        jack.knows << bob
+
+        lambda do
+          jack.save.should be_true
+        end.should_not change([*Neo4j.all_nodes], :size).by(3)
+
+        finish_tx
+        Neo4j.all_nodes.should include(jack, carol, bob)
+      end
+
+    end
+
+
+    describe "accepts_nested_attributes_for" do
       it "create one-to-one " do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
         member = Member.create(params[:member])
@@ -505,6 +631,7 @@ describe Neo4j::Model do
         member.save
         member.avatar.icon.should == 'smiling'
       end
+
 
       it "create one-to-one  - it also allows you to update the avatar through the member:" do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
@@ -540,11 +667,11 @@ describe Neo4j::Model do
       it "create one-to_many - You can now set or update attributes on an associated post model through the attribute hash" do
         # For each hash that does not have an id key a new record will be instantiated, unless the hash also contains a _destroy key that evaluates to true.
         params = {:member => {
-                :name => 'joe', :posts_attributes => [
-                        {:title => 'Kari, the awesome Ruby documentation browser!'},
-                        {:title => 'The egalitarian assumption of the modern citizen'},
-                        {:title => '', :_destroy => '1'} # this will be ignored
-                ]
+            :name => 'joe', :posts_attributes => [
+                {:title => 'Kari, the awesome Ruby documentation browser!'},
+                {:title => 'The egalitarian assumption of the modern citizen'},
+                {:title => '', :_destroy => '1'} # this will be ignored
+            ]
         }}
 
         member = Member.create(params[:member])
@@ -560,11 +687,11 @@ describe Neo4j::Model do
 
       it ":reject_if proc will silently ignore any new record hashes if they fail to pass your criteria." do
         params = {:member => {
-                :name => 'joe', :valid_posts_attributes => [
-                        {:title => 'Kari, the awesome Ruby documentation browser!'},
-                        {:title => 'The egalitarian assumption of the modern citizen'},
-                        {:title => ''} # this will be ignored because of the :reject_if proc
-                ]
+            :name => 'joe', :valid_posts_attributes => [
+                {:title => 'Kari, the awesome Ruby documentation browser!'},
+                {:title => 'The egalitarian assumption of the modern citizen'},
+                {:title => ''} # this will be ignored because of the :reject_if proc
+            ]
         }}
 
         member = Member.create(params[:member])
@@ -572,60 +699,60 @@ describe Neo4j::Model do
         member.valid_posts.first.title.should == 'Kari, the awesome Ruby documentation browser!'
         member.valid_posts[1].title.should == 'The egalitarian assumption of the modern citizen'
       end
-    end
-
-    it ":reject_if also accepts a symbol for using methods" do
-      params = {:member => {
-              :name => 'joe', :valid_posts2_attributes => [
-                      {:title => 'Kari, the awesome Ruby documentation browser!'},
-                      {:title => 'The egalitarian assumption of the modern citizen'},
-                      {:title => ''} # this will be ignored because of the :reject_if proc
-              ]
-      }}
-
-      member = Member.create(params[:member])
-      member.valid_posts2.length.should == 2
-      member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
-      member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
-
-      member = Member.new(params[:member])
-      member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
-      member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
-      member.save
-      member.valid_posts2.length.should == 2
-      member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
-      member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
-    end
 
 
-    it "If the hash contains an id key that matches an already associated record, the matching record will be modified:" do
-      params = {:member => {
-              :name => 'joe', :posts_attributes => [
-                      {:title => 'Kari, the awesome Ruby documentation browser!'},
-                      {:title => 'The egalitarian assumption of the modern citizen'},
-                      {:title => '', :_destroy => '1'} # this will be ignored
-              ]
-      }}
+      it ":reject_if also accepts a symbol for using methods" do
+        params = {:member => {
+            :name => 'joe', :valid_posts2_attributes => [
+                {:title => 'Kari, the awesome Ruby documentation browser!'},
+                {:title => 'The egalitarian assumption of the modern citizen'},
+                {:title => ''} # this will be ignored because of the :reject_if proc
+            ]
+        }}
 
-      member = Member.create(params[:member])
+        member = Member.create(params[:member])
+        member.valid_posts2.length.should == 2
+        member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
+        member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
 
-      # when
-      id1 = member.posts[0].id
-      id2 = member.posts[1].id
+        member = Member.new(params[:member])
+        member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
+        member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
+        member.save
+        member.valid_posts2.length.should == 2
+        member.valid_posts2.first.title.should == 'Kari, the awesome Ruby documentation browser!'
+        member.valid_posts2[1].title.should == 'The egalitarian assumption of the modern citizen'
+      end
 
-      member.attributes = {
-              :name => 'Joe',
-              :posts_attributes => [
-                      {:id => id1, :title => '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'},
-                      {:id => id2, :title => '[UPDATED] other post'}
-              ]
-      }
 
-      # then
-      member.posts.first.title.should == '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'
-      member.posts[1].title.should == '[UPDATED] other post'
+      it "If the hash contains an id key that matches an already associated record, the matching record will be modified:" do
+        params            = {:member => {
+            :name => 'joe', :posts_attributes => [
+                {:title => 'Kari, the awesome Ruby documentation browser!'},
+                {:title => 'The egalitarian assumption of the modern citizen'},
+                {:title => '', :_destroy => '1'} # this will be ignored
+            ]
+        }}
+
+        member            = Member.create(params[:member])
+
+        # when
+        id1               = member.posts[0].id
+        id2               = member.posts[1].id
+
+        member.attributes = {
+            :name             => 'Joe',
+            :posts_attributes => [
+                {:id => id1, :title => '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'},
+                {:id => id2, :title => '[UPDATED] other post'}
+            ]
+        }
+
+        # then
+        member.posts.first.title.should == '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'
+        member.posts[1].title.should == '[UPDATED] other post'
+      end
     end
   end
-
 
 end
