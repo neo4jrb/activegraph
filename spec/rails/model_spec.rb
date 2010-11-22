@@ -560,6 +560,25 @@ describe Neo4j::Model do
         end
       end
 
+      it "deleting relationships only when save is called" do
+        pending "not sure if we should implement this ..."
+        jack  = @clazz.new(:name => 'jack')
+        carol = @clazz.new(:name => 'carol')
+        bob   = @clazz.new(:name => 'bob')
+
+        jack.knows << carol
+        carol.knows << bob
+        jack.knows << bob
+        jack.knows_rels.first.delete
+        
+        jack.save.should be_true
+
+        # the knows_rels only support persisted relationships for now
+        jack.knows_rels.size.should == 2
+        jack.knows_rels.first.delete
+        jack.reload
+      end
+
       it "when one nested node is invalid it should not save any nodes" do
         jack  = @clazz.new(:name => 'jack')
         carol = @clazz.new(:name => 'carol')
@@ -622,6 +641,57 @@ describe Neo4j::Model do
 
 
     describe "accepts_nested_attributes_for" do
+
+      class Avatar < Neo4j::Model
+        property :icon
+      end
+
+      class Post < Neo4j::Model
+        property :title
+      end
+
+      class Description < Neo4j::Model
+        property :title
+        property :text
+        validates_presence_of :title
+
+        def to_s
+          "Description title: #{title} text:#{text}"
+        end
+      end
+      
+      class Member < Neo4j::Model
+        has_n(:posts).to(Post)
+        has_n(:valid_posts).to(Post)
+        has_n(:valid_posts2).to(Post)
+        has_n(:descriptions).to(Description)
+
+        has_one(:avatar).to(Avatar)
+
+        has_one(:thing)
+
+
+        accepts_nested_attributes_for :descriptions
+        accepts_nested_attributes_for :avatar, :allow_destroy => true
+        accepts_nested_attributes_for :posts, :allow_destroy => true
+        accepts_nested_attributes_for :valid_posts, :reject_if => proc { |attributes| attributes[:title].blank? }
+        accepts_nested_attributes_for :valid_posts2, :reject_if => :reject_posts
+
+        def reject_posts(attributed)
+          attributed[:title].blank?
+        end
+
+      end
+
+      it "does not save invalid nested nodes" do
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
+        member = Member.create(params[:member])
+        params = {:member => {:descriptions_attributes => [{:text => 'bla bla bla'}]}}
+        member.update_attributes(params[:member]).should be_false
+        member.reload
+        member.descriptions.should be_empty
+      end
+
       it "create one-to-one " do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
         member = Member.create(params[:member])

@@ -21,8 +21,7 @@ module Neo4j
           "#{self.class} #{object_id} dir: #{direction} rel_type: #{@rel_type} wrapped #{@dsl}"
         end
         
-        def single_relationship(me)
-          # TODO direction
+        def single_relationship(*)
           @relationships.first
         end
 
