@@ -39,7 +39,7 @@ module Neo4j
           @relationships.each do |rel|
             block.call rel.end_node
           end
-          @dsl.each_node(node, direction, &block) if @dsl
+          @dsl.each_node(node, direction, &block) if @dsl && node.persisted?
         end
 
         def del_rel(rel)
@@ -57,7 +57,7 @@ module Neo4j
           if !@relationships.empty?
             @relationships.first.end_node
           else
-            @dsl.single_node(from)
+            @dsl.single_node(from) if @dsl && from.persisted?
           end
         end
 

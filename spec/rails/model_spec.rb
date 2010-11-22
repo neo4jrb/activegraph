@@ -466,6 +466,21 @@ describe Neo4j::Model do
   end  
 
   describe "has_one, has_n, outgoing" do
+
+    it "has_n: should be empty when it has no relationships" do
+      clazz = create_model
+      clazz.has_n(:knows)
+      jack  = clazz.new
+      jack.knows.should be_empty
+    end
+
+    it "has_one: should be empty when it has no relationships" do
+      clazz = create_model
+      clazz.has_one :thing
+      jack  = clazz.new
+      jack.thing.should be_nil
+    end
+    
     it "add nodes to a has_one method with the #new method" do
       member = Member.new
       avatar = Avatar.new
