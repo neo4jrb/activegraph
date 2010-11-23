@@ -7,7 +7,7 @@ require 'neo4j/version'
 Gem::Specification.new do |s|
   s.name = "neo4j"
   s.version = Neo4j::VERSION
-#  s.platform = Gem::Platform::CURRENT  # will probably support  C Ruby via RJB also in the future
+  s.platform = 'java'
   s.authors = "Andreas Ronge"
   s.email = 'andreas.ronge@gmail.com'
   s.homepage = "http://github.com/andreasronge/neo4j/tree"
