@@ -25,6 +25,7 @@ EOF
   s.extra_rdoc_files = %w( README.rdoc )
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
   s.required_ruby_version = ">= 1.8.7"
+  s.add_dependency('orm_adapter',">= 0.0.3")
   s.add_dependency("activemodel", ">= 3.0.0")
   s.add_dependency("railties", ">= 3.0.0")
 end
