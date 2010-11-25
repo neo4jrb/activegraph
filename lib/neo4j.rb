@@ -8,7 +8,6 @@ require 'date'
 require 'neo4j/jars/neo4j-index-1.2-1.2.M04.jar'
 require 'neo4j/jars/neo4j-kernel-1.2-1.2.M04.jar'
 require 'neo4j/jars/neo4j-lucene-index-0.2-1.2.M04.jar'
-require 'neo4j/jars/neo4j-remote-graphdb-0.8-1.2.M04.jar'
 require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/lucene-core-3.0.2.jar'
 
