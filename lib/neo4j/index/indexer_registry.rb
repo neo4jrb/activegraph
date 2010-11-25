@@ -62,7 +62,6 @@ module Neo4j
         end
       end
     end
-    Neo4j.unstarted_db.event_handler.add(IndexerRegistry)
-
+    Neo4j.unstarted_db.event_handler.add(IndexerRegistry) unless Neo4j.read_only?
   end
 end

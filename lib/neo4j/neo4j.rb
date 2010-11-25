@@ -30,7 +30,11 @@ module Neo4j
       @db ||= Database.new
     end
 
-    # Returns a started db instance. Starts it if's not running.
+    def read_only?
+      @db && @db.graph && @db.graph.read_only?
+    end
+    
+    # Returns a started db instance. Starts it's not running.
     def started_db
       db = default_db
       db.start unless db.running?

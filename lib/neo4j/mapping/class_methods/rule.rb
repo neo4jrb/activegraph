@@ -290,6 +290,6 @@ module Neo4j::Mapping
 
     end
 
-    Neo4j.unstarted_db.event_handler.add(Rules)
+    Neo4j.unstarted_db.event_handler.add(Rules) unless Neo4j.read_only?
   end
 end
