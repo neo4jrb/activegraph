@@ -15,7 +15,6 @@ module Neo4j
     # register migrations in config/initializers
     initializer "neo4j.start", :after => :load_config_initializers do |app|
       Neo4j::Config.setup.merge!(app.config.neo4j.to_hash)
-      Neo4j.start
     end
   end
 end
