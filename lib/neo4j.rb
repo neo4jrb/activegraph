@@ -11,6 +11,7 @@ require 'neo4j/jars/neo4j-lucene-index-0.2-1.2.M04.jar'
 require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/lucene-core-3.0.2.jar'
 
+require 'will_paginate/finders/base'
 require 'neo4j/to_java'
 require 'neo4j/version'
 require 'neo4j/equal'

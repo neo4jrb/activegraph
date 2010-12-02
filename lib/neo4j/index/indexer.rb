@@ -237,7 +237,7 @@ module Neo4j
         @decl_props ||= @indexer_for.respond_to?(:_decl_props) && @indexer_for._decl_props
 
         index = index_for_type(params[:type] || :exact)
-        query = (params[:wrapped].nil? || params[:wrapped]) ? LuceneQuery.new(index, @decl_props, query) : index.query(query)
+        query = (params[:wrapped].nil? || params[:wrapped]) ? LuceneQuery.new(index, @decl_props, query, params) : index.query(query)
 
         if block_given?
           begin

@@ -5,6 +5,15 @@ module Neo4j
 
       extend Forwardable
 
+      def wp_query(options, pager, args, &block) #:nodoc:
+        params            = options[:params] || {}
+        params[:page]     = pager.current_page
+        params[:per_page] = pager.per_page
+        res = [*find(options, params, &block)]
+        pager.replace res
+      end
+
+
       ##
       # See Neo4j::Index::Indexer#index
       # Forwards to the indexer that should be used.

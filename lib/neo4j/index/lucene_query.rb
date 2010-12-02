@@ -39,15 +39,30 @@ module Neo4j
       include Enumerable
       attr_accessor :left_and_query, :left_or_query
       
-      def initialize(index, decl_props, query)
+      def initialize(index, decl_props, query, params={})
         @index = index
         @query = query
         @decl_props = decl_props
+        @params = params
       end
 
       # Since we include the Ruby Enumerable mixin we need this method.
       def each
-        hits.each { |n| yield n.wrapper }
+        if @params.include?(:per_page)
+          # paginate the result, used by the will_paginate gem
+          page = @params[:page] || 1
+          per_page = @params[:per_page]
+          to  = per_page * page
+          from = to - per_page
+          i = 0
+          hits.each do |node|
+            yield node.wrapper if i >= from
+            i += 1
+            break if i >= to
+          end
+        else
+          hits.each { |n| yield n.wrapper }
+        end
       end
 
       # Close hits

@@ -95,6 +95,7 @@ module Neo4j::Mapping
       c.extend ClassMethods::Rule
       c.extend ClassMethods::List
       c.extend Neo4j::Index::ClassMethods
+      c.extend WillPaginate::Finders::Base
 
       def c.inherited(subclass)
         # inherit the index properties

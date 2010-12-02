@@ -27,5 +27,6 @@ EOF
   s.required_ruby_version = ">= 1.8.7"
   s.add_dependency('orm_adapter',">= 0.0.3")
   s.add_dependency("activemodel", ">= 3.0.0")
+  s.add_dependency("will_paginate", ["~>3.0.pre"])
   s.add_dependency("railties", ">= 3.0.0")
 end
