@@ -44,6 +44,11 @@ module Neo4j
         @query = query
         @decl_props = decl_props
         @params = params
+
+        if Hash === query && query.include?(:sort)
+          @order = {}
+          query.delete(:sort).each_pair { |k,v| @order[k] = (v == :desc) }
+        end
       end
 
       # Since we include the Ruby Enumerable mixin we need this method.
