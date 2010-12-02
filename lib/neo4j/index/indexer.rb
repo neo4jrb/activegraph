@@ -90,7 +90,6 @@ module Neo4j
           conf.delete :via # avoid endless recursion
           via_indexer.index(field, conf)
         else
-#          raise "Already defined an (via?) index on #{field}, Using the same index for from two classes ? Check index :#{field}, :via => :#{@indexer_for}" if @field_types[field.to_s]
           @field_types[field.to_s] = conf[:type] || :exact
         end
       end

@@ -35,29 +35,25 @@ module Neo4j
         end
         
 				# Behave like the ActiveRecord query interface
-				
-				# Handle Model.find(params[:id])
-				
-				# Model.find
-				# Model.find(:first)
-				
-				# Model.find("1")
-				# Model.find(1)
-				
-				# Model.find("name: test")
-				# Model.find(:name => "test")
-				
-				# Model.find(:first, "name: test")
-				# Model.find(:first, { :name => "test" })
-				
-				# Model.find(:first, :conditions => "name: test")
-				# Model.find(:first, :conditions => { :name => "test" })
-				
-				# Model.find(:all, "name: test")
-				# Model.find(:all, { :name => "test" })
-				
-				# Model.find(:all, :conditions => "name: test")
-				# Model.find(:all, :conditions => { :name => "test" })
+        #
+        # === Example
+        #
+				#   Handle Model.find(params[:id])
+				#   Model.find
+				#   Model.find(:first)
+				#   Model.find("1")
+				#   Model.find(1)
+				#   Model.find("name: test")
+				#   Model.find(:name => "test")
+				#   Model.find(:first, "name: test")
+				#   Model.find(:first, { :name => "test" })
+				#   Model.find(:first, :conditions => "name: test")
+				#   Model.find(:first, :conditions => { :name => "test" })
+				#   Model.find(:all, "name: test")
+				#   Model.find(:all, { :name => "test" })
+				#   Model.find(:all, :conditions => "name: test")
+				#   Model.find(:all, :conditions => { :name => "test" })
+        #
         def find(*args)
         	case args.first
         	when :all, :first

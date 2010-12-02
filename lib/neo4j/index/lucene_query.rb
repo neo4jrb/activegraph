@@ -95,19 +95,24 @@ module Neo4j
         raise "find(#{@query}).between(#{lower}, #{upper}): #{upper} not a #{type}" if type && !type === upper.class
 
         # Make it possible to convert those values
-        lower  = TypeConverters.convert(lower)
-        upper  = TypeConverters.convert(upper)
-
-        @query = case lower
-                   when Fixnum
-                     org.apache.lucene.search.NumericRangeQuery.new_long_range(@query.to_s, lower, upper, lower_incusive, upper_inclusive)
-                   when Float
-                     org.apache.lucene.search.NumericRangeQuery.new_double_range(@query.to_s, lower, upper, lower_incusive, upper_inclusive)
-                   else
-                     org.apache.lucene.search.TermRangeQuery.new(@query.to_s, lower, upper, lower_incusive, upper_inclusive)
-                 end
+        @query = range_query(@query, lower, upper, lower_incusive, upper_inclusive)
         self
       end
+
+      def range_query(field, lower, upper, lower_incusive, upper_inclusive)
+        lower = TypeConverters.convert(lower)
+        upper = TypeConverters.convert(upper)
+
+        case lower
+          when Fixnum
+            org.apache.lucene.search.NumericRangeQuery.new_long_range(field.to_s, lower, upper, lower_incusive, upper_inclusive)
+          when Float
+            org.apache.lucene.search.NumericRangeQuery.new_double_range(field.to_s, lower, upper, lower_incusive, upper_inclusive)
+          else
+            org.apache.lucene.search.TermRangeQuery.new(field.to_s, lower, upper, lower_incusive, upper_inclusive)
+        end
+      end
+
 
       # Create a compound lucene query.
       #
@@ -166,10 +171,19 @@ module Neo4j
         and_query  = org.apache.lucene.search.BooleanQuery.new
 
         query.each_pair do |key, value|
-          raise "Only String values valid in find(hash) got :#{key} => #{value} which is not a String" if !value.is_a?(String) && @decl_props[key] && @decl_props[key][:type] != String
-          term = org.apache.lucene.index.Term.new(key.to_s, value.to_s)
-          term_query = org.apache.lucene.search.TermQuery.new(term)
-          and_query.add(term_query, org.apache.lucene.search.BooleanClause::Occur::MUST)
+          type = @decl_props[key.to_sym] && @decl_props[key.to_sym][:type]
+          if !type.nil? && type != String
+            if Range === value
+              and_query.add(range_query(key, value.first, value.last, true, !value.exclude_end?), org.apache.lucene.search.BooleanClause::Occur::MUST)
+            else
+              and_query.add(range_query(key, value, value, true, true), org.apache.lucene.search.BooleanClause::Occur::MUST)
+            end
+          else
+            conv_value = type ? TypeConverters.convert(value) : value.to_s
+            term       = org.apache.lucene.index.Term.new(key.to_s, conv_value)
+            term_query = org.apache.lucene.search.TermQuery.new(term)
+            and_query.add(term_query, org.apache.lucene.search.BooleanClause::Occur::MUST)
+          end
         end
         and_query
       end
