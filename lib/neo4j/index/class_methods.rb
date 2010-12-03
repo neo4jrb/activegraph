@@ -6,10 +6,16 @@ module Neo4j
       extend Forwardable
 
       def wp_query(options, pager, args, &block) #:nodoc:
-        params            = options[:params] || {}
+        params            = {} 
         params[:page]     = pager.current_page
         params[:per_page] = pager.per_page
-        res = [*find(options, params, &block)]
+        res               = if args.empty?
+                              [*find(options, params, &block)]
+                            else
+                              args << params.merge(options)
+                              [*find(*args, &block)]
+                            end
+
         pager.replace res
       end
 

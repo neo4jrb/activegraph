@@ -188,7 +188,6 @@ module Neo4j
                         else
                           org.apache.lucene.search.SortField::STRING
                       end
-          puts "sort by #{field}, type #{type}, #{@order[field]}"
           memo << org.apache.lucene.search.SortField.new(field.to_s, type, @order[field])
         end
         sort             = org.apache.lucene.search.Sort.new(*java_sort_fields)

@@ -65,7 +65,7 @@ module Neo4j
         end
 
         def all(*args)
-          if args.empty? || (args.first.is_a?(Hash) && args.first[:conditions] && args.first[:conditions].empty?)
+          if !conditions_in?(*args)
             # use the _all rule to recover all the stored instances of this node
             _all
           else
@@ -99,6 +99,20 @@ module Neo4j
           arg[:conditions].present? ? arg[:conditions][:id] : arg[:id]
         end
 
+
+        def conditions_in?(*args)
+          return false if args.empty?
+
+          # does it contain an string, which will be treated like a condition ?
+          return true if args.find { |a| a.is_a?(String) }
+
+          # does it contain an empty conditions param ?
+          hash = args.find { |a| a.is_a?(Hash) }
+          return false if hash.include?(:conditions) && hash[:conditions].empty?
+
+          # does it contain only paging or sorting params ?
+          !hash.except(:sort, :page, :per_page).empty?
+        end
 
         def find_with_ids(*args)
           if ((args.first.is_a?(String) || args.first.is_a?(Integer)) && args.first.to_i > 0)
