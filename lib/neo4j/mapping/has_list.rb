@@ -126,6 +126,7 @@ module Neo4j
           break if i >= to
         end
         pager.replace res
+        pager.total_entries ||= size
       end
 
       # If called then it will only return the raw java nodes and not the Ruby wrappers using the Neo4j::NodeMixin

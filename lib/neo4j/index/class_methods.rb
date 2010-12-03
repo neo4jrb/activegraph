@@ -9,14 +9,15 @@ module Neo4j
         params            = {} 
         params[:page]     = pager.current_page
         params[:per_page] = pager.per_page
-        res               = if args.empty?
-                              [*find(options, params, &block)]
+        query               = if args.empty?
+                              find(options, params, &block)
                             else
                               args << params.merge(options)
-                              [*find(*args, &block)]
+                              find(*args, &block)
                             end
 
-        pager.replace res
+        pager.replace [*query]
+        pager.total_entries = query.size
       end
 
 

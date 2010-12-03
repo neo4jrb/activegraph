@@ -39,34 +39,35 @@ module Neo4j
       include Enumerable
       include WillPaginate::Finders::Base
       attr_accessor :left_and_query, :left_or_query
-      
+
       def initialize(index, decl_props, query, params={})
-        @index = index
-        @query = query
+        @index      = index
+        @query      = query
         @decl_props = decl_props
-        @params = params
+        @params     = params
 
         if params.include?(:sort)
           @order = {}
-          params[:sort].each_pair { |k,v| @order[k] = (v == :desc) }
+          params[:sort].each_pair { |k, v| @order[k] = (v == :desc) }
         end
       end
 
       def wp_query(options, pager, args, &block) #:nodoc:
-         @params[:page] = pager.current_page
-         @params[:per_page] = pager.per_page
-         pager.replace [*self]
-       end
-      
+        @params[:page]     = pager.current_page
+        @params[:per_page] = pager.per_page
+        pager.replace [*self]
+        pager.total_entries = size
+      end
+
       # Since we include the Ruby Enumerable mixin we need this method.
       def each
         if @params.include?(:per_page)
           # paginate the result, used by the will_paginate gem
-          page = @params[:page] || 1
+          page     = @params[:page] || 1
           per_page = @params[:per_page]
-          to  = per_page * page
-          from = to - per_page
-          i = 0
+          to       = per_page * page
+          from     = to - per_page
+          i        = 0
           hits.each do |node|
             yield node.wrapper if i >= from
             i += 1
@@ -98,7 +99,7 @@ module Neo4j
       # Does simply loop all search items till the n'th is found.
       #
       def [](index)
-        each_with_index {|node,i| break node if index == i}
+        each_with_index { |node, i| break node if index == i }
       end
 
       # Returns the number of search hits
@@ -117,7 +118,7 @@ module Neo4j
         raise "Expected a symbol. Syntax for range queries example: index(:weight).between(a,b)" unless Symbol === @query
         raise "Can't only do range queries on Neo4j::NodeMixin, Neo4j::Model, Neo4j::RelationshipMixin" unless @decl_props
         # check that we perform a range query on the same values as we have declared with the property :key, :type => ...
-        type   = @decl_props[@query] && @decl_props[@query][:type]
+        type = @decl_props[@query] && @decl_props[@query][:type]
         raise "find(#{@query}).between(#{lower}, #{upper}): #{lower} not a #{type}" if type && !type === lower.class
         raise "find(#{@query}).between(#{lower}, #{upper}): #{upper} not a #{type}" if type && !type === upper.class
 
@@ -151,7 +152,7 @@ module Neo4j
       #  Person.find(:name=>'kalle').and(:age => 3)
       #
       def and(query2)
-        new_query = LuceneQuery.new(@index, @decl_props, query2)
+        new_query                = LuceneQuery.new(@index, @decl_props, query2)
         new_query.left_and_query = self
         new_query
       end
@@ -177,7 +178,7 @@ module Neo4j
         and_query
       end
 
-      def build_sort_query(query)  #:nodoc:
+      def build_sort_query(query) #:nodoc:
         java_sort_fields = @order.keys.inject([]) do |memo, field|
           decl_type = @decl_props && @decl_props[field] && @decl_props[field][:type]
           type      = case
@@ -194,8 +195,8 @@ module Neo4j
         org.neo4j.index.impl.lucene.QueryContext.new(query).sort(sort)
       end
 
-      def build_hash_query(query)  #:nodoc:
-        and_query  = org.apache.lucene.search.BooleanQuery.new
+      def build_hash_query(query) #:nodoc:
+        and_query = org.apache.lucene.search.BooleanQuery.new
 
         query.each_pair do |key, value|
           type = @decl_props[key.to_sym] && @decl_props[key.to_sym][:type]
@@ -214,8 +215,8 @@ module Neo4j
         end
         and_query
       end
-      
-      def build_query  #:nodoc:
+
+      def build_query #:nodoc:
         query = @query
         query = build_hash_query(query) if Hash === query
         query = build_and_query(query) if @left_and_query
@@ -223,7 +224,7 @@ module Neo4j
         query
       end
 
-      def perform_query  #:nodoc:
+      def perform_query #:nodoc:
         @index.query(build_query)
       end
     end

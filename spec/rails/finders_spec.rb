@@ -81,7 +81,9 @@ describe "finders" do
     end
 
     it "#all.paginate(:per_page => , :page=>)" do
-      res = [*FindableModel.all.paginate(:page => 1, :per_page => 5)]
+      res = FindableModel.all.paginate(:page => 1, :per_page => 5)
+      res.current_page.should == 1
+      res.total_entries.should == 4
       res.size.should == 4
       res.should include(@test_0, @test_2, @test_3, @test_4)
     end

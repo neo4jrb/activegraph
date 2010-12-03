@@ -25,17 +25,42 @@ describe Neo4j::NodeMixin, "paginate", :type => :transactional do
       @friends.each {|f| @person.friends << f}
     end
 
-    it "@person.outgoing(:friends).paginate" do
-      res = @person.outgoing(:friends).paginate(:page => 1, :per_page => 3)
-      res.should include(@friends[0], @friends[1], @friends[2])
-      res.should_not include(@friends[3])
-      res.size.should == 3
+    context "@person.outgoing(:friends).paginate(:page => 1, ..)" do
+      subject { @person.outgoing(:friends).paginate(:page => 1, :per_page => 3) }
 
-      res = @person.outgoing(:friends).paginate(:page => 2, :per_page => 3)
-      res.should include(@friends[3], @friends[4], @friends[5])
-      res.should_not include(@friends[6], @friends[2])
-      res.size.should == 3
+      it "includes page 1 and not page 2 nodes" do
+        should include(@friends[0], @friends[1], @friends[2])
+        should_not include(@friends[3])
+        subject.size.should == 3
+      end
+
+      it "set current_page to 1" do
+        subject.current_page.should == 1
+      end
+
+      it "sets total_entries" do
+        subject.total_entries.should == 20
+      end
+
     end
+
+    context "@person.outgoing(:friends).paginate(:page => 2, ..)" do
+      subject { @person.outgoing(:friends).paginate(:page => 2, :per_page => 3) }
+
+      it "includes page 2 and not page 1 nodes" do
+        should include(@friends[3], @friends[4], @friends[5])
+        subject.size.should == 3
+      end
+
+      it "set current_page to 2" do
+        subject.current_page.should == 2
+      end
+
+      it "sets total_entries" do
+        subject.total_entries.should == 20
+      end
+    end
+
 
     it "@person.friends.paginate" do
       res = @person.friends.paginate(:page => 1, :per_page => 3)
@@ -77,6 +102,8 @@ describe Neo4j::NodeMixin, "paginate", :type => :transactional do
       res.should include(@friends[0], @friends[1], @friends[2])
       res.should_not include(@friends[3])
       res.size.should == 3
+
+      res.total_entries.should == 20
 
       res = @person.friends.paginate(:page => 2, :per_page => 3)
       res.should include(@friends[3], @friends[4], @friends[5])
