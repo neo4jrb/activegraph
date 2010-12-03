@@ -12,6 +12,8 @@ module Neo4j
     #
     class HasN
       include Enumerable
+      include WillPaginate::Finders::Base
+      
       include ToJava
 
       def initialize(node, dsl) # :nodoc:
@@ -46,6 +48,24 @@ module Neo4j
         @dsl.each_node(@node, @direction, &block)
       end
 
+      # returns none wrapped nodes, you may get better performance using this method
+      def _each(&block)
+        @dsl.each_node(@node, @direction, true, &block)
+      end
+
+      def wp_query(options, pager, args, &block) #:nodoc:
+         page     = pager.current_page || 1
+         to       = pager.per_page * page
+         from     = to - pager.per_page
+         i        = 0
+         res      = []
+         _each do |node|
+           res << node.wrapper if i >= from
+           i += 1
+           break if i >= to
+         end
+         pager.replace res
+       end
 
       # Returns true if there are no node in this type of relationship
       def empty?

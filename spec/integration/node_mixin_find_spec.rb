@@ -105,6 +105,12 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
       result.should include(@bike)
     end
 
+    it "find(:conditions => {:name => 'bike', :wheels => 2})" do
+      result = [*Vehicle.find(:conditions => {:name => 'bike', :wheels => 2})]
+      result.size.should == 1
+      result.should include(@bike)
+    end
+
     it "find({}) should return nothing" do
       result = [*Vehicle.find({})]
       result.size.should == 0

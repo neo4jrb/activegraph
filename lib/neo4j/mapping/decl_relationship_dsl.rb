@@ -51,11 +51,11 @@ module Neo4j::Mapping
       @has_one
     end
 
-    def each_node(node, direction, &block) #:nodoc:
+    def each_node(node, direction, raw = false, &block) #:nodoc:
       type = type_to_java(rel_type)
       dir  = dir_to_java(direction)
       node._java_node.getRelationships(type, dir).each do |rel|
-        other = rel.getOtherNode(node).wrapper
+        other = raw ? rel.getOtherNode(node) : rel.getOtherNode(node).wrapper
         block.call other
       end
     end
