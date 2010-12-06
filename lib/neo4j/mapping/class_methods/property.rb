@@ -35,7 +35,8 @@ module Neo4j::Mapping
       #     property :since, :type => DateTime  # will be converted into a fixnum
       #   end
       #
-      # You can write your own converter and register it in the Neo4j::Config.
+      # You can write your own converter by writing a class that respond to :convert?, :to_ruby and
+      # :to_java in the Neo4j::TypeConverters module.
       #
       def property(*props)
         if props.size == 2 and props[1].kind_of?(Hash)

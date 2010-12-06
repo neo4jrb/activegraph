@@ -91,9 +91,5 @@ module Neo4j
       this_db.event_handler
     end
     
-    # Ruby to Java type converters
-    def converters
-    	Neo4j::Config[:converters] || {}
-    end
   end
 end

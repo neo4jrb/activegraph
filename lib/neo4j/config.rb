@@ -13,7 +13,6 @@ module Neo4j
   # <tt>:storage_path</tt>::   default <tt>tmp/neo4j</tt> where the database is stored
   # <tt>:timestamps</tt>::     default <tt>true</tt> for Rails Neo4j::Model - if timestamps should be used when saving the model
   # <tt>:lucene</tt>::         default hash keys: <tt>:fulltext</tt>, <tt>:exact</tt> configuration how the lucene index is stored
-  # <tt>:converters</tt>::     defines which converters should be used before writing and reading to neo4j, see Neo4j::TypeConverters
   #
   class Config
     # This code is copied from merb-core/config.rb.
@@ -27,12 +26,6 @@ module Neo4j
           :storage_path => 'tmp/neo4j',
           :timestamps => true,
           
-          # TODO: Just pickup all converter classes that are in the Neo4j::TypeConverters module?
-          :converters => { 	Date 			=> Neo4j::TypeConverters::DateConverter, 
-                            DateTime 	=> Neo4j::TypeConverters::DateTimeConverter,
-                            Time 			=> Neo4j::TypeConverters::TimeConverter
-          								},
-          								
           :lucene => {
                   :fulltext =>  {"provider" => "lucene", "type" => "fulltext" },
                   :exact    =>  {"provider" => "lucene", "type" => "exact" }}
@@ -117,10 +110,10 @@ module Neo4j
         @configuration.fetch(key, default)
       end
 
-      # Sets up the configuration
+      # Sets up the configuration to use the default.
       #
       # ==== Returns
-      # The configuration as a hash.
+      # The a new configuration using default values as a hash.
       #
       def setup()
         @configuration = {}
