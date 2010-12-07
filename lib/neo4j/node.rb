@@ -9,9 +9,19 @@ module Neo4j
     include Neo4j::Index
 
     # Delete the node and all its relationship
+    #
+    # ==== Returns
+    # true :: if the node was deleted
+    # false :: if node was not deleted, maybe it has already been deleted
+    #
     def del
       rels.each {|r| r.del}
-      delete
+      begin
+        delete
+        true
+      rescue
+        false
+      end
     end
 
     # returns true if the node exists in the database
@@ -118,7 +128,7 @@ module Neo4j
       # Same as load but does not return the node as a wrapped Ruby object.
       #
       def _load(node_id, db)
-	return nil if node_id.nil?
+        return nil if node_id.nil?
         db.graph.get_node_by_id(node_id.to_i)
       rescue java.lang.IllegalStateException
         nil # the node has been deleted

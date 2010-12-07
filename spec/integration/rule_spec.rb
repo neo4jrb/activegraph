@@ -3,10 +3,10 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 class Reader
   include Neo4j::NodeMixin
   property :age
-  
+
   rule :all
-  rule(:old) { age > 10 } 						# for testing evaluation in the context of a wrapped ruby object
-  rule(:young, :trigger => :readers) { |node| node[:age]  < 5 }  	# for testing using native java neo4j node
+  rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
+  rule(:young, :trigger => :readers) { |node| node[:age] < 5 } # for testing using native java neo4j node
 end
 
 class MaleReader < Reader
@@ -15,21 +15,20 @@ end
 
 class FastReader < Reader
   property :reading_speed
-  
+
   rule(:all) { reading_speed > 1 }
 end
 
 class NewsStory
   include Neo4j::NodeMixin
   has_n :readers
-  
+
   rule :all
   rule(:featured) { |node| node[:featured] == true }
   rule(:embargoed) { |node| node[:publish_date] > 2010 }
   # young readers for only young readers - find first person which is not young, if not found then the story has only young readers
-  rule(:young_readers) { !readers.find{|user| !user.young?}}
+  rule(:young_readers) { !readers.find { |user| !user.young? } }
 end
-
 
 
 describe "Neo4j::Node#rule", :type => :transactional do
@@ -43,7 +42,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
   it "instance method <rule_name>?  return true if the rule evaluates to true" do
     young = Reader.new :age => 2
-    old = Reader.new :age => 20
+    old   = Reader.new :age => 20
 
     young.should be_young
     old.should be_old
@@ -67,7 +66,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
   it "rule each changed node" do
     a = Reader.new :age => 25
     b = Reader.new :age => 4
-    lambda {finish_tx}.should change(Reader.all, :size).by(2)
+    lambda { finish_tx }.should change(Reader.all, :size).by(2)
 
     Reader.all.should include(a)
     Reader.all.should include(b)
@@ -79,10 +78,10 @@ describe "Neo4j::Node#rule", :type => :transactional do
   it "rule only instances of the given class (no side effects)" do
     Reader.new :age => 25
     Reader.new :age => 4
-    lambda {new_tx}.should_not change(NewsStory.all, :size)
+    lambda { new_tx }.should_not change(NewsStory.all, :size)
 
     NewsStory.new :featured => true, :publish_date => 2011
-    lambda {new_tx}.should_not change(Reader.all, :size)
+    lambda { new_tx }.should_not change(Reader.all, :size)
   end
 
 
@@ -117,7 +116,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
     # now, change age so that it does not belong to the group 'old'
     a[:age] = 8
-    lambda {finish_tx}.should change(Reader.old, :size).by(-1)
+    lambda { finish_tx }.should change(Reader.old, :size).by(-1)
 
     Reader.old.should_not include(a)
   end
@@ -158,7 +157,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
   end
 
   it "add nodes to rule group when a relationship is created" do
-    user = Reader.new :age => 2
+    user  = Reader.new :age => 2
     story = NewsStory.new :featured => true, :publish_date => 2009
     story.readers << user
 
@@ -168,7 +167,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
   end
 
   it "add nodes to rule group when a related node updates its property (trigger_rules)" do
-    user = Reader.new :age => 200
+    user  = Reader.new :age => 200
     story = NewsStory.new :featured => true, :publish_date => 2009
     story.readers << user
 
@@ -183,7 +182,7 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
 
   it "add nodes to rule group when a related node is deleted (trigger_rules)" do
-    user = Reader.new :age => 2
+    user  = Reader.new :age => 2
     story = NewsStory.new :featured => true, :publish_date => 2009
     story.readers << user
 
@@ -197,25 +196,136 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
     NewsStory.young_readers.should include(story)
   end
-  
+
+
+  context "used as sum" do
+
+    class RuleSum
+      class << self
+
+        def add(rule_name, agg_node, prop, old_value, new_value)
+#          puts "add #{rule_name} agg_node: #{agg_node.props.inspect}, old_value:#{old_value}, new_value: #{new_value}"
+          update(rule_name, agg_node, prop, old_value, new_value)
+          #set_value(value(agg_node) + old_rule_value + new_value - old_value)
+        end
+
+        def delete(rule_name, agg_node, prop, old_value, new_value)
+#          puts "delete #{rule_name} agg_node: #{agg_node.props.inspect}, old_value:#{old_value}, new_value: #{new_value}"
+          update(rule_name, agg_node, prop, new_value, old_value)
+          #set_value(value(agg_node) + old_rule_value + new_value - old_value)
+        end
+
+        def update(rule_name, agg_node, prop, old_value, new_value)
+          key = agg_propery(rule_name, prop)
+          agg_node[key] ||= 0
+          old_value ||= 0
+          new_value ||= 0
+          agg_node[key] += new_value - old_value
+        end
+
+        def value(agg_node, rule_name, prop)
+          key = agg_propery(rule_name, prop)
+          agg_node[key] || 0
+          #puts "ret = #{ret}, key = #{key}, value #{agg_node.props.inspect}, arg=#{rule_name}, #{prop}"
+        end
+
+        def agg_propery(rule_name, prop)
+          "_#{aggregate_name}_#{rule_name}_#{prop}"
+        end
+        
+        def aggregate_name
+          :sum
+        end
+      end
+    end
+
+    before(:all) do
+
+      @clazz = create_node_mixin do
+        property :age
+        rule(:all)
+        rule(:young) { age < 10 }
+        rule(:old) { age >= 10 }
+
+        #sum(:age)
+        #average(:age)
+        #count
+        #rules :Sum, :Avergae
+        # sum :age # => Person.sum(:age), Person.young.sum(:age)
+        # Person.count, Person.young.count
+        # rule(:total_age, :age, RuleSum)
+        rule_obj(RuleSum, :young, :age) # RuleSum.new(:age)
+        rule_obj(RuleSum, :old, :age) # RuleSum.new(:age)
+        rule_obj(RuleSum, :all, :age) # RuleSum.new(:age)        
+        #rule(:age, RuleSum) do
+      end
+    end
+
+    it "should sum given properties" do
+      a = @clazz.new :age => 2
+      b = @clazz.new :age => 3
+      new_tx
+      @clazz.sum(:all, :age).should == 5
+    end
+
+    it "can be used togehter with other rules" do
+      @clazz.new :age => 2
+      @clazz.new :age => 3
+      @clazz.new :age => 12
+
+      new_tx
+      @clazz.sum(:all, :age).should == 17
+      @clazz.sum(:young, :age).should == 5
+      @clazz.sum(:old, :age).should == 12
+    end
+
+    it "should tolerate empty aggregation" do
+      @clazz.sum(:all, :age).should == 0
+      @clazz.sum(:young, :age).should == 0
+      @clazz.sum(:old, :age).should == 0
+    end
+
+    it "when a value is changed the aggregations should also change" do
+      a = @clazz.new :age => 2
+      b = @clazz.new :age => 4
+      new_tx
+      b.age = 1
+      new_tx
+      @clazz.sum(:young, :age).should == 3
+      @clazz.sum(:all, :age).should == 3
+      @clazz.sum(:old, :age).should == 0
+    end
+
+    it "when a node is deleted the aggregations should be updated" do
+      a = @clazz.new :age => 2
+      b = @clazz.new :age => 4
+      new_tx
+      b.del
+      new_tx
+      @clazz.sum(:young, :age).should == 2
+      @clazz.sum(:all, :age).should == 2
+      @clazz.sum(:old, :age).should == 0
+    end
+  end
+
   context "when extended" do
     subject { @subject }
-    
+
     before(:each) do
       new_tx
-      @subject = MaleReader.new
+      @subject     = MaleReader.new
       @subject.age = 25
       finish_tx
     end
-    
+
     it "should be included in Reader#old" do
       Reader.old.should include(subject)
     end
-    
+
     it "should be included in MaleReader#old" do
       MaleReader.old.should include(subject)
     end
-    
+
     it "should not be included after age change" do
       new_tx
       subject.age = 8
@@ -224,37 +334,36 @@ describe "Neo4j::Node#rule", :type => :transactional do
       Reader.old.should_not include(subject)
     end
   end
-  
+
   context "when extended and overwriting a rule" do
-    subject { @subject}
-    
+    subject { @subject }
+
     before(:each) do
       new_tx
-      @subject = FastReader.new
-      @subject.age = 25
+      @subject               = FastReader.new
+      @subject.age           = 25
       @subject.reading_speed = 0
       finish_tx
     end
-    
+
     it "should be included in Reader#all" do
       Reader.all.should include(subject)
     end
-    
+
     it "should not be included in FastReader#all" do
       FastReader.all.should_not include(subject)
     end
-    
+
     context "after changing reading speed" do
       before(:each) { new_tx; subject.reading_speed = 2; finish_tx }
-      
+
       it "should be included in Reader#all" do
-	Reader.all.should include(subject)
+        Reader.all.should include(subject)
       end
-      
+
       it "should be included in FastReader#all" do
-	FastReader.all.should include(subject)
+        FastReader.all.should include(subject)
       end
     end
   end
 end
-

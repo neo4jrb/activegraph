@@ -9,7 +9,7 @@ module Neo4j::Mapping
         def add(clazz, field, props, &block)
           clazz                   = clazz.to_s
           @rules                  ||= {}
-          # was there no ruls for this class AND is neo4j running ?
+          # was there no rules for this class AND is neo4j running ?
           if !@rules.include?(clazz) && Neo4j.running?
             # maybe Neo4j was started first and the rules was added later. Create rule nodes now
             create_rule_node_for(clazz)
@@ -21,6 +21,19 @@ module Neo4j::Mapping
           @triggers[clazz]        ||= {}
           trigger                 = props[:trigger].nil? ? [] : props[:trigger]
           @triggers[clazz][field] = trigger.respond_to?(:each) ? trigger : [trigger]
+          @prop_aggregations ||= {}
+        end
+
+        def add_prop_aggregation(clazz, prop_aggregation, rule_name, prop)
+          # TODO, I guess this datastructure is a bit deep :-)
+          rule_name = rule_name.to_sym
+          prop = prop.to_s
+          @prop_aggregations ||= {}
+          @prop_aggregations[clazz.to_s] ||= {}
+          @prop_aggregations[clazz.to_s][rule_name] ||= {}
+          @prop_aggregations[clazz.to_s][rule_name][prop] ||= []
+          raise "Already included aggregate #{clazz}" if @prop_aggregations[clazz.to_s][rule_name][prop].include?(prop_aggregation)
+          @prop_aggregations[clazz.to_s][rule_name][prop] << prop_aggregation
         end
 
         def inherit(parent_class, subclass)
@@ -92,28 +105,59 @@ module Neo4j::Mapping
         end
 
 
-        def on_property_changed(node, *)
-          trigger_rules(node) if trigger?(node)
+        def on_property_changed(node, *changes)
+          trigger_rules(node, *changes) if trigger?(node)
         end
 
-        def trigger_rules(node)
-          trigger_rules_for_class(node, node[:_classname])
+        def on_node_deleted(node, old_properties, data)
+          # do we have prop_aggregations for this
+          clazz = old_properties['_classname']
+          return unless p_class = @prop_aggregations[clazz.to_s]
+          rule_node = rule_for(clazz)
+
+          id = node.getId
+
+          p_class.keys.each do |agg_name|
+            p_class[agg_name].each_pair do |prop, aggs|
+              agg_name = agg_name.to_s
+              aggs.each do |agg|
+                found = data.deletedRelationships.find {|r| r.getEndNode().getId() == id && r.rel_type == agg_name}
+                agg.delete(agg_name, rule_node, prop, nil, old_properties[prop]) if found
+              end
+            end
+          end
+        end
+
+        def trigger_rules(node, *changes)
+          trigger_rules_for_class(node, node[:_classname], *changes)
           trigger_other_rules(node)
         end
 
-        def trigger_rules_for_class(node, clazz)
+        def prop_aggregates(clazz, rule_name, property)
+          return nil unless @prop_aggregations
+          return nil unless p_class = @prop_aggregations[clazz.to_s]
+#          puts "pp_class #{p_class.inspect}, rule_name #{rule_name.inspect}, property=#{property.inspect}"
+          return nil unless p_rule = p_class[rule_name]
+          p_rule[property]
+        end
+        
+        def trigger_rules_for_class(node, clazz, *changes)
           return if @rules[clazz].nil?
 
           agg_node = rule_for(clazz)
           @rules[clazz].each_pair do |field, rule|
+            aggs = prop_aggregates(clazz, field, changes[0])
             if run_rule(rule, node)
               # is this node already included ?
               unless connected?(field, agg_node, node)
                 agg_node.outgoing(field) << node
               end
+              aggs.each {|agg| agg.add(field, agg_node, *changes)} if aggs
             else
               # remove old ?
-              break_connection(field, agg_node, node)
+              if break_connection(field, agg_node, node)
+                aggs.each {|agg| agg.delete(field, agg_node, *changes)} if aggs
+              end
             end
           end
 
@@ -218,7 +262,8 @@ module Neo4j::Mapping
     #   end
     #
     # === Thread Safe ?
-    # Not sure...
+    # Yes, since operations are performed in an transaction. However you may get a deadlock exception:
+    # http://docs.neo4j.org/html/snapshot/#_deadlocks
     #
     module Rule
 
@@ -264,6 +309,20 @@ module Neo4j::Mapping
         end
 
         Rules.add(self, name, props, &block)
+      end
+
+      # TODO,
+      def rule_obj(rule_clazz, rule_name, prop)
+        singelton = class << self
+          self
+        end
+        singelton.send(:define_method, rule_clazz.aggregate_name) do |rule, property|
+          agg_node = Rules.rule_for(self)
+          puts "Call #{rule} arg #{property}"
+          rule_clazz.value(agg_node, rule, property)
+        end unless respond_to?(rule_clazz.aggregate_name)
+
+        Rules.add_prop_aggregation(self, rule_clazz, rule_name, prop)
       end
 
       def inherit_rules_from(clazz)

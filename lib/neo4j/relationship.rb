@@ -9,8 +9,19 @@ module Neo4j
     alias_method :_other_node, :getOtherNode
 
 
+    # Deletes the relationship between the start and end node
+    #
+    # ==== Returns
+    # true :: if the relationship was deleted
+    # false :: if relationship was NOT deleted, maybe it has already been deleted
+    #
     def del
-      delete
+      begin
+        delete
+        true
+      rescue
+        false
+      end
     end
 
     def end_node # :nodoc:

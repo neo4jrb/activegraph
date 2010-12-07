@@ -13,7 +13,57 @@ module Neo4j
   # * <tt>on_property_changed</tt>
   # * <tt>on_rel_property_changed</tt>
   #
-  # === Usage
+  # ==== on_neo4j_started(db)
+  #
+  # Called when the neo4j engine starts.
+  # Notice that the neo4j will be started automatically when the first neo4j operation is performed.
+  # You can also start Neo4j: <tt>Neo4j.start</tt>
+  #
+  # * <tt>db</tt> :: the Neo4j::Database instance
+  #
+  # ==== on_neo4j_shutdown(db)
+  #
+  # Called when the neo4j engine shutdown. You don't need to call <tt>Neo4j.shutdown</tt> since
+  # the it will automatically be shutdown when the application exits (using the at_exit ruby hook).
+  #
+  # * <tt>db</tt> :: the Neo4j::Database instance
+  #
+  # ==== on_node_created(node)
+  #
+  # * <tt>node</tt> :: the node that was created
+  #
+  # ==== on_node_deleted(node, old_props, tx_data)
+  #
+  # * <tt>node</tt> :: the node that was deleted
+  # * <tt>old_props</tt> :: a hash of the old properties this node had
+  # * <tt>tx_data</tt> :: the Java Transaction Data object,  http://api.neo4j.org/current/org/neo4j/graphdb/event/TransactionData.html
+  #
+  # ==== on_relationship_created(rel, tx_data)
+  #
+  # * <tt>rel</tt> :: the relationship that was created
+  # * <tt>tx_data</tt> :: the Java Transaction Data object,  http://api.neo4j.org/current/org/neo4j/graphdb/event/TransactionData.html
+  #
+  # ==== on_relationship_deleted(rel, old_props, tx_data)
+  #
+  # * <tt>rel</tt> :: the relationship that was created
+  # * <tt>old_props</tt> :: a hash of the old properties this relationship had
+  # * <tt>tx_data</tt> :: the Java Transaction Data object,  http://api.neo4j.org/current/org/neo4j/graphdb/event/TransactionData.html
+  #
+  # ==== on_property_changed(node, key, old_value, new_value)
+  #
+  # * <tt>node</tt> :: the node
+  # * <tt>key</tt> :: the name of the property that was changed (String)
+  # * <tt>old_value</tt> :: old value of the property
+  # * <tt>new_value</tt> :: new value of the property
+  #
+  # ==== on_rel_property_changed(rel, key, old_value, new_value)
+  #
+  # * <tt>rel</tt> :: the node that was created
+  # * <tt>key</tt> :: the name of the property that was changed (String)
+  # * <tt>old_value</tt> :: old value of the property
+  # * <tt>new_value</tt> :: new value of the property
+  #
+  # == Usage
   #
   #   class MyListener
   #     def on_node_deleted(node, old_props, tx_data)
