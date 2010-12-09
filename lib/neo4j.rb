@@ -23,6 +23,9 @@ require 'neo4j/config'
 require 'neo4j/database'
 require 'neo4j/neo4j'
 
+require "neo4j/functions/sum"
+
+
 require 'neo4j/index/index'
 require 'neo4j/index/class_methods'
 require 'neo4j/index/indexer_registry'
@@ -46,6 +49,8 @@ require 'neo4j/mapping/has_n'
 require 'neo4j/mapping/has_list'
 require 'neo4j/mapping/node_mixin'
 require 'neo4j/mapping/relationship_mixin'
+require 'neo4j/mapping/rule'
+require 'neo4j/mapping/rule_node'
 require 'neo4j/node_mixin'
 require 'neo4j/relationship_mixin'
 require 'neo4j/mapping/class_methods/rule'

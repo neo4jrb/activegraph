@@ -29,6 +29,8 @@ module Neo4j::Mapping
   module NodeMixin
     include Neo4j::Index
 
+    include Neo4j::Functions
+
     delegate :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
              :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both, :get_property, :set_property,
              :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel, 

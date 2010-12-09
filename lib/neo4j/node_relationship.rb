@@ -116,7 +116,7 @@ module Neo4j
         java_types = types.inject([]) { |result, type| result << type_to_java(type) }.to_java(:'org.neo4j.graphdb.RelationshipType')
         get_relationships(java_types)
       elsif types.size == 1
-        get_relationships(type_to_java(types[0], dir_to_java(dir)))
+        get_relationships(type_to_java(types[0]), dir_to_java(dir))
       elsif dir == :both
         get_relationships(dir_to_java(dir))
       else

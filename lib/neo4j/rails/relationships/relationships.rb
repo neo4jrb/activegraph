@@ -3,7 +3,7 @@ module Neo4j
     module Relationships
 
       # TODO, reuse for incoming relationships ?
-      class OutgoingRelationship
+      class OutgoingRelationship #:nodoc:
         include Enumerable
 
         def initialize(from_node, mapper)
@@ -22,17 +22,17 @@ module Neo4j
       end
 
       
-      def write_changed_relationships
+      def write_changed_relationships #:nodoc:
         @relationships.each_value do |mapper|
           mapper.persist
         end
       end
 
-      def valid_relationships?
+      def valid_relationships? #:nodoc:
         !@relationships.values.find {|mapper| !mapper.valid?}
       end
 
-      def _decl_rels_for(type)
+      def _decl_rels_for(type) #:nodoc:
         dsl = super
         if false && persisted?
           dsl
@@ -42,11 +42,14 @@ module Neo4j
       end
 
 
-      def clear_relationships
+      def clear_relationships #:nodoc:
         @relationships = {}
       end
 
 
+      # See, Neo4j::NodeRelationship#outgoing
+      # Creates or traverse relationships in memory without communicating with the neo4j database.
+      #
       def outgoing(rel_type)
         if persisted?
           super

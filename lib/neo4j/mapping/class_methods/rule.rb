@@ -1,198 +1,5 @@
 module Neo4j::Mapping
   module ClassMethods
-    # Holds all defined rules and trigger them when an event is received.
-    #
-    # See Rule
-    # 
-    class Rules
-      class << self
-        def add(clazz, field, props, &block)
-          clazz                   = clazz.to_s
-          @rules                  ||= {}
-          # was there no rules for this class AND is neo4j running ?
-          if !@rules.include?(clazz) && Neo4j.running?
-            # maybe Neo4j was started first and the rules was added later. Create rule nodes now
-            create_rule_node_for(clazz)
-          end
-          @rules[clazz]           ||= {}
-          filter                  = block.nil? ? Proc.new { |*| true } : block
-          @rules[clazz][field]    = filter
-          @triggers               ||= {}
-          @triggers[clazz]        ||= {}
-          trigger                 = props[:trigger].nil? ? [] : props[:trigger]
-          @triggers[clazz][field] = trigger.respond_to?(:each) ? trigger : [trigger]
-          @prop_aggregations ||= {}
-        end
-
-        def add_prop_aggregation(clazz, prop_aggregation, rule_name, prop)
-          # TODO, I guess this datastructure is a bit deep :-)
-          rule_name = rule_name.to_sym
-          prop = prop.to_s
-          @prop_aggregations ||= {}
-          @prop_aggregations[clazz.to_s] ||= {}
-          @prop_aggregations[clazz.to_s][rule_name] ||= {}
-          @prop_aggregations[clazz.to_s][rule_name][prop] ||= []
-          raise "Already included aggregate #{clazz}" if @prop_aggregations[clazz.to_s][rule_name][prop].include?(prop_aggregation)
-          @prop_aggregations[clazz.to_s][rule_name][prop] << prop_aggregation
-        end
-
-        def inherit(parent_class, subclass)
-          # copy all the rules
-          @rules[parent_class.to_s].each_pair do |field, filter|
-            subclass.rule field, &filter
-          end if @rules[parent_class.to_s]
-        end
-
-        def trigger_other_rules(node)
-          clazz = node[:_classname]
-          @rules[clazz].keys.each do |field|
-            rel_types = @triggers[clazz][field]
-            rel_types.each do |rel_type|
-              node.incoming(rel_type).each { |n| n.trigger_rules }
-            end
-          end
-        end
-
-        def fields_for(clazz)
-          clazz = clazz.to_s
-          return [] if @rules.nil? || @rules[clazz].nil?
-          @rules[clazz].keys
-        end
-
-        def delete(clazz)
-          clazz = clazz.to_s
-          # delete the rule node if found
-          if Neo4j.ref_node.rel?(clazz)
-            Neo4j.ref_node.outgoing(clazz).each { |n| n.del }
-          end
-          @rules.delete(clazz) if @rules
-        end
-
-        def on_neo4j_started(*)
-          @rules.each_key { |clazz| create_rule_node_for(clazz) } if @rules
-        end
-
-        def create_rule_node_for(clazz)
-          if !Neo4j.ref_node.rel?(clazz)
-            Neo4j::Transaction.run do
-              node = Neo4j::Node.new
-              Neo4j.ref_node.outgoing(clazz) << node
-              node
-            end
-          end
-        end
-
-        def trigger?(node)
-          @rules && node.property?(:_classname) && @rules.include?(node[:_classname])
-        end
-
-        def rule_for(clazz)
-          if Neo4j.ref_node.rel?(clazz)
-            Neo4j.ref_node._rel(:outgoing, clazz)._end_node
-          else
-            # this should be called if the rule node gets deleted
-            create_rule_node_for(clazz)
-          end
-        end
-
-
-        def on_relationship_created(rel, *)
-          trigger_start_node = trigger?(rel._start_node)
-          trigger_end_node   = trigger?(rel._end_node)
-          # end or start node must be triggered by this event
-          return unless trigger_start_node || trigger_end_node
-          on_property_changed(trigger_start_node ? rel._start_node : rel._end_node)
-        end
-
-
-        def on_property_changed(node, *changes)
-          trigger_rules(node, *changes) if trigger?(node)
-        end
-
-        def on_node_deleted(node, old_properties, data)
-          # do we have prop_aggregations for this
-          clazz = old_properties['_classname']
-          return unless p_class = @prop_aggregations[clazz.to_s]
-          rule_node = rule_for(clazz)
-
-          id = node.getId
-
-          p_class.keys.each do |agg_name|
-            p_class[agg_name].each_pair do |prop, aggs|
-              agg_name = agg_name.to_s
-              aggs.each do |agg|
-                found = data.deletedRelationships.find {|r| r.getEndNode().getId() == id && r.rel_type == agg_name}
-                agg.delete(agg_name, rule_node, prop, nil, old_properties[prop]) if found
-              end
-            end
-          end
-        end
-
-        def trigger_rules(node, *changes)
-          trigger_rules_for_class(node, node[:_classname], *changes)
-          trigger_other_rules(node)
-        end
-
-        def prop_aggregates(clazz, rule_name, property)
-          return nil unless @prop_aggregations
-          return nil unless p_class = @prop_aggregations[clazz.to_s]
-#          puts "pp_class #{p_class.inspect}, rule_name #{rule_name.inspect}, property=#{property.inspect}"
-          return nil unless p_rule = p_class[rule_name]
-          p_rule[property]
-        end
-        
-        def trigger_rules_for_class(node, clazz, *changes)
-          return if @rules[clazz].nil?
-
-          agg_node = rule_for(clazz)
-          @rules[clazz].each_pair do |field, rule|
-            aggs = prop_aggregates(clazz, field, changes[0])
-            if run_rule(rule, node)
-              # is this node already included ?
-              unless connected?(field, agg_node, node)
-                agg_node.outgoing(field) << node
-              end
-              aggs.each {|agg| agg.add(field, agg_node, *changes)} if aggs
-            else
-              # remove old ?
-              if break_connection(field, agg_node, node)
-                aggs.each {|agg| agg.delete(field, agg_node, *changes)} if aggs
-              end
-            end
-          end
-
-          # recursively add relationships for all the parent classes with rules that also pass for this node
-          if clazz = eval("#{clazz}.superclass")
-            trigger_rules_for_class(node, clazz.to_s)
-          end
-        end
-
-        # work out if two nodes are connected by a particular relationship
-        # uses the end_node to start with because it's more likely to have less relationships to go through
-        # (just the number of superclasses it has really)
-        def connected?(relationship, start_node, end_node)
-          end_node.incoming(relationship).each do |n|
-            return true if n == start_node
-          end
-          false
-        end
-
-        # sever a direct one-to-one relationship if it exists
-        def break_connection(relationship, start_node, end_node)
-          end_node.rels(relationship).incoming.each do |r|
-            return r.del if r.start_node == start_node
-          end
-        end
-
-        def run_rule(rule, node)
-          if rule.arity != 1
-            node.wrapper.instance_eval(&rule)
-          else
-            rule.call(node)
-          end
-        end
-      end
-    end
 
 
     # Allows you to group nodes by providing a rule.
@@ -273,8 +80,10 @@ module Neo4j::Mapping
       # Example of usage:
       #   class Person
       #     include Neo4j
+      #     property :age
       #     rule :all
       #     rule :young { self[:age] < 10 }
+      #     rule(:old, :functions => [Sum.new[:age]) { age > 20 }
       #   end
       #
       #   p1 = Person.new :age => 5
@@ -284,49 +93,38 @@ module Neo4j::Mapping
       #   Person.all    # =>  [p1,p2,p3]
       #   Person.young  # =>  [p1,p2]
       #   p1.young?    # => true
+      #   p1.sum(old, :age) # the some of the old people's age
       #
-      def rule(name, props = {}, &block)
-        singelton = class << self;
+      def rule(rule_name, props = {}, &block)
+        singleton = class << self;
           self;
         end
 
         # define class methods
-        singelton.send(:define_method, name) do
-          agg_node  = Rules.rule_for(self)
-          raise "no rule node for #{name}  on #{self}" if agg_node.nil?
-          traversal = agg_node.outgoing(name) # TODO possible to cache this object
-          Rules.fields_for(self).each do |filter_name|
-            traversal.filter_method(filter_name) do |path|
-              path.end_node.rel?(filter_name, :incoming)
-            end
-          end
-          traversal
-        end unless respond_to?(name)
+        singleton.send(:define_method, rule_name) do
+          rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+          rule_node.traversal(rule_name)
+        end unless respond_to?(rule_name)
 
         # define instance methods
-        self.send(:define_method, "#{name}?") do
+        self.send(:define_method, "#{rule_name}?") do
           instance_eval &block
         end
 
-        Rules.add(self, name, props, &block)
-      end
+        rule = Neo4j::Mapping::Rule.add(self, rule_name, props, &block)
 
-      # TODO,
-      def rule_obj(rule_clazz, rule_name, prop)
-        singelton = class << self
-          self
+        rule.functions && rule.functions.each do |func|
+          puts "Define #{func.class.function_name} on self=#{self}"
+          singleton.send(:define_method, func.class.function_name) do |r_name, function_id|
+            rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+            function = rule_node.find_function(r_name, func.class.function_name, function_id)
+            function.value(rule_node.rule_node, r_name)
+          end
         end
-        singelton.send(:define_method, rule_clazz.aggregate_name) do |rule, property|
-          agg_node = Rules.rule_for(self)
-          puts "Call #{rule} arg #{property}"
-          rule_clazz.value(agg_node, rule, property)
-        end unless respond_to?(rule_clazz.aggregate_name)
-
-        Rules.add_prop_aggregation(self, rule_clazz, rule_name, prop)
       end
 
       def inherit_rules_from(clazz)
-        Rules.inherit(clazz, self)
+        Neo4j::Mapping::Rule.inherit(clazz, self)
       end
 
       # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
@@ -335,20 +133,20 @@ module Neo4j::Mapping
         singelton = class << self;
           self;
         end
-        Rules.fields_for(self).each do |name|
-          singelton.send(:remove_method, name)
-        end
-        Rules.delete(self)
+        rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+
+        rule_node.rule_names.each {|rule_name| singelton.send(:remove_method, rule_name)}
+        rule_node.rules.clear
       end
 
       # Force to trigger the rules.
       # You don't normally need that since it will be done automatically.
       def trigger_rules(node)
-        Rules.trigger_rules(node)
+        Neo4j::Mapping::Rule.trigger_rules(node)
       end
 
     end
 
-    Neo4j.unstarted_db.event_handler.add(Rules) unless Neo4j.read_only?
+    Neo4j.unstarted_db.event_handler.add(Neo4j::Mapping::Rule) unless Neo4j.read_only?
   end
 end

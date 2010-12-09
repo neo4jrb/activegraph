@@ -6,7 +6,7 @@ class Reader
 
   rule :all
   rule(:old) { age > 10 } # for testing evaluation in the context of a wrapped ruby object
-  rule(:young, :trigger => :readers) { |node| node[:age] < 5 } # for testing using native java neo4j node
+  rule(:young, :triggers => :readers) { |node| node[:age] < 5 } # for testing using native java neo4j node
 end
 
 class MaleReader < Reader
@@ -83,7 +83,6 @@ describe "Neo4j::Node#rule", :type => :transactional do
     NewsStory.new :featured => true, :publish_date => 2011
     lambda { new_tx }.should_not change(Reader.all, :size)
   end
-
 
   it "can chain rules" do
     a = NewsStory.new :publish_date => 2011, :featured => true
@@ -197,116 +196,68 @@ describe "Neo4j::Node#rule", :type => :transactional do
     NewsStory.young_readers.should include(story)
   end
 
-
   context "used as sum" do
-
-    class RuleSum
-      class << self
-
-        def add(rule_name, agg_node, prop, old_value, new_value)
-#          puts "add #{rule_name} agg_node: #{agg_node.props.inspect}, old_value:#{old_value}, new_value: #{new_value}"
-          update(rule_name, agg_node, prop, old_value, new_value)
-          #set_value(value(agg_node) + old_rule_value + new_value - old_value)
-        end
-
-        def delete(rule_name, agg_node, prop, old_value, new_value)
-#          puts "delete #{rule_name} agg_node: #{agg_node.props.inspect}, old_value:#{old_value}, new_value: #{new_value}"
-          update(rule_name, agg_node, prop, new_value, old_value)
-          #set_value(value(agg_node) + old_rule_value + new_value - old_value)
-        end
-
-        def update(rule_name, agg_node, prop, old_value, new_value)
-          key = agg_propery(rule_name, prop)
-          agg_node[key] ||= 0
-          old_value ||= 0
-          new_value ||= 0
-          agg_node[key] += new_value - old_value
-        end
-
-        def value(agg_node, rule_name, prop)
-          key = agg_propery(rule_name, prop)
-          agg_node[key] || 0
-          #puts "ret = #{ret}, key = #{key}, value #{agg_node.props.inspect}, arg=#{rule_name}, #{prop}"
-        end
-
-        def agg_propery(rule_name, prop)
-          "_#{aggregate_name}_#{rule_name}_#{prop}"
-        end
-        
-        def aggregate_name
-          :sum
-        end
-      end
-    end
 
     before(:all) do
 
-      @clazz = create_node_mixin do
+      class SumNode
+        include Neo4j::NodeMixin
         property :age
-        rule(:all)
-        rule(:young) { age < 10 }
-        rule(:old) { age >= 10 }
-
-        #sum(:age)
-        #average(:age)
-        #count
-        #rules :Sum, :Avergae
-        # sum :age # => Person.sum(:age), Person.young.sum(:age)
-        # Person.count, Person.young.count
-        # rule(:total_age, :age, RuleSum)
-        rule_obj(RuleSum, :young, :age) # RuleSum.new(:age)
-        rule_obj(RuleSum, :old, :age) # RuleSum.new(:age)
-        rule_obj(RuleSum, :all, :age) # RuleSum.new(:age)        
-        #rule(:age, RuleSum) do
+        rule :all, :functions => [Sum.new(:age)]
+        rule(:young, :functions => Sum.new(:age)) { age < 10 }
+        rule(:old, :functions => [Sum.new(:age)]) { age >= 10 }
       end
     end
 
     it "should sum given properties" do
-      a = @clazz.new :age => 2
-      b = @clazz.new :age => 3
+      a = SumNode.new :age => 2
+      b = SumNode.new :age => 3
       new_tx
-      @clazz.sum(:all, :age).should == 5
+      SumNode.sum(:all, :age).should == 5
     end
 
-    it "can be used togehter with other rules" do
-      @clazz.new :age => 2
-      @clazz.new :age => 3
-      @clazz.new :age => 12
+
+    it "can be used together with other rules" do
+      SumNode.new :age => 2
+      SumNode.new :age => 3
+      SumNode.new :age => 12
 
       new_tx
-      @clazz.sum(:all, :age).should == 17
-      @clazz.sum(:young, :age).should == 5
-      @clazz.sum(:old, :age).should == 12
+      SumNode.sum(:all, :age).should == 17
+      SumNode.sum(:young, :age).should == 5
+      SumNode.sum(:old, :age).should == 12
     end
 
-    it "should tolerate empty aggregation" do
-      @clazz.sum(:all, :age).should == 0
-      @clazz.sum(:young, :age).should == 0
-      @clazz.sum(:old, :age).should == 0
+    it "should tolerate empty rule groups" do
+      SumNode.sum(:all, :age).should == 0
+      SumNode.sum(:young, :age).should == 0
+      SumNode.sum(:old, :age).should == 0
     end
 
-    it "when a value is changed the aggregations should also change" do
-      a = @clazz.new :age => 2
-      b = @clazz.new :age => 4
+    it "when a value is changed the function's value should also change" do
+      a = SumNode.new :age => 2
+      b = SumNode.new :age => 4
       new_tx
       b.age = 1
       new_tx
-      @clazz.sum(:young, :age).should == 3
-      @clazz.sum(:all, :age).should == 3
-      @clazz.sum(:old, :age).should == 0
+      SumNode.sum(:young, :age).should == 3
+      SumNode.sum(:all, :age).should == 3
+      SumNode.sum(:old, :age).should == 0
     end
-
-    it "when a node is deleted the aggregations should be updated" do
-      a = @clazz.new :age => 2
-      b = @clazz.new :age => 4
+  
+    it "when a node is deleted the function's value should be updated" do
+      pending
+      a = SumNode.new :age => 2
+      b = SumNode.new :age => 4
       new_tx
       b.del
       new_tx
-      @clazz.sum(:young, :age).should == 2
-      @clazz.sum(:all, :age).should == 2
-      @clazz.sum(:old, :age).should == 0
+      SumNode.sum(:young, :age).should == 2
+      SumNode.sum(:all, :age).should == 2
+      SumNode.sum(:old, :age).should == 0
     end
   end
+
 
   context "when extended" do
     subject { @subject }
