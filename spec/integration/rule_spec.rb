@@ -244,14 +244,14 @@ describe "Neo4j::Node#rule", :type => :transactional do
       SumNode.sum(:all, :age).should == 3
       SumNode.sum(:old, :age).should == 0
     end
-  
+
     it "when a node is deleted the function's value should be updated" do
-      pending
       a = SumNode.new :age => 2
       b = SumNode.new :age => 4
       new_tx
       b.del
       new_tx
+
       SumNode.sum(:young, :age).should == 2
       SumNode.sum(:all, :age).should == 2
       SumNode.sum(:old, :age).should == 0

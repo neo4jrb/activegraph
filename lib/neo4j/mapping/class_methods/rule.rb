@@ -47,7 +47,7 @@ module Neo4j::Mapping
     #   class Reader
     #     include Neo4j::NodeMixin
     #     property :age
-    #     rule(:young, :trigger => :readers) { age < 15 }
+    #     rule(:young, :triggers => :readers) { age < 15 }
     #   end
     #
     #   class NewsStory
@@ -114,7 +114,6 @@ module Neo4j::Mapping
         rule = Neo4j::Mapping::Rule.add(self, rule_name, props, &block)
 
         rule.functions && rule.functions.each do |func|
-          puts "Define #{func.class.function_name} on self=#{self}"
           singleton.send(:define_method, func.class.function_name) do |r_name, function_id|
             rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
             function = rule_node.find_function(r_name, func.class.function_name, function_id)

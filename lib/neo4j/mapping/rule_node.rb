@@ -9,6 +9,10 @@ module Neo4j::Mapping
       @rules = []
     end
 
+    def to_s
+      "RuleNode #{@clazz}, rules: #{@rules.inspect}"
+    end
+    
     def node_exist?
       !Neo4j.ref_node.rel?(@clazz)
     end

@@ -13,9 +13,9 @@ module Neo4j::Mapping
       @rule_name = rule_name
       @triggers  = props[:triggers]
       @functions = props[:functions]
-      @triggers = [@triggers] if @triggers && !@triggers.respond_to?(:each)
+      @triggers  = [@triggers] if @triggers && !@triggers.respond_to?(:each)
       @functions = [@functions] if @functions && !@functions.respond_to?(:each)
-      @filter = block.nil? ? Proc.new { |*| true } : block
+      @filter    = block.nil? ? Proc.new { |*| true } : block
     end
 
     def to_s
@@ -24,7 +24,7 @@ module Neo4j::Mapping
 
     def find_function(function_name, function_id)
       function_id = function_id.to_s
-      @functions && @functions.find{|f| puts "FIND #{f}"; f.function_id == function_id && f.class.function_name == function_name}
+      @functions && @functions.find{|f| f.function_id == function_id && f.class.function_name == function_name}
     end
 
     # Reconstruct the properties given when created this rule
@@ -128,13 +128,15 @@ module Neo4j::Mapping
         return if rule_node.nil?
 
         id = node.getId
-        rule_node.rules do |rule|
+        rule_node.rules.each do |rule|
           next if rule.functions.nil?
-          rule_name = rule.rule_name
+          rule_name = rule.rule_name.to_s
           rule.functions.each do |function|
-            next unless data.deletedRelationships.find { |r| r.getEndNode().getId() == id && r.rel_type == rule_name }
-            previous_value = old_properties[function.property]
-            function.delete(rule_name, rule_node, previous_value) if previous_value
+            next unless data.deletedRelationships.find do |r|
+              r.getEndNode().getId() == id && r.rel_type == rule_name
+            end
+            previous_value = old_properties[function.function_id]
+            function.delete(rule_name, rule_node.rule_node, previous_value) if previous_value
           end if rule.functions
         end
       end
