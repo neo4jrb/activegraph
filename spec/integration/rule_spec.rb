@@ -196,6 +196,51 @@ describe "Neo4j::Node#rule", :type => :transactional do
     NewsStory.young_readers.should include(story)
   end
 
+  context "used as count" do
+
+    before(:all) do
+
+      class CountNode
+        include Neo4j::NodeMixin
+        property :age
+        rule :all, :functions => [Count.new]
+      end
+    end
+
+    it "is 0 when there are nodes of that class" do
+      CountNode.all.count.should == 0
+    end
+
+    it "increase the count property when a new node is created" do
+      CountNode.new
+      new_tx
+      CountNode.all.count.should == 1
+      CountNode.new
+      CountNode.new
+      new_tx
+      CountNode.all.count.should == 3
+    end
+
+    it "descrease the count property when a new node is created" do
+      c = CountNode.new
+      new_tx
+      c.del
+      new_tx
+      CountNode.all.count.should == 0
+    end
+
+    it "should not change count when properties or relationships is changed" do
+      c = CountNode.new :foo => '42'
+      new_tx
+      c[:foo] = nil
+      c.del
+      new_tx
+      CountNode.all.count.should == 0
+    end
+
+
+  end
+
   context "used as sum" do
 
     before(:all) do

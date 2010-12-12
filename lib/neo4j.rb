@@ -23,6 +23,8 @@ require 'neo4j/config'
 require 'neo4j/database'
 require 'neo4j/neo4j'
 
+require "neo4j/functions/function"
+require "neo4j/functions/count"
 require "neo4j/functions/sum"
 
 
