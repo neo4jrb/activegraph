@@ -203,41 +203,98 @@ describe "Neo4j::Node#rule", :type => :transactional do
       class CountNode
         include Neo4j::NodeMixin
         property :age
-        rule :all, :functions => [Count.new]
+        rule :all, :functions => Count.new
+        rule(:young, :functions => Count.new) {age && age < 10 }
       end
     end
 
-    it "is 0 when there are nodes of that class" do
-      CountNode.all.count.should == 0
+    context "rule group young" do
+      it "is 0 when there are nodes of that class and rule group" do
+        CountNode.count(:young).should == 0
+      end
+
+      it "increase the count property when a new node is created of given rule group" do
+        CountNode.new :age => 1
+        CountNode.new :age => 100
+        CountNode.new :age => 100
+        new_tx
+        CountNode.count(:young).should == 1
+        CountNode.count(:all).should == 3
+      end
+      
+      it "increase the count property when a node change rule group (property changed)" do
+        a = CountNode.new :age => 100
+        b = CountNode.new :age => 100
+        new_tx
+        CountNode.count(:young).should == 0
+        a.age = 2
+        new_tx
+        CountNode.count(:young).should == 1
+        CountNode.count(:all).should == 2
+      end
+
+      it "decrease the count property when a new node is deleted of given rule group" do
+        x = CountNode.new :age => 4
+        a = CountNode.new :age => 1
+        b = CountNode.new :age => 100
+        new_tx
+        CountNode.count(:young).should == 2
+        CountNode.count(:all).should == 3
+
+        # delete two and add one
+        a.del
+        x.del
+        b.age = 2
+        new_tx
+        CountNode.count(:young).should == 1
+        CountNode.count(:all).should == 1
+      end
+
+      it "should alias method size to count" do
+        a = CountNode.new
+        a.age = 1
+        b = CountNode.new
+        b.age = 2
+        new_tx
+        c = CountNode.new
+        c.age = 3
+        new_tx
+
+        CountNode.count(:young).should == 3
+      end
     end
 
-    it "increase the count property when a new node is created" do
-      CountNode.new
-      new_tx
-      CountNode.all.count.should == 1
-      CountNode.new
-      CountNode.new
-      new_tx
-      CountNode.all.count.should == 3
-    end
+    context "all" do
+      it "is 0 when there are nodes of that class" do
+        CountNode.all.count.should == 0
+      end
 
-    it "descrease the count property when a new node is created" do
-      c = CountNode.new
-      new_tx
-      c.del
-      new_tx
-      CountNode.all.count.should == 0
-    end
+      it "increase the count property when a new node is created" do
+        CountNode.new
+        new_tx
+        CountNode.count(:all).should == 1
+        CountNode.new
+        CountNode.new
+        new_tx
+        CountNode.count(:all).should == 3
+      end
 
-    it "should not change count when properties or relationships is changed" do
-      c = CountNode.new :foo => '42'
-      new_tx
-      c[:foo] = nil
-      c.del
-      new_tx
-      CountNode.all.count.should == 0
-    end
+      it "decrease the count property when a new node is deleted" do
+        c = CountNode.new
+        new_tx
+        c.del
+        new_tx
+        CountNode.count(:all).should == 0
+      end
 
+      it "should not change count when properties or relationships is changed" do
+        c = CountNode.new :foo => '42'
+        new_tx
+        c[:foo] = nil
+        new_tx
+        CountNode.count(:all).should == 1
+      end
+    end
 
   end
 

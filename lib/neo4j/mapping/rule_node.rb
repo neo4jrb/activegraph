@@ -109,16 +109,44 @@ module Neo4j::Mapping
     end
 
     def execute_rule(rule, node, *changes)
-      functions = !changes.empty? && rule.functions_for(changes[0])
-
       if rule.execute_filter(node)
-        connect(rule.rule_name, node) unless connected?(rule.rule_name, node)
-        functions.each { |f| f.update(rule.rule_name, rule_node, changes[1], changes[2]) } if functions
+        if connected?(rule.rule_name, node)
+          # it was already connected - the node is in the same rule group but a property has changed
+          execute_update_functions(rule, *changes)
+        else
+          # the node has changed or is in a new rule group
+          connect(rule.rule_name, node)
+          execute_add_functions(rule, *changes)
+        end
       else
         if break_connection(rule.rule_name, node)
-          functions.each { |f| f.delete(rule.rule_name, rule_node, changes[1]) } if functions
+          # the node has been removed from a rule group
+          execute_delete_functions(rule, *changes)
         end
       end
+    end
+
+    def execute_update_functions(rule, *changes)
+      if functions = find_functions_for_changes(rule, *changes)
+        functions && functions.each { |f| f.update(rule.rule_name, rule_node, changes[1], changes[2]) }
+      end
+    end
+
+    def execute_add_functions(rule, *changes)
+      if functions = find_functions_for_changes(rule, *changes)
+        functions && functions.each { |f| f.add(rule.rule_name, rule_node, changes[2]) }
+      end
+    end
+
+    def execute_delete_functions(rule, *changes)
+      if functions = find_functions_for_changes(rule, *changes)
+        functions.each { |f| f.delete(rule.rule_name, rule_node, changes[1]) }
+      end
+    end
+
+    def find_functions_for_changes(rule, *changes)
+      # changes = [property, old_value, new_value]
+      !changes.empty? && rule.functions_for(changes[0])
     end
 
     # work out if two nodes are connected by a particular relationship

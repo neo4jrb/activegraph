@@ -114,8 +114,9 @@ module Neo4j::Mapping
         rule = Neo4j::Mapping::Rule.add(self, rule_name, props, &block)
 
         rule.functions && rule.functions.each do |func|
-          singleton.send(:define_method, func.class.function_name) do |r_name, function_id|
+          singleton.send(:define_method, func.class.function_name) do |r_name, *args|
             rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+            function_id = args.empty? ? "_classname" : args[0]
             function = rule_node.find_function(r_name, func.class.function_name, function_id)
             function.value(rule_node.rule_node, r_name)
           end
