@@ -119,7 +119,7 @@ module Neo4j::Mapping
             function_id = args.empty? ? "_classname" : args[0]
             function = rule_node.find_function(r_name, func.class.function_name, function_id)
             function.value(rule_node.rule_node, r_name)
-          end
+          end unless respond_to?(func.class.function_name)
         end
       end
 
