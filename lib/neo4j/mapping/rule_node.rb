@@ -10,7 +10,7 @@ module Neo4j::Mapping
     end
 
     def to_s
-      "RuleNode #{@clazz}, rules: #{@rules.inspect}"
+      "RuleNode #{@clazz}, node #{rule_node} #rules: #{@rules.size}"
     end
     
     def node_exist?
@@ -39,12 +39,12 @@ module Neo4j::Mapping
     end
 
     def find_node
-      Neo4j.ref_node.rel?(@clazz) && Neo4j.ref_node._rel(:outgoing, @clazz)._end_node
+      Neo4j.ref_node.rel?(@clazz.to_s) && Neo4j.ref_node._rel(:outgoing, @clazz.to_s)._end_node
     end
 
     def on_neo4j_started
       # initialize the rule node when neo4j starts
-      rule_node
+      @rule_node = find_node || create_node
     end
 
     def rule_node

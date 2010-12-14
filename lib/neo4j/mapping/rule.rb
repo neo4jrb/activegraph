@@ -54,10 +54,9 @@ module Neo4j::Mapping
 
     class << self
       def add(clazz, rule_name, props, &block)
-        clazz              = clazz.to_s
         @rule_nodes        ||= {}
-        @rule_nodes[clazz] ||= RuleNode.new(clazz)
-        rule_node          = @rule_nodes[clazz]
+        @rule_nodes[clazz.to_s] ||= RuleNode.new(clazz)
+        rule_node          = @rule_nodes[clazz.to_s]
         rule_node.remove_rule(rule_name) # remove any previously inherited rules
         rule_node.add_rule(rule_name, props, &block)
       end
@@ -121,6 +120,7 @@ module Neo4j::Mapping
         # have we deleted a rule node ?
         del_rule_node = @rule_nodes && @rule_nodes.values.find{|rn| rn.rule_node?(node)}
         del_rule_node && del_rule_node.clear_rule_node
+        return if del_rule_node
 
         # do we have prop_aggregations for this
         clazz     = old_properties['_classname']

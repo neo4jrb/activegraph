@@ -44,17 +44,16 @@ module Neo4j
       def value(rule_node, rule_name)
         key = rule_node_property(rule_name)
         rule_node[key] || 0
-        #puts "ret = #{ret}, key = #{key}, value #{rule_node.props.inspect}, arg=#{rule_name}, #{prop}"
       end
 
       # Called when a node is removed from a rule group
-      # Default is calling update method which is expected to be implemented in a subcalss
+      # Default is calling update method which is expected to be implemented in a subclass
       def delete(rule_name, rule_node, old_value)
         update(rule_name, rule_node, old_value, nil)
       end
 
       # Called when a node is added to a rule group
-      # Default is calling update method which is expected to be implemented in a subcalss
+      # Default is calling update method which is expected to be implemented in a subclass
       def add(rule_name, rule_node, new_value)
         update(rule_name, rule_node, nil, new_value)
       end

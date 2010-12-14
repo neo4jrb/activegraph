@@ -11,6 +11,45 @@ describe Neo4j::Functions::Count, :type => :transactional do
       @clazz.rule(:all, :functions => Neo4j::Functions::Count.new)
     end
 
+    context "for a subclass" do
+      before(:all) do
+
+        class CountBaseClass
+          include Neo4j::NodeMixin
+          rule(:all, :functions => Count.new)
+        end
+
+        class CountSubClass < CountBaseClass
+        end
+      end
+
+      it "should update counter for only subclass when a new subclass is created" do
+        CountSubClass.new
+        new_tx
+        CountBaseClass.count(:all).should == 1
+        CountSubClass.count(:all).should == 1
+
+        CountBaseClass.new
+        new_tx
+        CountBaseClass.count(:all).should == 2
+        CountSubClass.count(:all).should == 1
+        
+      end
+
+      it "should update counter for both baseclass and subclass" do
+        CountBaseClass.new
+        new_tx
+        CountSubClass.count(:all).should == 0
+        CountBaseClass.count(:all).should == 1
+
+        CountSubClass.new
+        new_tx
+        CountSubClass.count(:all).should == 1
+        CountBaseClass.count(:all).should == 2
+      end
+    end
+
+
     context "when empty group" do
       it ".count(:all).should == 0" do
         @clazz.count(:all).should == 0
@@ -222,7 +261,7 @@ describe Neo4j::Functions::Sum, :type => :transactional do
         @clazz.sum(:old, :age).should == 0
         @clazz.old.sum(:age).should == 0
       end
-      
+
       it "when creating a node and it does not have an age property it should not change the sum" do
         @clazz.new
         new_tx
@@ -262,7 +301,7 @@ describe Neo4j::Functions::Sum, :type => :transactional do
         @node[:age] = 10
         new_tx
         @clazz.sum(:all, :age).should == 10
-        @clazz.all.sum(:age).should ==  10
+        @clazz.all.sum(:age).should == 10
       end
 
       it "when removing the age property it should remove the old age from the sum" do
@@ -285,34 +324,4 @@ describe Neo4j::Functions::Sum, :type => :transactional do
 
   end
 
-
-#
-#  it "should tolerate empty rule groups" do
-#    @clazz.sum(:all, :age).should == 0
-#    @clazz.sum(:young, :age).should == 0
-#    @clazz.sum(:old, :age).should == 0
-#  end
-#
-#  it "when a value is changed the function's value should also change" do
-#    a = @clazz.new :age => 2
-#    b = @clazz.new :age => 4
-#    new_tx
-#    b.age = 1
-#    new_tx
-#    @clazz.sum(:young, :age).should == 3
-#    @clazz.sum(:all, :age).should == 3
-#    @clazz.sum(:old, :age).should == 0
-#  end
-#
-#  it "when a node is deleted the function's value should be updated" do
-#    a = @clazz.new :age => 2
-#    b = @clazz.new :age => 4
-#    new_tx
-#    b.del
-#    new_tx
-#
-#    @clazz.sum(:young, :age).should == 2
-#    @clazz.sum(:all, :age).should == 2
-#    @clazz.sum(:old, :age).should == 0
-#  end
 end

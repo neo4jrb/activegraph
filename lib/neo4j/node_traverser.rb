@@ -71,7 +71,7 @@ module Neo4j
         break if i >= to
       end
       pager.replace res
-      pager.total_entries ||= size  # TODO, this could be very slow to do
+      pager.total_entries ||= count
     end
 
     def <<(other_node)
