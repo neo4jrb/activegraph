@@ -77,14 +77,17 @@ module Neo4j::Mapping
       r && @rules.delete(r)
     end
 
-    # Return a traversal object with methods for each rule
-    # E.g. Person.all.old
+    # Return a traversal object with methods for each rule and function.
+    # E.g. Person.all.old or Person.all.sum(:age)
     def traversal(rule_name)
       # define method on the traversal
       traversal = rule_node.outgoing(rule_name)
       @rules.each do |rule|
         traversal.filter_method(rule.rule_name) do |path|
           path.end_node.rel?(rule.rule_name, :incoming)
+        end
+        rule.functions && rule.functions.each do |func|
+          traversal.functions_method(func, self, rule_name)
         end
       end
       traversal

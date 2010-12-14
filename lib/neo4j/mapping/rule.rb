@@ -131,6 +131,11 @@ module Neo4j::Mapping
         rule_node.rules.each do |rule|
           next if rule.functions.nil?
           rule_name = rule.rule_name.to_s
+
+          # is the rule node deleted ?
+          deleted_rule_node = data.deletedNodes.find{|n| n == rule_node.rule_node}
+          next if deleted_rule_node
+          
           rule.functions.each do |function|
             next unless data.deletedRelationships.find do |r|
               r.getEndNode().getId() == id && r.rel_type == rule_name
