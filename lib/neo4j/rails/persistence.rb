@@ -138,6 +138,7 @@ module Neo4j
 
       def update
         write_changed_attributes
+        write_changed_relationships
         clear_changes
         clear_relationships
         true
