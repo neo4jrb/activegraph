@@ -17,19 +17,13 @@ describe Neo4j::Node, :type => :transactional do
   end
 
   describe "#del" do
-    it "returns true if the node was deleted" do
+    it "raise an exception if node was already deleted. Finish Transaction will also raise an exception" do
       new_node = Neo4j::Node.new
-      new_node.del.should be_true
+      new_node.del.should be_nil
+      lambda{ new_node.del }.should raise_error
+      lambda{ finish_tx }.should raise_error
     end
 
-    it "returns false if the node has already deleted" do
-      pending
-      new_node = Neo4j::Node.new
-      new_node.del
-      new_node.del.should be_false
-      finish_tx
-    end
-    
     it "deletes the node - does not exist after the transaction finish" do
       new_node = Neo4j::Node.new
       new_node.del

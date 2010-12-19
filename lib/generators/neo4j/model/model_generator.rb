@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', '..', 'neo4j.rb')
 
-class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base
+class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
 	argument :attributes, :type => :array, :default => [], :banner => "field:type field:type"
 	
 	check_class_collision

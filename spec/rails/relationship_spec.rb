@@ -36,6 +36,20 @@ describe "Neo4j::Model Relationships" do
       x.friends.size.should == 0
     end
 
+    it "#del deletes the relationship without needing to call save" do
+      clazz = create_model
+      clazz.has_n(:friends)
+      a = clazz.create
+      b = clazz.create
+      a.friends << b
+      a.save
+      a.outgoing(:friends).should include(b)
+
+      rel = a.rels(:friends).outgoing.to_other(b).first
+      Neo4j::Transaction.run { rel.del }
+      a.outgoing(:friends).should_not include(b)
+    end
+
     it "has_n: should be empty when it has no relationships" do
       clazz = create_model
       clazz.has_n(:knows)

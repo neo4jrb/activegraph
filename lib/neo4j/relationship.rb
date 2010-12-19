@@ -11,17 +11,13 @@ module Neo4j
 
     # Deletes the relationship between the start and end node
     #
+    # May raise an exception if delete was unsuccessful.
+    #
     # ==== Returns
-    # true :: if the relationship was deleted
-    # false :: if relationship was NOT deleted, maybe it has already been deleted
+    # nil
     #
     def del
-      begin
-        delete
-        true
-      rescue
-        false
-      end
+      delete
     end
 
     def end_node # :nodoc:

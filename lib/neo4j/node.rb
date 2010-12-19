@@ -8,20 +8,20 @@ module Neo4j
     include Neo4j::Equal
     include Neo4j::Index
 
-    # Delete the node and all its relationship
+    # Delete the node and all its relationship.
+    #
+    # It might raise an exception if this method was called without a Transaction,
+    # or if it failed to delete the node (it maybe was already deleted).
+    #
+    # If this method raise an exception you may also get an exception when the transaction finish.
     #
     # ==== Returns
-    # true :: if the node was deleted
-    # false :: if node was not deleted, maybe it has already been deleted
+    # nil or raise an exception
     #
     def del
       rels.each {|r| r.del}
-      begin
-        delete
-        true
-      rescue
-        false
-      end
+      delete
+      nil
     end
 
     # returns true if the node exists in the database
