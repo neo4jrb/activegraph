@@ -13,11 +13,15 @@ module Neo4j
 
         def <<(other)
           @mapper.create_relationship_to(@from_node, other)
+          self
+        end
+
+        def size
+          @mapper.dsl.all_relationships(@from_node).size
         end
 
         def each(&block)
-          # TODO Direction
-          @mapper.each &block
+          @mapper.each_node(@from_node, :outgoing, &block)
         end
       end
 
@@ -37,7 +41,7 @@ module Neo4j
         if false && persisted?
           dsl
         else
-          @relationships[type] ||= Mapper.new(type, dsl)
+          @relationships[type] ||= Mapper.new(type, dsl, self)
         end
       end
 
@@ -51,12 +55,8 @@ module Neo4j
       # Creates or traverse relationships in memory without communicating with the neo4j database.
       #
       def outgoing(rel_type)
-        if persisted?
-          super
-        else
-          @relationships[rel_type] ||= Mapper.new(rel_type)
-          OutgoingRelationship.new(self, @relationships[rel_type])
-        end
+        dsl = _decl_rels_for(rel_type)
+        OutgoingRelationship.new(self, dsl)
       end
     end
   end

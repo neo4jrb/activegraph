@@ -3,10 +3,13 @@ module Neo4j
     module Relationships
 
       class Mapper
-        def initialize(rel_type, dsl=nil)
+        attr_reader :dsl
+
+        def initialize(rel_type, dsl, node)
           @rel_type      = rel_type
           @relationships = []
           @dsl           = dsl
+          @node          = node
         end
 
         def rel_type
@@ -22,24 +25,41 @@ module Neo4j
         end
         
         def single_relationship(*)
-          @relationships.first
+          use_persisted_rels? ? @dsl.single_relationship(@node) : @relationships.first
         end
 
-        def each(&block)
-          # TODO direction
-          # TODO DRY
-          @relationships.each do |rel|
-            block.call rel.end_node
+        def all_relationships(*)
+          if use_persisted_rels?
+            @dsl.all_relationships(@node)
+          else
+            @relationships
           end
-          @dsl.each(&block) if @dsl
+        end
+
+        def each42(&block) # TODO remove ?
+          if use_persisted_rels?
+            @dsl.all_relationships(@node).each(&block)
+          else
+            # TODO direction
+            @relationships.each do |rel|
+              block.call rel.end_node
+            end
+          end
         end
 
         def each_node(node, direction, &block) #:nodoc:
-          # TODO direction
-          @relationships.each do |rel|
-            block.call rel.end_node
+          if use_persisted_rels?
+            @dsl.each_node(node, direction, &block)
+          else
+            # TODO direction
+            @relationships.each do |rel|
+              block.call rel.end_node
+            end
           end
-          @dsl.each_node(node, direction, &block) if @dsl && node.persisted?
+        end
+
+        def use_persisted_rels? #:nodoc:
+          @relationships.empty? && @node.persisted?
         end
 
         def del_rel(rel)
@@ -52,6 +72,7 @@ module Neo4j
           #from, to = (@dsl && @dsl.incoming?) ? [to, from] : [from, to]
           @relationships << Relationship.new(@rel_type, from, to, self)
         end
+        
 
         def single_node(from)
           if !@relationships.empty?

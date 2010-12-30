@@ -13,12 +13,71 @@ describe "Neo4j::Model Relationships" do
       a.friends << b << c
       a.save!
       a.friends.size.should == 2
-      a.friends.should include(b,c)
+      a.friends.should include(b, c)
 
-      # it should be persiested
+      # it should be persisted
       x = clazz.find(a.neo_id)
       x.friends.size.should == 2
     end
+
+    it "should find the relationship using #outgoing method" do
+      clazz = create_model
+      clazz.has_n(:friends)
+      a = clazz.create
+      b = clazz.create
+      c = clazz.create
+
+      a.friends << b << c
+      a.save!
+
+      a.outgoing(:friends).size.should == 2
+      a.outgoing(:friends).should include(b, c)
+    end
+
+
+    it "should find the relationship using #has_n method when created with outgoing method" do
+      clazz = create_model
+      clazz.has_n(:friends)
+      a = clazz.create
+      b = clazz.create
+      c = clazz.create
+
+      a.outgoing(:friends) << b << c
+      a.friends.should include(b, c)
+      a.save!
+      a.friends.should include(b, c)
+    end
+
+    it "should find the relationship using #has_n friends_rels method when created with outgoing method" do
+      clazz = create_model
+      clazz.has_n(:friends)
+      a = clazz.create
+      b = clazz.create
+      c = clazz.create
+
+      a.friends << b << c
+
+      a.friends_rels.size.should == 2
+      a.save!
+      a.friends_rels.size.should == 2
+    end
+
+    it "should only find none persisted relationship before saving it" do
+      clazz = create_model
+      clazz.has_n(:friends)
+      a = clazz.create
+      b = clazz.create
+      c = clazz.create
+
+      a.friends << b << c
+      a.save!
+      d = clazz.create
+      a.friends << d
+      a.friends_rels.size.should == 1
+      a.save!
+      a.friends_rels.size.should == 3
+    end
+
 
     it "#save is neccessarly to create relationships" do
       clazz = create_model
@@ -210,7 +269,7 @@ describe "Neo4j::Model Relationships" do
 
         # then
         jack.save.should be_false
-        jack.knows.should include(carol)
+        jack.knows.should_not include(carol) # since we have created a new relationship only that is visible, is this ok ?
         jack.knows.should include(bob)
         jack.reload
         jack.knows.should include(carol)

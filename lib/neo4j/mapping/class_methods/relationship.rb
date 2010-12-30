@@ -33,7 +33,7 @@ module Neo4j::Mapping
 
         module_eval(%Q{
                 def #{rel_type}_rels
-                    dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                    dsl = _decl_rels_for('#{rel_type}'.to_sym)
                     dsl.all_relationships(self)
                 end}, __FILE__, __LINE__)
 
