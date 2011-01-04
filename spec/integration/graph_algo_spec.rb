@@ -14,7 +14,7 @@ describe Neo4j::Algo, :type => :transactional do
     @y = Neo4j::Node.new :name => 'y'
   end
 
-  describe "#dijkstra" do
+  describe "#dijkstra_path" do
     before(:each) do
       Neo4j::Relationship.new(:friends, @x, @y)[:weight] = 40.2
       Neo4j::Relationship.new(:friends, @x, @b)[:weight] = 3.0
@@ -24,7 +24,7 @@ describe Neo4j::Algo, :type => :transactional do
     end
     
     it "cost_evaluator{|rel,*| rel[:weight]} returns the shortest path given the weight property of the relationships" do
-      res = Neo4j::Algo.dijkstra(@x,@y).cost_evaluator{|rel,*| rel[:weight]}
+      res = Neo4j::Algo.dijkstra_path(@x,@y).cost_evaluator{|rel,*| rel[:weight]}
       res.should include(@x,@b,@c,@y)
     end
   end
@@ -39,6 +39,19 @@ describe Neo4j::Algo, :type => :transactional do
 
       it "#outgoing(:friends).first.nodes returns the nodes in the path" do
         Neo4j::Algo.all_simple_paths(@x,@y).outgoing(:friends).first.nodes.should include(@x,@a,@y)
+      end
+    end
+  end
+
+  describe "#all_simple_path(a,b)" do
+    context "one outgoing path :friends exist between x and y of length 2" do
+      before(:each) do
+        @x.outgoing(:friends) << @a
+        @a.outgoing(:friends) << @y
+      end
+
+      it "#outgoing(:friends).first.nodes returns the nodes in the path" do
+        Neo4j::Algo.all_simple_path(@x,@y).outgoing(:friends).nodes.should include(@x,@a,@y)
       end
     end
   end

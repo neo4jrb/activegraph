@@ -160,13 +160,28 @@ module Neo4j
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_paths(_expander, _depth) }
     end
 
+    # See #all_paths, returns the first path found
+    def self.all_path(from, to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_paths(_expander, _depth) }.single
+    end
+
     # Returns an algorithm which can find all simple paths between two nodes. These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
     def self.all_simple_paths(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_simple_paths(_expander, _depth) }
     end
 
+    # See #all_simple_paths, returns the first path found
+    def self.all_simple_path(from, to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_simple_paths(_expander, _depth) }.single
+    end
+
     # Returns an algorithm which can find all shortest paths (that is paths with as short Path.length() as possible) between two nodes.
     # These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
+    def self.shortest_paths(from, to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.shortest_path(_expander, _depth) }
+    end
+
+    # See #shortest_paths, returns the first path found
     def self.shortest_path(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.shortest_path(_expander, _depth) }.single
     end
@@ -175,7 +190,12 @@ module Neo4j
     # The definition of "cheap" is the lowest possible cost to get from the start node to the end node, where the cost is returned from costEvaluator.
     # These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
     # See http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm for more information.
-    def self.dijkstra(from, to)
+    def self.dijkstra_paths(from, to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.dijkstra(_expander, _cost_evaluator) }
+    end
+
+    # See #dijkstra_paths, returns the first path found
+    def self.dijkstra_path(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.dijkstra(_expander, _cost_evaluator) }.single
     end
   end
