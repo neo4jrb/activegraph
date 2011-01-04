@@ -1,13 +1,13 @@
-# This module handles the getting, setting and updating of attributes or properties
-# in a Railsy way.  This typically means not writing anything to the DB until the
-# object is saved (after validation).
-#
-# Externally, when we talk about properties (e.g. #property?, #property_names, #properties),
-# we mean all of the stored properties for this object include the 'hidden' props
-# with underscores at the beginning such as _neo_id and _classname.  When we talk
-# about attributes, we mean all the properties apart from those hidden ones.
 module Neo4j
   module Rails
+    # This module handles the getting, setting and updating of attributes or properties
+    # in a Railsy way.  This typically means not writing anything to the DB until the
+    # object is saved (after validation).
+    #
+    # Externally, when we talk about properties (e.g. #property?, #property_names, #properties),
+    # we mean all of the stored properties for this object include the 'hidden' props
+    # with underscores at the beginning such as _neo_id and _classname.  When we talk
+    # about attributes, we mean all the properties apart from those hidden ones.
     module Attributes
       extend ActiveSupport::Concern
 

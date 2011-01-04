@@ -5,11 +5,12 @@ require 'forwardable'
 require 'time'
 require 'date'
 
-require 'neo4j/jars/neo4j-index-1.2-1.2.M04.jar'
-require 'neo4j/jars/neo4j-kernel-1.2-1.2.M04.jar'
-require 'neo4j/jars/neo4j-lucene-index-0.2-1.2.M04.jar'
+require 'neo4j/jars/neo4j-index-1.2-1.2.jar'
+require 'neo4j/jars/neo4j-kernel-1.2-1.2.jar'
+require 'neo4j/jars/neo4j-lucene-index-0.2-1.2.jar'
 require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/lucene-core-3.0.2.jar'
+require 'neo4j/jars/neo4j-graph-algo-0.7-1.2'
 
 require 'will_paginate/collection'
 require 'will_paginate/finders/base'
@@ -56,6 +57,7 @@ require 'neo4j/mapping/rule_node'
 require 'neo4j/node_mixin'
 require 'neo4j/relationship_mixin'
 require 'neo4j/mapping/class_methods/rule'
+require 'neo4j/algo'
 
 # rails
 require 'rails/railtie'

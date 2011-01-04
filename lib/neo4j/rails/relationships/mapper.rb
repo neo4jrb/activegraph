@@ -2,7 +2,7 @@ module Neo4j
   module Rails
     module Relationships
 
-      class Mapper
+      class Mapper #:nodoc:
         attr_reader :dsl
 
         def initialize(rel_type, dsl, node)
@@ -20,7 +20,7 @@ module Neo4j
           (@dsl && @dsl.direction) || :outgoing
         end
 
-        def to_s
+        def to_s #:nodoc:
           "#{self.class} #{object_id} dir: #{direction} rel_type: #{@rel_type} wrapped #{@dsl}"
         end
         
@@ -36,18 +36,7 @@ module Neo4j
           end
         end
 
-        def each42(&block) # TODO remove ?
-          if use_persisted_rels?
-            @dsl.all_relationships(@node).each(&block)
-          else
-            # TODO direction
-            @relationships.each do |rel|
-              block.call rel.end_node
-            end
-          end
-        end
-
-        def each_node(node, direction, &block) #:nodoc:
+        def each_node(node, direction, &block)
           if use_persisted_rels?
             @dsl.each_node(node, direction, &block)
           else
@@ -58,18 +47,15 @@ module Neo4j
           end
         end
 
-        def use_persisted_rels? #:nodoc:
+        def use_persisted_rels?
           @relationships.empty? && @node.persisted?
         end
 
         def del_rel(rel)
-          # TODO, we need to delete this when it is saved
           @relationships.delete(rel)
         end
 
         def create_relationship_to(from, to)
-          #rel_type = (@dsl && @dsl.rel_type) || @rel_type
-          #from, to = (@dsl && @dsl.incoming?) ? [to, from] : [from, to]
           @relationships << Relationship.new(@rel_type, from, to, self)
         end
         

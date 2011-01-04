@@ -11,6 +11,34 @@ module Neo4j
     end
   end
 
+  class RelExpander
+    include org.neo4j.graphdb.RelationshipExpander
+
+    attr_accessor :reversed
+
+    def initialize(&block)
+      @block = block
+      @reverse = false
+    end
+
+    def self.create_pair(&block)
+      normal = RelExpander.new(&block)
+      reversed = RelExpander.new(&block)
+      normal.reversed = reversed
+      reversed.reversed = normal
+      reversed.reverse!
+      normal
+    end
+
+    def expand(node)
+      @block.arity == 1 ? @block.call(node) : @block.call(node, @reverse)
+    end
+
+    def reverse!
+      @reverse = true
+    end
+  end
+  
   class FilterPredicate # :nodoc:
     include org.neo4j.helpers.Predicate
     def initialize
@@ -94,6 +122,11 @@ module Neo4j
       @type  = type_to_java(type) if type
       @dir   = dir_to_java(:both)
       @td = @td.relationships(type_to_java(type), @dir)
+      self
+    end
+
+    def expander(&expander)
+      @td = @td.expand(RelExpander.create_pair(&expander))
       self
     end
 

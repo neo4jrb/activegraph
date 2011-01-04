@@ -387,9 +387,6 @@ describe Neo4j::Node, :type => :transactional do
 
     it "#filter takes a block with parameter of type Java::org.neo4j.graphdb.Path" do
       a, b, c, d, e = create_nodes
-      #[a,b,c,d,e].each_with_index {|n,i| puts "#{i} : id #{n.id}"}
-
-      # only returns nodes with path length == 2
       nodes = [*b.outgoing(:work).depth(4).filter{|path| path.length == 2}]
       nodes.size.should == 1
       nodes.should include(e)

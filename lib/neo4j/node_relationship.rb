@@ -5,6 +5,20 @@ module Neo4j
     include ToJava
 
 
+    # A more powerful alternative of #outgoing, #incoming and #both method.
+    # You can use this method for example to only traverse nodes based on properties on the relationships
+    #
+    # ==== Example
+    #
+    #   some_node.expand { |n| n._rels.find_all { |r| r[:age] > 5 } }.depth(:all).to_a
+    #
+    # The above traverse all relationships with a property of age > 5
+    #
+    def expand(&expander)
+      NodeTraverser.new(self).expander(&expander)
+    end
+
+
     # Returns the outgoing nodes for this node.
     #
     # ==== Returns
