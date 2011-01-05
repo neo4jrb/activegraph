@@ -14,6 +14,45 @@ describe Neo4j::Algo, :type => :transactional do
     @y = Neo4j::Node.new :name => 'y'
   end
 
+  describe "#with_length_paths" do
+    before(:each) do
+      Neo4j::Relationship.new(:friends, @x, @y)  # length 1
+      Neo4j::Relationship.new(:friends, @x, @b)  # length 3 x->b->c->y
+      Neo4j::Relationship.new(:friends, @b, @c)  # length 2 x->b-y
+      Neo4j::Relationship.new(:friends, @b, @y)
+      Neo4j::Relationship.new(:friends, @c, @y)
+    end
+
+    it "depth(2) returns all path of length 2" do
+      Neo4j::Algo.with_length_paths(@x,@y).depth(1).size.should == 1
+      Neo4j::Algo.with_length_paths(@x,@y).depth(2).size.should == 1
+      Neo4j::Algo.with_length_paths(@x,@y).depth(3).size.should == 1
+      Neo4j::Algo.with_length_paths(@x,@y).depth(4).size.should == 0
+      Neo4j::Algo.with_length_path(@x,@y).depth(1).should include(@y)
+      Neo4j::Algo.with_length_path(@x,@y).depth(2).should include(@b,@y)
+      Neo4j::Algo.with_length_path(@x,@y).depth(3).should include(@b,@c,@y)
+    end
+
+  end
+
+  describe "#a_star_path" do
+    before(:each) do
+      Neo4j::Relationship.new(:friends, @x, @y)[:weight] = 40.2
+      Neo4j::Relationship.new(:friends, @x, @b)[:weight] = 3.0
+      Neo4j::Relationship.new(:friends, @b, @c)[:weight] = 7.2
+      Neo4j::Relationship.new(:friends, @b, @y)[:weight] =  10.2
+      Neo4j::Relationship.new(:friends, @c, @y)[:weight] = 1.2
+    end
+
+    it "cost_evaluator{|rel,*| rel[:weight]}. returns the shortest path given the weight property of the relationships" do
+      res = Neo4j::Algo.a_star_path(@x,@y).expand{|r| r._rels}.cost_evaluator{|rel,*| rel[:weight]}.estimate_evaluator{|node,goal| 1.0}
+      res.should include(@x,@b,@c,@y)
+      res = Neo4j::Algo.a_star_path(@x,@y).cost_evaluator{|rel,*| rel[:weight]}.estimate_evaluator{|node,goal| 1.0}
+      res.should include(@x,@b,@c,@y)
+    end
+  end
+
+
   describe "#dijkstra_path" do
     before(:each) do
       Neo4j::Relationship.new(:friends, @x, @y)[:weight] = 40.2

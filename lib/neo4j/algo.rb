@@ -5,6 +5,21 @@ module Neo4j
     include Enumerable
     include ToJava
 
+    class EstimateEvaluator #:nodoc
+      include org.neo4j.graphalgo.EstimateEvaluator
+      include ToJava
+
+      def initialize(&evaluator)
+        @evaluator = evaluator
+      end
+
+      # Implements T getCost(Node node, Node goal)
+      # Estimate the weight of the remaining path from one node to another.
+      def get_cost(node, goal)
+        @evaluator.call(node, goal)
+      end
+    end
+
     class CostEvaluator #:nodoc
       include org.neo4j.graphalgo.CostEvaluator
       include ToJava
@@ -12,9 +27,11 @@ module Neo4j
       def initialize(&evaluator)
         @evaluator = evaluator
       end
+
       # Implements the Java Method:   T getCost(Relationship relationship, Direction direction)
       # From the JavaDoc: <pre>
-      # This is the general method for looking up costs for relationships. This can do anything, like looking up a property or running some small calculation.
+      # This is the general method for looking up costs for relationships.
+      # This can do anything, like looking up a property or running some small calculation.
       # Parameters:
       # relationship -
       # direction - The direction in which the relationship is being evaluated, either Direction.INCOMING or Direction.OUTGOING.
@@ -29,7 +46,7 @@ module Neo4j
     def initialize(from, to, &factory_proc) #:nodoc:
       @from          = from
       @to            = to
-      @factory_proc   = factory_proc
+      @factory_proc  = factory_proc
       @type_and_dirs = []
 
     end
@@ -47,6 +64,11 @@ module Neo4j
     def _cost_evaluator #:nodoc:
       raise "Algorithm requeries a cost evalulator, use the cost_evaluator to provide one" unless @cost_evaluator
       @cost_evaluator
+    end
+
+    def _estimate_evaluator #:nodoc:
+      raise "Algorithm requeries a estimate evaluator, use the estimate_evaluator to provide one" unless @estimate_evaluator
+      @estimate_evaluator
     end
 
     # Specifies which outgoing relationship should be traversed for the graph algorithm
@@ -96,7 +118,7 @@ module Neo4j
     # See #single
     # Not sure if this method is useful
     def many
-       @single = false
+      @single = false
     end
 
     # The depth of the traversal
@@ -114,6 +136,25 @@ module Neo4j
     #
     def cost_evaluator(&cost_evaluator_proc)
       @cost_evaluator = CostEvaluator.new(&cost_evaluator_proc)
+      self
+    end
+
+    # Specifies an evaluator that returns an (optimistic) estimation of the cost to get from the current node (in the traversal) to the end node.
+    # Only available for the aStar algorithm.
+    #
+    # The provided proc estimate the weight of the remaining path from one node to another.
+    # The proc takes two parameters:
+    # * node :: the node to estimate the weight from.
+    # * goal :: the node to estimate the weight to.
+    #
+    # The proc should return an estimation of the weight of the path from the first node to the second.
+    #
+    # ==== Example
+    #
+    #  Neo4j::Algo.a_star(@x,@y).cost_evaluator{...}.estimate_evaluator{|node,goal| some calucalation retuning a Float}
+    #
+    def estimate_evaluator(&estimate_evaluator_proc)
+      @estimate_evaluator = EstimateEvaluator.new(&estimate_evaluator_proc)
       self
     end
 
@@ -155,7 +196,8 @@ module Neo4j
       end
     end
 
-    # Returns an algorithm which can find all available paths between two nodes. These returned paths can contain loops (i.e. a node can occur more than once in any returned path).
+    # Returns an instance of Neo4j::Algo which can find all available paths between two nodes.
+    # These returned paths can contain loops (i.e. a node can occur more than once in any returned path).
     def self.all_paths(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_paths(_expander, _depth) }
     end
@@ -165,7 +207,8 @@ module Neo4j
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_paths(_expander, _depth) }.single
     end
 
-    # Returns an algorithm which can find all simple paths between two nodes. These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
+    # Returns an instance of Neo4j::Algo which can find all simple paths between two nodes.
+    # These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
     def self.all_simple_paths(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_simple_paths(_expander, _depth) }
     end
@@ -175,7 +218,7 @@ module Neo4j
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.all_simple_paths(_expander, _depth) }.single
     end
 
-    # Returns an algorithm which can find all shortest paths (that is paths with as short Path.length() as possible) between two nodes.
+    # Returns an instance of Neo4j::Algo which can find all shortest paths (that is paths with as short Path.length() as possible) between two nodes.
     # These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
     def self.shortest_paths(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.shortest_path(_expander, _depth) }
@@ -186,26 +229,62 @@ module Neo4j
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.shortest_path(_expander, _depth) }.single
     end
 
-    # Returns an PathFinder which uses the Dijkstra algorithm to find the cheapest path between two nodes.
+    # Returns an instance of Neo4j::Algo which uses the Dijkstra algorithm to find the cheapest path between two nodes.
     # The definition of "cheap" is the lowest possible cost to get from the start node to the end node, where the cost is returned from costEvaluator.
     # These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
     # See http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm for more information.
+    #
+    # Example
+    #
+    #   Neo4j::Algo.dijkstra_path(node_a,node_b).cost_evaluator{|rel,*| rel[:weight]}.rels
+    #
     def self.dijkstra_paths(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.dijkstra(_expander, _cost_evaluator) }
     end
 
     # See #dijkstra_paths, returns the first path found
+    #
     def self.dijkstra_path(from, to)
       Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.dijkstra(_expander, _cost_evaluator) }.single
     end
+
+    # Returns an instance of Neo4j::Algo which uses the A* algorithm to find the cheapest path between two nodes.
+    # The definition of "cheap" is the lowest possible cost to get from the start node to the end node, where the cost is returned from lengthEvaluator and estimateEvaluator. These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
+    # See http://en.wikipedia.org/wiki/A*_search_algorithm for more information.
+    #
+    # Expacts an cost evaluator and estimate evaluator, see Algo#cost_evaluator and Algo#estimate_evaluator
+    #
+    # Example:
+    #
+    #  Neo4j::Algo.a_star_path(@x,@y).cost_evaluator{|rel,*| rel[:weight]}.estimate_evaluator{|node,goal| returns a float value}
+    #
+    def self.a_star_paths(from, to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.a_star(_expander, _cost_evaluator, _estimate_evaluator) }
+    end
+
+    # See #a_star_paths, returns the first path found
+    #
+    def self.a_star_path(from, to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.a_star(_expander, _cost_evaluator, _estimate_evaluator) }.single
+    end
+
+    # Returns an instance of Neo4j::Algo can find all paths of a certain length(depth) between two nodes.
+    # These returned paths cannot contain loops (i.e. a node cannot occur more than once in any returned path).
+    # Expects setting the depth parameter (the lenghto of the path) by the Algo#depth method.
+    #
+    # Example:
+    #
+    #   Neo4j::Algo.with_length_paths(node_a,node_b).depth(2).each {|x| puts "Node #{x}"}
+    #
+    def self.with_length_paths(from,to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.paths_with_length(_expander, _depth) }
+    end
+
+    # See #with_length_paths, returns the first path found
+    #
+    def self.with_length_path(from,to)
+      Algo.new(from, to) { org.neo4j.graphalgo.GraphAlgoFactory.paths_with_length(_expander, _depth) }.single
+    end
+
   end
 end
-#
-#class Iterator
-#  include java.lang.Iterable
-##Iterator<T>	iterator()
-##          Returns an iterator over a set of elements of type T.
-#  def iterator
-#
-#  end
-#end
