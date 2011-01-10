@@ -28,11 +28,11 @@ module Neo4j
 
     def start_readonly_graph_db #:nodoc:
       puts "Starting Neo4j in readonly mode since the #{Config[:storage_path]} is locked"
-      @graph = org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase.new(Config[:storage_path])
+      @graph = org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase.new(Config[:storage_path], Config.to_java_map)
     end
 
     def start_local_graph_db #:nodoc:
-      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path])
+      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path], Config.to_java_map)
       @graph.register_transaction_event_handler(@event_handler)
       @lucene =  @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
       @event_handler.neo4j_started(self)

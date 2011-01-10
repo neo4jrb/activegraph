@@ -17,22 +17,43 @@ module Neo4j
   class Config
     # This code is copied from merb-core/config.rb.
     class << self
+
+      # The location of the default configuration file
+      def default_file
+        @default_file ||= File.expand_path(File.join(File.dirname(__FILE__), "..", "..",  "config", "neo4j", "config.yml"))
+      end
+
+      # You can keep all the configuration in your own yaml file
+      def default_file=(file_path)
+        @default_file = file_path
+      end
+
       # Returns the hash of default config values for neo4j
       #
       # ==== Returns
       # Hash:: The defaults for the config.
       def defaults
-        @defaults ||= {
-          :storage_path => 'tmp/neo4j',
-          :timestamps => true,
-          
-          :lucene => {
-                  :fulltext =>  {"provider" => "lucene", "type" => "fulltext" },
-                  :exact    =>  {"provider" => "lucene", "type" => "exact" }}
-        }
+        @defaults ||= YAML.load_file(default_file)
       end
 
-     
+      # Returns a Java HashMap used by the Java Neo4j API as configuration for the GraphDatabase
+      def to_java_map
+        map = java.util.HashMap.new
+        to_hash.each_pair do |k, v|
+          case v
+            when TrueClass
+              map[k.to_s] = "YES"
+            when FalseClass
+              map[k.to_s] = "NO"
+            when String, Fixnum, Float
+              map[k.to_s] = v.to_s
+            # skip list and hash values - not accepted by the Java Neo4j API
+          end
+        end
+        map
+      end
+
+
       # Yields the configuration.
       #
       # ==== Block parameters
@@ -116,7 +137,7 @@ module Neo4j
       # The a new configuration using default values as a hash.
       #
       def setup()
-        @configuration = {}
+        @configuration = ActiveSupport::HashWithIndifferentAccess.new(defaults)
         @configuration.merge!(defaults)
         @configuration
       end
@@ -128,7 +149,7 @@ module Neo4j
       # The config as a hash.
       #
       def to_hash
-        @configuration
+        @configuration ||= setup
       end
 
       # Returns the config as YAML.
