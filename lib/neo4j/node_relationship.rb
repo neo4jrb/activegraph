@@ -53,8 +53,7 @@ module Neo4j
       if type
         NodeTraverser.new(self).outgoing(type)
       else
-        raise "not implemented yet"
-        NodeTraverser.new(self)
+        raise "Not implemented getting all types of outgoing relationship. Specify a relationship type"
       end
     end
 
@@ -67,8 +66,7 @@ module Neo4j
       if type
         NodeTraverser.new(self).incoming(type)
       else
-        raise "not implemented yet"
-        NodeTraverser.new(self)
+        raise "Not implemented getting all types of incoming relationship. Specify a relationship type"
       end
     end
 

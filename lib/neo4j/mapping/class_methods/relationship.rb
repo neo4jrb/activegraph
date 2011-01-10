@@ -72,14 +72,13 @@ module Neo4j::Mapping
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
-                  #dsl = #{clazz}._decl_rels[:#{rel_type}]
                   dsl = _decl_rels_for(:#{rel_type})
                   dsl.single_node(self)
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}_rel
+                  # TODO - use the class variable instance since we don't want to use none persisted rails relationships
                   dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
-#                  dsl = _decl_rels_for(:#{rel_type})
                   dsl.single_relationship(self)
                end}, __FILE__, __LINE__)
 

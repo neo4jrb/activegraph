@@ -42,7 +42,10 @@ describe "Neo4j::Model Relationships" do
       b = clazz.create
       c = clazz.create
 
+      # need to create a new transaction since the node is already peristed
+      new_tx
       a.outgoing(:friends) << b << c
+      finish_tx
       a.friends.should include(b, c)
       a.save!
       a.friends.should include(b, c)

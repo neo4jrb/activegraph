@@ -25,7 +25,7 @@ module Neo4j
         end
       end
 
-      
+
       def write_changed_relationships #:nodoc:
         @relationships.each_value do |mapper|
           mapper.persist
@@ -38,11 +38,7 @@ module Neo4j
 
       def _decl_rels_for(type) #:nodoc:
         dsl = super
-        if false && persisted?
-          dsl
-        else
-          @relationships[type] ||= Mapper.new(type, dsl, self)
-        end
+        @relationships[type] ||= Mapper.new(type, dsl, self)
       end
 
 
@@ -51,12 +47,19 @@ module Neo4j
       end
 
 
-      # See, Neo4j::NodeRelationship#outgoing
-      # Creates or traverse relationships in memory without communicating with the neo4j database.
+      # If the node is persisted it returns a Neo4j::NodeTraverser
+      # otherwise create a new object which will handle creating new relationships in memory.
+      # If not persisted the traversal method like prune, expand, filter etc. will not be available
+      #
+      # See, Neo4j::NodeRelationship#outgoing (when node is persisted) which returns a Neo4j::NodeTraverser
       #
       def outgoing(rel_type)
-        dsl = _decl_rels_for(rel_type)
-        OutgoingRelationship.new(self, dsl)
+        if persisted?
+          super
+        else
+          dsl = _decl_rels_for(rel_type)
+          OutgoingRelationship.new(self, dsl)
+        end
       end
     end
   end

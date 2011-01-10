@@ -7,7 +7,7 @@ module Neo4j
       def initialize(attributes = {})
       	reset_attributes
         clear_relationships
-        self.attributes = attributes
+        self.attributes = attributes if attributes.is_a?(Hash)
       end
 
       def id
