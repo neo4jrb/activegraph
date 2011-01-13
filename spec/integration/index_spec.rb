@@ -61,32 +61,32 @@ describe Neo4j::Node, "find", :type => :transactional do
     Neo4j::Node.new :name => 'pelle@gmail.com'
     Neo4j::Node.new :name => 'gustav@gmail.com'
     Neo4j::Node.new :name => 'andreas@gmail.com'
-    Neo4j::Node.new :name => 'örjan@gmail.com'
+    Neo4j::Node.new :name => 'orjan@gmail.com'
 
     new_tx
     result = Neo4j::Node.find('name: *@gmail.com').asc(:name)
 
     # then
     emails = result.collect { |x| x[:name] }
-    emails.should == %w[andreas@gmail.com gustav@gmail.com pelle@gmail.com örjan@gmail.com]
+    emails.should == %w[andreas@gmail.com gustav@gmail.com orjan@gmail.com pelle@gmail.com]
   end
 
   it "#desc(:field) sorts the given field as strings in desc order " do
     Neo4j::Node.new :name => 'pelle@gmail.com'
     Neo4j::Node.new :name => 'gustav@gmail.com'
     Neo4j::Node.new :name => 'andreas@gmail.com'
-    Neo4j::Node.new :name => 'örjan@gmail.com'
+    Neo4j::Node.new :name => 'zebbe@gmail.com'
 
     new_tx
     result = Neo4j::Node.find('name: *@gmail.com').desc(:name)
 
     # then
     emails = result.collect { |x| x[:name] }
-    emails.should == %w[örjan@gmail.com pelle@gmail.com gustav@gmail.com andreas@gmail.com ]
+    emails.should == %w[zebbe@gmail.com pelle@gmail.com gustav@gmail.com andreas@gmail.com ]
   end
 
   it "#asc(:field1,field2) sorts the given field as strings in ascending order " do
-    Neo4j::Node.new :name => 'örjan@gmail.com', :age => 3
+    Neo4j::Node.new :name => 'zebbe@gmail.com', :age => 3
     Neo4j::Node.new :name => 'pelle@gmail.com', :age => 2
     Neo4j::Node.new :name => 'pelle@gmail.com', :age => 4
     Neo4j::Node.new :name => 'pelle@gmail.com', :age => 1
@@ -102,7 +102,7 @@ describe Neo4j::Node, "find", :type => :transactional do
   end
 
   it "#asc(:field1).desc(:field2) sort the given field both ascending and descending orders" do
-    Neo4j::Node.new :name => 'örjan@gmail.com', :age => 3
+    Neo4j::Node.new :name => 'zebbe@gmail.com', :age => 3
     Neo4j::Node.new :name => 'pelle@gmail.com', :age => 2
     Neo4j::Node.new :name => 'pelle@gmail.com', :age => 4
     Neo4j::Node.new :name => 'pelle@gmail.com', :age => 1

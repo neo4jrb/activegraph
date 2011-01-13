@@ -99,7 +99,9 @@ module Neo4j
       # Does simply loop all search items till the n'th is found.
       #
       def [](index)
-        each_with_index { |node, i| break node if index == i }
+        i = 0
+        each{|x| return x if i == index; i += 1}
+        nil # out of index
       end
 
       # Returns the number of search hits

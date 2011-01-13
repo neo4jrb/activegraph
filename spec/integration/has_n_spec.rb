@@ -13,30 +13,47 @@ end
 
 describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
 
+  before(:all) do
+    @class = create_node_mixin do
+      has_n :friends
+    end
+  end
+
   context "unspecified outgoing relationship, e.g. has_n(:friends)" do
     before(:all) do
-      @class = create_node_mixin do
-        has_n :friends
+      new_tx
+      @node = @class.new
+      @a = Neo4j::Node.new(:item=>'a')
+      @b = Neo4j::Node.new(:item=>'b')
+      @c = Neo4j::Node.new(:item=>'c')
+      @node.friends << @a << @b << @c
+      finish_tx
+    end
+
+    it "#[] returns the n'th item" do
+      @node.friends.should include(@a,@b,@c)
+      array = [@node.friends[0], @node.friends[1], @node.friends[2]]
+      array.should include(@a,@b,@c)
+    end
+  end
+
+
+  context "specified relationship: has_n(:friends).relationship(Role)" do
+    before(:all) do
+      @role_class    = create_rel_mixin
+      @company_class = create_node_mixin
+      @company_class.has_n(:employees).relationship(@role_class)
+    end
+
+    context "generated 'employees' method" do
+      it "<< create Role Relationships" do
+        company = @company_class.new
+        company.employees << Neo4j::Node.new
+        # then
+        company.employees_rels.first.class.should == @role_class
       end
     end
 
-    context "specified relationship: has_n(:friends).relationship(Role)" do
-      before(:all) do
-        @role_class = create_rel_mixin
-        @company_class = create_node_mixin
-        @company_class.has_n(:employees).relationship(@role_class)
-      end
-
-      context "generated 'employees' method" do
-        it "<< create Role Relationships" do
-          company = @company_class.new
-          company.employees << Neo4j::Node.new
-          # then
-          company.employees_rels.first.class.should == @role_class
-        end
-      end
-    end
-    
     context "generated 'friends_rels' method" do
       before(:each) do
         @p1 = @class.new
@@ -214,8 +231,8 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
 
     context "specified relationship: OtherClass.has_n(:friends).to(OtherClass).relationship(Role)" do
       before(:all) do
-        @role_class = create_rel_mixin
-        @clazz = create_node_mixin
+        @role_class  = create_rel_mixin
+        @clazz       = create_node_mixin
         @other_class = create_node_mixin
         @other_class.has_n(:friends).to(@other_class).relationship(@role_class)
         @clazz.has_n(:known_by).from(@other_class, :friends)

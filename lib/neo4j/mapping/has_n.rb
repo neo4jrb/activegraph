@@ -32,8 +32,11 @@ module Neo4j
 
       alias_method :length, :size
 
+
       def [](index)
-        each_with_index {|node,i| break node if index == i}
+        i = 0
+        each{|x| return x if i == index; i += 1}
+        nil # out of index
       end
 
       # Pretend we are an array - this is neccessarly for Rails actionpack/actionview/formhelper to work with this

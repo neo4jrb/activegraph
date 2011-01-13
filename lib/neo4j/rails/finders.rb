@@ -96,7 +96,8 @@ module Neo4j
 
         def ids_in(arg)
           return nil unless arg.is_a?(Hash)
-          arg[:conditions].present? ? arg[:conditions][:id] : arg[:id]
+          condition = arg[:conditions].present? ? arg[:conditions] : arg
+          condition.is_a?(Hash) && condition[:id]
         end
 
 
