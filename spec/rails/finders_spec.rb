@@ -18,8 +18,28 @@ describe "finders" do
 		@test_3 = FindableModel.create!(:name => "Test 3")
 		@test_4 = FindableModel.create!(:name => "Test 1")
 	end
-	
-	it "should be able to find something" do
+
+  context "#close_lucene_connections" do
+    it "sets the Thread.current[:neo4j_lucene_connection] to nil and close all lucene connections" do
+      FindableModel.find('name: Test*')
+      Thread.current[:neo4j_lucene_connection].should_not be_nil
+      Neo4j::Rails::Model.close_lucene_connections
+      Thread.current[:neo4j_lucene_connection].should be_nil
+    end
+
+    it "close all lucene connections" do
+      con_1 = mock "Connection1"
+      con_1.should_receive(:close)
+      con_2 = mock "Connection1"
+      con_2.should_receive(:close)
+
+      Thread.current[:neo4j_lucene_connection] = [con_1, con_2]
+      Neo4j::Rails::Model.close_lucene_connections
+    end
+
+  end
+
+  it "should be able to find something" do
 		FindableModel.find.should be_a(FindableModel)
 		FindableModel.find(:first).should be_a(FindableModel)
 	end

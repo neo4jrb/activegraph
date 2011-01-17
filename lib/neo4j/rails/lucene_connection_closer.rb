@@ -8,8 +8,7 @@ module Neo4j
       def call(env)
         @app.call(env)
       ensure
-        Thread.current[:neo4j_lucene_connection].each {|hits| hits.close} if Thread.current[:neo4j_lucene_connection]
-        Thread.current[:neo4j_lucene_connection] = nil
+        Neo4j::Rails::Model.close_lucene_connections
       end
     end
   end

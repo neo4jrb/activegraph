@@ -92,6 +92,13 @@ module Neo4j
           all.size
         end
 
+        # Call this method if you are using Neo4j::Rails::Model outside rails
+        # This method is automatically called by rails to close all lucene connections.
+        def close_lucene_connections
+          Thread.current[:neo4j_lucene_connection].each {|hits| hits.close} if Thread.current[:neo4j_lucene_connection]
+          Thread.current[:neo4j_lucene_connection] = nil
+        end
+
         protected
 
         def ids_in(arg)
@@ -128,7 +135,6 @@ module Neo4j
           Thread.current[:neo4j_lucene_connection] << hits
           hits
         end
-
       end
     end
   end
