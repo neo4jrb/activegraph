@@ -146,11 +146,7 @@ module Neo4j
 
       def create
         node = Neo4j::Node.new
-        #unless _java_node.save_nested(node)
-        #	Neo4j::Rails::Transaction.fail
-        #	false
-        #else
-        init_on_load(node)
+        @_java_node = node
         init_on_create
         clear_changes
         clear_relationships

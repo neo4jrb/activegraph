@@ -23,7 +23,7 @@ module Neo4j
 						_decl_props[property] = options
 						handle_property_options_for(property, options)
 						define_property_methods_for(property, options)
-						_decl_props[property][:defined] = true
+						_decl_props[property][:defined] = true  # TODO is this needed ?
 					end
 					
 					def handle_property_options_for(property, options)

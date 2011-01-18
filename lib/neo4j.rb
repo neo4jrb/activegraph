@@ -5,6 +5,14 @@ require 'forwardable'
 require 'time'
 require 'date'
 
+# Rails
+require 'rails/railtie'
+require 'active_model'
+
+require 'will_paginate/collection'
+require 'will_paginate/finders/base'
+
+# Jars
 require 'neo4j/jars/neo4j-index-1.2-1.2.jar'
 require 'neo4j/jars/neo4j-kernel-1.2-1.2.jar'
 require 'neo4j/jars/neo4j-lucene-index-0.2-1.2.jar'
@@ -12,8 +20,7 @@ require 'neo4j/jars/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/lucene-core-3.0.2.jar'
 require 'neo4j/jars/neo4j-graph-algo-0.7-1.2'
 
-require 'will_paginate/collection'
-require 'will_paginate/finders/base'
+
 require 'neo4j/to_java'
 require 'neo4j/version'
 require 'neo4j/equal'
@@ -27,6 +34,7 @@ require 'neo4j/neo4j'
 require "neo4j/functions/function"
 require "neo4j/functions/count"
 require "neo4j/functions/sum"
+
 
 
 require 'neo4j/index/index'
@@ -54,14 +62,14 @@ require 'neo4j/mapping/node_mixin'
 require 'neo4j/mapping/relationship_mixin'
 require 'neo4j/mapping/rule'
 require 'neo4j/mapping/rule_node'
+
 require 'neo4j/node_mixin'
 require 'neo4j/relationship_mixin'
 require 'neo4j/mapping/class_methods/rule'
 require 'neo4j/algo'
+require 'neo4j/migrations'
 
 # rails
-require 'rails/railtie'
-require 'active_model'
 require 'neo4j/rails/tx_methods'
 require 'neo4j/rails/transaction'
 require 'neo4j/rails/railtie'

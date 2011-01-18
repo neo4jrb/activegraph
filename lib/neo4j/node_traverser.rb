@@ -203,6 +203,11 @@ module Neo4j
       iterator.each {|i| yield i.wrapper}
     end
 
+    # Same as #each but does not wrap each node in a Ruby class, yields the Java Neo4j Node instance instead.
+    def each_raw
+      iterator.each {|i| yield i}
+    end
+
     def iterator
       unless @include_start_node
         if @filter_predicate

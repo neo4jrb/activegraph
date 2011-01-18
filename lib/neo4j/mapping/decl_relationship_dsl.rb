@@ -171,7 +171,7 @@ module Neo4j::Mapping
         if other_class_dsl
           @relationship = other_class_dsl.relationship_class
         else
-          puts "WARNING: Unknown outgoing relationship #{args[1]} on #{@target_class}"
+          Neo4j.logger.warn "Unknown outgoing relationship #{args[1]} on #{@target_class}"
         end
       elsif (Symbol === args[0])
         # handle unspecified (unprefixed) relationship, e.g. has_n(:known_by).from(:type)

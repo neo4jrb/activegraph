@@ -4,7 +4,7 @@ module Neo4j
       extend ActiveSupport::Concern
 
       included do
-        rule :_all, :functions => Neo4j::Functions::Count.new
+        rule(:_all, :functions => Neo4j::Functions::Count.new) {|x| true}
       end
 
       module ClassMethods

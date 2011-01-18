@@ -10,7 +10,6 @@
 module Neo4j
 
   class << self
-    
     # Start Neo4j using the default database.
     # This is usally not required since the database will be started automatically when it is used.
     #
@@ -39,6 +38,22 @@ module Neo4j
       db = default_db
       db.start unless db.running?
       db
+    end
+
+
+    def logger
+      @logger ||= Neo4j::Config[:logger] || default_logger
+    end
+
+    def logger=(logger)
+      @logger = logger
+    end
+
+    def default_logger #:nodoc:
+      require 'logger'
+      logger = Logger.new(STDOUT)
+      logger.sev_threshold = Neo4j::Config[:logger_level] || Logger::WARN
+      logger
     end
 
 

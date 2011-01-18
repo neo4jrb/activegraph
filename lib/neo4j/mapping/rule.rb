@@ -54,9 +54,7 @@ module Neo4j::Mapping
 
     class << self
       def add(clazz, rule_name, props, &block)
-        @rule_nodes        ||= {}
-        @rule_nodes[clazz.to_s] ||= RuleNode.new(clazz)
-        rule_node          = @rule_nodes[clazz.to_s]
+        rule_node          = rule_node_for(clazz.to_s)
         rule_node.remove_rule(rule_name) # remove any previously inherited rules
         rule_node.add_rule(rule_name, props, &block)
       end
@@ -67,7 +65,9 @@ module Neo4j::Mapping
       end
 
       def rule_node_for(clazz)
-        @rule_nodes && @rule_nodes[clazz.to_s]
+        return nil if clazz.nil?
+        @rule_nodes             ||= {}
+        @rule_nodes[clazz.to_s] ||= RuleNode.new(clazz)
       end
 
       def inherit(parent_class, subclass)

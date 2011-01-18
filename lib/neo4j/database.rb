@@ -21,13 +21,14 @@ module Neo4j
         start_readonly_graph_db
       else
         start_local_graph_db
+        Neo4j.migrate!
       end
 
       at_exit { shutdown }
     end
 
     def start_readonly_graph_db #:nodoc:
-      puts "Starting Neo4j in readonly mode since the #{Config[:storage_path]} is locked"
+      Neo4j.logger.info "Starting Neo4j in readonly mode since the #{Config[:storage_path]} is locked"
       @graph = org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase.new(Config[:storage_path], Config.to_java_map)
     end
 
