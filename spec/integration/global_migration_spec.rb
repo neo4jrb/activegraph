@@ -8,7 +8,7 @@ describe "Neo4j#migration", :type => :transactional do
   end
 
   it "should not run any migration if db is on given version" do
-    Neo4j.ref_node[:db_version] = 1
+    Neo4j.ref_node[:_db_version] = 1
     Neo4j.migration 1, :create_articles do
       up do
         raise "Should not have been called" ""
@@ -17,7 +17,6 @@ describe "Neo4j#migration", :type => :transactional do
         raise "Should not have been called"
       end
     end
-    puts "CURR VER:#{Neo4j.ref_node[:db_version]}"
 
     # when starting
     Neo4j.migrate!
@@ -102,7 +101,7 @@ describe "Neo4j#migration", :type => :transactional do
 
   it "should call one 'down' block migration when running one down migration" do
     called                      = false
-    Neo4j.ref_node[:db_version] = 1
+    Neo4j.ref_node[:_db_version] = 1
     Neo4j.migration 1, :create_articles do
       up do
         raise "Should not have been called"

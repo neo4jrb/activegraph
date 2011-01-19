@@ -141,8 +141,8 @@ module Neo4j::Mapping
 
       # Force to trigger the rules.
       # You don't normally need that since it will be done automatically.
-      def trigger_rules(node)
-        Neo4j::Mapping::Rule.trigger_rules(node)
+      def trigger_rules(node, *changes)
+        Neo4j::Mapping::Rule.trigger_rules(node, *changes)
       end
 
     end

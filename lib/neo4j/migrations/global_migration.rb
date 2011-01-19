@@ -12,7 +12,7 @@ module Neo4j
       end
 
       def db_version
-        Neo4j.ref_node[:db_version] || 0
+        Neo4j.ref_node[:_db_version] || 0
       end
 
       # Remote all migration and set migrate_to = nil and set the current version to nil
@@ -20,7 +20,7 @@ module Neo4j
         @migrations = nil
         @migrate_to = nil
         Neo4j::Transaction.run do
-          Neo4j.ref_node[:db_version] = nil
+          Neo4j.ref_node[:_db_version] = nil
         end
       end
     end

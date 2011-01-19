@@ -50,7 +50,7 @@ module Neo4j
       return if self.migrate_to.nil?
 
       # which version are we on now ?
-      current_version = meta_node[:db_version] || 0
+      current_version = meta_node[:_db_version] || 0
 
       # do we need to migrate ?
       return if current_version == self.migrate_to

@@ -148,7 +148,6 @@ module Neo4j::Mapping
     end
 
     def find_functions_for_changes(rule, *changes)
-      # changes = [property, old_value, new_value]
       !changes.empty? && rule.functions_for(changes[0])
     end
 

@@ -29,7 +29,7 @@ module Neo4j
     def init_on_create(*)
       super
       # set the db version to the current
-      self[:db_version] = self.class.migrate_to
+      self[:_db_version] = self.class.migrate_to
     end
 
     def init_on_load(*) # :nodoc:
@@ -40,7 +40,7 @@ module Neo4j
     end
 
     def db_version
-      self[:db_version]
+      self[:_db_version]
     end
   end
 
