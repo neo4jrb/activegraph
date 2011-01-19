@@ -15,7 +15,7 @@ module Neo4j::Mapping
       @functions = props[:functions]
       @triggers  = [@triggers] if @triggers && !@triggers.respond_to?(:each)
       @functions = [@functions] if @functions && !@functions.respond_to?(:each)
-      @filter    = block.nil? ? Proc.new { |*| true } : block
+      @filter    = block
     end
 
     def to_s
@@ -41,7 +41,9 @@ module Neo4j::Mapping
     end
 
     def execute_filter(node)
-      if @filter.arity != 1
+      if @filter.nil?
+        true
+      elsif @filter.arity != 1
         node.wrapper.instance_eval(&@filter)
       else
         @filter.call(node)

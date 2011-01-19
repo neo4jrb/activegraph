@@ -9,18 +9,15 @@ describe Neo4j::LazyMigrationMixin do
       # Split name into two properties
       up do
         self[:name]
-        puts "Lazy #{self}/#{self.neo_id} name:#{self[:name]}"
         self[:given_name] = self[:name].split[0]
         self[:surname]    = self[:name].split[1]
         self[:name]      = nil
-#        self.save! if self.respond_to?(:save!)
       end
 
       down do
         self.name       = "#{self[:given_name]} #{self[:surname]}"
         self.surename   = nil
         self.given_name = nil
-#        self.save! if self.respond_to?(:save!)
       end
     end
   end
@@ -70,11 +67,7 @@ describe Neo4j::LazyMigrationMixin do
     end
 
     it "migrates when the node is loaded" do
-      puts "---------------------"
       kalle = LazyPersonModel.create! :name => 'kalle stropp'
-      puts "xxxxxxxxxxxxxxxxxxxxxxx"
-      puts "ALL MODELS #{LazyPersonModel.all.count}"
-      puts "KALLE = #{kalle} #{kalle.neo_id}"
 
       class LazyPersonModel
         property :surname
@@ -84,13 +77,9 @@ describe Neo4j::LazyMigrationMixin do
       create_lazy_migration(LazyPersonModel)
 
       # when
-      puts "LOAD IT #{kalle[:name]}/#{kalle.id}"
       k2 = Neo4j::Node.load(kalle.neo_id)
 
-
-      puts "LOADED !!! "
       # then
-
       k2._java_node[:surname].should == 'stropp'
       k2[:surname].should == 'stropp'
       k2[:given_name].should == 'kalle'
@@ -98,36 +87,33 @@ describe Neo4j::LazyMigrationMixin do
     end
 
   end
+
+  context Neo4j::NodeMixin, :type => :transactional do
+    class LazyPersonInfo
+      include Neo4j::NodeMixin
+      include Neo4j::LazyMigrationMixin
+      property :name
+    end
+
+    it "migrates when the node is loaded" do
+      kalle = LazyPersonInfo.new :name => 'kalle stropp'
+      finish_tx
+
+      class LazyPersonInfo
+        property :surname
+        property :given_name
+      end
+
+      create_lazy_migration(LazyPersonInfo)
+
+
+      # when
+      k2 = Neo4j::Node.load(kalle.neo_id)
+
+      # then
+      k2.surname.should == 'stropp'
+      k2.given_name.should == 'kalle'
+    end
+  end
 end
 
-#
-#  context Neo4j::NodeMixin, :type => :transactional do
-#    class LazyPersonInfo
-#      include Neo4j::NodeMixin
-#      include Neo4j::MigrationMixin
-#      extend Neo4j::Migrations
-#      include Neo4j::LazyMigrationMixin
-#      property :name
-#    end
-#
-#    it "migrates when the node is loaded" do
-#      kalle = LazyPersonInfo.new :name => 'kalle stropp'
-#      finish_tx
-#
-#      class LazyPersonInfo
-#        property :surname
-#        property :given_name
-#      end
-#
-#      create_lazy_migration(LazyPersonInfo)
-#
-#
-#      # when
-#      k2 = Neo4j::Node.load(kalle.neo_id)
-#
-#      # then
-#      k2.surname.should == 'stropp'
-#      k2.given_name.should == 'kalle'
-#    end
-#  end
-#end

@@ -33,7 +33,7 @@ module Neo4j::Mapping
 
     delegate :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :to_param, :getId,
              :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both, :expand, :get_property, :set_property,
-             :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel, 
+             :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel, :wrapped_entity,
              :to => :@_java_node, :allow_nil => true 
 
 

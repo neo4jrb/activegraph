@@ -58,6 +58,18 @@ module Neo4j
           migration_meta_node[:db_version] = nil
         end
       end
+
+      # sets the migration db version for this class on a 'meta' node.
+      def db_version=(version)
+        Neo4j::Transaction.run do
+          migration_meta_node[:db_version] = version
+        end
+      end
+
+      # returns the current version of the database for this class.
+      def db_version
+        migration_meta_node[:db_version]
+      end
     end
 
   end

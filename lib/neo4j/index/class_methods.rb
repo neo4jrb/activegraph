@@ -71,7 +71,7 @@ module Neo4j
       end
 
       def indexer(clazz, type) #:nodoc:
-        @_indexer = IndexerRegistry.create_for(self, clazz, type)
+        @_indexer ||= IndexerRegistry.create_for(self, clazz, type)
       end
     end
   end

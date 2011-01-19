@@ -201,7 +201,7 @@ module Neo4j
         and_query = org.apache.lucene.search.BooleanQuery.new
 
         query.each_pair do |key, value|
-          type = @decl_props[key.to_sym] && @decl_props[key.to_sym][:type]
+          type = @decl_props && @decl_props[key.to_sym] && @decl_props[key.to_sym][:type]
           if !type.nil? && type != String
             if Range === value
               and_query.add(range_query(key, value.first, value.last, true, !value.exclude_end?), org.apache.lucene.search.BooleanClause::Occur::MUST)
