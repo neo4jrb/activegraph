@@ -128,7 +128,7 @@ module Neo4j::Mapping
       end
 
       # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
-      # It also remove the given class method.
+      # It also remove all the rule class methods.
       def delete_rules
         singelton = class << self;
           self;
@@ -141,10 +141,42 @@ module Neo4j::Mapping
 
       # Force to trigger the rules.
       # You don't normally need that since it will be done automatically.
+      # This can be useful if you need to trigger rules on already existing nodes in the database.
+      # Can also be called from an migration.
+      #
       def trigger_rules(node, *changes)
         Neo4j::Mapping::Rule.trigger_rules(node, *changes)
       end
 
+      # Returns a proc that will call add method on the given function
+      # Can be used in migration to trigger rules on already existing nodes.
+      # Parameter function_id is default to '_classname' which means that
+      # the function 'reacts' on changes on the property '_classname'.
+      # That property changes only when a node is created or deleted.
+      # Function using function_id '_classname' is typically used for counting number of nodes of a class.
+      def add_function_for(rule_name, function_name_or_class, function_id = '_classname')
+        function_for(:add, rule_name, function_name_or_class, function_id)
+      end
+
+      # See #add_function_for
+      # Calls the delete method on the function.
+      def delete_function_for(rule_name, function_name_or_class, function_id = '_classname')
+        function_for(:delete, rule_name, function_name_or_class, function_id)
+      end
+
+      # Returns a proc that calls the given method on the given function.
+      def function_for(method, rule_name, function_name_or_class, function_id = '_classname')
+        function_name = function_name_or_class.is_a?(Symbol)? function_name_or_class : function_name_or_class.function_name
+        rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+        rule = rule_node.find_rule(rule_name)
+        rule_node_raw = rule_node.rule_node
+
+        function = rule_node.find_function(rule_name, function_name, function_id)
+        lambda do |node|
+          new_value = node[function_id]
+          function.send(method, rule.rule_name, rule_node_raw, new_value)
+        end
+      end
     end
 
     Neo4j.unstarted_db.event_handler.add(Neo4j::Mapping::Rule) unless Neo4j.read_only?

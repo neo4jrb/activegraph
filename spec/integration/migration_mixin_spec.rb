@@ -40,7 +40,7 @@ describe Neo4j::MigrationMixin do
 
     def create_migration_without_tx_success(clazz)
       clazz.migration 1, :split_name do
-        auto_transaction :false # let use create the transaction instead
+        auto_transaction false # let use create the transaction instead
         up do
           Neo4j::Transaction.run do
             Neo4j.ref_node[:bla] = 'bla'
@@ -55,7 +55,7 @@ describe Neo4j::MigrationMixin do
       end
     end
 
-    it "#migrate! should raise an exeption if the migration did not create an Transaction" do
+    it "#migrate! should raise an exception if the migration did not create an Transaction" do
       clazz = create_node_mixin do
         include Neo4j::MigrationMixin
       end
@@ -68,7 +68,7 @@ describe Neo4j::MigrationMixin do
       clazz.db_version.should be_nil
     end
 
-    it "#migrate! should not raise an exeption if the migration did create an Transaction" do
+    it "#migrate! should NOT raise an exception if the migration did create an Transaction" do
       clazz = create_node_mixin do
         include Neo4j::MigrationMixin
       end
@@ -86,57 +86,100 @@ describe Neo4j::MigrationMixin do
 
   context "one migration with a rule" do
     context Neo4j::NodeMixin, :type => :transactional do
-      it "update migration adds the rule on all nodes" do
-        pending
+      it "can add rule :all on existing nodes" do
         clazz = create_node_mixin do
           include Neo4j::MigrationMixin
         end
-
+        # create nodes with out
         a = clazz.new :name =>'a'
         b = clazz.new :name =>'b'
-        clazz.migration 1, :add_all_rule do
-          trigger_rules
+        finish_tx
+
+        clazz.should_not respond_to(:all)
+
+        # add the rule :all
+        clazz.instance_eval do
+          rule :all
         end
+        clazz.migration 1, :add_all_rule do
+          up do
+            Neo4j.all_nodes.each do |node|
+              clazz.trigger_rules(node)
+            end
+          end
+        end
+
+        clazz.migrate!
+
+        clazz.all.should include(a,b)
+      end
+
+      it "can add a counter after the nodes has been created" do
+        clazz = create_node_mixin do
+          include Neo4j::MigrationMixin
+          rule :all
+        end
+        # create nodes with out counter
+        a = clazz.new :name =>'a'
+        b = clazz.new :name =>'b'
+        finish_tx
+
+        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        rule_node_props.should_not include(:sum)
+        rule_node_props['_count_all__classname'].should be_nil
 
         clazz.instance_eval do
           rule(:all, :functions => Neo4j::Functions::Count.new)
         end
 
-        clazz.all.to_a.size.should == 0
-
+        clazz.migration 1, :add_count_rule do
+          up do
+            func = clazz.add_function_for(:all, Neo4j::Functions::Count)
+            clazz.all.each do |node|
+              func.call(node)
+            end
+          end
+        end
         clazz.migrate!
-        
+        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        #"_#{function_name}_#{rule_name}_#{prop}"
+        rule_node_props['_count_all__classname'].should == 2
         clazz.all.to_a.size.should == 2
         clazz.all.should include(a, b)
         clazz.all.count.should == 2
       end
 
-      it "update migration with a function" do
-        pending
+      it "can add a sum after the nodes has been created" do
         clazz = create_node_mixin do
           include Neo4j::MigrationMixin
-          rule(:all)
+          rule :all
         end
-
-        a = clazz.new :name =>'a'
-        b = clazz.new :name =>'b'
+        # create nodes with out counter
+        a = clazz.new :name =>'a', :age => 4
+        b = clazz.new :name =>'b', :age => 3
         finish_tx
-        clazz.migration 1, :add_count_function do
-          trigger_rules(clazz.all)
-        end
+
+        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        rule_node_props.should_not include(:sum)
+        rule_node_props['_sum_all_age'].should be_nil
 
         clazz.instance_eval do
-          rule(:all, :functions => Neo4j::Functions::Count.new)
+          rule(:all, :functions => Neo4j::Functions::Sum.new(:age))
         end
 
-        clazz.all.to_a.size.should == 2
-        clazz.all.count.should == 0
-
+        clazz.migration 1, :add_all_rule do
+          up do
+            func = clazz.add_function_for(:all, Neo4j::Functions::Sum, :age)
+            clazz.all.each do |node|
+              func.call(node)
+            end
+          end
+        end
         clazz.migrate!
-        
-        clazz.all.to_a.size.should == 2
-        clazz.all.should include(a, b)
-        clazz.all.count.should == 2
+        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        #"_#{function_name}_#{rule_name}_#{prop}"
+        rule_node_props['_sum_all_age'].should == 7
+        clazz.all.sum(:age).should == 7
       end
 
     end

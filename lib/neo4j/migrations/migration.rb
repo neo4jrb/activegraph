@@ -28,10 +28,6 @@ module Neo4j
       @auto_transaction = run_with_auto_tx
     end
 
-    # Sets if all rules should be triggered - could be very time consuming
-    def trigger_rules(traversal=Neo4j.all_nodes, property = '_classname')
-      @trigger_rules = {:traversal => traversal, :property => property}
-    end
 
     # Specifies which fields should be indexed
     def add_index(*fields)
@@ -51,12 +47,6 @@ module Neo4j
     # meta_node:: the node on which to set the 'db_version' property
     #
     def execute_up(context, meta_node)
-#      if @trigger_rules
-#        # TODO
-#        @trigger_rules[:traversal].each do |node|
-#          trigger_rules!(node, @trigger_rules[:property])
-#        end
-#      end
 
       if @auto_transaction
         Neo4j::Transaction.run do
@@ -75,17 +65,8 @@ module Neo4j
       end
     end
 
-    def trigger_rules!(node, property)
-      clazz = node.class
-      node.kind_of?(Neo4j::NodeMixin) && clazz.trigger_rules(node, property, 'nil', node[property])
-    end
-
     # Same as #execute_up but executes the down_block instead
     def execute_down(context, meta_node)
-#      if @trigger_rules
-#        Neo4j.all_nodes.each { |node| trigger_rules(node) }
-#      end
-
       if @auto_transaction
         Neo4j::Transaction.run do
           context.instance_eval &@down_block if @down_block

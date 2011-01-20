@@ -56,7 +56,7 @@ module Neo4j::Mapping
 
     class << self
       def add(clazz, rule_name, props, &block)
-        rule_node          = rule_node_for(clazz.to_s)
+        rule_node = rule_node_for(clazz.to_s)
         rule_node.remove_rule(rule_name) # remove any previously inherited rules
         rule_node.add_rule(rule_name, props, &block)
       end
@@ -92,6 +92,7 @@ module Neo4j::Mapping
 
       def trigger_rules(node, *changes)
         classname = node[:_classname]
+        return unless classname # there are no rules if there is not a :_classname property
         rule_node = rule_node_for(classname)
         rule_node.execute_rules(node, *changes)
 
