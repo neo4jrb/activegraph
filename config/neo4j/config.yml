@@ -16,6 +16,9 @@ lucene: { fulltext: { provider: lucene,
                        type: exact}
 }
 
+# If migrations should be run in a new thread
+# If set to true it you can use the database while it is migrating.
+migration_thread: false
 
 
 #===Memory mapped I/O settings===

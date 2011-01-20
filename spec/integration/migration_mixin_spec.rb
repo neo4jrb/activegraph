@@ -55,7 +55,7 @@ describe Neo4j::MigrationMixin do
       end
     end
 
-    it "#migrate! should raise an exception if the migration did not create an Transaction" do
+    it "#migrate! should raise an exception if the migration did not create a Transaction" do
       clazz = create_node_mixin do
         include Neo4j::MigrationMixin
       end
@@ -68,7 +68,7 @@ describe Neo4j::MigrationMixin do
       clazz.db_version.should be_nil
     end
 
-    it "#migrate! should NOT raise an exception if the migration did create an Transaction" do
+    it "#migrate! should NOT raise an exception if the migration did create a Transaction" do
       clazz = create_node_mixin do
         include Neo4j::MigrationMixin
       end
@@ -253,9 +253,11 @@ describe Neo4j::MigrationMixin do
           include Neo4j::MigrationMixin
         end
 
+        finish_tx
+        
         clazz.migration 1, :foo do
-          up {}
-          down {}
+          up { }
+          down { }
         end
 
         clazz.migrate!

@@ -54,14 +54,24 @@ module Neo4j
 
       # do we need to migrate ?
       return if current_version == self.migrate_to
-      
+
       # ok, so we are running some migrations
+      if Neo4j::Config['migration_thread']
+        Thread.new{ _upgrade_or_downgrade(current_version, context, meta_node)}
+      else
+        _upgrade_or_downgrade(current_version, context, meta_node)
+      end
+    end
+
+    def _upgrade_or_downgrade(current_version, context, meta_node) #:nodoc:
       if (current_version < self.migrate_to)
         upgrade((current_version+1).upto(self.migrate_to).collect { |ver| migrations[ver] }, context, meta_node)
       else
         downgrade(current_version.downto(self.migrate_to+1).collect { |ver| migrations[ver] }, context, meta_node)
       end
+
     end
+
 
     # Running the up method on the given migrations.
     #
