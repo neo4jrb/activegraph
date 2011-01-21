@@ -24,11 +24,14 @@ module Neo4j
       end
 
       # You can keep all the configuration in your own yaml file
+      # Also deletes all old configurations.
       def default_file=(file_path)
-        @default_file = file_path
+        @configuration = nil
+        @defaults = nil
+        @default_file = File.expand_path(file_path)
       end
 
-      # Returns the hash of default config values for neo4j
+      # Returns the hash of default config values for neo4j.
       #
       # ==== Returns
       # Hash:: The defaults for the config.
@@ -53,6 +56,11 @@ module Neo4j
         map
       end
 
+
+      # Returns the expanded path of the Config[:storage_path] property
+      def storage_path
+        File.expand_path(self[:storage_path])
+      end
 
       # Yields the configuration.
       #

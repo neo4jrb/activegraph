@@ -13,19 +13,24 @@ module Neo4j
     # Start Neo4j using the default database.
     # This is usally not required since the database will be started automatically when it is used.
     #
-    def start
-      db = default_db
+    # ==== Parameters
+    # config_file :: (optionally) if this is nil or not given use the Neo4j::Config, otherwise setup the Neo4j::Config file using the provided YAML configuration file.
+    #
+    def start(config_file=nil)
+      Neo4j.config.default_file = config_file if config_file
       db.start unless db.running?
     end
 
 
-    # sets the default database to use
-    def default_db=(my_db)
+    # Sets the Neo4j::Database instance to use
+    # An Neo4j::Database instance wraps both the Neo4j Database and Lucene Database.
+    def db=(my_db)
       @db = my_db
     end
 
-    # Returns default database. Creates a new one if it does not exist, but does not start it.
-    def default_db
+    # Returns the database holding references to both the Neo4j Graph Database and the Lucene Database.
+    # Creates a new one if it does not exist, but does not start it.
+    def db
       @db ||= Database.new
     end
 
@@ -35,11 +40,15 @@ module Neo4j
     
     # Returns a started db instance. Starts it's not running.
     def started_db
-      db = default_db
       db.start unless db.running?
       db
     end
 
+    # Returns the Neo4j::Config class
+    # Same as typing; Neo4j::Config
+    def config
+      Neo4j::Config
+    end
 
     def logger
       @logger ||= Neo4j::Config[:logger] || default_logger
@@ -52,7 +61,7 @@ module Neo4j
     def default_logger #:nodoc:
       require 'logger'
       logger = Logger.new(STDOUT)
-      logger.sev_threshold = Neo4j::Config[:logger_level] || Logger::WARN
+      logger.sev_threshold = Neo4j::Config[:logger_level] || Logger::INFO
       logger
     end
 
@@ -102,7 +111,7 @@ module Neo4j
 
     # Returns the Neo4j::EventHandler
     #
-    def event_handler(this_db = default_db)
+    def event_handler(this_db = db)
       this_db.event_handler
     end
     

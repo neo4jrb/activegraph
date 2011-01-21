@@ -21,6 +21,7 @@ EOF
 
   s.require_path = 'lib'
   s.files        = Dir.glob("{bin,lib}/**/*") + %w(README.rdoc CHANGELOG CONTRIBUTORS Gemfile neo4j.gemspec)
+  s.bindir = 'bin'
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc )
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--opname", "index.html", "--line-numbers", "--main", "README.rdoc", "--inline-source"]

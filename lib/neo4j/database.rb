@@ -16,26 +16,46 @@ module Neo4j
     def start #:nodoc:
       return if running?
       @running = true
-      
-      if self.class.locked?
-        start_readonly_graph_db
-      else
-        start_local_graph_db
-        Neo4j.migrate!
+
+      begin
+        if self.class.locked?
+          start_readonly_graph_db
+        elsif Neo4j::Config['ha.db']
+          start_ha_graph_db
+          Neo4j.migrate!
+        else
+          start_local_graph_db
+          Neo4j.migrate!
+        end
+      rescue
+        @running = false
+        raise
       end
 
       at_exit { shutdown }
     end
 
     def start_readonly_graph_db #:nodoc:
-      Neo4j.logger.info "Starting Neo4j in readonly mode since the #{Config[:storage_path]} is locked"
+      Neo4j.logger.info "Starting Neo4j in readonly mode since the #{Neo4j.config.storage_path} is locked"
+      Neo4j.load_local_jars
       @graph = org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase.new(Config[:storage_path], Config.to_java_map)
     end
 
     def start_local_graph_db #:nodoc:
-      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Config[:storage_path], Config.to_java_map)
+      Neo4j.logger.info "Starting local Neo4j using db #{Neo4j.config.storage_path}"
+      Neo4j.load_local_jars
+      @graph = org.neo4j.kernel.EmbeddedGraphDatabase.new(Neo4j.config.storage_path, Config.to_java_map)
       @graph.register_transaction_event_handler(@event_handler)
-      @lucene =  @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
+      @lucene = @graph.index
+      @event_handler.neo4j_started(self)
+    end
+
+    def start_ha_graph_db
+      Neo4j.logger.info "starting Neo4j in HA mode, machine id: #{Neo4j.config['ha.machine_id']} at #{Neo4j.config['ha.server']} db #{Neo4j.config.storage_path}"
+      Neo4j.load_ha_jars # those jars are only needed for the HighlyAvailableGraphDatabase
+      @graph = org.neo4j.kernel.HighlyAvailableGraphDatabase.new(Neo4j.config.storage_path, Neo4j.config.to_java_map)
+      @graph.register_transaction_event_handler(@event_handler)
+      @lucene = @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
       @event_handler.neo4j_started(self)
     end
 
@@ -51,7 +71,7 @@ module Neo4j
 
     # check if the database is locked. A neo4j database is locked when there is running.
     def self.locked?
-      lock_file = File.join(::Neo4j::Config[:storage_path], 'neostore')
+      lock_file = File.join(Neo4j.config.storage_path, 'neostore')
       return false unless File.exist?(lock_file)
       rfile = java.io.RandomAccessFile.new(lock_file, 'rw')
       begin
@@ -62,14 +82,14 @@ module Neo4j
         return false
       end
     end
-    
+
     def shutdown #:nodoc:
       if @running
         @graph.unregister_transaction_event_handler(@event_handler) unless read_only?
         @event_handler.neo4j_shutdown(self)
         @graph.shutdown
-        @graph  = nil
-        @lucene = nil
+        @graph   = nil
+        @lucene  = nil
         @running = false
       end
 
