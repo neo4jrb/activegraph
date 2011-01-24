@@ -1,6 +1,7 @@
-module Neo4j::Mapping
-  module ClassMethods
-    module Property
+module Neo4j
+  module Property
+
+    module ClassMethods
 
       # Generates accessor method and sets configuration for Neo4j node properties.
       # The generated accessor is a simple wrapper around the #[] and

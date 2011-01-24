@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::MigrationMixin do
+describe Neo4j::Migrations::NodeMixin do
 
   def create_migration(clazz)
     clazz.migration 1, :split_name do
@@ -57,7 +57,7 @@ describe Neo4j::MigrationMixin do
 
     it "#migrate! should raise an exception if the migration did not create a Transaction" do
       clazz = create_node_mixin do
-        include Neo4j::MigrationMixin
+        include Neo4j::Migrations::NodeMixin
       end
 
       create_migration_without_tx_fail(clazz)
@@ -70,7 +70,7 @@ describe Neo4j::MigrationMixin do
 
     it "#migrate! should NOT raise an exception if the migration did create a Transaction" do
       clazz = create_node_mixin do
-        include Neo4j::MigrationMixin
+        include Neo4j::Migrations::NodeMixin
       end
 
       create_migration_without_tx_success(clazz)
@@ -88,7 +88,7 @@ describe Neo4j::MigrationMixin do
     context Neo4j::NodeMixin, :type => :transactional do
       it "can add rule :all on existing nodes" do
         clazz = create_node_mixin do
-          include Neo4j::MigrationMixin
+          include Neo4j::Migrations::NodeMixin
         end
         # create nodes with out
         a = clazz.new :name =>'a'
@@ -116,7 +116,7 @@ describe Neo4j::MigrationMixin do
 
       it "can add a counter after the nodes has been created" do
         clazz = create_node_mixin do
-          include Neo4j::MigrationMixin
+          include Neo4j::Migrations::NodeMixin
           rule :all
         end
         # create nodes with out counter
@@ -124,7 +124,7 @@ describe Neo4j::MigrationMixin do
         b = clazz.new :name =>'b'
         finish_tx
 
-        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
         rule_node_props.should_not include(:sum)
         rule_node_props['_count_all__classname'].should be_nil
 
@@ -141,7 +141,7 @@ describe Neo4j::MigrationMixin do
           end
         end
         clazz.migrate!
-        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
         #"_#{function_name}_#{rule_name}_#{prop}"
         rule_node_props['_count_all__classname'].should == 2
         clazz.all.to_a.size.should == 2
@@ -151,7 +151,7 @@ describe Neo4j::MigrationMixin do
 
       it "can add a sum after the nodes has been created" do
         clazz = create_node_mixin do
-          include Neo4j::MigrationMixin
+          include Neo4j::Migrations::NodeMixin
           rule :all
         end
         # create nodes with out counter
@@ -159,7 +159,7 @@ describe Neo4j::MigrationMixin do
         b = clazz.new :name =>'b', :age => 3
         finish_tx
 
-        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
         rule_node_props.should_not include(:sum)
         rule_node_props['_sum_all_age'].should be_nil
 
@@ -176,7 +176,7 @@ describe Neo4j::MigrationMixin do
           end
         end
         clazz.migrate!
-        rule_node_props = Neo4j::Mapping::Rule.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
         #"_#{function_name}_#{rule_name}_#{prop}"
         rule_node_props['_sum_all_age'].should == 7
         clazz.all.sum(:age).should == 7
@@ -189,7 +189,7 @@ describe Neo4j::MigrationMixin do
 
     context Neo4j::Rails::Model do
       class RailsMigrationTestModel < Neo4j::Rails::Model
-        include Neo4j::MigrationMixin
+        include Neo4j::Migrations::NodeMixin
       end
 
       it "upgrade migration with added index should make all nodes be found with that index" do
@@ -235,7 +235,7 @@ describe Neo4j::MigrationMixin do
         clazz.index :name
 
         # add add an migration
-        clazz.send(:include, Neo4j::MigrationMixin)
+        clazz.send(:include, Neo4j::Migrations::NodeMixin)
 
         clazz.migration 1, :add_index do
           add_index :name
@@ -250,7 +250,7 @@ describe Neo4j::MigrationMixin do
 
       it "sets the class #db_version property when a migration has been executed" do
         clazz = create_node_mixin do
-          include Neo4j::MigrationMixin
+          include Neo4j::Migrations::NodeMixin
         end
 
         finish_tx
@@ -278,7 +278,7 @@ describe Neo4j::MigrationMixin do
         clazz.find(:name => 'foo').first.should == foo
 
         # add a migration
-        clazz.send(:include, Neo4j::MigrationMixin)
+        clazz.send(:include, Neo4j::Migrations::NodeMixin)
         clazz.migration 1, :add_index do
           add_index :name
         end
@@ -308,7 +308,7 @@ describe Neo4j::MigrationMixin do
         clazz.find(:name => 'foo').first.should == foo
 
         # add add an migration
-        clazz.send(:include, Neo4j::MigrationMixin)
+        clazz.send(:include, Neo4j::Migrations::NodeMixin)
 
         clazz.migration 1, :remove_name_index do
           rm_index :name
@@ -332,7 +332,7 @@ describe Neo4j::MigrationMixin do
         clazz.find(:name => 'foo').should be_empty
 
         # add a migration
-        clazz.send(:include, Neo4j::MigrationMixin)
+        clazz.send(:include, Neo4j::Migrations::NodeMixin)
         clazz.migration 1, :remove_this_index do
           rm_index :name
         end
@@ -356,7 +356,7 @@ describe Neo4j::MigrationMixin do
   context Neo4j::Rails::Model do
 
     class PersonMigModel < Neo4j::Rails::Model
-      include Neo4j::MigrationMixin
+      include Neo4j::Migrations::NodeMixin
       property :name
     end
 
@@ -397,7 +397,7 @@ describe Neo4j::MigrationMixin do
   context Neo4j::NodeMixin, :type => :transactional do
     class PersonInfo
       include Neo4j::NodeMixin
-      include Neo4j::MigrationMixin
+      include Neo4j::Migrations::NodeMixin
       rule :all
       property :name
     end

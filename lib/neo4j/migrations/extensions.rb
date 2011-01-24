@@ -10,7 +10,7 @@ module Neo4j
     # (It Delegates to the Reference Node)
     #
     # === See Also
-    # Neo4j::MigrationMixin#db_version
+    # Neo4j::Migrations::RefNodeWrapper#db_version
     #
     # :singleton-method: db_version
 
@@ -18,7 +18,7 @@ module Neo4j
     # Force Neo4j.rb to perform migrations
     #
     # === See Also
-    # Neo4j::MigrationMixin#migrate!
+    # Neo4j::Migrations::RefNodeWrapper#migrate!
     #
     # :singleton-method: migrate!
 
@@ -38,7 +38,7 @@ module Neo4j
     #  end
     #
     # === See Also
-    # Neo4j::MigrationMixin::ClassMethods#migration
+    # Neo4j::Migrations::ClassMethods#migration
     #
     # :singleton-method: migration
 
@@ -46,12 +46,12 @@ module Neo4j
     # Returns all migrations that has been defined.
     #
     # === See Also
-    # Neo4j::MigrationMixin::ClassMethods#migrations
+    # Neo4j::Migrations::ClassMethods#migrations
     #
     # :singleton-method: migrations
 
 
-    def_delegators :'Neo4j::GlobalMigration', :db_version, :migrate!, :migrations, :migration
+    def_delegators :'Neo4j::Migrations::RefNodeWrapper', :db_version, :migrate!, :migrations, :migration
 
   end
 end

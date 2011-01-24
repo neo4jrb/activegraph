@@ -1,5 +1,5 @@
 module Neo4j
-  module Mapping
+  module HasN
 
     # Enables creating and traversal of nodes.
     #
@@ -10,7 +10,7 @@ module Neo4j
     # ==== See Also
     # Neo4j::Mapping::ClassMethods::Relationship
     #
-    class HasN
+    class Mapping
       include Enumerable
       include WillPaginate::Finders::Base
       
@@ -23,7 +23,7 @@ module Neo4j
       end
 
       def to_s
-        "HasN [#@direction, id: #{@node.neo_id} type: #{@dsl && @dsl.rel_type} dsl:#{@dsl}]"
+        "HasN::Mapping [#@direction, id: #{@node.neo_id} type: #{@dsl && @dsl.rel_type} dsl:#{@dsl}]"
       end
 
       def size

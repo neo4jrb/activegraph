@@ -1,9 +1,8 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe "Neo4j#migration", :type => :transactional do
-  pending 
   after(:each) do
-    Neo4j::GlobalMigration.reset_migrations!
+    Neo4j::Migrations::RefNodeWrapper.reset_migrations!
     Neo4j.db_version.should == 0
   end
 
@@ -133,9 +132,9 @@ describe "Neo4j#migration", :type => :transactional do
 
     # when starting
     Neo4j.migrate! 1
-    called_up.should == Neo4j::GlobalMigration
+    called_up.should == Neo4j::Migrations::RefNodeWrapper
     Neo4j.migrate! 0
-    called_down.should == Neo4j::GlobalMigration
+    called_down.should == Neo4j::Migrations::RefNodeWrapper
   end
 
   it "should run any migration when neo4j starts without needing to call Neo4j.migrate!" do

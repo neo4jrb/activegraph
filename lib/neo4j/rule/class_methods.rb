@@ -1,5 +1,5 @@
-module Neo4j::Mapping
-  module ClassMethods
+module Neo4j
+  module Rule
 
 
     # Allows you to group nodes by providing a rule.
@@ -72,7 +72,7 @@ module Neo4j::Mapping
     # Yes, since operations are performed in an transaction. However you may get a deadlock exception:
     # http://docs.neo4j.org/html/snapshot/#_deadlocks
     #
-    module Rule
+    module ClassMethods
 
       # Creates an rule node attached to the Neo4j.ref_node
       # Can be used to rule all instances of a specific Ruby class.
@@ -102,7 +102,7 @@ module Neo4j::Mapping
 
         # define class methods
         singleton.send(:define_method, rule_name) do
-          rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+          rule_node = RuleEventListener.rule_node_for(self)
           rule_node.traversal(rule_name)
         end unless respond_to?(rule_name)
 
@@ -111,11 +111,11 @@ module Neo4j::Mapping
           instance_eval &block
         end
 
-        rule = Neo4j::Mapping::Rule.add(self, rule_name, props, &block)
+        rule = RuleEventListener.add(self, rule_name, props, &block)
 
         rule.functions && rule.functions.each do |func|
           singleton.send(:define_method, func.class.function_name) do |r_name, *args|
-            rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+            rule_node = RuleEventListener.rule_node_for(self)
             function_id = args.empty? ? "_classname" : args[0]
             function = rule_node.find_function(r_name, func.class.function_name, function_id)
             function.value(rule_node.rule_node, r_name)
@@ -124,7 +124,7 @@ module Neo4j::Mapping
       end
 
       def inherit_rules_from(clazz)
-        Neo4j::Mapping::Rule.inherit(clazz, self)
+        RuleEventListener.inherit(clazz, self)
       end
 
       # This is typically used for RSpecs to clean up rule nodes created by the #rule method.
@@ -133,7 +133,7 @@ module Neo4j::Mapping
         singelton = class << self;
           self;
         end
-        rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+        rule_node = RuleEventListener.rule_node_for(self)
 
         rule_node.rule_names.each {|rule_name| singelton.send(:remove_method, rule_name)}
         rule_node.rules.clear
@@ -145,7 +145,7 @@ module Neo4j::Mapping
       # Can also be called from an migration.
       #
       def trigger_rules(node, *changes)
-        Neo4j::Mapping::Rule.trigger_rules(node, *changes)
+        RuleEventListener.trigger_rules(node, *changes)
       end
 
       # Returns a proc that will call add method on the given function
@@ -167,7 +167,7 @@ module Neo4j::Mapping
       # Returns a proc that calls the given method on the given function.
       def function_for(method, rule_name, function_name_or_class, function_id = '_classname')
         function_name = function_name_or_class.is_a?(Symbol)? function_name_or_class : function_name_or_class.function_name
-        rule_node = Neo4j::Mapping::Rule.rule_node_for(self)
+        rule_node = RuleEventListener.rule_node_for(self)
         rule = rule_node.find_rule(rule_name)
         rule_node_raw = rule_node.rule_node
 
@@ -179,6 +179,6 @@ module Neo4j::Mapping
       end
     end
 
-    Neo4j.unstarted_db.event_handler.add(Neo4j::Mapping::Rule) unless Neo4j.read_only?
+    Neo4j.unstarted_db.event_handler.add(RuleEventListener) unless Neo4j.read_only?
   end
 end

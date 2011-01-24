@@ -53,16 +53,28 @@ require "neo4j/functions/function"
 require "neo4j/functions/count"
 require "neo4j/functions/sum"
 
-
-
 require 'neo4j/index/index'
 require 'neo4j/index/class_methods'
 require 'neo4j/index/indexer_registry'
 require 'neo4j/index/indexer'
 require 'neo4j/index/lucene_query'
+
 require 'neo4j/relationship_traverser'
 require 'neo4j/node_traverser'
-require 'neo4j/property'
+require 'neo4j/property/property'
+require 'neo4j/property/class_methods'
+
+require 'neo4j/has_n/class_methods'
+require 'neo4j/has_n/decl_relationship_dsl'
+require 'neo4j/has_n/mapping'
+
+require 'neo4j/has_list/class_methods'
+require 'neo4j/has_list/mapping'
+
+require 'neo4j/rule/rule_event_listener'
+require 'neo4j/rule/class_methods'
+require 'neo4j/rule/rule_node'
+
 require 'neo4j/transaction'
 require 'neo4j/node_relationship'
 require 'neo4j/load'
@@ -70,22 +82,15 @@ require 'neo4j/relationship'
 require 'neo4j/node'
 require 'neo4j/mapping/class_methods/init_node'
 require 'neo4j/mapping/class_methods/init_rel'
-require 'neo4j/mapping/class_methods/property'
-require 'neo4j/mapping/class_methods/relationship'
-require 'neo4j/mapping/class_methods/list'
-require 'neo4j/mapping/decl_relationship_dsl'
-require 'neo4j/mapping/has_n'
-require 'neo4j/mapping/has_list'
 require 'neo4j/mapping/node_mixin'
 require 'neo4j/mapping/relationship_mixin'
-require 'neo4j/mapping/rule'
-require 'neo4j/mapping/rule_node'
 
 require 'neo4j/node_mixin'
 require 'neo4j/relationship_mixin'
-require 'neo4j/mapping/class_methods/rule'
+
 require 'neo4j/algo'
-require 'neo4j/migrations'
+
+require 'neo4j/migrations/migrations'
 
 # rails
 require 'neo4j/rails/tx_methods'

@@ -1,5 +1,5 @@
 module Neo4j
-  module Mapping
+  module HasList
 
     # Enables creating and traversal of nodes in a list.
     #
@@ -31,7 +31,7 @@ module Neo4j
     #
     #  person.feeds[42] # => a
     #
-    class HasList
+    class Mapping
       include Enumerable
       include ToJava
       include WillPaginate::Finders::Base

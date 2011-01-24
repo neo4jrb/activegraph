@@ -1,12 +1,11 @@
-module Neo4j::Mapping
-  module ClassMethods
-
-    module Relationship
+module Neo4j
+  module HasN
+    module ClassMethods
       include Neo4j::ToJava
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship.
-      # Both incoming and outgoing relationships can be declared, see Neo4j::Mapping::DeclRelationshipDsl
+      # Both incoming and outgoing relationships can be declared, see Neo4j::HasN::DeclRelationshipDsl
       #
       # ==== Example
       #
@@ -21,14 +20,14 @@ module Neo4j::Mapping
       #
       # ==== Returns
       #
-      # Neo4j::Mapping::DeclRelationshipDsl
+      # Neo4j::HasN::DeclRelationshipDsl
       #
       def has_n(rel_type, params = {})
         clazz = self
         module_eval(%Q{
                 def #{rel_type}
                     dsl = _decl_rels_for('#{rel_type}'.to_sym)
-                    Neo4j::Mapping::HasN.new(self, dsl)
+                    Neo4j::HasN::Mapping.new(self, dsl)
                 end}, __FILE__, __LINE__)
 
         module_eval(%Q{
@@ -37,14 +36,14 @@ module Neo4j::Mapping
                     dsl.all_relationships(self)
                 end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, false, clazz, params)
+        _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, false, clazz, params)
       end
 
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship
       # Old relationship is deleted when a new relationship is assigned.
-      # Both incoming and outgoing relationships can be declared, see Neo4j::Mapping::DeclRelationshipDsl
+      # Both incoming and outgoing relationships can be declared, see Neo4j::HasN::DeclRelationshipDsl
       #
       # ==== Example
       #
@@ -60,7 +59,7 @@ module Neo4j::Mapping
       #
       # ==== Returns
       #
-      # Neo4j::Mapping::DeclRelationshipDsl
+      # Neo4j::HasN::DeclRelationshipDsl
       #
       def has_one(rel_type, params = {})
         clazz = self
@@ -82,7 +81,7 @@ module Neo4j::Mapping
                   dsl.single_relationship(self)
                end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = Neo4j::Mapping::DeclRelationshipDsl.new(rel_type, true, clazz, params)
+        _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, true, clazz, params)
       end
 
     end

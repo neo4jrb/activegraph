@@ -104,7 +104,7 @@ module Neo4j::Mapping
         c.class_inheritable_hash :_decl_props
         c._decl_props ||= {}
         
-        c.extend ClassMethods::Property
+        c.extend Neo4j::Property::ClassMethods
         c.extend ClassMethods::InitRel
         c.extend Neo4j::Index::ClassMethods
 

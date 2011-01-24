@@ -1,8 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
-describe Neo4j::LazyMigrationMixin do
-
-    pending
+describe Neo4j::Migrations::LazyNodeMixin do
 
   def create_lazy_migration(clazz)
     clazz.migration 1, :split_name do
@@ -25,8 +23,7 @@ describe Neo4j::LazyMigrationMixin do
 
   context Neo4j::Rails::Model do
     class LazyPersonModel < Neo4j::Rails::Model
-      include Neo4j::MigrationMixin
-      include Neo4j::LazyMigrationMixin
+      include Neo4j::Migrations::LazyNodeMixin
       property :name
     end
 
@@ -91,7 +88,7 @@ describe Neo4j::LazyMigrationMixin do
   context Neo4j::NodeMixin, :type => :transactional do
     class LazyPersonInfo
       include Neo4j::NodeMixin
-      include Neo4j::LazyMigrationMixin
+      include Neo4j::Migrations::LazyNodeMixin
       property :name
     end
 

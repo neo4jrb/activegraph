@@ -91,11 +91,11 @@ module Neo4j::Mapping
       c.class_inheritable_hash :_decl_rels
       c._decl_rels ||= {}
 
-      c.extend ClassMethods::Property
+      c.extend Neo4j::Property::ClassMethods
       c.extend ClassMethods::InitNode
-      c.extend ClassMethods::Relationship
-      c.extend ClassMethods::Rule
-      c.extend ClassMethods::List
+      c.extend Neo4j::HasN::ClassMethods
+      c.extend Neo4j::Rule::ClassMethods
+      c.extend Neo4j::HasList::ClassMethods
       c.extend Neo4j::Index::ClassMethods
       c.extend WillPaginate::Finders::Base
 
