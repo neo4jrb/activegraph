@@ -13,8 +13,8 @@ begin
 
   require 'neo4j'
 
-#  require 'logger'
-#  Neo4j::Config[:logger_level] = Logger::INFO
+  require 'logger'
+  Neo4j::Config[:logger_level] = Logger::ERROR
   
   def rm_db_storage
     FileUtils.rm_rf Neo4j::Config[:storage_path]

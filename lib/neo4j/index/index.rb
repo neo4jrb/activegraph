@@ -1,3 +1,8 @@
+require 'neo4j/index/class_methods'
+require 'neo4j/index/indexer_registry'
+require 'neo4j/index/indexer'
+require 'neo4j/index/lucene_query'
+
 module Neo4j
 
   module Index

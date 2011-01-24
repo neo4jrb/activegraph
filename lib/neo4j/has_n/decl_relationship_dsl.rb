@@ -81,7 +81,7 @@ module Neo4j
       end
 
       def all_relationships(node) #:nodoc:
-        Neo4j::RelationshipTraverser.new(node._java_node, [rel_type], direction)
+        Neo4j::Rels::Traverser.new(node._java_node, [rel_type], direction)
       end
 
       def create_relationship_to(node, other) # :nodoc:

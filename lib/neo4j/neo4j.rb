@@ -1,3 +1,7 @@
+# external neo4j dependencies
+require 'neo4j/config'
+require 'neo4j/database'
+
 # = Neo4j
 #
 # The Neo4j modules is used to interact with an Neo4j Database instance.

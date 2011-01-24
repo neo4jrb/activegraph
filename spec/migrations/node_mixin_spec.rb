@@ -129,12 +129,12 @@ describe Neo4j::Migrations::NodeMixin do
         rule_node_props['_count_all__classname'].should be_nil
 
         clazz.instance_eval do
-          rule(:all, :functions => Neo4j::Functions::Count.new)
+          rule(:all, :functions => Neo4j::Rule::Functions::Count.new)
         end
 
         clazz.migration 1, :add_count_rule do
           up do
-            func = clazz.add_function_for(:all, Neo4j::Functions::Count)
+            func = clazz.add_function_for(:all, Neo4j::Rule::Functions::Count)
             clazz.all.each do |node|
               func.call(node)
             end
@@ -164,12 +164,12 @@ describe Neo4j::Migrations::NodeMixin do
         rule_node_props['_sum_all_age'].should be_nil
 
         clazz.instance_eval do
-          rule(:all, :functions => Neo4j::Functions::Sum.new(:age))
+          rule(:all, :functions => Neo4j::Rule::Functions::Sum.new(:age))
         end
 
         clazz.migration 1, :add_all_rule do
           up do
-            func = clazz.add_function_for(:all, Neo4j::Functions::Sum, :age)
+            func = clazz.add_function_for(:all, Neo4j::Rule::Functions::Sum, :age)
             clazz.all.each do |node|
               func.call(node)
             end

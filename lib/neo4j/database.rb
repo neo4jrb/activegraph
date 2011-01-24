@@ -1,3 +1,7 @@
+require 'neo4j/config'
+require 'neo4j/event_handler'
+require 'neo4j/transaction'
+
 module Neo4j
   # Wraps both Java Neo4j GraphDatabaseService and Lucene.
   # You can access the raw java neo4j and lucene db's with the <tt>graph</tt> and <tt>lucene</tt>

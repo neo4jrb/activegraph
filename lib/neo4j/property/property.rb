@@ -1,3 +1,5 @@
+require 'neo4j/property/class_methods'
+
 module Neo4j
   module Property
 

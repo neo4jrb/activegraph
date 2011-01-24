@@ -1,10 +1,17 @@
+# external neo4j dependencies
+require 'neo4j/property/property'
+require 'neo4j/rels/rels'
+require 'neo4j/traversal/traversal'
+require 'neo4j/index/index'
+require 'neo4j/equal'
+require 'neo4j/load'
+
 module Neo4j
-
-
 
   org.neo4j.kernel.impl.core.NodeProxy.class_eval do
     include Neo4j::Property
-    include Neo4j::NodeRelationship
+    include Neo4j::Rels
+    include Neo4j::Traversal
     include Neo4j::Equal
     include Neo4j::Index
 

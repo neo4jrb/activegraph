@@ -1,3 +1,10 @@
+# external neo4j dependencies
+require 'neo4j/property/property'
+require 'neo4j/index/index'
+require 'neo4j/equal'
+require 'neo4j/load'
+require 'neo4j/to_java'
+
 module Neo4j
 
   org.neo4j.kernel.impl.core.RelationshipProxy.class_eval do
