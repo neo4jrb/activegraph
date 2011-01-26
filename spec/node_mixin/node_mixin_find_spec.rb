@@ -253,22 +253,26 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
 
   context "string queries" do
 
-    it "#index should add an index" do
-      n = SimpleNode.new
-      n[:city] = 'malmoe'
-      new_tx
-      SimpleNode.find('city: malmoe').first.should == n
+    before(:all) do
+      @clazz = create_node_mixin do
+        index :city
+      end
     end
 
+    it "#index should add an index" do
+      n = @clazz.new(:city => 'malmoe')
+      new_tx
+      @clazz.find('city: malmoe').first.should == n
+    end
 
     it "#index should keep the index in sync with the property value" do
-      n = SimpleNode.new
+      n = @clazz.new
       n[:city] = 'malmoe'
       new_tx
       n[:city] = 'stockholm'
       new_tx
-      SimpleNode.find('city: malmoe').first.should_not == n
-      SimpleNode.find('city: stockholm').first.should == n
+      @clazz.find('city: malmoe').first.should_not == n
+      @clazz.find('city: stockholm').first.should == n
     end
     
     it "can index and search on two properties if index has the same type" do
