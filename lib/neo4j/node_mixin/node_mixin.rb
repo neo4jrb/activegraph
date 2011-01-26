@@ -36,7 +36,7 @@ module Neo4j
   # * Neo4j::Index::ClassMethods
   # * Neo4j::HasList::ClassMethods
   #
-  # This class also includes the class methods of WillPaginate::Finders::Base
+  # This class also includes the class mixin WillPaginate::Finders::Base, see http://github.com/mislav/will_paginate/wiki
   #
   module NodeMixin
     include Neo4j::Index

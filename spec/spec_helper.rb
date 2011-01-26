@@ -64,7 +64,7 @@ begin
       finish_tx
       Neo4j::Transaction.run do
         Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
-      end
+      end unless Neo4j.running?
     end
 
     c.before(:all) do

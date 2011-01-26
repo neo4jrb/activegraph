@@ -72,6 +72,8 @@ require 'neo4j/migrations/migrations'
 
 require 'neo4j/algo/algo'
 
+require 'neo4j/batch/batch'
+
 require 'orm_adapter/adapters/neo4j'
 
 

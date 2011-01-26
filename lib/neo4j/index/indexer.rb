@@ -1,6 +1,6 @@
 module Neo4j
   module Index
-    class Indexer 
+    class Indexer
       attr_reader :indexer_for, :field_types, :via_relationships
 
       def initialize(clazz, type) #:nodoc:
@@ -83,9 +83,9 @@ module Neo4j
           rel_dsl = @indexer_for._decl_rels[conf[:via]]
           raise "No relationship defined for '#{conf[:via]}'. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]} <-- error. Define it with a has_one or has_n" unless rel_dsl
           raise "Only incoming relationship are possible to define index on. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]}" unless rel_dsl.incoming?
-          via_indexer = rel_dsl.target_class._indexer
+          via_indexer               = rel_dsl.target_class._indexer
 
-          field = field.to_s
+          field                     = field.to_s
           @via_relationships[field] = rel_dsl
           conf.delete :via # avoid endless recursion
           via_indexer.index(field, conf)
@@ -128,7 +128,7 @@ module Neo4j
           start_node = relationship._start_node
 
           # find the indexer to use
-          indexer   = dsl.target_class._indexer
+          indexer    = dsl.target_class._indexer
 
           # is the relationship created or deleted ?
           if is_created
@@ -141,7 +141,7 @@ module Neo4j
 
       def update_index_on(node, field, old_val, new_val) #:nodoc:
         if @via_relationships.include?(field)
-          dsl = @via_relationships[field]
+          dsl          = @via_relationships[field]
           target_class = dsl.target_class
 
           dsl._all_relationships(node).each do |rel|
@@ -182,22 +182,48 @@ module Neo4j
       # the lucene index in sync. See #index
       #
       def add_index(entity, field, value)
-       	return false unless @field_types.has_key?(field)
+        return false unless @field_types.has_key?(field)
+        value = indexed_value_for(field, value)
+        index = index_for_field(field.to_s)
+        index.add(entity, field, value)
+        @parent_indexers.each { |i| i.add_index(entity, field, value) }
+      end
 
+      def indexed_value_for(field, value)
         # we might need to know what type the properties are when indexing and querying
         @decl_props ||= @indexer_for.respond_to?(:_decl_props) && @indexer_for._decl_props
 
-        type = @decl_props && @decl_props[field.to_sym] && @decl_props[field.to_sym][:type]
-        if type
-          value = if String != type
-                    org.neo4j.index.impl.lucene.ValueContext.new(value).indexNumeric
-                  else
-                    org.neo4j.index.impl.lucene.ValueContext.new(value)
-                  end
+        type        = @decl_props && @decl_props[field.to_sym] && @decl_props[field.to_sym][:type]
+        return value unless type
+
+        if String != type
+          org.neo4j.index.impl.lucene.ValueContext.new(value).indexNumeric
+        else
+          org.neo4j.index.impl.lucene.ValueContext.new(value)
+        end
+      end
+
+      def add_index_batch(entity_id, props, index_provider)
+        filter_props = props.keys.inject({}) { |memo, field| memo[field] = indexed_value_for(field, props[field]) if @field_types.has_key?(field); memo }
+        return if filter_props.empty?
+
+        # for each index type create a new hash
+        # first index
+
+        while !filter_props.empty?
+          # pick one index type
+          index       = batch_index_for_field(filter_props.keys[0], index_provider)
+          # put all other fields that are not of this index type in a new hash
+          other_index = {}
+          # delete all fields that are not of this index
+          filter_props.delete_if { |k, v| index != batch_index_for_field(k,index_provider) && other_index[k] = v }
+          # add all those properties for this index
+          index.add(entity_id, filter_props)
+          # continue with the remaining fields
+          filter_props = other_index
         end
 
-        index_for_field(field.to_s).add(entity, field, value)
-      	@parent_indexers.each { |i| i.add_index(entity, field, value) }
+        @parent_indexers.each { |i| i.add_index_batch(entity_id, props, index_provider) }
       end
 
       # Removes an index on the given entity
@@ -236,7 +262,7 @@ module Neo4j
         # we might need to know what type the properties are when indexing and querying
         @decl_props ||= @indexer_for.respond_to?(:_decl_props) && @indexer_for._decl_props
 
-        index = index_for_type(params[:type] || :exact)
+        index       = index_for_type(params[:type] || :exact)
         if query.is_a?(Hash) && (query.include?(:conditions) || query.include?(:sort))
           params.merge! query.except(:conditions)
           query.delete(:sort)
@@ -285,7 +311,7 @@ module Neo4j
       end
 
       def index_for_field(field) #:nodoc:
-        type = @field_types[field]
+        type           = @field_types[field]
         @indexes[type] ||= create_index_with(type)
       end
 
@@ -300,13 +326,32 @@ module Neo4j
       end
 
       def create_index_with(type) #:nodoc:
-        db=Neo4j.started_db
+        db           =Neo4j.started_db
         index_config = lucene_config(type)
         if @type == :node
           db.lucene.for_nodes("#{@indexer_for}-#{type}", index_config)
         else
           db.lucene.for_relationships("#{@indexer_for}-#{type}", index_config)
         end
+      end
+
+
+      def batch_index_for_field(field, index_provider)
+        type                 = @field_types[field]
+        @batch_indexes       ||= {}
+        @batch_indexes[type] ||= create_batch_index_with(type, index_provider)
+      end
+
+      def create_batch_index_with(type, index_provider)
+        index_config = lucene_config(type)
+
+        if @type == :node
+          index_provider.node_index("#{@indexer_for}-#{type}", index_config)
+        else
+          index_provider.relationship_index("#{@indexer_for}-#{type}", index_config)
+        end
+
+        #@exact_index ||= org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
       end
 
     end

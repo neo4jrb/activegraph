@@ -1,0 +1,168 @@
+require File.join(File.dirname(__FILE__), '..', 'spec_helper')
+
+
+describe Neo4j::Batch::Inserter do
+  before(:each) do
+    # It is not allowed to run the neo4j the same time as doing batch inserter
+    Neo4j.shutdown
+    rm_db_storage
+    @storage_path = File.expand_path(File.join(Dir.tmpdir, 'neo4j-batch-inserter'))
+    FileUtils.rm_rf @storage_path
+  end
+
+  after(:each) do
+    @inserter && @inserter.shutdown
+  end
+
+  # Nodes/Properties and Relationships
+  context "#new(path, config)" do
+
+    it "ot started" do
+      Neo4j.running?.should be_false
+    end
+
+    it "raise an exception if neo4j is running using the same storage path" do
+      Neo4j.start
+      lambda do
+        @inserter = Neo4j::Batch::Inserter.new
+      end.should raise_error
+    end
+
+    it "allows running neo4j at the same time as creating the batch inserter if it does not use the same storage path" do
+      Neo4j.start
+      lambda do
+        @inserter = Neo4j::Batch::Inserter.new(@storage_path)
+      end.should_not raise_error
+    end
+
+    it "#running is true if creating a inserter" do
+      @inserter = Neo4j::Batch::Inserter.new(@storage_path)
+      @inserter.should be_running
+#      File.exist?(@storage_path).should be_true
+    end
+
+    it "#running should be false after shutdown" do
+      @inserter = Neo4j::Batch::Inserter.new(@storage_path)
+      @inserter.shutdown
+      @inserter.should_not be_running
+
+#      File.exist?(@storage_path).should be_true
+    end
+
+    it "creates the folder at storage_path when it starts" do
+      File.exist?(@storage_path).should be_false
+      @inserter = Neo4j::Batch::Inserter.new(@storage_path)
+      File.exist?(@storage_path).should be_true
+    end
+
+    it "uses default Neo4j.storage_path if not provided one" do
+      @inserter = Neo4j::Batch::Inserter.new
+      File.exist?(Neo4j.config.storage_path).should be_true
+    end
+  end
+
+  context "#create_node() #=> id" do
+    before(:each) do
+      @inserter = Neo4j::Batch::Inserter.new
+      @id       = @inserter.create_node
+    end
+
+    it "#node_exist?(id) == true" do
+      @inserter.node_exist?(@id).should be_true
+    end
+
+    it "#node_props(id) == {}" do
+      @inserter.node_props(@id).should be_empty
+    end
+
+    it "#set_node_props(id, props)" do
+      @inserter.set_node_props(@id, 'name' => 'andreas')
+      hash = @inserter.node_props(@id)
+      hash['name'].should == 'andreas'
+      hash.size.should == 1
+    end
+  end
+
+  context "#create_node(hash)" do
+    before(:each) do
+      @inserter = Neo4j::Batch::Inserter.new
+      @id = @inserter.create_node('name' => 'kalle123', 'age' => 42)
+    end
+
+    it "creates a node with given properties" do
+      @inserter.node_exist?(@id).should be_true
+      hash = @inserter.node_props(@id)
+      hash['name'].should == 'kalle123'
+      hash['age'].should == 42
+      hash.size.should == 2
+      @inserter.shutdown
+      Neo4j.all_nodes.collect { |n| n[:name] }.should include('kalle123')
+      Neo4j.all_nodes.collect { |n| n[:age] }.should include(42)
+    end
+
+    it "#set_node_props(id, props), overwrites old props" do
+      @inserter.set_node_props(@id, 'name' => 'andreas')
+      hash = @inserter.node_props(@id)
+      hash['name'].should == 'andreas'
+      hash.size.should == 1
+      @inserter.shutdown
+      Neo4j.all_nodes.collect { |n| n[:name] }.should include('andreas')
+      Neo4j.all_nodes.collect { |n| n[:age] }.should_not include(42)
+    end
+
+  end
+
+  context "#ref_node" do
+    it "returns the reference node" do
+      @inserter = Neo4j::Batch::Inserter.new
+      ref_node = @inserter.ref_node
+      @inserter.node_exist?(ref_node).should be_true
+    end
+  end
+
+  context "#create_rel(:friend, node_a, node_b)" do
+    before(:each) do
+      @inserter = Neo4j::Batch::Inserter.new
+      @node_a = @inserter.create_node
+      @node_b = @inserter.create_node
+      @rel_id = @inserter.create_rel(:friend, @node_a, @node_b)
+    end
+
+    it "#rels(node_a).size == 1" do
+      @inserter.rels(@node_a).size.should == 1
+    end
+
+    
+    it "#rels(node_a).first returns a simple relationship responding to get_start_node, get_end_node and get_type"  do
+      rel = @inserter.rels(@node_a).first
+      rel.get_start_node.should == @node_a
+      rel.start_node.should == @node_a
+      rel.get_end_node.should == @node_b
+      rel.get_type.name == 'friend'
+    end
+
+    it "#set_rel_props(rel_id, props) sets relationship properties" do
+      @inserter.set_rel_props(@rel_id, 'name' => 'hoho')
+      @inserter.rel_props(@rel_id).size.should == 1
+      @inserter.rel_props(@rel_id)['name'].should == 'hoho'
+    end
+  end
+
+  context "#create_rel(:friend, node_a, node_b, hash)" do
+    before(:each) do
+      @inserter = Neo4j::Batch::Inserter.new
+      @node_a = @inserter.create_node
+      @node_b = @inserter.create_node
+      @rel_id = @inserter.create_rel(:friend, @node_a, @node_b, 'name' => 'aaa', 'age' => 4242)
+    end
+
+    it "#rel_props(id) should include properties" do
+      hash = @inserter.rel_props(@rel_id)
+      hash.size.should == 2
+      hash['name'].should == 'aaa'
+      hash['age'].should == 4242
+    end
+  end
+
+
+end

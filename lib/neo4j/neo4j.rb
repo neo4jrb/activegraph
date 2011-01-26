@@ -48,6 +48,13 @@ module Neo4j
       db
     end
 
+    # Returns the current storage path of a running neo4j database.
+    # If the database is not running it returns nil.
+    def storage_path
+      return nil unless db.running?
+      db.storage_path
+    end
+
     # Returns the Neo4j::Config class
     # Same as typing; Neo4j::Config
     def config
