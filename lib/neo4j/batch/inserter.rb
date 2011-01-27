@@ -128,7 +128,10 @@ module Neo4j
       def initialize(storage_path=Neo4j.config.storage_path, config={})
         # check if neo4j is running and using the same storage path
         raise "Not allowed to start batch inserter while Neo4j is already running at storage location #{storage_path}" if Neo4j.storage_path == storage_path
-        @batch_inserter = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new(storage_path, config)
+        @batch_inserter  = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new(storage_path, config)
+
+        Indexer.index_provider  = org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
+        Indexer.inserter        = @batch_inserter
       end
 
       def running?
@@ -140,8 +143,10 @@ module Neo4j
         @batch_inserter && @batch_inserter.shutdown
         @batch_inserter = nil
 
-        @batch_indexer && @batch_indexer.shutdown
-        @batch_indexer = nil
+        Indexer.index_provider
+        Indexer.index_provider && Indexer.index_provider.shutdown
+        Indexer.index_provider = nil
+        Indexer.inserter = nil
       end
 
       # Creates a node. Returns a Fixnum id of the created node. 
@@ -191,10 +196,10 @@ module Neo4j
 
       # index the given entity (a node or a relationship)
       def index(entity, props, clazz = Neo4j::Node)
-        indexer = clazz._indexer
-        @batch_indexer ||= org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
-        indexer.add_index_batch(entity, props, @batch_indexer)
+        indexer = Indexer.instance_for(clazz)
+        indexer.index_entity(entity, props)
       end
+
 
       # hmm, maybe faster not wrapping this ?
       def to_java_map(hash)

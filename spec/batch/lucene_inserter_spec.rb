@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::Batch::Inserter do
-  before(:all) do
+  before(:each) do
     # It is not allowed to run the neo4j the same time as doing batch inserter
     Neo4j.shutdown
     rm_db_storage
@@ -12,7 +12,7 @@ describe Neo4j::Batch::Inserter do
     Neo4j::Node.index(:description, :type => :fulltext)
   end
 
-  after(:all) do
+  after(:each) do
     @inserter && @inserter.shutdown
     new_tx
     Neo4j::Node.rm_field_type :exact
@@ -29,11 +29,18 @@ describe Neo4j::Batch::Inserter do
     it "#index(node, key, value)" do
       node_a = @inserter.create_node
       @inserter.index(node_a, {'name' => 'foobar42'})
-#      @indexer.flush
-#      @indexer.get('name', 'foobar').first.should == node_a
       @inserter.shutdown
       Neo4j.start
       Neo4j::Node.find(:name => 'foobar42').size.should == 1
     end
+
+    it "#create_node automatically index declared fields" do
+      pending
+      @inserter.create_node 'name' => 'foobar42'
+      @inserter.shutdown
+      Neo4j.start
+      Neo4j::Node.find(:name => 'foobar42').size.should == 1
+    end
+
   end
 end

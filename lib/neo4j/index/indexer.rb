@@ -1,14 +1,14 @@
 module Neo4j
   module Index
     class Indexer
-      attr_reader :indexer_for, :field_types, :via_relationships
+      attr_reader :indexer_for, :field_types, :via_relationships, :entity_type, :parent_indexers, :via_relationships
 
       def initialize(clazz, type) #:nodoc:
         # part of the unique name of the index
         @indexer_for       = clazz
 
         # do we want to index nodes or relationships ?
-        @type              = type
+        @entity_type              = type
 
         @indexes           = {} # key = type, value = java neo4j index
         @field_types       = {} # key = field, value = type (e.g. :exact or :fulltext)
@@ -203,29 +203,6 @@ module Neo4j
         end
       end
 
-      def add_index_batch(entity_id, props, index_provider)
-        filter_props = props.keys.inject({}) { |memo, field| memo[field] = indexed_value_for(field, props[field]) if @field_types.has_key?(field); memo }
-        return if filter_props.empty?
-
-        # for each index type create a new hash
-        # first index
-
-        while !filter_props.empty?
-          # pick one index type
-          index       = batch_index_for_field(filter_props.keys[0], index_provider)
-          # put all other fields that are not of this index type in a new hash
-          other_index = {}
-          # delete all fields that are not of this index
-          filter_props.delete_if { |k, v| index != batch_index_for_field(k,index_provider) && other_index[k] = v }
-          # add all those properties for this index
-          index.add(entity_id, filter_props)
-          # continue with the remaining fields
-          filter_props = other_index
-        end
-
-        @parent_indexers.each { |i| i.add_index_batch(entity_id, props, index_provider) }
-      end
-
       # Removes an index on the given entity
       # This is normally not needed since you can instead declare an index which will automatically keep
       # the lucene index in sync. See #index
@@ -326,9 +303,9 @@ module Neo4j
       end
 
       def create_index_with(type) #:nodoc:
-        db           =Neo4j.started_db
+        db           = Neo4j.started_db
         index_config = lucene_config(type)
-        if @type == :node
+        if @entity_type == :node
           db.lucene.for_nodes("#{@indexer_for}-#{type}", index_config)
         else
           db.lucene.for_relationships("#{@indexer_for}-#{type}", index_config)
@@ -336,23 +313,6 @@ module Neo4j
       end
 
 
-      def batch_index_for_field(field, index_provider)
-        type                 = @field_types[field]
-        @batch_indexes       ||= {}
-        @batch_indexes[type] ||= create_batch_index_with(type, index_provider)
-      end
-
-      def create_batch_index_with(type, index_provider)
-        index_config = lucene_config(type)
-
-        if @type == :node
-          index_provider.node_index("#{@indexer_for}-#{type}", index_config)
-        else
-          index_provider.relationship_index("#{@indexer_for}-#{type}", index_config)
-        end
-
-        #@exact_index ||= org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
-      end
 
     end
 
