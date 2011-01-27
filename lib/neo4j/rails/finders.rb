@@ -60,7 +60,11 @@ module Neo4j
               kind = args.shift
               send(kind, *args)
             else
-              find_with_ids(*args) or first(*args)
+              if ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0)
+                find_with_ids(*args)
+              else
+                first(*args)
+              end
           end
         end
 
@@ -116,16 +120,20 @@ module Neo4j
 
           # does it contain an empty conditions param ?
           hash = args.find { |a| a.is_a?(Hash) }
-          return false if hash.include?(:conditions) && hash[:conditions].empty?
+          if hash
+            return false if hash.include?(:conditions) && hash[:conditions].empty?
 
-          # does it contain only paging or sorting params ?
-          !hash.except(:sort, :page, :per_page).empty?
+            # does it contain only paging or sorting params ?
+            !hash.except(:sort, :page, :per_page).empty?
+          else
+            return false
+          end
         end
 
         def find_with_ids(*args)
-          if ((args.first.is_a?(String) || args.first.is_a?(Integer)) && args.first.to_i > 0)
-            load(*args.map { |p| p.to_i })
-          end
+          result = load(*args.map { |p| p.to_i })
+          result.compact! if result.is_a?(Array)
+          result
         end
 
         def find_with_indexer(*args)

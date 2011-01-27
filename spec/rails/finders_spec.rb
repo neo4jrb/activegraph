@@ -51,6 +51,26 @@ describe "finders" do
 		end
   end
 
+
+  context ".find" do
+    def nonexistant_id
+      i       = rand(1000)
+      all_ids = FindableModel.all.map { |m| m.id.to_i }
+      while (all_ids.include?(i))
+        i = rand(1000)
+      end
+      i
+    end
+
+    it "should return nil when passed a non-existant id" do
+      FindableModel.find(nonexistant_id).should be_nil
+    end
+
+    it "should return an empty array when passed multiple non-existant ids" do
+      FindableModel.find(nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id).should == []
+    end
+  end
+
   context "query, :sort => {:field => :asc/:desc}" do
 
 		it ":sort => {:name => :asc} should sort by ascending" do
