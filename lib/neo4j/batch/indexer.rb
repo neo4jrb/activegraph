@@ -9,37 +9,29 @@ module Neo4j
         @parent_indexers = wrapped_indexer.parent_indexers.collect{|i| Indexer.new(i)}
       end
 
-      def indexer_for_field(field)
-        if via_relationships.include?(field)
-          dsl          = via_relationships[field]
-          target_class = dsl.target_class
-          self.class.instance_for(target_class)
-        else
-          self
-        end
+      def indexer_for_field(field, rel_type)
+        dsl = via_relationships[field]
+        return nil if dsl.nil?
+        return nil if dsl.rel_type != rel_type
+
+        target_class = dsl.target_class
+        self.class.instance_for(target_class)
       end
 
-      def index_node(node, props) #:nodoc:
-        return if props.empty?
-        props_copy = props.clone
+      def index_node_via_rel(rel_type, other, node_props) #:nodoc:
+        return if node_props.empty? || via_relationships.empty?
+        props_copy = node_props.clone
 
         while !props_copy.empty?
-          indexer     = indexer_for_field(props_copy.keys.first)
+          indexer     = indexer_for_field(props_copy.keys.first, rel_type)
+
           # put all other fields that are not of this index type in a new hash
           other_index = {}
           # delete all fields that are not of this index
-          props_copy.delete_if { |k, v| indexer != indexer_for_field(k) && other_index[k] = v }
+          props_copy.delete_if { |k, v| indexer != indexer_for_field(k, rel_type) && other_index[k] = v }
           # add all those properties for this index
+          indexer && indexer.index_entity(other, props_copy)
 
-          if indexer == self
-            indexer.index_entity(node, props_copy)
-          else
-            # TODO THIS IS NOT NECCESSARLY - only do this when creating a relationship and check which relationship type it is
-            self.class.inserter.rels(node).each do |rel|
-              other = rel.start_node
-              indexer.index_entity(other, props_copy)
-            end
-          end
           # continue with the remaining fields
           props_copy = other_index
         end
@@ -47,7 +39,6 @@ module Neo4j
 
       def index_entity(entity_id, props)
         filter_props = props.keys.inject({}) { |memo, field| memo[field] = indexed_value_for(field, props[field]) if field_types.has_key?(field); memo }
-        return if filter_props.empty?
 
         while !filter_props.empty?
           # pick one index type
@@ -62,7 +53,7 @@ module Neo4j
           filter_props = other_index
         end
 
-        @parent_indexers.each { |i| i.index_node(entity_id, props) }
+        @parent_indexers.each { |i| i.index_entity(entity_id, props) }
       end
 
       def batch_index_for_field(field)
@@ -82,11 +73,11 @@ module Neo4j
       end
 
       class << self
-        attr_accessor :index_provider, :inserter
+        attr_accessor :index_provider
 
         def instance_for(clazz)
           @instances ||= {}
-          @instances[clazz] ||= Indexer.new(clazz._indexer)
+          @instances[clazz.to_s] ||= Indexer.new(clazz._indexer)
         end
       end
     end

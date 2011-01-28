@@ -36,7 +36,6 @@ module Neo4j
     #
     #    inserter = Neo4j::Batch::Inserter.new(storage, config)
     #    node_a = inserter.create_node(:name => 'andreas')
-    #    inserter.index(node_a, :name => 'andreas')'
     #
     #  The Inserter#index method will add index of all declared indexes declared type (default 'exact')
     #
@@ -51,8 +50,8 @@ module Neo4j
     #    end
     #
     #    inserter = Neo4j::Batch::Inserter.new(storage, config)
-    #    node_a = inserter.create_node(:name => 'andreas')
-    #    inserter.index(node_a, :name => 'andreas', Person)'
+    #    # the next line will add a lucene index on field desc
+    #    node_a = inserter.create_node(:desc => 'bla bla', Person)
     #
     # === NodeMixin and  _classname
     #
@@ -80,14 +79,14 @@ module Neo4j
     #    end
     #
     #    inserter = Neo4j::Batch::Inserter.new(storage, config, Person)
-    #    person_inserter = inserter.for_class(Person)
     #
-    #    node_a = person_inserter.create_node(:name => 'andreas')
-    #    node_c = person_inserter.create_node(:name => 'craig')'
+    #    node_a = inserter.create_node(:name => 'andreas', Person)
+    #    node_c = inserter.create_node(:name => 'craig', Person)'
     #
-    #    person_inserter.create_rel(node_a, node_b, :friends, :since => '2009')
+    #    person_inserter.create_rel(:friends, node_a, node_b, :since => '2009')
     #
     #  This create a relationship of type 'Person#friend' from node_a to node_b
+    #  TODO, not implemented yet
     #
     # === Using the index, TODO !!!
     #
@@ -131,7 +130,6 @@ module Neo4j
         @batch_inserter  = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new(storage_path, config)
 
         Indexer.index_provider  = org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
-        Indexer.inserter        = @batch_inserter
       end
 
       def running?
@@ -146,12 +144,17 @@ module Neo4j
         Indexer.index_provider
         Indexer.index_provider && Indexer.index_provider.shutdown
         Indexer.index_provider = nil
-        Indexer.inserter = nil
       end
 
-      # Creates a node. Returns a Fixnum id of the created node. 
-      def create_node(hash=nil)
-        @batch_inserter.create_node(hash)
+      # Creates a node. Returns a Fixnum id of the created node.
+      # Adds a lucene index if there is a lucene index declared on the properties
+      def create_node(props=nil, clazz = Neo4j::Node)
+        props = {} if clazz != Neo4j::Node && props.nil?
+        props['_classname'] = clazz.to_s if clazz != Neo4j::Node
+
+        node = @batch_inserter.create_node(props)
+        props && _index(node, props, clazz)
+        node
       end
 
       # returns true if the node exists
@@ -165,8 +168,26 @@ module Neo4j
 
       # creates a relationship between given nodes of given type.
       # Returns a fixnum id of the created relationship.
-      def create_rel(type, from_node, to_node, property_hash=nil)
-        @batch_inserter.createRelationship(from_node, to_node, type_to_java(type), property_hash)
+      def create_rel(rel_type, from_node, to_node, props=nil, clazz=Neo4j::Relationship)
+        props = {} if clazz != Neo4j::Relationship && props.nil?
+        props['_classname'] = clazz.to_s if clazz != Neo4j::Relationship
+        rel = @batch_inserter.create_relationship(from_node, to_node, type_to_java(rel_type), props)
+
+        props && _index(rel, props, clazz)
+
+        from_props = node_props(from_node)
+
+        if from_props['_classname']
+          indexer = Indexer.instance_for(from_props['_classname'])
+          indexer.index_node_via_rel(rel_type, to_node, from_props)
+        end
+
+        to_props   = node_props(to_node)
+        if to_props['_classname']
+          indexer = Indexer.instance_for(to_props['_classname'])
+          indexer.index_node_via_rel(rel_type, from_node, to_props)
+        end
+
       end
 
       # Return a hash of all properties of given node
@@ -175,8 +196,9 @@ module Neo4j
       end
 
       # Sets the properties of the given node, overwrites old properties
-      def set_node_props(node, hash)
+      def set_node_props(node, hash, clazz = Neo4j::Node)
         @batch_inserter.set_node_properties(node, hash)
+        _index(node, hash, clazz)
       end
 
       # Sets the old properties of the given relationship, overwrites old properties
@@ -195,7 +217,7 @@ module Neo4j
       end
 
       # index the given entity (a node or a relationship)
-      def index(entity, props, clazz = Neo4j::Node)
+      def _index(entity, props, clazz = Neo4j::Node) #:nodoc:
         indexer = Indexer.instance_for(clazz)
         indexer.index_entity(entity, props)
       end

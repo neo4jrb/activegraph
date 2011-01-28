@@ -15,7 +15,8 @@ begin
 
   require 'logger'
   Neo4j::Config[:logger_level] = Logger::ERROR
-  
+  Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, "neo4j-rspec-db")
+
   def rm_db_storage
     FileUtils.rm_rf Neo4j::Config[:storage_path]
     raise "Can't delete db" if File.exist?(Neo4j::Config[:storage_path])

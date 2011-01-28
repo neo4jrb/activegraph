@@ -112,6 +112,18 @@ describe Neo4j::Batch::Inserter do
 
   end
 
+  context "#create_node(hash, PersonNode)" do
+    before(:each) do
+      @clazz = create_node_mixin
+      @inserter = Neo4j::Batch::Inserter.new
+      @id = @inserter.create_node({'name' => 'kalle123', 'age' => 42}, @clazz)
+    end
+
+    it "sets the _classname property to PersonNode" do
+      @inserter.node_props(@id)['_classname'].should == @clazz.to_s
+    end
+  end
+  
   context "#ref_node" do
     it "returns the reference node" do
       @inserter = Neo4j::Batch::Inserter.new

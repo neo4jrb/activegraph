@@ -21,25 +21,23 @@ describe Neo4j::Batch::Inserter do
     finish_tx
   end
 
-  context "#index Neo4j::Node" do
+  context "#index :name and :age on Neo4j::Node" do
     before(:each) do
       @inserter = Neo4j::Batch::Inserter.new
     end
 
-    it "#index(node, key, value)" do
-      node_a = @inserter.create_node
-      @inserter.index(node_a, {'name' => 'foobar42'})
+    it "create_node creates an index" do
+      @inserter.create_node 'name' => 'foobar42'
       @inserter.shutdown
       Neo4j.start
       Neo4j::Node.find(:name => 'foobar42').size.should == 1
     end
 
-    it "#create_node automatically index declared fields" do
-      pending
-      @inserter.create_node 'name' => 'foobar42'
+    it "does not create an index if index was not declared" do
+      @inserter.create_node 'city' => '123'
       @inserter.shutdown
       Neo4j.start
-      Neo4j::Node.find(:name => 'foobar42').size.should == 1
+      Neo4j::Node.find(:city => '123').size.should == 0
     end
 
   end
