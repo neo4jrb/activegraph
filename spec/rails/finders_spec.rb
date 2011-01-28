@@ -44,11 +44,49 @@ describe "finders" do
 		FindableModel.find(:first).should be_a(FindableModel)
 	end
 
-	context "anomalous cases" do
-		it "should return all when args normalises down to nothing" do
-			subject.class.all(:conditions => {}).to_a.should == subject.class.all.to_a
-			subject.class.first(:conditions => {}).should == subject.class.first
-		end
+  context "anomalous cases" do
+    it "should return all when args normalises down to nothing" do
+      subject.class.all(:conditions => {}).to_a.should == subject.class.all.to_a
+      subject.class.first(:conditions => {}).should == subject.class.first
+    end
+
+
+    context ".find" do
+      def nonexistant_id
+        i       = rand(1000)
+        all_ids = Neo4j.all_nodes.map(&:id)
+        while (all_ids.include?(i))
+          i = rand(1000)
+        end
+        i
+      end
+
+      def non_findable_model_allocated_ids
+        Neo4j.all_nodes.select { |node| !node.is_a?(FindableModel) }.map(&:id)
+      end
+
+      it "should return nil when passed a non-existant id" do
+        FindableModel.find(nonexistant_id).should be_nil
+        FindableModel.find(nonexistant_id.to_s).should be_nil
+      end
+
+      it "should return an empty array when passed multiple non-existant ids" do
+        FindableModel.find(nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id).should == []
+        FindableModel.find(nonexistant_id.to_s, nonexistant_id.to_s, nonexistant_id.to_s, nonexistant_id.to_s).should == []
+      end
+
+      it "should return nil for ids allocated to other node types" do
+        non_findable_model_allocated_ids.each do |i|
+          FindableModel.find(i).should be_nil
+          FindableModel.find(i.to_s).should be_nil
+        end
+      end
+
+      it "should return nil for the id of the reference node" do
+        FindableModel.find(0).should be_nil
+        FindableModel.find("0").should be_nil
+      end
+    end
   end
 
 
