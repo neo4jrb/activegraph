@@ -83,10 +83,9 @@ module Neo4j
     #    node_a = inserter.create_node(:name => 'andreas', Person)
     #    node_c = inserter.create_node(:name => 'craig', Person)'
     #
-    #    person_inserter.create_rel(:friends, node_a, node_b, :since => '2009')
+    #    person_inserter.create_rel(Person.friends, node_a, node_b, :since => '2009')
     #
     #  This create a relationship of type 'Person#friend' from node_a to node_b
-    #  TODO, not implemented yet
     #
     # === Using the index, TODO !!!
     #
@@ -214,6 +213,11 @@ module Neo4j
       # Returns all the relationships of the given node
       def rels(node)
         @batch_inserter.getRelationships(node)
+      end
+
+      def flush_index(clazz = Neo4j::Node)
+        indexer = Indexer.instance_for(clazz)
+        indexer.flush # TODO
       end
 
       # index the given entity (a node or a relationship)

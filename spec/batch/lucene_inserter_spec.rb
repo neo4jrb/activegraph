@@ -10,6 +10,8 @@ describe Neo4j::Batch::Inserter do
     Neo4j::Node.index(:name) # default :exact
     Neo4j::Node.index(:age) # default :exact
     Neo4j::Node.index(:description, :type => :fulltext)
+
+    @inserter = Neo4j::Batch::Inserter.new
   end
 
   after(:each) do
@@ -22,10 +24,6 @@ describe Neo4j::Batch::Inserter do
   end
 
   context "#index :name and :age on Neo4j::Node" do
-    before(:each) do
-      @inserter = Neo4j::Batch::Inserter.new
-    end
-
     it "create_node creates an index" do
       @inserter.create_node 'name' => 'foobar42'
       @inserter.shutdown
@@ -38,6 +36,38 @@ describe Neo4j::Batch::Inserter do
       @inserter.shutdown
       Neo4j.start
       Neo4j::Node.find(:city => '123').size.should == 0
+    end
+
+    it "lucene index can be used before inserter shutdown" do
+      pending
+      @inserter.create_node 'city' => '123'
+      @inserter.optimize_index(Neo4j::Node)
+      @inserter.find()
+    end
+  end
+
+  context "#index via" do
+    before(:all) do
+      @movie_class = create_node_mixin
+      @actor_class = create_node_mixin
+      @actor_class.has_n(:acted_in).to(@movie_class)
+      @actor_class.index :name
+      @movie_class.has_n(:actors).from(@actor_class, :acted_in)
+      @movie_class.index :title, :via => :actors        
+    end
+    
+    it "when a related node is created it should update the other nodes index" do
+      keanu  = @inserter.create_node({'name' => 'keanu'}, @actor_class)
+      matrix = @inserter.create_node({'title' => 'matrix'}, @movie_class)
+      speed  = @inserter.create_node({'title' => 'speed'}, @movie_class)
+      @inserter.create_rel(@actor_class.acted_in, keanu, matrix)
+      @inserter.create_rel(@actor_class.acted_in, keanu, speed)
+      @inserter.shutdown
+      Neo4j.start
+
+      @actor_class.find('name: keanu').should_not be_empty
+      @actor_class.find('title: matrix').should_not be_empty
+      @actor_class.find('title: speed').should_not be_empty
     end
 
   end

@@ -18,6 +18,30 @@ module Neo4j
       #   folder.files << Neo4j::Node.new << Neo4j::Node.new
       #   folder.files.inject {...}
       #
+      #   FolderNode.files #=> 'files' the name of the relationship
+      #
+      # ==== Example has_n(x).to(...)
+      #
+      # You can declare which class it has relationship to.
+      # The generated relationships will be prefixed with the name of that class.
+      #
+      #   class FolderNode
+      #      include Ne4j::NodeMixin
+      #      has_n(:files).to(File)
+      #   end
+      #
+      #   FolderNode.files #=> 'File#files' the name of the relationship
+      #
+      # ==== Example has_n(x).from(class, has_n_name)
+      #
+      # Neo4j.rb can also generate accessor method for traversing and adding relationship on incoming nodes.
+      #
+      #   class FileNode
+      #      include Ne4j::NodeMixin
+      #      has_one(:folder).from(FolderNode, :files)
+      #   end
+      #
+      #
       # ==== Returns
       #
       # Neo4j::HasN::DeclRelationshipDsl
@@ -30,11 +54,17 @@ module Neo4j
                     Neo4j::HasN::Mapping.new(self, dsl)
                 end}, __FILE__, __LINE__)
 
+        
         module_eval(%Q{
                 def #{rel_type}_rels
                     dsl = _decl_rels_for('#{rel_type}'.to_sym)
                     dsl.all_relationships(self)
                 end}, __FILE__, __LINE__)
+
+        instance_eval(%Q{
+          def #{rel_type}
+            _decl_rels[:#{rel_type}].rel_type.to_s
+          end}, __FILE__, __LINE__)
 
         _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, false, clazz, params)
       end

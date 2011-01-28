@@ -3,7 +3,7 @@ module Neo4j
     class Indexer
 
       delegate :field_types, :entity_type, :indexer_for, :indexed_value_for, :lucene_config, :via_relationships, :to => :@wrapped_indexer
-      
+
       def initialize(wrapped_indexer)
         @wrapped_indexer = wrapped_indexer
         @parent_indexers = wrapped_indexer.parent_indexers.collect{|i| Indexer.new(i)}
@@ -56,6 +56,10 @@ module Neo4j
         @parent_indexers.each { |i| i.index_entity(entity_id, props) }
       end
 
+      def flush
+         # TODO !!!
+      end
+
       def batch_index_for_field(field)
         type                 = field_types[field]
         @batch_indexes       ||= {}
@@ -74,7 +78,7 @@ module Neo4j
 
       class << self
         attr_accessor :index_provider
-
+      
         def instance_for(clazz)
           @instances ||= {}
           @instances[clazz.to_s] ||= Indexer.new(clazz._indexer)

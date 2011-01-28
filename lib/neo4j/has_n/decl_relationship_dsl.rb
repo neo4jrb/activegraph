@@ -120,7 +120,7 @@ module Neo4j
           @target_class = args[0]
           @rel_type = "#{@target_class}##{@method_id}"
         else
-          raise "Expected a class for, got #{args[0]}"
+          raise "Expected a class for, got #{args[0]}/#{args[0].class}"
         end
         self
       end

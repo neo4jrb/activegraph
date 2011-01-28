@@ -19,6 +19,38 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
     end
   end
 
+  describe "generated class methods" do
+    it "has_n :baaz will generate class method baaz returning 'baaz" do
+      clazz = create_node_mixin do
+        has_n :baaz
+      end
+
+      clazz.baaz.should == "baaz"
+    end
+
+    it "has_n(:baaz).to(Foo) will generate class method baaz returning 'Foo#baaz" do
+      foo = create_node_mixin
+      clazz = create_node_mixin do
+        has_n(:baaz).to(foo)
+      end
+
+      clazz.baaz.should == "#{foo}#baaz"
+    end
+
+    it "has_n(:foobar).from(Foo, :baaz) will generate class method foobar returning 'Foo#baaz" do
+      clazz = create_node_mixin
+
+      foo = create_node_mixin do
+        has_n(:baaz).to(clazz)
+      end
+
+      foo.baaz.should == "#{clazz}#baaz"
+      clazz.has_n(:foobar).from(foo, :baaz)
+      clazz.foobar.should == "#{clazz}#baaz"
+    end
+  end
+
+  
   context "unspecified outgoing relationship, e.g. has_n(:friends)" do
     before(:all) do
       new_tx
