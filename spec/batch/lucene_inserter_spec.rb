@@ -39,10 +39,10 @@ describe Neo4j::Batch::Inserter do
     end
 
     it "lucene index can be used before inserter shutdown" do
-      pending
-      @inserter.create_node 'city' => '123'
-      @inserter.optimize_index(Neo4j::Node)
-      @inserter.find()
+      node = @inserter.create_node 'name' => 'foo'
+      @inserter.index_flush
+      @inserter.index_get('name', 'foo').first.should == node
+      @inserter.index_query('name: foo').first.should == node
     end
   end
 
@@ -53,9 +53,9 @@ describe Neo4j::Batch::Inserter do
       @actor_class.has_n(:acted_in).to(@movie_class)
       @actor_class.index :name
       @movie_class.has_n(:actors).from(@actor_class, :acted_in)
-      @movie_class.index :title, :via => :actors        
+      @movie_class.index :title, :via => :actors
     end
-    
+
     it "when a related node is created it should update the other nodes index" do
       keanu  = @inserter.create_node({'name' => 'keanu'}, @actor_class)
       matrix = @inserter.create_node({'title' => 'matrix'}, @movie_class)

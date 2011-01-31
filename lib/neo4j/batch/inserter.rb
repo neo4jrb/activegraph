@@ -127,7 +127,6 @@ module Neo4j
         # check if neo4j is running and using the same storage path
         raise "Not allowed to start batch inserter while Neo4j is already running at storage location #{storage_path}" if Neo4j.storage_path == storage_path
         @batch_inserter  = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new(storage_path, config)
-
         Indexer.index_provider  = org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
       end
 
@@ -143,6 +142,7 @@ module Neo4j
         Indexer.index_provider
         Indexer.index_provider && Indexer.index_provider.shutdown
         Indexer.index_provider = nil
+        Indexer.clear_all_instances
       end
 
       # Creates a node. Returns a Fixnum id of the created node.
@@ -215,9 +215,36 @@ module Neo4j
         @batch_inserter.getRelationships(node)
       end
 
-      def flush_index(clazz = Neo4j::Node)
+      #  Makes sure additions/updates can be seen by #index_get and #index_query
+      # so that they are guaranteed to return correct results.
+      def index_flush(clazz = Neo4j::Node)
         indexer = Indexer.instance_for(clazz)
-        indexer.flush # TODO
+        indexer.index_flush
+      end
+
+      #  Returns matches from the index specified by index_type and class.
+      #
+      # ==== Parameters
+      # * key :: the lucene key
+      # * value :: the lucene value we look for given the key
+      # * index_type :: :exact or :fulltext
+      # * clazz :: on which clazz we want to perform the query
+      #
+      def index_get(key, value, index_type = :exact, clazz = Neo4j::Node)
+        indexer = Indexer.instance_for(clazz)
+        indexer.index_get(key, value, index_type)
+      end
+
+      #  Returns matches from the index specified by index_type and class.
+      #
+      # ==== Parameters
+      # * query :: lucene query
+      # * index_type :: :exact or :fulltext
+      # * clazz :: on which clazz we want to perform the query
+      #
+      def index_query(query, index_type = :exact, clazz = Neo4j::Node)
+        indexer = Indexer.instance_for(clazz)
+        indexer.index_query(query, index_type)
       end
 
       # index the given entity (a node or a relationship)

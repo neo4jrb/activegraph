@@ -56,9 +56,23 @@ module Neo4j
         @parent_indexers.each { |i| i.index_entity(entity_id, props) }
       end
 
-      def flush
-         # TODO !!!
+      def index_flush
+        return nil if @batch_indexes.nil?
+        @batch_indexes.values.each {|index| index.flush}
       end
+
+      def index_get(key, value, index_type)
+        index = @batch_indexes && @batch_indexes[index_type]
+        return nil if index.nil?
+        index.get(key,value)
+      end
+
+      def index_query(query, index_type)
+        index = @batch_indexes && @batch_indexes[index_type]
+        return nil if index.nil?
+        index.query(query)
+      end
+
 
       def batch_index_for_field(field)
         type                 = field_types[field]
@@ -82,6 +96,11 @@ module Neo4j
         def instance_for(clazz)
           @instances ||= {}
           @instances[clazz.to_s] ||= Indexer.new(clazz._indexer)
+        end
+
+        # Mostly for testing
+        def clear_all_instances
+          @instances = nil
         end
       end
     end
