@@ -5,14 +5,14 @@ require 'neo4j/has_n/mapping'
 module Neo4j
   module HasN
 
-    # Enables creating and traversal of nodes.
+    # The object created by a has_n or has_one Neo4j::NodeMixin class method which enables creating and traversal of nodes.
     #
-    # Includes the Enumerable Mixin.
+    # Includes the Enumerable and WillPaginate mixins.
     # The Neo4j::Mapping::ClassMethods::Relationship#has_n and Neo4j::Mapping::ClassMethods::Relationship#one
     # methods returns an object of this type.
     #
     # ==== See Also
-    # Neo4j::Mapping::ClassMethods::Relationship
+    # Neo4j::HasN::ClassMethods
     #
     class Mapping
       include Enumerable
@@ -31,7 +31,7 @@ module Neo4j
       end
 
       def size
-        [*self].size
+        self.to_a.size
       end
 
       alias_method :length, :size
@@ -58,6 +58,11 @@ module Neo4j
       # returns none wrapped nodes, you may get better performance using this method
       def _each(&block)
         @dsl.each_node(@node, @direction, true, &block)
+      end
+
+      # Returns an real ruby array.
+      def to_ary
+        self.to_a
       end
 
       def wp_query(options, pager, args, &block) #:nodoc:

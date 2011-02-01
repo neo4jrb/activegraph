@@ -44,7 +44,8 @@ module Neo4j
       #
       # ==== Returns
       #
-      # Neo4j::HasN::DeclRelationshipDsl
+      # * This method returns Neo4j::HasN::DeclRelationshipDsl
+      # * The generated has_n method returns a Neo4j::HasN::Mapping object
       #
       def has_n(rel_type, params = {})
         clazz = self

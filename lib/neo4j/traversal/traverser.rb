@@ -47,6 +47,11 @@ module Neo4j
         self
       end
 
+      # Returns an real ruby array.
+      def to_ary
+        self.to_a
+      end
+
       def new(other_node)
         case @dir
           when org.neo4j.graphdb.Direction::OUTGOING
@@ -130,7 +135,7 @@ module Neo4j
       end
 
       def size
-        [*self].size
+        to_a.size
       end
 
       alias_method :length, :size
