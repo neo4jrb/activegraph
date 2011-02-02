@@ -88,6 +88,7 @@ module Neo4j
       # This must be done according to the Neo4j Java Documentation:
       def close
         @hits.close if @hits
+        @hits = nil
       end
 
       # True if there is no search hits.
@@ -110,7 +111,8 @@ module Neo4j
       end
 
       def hits #:nodoc:
-        @hits ||= perform_query
+        close
+        @hits = perform_query
       end
 
       # Performs a range query
