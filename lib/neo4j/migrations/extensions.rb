@@ -9,7 +9,7 @@ module Neo4j
     # The version is stored on the reference node, with property 'db_version'
     # (It Delegates to the Reference Node)
     #
-    # === See Also
+    # ==== See Also
     # Neo4j::Migrations::RefNodeWrapper#db_version
     #
     # :singleton-method: db_version
@@ -17,7 +17,8 @@ module Neo4j
     ##
     # Force Neo4j.rb to perform migrations
     #
-    # === See Also
+    # ==== See Also
+    #
     # Neo4j::Migrations::RefNodeWrapper#migrate!
     #
     # :singleton-method: migrate!
@@ -37,7 +38,7 @@ module Neo4j
     #    end
     #  end
     #
-    # === See Also
+    # ==== See Also
     # Neo4j::Migrations::ClassMethods#migration
     #
     # :singleton-method: migration
@@ -45,7 +46,7 @@ module Neo4j
     ##
     # Returns all migrations that has been defined.
     #
-    # === See Also
+    # ==== See Also
     # Neo4j::Migrations::ClassMethods#migrations
     #
     # :singleton-method: migrations

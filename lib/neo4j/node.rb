@@ -15,45 +15,29 @@ module Neo4j
     include Neo4j::Equal
     include Neo4j::Index
 
-    # Delete the node and all its relationship.
-    #
-    # It might raise an exception if this method was called without a Transaction,
-    # or if it failed to delete the node (it maybe was already deleted).
-    #
-    # If this method raise an exception you may also get an exception when the transaction finish.
-    #
-    # ==== Returns
-    # nil or raise an exception
-    #
-    def del
+    def del #:nodoc:
       rels.each {|r| r.del}
       delete
       nil
     end
 
-    # returns true if the node exists in the database
-    def exist?
+    def exist?  #:nodoc:
       Neo4j::Node.exist?(self)
     end
 
-    # same as _java_node
-    # Used so that we have same method for both relationship and nodes
-    def wrapped_entity
+    def wrapped_entity  #:nodoc:
       self
     end
     
-    # Loads the Ruby wrapper for this node 
-    # If there is no _classname property for this node then it will simply return itself.
-    # Same as Neo4j::Node.wrapper(node)
-    def wrapper
+    def wrapper  #:nodoc:
       self.class.wrapper(self)
     end
 
-    def _java_node
+    def _java_node  #:nodoc:
       self
     end
 
-    def class
+    def class  #:nodoc:
       Neo4j::Node
     end
   end
@@ -83,6 +67,45 @@ module Neo4j
 
     self.node_indexer self
 
+
+    ##
+    # :method: del
+    # Delete the node and all its relationship.
+    #
+    # It might raise an exception if this method was called without a Transaction,
+    # or if it failed to delete the node (it maybe was already deleted).
+    #
+    # If this method raise an exception you may also get an exception when the transaction finish.
+    # This method is  defined in the  org.neo4j.kernel.impl.core.NodeProxy which is return by Neo4j::Node.new
+    #
+    # ==== Returns
+    # nil or raise an exception
+    #
+
+    ##
+    # :method: exist?
+    # returns true if the node exists in the database
+    # This method is  defined in the  org.neo4j.kernel.impl.core.NodeProxy which is return by Neo4j::Node.new
+
+    ##
+    # :method: wrapped_entity
+    # same as _java_node
+    # Used so that we have same method for both relationship and nodes
+    # This method is  defined in the  org.neo4j.kernel.impl.core.NodeProxy which is return by Neo4j::Node.new
+
+    ##
+    # :method: wrapper
+    # Loads the Ruby wrapper for this node (unless it is already the wrapper).
+    # If there is no _classname property for this node then it will simply return itself.
+    # Same as Neo4j::Node.wrapper(node)
+    # This method is  defined in the  org.neo4j.kernel.impl.core.NodeProxy which is return by Neo4j::Node.new
+
+
+    ##
+    # :method: _java_node
+    # Returns the java node/relationship object representing this object unless it is already the java object.
+    # This method is  defined in the  org.neo4j.kernel.impl.core.NodeProxy which is return by Neo4j::Node.new
+    
     class << self
 
       # Returns a new neo4j Node.

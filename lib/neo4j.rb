@@ -1,5 +1,3 @@
-include Java
-
 require 'enumerator'
 require 'forwardable'
 require 'time'
@@ -38,8 +36,12 @@ module Neo4j
   end
 end
 
-# hmm, looks like Enumerator have been moved in some ruby versions
-Enumerator = Enumerable::Enumerator unless defined? Enumerator
+module Neo4j
+  include Java
+  
+  # Enumerator has been moved to top level in Ruby 1.9.2, make it compatible with Ruby 1.8.7
+  Enumerator = Enumerable::Enumerator unless defined? Enumerator
+end
 
 require 'neo4j/version'
 require 'neo4j/neo4j'

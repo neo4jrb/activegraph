@@ -1,6 +1,6 @@
-# Handle all the created_at, updated_at, created_on, updated_on type stuff.
 module Neo4j
 	module Rails
+    # Handle all the created_at, updated_at, created_on, updated_on type stuff.
 		module Timestamps
 			extend ActiveSupport::Concern
 			
