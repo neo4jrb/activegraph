@@ -124,7 +124,7 @@ describe Neo4j::Migrations::NodeMixin do
         b = clazz.new :name =>'b'
         finish_tx
 
-        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::Rule.rule_node_for(clazz).rule_node.props
         rule_node_props.should_not include(:sum)
         rule_node_props['_count_all__classname'].should be_nil
 
@@ -141,7 +141,7 @@ describe Neo4j::Migrations::NodeMixin do
           end
         end
         clazz.migrate!
-        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::Rule.rule_node_for(clazz).rule_node.props
         #"_#{function_name}_#{rule_name}_#{prop}"
         rule_node_props['_count_all__classname'].should == 2
         clazz.all.to_a.size.should == 2
@@ -159,7 +159,7 @@ describe Neo4j::Migrations::NodeMixin do
         b = clazz.new :name =>'b', :age => 3
         finish_tx
 
-        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::Rule.rule_node_for(clazz).rule_node.props
         rule_node_props.should_not include(:sum)
         rule_node_props['_sum_all_age'].should be_nil
 
@@ -176,7 +176,7 @@ describe Neo4j::Migrations::NodeMixin do
           end
         end
         clazz.migrate!
-        rule_node_props = Neo4j::Rule::RuleEventListener.rule_node_for(clazz).rule_node.props
+        rule_node_props = Neo4j::Rule::Rule.rule_node_for(clazz).rule_node.props
         #"_#{function_name}_#{rule_name}_#{prop}"
         rule_node_props['_sum_all_age'].should == 7
         clazz.all.sum(:age).should == 7

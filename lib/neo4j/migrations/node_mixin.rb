@@ -48,7 +48,7 @@ module Neo4j
 
         # The node that holds the db version property
         def migration_meta_node
-          Neo4j::Rule::RuleEventListener.rule_node_for(self).rule_node
+          Neo4j::Rule::Rule.rule_node_for(self).rule_node
         end
 
         # Remote all migration and set migrate_to = nil and set the current version to nil

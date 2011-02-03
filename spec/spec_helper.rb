@@ -108,7 +108,7 @@ begin
     klass = Class.new(parent_clazz)
     TempModel.set(klass)
     klass.send(:include, Neo4j::NodeMixin)
-    klass.class_eval &block
+    klass.class_eval &block if block
     klass
   end
 

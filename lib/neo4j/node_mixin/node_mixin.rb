@@ -78,7 +78,7 @@ module Neo4j
 
     # Trigger rules.
     # You don't normally need to call this method (except in Migration) since
-    # it will be triggered automatically by the Neo4j::Rule::RuleEventListener
+    # it will be triggered automatically by the Neo4j::Rule::Rule
     #
     def trigger_rules
       self.class.trigger_rules(self)

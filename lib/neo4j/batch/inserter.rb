@@ -23,6 +23,7 @@ module Neo4j
         raise "Not allowed to start batch inserter while Neo4j is already running at storage location #{storage_path}" if Neo4j.storage_path == storage_path
         @batch_inserter  = org.neo4j.kernel.impl.batchinsert.BatchInserterImpl.new(storage_path, config)
         Indexer.index_provider  = org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider.new(@batch_inserter)
+        @rule_inserter = RuleInserter.new(self)
       end
 
       def running?
@@ -33,7 +34,8 @@ module Neo4j
       def shutdown
         @batch_inserter && @batch_inserter.shutdown
         @batch_inserter = nil
-
+        @rule_inserter = nil
+        
         Indexer.index_provider
         Indexer.index_provider && Indexer.index_provider.shutdown
         Indexer.index_provider = nil
@@ -48,6 +50,7 @@ module Neo4j
 
         node = @batch_inserter.create_node(props)
         props && _index(node, props, clazz)
+        @rule_inserter.node_added(node, props)
         node
       end
 

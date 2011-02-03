@@ -176,5 +176,35 @@ describe Neo4j::Batch::Inserter do
     end
   end
 
+  context "rules" do
+    before(:each) do
+      @inserter = Neo4j::Batch::Inserter.new
+    end
+    
+    class MyBatchInsertedClass
+      include Neo4j::NodeMixin
+      rule(:all)
+      rule(:young, :functions => Neo4j::Rule::Functions::Count.new) {|node| node[:age] && node[:age] <= 10}
+    end
+
+    it "can count nodes" do
+      # not declared rule
+      @clazz = create_node_mixin
+      @inserter.create_node({'age' => 2}, @clazz)
+
+      # declared rule
+      node_a = @inserter.create_node({'age' => 2}, MyBatchInsertedClass)
+      node_b = @inserter.create_node({}, MyBatchInsertedClass)
+      node_c = @inserter.create_node({'age' => 3}, MyBatchInsertedClass)
+      node_d = @inserter.create_node({'age' => 300}, MyBatchInsertedClass)
+      @inserter.shutdown
+      MyBatchInsertedClass.all.size.should == 4
+      MyBatchInsertedClass.all.collect{|n| n.neo_id}.should include(node_a, node_b, node_c, node_d)
+      MyBatchInsertedClass.young.collect{|n| n.neo_id}.should include(node_a, node_c)
+      MyBatchInsertedClass.count(:young).should == 2
+      MyBatchInsertedClass.young.to_a.size.should == 2
+      @clazz.should_not respond_to(:all)
+    end
+  end
 
 end
