@@ -1,6 +1,7 @@
 require 'movie'
+require 'logger'
 
-puts "Neo4j Version #{Neo4j::VERSION}"
+Neo4j.config[:logger_level] = Logger::ERROR
 
 def find_actor(query_or_id)
   id           = query_or_id.to_i
@@ -69,7 +70,15 @@ elsif ARGV.size == 2 && ARGV[0] == "-m"
 elsif ARGV.size == 2 && ARGV[0] == "-r"
   find_roles(ARGV[1])
 else
-  puts "Usage: jruby find.rb [-m|-r] <actor name|actor neo_id>\n\n  -m \tfinds the movies for the given a lucene query or an id\n  -r \t same as -m but finds roles\n"
+  puts <<HERE
+Usage: jruby find.rb [-m|-r] <actor name|actor neo_id>
+  -m \tfinds the movies for the given a lucene query or an id
+  -r \tsame as -m but finds roles
+
+Example, find all actors name Willis*: jruby find.rb "name: Willis*"
+
+Neo4j.rb version: #{Neo4j::VERSION}
+HERE
 end
 
 Neo4j.shutdown
