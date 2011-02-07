@@ -64,7 +64,7 @@ module Neo4j
           self[key] = value
         end
       end
-      keys_to_delete.each { |key| delete_property(key) } if strict
+      keys_to_delete.each { |key| remove_property(key) } if strict
       self
     end
 

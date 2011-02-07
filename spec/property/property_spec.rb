@@ -18,6 +18,13 @@ describe Neo4j::Node, :type => :transactional do
       node = Neo4j::Node.load(new_node.neo_id)
       node[:name].should == '123'
     end
+
+    it "update strict deletes properties not passed in" do
+      new_node = Neo4j::Node.new :name => 'foo', :age => 123
+      new_node.property?(:age).should be_true
+      new_node.update({ :name => 'bar' }, { :strict => true })
+      new_node.property?(:age).should be_false
+    end
   end
 
   describe "#[] and #[]=" do
