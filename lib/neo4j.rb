@@ -15,6 +15,7 @@ require 'neo4j/jars/core/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/core/lucene-core-3.0.3.jar'
 require 'neo4j/jars/core/neo4j-lucene-index-0.5-1.3.M01.jar'
 require 'neo4j/jars/core/neo4j-kernel-1.3-1.3.M01.jar'
+require 'neo4j/jars/ha/neo4j-management-1.3-1.3.M01.jar'
 
 module Neo4j
 
@@ -31,7 +32,6 @@ module Neo4j
   def self.load_ha_jars
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
     require 'neo4j/jars/ha/neo4j-ha-0.6-1.3.M01.jar'
-    require 'neo4j/jars/ha/neo4j-management-1.3-1.3.M01.jar'
     require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.lucene-3.0.1_2.jar'

@@ -102,8 +102,15 @@ module Neo4j
         @graph   = nil
         @lucene  = nil
         @running = false
+        @neo4j_manager = nil
       end
 
+    end
+
+
+    def management(jmx_clazz) #:nodoc:
+      @neo4j_manager ||= org.neo4j.management.Neo4jManager.new(@graph.get_management_bean(org.neo4j.management.Kernel.java_class))
+      @neo4j_manager.getBean(jmx_clazz.java_class)
     end
 
     def begin_tx #:nodoc:

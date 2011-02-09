@@ -110,6 +110,33 @@ module Neo4j
       this_db.graph.reference_node
     end
 
+    # Returns a Management JMX Bean.
+    #
+    # Notice that this information is also provided by the jconsole Java tool, check http://wiki.neo4j.org/content/Monitoring_and_Deployment
+    # and http://docs.neo4j.org/chunked/milestone/operations-monitoring.html
+    #
+    # By default it returns the Primitivies JMX Bean that can be used to find number of nodes in use.
+    #
+    # ==== Example Neo4j Primititives
+    #
+    #   Neo4j.management.get_number_of_node_ids_in_use
+    #   Neo4j.management.getNumberOfPropertyIdsInUse
+    #   Neo4j.management.getNumberOfRelationshipIdsInUse
+    #   Neo4j.management.get_number_of_relationship_type_ids_in_use
+    #
+    # ==== Example Neo4j HA Cluster Info
+    #
+    # Neo4j.management(org.neo4j.management.HighAvailability).isMaster
+    #
+    # ==== Arguments
+    #
+    # jmx_clazz :: http://api.neo4j.org/current/org/neo4j/management/package-summary.html
+    # this_db :: default currently runnig instance or a newly started neo4j db instance
+    #
+    def management(jmx_clazz = org.neo4j.management.Primitives, this_db = self.started_db)
+      this_db.management(jmx_clazz)
+    end
+
     # Returns an Enumerable object for all nodes in the database
     def all_nodes(this_db = self.started_db)
       Enumerator.new(this_db, :each_node)
