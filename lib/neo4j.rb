@@ -24,11 +24,14 @@ module Neo4j
     require 'neo4j/jars/core/neo4j-index-1.3-1.3.M01.jar'
   end
 
+  def self.load_shell_jars
+    require 'neo4j/jars/ha/neo4j-shell-1.3-1.3.M01.jar'
+  end
+  
   def self.load_ha_jars
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
     require 'neo4j/jars/ha/neo4j-ha-0.6-1.3.M01.jar'
     require 'neo4j/jars/ha/neo4j-management-1.3-1.3.M01.jar'
-    require 'neo4j/jars/ha/neo4j-shell-1.3-1.3.M01.jar'
     require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.lucene-3.0.1_2.jar'

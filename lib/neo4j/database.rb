@@ -22,6 +22,12 @@ module Neo4j
       @running = true
       @storage_path = Config.storage_path
 
+
+      if Config[:enable_remote_shell]
+        Neo4j.logger.info("Enable remote shell at port #{Config[:enable_remote_shell]}")
+        Neo4j.load_shell_jars
+      end
+
       begin
         if self.class.locked?
           start_readonly_graph_db
