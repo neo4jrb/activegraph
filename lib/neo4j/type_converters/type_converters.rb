@@ -65,7 +65,7 @@ module Neo4j
 
         def to_ruby(value)
           return nil if value.nil?
-          Time.at(value).utc
+          Time.at(value).utc.to_date
         end
       end
     end

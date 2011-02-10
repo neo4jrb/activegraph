@@ -126,53 +126,87 @@ describe LotsaProperties do
 end
 
 describe DateProperties do
-	before(:each) do
-		subject.time 				= @time 			= Time.now
-		subject.date_time 	= @date_time 	= DateTime.now
-		subject.date_property 	= @date 			= Date.today
-	end
-	
-	it_should_behave_like "a new model"
-	it_should_behave_like "a loadable model"
-	it_should_behave_like "a saveable model"
-	it_should_behave_like "a creatable model"
-	it_should_behave_like "a destroyable model"
-	it_should_behave_like "an updatable model"
-	
-	it "should give back the correct type even before it is saved" do
-		subject.time = subject.date_property
-		subject.time.is_a?(Time)
-	end
-	
-	context "After save and reload" do
-		subject do
-			@time 			||= Time.now
-			@date_time 	||= DateTime.now
-			@date 			||= Date.today
-			dp = DateProperties.create!(:time => @time, :date_time => @date_time, :date_property => @date)
-			DateProperties.find(dp.id)
-		end
-		
-		it "should have the correct date" do
-			subject.date_property.should == @date
-			subject.date_property.should be_a(Time)
-		end
-			
-		it "should have the correct date_time" do
-			subject.date_time.year.should == @date_time.year
-			subject.date_time.month.should == @date_time.month
-			subject.date_time.day.should == @date_time.day
-			subject.date_time.hour.should == @date_time.hour
-			subject.date_time.min.should == @date_time.min
-			subject.date_time.sec.should == @date_time.sec
-			subject.date_time.should be_a(DateTime)
-		end
-		
-		it "should have the correct time" do
-			subject.time.to_s.should == @time.to_s
-			subject.time.should be_a(Time)
-		end
-	end
+  before(:each) do
+    subject.time          = @time = Time.now
+    subject.date_time     = @date_time = DateTime.now
+    subject.date_property = @date = Date.today
+  end
+
+  it_should_behave_like "a new model"
+  it_should_behave_like "a loadable model"
+  it_should_behave_like "a saveable model"
+  it_should_behave_like "a creatable model"
+  it_should_behave_like "a destroyable model"
+  it_should_behave_like "an updatable model"
+
+  it "should give back the correct type even before it is saved" do
+    subject.time = Time.now
+    subject.time.is_a?(Time)
+  end
+
+  context "update_attributes" do
+    it "with Time" do
+      params = {"time(1i)"=>"2006", "time(2i)"=>"1", "time(3i)"=>"5", "time(4i)"=>"02", "time(5i)"=>"03"}
+      subject.update_attributes(params)
+      subject.time.class.should == Time
+      subject.time.year.should == 2006
+      subject.time.month.should == 1
+      subject.time.day.should == 5
+      #subject.time.hour.should == 2 # TODO it is stored as UTC time !!!
+      #subject.time.min.should == 3
+    end
+    
+    it "with Date" do
+      params = {"date_property(1i)"=>"2031", "date_property(2i)"=>"2", "date_property(3i)"=>"10"}
+      subject.update_attributes(params)
+      subject.date_property.year.should == 2031
+      subject.date_property.month.should == 2
+      subject.date_property.day.should == 10
+      subject.date_property.class.should == Date
+    end
+
+    it "with DateTime" do
+      params = {"date_time(1i)"=>"2006", "date_time(2i)"=>"1", "date_time(3i)"=>"5", "date_time(4i)"=>"02", "date_time(5i)"=>"03"}
+      subject.update_attributes(params)
+      subject.date_time.year.should == 2006
+      subject.date_time.month.should == 1
+      subject.date_time.day.should == 5
+      subject.date_time.hour.should == 2
+      subject.date_time.min.should == 3
+      subject.date_time.class.should == DateTime
+    end
+  end
+
+  
+  context "After save and reload" do
+    subject do
+      @time      ||= Time.now
+      @date_time ||= DateTime.now
+      @date      ||= Date.today
+      dp         = DateProperties.create!(:time => @time, :date_time => @date_time, :date_property => @date)
+      DateProperties.find(dp.id)
+    end
+
+    it "should have the correct date" do
+      subject.date_property.should == @date
+      subject.date_property.should be_a(Date)
+    end
+
+    it "should have the correct date_time" do
+      subject.date_time.year.should == @date_time.year
+      subject.date_time.month.should == @date_time.month
+      subject.date_time.day.should == @date_time.day
+      subject.date_time.hour.should == @date_time.hour
+      subject.date_time.min.should == @date_time.min
+      subject.date_time.sec.should == @date_time.sec
+      subject.date_time.should be_a(DateTime)
+    end
+
+    it "should have the correct time" do
+      subject.time.to_s.should == @time.to_s
+      subject.time.should be_a(Time)
+    end
+  end
 end
 
 describe ProtectedProperties do

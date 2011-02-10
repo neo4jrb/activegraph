@@ -57,7 +57,101 @@ module Neo4j
       # Mass-assign attributes.  Stops any protected attributes from being assigned.
       def attributes=(attributes, guard_protected_attributes = true)
         attributes = sanitize_for_mass_assignment(attributes) if guard_protected_attributes
-        attributes.each { |k, v| respond_to?("#{k}=") ? send("#{k}=", v) : self[k] = v }
+
+        multi_parameter_attributes = []
+        attributes.each do |k, v|
+          if k.to_s.include?("(")
+            multi_parameter_attributes << [ k, v ]
+          else
+            respond_to?("#{k}=") ? send("#{k}=", v) : self[k] = v
+          end
+        end
+
+        assign_multiparameter_attributes(multi_parameter_attributes)
+      end
+
+      # Instantiates objects for all attribute classes that needs more than one constructor parameter. This is done
+      # by calling new on the column type or aggregation type (through composed_of) object with these parameters.
+      # So having the pairs written_on(1) = "2004", written_on(2) = "6", written_on(3) = "24", will instantiate
+      # written_on (a date type) with Date.new("2004", "6", "24"). You can also specify a typecast character in the
+      # parentheses to have the parameters typecasted before they're used in the constructor. Use i for Fixnum,
+      # f for Float, s for String, and a for Array. If all the values for a given attribute are empty, the
+      # attribute will be set to nil.
+      def assign_multiparameter_attributes(pairs)
+        execute_callstack_for_multiparameter_attributes(
+          extract_callstack_for_multiparameter_attributes(pairs)
+        )
+      end
+
+      def execute_callstack_for_multiparameter_attributes(callstack)
+        errors = []
+        callstack.each do |name, values_with_empty_parameters|
+          begin
+            # (self.class.reflect_on_aggregation(name.to_sym) || column_for_attribute(name)).klass
+            klass = self.class._decl_props[name.to_sym][:type]
+            raise "Not a multiparameter attribute, missing :type on property #{name} for #{self.class}" unless klass
+
+            # in order to allow a date to be set without a year, we must keep the empty values.
+            values = values_with_empty_parameters.reject { |v| v.nil? }
+
+            if values.empty?
+              send(name + "=", nil)
+            else
+
+              value = if Time == klass
+                instantiate_time_object(name, values)
+              elsif Date == klass
+                begin
+                  values = values_with_empty_parameters.collect do |v| v.nil? ? 1 : v end
+                  Date.new(*values)
+                rescue ArgumentError => ex # if Date.new raises an exception on an invalid date
+                  instantiate_time_object(name, values).to_date # we instantiate Time object and convert it back to a date thus using Time's logic in handling invalid dates
+                end
+              else
+                klass.new(*values)
+              end
+
+              send(name + "=", value)
+            end
+          rescue Exception => ex
+            raise "error on assignment #{values.inspect} to #{name}, ex: #{ex}"
+          end
+        end
+        unless errors.empty?
+          raise MultiparameterAssignmentErrors.new(errors), "#{errors.size} error(s) on assignment of multiparameter attributes"
+        end
+      end
+
+      def instantiate_time_object(name, values)
+#        if self.class.send(:create_time_zone_conversion_attribute?, name, column_for_attribute(name))
+#          Time.zone.local(*values)
+#        else
+          Time.time_with_datetime_fallback(self.class.default_timezone, *values)
+#        end
+      end
+
+      def extract_callstack_for_multiparameter_attributes(pairs)
+        attributes = { }
+
+        for pair in pairs
+          multiparameter_name, value = pair
+          attribute_name = multiparameter_name.split("(").first
+          attributes[attribute_name] = [] unless attributes.include?(attribute_name)
+
+          parameter_value = value.empty? ? nil : type_cast_attribute_value(multiparameter_name, value)
+          attributes[attribute_name] << [ find_parameter_position(multiparameter_name), parameter_value ]
+        end
+
+        attributes.each { |name, values| attributes[name] = values.sort_by{ |v| v.first }.collect { |v| v.last } }
+      end
+
+
+      def type_cast_attribute_value(multiparameter_name, value)
+        multiparameter_name =~ /\([0-9]*([if])\)/ ? value.send("to_" + $1) : value
+      end
+
+      def find_parameter_position(multiparameter_name)
+        multiparameter_name.scan(/\(([0-9]*).*\)/).first.first
       end
 
       # Tracks the current changes and clears the changed attributes hash.  Called

@@ -2,10 +2,10 @@ module Neo4j
   module Rails
     class Model
       include Neo4j::NodeMixin
-      
+
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(attributes = {})
-      	reset_attributes
+        reset_attributes
         clear_relationships
         self.attributes = attributes if attributes.is_a?(Hash)
       end
@@ -39,9 +39,10 @@ module Neo4j
       end
 
       def ==(other)
-      	new? ? self.__id__ == other.__id__ : @_java_node == (other)
+        new? ? self.__id__ == other.__id__ : @_java_node == (other)
       end
-      
+
+
       # --------------------------------------
       # Public Class Methods
       # --------------------------------------
@@ -49,11 +50,22 @@ module Neo4j
         # NodeMixin overwrites the #new class method but it saves it as orig_new
         # Here, we just get it back to normal
         alias :new :orig_new
-        
+
         def transaction(&block)
           Neo4j::Rails::Transaction.run do |tx|
             block.call(tx)
-          end 
+          end
+        end
+
+        ##
+        # Determines whether to use Time.local (using :local) or Time.utc (using :utc) when pulling
+        # dates and times from the database. This is set to :local by default.
+        def default_timezone
+          @default_timezone || :local
+        end
+
+        def default_timezone=(zone)
+          @default_timezone = zone
         end
 
         def accepts_nested_attributes_for(*attr_names)
@@ -87,19 +99,19 @@ module Neo4j
         end
       end
     end
-    
+
     Model.class_eval do
-    	extend ActiveModel::Translation
-      
-      include Persistence				# handles how to save, create and update the model
-      include Attributes				# handles how to save and retrieve attributes
-      include Mapping::Property	# allows some additional options on the #property class method
-      include Serialization			# enable to_xml and to_json
-      include Timestamps				# handle created_at, updated_at timestamp properties
-      include Validations				# enable validations
-      include Callbacks					# enable callbacks
-      include Finders						# ActiveRecord style find
-      include Relationships     # for none persisted relationships
+      extend ActiveModel::Translation
+
+      include Persistence # handles how to save, create and update the model
+      include Attributes # handles how to save and retrieve attributes
+      include Mapping::Property # allows some additional options on the #property class method
+      include Serialization # enable to_xml and to_json
+      include Timestamps # handle created_at, updated_at timestamp properties
+      include Validations # enable validations
+      include Callbacks # enable callbacks
+      include Finders # ActiveRecord style find
+      include Relationships # for none persisted relationships
     end
   end
 end
