@@ -110,6 +110,17 @@ module Neo4j
       #  # generate a relationship between folder and file of type 'FileNode#files'
       #  folder.files << FileNode.new
       #
+      # ==== Example, without prefix
+      #
+      #   class FolderNode
+      #     include Neo4j::NodeMixin
+      #     has_n(:files).to(:contains)
+      #   end
+      #
+      #   file = FileNode.new
+      #   # create an outgoing relationship of type 'contains' from folder node to file
+      #   folder.files << FolderNode.new
+      #
       def to(target)
         @direction = :outgoing
 
