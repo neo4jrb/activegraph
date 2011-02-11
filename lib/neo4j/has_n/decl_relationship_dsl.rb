@@ -110,17 +110,18 @@ module Neo4j
       #  # generate a relationship between folder and file of type 'FileNode#files'
       #  folder.files << FileNode.new
       #
-      def to(*args)
+      def to(target)
         @direction = :outgoing
 
-        if (args.size > 1)
-          raise "only one argument expected - the class of the node this relationship points to, got #{args.inspect}"
-        elsif (Class === args[0])
+        if (Class === target)
           # handle e.g. has_n(:friends).to(class)
-          @target_class = args[0]
+          @target_class = target
           @rel_type = "#{@target_class}##{@method_id}"
+        elsif (Symbol === target)
+          # handle e.g. has_n(:friends).to(:knows)
+          @rel_type = target.to_s
         else
-          raise "Expected a class for, got #{args[0]}/#{args[0].class}"
+          raise "Expected a class or a symbol for, got #{target}/#{target.class}"
         end
         self
       end
