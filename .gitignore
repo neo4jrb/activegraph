@@ -10,3 +10,6 @@ tmp
 
 # jedit
 *~
+
+# vim
+.*.sw[a-z]
