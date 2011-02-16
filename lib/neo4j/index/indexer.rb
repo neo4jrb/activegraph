@@ -306,13 +306,16 @@ module Neo4j
         db           = Neo4j.started_db
         index_config = lucene_config(type)
         if @entity_type == :node
-          db.lucene.for_nodes("#{@indexer_for}-#{type}", index_config)
+          db.lucene.for_nodes(index_names[type], index_config)
         else
-          db.lucene.for_relationships("#{@indexer_for}-#{type}", index_config)
+          db.lucene.for_relationships(index_names[type], index_config)
         end
       end
 
-
+      def index_names
+        default_filename = @indexer_for.to_s.gsub('::', '_')
+        @index_names ||= Hash.new{|hash,index_type| hash[index_type] = "#{default_filename}-#{index_type}"}
+      end
 
     end
 

@@ -84,10 +84,11 @@ module Neo4j
         index_config = lucene_config(type)
 
         if entity_type == :node
-          self.class.index_provider.node_index("#{indexer_for}-#{type}", index_config)
+          self.class.index_provider.node_index(indexer_for.index_names[type], index_config)
         else
-          self.class.index_provider.relationship_index("#{indexer_for}-#{type}", index_config)
+          self.class.index_provider.relationship_index(indexer_for.index_names[type], index_config)
         end
+        
       end
 
       class << self

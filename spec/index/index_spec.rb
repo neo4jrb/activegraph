@@ -1,6 +1,40 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
+module Neo4j
+  module Test
+    class TestIndex
+      include Neo4j::NodeMixin
+      index :name
+      index :desc, :type => :fulltext
+      index_names[:exact] = 'new_location'
+    end
+  end
+end
+
+
+describe Neo4j::Node, "index_names", :type => :transactional do
+  before(:all) do
+  end
+
+  it "can be used to configure where the index is stored on the filesystem" do
+    Neo4j::Test::TestIndex.index_names[:exact].should == "new_location"
+  end
+
+  it "has a default file location" do
+    Neo4j::Test::TestIndex.index_names[:fulltext].should == "Neo4j_Test_TestIndex-fulltext"
+  end
+
+  it "creates a folder on the filesystem containing the lucene index" do
+    Neo4j::Test::TestIndex.new :name => 'hoho', :desc => "hej hopp hello"
+    finish_tx
+    path = File.join(Neo4j.config[:storage_path], "index", "lucene", "node", Neo4j::Test::TestIndex.index_names[:exact])
+    File.exist?(path).should be_true
+
+    path = File.join(Neo4j.config[:storage_path], "index", "lucene", "node", Neo4j::Test::TestIndex.index_names[:fulltext])
+    File.exist?(path).should be_true
+  end
+end
 
 describe Neo4j::Relationship, "find", :type => :transactional do
   before(:each) do

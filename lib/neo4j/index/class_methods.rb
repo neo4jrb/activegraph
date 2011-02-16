@@ -33,9 +33,33 @@ module Neo4j
       # It is possible to share the same index for several different classes, see #node_indexer.
       # :singleton-method: find
 
+      ##
+      # Specifies the location on the filesystem of the lucene index for the given index type.
+      #
+      # If not specified it will have the default location:
+      #
+      #   Neo4j.config[:storage_path]/index/lucene/node|relationship/ParentModuleName_SubModuleName_ClassName-indextype
+      #
+      # Forwards to the Indexer#index_names class
+      #
+      # ==== Example
+      #  module Foo
+      #    class Person
+      #       include Neo4j::NodeMixin
+      #       index :name
+      #       index_names[:fulltext] = 'my_location'
+      #    end
+      #  end
+      #
+      #  Person.index_names[:fulltext] => 'my_location'
+      #  Person.index_names[:exact] => 'Foo_Person-exact' # default Location
+      #  Notice in versions <= 1.0.0.beta.29 the default location was 'Foo::Person-exact'
+      #  which does not work on Windows [lighthouse ticket #147]
+      #
+      # :singleton-method: index_names
 
-      def_delegators :@_indexer, :index, :find, :index?, :index_type?, :delete_index_type, :rm_field_type, :add_index, :rm_index, :index_type_for, :index_name
 
+      def_delegators :@_indexer, :index, :find, :index?, :index_type?, :delete_index_type, :rm_field_type, :add_index, :rm_index, :index_type_for, :index_names
 
       # Sets which indexer should be used for the given node class.
       # You can share an indexer between several different classes.

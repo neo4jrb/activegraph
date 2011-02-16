@@ -175,7 +175,7 @@ describe Neo4j::Algo, :type => :transactional do
         # path 2
         @x.outgoing(:friends) << @b
         @b.outgoing(:friends) << @y
-        @paths = [*Neo4j::Algo.all_paths(@x,@y).outgoing(:friends)]
+        @paths = Neo4j::Algo.all_paths(@x,@y).outgoing(:friends).to_a
       end
 
       it "#outgoing(:friends) should contain two paths" do
