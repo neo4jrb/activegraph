@@ -19,19 +19,32 @@ require 'neo4j/jars/ha/neo4j-management-1.3.M02.jar'
 
 module Neo4j
 
-   def self.load_local_jars
+  def self.load_local_jars
     # This is a temporary fix since the HA does not yet work with this JAR
     # It will be solved in a future version of the Java Neo4j library.
-    require 'neo4j/jars/core/neo4j-index-1.3-1.3.M01.jar'
+    if Neo4j.config[:online_backup_enabled]
+      Neo4j.load_online_backup
+    else
+      # backup and HA does not work with this JAR FILE
+      require 'neo4j/jars/core/neo4j-index-1.3-1.3.M01.jar'
+    end
   end
 
   def self.load_shell_jars
     require 'neo4j/jars/ha/neo4j-shell-1.3.M02.jar'
   end
-  
+
+  def self.load_online_backup
+    require 'neo4j/jars/ha/neo4j-com-1.3.M02.jar'
+    require 'neo4j/jars/core/neo4j-backup-1.3-SNAPSHOT.jar'
+    require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
+    Neo4j.send(:const_set, :OnlineBackup, org.neo4j.backup.OnlineBackup)
+  end
+
   def self.load_ha_jars
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
     require 'neo4j/jars/ha/neo4j-ha-1.3.M02.jar'
+    require 'neo4j/jars/ha/neo4j-com-1.3.M02.jar'
     require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.lucene-3.0.1_2.jar'

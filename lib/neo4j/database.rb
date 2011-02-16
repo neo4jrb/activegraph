@@ -64,6 +64,7 @@ module Neo4j
     def start_ha_graph_db
       Neo4j.logger.info "starting Neo4j in HA mode, machine id: #{Neo4j.config['ha.machine_id']} at #{Neo4j.config['ha.server']} db #{@storage_path}"
       Neo4j.load_ha_jars # those jars are only needed for the HighlyAvailableGraphDatabase
+      Neo4j.load_online_backup if Neo4j.config[:online_backup_enabled]      
       @graph = org.neo4j.kernel.HighlyAvailableGraphDatabase.new(@storage_path, Neo4j.config.to_java_map)
       @graph.register_transaction_event_handler(@event_handler)
       @lucene = @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
