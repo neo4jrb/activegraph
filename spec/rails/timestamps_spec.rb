@@ -8,6 +8,14 @@ end
 class InheritedTimestampTest < TimestampTest
 end
 
+class DateTimestampTest < Neo4j::Rails::Model
+  property :created_at, :type => Date
+  index :created_at
+end
+
+class SubDateTimestampTest < DateTimestampTest
+end
+
 describe "Timestamp" do
   describe TimestampTest do
     it_should_behave_like "a timestamped model"
@@ -15,5 +23,24 @@ describe "Timestamp" do
 
   describe InheritedTimestampTest do
     it_should_behave_like "a timestamped model"
+
+    it "should be correct type" do
+      subject.save
+      subject.created_at.class.should == Time
+    end
+  end
+
+  describe DateTimestampTest do
+    it "should be correct type" do
+      subject.save
+      subject.created_at.class.should == Date
+    end
+  end
+
+  describe SubDateTimestampTest do
+    it "should be correct type" do
+      subject.save
+      subject.created_at.class.should == Date
+    end
   end
 end

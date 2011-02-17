@@ -46,7 +46,7 @@ module Neo4j
 				when "Time"
 					Time.now
 				end
-				
+
 				send("#{attribute}=", value)
 			end
 			
@@ -56,7 +56,7 @@ module Neo4j
 					
 					# ensure there's always a type on the timestamp properties
 					if Neo4j::Config[:timestamps] && TIMESTAMP_PROPERTIES.include?(property)
-						_decl_props[property][:type] = Time
+						_decl_props[property][:type] ||= Time
 					end
 				end
 			end

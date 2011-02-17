@@ -183,9 +183,9 @@ module Neo4j
       #
       def add_index(entity, field, value)
         return false unless @field_types.has_key?(field)
-        value = indexed_value_for(field, value)
+        conv_value = indexed_value_for(field, value)
         index = index_for_field(field.to_s)
-        index.add(entity, field, value)
+        index.add(entity, field, conv_value)
         @parent_indexers.each { |i| i.add_index(entity, field, value) }
       end
 

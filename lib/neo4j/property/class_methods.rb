@@ -52,7 +52,6 @@ module Neo4j
         props.each do |prop|
           pname = prop.to_sym
           _decl_props[pname] ||= {}
-          _decl_props[pname][:defined] = true
 
           define_method(pname) do
             Neo4j::TypeConverters.to_ruby(self.class, pname, self[pname])
@@ -77,7 +76,7 @@ module Neo4j
       #
       def property?(prop_name)
         return false if _decl_props[prop_name.to_sym].nil?
-        _decl_props[prop_name.to_sym][:defined] == true
+        !_decl_props[prop_name.to_sym].nil?
       end
     end
   end
