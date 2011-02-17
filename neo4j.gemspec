@@ -23,7 +23,7 @@ It comes included with the Apache Lucene document database.
 
   s.require_path = 'lib'
   s.files = Dir.glob("{bin,lib,config}/**/*") + %w(README.rdoc CHANGELOG CONTRIBUTORS Gemfile neo4j.gemspec)
-  s.executables = 'neo4j-shell'
+  s.executables = ['neo4j-shell', 'neo4j-jars']
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc )
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
