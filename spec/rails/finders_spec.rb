@@ -1,23 +1,31 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 class FindableModel < Neo4j::Rails::Model
-	property :name
-	index :name, :type => :exact
-  
+  property :name
+  property :age, :type => Fixnum
+  index :name
+  index :age
+
   def to_s
     name
   end
 end
 
 describe "finders" do
-	subject { FindableModel.create!(:name => "Test 1") }
+	subject { FindableModel.create!(:name => "Test 1", :age => 4241) }
 		
 	before(:each) do
 		@test_0 = FindableModel.create!(:name => "Test 0")    
 		@test_2 = FindableModel.create!(:name => "Test 2")
-		@test_3 = FindableModel.create!(:name => "Test 3")
+		@test_3 = FindableModel.create!(:name => "Test 3", :age => 3)
 		@test_4 = FindableModel.create!(:name => "Test 1")
 	end
+
+  context "index property with type Fixnum, :age, :type => Fixnum" do
+    it "find_by_age(a fixnum) should work because age is declared as a Fixnum" do
+      FindableModel.find_by_age(3).should == @test_3
+    end
+  end
 
   context "#close_lucene_connections" do
     it "sets the Thread.current[:neo4j_lucene_connection] to nil and close all lucene connections" do

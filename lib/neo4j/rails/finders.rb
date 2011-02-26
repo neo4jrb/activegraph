@@ -11,16 +11,27 @@ module Neo4j
         # overwrite the index method to add find_by_xxx class methods
         def index(*args)
           field = args.first
-          module_eval <<-RUBY, __FILE__, __LINE__
-						def self.all_by_#{field}(value)
-							find_with_indexer("#{field}: \\"\#{value}\\"")
-						end
-						
-						def self.find_by_#{field}(value)
-							all_by_#{field}(value).first
-						end
-          RUBY
 
+          if self._decl_props[field.to_sym] && self._decl_props[field.to_sym][:type] == Fixnum
+            module_eval <<-RUBY, __FILE__, __LINE__
+              def self.all_by_#{field}(value)
+                find_with_indexer(:#{field} => value)
+              end
+  	  		  def self.find_by_#{field}(value)
+	  	        all_by_#{field}(value).first
+		  	  end
+            RUBY
+          else
+            module_eval <<-RUBY, __FILE__, __LINE__
+              def self.all_by_#{field}(value)
+                find_with_indexer("#{field}: \\"\#{value}\\"")
+              end
+
+              def self.find_by_#{field}(value)
+                all_by_#{field}(value).first
+              end
+            RUBY
+          end
           super
         end
 
