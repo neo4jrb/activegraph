@@ -9,6 +9,10 @@ It uses two powerful and mature Java libraries:
 * {Neo4J}[http://www.neo4j.org] - for persistence and traversal of the graph
 * {Lucene}[http://lucene.apache.org/java/docs/index.html] for querying and indexing.
 
+=== Documentation
+
+* {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
+
 === Why Neo4j.rb or a Graph Database ?
 
 Here are some of the major benefits of Neo4j.rb
@@ -24,10 +28,6 @@ Here are some of the major benefits of Neo4j.rb
 * Seamless integration with Ruby on \Rails.
 * ACID Transaction with rollbacks support.
 
-=== Documentation
-
-* {API Documentation}[http://neo4j.rubyforge.org]
-* {Documentation and Getting Started with Neo4j}[http://neo4j.rubyforge.org/guides/index.html]
 
 === Some Examples
 
@@ -100,11 +100,7 @@ Example of creating an Neo4j Application from scratch:
  rails s
  open a webbrowser: http://localhost:3000/users
 
-You may get an error message "ERROR IOError: Connection reset by peer"
-using WEBrick (it still works). This error message is not shown when running
-the application with {Tomcat/Trinidad}[https://github.com/calavera/trinidad]
-
-To run it with Tomcat
+To run it with Tomcat instead of WEBrick
   
   gem install trinidad
   trinidad

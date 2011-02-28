@@ -61,10 +61,24 @@ module Neo4j
       Neo4j::Config
     end
 
+    # Returns the logger used by neo4j.
+    # If not specified (with Neo4j.logger=) it will use the standard Ruby logger.
+    # You can change standard logger threshold by configuration :logger_level.
+    #
+    # You can also specify which logger class should take care of logging with the
+    # :logger configuration.
+    #
+    # ==== Example
+    #
+    #  Neo4j::Config[:logger] = Logger.new(STDOUT)
+    #  Neo4j::Config[:logger_level] = Logger::ERROR
+    #
     def logger
       @logger ||= Neo4j::Config[:logger] || default_logger
     end
 
+    # Sets which logger should be used.
+    # If this this is not called then the standard Ruby logger will be used.
     def logger=(logger)
       @logger = logger
     end
