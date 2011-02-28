@@ -1,0 +1,6 @@
+A simple example of a recommendation algorithm.
+
+To run it:
+ 
+  ruby recommend.rb
+
