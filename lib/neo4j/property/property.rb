@@ -99,8 +99,6 @@ module Neo4j
             set_property(k, value.to_java(:boolean))
           when Fixnum
             set_property(k, value.to_java(:long))
-          when Boolean
-            set_property(k, value.to_java(:boolean))
           else
             raise "Not allowed to store array with value #{value[0]} type #{value[0].class}"
         end
