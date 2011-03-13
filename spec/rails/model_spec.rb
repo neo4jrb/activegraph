@@ -132,6 +132,17 @@ describe Neo4j::Model do
 
       model.reload.flavour.should == 'vanilla'
     end
+
+    it "create can initilize the object with a block" do
+      model = IceCream.create! {|o| o.flavour = 'vanilla'}
+      model.should be_persisted
+      model.flavour = 'vanilla'
+
+      model = IceCream.create {|o| o.flavour = 'vanilla'}
+      model.should be_persisted
+      model.flavour = 'vanilla'
+
+    end
   end
 
 

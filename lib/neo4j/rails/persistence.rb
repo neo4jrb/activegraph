@@ -108,13 +108,19 @@ module Neo4j
         # Initialize a model and set a bunch of attributes at the same time.  Returns
         # the object whether saved successfully or not.
         def create(*args)
-          new(*args).tap { |o| o.save }
+          new(*args).tap do |o|
+            yield o if block_given?
+            o.save
+          end
         end
 
         # Same as #create, but raises an error if there is a problem during save.
         # Returns the object whether saved successfully or not.
         def create!(*args)
-          new(*args).tap { |o| o.save! }
+          new(*args).tap do |o|
+            yield o if block_given?
+            o.save!
+          end
         end
 
         # Destroy each node in turn.  Runs the destroy callbacks for each node.
