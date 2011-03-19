@@ -18,6 +18,7 @@ module Neo4j
         persisted? ? neo_id.to_s : nil
       end
 
+
       # Returns an Enumerable of all (primary) key attributes
       # or nil if model.persisted? is false
       def to_key
@@ -57,6 +58,10 @@ module Neo4j
           end
         end
 
+        def entity_load(id)
+          Neo4j::Node.load(id)
+        end
+        
         ##
         # Determines whether to use Time.local (using :local) or Time.utc (using :utc) when pulling
         # dates and times from the database. This is set to :local by default.

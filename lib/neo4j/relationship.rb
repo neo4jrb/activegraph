@@ -140,9 +140,9 @@ module Neo4j
       #
       #  Neo4j::Relationship.new :friend, node1, node2, :since => '2001-01-02', :status => 'okey'
       #
-      def new(type, from_node, to_node, props=nil)
+      def new(type, start_node, end_node, props=nil)
         java_type = type_to_java(type)
-        rel = from_node._java_node.create_relationship_to(to_node._java_node, java_type)
+        rel = start_node._java_node.create_relationship_to(end_node._java_node, java_type)
         props.each_pair {|k,v| rel[k] = v} if props
         rel
       end

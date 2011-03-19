@@ -37,7 +37,7 @@ module Neo4j
 
         # load an id or array of ids from the database
         def load(*ids)
-          result = ids.map { |id| Neo4j::Node.load(id) }
+          result = ids.map { |id| entity_load(id) }
           if ids.length == 1
             result.first
           else

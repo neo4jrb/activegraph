@@ -133,7 +133,6 @@ share_examples_for "a destroyable model" do
       @other = subject.class.load(subject.id)
       subject.destroy
     end
-    
     it { should be_frozen }
     
     it "should remove the model from the database" do
@@ -169,6 +168,29 @@ share_examples_for "a creatable model" do
   end
 end
 
+share_examples_for "a creatable relationship model" do
+  context "when attempting to create" do
+
+    it "should create ok" do
+      subject.class.create(:some_type, @start_node, @end_node, subject.attributes).should be_true
+    end
+
+    it "should not raise an exception on #create!" do
+      lambda { subject.class.create!(:some_type, @start_node, @end_node, subject.attributes) }.should_not raise_error
+    end
+
+    it "should save the model and return it" do
+      model = subject.class.create(:some_type, @start_node, @end_node, subject.attributes)
+      model.should be_persisted
+    end
+
+    it "should accept attributes to be set" do
+      model = subject.class.create(:some_type, @start_node, @end_node, subject.attributes.merge(:name => "Ben"))
+      model[:name].should == "Ben"
+    end
+  end
+end
+
 share_examples_for "an uncreatable model" do
   context "when attempting to create" do
     
@@ -176,6 +198,19 @@ share_examples_for "an uncreatable model" do
       subject.class.create(subject.attributes).persisted?.should_not be_true
     end
     
+    it "should raise an exception on #create!" do
+      lambda { subject.class.create!(subject.attributes) }.should raise_error
+    end
+  end
+end
+
+share_examples_for "an uncreatable relationship model" do
+  context "when attempting to create" do
+
+    it "shouldn't create ok" do
+      subject.class.create(subject.attributes).persisted?.should_not be_true
+    end
+
     it "should raise an exception on #create!" do
       lambda { subject.class.create!(subject.attributes) }.should raise_error
     end

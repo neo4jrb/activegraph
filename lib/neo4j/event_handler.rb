@@ -148,6 +148,8 @@ module Neo4j
     end
 
     def relationship_created(relationship, tx_data)
+      puts "-- relationship_created rel: #{relationship} tx_data"
+
       @listeners.each {|li| li.on_relationship_created(relationship, tx_data) if li.respond_to?(:on_relationship_created)}
     end
 
@@ -160,6 +162,7 @@ module Neo4j
     end
 
     def rel_property_changed(rel, key, old_value, new_value)
+      puts "-- rel_property_changed rel: #{rel} field: #{key} old_val:#{old_value} new_val:#{new_value}"
       @listeners.each {|li| li.on_rel_property_changed(rel, key, old_value, new_value) if li.respond_to?(:on_rel_property_changed)}
     end
   end

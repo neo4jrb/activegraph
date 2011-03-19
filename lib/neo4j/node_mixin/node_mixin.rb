@@ -76,6 +76,11 @@ module Neo4j
       @_java_node
     end
 
+    # same as _java_node - so that we can use the same method for both relationships and nodes
+    def _java_entity
+      @_java_node
+    end
+    
     # Trigger rules.
     # You don't normally need to call this method (except in Migration) since
     # it will be triggered automatically by the Neo4j::Rule::Rule
