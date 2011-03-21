@@ -61,6 +61,15 @@ module Neo4j
         end
       end
 
+      def each_rel(node, direction, raw = false, &block) #:nodoc:
+        type = type_to_java(rel_type)
+        dir = dir_to_java(direction)
+        node._java_node.getRelationships(type, dir).each do |rel|
+          rel = raw ? rel : rel.wrapper
+          block.call rel
+        end
+      end
+
       def incoming? #:nodoc:
         @direction == :incoming
       end

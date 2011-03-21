@@ -10,7 +10,6 @@ module Neo4j
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(*args)
         @type, @start_node, @end_node, attributes = args
-        puts "initialize with attributes = #{attributes.inspect}"
         reset_attributes
         self.attributes = attributes if attributes.is_a?(Hash)
       end
@@ -26,7 +25,7 @@ module Neo4j
       end
       
       def id
-        neo_id.nil? ? nil : neo_id.to_s
+        _java_rel.nil? || neo_id.nil? ? nil : neo_id.to_s
       end
 
       def start_node
@@ -55,7 +54,7 @@ module Neo4j
         @properties = {}
       end
 
-      def valid_relationships?
+      def valid_relationships?(*)
         true
       end
       # --------------------------------------
@@ -72,16 +71,14 @@ module Neo4j
 
 
         def rule(*)
-          puts "IGNORE RULES"
+          # puts "IGNORE RULES"
         end
 
         def _all
-          query = "_classname: #{self}"
-          _indexer.find(query)
+          _indexer.find(:_classname => self)
         end
         
         def load(*ids) # TODO Copied from finders.rb
-          puts "LOAD IDS #{ids.inspect}"
           result = ids.map { |id| entity_load(id) }
           if ids.length == 1
             result.first

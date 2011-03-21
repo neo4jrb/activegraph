@@ -270,3 +270,41 @@ share_examples_for "a timestamped model" do
     end
   end
 end
+
+shared_examples_for "a relationship model" do
+
+  context "with something" do
+    before(:each) do
+      subject[:something] = "test setting the property before the relationship is persisted"
+    end
+
+    context "before save" do
+      it "should be persisted" do
+        @start_node.should_not be_persisted
+        @end_node.should_not be_persisted
+        subject.should_not be_persisted
+      end
+
+      it "should still know about something" do
+        subject[:something] == "test setting the property before the relationship is persisted"
+      end
+
+    end
+    context "after save" do
+      before(:each) do
+        @start_node.save
+      end
+
+      #it { should be_a(RelationshipWithNoProperty) }
+      it "should still know about something" do
+        subject[:something] == "test setting the property before the relationship is persisted"
+      end
+
+      it "should be persisted" do
+        @start_node.should be_persisted
+        @end_node.should be_persisted
+        subject.should be_persisted
+      end
+    end
+  end
+end
