@@ -209,13 +209,10 @@ describe "Neo4j::Model Relationships" do
        suger.outgoing(:related_icecreams) << icecream2
 
        # then
-       puts "????????????????????????????????"
        suger.save
        suger.outgoing(:related_icecreams).should include(icecream2)
-       puts "SUGER #{suger} #{suger.object_id} ERRORS #{suger.errors[:related_icecreams].inspect}, first #{suger.errors[:related_icecreams].first.object_id}"
        suger.errors[:related_icecreams].first.should include(:flavour)
      end
-
     describe "nested nodes two level deep" do
       before(:all) do
         @clazz = create_model do
@@ -277,7 +274,7 @@ describe "Neo4j::Model Relationships" do
 
         # then
         jack.save.should be_false
-        jack.knows.should include(carol) 
+        jack.knows.should include(carol)
         jack.knows.should include(bob)
         jack.reload
         jack.knows.should include(carol)

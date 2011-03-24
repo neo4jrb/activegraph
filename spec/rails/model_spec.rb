@@ -455,6 +455,9 @@ describe Neo4j::Model do
 
       # then
       item.orders << order
+      puts "item.orders #{item.orders.to_a.size} item=#{item.object_id} #{item.inspect}"
+      item.orders.each {|x| puts "order #{x.inspect} OBEJCT_ID #{x.object_id}"}
+      puts "order=#{order.inspect} OBJECT_ID #{order.object_id}"
       item.orders.should include(order)
       Neo4j.all_nodes.should_not include(item)
       Neo4j.all_nodes.should_not include(order)

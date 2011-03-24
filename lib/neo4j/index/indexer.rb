@@ -90,7 +90,6 @@ module Neo4j
           conf.delete :via # avoid endless recursion
           via_indexer.index(field, conf)
         else
-          puts "INDEX #{field} for #{@indexer_for}"
           @field_types[field.to_s] = conf[:type] || :exact
         end
       end
@@ -141,7 +140,6 @@ module Neo4j
       end
 
       def update_index_on(node, field, old_val, new_val) #:nodoc:
-        puts "update_index_on #{field} #{new_val} @field_types=#{@field_types.inspect} @indexer_for=#{@indexer_for}"
         if @via_relationships.include?(field)
           dsl          = @via_relationships[field]
           target_class = dsl.target_class
@@ -188,7 +186,6 @@ module Neo4j
         conv_value = indexed_value_for(field, value)
         index = index_for_field(field.to_s)
         index.add(entity, field, conv_value)
-        puts "ADDED INDEX #{@indexer_for} field: #{field} value: #{conv_value}"
         @parent_indexers.each { |i| i.add_index(entity, field, value) }
       end
 

@@ -4,7 +4,7 @@ module Neo4j
 
       class Mapper #:nodoc:
         include Neo4j::ToJava
-        attr_reader :dsl
+        attr_reader :dsl, :node
 
         def initialize(rel_type, dsl, node)
           @rel_type      = rel_type
@@ -96,23 +96,17 @@ module Neo4j
           rel = clazz.new(rel_type_with_prefix, from, to, self)
           write_relationships(direction) << rel #Relationship.new(@rel_type, from, to, self)
           if dir == :outgoing
-            puts "add_incoming_rel #{rel}"
-            to.add_incoming_rel(@rel_type, rel)
+            to.class != Neo4j::Node && to.add_incoming_rel(@rel_type, rel)
           else
-            puts "add_outgoing_rel #{rel}"
-            from.add_outgoing_rel(@rel_type, rel)
+            from.class != Neo4j::Node && from.add_outgoing_rel(@rel_type, rel)
           end
-
-          puts "exit create_relationship_to #{from} #{to}, size = #{write_relationships(direction).size}"
         end
         
         def add_incoming_rel(rel)
-          puts "-- add_incoming_rel on #{@node} #{@node.id}"
           @incoming_rels << rel
         end
 
         def add_outgoing_rel(rel)
-          puts "-- add_outgoing_rel on #{@node} #{@node.id}"
           @outgoing_rels << rel
         end
 
@@ -134,16 +128,12 @@ module Neo4j
             end_node = rel.end_node
             #start_node, end_node = end_node, start_node if @node == end_node
 
-            # TODO
-            included_end_node = validated_nodes.include?(end_node)
-            included_start_node = validated_nodes.include?(start_node)
             validated_nodes << start_node << end_node
-            if end_node_valid = !end_node.valid?(context, validated_nodes)
+            if !end_node.valid?(context, validated_nodes)
               all_valid                = false
               start_node.errors[@rel_type.to_sym] ||= []
               start_node.errors[@rel_type.to_sym] << end_node.errors.clone
-            end
-            if start_node_valid = !start_node.valid?(context, validated_nodes)
+            elsif !start_node.valid?(context, validated_nodes)
               all_valid                = false
               end_node.errors[@rel_type.to_sym] ||= []
               end_node.errors[@rel_type.to_sym] << start_node.errors.clone
@@ -172,7 +162,6 @@ module Neo4j
             success
           end
 
-          puts "persisted #{success}"
           success
 
 #            if @dsl

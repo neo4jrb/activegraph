@@ -29,7 +29,6 @@ module Neo4j
       end
 
       def start_node
-#        puts "start_node #{self.to_s}"
         if persisted?
           _java_rel.start_node
         else
@@ -38,7 +37,6 @@ module Neo4j
       end
 
       def end_node
-#        puts "start_node #{self.to_s}"
         if persisted?
           _java_rel.end_node
         else
@@ -71,7 +69,6 @@ module Neo4j
 
 
         def rule(*)
-          # puts "IGNORE RULES"
         end
 
         def _all

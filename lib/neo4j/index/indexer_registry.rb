@@ -31,23 +31,17 @@ module Neo4j
         end
 
         def on_rel_property_changed(rel, field, old_val, new_val)
-          puts "on_rel_property_changed rel: #{rel} field: #{field} old_val:#{old_val} new_val:#{new_val}"
           # works exactly like for nodes
           on_property_changed(rel, field, old_val, new_val)
         end
 
         def on_relationship_created(rel, tx_data)
-          puts "on_relationship_created #{rel}"
           end_node = rel._end_node
           # if end_node was created in this transaction then it will be handled in on_property_changed
           created = tx_data.created_nodes.find{|n| n.neo_id == end_node.neo_id}
           unless created
             indexer = find_by_class(end_node['_classname'])
             indexer && indexer.update_on_new_relationship(rel)
-          end
-
-          tx_data.assignedRelationshipProperties.each do |rel|
-            puts "XXX rel #{rel.key} value: #{rel.value}"
           end
         end
 

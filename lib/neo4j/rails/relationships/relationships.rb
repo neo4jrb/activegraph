@@ -44,14 +44,11 @@ module Neo4j
         end
 
         def <<(other)
-          puts "<< #{other} dir #{@direction} mapper: #{@mapper}"
           if @direction == :outgoing
             @mapper.create_relationship_to(@from_node, other, @direction)
           else
             @mapper.create_relationship_to(other, @from_node, @direction)
           end
-          puts "added << #{other} mapper: #{@mapper}"
-
           self
         end
 
@@ -60,7 +57,6 @@ module Neo4j
         end
 
         def each(&block)
-          puts "NodesDSL @mapper=#{@mapper} dir #{@direction}"
           @mapper.each_node(@from_node, @direction, &block)
         end
       end
@@ -118,7 +114,6 @@ module Neo4j
       end
       
       def add_incoming_rel(rel_type, rel)
-        puts "add_incoming_rel #{caller.inspect}"
         dsl = _decl_rels_for(rel_type)
         dsl.add_incoming_rel(rel)
       end
