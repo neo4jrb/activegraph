@@ -56,7 +56,6 @@ module Neo4j
         end
 
         def each_node(node, direction, &block)
-          puts "- each_node"
           if @node._java_node
             if @dsl
               @dsl.each_node(@node, direction, &block)
@@ -88,9 +87,13 @@ module Neo4j
           end
         end
 
+        def rel_type_with_prefix
+          @dsl && @dsl.rel_type || @rel_type
+        end
+        
         def create_relationship_to(from, to, dir = direction)
           clazz = (@dsl && @dsl.relationship_class) || Neo4j::Rails::Relationship
-          rel = clazz.new(@rel_type, from, to, self)
+          rel = clazz.new(rel_type_with_prefix, from, to, self)
           write_relationships(direction) << rel #Relationship.new(@rel_type, from, to, self)
           if dir == :outgoing
             puts "add_incoming_rel #{rel}"
@@ -131,25 +134,25 @@ module Neo4j
             end_node = rel.end_node
             #start_node, end_node = end_node, start_node if @node == end_node
 
+            # TODO
             included_end_node = validated_nodes.include?(end_node)
             included_start_node = validated_nodes.include?(start_node)
             validated_nodes << start_node << end_node
-            if !included_end_node && !end_node.valid?(context, validated_nodes)
+            if end_node_valid = !end_node.valid?(context, validated_nodes)
               all_valid                = false
               start_node.errors[@rel_type.to_sym] ||= []
-              start_node.errors[@rel_type.to_sym] << end_node.errors
+              start_node.errors[@rel_type.to_sym] << end_node.errors.clone
             end
-            if !included_start_node && !start_node.valid?(context, validated_nodes)
+            if start_node_valid = !start_node.valid?(context, validated_nodes)
               all_valid                = false
               end_node.errors[@rel_type.to_sym] ||= []
-              end_node.errors[@rel_type.to_sym] << start_node.errors
+              end_node.errors[@rel_type.to_sym] << start_node.errors.clone
             end
           end
           all_valid
         end
 
         def persist
-          puts "persist #{caller.inspect}"
           success = true
           @outgoing_rels.each do |rel|
             success = rel.save
@@ -166,6 +169,7 @@ module Neo4j
               success = rel.end_node.persisted? || rel.end_node.save
               break unless success
             end
+            success
           end
 
           puts "persisted #{success}"
