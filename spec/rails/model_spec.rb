@@ -121,12 +121,12 @@ describe Neo4j::Model do
       	model.flavour = "horse"
       	model.should be_valid
       	model.save
-      	
+
         model.flavour = nil
         model.flavour.should be_nil
         model.should_not be_valid
         model.save
-        
+
         Neo4j::Rails::Transaction.fail
       end
 
@@ -193,7 +193,7 @@ describe Neo4j::Model do
       model = IceCream.create(:flavour => 'vanilla')
       IceCream.find("flavour: vanilla").should == model
     end
-    
+
     it "should only find two by same attribute" do
       m1 = IceCream.create(:flavour => 'vanilla')
       m2 = IceCream.create(:flavour => 'vanilla')
@@ -432,7 +432,7 @@ describe Neo4j::Model do
         property :name
         validates :name, :presence => true
         def to_s
-          "Item #{name} class: #{self.class}"
+          "Item #{name} class: #{self.class} id: #{self.object_id}"
         end
       end
 
@@ -441,7 +441,7 @@ describe Neo4j::Model do
         has_n(:items).to(item)
         validates :name, :presence => true
         def to_s
-          "Order #{name} class: #{self.class}"
+          "Order #{name} class: #{self.class} id: #{self.object_id}"
         end
       end
 
@@ -455,9 +455,6 @@ describe Neo4j::Model do
 
       # then
       item.orders << order
-      puts "item.orders #{item.orders.to_a.size} item=#{item.object_id} #{item.inspect}"
-      item.orders.each {|x| puts "order #{x.inspect} OBEJCT_ID #{x.object_id}"}
-      puts "order=#{order.inspect} OBJECT_ID #{order.object_id}"
       item.orders.should include(order)
       Neo4j.all_nodes.should_not include(item)
       Neo4j.all_nodes.should_not include(order)
@@ -477,7 +474,7 @@ describe Neo4j::Model do
       item.orders.should include(order)
     end
 
-  end  
+  end
 
 
 end

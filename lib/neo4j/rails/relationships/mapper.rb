@@ -64,7 +64,7 @@ module Neo4j
             end
           end
           write_relationships(direction).each do |rel|
-            if direction == :outgoing
+            if rel.start_node == @node
               block.call rel.end_node
             else
               block.call rel.start_node
@@ -93,12 +93,14 @@ module Neo4j
         
         def create_relationship_to(from, to, dir = direction)
           clazz = (@dsl && @dsl.relationship_class) || Neo4j::Rails::Relationship
-          rel = clazz.new(rel_type_with_prefix, from, to, self)
-          write_relationships(direction) << rel #Relationship.new(@rel_type, from, to, self)
           if dir == :outgoing
+            rel = clazz.new(rel_type_with_prefix, from, to, self)
             to.class != Neo4j::Node && to.add_incoming_rel(@rel_type, rel)
+            add_outgoing_rel(rel)
           else
+            rel = clazz.new(rel_type_with_prefix, to, from, self)
             from.class != Neo4j::Node && from.add_outgoing_rel(@rel_type, rel)
+            add_incoming_rel(rel)
           end
         end
         
@@ -163,18 +165,6 @@ module Neo4j
           end
 
           success
-
-#            if @dsl
-#              start_node = rel.start_node
-#              end_node = rel.end_node
-#
-#              end_node.save!
-#              @dsl.create_relationship_to(start_node, end_node)
-#            else
-#              rel.end_node.save!
-#              rel.start_node.outgoing(@rel_type) << rel.end_node
-#            end
-#          end
         end
       end
     end
