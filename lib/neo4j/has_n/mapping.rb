@@ -22,12 +22,11 @@ module Neo4j
 
       def initialize(node, dsl) # :nodoc:
         @node = node
-        @direction = dsl.direction
         @dsl = dsl
       end
 
       def to_s
-        "HasN::Mapping [#@direction, id: #{@node.neo_id} type: #{@dsl && @dsl.rel_type} dsl:#{@dsl}]"
+        "HasN::Mapping [#{@dsl.dir}, id: #{@node.neo_id} type: #{@dsl && @dsl.rel_type} dsl:#{@dsl}]"
       end
 
       def size
@@ -43,7 +42,7 @@ module Neo4j
         nil # out of index
       end
 
-      # Pretend we are an array - this is neccessarly for Rails actionpack/actionview/formhelper to work with this
+      # Pretend we are an array - this is necessarily for Rails actionpack/actionview/formhelper to work with this
       def is_a?(type)
         # ActionView requires this for nested attributes to work
         return true if Array == type
@@ -52,12 +51,12 @@ module Neo4j
 
       # Required by the Enumerable mixin.
       def each(&block)
-        @dsl.each_node(@node, @direction, &block)
+        @dsl.each_node(@node, &block)
       end
 
       # returns none wrapped nodes, you may get better performance using this method
       def _each(&block)
-        @dsl.each_node(@node, @direction, true, &block)
+        @dsl._each_node(@node, &block)
       end
 
       # Returns an real ruby array.

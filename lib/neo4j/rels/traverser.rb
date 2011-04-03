@@ -12,23 +12,23 @@ module Neo4j
       include Enumerable
       include ToJava
 
-      def initialize(node, types, direction)
+      def initialize(node, types, dir)
         @node = node
         if types.size > 1
           @types = types.inject([]) { |result, type| result << type_to_java(type) }.to_java(:'org.neo4j.graphdb.RelationshipType')
         elsif types.size == 1
           @type = type_to_java(types[0])
         end
-        @direction = direction
+        @dir = dir
       end
 
       def to_s
         if @type
-          "#{self.class} [type: #{@type} dir:#{@direction}]"
+          "#{self.class} [type: #{@type} dir:#{@dir}]"
         elsif @types
-          "#{self.class} [types: #{@types.join(',')} dir:#{@direction}]"
+          "#{self.class} [types: #{@types.join(',')} dir:#{@dir}]"
         else
-          "#{self.class} [types: ANY dir:#{@direction}]"
+          "#{self.class} [types: ANY dir:#{@dir}]"
         end
       end
 
@@ -48,18 +48,18 @@ module Neo4j
         if @types
           @node.get_relationships(@types).iterator
         elsif @type
-          @node.get_relationships(@type, dir_to_java(@direction))
+          @node.get_relationships(@type, dir_to_java(@dir))
         else
-          @node.get_relationships(dir_to_java(@direction))
+          @node.get_relationships(dir_to_java(@dir))
         end
       end
 
       def match_to_other?(rel)
         if @to_other.nil?
           true
-        elsif @direction == :outgoing
+        elsif @dir == :outgoing
           rel._end_node == @to_other
-        elsif @direction == :incoming
+        elsif @dir == :incoming
           rel._start_node == @to_other
         else
           rel._start_node == @to_other || rel._end_node == @to_other
@@ -80,19 +80,19 @@ module Neo4j
       end
 
       def both
-        @direction = :both
+        @dir = :both
         self
       end
 
       def incoming
         raise "Not allowed calling incoming when finding several relationships types" if @types
-        @direction = :incoming
+        @dir = :incoming
         self
       end
 
       def outgoing
         raise "Not allowed calling outgoing when finding several relationships types" if @types
-        @direction = :outgoing
+        @dir = :outgoing
         self
       end
 

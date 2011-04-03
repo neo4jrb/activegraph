@@ -34,10 +34,10 @@ module Neo4j
     class DeclRelationshipDsl
       include Neo4j::ToJava
 
-      attr_reader :target_class, :direction, :rel_type
+      attr_reader :target_class, :dir, :rel_type
 
-      def initialize(method_id, has_one, target_class, params)
-        @direction = :outgoing
+      def initialize(method_id, has_one, target_class)
+        @dir = :outgoing
         @method_id = method_id
         @has_one = has_one
         @rel_type = method_id
@@ -45,33 +45,48 @@ module Neo4j
       end
 
       def to_s
-        "DeclRelationshipDsl #{object_id} dir: #{@direction} rel_id: #{@method_id}, rel_type: #{@rel_type}, target_class:#{@target_class} rel_class:#{@relationship}"
+        "DeclRelationshipDsl #{object_id} dir: #{@dir} rel_id: #{@method_id}, rel_type: #{@rel_type}, target_class:#{@target_class} rel_class:#{@relationship}"
       end
 
       def has_one?
         @has_one
       end
+      
+      def java_rel_type
+        type_to_java(@rel_type)
+      end
 
-      def each_node(node, direction, raw = false, &block) #:nodoc:
-        type = type_to_java(rel_type)
-        dir = dir_to_java(direction)
-        node._java_node.getRelationships(type, dir).each do |rel|
-          other = raw ? rel.getOtherNode(node) : rel.getOtherNode(node).wrapper
-          block.call other
+      def java_dir
+        dir_to_java(@dir)
+      end
+      
+      def each_node(node, &block) #:nodoc:
+        node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
+          block.call(rel.getOtherNode(node).wrapper)
         end
       end
 
-      def each_rel(node, direction, raw = false, &block) #:nodoc:
-        type = type_to_java(rel_type)
-        dir = dir_to_java(direction)
-        node._java_node.getRelationships(type, dir).each do |rel|
-          rel = raw ? rel : rel.wrapper
+      def _each_node(node, &block) #:nodoc:
+        node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
+          block.call rel.getOtherNode(node)
+        end
+      end
+
+
+      def each_rel(node, &block) #:nodoc:
+        node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
+          block.call rel.wrapper
+        end
+      end
+
+      def _each_rel(node, &block) #:nodoc:
+        node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
           block.call rel
         end
       end
 
       def incoming? #:nodoc:
-        @direction == :incoming
+        @dir == :incoming
       end
 
       def single_node(node) #:nodoc:
@@ -80,24 +95,20 @@ module Neo4j
       end
 
       def single_relationship(node) #:nodoc:
-        node._java_node.rel(direction, rel_type)
+        node._java_node.rel(dir, rel_type)
       end
 
       def _all_relationships(node) #:nodoc:
-        type = type_to_java(rel_type)
-        dir = dir_to_java(direction)
-        node._java_node.getRelationships(type, dir)
+        node._java_node.getRelationships(java_rel_type, java_dir)
       end
 
       def all_relationships(node) #:nodoc:
-        Neo4j::Rels::Traverser.new(node._java_node, [rel_type], direction)
+        Neo4j::Rels::Traverser.new(node._java_node, [rel_type], dir)
       end
 
       def create_relationship_to(node, other) # :nodoc:
         from, to = incoming? ? [other, node] : [node, other]
-        java_type = type_to_java(rel_type)
-
-        rel = from._java_node.create_relationship_to(to._java_node, java_type)
+        rel = from._java_node.create_relationship_to(to._java_node, java_rel_type)
         rel[:_classname] = relationship_class.to_s if relationship_class
         rel.wrapper
       end
@@ -131,7 +142,7 @@ module Neo4j
       #   folder.files << FolderNode.new
       #
       def to(target)
-        @direction = :outgoing
+        @dir = :outgoing
 
         if (Class === target)
           # handle e.g. has_n(:friends).to(class)
@@ -183,7 +194,7 @@ module Neo4j
       #
       #
       def from(*args)
-        @direction = :incoming
+        @dir = :incoming
 
         if (args.size > 1)
           # handle specified (prefixed) relationship, e.g. has_n(:known_by).from(clazz, :type)
