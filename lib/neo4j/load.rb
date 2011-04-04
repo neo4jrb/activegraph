@@ -22,7 +22,7 @@ module Neo4j
     # Checks if the given entity (node/relationship) or entity id (#neo_id) exists in the database.
     def exist?(node_or_node_id, db = Neo4j.started_db)
       id = node_or_node_id.kind_of?(Fixnum) ?  node_or_node_id : node_or_node_id.id
-      _load(id, db) != nil
+      !! _load(id, db)
     end
   end
 end

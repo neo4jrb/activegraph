@@ -22,11 +22,11 @@ module Neo4j
         end
 
         def running?
-          Thread.current[:neo4j_transaction] != nil
+          !! Thread.current[:neo4j_transaction]
         end
 
         def fail?
-          Thread.current[:neo4j_transaction_fail] != nil
+          !! Thread.current[:neo4j_transaction_fail]
         end
 
         def fail
