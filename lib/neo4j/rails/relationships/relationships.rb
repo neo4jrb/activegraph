@@ -38,16 +38,22 @@ module Neo4j
       def outgoing(rel_type)
         storage = _create_or_get_storage(rel_type)
         if persisted? && !storage.modified?
-          super(rel_type)
+          Neo4j::Traversal::Traverser.new(self).outgoing(rel_type)
         else
           NodesDSL.new(storage, :outgoing)
         end
       end
 
+
+      def create_relationship_to(other_node, rel_type)
+        storage = _create_or_get_storage(rel_type.name)
+        storage.create_relationship_to(other_node, :outgoing)
+      end
+
       def incoming(rel_type)
         storage = _create_or_get_storage(rel_type)
         if persisted? && !storage.modified?
-          super(rel_type)
+          Neo4j::Traversal::Traverser.new(self).incoming(rel_type)
         else
           NodesDSL.new(storage, :incoming)
         end

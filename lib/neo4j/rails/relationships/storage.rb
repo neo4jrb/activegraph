@@ -27,7 +27,7 @@ module Neo4j
         def size(dir)
           counter = 0
           # count persisted relationship
-          @node._java_node.getRelationships(java_rel_type, java_dir).each {|*| counter += 1 }
+          @node._java_node && @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each {|*| counter += 1 }
           # count relationship which has not yet been persisted
           counter += relationships(dir).size
           counter
@@ -106,14 +106,12 @@ module Neo4j
 
         def create_relationship_to(to, dir)
           if dir == :outgoing
-            puts "ADD OUTGOING #{@rel_type} from #{@node} to #{to}"
             rel = @rel_class.new(@rel_type, @node, to, self)
             to.class != Neo4j::Node && to.add_incoming_rel(@rel_type, rel)
             add_outgoing_rel(rel)
           else
-            puts "ADD INCOMING #{@rel_type} from #{@node} to #{to}"
-            rel = @rel_class.new(@rel_type, @node, to, self)
-            @node.class != Neo4j::Node && @node.add_outgoing_rel(@rel_type, rel)
+            rel = @rel_class.new(@rel_type, to, @node, self)
+            @node.class != Neo4j::Node && to.add_outgoing_rel(@rel_type, rel)
             add_incoming_rel(rel)
           end
         end

@@ -494,52 +494,50 @@ describe "Neo4j::Model Relationships" do
 end
 
 
-#
-#describe RelationshipWithNoProperty do
-#  pending
-#  before(:each) do
-#    @start_node = Neo4j::Model.new
-#    @end_node = Neo4j::Model.new
-#  end
-#
-#  subject do
-#    RelationshipWithNoProperty.new(:foo, @start_node, @end_node)
-#  end
-#
-##  it "should persist" do
-##    puts "a=#{@a}/#{@a.persisted?}, id:#{@a.object_id}"
-##    puts "b=#{@b}/#{@b.persisted?}, id:#{@b.object_id}"
-##    subject.save
-##
-##    RelationshipWithProperty._all.size.should == 1
-##  end
-#
-#  it_should_behave_like "a new model"
-#  it_should_behave_like "a loadable model"
-#  it_should_behave_like "a saveable model"
-#  it_should_behave_like "a creatable relationship model"
-#  it_should_behave_like "a destroyable model"
-#  it_should_behave_like "an updatable model"
-#
-#  context "when there's lots of them" do
-#    before(:each) do
-#      subject.class.create!(:foo, @start_node, @end_node)
-#      subject.class.create!(:foo, @start_node, @end_node)
-#      subject.class.create!(:foo, @start_node, @end_node)
-#    end
-#
-#    it "should be possible to #count" do
-#      subject.class.count.should == 3
-#    end
-#
-#    it "should be possible to #destroy_all" do
-#      subject.class.all.to_a.size.should == 3
-#      subject.class.destroy_all
-#      subject.class.all.to_a.should be_empty
-#    end
-#  end
-#
-#end
+
+describe RelationshipWithNoProperty do
+  pending
+  before(:each) do
+    @start_node = Neo4j::Model.new
+    @end_node = Neo4j::Model.new
+  end
+
+  subject do
+    RelationshipWithNoProperty.new(:foo, @start_node, @end_node)
+  end
+
+  it "should persist" do
+    subject.save
+
+    RelationshipWithProperty._all.size.should == 1
+  end
+
+  it_should_behave_like "a new model"
+  it_should_behave_like "a loadable model"
+  it_should_behave_like "a saveable model"
+  it_should_behave_like "a creatable relationship model"
+  it_should_behave_like "a destroyable model"
+  it_should_behave_like "an updatable model"
+
+  context "when there's lots of them" do
+    before(:each) do
+      subject.class.create!(:foo, @start_node, @end_node)
+      subject.class.create!(:foo, @start_node, @end_node)
+      subject.class.create!(:foo, @start_node, @end_node)
+    end
+
+    it "should be possible to #count" do
+      subject.class.count.should == 3
+    end
+
+    it "should be possible to #destroy_all" do
+      subject.class.all.to_a.size.should == 3
+      subject.class.destroy_all
+      subject.class.all.to_a.should be_empty
+    end
+  end
+
+end
 #
 #
 #
@@ -694,6 +692,9 @@ describe "SettingRelationship" do
     has_one(:other_node) #.relationship(RelationshipWithNoProperty)
     has_one(:foobar).relationship(RelationshipWithNoProperty)
     has_n(:baaz)
+    def to_s
+      "node object_id: #{object_id} #{self._java_node ? neo_id : "not persisted"}"
+    end
   end
 
   context "create a Neo4j::Rails::Relationship" do
@@ -702,28 +703,30 @@ describe "SettingRelationship" do
       @end_node = Neo4j::Rails::Model.new
     end
 
-#    it "has_n" do
-#      @start_node.outgoing(:baaz) << Neo4j::Rails::Model.new
-#      @start_node.baaz.size.should == 1
-#      @start_node.save
-#      @start_node.baaz.size.should == 1
-#      @start_node.outgoing(:baaz).to_a.size.should == 1
-#
-#      @start_node.outgoing(:baaz) << Neo4j::Rails::Model.new
-#      @start_node.outgoing(:baaz).to_a.size.should == 2
-#      @start_node.baaz.size.should == 2
-#      @start_node.save
-#      @start_node.baaz.size.should == 2
-#    end
-#
-#
-#    it "add an outgoing should set the incoming" do
-#      @start_node.outgoing(:other_node) << @end_node
-#      @end_node.incoming(:other_node).first.should == @start_node
-#    end
+    it "has_n" do
+      @start_node.outgoing(:baaz) << Neo4j::Rails::Model.new
+      @start_node.baaz.size.should == 1
+      @start_node.save
+      @start_node.baaz.size.should == 1
+      @start_node.outgoing(:baaz).to_a.size.should == 1
+
+      @start_node.outgoing(:baaz) << Neo4j::Rails::Model.new
+      @start_node.outgoing(:baaz).to_a.size.should == 2
+      @start_node.baaz.size.should == 2
+      @start_node.save
+      @start_node.baaz.size.should == 2
+    end
+
+
+    it "add an outgoing should set the incoming" do
+      @start_node.outgoing(:other_node) << @end_node
+      @end_node.incoming(:other_node).first.should == @start_node
+    end
 
     it "add an incoming should set the outgoing" do
+      puts "start #{@start_node}, end: #{@end_node}"
       @start_node.incoming(:other_node) << @end_node
+      puts "added --"
       @end_node.outgoing(:other_node).first.should == @start_node
       puts "-------- save"
       @start_node.save
@@ -732,75 +735,133 @@ describe "SettingRelationship" do
       @end_node.outgoing(:other_node).first.should == @start_node
       @start_node.incoming(:other_node).first.should == @end_node
     end
+    it "add an outgoing should set the outgoing" do
+      @start_node.outgoing(:other_node) << @end_node
+      @end_node.incoming(:other_node).first.should == @start_node
+      @start_node.save
+      @end_node.should be_persisted
+      @start_node.should be_persisted
+      @end_node.incoming(:other_node).first.should == @start_node
+      @start_node.outgoing(:other_node).first.should == @end_node
+    end
+
+    it "adding many different relationships" do
+      @start_node.outgoing(:foo) << (c = Neo4j::Rails::Model.new)
+      @start_node.outgoing(:other_node) << (a = Neo4j::Rails::Model.new)
+      @start_node.outgoing(:other_node) << (b = Neo4j::Rails::Model.new)
+
+      @start_node.outgoing(:foo).size.should == 1
+      @start_node.outgoing(:foo).should include(c)
+
+      @start_node.outgoing(:other_node).size.should == 2
+      @start_node.outgoing(:other_node).should include(a, b)
+
+      c.incoming(:foo).size.should == 1
+      c.incoming(:foo).should include(@start_node)
+      b.incoming(:other_node).size.should == 1
+      b.incoming(:other_node).should include(@start_node)
+      a.incoming(:other_node).size.should == 1
+      a.incoming(:other_node).should include(@start_node)
+      @start_node.save
+
+      @start_node.outgoing(:foo).size.should == 1
+      @start_node.outgoing(:foo).should include(c)
+
+      @start_node.outgoing(:other_node).size.should == 2
+      @start_node.outgoing(:other_node).should include(a, b)
+
+      c.incoming(:foo).size.should == 1
+      c.incoming(:foo).should include(@start_node)
+      b.incoming(:other_node).size.should == 1
+      b.incoming(:other_node).should include(@start_node)
+      a.incoming(:other_node).size.should == 1
+      a.incoming(:other_node).should include(@start_node)
+    end
+
+    it "add an outgoing twice should set the outgoing" do
+      @start_node.outgoing(:other_node) << @end_node
+      @start_node.outgoing(:other_node).size.should == 1
+      @end_node.incoming(:other_node).size.should == 1
+      @start_node.save
+      @start_node.outgoing(:other_node).size.should == 1
+      @end_node.incoming(:other_node).size.should == 1
+
+      @start_node.outgoing(:other_node) << Neo4j::Rails::Model.new
+      @start_node.outgoing(:other_node).size.should == 2
+      @end_node.incoming(:other_node).size.should == 1
+      @start_node.save
+      @end_node.should be_persisted
+      @start_node.should be_persisted
+
+      @start_node.outgoing(:other_node).size.should == 2
+      @end_node.incoming(:other_node).size.should == 1
+    end
+  end
+
+
+
+  context "setting a Neo4j::Rails::Relationship" do
+    subject { @start_node.other_node_rel } #@start_node.other_node_rel }
+
+    before(:each) do
+      @start_node = NodeWithRelationship.new
+      @end_node = Neo4j::Rails::Model.new
+      @start_node.other_node = @end_node
+    end
+
+    it { should be_kind_of(Neo4j::Rails::Relationship) }
+    it_should_behave_like "a relationship model"
+  end
+
+  context "setting has many" do
+
+    it "bla" do
+      @start_node = NodeWithRelationship.new
+      @end_node_1 = Neo4j::Rails::Model.new
+      @end_node_2 = Neo4j::Rails::Model.new
+      @start_node.baaz << @end_node_1 << @end_node_2
+
+      @start_node.baaz_rels.each do |rel|
+        rel.should be_kind_of(Neo4j::Rails::Relationship)
+      end
+      @start_node.baaz_rels.to_a.size.should == 2
+      @start_node.baaz.should include(@end_node_1, @end_node_2)
+      @start_node.save
+      @start_node.baaz_rels.each do |rel|
+        rel.should be_kind_of(Neo4j::Rails::Relationship)
+      end
+      @start_node.baaz_rels.to_a.size.should == 2
+      @start_node.baaz.should include(@end_node_1, @end_node_2)
+    end
+
+  end
+
+  context "setting RelationshipWithNoProperty" do
+    subject { @start_node.foobar_rel } #@start_node.other_node_rel }
+
+    before(:each) do
+      @start_node = NodeWithRelationship.new
+      @end_node = Neo4j::Rails::Model.new
+      @start_node.foobar = @end_node
+    end
+
+    it { should be_kind_of(RelationshipWithNoProperty) }
+
+    it "should create the correct relationship class after save" do
+      @start_node.save
+      @start_node.foobar_rel.should be_kind_of(RelationshipWithNoProperty)
+    end
+
+    it_should_behave_like "a relationship model"
+
+    it "should have no incoming" do
+      @start_node.rels(:foobar).incoming.should be_empty
+      @start_node.rels(:foobar).outgoing.size.should == 1
+    end
   end
 end
-
-#    it "add an outgoing should set the outgoing" do
-#      @start_node.outgoing(:other_node) << @end_node
-#      @end_node.incoming(:other_node).first.should == @start_node
-#      @start_node.save
-#      @end_node.should be_persisted
-#      @start_node.should be_persisted
-#      @end_node.incoming(:other_node).first.should == @start_node
-#      @start_node.outgoing(:other_node).first.should == @end_node
-#    end
-#
-#    it "adding many different relationships" do
-#      @start_node.outgoing(:foo) << (c = Neo4j::Rails::Model.new)
-#      @start_node.outgoing(:other_node) << (a = Neo4j::Rails::Model.new)
-#      @start_node.outgoing(:other_node) << (b = Neo4j::Rails::Model.new)
-#
-#      @start_node.outgoing(:foo).size.should == 1
-#      @start_node.outgoing(:foo).should include(c)
-#
-#      @start_node.outgoing(:other_node).size.should == 2
-#      @start_node.outgoing(:other_node).should include(a, b)
-#
-#      c.incoming(:foo).size.should == 1
-#      c.incoming(:foo).should include(@start_node)
-#      b.incoming(:other_node).size.should == 1
-#      b.incoming(:other_node).should include(@start_node)
-#      a.incoming(:other_node).size.should == 1
-#      a.incoming(:other_node).should include(@start_node)
-#      @start_node.save
-#
-#      @start_node.outgoing(:foo).size.should == 1
-#      @start_node.outgoing(:foo).should include(c)
-#
-#      @start_node.outgoing(:other_node).size.should == 2
-#      @start_node.outgoing(:other_node).should include(a, b)
-#
-#      c.incoming(:foo).size.should == 1
-#      c.incoming(:foo).should include(@start_node)
-#      b.incoming(:other_node).size.should == 1
-#      b.incoming(:other_node).should include(@start_node)
-#      a.incoming(:other_node).size.should == 1
-#      a.incoming(:other_node).should include(@start_node)
-#    end
-#
-#    it "add an outgoing twice should set the outgoing" do
-#      @start_node.outgoing(:other_node) << @end_node
-#      @start_node.outgoing(:other_node).size.should == 1
-#      @end_node.incoming(:other_node).size.should == 1
-#      @start_node.save
-#      @start_node.outgoing(:other_node).size.should == 1
-#      @end_node.incoming(:other_node).size.should == 1
-#
-#      @start_node.outgoing(:other_node) << Neo4j::Rails::Model.new
-#      @start_node.outgoing(:other_node).size.should == 2
-#      @end_node.incoming(:other_node).size.should == 1
-#      @start_node.save
-#      @end_node.should be_persisted
-#      @start_node.should be_persisted
-#
-#      @start_node.outgoing(:other_node).size.should == 2
-#      @end_node.incoming(:other_node).size.should == 1
-#    end
-#  end
-#
-#
-#  context "setting a Neo4j::Rails::Relationship" do
-#    subject { @start_node.other_node_rel } #@start_node.other_node_rel }
+#  context "other_node_rel" do
+#    subject { @start_node.other_node_rel }
 #
 #    before(:each) do
 #      @start_node = NodeWithRelationship.new
@@ -808,69 +869,9 @@ end
 #      @start_node.other_node = @end_node
 #    end
 #
-#    it { should be_kind_of(Neo4j::Rails::Relationship) }
+#    #it { should be_a(RelationshipWithNoProperty) }
 #    it_should_behave_like "a relationship model"
 #  end
 #
-#  context "setting has many" do
-#
-#    it "bla" do
-#      @start_node = NodeWithRelationship.new
-#      @end_node_1 = Neo4j::Rails::Model.new
-#      @end_node_2 = Neo4j::Rails::Model.new
-#      @start_node.baaz << @end_node_1 << @end_node_2
-#
-#      @start_node.baaz_rels.each do |rel|
-#        rel.should be_kind_of(Neo4j::Rails::Relationship)
-#      end
-#      @start_node.baaz_rels.to_a.size.should == 2
-#      @start_node.baaz.should include(@end_node_1, @end_node_2)
-#      @start_node.save
-#      @start_node.baaz_rels.each do |rel|
-#        rel.should be_kind_of(Neo4j::Rails::Relationship)
-#      end
-#      @start_node.baaz_rels.to_a.size.should == 2
-#      @start_node.baaz.should include(@end_node_1, @end_node_2)
-#    end
-#
-#  end
-#
-#  context "setting RelationshipWithNoProperty" do
-#    subject { @start_node.foobar_rel } #@start_node.other_node_rel }
-#
-#    before(:each) do
-#      @start_node = NodeWithRelationship.new
-#      @end_node = Neo4j::Rails::Model.new
-#      @start_node.foobar = @end_node
-#    end
-#
-#    it { should be_kind_of(RelationshipWithNoProperty) }
-#
-#    it "should create the correct relationship class after save" do
-#      @start_node.save
-#      @start_node.foobar_rel.should be_kind_of(RelationshipWithNoProperty)
-#    end
-#
-#    it_should_behave_like "a relationship model"
-#
-#    it "should have no incoming" do
-#      @start_node.rels(:foobar).incoming.should be_empty
-#      @start_node.rels(:foobar).outgoing.size.should == 1
-#    end
-#  end
 #end
-##  context "other_node_rel" do
-##    subject { @start_node.other_node_rel }
-##
-##    before(:each) do
-##      @start_node = NodeWithRelationship.new
-##      @end_node = Neo4j::Rails::Model.new
-##      @start_node.other_node = @end_node
-##    end
-##
-##    #it { should be_a(RelationshipWithNoProperty) }
-##    it_should_behave_like "a relationship model"
-##  end
-##
-##end
-#
+
