@@ -9,7 +9,14 @@ module Neo4j
     end
 
     def to_class(class_name) # :nodoc:
-      class_name.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
+      names = class_name.split("::")
+      names.shift if names.first.empty?
+
+      constant = Kernel
+      names.each do |name|
+        constant = constant.const_defined?(name) ? constant.const_get(name) : constant.const_missing(name)
+      end
+      constant
     end
 
     # Checks if the given entity (node/relationship) or entity id (#neo_id) exists in the database.
