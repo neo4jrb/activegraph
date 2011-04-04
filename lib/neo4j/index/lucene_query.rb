@@ -164,13 +164,15 @@ module Neo4j
 
       # Sort descending the given fields.
       def desc(*fields)
-        @order = fields.inject(@order || {}) { |memo, field| memo[field] = true; memo }
+        @order ||= {}
+        fields.each { |field| @order[field] = true }
         self
       end
 
       # Sort ascending the given fields.
       def asc(*fields)
-        @order = fields.inject(@order || {}) { |memo, field| memo[field] = false; memo }
+        @order ||= {}
+        fields.each { |field| @order[field] = false }
         self
       end
 
@@ -183,7 +185,7 @@ module Neo4j
       end
 
       def build_sort_query(query) #:nodoc:
-        java_sort_fields = @order.keys.inject([]) do |memo, field|
+        java_sort_fields = @order.keys.map do |field|
           decl_type = @decl_props && @decl_props[field] && @decl_props[field][:type]
           type      = case
                         when Float == decl_type
@@ -193,7 +195,7 @@ module Neo4j
                         else
                           org.apache.lucene.search.SortField::STRING
                       end
-          memo << org.apache.lucene.search.SortField.new(field.to_s, type, @order[field])
+          org.apache.lucene.search.SortField.new(field.to_s, type, @order[field])
         end
         sort             = org.apache.lucene.search.Sort.new(*java_sort_fields)
         org.neo4j.index.impl.lucene.QueryContext.new(query).sort(sort)

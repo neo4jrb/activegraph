@@ -1,6 +1,5 @@
 require 'rubygems'
 require "bundler/setup"
-require 'set'
 require 'neo4j'
 
 require 'logger' # use default logger
@@ -20,7 +19,7 @@ def recommend(node)
   # so that the person with the most similar taste is first in the list
   sorted = other_people_likes.sort_by { |p| (likes(p) & i_like).size }.reverse
   # now for each of those people in this list get the composers that I don't like yet
-  sorted.inject(Set.new){|result, person| result + (likes(person) - i_like)}.to_a
+  sorted.map{|person| likes(person) - i_like}.flatten.uniq
 end
 
 

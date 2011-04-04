@@ -15,7 +15,7 @@ module Neo4j
       def initialize(node, types, direction)
         @node = node
         if types.size > 1
-          @types = types.inject([]) { |result, type| result << type_to_java(type) }.to_java(:'org.neo4j.graphdb.RelationshipType')
+          @types = types.map { |type| type_to_java(type) }.to_java(:'org.neo4j.graphdb.RelationshipType')
         elsif types.size == 1
           @type = type_to_java(types[0])
         end
