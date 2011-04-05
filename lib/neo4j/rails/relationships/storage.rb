@@ -77,11 +77,11 @@ module Neo4j
         def single_relationship(dir)
           rel = relationships(dir).first
           if rel.nil? && @node.persisted?
-            rel = @node._java_node.getSingleRelationship(java_rel_type, dir_to_java(dir))
-            # TODO wrapper
+            java_rel = @node._java_node.getSingleRelationship(java_rel_type, dir_to_java(dir))
+            java_rel && java_rel.wrapper
+          else
+            rel
           end
-
-          rel
         end
 
         def all_relationships(dir)
@@ -90,8 +90,9 @@ module Neo4j
 
         def single_node(dir)
           rel = single_relationship(dir)
-          puts "REL = #{rel}"
-          rel && rel.get_other_node(@node).wrapper  # TODO wrapper
+          return nil if rel.nil?
+          other = rel.other_node(@node)
+          other && other.wrapper
         end
 
         def del_rel(rel)
@@ -107,9 +108,11 @@ module Neo4j
         def create_relationship_to(to, dir)
           if dir == :outgoing
             rel = @rel_class.new(@rel_type, @node, to, self)
+            # puts "create outgoing rel_class #{@rel_class} rel = #{rel} from #{@node} to #{to} of type #{@rel_type}"
             to.class != Neo4j::Node && to.add_incoming_rel(@rel_type, rel)
             add_outgoing_rel(rel)
           else
+            # puts "create incoming rel #{@rel_class} from #{to} to #{@node} of type #{@rel_type}"
             rel = @rel_class.new(@rel_type, to, @node, self)
             @node.class != Neo4j::Node && to.add_outgoing_rel(@rel_type, rel)
             add_incoming_rel(rel)
@@ -121,7 +124,6 @@ module Neo4j
         end
 
         def add_outgoing_rel(rel)
-          puts "ADD OUTGOING for #{@node} #{rel}"
           @outgoing_rels << rel
         end
 
@@ -153,15 +155,11 @@ module Neo4j
         end
 
         def persist
-          puts "PERSIST #{@node} outgoing: #{@outgoing_rels.inspect}, @incoming_rels=#{@incoming_rels.inspect}"
           success = true
           @outgoing_rels.each do |rel|
             success = rel.save
-            puts " ERROR #{rel.errors.inspect}" unless success
             break unless success
           end
-
-          puts "  success = #{success}"
 
           if success
             @outgoing_rels.each do |rel|
@@ -170,15 +168,12 @@ module Neo4j
             @outgoing_rels.clear
 
             @incoming_rels.each do |rel|
-              puts "  persist incoming #{rel}"
               success = rel.start_node.persisted? || rel.start_node.save
-              puts " ERROR #{rel.errors.inspect}" unless success
               break unless success
             end
             success
           end
 
-          puts "  ret #{success}"
           success
         end
       end

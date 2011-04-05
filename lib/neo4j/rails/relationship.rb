@@ -10,29 +10,23 @@ module Neo4j
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(*args)
         @type, @start_node, @end_node, attributes = args
-        puts "CREATE REL #{@type}, start: #@start_node end: #@end_node"
         reset_attributes
         self.attributes = attributes if attributes.is_a?(Hash)
       end
 
       def other_node(node) # TODO - compare neo_id instead ?
-        if @start_node == node
-          @end_node
+        if persisted?
+          _java_rel.getOtherNode(node._java_node)
         else
-          @start_node
+          @start_node == (node._java_node || node) ? @end_node : @start_node
         end
       end
+
 
       alias_method :get_other_node, :other_node # so it looks like the java version
       
       def to_s
-        if start_node.nil?
-          "START NODE NIL"
-        elsif end_node.nil?
-          "END NODE NIL"
-        else
-          "id: #{self.object_id}  @start_node: #{start_node.object_id}/#{start_node.persisted?} @end_node: #{end_node.object_id}/#{end_node.persisted?} type:#{@type}"
-        end
+        "id: #{self.object_id}  start_node: #{start_node} end_node: #{end_node} type:#{@type}"
       end
       
       def id

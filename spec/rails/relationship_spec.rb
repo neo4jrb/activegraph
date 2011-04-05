@@ -136,6 +136,7 @@ describe "Neo4j::Model Relationships" do
     it "add nodes to a has_one method with the #new method" do
       member = Member.new
       avatar = Avatar.new
+      puts "HOHO 123"
       member.avatar = avatar
       member.avatar.should be_kind_of(Avatar)
       member.save
@@ -509,7 +510,7 @@ describe RelationshipWithNoProperty do
   it "should persist" do
     subject.save
 
-    RelationshipWithProperty._all.size.should == 1
+    RelationshipWithNoProperty._all.size.should == 1
   end
 
   it_should_behave_like "a new model"
@@ -536,157 +537,156 @@ describe RelationshipWithNoProperty do
       subject.class.all.to_a.should be_empty
     end
   end
+end
+
+
+
+class RelationshipWithProperty < Neo4j::Rails::Relationship
+  property :flavour
+  index :flavour
+  property :required_on_create
+  property :required_on_update
+  property :created
+
+  attr_reader :saved
+
+  validates :flavour, :presence => true
+  validates :required_on_create, :presence => true, :on => :create
+  validates :required_on_update, :presence => true, :on => :update
+
+  before_create :timestamp
+  after_create :mark_saved
+
+  protected
+  def timestamp
+    self.created = "yep"
+  end
+
+  def mark_saved
+    @saved = true
+  end
 
 end
-#
-#
-#
-#class RelationshipWithProperty < Neo4j::Rails::Relationship
-#  property :flavour
-#  index :flavour
-#  property :required_on_create
-#  property :required_on_update
-#  property :created
-#
-#  attr_reader :saved
-#
-#  validates :flavour, :presence => true
-#  validates :required_on_create, :presence => true, :on => :create
-#  validates :required_on_update, :presence => true, :on => :update
-#
-#  before_create :timestamp
-#  after_create :mark_saved
-#
-#  protected
-#  def timestamp
-#    self.created = "yep"
-#  end
-#
-#  def mark_saved
-#    @saved = true
-#  end
-#
-#end
-#
-#describe RelationshipWithProperty do
-#  before(:each) do
-#    @start_node = Neo4j::Model.new
-#    @end_node = Neo4j::Model.new
-#  end
-#
-#  subject do
-#    RelationshipWithProperty.new(:foo, @start_node, @end_node)
-#  end
-#
-#  context "when valid" do
-#    before :each do
-#      subject.flavour = "vanilla"
-#      subject.required_on_create = "true"
-#      subject.required_on_update = "true"
-#      subject["new_attribute"] = "newun"
-#    end
-#
-#    it_should_behave_like "a new model"
-#    it_should_behave_like "a loadable model"
-#    it_should_behave_like "a saveable model"
-#    it_should_behave_like "a creatable relationship model"
-#    it_should_behave_like "a destroyable model"
-#    it_should_behave_like "an updatable model"
-#
-#    context "after being saved" do
-#      before { subject.save }
-#
-#      it { should == subject.class.find('flavour: vanilla') }
-#
-#      it "should render as XML" do
-#        subject.to_xml.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<relationship-with-property>\n  <flavour>vanilla</flavour>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n  <new-attribute>newun</new-attribute>\n  <created>yep</created>\n</relationship-with-property>\n"
-#      end
-#
-#      it "should be able to modify one of its named attributes" do
-#        lambda { subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
-#        subject.flavour.should == 'horse'
-#      end
-#
-#      it "should not have the extended property" do
-#        subject.attributes.should_not include("extended_property")
-#      end
-#
-#      it "should have the new attribute" do
-#        subject.attributes.should include("new_attribute")
-#        subject.attributes["new_attribute"].should == "newun"
-#        subject["new_attribute"].should == "newun"
-#      end
-#
-#      it "should have the new attribute after find" do
-#        obj = subject.class.find('flavour: vanilla')
-#        obj.attributes.should include("new_attribute")
-#        obj.attributes["new_attribute"].should == "newun"
-#      end
-#
-#      it "should respond to class.all" do
-#        subject.class.respond_to?(:all)
-#      end
-#
-#      it "should respond to class#all(:flavour => 'vanilla')" do
-#        subject.class.all('flavour: vanilla').should include(subject)
-#      end
-#
-#      it "should also be included in the rules for the parent class" do
-#        pending
-#        subject.class.superclass.all.to_a.should include(subject)
-#      end
-#
-#      context "and then made invalid" do
-#        before { subject.required_on_update = nil }
-#
-#        it "shouldn't be updatable" do
-#          subject.update_attributes(:flavour => "fish").should_not be_true
-#        end
-#
-#        it "should have the same attribute values after an unsuccessful update and reload" do
-#          subject.update_attributes(:flavour => "fish")
-#          subject.reload.flavour.should == "vanilla"
-#          subject.required_on_update.should_not be_nil
-#        end
-#
-#        it "shouldn't have a new attribute after an unsuccessful update and reload" do
-#          subject["this_is_new"] = "test"
-#          subject.attributes.should include("this_is_new")
-#          subject.update_attributes(:flavour => "fish")
-#          subject.reload.flavour.should == "vanilla"
-#          subject.required_on_update.should_not be_nil
-#          subject.attributes.should_not include("this_is_new")
-#        end
-#      end
-#    end
-#
-#    context "after create" do
-#      before :each do
-#        @obj = subject.class.create!(:foo, @start_node, @end_node, subject.attributes)
-#      end
-#
-#      it "should have run the #timestamp callback" do
-#        @obj.created.should_not be_nil
-#      end
-#
-#      it "should have run the #mark_saved callback" do
-#        @obj.saved.should_not be_nil
-#      end
-#    end
-#
-#
-#  end
-#
-#  context "when invalid" do
-#    it_should_behave_like "a new model"
-#    it_should_behave_like "an unsaveable model"
-#    it_should_behave_like "an uncreatable model"
-#    it_should_behave_like "a non-updatable model"
-#  end
-#
-#end
-#
-#
+
+describe RelationshipWithProperty do
+  before(:each) do
+    @start_node = Neo4j::Model.new
+    @end_node = Neo4j::Model.new
+  end
+
+  subject do
+    RelationshipWithProperty.new(:foo, @start_node, @end_node)
+  end
+
+  context "when valid" do
+    before :each do
+      subject.flavour = "vanilla"
+      subject.required_on_create = "true"
+      subject.required_on_update = "true"
+      subject["new_attribute"] = "newun"
+    end
+
+    it_should_behave_like "a new model"
+    it_should_behave_like "a loadable model"
+    it_should_behave_like "a saveable model"
+    it_should_behave_like "a creatable relationship model"
+    it_should_behave_like "a destroyable model"
+    it_should_behave_like "an updatable model"
+
+    context "after being saved" do
+      before { subject.save }
+
+      it { should == subject.class.find('flavour: vanilla') }
+
+      it "should render as XML" do
+        subject.to_xml.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<relationship-with-property>\n  <flavour>vanilla</flavour>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n  <new-attribute>newun</new-attribute>\n  <created>yep</created>\n</relationship-with-property>\n"
+      end
+
+      it "should be able to modify one of its named attributes" do
+        lambda { subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
+        subject.flavour.should == 'horse'
+      end
+
+      it "should not have the extended property" do
+        subject.attributes.should_not include("extended_property")
+      end
+
+      it "should have the new attribute" do
+        subject.attributes.should include("new_attribute")
+        subject.attributes["new_attribute"].should == "newun"
+        subject["new_attribute"].should == "newun"
+      end
+
+      it "should have the new attribute after find" do
+        obj = subject.class.find('flavour: vanilla')
+        obj.attributes.should include("new_attribute")
+        obj.attributes["new_attribute"].should == "newun"
+      end
+
+      it "should respond to class.all" do
+        subject.class.respond_to?(:all)
+      end
+
+      it "should respond to class#all(:flavour => 'vanilla')" do
+        subject.class.all('flavour: vanilla').should include(subject)
+      end
+
+      it "should also be included in the rules for the parent class" do
+        pending
+        subject.class.superclass.all.to_a.should include(subject)
+      end
+
+      context "and then made invalid" do
+        before { subject.required_on_update = nil }
+
+        it "shouldn't be updatable" do
+          subject.update_attributes(:flavour => "fish").should_not be_true
+        end
+
+        it "should have the same attribute values after an unsuccessful update and reload" do
+          subject.update_attributes(:flavour => "fish")
+          subject.reload.flavour.should == "vanilla"
+          subject.required_on_update.should_not be_nil
+        end
+
+        it "shouldn't have a new attribute after an unsuccessful update and reload" do
+          subject["this_is_new"] = "test"
+          subject.attributes.should include("this_is_new")
+          subject.update_attributes(:flavour => "fish")
+          subject.reload.flavour.should == "vanilla"
+          subject.required_on_update.should_not be_nil
+          subject.attributes.should_not include("this_is_new")
+        end
+      end
+    end
+
+    context "after create" do
+      before :each do
+        @obj = subject.class.create!(:foo, @start_node, @end_node, subject.attributes)
+      end
+
+      it "should have run the #timestamp callback" do
+        @obj.created.should_not be_nil
+      end
+
+      it "should have run the #mark_saved callback" do
+        @obj.saved.should_not be_nil
+      end
+    end
+
+
+  end
+
+  context "when invalid" do
+    it_should_behave_like "a new model"
+    it_should_behave_like "an unsaveable model"
+    it_should_behave_like "an uncreatable model"
+    it_should_behave_like "a non-updatable model"
+  end
+
+end
+
+
 describe "SettingRelationship" do
   class NodeWithRelationship < Neo4j::Rails::Model
     has_one(:other_node) #.relationship(RelationshipWithNoProperty)
@@ -842,13 +842,20 @@ describe "SettingRelationship" do
     before(:each) do
       @start_node = NodeWithRelationship.new
       @end_node = Neo4j::Rails::Model.new
+      puts "SET FOOBAR REL"
       @start_node.foobar = @end_node
+      puts "SETTED FOOBAR REL"
+
     end
 
     it { should be_kind_of(RelationshipWithNoProperty) }
 
     it "should create the correct relationship class after save" do
+      puts "SAVE FOOBAR_REL"
+      @start_node.foobar_rel.should be_kind_of(RelationshipWithNoProperty)
       @start_node.save
+      puts "  SAVED FOOBAR_REL #{@start_node.foobar_rel.inspect}"
+
       @start_node.foobar_rel.should be_kind_of(RelationshipWithNoProperty)
     end
 

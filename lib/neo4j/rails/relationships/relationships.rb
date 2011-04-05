@@ -29,9 +29,9 @@ module Neo4j
         @relationships[rel_type.to_sym] ||= Storage.new(self, rel_type, relationship_class)
       end
 
-      # If the node is persisted it returns a Neo4j::NodeTraverser
-      # otherwise create a new object which will handle creating new relationships in memory.
-      # If not persisted the traversal method like prune, expand, filter etc. will not be available
+      # If the node is persisted and it does not have any unsaved relationship it returns a Neo4j::NodeTraverser.
+      # Otherwise it will return a NodesDSL which behaves like the Neo4j::NodeTraverser except that it does not
+      # allow to traverse both persisted and not persisted (not saved yet) relationship more then depth one.
       #
       # See, Neo4j::NodeRelationship#outgoing (when node is persisted) which returns a Neo4j::NodeTraverser
       #
@@ -45,11 +45,14 @@ module Neo4j
       end
 
 
-      def create_relationship_to(other_node, rel_type)
+      def create_relationship_to(other_node, rel_type) #:nodoc:
         storage = _create_or_get_storage(rel_type.name)
         storage.create_relationship_to(other_node, :outgoing)
       end
 
+      # Traverse or update an incoming relationship
+      # See #outgoing
+      # See, Neo4j::NodeRelationship#outgoing (when node is persisted) which returns a Neo4j::NodeTraverser
       def incoming(rel_type)
         storage = _create_or_get_storage(rel_type)
         if persisted? && !storage.modified?
@@ -59,6 +62,9 @@ module Neo4j
         end
       end
 
+      # See Neo4j::Rels#rels.
+      # Will also allow to access unsaved relationships - like the #outgoing and #incoming method.
+      #
       def rels(*rel_types)
         storage = _create_or_get_storage(rel_types.first)
 
@@ -69,15 +75,15 @@ module Neo4j
         end
       end
 
-      def add_outgoing_rel(rel_type, rel)
+      def add_outgoing_rel(rel_type, rel) #:nodoc:
         _create_or_get_storage(rel_type).add_outgoing_rel(rel)
       end
 
-      def add_incoming_rel(rel_type, rel)
+      def add_incoming_rel(rel_type, rel) #:nodoc:
         _create_or_get_storage(rel_type).add_incoming_rel(rel)
       end
 
-      def rm_incoming_rel(rel_type, rel)
+      def rm_incoming_rel(rel_type, rel) #:nodoc:
         _create_or_get_storage(rel_type).rm_incoming_rel(rel)
       end
     end

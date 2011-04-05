@@ -166,9 +166,10 @@ module Neo4j
       end
 
       def init_on_create(*)
-        self["_classname"] = self.class.to_s
+        #self["_classname"] = self.class.to_s
         write_default_attributes
         write_changed_attributes
+        @_java_rel[:_classname] = self.class.to_s
       end
 
       def reset_attributes

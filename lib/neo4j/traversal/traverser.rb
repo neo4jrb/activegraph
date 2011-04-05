@@ -55,7 +55,6 @@ module Neo4j
       def new(other_node)
         case @dir
           when org.neo4j.graphdb.Direction::OUTGOING
-            puts "FROM #{@from}/#{@from.class}, caller #{caller.inspect}"
             @from.create_relationship_to(other_node, @type)
           when org.neo4j.graphdb.Direction::INCOMING
             other_node.create_relationship_to(@from, @type)
