@@ -56,8 +56,10 @@ module Neo4j
       def incoming(rel_type)
         storage = _create_or_get_storage(rel_type)
         if persisted? && !storage.modified?
+          puts "incoming Neo4j::Traversal::Traverser"
           Neo4j::Traversal::Traverser.new(self).incoming(rel_type)
         else
+          puts "NodesDSL #{persisted?} #{storage}"
           NodesDSL.new(storage, :incoming)
         end
       end
@@ -85,6 +87,10 @@ module Neo4j
 
       def rm_incoming_rel(rel_type, rel) #:nodoc:
         _create_or_get_storage(rel_type).rm_incoming_rel(rel)
+      end
+
+      def rm_outgoing_rel(rel_type, rel) #:nodoc:
+        _create_or_get_storage(rel_type).rm_outgoing_rel(rel)
       end
     end
   end

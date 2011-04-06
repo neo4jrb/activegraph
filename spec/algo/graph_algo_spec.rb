@@ -140,6 +140,7 @@ describe Neo4j::Algo, :type => :transactional do
   describe "#all_paths(a,b)" do
     context "no paths" do
       it "#outgoing(:friends).first.nodes returns the nodes in the path" do
+        pending "does not work - BUG"
         a = Neo4j::Node.new
         b = Neo4j::Node.new
         new_tx

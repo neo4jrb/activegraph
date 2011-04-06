@@ -156,6 +156,7 @@ module Neo4j
           return false unless end_node.save
         end
         @_java_rel = Neo4j::Relationship.new(type, start_node, end_node)
+        puts "CREATE REL #{self}, caller #{caller.inspect}"
         init_on_create
         clear_changes
         true

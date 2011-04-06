@@ -38,6 +38,31 @@ describe "Neo4j::Model Relationships" do
       a.outgoing(:friends).should include(b, c)
     end
 
+    it "should find the relationship using #incoming method" do
+      clazz = create_model
+      a = clazz.create
+      b = clazz.create
+      c = clazz.create
+      a.outgoing(:qwe) << b
+      a.outgoing(:qwe) << c
+      a.outgoing(:qwe).size.should == 2
+      b.incoming(:qwe).size.should == 1
+      b.outgoing(:qwe).size.should == 0
+      c.incoming(:qwe).size.should == 1
+      c.outgoing(:qwe).size.should == 0
+      b.incoming(:qwe).should include(a)
+      c.incoming(:qwe).should include(a)
+      a.save
+      a.outgoing(:qwe).size.should == 2
+      puts "GET INCOMIG b = #{b.neo_id}"
+      b._java_node.incoming(:qwe).size.should == 1
+      b.incoming(:qwe).size.should == 1
+      b.outgoing(:qwe).size.should == 0
+      c.incoming(:qwe).size.should == 1
+      c.outgoing(:qwe).size.should == 0
+      b.incoming(:qwe).should include(a)
+      c.incoming(:qwe).should include(a)
+    end
 
     it "should find the relationship using #has_n method when created with outgoing method" do
       clazz = create_model

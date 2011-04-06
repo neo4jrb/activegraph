@@ -153,6 +153,7 @@ module Neo4j
       def create
         node = Neo4j::Node.new
         @_java_node = node
+        puts "CREATE NODE #{neo_id}/#{self.object_id} caller #{caller.inspect}"
         init_on_create
         clear_changes
         clear_relationships

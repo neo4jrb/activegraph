@@ -26,7 +26,8 @@ module Neo4j
       alias_method :get_other_node, :other_node # so it looks like the java version
       
       def to_s
-        "id: #{self.object_id}  start_node: #{start_node} end_node: #{end_node} type:#{@type}"
+        neoid = _java_rel.nil? ? "not persisted" : _java_rel.neo_id
+        "objid: #{self.object_id} neo_id: #{neoid} start_node: #{start_node} end_node: #{end_node} type:#{@type}"
       end
       
       def id
@@ -34,19 +35,11 @@ module Neo4j
       end
 
       def start_node
-        if persisted?
-          _java_rel.start_node
-        else
-          @start_node
-        end
+        @start_node ||= _java_rel && _java_rel.start_node
       end
 
       def end_node
-        if persisted?
-          _java_rel.end_node
-        else
-          @end_node
-        end
+        @end_node ||= _java_rel && _java_rel.start_node
       end
 
       def del

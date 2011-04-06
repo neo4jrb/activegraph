@@ -8,15 +8,18 @@ module Neo4j
         attr_reader :dsl, :node, :rel_type
 
         def initialize(node, rel_type, rel_class)
-          @rel_type      = rel_type.to_sym
-          @node          = node
-          @rel_class     = rel_class || Neo4j::Rails::Relationship
+          @rel_type = rel_type.to_sym
+          @node = node
+          @rel_class = rel_class || Neo4j::Rails::Relationship
           @outgoing_rels = []
           @incoming_rels = []
+
+          puts "Created #{self.to_s}"
         end
 
         def to_s #:nodoc:
-          "#{self.class} #{object_id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
+          node_id = @node._java_node ? "#{@node.neo_id}/#{@node.object_id}" : "not persisted #{@node.object_id}"
+          "Storage #{object_id} node_id: #{node_id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
         end
 
         def modified?
@@ -27,7 +30,7 @@ module Neo4j
         def size(dir)
           counter = 0
           # count persisted relationship
-          @node._java_node && @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each {|*| counter += 1 }
+          @node._java_node && @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each { |*| counter += 1 }
           # count relationship which has not yet been persisted
           counter += relationships(dir).size
           counter
@@ -108,29 +111,37 @@ module Neo4j
         def create_relationship_to(to, dir)
           if dir == :outgoing
             rel = @rel_class.new(@rel_type, @node, to, self)
-            # puts "create outgoing rel_class #{@rel_class} rel = #{rel} from #{@node} to #{to} of type #{@rel_type}"
+            puts "create outgoing rel_class #{@rel_class} rel = #{rel} from #{@node} to #{to} of type #{@rel_type}"
             to.class != Neo4j::Node && to.add_incoming_rel(@rel_type, rel)
             add_outgoing_rel(rel)
           else
-            # puts "create incoming rel #{@rel_class} from #{to} to #{@node} of type #{@rel_type}"
+            puts "create incoming rel #{@rel_class} from #{to} to #{@node} of type #{@rel_type}"
             rel = @rel_class.new(@rel_type, to, @node, self)
             @node.class != Neo4j::Node && to.add_outgoing_rel(@rel_type, rel)
             add_incoming_rel(rel)
           end
         end
-        
+
         def add_incoming_rel(rel)
           @incoming_rels << rel
+          puts "add_incoming_rel #{@incoming_rels.size} for #{@node} on #{self.to_s}"
         end
 
         def add_outgoing_rel(rel)
           @outgoing_rels << rel
+          puts "add_outgoing_rel #{@outgoing_rels.size} for #{@node} on #{self.to_s}"
         end
 
         def rm_incoming_rel(rel)
           @incoming_rels.delete(rel)
+          puts "rm_incoming_rel #{self.to_s}"
         end
-        
+
+        def rm_outgoing_rel(rel)
+          @outgoing_rels.delete(rel)
+          puts "rm_outgoing_rel #{rel} #{self.to_s}"
+        end
+
         def valid?(context, validated_nodes)
           return true if validated_nodes.include?(@node)
           all_valid = true
@@ -142,11 +153,11 @@ module Neo4j
 
             validated_nodes << start_node << end_node
             if !end_node.valid?(context, validated_nodes)
-              all_valid                = false
+              all_valid = false
               start_node.errors[@rel_type.to_sym] ||= []
               start_node.errors[@rel_type.to_sym] << end_node.errors.clone
             elsif !start_node.valid?(context, validated_nodes)
-              all_valid                = false
+              all_valid = false
               end_node.errors[@rel_type.to_sym] ||= []
               end_node.errors[@rel_type.to_sym] << start_node.errors.clone
             end
@@ -155,6 +166,7 @@ module Neo4j
         end
 
         def persist
+          puts "PERSIST"
           success = true
           @outgoing_rels.each do |rel|
             success = rel.save
@@ -163,12 +175,14 @@ module Neo4j
 
           if success
             @outgoing_rels.each do |rel|
+              puts "RM OUT #{rel} from #{rel.end_node.neo_id}  (#{rel.start_node.neo_id})"
               rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel)
             end
             @outgoing_rels.clear
 
             @incoming_rels.each do |rel|
-              success = rel.start_node.persisted? || rel.start_node.save
+              puts "RM IN #{rel} from #{rel.start_node.neo_id}"
+              rel.start_node.rm_outgoing_rel(@rel_type.to_sym, rel)
               break unless success
             end
             success
