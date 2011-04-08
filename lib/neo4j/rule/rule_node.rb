@@ -7,6 +7,7 @@ module Neo4j
     # The RuleNode can also be used to hold properties for functions, like sum and count.
     #
     class RuleNode
+      include ToJava
       attr_reader :rules
 
       def initialize(clazz)
@@ -26,7 +27,7 @@ module Neo4j
       def create_node
         Neo4j::Transaction.run do
           node = Neo4j::Node.new
-          Neo4j.ref_node.outgoing(@clazz) << node
+          Neo4j.ref_node.create_relationship_to(node, type_to_java(@clazz))
           node
         end
       end

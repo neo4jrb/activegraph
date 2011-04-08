@@ -26,6 +26,7 @@ module Neo4j
         def on_property_changed(node, field, old_val, new_val)
           classname = node['_classname'] || node.class.to_s
           indexer = find_by_class(classname)
+
           indexer && indexer.update_index_on(node, field, old_val, new_val)
         end
 

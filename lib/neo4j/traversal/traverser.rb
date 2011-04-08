@@ -57,7 +57,7 @@ module Neo4j
           when org.neo4j.graphdb.Direction::OUTGOING
             @from.create_relationship_to(other_node, @type)
           when org.neo4j.graphdb.Direction::INCOMING
-            other_node._java_node.create_relationship_to(@from, @type)
+            other_node.create_relationship_to(@from, @type)
           else
             raise "Only allowed to create outgoing or incoming relationships (not #@dir)"
         end
@@ -166,7 +166,7 @@ module Neo4j
           end
         end
         @td = @td.prune(org.neo4j.kernel.Traversal.pruneAfterDepth(@depth)) unless @depth == :all
-        @td.traverse(@from).nodes
+        @td.traverse(@from._java_node).nodes
       end
     end
   end

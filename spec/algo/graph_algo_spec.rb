@@ -138,6 +138,16 @@ describe Neo4j::Algo, :type => :transactional do
   end
 
   describe "#all_paths(a,b)" do
+    context "no paths" do
+      it "#outgoing(:friends).first.nodes returns the nodes in the path" do
+        pending "does not work - BUG"
+        a = Neo4j::Node.new
+        b = Neo4j::Node.new
+        new_tx
+        Neo4j::Algo.all_paths(a,b).outgoing(:foo).outgoing(:friends).first.nodes.should be_empty
+      end
+    end
+
     context "one outgoing path :friends exist between x and y of length 2" do
       before(:each) do
         @x.outgoing(:friends) << @a

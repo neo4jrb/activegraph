@@ -47,7 +47,7 @@ module Neo4j
       # * This method returns Neo4j::HasN::DeclRelationshipDsl
       # * The generated has_n method returns a Neo4j::HasN::Mapping object
       #
-      def has_n(rel_type, params = {})
+      def has_n(rel_type)
         clazz = self
         module_eval(%Q{
                 def #{rel_type}
@@ -67,7 +67,7 @@ module Neo4j
             _decl_rels[:#{rel_type}].rel_type.to_s
           end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, false, clazz, params)
+        _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, false, clazz)
       end
 
 
@@ -92,7 +92,7 @@ module Neo4j
       #
       # Neo4j::HasN::DeclRelationshipDsl
       #
-      def has_one(rel_type, params = {})
+      def has_one(rel_type)
         clazz = self
         module_eval(%Q{def #{rel_type}=(value)
                   dsl = _decl_rels_for(:#{rel_type})
@@ -107,12 +107,11 @@ module Neo4j
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}_rel
-                  # TODO - use the class variable instance since we don't want to use none persisted rails relationships
-                  dsl = #{clazz}._decl_rels[:'#{rel_type.to_s}']
+                  dsl = _decl_rels_for(:#{rel_type})
                   dsl.single_relationship(self)
                end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, true, clazz, params)
+        _decl_rels[rel_type.to_sym] = DeclRelationshipDsl.new(rel_type, true, clazz)
       end
 
     end

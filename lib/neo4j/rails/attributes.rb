@@ -50,7 +50,7 @@ module Neo4j
         if @properties.has_key?(key)
           @properties[key]
         else
-          @properties[key] = (persisted? && _java_node.has_property?(key)) ? read_attribute(key) : attribute_defaults[key]
+          @properties[key] = (persisted? && _java_entity.has_property?(key)) ? read_attribute(key) : attribute_defaults[key]
         end
       end
 
@@ -185,7 +185,7 @@ module Neo4j
       # attributes or the property keys for the persisted node.
       def property_names
         keys = @properties.keys + self.class._decl_props.keys.map { |k| k.to_s }
-        keys += _java_node.property_keys.to_a if persisted?
+        keys += _java_entity.property_keys.to_a if persisted?
         keys.flatten.uniq
       end
 
@@ -202,7 +202,7 @@ module Neo4j
         @properties.keys.include?(name) ||
             self.class._decl_props.map { |k| k.to_s }.include?(name) ||
             begin
-              super
+              persisted? && super
             rescue org.neo4j.graphdb.NotFoundException
               set_deleted_properties
               nil

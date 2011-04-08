@@ -59,6 +59,10 @@ module Neo4j
       @_java_rel
     end
 
+    def _java_entity
+      @_java_rel
+    end
+
     # Returns the end node of this relationship
     def end_node
       id = getEndNode.getId
@@ -127,7 +131,7 @@ module Neo4j
         c.extend Neo4j::Index::ClassMethods
 
         def c.inherited(subclass)
-          subclass.rel_indexer subclass
+          subclass.rel_indexer self
           super
         end
 

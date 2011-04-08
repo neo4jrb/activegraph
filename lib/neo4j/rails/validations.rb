@@ -13,10 +13,10 @@ module Neo4j
         perform_validations(options) ? super : false
       end
 
-      def valid?(context = nil)
+      def valid?(context = nil, validated_nodes=nil)
         context     ||= (new_record? ? :create : :update)
         output      = super(context)
-        output_rels = valid_relationships?
+        output_rels = valid_relationships?(context, validated_nodes)
         errors.empty? && output && output_rels
       end
 

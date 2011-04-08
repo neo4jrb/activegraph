@@ -133,7 +133,6 @@ share_examples_for "a destroyable model" do
       @other = subject.class.load(subject.id)
       subject.destroy
     end
-    
     it { should be_frozen }
     
     it "should remove the model from the database" do
@@ -169,6 +168,29 @@ share_examples_for "a creatable model" do
   end
 end
 
+share_examples_for "a creatable relationship model" do
+  context "when attempting to create" do
+
+    it "should create ok" do
+      subject.class.create(:some_type, @start_node, @end_node, subject.attributes).should be_true
+    end
+
+    it "should not raise an exception on #create!" do
+      lambda { subject.class.create!(:some_type, @start_node, @end_node, subject.attributes) }.should_not raise_error
+    end
+
+    it "should save the model and return it" do
+      model = subject.class.create(:some_type, @start_node, @end_node, subject.attributes)
+      model.should be_persisted
+    end
+
+    it "should accept attributes to be set" do
+      model = subject.class.create(:some_type, @start_node, @end_node, subject.attributes.merge(:name => "Ben"))
+      model[:name].should == "Ben"
+    end
+  end
+end
+
 share_examples_for "an uncreatable model" do
   context "when attempting to create" do
     
@@ -176,6 +198,19 @@ share_examples_for "an uncreatable model" do
       subject.class.create(subject.attributes).persisted?.should_not be_true
     end
     
+    it "should raise an exception on #create!" do
+      lambda { subject.class.create!(subject.attributes) }.should raise_error
+    end
+  end
+end
+
+share_examples_for "an uncreatable relationship model" do
+  context "when attempting to create" do
+
+    it "shouldn't create ok" do
+      subject.class.create(subject.attributes).persisted?.should_not be_true
+    end
+
     it "should raise an exception on #create!" do
       lambda { subject.class.create!(subject.attributes) }.should raise_error
     end
@@ -232,6 +267,44 @@ share_examples_for "a timestamped model" do
     
     it "should have altered the updated_at property" do
       lambda { subject.update_attributes!(:a => 1, :b => 2) }.should change(subject, :updated_at)
+    end
+  end
+end
+
+shared_examples_for "a relationship model" do
+
+  context "with something" do
+    before(:each) do
+      subject[:something] = "test setting the property before the relationship is persisted"
+    end
+
+    context "before save" do
+      it "should be persisted" do
+        @start_node.should_not be_persisted
+        @end_node.should_not be_persisted
+        subject.should_not be_persisted
+      end
+
+      it "should still know about something" do
+        subject[:something] == "test setting the property before the relationship is persisted"
+      end
+
+    end
+    context "after save" do
+      before(:each) do
+        @start_node.save
+      end
+
+      #it { should be_a(RelationshipWithNoProperty) }
+      it "should still know about something" do
+        subject[:something] == "test setting the property before the relationship is persisted"
+      end
+
+      it "should be persisted" do
+        @start_node.should be_persisted
+        @end_node.should be_persisted
+        subject.should be_persisted
+      end
     end
   end
 end
