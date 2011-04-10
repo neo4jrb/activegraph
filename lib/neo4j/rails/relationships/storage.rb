@@ -133,21 +133,23 @@ module Neo4j
           return true if validated_nodes.include?(@node)
           all_valid = true
 
-          !@outgoing_rels.each do |rel|
+          @outgoing_rels.each do |rel|
             start_node = rel.start_node
             end_node = rel.end_node
-            #start_node, end_node = end_node, start_node if @node == end_node
 
             validated_nodes << start_node << end_node
             if !end_node.valid?(context, validated_nodes)
-              all_valid                = false
+              all_valid = false
               start_node.errors[@rel_type.to_sym] ||= []
               start_node.errors[@rel_type.to_sym] << end_node.errors.clone
             elsif !start_node.valid?(context, validated_nodes)
-              all_valid                = false
+
+              all_valid = false
               end_node.errors[@rel_type.to_sym] ||= []
               end_node.errors[@rel_type.to_sym] << start_node.errors.clone
             end
+
+            all_valid = false if !rel.valid?
           end
           all_valid
         end

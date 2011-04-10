@@ -105,6 +105,16 @@ begin
     klass
   end
 
+  def create_rel_model(base_class = Neo4j::Rails::Relationship, &block)
+    @@_rel_counter ||= 1
+    name ||= "Relationship_#{@@_rel_counter}"
+    @@_rel_counter += 1
+    klass = Class.new(base_class)
+    TempModel.set(klass, name)
+    klass.class_eval &block if block
+    klass
+  end
+
   def create_node_mixin_subclass(parent_clazz = Object, &block)
     klass = Class.new(parent_clazz)
     TempModel.set(klass)

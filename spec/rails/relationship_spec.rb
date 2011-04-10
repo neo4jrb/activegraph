@@ -892,19 +892,75 @@ describe "SettingRelationship" do
       @start_node.rels(:foobar).outgoing.size.should == 1
     end
   end
-end
-#  context "other_node_rel" do
-#    subject { @start_node.other_node_rel }
-#
-#    before(:each) do
-#      @start_node = NodeWithRelationship.new
-#      @end_node = Neo4j::Rails::Model.new
-#      @start_node.other_node = @end_node
-#    end
-#
-#    #it { should be_a(RelationshipWithNoProperty) }
-#    it_should_behave_like "a relationship model"
-#  end
-#
-#end
 
+  describe "Relationship validation" do
+    before(:all) do
+      @actor_class = create_model
+      @movie_class = create_model
+      @role_class = create_rel_model
+      @role_class.property :character
+      @role_class.validates_presence_of :character
+      @actor_class.has_n(:acted_in).relationship(@role_class)
+    end
+
+    it "validation when invalid" do
+      actor = @actor_class.new
+      movie = @movie_class.new
+      actor.acted_in << movie
+      actor.outgoing(:acted_in).size.should == 1
+      movie.incoming(:acted_in).size.should == 1
+      actor.acted_in.size.should == 1
+      actor.save.should be_false
+      actor.outgoing(:acted_in).size.should == 1
+      movie.incoming(:acted_in).size.should == 1
+      actor.acted_in.size.should == 1
+      rel = actor.acted_in_rels.first
+      rel.errors.size.should == 1
+      rel.should_not be_persisted
+      @actor_class.find(actor.neo_id).should be_nil
+      @movie_class.find(movie.neo_id).should be_nil
+      actor.reload
+      movie.reload
+      actor.outgoing(:acted_in).size.should == 0
+      movie.incoming(:acted_in).size.should == 0
+      actor.acted_in.size.should == 0
+    end
+
+
+    it "validation when invalid with depth 2" do
+      pending "not sure how this will work"
+      actor = @actor_class.new
+      movie = @movie_class.new
+      actor.acted_in << movie
+      role = actor.acted_in_rels.first
+      role.character = 'micky mouse'
+      actor2 = @actor_class.new
+      actor2.acted_in << movie
+      actor.save.should be_false # should probably return false here since we tried to save relationship for actor2
+    end
+
+    it "validation when valid" do
+      actor = @actor_class.new
+      movie = @movie_class.new
+      actor.acted_in << movie
+      role = actor.acted_in_rels.first
+      role.character = 'micky mouse'
+      actor.outgoing(:acted_in).size.should == 1
+      movie.incoming(:acted_in).size.should == 1
+      actor.acted_in.size.should == 1
+      actor.save.should be_true
+      actor.outgoing(:acted_in).size.should == 1
+      movie.incoming(:acted_in).size.should == 1
+      actor.acted_in.size.should == 1
+      rel = actor.acted_in_rels.first
+      rel.errors.size.should == 0
+      rel.should be_persisted
+      actor = @actor_class.find(actor.neo_id)
+      movie = @movie_class.find(movie.neo_id)
+      actor.outgoing(:acted_in).size.should == 1
+      movie.incoming(:acted_in).size.should == 1
+      actor.acted_in.size.should == 1
+    end
+
+  end
+end

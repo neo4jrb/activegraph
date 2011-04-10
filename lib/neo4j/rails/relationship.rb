@@ -4,6 +4,8 @@ module Neo4j
       include Neo4j::RelationshipMixin
 
       attr_reader :type
+      attr_writer :start_node
+      attr_writer :end_node
 
       index :_classname
 
@@ -33,7 +35,7 @@ module Neo4j
         _java_rel.nil? || neo_id.nil? ? nil : neo_id.to_s
       end
 
-        def start_node
+      def start_node
         @start_node ||= _java_rel && _java_rel.start_node
       end
 
