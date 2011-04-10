@@ -33,6 +33,63 @@ class ProtectedProperties < Neo4j::Rails::Model
 	attr_accessible :name
 end
 
+class FixnumProperties < Neo4j::Rails::Model
+  property :age, :type => Fixnum
+end
+
+class FloatProperties < Neo4j::Rails::Model
+  property :val, :type => Float
+end
+
+describe FixnumProperties do
+  context "before save" do
+    before(:each) do
+      subject.age = "123"
+    end
+
+    it "should convert the property to a fixnum" do
+      subject.age.class.should == Fixnum
+    end
+  end
+
+  context "after save" do
+    before(:each) do
+      subject.age = "123"
+      subject.save
+    end
+
+    it "should convert the property to a fixnum" do
+      subject.age.class.should == Fixnum
+      subject.age.should == 123
+    end
+  end
+
+end
+
+describe FloatProperties do
+  context "before save" do
+    before(:each) do
+      subject.val = "3.14"
+    end
+
+    it "should convert the property to a float" do
+      subject.val.class.should == Float
+    end
+  end
+
+  context "after save" do
+    before(:each) do
+      subject.val = 3.14
+      subject.save
+    end
+
+    it "should convert the property to a float" do
+      subject.val.class.should == Float
+      subject.val.should == 3.14
+    end
+  end
+end
+
 describe RequiredProperty do
 	it_should_behave_like "a new model"
 	it_should_behave_like "an unsaveable model"
@@ -43,7 +100,7 @@ describe RequiredProperty do
 		before(:each) do
 			subject.required = "true"
 		end
-		
+
 		it_should_behave_like "a new model"
 		it_should_behave_like "a loadable model"
 		it_should_behave_like "a saveable model"
@@ -58,18 +115,18 @@ describe LengthProperty do
 		before(:each) do
 			subject.length = "a" * 256
 		end
-		
+
 		it_should_behave_like "a new model"
 		it_should_behave_like "an unsaveable model"
 		it_should_behave_like "an uncreatable model"
 		it_should_behave_like "a non-updatable model"
 	end
-	
+
 	context "when small enough" do
 		before(:each) do
 			subject.length = "aaa"
 		end
-		
+
 		it_should_behave_like "a new model"
 		it_should_behave_like "a loadable model"
 		it_should_behave_like "a saveable model"
@@ -77,7 +134,7 @@ describe LengthProperty do
 		it_should_behave_like "a destroyable model"
 		it_should_behave_like "an updatable model"
 	end
-	
+
 	context "with no length at all" do
 		it_should_behave_like "a new model"
 		it_should_behave_like "a loadable model"
@@ -96,21 +153,21 @@ describe DefaultProperty do
 			subject.attributes["false_property"].should === false
 			subject.attributes["date_property"].should be_a(Time)
 		end
-		
+
 		it "should have the default" do
 			subject.default.should == "Test"
 			subject.false_property.should === false
 			subject.date_property.should be_a(Time)
 		end
-		
+
 		it_should_behave_like "a saveable model"
 	end
-	
+
 	context "when the property is set" do
 		it "shouldn't have the default" do
 			subject.class.new(:default => "Changed").default.should == "Changed"
 		end
-		
+
 		it "shouldn't have the default on reload" do
 			c = subject.class.create!(:default => "Changed")
 			c.default.should == "Changed"
@@ -155,7 +212,7 @@ describe DateProperties do
       #subject.time.hour.should == 2 # TODO it is stored as UTC time !!!
       #subject.time.min.should == 3
     end
-    
+
     it "with Date" do
       params = {"date_property(1i)"=>"2031", "date_property(2i)"=>"2", "date_property(3i)"=>"10"}
       subject.update_attributes(params)
@@ -177,7 +234,7 @@ describe DateProperties do
     end
   end
 
-  
+
   context "After save and reload" do
     subject do
       @time      ||= Time.now
@@ -215,46 +272,46 @@ describe ProtectedProperties do
 			@p ||= ProtectedProperties.create!(:name => "Ben", :admin => true)
 			@p.admin
 		end
-		
+
 		it { should === false }
 	end
-	
+
 	context "with mass-assignment of select properties" do
 		subject do
 			@p ||= ProtectedProperties.create!(:name => "Ben")
 			@p.admin
 		end
-		
+
 		it { should === false }
 	end
-	
+
 	context "when set without the safeguard" do
 		subject do
 			@p ||= ProtectedProperties.create!(:name => "Ben")
 			@p.send(:attributes=, { :admin => true }, false)
 			@p.admin
 		end
-		
+
 		it { should == true }
 	end
-	
+
 	context "when setting using attributes=" do
 		subject do
 			@p ||= ProtectedProperties.create!
 			@p.attributes = { :name => "Ben", :admin => true }
 			@p.admin
 		end
-		
+
 		it { should === false }
 	end
-	
+
 	context "when set using the single assignment" do
 		subject do
 			@p ||= ProtectedProperties.create!
 			@p.admin = true
 			@p.admin
 		end
-		
+
 		it { should == true }
 	end
 end

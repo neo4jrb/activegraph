@@ -50,6 +50,41 @@ module Neo4j
       end
     end
 
+
+    class FixnumConverter
+      class << self
+
+        def convert?(clazz)
+          Fixnum == clazz
+        end
+
+        def to_java(value)
+          value.to_i
+        end
+
+        def to_ruby(value)
+          value.to_i
+        end
+      end
+    end
+
+    class FloatConverter
+      class << self
+
+        def convert?(clazz)
+          Float == clazz
+        end
+
+        def to_java(value)
+          value.to_f
+        end
+
+        def to_ruby(value)
+          value.to_f
+        end
+      end
+    end
+
     # Converts Date objects to Java long types. Must be timezone UTC.
     class DateConverter
       class << self
