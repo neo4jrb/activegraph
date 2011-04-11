@@ -3,6 +3,7 @@ module Neo4j
     class Model
       include Neo4j::NodeMixin
 
+
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(attributes = {})
         reset_attributes

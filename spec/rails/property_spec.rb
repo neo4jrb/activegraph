@@ -21,9 +21,10 @@ class LotsaProperties < Neo4j::Rails::Model
 end
 
 class DateProperties < Neo4j::Rails::Model
-	property :date_time, 	    :type => DateTime
-	property :date_property,  :type => Date
-	property :time,           :type => Time
+  property :date_time, 	    :type => :datetime
+  property :date_property,  :type => :date
+  property :time,           :type => :time
+
 end
 
 class ProtectedProperties < Neo4j::Rails::Model
@@ -34,11 +35,65 @@ class ProtectedProperties < Neo4j::Rails::Model
 end
 
 class FixnumProperties < Neo4j::Rails::Model
-  property :age, :type => Fixnum
+  property :age, :type => :fixnum
 end
 
 class FloatProperties < Neo4j::Rails::Model
-  property :val, :type => Float
+  property :val, :type => :float
+end
+
+class BooleanProperties < Neo4j::Rails::Model
+  property :val, :type => :boolean
+end
+
+
+describe BooleanProperties do
+
+  [true, '1'].each do |value|
+    context "before save #{value}" do
+      before(:each) do
+        subject.val = value
+      end
+
+      it "should convert the property to a True" do
+        subject.val.class.should == TrueClass
+      end
+    end
+
+    context "after save #{value}" do
+      before(:each) do
+        subject.val = value
+        subject.save
+      end
+
+      it "should convert the property to a False" do
+        subject.val.class.should == TrueClass
+      end
+    end
+  end
+
+  [false, '0'].each do |value|
+    context "before save #{value}" do
+      before(:each) do
+        subject.val = value
+      end
+
+      it "should convert the property to a  FALSE" do
+        subject.val.class.should == FalseClass
+      end
+    end
+
+    context "after save #{value}" do
+      before(:each) do
+        subject.val = value
+        subject.save
+      end
+
+      it "should convert the property to a False" do
+        subject.val.class.should == FalseClass
+      end
+    end
+  end
 end
 
 describe FixnumProperties do

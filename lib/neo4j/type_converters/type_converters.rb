@@ -51,11 +51,29 @@ module Neo4j
     end
 
 
+    class BooleanConverter
+      class << self
+
+        def convert?(class_or_symbol)
+          :boolean == class_or_symbol
+        end
+
+        def to_java(value)
+          !!value && value != '0'
+        end
+
+        def to_ruby(value)
+          !!value && value != '0'
+        end
+      end
+    end
+
+
     class FixnumConverter
       class << self
 
-        def convert?(clazz)
-          Fixnum == clazz
+        def convert?(class_or_symbol)
+          Fixnum == class_or_symbol || :fixnum == class_or_symbol
         end
 
         def to_java(value)
@@ -71,8 +89,8 @@ module Neo4j
     class FloatConverter
       class << self
 
-        def convert?(clazz)
-          Float == clazz
+        def convert?(clazz_or_symbol)
+          Float == clazz_or_symbol || :float == clazz_or_symbol
         end
 
         def to_java(value)
@@ -89,8 +107,8 @@ module Neo4j
     class DateConverter
       class << self
 
-        def convert?(clazz)
-          Date == clazz
+        def convert?(clazz_or_symbol)
+          Date == clazz_or_symbol || :date == clazz_or_symbol
         end
 
         def to_java(value)
@@ -109,8 +127,8 @@ module Neo4j
     class DateTimeConverter
       class << self
 
-        def convert?(clazz)
-          DateTime == clazz
+        def convert?(clazz_or_symbol)
+          DateTime == clazz_or_symbol || :datetime == clazz_or_symbol
         end
 
         # Converts the given DateTime (UTC) value to an Fixnum.
@@ -131,8 +149,8 @@ module Neo4j
     class TimeConverter
       class << self
 
-        def convert?(clazz)
-          Time == clazz
+        def convert?(clazz_or_symbol)
+          Time == clazz_or_symbol || :time == clazz_or_symbol
         end
 
         # Converts the given DateTime (UTC) value to an Fixnum.

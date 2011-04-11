@@ -88,8 +88,8 @@ module Neo4j
         callstack.each do |name, values_with_empty_parameters|
           begin
             # (self.class.reflect_on_aggregation(name.to_sym) || column_for_attribute(name)).klass
-            klass = self.class._decl_props[name.to_sym][:type]
-            raise "Not a multiparameter attribute, missing :type on property #{name} for #{self.class}" unless klass
+            decl_type = self.class._decl_props[name.to_sym][:type]
+            raise "Not a multiparameter attribute, missing :type on property #{name} for #{self.class}" unless decl_type
 
             # in order to allow a date to be set without a year, we must keep the empty values.
             values = values_with_empty_parameters.reject { |v| v.nil? }
@@ -98,17 +98,19 @@ module Neo4j
               send(name + "=", nil)
             else
 
-              value = if Time == klass
+              value = if :time == decl_type
                 instantiate_time_object(name, values)
-              elsif Date == klass
+              elsif :date == decl_type
                 begin
                   values = values_with_empty_parameters.collect do |v| v.nil? ? 1 : v end
                   Date.new(*values)
                 rescue ArgumentError => ex # if Date.new raises an exception on an invalid date
                   instantiate_time_object(name, values).to_date # we instantiate Time object and convert it back to a date thus using Time's logic in handling invalid dates
                 end
+              elsif :datetime == decl_type
+                DateTime.new(*values)
               else
-                klass.new(*values)
+                raise "Unknown type #{decl_type}"
               end
 
               send(name + "=", value)
