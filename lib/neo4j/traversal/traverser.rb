@@ -149,12 +149,26 @@ module Neo4j
       end
 
       def each
-        iterator.each { |i| yield i.wrapper }
+        @traversal_result == :paths ? iterator.each { |i| yield i } : iterator.each { |i| yield i.wrapper }
       end
 
       # Same as #each but does not wrap each node in a Ruby class, yields the Java Neo4j Node instance instead.
       def each_raw
         iterator.each { |i| yield i }
+      end
+
+      # Returns an enumerable of relationships instead of nodes
+      #
+      def rels
+        @traversal_result = :rels
+        self
+      end
+
+      # Returns an enumerable of relationships instead of nodes
+      #
+      def paths
+        @traversal_result = :paths
+        self
       end
 
       def iterator
@@ -166,7 +180,14 @@ module Neo4j
           end
         end
         @td = @td.prune(org.neo4j.kernel.Traversal.pruneAfterDepth(@depth)) unless @depth == :all
-        @td.traverse(@from._java_node).nodes
+        if @traversal_result == :rels
+          @td.traverse(@from._java_node).relationships
+        elsif @traversal_result == :paths
+          @td.traverse(@from._java_node).iterator
+        else
+          @td.traverse(@from._java_node).nodes
+        end
+
       end
     end
   end

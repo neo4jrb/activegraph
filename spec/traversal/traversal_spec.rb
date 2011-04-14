@@ -29,6 +29,23 @@ describe Neo4j::Node, :type => :transactional do
     [a, b, c, d, e, f]
   end
 
+  describe "#outgoing(:friends).paths" do
+    it "returns paths objects" do
+      a,* = create_nodes
+      paths = a.outgoing(:friends).outgoing(:work).depth(:all).paths.to_a
+      paths.each {|x| x.should be_kind_of(org.neo4j.graphdb.Path)}
+      paths.size.should == 5
+    end
+  end
+
+  describe "#outgoing(:friends).rels" do
+    it "returns paths objects" do
+      a,* = create_nodes
+      paths = a.outgoing(:friends).outgoing(:work).depth(:all).rels.to_a
+      paths.each {|x| x.should be_kind_of(org.neo4j.graphdb.Relationship)}
+      paths.size.should == 5
+    end
+  end
 
   it "#outgoing(:friends) << other_node creates an outgoing relationship of type :friends" do
     a = Neo4j::Node.new

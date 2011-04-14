@@ -194,29 +194,6 @@ describe "Neo4j::Model Relationships" do
       suger.neo_id.should == nil
     end
 
-    it "should return false if one of the nested nodes is invalid when saving all of them" do
-      suger = Ingredience.new :name => 'suger'
-      icecream2 = IceCream.new # not valid
-
-      # when
-      suger.outgoing(:related_icecreams) << icecream2
-
-      # then
-      suger.save.should be_false
-    end
-
-    it "errors should contain aggregated errors if one of the nested nodes is invalid when saving all of them" do
-      suger = Ingredience.new :name => 'suger'
-      icecream2 = IceCream.new # not valid
-
-      # when
-      suger.outgoing(:related_icecreams) << icecream2
-
-      # then
-      suger.save
-      suger.outgoing(:related_icecreams).should include(icecream2)
-      suger.errors[:related_icecreams].first.should include(:flavour)
-    end
     describe "nested nodes two level deep" do
       before(:all) do
         @clazz = create_model do
@@ -245,63 +222,6 @@ describe "Neo4j::Model Relationships" do
         jack.reload
       end
 
-      it "when one nested node is invalid it should not save any nodes" do
-        jack = @clazz.new(:name => 'jack')
-        carol = @clazz.new(:name => 'carol')
-        bob = @clazz.new # invalid
-
-        jack.knows << carol
-        carol.knows << bob
-        jack.knows << bob
-
-        lambda do
-          jack.save.should be_false
-        end.should_not change([*Neo4j.all_nodes], :size)
-
-        finish_tx
-        Neo4j.all_nodes.should_not include(jack)
-        Neo4j.all_nodes.should_not include(bob)
-        Neo4j.all_nodes.should_not include(carol)
-      end
-
-      it "when one nested node is invalid it should not update any nodes" do
-        jack = @clazz.new(:name => 'jack')
-        carol = @clazz.new(:name => 'carol')
-        bob = @clazz.new # invalid
-
-        jack.knows << carol
-        jack.save! # save all
-
-        # when
-        jack.name = 'changed'
-        jack.knows << bob # invalid
-
-        # then
-        jack.save.should be_false
-        jack.knows.should include(carol)
-        jack.knows.should include(bob)
-        jack.reload
-        jack.knows.should include(carol)
-        jack.knows.should_not include(bob)
-        jack.name.should == 'jack'
-      end
-
-      it "only when all nested nodes are valid all the nodes will be saved" do
-        jack = @clazz.new(:name => 'jack')
-        carol = @clazz.new(:name => 'carol')
-        bob = @clazz.new(:name => 'bob')
-
-        jack.knows << carol
-        carol.knows << bob
-        jack.knows << bob
-
-        lambda do
-          jack.save.should be_true
-        end.should_not change([*Neo4j.all_nodes], :size).by(3)
-
-        finish_tx
-        Neo4j.all_nodes.should include(jack, carol, bob)
-      end
 
     end
 
@@ -347,15 +267,6 @@ describe "Neo4j::Model Relationships" do
           attributed[:title].blank?
         end
 
-      end
-
-      it "does not save invalid nested nodes" do
-        params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
-        member = Member.create(params[:member])
-        params = {:member => {:descriptions_attributes => [{:text => 'bla bla bla'}]}}
-        member.update_attributes(params[:member]).should be_false
-        member.reload
-        member.descriptions.should be_empty
       end
 
       it "create one-to-one " do
@@ -963,4 +874,5 @@ describe "SettingRelationship" do
     end
 
   end
+
 end
