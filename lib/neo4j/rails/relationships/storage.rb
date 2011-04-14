@@ -129,42 +129,7 @@ module Neo4j
           @incoming_rels.delete(rel)
         end
         
-        def valid?(context, validated_origins)
-          validated_nodes = validated_origins[0]
-          return true if validated_nodes.include?(@node)
-          all_valid = true
-
-          @outgoing_rels.each do |rel|
-            error_node = validated_origins[1]  # node where we store the error array
-            puts "STORE ERROR ON #{error_node}"
-            start_node = rel.start_node
-            end_node = rel.end_node
-
-            validated_nodes << start_node << end_node
-            if !end_node.valid?(context, validated_origins)
-              all_valid = false
-              error_node.errors[@rel_type.to_sym] ||= []
-              error_node.errors[@rel_type.to_sym] << end_node.errors.clone
-            elsif !start_node.valid?(context, validated_origins)
-
-              all_valid = false
-              error_node.errors[@rel_type.to_sym] ||= []
-              error_node.errors[@rel_type.to_sym] << start_node.errors.clone
-            end
-
-            if !rel.valid?
-              all_valid = false
-              puts "ERROR on relationship #{rel}"
-              error_node.errors[@rel_type.to_sym] ||= []
-              error_node.errors[@rel_type.to_sym] << rel.errors.clone # TODO CLONE ???
-            end
-          end
-          puts "all_valid=#{all_valid} for #{validated_origins[1]}"
-          all_valid
-        end
-
         def persist
-          puts "PERSIST BEGIN"
           success = true
           @outgoing_rels.each do |rel|
             success = rel.save
@@ -184,7 +149,6 @@ module Neo4j
             @incoming_rels.clear
             success
           end
-          puts "PERSIST #{success} END #{caller.inspect}"
           success
         end
       end
