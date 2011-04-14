@@ -9,9 +9,10 @@ module Neo4j
         end
       end
 
-      def valid_relationships?(context, validated_nodes) #:nodoc:
-        validated_nodes ||= Set.new
-        !@relationships.values.find { |storage| !storage.valid?(context, validated_nodes) }
+      def valid_relationships?(context, validated_origins) #:nodoc:
+        puts " -- valid_relationships? for #{self}"
+        validated_origins ||= [Set.new, self]
+        !@relationships.values.find { |storage| !storage.valid?(context, validated_origins) }
       end
 
       def _decl_rels_for(rel_type) #:nodoc:

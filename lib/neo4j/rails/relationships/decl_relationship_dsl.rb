@@ -4,9 +4,15 @@ module Neo4j
       # This is the Neo4j::Rails version of the Neo4j::HasN::DeclRelationshipDsl class used by Neo4j::NodeMixin#has_n and has_one
       #
       class DeclRelationshipDsl #:nodoc:
+        attr_accessor :dir
+
         def initialize(storage, dir)
           @storage = storage
           @dir = dir
+        end
+
+        def rel_type
+          @storage.rel_type
         end
 
         def single_relationship(*)

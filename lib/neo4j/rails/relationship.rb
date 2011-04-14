@@ -52,8 +52,11 @@ module Neo4j
       end
 
       def valid_relationships?(*)
+        raise "REMOVE THIS METHOD" if true
+        puts "valid_relationships? #{caller.inspect}"
         true
       end
+
       # --------------------------------------
       # Public Class Methods
       # --------------------------------------

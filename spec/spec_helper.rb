@@ -98,9 +98,9 @@ begin
     end
   end
 
-  def create_model(base_class = Neo4j::Model, &block)
+  def create_model(base_class = Neo4j::Model,name=nil, &block)
     klass = Class.new(base_class)
-    TempModel.set(klass)
+    TempModel.set(klass, name)
     klass.class_eval &block if block
     klass
   end
