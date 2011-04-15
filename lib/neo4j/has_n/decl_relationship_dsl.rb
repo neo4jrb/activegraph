@@ -51,7 +51,11 @@ module Neo4j
       def has_one?
         @has_one
       end
-      
+
+      def has_n?
+        !@has_one
+      end
+
       def java_rel_type
         type_to_java(@rel_type)
       end

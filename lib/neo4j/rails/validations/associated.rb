@@ -3,9 +3,7 @@ module Neo4j
     module Validations
       class AssociatedValidator < ActiveModel::EachValidator
         def validate_each(record, attribute, value)
-          # TODO validation for has_one
-          return if value.collect{|r| r.valid?}.all?
-          #return if (value.is_a?(Enumerable) ? value : [value]).collect { |r| r.nil? || r.valid? }.all?
+          return if (value.is_a?(Enumerable) ? value : [value]).collect { |r| r.nil? || r.valid? }.all?
           record.errors.add(attribute, :invalid, options.merge(:value => value))
         end
       end
@@ -44,9 +42,9 @@ module Neo4j
         #   not occur (e.g. <tt>:unless => :skip_validation</tt>, or <tt>:unless => Proc.new { |user| user.signup_step <= 2 }</tt>).  The
         #   method, proc or string should return or evaluate to a true or false value.
         def validates_associated(*attr_names)
-          # TODO validation for has_one
           validates_with AssociatedValidator, _merge_attributes(attr_names)
-          rel_attr_names = attr_names.collect{|a| a.is_a?(Symbol) ? "#{a}_rels" : a}
+          rel_attr_names = attr_names.collect{|a| a.is_a?(Symbol) && _decl_rels[a].has_one? ? "#{a}_rel" : a}
+          rel_attr_names = rel_attr_names.collect{|a| a.is_a?(Symbol) && _decl_rels[a].has_n? ? "#{a}_rels" : a}
           validates_with AssociatedValidator, _merge_attributes(rel_attr_names)
         end
       end
