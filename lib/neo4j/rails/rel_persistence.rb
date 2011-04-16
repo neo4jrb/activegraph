@@ -149,12 +149,8 @@ module Neo4j
       end
 
       def create()
-        unless start_node.persisted?
-          return false unless start_node.save
-        end
-        unless end_node.persisted?
-          return false unless end_node.save
-        end
+        return false if !start_node.persisted? && !start_node.save
+        return false if !end_node.persisted? && !end_node.save
         @_java_rel = Neo4j::Relationship.new(type, start_node, end_node)
         init_on_create
         clear_changes

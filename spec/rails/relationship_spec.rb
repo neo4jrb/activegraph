@@ -4,8 +4,92 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 class RelationshipWithNoProperty < Neo4j::Rails::Relationship
 end
 
+class NodeWithRelationship < Neo4j::Rails::Model
+  has_one(:other_node)
+  has_one(:foobar).relationship(RelationshipWithNoProperty)
+  has_n(:baaz)
+
+  def to_s
+    "node object_id: #{object_id} #{self._java_node ? neo_id : "not persisted"}"
+  end
+end
 
 describe "Neo4j::Model Relationships" do
+  describe "incoming" do
+    it "created incoming relationship can be accessed from outgoing node" do
+      clazz = create_model
+      a = clazz.create
+      b = clazz.create
+
+      a.incoming(:foo) << b
+      a.save
+      # then
+      a.incoming(:foo).size.should == 1
+      a.incoming(:foo).should include(b)
+
+      b.outgoing(:foo).size.should == 1
+      b.outgoing(:foo).to_a.should include(a)
+
+      # reload
+      a = clazz.find(a.id)
+      b = clazz.find(b.id)
+
+      a.incoming(:foo).size.should == 1
+      a.incoming(:foo).should include(b)
+
+      b.outgoing(:foo).size.should == 1
+      b.outgoing(:foo).should include(a)
+    end
+  end
+
+  describe "has_n from" do
+    before(:each) do
+      @b_clazz = create_model
+      @b_clazz.has_n :friends
+      @a_clazz = create_model
+      @a_clazz.has_n(:known_by).from(:friends)
+
+      @a = @a_clazz.create
+      @b = @b_clazz.create
+      @a.known_by << @b
+      @a.save
+    end
+
+    it "should find the node both ways" do
+      @a.known_by.size.should == 1
+      @a.known_by.should include(@b)
+      @b.friends.size.should == 1
+      @b.friends.should include(@a)
+    end
+
+    it "when reloaded it can also be found" do
+      a = @a_clazz.find(@a.id)
+      b = @b_clazz.find(@b.id)
+      a.known_by.size.should == 1
+      a.known_by.should include(b)
+      b.friends.size.should == 1
+      b.friends.should include(a)
+    end
+
+    it "can be found using incoming and outgoing" do
+      @b.outgoing(:friends).size.should == 1
+      @b.outgoing(:friends).should include(@a)
+      @a.incoming(:friends).size.should == 1
+      @a.incoming(:friends).should include(@b)
+    end
+
+    it "can be found using incoming and outgoing also when reloaded nodes" do
+      a = @a_clazz.find(@a.id)
+      b = @b_clazz.find(@b.id)
+
+      b.outgoing(:friends).size.should == 1
+      b.outgoing(:friends).should include(a)
+      a.incoming(:friends).size.should == 1
+      a.incoming(:friends).should include(b)
+    end
+
+  end
+
   describe "has_one, has_n, outgoing" do
     it "node.friends << MyModel.create; node.save! should work" do
       clazz = create_model
@@ -596,15 +680,6 @@ end
 
 
 describe "SettingRelationship" do
-  class NodeWithRelationship < Neo4j::Rails::Model
-    has_one(:other_node) #.relationship(RelationshipWithNoProperty)
-    has_one(:foobar).relationship(RelationshipWithNoProperty)
-    has_n(:baaz)
-
-    def to_s
-      "node object_id: #{object_id} #{self._java_node ? neo_id : "not persisted"}"
-    end
-  end
 
   context "create a Neo4j::Rails::Relationship" do
     before(:each) do
@@ -803,5 +878,4 @@ describe "SettingRelationship" do
       @start_node.rels(:foobar).outgoing.size.should == 1
     end
   end
-
 end

@@ -8,15 +8,15 @@ module Neo4j
         attr_reader :dsl, :node, :rel_type
 
         def initialize(node, rel_type, rel_class)
-          @rel_type      = rel_type.to_sym
-          @node          = node
-          @rel_class     = rel_class || Neo4j::Rails::Relationship
+          @rel_type = rel_type.to_sym
+          @node = node
+          @rel_class = rel_class || Neo4j::Rails::Relationship
           @outgoing_rels = []
           @incoming_rels = []
         end
 
         def to_s #:nodoc:
-          "#{self.class} #{object_id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
+          "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
         end
 
         def modified?
@@ -27,7 +27,7 @@ module Neo4j
         def size(dir)
           counter = 0
           # count persisted relationship
-          @node._java_node && @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each {|*| counter += 1 }
+          @node._java_node && @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each { |*| counter += 1 }
           # count relationship which has not yet been persisted
           counter += relationships(dir).size
           counter
@@ -116,7 +116,7 @@ module Neo4j
             add_incoming_rel(rel)
           end
         end
-        
+
         def add_incoming_rel(rel)
           @incoming_rels << rel
         end
@@ -128,8 +128,12 @@ module Neo4j
         def rm_incoming_rel(rel)
           @incoming_rels.delete(rel)
         end
-        
-        def persist
+
+        def rm_outgoing_rel(rel)
+          @outgoing_rels.delete(rel)
+        end
+
+        def persist2
           success = true
           @outgoing_rels.each do |rel|
             success = rel.save
@@ -151,6 +155,29 @@ module Neo4j
           end
           success
         end
+
+        def persist
+          out_rels = @outgoing_rels.clone
+          in_rels  = @incoming_rels.clone
+
+          @outgoing_rels.clear
+          @incoming_rels.clear
+
+          out_rels.each do |rel|
+            rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel)
+            success = rel.save
+            # don't think this can happend - just in case, TODO
+            raise "Can't save outgoing #{rel}, validation errors ? #{rel.errors.inspect}" unless success
+          end
+
+          in_rels.each do |rel|
+            rel.start_node.rm_outgoing_rel(@rel_type.to_sym, rel)
+            success = rel.save
+            # don't think this can happend - just in case, TODO
+            raise "Can't save incoming #{rel}, validation errors ? #{rel.errors.inspect}" unless success
+          end
+        end
+
       end
     end
   end

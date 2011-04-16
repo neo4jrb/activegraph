@@ -100,10 +100,10 @@ describe "finders" do
 
   context ".find" do
     def nonexistant_id
-      i       = rand(1000)
+      i       = rand(10000)
       all_ids = FindableModel.all.map { |m| m.id.to_i }
       while (all_ids.include?(i))
-        i = rand(1000)
+        i = rand(10000)
       end
       i
     end

@@ -81,6 +81,11 @@ module Neo4j
       def rm_incoming_rel(rel_type, rel) #:nodoc:
         _create_or_get_storage(rel_type).rm_incoming_rel(rel)
       end
+
+      def rm_outgoing_rel(rel_type, rel) #:nodoc:
+        _create_or_get_storage(rel_type).rm_outgoing_rel(rel)
+      end
+
     end
   end
 end

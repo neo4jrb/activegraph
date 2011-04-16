@@ -77,6 +77,7 @@ describe "Neo4j::Rails::Model#validates_associated" do
       actor = @actor_class.new
       movie = @movie_class.new
       actor.acted_in << movie
+      actor.should_not be_valid
       actor.save.should be_false
       actor.should_not be_valid
     end
@@ -89,6 +90,8 @@ describe "Neo4j::Rails::Model#validates_associated" do
       rel.character = "micky mouse"
       actor.should be_valid
       actor.save.should be_true
+      actor.valid?
+      actor.should be_valid
     end
 
     it "validation when invalid with depth 2" do
@@ -104,6 +107,7 @@ describe "Neo4j::Rails::Model#validates_associated" do
       movie.stars << star
 
       # then
+      actor.should_not be_valid
       actor.save.should be_false
       actor.should_not be_valid
     end
@@ -123,8 +127,8 @@ describe "Neo4j::Rails::Model#validates_associated" do
       rel.character = 'micky mouse'
 
       # then
-      actor.save.should be_true
       actor.should be_valid
+      actor.save.should be_true
     end
 
   end
