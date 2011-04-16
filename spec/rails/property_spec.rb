@@ -47,6 +47,48 @@ class BooleanProperties < Neo4j::Rails::Model
 end
 
 
+
+describe "hash" do
+  class UniqueHashModel < Neo4j::Rails::Model
+  end
+
+  class UniqueHashRelationship < Neo4j::Rails::Relationship
+  end
+
+  it "has a unique hash for persisted models" do
+    x = UniqueHashModel.create
+    y = UniqueHashModel.first
+    x.hash.should == y.hash
+    x.hash.should be_kind_of(Fixnum)
+  end
+
+  it "has not unique hash for not persisted models" do
+    x = UniqueHashModel.new
+    y = UniqueHashModel.new
+    x.hash.should_not == y.hash
+    x.hash.should be_kind_of(Fixnum)
+  end
+
+  it "has a unique hash for persisted relationships" do
+    a = Neo4j::Model.create
+    b = Neo4j::Model.create
+    x = UniqueHashRelationship.create(:foo, a, b)
+    y = UniqueHashRelationship.first
+    x.hash.should == y.hash
+    x.hash.should be_kind_of(Fixnum)
+  end
+
+  it "has not unique hash for not persisted relationships" do
+    a = Neo4j::Model.create
+    b = Neo4j::Model.create
+    x = UniqueHashRelationship.new(:foo, a, b)
+    y = UniqueHashRelationship.new(:foo, a, b)
+    x.hash.should_not == y.hash
+    x.hash.should be_kind_of(Fixnum)
+  end
+
+end
+
 describe BooleanProperties do
 
   [true, '1'].each do |value|

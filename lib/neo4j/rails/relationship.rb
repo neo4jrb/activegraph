@@ -35,6 +35,10 @@ module Neo4j
         _java_rel.nil? || neo_id.nil? ? nil : neo_id.to_s
       end
 
+      def hash
+        persisted? ? _java_entity.neo_id.hash : super
+      end
+
       def start_node
         @start_node ||= _java_rel && _java_rel.start_node
       end

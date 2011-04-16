@@ -15,6 +15,10 @@ module Neo4j
         neo_id.nil? ? nil : neo_id.to_s
       end
 
+      def hash
+        persisted? ? _java_entity.neo_id.hash : super
+      end
+
       def to_param
         persisted? ? neo_id.to_s : nil
       end
