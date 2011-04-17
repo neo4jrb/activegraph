@@ -4,14 +4,15 @@ module Neo4j
       include Neo4j::RelationshipMixin
 
       attr_reader :type
-      attr_writer :start_node
-      attr_writer :end_node
 
       index :_classname
 
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(*args)
-        @type, @start_node, @end_node, attributes = args
+        @type = args[0]
+        self.start_node = args[1]
+        self.end_node = args[2]
+        attributes = args[3]
         reset_attributes
         self.attributes = attributes if attributes.is_a?(Hash)
       end
@@ -43,8 +44,28 @@ module Neo4j
         @start_node ||= _java_rel && _java_rel.start_node
       end
 
+      def start_node=(node)
+        old = @start_node
+        @start_node = node
+        # TODO should raise exception if not persisted and changed
+        if old != @start_node
+          old && old.rm_outgoing_rel(type, self)
+          @start_node.class != Neo4j::Node && @start_node.add_outgoing_rel(type, self)
+        end
+      end
+
       def end_node
         @end_node ||= _java_rel && _java_rel.start_node
+      end
+
+      def end_node=(node)
+        old = @end_node
+        @end_node = node
+        # TODO should raise exception if not persisted and changed
+        if old != @end_node
+          old && old.rm_incoming_rel(type, self)
+          @end_node.class != Neo4j::Node && @end_node.add_incoming_rel(type, self)
+        end
       end
 
       def del

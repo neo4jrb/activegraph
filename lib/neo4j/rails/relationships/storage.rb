@@ -107,13 +107,9 @@ module Neo4j
 
         def create_relationship_to(to, dir)
           if dir == :outgoing
-            rel = @rel_class.new(@rel_type, @node, to, self)
-            to.class != Neo4j::Node && to.add_incoming_rel(@rel_type, rel)
-            add_outgoing_rel(rel)
+            @rel_class.new(@rel_type, @node, to, self)
           else
-            rel = @rel_class.new(@rel_type, to, @node, self)
-            @node.class != Neo4j::Node && to.add_outgoing_rel(@rel_type, rel)
-            add_incoming_rel(rel)
+            @rel_class.new(@rel_type, to, @node, self)
           end
         end
 
@@ -133,29 +129,6 @@ module Neo4j
           @outgoing_rels.delete(rel)
         end
 
-        def persist2
-          success = true
-          @outgoing_rels.each do |rel|
-            success = rel.save
-            break unless success
-          end
-
-          if success
-            @outgoing_rels.each do |rel|
-              rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel)
-            end
-            @outgoing_rels.clear
-
-            @incoming_rels.each do |rel|
-              success = rel.start_node.persisted? || rel.start_node.save
-              break unless success
-            end
-            @incoming_rels.clear
-            success
-          end
-          success
-        end
-
         def persist
           out_rels = @outgoing_rels.clone
           in_rels  = @incoming_rels.clone
@@ -165,15 +138,15 @@ module Neo4j
 
           out_rels.each do |rel|
             rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel)
-            success = rel.save
-            # don't think this can happend - just in case, TODO
+            success = rel.persisted? || rel.save
+            # don't think this can happen - just in case, TODO
             raise "Can't save outgoing #{rel}, validation errors ? #{rel.errors.inspect}" unless success
           end
 
           in_rels.each do |rel|
             rel.start_node.rm_outgoing_rel(@rel_type.to_sym, rel)
-            success = rel.save
-            # don't think this can happend - just in case, TODO
+            success = rel.persisted? || rel.save
+            # don't think this can happen - just in case, TODO
             raise "Can't save incoming #{rel}, validation errors ? #{rel.errors.inspect}" unless success
           end
         end

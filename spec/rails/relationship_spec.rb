@@ -490,7 +490,6 @@ end
 
 
 describe RelationshipWithNoProperty do
-  pending
   before(:each) do
     @start_node = Neo4j::Model.new
     @end_node = Neo4j::Model.new
@@ -502,8 +501,8 @@ describe RelationshipWithNoProperty do
 
   it "should persist" do
     subject.save
-
     RelationshipWithNoProperty._all.size.should == 1
+    subject.class.all.to_a.size.should == 1
   end
 
   it_should_behave_like "a new model"
@@ -521,11 +520,11 @@ describe RelationshipWithNoProperty do
     end
 
     it "should be possible to #count" do
-      subject.class.count.should == 3
+      subject.class.count.should == 4
     end
 
     it "should be possible to #destroy_all" do
-      subject.class.all.to_a.size.should == 3
+      subject.class.all.to_a.size.should == 4
       subject.class.destroy_all
       subject.class.all.to_a.should be_empty
     end
@@ -680,6 +679,29 @@ end
 
 
 describe "SettingRelationship" do
+
+  context "created with Neo4j::Rails::Relationship" do
+    before(:all) do
+      @actor_class = create_model(Neo4j::Model)
+      @actor_class.property :name
+      @movie_class = create_model(Neo4j::Model)
+      @movie_class.property :title
+      @actor_class.has_n(:acted_in)
+      @movie_class.has_n(:actors).from(:acted_in)
+    end
+
+    it "can be created with Neo4j::Rails::Relationship.create" do
+      actor = @actor_class.new
+      movie = @movie_class.new
+      Neo4j::Rails::Relationship.new(@actor_class.acted_in, actor, movie)
+      actor.acted_in.size.should == 1
+      actor.acted_in.should include(movie)
+      movie.actors.size.should == 1
+      movie.actors.should include(actor)
+    end
+
+  end
+
 
   context "create a Neo4j::Rails::Relationship" do
     before(:each) do
