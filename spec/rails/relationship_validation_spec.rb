@@ -97,27 +97,26 @@ describe "Neo4j::Rails::Model#validates_associated" do
 
 
     it "does not save any associated nodes if one is invalid (atomic commit)" do
-      pending "Not working yet"
+      @actor_class.has_n(:acted_in).relationship(@role_class)
       actor = @actor_class.new
       nbr_roles = @role_class.count
       nbr_actors = @actor_class.count
       nbr_movies = @movie_class.count
 
       # valid
-      movie1 = @movie_class.new
-      rel1 = @role_class.new(:acted_in, actor, movie1)
-#      rel1.character = "micky mouse"
+      movie1 = @movie_class.new :name => 'movie1'
+      rel1 = @role_class.new(@actor_class.acted_in, actor, movie1)
+      rel1.character = "micky mouse"
 
       # not valid, missing character
-      movie2 = @movie_class.new
-      rel2 = @role_class.new(:acted_in, actor, movie2)
+      movie2 = @movie_class.new :name => 'movie2'
+      rel2 = @role_class.new(@actor_class.acted_in, actor, movie2)
 
       # valid
-      movie3 = @movie_class.new
-      rel3 = @role_class.new(:acted_in, actor, movie3)
- #     rel3.character = "micky mouse"
+      movie3 = @movie_class.new :name => 'movie3'
+      rel3 = @role_class.new(@actor_class.acted_in, actor, movie3)
+      rel3.character = "micky mouse"
 
-      #actor.should_not be_valid
       actor.save.should_not be_true
       actor.should_not be_valid
 
