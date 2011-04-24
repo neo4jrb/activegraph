@@ -5,7 +5,7 @@ module Neo4j
 			
 			included do
 				include ActiveModel::Serializers::Xml
-				
+        include ActiveModel::Serializers::JSON
 				# Patch for ActiveModel's XML serializer.  There is a bug in the original where
 				# raw_value is used in the initializer and so demands always that the object being 
 				# serialized is sent the attribute's name as a method call.  This causes a problem

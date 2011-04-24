@@ -88,7 +88,11 @@ describe IceLolly do
       it "should render as XML" do
         subject.to_xml.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ice-lolly>\n  <flavour>vanilla</flavour>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n  <new-attribute>newun</new-attribute>\n  <created>yep</created>\n</ice-lolly>\n"
       end
-      
+
+      it "should render as JSON" do
+        subject.to_json.should == "{\"ice_lolly\":{\"created\":\"yep\",\"flavour\":\"vanilla\",\"new_attribute\":\"newun\",\"required_on_create\":\"true\",\"required_on_update\":\"true\"}}"
+      end
+
       it "should be able to modify one of its named attributes" do
         lambda{ subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
         subject.flavour.should == 'horse'
