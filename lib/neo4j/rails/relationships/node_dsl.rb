@@ -11,11 +11,13 @@ module Neo4j
         end
 
         def build(attrs)
-          self << @storage.build(attrs)
+          self << (node = @storage.build(attrs))
+          node
         end
 
         def create(attrs)
-          self << @storage.create(attrs)
+          self << (node = @storage.create(attrs))
+          node
         end
 
         def <<(other)

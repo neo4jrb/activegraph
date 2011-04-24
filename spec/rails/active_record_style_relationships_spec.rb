@@ -60,9 +60,9 @@ describe "Neo4j::Rails::Model Relationships" do
     end
 
 
-    describe "build outgoing" do
+    describe "build outgoing on rel" do
       before(:each) do
-        @actor.acted_in.build(:title => 'movie_4')
+        @ret = @actor.acted_in_rels.build(:title => 'movie_4')
       end
 
       it "create a new node but does not save it" do
@@ -73,11 +73,14 @@ describe "Neo4j::Rails::Model Relationships" do
         @actor.acted_in.find{|x| x.title == 'movie_4'}.should_not be_persisted
       end
 
+      it "returns new node " do
+        @ret.should be_kind_of(ModelRelationship1) #ModelRelationship1
+      end
     end
 
-    describe "create outgoing" do
+    describe "create outgoing on rel" do
       before(:each) do
-        @actor.acted_in.create(:title => 'movie_4')
+        @ret = @actor.acted_in_rels.create(:title => 'movie_4')
       end
 
       it "create a new node but does not save it" do
@@ -88,11 +91,51 @@ describe "Neo4j::Rails::Model Relationships" do
         @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
       end
 
+      it "returns new node " do
+        @ret.should be_kind_of(ModelRelationship1) #ModelRelationship1
+      end
+    end
+
+    describe "build outgoing" do
+      before(:each) do
+        @ret = @actor.acted_in.build(:title => 'movie_4')
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.size.should == 4
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should_not be_persisted
+      end
+
+      it "returns new node " do
+        @ret.should be_kind_of(@movie_class) #ModelRelationship1
+      end
+    end
+
+    describe "create outgoing" do
+      before(:each) do
+        @ret = @actor.acted_in.create(:title => 'movie_4')
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.size.should == 4
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
+      end
+
+      it "returns new node " do
+        @ret.should be_kind_of(@movie_class) #ModelRelationship1
+      end
+
     end
 
     describe "create incoming" do
       before(:each) do
-        @movie_1.actors.create(:name => 'actor_x')
+        @ret = @movie_1.actors.create(:name => 'actor_x')
       end
 
       it "create a new node but does not save it" do
@@ -103,11 +146,15 @@ describe "Neo4j::Rails::Model Relationships" do
         @movie_1.actors.find{|x| x.name == 'actor_x'}.should be_persisted
       end
 
+      it "returns new node " do
+        @ret.should be_kind_of(Neo4j::Rails::Model) #ModelRelationship1
+      end
+
     end
 
     describe "build incoming" do
       before(:each) do
-        @movie_1.actors.build(:name => 'actor_x')
+        @ret = @movie_1.actors.build(:name => 'actor_x')
       end
 
       it "create a new node but does not save it" do
@@ -116,6 +163,10 @@ describe "Neo4j::Rails::Model Relationships" do
 
       it "create a new node but does not save it" do
         @movie_1.actors.find{|x| x.name == 'actor_x'}.should_not be_persisted
+      end
+
+      it "returns new node " do
+        @ret.should be_kind_of(Neo4j::Rails::Model) # have node declare mapping the other way
       end
 
     end

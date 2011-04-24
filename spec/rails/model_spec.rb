@@ -32,7 +32,7 @@ describe Neo4j::Model do
 
     it "validation is skipped if save(:validate => false)" do
       v = IceCream.new(:name => 'illegal')
-      v.save.should be_true
+      v.save(:validate => false).should be_true
       v.should be_persisted
     end
 

@@ -9,6 +9,17 @@ module Neo4j
           @dir = dir
         end
 
+
+        def build(attrs)
+          node = @storage.build(attrs)
+          @storage.create_relationship_to(node, @dir)
+        end
+
+        def create(attrs)
+          node = @storage.create(attrs)
+          @storage.create_relationship_to(node, @dir)
+        end
+
         def outgoing
           @dir = :outgoing
           self
