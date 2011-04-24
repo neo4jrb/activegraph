@@ -43,6 +43,7 @@ module Neo4j
   end
 
   def self.load_ha_jars
+    require 'neo4j/jars/core/neo4j-backup-1.3.jar'
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
     require 'neo4j/jars/ha/neo4j-ha-1.3.jar'
     require 'neo4j/jars/ha/neo4j-com-1.3.jar'
