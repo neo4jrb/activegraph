@@ -147,7 +147,7 @@ module Neo4j
     # jmx_clazz :: http://api.neo4j.org/current/org/neo4j/management/package-summary.html
     # this_db :: default currently runnig instance or a newly started neo4j db instance
     #
-    def management(jmx_clazz = org.neo4j.management.Primitives, this_db = self.started_db)
+    def management(jmx_clazz = org.neo4j.jmx.Primitives, this_db = self.started_db)
       this_db.management(jmx_clazz)
     end
 

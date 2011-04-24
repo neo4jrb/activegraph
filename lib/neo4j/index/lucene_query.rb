@@ -196,7 +196,7 @@ module Neo4j
           memo << org.apache.lucene.search.SortField.new(field.to_s, type, @order[field])
         end
         sort             = org.apache.lucene.search.Sort.new(*java_sort_fields)
-        org.neo4j.index.impl.lucene.QueryContext.new(query).sort(sort)
+        org.neo4j.index.lucene.QueryContext.new(query).sort(sort)
       end
 
       def build_hash_query(query) #:nodoc:

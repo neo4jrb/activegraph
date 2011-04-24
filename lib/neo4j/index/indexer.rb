@@ -197,9 +197,9 @@ module Neo4j
         return value unless type
 
         if String != type
-          org.neo4j.index.impl.lucene.ValueContext.new(value).indexNumeric
+          org.neo4j.index.lucene.ValueContext.new(value).indexNumeric
         else
-          org.neo4j.index.impl.lucene.ValueContext.new(value)
+          org.neo4j.index.lucene.ValueContext.new(value)
         end
       end
 
