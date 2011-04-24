@@ -9,6 +9,7 @@ group 'test' do
   gem "rspec", ">= 2.0.0"
   gem "rspec-rails-matchers", ">= 0.2.1"
   gem "test-unit"
+  gem 'rcov'
 end
 
 #gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"

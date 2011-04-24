@@ -1,6 +1,6 @@
 module Neo4j
 	module Rails
-		module Callbacks
+		module Callbacks #:nodoc:
 			extend ActiveSupport::Concern
 			
 			included do

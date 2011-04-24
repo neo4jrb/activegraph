@@ -1,11 +1,19 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
 require 'rake'
+require 'rspec/core/rake_task'
+require 'rcov'
 require 'rdoc/task'
 
 require "neo4j/version"
 
 
+desc "Run all specs with rcov"
+RSpec::Core::RakeTask.new("spec:coverage") do |t|
+  t.rcov = true
+  t.rcov_opts = %w{--rails --include views -Ispec --exclude gems\/,spec\/,features\/,seeds\/}
+  t.rspec_opts = ["-c"]
+end
 
 task :check_commited do
   status = %x{git status}
@@ -18,7 +26,7 @@ task :clean_all do
 end
 
 desc "create the gemspec"
-task :build  do
+task :build do
   system "gem build neo4j.gemspec"
 end
 
@@ -30,7 +38,7 @@ end
 desc "Generate documentation for Neo4j.rb"
 RDoc::Task.new do |rdoc|
   rdoc.rdoc_dir = 'doc/rdoc'
-  rdoc.title    = "Neo4j.rb #{Neo4j::VERSION}"
+  rdoc.title = "Neo4j.rb #{Neo4j::VERSION}"
   rdoc.options << '--webcvs=http://github.com/andreasronge/neo4j/tree/master/'
   rdoc.options << '-f' << 'horo'
   rdoc.options << '-c' << 'utf-8'
@@ -49,6 +57,6 @@ end
 desc 'Upload documentation to RubyForge.'
 task 'upload-docs' do
   sh "scp -r doc/rdoc/* " +
-    "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
+         "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
 end
 

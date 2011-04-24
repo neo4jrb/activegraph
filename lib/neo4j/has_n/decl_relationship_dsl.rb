@@ -76,19 +76,6 @@ module Neo4j
         end
       end
 
-
-      def each_rel(node, &block) #:nodoc:
-        node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
-          block.call rel.wrapper
-        end
-      end
-
-      def _each_rel(node, &block) #:nodoc:
-        node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
-          block.call rel
-        end
-      end
-
       def incoming? #:nodoc:
         @dir == :incoming
       end

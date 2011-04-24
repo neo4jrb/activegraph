@@ -10,6 +10,14 @@ module Neo4j
           @dir = dir
         end
 
+        def build(attrs)
+          self << @storage.build(attrs)
+        end
+
+        def create(attrs)
+          self << @storage.create(attrs)
+        end
+
         def <<(other)
           @storage.create_relationship_to(other, @dir)
           self

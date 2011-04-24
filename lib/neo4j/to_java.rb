@@ -5,10 +5,6 @@ module Neo4j
       org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
     end
 
-    def type_from_java(type)
-      type.get_type
-    end
-
     def dir_from_java(dir)
       case dir
         when org.neo4j.graphdb.Direction::OUTGOING then :outgoing

@@ -37,6 +37,11 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
       clazz.baaz.should == "#{foo}#baaz"
     end
 
+    it "has_n(:foo).to(illegal arg) should raise" do
+      clazz = create_node_mixin
+      lambda{clazz.has_n(:baaz).to("ILLEGAL")}.should raise_exception
+    end
+
     it "has_n(:foobar).from(Foo, :baaz) will generate class method foobar returning 'Foo#baaz" do
       clazz = create_node_mixin
 

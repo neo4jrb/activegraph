@@ -60,7 +60,69 @@ describe "Neo4j::Rails::Model Relationships" do
     end
 
 
-    describe "delete_all on outgoing" do
+    describe "build outgoing" do
+      before(:each) do
+        @actor.acted_in.build(:title => 'movie_4')
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.size.should == 4
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should_not be_persisted
+      end
+
+    end
+
+    describe "create outgoing" do
+      before(:each) do
+        @actor.acted_in.create(:title => 'movie_4')
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.size.should == 4
+      end
+
+      it "create a new node but does not save it" do
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
+      end
+
+    end
+
+    describe "create incoming" do
+      before(:each) do
+        @movie_1.actors.create(:name => 'actor_x')
+      end
+
+      it "create a new node but does not save it" do
+        @movie_1.actors.size.should == 2
+      end
+
+      it "create a new node but does not save it" do
+        @movie_1.actors.find{|x| x.name == 'actor_x'}.should be_persisted
+      end
+
+    end
+
+    describe "build incoming" do
+      before(:each) do
+        @movie_1.actors.build(:name => 'actor_x')
+      end
+
+      it "create a new node but does not save it" do
+        @movie_1.actors.size.should == 2
+      end
+
+      it "create a new node but does not save it" do
+        @movie_1.actors.find{|x| x.name == 'actor_x'}.should_not be_persisted
+      end
+
+    end
+
+
+
+    describe "delete_all on outgoing nodes" do
       it "deletes all relationship" do
         @actor.acted_in.delete_all
         @actor.acted_in.size.should == 0
@@ -68,11 +130,61 @@ describe "Neo4j::Rails::Model Relationships" do
       end
     end
 
-    describe "destroy_all on outgoing" do
+    describe "destroy_all on outgoing nodes" do
       it "destroy all relationship" do
         @actor.acted_in.destroy_all
         @actor.acted_in.size.should == 0
         Neo4j::Node.load(@movie_3.id).should == nil
+      end
+    end
+
+    describe "delete_all on incoming nodes" do
+      it "deletes all relationship" do
+        @movie_2.actors.delete_all
+        @movie_2.actors.size.should == 0
+        Neo4j::Node.load(@actor.id).should == nil
+      end
+    end
+
+    describe "destroy_all on incoming nodes" do
+      it "destroy all relationship" do
+        @movie_2.actors.destroy_all
+        @movie_2.actors.size.should == 0
+        Neo4j::Node.load(@actor.id).should == nil
+      end
+    end
+
+    describe "delete_all on outgoing relationships" do
+      it "deletes all relationship" do
+        @actor.acted_in_rels.delete_all
+        @actor.acted_in.size.should == 0
+        @actor.acted_in_rels.size.should == 0
+        Neo4j::Node.load(@movie_3.id).should_not == nil
+      end
+    end
+
+    describe "destroy_all on outgoing relationships" do
+      it "destroy all relationship" do
+        @actor.acted_in_rels.destroy_all
+        @actor.acted_in.size.should == 0
+        @actor.acted_in_rels.size.should == 0
+        Neo4j::Node.load(@movie_3.id).should_not == nil
+      end
+    end
+
+    describe "delete_all on incoming nodes" do
+      it "deletes all relationship" do
+        @movie_2.actors_rels.delete_all
+        @movie_2.actors_rels.size.should == 0
+        Neo4j::Node.load(@actor.id).should_not == nil
+      end
+    end
+
+    describe "destroy_all on incoming nodes" do
+      it "destroy all relationship" do
+        @movie_2.actors_rels.destroy_all
+        @movie_2.actors_rels.size.should == 0
+        Neo4j::Node.load(@actor.id).should_not == nil
       end
     end
 

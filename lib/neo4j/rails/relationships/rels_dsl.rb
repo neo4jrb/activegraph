@@ -31,6 +31,14 @@ module Neo4j
           size == 0
         end
 
+        def destroy_all
+          each {|n| n.destroy}
+        end
+
+        def delete_all
+          each {|n| n.delete}
+        end
+
         def find(*args, &block)
           return super(*args, &block) if block
           node = args.first

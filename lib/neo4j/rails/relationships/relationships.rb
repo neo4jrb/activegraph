@@ -16,12 +16,11 @@ module Neo4j
 
       def _create_or_get_storage(rel_type) #:nodoc:
         dsl = _decl_rels_for(rel_type.to_sym)
-        relationship_class = dsl && dsl.relationship_class
-        @relationships[rel_type.to_sym] ||= Storage.new(self, rel_type, relationship_class)
+        @relationships[rel_type.to_sym] ||= Storage.new(self, rel_type, dsl)
       end
 
       def _create_or_get_storage_for_decl_rels(decl_rels) #:nodoc:
-        @relationships[decl_rels.rel_type.to_sym] ||= Storage.new(self, decl_rels.rel_type, decl_rels.relationship_class)
+        @relationships[decl_rels.rel_type.to_sym] ||= Storage.new(self, decl_rels.rel_type, decl_rels)
       end
 
 

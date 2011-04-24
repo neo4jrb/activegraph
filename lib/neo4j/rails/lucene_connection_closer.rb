@@ -1,6 +1,6 @@
 module Neo4j
   module Rails
-    class LuceneConnectionCloser
+    class LuceneConnectionCloser  #:nodoc:
       def initialize(app)
         @app = app
       end
@@ -14,5 +14,3 @@ module Neo4j
   end
 
 end
-
-Thread.current

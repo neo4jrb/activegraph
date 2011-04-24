@@ -50,6 +50,34 @@ describe Neo4j::Node, :type => :transactional do
     nodes.should_not include(e)
   end
 
+  it "#_rels returns unwrapped nodes" do
+    a, b, c, d, e, f = create_nodes
+    b._rels.to_a.size.should == 5
+    nodes = b._rels.collect { |r| r._other_node(b) }
+    nodes.should include(a, c, d, f)
+    nodes.should_not include(e)
+  end
+
+  it "#_rels(:type1, :type2) returns unwrapped nodes" do
+    a, b, c, d, e, f = create_nodes
+    b._rels(:both, :friends, :work).to_a.size.should == 5
+    nodes = b._rels.collect { |r| r._other_node(b) }
+    nodes.should include(a, c, d, f)
+    nodes.should_not include(e)
+  end
+
+  it "#_rels(:type1) returns unwrapped nodes" do
+    a, b, c, d, e, f = create_nodes
+    b._rels(:both, :work).to_a.size.should == 2
+    nodes = b._rels.collect { |r| r._other_node(b) }
+    nodes.should include(c, d)
+  end
+
+  it "#:rels with illegal args should raise" do
+    a, b, c, d, e, f = create_nodes
+    lambda{b._rels(:incoming)}.should raise_exception
+  end
+
   it "#rels(:friends) should return both incoming and outgoing relationships of given type of depth one" do
     # given
     a, b, c, d, e, f = create_nodes

@@ -7,20 +7,17 @@ module Neo4j
         include Neo4j::ToJava
         attr_reader :dsl, :node, :rel_type
 
-        def initialize(node, rel_type, rel_class)
+        def initialize(node, rel_type, dsl)
           @rel_type = rel_type.to_sym
           @node = node
-          @rel_class = rel_class || Neo4j::Rails::Relationship
+          @rel_class = (dsl && dsl.relationship_class) || Neo4j::Rails::Relationship
+          @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
           @outgoing_rels = []
           @incoming_rels = []
         end
 
         def to_s #:nodoc:
           "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
-        end
-
-        def modified?
-          !(@outgoing_rels.empty? && @incoming_rels.empty?)
         end
 
 
@@ -31,6 +28,15 @@ module Neo4j
           # count relationship which has not yet been persisted
           counter += relationships(dir).size
           counter
+        end
+
+
+        def build(attrs)
+          @target_class.new(attrs)
+        end
+
+        def create(attrs)
+          @target_class.create(attrs)
         end
 
         def relationships(dir)
@@ -93,16 +99,6 @@ module Neo4j
           return nil if rel.nil?
           other = rel.other_node(@node)
           other && other.wrapper
-        end
-
-        def del_rel(rel)
-          if relationships.delete(rel)
-            if direction == :outgoing
-              rel.end_node.del_rel
-            else
-              rel.start_node.del_rel
-            end
-          end
         end
 
         def destroy_rels(dir, *nodes)

@@ -30,6 +30,11 @@ describe Neo4j::Model do
       v.should be_valid
     end
 
+    it "validation is skipped if save(:validate => false)" do
+      v = IceCream.new(:name => 'illegal')
+      v.save.should be_true
+      v.should be_persisted
+    end
 
     it "accepts a hash of properties which will be validated" do
       v = IceCream.new(:flavour => 'vanilla')
