@@ -17,7 +17,7 @@ module Neo4j
         self.attributes = attributes if attributes.is_a?(Hash)
       end
 
-      def other_node(node) # TODO - compare neo_id instead ?
+      def other_node(node)
         if persisted?
           _java_rel.getOtherNode(node._java_node)
         else
@@ -29,7 +29,7 @@ module Neo4j
       alias_method :get_other_node, :other_node # so it looks like the java version
       
       def to_s
-        "id: #{self.object_id}  start_node: #{start_node} end_node: #{end_node} type:#{@type}"
+        "id: #{self.object_id}  start_node: #{start_node.id} end_node: #{end_node.id} type:#{@type}"
       end
       
       def id
@@ -55,7 +55,7 @@ module Neo4j
       end
 
       def end_node
-        @end_node ||= _java_rel && _java_rel.start_node
+        @end_node ||= _java_rel && _java_rel.end_node
       end
 
       def end_node=(node)

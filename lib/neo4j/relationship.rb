@@ -164,7 +164,7 @@ module Neo4j
 
       # Same as load but does not return the node as a wrapped Ruby object.
       #
-      def _load(rel_id, db)
+      def _load(rel_id, db = Neo4j.started_db)
         rel = db.graph.get_relationship_by_id(rel_id.to_i)
         rel.hasProperty('_classname')  # since we want a IllegalStateException which is otherwise not triggered
         rel

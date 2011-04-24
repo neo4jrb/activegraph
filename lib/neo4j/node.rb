@@ -151,13 +151,12 @@ module Neo4j
       #
       def load(node_id, db = Neo4j.started_db)
         node = _load(node_id, db)
-        return nil if node.nil?
-        node.wrapper
+        node && node.wrapper
       end
 
       # Same as load but does not return the node as a wrapped Ruby object.
       #
-      def _load(node_id, db)
+      def _load(node_id, db = Neo4j.started_db)
         return nil if node_id.nil?
         db.graph.get_node_by_id(node_id.to_i)
       rescue java.lang.IllegalStateException

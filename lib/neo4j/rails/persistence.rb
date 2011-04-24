@@ -5,7 +5,7 @@ module Neo4j
 			
 			included do
 				extend TxMethods
-				tx_methods :destroy, :create, :update, :update_nested_attributes
+				tx_methods :destroy, :create, :update, :update_nested_attributes, :delete
 			end
 
 			# Persist the object to the database.  Validations and Callbacks are included
@@ -53,7 +53,7 @@ module Neo4j
 			
 			# Returns true if the object was destroyed.
 			def destroyed?()
-        @_deleted
+        @_deleted || Neo4j::Node._load(id).nil?
       end
 			
 			# Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.

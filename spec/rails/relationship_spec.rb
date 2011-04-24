@@ -198,7 +198,7 @@ describe "Neo4j::Model Relationships" do
       a.save
       a.outgoing(:friends).should include(b)
 
-      rel = a.rels(:friends).outgoing.to_other(b).first
+      rel = a.rels(:friends).outgoing.find(b)
       Neo4j::Transaction.run { rel.del }
       a.outgoing(:friends).should_not include(b)
     end

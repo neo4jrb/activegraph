@@ -105,6 +105,14 @@ module Neo4j
           end
         end
 
+        def destroy_rels(dir, *nodes)
+          all_relationships(dir).each do |rel|
+            node = dir == :outgoing ? rel.end_node : rel.start_node
+            dir == :incoming ? rm_incoming_rel(rel) : rm_outgoing_rel(rel)
+            rel.destroy if nodes.include?(node)
+          end
+        end
+
         def create_relationship_to(to, dir)
           if dir == :outgoing
             @rel_class.new(@rel_type, @node, to, self)
@@ -131,7 +139,7 @@ module Neo4j
 
         def persist
           out_rels = @outgoing_rels.clone
-          in_rels  = @incoming_rels.clone
+          in_rels = @incoming_rels.clone
 
           @outgoing_rels.clear
           @incoming_rels.clear

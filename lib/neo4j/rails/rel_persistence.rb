@@ -5,7 +5,7 @@ module Neo4j
 
       included do
         extend TxMethods
-        tx_methods :destroy, :create, :update
+        tx_methods :destroy, :create, :update, :delete
       end
 
 
@@ -54,7 +54,7 @@ module Neo4j
 
 			# Returns true if the object was destroyed.
 			def destroyed?()
-        @_deleted
+        @_deleted || Neo4j::Relationship._load(id).nil?
       end
 
 			# Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -200,7 +200,6 @@ module Neo4j
       def set_deleted_properties
         @_deleted   = true
         @_persisted = false
-        #@_java_rel = nil
       end
 
       # Ensure any defaults are stored in the DB
