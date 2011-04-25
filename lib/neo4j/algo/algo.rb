@@ -162,14 +162,14 @@ module Neo4j
       self
     end
 
-    # Specifies that nodes should be returned from as result (this is default)
+    # Specifies that nodes should be returned from as result
     # See also #rels
     def nodes
       @path_finder_method = :nodes
       self
     end
 
-    # Specifies that relationships should be returned from as result (this is default)
+    # Specifies that relationships should be returned from as result
     # See also #nodes
     #
     def rels
@@ -184,8 +184,8 @@ module Neo4j
     end
 
     def each(&block) #:nodoc:
-      if @single
-        execute_algo.send(@path_finder_method || :nodes).each &block
+      if @single && @path_finder_method
+        execute_algo.send(@path_finder_method).each &block
       else
         execute_algo.each &block
       end
