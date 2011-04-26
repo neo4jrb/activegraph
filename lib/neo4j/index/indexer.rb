@@ -68,8 +68,8 @@ module Neo4j
       # Example:
       #   class Person
       #     include Neo4j::NodeMixin
-      #     property :weight, :type => Float
-      #     index :weight
+      #     property :height, :weight, :type => Float
+      #     index :height, :weight
       #   end
       #
       # Supported values for <tt>:type</tt> is <tt>String</tt>, <tt>Float</tt>, <tt>Date</tt>, <tt>DateTime</tt> and <tt>Fixnum</tt>
@@ -78,19 +78,23 @@ module Neo4j
       # * See Neo4j::Index::LuceneQuery
       # * See #find
       #
-      def index(field, conf = {})
-        if conf[:via]
-          rel_dsl = @indexer_for._decl_rels[conf[:via]]
-          raise "No relationship defined for '#{conf[:via]}'. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]} <-- error. Define it with a has_one or has_n" unless rel_dsl
-          raise "Only incoming relationship are possible to define index on. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]}" unless rel_dsl.incoming?
-          via_indexer               = rel_dsl.target_class._indexer
+      def index(*args)
+        conf = args.last.kind_of?(Hash) ? args.pop : {}
+        conf_no_via = conf.reject { |k,v| k == :via } # avoid endless recursion
 
-          field                     = field.to_s
-          @via_relationships[field] = rel_dsl
-          conf.delete :via # avoid endless recursion
-          via_indexer.index(field, conf)
-        else
-          @field_types[field.to_s] = conf[:type] || :exact
+        args.uniq.each do | field |
+          if conf[:via]
+            rel_dsl = @indexer_for._decl_rels[conf[:via]]
+            raise "No relationship defined for '#{conf[:via]}'. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]} <-- error. Define it with a has_one or has_n" unless rel_dsl
+            raise "Only incoming relationship are possible to define index on. Check class '#{@indexer_for}': index :#{field}, via=>:#{conf[:via]}" unless rel_dsl.incoming?
+            via_indexer               = rel_dsl.target_class._indexer
+
+            field                     = field.to_s
+            @via_relationships[field] = rel_dsl
+            via_indexer.index(field, conf_no_via) 
+          else
+            @field_types[field.to_s] = conf[:type] || :exact
+          end
         end
       end
 

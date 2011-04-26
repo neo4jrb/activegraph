@@ -11,14 +11,19 @@ describe Neo4j::NodeMixin, "inheritance", :type=> :transactional do
     end
 
     @employee_class = create_node_mixin_subclass(person_class) do
-      property :employee_id
+      property :employee_id, :ssn
+      property :weight, :height, :type => Float
       has_n :contracts
     end
   end
 
   it "#new creates node and set properties with given hash" do
-    empl = @employee_class.new(:name => 'andreas', :employee_id => 123)
+    empl = @employee_class.new(:name => 'andreas', :employee_id => 123, :ssn => 1000, :height => '6.3')
+
     empl[:name].should == 'andreas'
+    empl.ssn == 1000
+    empl.height.class.should == Float
+    empl.height.should == 6.3
   end
 
   it "#has_n can use baseclass definition" do
