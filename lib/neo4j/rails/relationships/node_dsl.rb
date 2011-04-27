@@ -25,6 +25,14 @@ module Neo4j
           self
         end
 
+        def depth(d)
+          adapt_to_traverser.depth(d)
+        end
+
+        def adapt_to_traverser
+          Neo4j::Traversal::Traverser.new(@storage.node, @storage.rel_type, @dir)
+        end
+
         def [](index)
           i = 0
           each{|x| return x if i == index; i += 1}

@@ -20,6 +20,32 @@ describe "Neo4j::Rails::Model Relationships" do
     @actor_class.validates_associated(:acted_in)
   end
 
+  context "traversal" do
+    before(:each) do
+      @n1 = Neo4j::Model.create
+      @n2 = Neo4j::Model.create
+      @n3 = Neo4j::Model.create
+      @n1.outgoing(:foo) << @n2;  @n1.save!
+      @n2.outgoing(:foo) << @n3;  @n2.save!
+    end
+
+    it "should still support outgoing traversals of depth > 1" do
+      @n1.outgoing(:foo).depth(2).size.should == 2
+      @n1.outgoing(:foo).depth(2).should include(@n2, @n3)
+    end
+
+    it "should still support incoming traversals of depth > 1" do
+      @n3.incoming(:foo).depth(2).size.should == 2
+      @n3.incoming(:foo).depth(2).should include(@n2, @n1)
+    end
+
+    it "should still support incoming traversals of depth == 1" do
+      @n3.incoming(:foo).depth(1).size.should == 1
+      @n3.incoming(:foo).depth(1).should include(@n2)
+    end
+
+  end
+
   context "has_one" do
     before(:each) do
       @actor = @actor_class.create
