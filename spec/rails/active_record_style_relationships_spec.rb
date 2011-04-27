@@ -83,11 +83,11 @@ describe "Neo4j::Rails::Model Relationships" do
         @ret = @actor.acted_in_rels.create(:title => 'movie_4')
       end
 
-      it "create a new node but does not save it" do
+      it "create a new node and save it" do
         @actor.acted_in.size.should == 4
       end
 
-      it "create a new node but does not save it" do
+      it "create a new node and save it" do
         @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
       end
 
@@ -119,11 +119,11 @@ describe "Neo4j::Rails::Model Relationships" do
         @ret = @actor.acted_in.create(:title => 'movie_4')
       end
 
-      it "create a new node but does not save it" do
+      it "create a new node and save it" do
         @actor.acted_in.size.should == 4
       end
 
-      it "create a new node but does not save it" do
+      it "create a new node and save it" do
         @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
       end
 
@@ -138,11 +138,11 @@ describe "Neo4j::Rails::Model Relationships" do
         @ret = @movie_1.actors.create(:name => 'actor_x')
       end
 
-      it "create a new node but does not save it" do
+      it "create a new node and save it" do
         @movie_1.actors.size.should == 2
       end
 
-      it "create a new node but does not save it" do
+      it "create a new node and save it" do
         @movie_1.actors.find{|x| x.name == 'actor_x'}.should be_persisted
       end
 
