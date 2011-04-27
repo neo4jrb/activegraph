@@ -7,7 +7,9 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
     before(:all) do
       @clazz = create_node_mixin do
         property :year, :type => Fixnum
+        property :month, :day, :type => Fixnum
         index :year
+        index :month, :day
         def to_s
           "Year #{year}"
         end
@@ -15,11 +17,11 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
     end
 
     before(:each) do
-      @x49 = @clazz.new(:year => 49)
-      @x50 = @clazz.new(:year => 50)
-      @x51 = @clazz.new(:year => 51)
-      @x52 = @clazz.new(:year => 52)
-      @x53 = @clazz.new(:year => 53)
+      @x49 = @clazz.new(:year => 49, :month => 1, :day => 11)
+      @x50 = @clazz.new(:year => 50, :month => 2, :day => 12)
+      @x51 = @clazz.new(:year => 51, :month => 3, :day => 13)
+      @x52 = @clazz.new(:year => 52, :month => 4, :day => 14)
+      @x53 = @clazz.new(:year => 53, :month => 5, :day => 15)
       new_tx
     end
 
@@ -35,8 +37,14 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
       res.should include(@x50,@x51,@x52)
     end
 
-    it "find(:year => 50..52) returns all integer between 50 and 51" do
+    it "find(:year => 50...52) returns all integer between 50 and 51" do
       res = [*@clazz.find(:year=> 50...52)]
+      res.should include(@x50,@x51)
+      res.should_not include(@x49,@x52,@x53)
+    end
+    
+    it "find(:month=> 2..5, :day => 11...14) finds nodes matching both conditions" do
+      res = [*@clazz.find(:month=> 2..5, :day => 11...14)]
       res.should include(@x50,@x51)
       res.should_not include(@x49,@x52,@x53)
     end

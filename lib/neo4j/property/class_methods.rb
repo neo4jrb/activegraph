@@ -40,18 +40,14 @@ module Neo4j
       # :to_java in the Neo4j::TypeConverters module.
       #
       def property(*props)
-        if props.size == 2 and props[1].kind_of?(Hash)
-          props[1].each_pair do |key, value|
-            pname = props[0].to_sym
-            _decl_props[pname] ||= {}
-            _decl_props[pname][key] = value
-          end
-          props = props[0..0]
-        end
+        options = props.last.kind_of?(Hash) ? props.pop : {}
 
-        props.each do |prop|
+        props.uniq.each do |prop|
           pname = prop.to_sym
           _decl_props[pname] ||= {}
+          options.each do |key, value|
+            _decl_props[pname][key] = value
+          end
 
           define_method(pname) do
             Neo4j::TypeConverters.to_ruby(self.class, pname, self[pname])
