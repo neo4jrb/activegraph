@@ -10,7 +10,7 @@ module Neo4j
 				
 				extend ActiveModel::Callbacks
 				
-				define_model_callbacks :create, :save, :update, :destroy
+				define_model_callbacks :create, :save, :update, :destroy, :validation
 			end
 			
 			def destroy_with_callbacks #:nodoc:
