@@ -17,6 +17,13 @@ module Neo4j
 
         def create(attrs)
           self << (node = @storage.create(attrs))
+          node.save
+          node
+        end
+
+        def create!(attrs)
+          self << (node = @storage.create(attrs))
+          node.save!
           node
         end
 
