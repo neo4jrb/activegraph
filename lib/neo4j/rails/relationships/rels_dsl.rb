@@ -17,7 +17,16 @@ module Neo4j
 
         def create(attrs)
           node = @storage.create(attrs)
-          @storage.create_relationship_to(node, @dir)
+          rel = @storage.create_relationship_to(node, @dir)
+          node.save
+          rel
+        end
+
+        def create!(attrs)
+          node = @storage.create(attrs)
+          rel = @storage.create_relationship_to(node, @dir)
+          node.save!
+          rel
         end
 
         def outgoing

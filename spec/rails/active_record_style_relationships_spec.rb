@@ -99,8 +99,13 @@ describe "Neo4j::Rails::Model Relationships" do
         @actor.acted_in.find{|x| x.title == 'movie_4'}.should_not be_persisted
       end
 
+      it "does not create a new relationship" do
+        @actor.reload
+        @actor.acted_in.size.should == 3
+      end
+
       it "returns new node " do
-        @ret.should be_kind_of(ModelRelationship1) #ModelRelationship1
+        @ret.should be_kind_of(ModelRelationship1)
       end
     end
 
@@ -110,15 +115,39 @@ describe "Neo4j::Rails::Model Relationships" do
       end
 
       it "create a new node and save it" do
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
         @actor.acted_in.size.should == 4
       end
 
-      it "create a new node and save it" do
+      it "create a new relationship" do
+        @actor.reload
+        @actor.acted_in.size.should == 4
         @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
       end
 
       it "returns new node " do
-        @ret.should be_kind_of(ModelRelationship1) #ModelRelationship1
+        @ret.should be_kind_of(ModelRelationship1)
+      end
+    end
+
+    describe "create! outgoing on rel" do
+      before(:each) do
+        @ret = @actor.acted_in_rels.create!(:title => 'movie_4')
+      end
+
+      it "create a new node and save it" do
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
+        @actor.acted_in.size.should == 4
+      end
+
+      it "create a new relationship" do
+        @actor.reload
+        @actor.acted_in.size.should == 4
+        @actor.acted_in.find{|x| x.title == 'movie_4'}.should be_persisted
+      end
+
+      it "returns new node " do
+        @ret.should be_kind_of(ModelRelationship1)
       end
     end
 
@@ -155,6 +184,11 @@ describe "Neo4j::Rails::Model Relationships" do
 
       it "returns new node " do
         @ret.should be_kind_of(@movie_class) #ModelRelationship1
+      end
+
+      it "persist the relationship" do
+        @actor.reload
+        @actor.acted_in.size.should == 4
       end
 
     end
