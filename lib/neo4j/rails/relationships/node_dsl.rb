@@ -55,12 +55,13 @@ module Neo4j
         def find(*args, &block)
           return super(*args, &block) if block
           node = args.first
-          enum = Enumerator.new(@storage, :each_rel, @dir)
-          if @dir == :incoming
-            enum.find{|r| r.start_node == node}
-          else
-            enum.find{|r| r.end_node == node}
-          end
+          enum = Enumerator.new(@storage, :each_node, @dir).find{|n| n == node}
+
+          #if @dir == :incoming
+          #  enum.find{|r| r.start_node == node}
+          #else
+          #  enum.find{|r| r.end_node == node}
+          #end
         end
 
         def destroy_all
