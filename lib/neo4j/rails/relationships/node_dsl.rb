@@ -54,14 +54,17 @@ module Neo4j
 
         def find(*args, &block)
           return super(*args, &block) if block
-          node = args.first
-          enum = Enumerator.new(@storage, :each_node, @dir).find{|n| n == node}
-
-          #if @dir == :incoming
-          #  enum.find{|r| r.start_node == node}
-          #else
-          #  enum.find{|r| r.end_node == node}
-          #end
+          
+          case args.first
+            when "0", 0
+              nil
+            else
+              if ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0)
+                find_by_id(*args)
+              else
+                enum = Enumerator.new(@storage, :each_node, @dir).find{|n| n == args.first}
+              end
+          end          
         end
 
         def destroy_all
@@ -90,9 +93,20 @@ module Neo4j
           size == 0 # TODO, performance: there are probably faster way of doing this
         end
 
+        def blank?
+          false unless size == 0
+        end
+
         def to_s
           "Node dir: #{@dir}, #{@storage}"
         end
+        
+        protected
+
+        def find_by_id(*args)
+          result = Enumerator.new(@storage, :each_node, @dir).find{|n| n.id.to_i == args.first.to_i}        
+        end
+   
       end
     end
   end
