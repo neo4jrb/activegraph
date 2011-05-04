@@ -85,6 +85,21 @@ describe "Neo4j::Rails::Model Relationships" do
       @movie_2.save
     end
 
+    describe "find nodes in relationship" do
+      it "find a child node by node" do
+        @actor.acted_in.find(@movie_1).should_not be_nil
+      end
+
+      it "find a child node by id" do
+        @actor.acted_in.find(@movie_1.id).should_not be_nil
+      end
+
+      it "find a child node by delegate to Enumerable#find" do
+        @actor.acted_in.find{|n| n.title == 'movie_1'}.should_not be_nil
+      end
+
+    
+    end
 
     describe "build outgoing on rel" do
       before(:each) do
