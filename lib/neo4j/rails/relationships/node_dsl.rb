@@ -56,15 +56,38 @@ module Neo4j
           return super(*args, &block) if block
           
           case args.first
+            when :all, :first          
+              kind = args.shift
+              send(kind, *args)
             when "0", 0
               nil
             else
               if ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0)
                 find_by_id(*args)
               else
-                enum = Enumerator.new(@storage, :each_node, @dir).find{|n| n == args.first}
+                first(*args)
               end
           end          
+        end
+
+        def all(*args)
+          unless args.empty?
+            enum = Enumerator.new(@storage, :each_node, @dir).find{|n| n == args.first}
+          else
+            enum = Enumerator.new(@storage, :each_node, @dir)
+          end
+        end
+
+        def first(*args)
+          if result = all(*args)
+            if result.respond_to?(:collect) #if it's enumerable, get the first result
+              result.min{|a,b| a.id <=> b.id}
+            else 
+              result
+            end
+          else
+            nil
+          end
         end
 
         def destroy_all
@@ -102,6 +125,7 @@ module Neo4j
         end
         
         protected
+
 
         def find_by_id(*args)
           result = Enumerator.new(@storage, :each_node, @dir).find{|n| n.id.to_i == args.first.to_i}        
