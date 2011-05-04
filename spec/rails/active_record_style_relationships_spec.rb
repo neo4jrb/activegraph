@@ -322,10 +322,11 @@ describe "Neo4j::Rails::Model Relationships" do
         @movie_2.actors.should include(@actor_2)
       end
 
-      it "can find incoming" do
-        rel = @movie_2.actors.find(@actor)
-        rel.character = 'me'
-        @movie_2.actors_rels.find(@actor).should == rel
+      it "can find and delete incoming" do
+        rel = @movie_2.actors_rels.find(@actor)
+        rel.should be_kind_of(ModelRelationship1)
+        rel.delete
+        @movie_2.actors_rels.find(@actor).should be_nil
       end
     end
 
