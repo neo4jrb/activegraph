@@ -81,6 +81,7 @@ module Neo4j
           super
         end
 
+
         def to_s
           "Rels dir: #{@dir}, #{@storage}"
         end
