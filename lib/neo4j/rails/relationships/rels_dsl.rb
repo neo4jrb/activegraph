@@ -85,14 +85,14 @@ module Neo4j
           elsif node_in?(*args) #arg is a node
             find{|r| r.start_node == args.first || r.end_node == args.first}
           else #there either aren't any args, or we don't understand them
-            self
+            collect
           end
         end
 
         def first(*args)
           if result = all(*args)
             if result.respond_to?(:collect) #if it's enumerable, get the first result
-              result.min{|a,b| a.id <=> b.id}
+              result.first
             else 
               result
             end

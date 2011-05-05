@@ -81,7 +81,7 @@ module Neo4j
         def first(*args)
           if result = all(*args)
             if result.respond_to?(:collect) #if it's enumerable, get the first result
-              result.min{|a,b| a.id <=> b.id}
+              result.first
             else 
               result
             end
