@@ -86,6 +86,15 @@ describe "Neo4j::Rails::Model Relationships" do
     end
 
     describe "find nodes in relationship" do
+
+      it "find all child nodes" do
+        @actor.acted_in.find(:all).should_not be_nil
+      end
+
+      it "find first child node" do
+        @actor.acted_in.find(:first).should_not be_nil
+      end
+
       it "find a child node by node" do
         @actor.acted_in.find(@movie_1).should_not be_nil
       end
@@ -97,8 +106,42 @@ describe "Neo4j::Rails::Model Relationships" do
       it "find a child node by delegate to Enumerable#find" do
         @actor.acted_in.find{|n| n.title == 'movie_1'}.should_not be_nil
       end
+    end
 
-    
+    describe "find rels by node or id" do
+      it "find all rels" do
+        @actor.acted_in_rels.find(:all).should_not be_nil
+      end
+
+      it "find first rel" do
+        @actor.acted_in_rels.find(:all).should_not be_nil
+      end
+
+      it "find rels for a node, by node" do
+        @actor.acted_in_rels.find(@movie_1).should_not be_nil
+      end
+      
+      it "find rels by id" do
+        relid = @actor.acted_in_rels.find(@movie_1).id
+        @actor.acted_in_rels.find(relid).should_not be_nil
+      end
+
+      it "find all rels for a node, by node" do
+        @actor.acted_in_rels.find(:all, @movie_1).should_not be_nil
+      end
+
+      it "find all rels for a node, by node id" do
+        @actor.acted_in_rels.find(:all, @movie_1.id).should_not be_nil
+      end
+
+      it "find first rels for a node, by node" do
+        @actor.acted_in_rels.find(:first, @movie_1).should_not be_nil
+      end
+
+      it "find first rels for a node, by node id" do
+        @actor.acted_in_rels.find(:first, @movie_1.id).should_not be_nil
+      end
+
     end
 
     describe "build outgoing on rel" do
