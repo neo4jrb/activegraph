@@ -79,11 +79,11 @@ module Neo4j
 
         def all(*args)
           if args.first.class == Neo4j::Rails::Relationship #arg is a relationship
-            find{|r| r == args.first}
+            find_all{|r| r == args.first}
           elsif ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0) #arg is an int
-            find{|r| r.start_node.id.to_i == args.first.to_i || r.end_node.id.to_i == args.first.to_i}
+            find_all{|r| r.start_node.id.to_i == args.first.to_i || r.end_node.id.to_i == args.first.to_i}
           elsif node_in?(*args) #arg is a node
-            find{|r| r.start_node == args.first || r.end_node == args.first}
+            find_all{|r| r.start_node == args.first || r.end_node == args.first}
           else #there either aren't any args, or we don't understand them
             collect
           end
