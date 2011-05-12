@@ -23,7 +23,7 @@ module Neo4j
     include Neo4j::Index
 
     def_delegators :@_java_rel, :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :to_param, :getId,
-                   :equal?, :eql?, :==, :delete, :getStartNode, :getEndNode, :getOtherNode, :exist?
+                   :equal?, :eql?, :==, :delete, :getStartNode, :getEndNode, :getOtherNode, :exist?, :getType
 
 
 
@@ -108,7 +108,7 @@ module Neo4j
     # the relationship type (of type Symbol)
     #
     def relationship_type
-      get_type.name.to_sym
+      getType.name.to_sym
     end
 
     # --------------------------------------------------------------------------
