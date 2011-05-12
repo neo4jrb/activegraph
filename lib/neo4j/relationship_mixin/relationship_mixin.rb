@@ -108,7 +108,7 @@ module Neo4j
     # the relationship type (of type Symbol)
     #
     def relationship_type
-      get_type.name.to_sym
+      @_java_rel.getType.name.to_sym
     end
 
     # --------------------------------------------------------------------------
