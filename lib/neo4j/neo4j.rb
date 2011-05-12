@@ -16,13 +16,22 @@ module Neo4j
   class << self
     # Start Neo4j using the default database.
     # This is usally not required since the database will be started automatically when it is used.
+    # If the global variable $NEO4J_SERVER is defined then it will use that as the Java Graph DB. This can
+    # be used if you want to embed neo4j.rb and already got an instance of the Java Neo4j Database service.
     #
     # ==== Parameters
     # config_file :: (optionally) if this is nil or not given use the Neo4j::Config, otherwise setup the Neo4j::Config file using the provided YAML configuration file.
-    #
-    def start(config_file=nil)
+    # external_db :: (optionally) use this Java Neo4j instead of creating a new neo4j database service
+    def start(config_file=nil, external_db = $NEO4J_SERVER)
+      return if @db && @db.running?
+
       Neo4j.config.default_file = config_file if config_file
-      db.start unless db.running?
+      if external_db
+        @db ||= Database.new
+        self.db.start_external_db(external_db)
+      else
+        db.start
+      end
     end
 
 
@@ -41,10 +50,11 @@ module Neo4j
     def read_only?
       @db && @db.graph && @db.graph.read_only?
     end
-    
+
     # Returns a started db instance. Starts it's not running.
+    # if $NEO4J_SERVER is defined then use that Java Neo4j Database service instead of creating a new one.
     def started_db
-      db.start unless db.running?
+      start unless db.running?
       db
     end
 
@@ -166,6 +176,6 @@ module Neo4j
     def event_handler(this_db = db)
       this_db.event_handler
     end
-    
+
   end
 end

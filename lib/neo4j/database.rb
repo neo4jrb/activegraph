@@ -64,11 +64,26 @@ module Neo4j
     def start_ha_graph_db
       Neo4j.logger.info "starting Neo4j in HA mode, machine id: #{Neo4j.config['ha.machine_id']} at #{Neo4j.config['ha.server']} db #{@storage_path}"
       Neo4j.load_ha_jars # those jars are only needed for the HighlyAvailableGraphDatabase
-      Neo4j.load_online_backup if Neo4j.config[:online_backup_enabled]      
+      Neo4j.load_online_backup if Neo4j.config[:online_backup_enabled]
       @graph = org.neo4j.kernel.HighlyAvailableGraphDatabase.new(@storage_path, Neo4j.config.to_java_map)
       @graph.register_transaction_event_handler(@event_handler)
       @lucene = @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
       @event_handler.neo4j_started(self)
+    end
+
+    def start_external_db(external_graph_db)
+      begin
+        @running = true
+        @graph = external_graph_db
+        Neo4j.migrate!
+        @graph.register_transaction_event_handler(@event_handler)
+        @lucene = @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
+        @event_handler.neo4j_started(self)
+        Neo4j.logger.info("Started with external db")
+      rescue
+        @running = false
+        raise
+      end
     end
 
     def running? #:nodoc:
@@ -100,8 +115,8 @@ module Neo4j
         @graph.unregister_transaction_event_handler(@event_handler) unless read_only?
         @event_handler.neo4j_shutdown(self)
         @graph.shutdown
-        @graph   = nil
-        @lucene  = nil
+        @graph = nil
+        @lucene = nil
         @running = false
         @neo4j_manager = nil
       end
