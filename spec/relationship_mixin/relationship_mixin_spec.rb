@@ -92,15 +92,17 @@ describe Neo4j::RelationshipMixin, :type=> :transactional do
     rel.should_not exist
   end
 
-  it "has relationship_type method" do
+  it "responds to relationship_type method" do
     a = Neo4j::Node.new
     b = Neo4j::Node.new
     f = Friend.new(:friend, a,b)
+    f.should respond_to(:relationship_type)
     f.relationship_type.should == :friend
 
     actor = Actor.new
     movie = Movie.new
     rel = actor.acted_in.new(movie)
+    rel.should respond_to(:relationship_type)
     rel.relationship_type.should == 'Movie#acted_in'.to_sym
   end
 
