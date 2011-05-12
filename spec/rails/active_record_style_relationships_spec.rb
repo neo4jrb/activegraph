@@ -127,15 +127,15 @@ describe "Neo4j::Rails::Model Relationships" do
       end
 
       it "find all rels for a node, by node" do
-        @actor.acted_in_rels.find(:all, @movie_1).should_not be_nil
+        @actor.acted_in_rels.find(:all, @movie_1).should be_kind_of(Enumerable)
       end
 
       it "find all rels for a node, by node id" do
-        @actor.acted_in_rels.find(:all, @movie_1.id).should_not be_nil
+        @actor.acted_in_rels.find(:all, @movie_1.id).should be_kind_of(Enumerable)
       end
 
       it "find first rels for a node, by node" do
-        @actor.acted_in_rels.find(:first, @movie_1).should_not be_nil
+        @actor.acted_in_rels.find(:first, @movie_1).should be_kind_of(Neo4j::Rails::Relationship)
       end
 
       it "find first rels for a node, by node id" do
