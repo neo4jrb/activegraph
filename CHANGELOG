@@ -1,4 +1,27 @@
-== 0.4.4 / 2010-08-01
+== 1.1.0 / 2011-05-13
+* Support for embedding neo4j.rb by providing an already running db instance (#168)
+* Neo4j::Rails::Relationships should be ActiveModel compliant (#156)
+* Support for incoming relationships in Neo4j::Rails::Model (#157)
+* to_json method for models no tags √ resolved (#154)
+* Implement hash so that it will work with Sets (#160)
+* Modified the traverser to allow iterating over paths not just over end_nodes (#161)
+* Create method should take a block to initialize itself (#162)
+* Upgrade to 1.3 neo4j java library (#164)
+* Default `nodes' invocation for Algo path finders (#165)
+* Property and index class methods modified to take arbitrary number of symbols optionally followed by options hash (#166)
+* BUG: Setting property :system on Neo4j::Rails::Model should work (#163)
+* BUG: update_attributes should convert values according to Type (#155)
+* BUG: Neo4j::RelationshipMixin#relationship_type broken #(169)
+* BUG: Relationship.load(nil) == Relationship.load(0) (#167)
+* BUG: Full text search returns nil in rails model (#153)
+
+== 1.0.0 / 2011-03-02
+* Complete rewrite of everything.
+* Replaced the lucene module with using the java neo4j-lucene integration instead
+* Lots of improvements of the API
+* Better ActiveModel/Rails integration
+
+    == 0.4.4 / 2010-08-01
 * Fixed bug on traversing when using the RelationshipMixin (#121)
 * BatchInserter and JRuby 1.6 - Fix iteration error with trying to modify in-place hash
 

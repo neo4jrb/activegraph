@@ -157,11 +157,13 @@ describe Neo4j::Batch::RuleInserter do
               fail("Unknown rel #{args[1]}")
           end
         when BASE_CLASS_RULE_NODE
+          args[1].should == 43
+          args[2].should == 2
           args[0].should == :foo
-          args[2].should == 43
         when SUBCLASS_CLASS_RULE_NODE
+          args[1].should == 42
+          args[2].should == 2
           args[0].should == :foo
-          args[2].should == 42
         else
           fail("Unknown from #{args[1]}")
       end
