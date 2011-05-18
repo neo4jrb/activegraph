@@ -117,6 +117,12 @@ describe Neo4j::Algo, :type => :transactional do
         res.should include(@x,@a,@y)
       end
 
+      it "#outgoing(:friends).first.nodes returns the nodes in the path" do
+        pending
+        res = Neo4j::Algo.shortest_path(@x,@y).outgoing(:xxx).outgoing(:yyy)
+        res.to_a.should be_nil
+      end
+
       it "#outgoing(:friends).rels returns the relationship in the shortest path" do
         res = Neo4j::Algo.shortest_path(@x,@y).outgoing(:friends).rels.to_a
         nodes = res.collect{|rel| rel.end_node}
