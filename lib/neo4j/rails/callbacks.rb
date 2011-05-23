@@ -4,13 +4,17 @@ module Neo4j
 			extend ActiveSupport::Concern
 			
 			included do
-				[:create_or_update, :create, :update, :destroy].each do |method|
+				[:valid?, :create_or_update, :create, :update, :destroy].each do |method|
 					alias_method_chain method, :callbacks
 				end
 				
 				extend ActiveModel::Callbacks
 				
-				define_model_callbacks :create, :save, :update, :destroy, :validation
+				define_model_callbacks :validation, :create, :save, :update, :destroy
+			end
+			
+			def valid_with_callbacks?(*) #:nodoc:
+			  _run_validation_callbacks { valid_without_callbacks? }
 			end
 			
 			def destroy_with_callbacks #:nodoc:
