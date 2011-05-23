@@ -107,6 +107,19 @@ describe Neo4j::TypeConverters, :type => :transactional do
       v = @clazz.new :since => since
       v.since.should == since
     end
+    
+    # Just to be compatible with the devise tests
+    it "should be able to load Dates too" do
+      since = Date.civil(1977)
+      v = @clazz.new :since => since
+      v.since.should be_a(DateTime)
+      v.since.year.should == since.year
+      v.since.month.should == since.month
+      v.since.day.should == since.day
+      v.since.hour.should == 0
+      v.since.min.should == 0
+      v.since.sec.should == 0
+    end
 
     it "can be ranged searched: find(:born).between(date_a, Date.today)" do
       a = DateTime.new(1992, 1, 2, 15, 20, 0)
