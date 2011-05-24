@@ -132,6 +132,27 @@ describe Neo4j::TypeConverters, :type => :transactional do
       found.should include(v)
     end
   end
+  
+  context Neo4j::TypeConverters::TimeConverter, "property :since => Time" do
+    before(:all) do
+      @clazz = create_node_mixin do
+        property :since, :type => Time
+      end
+    end
+    
+    # Just to be compatible with the devise tests
+    it "should be able to load Dates too" do
+      since = Date.civil(1977)
+      v = @clazz.new :since => since
+      v.since.should be_a(Time)
+      v.since.year.should == since.year
+      v.since.month.should == since.month
+      v.since.day.should == since.day
+      v.since.hour.should == 0
+      v.since.min.should == 0
+      v.since.sec.should == 0
+    end
+  end
 
 
 end
