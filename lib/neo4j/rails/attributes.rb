@@ -15,7 +15,7 @@ module Neo4j
         include ActiveModel::Dirty # track changes to attributes
         include ActiveModel::MassAssignmentSecurity # handle attribute hash assignment
 
-        class_inheritable_hash :attribute_defaults
+        class_inheritable_accessor :attribute_defaults
         self.attribute_defaults ||= {}
 
         # save the original [] and []= to use as read/write to Neo4j

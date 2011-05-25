@@ -123,7 +123,7 @@ module Neo4j
           end
         end
         
-        c.class_inheritable_hash :_decl_props
+        c.class_inheritable_accessor :_decl_props
         c._decl_props ||= {}
 
         c.extend ClassMethods

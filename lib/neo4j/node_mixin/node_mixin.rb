@@ -107,10 +107,10 @@ module Neo4j
         end
       end unless c.respond_to?(:orig_new)
 
-      c.class_inheritable_hash :_decl_props
+      c.class_inheritable_accessor :_decl_props
       c._decl_props ||= {}
 
-      c.class_inheritable_hash :_decl_rels
+      c.class_inheritable_accessor :_decl_rels
       c._decl_rels ||= {}
 
       c.extend ClassMethods

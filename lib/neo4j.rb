@@ -6,10 +6,17 @@ require 'tmpdir'
 
 # Rails
 require 'rails/railtie'
+require 'active_support/core_ext/class/inheritable_attributes'
+require 'active_support/core_ext/hash/indifferent_access'
 require 'active_model'
 
 require 'will_paginate/collection'
 require 'will_paginate/finders/base'
+
+# core extensions
+require 'neo4j/core_ext/class/inheritable_attributes'
+
+# Jars
 
 require 'neo4j/jars/core/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/core/lucene-core-3.0.3.jar'

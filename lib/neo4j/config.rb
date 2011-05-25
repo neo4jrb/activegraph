@@ -145,7 +145,7 @@ module Neo4j
       # The a new configuration using default values as a hash.
       #
       def setup()
-        @configuration = ActiveSupport::HashWithIndifferentAccess.new(defaults)
+        @configuration = defaults.with_indifferent_access #nested_under_indifferent_access
         @configuration.merge!(defaults)
         @configuration
       end
