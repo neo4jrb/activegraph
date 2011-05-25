@@ -12,6 +12,8 @@ describe Neo4j::Algo, :type => :transactional do
     @e = Neo4j::Node.new :name => 'e'
     @f = Neo4j::Node.new :name => 'f'
     @y = Neo4j::Node.new :name => 'y'
+    @z = Neo4j::Node.new :name => 'z' # not connected
+
   end
 
   describe "#with_length_paths" do
@@ -33,6 +35,10 @@ describe Neo4j::Algo, :type => :transactional do
       Neo4j::Algo.with_length_path(@x,@y).depth(3).should include(@b,@c,@y)
     end
 
+    it "should not find paths if nodes are not connected" do
+      Neo4j::Algo.with_length_paths(@x,@z).depth(1).size.should == 0
+    end
+
   end
 
   describe "#a_star_path" do
@@ -50,6 +56,7 @@ describe Neo4j::Algo, :type => :transactional do
       res = Neo4j::Algo.a_star_path(@x,@y).cost_evaluator{|rel,*| rel[:weight]}.estimate_evaluator{|node,goal| 1.0}
       res.should include(@x,@b,@c,@y)
     end
+
   end
 
 
@@ -103,6 +110,7 @@ describe Neo4j::Algo, :type => :transactional do
         @x = Neo4j::Node.new :name => 'x'
         @a = Neo4j::Node.new :name => 'a'
         @y = Neo4j::Node.new :name => 'y'
+        @z = Neo4j::Node.new :name => 'z'
         @x.outgoing(:knows) << @a
         @a.outgoing(:knows) << @y
         # length 3
@@ -139,6 +147,11 @@ describe Neo4j::Algo, :type => :transactional do
         Neo4j::Algo.shortest_path(@x,@y).should include(@x,@a,@y)
         Neo4j::Algo.shortest_path(@x,@y).length.should == 2
       end
+
+      it "should not find paths if nodes are not connected" do
+        Neo4j::Algo.shortest_path(@x,@z).to_a.should be_empty
+      end
+
 
     end
   end

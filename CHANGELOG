@@ -1,4 +1,9 @@
-== 1.1.0 / 2011-05-13
+== 1.1.1 / 2011-06-26
+* Made neo4j compatible with rails 3.1.0.rc1 [#170]
+* Fix for neo4j-devise [#171]
+* BUG: Neo4j::GraphAlgo shortest path does raise exception if two nodes are not connected [#172]
+
+ == 1.1.0 / 2011-05-13
 * Support for embedding neo4j.rb by providing an already running db instance (#168)
 * Neo4j::Rails::Relationships should be ActiveModel compliant (#156)
 * Support for incoming relationships in Neo4j::Rails::Model (#157)

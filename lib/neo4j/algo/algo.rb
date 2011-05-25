@@ -187,7 +187,8 @@ module Neo4j
       if @single && @path_finder_method
         execute_algo.send(@path_finder_method).each &block
       else
-        (execute_algo && execute_algo).each &block
+        traversal = execute_algo
+        traversal.each &block if traversal
       end
     end
 
