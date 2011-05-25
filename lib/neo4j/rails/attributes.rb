@@ -36,7 +36,7 @@ module Neo4j
       # and callbacks are run to ensure correctness
       def write_local_property(key, value)
         key_s = key.to_s
-        if @properties[key_s] != value
+        if !@properties.has_key?(key_s) || @properties[key_s] != value
           attribute_will_change!(key_s)
           @properties[key_s] = value
         end

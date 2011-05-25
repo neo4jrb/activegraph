@@ -135,7 +135,11 @@ module Neo4j
         # Only utc times are supported !
         def to_java(value)
           return nil if value.nil?
-          Time.utc(value.year, value.month, value.day, value.hour, value.min, value.sec).to_i
+          if value.class == Date
+            Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
+          else
+            Time.utc(value.year, value.month, value.day, value.hour, value.min, value.sec).to_i
+          end
         end
 
         def to_ruby(value)
@@ -157,7 +161,11 @@ module Neo4j
         # Only utc times are supported !
         def to_java(value)
           return nil if value.nil?
-          value.utc.to_i
+          if value.class == Date
+            Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
+          else
+            value.utc.to_i
+          end
         end
 
         def to_ruby(value)
