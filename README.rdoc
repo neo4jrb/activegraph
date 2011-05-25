@@ -13,7 +13,6 @@ It uses two powerful and mature Java libraries:
 
 * {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
-* {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
 
 === Why Neo4j.rb or a Graph Database ?
 
@@ -93,6 +92,7 @@ Example of using Neo4j with Rails 3 (ActiveModel)
 ==== Generate a Rails Application
 
 Example of creating an Neo4j Application from scratch:
+(make sure you have installed JRuby version >= 1.6.2)
 
  gem install rails
  rails new myapp -m http://andreasronge.github.com/rails3.rb
@@ -109,7 +109,7 @@ To run it with Tomcat instead of WEBrick
 
 
 === Presentation Materials and other URLs
-* {Intoduction to Neo4j.rb}[http://www.slideshare.net/andreasronge/neo4jrb]
+* {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
 * {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
 * {Neo4j wiki, check the guidelines and domain modeling gallery pages}[http://wiki.neo4j.org/content/Main_Page]
 
