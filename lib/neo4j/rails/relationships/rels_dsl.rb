@@ -1,6 +1,21 @@
 module Neo4j
   module Rails
     module Relationships
+
+      # Instances of this class is returned from the #rels, and generated accessor methods:
+      # has_n and has_one.
+      # Notice, this class is very similar to the Neo4j::Rails::Relationships::NodesDSL except that
+      # if creates, finds relationships instead of nodes.
+      #
+      # ==== Example
+      #   class Person < Neo4j::Rails::Model
+      #      has_n(:friends)
+      #   end
+      #
+      #   person = Person.find(...)
+      #   person.friends_rels  #=> returns a Neo4j::Rails::Relationships::RelsDSL
+      #   rel = person.friends_rels.create(relationship properties)
+      #
       class RelsDSL
         include Enumerable
 
@@ -10,11 +25,15 @@ module Neo4j
         end
 
 
+        # Same as Neo4j::Rails::Relationships::NodesDSL#build except that you specify the properties of the
+        # relationships and it returns a relationship
         def build(attrs)
           node = @storage.build(attrs)
           @storage.create_relationship_to(node, @dir)
         end
 
+        # Same as Neo4j::Rails::Relationships::NodesDSL#create except that you specify the properties of the
+        # relationships and it returns a relationship
         def create(attrs)
           node = @storage.create(attrs)
           rel = @storage.create_relationship_to(node, @dir)
@@ -22,6 +41,8 @@ module Neo4j
           rel
         end
 
+        # Same as Neo4j::Rails::Relationships::NodesDSL#create! except that you specify the properties of the
+        # relationships and it returns a relationship
         def create!(attrs)
           node = @storage.create(attrs)
           rel = @storage.create_relationship_to(node, @dir)
@@ -29,11 +50,21 @@ module Neo4j
           rel
         end
 
+        # Specifies that we want outgoing (undeclared) relationships.
+        #
+        # ==== Example
+        #   class Thing < Neo4j::Rails::Model
+        #   end
+        #
+        #   t = Thing.find(...)
+        #   t.rels(:reltype).outgoing  # returns an enumerable of all outgoing relationship of type :reltype
+        #
         def outgoing
           @dir = :outgoing
           self
         end
 
+        # Returns incoming relationship See #outgoing
         def incoming
           @dir = :incoming
           self
@@ -43,22 +74,28 @@ module Neo4j
           @storage.each_rel(@dir, &block)
         end
 
+        # Simply counts all relationships
         def size
           @storage.size(@dir)
         end
 
+        # True if no relationship
         def empty?
           size == 0
         end
 
+        # Destroys all relationships object. Will not destroy the nodes.
         def destroy_all
           each {|n| n.destroy}
         end
 
+        # Delete all relationship.
         def delete_all
           each {|n| n.delete}
         end
 
+        # Same as Neo4j::Rails::Relationships::NodesDSL#find except that it searches the relationships instead of
+        # the nodes.
         def find(*args, &block)
           return super(*args, &block) if block
 
@@ -77,6 +114,8 @@ module Neo4j
             end                             
         end
 
+        # Same as Neo4j::Rails::Relationships::NodesDSL#all except that it searches the relationships instead of
+        # the nodes.
         def all(*args)
           if args.first.class == Neo4j::Rails::Relationship #arg is a relationship
             find_all{|r| r == args.first}
@@ -89,6 +128,8 @@ module Neo4j
           end
         end
 
+        # Same as Neo4j::Rails::Relationships::NodesDSL#first except that it searches the relationships instead of
+        # the nodes.
         def first(*args)
           if result = all(*args)
             if result.respond_to?(:collect) #if it's enumerable, get the first result
@@ -101,7 +142,8 @@ module Neo4j
           end
         end
 
-
+        # Same as Neo4j::Rails::Relationships::NodesDSL#[] except that it returns the n:th relationship instead
+        # of the n:th node
         def [](index)
           i = 0
           each{|x| return x if i == index; i += 1}

@@ -1,8 +1,20 @@
 module Neo4j
   module Rails
+
+    # Includes the Neo4j::RelationshipMixin and adds ActiveRecord/Model like behaviour.
+    # That means for example that you don't have to care about transactions since they will be
+    # automatically be created when needed.
+    #
+    # By default all relationships created by hte Neo4j::Rails::Model will be of this type unless it is specified by
+    # an has_n(...).relationship(relationship_class),
+    #
+    # Notice that this class works like any ActiveModel compliant object with callbacks and validations.
+    # It also implement timestamps (like active record), just add a updated_at or created_at attribute.
+    #
     class Relationship
       include Neo4j::RelationshipMixin
 
+      # The relationship type
       attr_reader :type
 
       index :_classname

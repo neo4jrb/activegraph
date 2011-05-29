@@ -1,5 +1,25 @@
 module Neo4j
   module Rails
+
+    # Includes the Neo4j::NodeMixin and adds ActiveRecord/Model like behaviour.
+    # That means for example that you don't have to care about transactions since they will be
+    # automatically be created when needed.
+    #
+    # ==== Traversals
+    # This class only expose a limited set of traversals.
+    # If you want to access the raw java node to do traversals use the _java_node.
+    #
+    #   class Person < Neo4j::Rails::Model
+    #   end
+    #
+    #   person = Person.find(...)
+    #   person._java_node.outgoing(:foo).depth(:all)...
+    #
+    # ==== has_n and has_one
+    #
+    # The has_n and has_one relationship accessors returns objects of type Neo4j::Rails::Relationships::RelsDSL
+    # and Neo4j::Rails::Relationships::NodesDSL which behaves more like the Active Record relationships.
+    #
     class Model
       include Neo4j::NodeMixin
 
