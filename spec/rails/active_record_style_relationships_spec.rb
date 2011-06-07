@@ -144,6 +144,33 @@ describe "Neo4j::Rails::Model Relationships" do
 
     end
 
+    describe "connect outgoing nodes" do
+      before(:each) do
+        @movie_4 = @movie_class.create :title => 'movie_4'
+        @ret = @actor.acted_in_rels.connect(@movie_4, :since => 2001)
+      end
+
+      it "creates a new relationship with the given properties" do
+        @ret.should be_kind_of(ModelRelationship1)
+        @ret[:since].should == 2001
+      end
+
+      it "connects the two nodes" do
+        @actor.outgoing(@actor_class.acted_in).should include(@movie_4)
+      end
+
+      it "saves the new relationship with save is called" do
+        @actor.save
+        @actor._java_node.outgoing(@actor_class.acted_in).should include(@movie_4)
+      end
+
+      it "one can connect two nodes without having to specify properties on the relationship" do
+        @movie_5 = @movie_class.create :title => 'movie_5'
+        @actor.acted_in_rels.connect(@movie_5)
+        @actor.outgoing(@actor_class.acted_in).should include(@movie_5)
+      end
+    end
+
     describe "build outgoing on rel" do
       before(:each) do
         @ret = @actor.acted_in_rels.build(:title => 'movie_4')

@@ -41,6 +41,16 @@ module Neo4j
           rel
         end
 
+        # Connects this node with an already existing other node with a new relationship.
+        # The relationship can optionally be given a hash of properties
+        # Does not save it.
+        # Returns the created relationship
+        def connect(other_node, relationship_properties = nil)
+          rel = @storage.create_relationship_to(other_node, @dir)
+          rel.attributes = relationship_properties if relationship_properties
+          rel
+        end
+
         # Same as Neo4j::Rails::Relationships::NodesDSL#create! except that you specify the properties of the
         # relationships and it returns a relationship
         def create!(attrs)
