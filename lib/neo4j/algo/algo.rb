@@ -1,6 +1,6 @@
 # external neo4j dependencies
 require 'neo4j/to_java'
-require 'neo4j/jars/core/neo4j-graph-algo-1.3.jar'
+require 'neo4j/jars/core/neo4j-graph-algo-1.4.M03.jar'
 
 module Neo4j
 
