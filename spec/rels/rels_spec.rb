@@ -31,6 +31,25 @@ describe Neo4j::Node, :type => :transactional do
   end
 
 
+  describe "#node(direction, type)"do
+    before(:each) do
+      @a,@b,@c,@d,@e,@f = create_nodes #Neo4j::Transaction.run {create_nodes}
+    end
+
+    it "returns a node of the given relationship type if it exists" do
+      @a.node(:outgoing, :friends).should == @b
+    end
+
+    it "returns nil if the given relationship does not exist" do
+      @a.node(:incoming, :friends).should be_nil
+      @a.node(:outgoing, :unknown_rel).should be_nil
+    end
+
+    it "should raise an exception if there are more then one relationship" do
+      lambda {@b.node(:work)}.should raise_exception
+    end
+  end
+
   it "#rel? returns true if there are any relationship" do
     a = Neo4j::Node.new
     a.rel?.should be_false
