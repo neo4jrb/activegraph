@@ -12,7 +12,7 @@ module Neo4j
     # Typically this invariant is maintained by the rest of the code: if at any time more than one such relationships exist, it is a fatal error that should generate an exception.
 
     # This method reflects that semantics and returns either:
-    #  * null if there are zero relationships of the given type and direction,
+    #  * nil if there are zero relationships of the given type and direction,
     #  * the relationship if there's exactly one, or
     #  * throws an unchecked exception in all other cases.
     #

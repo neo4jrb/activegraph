@@ -8,7 +8,7 @@ module Neo4j
 
         def on_relationship_created(rel, *)
           trigger_start_node = Rule.trigger?(rel._start_node)
-          trigger_end_node   = Rule.trigger?(rel._end_node)
+          trigger_end_node = Rule.trigger?(rel._end_node)
           Rule.trigger_rules(rel._start_node) if trigger_start_node
           Rule.trigger_rules(rel._end_node) if trigger_end_node
         end
@@ -24,14 +24,14 @@ module Neo4j
           return if del_rule_node
 
           # do we have prop_aggregations for this
-          clazz     = old_properties['_classname']
+          clazz = old_properties['_classname']
           rule_node = Rule.rule_node_for(clazz)
           return if rule_node.nil?
 
           id = node.getId
           rule_node.rules.each do |rule|
             next if rule.functions.nil?
-            rule_name         = rule.rule_name.to_s
+            rule_name = rule.rule_name.to_s
 
             # is the rule node deleted ?
             deleted_rule_node = data.deletedNodes.find { |n| n == rule_node.rule_node }
@@ -47,8 +47,12 @@ module Neo4j
           end
         end
 
-        def on_neo4j_started(*)
-          Rule.on_neo4j_started
+        def on_neo4j_started(db)
+          if Neo4j::Config[:enable_rules]
+            Rule.on_neo4j_started
+          else
+            db.event_handler.remove(self)
+          end
         end
       end
 

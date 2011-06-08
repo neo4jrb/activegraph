@@ -3,6 +3,10 @@
 # The folder location of the neo4j and lucene database
 storage_path: db
 
+# If enable neo4j.rb will create _all relationship to all instances inheriting from Neo4j::Rails::Model
+# If disabled all custom rules will also be unavailable.
+enable_rules: true
+
 # When using the Neo4j::Model you can let neo4j automatically set timestamps when updating/creating nodes.
 # If set to true neo4j.rb automatically timestamps create and update operations if the model has properties named created_at/created_on or updated_at/updated_on
 # (similar to ActiveRecord).
