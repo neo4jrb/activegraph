@@ -45,7 +45,7 @@ module Neo4j
       type, from_node, to_node, props = args
       self[:_classname] = self.class.to_s
       if props.respond_to?(:each_pair)
-        props.each_pair { |k, v| @_java_rel.set_property(k.to_s, v) }
+        props.each_pair { |k, v| respond_to?("#{k}=") ? self.send("#{k}=", v) : @_java_rel[k] = v }
       end
     end
 

@@ -24,14 +24,14 @@ describe Neo4j::RelationshipMixin, :type=> :transactional do
     b = Neo4j::Node.new
 
     # when
-    Friend.new(:friend, a,b, :age => 2, :colour => 'blue')
+    Friend.new(:friend, a,b, :age => 2, :colour => 'blue', :facebook_ids => [1,2,3])
 
     # then
     rel = a.rels(:friend).outgoing.first
     rel[:age].should == 2
     rel[:colour].should == 'blue'
+    rel[:facebook_ids] = [1,2,3]
   end
-
 
   it "can set properties with the []= operator and read it with the [] operator" do
     a = Neo4j::Node.new
