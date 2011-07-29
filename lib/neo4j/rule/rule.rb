@@ -119,11 +119,18 @@ module Neo4j
           rule_node.execute_rules(node, *changes)
 
           # recursively add relationships for all the parent classes with rules that also pass for this node
-          if (clazz = eval("#{classname}.superclass")) && clazz.include?(Neo4j::NodeMixin)
-            rule_node = rule_node_for(clazz)
-            rule_node && rule_node.execute_rules(node, *changes)
-          end
+          recursive(node,classname,*changes)
         end
+
+        private 
+
+          def recursive(node,classname,*changes)
+            if (clazz = eval("#{classname}.superclass")) && clazz.include?(Neo4j::NodeMixin)
+              rule_node = rule_node_for(clazz)
+              rule_node && rule_node.execute_rules(node, *changes)
+              recursive(node,clazz.name,*changes)
+            end
+          end
       end
     end
   end
