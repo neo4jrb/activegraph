@@ -27,7 +27,7 @@ module Neo4j
       end
 
       def running?
-        @batch_inserter != nil
+        !! @batch_inserter
       end
 
       # This method MUST be called after inserting is completed.
