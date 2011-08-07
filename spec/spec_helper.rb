@@ -70,6 +70,7 @@ begin
     end
 
     c.before(:all) do
+      rm_db_storage
       Neo4j.start
     end
 
