@@ -60,3 +60,5 @@ task 'upload-docs' do
          "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
 end
 
+task :default => 'spec:coverage'
+

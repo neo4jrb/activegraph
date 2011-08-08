@@ -1,7 +1,3 @@
-rvm:
+rvm: 
   - jruby
-branches:
-  only:
-    - master
-script: 'bundle exec rake spec:coverage'
 

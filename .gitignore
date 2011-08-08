@@ -13,3 +13,7 @@ tmp
 
 # vim
 .*.sw[a-z]
+
+Gemfile.lock
+coverage
+
