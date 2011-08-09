@@ -50,6 +50,7 @@ module Neo4j
       Neo4j.logger.info "Starting Neo4j in readonly mode since the #{@storage_path} is locked"
       Neo4j.load_local_jars
       @graph = org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase.new(@storage_path, Config.to_java_map)
+      @lucene = @graph.index
     end
 
     def start_local_graph_db #:nodoc:
@@ -67,7 +68,7 @@ module Neo4j
       Neo4j.load_online_backup if Neo4j.config[:online_backup_enabled]
       @graph = org.neo4j.kernel.HighlyAvailableGraphDatabase.new(@storage_path, Neo4j.config.to_java_map)
       @graph.register_transaction_event_handler(@event_handler)
-      @lucene = @graph.index #org.neo4j.index.impl.lucene.LuceneIndexProvider.new
+      @lucene = @graph.index
       @event_handler.neo4j_started(self)
     end
 

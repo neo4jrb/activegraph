@@ -1,4 +1,9 @@
-== 1.1.2 / 2011-06-08
+
+* real recursive rule to the top class, subclasses with rules did not work (Frédéric Vanclef)
+* BUG: not able to create array properties on relationships (Pere Urbon)
+* BUG: lucene did not work if starting up neo4j in read only mode (like rails console when the rails is already running)
+
+  == 1.1.2 / 2011-06-08
 * Added configuration option 'enable_rules' to disable the _all relationships and custom rules [#176]
 * Added a #node method on the Neo4j::Node and Neo4j::NodeMixin. Works like the #rel method but returns the node instead. [#174]
 * Simplify creating relationship between two existing nodes [#175]
