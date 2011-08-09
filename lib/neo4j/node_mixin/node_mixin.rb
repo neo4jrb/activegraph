@@ -45,7 +45,7 @@ module Neo4j
 
     delegate :[]=, :[], :property?, :props, :attributes, :update, :neo_id, :id, :rels, :rel?, :node, :to_param, :getId,
              :rel, :del, :list?, :print, :print_sub, :outgoing, :incoming, :both, :expand, :get_property, :set_property,
-             :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel, :wrapped_entity,
+             :equal?, :eql?, :==, :exist?, :getRelationships, :getSingleRelationship, :_rels, :rel, :wrapped_entity, :_node,
              :to => :@_java_node, :allow_nil => true
 
 
