@@ -69,16 +69,16 @@ begin
       end 
     end
 
-    c.before(:all) do
-      rm_db_storage
-      Neo4j.start
-    end
-
-    c.after(:all) do
-      finish_tx
-      Neo4j.shutdown
-      rm_db_storage
-    end
+#    c.before(:all) do
+#      rm_db_storage
+#      Neo4j.start
+#    end
+#
+#    c.after(:all) do
+#      finish_tx
+#      Neo4j.shutdown
+#      rm_db_storage
+#    end
 
   end
 

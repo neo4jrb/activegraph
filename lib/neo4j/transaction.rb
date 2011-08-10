@@ -58,8 +58,8 @@ module Neo4j
         tx.success
       rescue Exception => e
         puts "GOT EXCEPTION #{e}"
-        puts "  1 CAUSE #{e.cause}" if e.respond_to?(:cause)
-        puts "  2 CAUSE #{e.getCause()}" if e.respond_to?(:getCause)
+        puts "  CAUSE #{e.cause}" if e.respond_to?(:cause)
+        e.cause.print_stack_trace if e.respond_to?(:cause)
         tx.failure unless tx.nil?
         raise
       ensure
