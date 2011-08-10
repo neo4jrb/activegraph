@@ -56,7 +56,10 @@ module Neo4j
         tx = Neo4j::Transaction.new
         ret = yield tx
         tx.success
-      rescue Exception
+      rescue Exception => e
+        puts "GOT EXCEPTION #{e}"
+        puts "  1 CAUSE #{e.cause}" if e.respond_to?(:cause)
+        puts "  2 CAUSE #{e.getCause()}" if e.respond_to?(:getCause)
         tx.failure unless tx.nil?
         raise
       ensure

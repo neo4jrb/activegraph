@@ -20,10 +20,10 @@ require 'neo4j/core_ext/class/inheritable_attributes'
 
 require 'neo4j/jars/core/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/core/lucene-core-3.1.0.jar'
-require 'neo4j/jars/core/neo4j-lucene-index-1.4.M03.jar'
-require 'neo4j/jars/core/neo4j-kernel-1.4.M03.jar'
-require 'neo4j/jars/ha/neo4j-management-1.4.M03.jar'
-require 'neo4j/jars/ha/neo4j-jmx-1.4.M03.jar'
+require 'neo4j/jars/core/neo4j-lucene-index-1.4.1.jar'
+require 'neo4j/jars/core/neo4j-kernel-1.4.1.jar'
+require 'neo4j/jars/ha/neo4j-management-1.4.1.jar'
+require 'neo4j/jars/ha/neo4j-jmx-1.4.1.jar'
 
 module Neo4j
 
@@ -39,24 +39,24 @@ module Neo4j
   end
 
   def self.load_shell_jars
-    require 'neo4j/jars/ha/neo4j-shell-1.4.M03.jar'
+    require 'neo4j/jars/ha/neo4j-shell-1.4.1.jar'
   end
 
   def self.load_online_backup
-    require 'neo4j/jars/ha/neo4j-com-1.4.M03.jar'
-    require 'neo4j/jars/core/neo4j-backup-1.4.M03.jar'
+    require 'neo4j/jars/ha/neo4j-com-1.4.1.jar'
+    require 'neo4j/jars/core/neo4j-backup-1.4.1.jar'
     require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
     Neo4j.send(:const_set, :OnlineBackup, org.neo4j.backup.OnlineBackup)
   end
 
   def self.load_ha_jars
-    require 'neo4j/jars/core/neo4j-backup-1.4.M03.jar'
+    require 'neo4j/jars/core/neo4j-backup-1.4.1.jar'
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
-    require 'neo4j/jars/ha/neo4j-ha-1.4.M03.jar'
-    require 'neo4j/jars/ha/neo4j-com-1.4.M03.jar'
+    require 'neo4j/jars/ha/neo4j-ha-1.4.1.jar'
+    require 'neo4j/jars/ha/neo4j-com-1.4.1.jar'
     require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
-    require 'neo4j/jars/ha/org.apache.servicemix.bundles.lucene-3.0.1_2.jar'
+    # require 'neo4j/jars/ha/org.apache.servicemix.bundles.lucene-3.0.1_2.jar' # TODO IS THIS NEEDED ?
     require 'neo4j/jars/ha/zookeeper-3.3.2.jar'
   end
 end
