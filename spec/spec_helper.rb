@@ -17,6 +17,7 @@ begin
   require 'logger'
   Neo4j::Config[:logger_level] = Logger::ERROR
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, "neo4j-rspec-db")
+  Neo4j::Config[:debug_java] = true
 
   def rm_db_storage
     FileUtils.rm_rf Neo4j::Config[:storage_path]
@@ -57,6 +58,7 @@ begin
 
     c.after(:each, :type => :transactional) do
       finish_tx
+      Neo4j::Rails::Model.close_lucene_connections
       Neo4j::Transaction.run do
         Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
       end
@@ -64,21 +66,15 @@ begin
 
     c.after(:each) do
       finish_tx
+      Neo4j::Rails::Model.close_lucene_connections
       Neo4j::Transaction.run do
         Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
-      end 
+      end
     end
 
-#    c.before(:all) do
-#      rm_db_storage
-#      Neo4j.start
-#    end
-#
-#    c.after(:all) do
-#      finish_tx
-#      Neo4j.shutdown
-#      rm_db_storage
-#    end
+    c.before(:all) do
+      rm_db_storage unless Neo4j.running?
+    end
 
   end
 

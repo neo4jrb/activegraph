@@ -57,9 +57,11 @@ module Neo4j
         ret = yield tx
         tx.success
       rescue Exception => e
-        puts "GOT EXCEPTION #{e}"
-        puts "  CAUSE #{e.cause}" if e.respond_to?(:cause)
-        e.cause.print_stack_trace if e.respond_to?(:cause)
+        if Neo4j::Config[:debug_java] && e.respond_to?(:cause)
+          puts "Java Exception in a transaction, cause: #{e.cause}"
+          e.cause.print_stack_trace
+        end
+
         tx.failure unless tx.nil?
         raise
       ensure
