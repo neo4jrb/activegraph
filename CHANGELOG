@@ -1,3 +1,6 @@
+  == 1.2.0 / 2011-08-16
+* Upgrade to java library neo4j 1.4.1, see http://neo4j.rubyforge.org/guides/configuration.html
+
   == 1.1.4 / 2011-08-10
 * Fixed dependency to will_paginate, locked to 3.0.pre4 (newly released 3.0.0 does not work yet with neo4j.rb)
 
