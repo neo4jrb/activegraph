@@ -20,7 +20,7 @@ module Neo4j
 		
 				# get a list of column names for a given class
 				def column_names
-					klass.props.keys
+					klass._decl_props.keys
 				end
 		
 				# Get an instance by id of the model
