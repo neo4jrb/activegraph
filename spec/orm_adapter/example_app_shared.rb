@@ -141,5 +141,11 @@ shared_examples_for "example app with orm_adapter" do
         reload_model(user).notes.should == notes
       end
     end
+
+    describe "#column_names" do
+      it "should include declared property names" do
+          user_adapter.column_names.should include(:name)
+      end
+    end
   end
 end
