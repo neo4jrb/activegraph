@@ -1,3 +1,6 @@
+  == 1.2.1 / 2011-08-29
+* Fixed failing RSpecs for devise-neo4j gem - column_names method on neo4j orm adapter throws NoMethodError (thanks Deepak N)
+
   == 1.2.0 / 2011-08-16
 * Upgrade to java library neo4j 1.4.1, see http://neo4j.rubyforge.org/guides/configuration.html
 
