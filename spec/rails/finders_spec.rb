@@ -5,6 +5,7 @@ class FindableModel < Neo4j::Rails::Model
   property :age, :type => Fixnum
   index :name
   index :age
+  validates_presence_of :name
 
   def to_s
     name
@@ -13,9 +14,9 @@ end
 
 describe "finders" do
 	subject { FindableModel.create!(:name => "Test 1", :age => 4241) }
-		
+
 	before(:each) do
-		@test_0 = FindableModel.create!(:name => "Test 0")    
+		@test_0 = FindableModel.create!(:name => "Test 0")
 		@test_2 = FindableModel.create!(:name => "Test 2")
 		@test_3 = FindableModel.create!(:name => "Test 3", :age => 3)
 		@test_4 = FindableModel.create!(:name => "Test 1")
@@ -117,6 +118,154 @@ describe "finders" do
     end
   end
 
+  describe ".find!" do
+    context "when the node by given id exists" do
+      it "should return the node" do
+        FindableModel.find!(@test_0.id).should == @test_0
+      end
+    end
+
+    context "for non existant node id" do
+      subject { lambda { FindableModel.find!(nonexistant_id = 99999) } }
+
+      it { should raise_error Neo4j::Rails::RecordNotFoundError }
+    end
+  end
+
+  describe ".find_or_create_by" do
+    context "when the node is found" do
+      let!(:node) do
+        FindableModel.create!(:name => "Foo", :ssn => "333-22-1111")
+      end
+
+      it "returns the node" do
+        FindableModel.find_or_create_by(:name => "Foo").should == node
+      end
+    end
+
+    context "when the node is not found" do
+      context "when not providing a block" do
+        let!(:node) do
+          FindableModel.find_or_create_by(:name => "Bar", :age => "22")
+        end
+
+        it "creates a persisted node" do
+          node.should be_persisted
+        end
+
+        it "sets the attributes" do
+          node.name.should == "Bar"
+          node.age.should == 22
+        end
+      end
+
+      context "when providing a block" do
+        let!(:node) do
+          FindableModel.find_or_create_by(:name => "Bar") do |node|
+            node.age = 22
+          end
+        end
+
+        it "creates a persisted node" do
+          node.should be_persisted
+        end
+
+        it "sets the attributes" do
+          node.name.should == "Bar"
+        end
+
+        it "calls the block" do
+          node.age.should == 22
+        end
+      end
+
+      context "when node is invalid" do
+        let!(:node) do
+          FindableModel.find_or_create_by(:age => 22, :name => nil)
+        end
+
+        it "node is not persisted" do
+          node.should_not be_persisted
+        end
+
+        it "node is invalid" do
+          node.should be_invalid
+        end
+      end
+    end
+  end
+
+  describe ".find_or_create_by!" do
+    context "when the node is found" do
+      let!(:node) do
+        FindableModel.create!(:name => "Foo", :ssn => "333-22-1111")
+      end
+
+      it "returns the node" do
+        FindableModel.find_or_create_by!(:name => "Foo").should == node
+      end
+    end
+
+    context "when the node is not found" do
+      context "when node is invalid" do
+        subject do
+          lambda { FindableModel.find_or_create_by!(:age => 22, :name => nil) }
+        end
+
+        it { should raise_error Neo4j::Rails::Persistence::RecordInvalidError }
+      end
+    end
+  end
+
+  describe ".find_or_initialize_by" do
+    context "when the node is found" do
+      let!(:node) do
+        FindableModel.create!(:name => "Foo")
+      end
+
+      it "returns the node" do
+        FindableModel.find_or_initialize_by(:name => "Foo").should == node
+      end
+    end
+
+    context "when the node is not found" do
+      context "when not providing a block" do
+        let!(:node) do
+          FindableModel.find_or_initialize_by(:name => "Bar", :age => 22)
+        end
+
+        it "creates a new node" do
+          node.should be_new
+        end
+
+        it "sets the attributes" do
+          node.name.should == "Bar"
+          node.age.should == 22
+        end
+      end
+
+      context "when providing a block" do
+        let!(:node) do
+          FindableModel.find_or_initialize_by(:name => "Bar") do |node|
+            node.age = 22
+          end
+        end
+
+        it "creates a new node" do
+          node.should be_new
+        end
+
+        it "sets the attributes" do
+          node.name.should == "Bar"
+        end
+
+        it "calls the block" do
+          node.age.should == 22
+        end
+      end
+    end
+  end
+
   context "query, :sort => {:field => :asc/:desc}" do
 
 		it ":sort => {:name => :asc} should sort by ascending" do
@@ -157,7 +306,7 @@ describe "finders" do
     it "#paginate(:all, query, :per_page => , :page=>, :sort=>)" do
       it_should_be_sorted([0,1,2,3], FindableModel.paginate(:all, 'name: Test*', :page => 1, :per_page => 5, :sort => {:name => :asc}))
       it_should_be_sorted([0,1], FindableModel.paginate(:all, 'name: Test*', :page => 1, :per_page => 2, :sort => {:name => :asc}))
-      it_should_be_sorted([2,3], FindableModel.paginate(:all, 'name: Test*', :page => 2, :per_page => 2, :sort => {:name => :asc}))      
+      it_should_be_sorted([2,3], FindableModel.paginate(:all, 'name: Test*', :page => 2, :per_page => 2, :sort => {:name => :asc}))
       it_should_be_sorted([3,2,1,0], FindableModel.paginate(:all, 'name: Test*', :page => 1, :per_page => 5, :sort => {:name => :desc}))
     end
 
@@ -182,7 +331,7 @@ describe "finders" do
     expectation.reverse! if order == :desc
     res.should == expectation
   end
-  
+
 	context "for single records" do
 		subject { @test_2 }
 
