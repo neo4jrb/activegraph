@@ -1,5 +1,8 @@
 module Neo4j
   module Rails
+    class RecordNotFoundError < StandardError
+    end
+
     module Finders
       extend ActiveSupport::Concern
 
@@ -81,6 +84,46 @@ module Neo4j
           end
         end
 
+        # Finds a model by given id or matching given criteria.
+        # When node not found, raises RecordNotFoundError
+        def find!(*args)
+          self.find(*args).tap do |result|
+            raise Neo4j::Rails::RecordNotFoundError if result.nil?
+          end
+        end
+
+        # Find the first Node given the conditions, or creates a new node
+        # with the conditions that were supplied.
+        #
+        # @example Find or create the node.
+        #   Person.find_or_create_by(:name => "test")
+        #
+        # @param [ Hash ] attrs The attributes to check.
+        #
+        # @return [ Node ] A matching or newly created node.
+        def find_or_create_by(attrs = {}, &block)
+          find_or(:create, attrs, &block)
+        end
+
+        # Similar to find_or_create_by,calls create! instead of create
+        # Raises RecordInvalidError if model is invalid.
+        def find_or_create_by!(attrs = {}, &block)
+          find_or(:create!, attrs, &block)
+        end
+
+        # Find the first Node given the conditions, or initializes a new node
+        # with the conditions that were supplied.
+        #
+        # @example Find or initialize the node.
+        #   Person.find_or_initialize_by(:name => "test")
+        #
+        # @param [ Hash ] attrs The attributes to check.
+        #
+        # @return [ Node ] A matching or newly initialized node.
+        def find_or_initialize_by(attrs = {}, &block)
+          find_or(:new, attrs, &block)
+        end
+
         def all(*args)
           if !conditions_in?(*args)
             # use the _all rule to recover all the stored instances of this node
@@ -159,6 +202,19 @@ module Neo4j
           Thread.current[:neo4j_lucene_connection] ||= []
           Thread.current[:neo4j_lucene_connection] << hits
           hits
+        end
+
+        # Find the first object or create/initialize it.
+        #
+        # @example Find or perform an action.
+        #   Person.find_or(:create, :name => "Dev")
+        #
+        # @param [ Symbol ] method The method to invoke.
+        # @param [ Hash ] attrs The attributes to query or set.
+        #
+        # @return [ Node ] The first or new node.
+        def find_or(method, attrs = {}, &block)
+          first(:conditions => attrs) || send(method, attrs, &block)
         end
       end
     end

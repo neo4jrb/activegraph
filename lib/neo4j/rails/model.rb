@@ -29,6 +29,7 @@ module Neo4j
         reset_attributes
         clear_relationships
         self.attributes = attributes if attributes.is_a?(Hash)
+        yield self if block_given?
       end
 
       def id
@@ -86,7 +87,7 @@ module Neo4j
         def entity_load(id)
           Neo4j::Node.load(id)
         end
-        
+
         ##
         # Determines whether to use Time.local (using :local) or Time.utc (using :utc) when pulling
         # dates and times from the database. This is set to :local by default.
