@@ -478,8 +478,10 @@ describe Neo4j::Model do
       item.reload
       item.orders.should include(order)
     end
-
   end
 
-
+  describe "i18n_scope" do
+    subject { Neo4j::Rails::Model.i18n_scope }
+    it { should == :neo4j }
+  end
 end
