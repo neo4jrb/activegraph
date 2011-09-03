@@ -128,6 +128,13 @@ module Neo4j
 
           end
         end
+
+        # Set the i18n scope to overwrite ActiveModel.
+        #
+        # @return [ Symbol ] :neo4j
+        def i18n_scope
+          :neo4j
+        end
       end
     end
 
