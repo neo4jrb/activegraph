@@ -7,7 +7,10 @@ group 'test' do
   gem "rdoc", ">= 2.5.10"
   gem "horo", ">= 1.0.2"
   gem "rspec", ">= 2.0.0"
-  gem "rspec-rails-matchers", ">= 0.2.1"
+
+  # use this version for rspec-rails-matchers which work with latest RSpec (Rspec => RSpec)
+  gem "rspec-rails-matchers", :git => 'git://github.com/afcapel/rspec-rails-matchers.git'
+
   gem "test-unit"
   gem 'rcov'
 end
