@@ -5,7 +5,7 @@ module Neo4j
     initializer "neo4j.tx" do |app|
       app.config.middleware.use Neo4j::Rails::LuceneConnectionCloser
     end
-    
+
     # Add ActiveModel translations to the I18n load_path
     initializer "i18n" do |app|
     	config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
@@ -15,6 +15,19 @@ module Neo4j
     # register migrations in config/initializers
     initializer "neo4j.start", :after => :load_config_initializers do |app|
       Neo4j::Config.setup.merge!(app.config.neo4j.to_hash)
+    end
+
+    # Instantitate any registered observers after Rails initialization and
+    # instantiate them after being reloaded in the development environment
+    initializer "instantiate.observers" do
+      config.after_initialize do
+        ::Neo4j::Rails::Model.observers = config.neo4j.observers || []
+        ::Neo4j::Rails::Model.instantiate_observers
+
+        ActionDispatch::Callbacks.to_prepare do
+          ::Neo4j::Rails::Model.instantiate_observers
+        end
+      end
     end
   end
 end
