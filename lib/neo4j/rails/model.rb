@@ -148,6 +148,7 @@ module Neo4j
       include Timestamps # handle created_at, updated_at timestamp properties
       include Validations # enable validations
       include Callbacks # enable callbacks
+      include ActiveModel::Observing # enable observers
       include Finders # ActiveRecord style find
       include Relationships # for none persisted relationships
     end

@@ -2,7 +2,15 @@ module Neo4j
 	module Rails
 		module Callbacks #:nodoc:
 			extend ActiveSupport::Concern
-			
+
+      CALLBACKS = [
+        :before_validation, :after_validation,
+        :before_create, :around_create, :after_create,
+        :before_destroy, :around_destroy, :after_destroy,
+        :before_save, :around_save, :after_save,
+        :before_update, :around_update, :after_update,
+        ].freeze
+
 			included do
 				[:valid?, :create_or_update, :create, :update, :destroy].each do |method|
 					alias_method_chain method, :callbacks
