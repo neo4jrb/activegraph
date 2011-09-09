@@ -225,6 +225,23 @@ describe "Neo4j::Model Relationships" do
       member.save
       member.avatar.id.should_not be_nil
     end
+    
+    it "has_one should allow assignments to nil" do
+      member = Member.new
+      member.avatar = nil
+      member.avatar.should be_nil
+      member.save
+      member.reload.avatar.should be_nil
+    end 
+
+    it "has_one should allow changing a value to nil from a non nil value" do
+      member = Member.new
+      member.avatar = Avatar.new
+      member.save
+      member.reload.avatar = nil
+      member.save
+      member.reload.avatar.should be_nil
+    end 
 
     it "adding nodes to a has_n method created with the #new method" do
       icecream = IceCream.new
