@@ -149,16 +149,18 @@ module Neo4j
       end
 
       def create()
-        # prevent calling create twice
-        @start_node.rm_outgoing_rel(type, self)
-        @end_node.rm_incoming_rel(type, self)
+        begin
+          # prevent calling create twice
+          @start_node.rm_outgoing_rel(type, self)
+          @end_node.rm_incoming_rel(type, self)
 
-        _persist_start_node
-        _persist_end_node
+          _persist_start_node
+          _persist_end_node
 
-        @_java_rel = Neo4j::Relationship.new(type, start_node, end_node)
-        init_on_create
-        clear_changes
+          @_java_rel = Neo4j::Relationship.new(type, start_node, end_node)
+          init_on_create
+          clear_changes
+        end unless @end_node.nil?
         true
       end
 
