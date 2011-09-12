@@ -196,10 +196,13 @@ module Neo4j
           write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
         end
       end
-
-      def _add_relationship(rel_type, attr)
+      
+      def _create_entity(rel_type, attr)
         clazz = self.class._decl_rels[rel_type.to_sym].target_class
-        node  = clazz.new(attr)
+        _add_relationship(rel_type, clazz.new(attr))
+      end
+      
+      def _add_relationship(rel_type, node)
         if respond_to?("#{rel_type}=")
           send("#{rel_type}=", node)
         elsif respond_to?("#{rel_type}")
@@ -220,32 +223,29 @@ module Neo4j
           raise "oops #{rel_type}"
         end
       end
+      
+      def _has_relationship(rel_type, id)
+        !_find_node(rel_type,id).nil?
+      end
 
       def update_nested_attributes(rel_type, attr, options)
         allow_destroy, reject_if = [options[:allow_destroy], options[:reject_if]] if options
-
-        if new?
-          # We are updating a node that was created with the 'new' method.
-          # The relationship will only be kept in the Value object.
-          _add_relationship(rel_type, attr) unless reject_if?(reject_if, attr) || (allow_destroy && attr[:_destroy] && attr[:_destroy] != '0')
-        else
-          # We have a node that was created with the #create method - has real Neo4j relationships
-          # does it exist ?
-          found   = _find_node(rel_type, attr[:id])
-
+        begin
           # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
-          destroy = attr[:_destroy] && attr[:_destroy] != '0'
-
-          if found
-            if destroy
-              found.destroy if allow_destroy
+          destroy = allow_destroy && attr[:_destroy] && attr[:_destroy] != '0'
+          found = Neo4j::Node.load(attr[:id])
+          if destroy
+            found.destroy if found
+          else
+            if not found
+              _create_entity(rel_type, attr) #Create new node from scratch
             else
-              found.update_attributes(attr) # it already exist, so update that one
+              #Create relationship to existing node in case it doesn't exist already
+              _add_relationship(rel_type, found) if (not _has_relationship(rel_type,attr[:id])) 
+              found.update_attributes(attr)              
             end
-          elsif !destroy && !reject_if?(reject_if, attr)
-            _add_relationship(rel_type, attr)
           end
-        end
+        end unless reject_if?(reject_if, attr)
       end
 
       public
