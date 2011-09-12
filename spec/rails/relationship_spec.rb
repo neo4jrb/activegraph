@@ -389,6 +389,22 @@ describe "Neo4j::Model Relationships" do
         member.update_attributes params[:member]
         member.avatar.icon.should == 'sad'
       end
+      
+      it "create one-to-one - allows assigning avatars that have already been created" do
+        avatar = Avatar.create(:icon => 'angry')
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:id => avatar.id}}}
+        member = Member.create(params[:member])
+        member.avatar.should == avatar
+        member.avatar.icon.should == 'angry'
+      end
+
+      it "create one-to-one - allows updating avatars that have already been created" do
+        avatar = Avatar.create(:icon => 'angry')
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:id => avatar.id, :icon => 'happy'}}}
+        member = Member.create(params[:member])
+        member.avatar.id.should == avatar.id
+        member.avatar.icon.should == 'happy'
+      end
 
       it "create one-to-one  - when you add the _destroy key to the attributes hash, with a value that evaluates to true, you will destroy the associated model" do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
@@ -499,6 +515,42 @@ describe "Neo4j::Model Relationships" do
         # then
         member.posts.first.title.should == '[UPDATED] An, as of yet, undisclosed awesome Ruby documentation browser!'
         member.posts[1].title.should == '[UPDATED] other post'
+      end
+
+      it "If the hash contains an id key that matches existing records, the matching records will associated" do
+        post1 = Post.create(:title => "First Old post")
+        post2 = Post.create(:title => "Second Old post")
+        params = {:member => {
+            :name => 'joe', :posts_attributes => [
+                {:id => post1.id},
+                {:id => post2.id}
+            ]
+        }}
+
+        member = Member.create(params[:member])
+
+        member.posts[0].id.should == post1.id
+        member.posts[1].id.should == post2.id
+
+        member.posts.first.title.should == 'First Old post'
+        member.posts[1].title.should == 'Second Old post'
+      end
+
+      it "If the hash contains a mix of existing and new records, the existing record will be updated, and a new record will be created" do
+        post1 = Post.create(:title => "First Old post")
+        params = {:member => {
+            :name => 'joe', :posts_attributes => [
+                {:id => post1.id, :title => "Updated first Old post"},
+                {:title => "New post"}
+            ]
+        }}
+
+        member = Member.create(params[:member])
+
+        member.posts[0].id.should == post1.id
+
+        member.posts.first.title.should == 'Updated first Old post'
+        member.posts[1].title.should == 'New post'
       end
     end
   end
