@@ -69,7 +69,7 @@ describe Neo4j::Model do
     it "runs a block in a transaction" do
       id = IceCream.transaction do
         a = IceCream.create :flavour => 'vanilla'
-        a.ingrediences << Neo4j::Node.new
+        a.ingredients << Neo4j::Node.new
         a.id
       end
       IceCream.load(id).should_not be_nil
@@ -78,7 +78,7 @@ describe Neo4j::Model do
     it "takes a 'tx' parameter that can be used to rollback the transaction" do
       id = IceCream.transaction do |tx|
         a = IceCream.create :flavour => 'vanilla'
-        a.ingrediences << Neo4j::Node.new
+        a.ingredients << Neo4j::Node.new
         tx.fail
         a.id
       end
@@ -131,8 +131,6 @@ describe Neo4j::Model do
         model.flavour.should be_nil
         model.should_not be_valid
         model.save
-
-        Neo4j::Rails::Transaction.fail
       end
 
       model.reload.flavour.should == 'vanilla'
