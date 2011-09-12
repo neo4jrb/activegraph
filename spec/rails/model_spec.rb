@@ -135,8 +135,24 @@ describe Neo4j::Model do
 
       model.reload.flavour.should == 'vanilla'
     end
+    
+    it "does not modify relationships if validation fails when save is run in a transaction" do
+      model = IceCream.create(:flavour => 'vanilla')
+      model.ingredients << Ingredient.create(:name => 'sugar')
+      model.save
 
-    it "create can initilize the object with a block" do
+      IceCream.transaction do
+        model.flavour = nil
+        model.ingredients << Ingredient.create(:name => 'flour')
+        model.save.should be_false
+      end
+
+      model.reload.flavour.should == 'vanilla'
+      model.ingredients.size.should == 1
+      model.ingredients.first.name.should == 'sugar'
+    end
+
+    it "create can initialize the object with a block" do
       model = IceCream.create! {|o| o.flavour = 'vanilla'}
       model.should be_persisted
       model.flavour = 'vanilla'
