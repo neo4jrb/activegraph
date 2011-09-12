@@ -245,54 +245,54 @@ describe "Neo4j::Model Relationships" do
 
     it "adding nodes to a has_n method created with the #new method" do
       icecream = IceCream.new
-      suger = Ingredience.new :name => 'suger'
-      icecream.ingrediences << suger
-      icecream.ingrediences.should include(suger)
+      sugar = Ingredient.new :name => 'sugar'
+      icecream.ingredients << sugar
+      icecream.ingredients.should include(sugar)
     end
 
     it "adding nodes using outgoing should work for models created with the #new method" do
       icecream = IceCream.new
-      suger = Ingredience.new :name => 'suger'
-      icecream.outgoing(:ingrediences) << suger
-      icecream.outgoing(:ingrediences).should include(suger)
+      sugar = Ingredient.new :name => 'sugar'
+      icecream.outgoing(:ingredients) << sugar
+      icecream.outgoing(:ingredients).should include(sugar)
     end
 
     it "saving the node should create all the nested nodes" do
       icecream = IceCream.new(:flavour => 'vanilla')
-      suger = Ingredience.new :name => 'suger'
-      butter = Ingredience.new :name => 'butter'
+      sugar = Ingredient.new :name => 'sugar'
+      butter = Ingredient.new :name => 'butter'
 
-      icecream.ingrediences << suger << butter
-      icecream.ingrediences.should include(suger, butter)
+      icecream.ingredients << sugar << butter
+      icecream.ingredients.should include(sugar, butter)
 
-      suger.neo_id.should == nil
+      sugar.neo_id.should == nil
       icecream.save.should be_true
 
       # then
-      suger.neo_id.should_not be_nil
-      icecream.ingrediences.should include(suger, butter)
+      sugar.neo_id.should_not be_nil
+      icecream.ingredients.should include(sugar, butter)
 
       # make sure the nested nodes were properly saved
       ice = IceCream.load(icecream.neo_id)
-      ice.ingrediences.should include(suger, butter)
-      icecream.ingrediences.first.should be_kind_of(Ingredience)
+      ice.ingredients.should include(sugar, butter)
+      icecream.ingredients.first.should be_kind_of(Ingredient)
     end
 
     it "should not save nested nodes if it was not valid" do
       icecream = IceCream.new # not valid
-      suger = Ingredience.new :name => 'suger'
-      butter = Ingredience.new :name => 'butter'
+      sugar = Ingredient.new :name => 'sugar'
+      butter = Ingredient.new :name => 'butter'
 
-      icecream.ingrediences << suger << butter
-      icecream.ingrediences.should include(suger, butter)
+      icecream.ingredients << sugar << butter
+      icecream.ingredients.should include(sugar, butter)
 
-      suger.neo_id.should == nil
+      sugar.neo_id.should == nil
       icecream.save.should be_false
 
       # then
-      icecream.ingrediences.should include(suger, butter)
+      icecream.ingredients.should include(sugar, butter)
 
-      suger.neo_id.should == nil
+      sugar.neo_id.should == nil
     end
 
     describe "nested nodes two level deep" do

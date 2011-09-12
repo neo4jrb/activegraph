@@ -10,7 +10,11 @@ module Neo4j
       # The validation process on save can be skipped by passing false. The regular Model#save method is
       # replaced with this when the validations module is mixed in, which it is by default.
       def save(options={})
-        perform_validations(options) ? super : false
+        result = perform_validations(options) ? super : false
+        if !result
+          Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
+        end
+        result
       end
 
       def valid?(context = nil)
