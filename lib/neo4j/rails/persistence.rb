@@ -210,7 +210,7 @@ module Neo4j
           has_n << node
         else
           raise "oops #{rel_type}"
-        end                
+        end
       end
 
       def _find_node(rel_type, id)
