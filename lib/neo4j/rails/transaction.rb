@@ -12,11 +12,6 @@ module Neo4j
     #  end
     class Transaction
       class << self
-        def new
-          finish if Thread.current[:neo4j_transaction]
-          Thread.current[:neo4j_transaction] = Neo4j::Transaction.new
-        end
-
         def current
           Thread.current[:neo4j_transaction]
         end
@@ -50,16 +45,25 @@ module Neo4j
         end
 
         def run
-          begin
-            new
-            ret = yield self
-          rescue
-            fail
-            raise
-          ensure
-            finish
+          if running?
+            yield self
+          else
+            begin
+              new
+              ret = yield self
+            rescue
+              fail
+              raise
+            ensure
+              finish
+            end
+            ret
           end
-          ret
+        end
+        
+        private
+        def new
+          Thread.current[:neo4j_transaction] = Neo4j::Transaction.new
         end
       end
     end
