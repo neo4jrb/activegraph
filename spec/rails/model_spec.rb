@@ -367,7 +367,7 @@ describe Neo4j::Model do
       cream.should_not exist
     end
     
-    it "should allow nested transactions" do
+    it "should roll back a transaction when the transaction fails within a nested transaction" do
       cream = nil
       IceCream.transaction do
         cream = IceCream.create :flavour => 'x'
@@ -381,7 +381,26 @@ describe Neo4j::Model do
           Neo4j::Rails::Transaction.fail
         end
       end
+      
       cream.should_not exist
+    end
+    
+    it "should commit a two level nested transaction" do
+      cream = nil
+      IceCream.transaction do
+        cream = IceCream.create :flavour => 'x'
+        cream.flavour = 'vanilla'
+        cream.should exist
+        Ingredient.transaction do
+          ingredient = Ingredient.create(:name => 'sugar')
+          cream.ingredients << ingredient
+        end
+      end
+      
+      cream.should exist
+      cream.flavour.should == 'vanilla'
+      cream.ingredients.size.should == 1
+      cream.ingredients.first.name.should == 'sugar'
     end
   end
 
