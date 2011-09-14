@@ -151,6 +151,7 @@ module Neo4j
       include ActiveModel::Observing # enable observers
       include Finders # ActiveRecord style find
       include Relationships # for none persisted relationships
+      include Compositions
     end
   end
 end
