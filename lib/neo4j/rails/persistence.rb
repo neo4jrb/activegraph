@@ -73,6 +73,7 @@ module Neo4j
       def reload(options = nil)
         clear_changes
         clear_relationships
+        clear_composition_cache
         reset_attributes
         unless reload_from_database
           set_deleted_properties
