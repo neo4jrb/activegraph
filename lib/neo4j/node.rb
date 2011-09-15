@@ -49,17 +49,25 @@ module Neo4j
   # The property operations give access to the key-value property pairs.
   # Property keys are always strings. Valid property value types are the primitives(<tt>String</tt>, <tt>Fixnum</tt>, <tt>Float</tt>, <tt>Boolean</tt>), and arrays of those primitives.
   #
-  # === Instance Methods form Included Mixins
+  # === Instance Methods from Included Mixins
   # * Neo4j::Property - methods that deal with properties
-  # * Neo4j::NodeRelationship methods for relationship
+  # * Neo4j::Rels methods for accessing incoming and outgoing relationship and nodes of depth one.
   # * Neo4j::Equal equality operators: <tt>eql?</tt>, <tt>equal</tt>, <tt>==</tt>
   # * Neo4j::Index lucene index methods, like indexing a node
+  # * Neo4j::Traversal - provides an API for accessing outgoing and incoming nodes by traversing from this node of any depth.
   #
   # === Class Methods from Included Mixins
   # * Neo4j::Index::ClassMethods lucene index class methods, like find
   # * Neo4j::Load - methods for loading a node
   #
-  # See also the Neo4j::NodeMixin (Neo4j::Mapping::NodeMixin) if you want to wrap a node with your own Ruby class.
+  # === Neo4j::Node#new and Wrappers 
+  #
+  # The Neo4j::Node#new method does not return a new Ruby instance (!). Instead it will call the Neo4j Java API which will return a 
+  # *org.neo4j.kernel.impl.core.NodeProxy* object. This java object includes those mixins, see above. The #class method on the java object
+  # returns Neo4j::Node in order to make it feel like an ordnary Ruby object.
+  #
+  # If you want to map your own class to a neo4j node you can use the  Neo4j::NodeMixin or the Neo4j::Rails::Model.
+  # The Neo4j::NodeMixin and Neo4j::Rails::Model wraps the Neo4j::Node object. The raw java node/Neo4j::Node object can be access with the Neo4j::NodeMixin#java_node method.
   #
   class Node
     extend Neo4j::Index::ClassMethods
