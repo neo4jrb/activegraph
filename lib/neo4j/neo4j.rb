@@ -131,7 +131,17 @@ module Neo4j
     # For more information about common node space organizational patterns, see the design guide at http://wiki.neo4j.org/content/Design_Guide
     #
     def ref_node(this_db = self.started_db)
+      return Thread.current[:local_ref_node] if Thread.current[:local_ref_node]
       this_db.graph.reference_node
+    end
+    
+    def threadlocal_ref_node=(reference_node)
+      Thread.current[:local_ref_node] = reference_node.nil? ? nil : reference_node._java_node
+    end
+    
+    def index_prefix
+      node = ref_node
+      node[:name]
     end
 
     # Returns a Management JMX Bean.

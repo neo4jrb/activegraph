@@ -175,7 +175,7 @@ describe Neo4j::Model do
       p.errors.size.should == 0
     end
   end
-
+  
   describe "ActiveModel::Dirty" do
 
     it "implements attribute_changed?, _change, _changed, _was, _changed? methods" do
@@ -197,9 +197,37 @@ describe Neo4j::Model do
   end
 
   describe "find" do
+    class ReferenceNode < Neo4j::Rails::Model
+      property :name
+      index :name
+    end
+    
+    after(:each) do
+      Neo4j.threadlocal_ref_node = nil
+    end
+
     it "should load all nodes of that type from the database" do
       model = IceCream.create :flavour => 'vanilla'
       IceCream.all.should include(model)
+    end
+
+    it "should allow switching the reference node" do
+      reference = ReferenceNode.create(:name => 'Name')
+      Neo4j.threadlocal_ref_node = reference
+      icecream = IceCream.create(:flavour => 'vanilla')
+      IceCream.first.should == icecream
+    end
+
+    it "switching the reference node should change the scope of finder queries" do
+      reference = ReferenceNode.create(:name => 'Tenant1')
+      reference2 = ReferenceNode.create(:name => 'Tenant2')
+      Neo4j.threadlocal_ref_node = reference
+      icecream = IceCream.create(:flavour => 'vanilla')
+      IceCream.first.should == icecream
+      Neo4j.threadlocal_ref_node = reference2
+      icecream_for_second_tenant = IceCream.create(:flavour => 'strawberry')
+      IceCream.all.size.should == 1
+      IceCream.first.should == icecream_for_second_tenant
     end
 
     it "should find the node given it's id" do

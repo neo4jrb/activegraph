@@ -51,19 +51,18 @@ module Neo4j
 
       def on_neo4j_started
         # initialize the rule node when neo4j starts
-        @rule_node = find_node || create_node
+        #@rule_node = find_node || create_node
       end
 
       def rule_node
-        @rule_node ||= find_node || create_node
+        find_node || create_node
       end
 
       def rule_node?(node)
-        @rule_node == node
+        rule_node == node
       end
 
       def clear_rule_node
-        @rule_node = nil
       end
 
       def rule_names
@@ -85,7 +84,7 @@ module Neo4j
 
       # Return a traversal object with methods for each rule and function.
       # E.g. Person.all.old or Person.all.sum(:age)
-      def traversal(rule_name)
+      def traversal(rule_name)      
         # define method on the traversal
         traversal = rule_node.outgoing(rule_name)
         @rules.each do |rule|

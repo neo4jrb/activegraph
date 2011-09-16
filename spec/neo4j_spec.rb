@@ -2,8 +2,16 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe Neo4j, :type => :transactional do
 
+  after(:each) { Neo4j.threadlocal_ref_node = nil }
+
   it "#ref_node returns the reference node" do
     Neo4j.ref_node.should be_kind_of(Java::org.neo4j.graphdb.Node)
+  end
+  
+  it "should be able to change the reference node" do
+    new_ref = Neo4j::Node.new
+    Neo4j.threadlocal_ref_node = new_ref
+    Neo4j.ref_node.should == new_ref._java_node
   end
 
   it "#ref_node, can have relationship to this node" do
