@@ -139,9 +139,14 @@ module Neo4j
       Thread.current[:local_ref_node] = reference_node.nil? ? nil : reference_node._java_node
     end
     
-    def index_prefix
-      node = ref_node
-      node[:name]
+    def ref_node_property(property)
+      return "" if not running?
+      local_ref_node = ref_node
+      !local_ref_node.nil? && local_ref_node.has_property(property.to_s)? local_ref_node.get_property(property.to_s) : ""
+    end
+    
+    def ref_node_name
+      ref_node_property :name
     end
 
     # Returns a Management JMX Bean.

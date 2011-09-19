@@ -13,6 +13,24 @@ describe Neo4j, :type => :transactional do
     Neo4j.threadlocal_ref_node = new_ref
     Neo4j.ref_node.should == new_ref._java_node
   end
+  
+  it "should return an empty string for the default reference node" do
+    Neo4j.ref_node_property(:name).should be_empty
+  end
+  
+  it "should be able to return a specified property of the reference node" do
+    new_ref = Neo4j::Node.new
+    new_ref[:name] = "name_value"
+    Neo4j.threadlocal_ref_node = new_ref
+    Neo4j.ref_node_property(:name).should == "name_value"
+  end
+  
+  it "should return the ref_node_name, if the property exists" do
+    new_ref = Neo4j::Node.new
+    new_ref[:name] = "name_value"
+    Neo4j.threadlocal_ref_node = new_ref
+    Neo4j.ref_node_name.should == "name_value"    
+  end
 
   it "#ref_node, can have relationship to this node" do
     new_tx

@@ -293,11 +293,11 @@ module Neo4j
 
       def index_for_field(field) #:nodoc:
         type           = @field_types[field]
-        @indexes[type] ||= create_index_with(type)
+        create_index_with(type)
       end
 
       def index_for_type(type) #:nodoc:
-        @indexes[type] ||= create_index_with(type)
+        create_index_with(type)
       end
 
       def lucene_config(type) #:nodoc:
@@ -317,12 +317,9 @@ module Neo4j
       end
 
       def index_names
-        default_filename = @indexer_for.to_s.gsub('::', '_')
+        default_filename = Neo4j.ref_node_name + @indexer_for.to_s.gsub('::', '_')
         @index_names ||= Hash.new{|hash,index_type| hash[index_type] = "#{default_filename}-#{index_type}"}
       end
-
     end
-
   end
-
 end

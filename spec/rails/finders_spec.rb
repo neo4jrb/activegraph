@@ -383,6 +383,32 @@ describe "finders" do
 			FindableModel.all_by_name("Test 1").size.should == 1
 		end
 	end
+	
+  context "queries scoped by reference node" do
+    class ReferenceNode < Neo4j::Rails::Model
+      property :name
+      index :name
+    end
+    
+    after(:each) do
+      Neo4j.threadlocal_ref_node = nil
+    end
+    
+    it "should return records scoped to a reference node" do
+      Neo4j.threadlocal_ref_node = ReferenceNode.create(:name => "Tenant1")
+      model = FindableModel.create!(:name => "Test 10")
+      FindableModel.find("name: \"Test 10\"").should == model
+    end
+    
+    # it "should not return records attached to another reference node" do
+    #   tenant1 = ReferenceNode.create(:name => "Tenant1")
+    #   tenant2 = ReferenceNode.create(:name => "Tenant2")
+    #   Neo4j.threadlocal_ref_node = tenant1
+    #   model = FindableModel.create!(:name => "Test 10")
+    #   Neo4j.threadlocal_ref_node = tenant2
+    #   FindableModel.find("name: \"Test 10\"").should be_nil
+    # end  
+  end
 
 	def it_should_be_included_in(array)
 		array.should include(subject)
