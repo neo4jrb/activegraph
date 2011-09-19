@@ -91,7 +91,7 @@ module Neo4j
 
             field                     = field.to_s
             @via_relationships[field] = rel_dsl
-            via_indexer.index(field, conf_no_via) 
+            via_indexer.index(field, conf_no_via)
           else
             @field_types[field.to_s] = conf[:type] || :exact
           end
@@ -226,7 +226,7 @@ module Neo4j
       # (by Rack).
       #
       # === Example, with a block
-      #   
+      #
       #   Person.find('name: kalle') {|query| puts "#{[*query].join(', )"}
       #
       # ==== Example
@@ -317,8 +317,10 @@ module Neo4j
       end
 
       def index_names
-        default_filename = Neo4j.ref_node_name + @indexer_for.to_s.gsub('::', '_')
-        @index_names ||= Hash.new{|hash,index_type| hash[index_type] = "#{default_filename}-#{index_type}"}
+        @index_names ||= Hash.new do |hash,index_type|
+          default_filename = Neo4j.index_prefix + @indexer_for.to_s.gsub('::', '_')
+          hash.fetch(index_type) {"#{default_filename}-#{index_type}"}
+        end
       end
     end
   end

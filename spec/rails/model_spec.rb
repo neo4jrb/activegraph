@@ -135,7 +135,7 @@ describe Neo4j::Model do
 
       model.reload.flavour.should == 'vanilla'
     end
-    
+
     it "does not modify relationships if validation fails when save is run in a transaction" do
       model = IceCream.create(:flavour => 'vanilla')
       model.ingredients << Ingredient.create(:name => 'sugar')
@@ -175,7 +175,7 @@ describe Neo4j::Model do
       p.errors.size.should == 0
     end
   end
-  
+
   describe "ActiveModel::Dirty" do
 
     it "implements attribute_changed?, _change, _changed, _was, _changed? methods" do
@@ -201,7 +201,7 @@ describe Neo4j::Model do
       property :name
       index :name
     end
-    
+
     after(:each) do
       Neo4j.threadlocal_ref_node = nil
     end
@@ -219,15 +219,15 @@ describe Neo4j::Model do
     end
 
     it "switching the reference node should change the scope of finder queries" do
-      reference = ReferenceNode.create(:name => 'Tenant1')
-      reference2 = ReferenceNode.create(:name => 'Tenant2')
-      Neo4j.threadlocal_ref_node = reference
-      icecream = IceCream.create(:flavour => 'vanilla')
-      IceCream.first.should == icecream
+      reference1 = ReferenceNode.create(:name => 'Ref1')
+      reference2 = ReferenceNode.create(:name => 'Ref2')
+      Neo4j.threadlocal_ref_node = reference1
+      icecream_for_reference1 = IceCream.create(:flavour => 'vanilla')
+      IceCream.first.should == icecream_for_reference1
       Neo4j.threadlocal_ref_node = reference2
-      icecream_for_second_tenant = IceCream.create(:flavour => 'strawberry')
+      icecream_for_reference2 = IceCream.create(:flavour => 'strawberry')
       IceCream.all.size.should == 1
-      IceCream.first.should == icecream_for_second_tenant
+      IceCream.first.should == icecream_for_reference2
     end
 
     it "should find the node given it's id" do
@@ -394,7 +394,7 @@ describe Neo4j::Model do
 
       cream.should_not exist
     end
-    
+
     it "should roll back a transaction when the transaction fails within a nested transaction" do
       cream = nil
       IceCream.transaction do
@@ -404,15 +404,15 @@ describe Neo4j::Model do
         Ingredient.transaction do
           ingredient = Ingredient.create(:name => 'sugar')
           cream.ingredients << ingredient
-          
+
           # rollback the transaction
           Neo4j::Rails::Transaction.fail
         end
       end
-      
+
       cream.should_not exist
     end
-    
+
     it "should commit a two level nested transaction" do
       cream = nil
       IceCream.transaction do
@@ -424,7 +424,7 @@ describe Neo4j::Model do
           cream.ingredients << ingredient
         end
       end
-      
+
       cream.should exist
       cream.flavour.should == 'vanilla'
       cream.ingredients.size.should == 1
