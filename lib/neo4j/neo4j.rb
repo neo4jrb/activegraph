@@ -131,7 +131,24 @@ module Neo4j
     # For more information about common node space organizational patterns, see the design guide at http://wiki.neo4j.org/content/Design_Guide
     #
     def ref_node(this_db = self.started_db)
+      return Thread.current[:local_ref_node] if Thread.current[:local_ref_node]
       this_db.graph.reference_node
+    end
+
+    # Changes the reference node on a threadlocal basis.
+    # This can be used to achieve multitenancy. All new entities will be attached to the new ref_node,
+    # which effectively partitions the graph, and hence scopes traversals.
+    def threadlocal_ref_node=(reference_node)
+      Thread.current[:local_ref_node] = reference_node.nil? ? nil : reference_node._java_node
+    end
+
+    # Returns a prefix for lucene indices based on the name property of the current reference node.
+    # This allows the index names to be prefixed by the reference node name, and hence scopes lucene indexes
+    # to all entities under the current reference node.
+    def index_prefix
+      return "" if not running?
+      ref_node_name = ref_node[:name]
+      ref_node_name.nil? || ref_node_name.empty? ? "" : ref_node_name + "_"
     end
 
     # Returns a Management JMX Bean.
