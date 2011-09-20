@@ -13,6 +13,7 @@ module Neo4j
       def initialize(clazz)
         @clazz = clazz
         @rules = []
+        @rule_node_key = ("rule_" + clazz.to_s).to_sym
       end
 
       def to_s
@@ -51,19 +52,33 @@ module Neo4j
 
       def on_neo4j_started
         # initialize the rule node when neo4j starts
-        @rule_node = find_node || create_node
+        Thread.current[@rule_node_key] = find_node || create_node
       end
 
       def rule_node
-        @rule_node ||= find_node || create_node
+        clear_rule_node if ref_node_changed?
+        Thread.current[@rule_node_key] ||= find_node || create_node
+      end
+
+      def ref_node_changed?
+        if Neo4j.ref_node != Thread.current[:rule_cached_ref_node]
+          Thread.current[:rule_cached_ref_node] = Neo4j.ref_node
+          true
+        else
+          false
+        end
       end
 
       def rule_node?(node)
-        @rule_node == node
+        cached_rule_node == node
+      end
+
+      def cached_rule_node
+        Thread.current[@rule_node_key]
       end
 
       def clear_rule_node
-        @rule_node = nil
+        Thread.current[@rule_node_key] = nil
       end
 
       def rule_names
