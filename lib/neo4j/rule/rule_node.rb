@@ -13,7 +13,7 @@ module Neo4j
       def initialize(clazz)
         @clazz = clazz
         @rules = []
-        @class_key = ("rule_" + clazz.to_s).to_sym
+        @rule_node_key = ("rule_" + clazz.to_s).to_sym
       end
 
       def to_s
@@ -52,14 +52,14 @@ module Neo4j
 
       def on_neo4j_started
         # initialize the rule node when neo4j starts
-        Thread.current[@class_key] = find_node || create_node
+        Thread.current[@rule_node_key] = find_node || create_node
       end
 
       def rule_node
         clear_rule_node if ref_node_changed?
-        Thread.current[@class_key] ||= find_node || create_node
+        Thread.current[@rule_node_key] ||= find_node || create_node
       end
-      
+
       def ref_node_changed?
         if Neo4j.ref_node != Thread.current[:rule_cached_ref_node]
           Thread.current[:rule_cached_ref_node] = Neo4j.ref_node
@@ -72,13 +72,13 @@ module Neo4j
       def rule_node?(node)
         cached_rule_node == node
       end
-      
+
       def cached_rule_node
-        Thread.current[@class_key]
+        Thread.current[@rule_node_key]
       end
 
       def clear_rule_node
-        Thread.current[@class_key] = nil
+        Thread.current[@rule_node_key] = nil
       end
 
       def rule_names
@@ -100,7 +100,7 @@ module Neo4j
 
       # Return a traversal object with methods for each rule and function.
       # E.g. Person.all.old or Person.all.sum(:age)
-      def traversal(rule_name)      
+      def traversal(rule_name)
         # define method on the traversal
         traversal = rule_node.outgoing(rule_name)
         @rules.each do |rule|

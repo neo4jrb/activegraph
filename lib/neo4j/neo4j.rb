@@ -135,10 +135,16 @@ module Neo4j
       this_db.graph.reference_node
     end
 
+    # Changes the reference node on a threadlocal basis.
+    # This can be used to achieve multitenancy. All new entities will be attached to the new ref_node,
+    # which effectively partitions the graph, and hence scopes traversals.
     def threadlocal_ref_node=(reference_node)
       Thread.current[:local_ref_node] = reference_node.nil? ? nil : reference_node._java_node
     end
 
+    # Returns a prefix for lucene indices based on the name property of the current reference node.
+    # This allows the index names to be prefixed by the reference node name, and hence scopes lucene indexes
+    # to all entities under the current reference node.
     def index_prefix
       return "" if not running?
       ref_node_name = ref_node[:name]

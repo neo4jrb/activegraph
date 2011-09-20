@@ -223,6 +223,7 @@ describe Neo4j::Model do
       reference2 = ReferenceNode.create(:name => 'Ref2')
       Neo4j.threadlocal_ref_node = reference1
       icecream_for_reference1 = IceCream.create(:flavour => 'vanilla')
+      IceCream.all.size.should == 1
       IceCream.first.should == icecream_for_reference1
       Neo4j.threadlocal_ref_node = reference2
       icecream_for_reference2 = IceCream.create(:flavour => 'strawberry')
