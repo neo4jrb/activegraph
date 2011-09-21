@@ -66,7 +66,7 @@ module Neo4j
 
     # Returns the relationship name
     #
-    # ====Example
+    # ==== Example
     #   a = Neo4j::Node.new
     #   a.outgoing(:friends) << Neo4j::Node.new
     #   a.rels.first.rel_type # => 'friends'
@@ -106,7 +106,14 @@ module Neo4j
   # Furthermore, Neo4j guarantees that a relationship is never "hanging freely,"
   # i.e. start_node, end_node and other_node are guaranteed to always return valid, non-null nodes.
   #
-  # See also the Neo4j::RelationshipMixin if you want to wrap a relationship with your own Ruby class.
+  # === Wrapping
+  #
+  # Notice that the Neo4j::Relationship.new does not create a Ruby object. Instead, it returns a Java 
+  # org.neo4j.graphdb.Relationship object which has been modified to feel more rubyish (like Neo4j::Node).
+  #
+  # === See also
+  # * Neo4j::RelationshipMixin if you want to wrap a relationship with your own Ruby class.
+  # * http://api.neo4j.org/1.4/org/neo4j/graphdb/Relationship.html
   #
   # === Included Mixins
   # * Neo4j::Property
@@ -123,6 +130,48 @@ module Neo4j
       include Neo4j::Load
       include Neo4j::ToJava
 
+
+      ##
+      # :method: start_node
+      #
+      # Returns the start node of this relationship
+
+
+      ##
+      # :method: end_node
+      #
+      # Returns the start node of this relationship
+
+      ##
+      # :method: other_node
+      #
+      # A convenience operation that, given a node that is attached to this relationship, returns the other node. 
+      # For example if node is a start node, the end node will be returned, and vice versa.
+      # This is a very convenient operation when you're manually traversing the node space by invoking one of the #rels
+      # method on a node. For example, to get the node "at the other end" of a relationship, use the following:
+      #
+      #   end_node = node.rels.first.other_node(node)
+      #
+      # This operation will throw a runtime exception if node is neither this relationship's start node nor its end node.
+      #
+      # === Parameters 
+      # 
+      # node :: the node that we don't want to return
+      
+
+      ##
+      # :method: del
+      #
+      # Deletes this relationship. Invoking any methods on this relationship after delete() has returned is invalid and will lead t
+
+      # :method rel_type
+      #
+      # Returns the type of this relationship.
+      # A relationship's type is an immutable attribute that is specified at Relationship creation.
+      # The relationship type is othen used when traversing nodes, example finding all the 
+      # outgoing nodes of relationship type :friends 
+      #  
+      #  node.outgoing(:friends)
 
       # Returns a org.neo4j.graphdb.Relationship java object (!)
       # Will trigger a event that the relationship was created.
