@@ -115,6 +115,8 @@ module Neo4j
 					def define_property_methods_for(property, options)
 						unless method_defined?(property)
 							class_eval <<-RUBY, __FILE__, __LINE__
+							  attr_accessor :#{property}_before_type_cast
+
 								def #{property}
 									send(:[], "#{property}")
 								end
