@@ -16,6 +16,7 @@ module Neo4j
           @incoming_rels = []
           @persisted_related_nodes = {}
           @persisted_relationships = {}
+          @persisted_node_to_relationships = {}
         end
 
         def to_s #:nodoc:
@@ -57,13 +58,18 @@ module Neo4j
         end
 
         def each_rel(dir, &block) #:nodoc:
-          relationships(dir).each { |rel| block.call rel }
-
+          relationships(dir).each { |rel| block.call rel }          
           if @node.persisted?
-            node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
-              block.call rel.wrapper
-            end
+            cache_relationships(dir) if @persisted_relationships[dir].nil?
+            @persisted_relationships[dir].each {|rel| block.call rel unless !rel.exist?}
           end
+        end
+        
+        def cache_relationships(dir)
+          @persisted_relationships[dir] ||= []
+          node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
+            @persisted_relationships[dir] << rel.wrapper
+          end          
         end
 
         def each_node(dir, &block)
@@ -75,25 +81,23 @@ module Neo4j
             end
           end
           if @node.persisted?
-            if @persisted_related_nodes[dir].nil?
-              cache_persisted_nodes_and_relationships dir
-            end
+            cache_persisted_nodes_and_relationships(dir) if @persisted_related_nodes[dir].nil?
             @persisted_related_nodes[dir].each {|node| block.call node unless relationship_deleted?(dir,node)}
           end
         end
 
         def cache_persisted_nodes_and_relationships(dir)
           @persisted_related_nodes[dir] ||= []
-          @persisted_relationships[dir] ||= {}
+          @persisted_node_to_relationships[dir] ||= {}
           @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
             end_node = rel.getOtherNode(@node._java_node).wrapper
             @persisted_related_nodes[dir] << end_node
-            @persisted_relationships[dir][end_node]=rel
+            @persisted_node_to_relationships[dir][end_node]=rel
           end
         end
 
         def relationship_deleted?(dir,node)
-          !@persisted_relationships[dir][node].exist?
+          !@persisted_node_to_relationships[dir][node].exist?
         end
 
         def single_relationship(dir)
@@ -153,10 +157,7 @@ module Neo4j
           out_rels = @outgoing_rels.clone
           in_rels = @incoming_rels.clone
 
-          @outgoing_rels.clear
-          @incoming_rels.clear
-          @persisted_related_nodes.clear
-          @persisted_relationships.clear
+          [@outgoing_rels, @incoming_rels, @persisted_related_nodes, @persisted_node_to_relationships, @persisted_relationships].each{|c| c.clear}
 
           out_rels.each do |rel|
             rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel) if rel.end_node

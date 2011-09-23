@@ -980,7 +980,6 @@ describe "SettingRelationship" do
            member.descriptions << description
            member.save
          end
-         member.reload
          member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => nil}})
          member.errors.should be_present
          member.errors[:descriptions].should include("is invalid")
