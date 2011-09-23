@@ -9,7 +9,8 @@ describe "Neo4j::Rails::Model Relationships" do
   before(:each) do
     @actor_class = create_model(Neo4j::Model)
     @actor_class.property :name
-
+    @actor_class.property :description
+    @actor_class.validates_length_of :description, :maximum => 10
     @movie_class = create_model(Neo4j::Model)
     @movie_class.property :title
 
@@ -419,6 +420,16 @@ describe "Neo4j::Rails::Model Relationships" do
         @actor.acted_in.delete(@movie_2, @movie_1, @movie_3)
         ModelRelationship1.all.size.should == 0
         [@movie_2, @movie_1, @movie_3].each { |n| Neo4j::Node.load(n.id).should_not be_nil }
+      end
+    end
+
+    describe "validation" do
+      it "Allows traversal when validation fails" do
+        @actor.description = "abcdefghijk"
+        @actor.save
+        @actor.valid?.should be_false
+        @actor.acted_in.delete(@movie_2)
+        @actor.acted_in_rels.find(@movie_2).should be_nil
       end
     end
   end
