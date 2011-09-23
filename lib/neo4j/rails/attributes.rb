@@ -244,6 +244,7 @@ module Neo4j
 
       # Wrap the setter in a conversion from Ruby to Java
       def write_local_property_with_type_conversion(property, value)
+        self.send("#{property}_before_type_cast=", value) if respond_to?("#{property}_before_type_cast=")
         write_local_property_without_type_conversion(property, Neo4j::TypeConverters.to_java(self.class, property, value))
       end
     end
