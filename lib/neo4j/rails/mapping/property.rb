@@ -100,6 +100,7 @@ module Neo4j
             _decl_props[property] = options
             handle_property_options_for(property, options)
             define_property_methods_for(property, options)
+            define_property_before_type_cast_methods_for(property, options)
           end
 
           def handle_property_options_for(property, options)
@@ -115,8 +116,6 @@ module Neo4j
 					def define_property_methods_for(property, options)
 						unless method_defined?(property)
 							class_eval <<-RUBY, __FILE__, __LINE__
-							  attr_accessor :#{property}_before_type_cast
-
 								def #{property}
 									send(:[], "#{property}")
 								end
@@ -131,6 +130,17 @@ module Neo4j
 							RUBY
 						end
 					end
+
+          def define_property_before_type_cast_methods_for(property, options)
+            property_before_type_cast = "#{property}_before_type_cast"
+            class_eval <<-RUBY, __FILE__, __LINE__
+              attr_writer :#{property_before_type_cast}
+
+              def #{property_before_type_cast}
+                instance_variable_defined?(:@#{property_before_type_cast}) ? @#{property_before_type_cast} : self.#{property}
+              end
+            RUBY
+          end
 				end
 			end
 		end
