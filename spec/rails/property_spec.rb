@@ -412,3 +412,77 @@ describe ProtectedProperties do
 		it { should == true }
 	end
 end
+
+describe "property_before_type_cast" do
+  class PropertyTestModel < Neo4j::Rails::Model
+    property :name
+    property :number_property, :type => :float
+    property :date_property, :type => :date
+  end
+
+  let(:today) { Date.today}
+
+  context "for loaded model" do
+    it "should be same as property value" do
+      model = PropertyTestModel.create(:date_property => today)
+
+      loaded_model = PropertyTestModel.find(model.id)
+
+      loaded_model.date_property_before_type_cast.should == today
+      loaded_model.date_property.should == today
+    end
+  end
+
+  context "for new model" do
+    it "should be value before_type_cast" do
+       model = PropertyTestModel.new(:number_property => "10.99")
+
+       model.number_property_before_type_cast.should == "10.99"
+       model.number_property.should == 10.99
+     end
+  end
+
+  context "after save" do
+    it "should be value before_type_cast" do
+       model = PropertyTestModel.new(:number_property => "10.99")
+
+       model.save!
+
+       model.number_property_before_type_cast.should == "10.99"
+       model.number_property.should == 10.99
+     end
+  end
+
+  context "after assigning new value to property" do
+    it "should be new value before_type_cast" do
+       model = PropertyTestModel.create!(:number_property => "10.99")
+
+       model.number_property = "222.33"
+
+       model.number_property_before_type_cast.should == "222.33"
+       model.number_property.should == 222.33
+     end
+  end
+
+  context "after updating attributes" do
+    it "should be new value before_type_cast" do
+       model = PropertyTestModel.create!(:number_property => "10.99")
+
+       model.update_attributes!(:number_property => "222.33")
+
+       model.number_property_before_type_cast.should == "222.33"
+       model.number_property.should == 222.33
+     end
+  end
+
+  context "when value is invalid" do
+    it "should be invalid value before_type_cast" do
+       model = PropertyTestModel.create!(:number_property => "10.99")
+
+       model.number_property = "foobar"
+
+       model.number_property_before_type_cast.should == "foobar"
+       model.number_property.should == 0
+     end
+  end
+end
