@@ -14,6 +14,8 @@ module Neo4j
           @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
           @outgoing_rels = []
           @incoming_rels = []
+          @persisted_related_nodes = {}
+          @persisted_relationships = {}
         end
 
         def to_s #:nodoc:
@@ -72,12 +74,26 @@ module Neo4j
               block.call rel.start_node
             end
           end
-
           if @node.persisted?
-            @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
-              block.call rel.getOtherNode(@node._java_node).wrapper
+            if @persisted_related_nodes[dir].nil?
+              cache_persisted_nodes_and_relationships dir
             end
+            @persisted_related_nodes[dir].each {|node| block.call node unless relationship_deleted?(dir,node)}
           end
+        end
+
+        def cache_persisted_nodes_and_relationships(dir)
+          @persisted_related_nodes[dir] ||= []
+          @persisted_relationships[dir] ||= {}
+          @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
+            end_node = rel.getOtherNode(@node._java_node).wrapper
+            @persisted_related_nodes[dir] << end_node
+            @persisted_relationships[dir][end_node]=rel
+          end
+        end
+
+        def relationship_deleted?(dir,node)
+          !@persisted_relationships[dir][node].exist?
         end
 
         def single_relationship(dir)
@@ -139,6 +155,8 @@ module Neo4j
 
           @outgoing_rels.clear
           @incoming_rels.clear
+          @persisted_related_nodes.clear
+          @persisted_relationships.clear
 
           out_rels.each do |rel|
             rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel) if rel.end_node
@@ -154,7 +172,6 @@ module Neo4j
             raise "Can't save incoming #{rel}, validation errors ? #{rel.errors.inspect}" unless success
           end
         end
-
       end
     end
   end
