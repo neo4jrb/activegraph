@@ -99,9 +99,12 @@ module Neo4j
 
       def create_relationship_to(node, other) # :nodoc:
         from, to = incoming? ? [other, node] : [node, other]
-        rel = from._java_node.create_relationship_to(to._java_node, java_rel_type)
-        rel[:_classname] = relationship_class.to_s if relationship_class
-        rel.wrapper
+
+        if relationship_class
+          relationship_class.new(@rel_type, from._java_node, to._java_node)
+        else
+          from._java_node.create_relationship_to(to._java_node, java_rel_type)
+        end
       end
 
       # Specifies an outgoing relationship.
@@ -232,7 +235,7 @@ module Neo4j
       end
 
       def relationship_class # :nodoc:
-        @relationship
+        @relationship 
       end
     end
   end

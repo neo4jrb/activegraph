@@ -170,4 +170,26 @@ describe Neo4j::RelationshipMixin, :type=> :transactional do
     Friend.find('since: 2003').first.should == found
   end
 
+  it "should call the init_on_create method when a new relationship is created" do
+    class Authored
+      include Neo4j::RelationshipMixin
+      property :ts
+
+      def init_on_create *args
+        super
+        self.ts = 'been here'
+      end
+    end
+
+    class UserNode
+      include Neo4j::NodeMixin
+      has_n( :authored ).relationship( Authored )
+    end
+
+    new_tx
+    user_node = UserNode.new
+    user_node.authored << Neo4j::Node.new
+    user_node.authored_rels.first.ts.should == 'been here'
+  end
+
 end
