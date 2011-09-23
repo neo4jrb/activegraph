@@ -2,7 +2,7 @@ module Neo4j
 	module Rails
 		module Persistence
 			extend ActiveSupport::Concern
-			
+
 			included do
 				extend TxMethods
 				tx_methods :destroy, :create, :update, :update_nested_attributes, :delete
@@ -14,7 +14,7 @@ module Neo4j
       def save(*)
       	create_or_update
       end
-      
+
       # Persist the object to the database.  Validations and Callbacks are included
 			# by default but validation can be disabled by passing :validate => false
 			# to #save!.
@@ -25,7 +25,7 @@ module Neo4j
 					raise RecordInvalidError.new(self)
 				end
 			end
-			
+
 			# Updates a single attribute and saves the record.
 			# This is especially useful for boolean flags on existing records. Also note that
 			#
@@ -37,25 +37,25 @@ module Neo4j
 				respond_to?("#{name}=") ? send("#{name}=", value) : self[name] = value
 				save(:validate => false)
 			end
-			
+
 			# Removes the node from Neo4j and freezes the object.
 			def destroy
 				delete
 				freeze
 			end
-			
+
 			# Same as #destroy but doesn't run destroy callbacks and doesn't freeze
 			# the object
 			def delete
 				del unless new_record?
 				set_deleted_properties
 			end
-			
+
 			# Returns true if the object was destroyed.
 			def destroyed?()
         @_deleted || Neo4j::Node._load(id).nil?
       end
-			
+
 			# Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
       # If saving fails because the resource is invalid then false will be returned.
       def update_attributes(attributes)
@@ -68,7 +68,7 @@ module Neo4j
         self.attributes = attributes
         save!
       end
-			
+
       # Reload the object from the DB.
       def reload(options = nil)
         clear_changes
@@ -86,14 +86,14 @@ module Neo4j
       def persisted?
         !new_record? && !destroyed?
       end
-      
+
       # Returns true if the record hasn't been saved to Neo4j yet.
       def new_record?
         _java_node.nil?
       end
-      
+
       alias :new? :new_record?
-      
+
       # Freeze the properties hash.
 			def freeze
 				@properties.freeze; self
@@ -197,12 +197,12 @@ module Neo4j
           write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
         end
       end
-      
+
       def _create_entity(rel_type, attr)
         clazz = self.class._decl_rels[rel_type.to_sym].target_class
         _add_relationship(rel_type, clazz.new(attr))
       end
-      
+
       def _add_relationship(rel_type, node)
         if respond_to?("#{rel_type}=")
           send("#{rel_type}=", node)
@@ -215,6 +215,7 @@ module Neo4j
       end
 
       def _find_node(rel_type, id)
+        return nil if id.nil?
         if respond_to?("#{rel_type}=")
           send("#{rel_type}")
         elsif respond_to?("#{rel_type}")
@@ -224,7 +225,7 @@ module Neo4j
           raise "oops #{rel_type}"
         end
       end
-      
+
       def _has_relationship(rel_type, id)
         !_find_node(rel_type,id).nil?
       end
@@ -234,7 +235,7 @@ module Neo4j
         begin
           # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
           destroy = allow_destroy && attr[:_destroy] && attr[:_destroy] != '0'
-          found = Neo4j::Node.load(attr[:id])
+          found = _find_node(rel_type, attr[:id]) || Neo4j::Node.load(attr[:id])
           if destroy
             found.destroy if found
           else
@@ -242,8 +243,8 @@ module Neo4j
               _create_entity(rel_type, attr) #Create new node from scratch
             else
               #Create relationship to existing node in case it doesn't exist already
-              _add_relationship(rel_type, found) if (not _has_relationship(rel_type,attr[:id])) 
-              found.update_attributes(attr)              
+              _add_relationship(rel_type, found) if (not _has_relationship(rel_type,attr[:id]))
+              found.update_attributes(attr)
             end
           end
         end unless reject_if?(reject_if, attr)

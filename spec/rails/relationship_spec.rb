@@ -225,14 +225,14 @@ describe "Neo4j::Model Relationships" do
       member.save
       member.avatar.id.should_not be_nil
     end
-    
+
     it "has_one should allow assignments to nil" do
       member = Member.new
       member.avatar = nil
       member.avatar.should be_nil
       member.save
       member.reload.avatar.should be_nil
-    end 
+    end
 
     it "has_one should allow changing a value to nil from a non nil value" do
       member = Member.new
@@ -241,7 +241,7 @@ describe "Neo4j::Model Relationships" do
       member.reload.avatar = nil
       member.save
       member.reload.avatar.should be_nil
-    end 
+    end
 
     it "adding nodes to a has_n method created with the #new method" do
       icecream = IceCream.new
@@ -363,6 +363,7 @@ describe "Neo4j::Model Relationships" do
         accepts_nested_attributes_for :posts, :allow_destroy => true
         accepts_nested_attributes_for :valid_posts, :reject_if => proc { |attributes| attributes[:title].blank? }
         accepts_nested_attributes_for :valid_posts2, :reject_if => :reject_posts
+        validates_associated :descriptions
 
         def reject_posts(attributed)
           attributed[:title].blank?
@@ -389,7 +390,7 @@ describe "Neo4j::Model Relationships" do
         member.update_attributes params[:member]
         member.avatar.icon.should == 'sad'
       end
-      
+
       it "create one-to-one - allows assigning avatars that have already been created" do
         avatar = Avatar.create(:icon => 'angry')
         params = {:member => {:name => 'Jack', :avatar_attributes => {:id => avatar.id}}}
@@ -968,5 +969,28 @@ describe "SettingRelationship" do
       @start_node.rels(:foobar).incoming.should be_empty
       @start_node.rels(:foobar).outgoing.size.should == 1
     end
+  end
+
+  describe "update" do
+   context "when validates associated" do
+     context "when a nested model is invalid" do
+       it "should make parent model invalid" do
+         description = Description.create!(:title => 'Awesome!', :text => "Awesome fella!")
+         member = Member.create.tap do |member|
+           member.descriptions << description
+           member.save
+         end
+         member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => nil}})
+         member.errors.should be_present
+         member.errors[:descriptions].should include("is invalid")
+         member.descriptions.size.should == 1
+         member_description = member.descriptions.first
+         member_description.should be_invalid
+         member_description.errors[:title].should include("can't be blank")
+         member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => "New title"}})
+         member.errors.should_not be_present
+       end
+     end
+   end
   end
 end
