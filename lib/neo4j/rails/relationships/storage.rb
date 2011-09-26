@@ -97,7 +97,7 @@ module Neo4j
         end
 
         def relationship_deleted?(dir,node)
-          !@persisted_node_to_relationships[dir][node].exist?
+          @persisted_node_to_relationships[dir][node].nil? || !@persisted_node_to_relationships[dir][node].exist?
         end
 
         def single_relationship(dir)
