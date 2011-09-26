@@ -994,6 +994,8 @@ describe "SettingRelationship" do
        it "should allow delete_all" do
          description = Description.create!(:title => 'Title', :text => "First description")
          member = Member.create.tap do |member|
+           member.descriptions << description
+           member.save
            member.descriptions.delete_all
            member.descriptions << description
            member.save
