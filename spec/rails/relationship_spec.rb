@@ -975,7 +975,7 @@ describe "SettingRelationship" do
    context "when validates associated" do
      context "when a nested model is invalid" do
        it "should make parent model invalid" do
-         description = Description.create!(:title => 'Awesome!', :text => "Awesome fella!")
+         description = Description.create!(:title => 'Title', :text => "First description")
          member = Member.create.tap do |member|
            member.descriptions << description
            member.save
@@ -990,6 +990,17 @@ describe "SettingRelationship" do
          member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => "New title"}})
          member.errors.should_not be_present
        end
+       
+       it "should allow delete_all" do
+         description = Description.create!(:title => 'Title', :text => "First description")
+         member = Member.create.tap do |member|
+           member.descriptions.delete_all
+           member.descriptions << description
+           member.save
+         end
+         member.descriptions.first.should == description
+         member.errors.should_not be_present
+      end
      end
    end
   end
