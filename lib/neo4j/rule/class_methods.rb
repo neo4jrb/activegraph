@@ -79,7 +79,7 @@ module Neo4j
       #
       # Example of usage:
       #   class Person
-      #     include Neo4j
+      #     include Neo4j::NodeMixin
       #     property :age
       #     rule :all
       #     rule :young { self[:age] < 10 }
@@ -121,6 +121,24 @@ module Neo4j
             function.value(rule_node.rule_node, r_name)
           end unless respond_to?(func.class.function_name)
         end
+      end
+
+      def ref_node_for_class
+        Neo4j.ref_node #The reference node for a type falls back to the threadlocal ref node by default.
+      end
+
+      # Assigns the reference node for a class via a supplied block.
+      # Example of usage:
+      #   class Person
+      #     include Neo4j::NodeMixin
+      #     ref_node { Neo4j.default_ref_node }
+      #   end
+      #
+      def ref_node(&block)
+        singleton = class << self;
+          self;
+        end
+        singleton.send(:define_method, :ref_node_for_class) { block.call }
       end
 
       def inherit_rules_from(clazz)
