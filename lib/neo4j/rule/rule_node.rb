@@ -22,13 +22,17 @@ module Neo4j
 
       # returns true if the rule node exist yet in the database
       def node_exist?
-        !Neo4j.ref_node.rel?(@clazz)
+        !ref_node.rel?(@clazz)
+      end
+      
+      def ref_node
+        Neo4j.ref_node
       end
 
       def create_node
         Neo4j::Transaction.run do
           node = Neo4j::Node.new
-          Neo4j.ref_node.create_relationship_to(node, type_to_java(@clazz))
+          ref_node.create_relationship_to(node, type_to_java(@clazz))
           node
         end
       end
@@ -40,14 +44,14 @@ module Neo4j
       end
 
       def delete_node
-        if Neo4j.ref_node.rel?(@clazz)
-          Neo4j.ref_node.outgoing(@clazz).each { |n| n.del }
+        if ref_node.rel?(@clazz)
+          ref_node.outgoing(@clazz).each { |n| n.del }
         end
         clear_rule_node
       end
 
       def find_node
-        Neo4j.ref_node.rel?(@clazz.to_s) && Neo4j.ref_node._rel(:outgoing, @clazz.to_s)._end_node
+        ref_node.rel?(@clazz.to_s) && ref_node._rel(:outgoing, @clazz.to_s)._end_node
       end
 
       def on_neo4j_started
@@ -61,8 +65,8 @@ module Neo4j
       end
 
       def ref_node_changed?
-        if Neo4j.ref_node != Thread.current[:rule_cached_ref_node]
-          Thread.current[:rule_cached_ref_node] = Neo4j.ref_node
+        if ref_node != Thread.current[:rule_cached_ref_node]
+          Thread.current[:rule_cached_ref_node] = ref_node
           true
         else
           false
