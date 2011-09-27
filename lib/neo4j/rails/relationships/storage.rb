@@ -153,6 +153,10 @@ module Neo4j
           @outgoing_rels.delete(rel)
         end
 
+        def persisted?
+          @outgoing_rels.empty? && @incoming_rels.empty?
+        end
+
         def persist
           out_rels = @outgoing_rels.clone
           in_rels = @incoming_rels.clone
