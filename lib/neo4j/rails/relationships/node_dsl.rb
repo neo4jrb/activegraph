@@ -58,6 +58,10 @@ module Neo4j
           @storage.persisted?
         end
 
+        def to_ary
+          all.to_a
+        end
+
         # Specifies the depth of the traversal
         def depth(d)
           adapt_to_traverser.depth(d)
