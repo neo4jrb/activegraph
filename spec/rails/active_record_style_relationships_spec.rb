@@ -177,6 +177,11 @@ describe "Neo4j::Rails::Model Relationships" do
         @ret = @actor.acted_in_rels.build(:title => 'movie_4')
       end
 
+      it "should allow to build a relationship with no properties" do
+        rel = @actor.acted_in_rels.build
+        rel.props.size.should == 1
+      end
+
       it "create a new node but does not save it" do
         @actor.acted_in.size.should == 4
       end
@@ -240,6 +245,14 @@ describe "Neo4j::Rails::Model Relationships" do
     describe "build outgoing" do
       before(:each) do
         @ret = @actor.acted_in.build(:title => 'movie_4')
+      end
+
+      it "create a node with no properties if none is given" do
+        actor = @actor_class.create
+        node =  actor.acted_in.build
+        actor.acted_in.size.should == 1
+        node.props.size.should == 1
+        node.should_not be_persisted
       end
 
       it "create a new node but does not save it" do
