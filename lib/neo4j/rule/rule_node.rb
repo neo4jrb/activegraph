@@ -27,7 +27,11 @@ module Neo4j
       end
       
       def ref_node
-        @type.ref_node_for_class
+        if @type.respond_to? :ref_node_for_class
+          @type.ref_node_for_class
+        else
+          Neo4j.ref_node
+        end
       end
 
       def create_node
