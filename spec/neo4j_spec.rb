@@ -14,7 +14,7 @@ describe Neo4j, :type => :transactional do
     Neo4j.ref_node.should == new_ref._java_node
   end
 
-  it "should return the index prefix, if the property exists" do
+  it "should return the index prefix, if the ref node's name property exists" do
     new_ref = Neo4j::Node.new
     new_ref[:name] = "name_value"
     Neo4j.threadlocal_ref_node = new_ref

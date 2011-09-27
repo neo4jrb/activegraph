@@ -125,14 +125,22 @@ module Neo4j
       this_db.shutdown if this_db
     end
 
+
+    # Returns the default reference node, which is a "starting point" in the node space.
+    #    
+    def default_ref_node(this_db = self.started_db)
+      this_db.graph.reference_node
+    end
+
     # Returns the reference node, which is a "starting point" in the node space.
+    # In case the ref_node has been assigned via the threadlocal_ref_node method, then that node will be returned instead.
     #
     # Usually, a client attaches relationships to this node that leads into various parts of the node space.
     # For more information about common node space organizational patterns, see the design guide at http://wiki.neo4j.org/content/Design_Guide
     #
     def ref_node(this_db = self.started_db)
       return Thread.current[:local_ref_node] if Thread.current[:local_ref_node]
-      this_db.graph.reference_node
+      default_ref_node(this_db)
     end
 
     # Changes the reference node on a threadlocal basis.
