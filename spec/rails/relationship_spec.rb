@@ -173,7 +173,7 @@ describe "Neo4j::Model Relationships" do
     end
 
 
-    it "#save is neccessarly to create relationships" do
+    it "#save is necessary to create relationships" do
       clazz = create_model
       clazz.has_n(:friends)
       a = clazz.create

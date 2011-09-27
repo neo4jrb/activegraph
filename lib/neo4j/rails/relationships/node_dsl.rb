@@ -29,13 +29,13 @@ module Neo4j
         #   Person.friends.build(:name => 'kalle')  # creates a Person and Friends class.
         #   Person.knows.build(:name => 'kalle') # creates a Neo4j::Rails::Model and Neo4j::Rails::Relationship class
         #
-        def build(attrs)
+        def build(attrs =  {})
           self << (node = @storage.build(attrs))
           node
         end
 
         # Same as #build except that the relationship and node are saved.
-        def create(attrs)
+        def create(attrs = {})
           self << (node = @storage.create(attrs))
           node.save
           node

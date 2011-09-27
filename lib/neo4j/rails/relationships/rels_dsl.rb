@@ -27,14 +27,14 @@ module Neo4j
 
         # Same as Neo4j::Rails::Relationships::NodesDSL#build except that you specify the properties of the
         # relationships and it returns a relationship
-        def build(attrs)
+        def build(attrs = {})
           node = @storage.build(attrs)
           @storage.create_relationship_to(node, @dir)
         end
 
         # Same as Neo4j::Rails::Relationships::NodesDSL#create except that you specify the properties of the
         # relationships and it returns a relationship
-        def create(attrs)
+        def create(attrs = {})
           node = @storage.create(attrs)
           rel = @storage.create_relationship_to(node, @dir)
           node.save
