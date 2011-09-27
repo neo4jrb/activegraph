@@ -11,6 +11,7 @@ module Neo4j
       attr_reader :rules
 
       def initialize(clazz)
+        @type = eval("#{clazz}")
         @clazz = clazz
         @rules = []
         @rule_node_key = ("rule_" + clazz.to_s).to_sym
@@ -26,7 +27,7 @@ module Neo4j
       end
       
       def ref_node
-        Neo4j.ref_node
+        @type.ref_node_for_class
       end
 
       def create_node
