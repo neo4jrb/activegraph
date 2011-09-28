@@ -5,6 +5,21 @@ module Neo4j
     # That means for example that you don't have to care about transactions since they will be
     # automatically be created when needed.
     #
+    # ==== Included Mixins
+    #
+    # * Neo4j::Rails::Persistence :: handles how to save, create and update the model
+    # * Neo4j::Rails::Attributes :: handles how to save and retrieve attributes
+    # * Neo4j::Rails::Mapping::Property :: allows some additional options on the #property class method
+    # * Neo4j::Rails::Serialization :: enable to_xml and to_json
+    # * Neo4j::Rails::Timestamps :: handle created_at, updated_at timestamp properties
+    # * Neo4j::Rails::Validations :: enable validations
+    # * Neo4j::Rails::Callbacks :: enable callbacks
+    # * Neo4j::Rails::Finders :: ActiveRecord style find
+    # * Neo4j::Rails::Relationships :: handles persisted and none persisted relationships.
+    # * Neo4j::Rails::Compositions :: see Neo4j::Rails::Compositions::ClassMethods, similar to http://api.rubyonrails.org/classes/ActiveRecord/Aggregations/ClassMethods.html
+    # * ActiveModel::Observing # enable observers, see Rails documentation.
+    # * ActiveModel::Translation - class mixin
+    #
     # ==== Traversals
     # This class only expose a limited set of traversals.
     # If you want to access the raw java node to do traversals use the _java_node.
@@ -19,6 +34,7 @@ module Neo4j
     #
     # The has_n and has_one relationship accessors returns objects of type Neo4j::Rails::Relationships::RelsDSL
     # and Neo4j::Rails::Relationships::NodesDSL which behaves more like the Active Record relationships.
+    # Notice that unlike Neo4j::NodeMixin new relationships are kept in memory until @save@ is called.
     #
     class Model
       include Neo4j::NodeMixin
@@ -83,6 +99,20 @@ module Neo4j
             block.call(tx)
           end
         end
+
+        ##
+        # :method: has_one
+        #
+        # Generates a has_one methods which returns an object of type Neo4j::Rails::Relationships::NodesDSL
+        # and a has_one method postfixed @_rel@ which return a Neo4j::Rails::Relationships::RelsDSL
+        #
+
+        ##
+        # :method: has_n
+        #
+        # Generates a has_n method which returns an object of type Neo4j::Rails::Relationships::NodesDSL
+        # and a has_n method postfixed @_rel@ which return a Neo4j::Rails::Relationships::RelsDSL
+        #
 
         def entity_load(id)
           Neo4j::Node.load(id)

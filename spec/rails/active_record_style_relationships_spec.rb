@@ -86,6 +86,19 @@ describe "Neo4j::Rails::Model Relationships" do
       @movie_2.save
     end
 
+    describe "used as nested form in active view" do
+      it "#persisted? returns true if all relationships has been persisted" do
+        @actor.acted_in.should be_persisted
+      end
+
+      it "#persisted? returns false if not all relationships has been persisted" do
+        movie_4 = @movie_class.create :title => 'movie_4'
+        @actor.acted_in << movie_4
+        @actor.acted_in.should_not be_persisted
+      end
+
+    end
+
     describe "find nodes in relationship" do
 
       it "find all child nodes" do
