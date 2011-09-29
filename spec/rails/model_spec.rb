@@ -563,4 +563,24 @@ describe Neo4j::Model do
     subject { Neo4j::Rails::Model.i18n_scope }
     it { should == :neo4j }
   end
+
+  describe "#columns" do
+    context "a model with no defined properties" do
+      it "should return an empty array" do
+        create_model.columns.should be_empty
+      end
+    end
+
+    context "a model with two defined property" do
+      it "should return an empty array" do
+        columns = create_model do
+          property :foo
+          property :bar
+        end.columns
+        columns.size.should == 2
+        columns.should include(:foo, :bar)
+      end
+    end
+
+  end
 end

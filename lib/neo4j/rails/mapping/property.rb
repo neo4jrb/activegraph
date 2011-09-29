@@ -6,18 +6,30 @@ module Neo4j
 
         module ClassMethods
 
+          # Create two new methods: rel_name and rel_name_rels
+          # The first one returns an Neo4j::Rails::Relationships::NodesDSL
+          # the second generate method (with the _rels postfix) returns a
+          # Neo4j::Rails::Relationships::RelsDSL
+          #
+          # See also Neo4j::NodeMixin#has_n which only work with persisted relationships.
+          #
           def has_n(*args)
             options = args.extract_options!
             define_has_n_methods_for(args.first, options)
           end
 
+          # See #has_n
           def has_one(*args)
             options = args.extract_options!
             define_has_one_methods_for(args.first, options)
           end
 
+          # Returns all defined properties
+          def columns
+            self._decl_props.keys
+          end
 
-          def define_has_one_methods_for(rel_type, options)
+          def define_has_one_methods_for(rel_type, options) #:nodoc:
             unless method_defined?(rel_type)
               class_eval <<-RUBY, __FILE__, __LINE__
                 def #{rel_type}
@@ -52,7 +64,7 @@ module Neo4j
             _decl_rels[rel_type.to_sym] = Neo4j::HasN::DeclRelationshipDsl.new(rel_type, true, self)
           end
 
-          def define_has_n_methods_for(rel_type, options)
+          def define_has_n_methods_for(rel_type, options) #:nodoc:
             unless method_defined?(rel_type)
               class_eval <<-RUBY, __FILE__, __LINE__
                 def #{rel_type}

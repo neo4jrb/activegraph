@@ -45,7 +45,18 @@ module Neo4j
       end
 
       # See Neo4j::Rels#rels.
+      #
       # Will also allow to access unsaved relationships - like the #outgoing and #incoming method.
+      # It one argument - the relationship type.
+      #
+      # To only find all the persisted relationship, node._java_node.rels
+      #
+      # === Example
+      #
+      #   node.outgoing(:foo) << node2
+      #   node.rels(:foo).outgoing #=> [node2]
+      #   node.rels(:foo).incoming #=> []
+      #   node.rels(:foo) #=> [node2] - incoming and outgoing
       #
       def rels(*rel_types)
         storage = _create_or_get_storage(rel_types.first)

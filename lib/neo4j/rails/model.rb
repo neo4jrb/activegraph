@@ -36,6 +36,12 @@ module Neo4j
     # and Neo4j::Rails::Relationships::NodesDSL which behaves more like the Active Record relationships.
     # Notice that unlike Neo4j::NodeMixin new relationships are kept in memory until @save@ is called.
     #
+    # ==== Callbacks
+    #
+    # The following callbacks are supported :validation, :create, :destroy, :save, :update.
+    # It works with before, after and around callbacks, see the Rails documentation.
+    # Notice you can also do callbacks using the Neo4j::Rails::Callbacks module (check the Rails documentation)
+    #
     class Model
       include Neo4j::NodeMixin
 
@@ -85,6 +91,34 @@ module Neo4j
         new? ? self.__id__ == other.__id__ : @_java_node == (other)
       end
 
+      ##
+      # :singleton-method: property
+      #
+      # See Neo4j::Rails::Mapping::Property::ClassMethods#property
+
+      ##
+      # :singleton-method: has_one
+      #
+      # Generates a has_one methods which returns an object of type Neo4j::Rails::Relationships::NodesDSL
+      # and a has_one method postfixed @_rel@ which return a Neo4j::Rails::Relationships::RelsDSL
+      #
+      # See also Neo4j::Rails::Mapping::Property::ClassMethods#has_one
+      #
+
+      ##
+      # :singleton-method: columns
+      #
+      # Returns all defined properties as an array
+
+      ##
+      # :singleton-method: has_n
+      #
+      # Generates a has_n method which returns an object of type Neo4j::Rails::Relationships::NodesDSL
+      # and a has_n method postfixed @_rel@ which return a Neo4j::Rails::Relationships::RelsDSL
+      #
+      # See also Neo4j::Rails::Mapping::Property::ClassMethods#has_n
+      #
+
 
       # --------------------------------------
       # Public Class Methods
@@ -99,20 +133,6 @@ module Neo4j
             block.call(tx)
           end
         end
-
-        ##
-        # :method: has_one
-        #
-        # Generates a has_one methods which returns an object of type Neo4j::Rails::Relationships::NodesDSL
-        # and a has_one method postfixed @_rel@ which return a Neo4j::Rails::Relationships::RelsDSL
-        #
-
-        ##
-        # :method: has_n
-        #
-        # Generates a has_n method which returns an object of type Neo4j::Rails::Relationships::NodesDSL
-        # and a has_n method postfixed @_rel@ which return a Neo4j::Rails::Relationships::RelsDSL
-        #
 
         def entity_load(id)
           Neo4j::Node.load(id)
