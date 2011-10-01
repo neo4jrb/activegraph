@@ -1,3 +1,13 @@
+ == 1.2.3 / 2011-10-01
+* Multitenancy support by namespaced-indices & changeable reference node (Vivek Prahlad, pull 41)
+* Added a Neo4j::Rails::Model#columns which returns all defined properties [#186]
+* Fixed validation associated entities, parent model should be invalid if its nested model(s) is invalid (Vivek Prahlad)
+* Fixed property validation to read value before conversion as per active model conventions (Deepak N)
+* Fixed property_before_type_cast for loaded models (Deepak N)
+* Better support for nested models via ActionView field_for [#185]
+* BUG: fix for null pointer issue after delete_all on Neo4j::Rails::Model#has_n relationships (Vivek Prahlad)
+* BUG: init_on_create was not called when creating a new relationship via the << operator [#183]
+
  == 1.2.2 / 2011-09-15
 * Added compositions support for rails mode (Deepak N)
 * Added support for nested transactions at the Rails model level (Vivek Prahlad)
