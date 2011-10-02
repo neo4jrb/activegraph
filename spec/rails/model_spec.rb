@@ -564,6 +564,60 @@ describe Neo4j::Model do
     it { should == :neo4j }
   end
 
+  describe "reachable_from_ref_node?" do
+    let(:ref_1) { Neo4j::Rails::Model.create!(:name => "Ref1") }
+    let(:ref_2) { Neo4j::Rails::Model.create!(:name => "Ref2") }
+
+    context "when node is not attached to default ref node" do
+      before(:each) do
+        Neo4j.threadlocal_ref_node = ref_1
+        @node_from_ref_1 = IceCream.create!(:flavour => 'Vanilla')
+      end
+
+      context "when node is created under current threadlocal ref_node" do
+        it "should be true" do
+          Neo4j.threadlocal_ref_node = ref_1
+
+          @node_from_ref_1.should be_reachable_from_ref_node
+        end
+      end
+
+      context "when node is not created under current threadlocal ref_node" do
+        it "should be false" do
+          Neo4j.threadlocal_ref_node = ref_2
+
+          @node_from_ref_1.should_not be_reachable_from_ref_node
+        end
+      end
+    end
+
+    context "when node is attached to default ref node" do
+      let(:clazz) do
+        create_model do
+           ref_node { Neo4j.default_ref_node }
+        end
+      end
+
+      context "when threadlocal node is set" do
+        it "should be true" do
+          Neo4j.threadlocal_ref_node = ref_1
+          node = clazz.create!
+
+          node.should be_reachable_from_ref_node
+        end
+      end
+
+      context "when threadlocal node is not set" do
+        it "should be true" do
+          Neo4j.threadlocal_ref_node = nil
+          node = clazz.create!
+
+          node.should be_reachable_from_ref_node
+        end
+      end
+    end
+  end
+
   describe "#columns" do
     context "a model with no defined properties" do
       it "should return an empty array" do

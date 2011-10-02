@@ -38,7 +38,7 @@ begin
 
   # ensure the translations get picked up for tests
   I18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', 'config', 'locales', '*.{rb,yml}')]
-  
+
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
@@ -67,6 +67,7 @@ begin
     c.after(:each) do
       finish_tx
       Neo4j::Rails::Model.close_lucene_connections
+      Neo4j.threadlocal_ref_node = nil
       Neo4j::Transaction.run do
         Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
       end
@@ -98,6 +99,7 @@ begin
   def create_model(base_class = Neo4j::Model,name=nil, &block)
     klass = Class.new(base_class)
     TempModel.set(klass, name)
+    base_class.inherited(klass)
     klass.class_eval &block if block
     klass
   end
