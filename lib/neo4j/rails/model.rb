@@ -91,6 +91,12 @@ module Neo4j
         new? ? self.__id__ == other.__id__ : @_java_node == (other)
       end
 
+      def reachable_from_ref_node?
+        class_node = self._java_node._rels(:incoming, :_all).first._start_node
+        ref_node = class_node._rel(:incoming, self.class.to_s)._start_node
+        ref_node == self.class.ref_node_for_class
+      end
+
       ##
       # :singleton-method: property
       #
@@ -177,6 +183,11 @@ module Neo4j
             end
 
           end
+        end
+
+        # When multitenancy is used, node should be findable only from current ref node.
+        def findable?(entity)
+          entity.is_a? self and entity.reachable_from_ref_node?
         end
 
         # Set the i18n scope to overwrite ActiveModel.

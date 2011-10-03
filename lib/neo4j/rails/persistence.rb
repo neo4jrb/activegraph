@@ -235,7 +235,7 @@ module Neo4j
         begin
           # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
           destroy = allow_destroy && attr[:_destroy] && attr[:_destroy] != '0'
-          found = _find_node(rel_type, attr[:id]) || Neo4j::Node.load(attr[:id])
+          found = _find_node(rel_type, attr[:id]) || Model.find(attr[:id])
           if destroy
             found.destroy if found
           else
