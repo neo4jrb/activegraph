@@ -204,9 +204,9 @@ module Neo4j
       end
 
       def _add_relationship(rel_type, node)
-        if respond_to?("#{rel_type}=")
+        if respond_to?("#{rel_type}_rel")
           send("#{rel_type}=", node)
-        elsif respond_to?("#{rel_type}")
+        elsif respond_to?("#{rel_type}_rels")
           has_n = send("#{rel_type}")
           has_n << node
         else
@@ -216,9 +216,9 @@ module Neo4j
 
       def _find_node(rel_type, id)
         return nil if id.nil?
-        if respond_to?("#{rel_type}=")
+        if respond_to?("#{rel_type}_rel")
           send("#{rel_type}")
-        elsif respond_to?("#{rel_type}")
+        elsif respond_to?("#{rel_type}_rels")
           has_n = send("#{rel_type}")
           has_n.find { |n| n.id == id }
         else

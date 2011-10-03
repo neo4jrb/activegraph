@@ -90,6 +90,42 @@ describe "Neo4j::Model Relationships" do
 
   end
 
+  describe "has_n generated setter" do
+    let(:sugar) { Ingredient.new :name => 'sugar'}
+    let(:brown_sugar) { Ingredient.new :name => 'brown sugar' }
+
+    context "when node is new" do
+      it "should create relations to associated nodes" do
+        icecream = IceCream.new
+
+        icecream.ingredients = [sugar, brown_sugar]
+
+        icecream.ingredients.to_a.should =~ [sugar, brown_sugar]
+      end
+    end
+
+    context "creating a node with associated nodes" do
+      it "should create relations to associated nodes" do
+        icecream = IceCream.create!(:flavour => "Yummy!", :ingredients => [sugar, brown_sugar])
+
+        icecream.ingredients.to_a.should =~ [sugar, brown_sugar]
+        icecream.reload.ingredients.to_a.should =~ [sugar, brown_sugar]
+      end
+    end
+
+    context "assinging associated nodes to node with existing associations" do
+      it "should delete old relations and create new relations to associated nodes" do
+        icecream = IceCream.create!(:flavour => "Yummy!", :ingredients => [brown_sugar])
+
+        icecream.ingredients = [sugar]
+
+        icecream.ingredients.to_a.should == [sugar]
+        icecream.save!
+        icecream.reload.ingredients.to_a.should == [sugar]
+      end
+    end
+  end
+
   describe "has_one, has_n, outgoing" do
     it "node.friends << MyModel.create; node.save! should work" do
       clazz = create_model
@@ -990,7 +1026,7 @@ describe "SettingRelationship" do
          member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => "New title"}})
          member.errors.should_not be_present
        end
-       
+
        it "should allow delete_all" do
          description = Description.create!(:title => 'Title', :text => "First description")
          member = Member.create.tap do |member|
