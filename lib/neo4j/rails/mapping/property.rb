@@ -75,6 +75,16 @@ module Neo4j
               RUBY
             end
 
+            unless method_defined?("#{rel_type}=".to_sym)
+              class_eval <<-RUBY, __FILE__, __LINE__
+                def #{rel_type}=(nodes)
+                    self.#{rel_type}_rels.destroy_all
+                    association = self.#{rel_type}
+                    nodes.each { |node| association << node }
+                end
+              RUBY
+            end
+
             unless method_defined?("#{rel_type}_rels".to_sym)
               class_eval <<-RUBY, __FILE__, __LINE__
                 def #{rel_type}_rels

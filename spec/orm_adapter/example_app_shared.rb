@@ -47,6 +47,7 @@ shared_examples_for "example app with orm_adapter" do
   describe "adapter instance" do
     let(:note_adapter) { note_class.to_adapter }
     let(:user_adapter) { user_class.to_adapter }
+    let(:non_existent_id) { "99999999" }
     
     describe "#get!(id)" do
       it "should return the instance with id if it exists" do
@@ -60,7 +61,7 @@ shared_examples_for "example app with orm_adapter" do
       end
 
       it "should raise an error if there is no instance with that id" do
-        lambda { user_adapter.get!("non-exitent id") }.should raise_error
+        lambda { user_adapter.get!(non_existent_id) }.should raise_error
       end
     end
 
@@ -76,7 +77,7 @@ shared_examples_for "example app with orm_adapter" do
       end
 
       it "should return nil if there is no instance with that id" do
-        user_adapter.get("non-exitent id").should be_nil
+        user_adapter.get(non_existent_id).should be_nil
       end
     end
   
@@ -129,16 +130,16 @@ shared_examples_for "example app with orm_adapter" do
         lambda { user_adapter.create!(:user => create_model(note_class)) }.should raise_error
       end
       
-      pending "when attributes contain an associated object, should create a model with the attributes" do
+      it "when attributes contain an associated object, should create a model with the attributes" do
         user = create_model(user_class)
         note = note_adapter.create!(:owner => user)
         reload_model(note).owner.should == user
       end
       
-      pending "when attributes contain an has_many assoc, should create a model with the attributes" do
+      it "when attributes contain an has_many assoc, should create a model with the attributes" do
         notes = [create_model(note_class), create_model(note_class)]
         user = user_adapter.create!(:notes => notes)
-        reload_model(user).notes.should == notes
+        reload_model(user).notes.to_a.should == notes
       end
     end
 
