@@ -15,6 +15,7 @@ module Neo4j
         @clazz = clazz
         @rules = []
         @rule_node_key = ("rule_" + clazz.to_s).to_sym
+        @ref_node_key = ("rule_ref_for_" + clazz.to_s).to_sym
       end
 
       def to_s
@@ -70,8 +71,8 @@ module Neo4j
       end
 
       def ref_node_changed?
-        if ref_node != Thread.current[:rule_cached_ref_node]
-          Thread.current[:rule_cached_ref_node] = ref_node
+        if ref_node != Thread.current[@ref_node_key]
+          Thread.current[@ref_node_key] = ref_node
           true
         else
           false
