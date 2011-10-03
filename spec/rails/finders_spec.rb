@@ -49,7 +49,6 @@ describe "finders" do
   end
 
   it "should be able to find something" do
-		FindableModel.find.should be_a(FindableModel)
 		FindableModel.find(:first).should be_a(FindableModel)
 	end
 
@@ -95,9 +94,16 @@ describe "finders" do
         FindableModel.find(0).should be_nil
         FindableModel.find("0").should be_nil
       end
+
+      it "should return nil if id is nil" do
+        FindableModel.find(nil).should be_nil
+      end
+
+      it "should return nil if no args are given" do
+        FindableModel.find.should be_nil
+      end
     end
   end
-
 
   context ".find" do
     def nonexistant_id
@@ -115,6 +121,32 @@ describe "finders" do
 
     it "should return an empty array when passed multiple non-existant ids" do
       FindableModel.find(nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id).should == []
+    end
+
+    context "with threadlocal_ref_node" do
+      let(:ref_1) { Neo4j::Rails::Model.create!(:name => "Ref1") }
+      let(:ref_2) { Neo4j::Rails::Model.create!(:name => "Ref2") }
+
+      before(:each) do
+        Neo4j.threadlocal_ref_node = ref_1
+        @node_from_ref_1 = FindableModel.create!(:name => 'foo')
+      end
+
+      context "when node reachable from ref node" do
+        it "should return node" do
+          Neo4j.threadlocal_ref_node = ref_1
+
+          FindableModel.find(@node_from_ref_1.id).should == @node_from_ref_1
+        end
+      end
+
+      context "when node not reachable from ref node" do
+        it "should return nil" do
+          Neo4j.threadlocal_ref_node = ref_2
+
+          FindableModel.find(@node_from_ref_1.id).should be_nil
+        end
+      end
     end
   end
 

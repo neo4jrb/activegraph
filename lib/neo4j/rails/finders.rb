@@ -73,7 +73,7 @@ module Neo4j
             when :all, :first
               kind = args.shift
               send(kind, *args)
-            when "0", 0
+            when "0", 0, nil
               nil
             else
               if ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0)
@@ -189,11 +189,15 @@ module Neo4j
         def find_with_ids(*args)
           result = load(*args.map { |p| p.to_i })
           if result.is_a?(Array)
-            result = result.select { |r| r.is_a? self }
+            result = result.select { |r| findable?(r)}
           else
-            result = nil unless result.is_a? self
+            result = nil unless findable?(result)
           end
           result
+        end
+
+        def findable?(entity)
+          entity.is_a? self
         end
 
         def find_with_indexer(*args)
