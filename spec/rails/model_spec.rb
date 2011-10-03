@@ -230,6 +230,25 @@ describe Neo4j::Model do
       IceCream.all.size.should == 1
       IceCream.first.should == icecream_for_reference2
     end
+    
+    it "switching the reference node works for multiple entities" do
+      reference1 = ReferenceNode.create(:name => 'Ref1')
+      reference2 = ReferenceNode.create(:name => 'Ref2')
+      Neo4j.threadlocal_ref_node = reference1
+      icecream_for_reference1 = IceCream.create(:flavour => 'vanilla')
+      ingredient_for_reference_1 = Ingredient.create(:name => 'sugar')
+      IceCream.all.size.should == 1
+      IceCream.first.should == icecream_for_reference1
+      Ingredient.all.size.should == 1
+      Ingredient.first.should == ingredient_for_reference_1
+      Neo4j.threadlocal_ref_node = reference2
+      icecream_for_reference2 = IceCream.create(:flavour => 'strawberry')
+      ingredient_for_reference_2 = Ingredient.create(:name => 'eggs')
+      IceCream.all.size.should == 1
+      IceCream.first.should == icecream_for_reference2            
+      Ingredient.all.size.should == 1
+      Ingredient.first.should == ingredient_for_reference_2
+    end    
 
     it "should find the node given it's id" do
       model = IceCream.create(:flavour => 'thing')
