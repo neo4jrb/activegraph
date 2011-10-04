@@ -16,9 +16,6 @@ describe "finders" do
 	subject { FindableModel.create!(:name => "Test 1", :age => 4241) }
 
 	before(:each) do
-    Neo4j::Transaction.run do
-      Neo4j::Index::IndexerRegistry.delete_all_indexes
-    end
 		@test_0 = FindableModel.create!(:name => "Test 0")
 		@test_2 = FindableModel.create!(:name => "Test 2")
 		@test_3 = FindableModel.create!(:name => "Test 3", :age => 3)

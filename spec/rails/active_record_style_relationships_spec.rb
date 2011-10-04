@@ -7,9 +7,6 @@ describe "Neo4j::Rails::Model Relationships" do
   end
 
   before(:each) do
-    Neo4j::Transaction.run do
-      Neo4j::Index::IndexerRegistry.delete_all_indexes
-    end
     @actor_class = create_model(Neo4j::Model)
     @actor_class.property :name
     @actor_class.property :description

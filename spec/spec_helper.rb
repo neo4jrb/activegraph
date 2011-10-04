@@ -59,14 +59,14 @@ begin
     c.after(:each, :type => :transactional) do
       finish_tx
       Neo4j::Rails::Model.close_lucene_connections
-      Neo4j::Transaction.run do
-        Neo4j::Index::IndexerRegistry.delete_all_indexes
-      end
     end
 
     c.after(:each) do
       finish_tx
       Neo4j::Rails::Model.close_lucene_connections
+      Neo4j::Transaction.run do
+        Neo4j::Index::IndexerRegistry.delete_all_indexes
+      end
       Neo4j::Transaction.run do
         Neo4j.threadlocal_ref_node = Neo4j::Node.new :name => "ref_#{$name_counter}"
         $name_counter += 1
