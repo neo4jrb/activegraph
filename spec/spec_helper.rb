@@ -51,7 +51,7 @@ begin
 
   RSpec.configure do |c|
     $name_counter = 0
-  #c.filter = { :type => :problem}
+  
     c.before(:each, :type => :transactional) do
       new_tx
     end
