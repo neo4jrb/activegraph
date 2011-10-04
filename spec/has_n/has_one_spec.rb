@@ -168,23 +168,23 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
 
   context "from a has_n relationship" do
     before(:all) do
-      @movie_class = create_node_mixin "Movie"
+      @film_class = create_node_mixin "Film"
       @director_class = create_node_mixin "Director"
-      @director_class.has_n(:directed).to(@movie_class)
-      @movie_class.has_one(:director).from(@director_class, :directed)
+      @director_class.has_n(:directed).to(@film_class)
+      @film_class.has_one(:director).from(@director_class, :directed)
     end
 
-    it "has_one/has_n: one-to-many, e.g. director --directed -*> movie" do
+    it "has_one/has_n: one-to-many, e.g. director --directed -*> film" do
       lucas = @director_class.new :name => 'George Lucas'
 
-      star_wars_4 = @movie_class.new :title => 'Star Wars Episode IV: A New Hope', :year => 1977
-      star_wars_3 = @movie_class.new :title => "Star Wars Episode III: Revenge of the Sith", :year => 2005
+      star_wars_4 = @film_class.new :title => 'Star Wars Episode IV: A New Hope', :year => 1977
+      star_wars_3 = @film_class.new :title => "Star Wars Episode III: Revenge of the Sith", :year => 2005
       lucas.directed << star_wars_3 << star_wars_4
 
       # then
       lucas.directed.should include(star_wars_3, star_wars_4)
-      lucas.outgoing("#{@movie_class}#directed").should include(star_wars_3, star_wars_4)
-      star_wars_3.incoming("#{@movie_class}#directed").should include(lucas)
+      lucas.outgoing("#{@film_class}#directed").should include(star_wars_3, star_wars_4)
+      star_wars_3.incoming("#{@film_class}#directed").should include(lucas)
       star_wars_3.director.should == lucas
       star_wars_4.director.should == lucas
     end
