@@ -50,7 +50,7 @@ begin
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, 'neo4j-rspec-tests')
 
   RSpec.configure do |c|
-
+    $name_counter = 0
   #c.filter = { :type => :problem}
     c.before(:each, :type => :transactional) do
       new_tx
@@ -60,9 +60,6 @@ begin
       finish_tx
       Neo4j::Rails::Model.close_lucene_connections
       Neo4j::Transaction.run do
-        Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
-      end
-      Neo4j::Transaction.run do
         Neo4j::Index::IndexerRegistry.delete_all_indexes
       end
     end
@@ -70,9 +67,9 @@ begin
     c.after(:each) do
       finish_tx
       Neo4j::Rails::Model.close_lucene_connections
-      Neo4j.threadlocal_ref_node = nil
       Neo4j::Transaction.run do
-        Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
+        Neo4j.threadlocal_ref_node = Neo4j::Node.new :name => "ref_#{$name_counter}"
+        $name_counter += 1
       end
     end
 

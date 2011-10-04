@@ -1,6 +1,9 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe Neo4j::Migrations::LazyNodeMixin do
+  before(:each) do
+    Neo4j.threadlocal_ref_node = nil    
+  end
 
   def create_lazy_migration(clazz)
     clazz.migration 1, :split_name do

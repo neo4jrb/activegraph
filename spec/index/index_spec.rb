@@ -14,7 +14,8 @@ end
 
 
 describe Neo4j::Node, "index_names", :type => :transactional do
-  before(:all) do
+  before(:each) do
+    Neo4j.threadlocal_ref_node = nil    
   end
 
   it "can be used to configure where the index is stored on the filesystem" do
