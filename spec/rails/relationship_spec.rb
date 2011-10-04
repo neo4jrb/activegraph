@@ -620,10 +620,6 @@ describe RelationshipWithNoProperty do
 
   context "when there's lots of them" do
     before(:each) do
-      Neo4j::Transaction.run do
-        Neo4j::Index::IndexerRegistry.delete_all_indexes
-      end
-
       subject.class.create!(:foo, @start_node, @end_node)
       subject.class.create!(:foo, @start_node, @end_node)
       subject.class.create!(:foo, @start_node, @end_node)
@@ -671,9 +667,6 @@ end
 
 describe RelationshipWithProperty do
   before(:each) do
-    Neo4j::Transaction.run do
-      Neo4j::Index::IndexerRegistry.delete_all_indexes
-    end
     @start_node = Neo4j::Model.new
     @end_node = Neo4j::Model.new
   end
