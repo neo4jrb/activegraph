@@ -2,6 +2,10 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::Batch::Indexer do
+  before(:each) do
+    Neo4j.threadlocal_ref_node = nil    
+  end
+  
   def setup_index_provider(index_provider, exact_indexes, fulltext_indexes = {})
     indexes = {}
     exact_indexes.each_pair { |k, v| indexes["#{k}-exact"] = v }
@@ -17,6 +21,7 @@ describe Neo4j::Batch::Indexer do
   describe "#index_entity" do
     context "has no index" do
       before(:each) do
+        Neo4j.threadlocal_ref_node = nil
         @clazz = create_node_mixin do
         end
       end
@@ -30,6 +35,7 @@ describe Neo4j::Batch::Indexer do
 
     context "has a subclass" do
       before(:each) do
+        Neo4j.threadlocal_ref_node = nil
         @base_class = create_node_mixin do
           index :name
         end
@@ -94,6 +100,7 @@ describe Neo4j::Batch::Indexer do
 
     context "declared one exact and one fulltext field" do
       before(:each) do
+        Neo4j.threadlocal_ref_node = nil
         @clazz = create_node_mixin do
           index :name
           index :desc, :type => :fulltext
@@ -164,6 +171,10 @@ describe Neo4j::Batch::Indexer do
   end
 
   describe "#index_node_via_rel" do
+    before(:each) do
+      Neo4j.threadlocal_ref_node = nil
+    end
+    
     it "does not index anything unless the index is decalred with an :via=>" do
       clazz                                = create_node_mixin do
         index :name

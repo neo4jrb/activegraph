@@ -1,6 +1,10 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 describe "Neo4j#migration", :type => :transactional do
+  before(:each) do
+    Neo4j.threadlocal_ref_node = nil    
+  end
+  
   after(:each) do
     Neo4j::Migrations::RefNodeWrapper.reset_migrations!
     Neo4j.db_version.should == 0

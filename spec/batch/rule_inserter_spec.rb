@@ -2,7 +2,9 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
 describe Neo4j::Batch::RuleInserter do
-
+  before(:each) do
+    Neo4j.threadlocal_ref_node = nil    
+  end
 
   class TestInserter
     attr_reader :created_nodes, :created_rels
