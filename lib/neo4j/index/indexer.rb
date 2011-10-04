@@ -322,10 +322,19 @@ module Neo4j
       end
 
       def index_names
-        @index_names ||= Hash.new do |hash,index_type|
-          default_filename = Neo4j.index_prefix + @indexer_for.to_s.gsub('::', '_')
+        @index_names ||= Hash.new do |hash, index_type|
+          default_filename = index_prefix + @indexer_for.to_s.gsub('::', '_')
           hash.fetch(index_type) {"#{default_filename}-#{index_type}"}
         end
+      end
+
+      protected
+      def index_prefix
+        return "" unless Neo4j.running?
+        return "" unless @indexer_for.respond_to?(:ref_node_for_class)
+        ref_node = @indexer_for.ref_node_for_class
+        ref_node_name = ref_node[:name]
+        ref_node_name.blank? ? "" : ref_node_name + "_"
       end
     end
   end
