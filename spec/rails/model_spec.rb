@@ -3,6 +3,11 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
 describe Neo4j::Model do
+  before(:each) do
+    Neo4j::Transaction.run do
+      Neo4j::Index::IndexerRegistry.delete_all_indexes
+    end
+  end
 
   describe "new" do
     before :each do
@@ -640,6 +645,10 @@ describe Neo4j::Model do
       before(:each) do
         Neo4j.threadlocal_ref_node = ref_1
         @node_from_ref_1 = IceCream.create!(:flavour => 'Vanilla')
+      end
+      
+      after(:each) do
+        Neo4j.threadlocal_ref_node = nil
       end
 
       context "when node is created under current threadlocal ref_node" do

@@ -8,6 +8,7 @@ describe Neo4j::Batch::Inserter do
     rm_db_storage
     @storage_path = File.expand_path(File.join(Dir.tmpdir, 'neo4j-batch-inserter'))
     FileUtils.rm_rf @storage_path
+    Neo4j.threadlocal_ref_node = nil    
   end
 
   after(:each) do

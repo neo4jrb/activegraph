@@ -12,6 +12,7 @@ describe Neo4j::Batch::Inserter do
     Neo4j::Node.index(:description, :type => :fulltext)
 
     @inserter = Neo4j::Batch::Inserter.new
+    Neo4j.threadlocal_ref_node = nil    
   end
 
   after(:each) do
