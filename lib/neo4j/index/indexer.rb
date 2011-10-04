@@ -267,8 +267,9 @@ module Neo4j
       def delete_index_type(type=nil)
         if type
           #raise "can't clear index of type '#{type}' since it does not exist ([#{@field_types.values.join(',')}] exists)" unless index_type?(type)
-          @indexes[type] && @indexes[type].delete
-          @indexes[type] = nil
+          key = index_key(type)
+          @indexes[key] && @indexes[key].delete
+          @indexes[key] = nil
         else
           @indexes.each_value { |index| index.delete }
           @indexes.clear
@@ -293,11 +294,15 @@ module Neo4j
 
       def index_for_field(field) #:nodoc:
         type           = @field_types[field]
-        create_index_with(type)
+        @indexes[index_key(type)] ||= create_index_with(type)
       end
 
       def index_for_type(type) #:nodoc:
-        create_index_with(type)
+        @indexes[index_key(type)] ||= create_index_with(type)
+      end
+
+      def index_key(type)
+        index_names[type] + type.to_s
       end
 
       def lucene_config(type) #:nodoc:
