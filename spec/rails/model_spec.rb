@@ -641,6 +641,10 @@ describe Neo4j::Model do
         Neo4j.threadlocal_ref_node = ref_1
         @node_from_ref_1 = IceCream.create!(:flavour => 'Vanilla')
       end
+      
+      after(:each) do
+        Neo4j.threadlocal_ref_node = nil
+      end
 
       context "when node is created under current threadlocal ref_node" do
         it "should be true" do

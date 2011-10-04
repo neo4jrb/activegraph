@@ -131,6 +131,10 @@ describe "finders" do
         Neo4j.threadlocal_ref_node = ref_1
         @node_from_ref_1 = FindableModel.create!(:name => 'foo')
       end
+      
+      after(:each) do
+        Neo4j.threadlocal_ref_node = nil
+      end
 
       context "when node reachable from ref node" do
         it "should return node" do

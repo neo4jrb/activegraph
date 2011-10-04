@@ -70,7 +70,6 @@ begin
     c.after(:each) do
       finish_tx
       Neo4j::Rails::Model.close_lucene_connections
-      Neo4j.threadlocal_ref_node = nil
       Neo4j::Transaction.run do
         Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
       end
