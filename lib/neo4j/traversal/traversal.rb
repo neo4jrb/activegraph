@@ -86,5 +86,43 @@ module Neo4j
       end
     end
 
+
+    # Traverse using a block. The block is expected to return one of the following values:
+    # * :exclude_and_continue
+    # * :exclude_and_prune
+    # * :include_and_continue
+    # * :include_and_prune
+    # in order to decide if it should continue to traverse and if it should include the node in the traversal result.
+    # The block will receive a path argument.
+    #
+    # ==== Example
+    #
+    #   @pet0.eval_paths {|path| path.end_node ==  @principal1 ? :include_and_prune : :exclude_and_continue }.unique(:node_path).depth(:all)
+    #
+    # ==== See also
+    #
+    # * the path parameter - http://api.neo4j.org/1.4/org/neo4j/graphdb/Path.html
+    # * the #unique - if paths should be visit more the once, etc...
+    #
+    def eval_paths(&eval_block)
+      Traverser.new(self).eval_paths(&eval_block)
+    end
+
+    # Sets uniqueness of nodes or relationships to visit during a traversals.
+    #
+    # Allowed values
+    # * :node_global :: A node cannot be traversed more than once (default)
+    # * :node_path :: For each returned node there 's a unique path from the start node to it.
+    # * :node_recent :: This is like :node_global, but only guarantees uniqueness among the most recent visited nodes, with a configurable count.
+    # * :none :: No restriction (the user will have to manage it).
+    # * :rel_global :: A relationship cannot be traversed more than once, whereas nodes can.
+    # * :rel_path :: No restriction (the user will have to manage it).
+    # * :rel_recent :: Same as for :node_recent, but for relationships.
+    #
+    # See example in #eval_paths
+    # See http://api.neo4j.org/1.4/org/neo4j/kernel/Uniqueness.html
+    def unique(u)
+      Traverser.new(self).unique(u)
+    end
   end
 end

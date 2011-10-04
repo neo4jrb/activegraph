@@ -2,6 +2,32 @@ module Neo4j
 
   module Traversal
 
+    class Evaluator  #:nodoc:
+      include org.neo4j.graphdb.traversal.Evaluator
+      def initialize(&eval_block)
+        @eval_block = eval_block
+      end
+
+      # Implements the Java Interface:
+      #  evaluate(Path path)
+      #  Evaluates a Path and returns an Evaluation containing information about whether or not to include it in the traversal result, i.e return it from the Traverser.
+      def evaluate(path)
+        ret = @eval_block.call(path)
+        case ret
+          when :exclude_and_continue then
+            org.neo4j.graphdb.traversal.Evaluation::EXCLUDE_AND_CONTINUE
+          when :exclude_and_prune then
+            org.neo4j.graphdb.traversal.Evaluation::EXCLUDE_AND_PRUNE
+          when :include_and_continue then
+            org.neo4j.graphdb.traversal.Evaluation::INCLUDE_AND_CONTINUE
+          when :include_and_prune then
+            org.neo4j.graphdb.traversal.Evaluation::INCLUDE_AND_PRUNE
+          else
+            raise "Got #{ret}, only accept :exclude_and_continue,:exclude_and_prune,:include_and_continue and :include_and_prune"
+        end
+      end
+    end
+
     class Traverser
       include Enumerable
       include ToJava
@@ -20,6 +46,39 @@ module Neo4j
         end
       end
 
+      def eval_paths(&eval_path_block)
+        @td = @td.evaluator(Evaluator.new(&eval_path_block))
+        self
+      end
+
+      def unique(u = :node_global)
+        case u
+          when :node_global then
+            # A node cannot be traversed more than once.
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::NODE_GLOBAL)
+          when :node_path then
+            # For each returned node there 's a unique path from the start node to it.
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::NODE_PATH)
+          when :node_recent then
+            # This is like NODE_GLOBAL, but only guarantees uniqueness among the most recent visited nodes, with a configurable count.
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::NODE_RECENT)
+          when :none then
+            # No restriction (the user will have to manage it).
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::NONE)
+          when :rel_global then
+            # A relationship cannot be traversed more than once, whereas nodes can.
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::RELATIONSHIP_GLOBAL)
+          when :rel_path then
+            # No restriction (the user will have to manage it).
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::RELATIONSHIP_PATH)
+          when :rel_recent then
+            # Same as for NODE_RECENT, but for relationships.
+            @td = @td.uniqueness(org.neo4j.kernel.Uniqueness::RELATIONSHIP_RECENT)
+          else
+            raise "Got option for unique '#{u}' allowed: :node_global, :node_path, :node_recent, :none, :rel_global, :rel_path, :rel_recent"
+        end
+        self
+      end
 
       def to_s
         "NodeTraverser [from: #{@from.neo_id} depth: #{@depth} type: #{@type} dir:#{@dir}"

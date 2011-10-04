@@ -248,4 +248,34 @@ describe Neo4j::Node, :type => :transactional do
 
   end
 
+  describe "Neo4j::Node#eval_paths", :type => :transactional do
+    before(:all) do
+      new_tx
+      @principal1 = Neo4j::Node.new(:name => 'principal1')
+      @principal2 = Neo4j::Node.new(:name => 'principal2')
+      @pet0 = Neo4j::Node.new(:name => 'pet0')
+      @pet1 = Neo4j::Node.new(:name => 'pet1')
+      @pet2 = Neo4j::Node.new(:name => 'pet2')
+      @pet3 = Neo4j::Node.new(:name => 'pet3')
+
+      @principal1.outgoing(:owns) << @pet1 << @pet3
+      @pet0.outgoing(:descendant) << @pet1 << @pet2 << @pet3
+      @principal2.outgoing(:owns) << @pet2
+      finish_tx
+    end
+
+    it "#unique :node_path returns paths that is traversed more then once" do
+      result = @pet0.eval_paths {|path| path.end_node ==  @principal1 ? :include_and_prune : :exclude_and_continue }.unique(:node_path).depth(:all).to_a
+      result.size.should == 2
+      result.should include(@principal1)
+    end
+
+    it "#unique :node_global returns paths that is traversed more then once" do
+      result = @pet0.eval_paths {|path| path.end_node ==  @principal1 ? :include_and_prune : :exclude_and_continue }.unique(:node_global).depth(:all).to_a
+      result.size.should == 1
+      result.should include(@principal1)
+    end
+
+  end
+
 end
