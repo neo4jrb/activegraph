@@ -62,6 +62,9 @@ begin
       Neo4j::Transaction.run do
         Neo4j._all_nodes.each { |n| n.del unless n.neo_id == 0 }
       end
+      Neo4j::Transaction.run do
+        Neo4j::Index::IndexerRegistry.delete_all_indexes
+      end
     end
 
     c.after(:each) do
