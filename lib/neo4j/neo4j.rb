@@ -150,15 +150,6 @@ module Neo4j
       Thread.current[:local_ref_node] = reference_node.nil? ? nil : reference_node._java_node
     end
 
-    # Returns a prefix for lucene indices based on the name property of the current reference node.
-    # This allows the index names to be prefixed by the reference node name, and hence scopes lucene indexes
-    # to all entities under the current reference node.
-    def index_prefix
-      return "" if not running?
-      ref_node_name = ref_node[:name]
-      ref_node_name.nil? || ref_node_name.empty? ? "" : ref_node_name + "_"
-    end
-
     # Returns a Management JMX Bean.
     #
     # Notice that this information is also provided by the jconsole Java tool, check http://wiki.neo4j.org/content/Monitoring_and_Deployment

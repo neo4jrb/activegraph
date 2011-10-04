@@ -230,7 +230,7 @@ describe Neo4j::Model do
       IceCream.all.size.should == 1
       IceCream.first.should == icecream_for_reference2
     end
-    
+
     it "switching the reference node works for multiple entities" do
       reference1 = ReferenceNode.create(:name => 'Ref1')
       reference2 = ReferenceNode.create(:name => 'Ref2')
@@ -245,10 +245,10 @@ describe Neo4j::Model do
       icecream_for_reference2 = IceCream.create(:flavour => 'strawberry')
       ingredient_for_reference_2 = Ingredient.create(:name => 'eggs')
       IceCream.all.size.should == 1
-      IceCream.first.should == icecream_for_reference2            
+      IceCream.first.should == icecream_for_reference2
       Ingredient.all.size.should == 1
       Ingredient.first.should == ingredient_for_reference_2
-    end    
+    end
 
     it "should find the node given it's id" do
       model = IceCream.create(:flavour => 'thing')
@@ -266,6 +266,55 @@ describe Neo4j::Model do
       m2 = IceCream.create(:flavour => 'vanilla')
       m3 = IceCream.create(:flavour => 'fish')
       IceCream.all("flavour: vanilla").size.should == 2
+    end
+
+    context "when node is attached to default ref node" do
+      let(:reference1) { ReferenceNode.create(:name => 'Ref1') }
+      let(:reference2) { ReferenceNode.create(:name => 'Ref2') }
+
+      class IndexedGlobalModel < Neo4j::Model
+        property :name
+        index :name
+        ref_node { Neo4j.default_ref_node }
+      end
+
+      context "given node is created with threadlocal node set" do
+        before(:each) do
+          Neo4j.threadlocal_ref_node = reference1
+          @model = IndexedGlobalModel.create!(:name => 'foo')
+        end
+
+        it "should find the model when threadlocal node is set" do
+          Neo4j.threadlocal_ref_node = reference2
+
+          IndexedGlobalModel.find(:name => 'foo').should == @model
+        end
+
+        it "should find the node when threadlocal node is not set" do
+          Neo4j.threadlocal_ref_node = nil
+
+          IndexedGlobalModel.find(:name => 'foo').should == @model
+        end
+      end
+
+      context "given node is created with threadlocal node set" do
+        before(:each) do
+          Neo4j.threadlocal_ref_node = nil
+          @model = IndexedGlobalModel.create!(:name => 'foo')
+        end
+
+        it "should find the node when threadlocal node is not set" do
+          Neo4j.threadlocal_ref_node = nil
+
+          IndexedGlobalModel.find(:name => 'foo').should == @model
+        end
+
+        it "should find the model when threadlocal node is set" do
+          Neo4j.threadlocal_ref_node = reference1
+
+          IndexedGlobalModel.find(:name => 'foo').should == @model
+        end
+      end
     end
   end
 
