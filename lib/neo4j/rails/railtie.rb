@@ -3,7 +3,7 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     initializer "neo4j.tx" do |app|
-      app.config.middleware.use Neo4j::Rails::LuceneConnectionCloser
+      app.config.middleware.use Neo4j::Rails::RackMiddleware
     end
 
     # Add ActiveModel translations to the I18n load_path
