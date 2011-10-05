@@ -92,9 +92,7 @@ module Neo4j
       end
 
       def reachable_from_ref_node?
-        class_node = self._java_node._rels(:incoming, :_all).first._start_node
-        ref_node = class_node._rel(:incoming, self.class.to_s)._start_node
-        ref_node == self.class.ref_node_for_class
+        Neo4j::Algo.all_path(self.class.ref_node_for_class, self).outgoing(self.class).outgoing(:_all).count > 0
       end
 
       ##
