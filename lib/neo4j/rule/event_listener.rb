@@ -48,9 +48,7 @@ module Neo4j
         end
 
         def on_neo4j_started(db)
-          if Neo4j::Config[:enable_rules]
-            Rule.on_neo4j_started
-          else
+          if not Neo4j::Config[:enable_rules]
             db.event_handler.remove(self)
           end
         end

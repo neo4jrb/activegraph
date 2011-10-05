@@ -60,11 +60,6 @@ module Neo4j
         ref_node.rel?(@clazz.to_s) && ref_node._rel(:outgoing, @clazz.to_s)._end_node
       end
 
-      def on_neo4j_started
-        # initialize the rule node when neo4j starts
-        Thread.current[@rule_node_key] = find_node || create_node
-      end
-
       def rule_node
         clear_rule_node if ref_node_changed?
         Thread.current[@rule_node_key] ||= find_node || create_node

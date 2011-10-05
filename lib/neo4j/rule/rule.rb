@@ -90,10 +90,6 @@ module Neo4j
           @rule_nodes && @rule_nodes.values.find { |rn| rn.rule_node?(node) }
         end
 
-        def on_neo4j_started
-          @rule_nodes.each_value { |rule_node| rule_node.on_neo4j_started } if @rule_nodes
-        end
-
         def inherit(parent_class, subclass)
           # copy all the rules
           if rule_node = rule_node_for(parent_class)
