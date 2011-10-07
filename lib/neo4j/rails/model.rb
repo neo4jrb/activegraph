@@ -96,6 +96,64 @@ module Neo4j
       end
 
       ##
+      # :method: outgoing
+      #
+      # Similar to Neo4j::Traversal#outgoing but returns depth one only outgoing relationship
+      # which may not all be persisted.
+      # For only traversing persisted outgoing relationship of any depth or more advanced traversals, use
+      # the wrapped Java node instead.
+      #
+      # ==== Examples
+      #
+      #   person.outgoing(:friends) << other_person
+      #   person.save!
+      #
+      #   person.outgoing(:friends).map{|f| f.outgoing(:knows).to_a}.flatten
+      #
+      # ==== Examples
+      #
+      #   Neo4j::Transaction.run do
+      #     person._java_node.outgoing(:friends) << other_person
+      #   end
+      #
+      #   person._java_node.outgoing(:friends).outgoing(:knows).depth(4)
+      #
+      # Notice you can also declare outgoing relationships with the #has_n and #has_one class method.
+      #
+      # See Neo4j::Rails::Relationships#outgoing
+      # See Neo4j::Traversal#outgoing (when using it from the _java_node)
+
+
+      ##
+      # :method: incoming
+      #
+      # Returns incoming relationship of depth one which may not all be persisted.
+      # See #outgoing
+
+
+      ##
+      # :method: rels
+      #
+      # Returns both incoming and outgoing relationships which may not all be persisted.
+      # If you only want to find persisted relationships: @node._java_node.rels@
+      #
+      # See Neo4j::Rails::Relationships#rels
+      # See Neo4j::Rels#rels or Neo4j::Rels
+      #
+
+      ##
+      # :method: []
+      #
+      # Returns a property of this node, which may or may not have been declared with the class property method.
+      # Similar to Neo4j::Property#[] but can return not persisted properties as well.
+
+      ##
+      # :method: []=
+      #
+      # Sets any property on the node.
+      # Similar to Neo4j::Property#[]= but you must call the #save method to persist the property.
+
+      ##
       # :singleton-method: property
       #
       # See Neo4j::Rails::Mapping::Property::ClassMethods#property

@@ -45,7 +45,7 @@ Example of creating a Neo4j::Node
     node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
   end
 
-==== Neo4j::Mapping::NodeMixin
+==== Neo4j::NodeMixin
 
 Example of mapping a ruby class to a node and delaring properties and relationships and lucene index.
 

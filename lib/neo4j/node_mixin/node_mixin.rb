@@ -15,7 +15,7 @@ require 'neo4j/node_mixin/class_methods'
 module Neo4j
   # This Mixin is used to wrap Neo4j Java Nodes in Ruby objects.
   #
-  # It includes a number of mixins and forwards some methods to the raw Java node which in term includes a number of mixins, see below.
+  # It includes a number of mixins and forwards some methods to the raw Java node (Neo4j::Node) which includes the mixins below:
   #
   # === Instance Methods
   #

@@ -1,3 +1,9 @@
+ == 1.2.4 / 2011-10-07
+* Support for traversing with Neo4j::Node#eval_paths and setting uniqueness on traversals [#187]
+* Removed unnecessary node creation on database start up (class nodes attached to reference node) (Vivek Prahlad)
+* Safer multitenancy - automatically reset the reference node in thread local context after each request using rack middleware
+* Bugfixes for multitenancy (Deepak N and Vivek Prahlad)
+
  == 1.2.3 / 2011-10-01
 * Multitenancy support by namespaced-indices & changeable reference node (Vivek Prahlad, pull 41)
 * Added a Neo4j::Rails::Model#columns which returns all defined properties [#186]
