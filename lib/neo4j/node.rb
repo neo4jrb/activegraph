@@ -113,7 +113,93 @@ module Neo4j
     # :method: _java_node
     # Returns the java node/relationship object representing this object unless it is already the java object.
     # This method is  defined in the  org.neo4j.kernel.impl.core.NodeProxy which is return by Neo4j::Node.new
-    
+
+
+    ##
+    # :method: expand
+    # See Neo4j::Traversal#expand
+
+    ##
+    # :method: outgoing
+    # See Neo4j::Traversal#outgoing
+
+
+    ##
+    # :method: incoming
+    # See Neo4j::Traversal#incoming
+
+    ##
+    # :method: both
+    # See Neo4j::Traversal#both
+
+    ##
+    # :method: eval_paths
+    # See Neo4j::Traversal#eval_paths
+
+    ##
+    # :method: unique
+    # See Neo4j::Traversal#unique
+
+    ##
+    # :method: node
+    # See Neo4j::Rels#node or Neo4j::Rels
+
+    ##
+    # :method: _node
+    # See Neo4j::Rels#_node or Neo4j::Rels
+
+    ##
+    # :method: rels
+    # See Neo4j::Rels#rels or Neo4j::Rels
+
+    ##
+    # :method: _rels
+    # See Neo4j::Rels#_rels or Neo4j::Rels
+
+    ##
+    # :method: rel
+    # See Neo4j::Rels#rel
+
+    ##
+    # :method: _rel
+    # See Neo4j::Rels#_rel
+
+    ##
+    # :method: rel?
+    # See Neo4j::Rels#rel?
+
+    ##
+    # :method: props
+    # See Neo4j::Property#props
+
+    ##
+    # :method: neo_id
+    # See Neo4j::Property#neo_id
+
+    ##
+    # :method: attributes
+    # See Neo4j::Property#attributes
+
+    ##
+    # :method: property?
+    # See Neo4j::Property#property?
+
+    ##
+    # :method: update
+    # See Neo4j::Property#update
+
+    ##
+    # :method: []
+    # See Neo4j::Property#[]
+
+    ##
+    # :method: []=
+    # See Neo4j::Property#[]=
+
+    ##
+    # :method: []=
+    # See Neo4j::Property#[]=
+
     class << self
 
       # Returns a new neo4j Node.

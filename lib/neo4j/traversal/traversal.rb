@@ -4,6 +4,11 @@ require 'neo4j/traversal/rel_expander'
 require 'neo4j/traversal/traverser'
 
 module Neo4j
+
+  # Contains methods that are mixin for Neo4j::Node
+  # They all return Neo4j::Traversal::Traverser
+  # See the {Neo4j.rb Guide: Traversing Relationships and Nodes}[http://neo4j.rubyforge.org/guides/traverser.html]
+  #
   module Traversal
     include ToJava
 
@@ -15,6 +20,8 @@ module Neo4j
     #   some_node.expand { |n| n._rels.find_all { |r| r[:age] > 5 } }.depth(:all).to_a
     #
     # The above traverse all relationships with a property of age > 5
+    #
+    # See http://neo4j.rubyforge.org/guides/traverser.html
     #
     def expand(&expander)
       Traverser.new(self).expander(&expander)
@@ -49,7 +56,9 @@ module Neo4j
     #   # Find all my friends and work colleges
     #   me.outgoing(:friends).outgoing(:work).each {...}
     #
-    # Of course all the methods <tt>outgoing</tt>, <tt>incoming</tt>, <tt>both</tt>, <tt>depth</tt>, <tt>include_start_node</tt>, <tt>filter</tt>, and <tt>prune</tt> can be combined.
+    # Of course all the methods <tt>outgoing</tt>, <tt>incoming</tt>, <tt>both</tt>, <tt>depth</tt>, <tt>include_start_node</tt>, <tt>filter</tt>, and <tt>prune</tt>, <tt>eval_paths</tt>, <tt>unique</tt> can be combined.
+    #
+    # See the {Neo4j.rb Guides}[http://neo4j.rubyforge.org/guides/traverser.html]
     #
     def outgoing(type)
       if type
@@ -62,7 +71,7 @@ module Neo4j
 
     # Returns the incoming nodes of given type(s).
     #
-    # See #outgoing
+    # See #outgoing and http://neo4j.rubyforge.org/guides/traverser.html
     #
     def incoming(type)
       if type
@@ -76,7 +85,7 @@ module Neo4j
     #
     # If a type is not given then it will return all types of relationships.
     #
-    # See #outgoing
+    # See #outgoing and http://neo4j.rubyforge.org/guides/traverser.html
     #
     def both(type=nil)
       if type
@@ -88,11 +97,11 @@ module Neo4j
 
 
     # Traverse using a block. The block is expected to return one of the following values:
-    # * :exclude_and_continue
-    # * :exclude_and_prune
-    # * :include_and_continue
-    # * :include_and_prune
-    # in order to decide if it should continue to traverse and if it should include the node in the traversal result.
+    # * <tt>:exclude_and_continue</tt>
+    # * <tt>:exclude_and_prune</tt>
+    # * <tt>:include_and_continue</tt>
+    # * <tt>:include_and_prune</tt>
+    # This value decides if it should continue to traverse and if it should include the node in the traversal result.
     # The block will receive a path argument.
     #
     # ==== Example
@@ -101,8 +110,9 @@ module Neo4j
     #
     # ==== See also
     #
+    # * How to use - http://neo4j.rubyforge.org/guides/traverser.html
     # * the path parameter - http://api.neo4j.org/1.4/org/neo4j/graphdb/Path.html
-    # * the #unique - if paths should be visit more the once, etc...
+    # * the #unique method - if paths should be visit more the once, etc...
     #
     def eval_paths(&eval_block)
       Traverser.new(self).eval_paths(&eval_block)
@@ -111,16 +121,16 @@ module Neo4j
     # Sets uniqueness of nodes or relationships to visit during a traversals.
     #
     # Allowed values
-    # * :node_global :: A node cannot be traversed more than once (default)
-    # * :node_path :: For each returned node there 's a unique path from the start node to it.
-    # * :node_recent :: This is like :node_global, but only guarantees uniqueness among the most recent visited nodes, with a configurable count.
-    # * :none :: No restriction (the user will have to manage it).
-    # * :rel_global :: A relationship cannot be traversed more than once, whereas nodes can.
-    # * :rel_path :: No restriction (the user will have to manage it).
-    # * :rel_recent :: Same as for :node_recent, but for relationships.
+    # * <tt>:node_global</tt>  A node cannot be traversed more than once (default)
+    # * <tt>:node_path</tt>  For each returned node there 's a unique path from the start node to it.
+    # * <tt>:node_recent</tt>  This is like :node_global, but only guarantees uniqueness among the most recent visited nodes, with a configurable count.
+    # * <tt>:none</tt>  No restriction (the user will have to manage it).
+    # * <tt>:rel_global</tt>  A relationship cannot be traversed more than once, whereas nodes can.
+    # * <tt>:rel_path</tt> :: No restriction (the user will have to manage it).
+    # * <tt>:rel_recent</tt>  Same as for :node_recent, but for relationships.
     #
     # See example in #eval_paths
-    # See http://api.neo4j.org/1.4/org/neo4j/kernel/Uniqueness.html
+    # See http://api.neo4j.org/1.4/org/neo4j/kernel/Uniqueness.html and http://neo4j.rubyforge.org/guides/traverser.html
     def unique(u)
       Traverser.new(self).unique(u)
     end

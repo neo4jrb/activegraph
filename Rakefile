@@ -40,7 +40,7 @@ RDoc::Task.new do |rdoc|
   rdoc.rdoc_dir = 'doc/rdoc'
   rdoc.title = "Neo4j.rb #{Neo4j::VERSION}"
   rdoc.options << '--webcvs=http://github.com/andreasronge/neo4j/tree/master/'
-  rdoc.options << '-f' << 'horo'
+#  rdoc.options << '-f' << 'horo'
   rdoc.options << '-c' << 'utf-8'
   rdoc.options << '-m' << 'README.rdoc'
   rdoc.rdoc_files.include('README.rdoc')
