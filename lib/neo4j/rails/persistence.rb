@@ -5,7 +5,7 @@ module Neo4j
 
 			included do
 				extend TxMethods
-				tx_methods :destroy, :create, :update, :update_nested_attributes, :delete
+				tx_methods :destroy, :create, :update, :update_nested_attributes, :delete, :update_attributes, :update_attributes!
 			end
 
 			# Persist the object to the database.  Validations and Callbacks are included

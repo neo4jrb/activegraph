@@ -440,6 +440,38 @@ describe Neo4j::Model do
     end
   end
 
+  context "transactionality" do
+    let(:clazz) do
+      create_model do
+        has_one :icecream
+        validates_presence_of :icecream
+      end
+    end
+
+    describe "update_attributes!" do
+      it "should not update the relations when model is invalid" do
+        model = clazz.create!(:icecream => IceCream.create!(:flavour => 'x'))
+
+        begin
+          model.update_attributes!(:icecream => nil)
+        rescue Neo4j::Model::RecordInvalidError
+        end
+
+        model.reload.icecream.should_not be_nil
+      end
+    end
+
+    describe "update_attributes" do
+      it "should not update the relations when model is invalid" do
+        model = clazz.create!(:icecream => IceCream.create!(:flavour => 'x'))
+
+        model.update_attributes(:icecream => nil)
+
+        model.reload.icecream.should_not be_nil
+      end
+    end
+  end
+
   describe "properties" do
     it "not required to run in a transaction (will create one)" do
       cream = IceCream.create :flavour => 'x'
@@ -640,7 +672,7 @@ describe Neo4j::Model do
         Neo4j.threadlocal_ref_node = ref_1
         @node_from_ref_1 = IceCream.create!(:flavour => 'Vanilla')
       end
-      
+
       after(:each) do
         Neo4j.threadlocal_ref_node = nil
       end
