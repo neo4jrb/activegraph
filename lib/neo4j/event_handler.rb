@@ -90,14 +90,22 @@ module Neo4j
     end
 
     def before_commit(data)
+      created_identity_map = node_identity_map(data.created_nodes)
+      deleted_identity_map = node_identity_map(data.deleted_nodes)
       data.created_nodes.each{|node| node_created(node)}
       data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
       data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_nodes.include?(tx_data.entity) }
       data.deleted_nodes.each { |node| node_deleted(node, deleted_properties_for(node,data), data)}
-      data.created_relationships.each {|rel| relationship_created(rel, data)}
-      data.deleted_relationships.each {|rel| relationship_deleted(rel, deleted_rel_properties_for(rel, data), data)}
+      data.created_relationships.each {|rel| relationship_created(rel, data, created_identity_map)}
+      data.deleted_relationships.each {|rel| relationship_deleted(rel, deleted_rel_properties_for(rel, data), data, deleted_identity_map)}
       data.assigned_relationship_properties.each { |tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
       data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_relationships.include?(tx_data.entity) }
+    end
+
+    def node_identity_map(nodes)
+      identity_map = java.util.HashMap.new
+      nodes.each{|node| identity_map.put(node.neo_id,node)}#using put due to a performance regression in JRuby 1.6.4
+      identity_map
     end
 
     def deleted_properties_for(node, data)
@@ -147,12 +155,12 @@ module Neo4j
       @listeners.each {|li| li.on_node_deleted(node,old_properties, data) if li.respond_to?(:on_node_deleted)}
     end
 
-    def relationship_created(relationship, tx_data)
-      @listeners.each {|li| li.on_relationship_created(relationship, tx_data) if li.respond_to?(:on_relationship_created)}
+    def relationship_created(relationship, tx_data, created_identity_map)
+      @listeners.each {|li| li.on_relationship_created(relationship, tx_data, created_identity_map) if li.respond_to?(:on_relationship_created)}
     end
 
-    def relationship_deleted(relationship, old_props, data)
-      @listeners.each {|li| li.on_relationship_deleted(relationship, old_props, data) if li.respond_to?(:on_relationship_deleted)}
+    def relationship_deleted(relationship, old_props, data, deleted_identity_map)
+      @listeners.each {|li| li.on_relationship_deleted(relationship, old_props, data, deleted_identity_map) if li.respond_to?(:on_relationship_deleted)}
     end
 
     def property_changed(node, key, old_value, new_value)
