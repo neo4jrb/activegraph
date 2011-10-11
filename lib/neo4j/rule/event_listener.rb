@@ -17,7 +17,7 @@ module Neo4j
           Rule.trigger_rules(node, *changes) if Rule.trigger?(node)
         end
 
-        def on_node_deleted(node, old_properties, data)
+        def on_node_deleted(node, old_properties, tx_data, deleted_identity_map)
           # have we deleted a rule node ?
           del_rule_node = Rule.find_rule_node(node)
           del_rule_node && del_rule_node.clear_rule_node
@@ -34,11 +34,11 @@ module Neo4j
             rule_name = rule.rule_name.to_s
 
             # is the rule node deleted ?
-            deleted_rule_node = data.deletedNodes.find { |n| n == rule_node.rule_node }
+            deleted_rule_node = deleted_identity_map.get(rule_node.rule_node.neo_id)
             next if deleted_rule_node
 
             rule.functions.each do |function|
-              next unless data.deletedRelationships.find do |r|
+              next unless tx_data.deletedRelationships.find do |r|
                 r.getEndNode().getId() == id && r.rel_type == rule_name
               end
               previous_value = old_properties[function.function_id]
