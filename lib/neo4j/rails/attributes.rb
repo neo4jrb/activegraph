@@ -216,6 +216,10 @@ module Neo4j
       def attribute?(name)
         name[0] != ?_ && property?(name)
       end
+      
+      def _classname
+        self[:_classname]
+      end
 
       # To get ActiveModel::Dirty to work, we need to be able to call undeclared
       # properties as though they have get methods

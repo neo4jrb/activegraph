@@ -9,27 +9,28 @@ module Neo4j
     class RuleNode
       include ToJava
       attr_reader :rules
+      attr_reader :model_class
 
       def initialize(clazz)
-        @type = eval("#{clazz}")
-        @clazz = clazz
+        @model_class = eval("#{clazz}")
+        @classname = clazz
         @rules = []
         @rule_node_key = ("rule_" + clazz.to_s).to_sym
         @ref_node_key = ("rule_ref_for_" + clazz.to_s).to_sym
       end
 
       def to_s
-        "RuleNode #{@clazz}, node #{rule_node} #rules: #{@rules.size}"
+        "RuleNode #{@classname}, node #{rule_node} #rules: #{@rules.size}"
       end
 
       # returns true if the rule node exist yet in the database
       def node_exist?
-        !ref_node.rel?(@clazz)
+        !ref_node.rel?(@classname)
       end
       
       def ref_node
-        if @type.respond_to? :ref_node_for_class
-          @type.ref_node_for_class
+        if @model_class.respond_to? :ref_node_for_class
+          @model_class.ref_node_for_class
         else
           Neo4j.ref_node
         end
@@ -38,7 +39,7 @@ module Neo4j
       def create_node
         Neo4j::Transaction.run do
           node = Neo4j::Node.new
-          ref_node.create_relationship_to(node, type_to_java(@clazz))
+          ref_node.create_relationship_to(node, type_to_java(@classname))
           node
         end
       end
@@ -50,14 +51,14 @@ module Neo4j
       end
 
       def delete_node
-        if ref_node.rel?(@clazz)
-          ref_node.outgoing(@clazz).each { |n| n.del }
+        if ref_node.rel?(@classname)
+          ref_node.outgoing(@classname).each { |n| n.del }
         end
         clear_rule_node
       end
 
       def find_node
-        ref_node.rel?(@clazz.to_s) && ref_node._rel(:outgoing, @clazz.to_s)._end_node
+        ref_node.rel?(@classname.to_s) && ref_node._rel(:outgoing, @classname.to_s)._end_node
       end
 
       def rule_node
