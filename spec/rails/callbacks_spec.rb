@@ -3,13 +3,18 @@ require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 module Neo4j
   module Rails
     class CallbacksTestModel < Neo4j::Rails::Model
-      property :name
-      
+      property :name, :desc
+
+      after_initialize :set_desc
       before_validation :downcase_name
-      
+
       private
       def downcase_name
         self.name.downcase!
+      end
+
+      def set_desc
+        self.desc ||= self.name
       end
     end
 
@@ -19,6 +24,11 @@ module Neo4j
         m.name.should == "Test"
         m.valid?
         m.name.should == "test"
+      end
+
+      it "should have after_intialize callback triggered" do
+        m = CallbacksTestModel.new(:name => "Test")
+        m.desc.should == "Test"
       end
     end
   end
