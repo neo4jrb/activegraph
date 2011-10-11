@@ -33,6 +33,25 @@ describe Neo4j::Rails::Observer do
     end
   end
 
+  context "when the node is new" do
+
+    let!(:animal) do
+      Animal.new
+    end
+
+    it "observes after initialize" do
+      recorder.last_callback.should == :after_initialize
+    end
+
+    it "calls after initialize once" do
+      recorder.call_count[:after_initialize].should == 1
+    end
+
+    it "contains the model of the callback" do
+      recorder.last_record[:after_initialize].should eq(animal)
+    end
+  end
+
   context "when the node is being created" do
 
     let!(:animal) do
