@@ -204,6 +204,31 @@ describe "shared index - many to many", :type => :transactional do
     search.size.should == 1
   end
 
+  it "when via indexed node is deleted it propogate to related nodes" do
+    keanu  = Actor.new :name => 'Keanu Reeves'
+    speed  = Movie.new :title => 'speed'
+    matrix = Movie.new :title => 'matrix'
+
+    fishburne = Actor.new :name => 'Laurence Fishburne'
+    keanu.acted_in << speed << matrix
+    fishburne.acted_in << matrix
+
+    new_tx
+
+    search = [*Actor.find('title: matrix', :type => :fulltext)]
+    search.should include(keanu, fishburne)
+    search.size.should == 2
+
+    # when deleting speed
+    speed.del
+    finish_tx
+
+    # then we still should find fishburne
+    search = [*Actor.find('title: speed', :type => :fulltext)]
+    search.should_not include(keanu)
+    search.size.should == 0
+  end
+
 end
 
 describe "shared index - one to one", :type => :transactional do

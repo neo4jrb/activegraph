@@ -10,7 +10,29 @@ describe "RelationshipSet" do
   end
 
   it "should return true for registered entries" do
-    @set.add(4,:foo)
-    @set.contains?(4,:foo).should be_true
+    new_tx
+    node1 = Neo4j::Node.new
+    node2 = Neo4j::Node.new
+
+    rel   = Neo4j::Relationship.new(:relationship, node1, node2)
+    finish_tx
+    @set.add(rel)
+    @set.contains?(node2.getId(),:relationship).should be_true
   end
+
+  it "should return list of nodes attached to an end node across relationships" do
+    new_tx
+    node1 = Neo4j::Node.new
+    node2 = Neo4j::Node.new
+    node3 = Neo4j::Node.new
+
+    rel1   = Neo4j::Relationship.new(:relationship, node1, node2)
+    rel2   = Neo4j::Relationship.new(:relationship, node3, node2)
+    finish_tx
+    @set.add(rel1)
+    @set.add(rel2)
+    @set.relationships(node2.getId()).size.should == 2
+    @set.relationships(node2.getId()).should include(rel1,rel2)
+  end
+
 end
