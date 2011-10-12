@@ -63,7 +63,7 @@ end
 
 module Neo4j
   include Java
-  
+
   # Enumerator has been moved to top level in Ruby 1.9.2, make it compatible with Ruby 1.8.7
   Enumerator = Enumerable::Enumerator unless defined? Enumerator
 end
@@ -72,6 +72,7 @@ require 'neo4j/version'
 require 'neo4j/neo4j'
 require 'neo4j/node'
 require 'neo4j/relationship'
+require 'neo4j/relationship_set'
 
 require 'neo4j/type_converters/type_converters'
 
