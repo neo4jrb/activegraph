@@ -132,6 +132,7 @@ module Neo4j
       include Validations # enable validations
       include Callbacks # enable callbacks
       include Finders # ActiveRecord style find
+      include Compositions
     end
 
   end
