@@ -58,7 +58,11 @@ module Neo4j
         end
 
         def self.match(rec,attribute,value)
-          rec[attribute].downcase == value.downcase
+          downcase(rec[attribute]) == downcase(value)
+        end
+
+        def self.downcase(value)
+          value.nil? ? value : value.strip.downcase
         end
       end
 

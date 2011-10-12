@@ -206,6 +206,16 @@ module Neo4j
           end
         end
 
+        it "should allow presence validation with case insensitive propeties" do
+          class CaseInsensitiveWithNilTest < Neo4j::Rails::Model
+            property :name, :required
+            index :name, :type => :fulltext
+            validates :name, :uniqueness => { :case_sensitive => false }
+            validates :required, :presence => true
+          end
+          CaseInsensitiveWithNilTest.new.should validate_presence_of :required
+        end
+
         it "should check properties on a case insensitive basis with allow_blank false" do
           class CaseInsensitiveWithAllowBlankFalseTest < Neo4j::Rails::Model
             property :name
