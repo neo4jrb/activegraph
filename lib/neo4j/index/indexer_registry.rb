@@ -18,9 +18,9 @@ module Neo4j
           @@indexers[classname]
         end
 
-        def on_node_deleted(node, old_props, tx_data, deleted_relationship_set, deleted_identity_map)
+        def on_node_deleted(node, old_props, deleted_relationship_set, deleted_identity_map)
           indexer = find_by_class(old_props['_classname'] || node.class.to_s)
-          indexer && indexer.remove_index_on_fields(node, old_props, tx_data)
+          indexer && indexer.remove_index_on_fields(node, old_props, deleted_relationship_set)
         end
 
         def on_property_changed(node, field, old_val, new_val)
@@ -45,8 +45,8 @@ module Neo4j
           end
         end
 
-        def on_relationship_deleted(rel, old_props,tx_data, deleted_relationship_set, deleted_identity_map)
-          on_node_deleted(rel, old_props, tx_data, deleted_relationship_set, deleted_identity_map)
+        def on_relationship_deleted(rel, old_props, deleted_relationship_set, deleted_identity_map)
+          on_node_deleted(rel, old_props, deleted_relationship_set, deleted_identity_map)
           # if only the relationship has been deleted then we have to remove the index
           # if both the relationship and the node has been deleted then the index will be removed in the
           # on_node_deleted callback
