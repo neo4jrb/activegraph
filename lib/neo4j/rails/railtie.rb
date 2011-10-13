@@ -4,6 +4,7 @@ module Neo4j
 
     initializer "neo4j.tx" do |app|
       app.config.middleware.use Neo4j::Rails::RackMiddleware
+      app.config.middleware.use Neo4j::IdentityMap::Middleware
     end
 
     # Add ActiveModel translations to the I18n load_path

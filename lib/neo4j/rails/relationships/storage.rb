@@ -14,15 +14,17 @@ module Neo4j
           @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
           @outgoing_rels = []
           @incoming_rels = []
-          @persisted_related_nodes = {}
-          @persisted_relationships = {}
-          @persisted_node_to_relationships = {}
         end
 
         def to_s #:nodoc:
           "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
         end
 
+
+        def remove_from_identity_map
+          @outgoing_rels.each {|r| Neo4j::IdentityMap.remove(r._java_rel)}
+          @incoming_rels.each {|r| Neo4j::IdentityMap.remove(r._java_rel)}
+        end
 
         def size(dir)
           counter = 0
@@ -60,18 +62,12 @@ module Neo4j
         def each_rel(dir, &block) #:nodoc:
           relationships(dir).each { |rel| block.call rel }          
           if @node.persisted?
-            cache_relationships(dir) if @persisted_relationships[dir].nil?
-            @persisted_relationships[dir].each {|rel| block.call rel unless !rel.exist?}
+            @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
+              block.call(rel.wrapper)
+            end
           end
         end
         
-        def cache_relationships(dir)
-          @persisted_relationships[dir] ||= []
-          node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
-            @persisted_relationships[dir] << rel.wrapper
-          end          
-        end
-
         def each_node(dir, &block)
           relationships(dir).each do |rel|
             if rel.start_node == @node
@@ -80,31 +76,21 @@ module Neo4j
               block.call rel.start_node
             end
           end
+
           if @node.persisted?
-            cache_persisted_nodes_and_relationships(dir) if @persisted_related_nodes[dir].nil?
-            @persisted_related_nodes[dir].each {|node| block.call node unless relationship_deleted?(dir,node)}
+            @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
+              end_node = rel.getOtherNode(@node._java_node).wrapper
+              block.call(end_node)
+            end
           end
         end
 
-        def cache_persisted_nodes_and_relationships(dir)
-          @persisted_related_nodes[dir] ||= []
-          @persisted_node_to_relationships[dir] ||= {}
-          @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
-            end_node = rel.getOtherNode(@node._java_node).wrapper
-            @persisted_related_nodes[dir] << end_node
-            @persisted_node_to_relationships[dir][end_node]=rel
-          end
-        end
-
-        def relationship_deleted?(dir,node)
-          @persisted_node_to_relationships[dir][node].nil? || !@persisted_node_to_relationships[dir][node].exist?
-        end
-
-        def single_relationship(dir)
+        def single_relationship(dir, raw = false)
           rel = relationships(dir).first
+#          puts "single_relationship #{dir} for #{self}, got #{rel && rel._java_rel} @node.persisted?=#{@node.persisted?}, #{@node._java_node}"
           if rel.nil? && @node.persisted?
             java_rel = @node._java_node.getSingleRelationship(java_rel_type, dir_to_java(dir))
-            java_rel && java_rel.wrapper
+            raw ? java_rel : java_rel && java_rel.wrapper
           else
             rel
           end
@@ -115,10 +101,8 @@ module Neo4j
         end
 
         def single_node(dir)
-          rel = single_relationship(dir)
-          return nil if rel.nil?
-          other = rel.other_node(@node)
-          other && other.wrapper
+          rel = single_relationship(dir, true)
+          rel && rel.other_node(@node)
         end
 
         def destroy_rels(dir, *nodes)
@@ -161,7 +145,7 @@ module Neo4j
           out_rels = @outgoing_rels.clone
           in_rels = @incoming_rels.clone
 
-          [@outgoing_rels, @incoming_rels, @persisted_related_nodes, @persisted_node_to_relationships, @persisted_relationships].each{|c| c.clear}
+          [@outgoing_rels, @incoming_rels].each{|c| c.clear}
 
           out_rels.each do |rel|
             rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel) if rel.end_node

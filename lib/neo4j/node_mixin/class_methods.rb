@@ -39,6 +39,7 @@ module Neo4j
       def new(*args)
         node = Neo4j::Node.create
         wrapped_node = super()
+        Neo4j::IdentityMap.add(node, wrapped_node)
         wrapped_node.init_on_load(node)
         wrapped_node.init_on_create(*args)
         wrapped_node

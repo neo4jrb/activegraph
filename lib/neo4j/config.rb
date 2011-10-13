@@ -14,6 +14,7 @@ module Neo4j
   # <tt>:timestamps</tt>::     default <tt>true</tt> for Rails Neo4j::Model - if timestamps should be used when saving the model
   # <tt>:lucene</tt>::         default hash keys: <tt>:fulltext</tt>, <tt>:exact</tt> configuration how the lucene index is stored
   # <tt>:enable_rules</tt>::   default true, if false the _all relationship to all instances will not be created and custom rules will not be available.
+  # <tt>:identity_map</tt>::   default false, See Neo4j::IdentityMap
   #
   class Config
     # This code is copied from merb-core/config.rb.

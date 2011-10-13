@@ -4,23 +4,24 @@ module Neo4j
 
 
       def write_changed_relationships #:nodoc:
-        @relationships.each_value do |storage|
+        @_relationships.each_value do |storage|
           storage.persist
         end
       end
 
       def clear_relationships #:nodoc:
-        @relationships = {}
+        @_relationships && @_relationships.each_value{|storage| storage.remove_from_identity_map}
+        @_relationships = {}
       end
 
 
       def _create_or_get_storage(rel_type) #:nodoc:
         dsl = _decl_rels_for(rel_type.to_sym)
-        @relationships[rel_type.to_sym] ||= Storage.new(self, rel_type, dsl)
+        @_relationships[rel_type.to_sym] ||= Storage.new(self, rel_type, dsl)
       end
 
       def _create_or_get_storage_for_decl_rels(decl_rels) #:nodoc:
-        @relationships[decl_rels.rel_type.to_sym] ||= Storage.new(self, decl_rels.rel_type, decl_rels)
+        @_relationships[decl_rels.rel_type.to_sym] ||= Storage.new(self, decl_rels.rel_type, decl_rels)
       end
 
 

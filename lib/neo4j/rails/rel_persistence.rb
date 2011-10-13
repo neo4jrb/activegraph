@@ -158,6 +158,7 @@ module Neo4j
           _persist_end_node
 
           @_java_rel = Neo4j::Relationship.new(type, start_node, end_node)
+          Neo4j::IdentityMap.add(@_java_rel, self)
           init_on_create
           clear_changes
         end unless @end_node.nil?
@@ -193,6 +194,10 @@ module Neo4j
       end
 
       def reload_from_database
+        Neo4j::IdentityMap.remove_rel_by_id(id) if persisted?
+        Neo4j::IdentityMap.remove_node_by_id(@end_node.id) if @end_node && @end_node.persisted?
+        Neo4j::IdentityMap.remove_node_by_id(@start_node.id) if @start_node && @start_node.persisted?
+
         if reloaded = self.class.load(id)
           send(:attributes=, reloaded.attributes, false)
         end

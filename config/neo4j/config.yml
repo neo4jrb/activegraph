@@ -7,6 +7,11 @@ storage_path: db
 # If disabled all custom rules will also be unavailable.
 enable_rules: true
 
+# if identity map should be on or not
+# It may impact the performance. Using the identity map will keep all loaded wrapper node/relationship
+# object in memory for each thread and transaction - which may speed up or slow down operations.
+identity_map: false
+
 # When using the Neo4j::Model you can let neo4j automatically set timestamps when updating/creating nodes.
 # If set to true neo4j.rb automatically timestamps create and update operations if the model has properties named created_at/created_on or updated_at/updated_on
 # (similar to ActiveRecord).

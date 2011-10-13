@@ -28,7 +28,7 @@ module Neo4j
     def wrapped_entity  #:nodoc:
       self
     end
-    
+
     def wrapper  #:nodoc:
       self.class.wrapper(self)
     end

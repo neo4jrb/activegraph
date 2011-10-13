@@ -154,6 +154,7 @@ module Neo4j
       def create
         node = Neo4j::Node.new
         @_java_node = node
+        Neo4j::IdentityMap.add(node, self)
         init_on_create
         clear_changes
         clear_relationships
@@ -172,7 +173,9 @@ module Neo4j
       end
 
       def reload_from_database
+        Neo4j::IdentityMap.remove_node_by_id(id)
         if reloaded = self.class.load(id)
+          clear_relationships
           send(:attributes=, reloaded.attributes, false)
         end
         reloaded

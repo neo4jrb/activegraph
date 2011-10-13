@@ -104,4 +104,7 @@ require 'neo4j/batch/batch'
 
 require 'orm_adapter/adapters/neo4j'
 
+require 'neo4j/identity_map'
+
+
 

@@ -12,6 +12,7 @@ module Neo4j
   # * <tt>on_relationship_deleted</tt>
   # * <tt>on_property_changed</tt>
   # * <tt>on_rel_property_changed</tt>
+  # * <tt>on_after_commit</tt>
   #
   # ==== on_neo4j_started(db)
   #
@@ -27,6 +28,11 @@ module Neo4j
   # the it will automatically be shutdown when the application exits (using the at_exit ruby hook).
   #
   # * <tt>db</tt> :: the Neo4j::Database instance
+  #
+  # ==== on_after_commit(data, state)
+  #
+  # Called after the transaction has successfully committed.
+  # See http://api.neo4j.org/1.4/org/neo4j/graphdb/event/TransactionEventHandler.html for the data and state parameter.
   #
   # ==== on_node_created(node)
   #
@@ -86,6 +92,7 @@ module Neo4j
 
 
     def after_commit(data, state)
+      @listeners.each {|li|  li.on_after_commit(data, state) if li.respond_to?(:on_after_commit)}
     end
 
     def after_rollback(data, state)

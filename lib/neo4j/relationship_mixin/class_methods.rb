@@ -24,6 +24,7 @@ module Neo4j
         type, from_node, to_node = args
         rel = Neo4j::Relationship.create(type, from_node, to_node)
         wrapped_rel = super()
+        Neo4j::IdentityMap.add(rel, wrapped_rel)
         wrapped_rel.init_on_load(rel)
         wrapped_rel.init_on_create(*args)
         wrapped_rel
