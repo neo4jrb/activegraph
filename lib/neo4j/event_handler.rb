@@ -32,22 +32,24 @@ module Neo4j
   #
   # * <tt>node</tt> :: the node that was created
   #
-  # ==== on_node_deleted(node, old_props, tx_data)
+  # ==== on_node_deleted(node, old_props, deleted_relationship_set, deleted_node_identity_map)
   #
   # * <tt>node</tt> :: the node that was deleted
   # * <tt>old_props</tt> :: a hash of the old properties this node had
-  # * <tt>tx_data</tt> :: the Java Transaction Data object,  http://api.neo4j.org/current/org/neo4j/graphdb/event/TransactionData.html
+  # * <tt>deleted_relationship_set</tt> :: the set of deleted relationships. See Neo4j::RelationshipSet
+  # * <tt>deleted_node_identity_map</tt> :: the identity map of deleted nodes. The key is the node id, and the value is the node
   #
-  # ==== on_relationship_created(rel, tx_data)
+  # ==== on_relationship_created(rel, created_node_identity_map)
   #
   # * <tt>rel</tt> :: the relationship that was created
-  # * <tt>tx_data</tt> :: the Java Transaction Data object,  http://api.neo4j.org/current/org/neo4j/graphdb/event/TransactionData.html
+  # * <tt>created_node_identity_map</tt> :: the identity map of created nodes. The key is the node id, and the value is the node
   #
-  # ==== on_relationship_deleted(rel, old_props, tx_data)
+  # ==== on_relationship_deleted(rel, old_props, deleted_relationship_set, deleted_node_identity_map)
   #
   # * <tt>rel</tt> :: the relationship that was created
   # * <tt>old_props</tt> :: a hash of the old properties this relationship had
-  # * <tt>tx_data</tt> :: the Java Transaction Data object,  http://api.neo4j.org/current/org/neo4j/graphdb/event/TransactionData.html
+  # * <tt>deleted_relationship_set</tt> :: the set of deleted relationships. See Neo4j::RelationshipSet
+  # * <tt>deleted_node_identity_map</tt> :: the identity map of deleted nodes. The key is the node id, and the value is the node
   #
   # ==== on_property_changed(node, key, old_value, new_value)
   #
@@ -66,7 +68,7 @@ module Neo4j
   # == Usage
   #
   #   class MyListener
-  #     def on_node_deleted(node, old_props, tx_data)
+  #     def on_node_deleted(node, old_props, deleted_relationship_set, deleted_node_identity_map)
   #     end
   #   end
   #
@@ -90,43 +92,49 @@ module Neo4j
     end
 
     def before_commit(data)
-      created_identity_map = node_identity_map(data.created_nodes)
-      deleted_identity_map = node_identity_map(data.deleted_nodes)
+      created_node_identity_map = node_identity_map(data.created_nodes)
+      deleted_node_identity_map = node_identity_map(data.deleted_nodes)
       deleted_relationship_set = relationship_set(data.deleted_relationships)
+      removed_node_properties_map = property_map(data.removed_node_properties)
+      removed_relationship_properties_map = property_map(data.removed_relationship_properties)
+      empty_map = java.util.HashMap.new
       data.created_nodes.each{|node| node_created(node)}
       data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_nodes.include?(tx_data.entity) }
-      data.deleted_nodes.each { |node| node_deleted(node, deleted_properties_for(node,data), data, deleted_relationship_set, deleted_identity_map)}
-      data.created_relationships.each {|rel| relationship_created(rel, created_identity_map)}
-      data.deleted_relationships.each {|rel| relationship_deleted(rel, deleted_rel_properties_for(rel, data), data, deleted_relationship_set, deleted_identity_map)}
+      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless deleted_node_identity_map.containsKey(tx_data.entity.getId) }
+      data.deleted_nodes.each { |node| node_deleted(node, removed_node_properties_map.get(node.getId)||empty_map, deleted_relationship_set, deleted_node_identity_map)}
+      data.created_relationships.each {|rel| relationship_created(rel, created_node_identity_map)}
+      data.deleted_relationships.each {|rel| relationship_deleted(rel, removed_relationship_properties_map.get(rel.getId)||empty_map, deleted_relationship_set, deleted_node_identity_map)}
       data.assigned_relationship_properties.each { |tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_relationships.include?(tx_data.entity) }
+      data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless deleted_relationship_set.contains_rel?(tx_data.entity) }
     end
 
     def node_identity_map(nodes)
-      identity_map = java.util.HashMap.new
+      identity_map = java.util.HashMap.new(nodes.size)
       nodes.each{|node| identity_map.put(node.neo_id,node)}#using put due to a performance regression in JRuby 1.6.4
       identity_map
     end
 
     def relationship_set(relationships)
-      relationship_set = RelationshipSet.new
-      relationships.each{|rel| relationship_set.add(rel.getEndNode().getId(),rel.rel_type)}
+      relationship_set = Neo4j::RelationshipSet.new(relationships.size)
+      relationships.each{|rel| relationship_set.add(rel)}
       relationship_set
     end
 
-    def deleted_properties_for(node, data)
-      data.removed_node_properties.find_all{|tx_data| tx_data.entity == node}.inject({}) do |memo, tx_data|
-        memo[tx_data.key] = tx_data.previously_commited_value
-        memo
+    def property_map(properties)
+      map = java.util.HashMap.new
+      properties.each do |property|
+        map(property.entity.getId, map).put(property.key, property.previously_commited_value)
       end
+      map
     end
 
-    def deleted_rel_properties_for(rel, data)
-      data.removed_relationship_properties.find_all{|tx_data| tx_data.entity == rel}.inject({}) do |memo, tx_data|
-        memo[tx_data.key] = tx_data.previously_commited_value
-        memo
-      end
+    def map(key,map)
+      map.get(key) || add_map(key,map)
+    end
+
+    def add_map(key,map)
+      map.put(key, java.util.HashMap.new)
+      map.get(key)
     end
 
     def add(listener)
@@ -158,16 +166,16 @@ module Neo4j
       @listeners.each {|li| li.on_node_created(node) if li.respond_to?(:on_node_created)}
     end
 
-    def node_deleted(node,old_properties, tx_data, deleted_relationship_set, deleted_identity_map)
-      @listeners.each {|li| li.on_node_deleted(node,old_properties, tx_data, deleted_relationship_set, deleted_identity_map) if li.respond_to?(:on_node_deleted)}
+    def node_deleted(node,old_properties, deleted_relationship_set, deleted_node_identity_map)
+      @listeners.each {|li| li.on_node_deleted(node,old_properties, deleted_relationship_set, deleted_node_identity_map) if li.respond_to?(:on_node_deleted)}
     end
 
-    def relationship_created(relationship, created_identity_map)
-      @listeners.each {|li| li.on_relationship_created(relationship, created_identity_map) if li.respond_to?(:on_relationship_created)}
+    def relationship_created(relationship, created_node_identity_map)
+      @listeners.each {|li| li.on_relationship_created(relationship, created_node_identity_map) if li.respond_to?(:on_relationship_created)}
     end
 
-    def relationship_deleted(relationship, old_props, tx_data, deleted_relationship_set, deleted_identity_map)
-      @listeners.each {|li| li.on_relationship_deleted(relationship, old_props, tx_data, deleted_relationship_set, deleted_identity_map) if li.respond_to?(:on_relationship_deleted)}
+    def relationship_deleted(relationship, old_props, deleted_relationship_set, deleted_node_identity_map)
+      @listeners.each {|li| li.on_relationship_deleted(relationship, old_props, deleted_relationship_set, deleted_node_identity_map) if li.respond_to?(:on_relationship_deleted)}
     end
 
     def property_changed(node, key, old_value, new_value)

@@ -98,15 +98,13 @@ module Neo4j
         end
       end
 
-      def remove_index_on_fields(node, props, tx_data) #:nodoc:
+      def remove_index_on_fields(node, props, deleted_relationship_set) #:nodoc:
         @field_types.keys.each { |field| rm_index(node, field, props[field]) if props[field] }
         # remove all via indexed fields
         @via_relationships.each_value do |dsl|
           indexer = dsl.target_class._indexer
-          tx_data.deleted_relationships.each do |rel|
-            start_node = rel._start_node
-            next if node != rel._end_node
-            indexer.remove_index_on_fields(start_node, props, tx_data)
+          deleted_relationship_set.relationships(node.getId).each do |rel|
+            indexer.remove_index_on_fields(rel._start_node, props, deleted_relationship_set)
           end
         end
       end
