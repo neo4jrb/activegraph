@@ -1,16 +1,22 @@
 class RelationshipSet
-  def initialize()
-    @set = java.util.HashSet.new
-    @relationship_map = java.util.HashMap.new
+  def initialize(size=0)
+    @set = java.util.HashSet.new(size)
+    @relationship_set = java.util.HashSet.new(size)
+    @relationship_map = java.util.HashMap.new(size)
   end
 
   def add(rel)
     @set.add(SetEntry.new(rel.getEndNode().getId(),rel.rel_type))
     relationships(rel.getEndNode().getId()) << rel
+    @relationship_set.add(rel.getId)
   end
 
   def relationships(node_id)
     @relationship_map.get(node_id) || add_list(node_id)
+  end
+
+  def contains_rel?(rel)
+    @relationship_set.contains(rel.getId)
   end
 
   def add_list(node_id)

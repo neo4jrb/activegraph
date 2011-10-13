@@ -98,22 +98,22 @@ module Neo4j
       empty_map = java.util.HashMap.new
       data.created_nodes.each{|node| node_created(node)}
       data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_nodes.include?(tx_data.entity) }
-      data.deleted_nodes.each { |node| node_deleted(node, removed_node_properties_map.get(node)||empty_map, deleted_relationship_set, deleted_identity_map)}
+      data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless deleted_identity_map.containsKey(tx_data.entity.getId) }
+      data.deleted_nodes.each { |node| node_deleted(node, removed_node_properties_map.get(node.getId)||empty_map, deleted_relationship_set, deleted_identity_map)}
       data.created_relationships.each {|rel| relationship_created(rel, created_identity_map)}
-      data.deleted_relationships.each {|rel| relationship_deleted(rel, removed_relationship_properties_map.get(rel)||empty_map, deleted_relationship_set, deleted_identity_map)}
+      data.deleted_relationships.each {|rel| relationship_deleted(rel, removed_relationship_properties_map.get(rel.getId)||empty_map, deleted_relationship_set, deleted_identity_map)}
       data.assigned_relationship_properties.each { |tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
-      data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless data.deleted_relationships.include?(tx_data.entity) }
+      data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless deleted_relationship_set.contains_rel?(tx_data.entity) }
     end
 
     def node_identity_map(nodes)
-      identity_map = java.util.HashMap.new
+      identity_map = java.util.HashMap.new(nodes.size)
       nodes.each{|node| identity_map.put(node.neo_id,node)}#using put due to a performance regression in JRuby 1.6.4
       identity_map
     end
 
     def relationship_set(relationships)
-      relationship_set = RelationshipSet.new
+      relationship_set = RelationshipSet.new(relationships.size)
       relationships.each{|rel| relationship_set.add(rel)}
       relationship_set
     end
@@ -121,7 +121,7 @@ module Neo4j
     def property_map(properties)
       map = java.util.HashMap.new
       properties.each do |property|
-        map(property.entity, map).put(property.key, property.previously_commited_value)
+        map(property.entity.getId, map).put(property.key, property.previously_commited_value)
       end
       map
     end

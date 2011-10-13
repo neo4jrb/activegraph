@@ -35,4 +35,17 @@ describe "RelationshipSet" do
     @set.relationships(node2.getId()).should include(rel1,rel2)
   end
 
+  it "should return true if a relationship is contained" do
+    new_tx
+    node1 = Neo4j::Node.new
+    node2 = Neo4j::Node.new
+    node3 = Neo4j::Node.new
+
+    rel1   = Neo4j::Relationship.new(:relationship, node1, node2)
+    rel2   = Neo4j::Relationship.new(:relationship, node3, node2)
+    finish_tx
+    @set.add(rel1)
+    @set.contains_rel?(rel1).should be_true
+    @set.contains_rel?(rel2).should be_false
+  end
 end
