@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe "RelationshipSet" do
   before(:each) do
-    @set = RelationshipSet.new
+    @set = Neo4j::RelationshipSet.new
   end
 
   it "should return false contains for nonexistent entries" do
