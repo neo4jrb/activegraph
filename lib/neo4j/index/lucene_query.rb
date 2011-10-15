@@ -117,7 +117,7 @@ module Neo4j
 
       # Performs a range query
       # Notice that if you don't specify a type when declaring a property a String range query will be performed.
-      # 
+      #
       def between(lower, upper, lower_incusive=false, upper_inclusive=false)
         raise "Expected a symbol. Syntax for range queries example: index(:weight).between(a,b)" unless Symbol === @query
         raise "Can't only do range queries on Neo4j::NodeMixin, Neo4j::Model, Neo4j::RelationshipMixin" unless @decl_props
@@ -188,7 +188,7 @@ module Neo4j
           type      = case
                         when Float == decl_type
                           org.apache.lucene.search.SortField::DOUBLE
-                        when Fixnum == decl_type
+                        when Fixnum == decl_type || DateTime == decl_type || Date == decl_type || Time == decl_type
                           org.apache.lucene.search.SortField::LONG
                         else
                           org.apache.lucene.search.SortField::STRING

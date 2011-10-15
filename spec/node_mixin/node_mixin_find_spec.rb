@@ -42,13 +42,13 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
       res.should include(@x50,@x51)
       res.should_not include(@x49,@x52,@x53)
     end
-    
+
     it "find(:month=> 2..5, :day => 11...14) finds nodes matching both conditions" do
       res = [*@clazz.find(:month=> 2..5, :day => 11...14)]
       res.should include(@x50,@x51)
       res.should_not include(@x49,@x52,@x53)
     end
-    
+
   end
 
 
@@ -282,7 +282,7 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
       @clazz.find('city: malmoe').first.should_not == n
       @clazz.find('city: stockholm').first.should == n
     end
-    
+
     it "can index and search on two properties if index has the same type" do
       c = Car.new(:wheels => 4, :colour => 'blue')
       new_tx
@@ -350,6 +350,47 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
       100.times do |x|
         Car.find("wheels: #{x}").first.should_not be_nil
       end
+    end
+  end
+
+  context "sorting on date" do
+    it "should sort on date" do
+      clazz = create_node_mixin do
+        property :date_property, :type => Date
+        index :date_property
+      end
+      first_date = clazz.new(:date_property => Date.new(1902,1,1))
+      second_date = clazz.new(:date_property => Date.new(2002,1,1))
+      third_date = clazz.new(:date_property => Date.new(2012,1,1))
+      new_tx
+      result = [*clazz.find("date_property: *").desc(:date_property)]
+      result.should == [third_date,second_date,first_date]
+    end
+
+    it "should sort on date_time" do
+      clazz = create_node_mixin do
+        property :date_property, :type => DateTime
+        index :date_property
+      end
+      first_date = clazz.new(:date_property => DateTime.new(1902,1,1,10,30))
+      second_date = clazz.new(:date_property => DateTime.new(2002,1,1,11,30))
+      third_date = clazz.new(:date_property => DateTime.new(2012,1,1,12,30))
+      new_tx
+      result = [*clazz.find("date_property: *").desc(:date_property)]
+      result.should == [third_date,second_date,first_date]
+    end
+
+    it "should sort on time" do
+      clazz = create_node_mixin do
+        property :date_property, :type => Time
+        index :date_property
+      end
+      first_date = clazz.new(:date_property => Time.utc(1902,1,1,1,2,0))
+      second_date = clazz.new(:date_property => Time.utc(2002,1,1,1,2,0))
+      third_date = clazz.new(:date_property => Time.utc(2012,1,1,1,2,0))
+      new_tx
+      result = [*clazz.find("date_property: *").desc(:date_property)]
+      result.should == [third_date,second_date,first_date]
     end
   end
 end
