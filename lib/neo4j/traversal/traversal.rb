@@ -36,7 +36,10 @@ module Neo4j
     #
     # ==== Examples
     #   # Find all my friends (nodes of depth 1 of type <tt>friends</tt>)
-    #   me.outgoing(:friends).each {|friend| puts friend[:name]}
+    #   me.outgoing(:friends).each {|friend| puts friend.name}
+    #
+    #   # A possible faster way, avoid loading wrapper Ruby classes, instead use raw java neo4j node objects
+    #   me.outgoing(:friends).raw.each {|friend| puts friend[:name]}
     #
     #   # Find all my friends and their friends (nodes of depth 1 of type <tt>friends</tt>)
     #   # me.outgoing(:friends).depth(2).each {|friend| puts friend[:name]}

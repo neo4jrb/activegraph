@@ -47,6 +47,24 @@ describe Neo4j::Node, :type => :transactional do
     end
   end
 
+  describe "#raw" do
+    before(:all) do
+      new_tx
+      @node = SimpleNode.new
+      @node.outgoing(:simple) << SimpleNode.new << SimpleNode.new
+      finish_tx
+    end
+    it "does not return the wrapper instances" do
+      @node.outgoing(:simple).size.should == 2
+      @node.outgoing(:simple).raw.each {|n| n.class.should == Neo4j::Node}
+    end
+
+    it "does return the wrapper instances when not using raw" do
+      @node.outgoing(:simple).each {|n| n.class.should == SimpleNode}
+    end
+
+  end
+
   it "#outgoing(:friends) << other_node creates an outgoing relationship of type :friends" do
     a = Neo4j::Node.new
     other_node = Neo4j::Node.new

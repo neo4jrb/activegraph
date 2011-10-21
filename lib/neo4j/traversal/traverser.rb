@@ -194,7 +194,9 @@ module Neo4j
       end
 
       def size
-        to_a.size
+        s = 0
+        iterator.each { |_| s += 1 }
+        s
       end
 
       alias_method :length, :size
@@ -208,7 +210,7 @@ module Neo4j
       end
 
       def each
-        @traversal_result == :paths ? iterator.each { |i| yield i } : iterator.each { |i| yield i.wrapper }
+        @raw ? iterator.each { |i| yield i } : iterator.each { |i| yield i.wrapper }
       end
 
       # Same as #each but does not wrap each node in a Ruby class, yields the Java Neo4j Node instance instead.
@@ -223,10 +225,18 @@ module Neo4j
         self
       end
 
-      # Returns an enumerable of relationships instead of nodes
+      # If this is called then it will not wrap the nodes but instead return the raw Java Neo4j::Node objects when traversing
+      #
+      def raw
+        @raw = true
+        self
+      end
+
+      # Returns an enumerable of paths instead of nodes
       #
       def paths
         @traversal_result = :paths
+        @raw = true
         self
       end
 
