@@ -1,3 +1,16 @@
+ == 1.2.5 / 2011-10-21
+* Faster traversals by avoiding loading Ruby wrappers (new method 'raw' on traversals) [#189]
+* Support for IdentityMap [#188]
+* Improved performance in event handler (Vivek Prahlad)
+* Fixing issue with validates_presence_of validation (Vivek Prahlad)
+* Implemented compositions support on Neo4j::Rails::Relationship (Kalyan Akella)
+* Added after_initialize callback (Deepak N)
+* Fixed performance issues on node deleted (Vivek Prahlad)
+* Fixed a performance issue in the index_registry (Vivek Prahlad)
+* Fixed uniqueness validation for :case_sensitive => false (Vivek Prahlad)
+* Fixed update_attributes deleting relations when model is invalid (Deepak N)
+* Fixed timestamp rails generator (Marcio Toshio)
+
  == 1.2.4 / 2011-10-07
 * Support for traversing with Neo4j::Node#eval_paths and setting uniqueness on traversals [#187]
 * Removed unnecessary node creation on database start up (class nodes attached to reference node) (Vivek Prahlad)
