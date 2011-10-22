@@ -15,7 +15,7 @@ end
 
 describe Neo4j::Node, "index_names", :type => :transactional do
   before(:each) do
-    Neo4j.threadlocal_ref_node = nil    
+    Neo4j.threadlocal_ref_node = nil
   end
 
   it "can be used to configure where the index is stored on the filesystem" do
@@ -34,6 +34,44 @@ describe Neo4j::Node, "index_names", :type => :transactional do
 
     path = File.join(Neo4j.config[:storage_path], "index", "lucene", "node", Neo4j::Test::TestIndex.index_names[:fulltext])
     File.exist?(path).should be_true
+  end
+
+  context "when threadlocal_ref_node is set" do
+    context "when reference node defines _index_prefix" do
+      class IndexPrefixReferenceNode < Neo4j::Rails::Model
+        def _index_prefix
+          "Foo" + self.id
+        end
+      end
+
+      it "should use the _index_prefix and classname to build index name" do
+        ref_node = IndexPrefixReferenceNode.create!(:name => 'Ignore this for building prefix')
+        Neo4j.threadlocal_ref_node = ref_node
+
+        IceCream.index_names[:fulltext].should == "Foo#{ref_node.id}_IceCream-fulltext"
+        IceCream.index_names[:exact].should == "Foo#{ref_node.id}_IceCream-exact"
+      end
+    end
+
+    context "when reference node does not define _index_prefix but has name property" do
+      it "should use name property and classname to build index name" do
+        ref_node = Neo4j::Node.new(:name => 'Ref1')
+        Neo4j.threadlocal_ref_node = ref_node
+
+        IceCream.index_names[:fulltext].should == "Ref1_IceCream-fulltext"
+        IceCream.index_names[:exact].should == "Ref1_IceCream-exact"
+      end
+    end
+
+    context "when reference node does not define _index_prefix and has no name property" do
+      it "should use only classname to build index name" do
+        ref_node = Neo4j::Node.new
+        Neo4j.threadlocal_ref_node = ref_node
+
+        IceCream.index_names[:fulltext].should == "IceCream-fulltext"
+        IceCream.index_names[:exact].should == "IceCream-exact"
+      end
+    end
   end
 end
 
