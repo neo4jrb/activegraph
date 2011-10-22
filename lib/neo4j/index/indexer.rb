@@ -330,9 +330,10 @@ module Neo4j
       def index_prefix
         return "" unless Neo4j.running?
         return "" unless @indexer_for.respond_to?(:ref_node_for_class)
-        ref_node = @indexer_for.ref_node_for_class
-        ref_node_name = ref_node[:name]
-        ref_node_name.blank? ? "" : ref_node_name + "_"
+        ref_node = @indexer_for.ref_node_for_class.wrapper
+        prefix = ref_node.send(:_index_prefix) if ref_node.respond_to?(:_index_prefix)
+        prefix ||= ref_node[:name] # To maintain backward compatiblity
+        prefix.blank? ? "" : prefix + "_"
       end
     end
   end
