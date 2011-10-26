@@ -1,6 +1,6 @@
 rvm: 
   - jruby
 env:
-  - IM=true
-  - IM=false
+  - "IM=true"
+  - "IM=false"
 
