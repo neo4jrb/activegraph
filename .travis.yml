@@ -1,6 +1,6 @@
-rvm: 
+rvm:
   - jruby
 env:
-  - "IM=true"
-  - "IM=false"
+  - "IDENTITY_MAP=true"
+  - "IDENTITY_MAP=false"
 
