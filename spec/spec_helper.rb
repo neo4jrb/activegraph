@@ -18,9 +18,9 @@ begin
   Neo4j::Config[:logger_level] = Logger::ERROR
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, "neo4j-rspec-db")
   Neo4j::Config[:debug_java] = true
-  Neo4j::Config[:identity_map] = true # faster tests
 
-  Neo4j::IdentityMap.enabled = true # this is normally set in the rails rack middleware
+  Neo4j::Config[:identity_map] = (ENV['IDENTITY_MAP'] == "true") # faster tests
+  Neo4j::IdentityMap.enabled = (ENV['IDENTITY_MAP'] == "true") # this is normally set in the rails rack middleware
 
   def rm_db_storage
     FileUtils.rm_rf Neo4j::Config[:storage_path]
@@ -54,7 +54,9 @@ begin
 
   RSpec.configure do |c|
     $name_counter = 0
-  
+
+    c.filter_run_excluding :identity_map => true if not Neo4j::IdentityMap.enabled
+
     c.before(:each, :type => :transactional) do
       new_tx
     end
