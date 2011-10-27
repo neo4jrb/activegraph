@@ -57,7 +57,7 @@ share_examples_for "not containing the entity" do
 end
 
 
-describe "Identity Map" do
+describe "Identity Map", :identity_map => true do
 
   before(:all) do
     @old_identity_map_enabled = Neo4j::IdentityMap.enabled?
