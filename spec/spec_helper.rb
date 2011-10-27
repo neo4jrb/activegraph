@@ -19,7 +19,6 @@ begin
   Neo4j::Config[:storage_path] = File.join(Dir.tmpdir, "neo4j-rspec-db")
   Neo4j::Config[:debug_java] = true
 
-  puts "DEBUG: ENV['IDENTITY_MAP'] : #{ENV['IDENTITY_MAP']}"
   Neo4j::Config[:identity_map] = (ENV['IDENTITY_MAP'] == "true") # faster tests
   Neo4j::IdentityMap.enabled = (ENV['IDENTITY_MAP'] == "true") # this is normally set in the rails rack middleware
 
