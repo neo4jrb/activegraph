@@ -29,7 +29,20 @@ module Neo4j
     def revise
       self[:_version] = current_version + 1
       Neo4j::Transaction.run do
-        Version.new(:version, self, Snapshot.new(self.props), :classname => _classname, :number => current_version)
+        snapshot = Snapshot.new(self.props)
+        version_relationships(snapshot)
+        Version.new(:version, self, snapshot, :classname => _classname, :number => current_version)
+      end
+    end
+
+    def version_relationships(snapshot)
+      java_node = self._java_node
+      java_node.getRelationships().each do |java_rel|
+        if (java_node == java_rel.getStartNode())
+          snapshot._java_node.createRelationshipTo(java_rel.getOtherNode(java_node),java_rel.getType())
+        else
+          java_rel.getStartNode().createRelationshipTo(java_node,java_rel.getType())
+        end
       end
     end
 
