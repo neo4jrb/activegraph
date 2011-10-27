@@ -106,5 +106,5 @@ require 'orm_adapter/adapters/neo4j'
 
 require 'neo4j/identity_map'
 
-
+require 'neo4j/versioning/versioning'
 
