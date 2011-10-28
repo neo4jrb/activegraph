@@ -1,30 +1,31 @@
-require File.join(File.dirname(__FILE__), '..', 'spec_helper')
+require File.join(File.dirname(__FILE__), '..', '..', 'spec_helper')
 
 describe "Versioning" do
   class VersionableModel < Neo4j::Rails::Model
-    include Neo4j::Versioning
+    include Neo4j::Rails::Versioning
   end
 
   class SportsCar < Neo4j::Rails::Model
-    include Neo4j::Versioning
+    include Neo4j::Rails::Versioning
     property :brand
   end
 
   class Driver < Neo4j::Rails::Model
-    include Neo4j::Versioning
+    include Neo4j::Rails::Versioning
     property :name
     has_n(:sports_cars)
   end
 
-  it "should return version number" do
+  it "should start version numbers at 1" do
     versionable_model = VersionableModel.create!(:property => 'property1')
     versionable_model.current_version.should == 1
   end
 
-  it "should increment version when a model is revised" do
+  it "should increment version when a model is saved" do
     versionable_model = VersionableModel.create!(:property => 'property1')
     versionable_model.current_version.should == 1
-    versionable_model.revise
+    versionable_model[:other_property] = 'other'
+    versionable_model.save!
     versionable_model.current_version.should == 2
   end
 
@@ -33,11 +34,20 @@ describe "Versioning" do
     versionable_model[:second_property] = 'property 2'
     versionable_model.save!
     versionable_model.current_version.should == 2
+    versionable_model.version(1).should be_a(Neo4j::Rails::Versioning::Snapshot)
     versionable_model.version(1)[:second_property].should be_nil
     versionable_model.version(1)[:property].should == 'property1'
   end
 
-  it "should create correctly named relationships to and from snapshots" do
+  it "should not save a version if there are no changes" do
+    versionable_model = VersionableModel.create!(:property => 'property1')
+    versionable_model[:property] = 'property 2'
+    versionable_model.save
+    versionable_model.save
+    versionable_model.current_version.should == 2
+  end
+
+  it "should create correctly named outgoing relationships to and from snapshots" do
     ferarri = SportsCar.create!(:name => 'Ferarri')
     porsche = SportsCar.create!(:name => 'Porsche')
     driver = Driver.create!(:name => 'Driver')
@@ -49,5 +59,6 @@ describe "Versioning" do
     driver.version(1).outgoing(:sports_cars).should be_empty
     driver.version(2).outgoing(:sports_cars).should include(ferarri)
     driver.version(3).outgoing(:sports_cars).should include(ferarri,porsche)
+    ferarri.incoming(:sports_cars).size.should == 1 #Versioning uses a relationship name with a prefix
   end
 end
