@@ -47,8 +47,9 @@ describe "Versioning" do
     versionable_model.current_version.should == 2
   end
 
-  it "should create correctly named outgoing relationships to and from snapshots" do
+  it "should create correctly named incoming and outgoing relationships to and from snapshots" do
     ferarri = SportsCar.create!(:name => 'Ferarri')
+    ferarri.version(1).incoming(:sports_cars).should be_empty
     porsche = SportsCar.create!(:name => 'Porsche')
     driver = Driver.create!(:name => 'Driver')
     driver.sports_cars << ferarri
@@ -56,9 +57,12 @@ describe "Versioning" do
     driver.sports_cars << porsche
     driver.save!
     driver.current_version.should == 3
+    ferarri[:max_speed] = 300
+    ferarri.save!
     driver.version(1).outgoing(:sports_cars).should be_empty
     driver.version(2).outgoing(:sports_cars).should include(ferarri)
     driver.version(3).outgoing(:sports_cars).should include(ferarri,porsche)
     ferarri.incoming(:sports_cars).size.should == 1 #Versioning uses a relationship name with a prefix
+    ferarri.version(2).incoming(:sports_cars).should include(driver)
   end
 end

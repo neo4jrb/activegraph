@@ -4,9 +4,9 @@ module Neo4j
       class Version
         include Neo4j::RelationshipMixin
         property :number, :type => Fixnum
-        property :classname
+        property :model_classname
         index :number
-        index :classname
+        index :model_classname
       end
 
       class Snapshot
@@ -22,7 +22,7 @@ module Neo4j
       end
 
       def self.included(c)
-        c.has_n(:version).to(Snapshot).relationship(Version)
+        c.has_n(:versions).to(Snapshot).relationship(Version)
       end
 
       def current_version
@@ -30,7 +30,7 @@ module Neo4j
       end
 
       def version(number)
-        Version.find(:classname => _classname, :number => number) {|query| query.first.end_node}
+        Version.find(:model_classname => _classname, :number => number) {|query| query.first.end_node}
       end
 
       def revise
@@ -38,7 +38,7 @@ module Neo4j
           snapshot = Snapshot.new(self.props)
           snapshot[:_classname] = Snapshot.new[:_classname]
           version_relationships(snapshot)
-          Version.new(:version, self, snapshot, :classname => _classname, :number => current_version)
+          Version.new(:version, self, snapshot, :model_classname => _classname, :number => current_version)
         end
       end
 
