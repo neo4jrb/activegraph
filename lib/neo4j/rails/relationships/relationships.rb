@@ -2,11 +2,17 @@ module Neo4j
   module Rails
     module Relationships
 
-
       def write_changed_relationships #:nodoc:
         @_relationships.each_value do |storage|
           storage.persist
         end
+      end
+
+      def relationships_changed?
+        @_relationships.each_value do |storage|
+          return true if !storage.persisted?
+        end
+        false
       end
 
       def clear_relationships #:nodoc:
