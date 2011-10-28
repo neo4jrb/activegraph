@@ -65,4 +65,25 @@ describe "Versioning" do
     ferarri.incoming(:sports_cars).size.should == 1 #Versioning uses a relationship name with a prefix
     ferarri.version(2).incoming(:sports_cars).should include(driver)
   end
+
+  it "should delete older versions when max_versions is exceeded" do
+    class MaxVersion < Neo4j::Rails::Model
+      include Neo4j::Rails::Versioning
+      max_versions 2
+    end
+    max_version = MaxVersion.create!(:name => "Foo")
+    max_version.update_attributes!(:name => "Bar")
+    max_version.update_attributes!(:name => "Baz")
+    max_version.update_attributes!(:name => "FooBar")
+    max_version.current_version.should == 4
+    max_version.version(1).should be_nil
+    max_version.version(2).should be_nil
+  end
+
+  it "versions multiple instances" do
+    model1 = VersionableModel.create!(:property => 'model1property')
+    model2 = VersionableModel.create!(:property => 'model2property')
+    model1.version(1)[:property].should == 'model1property'
+    model2.version(1)[:property].should == 'model2property'
+  end
 end
