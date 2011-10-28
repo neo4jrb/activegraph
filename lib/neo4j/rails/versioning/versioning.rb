@@ -8,9 +8,9 @@ module Neo4j
     #     include Neo4j::Rails::Versioning
     #   end
     #
-    # To find out the number of versions of an instance, you can use the current_versions method.
+    # To find out the number of versions of an instance, you can use the current_version method.
     #
-    # To retrieve a snapshot of an older verions, use the version method.
+    # To retrieve a snapshot of an older version, use the version method.
     #   snapshot = instance.version(1) #Retrieves version 1.
     #
     # Note that the version numbers start from 1 onwards.
@@ -21,7 +21,7 @@ module Neo4j
     # For example:
     #   snapshot.incoming(:friends) would return a collection of nodes that are related via the friends relationship.
     #
-    # The snapshot node creates relationships with a models related nodes with a "version_" prefix in order to
+    # The snapshot node creates relationships with a model's related nodes with a "version_" prefix in order to
     # avoid name clashes. However, you can call the incoming and outgoing methods using your model's relationship names.
     #
     # To control the maximum number of versions created, you can use the max_versions property.
