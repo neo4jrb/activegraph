@@ -884,7 +884,9 @@ describe "SettingRelationship" do
       b.incoming(:other_node).should include(@start_node)
       a.incoming(:other_node).size.should == 1
       a.incoming(:other_node).should include(@start_node)
+      @start_node.relationships_changed?.should be_true
       @start_node.save
+      @start_node.relationships_changed?.should be_false
 
       @start_node.outgoing(:foo).size.should == 1
       @start_node.outgoing(:foo).should include(c)
