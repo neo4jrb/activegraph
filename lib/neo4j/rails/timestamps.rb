@@ -6,16 +6,10 @@ module Neo4j
 
 			TIMESTAMP_PROPERTIES = [ :created_at, :created_on, :updated_at, :updated_on ]
 
-			def write_changed_attributes
-				update_timestamp
-				super
-			end
-
-			def init_on_create(*args)
-				create_timestamp
-				super
-			end
-
+      included do
+        before_create :create_timestamp
+        before_save :update_timestamp, :if => :new_or_changed?
+      end
 			# Set the timestamps for this model if timestamps is set to true in the config
 			# and the model is set up with the correct property name, e.g.:
 			#
@@ -49,6 +43,10 @@ module Neo4j
 
 				send("#{attribute}=", value)
 			end
+
+      def new_or_changed?
+        self.new? or self.changed?
+      end
 
 			module ClassMethods
 				def property_setup(property, options)

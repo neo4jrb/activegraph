@@ -128,9 +128,9 @@ module Neo4j
       include Attributes # handles how to save and retrieve attributes
       include Mapping::Property # allows some additional options on the #property class method
       include Serialization # enable to_xml and to_json
-      include Timestamps # handle created_at, updated_at timestamp properties
       include Validations # enable validations
       include Callbacks # enable callbacks
+      include Timestamps # handle created_at, updated_at timestamp properties
       include Finders # ActiveRecord style find
       include Compositions
     end
