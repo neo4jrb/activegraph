@@ -1,7 +1,11 @@
 class <%= class_name %> < <%= parent? ? options[:parent].classify : "Neo4j::Rails::Model" %>
 <% attributes.each do |attribute| -%>
-  property :<%= attribute.name %><%= ", :type => #{attribute.type_class}" %>
+  property :<%= attribute.name %><%= ", :type => #{attribute.type_class}" unless attribute.type_class == 'any' %>
 <% end -%>
+<%= indices_statements if indices? -%>
+
+<%= has_n_statements if has_n? -%>
+<%= has_one_statements if has_one? -%>
 
 <%= timestamp_statements if timestamps? -%>
 end
