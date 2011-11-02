@@ -1,3 +1,11 @@
+ == 1.2.6 / 2011-11-02
+* Generators can now generate relationships as well [#195]
+* Better will_paginate support for Neo4j::Rails::Model [#194]
+* Fixing updated_at to be set only if model has changed (pull #68, Deepak N)
+* Bringing back changes removed during identiy map to fix bug [#190] (Deepak N)
+* Fixing updated_at to be set only if model has changed, using callbacks instead of overriding method for stamping time (Deepak N)
+* Added versioning support (pull #67) (Vivek Prahlad)
+
  == 1.2.5 / 2011-10-21
 * Faster traversals by avoiding loading Ruby wrappers (new method 'raw' on traversals) [#189]
 * Support for IdentityMap [#188]
