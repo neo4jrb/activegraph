@@ -9,6 +9,7 @@ module Neo4j
       #
       class NodesDSL
         include Enumerable
+        include Neo4j::Paginate
 
         def initialize(storage, dir)
           @storage = storage

@@ -70,6 +70,7 @@ end
 
 require 'neo4j/version'
 require 'neo4j/neo4j'
+require 'neo4j/paginate'
 require 'neo4j/node'
 require 'neo4j/relationship'
 require 'neo4j/relationship_set'

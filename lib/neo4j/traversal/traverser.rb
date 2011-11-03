@@ -31,7 +31,7 @@ module Neo4j
     class Traverser
       include Enumerable
       include ToJava
-      include WillPaginate::Finders::Base
+      include Neo4j::Paginate
 
 
       def initialize(from, type = nil, dir=nil)
@@ -84,22 +84,6 @@ module Neo4j
         "NodeTraverser [from: #{@from.neo_id} depth: #{@depth} type: #{@type} dir:#{@dir}"
       end
 
-
-      def wp_query(options, pager, args, &block) #:nodoc:
-        page = pager.current_page || 1
-        per_page = pager.per_page
-        to = per_page * page
-        from = to - per_page
-        i = 0
-        res = []
-        iterator.each do |node|
-          res << node.wrapper if i >= from
-          i += 1
-          break if i >= to
-        end
-        pager.replace res
-        pager.total_entries ||= count
-      end
 
       def <<(other_node)
         new(other_node)

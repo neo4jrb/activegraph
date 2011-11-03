@@ -88,6 +88,10 @@ module Neo4j
         @properties = {}
       end
 
+      def wrapper
+        self
+      end
+
       # --------------------------------------
       # Public Class Methods
       # --------------------------------------
