@@ -86,4 +86,19 @@ describe "Versioning" do
     model1.version(1)[:property].should == 'model1property'
     model2.version(1)[:property].should == 'model2property'
   end
+
+  it "deleting an entity deletes all its versions" do
+    model1 = VersionableModel.create!(:property => 'model1property')
+    model1.version(1).should_not be_nil
+    neo_id = model1.neo_id #Saving the ID because destroy deletes it
+    classname = model1._classname
+    version(classname, neo_id, 1).should_not be_nil
+    model1.destroy
+    version(classname, neo_id, 1).should be_nil
+  end
+
+  def version(classname, neo_id, number)
+    Neo4j::Rails::Versioning::Version.find(:model_classname => classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node}
+  end
+
 end
