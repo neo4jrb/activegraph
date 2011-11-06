@@ -13,6 +13,7 @@ It uses two powerful and mature Java libraries:
 
 * {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
+* {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
 
 === Why Neo4j.rb or a Graph Database ?
 
