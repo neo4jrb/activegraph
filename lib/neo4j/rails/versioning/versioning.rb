@@ -98,7 +98,9 @@ module Neo4j
       end
 
       def version_relationships(snapshot)
+        rule_relationships = java.util.HashSet.new(Neo4j::Rule::Rule.rule_names_for(_classname))
         self._java_node.getRelationships().each do |rel|
+          next if rule_relationships.contains(rel.getType().name().to_sym)
           if (self._java_node == rel.getStartNode())
             snapshot._java_node.createRelationshipTo(rel.getEndNode(), relationship_type(rel.getType()))
           else

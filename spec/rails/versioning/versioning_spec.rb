@@ -87,6 +87,12 @@ describe "Versioning" do
     model2.version(1)[:property].should == 'model2property'
   end
 
+  it "should not version rule relationships" do
+    model1 = VersionableModel.create!(:property => 'model1property')
+    model1.version(1).rels.size().should == 1
+    model1.version(1).rels.first.relationship_type.should == :version
+  end
+
   it "deleting an entity deletes all its versions" do
     model1 = VersionableModel.create!(:property => 'model1property')
     model1.version(1).should_not be_nil
