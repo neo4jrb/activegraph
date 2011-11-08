@@ -358,10 +358,22 @@ describe "Neo4j::Model Relationships" do
         jack.knows_rels.first.destroy
         jack.reload
       end
-
-
     end
 
+    describe "has_one incoming" do
+      it "should allow assignments to nil" do
+        child_class = create_model
+        parent_class = create_model { has_n(:children).to(child_class) }
+        child_class.class_eval { has_one(:parent).from(parent_class, :children) }
+
+        child = child_class.new
+        child.parent = nil
+        child.parent.should be_nil
+
+        child.save
+        child.reload.parent.should be_nil
+      end
+    end
 
     describe "accepts_nested_attributes_for" do
 
