@@ -161,7 +161,7 @@ module Neo4j
           Neo4j::IdentityMap.add(@_java_rel, self)
           init_on_create
           clear_changes
-        end unless @end_node.nil?
+        end unless @end_node.nil? or @start_node.nil?
         true
       end
 
