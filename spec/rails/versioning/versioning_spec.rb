@@ -16,6 +16,11 @@ describe "Versioning" do
     has_n(:sports_cars)
   end
 
+  class ModelWithDateProperty < Neo4j::Rails::Model
+    include Neo4j::Rails::Versioning
+    property :date, :type => :date
+  end
+
   it "should start version numbers at 1" do
     versionable_model = VersionableModel.create!(:property => 'property1')
     versionable_model.current_version.should == 1
@@ -97,6 +102,11 @@ describe "Versioning" do
     model1.version(2).rels.first.relationship_type.should == :version
   end
 
+  it "should version models with date properties" do
+    model = ModelWithDateProperty.create!(:date => Date.today)
+    model.version(1)[:date].should == Neo4j::TypeConverters::DateConverter.to_java(model.date)
+  end
+
   it "deleting an entity deletes all its versions" do
     model1 = VersionableModel.create!(:property => 'model1property')
     model1.version(1).should_not be_nil
@@ -105,6 +115,15 @@ describe "Versioning" do
     version(classname, neo_id, 1).should_not be_nil
     model1.destroy
     version(classname, neo_id, 1).should be_nil
+  end
+
+  it "restores an older version with properties" do
+    model = ModelWithDateProperty.create!(:date => Date.today)
+    model[:other_property] = 'Other'
+    model.save!
+    model.revert_to(1)
+    model[:other_property].should be_nil
+    model.date.should == Date.today
   end
 
   def version(classname, neo_id, number)

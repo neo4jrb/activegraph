@@ -83,10 +83,19 @@ module Neo4j
         end
       end
 
+      def revert_to(version_number)
+        snapshot = version(version_number)
+        self.props.each_pair{|k,v| self[k] = nil if !snapshot.props.has_key?(k)}
+        snapshot.props.each_pair{|k,v| self.props[k] = Neo4j::TypeConverters.to_ruby(self.class, k, v) if self.props[k].nil?}
+        save
+      end
+
       private
       def revise
         Neo4j::Transaction.run do
-          snapshot = Snapshot.new(self.props.reject{|key, value| key.to_sym == :_classname})
+          properties = self.props.reject{|key, value| key.to_sym == :_classname}
+          converted_props = properties.inject({}) { |h,(k,v)| h[k] = Neo4j::TypeConverters.to_java(self.class, k, v); h }
+          snapshot = Snapshot.new(converted_props)
           version_relationships(snapshot)
           delete_old_version if version_max.present? && number_of_versions >= version_max
           Version.new(:version, self, snapshot, :model_classname => _classname, :instance_id => neo_id, :number => current_version)
