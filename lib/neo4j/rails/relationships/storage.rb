@@ -172,7 +172,7 @@ module Neo4j
           end
 
           in_rels.each do |rel|
-            rel.start_node.rm_outgoing_rel(@rel_type.to_sym, rel)
+            rel.start_node.rm_outgoing_rel(@rel_type.to_sym, rel) if rel.start_node
             success = rel.persisted? || rel.save
             # don't think this can happen - just in case, TODO
             raise "Can't save incoming #{rel}, validation errors ? #{rel.errors.inspect}" unless success
