@@ -16,6 +16,11 @@ describe "Versioning" do
     has_n(:sports_cars)
   end
 
+  class ModelWithDateProperty < Neo4j::Rails::Model
+    include Neo4j::Rails::Versioning
+    property :date, :type => :date
+  end
+
   it "should start version numbers at 1" do
     versionable_model = VersionableModel.create!(:property => 'property1')
     versionable_model.current_version.should == 1
@@ -85,5 +90,63 @@ describe "Versioning" do
     model2 = VersionableModel.create!(:property => 'model2property')
     model1.version(1)[:property].should == 'model1property'
     model2.version(1)[:property].should == 'model2property'
+  end
+
+  it "should not version rule and version to snapshot relationships" do
+    model1 = VersionableModel.create!(:property => 'model1property')
+    model1[:other] = 'other_property'
+    model1.save!
+    model1.version(1).rels.size().should == 1
+    model1.version(1).rels.first.relationship_type.should == :version
+    model1.version(2).rels.size().should == 1
+    model1.version(2).rels.first.relationship_type.should == :version
+  end
+
+  it "should version models with date properties" do
+    model = ModelWithDateProperty.create!(:date => Date.today)
+    model.version(1)[:date].should == model.date
+  end
+
+  it "deleting an entity deletes all its versions" do
+    model1 = VersionableModel.create!(:property => 'model1property')
+    model1.version(1).should_not be_nil
+    neo_id = model1.neo_id #Saving the ID because destroy deletes it
+    classname = model1._classname
+    version(classname, neo_id, 1).should_not be_nil
+    model1.destroy
+    version(classname, neo_id, 1).should be_nil
+  end
+
+  it "restores an older version with properties" do
+    model = ModelWithDateProperty.create!(:date => Date.today)
+    model[:other_property] = 'Other'
+    model.save!
+    model.revert_to(1)
+    model[:other_property].should be_nil
+    model.date.should == Date.today
+    model.current_version.should == 3
+  end
+
+  it "restores an older version with relationships" do
+    ferarri = SportsCar.create!(:name => 'Ferarri')
+    ferarri.version(1).incoming(:sports_cars).should be_empty
+    porsche = SportsCar.create!(:name => 'Porsche')
+    driver = Driver.create!(:name => 'Driver')
+    driver.sports_cars << ferarri
+    driver.save!
+    driver.sports_cars << porsche
+    driver.save!
+    driver.current_version.should == 3
+    driver._java_node.rels.size.should == 7 #1 to the Driver _all node,1 to the Rails model _all node, 3 snapshots, 2 sports cars
+    driver.revert_to(1)
+    driver.sports_cars.should be_empty
+    driver.current_version.should == 4
+    driver._java_node.rels.size.should == 6 #4 relationships to snapshots + 1 to the Driver _all node, 1 to the Rails model _all node
+    driver.revert_to(2)
+    driver.sports_cars.should include(ferarri)
+  end
+
+  def version(classname, neo_id, number)
+    Neo4j::Rails::Versioning::Version.find(:model_classname => classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node}
   end
 end
