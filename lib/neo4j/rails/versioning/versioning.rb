@@ -162,7 +162,7 @@ module Neo4j
       def restore_relationships(snapshot)
         each_versionable_relationship{|rel| rel.del}
         snapshot._java_node.getRelationships().each do |rel|
-          next if rel.getType.name.to_sym == :version || rel.getType.name.to_sym == :_all
+          next if rel.getType.name.to_sym == :version
           restore_relationship(rel,snapshot)
         end
       end
