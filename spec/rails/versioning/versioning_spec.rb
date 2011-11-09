@@ -104,7 +104,7 @@ describe "Versioning" do
 
   it "should version models with date properties" do
     model = ModelWithDateProperty.create!(:date => Date.today)
-    model.version(1)[:date].should == Neo4j::TypeConverters::DateConverter.to_java(model.date)
+    model.version(1)[:date].should == model.date
   end
 
   it "deleting an entity deletes all its versions" do
@@ -124,10 +124,29 @@ describe "Versioning" do
     model.revert_to(1)
     model[:other_property].should be_nil
     model.date.should == Date.today
+    model.current_version.should == 3
+  end
+
+  it "restores an older version with relationships" do
+    ferarri = SportsCar.create!(:name => 'Ferarri')
+    ferarri.version(1).incoming(:sports_cars).should be_empty
+    porsche = SportsCar.create!(:name => 'Porsche')
+    driver = Driver.create!(:name => 'Driver')
+    driver.sports_cars << ferarri
+    driver.save!
+    driver.sports_cars << porsche
+    driver.save!
+    driver.current_version.should == 3
+    driver._java_node.rels.size.should == 7 #1 to the Driver _all node,1 to the Rails model _all node, 3 snapshots, 2 sports cars
+    driver.revert_to(1)
+    driver.sports_cars.should be_empty
+    driver.current_version.should == 4
+    driver._java_node.rels.size.should == 6 #4 relationships to snapshots + 1 to the Driver _all node, 1 to the Rails model _all node
+    driver.revert_to(2)
+    driver.sports_cars.should include(ferarri)
   end
 
   def version(classname, neo_id, number)
     Neo4j::Rails::Versioning::Version.find(:model_classname => classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node}
   end
-
 end
