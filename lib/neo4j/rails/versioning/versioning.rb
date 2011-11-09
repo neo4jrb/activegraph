@@ -131,17 +131,12 @@ module Neo4j
       def each_versionable_relationship
         rule_relationships = java.util.HashSet.new(Neo4j::Rule::Rule.rule_names_for(_classname))
         self._java_node.getRelationships().each do |rel|
-          next if rule_relationships.contains(rel.getType().name().to_sym) || rel.getType.name.to_sym == :version
-          yield rel
+          yield rel unless rule_relationships.contains(rel.getType().name().to_sym) || rel.getType.name.to_sym == :version
         end
       end
 
       def create_version_relationship(rel,snapshot)
-        if (self._java_node == rel.getStartNode())
-          snapshot._java_node.createRelationshipTo(rel.getEndNode(), relationship_type(rel.getType()))
-        else
-          rel.getStartNode().createRelationshipTo(snapshot._java_node, relationship_type(rel.getType()))
-        end
+        create_relationship(self._java_node,snapshot._java_node, rel, relationship_type(rel.getType()))
       end
 
       def relationship_type(rel_type)
@@ -161,16 +156,19 @@ module Neo4j
       def restore_relationships(snapshot)
         each_versionable_relationship{|rel| rel.del}
         snapshot._java_node.getRelationships().each do |rel|
-          next if rel.getType.name.to_sym == :version
-          restore_relationship(rel,snapshot)
+          restore_relationship(rel,snapshot) unless rel.getType.name.to_sym == :version
         end
       end
 
       def restore_relationship(rel,snapshot)
-        if (snapshot._java_node == rel.getStartNode())
-          self._java_node.createRelationshipTo(rel.getEndNode(), restore_relationship_type(rel.getType()))
+        create_relationship(snapshot._java_node, self._java_node, rel, restore_relationship_type(rel.getType()))
+      end
+
+      def create_relationship(comparison_node,connection_node,rel, relationship_type)
+        if (comparison_node == rel.getStartNode())
+          connection_node.createRelationshipTo(rel.getEndNode(), relationship_type)
         else
-          rel.getStartNode().createRelationshipTo(self._java_node, restore_relationship_type(rel.getType()))
+          rel.getStartNode().createRelationshipTo(connection_node, relationship_type)
         end
       end
 
