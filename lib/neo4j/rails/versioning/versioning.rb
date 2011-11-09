@@ -45,6 +45,16 @@ module Neo4j
       class Snapshot
         include Neo4j::NodeMixin
 
+        def assign(key,value)
+          @converted_properties = {} if @converted_properties.nil?
+          @converted_properties[key.to_sym] = value
+        end
+
+        def [](key)
+          return @converted_properties[key] if @converted_properties
+          super(key)
+        end
+
         def incoming(rel_type)
           super "version_#{rel_type.to_s}".to_sym
         end
@@ -70,7 +80,9 @@ module Neo4j
       # @param [ Integer ] number The version number to retrieve.
       # Returns nil in case a version is not found.
       def version(number)
-        Version.find(:model_classname => _classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node}
+        snapshot = Version.find(:model_classname => _classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node}
+        snapshot.props.each_pair{|k,v| snapshot.assign(k,Neo4j::TypeConverters.to_ruby(self.class, k, v))} if !snapshot.nil?
+        snapshot
       end
 
       ##
@@ -83,38 +95,81 @@ module Neo4j
         end
       end
 
+      ##
+      # Reverts this instance to a specified version
+      # @param [ Integer ] version_number The version number to revert to.
+      # Reverting the instance will increment the current version number.
+      def revert_to(version_number)
+        snapshot = version(version_number)
+        self.props.each_pair{|k,v| self[k] = nil if !snapshot.props.has_key?(k)}
+        snapshot.props.each_pair{|k,v| self[k] = v if self.props[k].nil?}
+        Neo4j::Transaction.run do
+          restore_relationships(snapshot)
+          save
+        end
+      end
+
       private
       def revise
         Neo4j::Transaction.run do
-          snapshot = Snapshot.new(self.props.reject{|key, value| key.to_sym == :_classname})
-          version_relationships(snapshot)
+          snapshot = Snapshot.new(converted_properties)
+          each_versionable_relationship{|rel| create_version_relationship(rel,snapshot)}
           delete_old_version if version_max.present? && number_of_versions >= version_max
           Version.new(:version, self, snapshot, :model_classname => _classname, :instance_id => neo_id, :number => current_version)
         end
+      end
+
+      def converted_properties
+        properties = self.props.reject{|key, value| key.to_sym == :_classname}
+        properties.inject({}) { |h,(k,v)| h[k] = Neo4j::TypeConverters.to_java(self.class, k, v); h }
       end
 
       def number_of_versions
         Version.find(:model_classname => _classname, :instance_id => neo_id) {|query| query.size}
       end
 
-      def version_relationships(snapshot)
+      def each_versionable_relationship
+        rule_relationships = java.util.HashSet.new(Neo4j::Rule::Rule.rule_names_for(_classname))
         self._java_node.getRelationships().each do |rel|
-          if (self._java_node == rel.getStartNode())
-            snapshot._java_node.createRelationshipTo(rel.getEndNode(), relationship_type(rel.getType()))
-          else
-            rel.getStartNode().createRelationshipTo(snapshot._java_node, relationship_type(rel.getType()))
-          end
+          yield rel unless rule_relationships.contains(rel.getType().name().to_sym) || rel.getType.name.to_sym == :version
         end
+      end
+
+      def create_version_relationship(rel,snapshot)
+        create_relationship(self._java_node,snapshot._java_node, rel, relationship_type(rel.getType()))
       end
 
       def relationship_type(rel_type)
         org.neo4j.graphdb.DynamicRelationshipType.withName( "version_#{rel_type.name}" )
       end
 
+      def restore_relationship_type(snapshot_rel_type)
+        org.neo4j.graphdb.DynamicRelationshipType.withName( "#{snapshot_rel_type.name.gsub("version_","")}" )
+      end
+
       def delete_old_version
         versions = Version.find(:model_classname => _classname).asc(:number)
         versions.first.del
         versions.close
+      end
+
+      def restore_relationships(snapshot)
+        each_versionable_relationship{|rel| rel.del}
+        snapshot._java_node.getRelationships().each do |rel|
+          restore_relationship(rel,snapshot) unless rel.getType.name.to_sym == :version
+        end
+      end
+
+      def restore_relationship(rel,snapshot)
+        create_relationship(snapshot._java_node, self._java_node, rel, restore_relationship_type(rel.getType()))
+      end
+
+      def create_relationship(comparison_node,connection_node,rel, relationship_type)
+        if (comparison_node == rel.getStartNode())
+          connection_node.createRelationshipTo(rel.getEndNode(), relationship_type)
+        else
+          rel.getStartNode().createRelationshipTo(connection_node, relationship_type)
+        end
       end
 
       module ClassMethods #:nodoc:
