@@ -98,8 +98,7 @@ module Neo4j
       ##
       # Reverts this instance to a specified version
       # @param [ Integer ] version_number The version number to revert to.
-      # Reverting the instance will increment the current version number to the next version.
-      # Returns nil in case a version is not found.
+      # Reverting the instance will increment the current version number.
       def revert_to(version_number)
         snapshot = version(version_number)
         self.props.each_pair{|k,v| self[k] = nil if !snapshot.props.has_key?(k)}
