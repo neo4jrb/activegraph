@@ -38,7 +38,7 @@ module Neo4j
       
 
       def initialize(node, name)
-        @time_line = org.neo4j.index.timeline.Timeline.new(name, node._java_node, true, Neo4j.started_db.graph)
+        @time_line = org.neo4j.index.lucene.LuceneTimeline.new(name, node._java_node, true, Neo4j.started_db.graph)
         @node      = node
         @name      = name
         self.size = 0 unless size
