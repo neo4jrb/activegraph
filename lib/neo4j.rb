@@ -20,43 +20,42 @@ require 'neo4j/core_ext/class/inheritable_attributes'
 
 require 'neo4j/jars/core/geronimo-jta_1.1_spec-1.1.1.jar'
 require 'neo4j/jars/core/lucene-core-3.1.0.jar'
-require 'neo4j/jars/core/neo4j-lucene-index-1.4.1.jar'
-require 'neo4j/jars/core/neo4j-kernel-1.4.1.jar'
-require 'neo4j/jars/ha/neo4j-management-1.4.1.jar'
-require 'neo4j/jars/ha/neo4j-jmx-1.4.1.jar'
+require 'neo4j/jars/core/neo4j-cypher-1.5.jar'
+require 'neo4j/jars/core/neo4j-kernel-1.5.jar'
+require 'neo4j/jars/core/neo4j-lucene-index-1.5.jar'
+require 'neo4j/jars/core/neo4j-jmx-1.5.jar'
+require 'neo4j/jars/core/neo4j-udc-1.5.jar'
+require 'neo4j/jars/core/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
+require 'neo4j/jars/core/scala-library-2.9.0-1.jar'
+require 'neo4j/jars/core/server-api-1.5.jar'
+require 'neo4j/jars/ha/neo4j-management-1.5.jar'
 
 module Neo4j
 
   def self.load_local_jars
-    # This is a temporary fix since the HA does not yet work with this JAR
-    # It will be solved in a future version of the Java Neo4j library.
     if Neo4j.config[:online_backup_enabled]
       Neo4j.load_online_backup
-    else
-      # backup and HA does not work with this JAR FILE
-      require 'neo4j/jars/core/neo4j-index-1.3-1.3.M01.jar'
     end
   end
 
   def self.load_shell_jars
-    require 'neo4j/jars/ha/neo4j-shell-1.4.1.jar'
+    require 'neo4j/jars/core/neo4j-shell-1.5.jar'
   end
 
   def self.load_online_backup
-    require 'neo4j/jars/ha/neo4j-com-1.4.1.jar'
-    require 'neo4j/jars/core/neo4j-backup-1.4.1.jar'
-    require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
+    require 'neo4j/jars/ha/neo4j-com-1.5.jar'
+    require 'neo4j/jars/ha/neo4j-backup-1.5.jar'
+    require 'neo4j/jars/ha/org.apache.servicemix.bundles.netty-3.2.5.Final_1.jar'
     Neo4j.send(:const_set, :OnlineBackup, org.neo4j.backup.OnlineBackup)
   end
 
   def self.load_ha_jars
-    require 'neo4j/jars/core/neo4j-backup-1.4.1.jar'
+    require 'neo4j/jars/ha/neo4j-backup-1.5.jar'
+    require 'neo4j/jars/ha/neo4j-com-1.5.jar'
+    require 'neo4j/jars/ha/neo4j-ha-1.5.jar'
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
-    require 'neo4j/jars/ha/neo4j-ha-1.4.1.jar'
-    require 'neo4j/jars/ha/neo4j-com-1.4.1.jar'
-    require 'neo4j/jars/ha/netty-3.2.1.Final.jar'
-    require 'neo4j/jars/ha/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
-    # require 'neo4j/jars/ha/org.apache.servicemix.bundles.lucene-3.0.1_2.jar' # TODO IS THIS NEEDED ?
+    require 'neo4j/jars/ha/org.apache.servicemix.bundles.netty-3.2.5.Final_1.jar'
+    require 'neo4j/jars/ha/slf4j-api-1.6.1.jar'
     require 'neo4j/jars/ha/zookeeper-3.3.2.jar'
   end
 end

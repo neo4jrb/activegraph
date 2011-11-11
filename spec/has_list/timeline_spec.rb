@@ -8,12 +8,24 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
   end
 
   describe "not empty list" do
+    before(:all) do
+      new_tx
+      @root = @clazz.new
+    end
+
     before(:each) do
-      @root               = @clazz.new
+      new_tx
       @root.events[14243] = (@a = Neo4j::Node.new :name => 'a')
       @root.events[42]    = (@b = Neo4j::Node.new :name => 'b')
       @root.events[42]    = (@c = Neo4j::Node.new :name => 'c')
       @root.events[100]   = (@d = Neo4j::Node.new :name => 'd')
+      new_tx
+    end
+
+    after(:each) do
+      new_tx
+      @root.events.each{|node| @root.events.remove(node)}
+      finish_tx
     end
 
     describe "generated method 'events" do
@@ -42,15 +54,16 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
       describe "all(n)" do
         it "all(n) returns all the items with index n" do
           all = [*@root.events.all(42)]
-          all.should == [@b, @c]
+          all.should include(@b, @c)
         end
       end
 
       describe "between(range)" do
         it "events.between(x,y) returns all nodes between x and y (Fixnum)" do
-          @root.events.between(2..99998).should include(@b, @c, @d, @a)
           @root.events.between(100..100).should include(@d)
           [*@root.events.between(100..100)].size.should == 1
+          @root.events.between(2..99998).size.should == 4
+          @root.events.between(2..99998).collect{|v| v}.should include(@a, @b, @c, @d)
         end
       end
 
@@ -62,7 +75,9 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
       end
 
       it "does not change size of the list when the node is deleted (!)" do
+        new_tx
         lambda { @a.del }.should_not change(@root.events, :size)
+        finish_tx
       end
 
 
@@ -81,8 +96,16 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
   end
 
   describe "empty list" do
-    before(:each) do
+    before(:all) do
+      new_tx
       @root = @clazz.new
+      finish_tx
+    end
+
+    after(:each) do
+      new_tx
+      @root.events.each{|node| @root.events.remove(node)}
+      finish_tx
     end
 
     describe "generated method 'events'" do
@@ -104,6 +127,8 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
         end
 
         it "is inserted with the same index as the size of the list" do
+          [*@root.events].should == [@a, @b, @c, @d]
+          @root.events.size.should == 4
           @root.events[0].should == @a
           @root.events[1].should == @b
           @root.events[2].should == @c
@@ -126,13 +151,19 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
 
       describe "first" do
         it "returns nil" do
+          new_tx
+          @root.events.each{|node| @root.events.remove(node)}
+          finish_tx
           @root.events.first.should be_nil
         end
       end
 
       describe "last" do
         it "returns nil" do
-          @root.events.last.should be_nil          
+          new_tx
+          @root.events.each{|node| @root.events.remove(node)}
+          finish_tx
+          @root.events.last.should be_nil
         end
       end
 
