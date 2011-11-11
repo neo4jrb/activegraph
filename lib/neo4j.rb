@@ -55,7 +55,6 @@ module Neo4j
     require 'neo4j/jars/ha/neo4j-ha-1.5.jar'
     require 'neo4j/jars/ha/log4j-1.2.16.jar'
     require 'neo4j/jars/ha/org.apache.servicemix.bundles.netty-3.2.5.Final_1.jar'
-    require 'neo4j/jars/ha/org.apache.servicemix.bundles.jline-0.9.94_1.jar'
     require 'neo4j/jars/ha/slf4j-api-1.6.1.jar'
     require 'neo4j/jars/ha/zookeeper-3.3.2.jar'
   end
