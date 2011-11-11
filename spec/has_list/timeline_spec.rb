@@ -14,10 +14,12 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
     end
 
     before(:each) do
+      new_tx
       @root.events[14243] = (@a = Neo4j::Node.new :name => 'a')
       @root.events[42]    = (@b = Neo4j::Node.new :name => 'b')
       @root.events[42]    = (@c = Neo4j::Node.new :name => 'c')
       @root.events[100]   = (@d = Neo4j::Node.new :name => 'd')
+      new_tx
     end
 
     after(:each) do
@@ -52,16 +54,16 @@ describe "Neo4j::NodeMixin#list :events", :type => :transactional do
       describe "all(n)" do
         it "all(n) returns all the items with index n" do
           all = [*@root.events.all(42)]
-          all.each {|node| puts node.props}
-          all.should == [@b, @c]
+          all.should include(@b, @c)
         end
       end
 
       describe "between(range)" do
         it "events.between(x,y) returns all nodes between x and y (Fixnum)" do
-          @root.events.between(2..99998).should include(@b, @c, @d, @a)
           @root.events.between(100..100).should include(@d)
           [*@root.events.between(100..100)].size.should == 1
+          @root.events.between(2..99998).size.should == 4
+          @root.events.between(2..99998).collect{|v| v}.should include(@a, @b, @c, @d)
         end
       end
 

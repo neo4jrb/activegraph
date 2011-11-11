@@ -37,8 +37,8 @@ module Neo4j
       include WillPaginate::Finders::Base
 
 
-      def initialize(node, name)
-        @index = Neo4j.started_db.lucene.for_nodes("#{node[:_classname]}_#{name}-timeline", Neo4j::Config[:lucene][:exact])
+      def initialize(indexer_for, node, name)
+        @index = Neo4j.started_db.lucene.for_nodes("#{indexer_for.to_s.gsub('::', '_')}_#{name}-timeline", Neo4j::Config[:lucene][:exact])
         @time_line = org.neo4j.index.lucene.LuceneTimeline.new(Neo4j.started_db.graph, @index)
         @node      = node
         @name      = name
@@ -78,7 +78,7 @@ module Neo4j
 
       # adds a node to the list with the given index n
       def []=(n, other_node)
-        @time_line.add(other_node._java_node, n)
+        @time_line.add(other_node, n)
         self.size = self.size + 1
       end
 
@@ -89,7 +89,7 @@ module Neo4j
 
       # removes one node from the list and decrases the size of the list,
       def remove(node)
-        @index.remove(node._java_node, "timestamp")
+        @index.remove(node, "timestamp")
         self.size = self.size - 1
       end
 
