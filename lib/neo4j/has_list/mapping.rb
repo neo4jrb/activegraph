@@ -35,10 +35,11 @@ module Neo4j
       include Enumerable
       include ToJava
       include WillPaginate::Finders::Base
-      
 
-      def initialize(node, name)
-        @time_line = org.neo4j.index.timeline.Timeline.new(name, node._java_node, true, Neo4j.started_db.graph)
+
+      def initialize(indexer_for, node, name)
+        @index = Neo4j.started_db.lucene.for_nodes("#{indexer_for.to_s.gsub('::', '_')}_#{name}-timeline", Neo4j::Config[:lucene][:exact])
+        @time_line = org.neo4j.index.lucene.LuceneTimeline.new(Neo4j.started_db.graph, @index)
         @node      = node
         @name      = name
         self.size = 0 unless size
@@ -57,38 +58,38 @@ module Neo4j
 
       # returns the first node with index n
       def [](n)
-        @time_line.getAllNodesBetween(n-1, n+1).first
+        @time_line.getBetween(n, n).first
       end
 
       # returns all nodes with the given index n
       def all(n)
-        @time_line.getAllNodesBetween(n-1, n+1)
+        @time_line.getBetween(n, n)
       end
 
       # returns the first node in the list or nil
       def first
-        @time_line.first_node
+        @time_line.getFirst()
       end
 
       # returns the last node in the list or nil
       def last
-        @time_line.last_node
+        @time_line.getLast
       end
 
       # adds a node to the list with the given index n
       def []=(n, other_node)
-        @time_line.add_node(other_node, n)
+        @time_line.add(other_node, n)
         self.size = self.size + 1
       end
 
       # returns all the nodes between the given Range
       def between(range)
-        @time_line.getAllNodesBetween(range.first-1, range.end+1)
+        @time_line.getBetween(range.first, range.end)
       end
 
       # removes one node from the list and decrases the size of the list,
       def remove(node)
-        @time_line.remove_node(node)
+        @index.remove(node, "timestamp")
         self.size = self.size - 1
       end
 
@@ -104,7 +105,7 @@ module Neo4j
       #  person.feeds.each {|node| node}
       #
       def each
-        @time_line.all_nodes.iterator.each do |node|
+        @time_line.getBetween(java.lang.Long::MIN_VALUE,java.lang.Long::MAX_VALUE).iterator.each do |node|
           if @raw then
             yield node
           else
@@ -135,19 +136,15 @@ module Neo4j
       end
 
       def <<(other)
-        @time_line.add_node(other, size)
+        @time_line.add(other._java_node, size)
         self.size = self.size + 1
         self
       end
-
 
       private
       def size=(size)
         @node["_list_size_#{@name}"] = size
       end
-
-
     end
-
   end
 end
