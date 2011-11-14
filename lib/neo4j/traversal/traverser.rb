@@ -46,6 +46,44 @@ module Neo4j
         end
       end
 
+
+      # Sets traversing depth first.
+      #
+      # The <tt>pre_or_post</tt> parameter parameter can have two values: :pre or :post
+      # * :pre - Traversing depth first, visiting each node before visiting its child nodes (default)
+      # * :post -  Traversing depth first, visiting each node after visiting its child nodes.
+      #
+      def depth_first(pre_or_post = :pre)
+        case pre_or_post
+          when :pre then @td = @td.order(org.neo4j.kernel.Traversal.preorderDepthFirst())
+          when :post then @td = @td.order(org.neo4j.kernel.Traversal.postorderDepthFirst())
+          else raise "Unknown type #{pre_or_post}, should be :pre or :post"
+        end
+        self
+      end
+
+
+      # Sets traversing breadth first (default).
+      #
+      # This is the default ordering if none is defined.
+      # The <tt>pre_or_post</tt> parameter parameter can have two values: :pre or :post
+      # * :pre - Traversing breadth first, visiting each node before visiting its child nodes (default)
+      # * :post - Traversing breadth first, visiting each node after visiting its child nodes.
+      #
+      #	==== Note
+      # Please note that breadth first traversals have a higher memory overhead than depth first traversals.
+      # BranchSelectors carries state and hence needs to be uniquely instantiated for each traversal. Therefore it is supplied to the TraversalDescription through a BranchOrderingPolicy interface, which is a factory of BranchSelector instances.
+      #
+      def breadth_first(pre_or_post = :pre)
+        case pre_or_post
+          when :pre then @td = @td.order(org.neo4j.kernel.Traversal.preorderBreadthFirst())
+          when :post then @td = @td.order(org.neo4j.kernel.Traversal.postorderBreadthFirst())
+          else raise "Unknown type #{pre_or_post}, should be :pre or :post"
+        end
+        self
+      end
+
+
       def eval_paths(&eval_path_block)
         @td = @td.evaluator(Evaluator.new(&eval_path_block))
         self

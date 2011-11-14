@@ -85,6 +85,8 @@ module Neo4j
       engine = org.neo4j.cypher.javacompat.ExecutionEngine.new(db)
       engine.execute(query, params)
     end
+
+
     # Returns the logger used by neo4j.
     # If not specified (with Neo4j.logger=) it will use the standard Ruby logger.
     # You can change standard logger threshold by configuration :logger_level.
