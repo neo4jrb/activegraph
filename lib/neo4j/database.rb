@@ -62,6 +62,14 @@ module Neo4j
       @event_handler.neo4j_started(self)
     end
 
+    def getNodeById(id) #:nodoc:
+      Neo4j::Node.load(id)
+    end
+
+    def getRelationshipById(id) #:nodoc:
+      Neo4j::Relationship.load(id)
+    end
+
     def start_ha_graph_db
       Neo4j.logger.info "starting Neo4j in HA mode, machine id: #{Neo4j.config['ha.machine_id']} at #{Neo4j.config['ha.server']} db #{@storage_path}"
       Neo4j.load_ha_jars # those jars are only needed for the HighlyAvailableGraphDatabase

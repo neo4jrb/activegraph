@@ -71,6 +71,20 @@ module Neo4j
       Neo4j::Config
     end
 
+    # Executes a Cypher Query
+    # Check the neo4j http://docs.neo4j.org/chunked/milestone/cypher-query-lang.html
+    # Returns an enumerable of hash values.
+    #
+    # === Usage
+    #
+    #  q = Neo4j.query("START n=node({node}) RETURN n", 'node' => @node.neo_id)
+    #  q.first['n'] #=> the @node
+    #  q.columns.first => 'n'
+    #
+    def query(query, params = {})
+      engine = org.neo4j.cypher.javacompat.ExecutionEngine.new(db)
+      engine.execute(query, params)
+    end
     # Returns the logger used by neo4j.
     # If not specified (with Neo4j.logger=) it will use the standard Ruby logger.
     # You can change standard logger threshold by configuration :logger_level.
