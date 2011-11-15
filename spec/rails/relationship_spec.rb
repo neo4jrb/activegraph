@@ -59,30 +59,156 @@ describe "Neo4j::Model Relationships" do
   end
 
 
-  describe "Neo4j::Model#rels().#to_other" do
-    context "when all relationships are persisted" do
-      before(:all) do
-        @a = Neo4j::Rails::Model.create(:name => 'a')
-        @b = Neo4j::Rails::Model.create(:name => 'b')
-        @c = Neo4j::Rails::Model.create(:name => 'c')
-        @d = Neo4j::Rails::Model.create(:name => 'd')
-        @a.outgoing(:foo) << @b << @c
-        @a.save!
-        Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad1')
-        Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad2')
+  describe "Neo4j::Model#rels" do
+    before(:each) do
+      @a = Neo4j::Rails::Model.create(:name => 'a')
+      @b = Neo4j::Rails::Model.create(:name => 'b')
+      @c = Neo4j::Rails::Model.create(:name => 'c')
+      @d = Neo4j::Rails::Model.create(:name => 'd')
+      @a.outgoing(:foo) << @b << @c
+      @a.save!
+      Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad1')
+      Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad2')
+
+      # none persisted
+      @a1 = Neo4j::Rails::Model.new(:name => 'a1')
+      @b1 = Neo4j::Rails::Model.new(:name => 'b1')
+      @c1 = Neo4j::Rails::Model.new(:name => 'c1')
+      @d1 = Neo4j::Rails::Model.new(:name => 'd1')
+      @a1.outgoing(:foo) << @b1 << @c1
+      Neo4j::Rails::Relationship.new(:bar, @a1, @d1, :name => 'ad11')
+      Neo4j::Rails::Relationship.new(:bar, @a1, @d1, :name => 'ad21')
+    end
+
+    context "find all relationships (#rels())" do
+      context "when all relationships are persisted" do
+        it "returns all relationships if no type is given" do
+          @a.rels().size.should == 5
+          @a.rels.map { |x| x[:name] }.compact.should =~ %w[ad1 ad2]
+        end
+
+        describe "delete all found relationship" do
+          it "delete with #del deletes all relationships" do
+            @a.rels().size.should > 0
+            @a.rels().del # alias for delete_all for consistency with Neo4j::NodeMixin api
+            @a.rels().size.should == 0
+          end
+
+          it "delete with #destroy deletes all relationships" do
+            @a.rels().size.should > 0
+            @a.rels().destroy_all
+            @a.rels().size.should == 0
+          end
+        end
+
+        describe "to_other" do
+          it "returns an Enumerable of all found relationships between the given nodes" do
+            @a.rels.to_other(@d).to_a.size.should == 2
+            rels = @a.rels(:bar).to_other(@d).map { |n| n[:name] }
+            rels.should =~ ['ad1', 'ad2']
+          end
+
+          it "returns nothing if there are no relationship between the given nodes" do
+            @a.rels.to_other(Neo4j::Rails::Model.create!).to_a.should == []
+          end
+
+          it "accepts a Neo4j::Node as the other node" do
+            other_node = Neo4j::Transaction.run{n = Neo4j::Node.new(:name => 'fooo'); @a._java_node.outgoing(:baz) << n; n}
+            rel = @a.rels.to_other(other_node).first
+            rel.class.should == Neo4j::Relationship
+            rel.end_node.should == other_node
+          end
+        end
       end
 
-      it "return an Enumerable of all found relationships between the given nodes" do
-        @a.rels(:foo).to_other(@b).size.should == 1
-        rels = @a.rels(:bar).to_other(@d).map{|n| n[:name]}
-        rels.should =~ ['ad1', 'ad2']
+      context "when no relationships are persisted" do
+        it "returns all relationships if no type is given" do
+          @a1.rels().size.should == 4 # the _all relationship to ref node should be missing
+          @a1.rels.map { |x| x[:name] }.compact.should =~ %w[ad11 ad21]
+        end
+
+        describe "delete all found relationship" do
+          it "delete with #delete_all deletes all relationships" do
+            @a1.rels().size.should > 0
+            @a1.rels().delete_all
+            @a1.rels().size.should == 0
+          end
+
+          it "delete with #destroy deletes all relationships" do
+            @a1.rels().size.should > 0
+            @a1.rels().destroy_all
+            @a1.rels().size.should == 0
+          end
+        end
+      end
+    end
+
+    context "find a specific relationship type (#rels(:rel_type))" do
+      context "when all relationships are persisted" do
+        it "returns all relationships of the given type" do
+          @a.rels(:foo).size.should == 2
+          @a.rels(:bar).map { |x| x[:name] }.compact.should =~ %w[ad1 ad2]
+        end
+
+        describe "delete all found relationship of a given type" do
+          it "deletes with #delete_all" do
+            @a.rels(:foo).size.should > 0
+            @a.rels(:foo).delete_all
+            @a.rels(:foo).size.should == 0
+          end
+
+          it "deletes with #destroy_all" do
+            @a.rels(:foo).size.should > 0
+            @a.rels(:foo).destroy_all
+            @a.rels(:foo).size.should == 0
+          end
+        end
+
+        describe "to_other" do
+          it "return an Enumerable of all found relationships between the given nodes" do
+            @a.rels(:foo).to_other(@b).size.should == 1
+            rels = @a.rels(:bar).to_other(@d).map { |n| n[:name] }
+            rels.should =~ ['ad1', 'ad2']
+          end
+
+          it "raise an exception if the node is not persisted" do
+            lambda { Neo4j::Rails::Model.new.rels(:bar).to_other(Neo4j.ref_node) }.should raise_error
+          end
+        end
       end
 
-      it "raise an exception if the node is not persisted" do
-        lambda{Neo4j::Rails::Model.new.rels(:bar).to_other(Neo4j.ref_node)}.should raise_error
+      context "when no relationships are persisted" do
+        it "returns all relationships if no type is given" do
+          @a1.rels(:foo).size.should == 2
+          @a1.rels(:bar).map { |x| x[:name] }.compact.should =~ %w[ad11 ad21]
+        end
+
+        describe "delete all relationship of given type" do
+          it "delete with #del deletes all relationships" do
+            @a1.rels(:foo).size.should > 0
+            @a1.rels(:foo).delete_all
+            @a1.rels(:foo).size.should == 0
+            @a1.rels.size.should > 0
+          end
+
+          it "delete with #destroy deletes all relationships" do
+            @a1.rels(:foo).size.should > 0
+            @a1.rels(:foo).destroy_all
+            @a1.rels(:foo).size.should == 0
+            @a1.rels.size.should > 0
+          end
+        end
+
+        describe "to_other" do
+          it "raise an exception since it only allows finding persisted relationships" do
+            lambda{@a1.rels(:foo).to_other(@b1).to_a}.should raise_error
+          end
+        end
+
       end
     end
   end
+
 
   describe "has_n from" do
     before(:each) do
@@ -133,7 +259,7 @@ describe "Neo4j::Model Relationships" do
   end
 
   describe "has_n generated setter" do
-    let(:sugar) { Ingredient.new :name => 'sugar'}
+    let(:sugar) { Ingredient.new :name => 'sugar' }
     let(:brown_sugar) { Ingredient.new :name => 'brown sugar' }
 
     context "when node is new" do
@@ -1064,38 +1190,38 @@ describe "SettingRelationship" do
   end
 
   describe "update" do
-   context "when validates associated" do
-     context "when a nested model is invalid" do
-       it "should make parent model invalid" do
-         description = Description.create!(:title => 'Title', :text => "First description")
-         member = Member.create.tap do |member|
-           member.descriptions << description
-           member.save
-         end
-         member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => nil}})
-         member.errors.should be_present
-         member.errors[:descriptions].should include("is invalid")
-         member.descriptions.size.should == 1
-         member_description = member.descriptions.first
-         member_description.should be_invalid
-         member_description.errors[:title].should include("can't be blank")
-         member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => "New title"}})
-         member.errors.should_not be_present
-       end
+    context "when validates associated" do
+      context "when a nested model is invalid" do
+        it "should make parent model invalid" do
+          description = Description.create!(:title => 'Title', :text => "First description")
+          member = Member.create.tap do |member|
+            member.descriptions << description
+            member.save
+          end
+          member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => nil}})
+          member.errors.should be_present
+          member.errors[:descriptions].should include("is invalid")
+          member.descriptions.size.should == 1
+          member_description = member.descriptions.first
+          member_description.should be_invalid
+          member_description.errors[:title].should include("can't be blank")
+          member.update_attributes(:descriptions_attributes => {"0" => {:id => description.id, :title => "New title"}})
+          member.errors.should_not be_present
+        end
 
-       it "should allow delete_all" do
-         description = Description.create!(:title => 'Title', :text => "First description")
-         member = Member.create.tap do |member|
-           member.descriptions << description
-           member.save
-           member.descriptions.delete_all
-           member.descriptions << description
-           member.save
-         end
-         member.descriptions.first.should == description
-         member.errors.should_not be_present
+        it "should allow delete_all" do
+          description = Description.create!(:title => 'Title', :text => "First description")
+          member = Member.create.tap do |member|
+            member.descriptions << description
+            member.save
+            member.descriptions.delete_all
+            member.descriptions << description
+            member.save
+          end
+          member.descriptions.first.should == description
+          member.errors.should_not be_present
+        end
       end
-     end
-   end
+    end
   end
 end

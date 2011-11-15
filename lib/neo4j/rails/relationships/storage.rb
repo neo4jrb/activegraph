@@ -23,6 +23,11 @@ module Neo4j
           "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
         end
 
+        def clear_unpersisted
+          @outgoing_rels.clear
+          @incoming_rels.clear
+        end
+
         def remove_from_identity_map
           @outgoing_rels.each {|r| Neo4j::IdentityMap.remove(r._java_rel)}
           @incoming_rels.each {|r| Neo4j::IdentityMap.remove(r._java_rel)}

@@ -66,8 +66,12 @@ module Neo4j
       #   node.rels(:foo) #=> [node2] - incoming and outgoing
       #
       def rels(*rel_types)
-        storage = _create_or_get_storage(rel_types.first)
-        RelsDSL.new(storage)
+        if rel_types.empty?
+          AllRelsDsl.new(@_relationships, _java_node)
+        else
+          storage = _create_or_get_storage(rel_types.first)
+          RelsDSL.new(storage)
+        end
       end
 
       def add_outgoing_rel(rel_type, rel) #:nodoc:

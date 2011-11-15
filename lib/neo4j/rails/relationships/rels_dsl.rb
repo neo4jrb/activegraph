@@ -2,6 +2,55 @@ module Neo4j
   module Rails
     module Relationships
 
+      # This DSL is return when asking for all relationship from and to a node, example node.rels.each{}
+      #
+      class AllRelsDsl
+        include Enumerable
+
+        def initialize(rels_stores, node)
+          @rels_stores = rels_stores
+          @node = node
+        end
+
+        def each
+          @rels_stores.each_value {|storage| storage.relationships(:both).each{|r| yield r}}
+          @node && @node.rels.each {|r| yield r}
+        end
+
+        # simply traverse and count all relationship
+        def size
+          s = 0
+          each { |_| s += 1 }
+          s
+        end
+
+        # Find all relationships between two nodes like this *if* the node is persisted.
+        # Returns an Enumerable. If the node is not persisted it will raise an error.
+        # Notice, only persisted relationships will be returned.
+        def to_other(other)
+          raise('node.rels(...).to_other() not allowed on a node that is not persisted') unless @node
+          @node.rels.to_other(other)
+        end
+
+        def delete_all
+          # since some of the relationships might not be a Neo4j::Rails::Relationship we must create a transaction
+          Neo4j::Transaction.run do
+            each{|r| r.respond_to?(:delete) ? r.delete : r.del}
+          end
+          @rels_stores.clear
+        end
+
+        def destroy_all
+          Neo4j::Transaction.run do
+            each{|r| r.respond_to?(:destroy)? r.destroy : r.del}
+          end
+          @rels_stores.clear
+        end
+
+        alias_method :del, :delete_all
+      end
+
+
       # Instances of this class is returned from the #rels, and generated accessor methods:
       # has_n and has_one.
       # Notice, this class is very similar to the Neo4j::Rails::Relationships::NodesDSL except that
@@ -105,11 +154,13 @@ module Neo4j
         # Destroys all relationships object. Will not destroy the nodes.
         def destroy_all
           each {|n| n.destroy}
+          @storage.clear_unpersisted
         end
 
         # Delete all relationship.
         def delete_all
           each {|n| n.delete}
+          @storage.clear_unpersisted
         end
 
         # Same as Neo4j::Rails::Relationships::NodesDSL#find except that it searches the relationships instead of
