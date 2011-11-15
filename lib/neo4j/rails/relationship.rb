@@ -21,7 +21,7 @@ module Neo4j
 
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(*args)
-        @type = args[0]
+        @type = args[0].to_s
         self.start_node = args[1]
         self.end_node = args[2]
         attributes = args[3]
@@ -39,7 +39,11 @@ module Neo4j
 
 
       alias_method :get_other_node, :other_node # so it looks like the java version
-      
+
+      def rel_type
+        persisted? ?  _java_entity.rel_type : @type
+      end
+
       def to_s
         "id: #{self.object_id}  start_node: #{start_node.id} end_node: #{end_node.id} type:#{@type}"
       end

@@ -42,6 +42,22 @@ describe "Neo4j::Model Relationships" do
     end
   end
 
+  describe "Neo4j::Model Relationship#rel_type" do
+    context "when not persisted" do
+      it "returns the type of the relationship" do
+        rel = RelationshipWithNoProperty.new(:foo, Neo4j::Rails::Model.create, Neo4j::Rails::Model.create)
+        rel.rel_type.should == 'foo'
+      end
+    end
+
+    context "when persisted" do
+      it "returns the type of the relationship" do
+        rel = RelationshipWithNoProperty.create!(:foo, Neo4j::Rails::Model.create, Neo4j::Rails::Model.create)
+        rel.rel_type.should == 'foo'
+      end
+    end
+  end
+
   describe "has_n from" do
     before(:each) do
       @b_clazz = create_model
