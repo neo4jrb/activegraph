@@ -58,6 +58,32 @@ describe "Neo4j::Model Relationships" do
     end
   end
 
+
+  describe "Neo4j::Model#rels().#to_other" do
+    context "when all relationships are persisted" do
+      before(:all) do
+        @a = Neo4j::Rails::Model.create(:name => 'a')
+        @b = Neo4j::Rails::Model.create(:name => 'b')
+        @c = Neo4j::Rails::Model.create(:name => 'c')
+        @d = Neo4j::Rails::Model.create(:name => 'd')
+        @a.outgoing(:foo) << @b << @c
+        @a.save!
+        Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad1')
+        Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad2')
+      end
+
+      it "return an Enumerable of all found relationships between the given nodes" do
+        @a.rels(:foo).to_other(@b).size.should == 1
+        rels = @a.rels(:bar).to_other(@d).map{|n| n[:name]}
+        rels.should =~ ['ad1', 'ad2']
+      end
+
+      it "raise an exception if the node is not persisted" do
+        lambda{Neo4j::Rails::Model.new.rels(:bar).to_other(Neo4j.ref_node)}.should raise_error
+      end
+    end
+  end
+
   describe "has_n from" do
     before(:each) do
       @b_clazz = create_model

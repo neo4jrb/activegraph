@@ -37,6 +37,10 @@ module Neo4j
           counter
         end
 
+        def to_other(other)
+          (@node._java_node) ? @node._java_node.rels(@rel_type).to_other(other) : raise('node.rels(...).to_other() not allowed on a node that is not persisted')
+        end
+
         def build(attrs)
           @target_class.new(attrs)
         end

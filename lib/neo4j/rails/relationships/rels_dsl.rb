@@ -42,6 +42,13 @@ module Neo4j
           rel
         end
 
+        # Find all relationships between two nodes like this *if* the node is persisted.
+        # Returns an Enumerable. If the node is not persisted it will raise an error.
+        # Notice, only persisted relationships will be returned.
+        def to_other(other)
+          @storage.to_other(other)
+        end
+
         # Connects this node with an already existing other node with a new relationship.
         # The relationship can optionally be given a hash of properties
         # Does not save it.
