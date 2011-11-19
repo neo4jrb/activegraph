@@ -74,7 +74,7 @@ module Neo4j
         def has_rules?(clazz)
           !@rule_nodes[clazz.to_s].nil?
         end
-        
+
         def rule_names_for(clazz)
           rule_node = rule_node_for(clazz)
           rule_node.rules.map { |rule| rule.rule_name }
@@ -118,13 +118,15 @@ module Neo4j
           recursive(node,rule_node.model_class,*changes)
         end
 
-        private 
+        private
 
           def recursive(node,model_class,*changes)
             if (clazz = model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
-              rule_node = rule_node_for(clazz)
-              rule_node && rule_node.execute_rules(node, *changes)
-              recursive(node,clazz,*changes)
+              if clazz != Neo4j::Rails::Model
+                rule_node = rule_node_for(clazz)
+                rule_node && rule_node.execute_rules(node, *changes)
+                recursive(node,clazz,*changes)
+              end
             end
           end
       end
