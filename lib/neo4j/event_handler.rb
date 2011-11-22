@@ -196,25 +196,25 @@ module Neo4j
 
     def class_change_map(data, removed_node_properties_map)
       class_change_map = java.util.HashMap.new
-      data.created_nodes.each{|node| class_created(node, class_change_map)}
-      data.deleted_nodes.each{|node| class_deleted(node, removed_node_properties_map, class_change_map)}
+      data.created_nodes.each{|node| instance_created(node, class_change_map)}
+      data.deleted_nodes.each{|node| instance_deleted(node, removed_node_properties_map, class_change_map)}
       class_change_map
     end
 
-    def class_created(node, class_change_map)
-      class_total(node[:_classname], class_change_map).add(node) if node[:_classname]
+    def instance_created(node, class_change_map)
+      class_change(node[:_classname], class_change_map).add(node) if node[:_classname]
     end
 
-    def class_deleted(node, removed_node_properties_map, class_change_map)
+    def instance_deleted(node, removed_node_properties_map, class_change_map)
       properties = removed_node_properties_map.get(node.getId)
       if properties
         classname = properties.get("_classname")
-        class_total(classname, class_change_map).delete(node) if classname
+        class_change(classname, class_change_map).delete(node) if classname
       end
     end
 
-    def class_total(classname, class_change_map)
-      class_change_map.put(classname, ClassTotals.new) if class_change_map.get(classname).nil?
+    def class_change(classname, class_change_map)
+      class_change_map.put(classname, ClassChanges.new) if class_change_map.get(classname).nil?
       class_change_map.get(classname)
     end
 
@@ -223,7 +223,7 @@ module Neo4j
     end
   end
 
-  class ClassTotals
+  class ClassChanges
     attr_accessor :added, :deleted
 
     def initialize
@@ -239,7 +239,7 @@ module Neo4j
       self.deleted << node
     end
 
-    def net_size
+    def net_change
       self.added.size - self.deleted.size
     end
   end

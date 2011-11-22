@@ -123,25 +123,25 @@ module Neo4j
           recursive(node,rule_node.model_class,*changes)
         end
 
-        def bulk_trigger(classname,total, map)
+        def bulk_trigger_rules(classname,class_change, map)
           rule_node = rule_node_for(classname)
-          rule_node.classes_changed(total)
+          rule_node.classes_changed(class_change)
           if (clazz = rule_node.model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
-            bulk_trigger(clazz.name,total,map) if clazz != Neo4j::Rails::Model
+            bulk_trigger_rules(clazz.name,class_change,map) if clazz != Neo4j::Rails::Model
           end
         end
 
         private
 
-          def recursive(node,model_class,*changes)
-            if (clazz = model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
-              if clazz != Neo4j::Rails::Model
-                rule_node = rule_node_for(clazz)
-                rule_node && rule_node.execute_rules(node, *changes)
-                recursive(node,clazz,*changes)
-              end
+        def recursive(node,model_class,*changes)
+          if (clazz = model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
+            if clazz != Neo4j::Rails::Model
+              rule_node = rule_node_for(clazz)
+              rule_node && rule_node.execute_rules(node, *changes)
+              recursive(node,clazz,*changes)
             end
           end
+        end
       end
     end
   end

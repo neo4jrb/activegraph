@@ -186,7 +186,7 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.arg0[0].get("TestModel").added.size.should == 2
     rec.arg0[0].get("TestModel").added.should include(model1,model2)
     rec.arg0[0].get("TestModel").deleted.size.should == 0
-    rec.arg0[0].get("TestModel").net_size.should == 2
+    rec.arg0[0].get("TestModel").net_change.should == 2
   end
 
   it "#classes_changed should be called once for all deleted nodes" do
@@ -210,7 +210,7 @@ describe Neo4j::EventHandler, :type => :transactional do
     rec.arg0[0].get("TestModel").added.size.should == 0
     rec.arg0[0].get("TestModel").deleted.size.should == 2
     rec.arg0[0].get("TestModel").deleted.should include(model1,model2)
-    rec.arg0[0].get("TestModel").net_size.should == -2
+    rec.arg0[0].get("TestModel").net_change.should == -2
   end
 
 end

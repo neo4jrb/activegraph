@@ -46,8 +46,8 @@ module Neo4j
         end
 
         def classes_changed(changed_class_map)
-          changed_class_map.each_pair do |clazz,total|
-            Rule.bulk_trigger(clazz,total,changed_class_map)
+          changed_class_map.each_pair do |clazz,class_change|
+            Rule.bulk_trigger_rules(clazz,class_change,changed_class_map)
           end
         end
 
