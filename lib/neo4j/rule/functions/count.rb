@@ -28,6 +28,12 @@ module Neo4j
           # we are only counting, not interested in property changes
         end
 
+        def classes_changed(rule_name, rule_node, totals)
+          key = rule_node_property(rule_name)
+          rule_node[key] ||= 0
+          rule_node[key] += totals.net_size
+        end
+
         def self.function_name
           :count
         end

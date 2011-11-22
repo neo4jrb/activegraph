@@ -24,6 +24,7 @@ module Neo4j
         @triggers = [@triggers] if @triggers && !@triggers.respond_to?(:each)
         @functions = [@functions] if @functions && !@functions.respond_to?(:each)
         @filter = block
+        @bulk_update = !@functions.nil? && @functions.size == 1 && @functions.first.class.function_name == :count && @filter.nil?
       end
 
       def to_s
@@ -56,6 +57,10 @@ module Neo4j
         else
           @filter.call(node)
         end
+      end
+
+      def bulk_update?
+        @bulk_update
       end
 
       # ------------------------------------------------------------------------------------------------------------------
@@ -105,7 +110,7 @@ module Neo4j
 
         def trigger?(node)
           classname = node[:_classname]
-          @rule_nodes && classname && rule_node_for(classname)
+          @rule_nodes && classname && rule_node_for(classname) && !rule_node_for(classname).bulk_update?
         end
 
         def trigger_rules(node, *changes)
@@ -116,6 +121,14 @@ module Neo4j
 
           # recursively add relationships for all the parent classes with rules that also pass for this node
           recursive(node,rule_node.model_class,*changes)
+        end
+
+        def bulk_trigger(classname,total, map)
+          rule_node = rule_node_for(classname)
+          rule_node.classes_changed(total)
+          if (clazz = rule_node.model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
+            bulk_trigger(clazz.name,total,map) if clazz != Neo4j::Rails::Model
+          end
         end
 
         private

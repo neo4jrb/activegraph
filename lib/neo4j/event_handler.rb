@@ -238,5 +238,9 @@ module Neo4j
     def delete(node)
       self.deleted << node
     end
+
+    def net_size
+      self.added.size - self.deleted.size
+    end
   end
 end
