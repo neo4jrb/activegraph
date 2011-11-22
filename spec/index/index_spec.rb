@@ -7,6 +7,7 @@ module Neo4j
       include Neo4j::NodeMixin
       index :name
       index :desc, :type => :fulltext
+
       index_names[:exact] = 'new_location'
     end
   end
@@ -190,30 +191,6 @@ describe Neo4j::Node, "find", :type => :transactional do
     ages.should == [5, 4, 2, 1, 3]
   end
 
-  it "create index on a node" do
-    new_node        = Neo4j::Node.new
-    new_node[:name] = 'andreas'
-
-    # when
-    new_node.add_index(:name)
-
-    # then
-    Neo4j::Node.find("name: andreas", :wrapped => false).get_single.should == new_node
-  end
-
-
-  it "create index on a node with a given type (e.g. fulltext)" do
-    new_node               = Neo4j::Node.new
-    new_node[:description] = 'hej'
-
-    # when
-    new_node.add_index(:description)
-
-    # then
-    Neo4j::Node.find('description: "hej"', :type => :fulltext, :wrapped => false).get_single.should == new_node
-    #Neo4j::Node.find('name: "hej"').get_single.should == new_node
-  end
-
   it "can find several nodes with the same index" do
     thing1 = Neo4j::Node.new :name => 'thing'
     thing2 = Neo4j::Node.new :name => 'thing'
@@ -225,7 +202,6 @@ describe Neo4j::Node, "find", :type => :transactional do
     Neo4j::Node.find("name: thing", :wrapped => true).should include(thing2)
     Neo4j::Node.find("name: thing", :wrapped => true).should include(thing3)
   end
-
 
   it "#delete_index_type clears the index" do
     pending "Looks like I can't delete a whole lucene index and recreated it again"
@@ -256,7 +232,6 @@ describe Neo4j::Node, "find", :type => :transactional do
     # clean up
     Neo4j::Node.index(:name)
   end
-
 
   it "does not remove old index when a property is reindexed" do
     new_node        = Neo4j::Node.new
@@ -362,7 +337,6 @@ describe Neo4j::Node, "find", :type => :transactional do
     Neo4j::Node.instance_eval { @_indexer = old_indexer }
   end
 
-
   it "will automatically close the connection even if the block provided raises an exception" do
     indexer     = Neo4j::Index::Indexer.new('mocked-indexer', :node)
     index       = double('index')
@@ -379,5 +353,46 @@ describe Neo4j::Node, "find", :type => :transactional do
     Neo4j::Node.instance_eval { @_indexer = old_indexer }
   end
 
+  describe "add_index" do
+    it "should create index on a node" do
+      new_node        = Neo4j::Node.new
+      new_node[:name] = 'andreas'
+
+      # when
+      new_node.add_index(:name)
+
+      # then
+      Neo4j::Node.find("name: andreas", :wrapped => false).get_single.should == new_node
+    end
+
+
+    it "should create index on a node with a given type (e.g. fulltext)" do
+      new_node               = Neo4j::Node.new
+      new_node[:description] = 'hej'
+
+      # when
+      new_node.add_index(:description)
+
+      # then
+      Neo4j::Node.find('description: "hej"', :type => :fulltext, :wrapped => false).get_single.should == new_node
+      #Neo4j::Node.find('name: "hej"').get_single.should == new_node
+    end
+
+    it "should create appropriate index for non-string fields" do
+      model_class = create_model do
+        property :time_field, :type => DateTime
+        index :time_field
+      end
+      now = DateTime.now
+      node = model_class.create!(:time_field => now)
+
+      node.rm_index(:time_field)
+      model_class.find(:time_field => now).should be_nil
+
+      node.add_index(:time_field)
+      model_class.find(:time_field => now).should == node
+      model_class.find(:time_field => ((now - 1.day)..(now + 1.day))).should == node
+    end
+  end
 end
 
