@@ -71,6 +71,9 @@ module Neo4j
   # * <tt>old_value</tt> :: old value of the property
   # * <tt>new_value</tt> :: new value of the property
   #
+  # ==== classes_changed(class_change_map)
+  # * <tt>class_change_map</tt> :: a hash with class names as keys, and class changes as values. See Neo4j::ClassChanges
+  #
   # == Usage
   #
   #   class MyListener
