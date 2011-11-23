@@ -137,11 +137,11 @@ describe "Versioning" do
     driver.sports_cars << porsche
     driver.save!
     driver.current_version.should == 3
-    driver._java_node.rels.size.should == 7 #1 to the Driver _all node,1 to the Rails model _all node, 3 snapshots, 2 sports cars
+    driver._java_node.rels.size.should == 6 #1 to the Driver _all node, 3 snapshots, 2 sports cars
     driver.revert_to(1)
     driver.sports_cars.should be_empty
     driver.current_version.should == 4
-    driver._java_node.rels.size.should == 6 #4 relationships to snapshots + 1 to the Driver _all node, 1 to the Rails model _all node
+    driver._java_node.rels.size.should == 5 #4 relationships to snapshots + 1 to the Driver _all node
     driver.revert_to(2)
     driver.sports_cars.should include(ferarri)
   end
