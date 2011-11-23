@@ -216,9 +216,13 @@ module Neo4j
       def attribute?(name)
         name[0] != ?_ && property?(name)
       end
-      
+
       def _classname
         self[:_classname]
+      end
+
+      def _classname=(value)
+        write_local_property_without_type_conversion("_classname",value)
       end
 
       # To get ActiveModel::Dirty to work, we need to be able to call undeclared

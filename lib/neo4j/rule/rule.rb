@@ -24,6 +24,7 @@ module Neo4j
         @triggers = [@triggers] if @triggers && !@triggers.respond_to?(:each)
         @functions = [@functions] if @functions && !@functions.respond_to?(:each)
         @filter = block
+        @bulk_update = !@functions.nil? && @functions.size == 1 && @functions.first.class.function_name == :count && @filter.nil?
       end
 
       def to_s
@@ -58,6 +59,10 @@ module Neo4j
         end
       end
 
+      def bulk_update?
+        @bulk_update
+      end
+
       # ------------------------------------------------------------------------------------------------------------------
       # Class Methods
       # ------------------------------------------------------------------------------------------------------------------
@@ -74,7 +79,7 @@ module Neo4j
         def has_rules?(clazz)
           !@rule_nodes[clazz.to_s].nil?
         end
-        
+
         def rule_names_for(clazz)
           rule_node = rule_node_for(clazz)
           rule_node.rules.map { |rule| rule.rule_name }
@@ -105,7 +110,7 @@ module Neo4j
 
         def trigger?(node)
           classname = node[:_classname]
-          @rule_nodes && classname && rule_node_for(classname)
+          @rule_nodes && classname && rule_node_for(classname) && !rule_node_for(classname).bulk_update?
         end
 
         def trigger_rules(node, *changes)
@@ -118,15 +123,25 @@ module Neo4j
           recursive(node,rule_node.model_class,*changes)
         end
 
-        private 
+        def bulk_trigger_rules(classname,class_change, map)
+          rule_node = rule_node_for(classname)
+          rule_node.classes_changed(class_change)
+          if (clazz = rule_node.model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
+            bulk_trigger_rules(clazz.name,class_change,map) if clazz != Neo4j::Rails::Model
+          end
+        end
 
-          def recursive(node,model_class,*changes)
-            if (clazz = model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
+        private
+
+        def recursive(node,model_class,*changes)
+          if (clazz = model_class.superclass) && clazz.include?(Neo4j::NodeMixin)
+            if clazz != Neo4j::Rails::Model
               rule_node = rule_node_for(clazz)
               rule_node && rule_node.execute_rules(node, *changes)
               recursive(node,clazz,*changes)
             end
           end
+        end
       end
     end
   end

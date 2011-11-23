@@ -1,62 +1,62 @@
 module Neo4j
-	module Rails
-		module Persistence
-			extend ActiveSupport::Concern
+  module Rails
+    module Persistence
+      extend ActiveSupport::Concern
 
-			included do
-				extend TxMethods
-				tx_methods :destroy, :create, :update, :update_nested_attributes, :delete, :update_attributes, :update_attributes!
-			end
-
-			# Persist the object to the database.  Validations and Callbacks are included
-			# by default but validation can be disabled by passing :validate => false
-			# to #save.
-      def save(*)
-      	create_or_update
+      included do
+        extend TxMethods
+        tx_methods :destroy, :create, :update, :update_nested_attributes, :delete, :update_attributes, :update_attributes!
       end
 
       # Persist the object to the database.  Validations and Callbacks are included
-			# by default but validation can be disabled by passing :validate => false
-			# to #save!.
-			#
-			# Raises a RecordInvalidError if there is a problem during save.
+      # by default but validation can be disabled by passing :validate => false
+      # to #save.
+      def save(*)
+        create_or_update
+      end
+
+      # Persist the object to the database.  Validations and Callbacks are included
+      # by default but validation can be disabled by passing :validate => false
+      # to #save!.
+      #
+      # Raises a RecordInvalidError if there is a problem during save.
       def save!(*args)
-				unless save(*args)
-					raise RecordInvalidError.new(self)
-				end
-			end
+        unless save(*args)
+          raise RecordInvalidError.new(self)
+        end
+      end
 
-			# Updates a single attribute and saves the record.
-			# This is especially useful for boolean flags on existing records. Also note that
-			#
-			# * Validation is skipped.
-			# * Callbacks are invoked.
-			# * Updates all the attributes that are dirty in this object.
-			#
-			def update_attribute(name, value)
-				respond_to?("#{name}=") ? send("#{name}=", value) : self[name] = value
-				save(:validate => false)
-			end
+      # Updates a single attribute and saves the record.
+      # This is especially useful for boolean flags on existing records. Also note that
+      #
+      # * Validation is skipped.
+      # * Callbacks are invoked.
+      # * Updates all the attributes that are dirty in this object.
+      #
+      def update_attribute(name, value)
+        respond_to?("#{name}=") ? send("#{name}=", value) : self[name] = value
+        save(:validate => false)
+      end
 
-			# Removes the node from Neo4j and freezes the object.
-			def destroy
-				delete
-				freeze
-			end
+      # Removes the node from Neo4j and freezes the object.
+      def destroy
+        delete
+        freeze
+      end
 
-			# Same as #destroy but doesn't run destroy callbacks and doesn't freeze
-			# the object
-			def delete
-				del unless new_record?
-				set_deleted_properties
-			end
+      # Same as #destroy but doesn't run destroy callbacks and doesn't freeze
+      # the object
+      def delete
+        del unless new_record?
+        set_deleted_properties
+      end
 
-			# Returns true if the object was destroyed.
-			def destroyed?()
+      # Returns true if the object was destroyed.
+      def destroyed?()
         @_deleted || Neo4j::Node._load(id).nil?
       end
 
-			# Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
+      # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
       # If saving fails because the resource is invalid then false will be returned.
       def update_attributes(attributes)
         self.attributes = attributes
@@ -95,9 +95,9 @@ module Neo4j
       alias :new? :new_record?
 
       # Freeze the properties hash.
-			def freeze
-				@properties.freeze; self
-			end
+      def freeze
+        @properties.freeze; self
+      end
 
       # Returns +true+ if the properties hash has been frozen.
       def frozen?
@@ -162,7 +162,7 @@ module Neo4j
       end
 
       def init_on_create(*)
-        self["_classname"] = self.class.to_s
+        self._classname = self.class.to_s
         write_default_attributes
         write_changed_attributes
         write_changed_relationships
@@ -262,7 +262,7 @@ module Neo4j
           super(@record.errors.full_messages.join(", "))
         end
       end
-		end
-	end
+    end
+  end
 end
 

@@ -71,6 +71,9 @@ module Neo4j
   # * <tt>old_value</tt> :: old value of the property
   # * <tt>new_value</tt> :: new value of the property
   #
+  # ==== classes_changed(class_change_map)
+  # * <tt>class_change_map</tt> :: a hash with class names as keys, and class changes as values. See Neo4j::ClassChanges
+  #
   # == Usage
   #
   #   class MyListener
@@ -113,6 +116,7 @@ module Neo4j
       data.deleted_relationships.each {|rel| relationship_deleted(rel, removed_relationship_properties_map.get(rel.getId)||empty_map, deleted_relationship_set, deleted_node_identity_map)}
       data.assigned_relationship_properties.each { |tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
       data.removed_relationship_properties.each {|tx_data| rel_property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless deleted_relationship_set.contains_rel?(tx_data.entity) }
+      classes_changed(class_change_map(data, removed_node_properties_map))
     end
 
     def node_identity_map(nodes)
@@ -191,6 +195,55 @@ module Neo4j
 
     def rel_property_changed(rel, key, old_value, new_value)
       @listeners.each {|li| li.on_rel_property_changed(rel, key, old_value, new_value) if li.respond_to?(:on_rel_property_changed)}
+    end
+
+    def class_change_map(data, removed_node_properties_map)
+      class_change_map = java.util.HashMap.new
+      data.created_nodes.each{|node| instance_created(node, class_change_map)}
+      data.deleted_nodes.each{|node| instance_deleted(node, removed_node_properties_map, class_change_map)}
+      class_change_map
+    end
+
+    def instance_created(node, class_change_map)
+      class_change(node[:_classname], class_change_map).add(node) if node[:_classname]
+    end
+
+    def instance_deleted(node, removed_node_properties_map, class_change_map)
+      properties = removed_node_properties_map.get(node.getId)
+      if properties
+        classname = properties.get("_classname")
+        class_change(classname, class_change_map).delete(node) if classname
+      end
+    end
+
+    def class_change(classname, class_change_map)
+      class_change_map.put(classname, ClassChanges.new) if class_change_map.get(classname).nil?
+      class_change_map.get(classname)
+    end
+
+    def classes_changed(changed_class_map)
+      @listeners.each {|li| li.classes_changed(changed_class_map) if li.respond_to?(:classes_changed)}
+    end
+  end
+
+  class ClassChanges
+    attr_accessor :added, :deleted
+
+    def initialize
+      self.added = []
+      self.deleted = []
+    end
+
+    def add(node)
+      self.added << node
+    end
+
+    def delete(node)
+      self.deleted << node
+    end
+
+    def net_change
+      self.added.size - self.deleted.size
     end
   end
 end

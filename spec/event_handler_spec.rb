@@ -1,6 +1,11 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe Neo4j::EventHandler, :type => :transactional do
+  class TestModel
+    include Neo4j::NodeMixin
+    property :name
+  end
+
   def event_receiver(meth, &block)
     @rec      = Object.new
     singelton = class << @rec;
@@ -163,6 +168,49 @@ describe Neo4j::EventHandler, :type => :transactional do
     # then
     rec.calls.should == 1
     rec.arg0.should include(rel)
+  end
+
+  it "#classes_changed should be called once for all added nodes" do
+
+    model1 = TestModel.new(:name => 'one')
+    model2 = TestModel.new(:name => 'two')
+
+    rec   = event_receiver(:classes_changed)
+    Neo4j.event_handler.add rec
+    # when
+    new_tx
+
+    # then
+    rec.calls.should == 1
+    rec.arg0.size.should == 1
+    rec.arg0[0].get("TestModel").added.size.should == 2
+    rec.arg0[0].get("TestModel").added.should include(model1,model2)
+    rec.arg0[0].get("TestModel").deleted.size.should == 0
+    rec.arg0[0].get("TestModel").net_change.should == 2
+  end
+
+  it "#classes_changed should be called once for all deleted nodes" do
+
+    model1 = TestModel.new(:name => 'one')
+    model2 = TestModel.new(:name => 'two')
+
+    # when
+    new_tx
+
+    model1.del
+    model2.del
+
+    rec   = event_receiver(:classes_changed)
+    Neo4j.event_handler.add rec
+    finish_tx
+
+    # then
+    rec.calls.should == 1
+    rec.arg0.size.should == 1
+    rec.arg0[0].get("TestModel").added.size.should == 0
+    rec.arg0[0].get("TestModel").deleted.size.should == 2
+    rec.arg0[0].get("TestModel").deleted.should include(model1,model2)
+    rec.arg0[0].get("TestModel").net_change.should == -2
   end
 
 end
