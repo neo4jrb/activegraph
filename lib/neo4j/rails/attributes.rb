@@ -218,7 +218,7 @@ module Neo4j
       end
 
       def _classname
-        self[:_classname]
+        self.class.to_s
       end
 
       def _classname=(value)
