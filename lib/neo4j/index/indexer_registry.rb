@@ -10,7 +10,7 @@ module Neo4j
         def create_for(this_clazz, using_other_clazz, type)
           @@indexers                  ||= {}
           index                       = Indexer.new(this_clazz, type)
-          index.inherit_fields_from(@@indexers[using_other_clazz.to_s])
+          index.inherit_fields_from(@@indexers[using_other_clazz.to_s]) if @@indexers[using_other_clazz.to_s]
           @@indexers[this_clazz.to_s] = index
         end
 

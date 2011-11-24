@@ -201,8 +201,8 @@ module Neo4j
       # Known properties are either in the @properties, the declared
       # properties or the property keys for the persisted node
       def property?(name)
-        @properties.keys.include?(name) ||
-            self.class._decl_props.map { |k| k.to_s }.include?(name) ||
+        @properties.has_key?(name) ||
+            self.class._decl_props.has_key?(name) ||
             begin
               persisted? && super
             rescue org.neo4j.graphdb.NotFoundException

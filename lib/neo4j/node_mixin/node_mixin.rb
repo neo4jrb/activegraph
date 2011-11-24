@@ -80,7 +80,7 @@ module Neo4j
     def _java_entity
       @_java_node
     end
-    
+
     # Trigger rules.
     # You don't normally need to call this method (except in Migration) since
     # it will be triggered automatically by the Neo4j::Rule::Rule
@@ -131,7 +131,7 @@ module Neo4j
         super
       end
 
-      c.node_indexer c
+      c.node_indexer c unless c == Neo4j::Rails::Model
     end
   end
 end

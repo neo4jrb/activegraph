@@ -186,7 +186,7 @@ module Neo4j
       end
 
       def connect(rule_name, end_node)
-        rule_node.outgoing(rule_name) << end_node
+        rule_node._java_node.createRelationshipTo(end_node._java_node, org.neo4j.graphdb.DynamicRelationshipType.withName(rule_name))
       end
 
       # sever a direct one-to-one relationship if it exists
