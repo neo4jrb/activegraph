@@ -156,7 +156,7 @@ module Neo4j
       end
 
       def update_single_index_on(node, field, old_val, new_val) #:nodoc:
-        if @field_types.include?(field)
+        if @field_types.has_key?(field)
           rm_index(node, field, old_val) if old_val
           add_index(node, field, new_val) if new_val
         end

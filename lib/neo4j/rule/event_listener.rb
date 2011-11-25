@@ -30,7 +30,7 @@ module Neo4j
 
           id = node.getId
           rule_node.rules.each do |rule|
-            next if rule.functions.nil?
+            next if rule.functions.nil? || rule.bulk_update?
             rule_name = rule.rule_name.to_s
 
             # is the rule node deleted ?
@@ -42,6 +42,12 @@ module Neo4j
               previous_value = old_properties[function.function_id]
               function.delete(rule_name, rule_node.rule_node, previous_value) if previous_value
             end if rule.functions
+          end
+        end
+
+        def classes_changed(changed_class_map)
+          changed_class_map.each_pair do |clazz,class_change|
+            Rule.bulk_trigger_rules(clazz,class_change,changed_class_map)
           end
         end
 

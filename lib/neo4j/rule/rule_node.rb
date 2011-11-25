@@ -27,7 +27,7 @@ module Neo4j
       def node_exist?
         !ref_node.rel?(@classname)
       end
-      
+
       def ref_node
         if @model_class.respond_to? :ref_node_for_class
           @model_class.ref_node_for_class
@@ -186,7 +186,7 @@ module Neo4j
       end
 
       def connect(rule_name, end_node)
-        rule_node.outgoing(rule_name) << end_node
+        rule_node._java_node.createRelationshipTo(end_node._java_node, org.neo4j.graphdb.DynamicRelationshipType.withName(rule_name))
       end
 
       # sever a direct one-to-one relationship if it exists
@@ -196,9 +196,19 @@ module Neo4j
         !rel.nil?
       end
 
+      def bulk_update?
+        @rules.size == 1 && @rules.first.bulk_update?
+      end
+
+      def classes_changed(total)
+        @rules.each do |rule|
+          if rule.bulk_update?
+            rule.functions.first.classes_changed(rule.rule_name, rule_node, total)
+            total.added.each{|node| connect(rule.rule_name, node)}
+            total.deleted.each{|node| break_connection(rule.rule_name, node)}
+          end
+        end
+      end
     end
-
-
   end
-
 end

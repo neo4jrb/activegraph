@@ -227,6 +227,18 @@ module Neo4j
           duplicate.should be_invalid
           duplicate.errors[:name].should include("has already been taken")
         end
+
+        it "should handle quotes in unique properties" do
+          class CaseInsensitiveWithQuotesTest < Neo4j::Rails::Model
+            property :name
+            index :name, :type => :fulltext
+            validates :name, :uniqueness => { :case_sensitive => false }
+          end
+          CaseInsensitiveWithQuotesTest.create :name => "test\"\""
+          duplicate = CaseInsensitiveWithQuotesTest.new :name => "test\"\""
+          duplicate.should be_invalid
+          duplicate.errors[:name].should include("has already been taken")
+        end
       end
     end
   end

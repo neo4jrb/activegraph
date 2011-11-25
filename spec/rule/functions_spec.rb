@@ -33,7 +33,7 @@ describe Neo4j::Rule::Functions::Count, :type => :transactional do
         new_tx
         CountBaseClass.count(:all).should == 2
         CountSubClass.count(:all).should == 1
-        
+
       end
 
       it "should update counter for both baseclass and subclass" do
@@ -73,6 +73,7 @@ describe Neo4j::Rule::Functions::Count, :type => :transactional do
       end
 
       it "when deleted .count(:all).should == 0" do
+        @clazz.count(:all).should == 1
         @node.del
         new_tx
         @clazz.count(:all).should == 0
