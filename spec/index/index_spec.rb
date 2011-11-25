@@ -24,7 +24,7 @@ describe Neo4j::Node, "index_names", :type => :transactional do
   end
 
   it "has a default file location" do
-    Neo4j::Test::TestIndex.index_names[:fulltext].should == "Neo4j_Test_TestIndex-fulltext"
+    Neo4j::Test::TestIndex.index_names[:fulltext].should == "Neo4j_Test_TestIndex_fulltext"
   end
 
   it "creates a folder on the filesystem containing the lucene index" do
@@ -49,8 +49,8 @@ describe Neo4j::Node, "index_names", :type => :transactional do
         ref_node = IndexPrefixReferenceNode.create!(:name => 'Ignore this for building prefix')
         Neo4j.threadlocal_ref_node = ref_node
 
-        IceCream.index_names[:fulltext].should == "Foo#{ref_node.id}_IceCream-fulltext"
-        IceCream.index_names[:exact].should == "Foo#{ref_node.id}_IceCream-exact"
+        IceCream.index_names[:fulltext].should == "Foo#{ref_node.id}_IceCream_fulltext"
+        IceCream.index_names[:exact].should == "Foo#{ref_node.id}_IceCream_exact"
       end
     end
 
@@ -59,8 +59,8 @@ describe Neo4j::Node, "index_names", :type => :transactional do
         ref_node = Neo4j::Node.new(:name => 'Ref1')
         Neo4j.threadlocal_ref_node = ref_node
 
-        IceCream.index_names[:fulltext].should == "Ref1_IceCream-fulltext"
-        IceCream.index_names[:exact].should == "Ref1_IceCream-exact"
+        IceCream.index_names[:fulltext].should == "Ref1_IceCream_fulltext"
+        IceCream.index_names[:exact].should == "Ref1_IceCream_exact"
       end
     end
 
@@ -69,8 +69,8 @@ describe Neo4j::Node, "index_names", :type => :transactional do
         ref_node = Neo4j::Node.new
         Neo4j.threadlocal_ref_node = ref_node
 
-        IceCream.index_names[:fulltext].should == "IceCream-fulltext"
-        IceCream.index_names[:exact].should == "IceCream-exact"
+        IceCream.index_names[:fulltext].should == "IceCream_fulltext"
+        IceCream.index_names[:exact].should == "IceCream_exact"
       end
     end
   end

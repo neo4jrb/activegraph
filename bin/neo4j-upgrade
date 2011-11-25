@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'neo4j'
+
+if ARGV.length == 0
+  puts <<TEXT
+A tool for upgrading the neo4j database to #{Neo4j::VERSION}.
+Make sure you shutdown the database cleanly before running this script.
+More info:  http://neo4j.rubyforge.org/guides/configuration.html#upgrade-to-a-new-neo4j-version
+
+Usage   : neo4j-upgrade <location of database>
+Example : neo4j-upgrade db/neo4j-development
+
+TEXT
+exit
+end
+
+def error(msg)
+  puts msg
+  exit
+end
+
+def rename_index(folder, file)
+  new_file = File.join(folder, file.gsub(/-/, '_'))
+  old_file = File.join(folder, file)
+  puts "moved index '#{old_file}' to '#{new_file}'"
+  FileUtils.move(old_file, new_file)
+end
+
+def upgrade(path)
+  Dir.entries(path).each do |file|
+    rename_index(path, file) if file =~ /(-exact)|(-fulltext)$/
+  end
+end
+
+root = ARGV[0]
+error("Can't find database at location #{root}") unless File.exist?(root)
+error("Expected location #{root} to be a folder") unless File.directory?(root)
+
+# Upgrade
+puts "upgrade database, this might take a while ...."
+Neo4j::Config[:allow_store_upgrade] = 'true'
+Neo4j.start
+puts "Neo4j database at #{root} upgraded to #{Neo4j::VERSION}, now shutdown"
+Neo4j.shutdown
+puts "Rename lucene index files"
+
+nodes_path = File.join(root, "index", "lucene", "node")
+if File.exist?(nodes_path)
+  upgrade(nodes_path)
+else
+  puts("Can't find lucene index at location #{nodes_path}")
+end
+
+
+nodes_path = File.join(root, "index", "lucene", "node")
+if File.exist?(nodes_path)
+  upgrade(nodes_path)
+else
+  puts("No lucene index for nodes found at location #{nodes_path}, continue")
+end
+
+nodes_path = File.join(root, "index", "lucene", "relationship")
+if File.exist?(nodes_path)
+  upgrade(nodes_path)
+else
+  puts("No lucene index for relationship found at location #{nodes_path}")
+end
+
+puts "Upgraded database done"

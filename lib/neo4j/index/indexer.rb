@@ -323,7 +323,7 @@ module Neo4j
       def index_names
         @index_names ||= Hash.new do |hash, index_type|
           default_filename = index_prefix + @indexer_for.to_s.gsub('::', '_')
-          hash.fetch(index_type) {"#{default_filename}-#{index_type}"}
+          hash.fetch(index_type) {"#{default_filename}_#{index_type}"}
         end
       end
 
