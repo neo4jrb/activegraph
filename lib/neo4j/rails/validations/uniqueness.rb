@@ -54,6 +54,7 @@ module Neo4j
         end
 
         def self.query(model,attribute,value)
+          value = value.gsub("\"", "\\\"") if !value.blank?
           value.blank? ? model.all("*:* -#{attribute}:[* TO *]", :type => :fulltext) : model.all("#{attribute}: \"#{value}\"", :type => :fulltext)
         end
 
