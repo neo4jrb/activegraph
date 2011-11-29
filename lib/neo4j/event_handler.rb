@@ -201,7 +201,11 @@ module Neo4j
     end
 
     def property_changed(node, key, old_value, new_value)
-      @listeners.each {|li| li.on_property_changed(node, key, old_value, new_value) if li.respond_to?(:on_property_changed)}
+      @listeners.each do |li|
+        if li.respond_to?(:on_property_changed) && key != '_classname'
+          li.on_property_changed(node, key, old_value, new_value)
+        end
+      end
     end
 
     def rel_property_changed(rel, key, old_value, new_value)
