@@ -8,8 +8,8 @@ describe Neo4j::Batch::Indexer do
   
   def setup_index_provider(index_provider, exact_indexes, fulltext_indexes = {})
     indexes = {}
-    exact_indexes.each_pair { |k, v| indexes["#{k}-exact"] = v }
-    fulltext_indexes.each_pair { |k, v| indexes["#{k}-fulltext"] = v }
+    exact_indexes.each_pair { |k, v| indexes["#{k}_exact"] = v }
+    fulltext_indexes.each_pair { |k, v| indexes["#{k}_fulltext"] = v }
 
     index_provider.should_receive(:node_index).any_number_of_times do |*args|
       index_name = args[0]

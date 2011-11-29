@@ -107,4 +107,26 @@ describe "Neo4j#query (cypher)" do
 
   end
 
+
+  describe "a query with a lucene index" do
+
+    class FooBarCypher < Neo4j::Rails::Model
+      property :name
+      index :name
+    end
+
+    before(:all) do
+      @foo = FooBarCypher.create!(:name => 'foo')
+      @bar = FooBarCypher.create!(:name => 'bar')
+      @andreas = FooBarCypher.create!(:name => 'andreas')
+    end
+
+    it "can use the lucene index" do
+      index_name = FooBarCypher.index_names[:exact]
+      query = %Q[START n=node:#{index_name}("name:foo") RETURN n]
+      @query_result = Neo4j.query(query)
+      @query_result.to_a.size.should == 1
+      @query_result.to_a.first['n'].wrapper.should == @foo
+    end
+  end
 end

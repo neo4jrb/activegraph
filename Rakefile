@@ -20,17 +20,17 @@ task :check_commited do
   fail("Can't release gem unless everything is committed") unless status =~ /nothing to commit \(working directory clean\)|nothing added to commit but untracked files present/
 end
 
-desc "clean all, delete all files that are not in git"
+desc "Clean all, delete all files that are not in git"
 task :clean_all do
   system "git clean -df"
 end
 
-desc "create the gemspec"
+desc "Create the Neo4j gem"
 task :build do
   system "gem build neo4j.gemspec"
 end
 
-desc "release gem to gemcutter"
+desc "Release gem to gemcutter"
 task :release => [:check_commited, :build] do
   system "gem push neo4j-#{Neo4j::VERSION}-java.gem"
 end

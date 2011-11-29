@@ -53,13 +53,19 @@ module Neo4j
       #
       #  Person.index_names[:fulltext] => 'my_location'
       #  Person.index_names[:exact] => 'Foo_Person-exact' # default Location
-      #  Notice in versions <= 1.0.0.beta.29 the default location was 'Foo::Person-exact'
-      #  which does not work on Windows [lighthouse ticket #147]
+      #
+      # The index can be prefixed, see Neo4j#threadlocal_ref_node= and multi dendency.
       #
       # :singleton-method: index_names
 
 
-      def_delegators :@_indexer, :index, :find, :index?, :index_type?, :delete_index_type, :rm_field_type, :add_index, :rm_index, :index_type_for, :index_names
+      ##
+      # Returns a hash of which indexes has been defined and the type of index (:exact or :fulltext)
+      #
+      # :singleton-method: index_types
+
+
+      def_delegators :@_indexer, :index, :find, :index?, :index_type?, :delete_index_type, :rm_field_type, :add_index, :rm_index, :index_type_for, :index_names, :index_types
 
       # Sets which indexer should be used for the given node class.
       # You can share an indexer between several different classes.

@@ -13,6 +13,8 @@ module Neo4j
   class Database
     attr_reader :graph, :lucene, :event_handler, :storage_path
 
+    alias_method :index, :lucene # needed by cypher
+
     def initialize()
       @event_handler = EventHandler.new
     end
@@ -62,10 +64,12 @@ module Neo4j
       @event_handler.neo4j_started(self)
     end
 
+    # needed by cypher
     def getNodeById(id) #:nodoc:
       Neo4j::Node.load(id)
     end
 
+    # needed by cypher
     def getRelationshipById(id) #:nodoc:
       Neo4j::Relationship.load(id)
     end

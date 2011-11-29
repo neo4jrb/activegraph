@@ -2,6 +2,7 @@ module Neo4j
   module Index
     class Indexer
       attr_reader :indexer_for, :field_types, :via_relationships, :entity_type, :parent_indexers, :via_relationships
+      alias_method :index_types, :field_types  # public method accessible from node.index_types
 
       def initialize(clazz, type) #:nodoc:
         # part of the unique name of the index
@@ -322,7 +323,7 @@ module Neo4j
       def index_names
         @index_names ||= Hash.new do |hash, index_type|
           default_filename = index_prefix + @indexer_for.to_s.gsub('::', '_')
-          hash.fetch(index_type) {"#{default_filename}-#{index_type}"}
+          hash.fetch(index_type) {"#{default_filename}_#{index_type}"}
         end
       end
 

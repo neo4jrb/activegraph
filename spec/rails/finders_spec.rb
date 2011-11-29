@@ -440,10 +440,10 @@ describe "finders" do
       ref1 = ReferenceNode.create(:name => "Ref1")
       ref2 = ReferenceNode.create(:name => "Ref2")
       Neo4j.threadlocal_ref_node = ref1
-      FindableModel.index_names[:exact].should == "Ref1_FindableModel-exact"
+      FindableModel.index_names[:exact].should == "Ref1_FindableModel_exact"
       model = FindableModel.create!(:name => "Test 10")
       Neo4j.threadlocal_ref_node = ref2
-      FindableModel.index_names[:exact].should == "Ref2_FindableModel-exact"
+      FindableModel.index_names[:exact].should == "Ref2_FindableModel_exact"
       FindableModel.find("name: \"Test 10\"").should be_nil
     end
   end
