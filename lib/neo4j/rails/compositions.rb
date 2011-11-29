@@ -206,6 +206,14 @@ module Neo4j
         #               :constructor => Proc.new { |ip| IPAddr.new(ip, Socket::AF_INET) },
         #               :converter => Proc.new { |ip| ip.is_a?(Integer) ? IPAddr.new(ip, Socket::AF_INET) : IPAddr.new(ip.to_s) }
         #
+        def is_composed_property?(property)
+          composed_properties.contains(property)
+        end
+
+        def composed_properties
+          @composed_properties ||= java.util.HashSet.new
+        end
+
         def composed_of(part_id, options = {})
           options.assert_valid_keys(:class_name, :mapping, :allow_nil, :constructor, :converter)
 
@@ -216,7 +224,7 @@ module Neo4j
           allow_nil   = options[:allow_nil]   || false
           constructor = options[:constructor] || :new
           converter   = options[:converter]
-
+          composed_properties.add(name.to_sym)
           reader_method(name, class_name, mapping, allow_nil, constructor)
           writer_method(name, class_name, mapping, allow_nil, converter)
         end

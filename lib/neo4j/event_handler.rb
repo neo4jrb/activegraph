@@ -110,7 +110,7 @@ module Neo4j
       removed_relationship_properties_map = property_map(data.removed_relationship_properties)
       add_deleted_nodes(data, class_change_map, removed_node_properties_map)
       empty_map = java.util.HashMap.new
-      data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) }
+      data.assigned_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, tx_data.value) unless tx_data.key == '_classname'}
       data.removed_node_properties.each { |tx_data| property_changed(tx_data.entity, tx_data.key, tx_data.previously_commited_value, nil) unless deleted_node_identity_map.containsKey(tx_data.entity.getId) }
       data.deleted_nodes.each { |node| node_deleted(node, removed_node_properties_map.get(node.getId)||empty_map, deleted_relationship_set, deleted_node_identity_map)}
       data.created_relationships.each {|rel| relationship_created(rel, created_node_identity_map)}

@@ -21,6 +21,7 @@ module Neo4j
 
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(*args)
+        @properties_before_type_cast=java.util.HashMap.new
         @type = args[0].to_s
         self.start_node = args[1]
         self.end_node = args[2]
@@ -47,7 +48,7 @@ module Neo4j
       def to_s
         "id: #{self.object_id}  start_node: #{start_node.id} end_node: #{end_node.id} type:#{@type}"
       end
-      
+
       def id
         _java_rel.nil? || neo_id.nil? ? nil : neo_id.to_s
       end
@@ -115,7 +116,7 @@ module Neo4j
         def _all
           _indexer.find(:_classname => self)
         end
-        
+
         def load(*ids) # TODO Copied from finders.rb
           result = ids.map { |id| entity_load(id) }
           if ids.length == 1

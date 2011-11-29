@@ -106,10 +106,10 @@ module Neo4j
 
           # Handles options for the property
           #
-          # Set the property type 				:type => Time
-          # Set a default  								:default => "default"
-          # Property must be there  			:null => false
-          # Property has a length limit  	:limit => 128
+          # Set the property type         :type => Time
+          # Set a default                  :default => "default"
+          # Property must be there        :null => false
+          # Property has a length limit    :limit => 128
           def property(*args)
             options = args.extract_options!
             args.each do |property_sym|
@@ -132,39 +132,41 @@ module Neo4j
               validates(property, :non_nil => true, :on => :create)
               validates(property, :non_nil => true, :on => :update)
             end
-						validates(property, :length => { :maximum => options[:limit] }) if options[:limit]
-					end
+            validates(property, :length => { :maximum => options[:limit] }) if options[:limit]
+          end
 
-					def define_property_methods_for(property, options)
-						unless method_defined?(property)
-							class_eval <<-RUBY, __FILE__, __LINE__
-								def #{property}
-									send(:[], "#{property}")
-								end
+          def define_property_methods_for(property, options)
+            unless method_defined?(property)
+              class_eval <<-RUBY, __FILE__, __LINE__
+                def #{property}
+                  send(:[], "#{property}")
+                end
               RUBY
             end
 
             unless method_defined?("#{property}=".to_sym)
               class_eval <<-RUBY, __FILE__, __LINE__
-								def #{property}=(value)
-									send(:[]=, "#{property}", value)
-								end
-							RUBY
-						end
-					end
+                def #{property}=(value)
+                  send(:[]=, "#{property}", value)
+                end
+              RUBY
+            end
+          end
 
           def define_property_before_type_cast_methods_for(property, options)
             property_before_type_cast = "#{property}_before_type_cast"
             class_eval <<-RUBY, __FILE__, __LINE__
-              attr_writer :#{property_before_type_cast}
+              def #{property_before_type_cast}=(value)
+                @properties_before_type_cast[:#{property}]=value
+              end
 
               def #{property_before_type_cast}
-                instance_variable_defined?(:@#{property_before_type_cast}) ? @#{property_before_type_cast} : self.#{property}
+                @properties_before_type_cast.has_key?(:#{property}) ? @properties_before_type_cast[:#{property}] : self.#{property}
               end
             RUBY
           end
-				end
-			end
-		end
-	end
+        end
+      end
+    end
+  end
 end

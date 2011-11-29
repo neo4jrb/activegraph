@@ -63,11 +63,23 @@ module Neo4j
           if k.to_s.include?("(")
             multi_parameter_attributes << [ k, v ]
           else
-            respond_to?("#{k}=") ? send("#{k}=", v) : self[k] = v
+            if self.class._decl_props.has_key? k.to_sym
+              write_declared_property(k,v)
+            else
+              respond_to?("#{k}=") ? send("#{k}=",v) : self[k] = v
+            end
           end
         end
 
         assign_multiparameter_attributes(multi_parameter_attributes)
+      end
+
+      def write_declared_property(k,v)
+        if self.class.is_composed_property? k.to_sym
+          send("#{k}=",v)
+        else
+          write_local_property_with_type_conversion(k,v)
+        end
       end
 
       # Instantiates objects for all attribute classes that needs more than one constructor parameter. This is done
@@ -252,7 +264,7 @@ module Neo4j
 
       # Wrap the setter in a conversion from Ruby to Java
       def write_local_property_with_type_conversion(property, value)
-        self.send("#{property}_before_type_cast=", value) if respond_to?("#{property}_before_type_cast=")
+        @properties_before_type_cast[property.to_sym]=value if self.class._decl_props.has_key? property.to_sym
         write_local_property_without_type_conversion(property, Neo4j::TypeConverters.to_java(self.class, property, value))
       end
     end
