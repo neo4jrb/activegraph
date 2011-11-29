@@ -21,7 +21,7 @@ module Neo4j
 
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(*args)
-        @properties_before_type_cast={}
+        @properties_before_type_cast=java.util.HashMap.new
         @type = args[0].to_s
         self.start_node = args[1]
         self.end_node = args[2]
