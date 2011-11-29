@@ -48,6 +48,7 @@ module Neo4j
 
       # Initialize a Node with a set of properties (or empty if nothing is passed)
       def initialize(attributes = {})
+        @properties_before_type_cast=java.util.HashMap.new
         reset_attributes
         clear_relationships
         self.attributes = attributes if attributes.is_a?(Hash)
