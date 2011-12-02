@@ -30,6 +30,7 @@ class NewsStory
   rule(:young_readers) { !readers.find { |user| !user.young? } }
 end
 
+
 describe "Neo4j::Node#rule", :type => :transactional do
 
   it "generate instance method: <rule_name>? for each rule" do
@@ -72,6 +73,25 @@ describe "Neo4j::Node#rule", :type => :transactional do
     Reader.old.should include(a)
     Reader.old.should_not include(b)
     Reader.young.should include(b)
+  end
+
+    #Run this test alone to reproduce the issue
+
+  it "rule node created from concurrent threads" do
+    Neo4j.threadlocal_ref_node = nil
+    Reader.all.each(&:del)
+    finish_tx
+    readers = []
+    threads = 2.times.collect do
+      Thread.new do
+        Neo4j.threadlocal_ref_node = nil
+        new_tx
+        readers << Reader.new(:age => 2)
+        finish_tx
+      end
+     end
+    threads.each(&:join)
+    Reader.all.to_a.should =~ readers
   end
 
   it "rule only instances of the given class (no side effects)" do
@@ -251,29 +271,6 @@ describe "Neo4j::Node#rule", :type => :transactional do
 
       it "should be included in FastReader#all" do
         FastReader.all.should include(subject)
-      end
-    end
-
-    context "allow rule nodes to be attached to a defined reference node" do
-      after(:each) { Neo4j.threadlocal_ref_node = nil}
-
-      it "should allow the reference node for a class to be defined via a block" do
-        new_tx
-          other_reference_node = Neo4j::Node.new
-        finish_tx
-
-        class ReferenceNodeExample
-          include Neo4j::NodeMixin
-          rule :all
-          ref_node { Neo4j.default_ref_node }
-        end
-
-        new_tx
-          example = ReferenceNodeExample.new(:name => "Name")
-        finish_tx
-        Neo4j.threadlocal_ref_node = other_reference_node
-
-        ReferenceNodeExample.all.size.should == 1
       end
     end
   end
