@@ -57,6 +57,31 @@ describe Neo4j::TypeConverters, :type => :transactional do
 
   end
 
+  context Neo4j::TypeConverters::SymbolConverter, "property :status => Symbol" do
+    before(:all) do
+      @clazz = create_node_mixin do
+        property :status, :type => Symbol
+      end
+    end
+
+    it "should save Symbol as String" do
+      v = @clazz.new :status => :active
+      val = v._java_node.get_property('status')
+      val.class.should == String
+    end
+
+    it "should load as Symbol" do
+      v = @clazz.new :status => :active
+      v.status.should == :active
+    end
+
+    it "should treat String as Symbol" do
+      v = @clazz.new :status => 'active'
+      v.status.should == :active
+    end
+  end
+
+
   context Neo4j::TypeConverters::DateConverter, "property :born => Date" do
     before(:all) do
       @clazz = create_node_mixin do
