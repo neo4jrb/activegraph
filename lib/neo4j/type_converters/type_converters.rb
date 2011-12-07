@@ -88,6 +88,26 @@ module Neo4j
     end
 
 
+    class StringConverter
+      class << self
+
+        def convert?(class_or_symbol)
+          [String, :string, :text].include? class_or_symbol
+        end
+
+        def to_java(value)
+          return nil unless value
+          value.to_s
+        end
+
+        def to_ruby(value)
+          return nil unless value
+          value.to_s
+        end
+      end
+    end
+
+
 
     class FixnumConverter
       class << self
