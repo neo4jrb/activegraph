@@ -82,6 +82,34 @@ describe Neo4j::TypeConverters, :type => :transactional do
   end
 
 
+  context Neo4j::TypeConverters::StringConverter, "property :name => String" do
+    before(:all) do
+      @clazz = create_node_mixin do
+        property :name, :type => String
+      end
+    end
+
+    it "should save String as String" do
+      v = @clazz.new :name => 'me'
+      val = v._java_node.get_property('name')
+      val.class.should == String
+    end
+
+    it "should load as String" do
+      v = @clazz.new :name => 'me'
+      v.name.should == 'me'
+    end
+
+    it "should treat anything as String" do
+      @clazz.new(:name=>123).name.should == '123'
+      @clazz.new(:name=>1.23).name.should == '1.23'
+      @clazz.new(:name=>:sym).name.should == 'sym'
+      @clazz.new(:name=> Object.new).name.class.should == String
+    end
+  end
+
+
+
   context Neo4j::TypeConverters::DateConverter, "property :born => Date" do
     before(:all) do
       @clazz = create_node_mixin do
