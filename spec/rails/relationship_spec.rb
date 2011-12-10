@@ -421,6 +421,18 @@ describe "Neo4j::Model Relationships" do
       jack.thing.should be_nil
     end
 
+    it "has_one: should not create duplicate relationships on multiple assignment" do
+      clazz = create_model
+      clazz.has_one :thing
+
+      jack = clazz.create!
+      jack.thing = Neo4j::Model.create!
+      jack.thing = Neo4j::Model.create!
+      jack.save!
+
+      expect { jack.thing }.not_to raise_error
+    end
+
     it "add nodes to a has_one method with the #new method" do
       member = Member.new
       avatar = Avatar.new

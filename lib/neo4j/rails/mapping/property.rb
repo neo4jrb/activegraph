@@ -55,8 +55,7 @@ module Neo4j
                 def #{rel_type}=(other)
                     dsl = _decl_rels_for(:'#{rel_type}')
                     storage = _create_or_get_storage_for_decl_rels(dsl)
-                    rel = storage.single_relationship(dsl.dir)
-                    rel && rel.destroy
+                    storage.destroy_single_relationship(dsl.dir)
                     storage.create_relationship_to(other, dsl.dir)
                 end
               RUBY
