@@ -122,6 +122,11 @@ module Neo4j
           end
         end
 
+        def destroy_single_relationship(dir)
+          rel = single_relationship(dir)
+          rel && rel.destroy && relationships(dir).delete(rel)
+        end
+
         def all_relationships(dir)
           Enumerator.new(self, :each_rel, dir)
         end
