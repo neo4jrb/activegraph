@@ -63,7 +63,7 @@ module Neo4j
       def java_dir
         dir_to_java(@dir)
       end
-      
+
       def each_node(node, &block) #:nodoc:
         node._java_node.getRelationships(java_rel_type, java_dir).each do |rel|
           block.call(rel.getOtherNode(node).wrapper)
@@ -194,12 +194,7 @@ module Neo4j
           # handle specified (prefixed) relationship, e.g. has_n(:known_by).from(clazz, :type)
           @rel_type = "#{@target_class}##{args[1]}"
           @target_class = args[0]
-          other_class_dsl = @target_class._decl_rels[args[1]]
-          if other_class_dsl
-            @relationship = other_class_dsl.relationship_class
-          else
-            Neo4j.logger.warn "Unknown outgoing relationship #{args[1]} on #{@target_class}"
-          end
+          @relationship_name = args[1]
         elsif (Symbol === args[0])
           # handle unspecified (unprefixed) relationship, e.g. has_n(:known_by).from(:type)
           @rel_type = args[0]
@@ -235,7 +230,15 @@ module Neo4j
       end
 
       def relationship_class # :nodoc:
-        @relationship 
+        if !@relationship_name.nil? && @relationship.nil?
+          other_class_dsl = @target_class._decl_rels[@relationship_name]
+          if other_class_dsl
+            @relationship = other_class_dsl.relationship_class
+          else
+            Neo4j.logger.warn "Unknown outgoing relationship #{@relationship_name} on #{@target_class}"
+          end
+        end
+        @relationship
       end
     end
   end

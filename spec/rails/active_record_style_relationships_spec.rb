@@ -16,7 +16,7 @@ describe "Neo4j::Rails::Model Relationships" do
 
     @actor_class.has_n(:acted_in).to(@movie_class).relationship(ModelRelationship1)
     @actor_class.has_one(:favorite).to(@movie_class)
-    @movie_class.has_n(:actors).from(@movie_class, :acted_in)
+    @movie_class.has_n(:actors).from(@actor_class, :acted_in)
 
     @actor_class.validates_associated(:acted_in)
   end
