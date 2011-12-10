@@ -1,3 +1,5 @@
+require 'active_support/core_ext/class/attribute_accessors'
+
 module Neo4j
   module Rails
     # Observer classes respond to life cycle callbacks to implement trigger-like
@@ -113,6 +115,48 @@ module Neo4j
         super and observed_descendants.each { |klass| add_observer!(klass) }
       end
 
+      cattr_accessor :default_observers_enabled, :observers_enabled
+
+      # TODO: Add docs
+      class << self
+        # Enables all observers (default behavior)
+        def enable_observers
+          self.default_observers_enabled = true
+        end
+
+        # Disables all observers
+        def disable_observers
+          self.default_observers_enabled = false
+        end
+
+        # Run a block with a specific set of observers enabled
+        def with_observers(*observer_syms)
+          self.observers_enabled = Array(observer_syms).map do |o|
+            o.respond_to?(:instance) ? o.instance : o.to_s.classify.constantize.instance
+          end
+          yield
+        ensure
+          self.observers_enabled = []
+        end
+
+        # Determines whether an observer is enabled.  Either:
+        # - All observers are enabled OR
+        # - The observer is in the whitelist
+        def observer_enabled?(observer)
+          default_observers_enabled or self.observers_enabled.include?(observer)
+        end
+      end
+
+
+      # Determines whether this observer should be run
+      def observer_enabled?
+        self.class.observer_enabled?(self)
+      end
+
+      # By default, enable all observers
+      enable_observers
+      self.observers_enabled = []
+
       protected
 
       # Get all the child observers.
@@ -149,9 +193,9 @@ module Neo4j
             callback_meth = :"_notify_#{observer_name}_for_#{callback}"
             unless klass.respond_to?(callback_meth)
               klass.send(:define_method, callback_meth) do |&block|
-                observer.send(callback, self, &block)
+                observer.send(callback, self, &block) if observer.observer_enabled?
               end
-              klass.send(callback, callback_meth)
+              klass.send(callback, callback_meth) 
             end
           end
         end

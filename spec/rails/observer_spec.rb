@@ -33,6 +33,28 @@ describe Neo4j::Rails::Observer do
     end
   end
 
+  it "should be enabled by default" do
+    AnimalObserver.instance.should be_observer_enabled
+  end
+
+  context "when all the observers are disabled" do
+    before { Neo4j::Rails::Observer.disable_observers }
+    after  { Neo4j::Rails::Observer.enable_observers  }
+
+    it "should not run" do
+      Human.new(:name => 'Dmytrii').valid?
+      Animal.new(:name => 'Tuzik').valid?
+      recorder.call_count.should be_empty
+    end
+
+    it "should run a temporarily enabled one" do
+      Neo4j::Rails::Observer.with_observers(:callback_recorder) do
+        Animal.new.valid?
+      end
+      recorder.call_count.should_not be_empty
+    end
+  end
+
   context "when the node is new" do
 
     let!(:animal) do
