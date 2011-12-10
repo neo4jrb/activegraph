@@ -8,6 +8,13 @@ group 'test' do
   gem "horo", ">= 1.0.2"
   gem "rspec", "= 2.6.0"
 
+  gem 'guard'
+  gem 'ruby_gntp', :require => false # GrowlNotify for Mac
+  gem 'rb-inotify', :require => false
+  gem 'rb-fsevent', :require => false
+  gem 'rb-fchange', :require => false
+  gem "guard-rspec"
+
   # use this version for rspec-rails-matchers which work with latest RSpec (Rspec => RSpec)
   gem "rspec-rails-matchers", :git => 'git://github.com/afcapel/rspec-rails-matchers.git'
 
