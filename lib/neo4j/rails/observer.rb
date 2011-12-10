@@ -93,6 +93,21 @@ module Neo4j
     # Observers will not be invoked unless you define them in your
     # application configuration.
     #
+    # During testing you may want (and probably should) to disable all the observers.
+    # Most of the time you don't want any kind of emails to be sent when creating objects.
+    # This should improve the speed of your tests and isolate the models and observer logic.
+    #
+    # For example, the following will disable the observers in RSpec:
+    #
+    #   config.before(:each) { Neo4j::Rails::Observer.disable_observers }
+    #
+    # But if you do want to run a particular observer(s) as part of the test,
+    # you can temporarily enable it:
+    #
+    #   Neo4j::Rails::Observer.with_observers(:user_recorder, :account_observer) do
+    #     # Any code here will work with observers enabled
+    #   end
+    #
     # == Loading
     #
     # Observers register themselves with the model class that they observe,
