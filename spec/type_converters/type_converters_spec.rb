@@ -57,6 +57,27 @@ describe Neo4j::TypeConverters, :type => :transactional do
 
   end
 
+  describe Neo4j::TypeConverters, "finding a converter" do
+    subject { Neo4j::TypeConverters.converter(type) }
+
+    context "when no type given" do
+      let(:type) { nil }
+      it { should == Neo4j::TypeConverters::DefaultConverter }
+    end
+
+    context "when known type is given" do
+      let(:type) { :date }
+      it { should == Neo4j::TypeConverters::DateConverter }
+    end
+
+    context "when unknown type is given" do
+      let(:type) { :nobody_know_this_kind_of_type_that_i_propbably_missssspelled }
+      it "should raise error" do
+        expect { subject }.to raise_error
+      end
+    end
+  end
+
   context Neo4j::TypeConverters::SymbolConverter, "property :status => Symbol" do
     before(:all) do
       @clazz = create_node_mixin do

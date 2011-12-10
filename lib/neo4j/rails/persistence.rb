@@ -190,7 +190,7 @@ module Neo4j
       # Ensure any defaults are stored in the DB
       def write_default_attributes
         attribute_defaults.each do |attribute, value|
-          write_attribute(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
+          write_attribute(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class, false)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
         end
       end
 
