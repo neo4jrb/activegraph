@@ -88,7 +88,7 @@ module Neo4j
     # In order to activate an observer, list it in the +config.neo4j.observers+
     # configuration setting in your +config/application.rb+ file.
     #
-    #   config.neo4j.observers = :comment_observer, :signup_observer
+    #   config.neo4j.observers = [:comment_observer, :signup_observer]
     #
     # Observers will not be invoked unless you define them in your
     # application configuration.
@@ -210,7 +210,7 @@ module Neo4j
               klass.send(:define_method, callback_meth) do |&block|
                 observer.send(callback, self, &block) if observer.observer_enabled?
               end
-              klass.send(callback, callback_meth) 
+              klass.send(callback, callback_meth)
             end
           end
         end
