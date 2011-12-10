@@ -224,7 +224,10 @@ module Neo4j
       end
       
       # Always returns a converter that handles to_ruby or to_java
-      def converter(type = nil)
+      # if +enforce_type+ is set to false then it will raise in case of unknown type
+      # otherwise it will return the DevaultConverter.
+      def converter(type = nil, enforce_type = true)
+        return DefaultConverter unless type
         @converters ||= begin
           Neo4j::TypeConverters.constants.find_all do |c|
             Neo4j::TypeConverters.const_get(c).respond_to?(:convert?)
@@ -232,14 +235,16 @@ module Neo4j
             Neo4j::TypeConverters.const_get(c)
           end
         end
-        (type && @converters.find { |c| c.convert?(type) }) || DefaultConverter
+        found = @converters.find {|c| c.convert?(type) }
+        raise "The type #{type.inspect} is unknown. Use one of #{@converters.map{|c| c.name.demodulize.sub('Converter','') }.join(", ")} or create a custom type converter." if !found && enforce_type
+        found or DefaultConverter
       end
 
       # Converts the given value to a Java type by using the registered converters.
       # It just looks at the class of the given value unless an attribute name is given.
       # It will convert it if there is a converter registered (in Neo4j::Config) for this value.
-      def convert(value, attribute = nil, klass = nil)
-        converter(attribute_type(value, attribute, klass)).to_java(value)
+      def convert(value, attribute = nil, klass = nil, enforce_type = true)
+        converter(attribute_type(value, attribute, klass), enforce_type).to_java(value)
       end
 
       # Converts the given property (key, value) to Java if there is a type converter for given type.
