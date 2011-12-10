@@ -270,6 +270,7 @@ module Neo4j
       include Finders # ActiveRecord style find
       include Relationships # for none persisted relationships
       include Compositions
+      include AcceptId
     end
   end
 end
