@@ -170,15 +170,18 @@ module Neo4j
       end
 
       def _persist_start_node
-        unless @start_node.persisted? || @start_node.save
-          # not sure if this can happen - probably a bug
-          raise "Can't save start_node #{@start_node} id #{@start_node.id}"
+        if !@start_node.persisted? || @start_node.relationships_changed?
+          unless @start_node.save
+            raise "Can't save start_node #{@start_node} id #{@start_node.id}"
+          end
         end
       end
 
       def _persist_end_node
-        unless @end_node.persisted? || @end_node.save
-          raise "Can't save end_node #{@end_node} id #{@end_node.id}"
+        if !@end_node.persisted? || @end_node.relationships_changed?
+          unless @end_node.save
+            raise "Can't save end_node #{@end_node} id #{@end_node.id}"
+          end
         end
       end
 
