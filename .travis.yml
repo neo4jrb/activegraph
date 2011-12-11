@@ -3,4 +3,6 @@ rvm:
 env:
   - "IDENTITY_MAP=true"
   - "IDENTITY_MAP=false"
+  - IDENTITY_MAP=true JRUBY_OPTS=--1.9
+  - IDENTITY_MAP=false JRUBY_OPTS=--1.9
 
