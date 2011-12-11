@@ -133,6 +133,8 @@ Notice that you can always access the lower layers if you want to do some more a
 
 === Contributing
 
+{<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j]
+
 Have you found a bug, need help or have a patch ?
 Just clone neo4j.rb and send me a pull request or email me.
 Do you need help - send me an email (andreas.ronge at gmail dot com).
