@@ -108,28 +108,40 @@ describe Neo4j::NodeMixin, "find", :type => :transactional do
     end
 
     it "find(:name => 'bike', :wheels => 2)" do
-      result = [*Vehicle.find(:name => 'bike', :wheels => 2)]
-      result.size.should == 1
-      result.should include(@bike)
+      Vehicle.find(:name => 'bike', :wheels => 2).to_a.should =~ [@bike]
     end
 
     it "find(:conditions => {:name => 'bike', :wheels => 2})" do
-      result = [*Vehicle.find(:conditions => {:name => 'bike', :wheels => 2})]
-      result.size.should == 1
-      result.should include(@bike)
+      Vehicle.find(:conditions => {:name => 'bike', :wheels => 2}).to_a.should =~ [@bike]
     end
 
     it "find({}) should return nothing" do
-      result = [*Vehicle.find({})]
-      result.size.should == 0
+      Vehicle.find({}).should be_empty
     end
 
     it "find(:name => 'bike').and(:wheels => 2) should return same thing as find(:name => 'bike', :wheels => 2)" do
-      result = [*Vehicle.find(:name => 'bike').and(:wheels => 2)]
-      result.size.should == 1
-      result.should include(@bike)
+      Vehicle.find(:name => 'bike').and(:wheels => 2).to_a.should =~ [@bike]
     end
 
+    it "find(:name => 'bike').or(:name => 'car') should return bike and car" do
+      Vehicle.find(:name => 'bike').or(:name => 'car').to_a.should =~ [@bike, @car]
+    end
+
+    it "find(:name => 'bike').or(:wheels => 4) should return bike and car" do
+      Vehicle.find(:name => 'bike').or(:wheels => 4).to_a.should =~ [@bike, @car]
+    end
+
+    it "find(:wheels => 2).not(:name => 'bike') should return only 'old bike'" do
+      Vehicle.find(:wheels => 2).not(:name => 'bike').to_a.should =~ [@old_bike]
+    end
+
+    it "find(:wheels => 2).or(:wheels => 4).not(:name => 'old bike') should return bike and car" do
+      Vehicle.find(:wheels => 2).or(:wheels => 4).not(:name => 'old bike').to_a.should =~ [@bike, @car]
+    end
+
+    it "find(:wheels => 2).not(:name => 'old bike').not(:name => 'bike') should return nothing" do
+      Vehicle.find(:wheels => 2).not(:name => 'old bike').not(:name => 'bike').should be_empty
+    end
   end
 
   context "range queries, index :name, :type => String" do
