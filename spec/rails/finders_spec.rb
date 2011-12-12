@@ -79,8 +79,19 @@ describe "finders" do
       end
 
       it "should return an empty array when passed multiple non-existant ids" do
-        FindableModel.find(nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id).should == []
-        FindableModel.find(nonexistant_id.to_s, nonexistant_id.to_s, nonexistant_id.to_s, nonexistant_id.to_s).should == []
+        ids = [nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id]
+        all = FindableModel.find(*ids)
+        all.each {|x| puts "found1: #{x.id}/#{x.class} for #{ids.join(', ')}"}
+
+        ids2 = [nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id]
+        all2 = FindableModel.find(*ids2)
+        all2.each {|x| puts "found2: #{x.id}/#{x.class} for #{ids2.join(', ')}"}
+
+        all.should be_empty
+        all2.should be_empty
+
+        #FindableModel.find(nonexistant_id, nonexistant_id, nonexistant_id, nonexistant_id).should == []
+        #FindableModel.find(nonexistant_id.to_s, nonexistant_id.to_s, nonexistant_id.to_s, nonexistant_id.to_s).should == []
       end
 
       it "should return nil for ids allocated to other node types" do
