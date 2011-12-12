@@ -106,6 +106,16 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
             its(:persisted?)  { should be_true }
             its(:leader)      { should == brin }
           end
+
+          context "when saving twice" do
+            it "should allow calling `save` twice" do
+              him = person.new
+              amazon = company.new
+              amazon.save.should be_false
+              amazon.leader = him
+              amazon.save.should be_true
+            end
+          end
         end
       end
 
