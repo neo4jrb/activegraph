@@ -30,6 +30,9 @@ module Neo4j
         @_relationships[decl_rels.rel_type.to_sym] ||= Storage.new(self, decl_rels.rel_type, decl_rels)
       end
 
+      def _storage_for(rel_type) #:nodoc:
+        @_relationships[rel_type.to_sym]
+      end
 
       # If the node is persisted and it does not have any unsaved relationship it returns a Neo4j::NodeTraverser.
       # Otherwise it will return a NodesDSL which behaves like the Neo4j::NodeTraverser except that it does not
@@ -89,6 +92,37 @@ module Neo4j
       def rm_outgoing_rel(rel_type, rel) #:nodoc:
         _create_or_get_storage(rel_type).rm_outgoing_rel(rel)
       end
+
+      def rm_outgoing_rel(rel_type, rel) #:nodoc:
+        _create_or_get_storage(rel_type).rm_outgoing_rel(rel)
+      end
+
+      def add_unpersisted_incoming_rel(rel_type, rel) #:nodoc
+        storage = _storage_for(rel_type)
+        # move the relationship since we are now about to store the relationship
+        storage.add_unpersisted_incoming_rel(rel)
+        storage.rm_incoming_rel(rel)
+      end
+
+      def add_unpersisted_outgoing_rel(rel_type, rel) #:nodoc
+        storage = _storage_for(rel_type)
+        # move the relationship since we are now about to store the relationship
+        storage.add_unpersisted_outgoing_rel(rel)
+        storage.rm_outgoing_rel(rel)
+      end
+
+      def rm_unpersisted_outgoing_rel(rel_type, rel)  #:nodoc
+        if (storage = _storage_for(rel_type))
+          storage.rm_unpersisted_outgoing_rel(rel)
+        end
+      end
+
+      def rm_unpersisted_incoming_rel(rel_type, rel)  #:nodoc
+        if (storage = _storage_for(rel_type))
+          storage.rm_unpersisted_incoming_rel(rel)
+        end
+      end
+
 
     end
   end

@@ -1,44 +1,8 @@
 require File.join(File.dirname(__FILE__), '..', 'spec_helper')
 
 
-describe "Neo4j::Rails Cascade delete with callbacks" do
-#	subject { FindableModel.create!(:name => "Test 1", :age => 4241) }
+describe "Neo4j::Rails cascade update of models inside callbacks" do
 
-  class CascadePerson < Neo4j::Rails::Model
-    property :name
-    has_n :friends
-  end
-
-  class CascadeGroup < Neo4j::Rails::Model
-    has_n :people
-  end
-
-  class CascadeCompany < Neo4j::Rails::Model
-    has_n(:groups)
-    has_n :people
-    has_one :leader
-
-    before_save :cascade_add
-
-    def cascade_add
-      p1 = CascadePerson.create(:name => 'p1')
-
-      self.people << p1
-
-      p2 = CascadePerson.create(:name => 'p2')
-      p1.friends << p2
-    end
-  end
-
-  it "should allow to create new nodes in a rails callback" do
-    c = CascadeCompany.create!
-
-    c.people.size.should == 1
-    c.people.first.friends.size.should == 1
-#        first.should == c
-  end
-
-  #TODO: Consider moving the spec above under the example model below
   describe "example model" do
     let!(:person) do
       create_model
@@ -59,8 +23,8 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
     end
 
 
-    let(:brin)   { person.new }
-    let(:larry)  { person.new }
+    let(:brin) { person.create }
+    let(:larry) { person.new }
     let(:google) { company.new(google_data) }
 
     subject { google }
@@ -80,20 +44,20 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
 
         context "with leader passed in" do
           let(:google_data) { {:leader => brin} }
-          its(:valid?)      { should be_true }
-          its(:people)      { should include brin }
+          its(:valid?) { should be_true }
+          its(:people) { should include brin }
         end
 
         context "with validation on a leader :)" do
-          before            { company.validates(:leader, :presence=>true) }
+          before { company.validates(:leader, :presence=>true) }
           let(:google_data) { {:leader => nil} }
-          its(:valid?)      { should be_false }
-          its(:people)      { should be_empty }
+          its(:valid?) { should be_false }
+          its(:people) { should be_empty }
 
           context "and validating before saving" do
-            before            { google.valid? }
+            before { google.valid? }
             let(:google_data) { {:leader => brin} }
-            its(:persisted?)  { should be_true }
+            its(:persisted?) { should be_true }
           end
 
           context "when saving root with persisted nested" do
@@ -103,8 +67,8 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
               google.leader = brin
               google.save!
             end
-            its(:persisted?)  { should be_true }
-            its(:leader)      { should == brin }
+            its(:persisted?) { should be_true }
+            its(:leader) { should == brin }
           end
 
           context "when saving twice" do
@@ -120,8 +84,5 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
       end
 
     end
-
   end
-
 end
-
