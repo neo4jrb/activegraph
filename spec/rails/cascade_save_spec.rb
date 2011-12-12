@@ -95,8 +95,20 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
             let(:google_data) { {:leader => brin} }
             its(:persisted?)  { should be_true }
           end
+
+          context "when saving root with persisted nested" do
+            let(:google_data) { nil }
+            before do
+              brin.save!
+              google.leader = brin
+              google.save!
+            end
+            its(:persisted?)  { should be_true }
+            its(:leader)      { should == brin }
+          end
         end
       end
+
     end
 
   end
