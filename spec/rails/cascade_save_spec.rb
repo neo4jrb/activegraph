@@ -37,5 +37,69 @@ describe "Neo4j::Rails Cascade delete with callbacks" do
     c.people.first.friends.size.should == 1
 #        first.should == c
   end
+
+  #TODO: Consider moving the spec above under the example model below
+  describe "example model" do
+    let!(:person) do
+      create_model
+    end
+    let!(:group) do
+      create_model do
+        has_n(:people)
+      end
+    end
+    let!(:company) do
+      create_model do
+        has_n(:groups)
+        has_one(:leader)
+        def people
+          groups.map{|g| g.people}.flatten
+        end
+      end
+    end
+
+
+    let(:brin)   { person.new }
+    let(:larry)  { person.new }
+    let(:google) { company.new(google_data) }
+
+    subject { google }
+
+    context "with modifying code in before_validation" do
+      before do
+        group_class = group
+        company.before_validation do
+          g = self.groups.first
+          self.groups << (g = group_class.new) unless g
+          g.people << leader if !g.people.include?(leader) && leader
+        end
+      end
+
+      context "when saving" do
+        subject { google.save; google.reload }
+
+        context "with leader passed in" do
+          let(:google_data) { {:leader => brin} }
+          its(:valid?)      { should be_true }
+          its(:people)      { should include brin }
+        end
+
+        context "with validation on a leader :)" do
+          before            { company.validates(:leader, :presence=>true) }
+          let(:google_data) { {:leader => nil} }
+          its(:valid?)      { should be_false }
+          its(:people)      { should be_empty }
+
+          context "and validating before saving" do
+            before            { google.valid? }
+            let(:google_data) { {:leader => brin} }
+            its(:persisted?)  { should be_true }
+          end
+        end
+      end
+    end
+
+  end
+
 end
 
