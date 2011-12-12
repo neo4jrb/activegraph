@@ -61,10 +61,10 @@ describe "finders" do
 
     context ".find" do
       def nonexistant_id
-        i       = rand(1000)
+        i       = rand(1000) + 1000000
         all_ids = Neo4j.all_nodes.map(&:id)
         while (all_ids.include?(i))
-          i = rand(1000)
+          i = rand(1000) + 1000000
         end
         i
       end
