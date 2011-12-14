@@ -13,6 +13,12 @@ module Neo4j
       class InheritedUniquenessTest < UniquenessTest
       end
 
+      class UniquenessOptOutTest < Neo4j::Rails::Model
+        property :name
+        index    :name
+        validates :name, :uniqueness => false
+      end
+
       class AllowBlankTest < Neo4j::Rails::Model
         property   :name, :title
         index      :name
@@ -20,6 +26,16 @@ module Neo4j
 
         validates :name,   :uniqueness => true, :allow_blank => true
         validates :title, :uniqueness => true, :allow_blank => false
+      end
+
+      describe UniquenessOptOutTest do
+        it "should not validate uniqueness when opted out" do
+          subject.class.create("foo")
+
+          subject.name = "foo"
+
+          subject.should be_valid
+        end
       end
 
       describe UniquenessTest do

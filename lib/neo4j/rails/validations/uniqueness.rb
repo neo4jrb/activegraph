@@ -10,6 +10,7 @@ module Neo4j
         end
 
         def setup(klass)
+          return if options[:with] == false
           @attributes.each do |attribute|
             if klass.index_type_for(attribute) != @validator.index_type
               raise index_error_message(klass,attribute,@validator.index_type)
