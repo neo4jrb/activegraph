@@ -15,6 +15,11 @@ RSpec::Core::RakeTask.new("spec:coverage") do |t|
   t.rspec_opts = ["-c"]
 end
 
+desc "Run all specs"
+RSpec::Core::RakeTask.new("spec") do |t|
+  t.rspec_opts = ["-c"]
+end
+
 task :check_commited do
   status = %x{git status}
   fail("Can't release gem unless everything is committed") unless status =~ /nothing to commit \(working directory clean\)|nothing added to commit but untracked files present/
@@ -60,5 +65,9 @@ task 'upload-docs' do
          "ronge@rubyforge.org:/var/www/gforge-projects/neo4j/"
 end
 
-task :default => 'spec:coverage'
 
+if RUBY_VERSION.include?("1.8")
+  task :default => 'spec:coverage'
+else
+  task :default => 'spec'
+end
