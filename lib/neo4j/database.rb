@@ -106,7 +106,7 @@ module Neo4j
     # Returns true if the neo4j db was started in read only mode.
     # This can occur if the database was locked (it was already one instance running).
     def read_only?
-      @graph.isReadOnly
+      @graph.java_class == org.neo4j.kernel.EmbeddedGraphDatabase
     end
 
     # check if the database is locked. A neo4j database is locked when the database is running.

@@ -39,7 +39,8 @@ error("Can't find database at location #{root}") unless File.exist?(root)
 error("Expected location #{root} to be a folder") unless File.directory?(root)
 
 # Upgrade
-puts "upgrade database, this might take a while ...."
+puts "upgrade database to Neo4j.rb version #{Neo4j::VERSION}, this might take a while ...."
+Neo4j::Config[:storage_path] = root
 Neo4j::Config[:allow_store_upgrade] = 'true'
 Neo4j.start
 puts "Neo4j database at #{root} upgraded to #{Neo4j::VERSION}, now shutdown"
@@ -68,4 +69,4 @@ else
   puts("No lucene index for relationship found at location #{nodes_path}")
 end
 
-puts "Upgraded database done"
+puts "Upgraded database done at '#{root}'"

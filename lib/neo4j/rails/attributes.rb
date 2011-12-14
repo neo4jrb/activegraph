@@ -63,23 +63,11 @@ module Neo4j
           if k.to_s.include?("(")
             multi_parameter_attributes << [ k, v ]
           else
-            if self.class._decl_props.has_key? k.to_sym
-              write_declared_property(k,v)
-            else
-              respond_to?("#{k}=") ? send("#{k}=",v) : self[k] = v
-            end
+            respond_to?("#{k}=") ? send("#{k}=", v) : self[k] = v
           end
         end
 
         assign_multiparameter_attributes(multi_parameter_attributes)
-      end
-
-      def write_declared_property(k,v)
-        if self.class.is_composed_property? k.to_sym
-          send("#{k}=",v)
-        else
-          write_local_property_with_type_conversion(k,v)
-        end
       end
 
       # Instantiates objects for all attribute classes that needs more than one constructor parameter. This is done

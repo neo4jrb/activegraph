@@ -1,3 +1,5 @@
+require 'active_support/core_ext/class/attribute_accessors'
+
 module Neo4j
   module Rails
     # Observer classes respond to life cycle callbacks to implement trigger-like
@@ -86,10 +88,25 @@ module Neo4j
     # In order to activate an observer, list it in the +config.neo4j.observers+
     # configuration setting in your +config/application.rb+ file.
     #
-    #   config.neo4j.observers = :comment_observer, :signup_observer
+    #   config.neo4j.observers = [:comment_observer, :signup_observer]
     #
     # Observers will not be invoked unless you define them in your
     # application configuration.
+    #
+    # During testing you may want (and probably should) to disable all the observers.
+    # Most of the time you don't want any kind of emails to be sent when creating objects.
+    # This should improve the speed of your tests and isolate the models and observer logic.
+    #
+    # For example, the following will disable the observers in RSpec:
+    #
+    #   config.before(:each) { Neo4j::Rails::Observer.disable_observers }
+    #
+    # But if you do want to run a particular observer(s) as part of the test,
+    # you can temporarily enable it:
+    #
+    #   Neo4j::Rails::Observer.with_observers(:user_recorder, :account_observer) do
+    #     # Any code here will work with observers enabled
+    #   end
     #
     # == Loading
     #
@@ -112,6 +129,48 @@ module Neo4j
       def initialize
         super and observed_descendants.each { |klass| add_observer!(klass) }
       end
+
+      cattr_accessor :default_observers_enabled, :observers_enabled
+
+      # TODO: Add docs
+      class << self
+        # Enables all observers (default behavior)
+        def enable_observers
+          self.default_observers_enabled = true
+        end
+
+        # Disables all observers
+        def disable_observers
+          self.default_observers_enabled = false
+        end
+
+        # Run a block with a specific set of observers enabled
+        def with_observers(*observer_syms)
+          self.observers_enabled = Array(observer_syms).map do |o|
+            o.respond_to?(:instance) ? o.instance : o.to_s.classify.constantize.instance
+          end
+          yield
+        ensure
+          self.observers_enabled = []
+        end
+
+        # Determines whether an observer is enabled.  Either:
+        # - All observers are enabled OR
+        # - The observer is in the whitelist
+        def observer_enabled?(observer)
+          default_observers_enabled or self.observers_enabled.include?(observer)
+        end
+      end
+
+
+      # Determines whether this observer should be run
+      def observer_enabled?
+        self.class.observer_enabled?(self)
+      end
+
+      # By default, enable all observers
+      enable_observers
+      self.observers_enabled = []
 
       protected
 
@@ -149,7 +208,7 @@ module Neo4j
             callback_meth = :"_notify_#{observer_name}_for_#{callback}"
             unless klass.respond_to?(callback_meth)
               klass.send(:define_method, callback_meth) do |&block|
-                observer.send(callback, self, &block)
+                observer.send(callback, self, &block) if observer.observer_enabled?
               end
               klass.send(callback, callback_meth)
             end

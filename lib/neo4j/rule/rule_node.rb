@@ -10,6 +10,7 @@ module Neo4j
       include ToJava
       attr_reader :rules
       attr_reader :model_class
+      @@rule_nodes = {}
 
       def initialize(clazz)
         @model_class = eval("#{clazz}")
@@ -26,6 +27,20 @@ module Neo4j
       # returns true if the rule node exist yet in the database
       def node_exist?
         !ref_node.rel?(@classname)
+      end
+
+      def rule_node
+        ref_node._java_node.synchronized do
+          @@rule_nodes[key] ||= find_node || create_node
+        end
+      end
+
+      def rule_node?(node)
+        @@rule_nodes[key] == node
+      end
+
+      def key
+        "#{ref_node}#{@ref_node_key}".to_sym
       end
 
       def ref_node
@@ -61,11 +76,6 @@ module Neo4j
         ref_node.rel?(@classname.to_s) && ref_node._rel(:outgoing, @classname.to_s)._end_node
       end
 
-      def rule_node
-        clear_rule_node if ref_node_changed?
-        Thread.current[@rule_node_key] ||= find_node || create_node
-      end
-
       def ref_node_changed?
         if ref_node != Thread.current[@ref_node_key]
           Thread.current[@ref_node_key] = ref_node
@@ -75,16 +85,8 @@ module Neo4j
         end
       end
 
-      def rule_node?(node)
-        cached_rule_node == node
-      end
-
-      def cached_rule_node
-        Thread.current[@rule_node_key]
-      end
-
       def clear_rule_node
-        Thread.current[@rule_node_key] = nil
+        @@rule_nodes[key] = nil
       end
 
       def rule_names

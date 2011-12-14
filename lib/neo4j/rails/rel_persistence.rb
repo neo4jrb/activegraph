@@ -151,16 +151,19 @@ module Neo4j
       def create()
         begin
           # prevent calling create twice
-          @start_node.rm_outgoing_rel(type, self)
-          @end_node.rm_incoming_rel(type, self)
+          @start_node.add_unpersisted_outgoing_rel(type, self)
+          @end_node.add_unpersisted_incoming_rel(type, self)
 
-          _persist_start_node
-          _persist_end_node
+          return unless _persist_start_node && _persist_end_node
 
           @_java_rel = Neo4j::Relationship.new(type, start_node, end_node)
           Neo4j::IdentityMap.add(@_java_rel, self)
           init_on_create
           clear_changes
+
+          @start_node.rm_unpersisted_outgoing_rel(type, self)
+          @end_node.rm_unpersisted_incoming_rel(type, self)
+
         end unless @end_node.nil? or @start_node.nil?
         true
       end
@@ -170,17 +173,13 @@ module Neo4j
       end
 
       def _persist_start_node
-        unless @start_node.persisted? || @start_node.save
-          # not sure if this can happen - probably a bug
-          raise "Can't save start_node #{@start_node} id #{@start_node.id}"
-        end
+        (!@start_node.persisted? || @start_node.relationships_changed?) ? @start_node.save : true
       end
 
       def _persist_end_node
-        unless @end_node.persisted? || @end_node.save
-          raise "Can't save end_node #{@end_node} id #{@end_node.id}"
-        end
+        (!@end_node.persisted? || @end_node.relationships_changed?) ? @end_node.save : true
       end
+
 
       def init_on_create(*)
         #self["_classname"] = self.class.to_s

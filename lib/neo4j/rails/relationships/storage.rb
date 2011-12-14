@@ -20,17 +20,21 @@ module Neo4j
         end
 
         def to_s #:nodoc:
-          "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size} incoming #{@incoming_rels.size}"
+          "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size}/#{@unpersisted_outgoing_rels && @unpersisted_outgoing_rels.size} incoming #{@incoming_rels.size}/#{@unpersisted_incoming_rels && @unpersisted_incoming_rels.size}"
         end
 
         def clear_unpersisted
           @outgoing_rels.clear
           @incoming_rels.clear
+          @unpersisted_outgoing_rels = nil
+          @unpersisted_incoming_rels = nil
         end
 
         def remove_from_identity_map
           @outgoing_rels.each {|r| Neo4j::IdentityMap.remove(r._java_rel)}
           @incoming_rels.each {|r| Neo4j::IdentityMap.remove(r._java_rel)}
+          @unpersisted_outgoing_rels = nil
+          @unpersisted_incoming_rels = nil
         end
 
         def size(dir)
@@ -57,9 +61,9 @@ module Neo4j
         def relationships(dir)
           case dir
             when :outgoing
-              @outgoing_rels
+              @unpersisted_outgoing_rels || @outgoing_rels
             when :incoming
-              @incoming_rels
+              @unpersisted_incoming_rels || @incoming_rels
             when :both
               @incoming_rels + @outgoing_rels
           end
@@ -122,6 +126,11 @@ module Neo4j
           end
         end
 
+        def destroy_single_relationship(dir)
+          rel = single_relationship(dir)
+          rel && rel.destroy && relationships(dir).delete(rel)
+        end
+
         def all_relationships(dir)
           Enumerator.new(self, :each_rel, dir)
         end
@@ -155,12 +164,34 @@ module Neo4j
           @outgoing_rels << rel
         end
 
+        # Makes the given relationship available in callbacks
+        def add_unpersisted_incoming_rel(rel)
+          @unpersisted_incoming_rels ||= []
+          @unpersisted_incoming_rels << rel
+        end
+
+        # Makes the given relationship available in callbacks
+        def add_unpersisted_outgoing_rel(rel)
+          @unpersisted_outgoing_rels ||= []
+          @unpersisted_outgoing_rels << rel
+        end
+
         def rm_incoming_rel(rel)
           @incoming_rels.delete(rel)
         end
 
         def rm_outgoing_rel(rel)
           @outgoing_rels.delete(rel)
+        end
+
+        def rm_unpersisted_incoming_rel(rel)
+          @unpersisted_incoming_rels.delete(rel)
+          @unpersisted_incoming_rels = nil if @unpersisted_incoming_rels.empty?
+        end
+
+        def rm_unpersisted_outgoing_rel(rel)
+          @unpersisted_outgoing_rels.delete(rel)
+          @unpersisted_outgoing_rels = nil if @unpersisted_outgoing_rels.empty?
         end
 
         def persisted?
@@ -174,14 +205,12 @@ module Neo4j
           [@outgoing_rels, @incoming_rels, @persisted_related_nodes, @persisted_node_to_relationships, @persisted_relationships].each{|c| c.clear}
 
           out_rels.each do |rel|
-            rel.end_node.rm_incoming_rel(@rel_type.to_sym, rel) if rel.end_node
             success = rel.persisted? || rel.save
             # don't think this can happen - just in case, TODO
             raise "Can't save outgoing #{rel}, validation errors ? #{rel.errors.inspect}" unless success
           end
 
           in_rels.each do |rel|
-            rel.start_node.rm_outgoing_rel(@rel_type.to_sym, rel) if rel.start_node
             success = rel.persisted? || rel.save
             # don't think this can happen - just in case, TODO
             raise "Can't save incoming #{rel}, validation errors ? #{rel.errors.inspect}" unless success

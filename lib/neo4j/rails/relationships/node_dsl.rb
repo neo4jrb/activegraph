@@ -185,7 +185,11 @@ module Neo4j
         def to_s
           "Node dir: #{@dir}, #{@storage}"
         end
-        
+
+        def rel_changed?
+          @storage.persisted?
+        end
+
         protected
 
 

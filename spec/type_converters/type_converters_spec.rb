@@ -57,6 +57,80 @@ describe Neo4j::TypeConverters, :type => :transactional do
 
   end
 
+  describe Neo4j::TypeConverters, "finding a converter" do
+    subject { Neo4j::TypeConverters.converter(type) }
+
+    context "when no type given" do
+      let(:type) { nil }
+      it { should == Neo4j::TypeConverters::DefaultConverter }
+    end
+
+    context "when known type is given" do
+      let(:type) { :date }
+      it { should == Neo4j::TypeConverters::DateConverter }
+    end
+
+    context "when unknown type is given" do
+      let(:type) { :nobody_know_this_kind_of_type_that_i_propbably_missssspelled }
+      it "should raise error" do
+        expect { subject }.to raise_error
+      end
+    end
+  end
+
+  context Neo4j::TypeConverters::SymbolConverter, "property :status => Symbol" do
+    before(:all) do
+      @clazz = create_node_mixin do
+        property :status, :type => Symbol
+      end
+    end
+
+    it "should save Symbol as String" do
+      v = @clazz.new :status => :active
+      val = v._java_node.get_property('status')
+      val.class.should == String
+    end
+
+    it "should load as Symbol" do
+      v = @clazz.new :status => :active
+      v.status.should == :active
+    end
+
+    it "should treat String as Symbol" do
+      v = @clazz.new :status => 'active'
+      v.status.should == :active
+    end
+  end
+
+
+  context Neo4j::TypeConverters::StringConverter, "property :name => String" do
+    before(:all) do
+      @clazz = create_node_mixin do
+        property :name, :type => String
+      end
+    end
+
+    it "should save String as String" do
+      v = @clazz.new :name => 'me'
+      val = v._java_node.get_property('name')
+      val.class.should == String
+    end
+
+    it "should load as String" do
+      v = @clazz.new :name => 'me'
+      v.name.should == 'me'
+    end
+
+    it "should treat anything as String" do
+      @clazz.new(:name=>123).name.should == '123'
+      @clazz.new(:name=>1.23).name.should == '1.23'
+      @clazz.new(:name=>:sym).name.should == 'sym'
+      @clazz.new(:name=> Object.new).name.class.should == String
+    end
+  end
+
+
+
   context Neo4j::TypeConverters::DateConverter, "property :born => Date" do
     before(:all) do
       @clazz = create_node_mixin do
