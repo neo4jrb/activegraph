@@ -9,6 +9,7 @@ begin
   require 'tmpdir'
   require 'rspec-rails-matchers'
   require 'benchmark'
+  require 'pry'
 
   $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 

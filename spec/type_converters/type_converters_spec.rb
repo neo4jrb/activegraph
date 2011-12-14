@@ -226,6 +226,18 @@ describe Neo4j::TypeConverters, :type => :transactional do
       v.since.min.should == 0
       v.since.sec.should == 0
     end
+
+    it "should not double-change time zone" do
+      t = Time.new(2011, 12, 14, 21, 56)
+      v = @clazz.new :since => t
+      v.since = v.since
+      v.since = v.since.getutc
+      v.since = v.since
+      v.since.should == t
+      v.since = v.since.localtime
+      v.since = v.since
+      v.since.should === t
+    end
   end
 
 
