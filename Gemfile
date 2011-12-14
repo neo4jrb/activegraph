@@ -20,6 +20,8 @@ group 'test' do
 
   gem "test-unit"
   gem 'rcov'
+
+  gem 'pry'
 end
 
 #gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"

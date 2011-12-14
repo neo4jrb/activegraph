@@ -300,14 +300,18 @@ describe DateProperties do
 
   context "update_attributes" do
     it "with Time" do
-      params = {"time(1i)"=>"2006", "time(2i)"=>"1", "time(3i)"=>"5", "time(4i)"=>"02", "time(5i)"=>"03"}
+      params = {"time(1i)"=>"2006", "time(2i)"=>"1", "time(3i)"=>"5", "time(4i)"=>"23", "time(5i)"=>"59"}
+      local = Time.new(2006, 1, 5, 23, 59)
+      local.should_not be_utc # just make it explicit
+      utc = local.getutc
+
       subject.update_attributes(params)
-      subject.time.class.should == Time
+      subject.time.should === utc
       subject.time.year.should == 2006
       subject.time.month.should == 1
-      subject.time.day.should == 5
-      #subject.time.hour.should == 2 # TODO it is stored as UTC time !!!
-      #subject.time.min.should == 3
+      subject.time.day.should == utc.day
+      subject.time.hour.should == utc.hour
+      subject.time.min.should == utc.min
     end
 
     it "with Date" do
