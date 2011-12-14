@@ -39,5 +39,5 @@ describe Neo4j, :type => :transactional do
 
   it "#management returns by default a management for Primitives" do
     (Neo4j.management.get_number_of_node_ids_in_use > 0).should be true
-    end
   end
+end
