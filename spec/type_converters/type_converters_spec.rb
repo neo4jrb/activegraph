@@ -228,7 +228,7 @@ describe Neo4j::TypeConverters, :type => :transactional do
     end
 
     it "should not double-change time zone" do
-      t = Time.new(2011, 12, 14, 21, 56)
+      t = Time.utc(2011, 12, 14, 21, 56)
       v = @clazz.new :since => t
       v.since = v.since
       v.since = v.since.getutc
