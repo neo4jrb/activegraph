@@ -1,6 +1,3 @@
-# https://github.com/rails/rails/blob/master/activerecord/lib/active_record/identity_map.rb
-# https://github.com/rails/rails/pull/76
-
 module Neo4j
 
   # = Neo4j Identity Map

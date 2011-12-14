@@ -126,19 +126,20 @@ Notice that you can always access the lower layers if you want to do some more a
 
 === Project information
 * {GitHub}[http://github.com/andreasronge/neo4j/tree/master]
-* {Lighthouse Issue Tracking}[http://neo4j.lighthouseapp.com]
+* {Issue Tracking}[https://github.com/andreasronge/neo4j/issues]
 * {Twitter}[http://twitter.com/ronge]
-* IRC -  #neo4j @ irc.freenode.net
 * {Mailing list, neo4jrb@googlegroups.com}[http://groups.google.com/group/neo4jrb]
+* {Read only, old lighthouse issues}[http://neo4j.lighthouseapp.com]
 
 === Contributing
 
 {<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j]
 
+{Development configuration}[http://neo4j.rubyforge.org/guides/index.html#development-and-testing-configuration]
+
 Have you found a bug, need help or have a patch ?
 Just clone neo4j.rb and send me a pull request or email me.
 Do you need help - send me an email (andreas.ronge at gmail dot com).
-Please also check/add issues at lighthouse, http://neo4j.lighthouseapp.com
 
 === License
 * Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.

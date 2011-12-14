@@ -1,3 +1,17 @@
+ == 1.3.1 / 2011-12-14
+* Make all relationships visible in Rails callback (rspecs #87, Dmytrii Nagirniak) [#211]
+* Enable travis to build JRuby 1.9 (pull #87, Dmytrii Nagirniak) [#214]
+* Support for composite lucene queries with OR and NOT (pull #89, Deepak N)
+* Enforce the correct converter on a property type when the type is given (pull #86, Dmytrii Nagirniak)
+* Development: make it easier to run RSpecs and guard (pull #85, Dmytrii Nagirniak)
+* Added ability to disable observer (pull #84, Dmytrii Nagirniak)
+* Fixing multiple assignment of has_one assocaition (pull #83 Deepak N)
+* Accept association_id for has_one assocations (pull #82, Deepak N)
+* Upgrade to 1.6.M01 Neo4j java jars [#209]
+* Defer warning message 'Unknown outgoing relationship' (pull #81, Vivek Prahlad)
+* Added string converter, e.g. property :name, :type => String  (pull #80, Dmytrii Nagirniak)
+* Added symbol converter e.g. property :status, :type => Symbol (pull #79, Dmytrii Nagirniak) [#205]
+
  == 1.3.0 / 2011-12-06
 * Added neo4j-upgrade script to rename lucene index files and upgrade to 1.5 [#197]
 * Expose Neo4j::NodeMixin#index_types returning available indices (useful for Cypher queries) [#194]
