@@ -301,7 +301,7 @@ describe DateProperties do
   context "update_attributes" do
     it "with Time" do
       params = {"time(1i)"=>"2006", "time(2i)"=>"1", "time(3i)"=>"5", "time(4i)"=>"23", "time(5i)"=>"59"}
-      local = Time.new(2006, 1, 5, 23, 59)
+      local = Time.local(2006, 1, 5, 23, 59)
       local.should_not be_utc # just make it explicit
       utc = local.getutc
 
