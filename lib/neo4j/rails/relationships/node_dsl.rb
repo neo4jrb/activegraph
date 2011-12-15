@@ -51,7 +51,14 @@ module Neo4j
 
         # Adds a new node to the relationship
         def <<(other)
-          @storage.create_relationship_to(other, @dir)
+          if other.is_a?(String)
+            # this is typically called in an assignment operator, person.friends = ['42', '32']
+            node = Neo4j::Node.load(other)
+            @storage.create_relationship_to(node, @dir) unless all.include?(node)
+          else
+            # allow multiple relationships to the same node
+            @storage.create_relationship_to(other, @dir)
+          end
           self
         end
 

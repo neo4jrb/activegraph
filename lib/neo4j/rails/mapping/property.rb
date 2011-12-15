@@ -75,9 +75,21 @@ module Neo4j
             end
 
             unless method_defined?("#{rel_type}=".to_sym)
+
+              # TODO: This is a temporary fix for allowing running neo4j with Formtastic, issue 109
+              # A better solution might be to implement accept_ids for has_n relationship and
+              # make sure (somehow) that Formtastic uses the _ids methods.
+
               class_eval <<-RUBY, __FILE__, __LINE__
                 def #{rel_type}=(nodes)
-                    self.#{rel_type}_rels.destroy_all
+                    if nodes.is_a?(Array) && nodes.first.is_a?(String)
+                      if nodes.first.blank?
+                        self.#{rel_type}_rels.destroy_all
+                        nodes.shift
+                      end
+                    else
+                      self.#{rel_type}_rels.destroy_all
+                    end
                     association = self.#{rel_type}
                     nodes.each { |node| association << node }
                 end

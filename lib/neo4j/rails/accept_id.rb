@@ -1,5 +1,5 @@
 module Neo4j::Rails
-  # Allows accepting id for association objjects. For example
+  # Allows accepting id for association objects. For example
   # class Book < Neo4j::Model
   #   has_one(:author).to(Author)
   #   accepts_id_for :author
