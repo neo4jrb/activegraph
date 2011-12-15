@@ -162,7 +162,6 @@ describe Neo4j::Model do
     end
 
     it "should save successfully when model is ::Property" do
-      @previous = defined?(::Property) ? ::Property : nil
       class ::Property < Neo4j::Rails::Model
       end
       ::Property.new.save.should be_true
