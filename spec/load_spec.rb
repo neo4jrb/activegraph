@@ -22,7 +22,7 @@ describe Neo4j::Load do
         class Property; end
       end
       after do
-        ::Property == @previous # TODO: Undefine instead of setting to nil
+        ::Property = @previous # TODO: Undefine instead of setting to nil
       end
       it "should resolve global Property constant" do
         subject.to_class("Property").should == ::Property

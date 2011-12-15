@@ -168,7 +168,7 @@ describe Neo4j::Model do
         class ::Property < Neo4j::Rails::Model; end
         ::Property.new.save.should be_true
       ensure
-        ::Property == @previous # TODO: Undefine instead of setting to nil
+        ::Property = @previous # TODO: Undefine instead of setting to nil
       end
     end
   end
