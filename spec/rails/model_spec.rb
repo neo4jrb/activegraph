@@ -122,9 +122,9 @@ describe Neo4j::Model do
       model = IceCream.create(:flavour => 'vanilla')
 
       IceCream.transaction do
-      	model.flavour = "horse"
-      	model.should be_valid
-      	model.save
+        model.flavour = "horse"
+        model.should be_valid
+        model.save
 
         model.flavour = nil
         model.flavour.should be_nil
@@ -159,7 +159,12 @@ describe Neo4j::Model do
       model = IceCream.create {|o| o.flavour = 'vanilla'}
       model.should be_persisted
       model.flavour = 'vanilla'
+    end
 
+    it "should save successfully when model is ::Property" do
+      class ::Property < Neo4j::Rails::Model
+      end
+      ::Property.new.save.should be_true
     end
   end
 
