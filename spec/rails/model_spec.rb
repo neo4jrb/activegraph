@@ -161,6 +161,16 @@ describe Neo4j::Model do
       model.flavour = 'vanilla'
 
     end
+
+    it "should save successfully when model is ::Property" do
+      @previous = defined?(::Property) ? ::Property : nil
+      begin
+        class ::Property < Neo4j::Rails::Model; end
+        ::Property.new.save.should be_true
+      ensure
+        ::Property == @previous # TODO: Undefine instead of setting to nil
+      end
+    end
   end
 
 
