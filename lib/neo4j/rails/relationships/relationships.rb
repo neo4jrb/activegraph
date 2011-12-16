@@ -98,17 +98,19 @@ module Neo4j
       end
 
       def add_unpersisted_incoming_rel(rel_type, rel) #:nodoc
-        storage = _storage_for(rel_type)
-        # move the relationship since we are now about to store the relationship
-        storage.add_unpersisted_incoming_rel(rel)
-        storage.rm_incoming_rel(rel)
+        if (storage = _create_or_get_storage(rel_type))
+          # move the relationship since we are now about to store the relationship
+          storage.add_unpersisted_incoming_rel(rel)
+          storage.rm_incoming_rel(rel)
+        end
       end
 
       def add_unpersisted_outgoing_rel(rel_type, rel) #:nodoc
-        storage = _storage_for(rel_type)
-        # move the relationship since we are now about to store the relationship
-        storage.add_unpersisted_outgoing_rel(rel)
-        storage.rm_outgoing_rel(rel)
+        if (storage = _create_or_get_storage(rel_type))
+          # move the relationship since we are now about to store the relationship
+          storage.add_unpersisted_outgoing_rel(rel)
+          storage.rm_outgoing_rel(rel)
+        end
       end
 
       def rm_unpersisted_outgoing_rel(rel_type, rel)  #:nodoc
