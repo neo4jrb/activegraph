@@ -131,11 +131,19 @@ Notice that you can always access the lower layers if you want to do some more a
 * {Mailing list, neo4jrb@googlegroups.com}[http://groups.google.com/group/neo4jrb]
 * {Read only, old lighthouse issues}[http://neo4j.lighthouseapp.com]
 
+=== Configuration
+
+{Development configuration}[http://neo4j.rubyforge.org/guides/index.html#development-and-testing-configuration] - You can configure Neo4j through the {Neo4j::Config}[http://neo4j.rubyforge.org/Neo4j/Config.html] object.
+
+    Neo4j::Config[:storage_path] = "/var/neo4j"
+
+{Configuring Neo4j from Rails}[http://neo4j.rubyforge.org/guides/configuration.html#config-neo4j-from-rails] - When using Neo4j.rb from rails you can use the normal rails configuration to set Neo4j configuration.
+    
+    config.neo4j.storage_path = "#{config.root}/db/neo4j"
+
 === Contributing
 
 {<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j]
-
-{Development configuration}[http://neo4j.rubyforge.org/guides/index.html#development-and-testing-configuration]
 
 Have you found a bug, need help or have a patch ?
 Just clone neo4j.rb and send me a pull request or email me.
