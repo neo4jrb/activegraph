@@ -51,6 +51,19 @@ module Regressions
         p.development = dev
         p.save.should be_true
       end
+
+      it "should update has_one and has_n relations without affecting each other" do
+        dev = Development.create(:name => 'X')
+        p = Property.create(:name => 'p1')
+        doc = Document.new(:file_name => 'd1')
+
+        doc.development = dev
+        doc.properties = [p]
+
+        doc.development.should == dev
+        doc.properties.size.should == 1
+        doc.properties.should include p
+      end
     end
 
   end
