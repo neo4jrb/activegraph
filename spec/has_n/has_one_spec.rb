@@ -84,7 +84,7 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
       it "creates a new outgoing relationship 'OtherClass#phone'" do
         person       = @class.new
         person.phone = Neo4j::Node.new
-        person.rel?("#{@other_class}#phone", :outgoing).should be_true
+        person.rel?("#{@class}#phone", :outgoing).should be_true
       end
     end
 
@@ -94,7 +94,7 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
         person.phone.should be_nil
         other = Neo4j::Node.new
         person.phone = other
-        person.rel?("#{@other_class}#phone", :outgoing).should be_true
+        person.rel?("#{@class}#phone", :outgoing).should be_true
         person.phone.should == other
       end
     end
@@ -150,7 +150,7 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
       it "creates a new incoming relationship 'MyClass#profile'" do
         node      = @class.new
         node.user = Neo4j::Node.new
-        node.rel?("#{@class}#profile", :incoming).should be_true
+        node.rel?("#{@user}#profile", :incoming).should be_true
       end
     end
 
@@ -174,7 +174,7 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
       @film_class.has_one(:director).from(@director_class, :directed)
     end
 
-    it "has_one/has_n: one-to-many, e.g. director --directed -*> film" do
+    it "can assign outgoing relationships and read a has_one incoming" do
       lucas = @director_class.new :name => 'George Lucas'
 
       star_wars_4 = @film_class.new :title => 'Star Wars Episode IV: A New Hope', :year => 1977
@@ -183,44 +183,43 @@ describe Neo4j::NodeMixin, "#has_one", :type => :transactional do
 
       # then
       lucas.directed.should include(star_wars_3, star_wars_4)
-      lucas.outgoing("#{@film_class}#directed").should include(star_wars_3, star_wars_4)
-      star_wars_3.incoming("#{@film_class}#directed").should include(lucas)
+      lucas.outgoing("#{@director_class}#directed").should include(star_wars_3, star_wars_4)
+      star_wars_3.incoming("#{@director_class}#directed").should include(lucas)
       star_wars_3.director.should == lucas
       star_wars_4.director.should == lucas
     end
 
+
+    it "can assign a has_one incoming and read outgoing relationships" do
+      lucas = @director_class.new :name => 'George Lucas'
+      star_wars_4 = @film_class.new :title => 'Star Wars Episode IV: A New Hope', :year => 1977
+      star_wars_3 = @film_class.new :title => "Star Wars Episode III: Revenge of the Sith", :year => 2005
+
+      star_wars_4.director = lucas
+      star_wars_3.director = lucas
+
+      # then
+      lucas.directed.should include(star_wars_3, star_wars_4)
+      lucas.outgoing("#{@director_class}#directed").should include(star_wars_3, star_wars_4)
+      star_wars_3.incoming("#{@director_class}#directed").should include(lucas)
+      star_wars_3.director.should == lucas
+      star_wars_4.director.should == lucas
+    end
+
+    it "an incoming has_one relationship can be deleted" do
+      lucas = @director_class.new :name => 'George Lucas'
+      star_wars_4 = @film_class.new :title => 'Star Wars Episode IV: A New Hope', :year => 1977
+      star_wars_3 = @film_class.new :title => "Star Wars Episode III: Revenge of the Sith", :year => 2005
+      lucas.directed << star_wars_3 << star_wars_4
+      new_tx
+
+      star_wars_3.director = nil
+      new_tx
+      lucas.outgoing("#{@director_class}#directed").size.should == 1
+      lucas.outgoing("#{@director_class}#directed").should include(star_wars_4)
+      star_wars_3.director.should be_nil
+      star_wars_4.director.should == lucas
+    end
   end
-#  it "can add nodes to an incoming relationship" do
-#    p1 = Person.new
-#    p2 = Person.new
-#    p3 = Person.new
-#    p2.friend_by << p1
-#    p1.friends << p3
-#
-#    p1.friends.size.should == 2
-#    p1.friends.should include(p2, p3)
-#    p2.friend_by.should include(p1)
-#    p3.friend_by.should include(p1)
-#  end
-#
-#  it "can navigate a incoming relationship (has_n(:employed_by).from(Company, :employees))" do
-#    p1     = Person.new
-#    p2     = Person.new
-#
-#    jayway = Company.new
-#    jayway.employees << p1 << p2
-#
-#    google = Company.new
-#    google.employees << p1
-#
-#    # then
-#    p1.employed_by.size.should == 2
-#    p2.employed_by.size.should == 1
-#    p1.employed_by.should include(jayway, google)
-#    p2.employed_by.should include(jayway)
-#    jayway.employees.should include(p1, p2)
-#    google.employees.should include(p1)
-#  end
-#
 
 end

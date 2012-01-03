@@ -34,7 +34,7 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
         has_n(:baaz).to(foo)
       end
 
-      clazz.baaz.should == "#{foo}#baaz"
+      clazz.baaz.should == "#{clazz}#baaz"
     end
 
     it "has_n(:foo).to(illegal arg) should raise" do
@@ -49,9 +49,9 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
         has_n(:baaz).to(clazz)
       end
 
-      foo.baaz.should == "#{clazz}#baaz"
+      foo.baaz.should == "#{foo}#baaz"
       clazz.has_n(:foobar).from(foo, :baaz)
-      clazz.foobar.should == "#{clazz}#baaz"
+      clazz.foobar.should == "#{foo}#baaz"
     end
   end
 
@@ -302,7 +302,7 @@ describe Neo4j::NodeMixin, "#has_n", :type => :transactional do
         end
 
         it "creates an incoming relationship of type 'class#friends" do
-          @from.rel?("#{@class}#friends", :incoming).should be_true
+          @from.rel?("#{@other_class}#friends", :incoming).should be_true
         end
 
         it "known_by returns all incoming relationship of type 'class#friends'" do

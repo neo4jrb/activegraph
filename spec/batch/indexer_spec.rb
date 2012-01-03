@@ -195,7 +195,7 @@ describe Neo4j::Batch::Indexer do
       # we create a relationship between
       # Actor[Node] --(Role[Relationship])--> Movie[Node], rel_type = Movie#acted_in
       indexer = Neo4j::Batch::Indexer.instance_for(Movie)
-      indexer.index_node_via_rel("Movie#acted_in", 42, {'title' => 'matrix'})
+      indexer.index_node_via_rel("Actor#acted_in", 42, {'title' => 'matrix'})
     end
 
     it "does not index when there is no indexer for the given relationship" do

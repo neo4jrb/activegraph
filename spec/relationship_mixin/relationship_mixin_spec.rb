@@ -103,7 +103,7 @@ describe Neo4j::RelationshipMixin, :type=> :transactional do
     movie = Movie.new
     rel = actor.acted_in.new(movie)
     rel.should respond_to(:relationship_type)
-    rel.relationship_type.should == 'Movie#acted_in'.to_sym
+    rel.relationship_type.should == 'Actor#acted_in'.to_sym
   end
 
   it "can be specified in a NodeMixin#has_n(:type).relationship(clazz)" do
