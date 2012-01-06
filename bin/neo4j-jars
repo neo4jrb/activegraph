@@ -14,13 +14,13 @@ TEXT
 exit
 end
 
-Neo4j.load_online_backup if ARGV.include?('-backup')
-Neo4j.load_ha_jars if ARGV.include?('-ha')
+Neo4jJars.load_online_backup if ARGV.include?('-backup')
+Neo4jJars.load_ha_jars if ARGV.include?('-ha')
 
 lib_dir = File.join(Dir.pwd, 'lib')
 raise "Expected a lib folder where to copy the jars file, mkdir #{lib_dir}? " unless File.exist?(lib_dir)
 
-files = $CLASSPATH.find_all{|x| x =~ /neo4j\/jars/}.collect{|y| y.sub('file:', '')}
+files = $CLASSPATH.find_all{|x| x =~ /\.jar$/}.collect{|y| y.sub('file:', '')}
 files.each {|file| FileUtils.cp(file, lib_dir)}
 
 puts "copied #{files.size} files to #{lib_dir}"
