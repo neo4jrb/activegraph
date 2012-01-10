@@ -14,9 +14,6 @@ TEXT
 exit
 end
 
-Neo4jJars.load_online_backup if ARGV.include?('-backup')
-Neo4jJars.load_ha_jars if ARGV.include?('-ha')
-
 lib_dir = File.join(Dir.pwd, 'lib')
 raise "Expected a lib folder where to copy the jars file, mkdir #{lib_dir}? " unless File.exist?(lib_dir)
 
