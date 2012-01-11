@@ -1,6 +1,9 @@
 # ignore netbeans specific stuff
 nbproject
 
+# Can we agree to install binstubs as `bundle install --binstubs=b`?
+b/
+
 # ignore Rubymine
 .idea
 
