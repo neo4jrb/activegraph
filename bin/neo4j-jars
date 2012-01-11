@@ -2,14 +2,11 @@
 
 require 'neo4j'
 
-if ARGV.length == 0
+if ARGV.length != 0
   puts <<TEXT
 A tool for copying jar files needed by the application server, like trinidad
-It copies the jar files to the lib folder of the current directory
-Usage: neo4j-jars [-ha|-backup]
-  -ha      copies the High Available cluster Jars
-  -backup  copies the online backup jars
-  -local   copies only the jars for running a local neo4j db
+It copies all jar files which has been required (neo4j-community, neo4j-advanced or neo4j-enterprise) to the lib folder of the current directory
+Usage: neo4j-jars
 TEXT
 exit
 end

@@ -6,7 +6,7 @@ group 'test' do
   gem "rake", ">= 0.8.7"
   gem "rdoc", ">= 2.5.10"
   gem "horo", ">= 1.0.2"
-  gem "rspec", "~> 2.8"
+  gem "rspec", "= 2.6.0"
 
   gem 'guard'
   gem 'ruby_gntp', :require => false # GrowlNotify for Mac
