@@ -21,10 +21,11 @@ describe "Neo4j#query (cypher)" do
     end
 
     it "its first value is hash" do
-      @query_result.to_a.size.should == 1
-      @query_result.first.should include('n')
-      @query_result.first['n'].class.should == Neo4j::Node
-      @query_result.first['n'].neo_id.should == 0
+      r = @query_result.to_a  # can only loop once
+      r.size.should == 1
+      r.first.should include('n')
+      r.first['n'].class.should == Neo4j::Node
+      r.first['n'].neo_id.should == 0
     end
   end
 
@@ -39,10 +40,11 @@ describe "Neo4j#query (cypher)" do
     end
 
     it "its first value is hash" do
-      @query_result.to_a.size.should == 1
-      @query_result.first.should include('n')
-      @query_result.first['n'].class.should == Neo4j::Relationship
-      @query_result.first['n'].neo_id.should == @r.neo_id
+      r = @query_result.to_a
+      r.size.should == 1
+      r.first.should include('n')
+      r.first['n'].class.should == Neo4j::Relationship
+      r.first['n'].neo_id.should == @r.neo_id
     end
   end
 
@@ -56,10 +58,12 @@ describe "Neo4j#query (cypher)" do
       @query_result = Neo4j.query("START n=node({node}) RETURN n", 'node' => @node.neo_id)
     end
     it "its first value is hash" do
-      @query_result.to_a.size.should == 1
-      @query_result.first.should include('n')
-      @query_result.first['n'].class.should == MyCypherNode
-      @query_result.first['n'].neo_id.should == @node.neo_id
+      r = @query_result.to_a
+
+      r.size.should == 1
+      r.first.should include('n')
+      r.first['n'].class.should == MyCypherNode
+      r.first['n'].neo_id.should == @node.neo_id
     end
   end
 
@@ -74,10 +78,11 @@ describe "Neo4j#query (cypher)" do
     end
 
     it "its first value is hash" do
-      @query_result.to_a.size.should == 1
-      @query_result.first.should include('n')
-      @query_result.first['n'].class.should == MyCypherRel
-      @query_result.first['n'].neo_id.should == @rel.neo_id
+      r = @query_result.to_a  # can only loop once
+      r.size.should == 1
+      r.first.should include('n')
+      r.first['n'].class.should == MyCypherRel
+      r.first['n'].neo_id.should == @rel.neo_id
     end
   end
 
@@ -92,10 +97,11 @@ describe "Neo4j#query (cypher)" do
     end
 
     it "its first value is hash" do
-      @query_result.to_a.size.should == 2
-      @query_result.first.should include('n')
-      @query_result.to_a[0]['n'].neo_id.should == @a.neo_id
-      @query_result.to_a[1]['n'].neo_id.should == @b.neo_id
+      r = @query_result.to_a  # can only loop once
+      r.size.should == 2
+      r.first.should include('n')
+      r[0]['n'].neo_id.should == @a.neo_id
+      r[1]['n'].neo_id.should == @b.neo_id
     end
   end
 
@@ -125,8 +131,9 @@ describe "Neo4j#query (cypher)" do
       index_name = FooBarCypher.index_names[:exact]
       query = %Q[START n=node:#{index_name}("name:foo") RETURN n]
       @query_result = Neo4j.query(query)
-      @query_result.to_a.size.should == 1
-      @query_result.to_a.first['n'].wrapper.should == @foo
+      r = @query_result.to_a  # can only loop once
+      r.size.should == 1
+      r.first['n'].wrapper.should == @foo
     end
   end
 end
