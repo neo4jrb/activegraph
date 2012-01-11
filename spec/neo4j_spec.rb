@@ -37,4 +37,7 @@ describe Neo4j, :type => :transactional do
     found_nodes.should include(Neo4j.ref_node.id)
   end
 
+  it "#management returns by default a management for Primitives", :edition => :advanced do
+    (Neo4j.management.get_number_of_node_ids_in_use > 0).should be true
+  end
 end
