@@ -8,10 +8,14 @@ else
   ZOOBIN="$0"
 fi
 
+mkdir -f lib
+# copy jar files
+neo4j-jars enterprise
+
 ZOOMAIN="org.apache.zookeeper.server.quorum.QuorumPeerMain"
 
 ZOOBINDIR=`dirname "$ZOOBIN"`
-JARDIR=`cd "${ZOOBINDIR}/../../lib/neo4j/jars/ha"; pwd`
+JARDIR=`cd "${ZOOBINDIR}/lib"; pwd`
 
 CLASSPATH=$JARDIR/log4j-1.2.16.jar:$JARDIR/zookeeper-3.3.2.jar
 java -cp "$CLASSPATH" $ZOOMAIN conf/server1.cfg &
