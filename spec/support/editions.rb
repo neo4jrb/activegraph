@@ -1,3 +1,5 @@
+require 'spec/support/rspec'
+
 module Neo4jSpecEdition
   def self.current
     edition = ENV['EDITION'] || ENV['ED']
@@ -11,5 +13,10 @@ RSpec.configure do |c|
   if edition
     require "neo4j-#{edition}"
     c.filter = { :edition => edition }
+  else
+    # If no edition profided, we need to exclude spacs tagged with :edition
+    c.exclusion_filter = {
+      :edition => lambda {|ed| ed.present? }
+    }
   end
 end
