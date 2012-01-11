@@ -38,6 +38,6 @@ describe Neo4j, :type => :transactional do
   end
 
   it "#management returns by default a management for Primitives", :edition => :advanced do
-    (Neo4j.management.get_number_of_node_ids_in_use > 0).should be true
+    Neo4j.management.get_number_of_node_ids_in_use.should > 0
   end
 end
