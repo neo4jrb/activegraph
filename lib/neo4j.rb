@@ -16,7 +16,7 @@ require 'will_paginate/finders/base'
 # core extensions
 require 'neo4j/core_ext/class/inheritable_attributes'
 
-require 'neo4j-jars'
+require 'neo4j-community'
 
 module Neo4j
   include Java
