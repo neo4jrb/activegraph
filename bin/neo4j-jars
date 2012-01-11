@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require 'neo4j'
+
+if ARGV.length == 0
+  puts <<TEXT
+A tool for copying jar files needed by the application server, like trinidad
+It copies the jar files to the lib folder of the current directory
+Usage: neo4j-jars [-ha|-backup]
+  -ha      copies the High Available cluster Jars
+  -backup  copies the online backup jars
+  -local   copies only the jars for running a local neo4j db
+TEXT
+exit
+end
+
+lib_dir = File.join(Dir.pwd, 'lib')
+raise "Expected a lib folder where to copy the jars file, mkdir #{lib_dir}? " unless File.exist?(lib_dir)
+
+files = $CLASSPATH.find_all{|x| x =~ /\.jar$/}.collect{|y| y.sub('file:', '')}
+files.each {|file| FileUtils.cp(file, lib_dir)}
+
+puts "copied #{files.size} files to #{lib_dir}"
