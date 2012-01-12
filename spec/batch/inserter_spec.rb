@@ -87,7 +87,7 @@ describe Neo4j::Batch::Inserter do
   context "#create_node(hash)" do
     before(:each) do
       @inserter = Neo4j::Batch::Inserter.new
-      @id = @inserter.create_node('name' => 'kalle123', 'age' => 42)
+      @id = @inserter.create_node('name' => 'kalle123', :age => 42)
     end
 
     it "creates a node with given properties" do
@@ -166,7 +166,7 @@ describe Neo4j::Batch::Inserter do
       @inserter = Neo4j::Batch::Inserter.new
       @node_a = @inserter.create_node
       @node_b = @inserter.create_node
-      @rel_id = @inserter.create_rel(:friend, @node_a, @node_b, 'name' => 'aaa', 'age' => 4242)
+      @rel_id = @inserter.create_rel(:friend, @node_a, @node_b, 'name' => 'aaa', :age => 4242)
     end
 
     it "#rel_props(id) should include properties" do
