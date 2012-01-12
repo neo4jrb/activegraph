@@ -48,6 +48,8 @@ module Neo4j
         props = {} if clazz != Neo4j::Node && props.nil?
         props['_classname'] = clazz.to_s if clazz != Neo4j::Node
 
+        props = ensure_valid_props(props)
+
         node = @batch_inserter.create_node(props)
         props && _index(node, props, clazz)
         @rule_inserter.node_added(node, props)
@@ -68,6 +70,9 @@ module Neo4j
       def create_rel(rel_type, from_node, to_node, props=nil, clazz=Neo4j::Relationship)
         props = {} if clazz != Neo4j::Relationship && props.nil?
         props['_classname'] = clazz.to_s if clazz != Neo4j::Relationship
+
+        props = ensure_valid_props(props)
+
         rel = @batch_inserter.create_relationship(from_node, to_node, type_to_java(rel_type), props)
 
         props && _index(rel, props, clazz)
