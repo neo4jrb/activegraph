@@ -2,7 +2,7 @@ require "rubygems"
 require "bundler/setup"
 require 'fileutils'
 require 'neo4j'
-
+require 'neo4j-enterprise'
 
 def start(machine_id)
   Neo4j::Config.default_file = 'config.yml' # use local config file

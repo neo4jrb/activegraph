@@ -8,7 +8,7 @@ else
   ZOOBIN="$0"
 fi
 
-mkdir -f lib
+mkdir -p lib
 # copy jar files
 neo4j-jars enterprise
 
