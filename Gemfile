@@ -5,7 +5,7 @@ gemspec
 group 'test' do
   gem "rake", ">= 0.8.7"
   gem "rdoc", ">= 2.5.10"
-  gem "horo", ">= 1.0.2"
+  gem "horo", ">= 1.0.2" # TODO: Why horo, YARD seems to be much better option?
   gem "rspec", "~> 2.8"
 
   gem 'guard'

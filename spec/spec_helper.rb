@@ -9,7 +9,6 @@ begin
   require 'tmpdir'
   require 'active_model' # Need to pull this before shoulda-matcher, so it can configure RSpec
   require 'shoulda-matchers'
-  require 'shoulda/matchers/active_model'
   require 'benchmark'
   require 'pry'
 
