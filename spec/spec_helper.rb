@@ -7,7 +7,9 @@ begin
   require 'rspec'
   require 'fileutils'
   require 'tmpdir'
-  require 'rspec-rails-matchers'
+  require 'active_model' # Need to pull this before shoulda-matcher, so it can configure RSpec
+  require 'shoulda-matchers'
+  require 'shoulda/matchers/active_model'
   require 'benchmark'
   require 'pry'
 
