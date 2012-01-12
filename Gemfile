@@ -5,8 +5,8 @@ gemspec
 group 'test' do
   gem "rake", ">= 0.8.7"
   gem "rdoc", ">= 2.5.10"
-  gem "horo", ">= 1.0.2"
-  gem "rspec", "~> 2.8.0"
+  gem "horo", ">= 1.0.2" # TODO: Why horo, YARD seems to be much better option?
+  gem "rspec", "~> 2.8"
 
   gem 'guard'
   gem 'ruby_gntp', :require => false # GrowlNotify for Mac
@@ -15,8 +15,7 @@ group 'test' do
   gem 'rb-fchange', :require => false
   gem "guard-rspec"
 
-  # use this version for rspec-rails-matchers which work with latest RSpec (Rspec => RSpec)
-  gem "rspec-rails-matchers", :git => 'git://github.com/dnagir/rspec-rails-matchers.git'
+  gem 'shoulda-matchers', '~> 1.0'
 
   gem "test-unit"
   gem 'rcov'
