@@ -59,10 +59,12 @@ module Neo4j
         end
 
         def to_java(value)
+          return nil unless value
           !!value && value != '0'
         end
 
         def to_ruby(value)
+          return nil unless value
           !!value && value != '0'
         end
       end
