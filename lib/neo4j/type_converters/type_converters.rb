@@ -59,12 +59,12 @@ module Neo4j
         end
 
         def to_java(value)
-          return nil unless value
+          return nil if value.nil?
           !!value && value != '0'
         end
 
         def to_ruby(value)
-          return nil unless value
+          return nil if value.nil?
           !!value && value != '0'
         end
       end
@@ -78,12 +78,12 @@ module Neo4j
         end
 
         def to_java(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_s
         end
 
         def to_ruby(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_sym
         end
       end
@@ -98,12 +98,12 @@ module Neo4j
         end
 
         def to_java(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_s
         end
 
         def to_ruby(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_s
         end
       end
@@ -119,12 +119,12 @@ module Neo4j
         end
 
         def to_java(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_i
         end
 
         def to_ruby(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_i
         end
       end
@@ -138,12 +138,12 @@ module Neo4j
         end
 
         def to_java(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_f
         end
 
         def to_ruby(value)
-          return nil unless value
+          return nil if value.nil?
           value.to_f
         end
       end
@@ -180,7 +180,7 @@ module Neo4j
         # Converts the given DateTime (UTC) value to an Fixnum.
         # Only utc times are supported !
         def to_java(value)
-          return nil unless value
+          return nil if value.nil?
           if value.class == Date
             Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
           else
@@ -189,7 +189,7 @@ module Neo4j
         end
 
         def to_ruby(value)
-          return nil unless value
+          return nil if value.nil?
           t = Time.at(value).utc
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
         end
