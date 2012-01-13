@@ -1,3 +1,4 @@
+srand # Workaround for JRuby bug 1.6.5
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
 require 'rake'
