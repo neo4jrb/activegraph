@@ -38,7 +38,7 @@ module Neo4j
         key_s = key.to_s
         if !@properties.has_key?(key_s) || @properties[key_s] != value
           attribute_will_change!(key_s)
-          @properties[key_s] = value
+          @properties[key_s] = value.nil? ? attribute_defaults[key_s] : value
         end
         value
       end
