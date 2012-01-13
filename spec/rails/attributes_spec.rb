@@ -6,7 +6,8 @@ module Neo4j
       property :name
       property :number_property, :type => :float
       property :foo
-      validates :number_property, :numericality => true
+      property :defaulty, :type => Fixnum, :default => 10
+      validates :number_property, :numericality => { :allow_nil => true }
 
       def foo=(f)
         self.name = f + 'changed'
@@ -64,6 +65,16 @@ module Neo4j
           subject._java_node.property?(:number_property_before_type_cast).should be_false
           AttributesTestModel.find(subject.id)[:number_property_before_type_cast].should be_nil
         end
+
+        it "should have valid default" do
+          subject.defaulty.should == 10
+        end
+
+        it "should return default for no value" do
+          subject.defaulty = nil
+          subject.defaulty.should == 10
+        end
+
       end
     end
   end

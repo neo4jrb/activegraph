@@ -7,6 +7,7 @@ group 'test' do
   gem "rdoc", ">= 2.5.10"
   gem "horo", ">= 1.0.2" # TODO: Why horo, YARD seems to be much better option?
   gem "rspec", "~> 2.8"
+  gem "its" # its(:with, :arguments) { should be_possible }
 
   gem 'guard'
   gem 'ruby_gntp', :require => false # GrowlNotify for Mac
