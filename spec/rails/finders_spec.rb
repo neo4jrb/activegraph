@@ -73,6 +73,14 @@ describe "finders" do
         Neo4j.all_nodes.select { |node| !node.is_a?(FindableModel) }.map(&:id)
       end
 
+      it "should return nil when passed a negative id" do
+        FindableModel.find(-99).should be_nil
+      end
+
+      it "should return nil when passed " do
+        FindableModel.find(-99).should be_nil
+      end
+
       it "should return nil when passed a non-existant id" do
         FindableModel.find(nonexistant_id).should be_nil
         FindableModel.find(nonexistant_id.to_s).should be_nil

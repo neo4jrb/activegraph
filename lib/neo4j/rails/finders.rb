@@ -76,7 +76,7 @@ module Neo4j
             when "0", 0, nil
               nil
             else
-              if ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0)
+              if convertable_to_id?(args.first)
                 find_with_ids(*args)
               else
                 first(*args)
@@ -167,6 +167,10 @@ module Neo4j
           condition.is_a?(Hash) && condition[:id]
         end
 
+        def convertable_to_id?(value)
+          return false unless value
+          value.is_a?(Integer) || (value.is_a?(String) && value =~ /^[+-]?\d+$/)
+        end
 
         def conditions_in?(*args)
           return false if args.empty?
