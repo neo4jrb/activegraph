@@ -119,12 +119,12 @@ module Neo4j
         end
 
         def to_java(value)
-          return value unless value
+          return nil unless value
           value.to_i
         end
 
         def to_ruby(value)
-          return value unless value
+          return nil unless value
           value.to_i
         end
       end
