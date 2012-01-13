@@ -6,7 +6,7 @@ module Neo4j
       property :name
       property :number_property, :type => :float
       property :foo
-      validates :number_property, :numericality => true
+      validates :number_property, :numericality => { :allow_nil => true }
 
       def foo=(f)
         self.name = f + 'changed'

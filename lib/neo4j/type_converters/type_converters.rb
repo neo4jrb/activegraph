@@ -180,7 +180,7 @@ module Neo4j
         # Converts the given DateTime (UTC) value to an Fixnum.
         # Only utc times are supported !
         def to_java(value)
-          return nil if value.nil?
+          return nil unless value
           if value.class == Date
             Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
           else
@@ -189,7 +189,7 @@ module Neo4j
         end
 
         def to_ruby(value)
-          return nil if value.nil?
+          return nil unless value
           t = Time.at(value).utc
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
         end
