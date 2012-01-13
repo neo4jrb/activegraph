@@ -16,7 +16,6 @@ require 'will_paginate/finders/base'
 # core extensions
 require 'neo4j/core_ext/class/inheritable_attributes'
 
-require 'neo4j-community'
 
 module Neo4j
   include Java
@@ -25,6 +24,7 @@ module Neo4j
   Enumerator = Enumerable::Enumerator unless defined? Enumerator
 end
 
+require 'neo4j-community'
 require 'neo4j/version'
 require 'neo4j/neo4j'
 require 'neo4j/paginate'

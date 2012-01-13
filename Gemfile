@@ -23,8 +23,8 @@ group 'test' do
 
   gem 'pry'
 
-  gem 'neo4j-advanced',   :require => false
-  gem 'neo4j-enterprise', :require => false
+  gem 'neo4j-advanced', "1.6.0.alpha.4",  :require => false
+  gem 'neo4j-enterprise', "1.6.0.alpha.4", :require => false
 end
 
 #gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"
