@@ -113,14 +113,16 @@ module Neo4j
       class << self
 
         def convert?(class_or_symbol)
-          Fixnum == class_or_symbol || :fixnum == class_or_symbol
+          Fixnum == class_or_symbol || :fixnum == class_or_symbol || :numeric == class_or_symbol
         end
 
         def to_java(value)
+          return value unless value
           value.to_i
         end
 
         def to_ruby(value)
+          return value unless value
           value.to_i
         end
       end
