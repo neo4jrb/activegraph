@@ -8,10 +8,6 @@ else
   ZOOBIN="$0"
 fi
 
-mkdir -p lib
-# copy jar files
-neo4j-jars enterprise
-
 ZOOMAIN="org.apache.zookeeper.server.quorum.QuorumPeerMain"
 
 ZOOBINDIR=`dirname "$ZOOBIN"`

@@ -3,6 +3,10 @@ A simple High Availability Cluster Example
 
 To run this:
 
+0. First you need the neo4j enterprise JAR files
+  mkdir -p lib
+  bundle exec ../../bin/neo4j-jars enterprise
+
 1. type: start_zookeeper.sh
 This starts 3 java processes (ps -ef | grep java)
 

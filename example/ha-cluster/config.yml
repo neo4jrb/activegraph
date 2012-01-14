@@ -27,9 +27,9 @@ online_backup_enabled: false
 
 # Example of HA Configuration, see http://wiki.neo4j.org/content/High_Availability_Cluster
 # This is only used when ha.db is set to true
-ha.machine_id: 1
+ha.server_id: 1
 ha.server: 'localhost:6001'
-ha.zoo_keeper_servers: 'localhost:2181,localhost:2182,localhost:2183'
+ha.coordinators: 'localhost:2181,localhost:2182,localhost:2183'
 
 # if enabled you can use the bin/neo4j-shell command to access the database
 enable_remote_shell: "port=9331"
