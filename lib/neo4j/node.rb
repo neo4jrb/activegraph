@@ -7,42 +7,6 @@ require 'neo4j/equal'
 require 'neo4j/load'
 
 module Neo4j
-
-  org.neo4j.kernel.impl.core.NodeProxy.class_eval do
-    include Neo4j::Property
-    include Neo4j::Rels
-    include Neo4j::Traversal
-    include Neo4j::Equal
-    include Neo4j::Index
-
-    def del #:nodoc:
-      rels.each {|r| r.del}
-      delete
-      nil
-    end
-
-    def exist?  #:nodoc:
-      Neo4j::Node.exist?(self)
-    end
-
-    def wrapped_entity  #:nodoc:
-      self
-    end
-
-    def wrapper  #:nodoc:
-      self.class.wrapper(self)
-    end
-
-    def _java_node  #:nodoc:
-      self
-    end
-
-    def class  #:nodoc:
-      Neo4j::Node
-    end
-  end
-
-
   # A node in the graph with properties and relationships to other entities.
   # Along with relationships, nodes are the core building blocks of the Neo4j data representation model.
   # Node has three major groups of operations: operations that deal with relationships, operations that deal with properties and operations that traverse the node space.
@@ -259,6 +223,48 @@ module Neo4j
         nil
       end
 
+      def extend_java_class(java_clazz) #:nodoc:
+        java_clazz.class_eval do
+          include Neo4j::Property
+          include Neo4j::Rels
+          include Neo4j::Traversal
+          include Neo4j::Equal
+          include Neo4j::Index
+
+          def del #:nodoc:
+            rels.each { |r| r.del }
+            delete
+            nil
+          end
+
+          def exist? #:nodoc:
+            Neo4j::Node.exist?(self)
+          end
+
+          def wrapped_entity #:nodoc:
+            self
+          end
+
+          def wrapper #:nodoc:
+            self.class.wrapper(self)
+          end
+
+          def _java_node #:nodoc:
+            self
+          end
+
+          def class #:nodoc:
+            Neo4j::Node
+          end
+        end
+      end
     end
   end
+
+  # org.neo4j.kernel.HighlyAvailableGraphDatabase$LookupNode
+  #
+  Neo4j::Node.extend_java_class(org.neo4j.kernel.impl.core.NodeProxy)
+
+
+
 end

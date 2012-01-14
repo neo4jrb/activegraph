@@ -7,79 +7,6 @@ require 'neo4j/to_java'
 
 module Neo4j
 
-  org.neo4j.kernel.impl.core.RelationshipProxy.class_eval do
-    include Neo4j::Property
-    include Neo4j::Equal
-
-    alias_method :_end_node, :getEndNode
-    alias_method :_start_node, :getStartNode
-    alias_method :_other_node, :getOtherNode
-
-
-    # Deletes the relationship between the start and end node
-    #
-    # May raise an exception if delete was unsuccessful.
-    #
-    # ==== Returns
-    # nil
-    #
-    def del
-      delete
-    end
-
-    def end_node # :nodoc:
-      getEndNode.wrapper
-    end
-
-    def start_node # :nodoc:
-      getStartNode.wrapper
-    end
-
-    def other_node(node) # :nodoc:
-      getOtherNode(node._java_node).wrapper
-    end
-
-
-    # same as _java_rel
-    # Used so that we have same method for both relationship and nodes
-    def wrapped_entity
-      self
-    end
-
-    def _java_rel
-      self
-    end
-
-
-    # Returns true if the relationship exists
-    def exist?
-      Neo4j::Relationship.exist?(self)
-    end
-
-    # Loads the Ruby wrapper for this node
-    # If there is no _classname property for this node then it will simply return itself.
-    # Same as Neo4j::Node.load_wrapper(node)
-    def wrapper
-      self.class.wrapper(self)
-    end
-
-
-    # Returns the relationship name
-    #
-    # ==== Example
-    #   a = Neo4j::Node.new
-    #   a.outgoing(:friends) << Neo4j::Node.new
-    #   a.rels.first.rel_type # => 'friends'
-    #
-    def rel_type
-      getType().name()
-    end
-
-    def class
-      Neo4j::Relationship
-    end
-
-  end
 
   #
   # A relationship between two nodes in the graph. A relationship has a start node, an end node and a type.
@@ -223,6 +150,85 @@ module Neo4j
       rescue org.neo4j.graphdb.NotFoundException
         nil
       end
+
+      def extend_java_class(java_clazz)  #:nodoc:
+        java_clazz.class_eval do
+            include Neo4j::Property
+            include Neo4j::Equal
+
+            alias_method :_end_node, :getEndNode
+            alias_method :_start_node, :getStartNode
+            alias_method :_other_node, :getOtherNode
+
+
+            # Deletes the relationship between the start and end node
+            #
+            # May raise an exception if delete was unsuccessful.
+            #
+            # ==== Returns
+            # nil
+            #
+            def del
+              delete
+            end
+
+            def end_node # :nodoc:
+              getEndNode.wrapper
+            end
+
+            def start_node # :nodoc:
+              getStartNode.wrapper
+            end
+
+            def other_node(node) # :nodoc:
+              getOtherNode(node._java_node).wrapper
+            end
+
+
+            # same as _java_rel
+            # Used so that we have same method for both relationship and nodes
+            def wrapped_entity
+              self
+            end
+
+            def _java_rel
+              self
+            end
+
+
+            # Returns true if the relationship exists
+            def exist?
+              Neo4j::Relationship.exist?(self)
+            end
+
+            # Loads the Ruby wrapper for this node
+            # If there is no _classname property for this node then it will simply return itself.
+            # Same as Neo4j::Node.load_wrapper(node)
+            def wrapper
+              self.class.wrapper(self)
+            end
+
+
+            # Returns the relationship name
+            #
+            # ==== Example
+            #   a = Neo4j::Node.new
+            #   a.outgoing(:friends) << Neo4j::Node.new
+            #   a.rels.first.rel_type # => 'friends'
+            #
+            def rel_type
+              getType().name()
+            end
+
+            def class
+              Neo4j::Relationship
+            end
+
+          end
+
+      end
+
+      Neo4j::Relationship.extend_java_class(org.neo4j.kernel.impl.core.RelationshipProxy)
 
     end
 
