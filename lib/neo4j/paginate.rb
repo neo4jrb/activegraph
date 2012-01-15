@@ -2,12 +2,13 @@ module Neo4j
 
   # The module implements the interface for pagination.
   # Currently relies on the fact that it's included into an Enumerable
-    # TODO: Make it efficient, see https://github.com/andreasronge/neo4j/issues/130
   module Paginate
     extend ActiveSupport::Concern
 
     module InstanceMethods
 
+      # Provides the pagination support on relations, queries etc.
+      # TODO: Deprecate it in favour of external pagination gems.
       def paginate(options={})
         page = options[:page] || 1
         per_page = options[:per_page] || 30
@@ -19,13 +20,12 @@ module Neo4j
 
     module ClassMethods
 
-      def paginate(options={})
-        page = options[:page] || 1
-        per_page = options[:per_page] || 30
-
-        finder_options = options.except(:page, :per_page)
-        source = find(finder_options) # Requires a 'find' method with options
-        Paginated.create_from source, page, per_page
+      # Provides the pagination support on models.
+      # TODO: Deprecate it in favour of external pagination gems
+      def paginate(*args)
+        options = args.last || {}
+        source = find(*args)
+        return source.paginate(options)
       end
 
     end
@@ -33,6 +33,10 @@ module Neo4j
   end
 
 
+  # The class provides the pagination based on the given source.
+  # The source must be an Enumerable implementing methods drop, first and count
+  # This can be used to paginage any Enumerable collection and
+  # provides the integration point for other gems, like will_paginate and kaminari.
   class Paginated
     include Enumerable
     attr_reader :items, :total_items, :current_page
@@ -43,7 +47,6 @@ module Neo4j
 
     def self.create_from(source, page, per_page)
       items = source.drop((page-1) * per_page).first(per_page)
-      binding.pry
       Paginated.new(items, source.count, page)
     end
 
