@@ -16,7 +16,7 @@ module Neo4j
     #
     class Mapping
       include Enumerable
-      include WillPaginate::Finders::Base
+      include Paginate
       
       include ToJava
 

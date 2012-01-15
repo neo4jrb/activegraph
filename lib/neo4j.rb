@@ -10,9 +10,6 @@ require 'active_support/core_ext/class/inheritable_attributes'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_model'
 
-require 'will_paginate/collection'
-require 'will_paginate/finders/base'
-
 # core extensions
 require 'neo4j/core_ext/class/inheritable_attributes'
 

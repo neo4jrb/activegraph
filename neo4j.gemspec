@@ -31,7 +31,6 @@ It comes included with the Apache Lucene document database.
 
   s.add_dependency('orm_adapter', ">= 0.0.3")
   s.add_dependency("activemodel", ">= 3.0.0")
-  s.add_dependency("will_paginate", ["3.0.pre4"])  # should be ~>3.0 but it's API has changed '
   s.add_dependency("railties", ">= 3.0.0")
   s.add_dependency("neo4j-community", "1.6.0.alpha.6")
 end
