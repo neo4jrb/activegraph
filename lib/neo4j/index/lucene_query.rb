@@ -54,7 +54,7 @@ module Neo4j
 
       # Implements the Ruby +Enumerable+ interface
       def each
-        hits.each { |x| yield x }
+        hits.each { |x| yield x.wrapper }
       end
 
       # Close hits

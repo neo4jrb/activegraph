@@ -30,7 +30,7 @@ module Neo4j
       end
 
       def size
-        self.to_a.size
+        self.to_a.size # TODO: Optimise this
       end
 
       alias_method :length, :size
@@ -50,34 +50,19 @@ module Neo4j
       end
 
       # Required by the Enumerable mixin.
-      def each(&block)
-        @dsl.each_node(@node, &block)
+      def each
+        @dsl.each_node(@node) {|n| yield n} # Should use yield here as passing &block through doesn't always work (why?)
       end
 
       # returns none wrapped nodes, you may get better performance using this method
-      def _each(&block)
-        @dsl._each_node(@node, &block)
+      def _each
+        @dsl._each_node(@node) {|n| yield n}
       end
 
       # Returns an real ruby array.
       def to_ary
         self.to_a
       end
-
-      def wp_query(options, pager, args, &block) #:nodoc:
-         page     = pager.current_page || 1
-         to       = pager.per_page * page
-         from     = to - pager.per_page
-         i        = 0
-         res      = []
-         _each do |node|
-           res << node.wrapper if i >= from
-           i += 1
-           break if i >= to
-         end
-         pager.replace res
-         pager.total_entries ||= self.size  # TODO, this could be very slow to do
-       end
 
       # Returns true if there are no node in this type of relationship
       def empty?
