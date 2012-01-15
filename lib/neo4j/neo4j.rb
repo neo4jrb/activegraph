@@ -13,6 +13,9 @@ require 'neo4j/database'
 #
 module Neo4j
 
+  # The version of the Neo4j jar files
+  NEO_VERSION = Neo4j::Community::VERSION
+
   class << self
     # Start Neo4j using the default database.
     # This is usally not required since the database will be started automatically when it is used.

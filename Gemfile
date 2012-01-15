@@ -7,6 +7,7 @@ group 'test' do
   gem "rdoc", ">= 2.5.10"
   gem "horo", ">= 1.0.2" # TODO: Why horo, YARD seems to be much better option?
   gem "rspec", "~> 2.8"
+  gem "its" # its(:with, :arguments) { should be_possible }
 
   gem 'guard'
   gem 'ruby_gntp', :require => false # GrowlNotify for Mac
@@ -22,8 +23,8 @@ group 'test' do
 
   gem 'pry'
 
-  gem 'neo4j-advanced',   :require => false
-  gem 'neo4j-enterprise', :require => false
+  gem 'neo4j-advanced', "1.6.0.alpha.4",  :require => false
+  gem 'neo4j-enterprise', "1.6.0.alpha.4", :require => false
 end
 
 #gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"
