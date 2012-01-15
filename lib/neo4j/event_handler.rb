@@ -121,6 +121,7 @@ module Neo4j
     rescue Exception => e
       # since these exceptions gets swallowed
       puts "ERROR in before commit hook #{e}"
+      puts e.backtrace.join("\n")
     end
 
 
