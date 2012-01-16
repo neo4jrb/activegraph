@@ -1,25 +1,63 @@
 module Neo4j
+
+  # The module implements the interface for pagination.
+  # Currently relies on the fact that it's included into an Enumerable
   module Paginate
-    def self.included(base)
-      base.send(:include, WillPaginate::Finders::Base)
+    extend ActiveSupport::Concern
+
+    module InstanceMethods
+
+      # Provides the pagination support on relations, queries etc.
+      # TODO: Deprecate it in favour of external pagination gems.
+      def paginate(options={})
+        page = options[:page] || 1
+        per_page = options[:per_page] || 30
+        source = self
+        Paginated.create_from source, page, per_page
+      end
+
     end
 
+    module ClassMethods
 
-    def wp_query(options, pager, args, &block) #:nodoc:
-      page = pager.current_page || 1
-      per_page = pager.per_page
-      to = per_page * page
-      from = to - per_page
-      i = 0
-      res = []
-      each do |node|
-        res << node.wrapper if i >= from
-        i += 1
-        break if i >= to
+      # Provides the pagination support on models.
+      # TODO: Deprecate it in favour of external pagination gems
+      def paginate(*args)
+        options = args.last || {}
+        source = find(*args)
+        return source.paginate(options)
       end
-      pager.replace res
-      pager.total_entries ||= count
+
     end
 
   end
+
+
+  # The class provides the pagination based on the given source.
+  # The source must be an Enumerable implementing methods drop, first and count
+  # This can be used to paginage any Enumerable collection and
+  # provides the integration point for other gems, like will_paginate and kaminari.
+  class Paginated
+    include Enumerable
+    attr_reader :items, :total_items, :current_page
+
+    def initialize(items, total_items, current_page)
+      @items, @total_items, @current_page = items, total_items, current_page
+    end
+
+    def self.create_from(source, page, per_page)
+      items = source.drop((page-1) * per_page).first(per_page)
+      Paginated.new(items, source.count, page)
+    end
+
+    def each
+      @items.each { |x| yield x }
+    end
+
+    delegate :size, :[], :to => :items
+
+    alias :total_entries :total_items
+
+  end
+
 end

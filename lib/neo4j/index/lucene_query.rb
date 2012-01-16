@@ -37,7 +37,7 @@ module Neo4j
     #
     class LuceneQuery
       include Enumerable
-      include WillPaginate::Finders::Base
+      include Paginate
       attr_accessor :left_and_query, :left_or_query, :right_not_query
 
       def initialize(index, decl_props, query, params={})
@@ -52,30 +52,9 @@ module Neo4j
         end
       end
 
-      def wp_query(options, pager, args, &block) #:nodoc:
-        @params[:page]     = pager.current_page
-        @params[:per_page] = pager.per_page
-        pager.replace [*self]
-        pager.total_entries = size
-      end
-
-      # Since we include the Ruby Enumerable mixin we need this method.
+      # Implements the Ruby +Enumerable+ interface
       def each
-        if @params.include?(:per_page)
-          # paginate the result, used by the will_paginate gem
-          page     = @params[:page] || 1
-          per_page = @params[:per_page]
-          to       = per_page * page
-          from     = to - per_page
-          i        = 0
-          hits.each do |node|
-            yield node.wrapper if i >= from
-            i += 1
-            break if i >= to
-          end
-        else
-          hits.each { |n| yield n.wrapper }
-        end
+        hits.each { |x| yield x.wrapper }
       end
 
       # Close hits

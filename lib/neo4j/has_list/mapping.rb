@@ -34,7 +34,7 @@ module Neo4j
     class Mapping
       include Enumerable
       include ToJava
-      include WillPaginate::Finders::Base
+      include Paginate
 
 
       def initialize(indexer_for, node, name)
@@ -112,22 +112,6 @@ module Neo4j
             yield node.wrapper
           end
         end
-      end
-
-      def wp_query(options, pager, args, &block) #:nodoc:
-        @raw = true
-        page = pager.current_page || 1
-        to   = pager.per_page * page
-        from = to - pager.per_page
-        i    = 0
-        res  = []
-        each do |node|
-          res << node.wrapper if i >= from
-          i += 1
-          break if i >= to
-        end
-        pager.replace res
-        pager.total_entries ||= size
       end
 
       # If called then it will only return the raw java nodes and not the Ruby wrappers using the Neo4j::NodeMixin
