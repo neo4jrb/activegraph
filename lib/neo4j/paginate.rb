@@ -18,18 +18,6 @@ module Neo4j
 
     end
 
-    module ClassMethods
-
-      # Provides the pagination support on models.
-      # TODO: Deprecate it in favour of external pagination gems
-      def paginate(*args)
-        options = args.last || {}
-        source = find(*args)
-        return source.paginate(options)
-      end
-
-    end
-
   end
 
 

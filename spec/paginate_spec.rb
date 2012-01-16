@@ -132,12 +132,12 @@ describe Neo4j::NodeMixin, "paginate", :type => :transactional do
     end
 
     it "#paginate(query, :page => x, :per_page => y) returns given range of nodes" do
-      s = @clazz.paginate(:days => 0..55, :page => 1, :per_page => 5, :sort => {:days => :asc} )
+      s = @clazz.find(:days => 0..55).asc(:days).paginate(:page => 1, :per_page => 5)
       s.size.should == 5
       s[0].should == @items[0]
       s[4].should == @items[4]
 
-      s = @clazz.paginate(:days => 0..55, :page => 2, :per_page => 5, :sort => {:days => :asc})
+      s = @clazz.find(:days => 0..55).asc(:days).paginate(:page => 2, :per_page => 5)
       s.size.should == 5
 
       s[0].should == @items[5]
@@ -145,12 +145,12 @@ describe Neo4j::NodeMixin, "paginate", :type => :transactional do
     end
 
     it "#paginate(:conditions => query, :page => x, :per_page => y) returns given range of nodes" do
-      s = @clazz.paginate(:conditions => {:days => 0..55}, :page => 1, :per_page => 5, :sort => {:days => :asc} )
+      s = @clazz.find(:conditions => {:days => 0..55}).asc(:days).paginate(:page => 1, :per_page => 5)
       s.size.should == 5
       s[0].should == @items[0]
       s[4].should == @items[4]
 
-      s = @clazz.paginate(:conditions => {:days => 0..55}, :page => 2, :per_page => 5, :sort => {:days => :asc})
+      s = @clazz.find(:conditions => {:days => 0..55}).asc(:days).paginate(:page => 2, :per_page => 5)
       s.size.should == 5
 
       s[0].should == @items[5]
@@ -158,18 +158,18 @@ describe Neo4j::NodeMixin, "paginate", :type => :transactional do
     end
 
     it "#paginate(:page => x, :per_page => y) returns empty array if page does not exist" do
-      s = @clazz.paginate(:days => 0..55, :page => 15, :per_page => 5)
+      s = @clazz.find(:days => 0..55).paginate(:page => 15, :per_page => 5)
       s.size.should == 0
     end
 
 
     it "#paginate(:page => x, :per_page => y) can return less then specified per_page when on the last page" do
-      s = @clazz.paginate(:days => 0..55, :page => 2, :per_page => 15)
+      s = @clazz.find(:days => 0..55).paginate(:page => 2, :per_page => 15)
       s.size.should == 5
     end
 
     it "#paginate(:page => x, :per_page => y) return all if per_page is bigger then total size" do
-      s = @clazz.paginate(:days => 0..55, :page => 1, :per_page => 150)
+      s = @clazz.find(:days => 0..55).paginate(:page => 1, :per_page => 150)
       s.size.should == 20
     end
 

@@ -359,10 +359,10 @@ describe "finders" do
 
   context "pagination" do
     it "#paginate(:all, query, :per_page => , :page=>, :sort=>)" do
-      it_should_be_sorted([0,1,2,3], FindableModel.paginate(:all, 'name: Test*', :page => 1, :per_page => 5, :sort => {:name => :asc}))
-      it_should_be_sorted([0,1], FindableModel.paginate(:all, 'name: Test*', :page => 1, :per_page => 2, :sort => {:name => :asc}))
-      it_should_be_sorted([2,3], FindableModel.paginate(:all, 'name: Test*', :page => 2, :per_page => 2, :sort => {:name => :asc}))
-      it_should_be_sorted([3,2,1,0], FindableModel.paginate(:all, 'name: Test*', :page => 1, :per_page => 5, :sort => {:name => :desc}))
+      it_should_be_sorted([0,1,2,3], FindableModel.find(:all, 'name: Test*').asc(:name).paginate(:page => 1, :per_page => 5))
+      it_should_be_sorted([0,1], FindableModel.find(:all, 'name: Test*').asc(:name).paginate(:page => 1, :per_page => 2))
+      it_should_be_sorted([2,3], FindableModel.find(:all, 'name: Test*').asc(:name).paginate(:page => 2, :per_page => 2))
+      it_should_be_sorted([3,2,1,0], FindableModel.find(:all, 'name: Test*').desc(:name).paginate(:page => 1, :per_page => 5))
     end
 
     it "#all(query).asc(field).paginate(:per_page => , :page=>)" do

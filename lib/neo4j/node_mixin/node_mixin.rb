@@ -124,7 +124,6 @@ module Neo4j
       c.extend Neo4j::Rule::ClassMethods
       c.extend Neo4j::HasList::ClassMethods
       c.extend Neo4j::Index::ClassMethods
-      c.send(:include, Paginate)
 
       def c.inherited(subclass)
         # inherit the index properties
