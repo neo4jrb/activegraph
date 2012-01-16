@@ -98,16 +98,17 @@ module Neo4j
               send(name + "=", nil)
             else
 
-              value = if :time == decl_type
+              #TODO: Consider extracting hardcoded assignments into "Binders"
+              value = if Neo4j::TypeConverters::TimeConverter.convert?(decl_type)
                 instantiate_time_object(name, values)
-              elsif :date == decl_type
+              elsif Neo4j::TypeConverters::DateConverter.convert?(decl_type)
                 begin
                   values = values_with_empty_parameters.collect do |v| v.nil? ? 1 : v end
                   Date.new(*values)
                 rescue ArgumentError => ex # if Date.new raises an exception on an invalid date
                   instantiate_time_object(name, values).to_date # we instantiate Time object and convert it back to a date thus using Time's logic in handling invalid dates
                 end
-              elsif :datetime == decl_type
+              elsif Neo4j::TypeConverters::DateTimeConverter.convert?(decl_type)
                 DateTime.new(*values)
               else
                 raise "Unknown type #{decl_type}"
