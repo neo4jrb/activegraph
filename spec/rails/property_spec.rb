@@ -23,6 +23,7 @@ end
 class DateProperties < Neo4j::Rails::Model
   property :date_time, 	    :type => :datetime
   property :date_property,  :type => :date
+  property :date_as_type,   :type => Date
   property :time,           :type => :time
 
 end
@@ -315,6 +316,15 @@ describe DateProperties do
     end
 
     it "with Date" do
+      params = {"date_as_type(1i)"=>"2031", "date_as_type(2i)"=>"2", "date_as_type(3i)"=>"10"}
+      subject.update_attributes(params)
+      subject.date_as_type.year.should == 2031
+      subject.date_as_type.month.should == 2
+      subject.date_as_type.day.should == 10
+      subject.date_as_type.class.should == Date
+    end
+
+    it "with :date" do
       params = {"date_property(1i)"=>"2031", "date_property(2i)"=>"2", "date_property(3i)"=>"10"}
       subject.update_attributes(params)
       subject.date_property.year.should == 2031
