@@ -15,7 +15,10 @@ module Neo4j
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
     initializer "neo4j.start", :after => :load_config_initializers do |app|
-      Neo4j::Config.setup.merge!(app.config.neo4j.to_hash)
+      cfg = app.config.neo4j
+      # Set Rails specific defaults
+      cfg.storage_path = "#{app.config.root}/db/neo4j-#{::Rails.env}" unless cfg.storage_path
+      Neo4j::Config.setup.merge!(cfg.to_hash)
     end
 
     # Instantitate any registered observers after Rails initialization and
