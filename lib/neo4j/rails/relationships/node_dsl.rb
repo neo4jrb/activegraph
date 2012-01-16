@@ -173,8 +173,8 @@ module Neo4j
 
         alias :length :size
 
-        def each(&block)
-          @storage.each_node(@dir, &block)
+        def each
+          @storage.each_node(@dir) {|n| yield n} # Why passing the &block through doesn't work on JRuby 1.9?
         end
 
         def delete(*nodes)

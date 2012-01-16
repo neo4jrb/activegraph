@@ -137,8 +137,8 @@ module Neo4j
           self
         end
 
-        def each(&block)
-          @storage.each_rel(@dir, &block)
+        def each
+          @storage.each_rel(@dir) {|x| yield x}
         end
 
         # Simply counts all relationships
