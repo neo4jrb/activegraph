@@ -3,7 +3,7 @@ require 'spec/support/rspec'
 module Neo4jSpecEdition
   def self.current
     edition = ENV['EDITION'] || ENV['ED']
-    edition ? edition.downcase.to_sym : nil
+    (edition && !edition.empty?) ? edition.downcase.to_sym : nil
   end
 end
 

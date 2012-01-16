@@ -1,13 +1,16 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-describe Neo4j, " with neo4j-enterprise edition", :edition => :enterprise do
+describe Neo4j, " with neo4j-enterprise edition"do
 
   describe "Backup enabled" do
     after(:all) do
       Neo4j.shutdown
     end
 
-    it "can do a backup" do
+    it "can do a backup", :edition => :enterprise  do
+      # TODO this spec does not run together with other specs
+      # We need to start neo4j in a separate process I think
+      # like see: https://github.com/neo4j/enterprise/blob/master/backup/src/test/java/org/neo4j/backup/TestBackupToolEmbedded.java
       Neo4j::Config['enable_online_backup'] = 'true'
       backup_source_dir = File.join(Dir.tmpdir, "neo4j_backup_source")
       backup_target_dir = File.join(Dir.tmpdir, "neo4j_backup_target")
