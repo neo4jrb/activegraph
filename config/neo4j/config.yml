@@ -28,8 +28,9 @@ lucene: { fulltext: { provider: lucene,
 # If set to true it you can use the database while it is migrating.
 migration_thread: false
 
-# If online backup should be available, if it is the Online JAR file will be loaded.
-online_backup_enabled: false
+# If online backup should be available, if it is the Online JAR file will be loaded,
+# Notice it must be either 'true' or 'false' as string
+enable_online_backup: 'false'
 
 #use the clustered Neo4j GraphDatabase (org.neo4j.kernel.HighlyAvailableGraphDatabase)
 ha.db: false
