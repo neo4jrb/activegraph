@@ -6,7 +6,6 @@ require 'tmpdir'
 
 # Rails
 require 'rails/railtie'
-require 'active_support/core_ext/class/inheritable_attributes'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_model'
 
