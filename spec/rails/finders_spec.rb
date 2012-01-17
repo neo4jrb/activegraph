@@ -357,36 +357,6 @@ describe "finders" do
 
 	end
 
-  context "pagination" do
-    it "#paginate(:all, query, :per_page => , :page=>, :sort=>)" do
-      it_should_be_sorted([0,1,2,3], FindableModel.find(:all, 'name: Test*').asc(:name).paginate(:page => 1, :per_page => 5))
-      it_should_be_sorted([0,1], FindableModel.find(:all, 'name: Test*').asc(:name).paginate(:page => 1, :per_page => 2))
-      it_should_be_sorted([2,3], FindableModel.find(:all, 'name: Test*').asc(:name).paginate(:page => 2, :per_page => 2))
-      it_should_be_sorted([3,2,1,0], FindableModel.find(:all, 'name: Test*').desc(:name).paginate(:page => 1, :per_page => 5))
-    end
-
-    it "#all(query).asc(field).paginate(:per_page => , :page=>)" do
-      it_should_be_sorted([0,1,2], FindableModel.all('name: Test*').asc(:name).paginate(:page => 1, :per_page => 3))
-      it_should_be_sorted([3], FindableModel.all('name: Test*').asc(:name).paginate(:page => 2, :per_page => 3))
-    end
-
-    it "#all.paginate(:per_page => , :page=>)" do
-      res = FindableModel.all.paginate(:page => 1, :per_page => 5)
-      res.current_page.should == 1
-      res.total_entries.should == 4
-      res.size.should == 4
-      res.should include(@test_0, @test_2, @test_3, @test_4)
-    end
-
-  end
-
-  def it_should_be_sorted(order, result)
-    res = [*result].collect{|n| n.to_s}
-    expectation = order.collect{|n| "Test #{n}"}
-    expectation.reverse! if order == :desc
-    res.should == expectation
-  end
-
 	context "for single records" do
 		subject { @test_2 }
 

@@ -67,7 +67,6 @@ module Neo4j
       #
       class RelsDSL
         include Enumerable
-        include Neo4j::Paginate
 
         def initialize(storage, dir=:both)
           @storage = storage

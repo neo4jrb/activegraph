@@ -7,7 +7,7 @@ module Neo4j
 
     # The object created by a has_n or has_one Neo4j::NodeMixin class method which enables creating and traversal of nodes.
     #
-    # Includes the Enumerable and WillPaginate mixins.
+    # Includes the Enumerable mixin.
     # The Neo4j::Mapping::ClassMethods::Relationship#has_n and Neo4j::Mapping::ClassMethods::Relationship#one
     # methods returns an object of this type.
     #
@@ -16,8 +16,6 @@ module Neo4j
     #
     class Mapping
       include Enumerable
-      include Paginate
-      
       include ToJava
 
       def initialize(node, dsl) # :nodoc:
