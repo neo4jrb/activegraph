@@ -37,7 +37,6 @@ module Neo4j
     #
     class LuceneQuery
       include Enumerable
-      include Paginate
       attr_accessor :left_and_query, :left_or_query, :right_not_query
 
       def initialize(index, decl_props, query, params={})

@@ -34,7 +34,6 @@ module Neo4j
     class Mapping
       include Enumerable
       include ToJava
-      include Paginate
 
 
       def initialize(indexer_for, node, name)
