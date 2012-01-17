@@ -81,17 +81,18 @@ describe "Neo4j::Node#rule", :type => :transactional do
     Neo4j.threadlocal_ref_node = nil
     Reader.all.each(&:del)
     finish_tx
-    readers = []
-    threads = 2.times.collect do
+    Reader.all.size.should == 0
+    threads = 50.times.collect do
       Thread.new do
         Neo4j.threadlocal_ref_node = nil
-        new_tx
-        readers << Reader.new(:age => 2)
-        finish_tx
+        tx = Neo4j::Transaction.new
+        Reader.new(:age => 2)
+        tx.success
+        tx.finish
       end
      end
     threads.each(&:join)
-    Reader.all.to_a.should =~ readers
+    Reader.all.size.should == 50
   end
 
   it "rule only instances of the given class (no side effects)" do

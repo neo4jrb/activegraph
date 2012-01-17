@@ -67,7 +67,10 @@ module Neo4j
       # Class Methods
       # ------------------------------------------------------------------------------------------------------------------
 
+      @rule_nodes = {}
+
       class << self
+
         def add(clazz, rule_name, props, &block)
           rule_node = rule_node_for(clazz.to_s)
           rule_node.remove_rule(rule_name) # remove any previously inherited rules
@@ -87,7 +90,6 @@ module Neo4j
 
         def rule_node_for(clazz)
           return nil if clazz.nil?
-          @rule_nodes             ||= {}
           @rule_nodes[clazz.to_s] ||= RuleNode.new(clazz)
         end
 
