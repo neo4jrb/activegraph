@@ -52,7 +52,7 @@ module Neo4j
     # :singleton-method: migrations
 
 
-    def_delegators :'Neo4j::Migrations::RefNodeWrapper', :db_version, :migrate!, :upgrade_v2, :migration
+    def_delegators :'Neo4j::Migrations::RefNodeWrapper', :db_version, :migrate!, :migrations, :migration
 
   end
 end
