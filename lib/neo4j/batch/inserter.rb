@@ -14,6 +14,7 @@ module Neo4j
     class Inserter
       attr_reader :batch_inserter, :batch_indexer
       include ToJava
+      include Neo4j::Load
 
       # Creates a new batch inserter.
       # Will raise an exception if Neo4j is already running at the same storage_path
@@ -80,16 +81,18 @@ module Neo4j
         from_props = node_props(from_node)
 
         if from_props['_classname']
-          indexer = Indexer.instance_for(from_props['_classname'])
+          from_class = to_class(from_props['_classname'])
+          indexer = Indexer.instance_for(from_class)
           indexer.index_node_via_rel(rel_type, to_node, from_props)
         end
 
         to_props   = node_props(to_node)
         if to_props['_classname']
-          indexer = Indexer.instance_for(to_props['_classname'])
+          to_class = to_class(to_props['_classname'])
+          indexer = Indexer.instance_for(to_class)
           indexer.index_node_via_rel(rel_type, from_node, to_props)
         end
-
+        rel
       end
 
       # Return a hash of all properties of given node

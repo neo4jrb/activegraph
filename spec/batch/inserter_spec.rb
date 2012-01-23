@@ -116,12 +116,54 @@ describe Neo4j::Batch::Inserter do
   context "#create_node(hash, PersonNode)" do
     before(:each) do
       @clazz = create_node_mixin
+      @old_storage_path = Neo4j::Config[:storage_path]
+      Neo4j::Config[:storage_path] = @storage_path
       @inserter = Neo4j::Batch::Inserter.new
-      @id = @inserter.create_node({'name' => 'kalle123', 'age' => 42}, @clazz)
+      @person_1_id = @inserter.create_node({'name' => 'kalle123', 'age' => 42}, @clazz)
+    end
+
+    after(:each) do
+      Neo4j::Config[:storage_path] = @old_storage_path
     end
 
     it "sets the _classname property to PersonNode" do
-      @inserter.node_props(@id)['_classname'].should == @clazz.to_s
+      @inserter.node_props(@person_1_id)['_classname'].should == @clazz.to_s
+    end
+
+    it "can create a relationship between two created PersonNodes" do
+      node2 = @inserter.create_node({'name' => 'kalle123', 'age' => 42}, @clazz)
+      rel = @inserter.create_rel('friends', @person_1_id, node2)
+      rel.should be_a(Fixnum)
+    end
+
+    it "can also create a relationship between an already existing node" do
+      # first create a node using transactions
+      @inserter.shutdown
+      Neo4j.start
+      new_tx
+      person_2 = @clazz.new
+      person_2_id = person_2.neo_id
+      finish_tx
+      Neo4j.shutdown
+
+      # create a relationship using batch insert
+      @inserter = Neo4j::Batch::Inserter.new
+      @inserter.create_rel('friends1', person_2_id, @person_1_id)
+      @inserter.create_rel('friends2', @person_1_id, person_2_id)
+      @inserter.shutdown
+
+      # make sure this relationships exists
+      Neo4j.start
+      p2 = Neo4j::Node.load(person_2_id)
+      p2.class.should == @clazz
+      p2.outgoing(:friends1).size.should == 1
+      p2.outgoing(:friends1).first.neo_id.should == @person_1_id
+
+      p1 = Neo4j::Node.load(@person_1_id)
+      p1.class.should == @clazz
+      p1.outgoing(:friends2).size.should == 1
+      p1.outgoing(:friends2).first.neo_id.should == person_2_id
+      Neo4j.shutdown
     end
   end
   
@@ -174,6 +216,10 @@ describe Neo4j::Batch::Inserter do
       hash.size.should == 2
       hash['name'].should == 'aaa'
       hash['age'].should == 4242
+    end
+
+    it "returns a fixnum id of the created relationship." do
+      @rel_id.class.should == Fixnum
     end
   end
 
