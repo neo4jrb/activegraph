@@ -3,18 +3,10 @@ $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
 require 'rake'
 require 'rspec/core/rake_task'
-require 'rcov'
 require 'rdoc/task'
 
 require "neo4j/version"
 
-
-desc "Run all specs with rcov"
-RSpec::Core::RakeTask.new("spec:coverage") do |t|
-  t.rcov = true
-  t.rcov_opts = %w{--rails --include views -Ispec --exclude gems\/,spec\/,features\/,seeds\/}
-  t.rspec_opts = ["-c"]
-end
 
 desc "Run all specs"
 RSpec::Core::RakeTask.new("spec") do |t|
@@ -67,8 +59,5 @@ task 'upload-docs' do
 end
 
 
-if RUBY_VERSION.include?("1.8")
-  task :default => 'spec:coverage'
-else
-  task :default => 'spec'
-end
+task :default => 'spec'
+
