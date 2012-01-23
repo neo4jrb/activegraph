@@ -16,6 +16,9 @@ It uses two powerful and mature Java libraries:
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
 
+*Neo4j.rb does currently not work together with ActiveModel 3.2 (rails 3.2), see issue  https://github.com/andreasronge/neo4j/issues/131*
+
+
 === Why Neo4j.rb or a Graph Database ?
 
 Here are some of the major benefits of Neo4j.rb

@@ -19,7 +19,7 @@ group 'test' do
   gem 'shoulda-matchers', '~> 1.0'
 
   gem "test-unit"
-  gem 'rcov'
+  #gem 'rcov'
 
   gem 'pry'
 
