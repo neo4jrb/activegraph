@@ -36,7 +36,7 @@ module Neo4j
       end
 
       describe "property_before_type_cast" do
-        it "should retain value before type cnvertion for validations" do
+        it "should retain value before type convertion for validations" do
           subject.number_property = "abc"
 
           subject.should be_invalid

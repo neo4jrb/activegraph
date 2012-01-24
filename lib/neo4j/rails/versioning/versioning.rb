@@ -102,7 +102,7 @@ module Neo4j
       def revert_to(version_number)
         snapshot = version(version_number)
         self.props.each_pair{|k,v| self[k] = nil if !snapshot.props.has_key?(k)}
-        snapshot.props.each_pair{|k,v| self[k] = v if self.props[k].nil?}
+        snapshot.props.each_pair{|k,v| self[k] = v if self.props[k].nil? && k != '_neo_id'}
         Neo4j::Transaction.run do
           restore_relationships(snapshot)
           save

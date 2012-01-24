@@ -86,7 +86,9 @@ describe IceLolly do
       it { should == subject.class.find('flavour: vanilla') }
 
       it "should render as XML" do
-        subject.to_xml.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ice-lolly>\n  <flavour>vanilla</flavour>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n  <new-attribute>newun</new-attribute>\n  <created>yep</created>\n</ice-lolly>\n"
+        xml = subject.to_xml
+        xml.should include("<new-attribute>newun</new-attribute")# "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ice-lolly>\n  <created>yep</created>\n  <flavour>vanilla</flavour>\n  <new-attribute>newun</new-attribute>\n  <required-on-create>true</required-on-create>\n  <required-on-update>true</required-on-update>\n</ice-lolly>\n"
+        xml.should include("<required-on-update>true</required-on-update>")
       end
 
       it "should render as JSON" do

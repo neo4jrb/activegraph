@@ -5,15 +5,8 @@
 # Changes made:
 # - Remove deprecation warnings
 # - Ignore if already available from ActiveSupport
+#
+# Can't use class_attribute because we want to use the same value for all subclasses
 
-# TODO: convert the code to use class_attribute. dnagir failed at it :)
 
-
-
-begin
-  require 'active_support/core_ext/class/inheritable_attributes'
-rescue LoadError
-ensure
-  # Fallback to internal implementation & override deprecations
-  require 'neo4j/core_ext/class/rewrite_inheritable_attributes.rb'
-end
+require 'neo4j/core_ext/class/rewrite_inheritable_attributes.rb'

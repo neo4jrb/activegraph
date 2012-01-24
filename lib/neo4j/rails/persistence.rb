@@ -237,9 +237,9 @@ module Neo4j
         allow_destroy, reject_if = [options[:allow_destroy], options[:reject_if]] if options
         begin
           # Check if we want to destroy not found nodes (e.g. {..., :_destroy => '1' } ?
-          destroy = allow_destroy && attr[:_destroy] && attr[:_destroy] != '0'
+          destroy = attr.delete(:_destroy)
           found = _find_node(rel_type, attr[:id]) || Model.find(attr[:id])
-          if destroy
+          if allow_destroy && destroy && destroy != '0'
             found.destroy if found
           else
             if not found

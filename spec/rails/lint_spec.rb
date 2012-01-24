@@ -18,7 +18,6 @@ describe Neo4j::Model, "lint", :type => :transactional do
 
     it                  { should be_kind_of String }
     its(:human)         { should be_kind_of(String) }
-    its(:partial_path)  { should be_kind_of(String) }
     its(:singular)      { should be_kind_of(String) }
     its(:plural)        { should be_kind_of(String) }
   end

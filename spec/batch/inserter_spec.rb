@@ -136,7 +136,7 @@ describe Neo4j::Batch::Inserter do
       rel.should be_a(Fixnum)
     end
 
-    it "can also create a relationship between an already existing node" do
+    it "can also create a relationship between an already existing node", :type => :slow do
       # first create a node using transactions
       @inserter.shutdown
       Neo4j.start

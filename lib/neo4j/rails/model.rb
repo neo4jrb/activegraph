@@ -96,6 +96,15 @@ module Neo4j
         Neo4j::Algo.all_path(self.class.ref_node_for_class, self).outgoing(self.class).outgoing(:_all).count > 0
       end
 
+      def attribute_missing(method_id, *args, &block)
+        method_name = method_id.method_name
+        if property?(method_name)
+          self[method_name]
+        else
+          super
+        end
+      end
+
       ##
       # :method: outgoing
       #

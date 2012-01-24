@@ -1,4 +1,4 @@
-require 'spec/support/rspec'
+#require 'spec/support/rspec'
 
 module Neo4jSpecEdition
   def self.current

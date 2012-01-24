@@ -192,7 +192,7 @@ describe Neo4j::Model do
       p.flavour_was.should == nil
       p.flavour_changed?.should be_true
       p.flavour_was.should == nil
-
+      p.save!
       p.flavour = 'andreas'
       p.flavour_change.should == ['kalle', 'andreas']
       p.save

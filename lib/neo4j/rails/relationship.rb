@@ -41,6 +41,15 @@ module Neo4j
 
       alias_method :get_other_node, :other_node # so it looks like the java version
 
+      def attribute_missing(method_id, *args, &block)
+        method_name = method_id.method_name
+        if property?(method_name)
+          self[method_name]
+        else
+          super
+        end
+      end
+
       def rel_type
         persisted? ?  _java_entity.rel_type : @type
       end

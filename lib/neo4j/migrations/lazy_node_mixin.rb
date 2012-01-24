@@ -9,20 +9,11 @@ module Neo4j
     # Migration will take place if needed when the node is loaded.
     #
     module LazyNodeMixin
-      extend ActiveSupport::Concern
-
-      included do
-        extend Neo4j::Migrations::ClassMethods
+      def self.included(base)
+        base.extend Neo4j::Migrations::ClassMethods
+        base.property :_db_version if base.respond_to?(:property)
       end
 
-      module ClassMethods
-        # Remote all migration and set migrate_to = nil
-        # Does not change the version of nodes.
-        def reset_migrations!
-          @migrations = nil
-          @migrate_to = nil
-        end
-      end
 
       def migrate!
         self.class._migrate!(self._java_node, self)

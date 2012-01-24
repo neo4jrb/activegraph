@@ -21,6 +21,14 @@ module Neo4j
         @migrations ||= {}
       end
 
+      # Remote all migration and set migrate_to = nil
+      # Does not change the version of nodes.
+      def reset_migrations!
+        @migrations = nil
+        @migrate_to = nil
+      end
+
+
       # Specifies a migration to be performed.
       # Updates the migrate_to variable so that it will migrate to the latest migration.
       #
