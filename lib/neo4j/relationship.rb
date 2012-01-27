@@ -67,7 +67,7 @@ module Neo4j
       ##
       # :method: end_node
       #
-      # Returns the start node of this relationship
+      # Returns the end node of this relationship
 
       ##
       # :method: other_node
