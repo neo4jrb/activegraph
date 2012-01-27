@@ -1,4 +1,4 @@
-== Welcome to Neo4j.rb
+== Welcome to Neo4j.rb {<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j] {<img src="https://gemnasium.com/andreasronge/neo4j.png" />}[https://gemnasium.com/andreasronge/neo4j]
 
 Neo4j.rb is a graph database for JRuby.
 
@@ -15,8 +15,6 @@ It uses two powerful and mature Java libraries:
 * {RDoc}[http://neo4j.rubyforge.org]
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
-
-*Neo4j.rb does currently not work together with ActiveModel 3.2 (rails 3.2), see issue  https://github.com/andreasronge/neo4j/issues/131*
 
 
 === Why Neo4j.rb or a Graph Database ?
@@ -145,8 +143,6 @@ Notice that you can always access the lower layers if you want to do some more a
     config.neo4j.storage_path = "#{config.root}/db/neo4j"
 
 === Contributing
-
-{<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j]
 
 Have you found a bug, need help or have a patch ?
 Just clone neo4j.rb and send me a pull request or email me.

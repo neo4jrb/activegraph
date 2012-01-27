@@ -11,7 +11,6 @@ begin
   require 'shoulda-matchers'
   require 'its'
   require 'benchmark'
-  require 'pry'
 
   $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
