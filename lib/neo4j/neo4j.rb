@@ -86,7 +86,6 @@ module Neo4j
     #
     def query(query, params = {})
       engine = org.neo4j.cypher.javacompat.ExecutionEngine.new(db)
-      params.stringify_keys!
       engine.execute(query, params)
     end
 
