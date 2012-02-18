@@ -34,7 +34,7 @@ module Neo4j
     class DeclRelationshipDsl
       include Neo4j::ToJava
 
-      attr_reader :target_class, :source_class, :dir, :rel_type
+      attr_reader :target_class, :source_class, :dir
 
       def initialize(method_id, has_one, target_class)
         @dir = :outgoing
@@ -118,7 +118,7 @@ module Neo4j
       # ==== Example
       #   class FolderNode
       #     include Neo4j::NodeMixin
-      #     has_n(:files).to(FileNode)
+      #     has_n(:files).to("FileNode")
       #   end
       #
       #  folder = FolderNode.new
@@ -139,17 +139,32 @@ module Neo4j
       def to(target)
         @dir = :outgoing
 
-        if (Class === target)
+        if (target.is_a? Class)
           # handle e.g. has_n(:friends).to(class)
+          target = target.to_s
+        elsif (target.is_a? String)
           @target_class = target
+          # todo: why do we do this here if it doesn't use target class?
           @rel_type = "#{@source_class}##{@method_id}"
-        elsif (Symbol === target)
+        elsif (target.is_a? Symbol)
           # handle e.g. has_n(:friends).to(:knows)
-          @rel_type = target.to_s
+          rel_type(target)
         else
-          raise "Expected a class or a symbol for, got #{target}/#{target.class}"
+          raise "Expected a string or a symbol for, got #{target}/#{target.class}"
         end
         self
+      end
+
+      # todo: docs
+      # this method is nice because we learn the api for getting/setting at the same time
+      def rel_type(symbol = nil)
+        if symbol
+          # todo: how about leave as symbol?
+          @rel_type = symbol.to_s
+          self
+        else
+          @rel_type
+        end
       end
 
       # Specifies an incoming relationship.
@@ -158,13 +173,13 @@ module Neo4j
       # ==== Example, with prefix FileNode
       #   class FolderNode
       #     include Neo4j::NodeMixin
-      #     has_n(:files).to(FileNode)
+      #     has_n(:files).to("FileNode")
       #   end
       #
       #   class FileNode
       #     include Neo4j::NodeMixin
       #     # will only traverse any incoming relationship of type files from node FileNode
-      #     has_one(:folder).from(FolderNode, :files)
+      #     has_one(:folder).from("FolderNode", :files)
       #   end
       #
       #   file = FileNode.new
@@ -194,11 +209,11 @@ module Neo4j
         if (args.size > 1)
           # handle specified (prefixed) relationship, e.g. has_n(:known_by).from(clazz, :type)
           @target_class = args[0]
-          @rel_type = "#{@target_class}##{args[1]}"
           @relationship_name = args[1]
-        elsif (Symbol === args[0])
+          @rel_type = "#{@target_class}##{@relationship_name}"
+        elsif (args[0].is_a? Symbol)
           # handle unspecified (unprefixed) relationship, e.g. has_n(:known_by).from(:type)
-          @rel_type = args[0]
+          rel_type(args[0])
         else
           raise "Expected a symbol for, got #{args[0]}"
         end
@@ -225,22 +240,37 @@ module Neo4j
       #  order.products << Product.new
       #  order.products_rels.first # => OrderLine
       #
-      def relationship(rel_class)
-        @relationship = rel_class
-        self
+      def relationship(rel_class = nil)
+        if rel_class
+          @relationship = rel_class
+          self
+        else
+          relationship_class
+          # todo: this could alternatively return @relationship, which would be the expected string, but not
+          # reflect the reality of Neo4j::Rails::Relationship
+        end
       end
 
       def relationship_class # :nodoc:
-        if !@relationship_name.nil? && @relationship.nil?
-          other_class_dsl = @target_class._decl_rels[@relationship_name]
+
+        if @relationship_name.presence && @relationship.nil?
+          other_class_dsl = target_class._decl_rels[@relationship_name]
           if other_class_dsl
             @relationship = other_class_dsl.relationship_class
           else
             Neo4j.logger.warn "Unknown outgoing relationship #{@relationship_name} on #{@target_class}"
           end
         end
-        @relationship
+
+        @relationship.try(:constantize) || Neo4j::Rails::Relationship
       end
+
+      protected
+      # todo: unprotect?
+      def target_class
+        @target_class.try(:constantize) || Neo4j::Rails::Model
+      end
+
     end
   end
 end
