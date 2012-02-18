@@ -34,7 +34,7 @@ module Neo4j
     class DeclRelationshipDsl
       include Neo4j::ToJava
 
-      attr_reader :target_class, :source_class, :dir
+      attr_reader :source_class, :dir
 
       def initialize(method_id, has_one, target_class)
         @dir = :outgoing
@@ -139,19 +139,15 @@ module Neo4j
       def to(target)
         @dir = :outgoing
 
-        if (target.is_a? Class)
-          # handle e.g. has_n(:friends).to(class)
-          target = target.to_s
-        elsif (target.is_a? String)
-          @target_class = target
-          # todo: why do we do this here if it doesn't use target class?
-          @rel_type = "#{@source_class}##{@method_id}"
-        elsif (target.is_a? Symbol)
+        if (target.is_a? Symbol)
           # handle e.g. has_n(:friends).to(:knows)
           rel_type(target)
         else
-          raise "Expected a string or a symbol for, got #{target}/#{target.class}"
+          target_class(target)
+          # todo: why do we do this here if it doesn't use target class?
+          @rel_type = "#{@source_class}##{@method_id}"
         end
+
         self
       end
 
@@ -206,9 +202,9 @@ module Neo4j
       def from(*args)
         @dir = :incoming
 
-        if (args.size > 1)
+        if (args.size) > 1
           # handle specified (prefixed) relationship, e.g. has_n(:known_by).from(clazz, :type)
-          @target_class = args[0]
+          target_class(target)
           @relationship_name = args[1]
           @rel_type = "#{@target_class}##{@relationship_name}"
         elsif (args[0].is_a? Symbol)
@@ -265,10 +261,20 @@ module Neo4j
         @relationship.try(:constantize) || Neo4j::Rails::Relationship
       end
 
-      protected
-      # todo: unprotect?
-      def target_class
-        @target_class.try(:constantize) || Neo4j::Rails::Model
+      def target_class(klass = nil)
+        unless klass
+          return @target_class.try(:constantize) || Neo4j::Rails::Model
+        end
+
+        if klass.is_a? Class
+          klass = klass.to_s
+        end
+
+        unless klass.is_a? String
+          raise "dsl#target_class only accepts a string or a class"
+        end
+        @target_class = klass
+        self
       end
 
     end
