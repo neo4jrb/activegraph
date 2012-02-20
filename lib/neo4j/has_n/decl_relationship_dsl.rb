@@ -204,9 +204,9 @@ module Neo4j
 
         if (args.size) > 1
           # handle specified (prefixed) relationship, e.g. has_n(:known_by).from(clazz, :type)
-          target_class(target)
+          target_class(args[0])
           @relationship_name = args[1]
-          @rel_type = "#{@target_class}##{@relationship_name}"
+          @rel_type = "#{args[0]}##{@relationship_name}"
         elsif (args[0].is_a? Symbol)
           # handle unspecified (unprefixed) relationship, e.g. has_n(:known_by).from(:type)
           rel_type(args[0])
