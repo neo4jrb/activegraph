@@ -3,7 +3,7 @@ before_install:
   - gem --version
 bundler_args: --without development
 rvm:
-  - jruby
+  - jruby-1.6.7
 env:
   - IDENTITY_MAP="true" JRUBY_OPTS="--1.8"
   - IDENTITY_MAP="false" JRUBY_OPTS="--1.8"
