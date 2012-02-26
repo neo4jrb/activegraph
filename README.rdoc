@@ -148,6 +148,7 @@ Have you found a bug, need help or have a patch ?
 Just clone neo4j.rb and send me a pull request or email me.
 Do you need help - send me an email (andreas.ronge at gmail dot com).
 
+
 === License
 * Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
 * Lucene -  Apache, see http://lucene.apache.org/java/docs/features.html
