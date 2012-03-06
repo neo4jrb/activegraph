@@ -635,6 +635,21 @@ describe "Neo4j::Model Relationships" do
         member.avatar.icon.should == 'happy'
       end
 
+      it "create one-to-one - allows validating presence of multiple nested attributes of the same class that have already been created" do
+        class Member2 < Member #use a sub-class so we don't ruin the other tests
+            has_one(:avatar2).to(Avatar)
+            accepts_nested_attributes_for :avatar2, :allow_destroy => true
+            validates_presence_of :avatar, :avatar2
+        end
+        avatar = Avatar.create(:icon => 'angry')
+        avatar2 = Avatar.create(:icon => 'happy')
+        params = {:member => {:name => 'Jack', :avatar_attributes => {:id => avatar.id}, :avatar2_attributes => {:id => avatar2.id}}}
+        member = Member2.create(params[:member])
+
+        member.avatar.class.should == Avatar
+        member.avatar2.class.should == Avatar
+      end
+
       it "create one-to-one  - when you add the _destroy key to the attributes hash, with a value that evaluates to true, you will destroy the associated model" do
         params = {:member => {:name => 'Jack', :avatar_attributes => {:icon => 'smiling'}}}
         member = Member.create(params[:member])
