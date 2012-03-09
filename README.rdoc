@@ -16,6 +16,16 @@ It uses two powerful and mature Java libraries:
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
 
+=== Status of Upcomming 2.0 Release
+
+See the {neo4j-core gem}[https://github.com/andreasronge/neo4j-core] and GitHub issues.
+
+Improvements:
+* More modular (create your own wrapper or use Neo4j::NodeMixin/Neo4j::Rails::Model)
+* Better performance 
+* More consistent API
+* Better quality of RSpecs, code and docs (YARD)
+
 
 === Why Neo4j.rb or a Graph Database ?
 
