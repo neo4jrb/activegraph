@@ -102,8 +102,8 @@ begin
       Kernel.const_set(name, klass)
       klass
     end
-  end                                              e
-                                                               c
+  end
+
   def create_model(base_class = Neo4j::Model, name=nil, &block)    TempModel.set(klass, name)
     base_class.inherited(klass)
     klass.class_eval &block if block
