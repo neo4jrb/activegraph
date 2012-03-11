@@ -238,7 +238,7 @@ module Neo4j
       #
       def relationship(rel_class = nil)
         if rel_class
-          @relationship = rel_class
+          @relationship = rel_class.to_s
           self
         else
           relationship_class
@@ -252,7 +252,7 @@ module Neo4j
         if @relationship_name.presence && @relationship.nil?
           other_class_dsl = target_class._decl_rels[@relationship_name]
           if other_class_dsl
-            @relationship = other_class_dsl.relationship_class
+            @relationship = other_class_dsl.relationship_class.to_s
           else
             Neo4j.logger.warn "Unknown outgoing relationship #{@relationship_name} on #{@target_class}"
           end
