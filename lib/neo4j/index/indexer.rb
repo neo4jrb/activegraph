@@ -157,8 +157,8 @@ module Neo4j
 
       def update_single_index_on(node, field, old_val, new_val) #:nodoc:
         if @field_types.has_key?(field)
-          rm_index(node, field, old_val) if old_val
-          add_index(node, field, new_val) if new_val
+          rm_index(node, field, old_val) unless old_val.nil?
+          add_index(node, field, new_val) unless new_val.nil?
         end
       end
 
@@ -198,6 +198,15 @@ module Neo4j
 
         type        = @decl_props && @decl_props[field.to_sym] && @decl_props[field.to_sym][:type]
         return value unless type
+
+        if :boolean == type
+          type = String
+          if value
+            value = 'true'
+          else
+            value = 'false'
+          end
+        end
 
         if String != type
           org.neo4j.index.lucene.ValueContext.new(value).indexNumeric
