@@ -22,6 +22,9 @@ module Neo4j
 
 
       def _create_or_get_storage(rel_type) #:nodoc:
+        unless rel_type.respond_to? :to_sym
+          raise "Cannot convert #{rel_type.inspect} in to rel_type symbol"
+        end
         dsl = _decl_rels_for(rel_type.to_sym)
         @_relationships[rel_type.to_sym] ||= Storage.new(self, rel_type, dsl)
       end

@@ -10,14 +10,15 @@ module Neo4j
         def initialize(node, rel_type, dsl)
           @rel_type = rel_type.to_sym
           @node = node
-          @rel_class = (dsl && dsl.relationship_class) || Neo4j::Rails::Relationship
-          @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
+          @dsl = dsl
           @outgoing_rels = []
           @incoming_rels = []
           @persisted_related_nodes = {}
           @persisted_relationships = {}
           @persisted_node_to_relationships = {}
         end
+
+        delegate :target_class, :relationship_class, to: :dsl
 
         def to_s #:nodoc:
           "Storage #{object_id} node: #{@node.id} rel_type: #{@rel_type} outgoing #{@outgoing_rels.size}/#{@unpersisted_outgoing_rels && @unpersisted_outgoing_rels.size} incoming #{@incoming_rels.size}/#{@unpersisted_incoming_rels && @unpersisted_incoming_rels.size}"
@@ -51,11 +52,11 @@ module Neo4j
         end
 
         def build(attrs)
-          @target_class.new(attrs)
+          target_class.new(attrs)
         end
 
         def create(attrs)
-          @target_class.create(attrs)
+          target_class.create(attrs)
         end
 
         def relationships(dir)
@@ -150,9 +151,9 @@ module Neo4j
 
         def create_relationship_to(to, dir)
           if dir == :outgoing
-            @rel_class.new(@rel_type, @node, to, self)
+            relationship_class.new(@rel_type, @node, to, self)
           else
-            @rel_class.new(@rel_type, to, @node, self)
+            relationship_class.new(@rel_type, to, @node, self)
           end
         end
 

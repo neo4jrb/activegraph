@@ -58,14 +58,16 @@ module Neo4j
           :boolean == class_or_symbol
         end
 
+        # we make special cases for two strings, '0' and 'false'.
+        # both evaluate to false
         def to_java(value)
           return nil if value.nil?
-          !!value && value != '0'
+          !!value && value != '0' && value != 'false'
         end
 
         def to_ruby(value)
           return nil if value.nil?
-          !!value && value != '0'
+          !!value && value != '0' && value != 'false'
         end
       end
     end

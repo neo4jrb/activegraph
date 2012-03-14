@@ -133,7 +133,7 @@ Notice that you can always access the lower layers if you want to do some more a
 === Presentation Materials and other URLs
 * {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
 * {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
-* {Neo4j wiki, check the guidelines and domain modeling gallery pages}[http://wiki.neo4j.org/content/Main_Page]
+* {Neo4j docs}[http://docs.neo4j.org/]
 
 === Project information
 * {GitHub}[http://github.com/andreasronge/neo4j/tree/master]
