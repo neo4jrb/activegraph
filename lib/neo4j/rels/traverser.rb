@@ -48,9 +48,9 @@ module Neo4j
         if @types
           @node.get_relationships(@types).iterator
         elsif @type
-          @node.get_relationships(@type, dir_to_java(@dir))
+          @node.get_relationships(@type, dir_to_java(@dir)).iterator
         else
-          @node.get_relationships(dir_to_java(@dir))
+          @node.get_relationships(dir_to_java(@dir)).iterator
         end
       end
 
