@@ -2,8 +2,8 @@ source :gemcutter
 
 gemspec
 
-gem 'neo4j-advanced', "1.7.0.alpha.1",  :require => false
-gem 'neo4j-enterprise', "1.7.0.alpha.1", :require => false
+gem 'neo4j-advanced', "1.7.M02",  :require => false
+gem 'neo4j-enterprise', "1.7.M02", :require => false
 
 group 'development' do
   gem 'guard'
