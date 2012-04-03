@@ -208,6 +208,11 @@ module Neo4j
           end
         end
 
+        if :symbol == type
+          type = String
+        end
+
+
         if String != type
           org.neo4j.index.lucene.ValueContext.new(value).indexNumeric
         else
