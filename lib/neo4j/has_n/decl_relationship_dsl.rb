@@ -41,7 +41,7 @@ module Neo4j
         @method_id = method_id
         @has_one = has_one
         @rel_type = method_id
-        @target_class = target_class
+        @target_class = target_class.to_s
         @source_class = target_class
       end
 
