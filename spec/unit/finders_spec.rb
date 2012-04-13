@@ -50,7 +50,6 @@ describe Neo4j::Rails::Finders, :type => :unit do
   describe "find with block" do
     it "allows block" do
       r = []
-      puts "klass._indexer=#{klass._indexer.class}"
       klass._indexer.should_receive(:find).with("name: bla").and_yield("HEJ")
       klass.find('name: bla') {|q| r << q}
       r.first.should == "HEJ"

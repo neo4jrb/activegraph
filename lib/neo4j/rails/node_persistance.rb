@@ -29,7 +29,7 @@ module Neo4j
       # Reload the object from the DB
       def reload(options = nil)
         # Can't reload a none persisted node
-        return if new_record?
+        return self if new_record?
         clear_changes
         clear_relationships
         clear_composition_cache

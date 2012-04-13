@@ -11,7 +11,7 @@ require "neo4j/version"
 desc "Run all specs"
 RSpec::Core::RakeTask.new("spec") do |t|
   t.rspec_opts = ["-c"]
-  t.pattern = 'spec/unit/*_spec.rb'
+  t.pattern = 'spec/**/*_spec.rb'
 end
 
 task :check_commited do

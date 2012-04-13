@@ -127,7 +127,7 @@ describe Neo4j::Rails::Persistence, :type => :unit do
     context "when new" do
       subject { new_model }
       it "raise an exception" do
-        lambda { subject.reload }.should raise_error
+        lambda { subject.reload }.should_not raise_error
       end
     end
 
