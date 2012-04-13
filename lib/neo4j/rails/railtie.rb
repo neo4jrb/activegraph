@@ -3,8 +3,7 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     initializer "neo4j.tx" do |app|
-      app.config.middleware.use Neo4j::Rails::RackMiddleware
-      app.config.middleware.use Neo4j::IdentityMap::Middleware
+      app.config.middleware.use Neo4j::Rails::Middleware
     end
 
     # Add ActiveModel translations to the I18n load_path
@@ -25,11 +24,11 @@ module Neo4j
     # instantiate them after being reloaded in the development environment
     initializer "instantiate.observers" do
       config.after_initialize do
-        ::Neo4j::Rails::Model.observers = config.neo4j.observers || []
-        ::Neo4j::Rails::Model.instantiate_observers
+        ::Neo4j::RailsNode.observers = config.neo4j.observers || []
+        ::Neo4j::RailsNode.instantiate_observers
 
         ActionDispatch::Callbacks.to_prepare do
-          ::Neo4j::Rails::Model.instantiate_observers
+          ::Neo4j::RailsNode.instantiate_observers
         end
       end
     end

@@ -1,8 +1,8 @@
-class City < Neo4j::Rails::Model
+class City < Neo4j::RailsNode
 
 end
 
-class State < Neo4j::Rails::Model
+class State < Neo4j::RailsNode
   property :name
   index :name
 
@@ -21,11 +21,11 @@ class State < Neo4j::Rails::Model
 
 end
 
-class Person < Neo4j::Rails::Model
+class Person < Neo4j::RailsNode
 
 end
 
-class City < Neo4j::Rails::Model
+class City < Neo4j::RailsNode
   property :name
   index :name
 
@@ -47,7 +47,7 @@ end
 
 
 
-class Person < Neo4j::Rails::Model
+class Person < Neo4j::RailsNode
   property :name
   index :name
   has_n :likes
@@ -67,7 +67,7 @@ class Person < Neo4j::Rails::Model
 
 end
 
-class Film < Neo4j::Rails::Model
+class Film < Neo4j::RailsNode
   property :title
   index :title
   

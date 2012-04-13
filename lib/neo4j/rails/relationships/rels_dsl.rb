@@ -7,13 +7,14 @@ module Neo4j
       class AllRelsDsl
         include Enumerable
 
-        def initialize(rels_stores, node)
+        def initialize(rels_stores, node, dir)
           @rels_stores = rels_stores
           @node = node
+          @dir = dir
         end
 
         def each
-          @rels_stores.each_value {|storage| storage.relationships(:both).each{|r| yield r}}
+          @rels_stores.each_value {|storage| storage.relationships(@dir).each{|r| yield r}}
           @node && @node.rels.each {|r| yield r}
         end
 
@@ -29,11 +30,11 @@ module Neo4j
         # Notice, only persisted relationships will be returned.
         def to_other(other)
           raise('node.rels(...).to_other() not allowed on a node that is not persisted') unless @node
-          @node.rels.to_other(other)
+          @node._java_node.rels(@dir).to_other(other)
         end
 
         def delete_all
-          # since some of the relationships might not be a Neo4j::Rails::Relationship we must create a transaction
+          # since some of the relationships might not be a Neo4j::RailsRelationship we must create a transaction
           Neo4j::Transaction.run do
             each{|r| r.respond_to?(:delete) ? r.delete : r.del}
           end
@@ -57,7 +58,7 @@ module Neo4j
       # if creates, finds relationships instead of nodes.
       #
       # ==== Example
-      #   class Person < Neo4j::Rails::Model
+      #   class Person < Neo4j::RailsNode
       #      has_n(:friends)
       #   end
       #
@@ -68,7 +69,7 @@ module Neo4j
       class RelsDSL
         include Enumerable
 
-        def initialize(storage, dir=:both)
+        def initialize(storage, dir)
           @storage = storage
           @dir = dir
         end
@@ -76,16 +77,16 @@ module Neo4j
 
         # Same as Neo4j::Rails::Relationships::NodesDSL#build except that you specify the properties of the
         # relationships and it returns a relationship
-        def build(attrs = {})
-          node = @storage.build(attrs)
-          @storage.create_relationship_to(node, @dir)
+        def build(rels_attrs = nil, node_attr = nil)
+          node = @storage.build(node_attr)
+          @storage.create_relationship_to(node, @dir, rels_attrs)
         end
 
         # Same as Neo4j::Rails::Relationships::NodesDSL#create except that you specify the properties of the
         # relationships and it returns a relationship
-        def create(attrs = {})
-          node = @storage.create(attrs)
-          rel = @storage.create_relationship_to(node, @dir)
+        def create(rels_attrs = {}, node_attr = nil)
+          node = @storage.build(node_attr)
+          rel = @storage.create_relationship_to(node, @dir, rels_attrs)
           node.save
           rel
         end
@@ -94,7 +95,7 @@ module Neo4j
         # Returns an Enumerable. If the node is not persisted it will raise an error.
         # Notice, only persisted relationships will be returned.
         def to_other(other)
-          @storage.to_other(other)
+          @storage.to_other(@dir, other)
         end
 
         # Connects this node with an already existing other node with a new relationship.
@@ -109,8 +110,8 @@ module Neo4j
 
         # Same as Neo4j::Rails::Relationships::NodesDSL#create! except that you specify the properties of the
         # relationships and it returns a relationship
-        def create!(attrs)
-          node = @storage.create(attrs)
+        def create!(rels_attrs)
+          node = @storage.create(rels_attrs)
           rel = @storage.create_relationship_to(node, @dir)
           node.save!
           rel
@@ -118,8 +119,8 @@ module Neo4j
 
         # Specifies that we want outgoing (undeclared) relationships.
         #
-        # ==== Example
-        #   class Thing < Neo4j::Rails::Model
+        # @example
+        #   class Thing < Neo4j::RailsNode
         #   end
         #
         #   t = Thing.find(...)
@@ -141,13 +142,13 @@ module Neo4j
         end
 
         # Simply counts all relationships
-        def size
-          @storage.size(@dir)
+        def count
+          @storage.count(@dir)
         end
 
         # True if no relationship
         def empty?
-          size == 0
+          !@storage.relationships?(@dir)
         end
 
         # Destroys all relationships object. Will not destroy the nodes.
@@ -185,7 +186,7 @@ module Neo4j
         # Same as Neo4j::Rails::Relationships::NodesDSL#all except that it searches the relationships instead of
         # the nodes.
         def all(*args)
-          if args.first.class == Neo4j::Rails::Relationship #arg is a relationship
+          if args.first.class == Neo4j::RailsRelationship #arg is a relationship
             find_all{|r| r == args.first}
           elsif ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0) #arg is an int
             find_all{|r| r.start_node.id.to_i == args.first.to_i || r.end_node.id.to_i == args.first.to_i}
@@ -232,7 +233,7 @@ module Neo4j
 
         def node_in?(*args)
           # does it contain an string, which will be treated like a condition ?
-          if args.find { |a| a.class.superclass == Neo4j::Rails::Model }
+          if args.find { |a| a.class.superclass == Neo4j::RailsNode }
             return true 
           else
             return false

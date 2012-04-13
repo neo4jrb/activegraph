@@ -11,7 +11,7 @@ module Neo4j
 
         def setup(klass)
           @attributes.each do |attribute|
-            if klass.index_type_for(attribute) != @validator.index_type
+            if klass.index_type(attribute) != @validator.index_type
               raise index_error_message(klass,attribute,@validator.index_type)
             end
           end

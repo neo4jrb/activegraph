@@ -27,8 +27,8 @@ share_examples_for "a loadable model" do
       subject.save!
     end
 
-    it "should load a previously stored node" do
-      result = subject.class.load(subject.id)
+    it "should load_entity a previously stored node" do
+      result = subject.class.load_entity(subject.id)
       result.should == subject
       result.should be_persisted
     end
@@ -66,7 +66,7 @@ share_examples_for "a saveable model" do
     end
 
     it { should be_persisted }
-    it { should == subject.class.load(subject.id) }
+    it { should == subject.class.load_entity(subject.id) }
     it { should be_valid }
 
     it "should be found in the database" do
@@ -130,13 +130,13 @@ share_examples_for "a destroyable model" do
   context "when saved" do
     before :each do
       subject.save!
-      @other = subject.class.load(subject.id)
+      @other = subject.class.load_entity(subject.id)
       subject.destroy
     end
     it { should be_frozen }
 
     it "should remove the model from the database" do
-      subject.class.load(subject.id).should be_nil
+      subject.class.load_entity(subject.id).should be_nil
     end
 
     it "should also be frozen in @other" do

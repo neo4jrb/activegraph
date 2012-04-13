@@ -38,7 +38,15 @@ module Neo4j
           tx.finish
           Thread.current[:neo4j_transaction] = nil
           Thread.current[:neo4j_transaction_fail] = nil
+        rescue Exception => e
+          if Neo4j::Config[:debug_java] && e.respond_to?(:cause)
+            puts "Java Exception in a transaction, cause: #{e.cause}"
+            e.cause.print_stack_trace
+          end
+          tx.failure unless tx.nil?
+          raise
         end
+
 
         def filter(*, &block)
           run &block
@@ -60,7 +68,7 @@ module Neo4j
             ret
           end
         end
-        
+
         private
         def new
           Thread.current[:neo4j_transaction] = Neo4j::Transaction.new

@@ -2,9 +2,6 @@ source :gemcutter
 
 gemspec
 
-gem 'neo4j-advanced', "1.7.M02",  :require => false
-gem 'neo4j-enterprise', "1.7.M02", :require => false
-
 group 'development' do
   gem 'guard'
   gem 'ruby_gntp', :require => false # GrowlNotify for Mac
@@ -12,7 +9,6 @@ group 'development' do
   gem 'rb-fsevent', :require => false
   gem 'rb-fchange', :require => false
   gem "guard-rspec"
-  gem "horo", ">= 1.0.2" # TODO: Why horo, YARD seems to be much better option?
   #gem 'ruby-debug-base19' if RUBY_VERSION.include? "1.9"
   #gem 'ruby-debug-base' if RUBY_VERSION.include? "1.8"
   #gem "ruby-debug-ide"

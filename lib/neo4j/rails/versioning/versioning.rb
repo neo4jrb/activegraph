@@ -4,7 +4,7 @@ module Neo4j
     # To use versioning, include this module in your model.
     #
     # Example:
-    #   class VersionableModel < Neo4j::Rails::Model
+    #   class VersionableModel < Neo4j::RailsNode
     #     include Neo4j::Rails::Versioning
     #   end
     #
@@ -27,7 +27,7 @@ module Neo4j
     # To control the maximum number of versions created, you can use the max_versions property.
     #
     # Example:
-    #   class MaxVersionableModel < Neo4j::Rails::Model
+    #   class MaxVersionableModel < Neo4j::RailsNode
     #     include Neo4j::Rails::Versioning
     #     max_versions 10
     #   end
@@ -80,7 +80,7 @@ module Neo4j
       # @param [ Integer ] number The version number to retrieve.
       # Returns nil in case a version is not found.
       def version(number)
-        snapshot = Version.find(:model_classname => _classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node}
+        snapshot = Version.find(:model_classname => _classname, :instance_id => neo_id, :number => number) {|query| query.first.nil? ? nil : query.first.end_node.wrapper}
         snapshot.props.each_pair{|k,v| snapshot.assign(k,Neo4j::TypeConverters.to_ruby(self.class, k, v))} if !snapshot.nil?
         snapshot
       end
@@ -129,7 +129,7 @@ module Neo4j
       end
 
       def each_versionable_relationship
-        rule_relationships = java.util.HashSet.new(Neo4j::Rule::Rule.rule_names_for(_classname))
+        rule_relationships = java.util.HashSet.new(Neo4j::Wrapper::Rule::Rule.rule_names_for(_classname))
         self._java_node.getRelationships().each do |rel|
           yield rel unless rule_relationships.contains(rel.getType().name().to_sym) || rel.getType.name.to_sym == :version
         end

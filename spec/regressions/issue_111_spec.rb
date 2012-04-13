@@ -1,22 +1,22 @@
-require File.join(File.dirname(__FILE__), '..', 'spec_helper')
+require 'spec_helper'
 
 module Regressions
 
   # https://github.com/andreasronge/neo4j/issues/111
   module Issue111
     # Pre-declare classes as everything is cross-referenced
-    class Document< Neo4j::Model
+    class Document< Neo4j::RailsNode
     end
 
-    class Property < Neo4j::Model
+    class Property < Neo4j::RailsNode
     end
 
-    class Development < Neo4j::Model
+    class Development < Neo4j::RailsNode
     end
 
 
 
-    class Document < Neo4j::Model
+    class Document < Neo4j::RailsNode
       property :file_name, :type => String
 
       has_one(:development).from(Development, :documents)
@@ -24,7 +24,7 @@ module Regressions
     end
 
 
-    class Development < Neo4j::Model
+    class Development < Neo4j::RailsNode
       property :name, :type => String
 
       has_n(:documents).to(Document)
@@ -32,7 +32,7 @@ module Regressions
     end
 
 
-    class Property < Neo4j::Model
+    class Property < Neo4j::RailsNode
       property :name, :type => String
 
       has_one(:development).from(Development, :properties)
@@ -61,7 +61,7 @@ module Regressions
         doc.properties = [p]
 
         doc.development.should == dev
-        doc.properties.size.should == 1
+        doc.properties.count.should == 1
         doc.properties.should include p
       end
     end

@@ -5,7 +5,7 @@ module Neo4j
       # Instances of this class is returned from the #outgoing, #incoming and generated accessor methods:
       # has_n and has_one.
       # Notice that this class includes the Ruby Enumerable mixin.
-      # If you want to full traversal api use the wrapped java node instead (some_node._java_node.outgoing(...)).
+      # If you want to full traversal api use the core version of these methods (some_node._outgoing(...)).
       #
       class NodesDSL
         include Enumerable
@@ -19,22 +19,24 @@ module Neo4j
         # The new node and relationship will not be saved.
         # Both the relationship class and the node class can be specified with the has_n and has_one.
         #
-        # ==== Example
-        #
-        #   class Person < Neo4j::Rails::Model
+        # @example
+        #   class Person < Neo4j::RailsNode
         #      has_n(:friends).to(Person).relationship(Friend)
         #      has_n(:knows)
         #   end
         #
         #   Person.friends.build(:name => 'kalle')  # creates a Person and Friends class.
-        #   Person.knows.build(:name => 'kalle') # creates a Neo4j::Rails::Model and Neo4j::Rails::Relationship class
-        #
-        def build(attrs =  {})
+        #   Person.knows.build(:name => 'kalle') # creates a Neo4j::RailsNode and Neo4j::RailsRelationship class
+        # @param [Hash] attrs the attributes for the created node
+        # @return [Neo4j::RailsNode]
+        def build(attrs = {})
           self << (node = @storage.build(attrs))
           node
         end
 
         # Same as #build except that the relationship and node are saved.
+        # @param (see #build)
+        # @return [Neo4j::RailsNode]
         def create(attrs = {})
           self << (node = @storage.create(attrs))
           node.save
@@ -42,13 +44,24 @@ module Neo4j
         end
 
         # Same as #create but will raise an exception if an error (like validation) occurs.
+        # @param (see #build)
+        # @return [Neo4j::RailsNode]
         def create!(attrs)
           self << (node = @storage.create(attrs))
           node.save!
           node
         end
 
-        # Adds a new node to the relationship
+        # Adds a new node to the relationship, no transaction is needed.
+        #
+        # @example create a relationship between two nodes
+        #   node.friends << other
+        #
+        # @example using existing nodes
+        #   node.friends = ['42', '32']
+        #
+        # @param [String, Neo4j::RailsNode] other
+        # @return self
         def <<(other)
           if other.is_a?(String)
             # this is typically called in an assignment operator, person.friends = ['42', '32']
@@ -69,20 +82,11 @@ module Neo4j
           all.to_a
         end
 
-        # Specifies the depth of the traversal
-        def depth(d)
-          adapt_to_traverser.depth(d)
-        end
-
-        def adapt_to_traverser # :nodoc:
-          Neo4j::Traversal::Traverser.new(@storage.node, @storage.rel_type, @dir)
-        end
-
         # Returns the n:th item in the relationship.
         # This method simply traverse all relationship and returns the n:th one.
         def [](index)
           i = 0
-          each{|x| return x if i == index; i += 1}
+          each { |x| return x if i == index; i += 1 }
           nil # out of index
         end
 
@@ -94,32 +98,33 @@ module Neo4j
 
         # Find one node in the relationship.
         #
-        # ==== Example
+        # @example Declaration of the relationship used in the examples below
         #
-        #   class Actor < Neo4j::Rails::Model
+        #   class Actor < Neo4j::RailsNode
         #     has_n(:acted_in)
         #   end
         #
-        #    # find all child nodes
-        #    actor.acted_in.find(:all)
+        # @example find all child nodes
+        #   actor.acted_in.find(:all)
         #
-        #    # find first child node
-        #    actor.acted_in.find(:first)
+        # @example find first child node
+        #   actor.acted_in.find(:first)
         #
-        #    # find a child node by node
-        #    actor.acted_in.find(some_movie)
+        # @example find a child node by node
+        #   actor.acted_in.find(some_movie)
         #
-        #    # find a child node by id" do
-        #    actor.acted_in.find(some_movie.id)
+        # @example find a child node by id" do
+        #   actor.acted_in.find(some_movie.id)
         #
-        #    #find a child node by delegate to Enumerable#find
-        #    actor.acted_in.find{|n| n.title == 'movie_1'}
+        # @example find a child node by delegate to Enumerable#find
+        #   actor.acted_in.find{|n| n.title == 'movie_1'}
         #
+        # @return [Neo4j::RailsNode]
         def find(*args, &block)
           return super(*args, &block) if block
-          
+
           case args.first
-            when :all, :first          
+            when :all, :first
               kind = args.shift
               send(kind, *args)
             when "0", 0
@@ -130,14 +135,14 @@ module Neo4j
               else
                 first(*args)
               end
-          end          
+          end
         end
 
         # Same as #find except that it returns an Enumerator of all nodes found.
         #
         def all(*args)
           unless args.empty?
-            enum = Enumerator.new(@storage, :each_node, @dir).find{|n| n == args.first}
+            enum = Enumerator.new(@storage, :each_node, @dir).find { |n| n == args.first }
           else
             enum = Enumerator.new(@storage, :each_node, @dir)
           end
@@ -148,7 +153,7 @@ module Neo4j
           if result = all(*args)
             if result.respond_to?(:collect) #if it's enumerable, get the first result
               result.first
-            else 
+            else
               result
             end
           else
@@ -156,36 +161,40 @@ module Neo4j
           end
         end
 
-        # Destroys all nodes (!!!) and relationship in this relatationship.
-        # Notice, if you only want to destroy the relationship use the
+        # Destroys all nodes (!) and relationship.
+        # Notice, if you only want to destroy the relationship use the #rels(:friends).destroy_all method instead.
         def destroy_all
-          each {|n| n.destroy}
+          each { |n| n.destroy }
         end
 
+        # Deletes all nodes and relationships, similar to #destroy_all
         def delete_all
-          each {|n| n.delete}
+          each { |n| n.delete }
         end
 
-        def size
-          @storage.size(@dir)
+        # Counts all relationships
+        def count
+          @storage.count(@dir)
         end
 
-        alias :length :size
+        alias :length :count
 
         def each
-          @storage.each_node(@dir) {|n| yield n} # Why passing the &block through doesn't work on JRuby 1.9?
+          @storage.each_node(@dir) { |n| yield n } # Why passing the &block through doesn't work on JRuby 1.9?
         end
 
+        # Delete relationships to the given nodes
+        # @param [Neo4j::RailsNode] nodes a list of nodes we want to delete relationships to
         def delete(*nodes)
           @storage.destroy_rels(@dir, *nodes)
         end
 
         def empty?
-          size == 0 # TODO, performance: there are probably faster way of doing this
+          !@storage.relationships?(@dir)
         end
 
         def blank?
-          false unless size == 0
+          false unless empty?
         end
 
         def to_s
@@ -196,13 +205,32 @@ module Neo4j
           @storage.persisted?
         end
 
+
+        # These methods are using the Neo4j::Core::Traversal::Traverser which means that only persisted relationship will be seen
+        # but more advanced traversal can be performed.
+        CORE_TRAVERSAL_METHODS = [:depth, :outgoing, :incoming, :both, :expand, :depth_first, :breadth_first, :eval_paths, :unique, :expander, :prune, :filter, :include_start_node, :rels, :eval_paths]
+
+
         protected
 
+        def self.define_traversal_method(method_name)
+          class_eval <<-RUBY, __FILE__, __LINE__
+						def #{method_name}(*args, &block)
+              if block
+							  Neo4j::Core::Traversal::Traverser.new(@storage.node, @dir, @storage.rel_type).send(:"#{method_name}", *args, &block)
+              else
+              	Neo4j::Core::Traversal::Traverser.new(@storage.node, @dir, @storage.rel_type).send(:"#{method_name}", *args)
+              end
+						end
+          RUBY
+        end
+
+        CORE_TRAVERSAL_METHODS.each { |meth| define_traversal_method(meth)}
 
         def find_by_id(*args)
-          result = Enumerator.new(@storage, :each_node, @dir).find{|n| n.id.to_i == args.first.to_i}        
+          result = Enumerator.new(@storage, :each_node, @dir).find { |n| n.id.to_i == args.first.to_i }
         end
-   
+
       end
     end
   end

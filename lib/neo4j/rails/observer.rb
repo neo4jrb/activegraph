@@ -1,5 +1,3 @@
-require 'active_support/core_ext/class/attribute_accessors'
-
 module Neo4j
   module Rails
     # Observer classes respond to life cycle callbacks to implement trigger-like

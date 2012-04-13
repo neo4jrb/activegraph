@@ -1,4 +1,4 @@
-class Animal < Neo4j::Rails::Model
+class Animal < Neo4j::RailsNode
   property :name
 end
 

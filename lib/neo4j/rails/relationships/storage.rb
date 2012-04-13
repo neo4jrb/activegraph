@@ -4,14 +4,13 @@ module Neo4j
 
       # Holds the relationships in memory but also allows read access to persisted relationships
       class Storage #:nodoc:
-        include Neo4j::ToJava
         attr_reader :dsl, :node, :rel_type
 
-        def initialize(node, rel_type, dsl)
+        def initialize(node, rel_type, dsl=nil)
           @rel_type = rel_type.to_sym
           @node = node
-          @rel_class = (dsl && dsl.relationship_class) || Neo4j::Rails::Relationship
-          @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
+          @rel_class = (dsl && dsl.relationship_class) || Neo4j::RailsRelationship
+          @target_class = (dsl && dsl.target_class) || Neo4j::RailsNode
           @outgoing_rels = []
           @incoming_rels = []
           @persisted_related_nodes = {}
@@ -37,17 +36,20 @@ module Neo4j
           @unpersisted_incoming_rels = nil
         end
 
-        def size(dir)
+        def count(dir)
           counter = 0
           # count persisted relationship
-          @node._java_node && @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each { |*| counter += 1 }
+          @node._rels(dir, @rel_type).each { |*| counter += 1 } if @node.persisted?
           # count relationship which has not yet been persisted
           counter += relationships(dir).size
           counter
         end
 
-        def to_other(other)
-          (@node._java_node) ? @node._java_node.rels(@rel_type).to_other(other) : raise('node.rels(...).to_other() not allowed on a node that is not persisted')
+        def to_other(dir, other)
+          raise('node.rels(...).to_other() not allowed on a node that is not persisted') if @node.new_record?
+          all_relationships(dir).find_all do |rel|
+            rel._other_node(@node) == other
+          end
         end
 
         def build(attrs)
@@ -69,10 +71,6 @@ module Neo4j
           end
         end
 
-        def java_rel_type
-          type_to_java(rel_type)
-        end
-
         def each_rel(dir, &block) #:nodoc:
           relationships(dir).each { |rel| block.call rel }
           if @node.persisted?
@@ -83,7 +81,7 @@ module Neo4j
 
         def cache_relationships(dir)
           @persisted_relationships[dir] ||= []
-          node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
+          node._rels(dir, @rel_type).each do |rel|
             @persisted_relationships[dir] << rel.wrapper
           end
         end
@@ -91,8 +89,8 @@ module Neo4j
         def cache_persisted_nodes_and_relationships(dir)
           @persisted_related_nodes[dir] ||= []
           @persisted_node_to_relationships[dir] ||= {}
-          @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
-            end_node = rel.getOtherNode(@node._java_node).wrapper
+          @node._rels(dir, @rel_type).each do |rel|
+            end_node = rel._other_node(@node._java_node).wrapper
             @persisted_related_nodes[dir] << end_node
             @persisted_node_to_relationships[dir][end_node]=rel
           end
@@ -116,10 +114,14 @@ module Neo4j
           end
         end
 
+        def relationships?(dir)
+          !!relationships(dir).first || (@node.persisted? && @node._rels(dir, @rel_type).first)
+        end
+
         def single_relationship(dir, raw = false)
           rel = relationships(dir).first
           if rel.nil? && @node.persisted?
-            java_rel = @node._java_node.getSingleRelationship(java_rel_type, dir_to_java(dir))
+            java_rel = @node._rel(dir, @rel_type)
             raw ? java_rel : java_rel && java_rel.wrapper
           else
             rel
@@ -148,11 +150,11 @@ module Neo4j
           end
         end
 
-        def create_relationship_to(to, dir)
+        def create_relationship_to(to, dir, attributes=nil)
           if dir == :outgoing
-            @rel_class.new(@rel_type, @node, to, self)
+            @rel_class.new(@rel_type, @node, to, attributes)
           else
-            @rel_class.new(@rel_type, to, @node, self)
+            @rel_class.new(@rel_type, to, @node, attributes)
           end
         end
 

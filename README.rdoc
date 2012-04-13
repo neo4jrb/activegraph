@@ -15,17 +15,7 @@ It uses two powerful and mature Java libraries:
 * {RDoc}[http://neo4j.rubyforge.org]
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
-
-=== Status of Upcomming 2.0 Release
-
-See the {neo4j-core gem}[https://github.com/andreasronge/neo4j-core] and GitHub issues.
-
-Improvements:
-* More modular (create your own wrapper or use Neo4j::NodeMixin/Neo4j::Rails::Model)
-* Better performance 
-* More consistent API
-* Better quality of RSpecs, code and docs (YARD)
-
+* RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
 
 === Why Neo4j.rb or a Graph Database ?
 
@@ -58,6 +48,8 @@ Example of creating a Neo4j::Node
     node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
   end
 
+The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http://github.com/andreasronge/neo4j-core] gem.
+
 ==== Neo4j::NodeMixin
 
 Example of mapping a ruby class to a node and delaring properties and relationships and lucene index.
@@ -78,11 +70,13 @@ Example of mapping a ruby class to a node and delaring properties and relationsh
   andreas.friends.each {|person| puts "name #{person.name}" }
   Person.find("name: andreas").first.name # => 'andreas'
 
-==== Neo4j::Rails::Model
+The Neo4j::NodeMixin and Neo4j::RelationshipMixin is implemented in the {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper] gem
+
+==== Neo4j::RailsNode
 
 Example of using Neo4j with Rails 3 (ActiveModel)
 
-  class User < Neo4j::Model
+  class User < Neo4j::RailsNode
     attr_accessor :password
     attr_accessible :email, :password, :password_confirmation, :pending_account
 
@@ -126,7 +120,7 @@ As you seen above, neo4j.rb consists of a three layers API:
 
 * Layer 1. For interacting with the basic building blocks of the graph database (node, properties and relationship), see Neo4j::Node and Neo4j::Relationship classes.
 * Layer 2. A binding API to Ruby objects, see Neo4j::NodeMixin and Neo4j::RelationshipMixin modules.
-* Layer 3. An implementation of the Rails Active Model and a subset of the Active Record API, see Neo4j::Rails::Model class.
+* Layer 3. An implementation of the Rails Active Model and a subset of the Active Record API, see Neo4j::RailsNode and Neo4j::RailsRelationship class.
 
 Notice that you can always access the lower layers if you want to do some more advanced. You can even access the Java API directly.
 

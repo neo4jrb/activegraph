@@ -6,11 +6,26 @@ module Neo4j
     module Finders
       extend ActiveSupport::Concern
 
+
+      def reachable_from_ref_node?
+        # All relationships are reachable
+        respond_to?(:_java_rel) || Neo4j::Algo.all_path(self.class.ref_node_for_class, self).outgoing(self.class).outgoing(:_all).first != nil
+      end
+
       included do
-        rule(:_all, :functions => Neo4j::Rule::Functions::Count.new)
+        rule(:_all, :functions => Neo4j::Wrapper::Rule::Functions::Size.new) if respond_to?(:rule)
       end
 
       module ClassMethods
+
+        def index_prefix
+          return "" unless Neo4j.running?
+          return "" unless respond_to?(:ref_node_for_class)
+          ref_node = ref_node_for_class.wrapper
+          prefix = ref_node.respond_to?(:index_prefix) ? ref_node.send(:index_prefix) : ref_node[:name]
+          prefix ? prefix + "_" : ""
+        end
+
         # overwrite the index method to add find_by_xxx class methods
         def index(*args)
           field = args.first
@@ -40,13 +55,15 @@ module Neo4j
 
         # load an id or array of ids from the database
         def load(*ids)
-          result = ids.map { |id| entity_load(id) }
+          result = ids.map { |id| load_entity(id) }
           if ids.length == 1
             result.first
           else
             result
           end
         end
+
+        Neo4j::Wrapper::Find.send(:alias_method, :_wrapper_find, :find)
 
         # Behave like the ActiveRecord query interface
         #
@@ -68,18 +85,18 @@ module Neo4j
         #   Model.find(:all, :conditions => "name: test")
         #   Model.find(:all, :conditions => { :name => "test" })
         #
-        def find(*args)
+        def find(*args, &block)
           case args.first
             when :all, :first
               kind = args.shift
-              send(kind, *args)
+              send(kind, *args, &block)
             when "0", 0, nil
               nil
             else
               if convertable_to_id?(args.first)
                 find_with_ids(*args)
               else
-                first(*args)
+                first(*args, &block)
               end
           end
         end
@@ -124,7 +141,7 @@ module Neo4j
           find_or(:new, attrs, &block)
         end
 
-        def all(*args)
+        def all(*args, &block)
           if !conditions_in?(*args)
             # use the _all rule to recover all the stored instances of this node
             _all
@@ -134,25 +151,25 @@ module Neo4j
             if ids
               [find_with_ids(ids)].flatten
             else
-              find_with_indexer(*args)
+              find_with_indexer(*args, &block)
             end
           end
         end
 
-        def first(*args)
-          all(*args).first
+        def first(*args, &block)
+          all(*args, &block).first
         end
 
         def last(*args)
           a = all(*args)
-          a.empty? ? nil : a[a.size - 1]
+          a.empty? ? nil : a[all.size - 1]
         end
 
         def count
           all.size
         end
 
-        # Call this method if you are using Neo4j::Rails::Model outside rails
+        # Call this method if you are using Neo4j::RailsNode outside rails
         # This method is automatically called by rails to close all lucene connections.
         def close_lucene_connections
           Thread.current[:neo4j_lucene_connection].each {|hits| hits.close} if Thread.current[:neo4j_lucene_connection]
@@ -201,14 +218,23 @@ module Neo4j
         end
 
         def findable?(entity)
-          entity.is_a? self
+          entity.is_a?(self) and entity.reachable_from_ref_node?
         end
 
-        def find_with_indexer(*args)
-          hits                                     = _indexer.find(*args)
+        def find_with_indexer(*args, &block)
+          hits = if args.first.is_a?(Hash) && args.first.include?(:conditions)
+                   params = args.first.clone
+                   params.delete(:conditions)
+                   raise "ARGS #{args.inspect}" if args.size > 1
+                   _wrapper_find(args.first[:conditions], params, &block)
+                 else
+                   _wrapper_find(*args, &block)
+                 end
+
+
           # We need to save this so that the Rack Neo4j::Rails:LuceneConnection::Closer can close it
           Thread.current[:neo4j_lucene_connection] ||= []
-          Thread.current[:neo4j_lucene_connection] << hits
+          Thread.current[:neo4j_lucene_connection] << hits if hits.respond_to?(:close)
           hits
         end
 
@@ -222,7 +248,7 @@ module Neo4j
         #
         # @return [ Node ] The first or new node.
         def find_or(method, attrs = {}, &block)
-          first(:conditions => attrs) || send(method, attrs, &block)
+          first(attrs) || send(method, attrs, &block)
         end
       end
     end
