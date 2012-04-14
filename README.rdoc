@@ -1,4 +1,4 @@
-== Welcome to Neo4j.rb {<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j] {<img src="https://gemnasium.com/andreasronge/neo4j.png" />}[https://gemnasium.com/andreasronge/neo4j]
+= Welcome to Neo4j.rb {<img src="https://secure.travis-ci.org/andreasronge/neo4j.png" />}[http://travis-ci.org/andreasronge/neo4j] {<img src="https://gemnasium.com/andreasronge/neo4j.png" />}[https://gemnasium.com/andreasronge/neo4j]
 
 Neo4j.rb is a graph database for JRuby.
 
@@ -9,15 +9,26 @@ It uses two powerful and mature Java libraries:
 * {Neo4J}[http://www.neo4j.org] - for persistence and traversal of the graph
 * {Lucene}[http://lucene.apache.org/java/docs/index.html] for querying and indexing.
 
-=== Documentation
+== Documentation
 
-* {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
-* {RDoc}[http://neo4j.rubyforge.org]
+==== Version < 2.0
+* {Guides and API}[http://neo4j.rubyforge.org/guides/index.html], version < 2.0
+* {RDoc}[http://neo4j.rubyforge.org] version < 2.0
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
+
+==== Version >= 2.0
+
+* YARD
 * RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
 
-=== Why Neo4j.rb or a Graph Database ?
+=== Presentation Materials and other URLs
+
+* {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
+* {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
+* {Docs from NeoTechnology}[http://docs.neo4j.org/]
+
+== Why Neo4j.rb or a Graph Database ?
 
 Here are some of the major benefits of Neo4j.rb
 
@@ -33,73 +44,24 @@ Here are some of the major benefits of Neo4j.rb
 * ACID Transaction with rollbacks support.
 
 
-=== Public API
+== Public API
 
 The neo4j gem depends on the neo4j-wrapper and neo4j-core gems.
 
-==== neo4j gem
+=== neo4j gem
 
 {Neo4j::Rails::Model}
+
 {Neo4j::Rails::Relationship}
+
+{Neo4j::Rails::Observer}
+
 {Neo4j::Railtie}
 
-==== neo4j-wrapper gem
+{Neo4j::Rails::Versioning}
 
-{Neo4j::NodeMixin}
-{Neo4j::RelationshipMixin}
 
-==== neo4j-core gem
-
-{Neo4j::Node} The Java Neo4j Node
-
-{Neo4j::Relationship} The Java Relationship
-
-{Neo4j} The Database
-
-{Neo4j::Cypher} Cypher Query Generator, see RSpec spec/neo4j/cypher_spec
-
-{Neo4j::Algo} Included algorithms, like shortest path
-
-=== Some Examples
-
-==== Neo4j::Node
-
-Example of creating a Neo4j::Node
-
-  require "rubygems"
-  require 'neo4j'
-
-  Neo4j::Transaction.run do
-    node = Neo4j::Node.new (:name => 'andreas')
-    node.outgoing(:friends) << Neo4j::Node.new (:name => 'peter')
-    node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
-  end
-
-The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http://github.com/andreasronge/neo4j-core] gem.
-
-==== Neo4j::NodeMixin
-
-Example of mapping a ruby class to a node and delaring properties and relationships and lucene index.
-
-  class Person
-    include Neo4j::NodeMixin
-    property :name
-    property :city
-
-    has_n :friends
-    has_one :address
-    index :name
-  end
-
-  # assume we have an transaction already running
-  andreas = Person.new (:name => 'andreas')
-  andreas.friends << Person.new (:name => 'peter')
-  andreas.friends.each {|person| puts "name #{person.name}" }
-  Person.find("name: andreas").first.name # => 'andreas'
-
-The Neo4j::NodeMixin and Neo4j::RelationshipMixin is implemented in the {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper] gem
-
-==== Neo4j::RailsNode
+==== Example
 
 Example of using Neo4j with Rails 3 (ActiveModel)
 
@@ -137,11 +99,68 @@ Example of creating an Neo4j Application from scratch:
  open a webbrowser: http://localhost:3000/users
 
 To run it with Tomcat instead of WEBrick
-  
+
   gem install trinidad
   trinidad
 
-=== Architecture
+
+=== {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper]
+
+{Neo4j::NodeMixin}[http://rdoc.info/github/andreasronge/neo4j-wrapper/Neo4j/NodeMixin]
+
+{Neo4j::RelationshipMixin}[http://rdoc.info/github/andreasronge/neo4j-wrapper/Neo4j/RelationshipMixin]
+
+==== Example
+
+Example of mapping a ruby class to a node and delaring properties and relationships and lucene index.
+
+  class Person
+    include Neo4j::NodeMixin
+    property :name
+    property :city
+
+    has_n :friends
+    has_one :address
+    index :name
+  end
+
+  # assume we have an transaction already running
+  andreas = Person.new (:name => 'andreas')
+  andreas.friends << Person.new (:name => 'peter')
+  andreas.friends.each {|person| puts "name #{person.name}" }
+  Person.find("name: andreas").first.name # => 'andreas'
+
+The Neo4j::NodeMixin and Neo4j::RelationshipMixin is implemented in the {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper] gem
+
+
+=== neo4j-core gem
+
+{Neo4j::Node}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Node] The Java Neo4j Node
+
+{Neo4j::Relationship}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Relationship] The Java Relationship
+
+{Neo4j}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j] The Database
+
+{Neo4j::Cypher}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Cypher] Cypher DSL, see RSpec spec/neo4j/cypher_spec
+
+{Neo4j::Algo}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Algo] Included algorithms, like shortest path
+
+==== Example
+
+Example of creating a Neo4j::Node
+
+  require "rubygems"
+  require 'neo4j'
+
+  Neo4j::Transaction.run do
+    node = Neo4j::Node.new (:name => 'andreas')
+    node.outgoing(:friends) << Neo4j::Node.new (:name => 'peter')
+    node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
+  end
+
+The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http://github.com/andreasronge/neo4j-core] gem.
+
+== Architecture
 
 As you seen above, neo4j.rb consists of a three layers API:
 
@@ -151,19 +170,14 @@ As you seen above, neo4j.rb consists of a three layers API:
 
 Notice that you can always access the lower layers if you want to do some more advanced. You can even access the Java API directly.
 
-=== Presentation Materials and other URLs
-* {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
-* {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
-* {Neo4j wiki, check the guidelines and domain modeling gallery pages}[http://wiki.neo4j.org/content/Main_Page]
-
-=== Project information
+== Project information
 * {GitHub}[http://github.com/andreasronge/neo4j/tree/master]
 * {Issue Tracking}[https://github.com/andreasronge/neo4j/issues]
 * {Twitter}[http://twitter.com/ronge]
 * {Mailing list, neo4jrb@googlegroups.com}[http://groups.google.com/group/neo4jrb]
 * {Read only, old lighthouse issues}[http://neo4j.lighthouseapp.com]
 
-=== Configuration
+== Configuration
 
 {Development configuration}[http://neo4j.rubyforge.org/guides/index.html#development-and-testing-configuration] - You can configure Neo4j through the {Neo4j::Config}[http://neo4j.rubyforge.org/Neo4j/Config.html] object.
 
@@ -184,3 +198,6 @@ Do you need help - send me an email (andreas.ronge at gmail dot com).
 * Neo4j.rb - MIT, see the LICENSE file http://github.com/andreasronge/neo4j/tree/master/LICENSE.
 * Lucene -  Apache, see http://lucene.apache.org/java/docs/features.html
 * \Neo4j - Dual free software/commercial license, see http://neo4j.org/
+
+Notice there are different license for the neo4j-community, neo4j-advanced and neo4j-enterprise jar gems.
+Only the neo4j-community gem is by default required.

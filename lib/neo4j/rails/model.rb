@@ -1,65 +1,60 @@
 module Neo4j
   module Rails
-    # Includes the Neo4j::NodeMixin and adds ActiveRecord/Model like behaviour.
+    # Makes Neo4j nodes and relationships behave like active record objects.
     # That means for example that you don't have to care about transactions since they will be
-    # automatically be created when needed.
+    # automatically be created when needed. Validation, Callbacks etc. are also supported.
     #
-    # ==== Included Mixins
-    #
-    # * Neo4j::Rails::Persistence :: handles how to save, create and update the model
-    # * Neo4j::Rails::Attributes :: handles how to save and retrieve attributes
-    # * Neo4j::Rails::Mapping::Property :: allows some additional options on the #property class method
-    # * Neo4j::Rails::Serialization :: enable to_xml and to_json
-    # * Neo4j::Rails::Timestamps :: handle created_at, updated_at timestamp properties
-    # * Neo4j::Rails::Validations :: enable validations
-    # * Neo4j::Rails::Callbacks :: enable callbacks
-    # * Neo4j::Rails::Finders :: ActiveRecord style find
-    # * Neo4j::Rails::Relationships :: handles persisted and none persisted relationships.
-    # * Neo4j::Rails::Compositions :: see Neo4j::Rails::Compositions::ClassMethods, similar to http://api.rubyonrails.org/classes/ActiveRecord/Aggregations/ClassMethods.html
-    # * ActiveModel::Observing # enable observers, see Rails documentation.
-    # * ActiveModel::Translation - class mixin
-    #
-    # ==== Traversals
-    # This class only expose a limited set of traversals.
-    # If you want to access the raw java node to do traversals use the _java_node.
+    # @example Traverse
     #
     #   class Person < Neo4j::Rails::Model
     #   end
     #
     #   person = Person.find(...)
-    #   person._java_node.outgoing(:foo).depth(:all)...
-    #
-    # ==== has_n and has_one
-    #
-    # The has_n and has_one relationship accessors returns objects of type Neo4j::Rails::Relationships::RelsDSL
-    # and Neo4j::Rails::Relationships::NodesDSL which behaves more like the Active Record relationships.
-    # Notice that unlike Neo4j::NodeMixin new relationships are kept in memory until @save@ is called.
-    #
-    # ==== Callbacks
-    #
-    # The following callbacks are supported :initialize, :validation, :create, :destroy, :save, :update.
-    # It works with before, after and around callbacks, see the Rails documentation.
-    # Notice you can also do callbacks using the Neo4j::Rails::Callbacks module (check the Rails documentation)
-    #
-    # ==== Examples
-    #
-    #   person.outgoing(:friends) << other_person
+    #   person.outgoing(:foo) << Person.create
     #   person.save!
-    #
+    #   person.outgoing(:foo).depth(:all)...
     #   person.outgoing(:friends).map{|f| f.outgoing(:knows).to_a}.flatten
     #
-    # ==== Examples
+    # @example Declared Relationships: has_n and has_one
     #
-    #   Neo4j::Transaction.run do
-    #     person._java_node.outgoing(:friends) << other_person
+    #   class Person < Neo4j::Rails::Model
     #   end
     #
-    #   person._java_node.outgoing(:friends).outgoing(:knows).depth(4)
+    #   class Person
+    #      has_n(:friends).to(Person)
+    #      has_n(:employed_by)
+    #   end
     #
-    # Notice you can also declare outgoing relationships with the #has_n and #has_one class method.
+    #   Person.new.foo << other_node
+    #   Person.friends.build(:name => 'kalle')
     #
-    # See Neo4j::Rails::Relationships#outgoing
-    # See Neo4j::Traversal#outgoing (when using it from the _java_node)
+    # @example Declared Properties and Index
+    #
+    #   class Person < Neo4j::Rails::Model
+    #     property :name
+    #     property :age, :type => Fixnum, :index => :exact
+    #   end
+    #
+    #   Person.create(:name => 'kalle', :age => 42, :undeclared_prop => 3.14)
+    #   Person.find_by_age(42)
+    #
+    # @example Callbacks
+    #
+    #   class Person < Neo4j::Rails::Model
+    #     before_save :do_something
+    #     def do_something
+    #     end
+    #   end
+    #
+    # = Class Method Modules
+    # * {Neo4j::Rails::Persistence::ClassMethods} defines methods like: <tt>create</tt> and <tt>destroy_all</tt>
+    # * {Neo4j::Rails::Attributes::ClassMethods} defines the <tt>property</tt> and <tt>columns</tt> methods.
+    # * {Neo4j::Rails::NestedAttributes::ClassMethods} defines <tt>accepts_nested_attributes_for</tt>
+    # * {Neo4j::Rails::HasN::ClassMethods} defines <tt>has_n</tt> and <tt>has_one</tt>
+    # * {Neo4j::Rails::Finders::ClassMethods} defines <tt>find</tt>
+    # * {Neo4j::Rails::Compositions::ClassMethods} defines <tt>composed_of</tt> method
+    # * {Neo4j::Rails::AcceptId::ClassMethods} defines <tt>accepts_id_for</tt> method.
+    #
     class Model
       extend ActiveModel::Translation
 
