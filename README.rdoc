@@ -19,7 +19,7 @@ It uses two powerful and mature Java libraries:
 
 ==== Version >= 2.0
 
-* YARD
+* {YARD}[http://rdoc.info/github/andreasronge/neo4j/master/frames]
 * RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
 
 === Presentation Materials and other URLs
