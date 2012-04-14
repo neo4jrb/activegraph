@@ -11,9 +11,10 @@ It uses two powerful and mature Java libraries:
 
 == Documentation
 
-==== Version < 2.0
-* {Guides and API}[http://neo4j.rubyforge.org/guides/index.html], version < 2.0
-* {RDoc}[http://neo4j.rubyforge.org] version < 2.0
+==== Version < 2.0.alpha.5
+
+* {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
+* {RDoc}[http://neo4j.rubyforge.org]
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
 
@@ -24,6 +25,7 @@ It uses two powerful and mature Java libraries:
 
 === Presentation Materials and other URLs
 
+* {JRubyConf 2012 May}[http://jrubyconf.com/#speakers]
 * {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
 * {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
 * {Docs from NeoTechnology}[http://docs.neo4j.org/]
@@ -65,25 +67,27 @@ The neo4j gem depends on the neo4j-wrapper and neo4j-core gems.
 
 Example of using Neo4j with Rails 3 (ActiveModel)
 
-  class User < Neo4j::RailsNode
-    attr_accessor :password
-    attr_accessible :email, :password, :password_confirmation, :pending_account
+    class User < Neo4j::Rails::Model
+      attr_accessor :password
+      attr_accessible :email, :password, :password_confirmation, :pending_account
 
-    after_save   :encrypt_password
+      after_save   :encrypt_password
 
-    email_regex = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
+      email_regex = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
 
-    property :email
-    index :email
+      # add an exact lucene index on the email property
+      property :email, :index => :exact
 
-    has_one(:avatar).to(Avator)
+      has_one(:avatar).to(Avator)
 
-    validates :email, :presence => true,:format   => { :with => email_regex }
-    validates :email, :uniqueness => true, :unless => :pending_account?
-    accepts_nested_attributes_for :avatar, :allow_destroy => true
+      validates :email, :presence => true,:format   => { :with => email_regex }
+      validates :email, :uniqueness => true, :unless => :pending_account?
+      accepts_nested_attributes_for :avatar, :allow_destroy => true
 
-    ...
-  end
+    end
+
+    u = User.new(:name => 'kalle', :age => 42, :email => "bla@foo.com")
+    u.save
 
 ==== Generate a Rails Application
 
@@ -114,21 +118,21 @@ To run it with Tomcat instead of WEBrick
 
 Example of mapping a ruby class to a node and delaring properties and relationships and lucene index.
 
-  class Person
-    include Neo4j::NodeMixin
-    property :name
-    property :city
+    class Person
+      include Neo4j::NodeMixin
+      property :name
+      property :city
 
-    has_n :friends
-    has_one :address
-    index :name
-  end
+      has_n :friends
+      has_one :address
+      index :name
+    end
 
-  # assume we have an transaction already running
-  andreas = Person.new (:name => 'andreas')
-  andreas.friends << Person.new (:name => 'peter')
-  andreas.friends.each {|person| puts "name #{person.name}" }
-  Person.find("name: andreas").first.name # => 'andreas'
+    # assume we have an transaction already running !
+    andreas = Person.new (:name => 'andreas')
+    andreas.friends << Person.new (:name => 'peter')
+    andreas.friends.each {|person| puts "name #{person.name}" }
+    Person.find("name: andreas").first.name # => 'andreas'
 
 The Neo4j::NodeMixin and Neo4j::RelationshipMixin is implemented in the {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper] gem
 
@@ -149,14 +153,14 @@ The Neo4j::NodeMixin and Neo4j::RelationshipMixin is implemented in the {neo4j-w
 
 Example of creating a Neo4j::Node
 
-  require "rubygems"
-  require 'neo4j'
+    require "rubygems"
+    require 'neo4j'
 
-  Neo4j::Transaction.run do
-    node = Neo4j::Node.new (:name => 'andreas')
-    node.outgoing(:friends) << Neo4j::Node.new (:name => 'peter')
-    node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
-  end
+    Neo4j::Transaction.run do
+      node = Neo4j::Node.new(:name => 'andreas')
+      node.outgoing(:friends) << Neo4j::Node.new(:name => 'peter')
+      node.outgoing(:friends).each {|node| puts "name #{node[:name]}"}
+    end
 
 The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http://github.com/andreasronge/neo4j-core] gem.
 
@@ -164,9 +168,9 @@ The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http:
 
 As you seen above, neo4j.rb consists of a three layers API:
 
-* Layer 1. For interacting with the basic building blocks of the graph database (node, properties and relationship), see Neo4j::Node and Neo4j::Relationship classes.
-* Layer 2. A binding API to Ruby objects, see Neo4j::NodeMixin and Neo4j::RelationshipMixin modules.
-* Layer 3. An implementation of the Rails Active Model and a subset of the Active Record API, see Neo4j::RailsNode and Neo4j::RailsRelationship class.
+* Layer 1, neo4j-core. For interacting with the basic building blocks of the graph database (node, properties and relationship), see Neo4j::Node and Neo4j::Relationship classes.
+* Layer 2, neo4j-wrapper. A binding API to Ruby objects, see Neo4j::NodeMixin and Neo4j::RelationshipMixin modules.
+* Layer 3, neo4j. An implementation of the Rails Active Model and a subset of the Active Record API, see Neo4j::RailsNode and Neo4j::RailsRelationship class.
 
 Notice that you can always access the lower layers if you want to do some more advanced. You can even access the Java API directly.
 

@@ -1,3 +1,12 @@
+* Lots of refactoring and better/more RSpecs
+* Cypher DSL support
+* Modularization - e.g. make it possible to create your own wrapper
+* Made the Lucene indexing more flexible
+* Renamed size methods to count since it does simply count all the relationships (e.g. Person.all.count)
+# Changed API - rel_type always returns a Symbol
+* Changed API - #rels and #rel first parameter is always :outgoing, :incoming or :both
+* Moved code to the neo4j-core and neo4j-wrapper gems
+
 == 2.0.0.alpha.5 / 2012-03-27
 * Fix for HA/cluster bug [#173]
 * Upgrade to neo4j-community jars 1.7.0.alpha.1

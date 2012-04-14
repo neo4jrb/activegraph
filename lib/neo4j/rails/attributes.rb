@@ -275,12 +275,16 @@ module Neo4j
         #       "Ruby:#{v}"
         #     end
         #
-        #     extend self
-        #  end
+        #     def index_as
+        #       String
+        #     end
         #
-        #  class Person < Neo4j::RailsModel
-        #    property :name, :converter => MyConverter
-        #  end
+        #     extend self
+        #   end
+        #
+        #   class Person < Neo4j::RailsModel
+        #     property :name, :converter => MyConverter
+        #   end
         #
         def property(*args)
           options = args.extract_options!

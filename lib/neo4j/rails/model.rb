@@ -5,7 +5,6 @@ module Neo4j
     # automatically be created when needed. Validation, Callbacks etc. are also supported.
     #
     # @example Traverse
-    #
     #   class Person < Neo4j::Rails::Model
     #   end
     #
