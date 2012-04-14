@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Neo4j
   module Rails
-    class AttributesTestModel < Neo4j::RailsNode
+    class AttributesTestModel < Neo4j::Rails::Model
       property :name
       property :number_property, :type => :float
       property :foo

@@ -1,7 +1,7 @@
 module Neo4j::Rails
   # Allows accepting id for association objects.
   # @example
-  #   class Book < Neo4j::RailsNode
+  #   class Book < Neo4j::Rails::Model
   #     has_one(:author).to(Author)
   #     accepts_id_for :author
   #   end
@@ -18,7 +18,7 @@ module Neo4j::Rails
       # Adds association_id getter and setter for one or more has_one associations
       #
       # @example
-      #   class Book < Neo4j::RailsNode
+      #   class Book < Neo4j::Rails::Model
       #     has_one(:author).to(Author)
       #     has_one(:publisher).to(Publisher)
       #     accepts_id_for :author, :publisher
@@ -57,7 +57,7 @@ module Neo4j::Rails
         class_eval %Q{
           def #{association_name}_id=(id)
             relation_target_class = self.class._decl_rels[:#{association_name}].target_class
-            association_class =  relation_target_class <= self.class ?  Neo4j::RailsNode : relation_target_class
+            association_class =  relation_target_class <= self.class ?  Neo4j::Rails::Model : relation_target_class
             self.#{association_name} = id.present? ? association_class.find(id) : nil
           end
         }, __FILE__, __LINE__

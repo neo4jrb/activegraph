@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class TimestampTest < Neo4j::RailsNode
+class TimestampTest < Neo4j::Rails::Model
   property :created_at
   property :updated_at
 end
@@ -8,7 +8,7 @@ end
 class InheritedTimestampTest < TimestampTest
 end
 
-class DateTimestampTest < Neo4j::RailsNode
+class DateTimestampTest < Neo4j::Rails::Model
   property :created_at, :type => Date, :index => :exact
 end
 

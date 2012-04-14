@@ -1,26 +1,26 @@
 require 'spec_helper'
 
-class RequiredProperty < Neo4j::RailsNode
+class RequiredProperty < Neo4j::Rails::Model
 	property :required,       :null => false
 end
 
-class LengthProperty < Neo4j::RailsNode
+class LengthProperty < Neo4j::Rails::Model
 	property :length,         :limit => 128
 end
 
-class DefaultProperty < Neo4j::RailsNode
+class DefaultProperty < Neo4j::Rails::Model
 	property :default,        :default => "Test"
 	property :false_property, :default => false
 	property :date_property,  :default => Time.now, :type => Time
 end
 
-class LotsaProperties < Neo4j::RailsNode
+class LotsaProperties < Neo4j::Rails::Model
 	property :required,       :null => false
 	property :length,         :limit => 128
 	property :nothing
 end
 
-class DateProperties < Neo4j::RailsNode
+class DateProperties < Neo4j::Rails::Model
   property :date_time, 	    :type => :datetime
   property :date_property,  :type => :date
   property :date_as_type,   :type => Date
@@ -28,32 +28,32 @@ class DateProperties < Neo4j::RailsNode
 
 end
 
-class ProtectedProperties < Neo4j::RailsNode
+class ProtectedProperties < Neo4j::Rails::Model
 	property :name
 	property :admin, :default => false
 
 	attr_accessible :name
 end
 
-class FixnumProperties < Neo4j::RailsNode
+class FixnumProperties < Neo4j::Rails::Model
   property :age, :type => :fixnum
 end
 
-class FloatProperties < Neo4j::RailsNode
+class FloatProperties < Neo4j::Rails::Model
   property :val, :type => :float
 end
 
-class BooleanProperties < Neo4j::RailsNode
+class BooleanProperties < Neo4j::Rails::Model
   property :val, :type => :boolean
 end
 
 
 
 describe "hash", :type => :integration do
-  class UniqueHashModel < Neo4j::RailsNode
+  class UniqueHashModel < Neo4j::Rails::Model
   end
 
-  class UniqueHashRelationship < Neo4j::RailsRelationship
+  class UniqueHashRelationship < Neo4j::Rails::Relationship
   end
 
   it "has a unique hash for persisted models" do
@@ -71,8 +71,8 @@ describe "hash", :type => :integration do
   end
 
   it "has a unique hash for persisted relationships" do
-    a = Neo4j::RailsNode.create
-    b = Neo4j::RailsNode.create
+    a = Neo4j::Rails::Model.create
+    b = Neo4j::Rails::Model.create
     x = UniqueHashRelationship.create(:foo, a, b)
     y = UniqueHashRelationship.first
     x.hash.should == y.hash
@@ -80,8 +80,8 @@ describe "hash", :type => :integration do
   end
 
   it "has not unique hash for not persisted relationships" do
-    a = Neo4j::RailsNode.create
-    b = Neo4j::RailsNode.create
+    a = Neo4j::Rails::Model.create
+    b = Neo4j::Rails::Model.create
     x = UniqueHashRelationship.new(:foo, a, b)
     y = UniqueHashRelationship.new(:foo, a, b)
     x.hash.should_not == y.hash
@@ -428,7 +428,7 @@ describe ProtectedProperties, :type => :integration do
 end
 
 describe "property_before_type_cast", :type => :integration do
-  class PropertyTestModel < Neo4j::RailsNode
+  class PropertyTestModel < Neo4j::Rails::Model
     property :name
     property :number_property, :type => :float
     property :date_property, :type => :date

@@ -4,7 +4,7 @@ module Neo4j
     # To use versioning, include this module in your model.
     #
     # Example:
-    #   class VersionableModel < Neo4j::RailsNode
+    #   class VersionableModel < Neo4j::Rails::Model
     #     include Neo4j::Rails::Versioning
     #   end
     #
@@ -27,7 +27,7 @@ module Neo4j
     # To control the maximum number of versions created, you can use the max_versions property.
     #
     # Example:
-    #   class MaxVersionableModel < Neo4j::RailsNode
+    #   class MaxVersionableModel < Neo4j::Rails::Model
     #     include Neo4j::Rails::Versioning
     #     max_versions 10
     #   end

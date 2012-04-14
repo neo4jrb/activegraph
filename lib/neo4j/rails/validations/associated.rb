@@ -11,7 +11,7 @@ module Neo4j
       module ClassMethods
         # Validates whether the associated object or objects are all valid themselves. Works with any kind of association.
         #
-        #   class Book < Neo4j::RailsNode
+        #   class Book < Neo4j::Rails::Model
         #     has_n :pages
         #     belongs_to :library
         #
@@ -20,7 +20,7 @@ module Neo4j
         #
         # Warning: If, after the above definition, you then wrote:
         #
-        #   class Page < Neo4j::RailsNode
+        #   class Page < Neo4j::Rails::Model
         #     has_n(:book).from(:pages)
         #
         #     validates_associated :book

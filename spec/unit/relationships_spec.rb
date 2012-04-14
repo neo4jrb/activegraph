@@ -44,9 +44,9 @@ describe Neo4j::Rails::Relationships, :type => :unit do
       it "creates a relationship with attributes" do
         other = mock("other")
         other.should_receive(:save).and_return(true)
-        Neo4j::RailsNode.should_receive(:new).and_return(other)
+        Neo4j::Rails::Model.should_receive(:new).and_return(other)
         rel = mock("Relationship")
-        Neo4j::RailsRelationship.should_receive(:new).with(:foo, node, other, :since => 1994).and_return(rel)
+        Neo4j::Rails::Relationship.should_receive(:new).with(:foo, node, other, :since => 1994).and_return(rel)
         node.rels(:outgoing, :foo).create(:since => 1994)
       end
     end

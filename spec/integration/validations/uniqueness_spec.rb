@@ -150,7 +150,7 @@ module Neo4j
         describe "An unindexed unique field" do
           it "should cause an exception for case sensitive matches" do
             expect do
-              class UnindexedTest < Neo4j::RailsNode
+              class UnindexedTest < Neo4j::Rails::Model
                 property :name
 
                 validates :name, :uniqueness => true
@@ -162,7 +162,7 @@ module Neo4j
 
           it "should cause an exception for case insensitive matches" do
             expect do
-              class CaseInsensitiveUnindexedTest < Neo4j::RailsNode
+              class CaseInsensitiveUnindexedTest < Neo4j::Rails::Model
                 property :name
 
                 validates :name, :uniqueness => {:case_sensitive => false}
@@ -175,7 +175,7 @@ module Neo4j
 
         describe "Case sensitivity" do
           it "should check uniqueness on case sensitive basis by default" do
-            class CaseSensitiveTest < Neo4j::RailsNode
+            class CaseSensitiveTest < Neo4j::Rails::Model
               property :name
               index :name
               validates :name, :uniqueness => true
@@ -189,7 +189,7 @@ module Neo4j
           end
 
           it "should check properties on a case insensitive basis if specified" do
-            class CaseInsensitiveTest < Neo4j::RailsNode
+            class CaseInsensitiveTest < Neo4j::Rails::Model
               property :name
               index :name, :type => :fulltext
               validates :name, :uniqueness => {:case_sensitive => false}
@@ -201,7 +201,7 @@ module Neo4j
           end
 
           it "should check properties with spaces for case insensitive propeties" do
-            class CaseInsensitiveWithSpacesTest < Neo4j::RailsNode
+            class CaseInsensitiveWithSpacesTest < Neo4j::Rails::Model
               property :name
               index :name, :type => :fulltext
               validates :name, :uniqueness => {:case_sensitive => false}
@@ -217,7 +217,7 @@ module Neo4j
           end
 
           it "should allow presence validation with case insensitive propeties" do
-            class CaseInsensitiveWithNilTest < Neo4j::RailsNode
+            class CaseInsensitiveWithNilTest < Neo4j::Rails::Model
               property :name, :required
               index :name, :type => :fulltext
               validates :name, :uniqueness => {:case_sensitive => false}
@@ -227,7 +227,7 @@ module Neo4j
           end
 
           it "should check properties on a case insensitive basis with allow_blank false" do
-            class CaseInsensitiveWithAllowBlankFalseTest < Neo4j::RailsNode
+            class CaseInsensitiveWithAllowBlankFalseTest < Neo4j::Rails::Model
               property :name
               index :name, :type => :fulltext
               validates :name, :uniqueness => {:case_sensitive => false}, :allow_blank => false
@@ -239,7 +239,7 @@ module Neo4j
           end
 
           it "should handle quotes in unique properties" do
-            class CaseInsensitiveWithQuotesTest < Neo4j::RailsNode
+            class CaseInsensitiveWithQuotesTest < Neo4j::Rails::Model
               property :name
               index :name, :type => :fulltext
               validates :name, :uniqueness => {:case_sensitive => false}

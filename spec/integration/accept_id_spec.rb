@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-class AcceptIdAssociatedModel < Neo4j::RailsNode
+class AcceptIdAssociatedModel < Neo4j::Rails::Model
 end
-class GenericIdTestModel < Neo4j::RailsNode
+class GenericIdTestModel < Neo4j::Rails::Model
 end
-class AcceptIdModel < Neo4j::RailsNode
+class AcceptIdModel < Neo4j::Rails::Model
   has_one(:child).to(AcceptIdAssociatedModel)
   has_one(:generic_child)
   has_one(:other_child)

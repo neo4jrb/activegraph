@@ -68,7 +68,7 @@ RSpec.configure do |c|
   end
 
   c.after(:each, :type => :integration) do
-    Neo4j::RailsNode.close_lucene_connections
+    Neo4j::Rails::Model.close_lucene_connections
     Neo4j::Transaction.run do
       Neo4j.threadlocal_ref_node = Neo4j::Node.new :name => "ref_#{$name_counter}"
       $name_counter += 1
@@ -94,7 +94,7 @@ module TempModel
   end
 end
 
-def create_model(base_class = Neo4j::RailsNode, name=nil, &block)
+def create_model(base_class = Neo4j::Rails::Model, name=nil, &block)
   klass = Class.new(base_class) do
     def mock_save(java_entity)
       @_java_node = java_entity
@@ -114,7 +114,7 @@ def create_model(base_class = Neo4j::RailsNode, name=nil, &block)
   klass
 end
 
-def create_rel_model(base_class = Neo4j::RailsRelationship, &block)
+def create_rel_model(base_class = Neo4j::Rails::Relationship, &block)
   @@_rel_counter ||= 1
   name ||= "Relationship_#{@@_rel_counter}"
   @@_rel_counter += 1

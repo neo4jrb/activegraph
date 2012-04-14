@@ -1,16 +1,16 @@
 require 'spec_helper'
 
 
-class FormtasticAssociatedModel < Neo4j::RailsNode
+class FormtasticAssociatedModel < Neo4j::Rails::Model
   property :name
 end
 
-class FormtasticModel < Neo4j::RailsNode
+class FormtasticModel < Neo4j::Rails::Model
   property :name
   has_n(:children).to(FormtasticAssociatedModel)
 end
 
-describe Neo4j::RailsNode, "has_n", :type => :integration do
+describe Neo4j::Rails::Model, "has_n", :type => :integration do
 
   subject do
     FormtasticModel.new

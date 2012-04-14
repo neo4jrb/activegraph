@@ -109,7 +109,7 @@ module Neo4j
       # * raise an exception in all other cases.
       # @param [:both, :incoming, :outgoing] dir the direction of the relationship
       # @param [Symbol, String] rel_type the type of relationship, see Neo4j::Core::Relationship#rel_type
-      # @return [Neo4j::Relationship, nil, Neo4j::RailsRelationship] the Relationship or wrapper for the Relationship or nil
+      # @return [Neo4j::Relationship, nil, Neo4j::Rails::Relationship] the Relationship or wrapper for the Relationship or nil
       # @raise an exception if more then one relationship of given type and direction was found
       # @note it can return an unpersisted relationship
       def rel(dir, rel_type)

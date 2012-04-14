@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', '..', 'spec_helper')
 
-class NilTest < Neo4j::RailsNode
+class NilTest < Neo4j::Rails::Model
 	property :the_property
 	
 	validates :the_property, :non_nil => true

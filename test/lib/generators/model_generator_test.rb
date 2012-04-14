@@ -13,7 +13,7 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/models/account.rb" do |account|
       assert_class "Account", account do |klass|
-        assert_match /Neo4j::RailsNode/, klass
+        assert_match /Neo4j::Rails::Model/, klass
       end
     end
   end

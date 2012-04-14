@@ -34,7 +34,7 @@ module Neo4j
         end
 
         def delete_all
-          # since some of the relationships might not be a Neo4j::RailsRelationship we must create a transaction
+          # since some of the relationships might not be a Neo4j::Rails::Relationship we must create a transaction
           Neo4j::Transaction.run do
             each{|r| r.respond_to?(:delete) ? r.delete : r.del}
           end
@@ -58,7 +58,7 @@ module Neo4j
       # if creates, finds relationships instead of nodes.
       #
       # ==== Example
-      #   class Person < Neo4j::RailsNode
+      #   class Person < Neo4j::Rails::Model
       #      has_n(:friends)
       #   end
       #
@@ -120,7 +120,7 @@ module Neo4j
         # Specifies that we want outgoing (undeclared) relationships.
         #
         # @example
-        #   class Thing < Neo4j::RailsNode
+        #   class Thing < Neo4j::Rails::Model
         #   end
         #
         #   t = Thing.find(...)
@@ -186,7 +186,7 @@ module Neo4j
         # Same as Neo4j::Rails::Relationships::NodesDSL#all except that it searches the relationships instead of
         # the nodes.
         def all(*args)
-          if args.first.class == Neo4j::RailsRelationship #arg is a relationship
+          if args.first.class == Neo4j::Rails::Relationship #arg is a relationship
             find_all{|r| r == args.first}
           elsif ((args.first.is_a?(Integer) || args.first.is_a?(String)) && args.first.to_i > 0) #arg is an int
             find_all{|r| r.start_node.id.to_i == args.first.to_i || r.end_node.id.to_i == args.first.to_i}
@@ -233,7 +233,7 @@ module Neo4j
 
         def node_in?(*args)
           # does it contain an string, which will be treated like a condition ?
-          if args.find { |a| a.class.superclass == Neo4j::RailsNode }
+          if args.find { |a| a.class.superclass == Neo4j::Rails::Model }
             return true 
           else
             return false

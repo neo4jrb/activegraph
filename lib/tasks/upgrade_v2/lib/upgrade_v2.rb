@@ -1,7 +1,7 @@
 # A script for renaming relationship
 # In Ne4j.rb version 2.0.0 the relationship declared with has_n(something).to(otherclass)
 # has changed. In order to change the relationship of an already existing database you can run this script.
-# Use the migrate_all! to automatically update all Neo4j::RailsNode classes
+# Use the migrate_all! to automatically update all Neo4j::Rails::Model classes
 # For Neo4j::NodeMixin nodes you need to migrate each node using the migrate method (since there are no automatic way of finding all instances of an Neo4j::NodeMixin)
 
 $NEO4J_CLASSES = []
@@ -15,7 +15,7 @@ module Neo4j
 
         def inherited(c)
           _old_inherited(c)
-          unless c == Neo4j::RailsNode
+          unless c == Neo4j::Rails::Model
             $NEO4J_CLASSES << c
             $DOMAIN_CLASSES << c if c.respond_to?(:ref_node_for_class)
           end

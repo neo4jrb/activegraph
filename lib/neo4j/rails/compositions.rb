@@ -20,7 +20,7 @@ module Neo4j
       # existing object) and how it can be turned back into attributes  (when the entity is saved to
       # the database).
       #
-      #   class Customer < Neo4j::RailsNode
+      #   class Customer < Neo4j::Rails::Model
       #     composed_of :balance, :class_name => "Money", :mapping => %w(balance amount)
       #     composed_of :address, :mapping => [ %w(address_street street), %w(address_city city) ]
       #   end
@@ -103,7 +103,7 @@ module Neo4j
       # unlike entity objects where equality is determined by identity. An entity class such as Customer can
       # easily have two different objects that both have an address on Hyancintvej. Entity identity is
       # determined by object or relational unique identifiers (such as primary keys). Normal
-      # Neo4j::RailsNode classes are entity objects.
+      # Neo4j::Rails::Model classes are entity objects.
       #
       # It's also important to treat the value objects as immutable. Don't allow the Money object to have
       # its amount changed after creation. Create a new Money object with the new value instead. This
@@ -135,7 +135,7 @@ module Neo4j
       # or an array. The <tt>:constructor</tt> and <tt>:converter</tt> options can be used to meet
       # these requirements:
       #
-      #   class NetworkResource < Neo4j::RailsNode
+      #   class NetworkResource < Neo4j::Rails::Model
       #     composed_of :cidr,
       #                 :class_name => 'NetAddr::CIDR',
       #                 :mapping => [ %w(network_address network), %w(cidr_range bits) ],

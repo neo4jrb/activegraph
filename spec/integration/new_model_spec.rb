@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class IceLolly < Neo4j::RailsNode
+class IceLolly < Neo4j::Rails::Model
   property :flavour
   property :required_on_create
   property :required_on_update
@@ -31,7 +31,7 @@ class ExtendedIceLolly < IceLolly
   property :extended_property
 end
 
-describe Neo4j::RailsNode, :type => :integration do
+describe Neo4j::Rails::Model, :type => :integration do
   it_should_behave_like "a new model"
   it_should_behave_like "a loadable model"
   it_should_behave_like "a saveable model"
@@ -47,13 +47,13 @@ describe Neo4j::RailsNode, :type => :integration do
     end
 
     it "should be possible to #count" do
-      Neo4j::RailsNode.count.should == 3
+      Neo4j::Rails::Model.count.should == 3
     end
 
     it "should be possible to #destroy_all" do
-      Neo4j::RailsNode.all.to_a.size.should == 3
-      Neo4j::RailsNode.destroy_all
-      Neo4j::RailsNode.all.to_a.should be_empty
+      Neo4j::Rails::Model.all.to_a.size.should == 3
+      Neo4j::Rails::Model.destroy_all
+      Neo4j::Rails::Model.all.to_a.should be_empty
     end
   end
 end
@@ -125,7 +125,7 @@ describe IceLolly, :type => :integration do
       end
 
       it "should also be included in the rules for the parent class" do
-        subject.class.superclass.all.to_a.should include(subject) if !subject.class.superclass == Neo4j::RailsNode
+        subject.class.superclass.all.to_a.should include(subject) if !subject.class.superclass == Neo4j::Rails::Model
       end
 
       context "and then made invalid" do

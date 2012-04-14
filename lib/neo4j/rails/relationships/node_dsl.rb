@@ -20,15 +20,15 @@ module Neo4j
         # Both the relationship class and the node class can be specified with the has_n and has_one.
         #
         # @example
-        #   class Person < Neo4j::RailsNode
+        #   class Person < Neo4j::Rails::Model
         #      has_n(:friends).to(Person).relationship(Friend)
         #      has_n(:knows)
         #   end
         #
         #   Person.friends.build(:name => 'kalle')  # creates a Person and Friends class.
-        #   Person.knows.build(:name => 'kalle') # creates a Neo4j::RailsNode and Neo4j::RailsRelationship class
+        #   Person.knows.build(:name => 'kalle') # creates a Neo4j::Rails::Model and Neo4j::Rails::Relationship class
         # @param [Hash] attrs the attributes for the created node
-        # @return [Neo4j::RailsNode]
+        # @return [Neo4j::Rails::Model]
         def build(attrs = {})
           self << (node = @storage.build(attrs))
           node
@@ -36,7 +36,7 @@ module Neo4j
 
         # Same as #build except that the relationship and node are saved.
         # @param (see #build)
-        # @return [Neo4j::RailsNode]
+        # @return [Neo4j::Rails::Model]
         def create(attrs = {})
           self << (node = @storage.create(attrs))
           node.save
@@ -45,7 +45,7 @@ module Neo4j
 
         # Same as #create but will raise an exception if an error (like validation) occurs.
         # @param (see #build)
-        # @return [Neo4j::RailsNode]
+        # @return [Neo4j::Rails::Model]
         def create!(attrs)
           self << (node = @storage.create(attrs))
           node.save!
@@ -60,7 +60,7 @@ module Neo4j
         # @example using existing nodes
         #   node.friends = ['42', '32']
         #
-        # @param [String, Neo4j::RailsNode] other
+        # @param [String, Neo4j::Rails::Model] other
         # @return self
         def <<(other)
           if other.is_a?(String)
@@ -100,7 +100,7 @@ module Neo4j
         #
         # @example Declaration of the relationship used in the examples below
         #
-        #   class Actor < Neo4j::RailsNode
+        #   class Actor < Neo4j::Rails::Model
         #     has_n(:acted_in)
         #   end
         #
@@ -119,7 +119,7 @@ module Neo4j
         # @example find a child node by delegate to Enumerable#find
         #   actor.acted_in.find{|n| n.title == 'movie_1'}
         #
-        # @return [Neo4j::RailsNode]
+        # @return [Neo4j::Rails::Model]
         def find(*args, &block)
           return super(*args, &block) if block
 
@@ -184,7 +184,7 @@ module Neo4j
         end
 
         # Delete relationships to the given nodes
-        # @param [Neo4j::RailsNode] nodes a list of nodes we want to delete relationships to
+        # @param [Neo4j::Rails::Model] nodes a list of nodes we want to delete relationships to
         def delete(*nodes)
           @storage.destroy_rels(@dir, *nodes)
         end

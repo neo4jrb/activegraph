@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-# Neo4j::RailsRelationship
-# Neo4j::RailsNode
+# Neo4j::Rails::Relationship
+# Neo4j::Rails::Model
 
-# Neo4j::RailsNode
-# Neo4j::RailsRelationship
+# Neo4j::Rails::Model
+# Neo4j::Rails::Relationship
 
-# Neo4j::RailsNodeMixin
-# Neo4j::RailsRelationshipMixin
+# Neo4j::Rails::ModelMixin
+# Neo4j::Rails::RelationshipMixin
 
 describe Neo4j::Rails::Persistence, :type => :unit do
 

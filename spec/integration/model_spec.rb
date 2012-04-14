@@ -2,11 +2,11 @@ require 'spec_helper'
 
 # Specs written by Nick Sieger and modified by Andreas Ronge
 
-describe Neo4j::RailsNode, :type => :integration do
+describe Neo4j::Rails::Model, :type => :integration do
 
   describe "new" do
     before :each do
-      @model = Neo4j::RailsNode.new
+      @model = Neo4j::Rails::Model.new
     end
     subject { @model }
 
@@ -57,8 +57,8 @@ describe Neo4j::RailsNode, :type => :integration do
 
   describe "load" do
     it "should load a previously stored node" do
-      model = Neo4j::RailsNode.create
-      result = Neo4j::RailsNode.load(model.id)
+      model = Neo4j::Rails::Model.create
+      result = Neo4j::Rails::Model.load(model.id)
       result.should == model
       result.should be_persisted
     end
@@ -163,7 +163,7 @@ describe Neo4j::RailsNode, :type => :integration do
     end
 
     it "should save successfully when model is ::Property" do
-      class ::Property < Neo4j::RailsNode
+      class ::Property < Neo4j::Rails::Model
       end
       ::Property.new.save.should be_true
     end
@@ -202,7 +202,7 @@ describe Neo4j::RailsNode, :type => :integration do
   end
 
   describe "find" do
-    class ReferenceNode < Neo4j::RailsNode
+    class ReferenceNode < Neo4j::Rails::Model
       property :name, :index => :exact
     end
 
@@ -276,7 +276,7 @@ describe Neo4j::RailsNode, :type => :integration do
       let(:reference1) { ReferenceNode.create(:name => 'Ref1') }
       let(:reference2) { ReferenceNode.create(:name => 'Ref2') }
 
-      class IndexedGlobalModel < Neo4j::RailsNode
+      class IndexedGlobalModel < Neo4j::Rails::Model
         property :name, :index => :exact
         ref_node { Neo4j.default_ref_node }
       end
@@ -319,7 +319,7 @@ describe Neo4j::RailsNode, :type => :integration do
 
   describe "destroy" do
     before :each do
-      @model = Neo4j::RailsNode.create
+      @model = Neo4j::Rails::Model.create
     end
 
     it "should remove the model from the database" do
@@ -332,17 +332,17 @@ describe Neo4j::RailsNode, :type => :integration do
   describe "create" do
 
     it "should save the model and return it" do
-      model = Neo4j::RailsNode.create
+      model = Neo4j::Rails::Model.create
       model.should be_persisted
     end
 
     it "should accept attributes to be set" do
-      model = Neo4j::RailsNode.create :name => "Nick"
+      model = Neo4j::Rails::Model.create :name => "Nick"
       model[:name].should == "Nick"
     end
 
     it "bang version should raise an exception if save returns false" do
-      expect { IceCream.create! }.to raise_error(Neo4j::RailsNode::RecordInvalidError)
+      expect { IceCream.create! }.to raise_error(Neo4j::Rails::Model::RecordInvalidError)
     end
 
     it "bang version should NOT raise an exception" do
@@ -351,7 +351,7 @@ describe Neo4j::RailsNode, :type => :integration do
     end
 
     it "should run before and after create callbacks" do
-      class RunBeforeAndAfterCreateCallbackModel < Neo4j::RailsNode
+      class RunBeforeAndAfterCreateCallbackModel < Neo4j::Rails::Model
         property :created
         before_create :timestamp
 
@@ -373,7 +373,7 @@ describe Neo4j::RailsNode, :type => :integration do
     end
 
     it "should run before and after save callbacks" do
-      class RunBeforeAndAfterSaveCallbackModel < Neo4j::RailsNode
+      class RunBeforeAndAfterSaveCallbackModel < Neo4j::Rails::Model
         property :created
         before_save :timestamp
 
@@ -396,7 +396,7 @@ describe Neo4j::RailsNode, :type => :integration do
     end
 
     it "should run before and after new & save callbacks" do
-      class RunBeforeAndAfterNewAndSaveCallbackModel < Neo4j::RailsNode
+      class RunBeforeAndAfterNewAndSaveCallbackModel < Neo4j::Rails::Model
         property :created
         before_save :timestamp
 
@@ -423,14 +423,14 @@ describe Neo4j::RailsNode, :type => :integration do
 
   describe "update_attributes" do
     it "should save the attributes" do
-      model = Neo4j::RailsNode.new
+      model = Neo4j::Rails::Model.new
       model.update_attributes(:a => 1, :b => 2).should be_true
       model[:a].should == 1
       model[:b].should == 2
     end
 
     it "should not update the model if it is invalid" do
-      class UpdatedAttributesModel < Neo4j::RailsNode
+      class UpdatedAttributesModel < Neo4j::Rails::Model
         property :name
         validates_presence_of :name
       end
@@ -455,7 +455,7 @@ describe Neo4j::RailsNode, :type => :integration do
 
         lambda do
           model.update_attributes!(:icecream => nil)
-        end.should raise_error #(Neo4j::RailsNode::RecordInvalidError)
+        end.should raise_error #(Neo4j::Rails::Model::RecordInvalidError)
 
         model.reload.icecream.should_not be_nil
       end
@@ -534,7 +534,7 @@ describe Neo4j::RailsNode, :type => :integration do
 
   describe "Neo4j::Rails::Validations::UniquenessValidator" do
     before(:all) do
-      class ValidThing < Neo4j::RailsNode
+      class ValidThing < Neo4j::Rails::Model
         property :email, :index => :exact
         validates :email, :uniqueness => true
       end
@@ -661,13 +661,13 @@ describe Neo4j::RailsNode, :type => :integration do
   end
 
   describe "i18n_scope" do
-    subject { Neo4j::RailsNode.i18n_scope }
+    subject { Neo4j::Rails::Model.i18n_scope }
     it { should == :neo4j }
   end
 
   describe "reachable_from_ref_node?" do
-    let(:ref_1) { Neo4j::RailsNode.create!(:name => "Ref1") }
-    let(:ref_2) { Neo4j::RailsNode.create!(:name => "Ref2") }
+    let(:ref_1) { Neo4j::Rails::Model.create!(:name => "Ref1") }
+    let(:ref_2) { Neo4j::Rails::Model.create!(:name => "Ref2") }
 
     context "when node is not attached to default ref node" do
       before(:each) do

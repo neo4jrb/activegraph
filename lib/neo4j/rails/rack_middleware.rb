@@ -32,7 +32,7 @@ module Neo4j
         status, headers, body = @app.call(env)
         [status, headers, Body.new(body, enabled)]
       ensure
-        Neo4j::RailsNode.close_lucene_connections
+        Neo4j::Rails::Model.close_lucene_connections
         Neo4j.threadlocal_ref_node = Neo4j.default_ref_node
       end
     end

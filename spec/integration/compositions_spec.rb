@@ -3,7 +3,7 @@ require 'active_support/core_ext/exception'
 
 describe Neo4j::Rails::Compositions, :type => :integration do
 
-  class Customer < Neo4j::RailsNode
+  class Customer < Neo4j::Rails::Model
     property :address_street, :address_city, :address_country
     property :balance
     property :gps_location
@@ -250,7 +250,7 @@ describe Neo4j::Rails::Compositions, :type => :integration do
   # It works if it is not transactional
   context "on a relationship", :type => :transactional do
 
-    class RelationWithComposition < Neo4j::RailsRelationship
+    class RelationWithComposition < Neo4j::Rails::Relationship
       property :address_street, :address_city, :address_country
       property :cost
       property :gps_location
@@ -262,7 +262,7 @@ describe Neo4j::Rails::Compositions, :type => :integration do
       composed_of :fullname, :mapping => %w(name to_s), :constructor => Proc.new { |name| Fullname.parse(name) }, :converter => :parse
     end
 
-    class Relative < Neo4j::RailsNode
+    class Relative < Neo4j::Rails::Model
       has_n(:relatives).to(Relative).relationship(RelationWithComposition)
     end
 

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 
-describe Neo4j::RailsNode, :type => :unit do
+describe Neo4j::Rails::Model, :type => :unit do
 
   without_database
 
@@ -54,7 +54,12 @@ describe Neo4j::RailsNode, :type => :unit do
     its(:persisted?) { should be_true }
     its(:destroyed?) { should be_false }
     its(:new_record?) { should be_false }
-    its(:frozen?) { pending "TODO"; should be_false }
+    describe "frozen?" do
+      it "reloads the node and returns false" do
+        subject.should_receive(:reload).and_return(true)
+        subject.frozen?.should be_false
+      end
+    end
   end
 
 end

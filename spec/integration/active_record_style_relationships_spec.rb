@@ -1,17 +1,17 @@
 require 'spec_helper'
 
-describe "Neo4j::RailsNode Relationships", :type => :integration do
+describe "Neo4j::Rails::Model Relationships", :type => :integration do
 
-  class ModelRelationship1 < Neo4j::RailsRelationship
+  class ModelRelationship1 < Neo4j::Rails::Relationship
     property :character
   end
 
   before(:each) do
-    @actor_class = create_model(Neo4j::RailsNode)
+    @actor_class = create_model(Neo4j::Rails::Model)
     @actor_class.property :name
     @actor_class.property :description
     @actor_class.validates_length_of :description, :maximum => 10
-    @movie_class = create_model(Neo4j::RailsNode)
+    @movie_class = create_model(Neo4j::Rails::Model)
     @movie_class.property :title
 
     @actor_class.has_n(:acted_in).to(@movie_class).relationship(ModelRelationship1)
@@ -23,9 +23,9 @@ describe "Neo4j::RailsNode Relationships", :type => :integration do
 
   context "traversal" do
     before(:each) do
-      @n1 = Neo4j::RailsNode.create
-      @n2 = Neo4j::RailsNode.create
-      @n3 = Neo4j::RailsNode.create
+      @n1 = Neo4j::Rails::Model.create
+      @n2 = Neo4j::Rails::Model.create
+      @n3 = Neo4j::Rails::Model.create
       @n1.outgoing(:foo) << @n2; @n1.save!
       @n2.outgoing(:foo) << @n3; @n2.save!
     end
@@ -167,7 +167,7 @@ describe "Neo4j::RailsNode Relationships", :type => :integration do
       end
 
       it "find first rels for a node, by node" do
-        @actor.acted_in_rels.find(:first, @movie_1).should be_kind_of(Neo4j::RailsRelationship)
+        @actor.acted_in_rels.find(:first, @movie_1).should be_kind_of(Neo4j::Rails::Relationship)
       end
 
       it "find first rels for a node, by node id" do
@@ -338,7 +338,7 @@ describe "Neo4j::RailsNode Relationships", :type => :integration do
       end
 
       it "returns new node " do
-        @ret.should be_kind_of(Neo4j::RailsNode) #ModelRelationship1
+        @ret.should be_kind_of(Neo4j::Rails::Model) #ModelRelationship1
       end
 
     end
@@ -357,7 +357,7 @@ describe "Neo4j::RailsNode Relationships", :type => :integration do
       end
 
       it "returns new node " do
-        @ret.should be_kind_of(Neo4j::RailsNode) # have node declare mapping the other way
+        @ret.should be_kind_of(Neo4j::Rails::Model) # have node declare mapping the other way
       end
 
     end

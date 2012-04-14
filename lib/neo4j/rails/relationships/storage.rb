@@ -9,8 +9,8 @@ module Neo4j
         def initialize(node, rel_type, dsl=nil)
           @rel_type = rel_type.to_sym
           @node = node
-          @rel_class = (dsl && dsl.relationship_class) || Neo4j::RailsRelationship
-          @target_class = (dsl && dsl.target_class) || Neo4j::RailsNode
+          @rel_class = (dsl && dsl.relationship_class) || Neo4j::Rails::Relationship
+          @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
           @outgoing_rels = []
           @incoming_rels = []
           @persisted_related_nodes = {}

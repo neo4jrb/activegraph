@@ -34,7 +34,7 @@ describe "finders", :type => :integration do
     it "sets the Thread.current[:neo4j_lucene_connection] to nil and close all lucene connections" do
       findable_class.find('name: Test*')
       Thread.current[:neo4j_lucene_connection].should_not be_nil
-      Neo4j::RailsNode.close_lucene_connections
+      Neo4j::Rails::Model.close_lucene_connections
       Thread.current[:neo4j_lucene_connection].should be_nil
     end
 
@@ -45,7 +45,7 @@ describe "finders", :type => :integration do
       con_2.should_receive(:close)
 
       Thread.current[:neo4j_lucene_connection] = [con_1, con_2]
-      Neo4j::RailsNode.close_lucene_connections
+      Neo4j::Rails::Model.close_lucene_connections
     end
 
   end
@@ -145,8 +145,8 @@ describe "finders", :type => :integration do
     end
 
     context "with threadlocal_ref_node" do
-      let(:ref_1) { Neo4j::RailsNode.create!(:name => "Ref1") }
-      let(:ref_2) { Neo4j::RailsNode.create!(:name => "Ref2") }
+      let(:ref_1) { Neo4j::Rails::Model.create!(:name => "Ref1") }
+      let(:ref_2) { Neo4j::Rails::Model.create!(:name => "Ref2") }
 
       before(:each) do
         Neo4j.threadlocal_ref_node = ref_1
@@ -412,11 +412,11 @@ describe "finders", :type => :integration do
   end
 
   context "queries scoped by reference node" do
-    class ReferenceNode < Neo4j::RailsNode
+    class ReferenceNode < Neo4j::Rails::Model
       property :name, :index => :exact
     end
 
-    class FindableModel < Neo4j::RailsNode
+    class FindableModel < Neo4j::Rails::Model
       property :name, :index => :exact
       property :age, :type => Fixnum, :index => :exact
       validates_presence_of :name

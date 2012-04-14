@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Neo4j::RailsNode, "lint", :type => :integration do
+describe Neo4j::Rails::Model, "lint", :type => :integration do
   %w{to_model to_key to_param valid? persisted?}.each do |m|
     it { should respond_to m }
   end
@@ -14,7 +14,7 @@ describe Neo4j::RailsNode, "lint", :type => :integration do
   #its(:column_names)  { should respond_to(:model_name) }
 
   describe ".model_name" do
-    subject             { Neo4j::RailsNode.model_name }
+    subject             { Neo4j::Rails::Model.model_name }
 
     it                  { should be_kind_of String }
     its(:human)         { should be_kind_of(String) }

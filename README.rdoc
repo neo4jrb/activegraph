@@ -33,6 +33,33 @@ Here are some of the major benefits of Neo4j.rb
 * ACID Transaction with rollbacks support.
 
 
+=== Public API
+
+The neo4j gem depends on the neo4j-wrapper and neo4j-core gems.
+
+==== neo4j gem
+
+{Neo4j::Rails::Model}
+{Neo4j::Rails::Relationship}
+{Neo4j::Railtie}
+
+==== neo4j-wrapper gem
+
+{Neo4j::NodeMixin}
+{Neo4j::RelationshipMixin}
+
+==== neo4j-core gem
+
+{Neo4j::Node} The Java Neo4j Node
+
+{Neo4j::Relationship} The Java Relationship
+
+{Neo4j} The Database
+
+{Neo4j::Cypher} Cypher Query Generator, see RSpec spec/neo4j/cypher_spec
+
+{Neo4j::Algo} Included algorithms, like shortest path
+
 === Some Examples
 
 ==== Neo4j::Node

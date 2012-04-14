@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Neo4j
   module Rails
-    class CallbacksTestModel < Neo4j::RailsNode
+    class CallbacksTestModel < Neo4j::Rails::Model
       property :name, :desc
 
       after_initialize :set_desc

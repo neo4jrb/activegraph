@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Neo4j::RailsNode, :type => :unit do
+describe Neo4j::Rails::Model, :type => :unit do
 
   without_database
 

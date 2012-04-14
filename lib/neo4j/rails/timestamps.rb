@@ -13,7 +13,7 @@ module Neo4j
       # Set the timestamps for this model if timestamps is set to true in the config
       # and the model is set up with the correct property name, e.g.:
       #
-      #   class Trackable < Neo4j::RailsNode
+      #   class Trackable < Neo4j::Rails::Model
       #     property :updated_at, :type => DateTime
       #   end
       def update_timestamp
@@ -23,7 +23,7 @@ module Neo4j
       # Set the timestamps for this model if timestamps is set to true in the config
       # and the model is set up with the correct property name, e.g.:
       #
-      #   class Trackable < Neo4j::RailsNode
+      #   class Trackable < Neo4j::Rails::Model
       #     property :created_at, :type => DateTime
       #   end
       def create_timestamp

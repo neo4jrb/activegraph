@@ -1,15 +1,15 @@
 require 'spec_helper'
 
-describe "Neo4j::RailsNode#validates_associated", :type => :integration do
-  class RoleValidation < Neo4j::RailsRelationship
+describe "Neo4j::Rails::Model#validates_associated", :type => :integration do
+  class RoleValidation < Neo4j::Rails::Relationship
     property :character
     validates_presence_of :character
   end
 
-  class MovieValidation < Neo4j::RailsNode
+  class MovieValidation < Neo4j::Rails::Model
   end
 
-  class ActorValidation < Neo4j::RailsNode
+  class ActorValidation < Neo4j::Rails::Model
     property :name
     has_n(:acted_in).to(MovieValidation).relationship(RoleValidation)
     has_one(:favorite).to(MovieValidation).relationship(RoleValidation)

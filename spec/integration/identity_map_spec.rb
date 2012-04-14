@@ -70,11 +70,11 @@ describe "IdentityMap", :type => :integration do
 
 
   before do
-    class RailsModelIdentiyTest < Neo4j::RailsNode
+    class RailsModelIdentiyTest < Neo4j::Rails::Model
       property :name, :index =>:exact
     end
 
-    class RailsRelationshipIdentiyTest < Neo4j::RailsRelationship
+    class RailsRelationshipIdentiyTest < Neo4j::Rails::Relationship
       property :name, :index => :exact
     end
 
@@ -97,8 +97,8 @@ describe "IdentityMap", :type => :integration do
   context "Created a Rails model but not committed it" do
     before(:each) do
       new_tx
-      @a = Neo4j::RailsNode.create(:name => 'a')
-      @b = Neo4j::RailsNode.create(:name => 'b')
+      @a = Neo4j::Rails::Model.create(:name => 'a')
+      @b = Neo4j::Rails::Model.create(:name => 'b')
       @instance = RailsRelationshipIdentiyTest.create(:foo, @a, @b)
     end
     subject { @instance }
@@ -107,8 +107,8 @@ describe "IdentityMap", :type => :integration do
 
   context "Created and committed a Rails model" do
     before(:each) do
-      @a = Neo4j::RailsNode.create(:name => 'a')
-      @b = Neo4j::RailsNode.create(:name => 'b')
+      @a = Neo4j::Rails::Model.create(:name => 'a')
+      @b = Neo4j::Rails::Model.create(:name => 'b')
       @instance = RailsRelationshipIdentiyTest.create(:foo, @a, @b)
     end
     subject { @instance }

@@ -1,22 +1,22 @@
 require File.join(File.dirname(__FILE__), '..', '..', 'spec_helper')
 
 describe "Versioning" do
-  class VersionableModel < Neo4j::RailsNode
+  class VersionableModel < Neo4j::Rails::Model
     include Neo4j::Rails::Versioning
   end
 
-  class SportsCar < Neo4j::RailsNode
+  class SportsCar < Neo4j::Rails::Model
     include Neo4j::Rails::Versioning
     property :brand
   end
 
-  class Driver < Neo4j::RailsNode
+  class Driver < Neo4j::Rails::Model
     include Neo4j::Rails::Versioning
     property :name
     has_n(:sports_cars)
   end
 
-  class ModelWithDateProperty < Neo4j::RailsNode
+  class ModelWithDateProperty < Neo4j::Rails::Model
     include Neo4j::Rails::Versioning
     property :date, :type => :date
   end
@@ -72,7 +72,7 @@ describe "Versioning" do
   end
 
   it "should delete older versions when max_versions is exceeded" do
-    class MaxVersion < Neo4j::RailsNode
+    class MaxVersion < Neo4j::Rails::Model
       include Neo4j::Rails::Versioning
       max_versions 2
     end

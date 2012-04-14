@@ -5,18 +5,18 @@ module Regressions
   # https://github.com/andreasronge/neo4j/issues/111
   module Issue111
     # Pre-declare classes as everything is cross-referenced
-    class Document< Neo4j::RailsNode
+    class Document< Neo4j::Rails::Model
     end
 
-    class Property < Neo4j::RailsNode
+    class Property < Neo4j::Rails::Model
     end
 
-    class Development < Neo4j::RailsNode
+    class Development < Neo4j::Rails::Model
     end
 
 
 
-    class Document < Neo4j::RailsNode
+    class Document < Neo4j::Rails::Model
       property :file_name, :type => String
 
       has_one(:development).from(Development, :documents)
@@ -24,7 +24,7 @@ module Regressions
     end
 
 
-    class Development < Neo4j::RailsNode
+    class Development < Neo4j::Rails::Model
       property :name, :type => String
 
       has_n(:documents).to(Document)
@@ -32,7 +32,7 @@ module Regressions
     end
 
 
-    class Property < Neo4j::RailsNode
+    class Property < Neo4j::Rails::Model
       property :name, :type => String
 
       has_one(:development).from(Development, :properties)

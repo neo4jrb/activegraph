@@ -1,17 +1,17 @@
 require 'spec_helper'
 
 
-describe "Neo4j::RailsNode relationships", :type => :integration do
+describe "Neo4j::Rails::Model relationships", :type => :integration do
 
   let(:relationship_with_no_property_class) do
-    #class RelationshipWithNoProperty < Neo4j::RailsRelationship
+    #class RelationshipWithNoProperty < Neo4j::Rails::Relationship
     #end
     create_rel_model
   end
 
 
   let(:node_with_relationship) do
-    #class NodeWithRelationship < Neo4j::RailsNode
+    #class NodeWithRelationship < Neo4j::Rails::Model
     #  has_one(:other_node)
     #  has_one(:foobar).relationship(relationship_with_no_property_class)
     #  has_n(:baaz)
@@ -32,7 +32,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
     end
   end
 
-  describe "Neo4j::RailsNode Relationships", :type => :integration do
+  describe "Neo4j::Rails::Model Relationships", :type => :integration do
     describe "incoming" do
       it "created incoming relationship can be accessed from outgoing node" do
         clazz = create_model
@@ -60,42 +60,42 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
       end
     end
 
-    describe "Neo4j::RailsNode Relationship#rel_type" do
+    describe "Neo4j::Rails::Model Relationship#rel_type" do
       context "when not persisted" do
         it "returns the type of the relationship" do
-          rel = relationship_with_no_property_class.new(:foo, Neo4j::RailsNode.create, Neo4j::RailsNode.create)
+          rel = relationship_with_no_property_class.new(:foo, Neo4j::Rails::Model.create, Neo4j::Rails::Model.create)
           rel.rel_type.should == :foo
         end
       end
 
       context "when persisted" do
         it "returns the type of the relationship" do
-          rel = relationship_with_no_property_class.create!(:foo, Neo4j::RailsNode.create, Neo4j::RailsNode.create)
+          rel = relationship_with_no_property_class.create!(:foo, Neo4j::Rails::Model.create, Neo4j::Rails::Model.create)
           rel.rel_type.should == :foo
         end
       end
     end
 
 
-    describe "Neo4j::RailsNode#rels" do
+    describe "Neo4j::Rails::Model#rels" do
       before(:each) do
-        @a = Neo4j::RailsNode.create(:name => 'a')
-        @b = Neo4j::RailsNode.create(:name => 'b')
-        @c = Neo4j::RailsNode.create(:name => 'c')
-        @d = Neo4j::RailsNode.create(:name => 'd')
+        @a = Neo4j::Rails::Model.create(:name => 'a')
+        @b = Neo4j::Rails::Model.create(:name => 'b')
+        @c = Neo4j::Rails::Model.create(:name => 'c')
+        @d = Neo4j::Rails::Model.create(:name => 'd')
         @a.outgoing(:foo) << @b << @c
         @a.save!
-        Neo4j::RailsRelationship.create!(:bar, @a, @d, :name => 'ad1')
-        Neo4j::RailsRelationship.create!(:bar, @a, @d, :name => 'ad2')
+        Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad1')
+        Neo4j::Rails::Relationship.create!(:bar, @a, @d, :name => 'ad2')
 
         # none persisted
-        @a1 = Neo4j::RailsNode.new(:name => 'a1')
-        @b1 = Neo4j::RailsNode.new(:name => 'b1')
-        @c1 = Neo4j::RailsNode.new(:name => 'c1')
-        @d1 = Neo4j::RailsNode.new(:name => 'd1')
+        @a1 = Neo4j::Rails::Model.new(:name => 'a1')
+        @b1 = Neo4j::Rails::Model.new(:name => 'b1')
+        @c1 = Neo4j::Rails::Model.new(:name => 'c1')
+        @d1 = Neo4j::Rails::Model.new(:name => 'd1')
         @a1.outgoing(:foo) << @b1 << @c1
-        Neo4j::RailsRelationship.new(:bar, @a1, @d1, :name => 'ad11')
-        Neo4j::RailsRelationship.new(:bar, @a1, @d1, :name => 'ad21')
+        Neo4j::Rails::Relationship.new(:bar, @a1, @d1, :name => 'ad11')
+        Neo4j::Rails::Relationship.new(:bar, @a1, @d1, :name => 'ad21')
       end
 
       context "find all relationships (#rels())" do
@@ -127,7 +127,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
             end
 
             it "returns nothing if there are no relationship between the given nodes" do
-              @a.rels.to_other(Neo4j::RailsNode.create!).to_a.should == []
+              @a.rels.to_other(Neo4j::Rails::Model.create!).to_a.should == []
             end
 
             it "accepts a Neo4j::Node as the other node" do
@@ -190,7 +190,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
             end
 
             it "raise an exception if the node is not persisted" do
-              lambda { Neo4j::RailsNode.new.rels(:bar).to_other(Neo4j.ref_node) }.should raise_error
+              lambda { Neo4j::Rails::Model.new.rels(:bar).to_other(Neo4j.ref_node) }.should raise_error
             end
           end
         end
@@ -444,8 +444,8 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
         clazz.has_one :thing
 
         jack = clazz.create!
-        jack.thing = Neo4j::RailsNode.create!
-        jack.thing = Neo4j::RailsNode.create!
+        jack.thing = Neo4j::Rails::Model.create!
+        jack.thing = Neo4j::Rails::Model.create!
         jack.save!
 
         expect { jack.thing }.not_to raise_error
@@ -575,15 +575,15 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
 
       describe "accepts_nested_attributes_for" do
 
-        class Avatar < Neo4j::RailsNode
+        class Avatar < Neo4j::Rails::Model
           property :icon
         end
 
-        class Post < Neo4j::RailsNode
+        class Post < Neo4j::Rails::Model
           property :title
         end
 
-        class Description < Neo4j::RailsNode
+        class Description < Neo4j::Rails::Model
           property :title
           property :text
           validates_presence_of :title
@@ -593,7 +593,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
           end
         end
 
-        class Member < Neo4j::RailsNode
+        class Member < Neo4j::Rails::Model
           has_n(:posts).to(Post)
           has_n(:valid_posts).to(Post)
           has_n(:valid_posts2).to(Post)
@@ -807,8 +807,8 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
 
   describe "RelationshipWithNoProperty", :type => :integration do
     before(:each) do
-      @start_node = Neo4j::RailsNode.new
-      @end_node = Neo4j::RailsNode.new
+      @start_node = Neo4j::Rails::Model.new
+      @end_node = Neo4j::Rails::Model.new
     end
 
     subject do
@@ -848,7 +848,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
   end
 
 
-  class RelationshipWithProperty < Neo4j::RailsRelationship
+  class RelationshipWithProperty < Neo4j::Rails::Relationship
     property :flavour
     index :flavour
     property :required_on_create
@@ -877,8 +877,8 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
 
   describe RelationshipWithProperty, :type => :integration do
     before(:each) do
-      @start_node = Neo4j::RailsNode.new
-      @end_node = Neo4j::RailsNode.new
+      @start_node = Neo4j::Rails::Model.new
+      @end_node = Neo4j::Rails::Model.new
     end
 
     subject do
@@ -997,20 +997,20 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
 
   describe "SettingRelationship", :type => :integration do
 
-    context "created with Neo4j::RailsRelationship" do
+    context "created with Neo4j::Rails::Relationship" do
       before(:all) do
-        @actor_class = create_model(Neo4j::RailsNode)
+        @actor_class = create_model(Neo4j::Rails::Model)
         @actor_class.property :name
-        @movie_class = create_model(Neo4j::RailsNode)
+        @movie_class = create_model(Neo4j::Rails::Model)
         @movie_class.property :title
         @actor_class.has_n(:acted_in)
         @movie_class.has_n(:actors).from(:acted_in)
       end
 
-      it "can be created with Neo4j::RailsRelationship.create" do
+      it "can be created with Neo4j::Rails::Relationship.create" do
         actor = @actor_class.new
         movie = @movie_class.new
-        Neo4j::RailsRelationship.new(@actor_class.acted_in, actor, movie)
+        Neo4j::Rails::Relationship.new(@actor_class.acted_in, actor, movie)
         actor.acted_in.count.should == 1
         actor.acted_in.should include(movie)
         movie.actors.count.should == 1
@@ -1020,20 +1020,20 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
     end
 
 
-    context "create a Neo4j::RailsRelationship" do
+    context "create a Neo4j::Rails::Relationship" do
       before(:each) do
         @start_node = node_with_relationship.new
-        @end_node = Neo4j::RailsNode.new
+        @end_node = Neo4j::Rails::Model.new
       end
 
       it "has_n" do
-        @start_node.outgoing(:baaz) << Neo4j::RailsNode.new
+        @start_node.outgoing(:baaz) << Neo4j::Rails::Model.new
         @start_node.baaz.count.should == 1
         @start_node.save
         @start_node.baaz.count.should == 1
         @start_node.outgoing(:baaz).to_a.count.should == 1
 
-        @start_node.outgoing(:baaz) << Neo4j::RailsNode.new
+        @start_node.outgoing(:baaz) << Neo4j::Rails::Model.new
         @start_node.outgoing(:baaz).to_a.count.should == 2
         @start_node.baaz.count.should == 2
         @start_node.save
@@ -1079,9 +1079,9 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
       end
 
       it "adding many different relationships" do
-        @start_node.outgoing(:foo) << (c = Neo4j::RailsNode.new)
-        @start_node.outgoing(:other_node) << (a = Neo4j::RailsNode.new)
-        @start_node.outgoing(:other_node) << (b = Neo4j::RailsNode.new)
+        @start_node.outgoing(:foo) << (c = Neo4j::Rails::Model.new)
+        @start_node.outgoing(:other_node) << (a = Neo4j::Rails::Model.new)
+        @start_node.outgoing(:other_node) << (b = Neo4j::Rails::Model.new)
 
         @start_node.outgoing(:foo).count.should == 1
         @start_node.outgoing(:foo).should include(c)
@@ -1121,7 +1121,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
         @start_node.outgoing(:other_node).count.should == 1
         @end_node.incoming(:other_node).count.should == 1
 
-        @start_node.outgoing(:other_node) << Neo4j::RailsNode.new
+        @start_node.outgoing(:other_node) << Neo4j::Rails::Model.new
         @start_node.outgoing(:other_node).count.should == 2
         @end_node.incoming(:other_node).count.should == 1
         @start_node.save
@@ -1159,16 +1159,16 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
     end
 
 
-    context "setting a Neo4j::RailsRelationship" do
+    context "setting a Neo4j::Rails::Relationship" do
       subject { @start_node.other_node_rel } #@start_node.other_node_rel }
 
       before(:each) do
         @start_node = node_with_relationship.new
-        @end_node = Neo4j::RailsNode.new
+        @end_node = Neo4j::Rails::Model.new
         @start_node.other_node = @end_node
       end
 
-      it { should be_kind_of(Neo4j::RailsRelationship) }
+      it { should be_kind_of(Neo4j::Rails::Relationship) }
       it_should_behave_like "a relationship model"
     end
 
@@ -1176,18 +1176,18 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
 
       it "bla" do
         @start_node = node_with_relationship.new
-        @end_node_1 = Neo4j::RailsNode.new
-        @end_node_2 = Neo4j::RailsNode.new
+        @end_node_1 = Neo4j::Rails::Model.new
+        @end_node_2 = Neo4j::Rails::Model.new
         @start_node.baaz << @end_node_1 << @end_node_2
 
         @start_node.baaz_rels.each do |rel|
-          rel.should be_kind_of(Neo4j::RailsRelationship)
+          rel.should be_kind_of(Neo4j::Rails::Relationship)
         end
         @start_node.baaz_rels.to_a.count.should == 2
         @start_node.baaz.should include(@end_node_1, @end_node_2)
         @start_node.save
         @start_node.baaz_rels.each do |rel|
-          rel.should be_kind_of(Neo4j::RailsRelationship)
+          rel.should be_kind_of(Neo4j::Rails::Relationship)
         end
         @start_node.baaz_rels.to_a.count.should == 2
         @start_node.baaz.should include(@end_node_1, @end_node_2)
@@ -1200,7 +1200,7 @@ describe "Neo4j::RailsNode relationships", :type => :integration do
 
       before(:each) do
         @start_node = node_with_relationship.new
-        @end_node = Neo4j::RailsNode.new
+        @end_node = Neo4j::Rails::Model.new
         @start_node.foobar = @end_node
       end
 
