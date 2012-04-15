@@ -89,6 +89,8 @@ Example of using Neo4j with Rails 3 (ActiveModel)
     u = User.new(:name => 'kalle', :age => 42, :email => "bla@foo.com")
     u.save
 
+Make sure you are using JRuby !
+
 ==== Generate a Rails Application
 
 Example of creating an Neo4j Application from scratch:

@@ -1,11 +1,14 @@
-* Lots of refactoring and better/more RSpecs
-* Cypher DSL support
-* Modularization - e.g. make it possible to create your own wrapper
+== 2.0.0.alpha.6 / 2012-04-15
+* Complete rewrite and smaller change of API + lots of refactoring and better RSpecs
+* Moved code to the neo4j-core and neo4j-wrapper gems
+* Changed API - index properties using the Neo4j::Rails::Model (property :name, :index => :exact)
+* Changed API - rel_type always returns a Symbol
+* Changed API - #rels and #rel first parameter is always :outgoing, :incoming or :both
+* Cypher DSL support, see neo4j-core
 * Made the Lucene indexing more flexible
 * Renamed size methods to count since it does simply count all the relationships (e.g. Person.all.count)
-# Changed API - rel_type always returns a Symbol
-* Changed API - #rels and #rel first parameter is always :outgoing, :incoming or :both
-* Moved code to the neo4j-core and neo4j-wrapper gems
+* Modularization - e.g. make it possible to create your own wrapper
+* Added builder method for has_one relationships (just like ActiveRecord build_best_friend)
 
 == 2.0.0.alpha.5 / 2012-03-27
 * Fix for HA/cluster bug [#173]
