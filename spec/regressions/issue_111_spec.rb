@@ -41,7 +41,7 @@ module Regressions
 
 
 
-    describe "cross referenced everything" do
+    describe "cross referenced everything", :type => :integration do
       it "should create nested with existing root and other nested" do
         dev = Development.create(:name => 'X')
         doc1 = Document.create(:file_name => 'd1', :development => dev)
