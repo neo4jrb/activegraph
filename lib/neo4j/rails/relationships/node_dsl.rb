@@ -142,6 +142,7 @@ module Neo4j
         #
         def all(*args)
           unless args.empty?
+            raise "Illegal argument, expected a node" unless args.first.kind_of?(Neo4j::NodeMixin)
             enum = Enumerator.new(@storage, :each_node, @dir).find { |n| n == args.first }
           else
             enum = Enumerator.new(@storage, :each_node, @dir)

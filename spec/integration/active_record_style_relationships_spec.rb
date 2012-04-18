@@ -131,6 +131,13 @@ describe "Neo4j::Rails::Model Relationships", :type => :integration do
         @actor.acted_in.find(@movie_1).should_not be_nil
       end
 
+      it "can not find anything else except nodes" do
+        lambda{@actor.acted_in.find("bla")}.should raise_error
+        lambda{@actor.acted_in.first("bla")}.should raise_error
+        lambda{@actor.acted_in.all("bla")}.should raise_error
+        lambda{@actor.acted_in.all(:bla => 42)}.should raise_error
+      end
+
       it "find a child node by id" do
         @actor.acted_in.find(@movie_1.id).should_not be_nil
       end

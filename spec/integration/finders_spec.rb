@@ -8,7 +8,7 @@ describe "finders", :type => :integration do
       property :name, :index => :exact
       property :age, :type => Fixnum, :index => :exact
       validates_presence_of :name
-
+      has_n(:items)
       def to_s
         name
       end
@@ -77,6 +77,11 @@ describe "finders", :type => :integration do
 
       it "should return nil when passed a negative id" do
         findable_class.find(-99).should be_nil
+      end
+
+      it "should raise an exception when trying to find related nodes with a string" do
+        lambda{findable_class.new.items("bla")}.should raise_error
+        lambda{findable_class.new.items.all("bla")}.should raise_error
       end
 
       it "should return nil when passed " do

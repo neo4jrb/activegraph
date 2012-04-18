@@ -151,6 +151,7 @@ module Neo4j
                 def #{rel_type}(cypher_hash_query = nil, &cypher_block)
                     dsl = _decl_rels_for(:'#{rel_type}')
                     if cypher_hash_query || cypher_block
+                      raise "Expected a hash, can't translated to cypher where statements" if cypher_hash_query && !cypher_hash_query.is_a?(Hash)
                       Neo4j::Wrapper::HasN::Nodes.new(self, dsl, cypher_hash_query, &cypher_block)
                     else
                       storage = _create_or_get_storage_for_decl_rels(dsl)
