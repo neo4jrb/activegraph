@@ -7,6 +7,14 @@ describe Neo4j::Rails::Model, :type => :unit do
   let(:klass) { create_model }
 
 
+  describe "index?" do
+    it "returns true only if there is an index on the property" do
+      klass.index?(:name).should be_false
+      klass.property :name, :index => :exact
+      klass.index?(:name).should be_true
+    end
+  end
+
   describe "save" do
     it "sets the _java_entity" do
       klass.create._java_entity.should == new_node

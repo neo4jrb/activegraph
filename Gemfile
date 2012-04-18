@@ -1,5 +1,8 @@
 source :gemcutter
 
+
+# gem "neo4j-wrapper", :path => "/home/andreas/projects/neo4j-wrapper"
+
 gemspec
 
 group 'development' do

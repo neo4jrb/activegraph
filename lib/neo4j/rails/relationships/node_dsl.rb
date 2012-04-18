@@ -208,7 +208,7 @@ module Neo4j
 
         # These methods are using the Neo4j::Core::Traversal::Traverser which means that only persisted relationship will be seen
         # but more advanced traversal can be performed.
-        CORE_TRAVERSAL_METHODS = [:depth, :outgoing, :incoming, :both, :expand, :depth_first, :breadth_first, :eval_paths, :unique, :expander, :prune, :filter, :include_start_node, :rels, :eval_paths]
+        CORE_TRAVERSAL_METHODS = [:depth, :outgoing, :incoming, :both, :expand, :depth_first, :breadth_first, :eval_paths, :unique, :expander, :prune, :filter, :include_start_node, :rels, :eval_paths, :query]
 
 
         protected

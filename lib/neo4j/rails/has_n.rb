@@ -101,7 +101,7 @@ module Neo4j
             RUBY
           end
 
-          unless method_defined?("#{rel_type}=".to_sym)
+          unless method_defined?("#{rel_type}=")
             class_eval <<-RUBY, __FILE__, __LINE__
                 def #{rel_type}=(other)
                     dsl = _decl_rels_for(:'#{rel_type}')
@@ -148,10 +148,16 @@ module Neo4j
         def define_has_n_methods_for(rel_type, options) #:nodoc:
           unless method_defined?(rel_type)
             class_eval <<-RUBY, __FILE__, __LINE__
-                def #{rel_type}
+                def #{rel_type}(cypher_hash_query = nil, &cypher_block)
                     dsl = _decl_rels_for(:'#{rel_type}')
-                    storage = _create_or_get_storage_for_decl_rels(dsl)
-                    NodesDSL.new(storage, dsl.dir)
+                    if cypher_hash_query || cypher_block
+                      Neo4j::Wrapper::HasN::Nodes.new(self, dsl, cypher_hash_query, &cypher_block)
+                    else
+                      storage = _create_or_get_storage_for_decl_rels(dsl)
+                      NodesDSL.new(storage, dsl.dir).tap do |n|
+                        Neo4j::Wrapper::HasN::Nodes.define_rule_methods_on(n, dsl)
+                      end
+                    end
                 end
             RUBY
           end

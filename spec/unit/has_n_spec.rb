@@ -5,7 +5,7 @@ describe Neo4j::Rails::HasN, :type => :unit do
   without_database
 
   let(:klass) do
-    Class.new do
+    klass = Class.new do
       def self.to_s
         "Klass"
       end
@@ -21,14 +21,11 @@ describe Neo4j::Rails::HasN, :type => :unit do
       include Neo4j::Rails::HasN
       include Neo4j::Rails::Relationships
     end
+    TempModel.set(klass)
   end
 
   let(:other_klass) do
-    Class.new do
-      def self.to_s
-        "OtherKlass"
-      end
-
+    klass = Class.new do
       attr_accessor :attr
 
       def initialize(attr = {})
@@ -47,6 +44,7 @@ describe Neo4j::Rails::HasN, :type => :unit do
       include Neo4j::Rails::HasN
       include Neo4j::Rails::Relationships
     end
+    TempModel.set(klass)
   end
 
   let(:node) do

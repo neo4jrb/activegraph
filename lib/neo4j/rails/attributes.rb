@@ -309,6 +309,7 @@ module Neo4j
           _decl_props[property][:converter] = converter
 
           if options.include?(:index)
+            _decl_props[property][:index] = options[:index]
             index(property, :type => options[:index], :field_type => converter.index_as)
           end
 
