@@ -1,14 +1,20 @@
 module Neo4j
   module Rails
+    # This mixin replace the original save method and performs validation before the save.
     module Validations
       include ActiveModel::Validations
 
+      # Implements the ActiveModel::Validation hook method.
+      # @see http://rubydoc.info/docs/rails/ActiveModel/Validations:read_attribute_for_validation
       def read_attribute_for_validation(key)
         respond_to?(key) ? send(key) : self[key]
       end
 
       # The validation process on save can be skipped by passing false. The regular Model#save method is
       # replaced with this when the validations module is mixed in, which it is by default.
+      # @param [Hash] options the options to create a message with.
+      # @option options [true, false] :validate if false no validation will take place
+      # @return [Boolean] true if it saved it successfully
       def save(options={})
         result = perform_validations(options) ? super : false
         if !result
@@ -17,6 +23,7 @@ module Neo4j
         result
       end
 
+      # @return [Boolean] true if valid
       def valid?(context = nil)
         context     ||= (new_record? ? :create : :update)
         super(context)

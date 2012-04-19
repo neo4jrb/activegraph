@@ -1,7 +1,8 @@
 module Neo4j
   module Rails
 
-    # This module overrides the Neo4j::Core::Rels module so that it can handle unpersisted relationships.
+    # This module overrides the {Neo4j::Core::Rels}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Core/Rels] and {Neo4j::Core::Traversal}[http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Core/Traversal]
+    # modules so that it can handle unpersisted relationships of depth one.
     #
     module Relationships
       extend ActiveSupport::Concern

@@ -4,10 +4,13 @@ module Neo4j
     # in a Railsy way.  This typically means not writing anything to the DB until the
     # object is saved (after validation).
     #
-    # Externally, when we talk about properties (e.g. #property?, #property_names, #properties),
+    # Externally, when we talk about properties (e.g. {#property?}, {#property_names}),
     # we mean all of the stored properties for this object include the 'hidden' props
     # with underscores at the beginning such as _neo_id and _classname.  When we talk
     # about attributes, we mean all the properties apart from those hidden ones.
+    #
+    # This mixin defines a number of class methods, see #{ClassMethods}.
+    #
     module Attributes
       extend ActiveSupport::Concern
       extend TxMethods
@@ -47,6 +50,8 @@ module Neo4j
         end
       end
 
+      # Is called when a node neo4j entity is created and we need to save attributes
+      # @private
       def init_on_create(*)
         self._classname = self.class.to_s
         write_default_attributes
@@ -54,6 +59,8 @@ module Neo4j
         clear_changes
       end
 
+      # Setup this mixins instance variables
+      # @private
       def initialize_attributes(attributes)
         @_properties = {}
         @_properties_before_type_cast={}
@@ -88,13 +95,14 @@ module Neo4j
       end
       tx_methods :update_attributes
 
-      # Same as #update_attributes, but raises an exception if saving fails.
+      # Same as {#update_attributes}, but raises an exception if saving fails.
       def update_attributes!(attributes)
         self.attributes = attributes
         save!
       end
       tx_methods :update_attributes!
 
+      # @private
       def reset_attributes
         @_properties = {}
       end

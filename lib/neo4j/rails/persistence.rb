@@ -1,13 +1,19 @@
 module Neo4j
   module Rails
+    # Defines the create, delete and update methods.
+    # @see ClassMethods class methods when including this module
     module Persistence
       extend ActiveSupport::Concern
       extend TxMethods
 
 
       # Persist the object to the database.  Validations and Callbacks are included
-      # by default but validation can be disabled by passing :validate => false
-      # to #save.
+      # by default but validation can be disabled by passing <tt>:validate => false</tt>
+      # to <tt>save</tt>. Creates a new transaction.
+      # @param (see Neo4j::Rails::Validations#save)
+      # @return [Boolean] true if it was persisted
+      # @see Neo4j::Rails::Validations Neo4j::Rails::Validations - for the :validate parameter
+      # @see Neo4j::Rails::Callbacks Neo4j::Rails::Callbacks - for callbacks
       def save(*)
         create_or_update
       end
@@ -15,22 +21,19 @@ module Neo4j
 
       # Persist the object to the database.  Validations and Callbacks are included
       # by default but validation can be disabled by passing :validate => false
-      # to #save!.
+      # to #save!  Creates a new transaction.
       #
-      # Raises a RecordInvalidError if there is a problem during save.
+      # @raise a RecordInvalidError if there is a problem during save.
+      # @param (see Neo4j::Rails::Validations#save)
+      # @return nil
+      # @see #save
+      # @see Neo4j::Rails::Validations Neo4j::Rails::Validations - for the :validate parameter
+      # @see Neo4j::Rails::Callbacks Neo4j::Rails::Callbacks - for callbacks
       def save!(*args)
         unless save(*args)
           raise RecordInvalidError.new(self)
         end
       end
-
-      def update
-        write_changed_attributes
-        clear_changes
-        true
-      end
-
-
 
       # Removes the node from Neo4j and freezes the object.
       def destroy
@@ -39,24 +42,24 @@ module Neo4j
       end
 
       # Same as #destroy but doesn't run destroy callbacks and doesn't freeze
-      # the object
+      # the object. Creates a new transaction
       def delete
         del unless new_record? || destroyed?
         set_deleted_properties
       end
       tx_methods :delete
 
-      # Returns true if the object was destroyed.
+      # Returns +true+ if the object was destroyed.
       def destroyed?
         @_deleted || (!new_record? && !self.class.load_entity(neo_id))
       end
 
-      # Returns if the record is persisted, i.e. it’s not a new record and it was not destroyed
+      # Returns +true+ if the record is persisted, i.e. it’s not a new record and it was not destroyed
       def persisted?
         !new_record? && !destroyed?
       end
 
-      # Returns true if the record hasn't been saved to Neo4j yet.
+      # Returns +true+ if the record hasn't been saved to Neo4j yet.
       def new_record?
         _java_entity.nil?
       end
@@ -117,6 +120,13 @@ module Neo4j
       end
 
       protected
+
+      def update
+        write_changed_attributes
+        clear_changes
+        true
+      end
+
       def create_or_update
         result = persisted? ? update : create
         unless result != false

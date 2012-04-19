@@ -1,14 +1,15 @@
 module Neo4j
   module Rails
+    # Defines class methods, see {ClassMethods}
     module HasN
       extend ActiveSupport::Concern
 
       module ClassMethods
 
         # Create a number of methods similar to active record has_many.
-        # The first one returns an Neo4j::Rails::Relationships::NodesDSL
+        # The first one returns an {Neo4j::Rails::Relationships::NodesDSL}
         # the second generate method (with the _rels postfix) returns a
-        # Neo4j::Rails::Relationships::RelsDSL
+        # {Neo4j::Rails::Relationships::RelsDSL}
         #
         # See also Neo4j::NodeMixin#has_n which only work with persisted relationships.
         #

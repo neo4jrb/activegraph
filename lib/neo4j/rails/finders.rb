@@ -3,10 +3,12 @@ module Neo4j
     class RecordNotFoundError < StandardError
     end
 
+    # Defines {ClassMethods}
     module Finders
       extend ActiveSupport::Concern
 
 
+      # @private
       def reachable_from_ref_node?
         # All relationships are reachable
         respond_to?(:_java_rel) || Neo4j::Algo.all_path(self.class.ref_node_for_class, self).outgoing(self.class).outgoing(:_all).first != nil
@@ -16,8 +18,29 @@ module Neo4j
         rule(:_all, :functions => Neo4j::Wrapper::Rule::Functions::Size.new) if respond_to?(:rule)
       end
 
+      # Defines the #{#find} method. When declaring properties with index a number of finder methods will be generated,
+      # similar to active record, example +find_by_<property_name>+, +find_or_create_by_<property_name>. +all_by_<property_name>+
+      #
+      # @example find_or_create_by
+      #   class Person < Neo4j::Rails::Model
+      #     property :age, :type => Fixnum
+      #   end
+      #
+      #   Person.find_by_age(42)
+      #   Person.find_or_create_by
+      #   Person.find_or_create_by!(:age => 'bla')
+      #
+      # @example find all
+      #   Person.all_by_age
+      #   Person.all(:name => 'bla')
+      #   Person.all('name: "bla"')  # lucene query syntax
+      #
+      # @see Neo4j::Rails::Attributes::ClassMethods#property
+      # @see #find
+      #
       module ClassMethods
 
+        # @private
         def index_prefix
           return "" unless Neo4j.running?
           return "" unless respond_to?(:ref_node_for_class)
@@ -26,6 +49,7 @@ module Neo4j
           prefix ? prefix + "_" : ""
         end
 
+        # @private
         # overwrite the index method to add find_by_xxx class methods
         def index(*args)
           field = args.first

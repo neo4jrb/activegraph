@@ -1,20 +1,39 @@
 module Neo4j
   module Rails
     # Makes Neo4j nodes and relationships behave like active record objects.
-    # That means for example that you don't have to care about transactions since they will be
-    # automatically be created when needed. Validation, Callbacks etc. are also supported.
+    # That means for example that you don't (normally) have to care about transactions since they will be
+    # automatically be created when needed. {Neo4j::Rails::Validation}, {Neo4j::Rails::Callbacks} etc. are also supported.
     #
-    # @example Traverse
+    # @example Create a node (learn more - see {Neo4j::Rails::Persistence})
+    #   class Company < Neo4j::Rails::Model
+    #   end
+    #   Company.new.save
+    #   Company.save
+    #   Company.save(:name => 'Foo Ab')
+    #
+    # @example Declare properties (learn more - see {Neo4j::Rails::Attributes})
+    #
+    #   class Company < Neo4j::Rails::Model
+    #     property :data
+    #     property :revenue, :type => :Float
+    #   end
+    #
+    #   c = Company.new(:data => false, :type => '2123123.23')
+    #   c.data = "changed type"
+    #   c.revenue = 123124 # will always be converted
+    #
+    # @example Creating and Navigating Relationships (learn more - see {Neo4j::Rails::Relationships})
     #   class Person < Neo4j::Rails::Model
     #   end
     #
-    #   person = Person.find(...)
-    #   person.outgoing(:foo) << Person.create
+    #   person = Person.new
+    #   person.outgoing(:foo) << Person.new
     #   person.save!
     #   person.outgoing(:foo).depth(:all)...
     #   person.outgoing(:friends).map{|f| f.outgoing(:knows).to_a}.flatten
+    #   person.rels(:outgoing, :foo).first.end_node #=> the other node
     #
-    # @example Declared Relationships: has_n and has_one
+    # @example Declared Relationships (learn more - see {Neo4j::Rails::HasN::ClassMethods})
     #
     #   class Person < Neo4j::Rails::Model
     #   end
@@ -25,9 +44,9 @@ module Neo4j
     #   end
     #
     #   Person.new.foo << other_node
-    #   Person.friends.build(:name => 'kalle')
+    #   Person.friends.build(:name => 'kalle').save
     #
-    # @example Declared Properties and Index
+    # @example Searching with Lucene Index (learn more - see {Neo4j::Rails::Finders::ClassMethods})
     #
     #   class Person < Neo4j::Rails::Model
     #     property :name
@@ -37,7 +56,32 @@ module Neo4j
     #   Person.create(:name => 'kalle', :age => 42, :undeclared_prop => 3.14)
     #   Person.find_by_age(42)
     #
-    # @example Callbacks
+    # @example Searching with Cypher (learn more - {Neo4j-core}[http://rdoc.info/github/andreasronge/neo4j-core/file/README.rdoc])
+    #
+    #   Monster.all.query(:strength => 17).first #=> a node/Neo4j::Rails::Model
+    #   Monster.all.query(:strength => 17).to_s  #=> "START n0=node(42) MATCH ..."
+    #   Neo4j.query{Neo4j.rb cypher DSL}
+    #   dungeon.monsters.query(:name => 'Ghost', :strength => 10) # all monsters with those properties
+    #   dungeon.monsters(:name => 'Ghost', :strength => 10) # same as above
+    #   dungeon.monsters { |m| m[:name] == 'Ghost'] & m[:strength] == 16} # same as above
+    #
+    # @example Rules and Cypher (learn more {Neoj::Wrapper::Rule::ClassMethods}[http://rdoc.info/github/andreasronge/neo4j-wrapper/Neo4j/Wrapper/Rule/ClassMethods] )
+    #   class Dungeon < Neo4j::Rails::Model
+    #     has_n(:monsters).to(Monster)
+    #   end
+    #
+    #   class Monster < Neo4j::Rails::Model
+    #     rule(:dangerous) { |m| m[:strength] > 15 }
+    #   end
+    #
+    #   class Room < Neo4j::Rails::Model
+    #     has_n(:monsters).to(Monster)
+    #   end
+    #
+    #   @dungeon.monsters.dangerous { |m| rooms = m.incoming(Room.monsters); rooms }  # returns rooms we should avoid
+    #   @dungeon.monsters{|m| ret(m).asc(m[:strength])} # return the monsters nodes sorted by strength
+    #
+    # @example Callbacks (learn more - see #{Neo4j::Rails::Callbacks})
     #
     #   class Person < Neo4j::Rails::Model
     #     before_save :do_something
