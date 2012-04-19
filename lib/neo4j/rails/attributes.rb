@@ -318,6 +318,7 @@ module Neo4j
 
           if options.include?(:index)
             _decl_props[property][:index] = options[:index]
+            raise "Indexing boolean property is not allowed" if options[:type] && options[:type] == :boolean
             index(property, :type => options[:index], :field_type => converter.index_as)
           end
 

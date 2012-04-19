@@ -40,6 +40,17 @@ describe Neo4j::Rails::Finders, :type => :unit do
     end
   end
 
+  describe "index boolean value not allowed" do
+    it "raise" do
+      lambda{klass.property :thing, :type => :boolean, :index => :exact}.should raise_error
+    end
+
+    it "but boolean property without index is allowed" do
+      klass.property :thing, :type => :boolean
+    end
+
+  end
+
   describe "find_by_desc" do
     it "uses the _indexer find method" do
       klass._indexer.should_receive(:find).with("desc: \"bla\"").and_return([11,22])
