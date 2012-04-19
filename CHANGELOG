@@ -1,3 +1,10 @@
+== 2.0.0.alpha.7 / 2012-04-19
+* fix for Neo4j::Config bug - did not work from rails to set the db location, closes #191
+* has_n and has_one method generate class method returning the name of the relationship as a Symbol, closes #170
+* Raise exception if trying to index boolean property, closes #180
+* Made start_node= and end_node= protected closes 186
+* Support for things like @dungeon.monsters.dangerous { |m| m[:weapon?] == 'sword' } closes #181
+
 == 2.0.0.alpha.6 / 2012-04-15
 * Complete rewrite and smaller change of API + lots of refactoring and better RSpecs
 * Moved code to the neo4j-core and neo4j-wrapper gems
