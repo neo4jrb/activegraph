@@ -57,8 +57,22 @@ describe Neo4j::Rails::HasN, :type => :unit do
     other_klass.new
   end
 
+  describe "has_one(:best_friend)" do
+    it "has a best_friend class method for the relationship type" do
+      klass.has_one(:best_friend).to(other_klass)
+      klass.has_one(:stuff)
+
+      klass.stuff.should == :stuff
+      klass.best_friend.should == :"#{klass}#best_friend"
+    end
+  end
+
   describe "has_n(:friends).to(Other)" do
     before { klass.has_n(:friends).to(other_klass) }
+
+    it "has a friend class method for the relationship type" do
+      klass.friends.should == :"#{klass}#friends"
+    end
 
     describe "node.friends.build(:name => 'foo')" do
       it "initialize a node with give properties" do

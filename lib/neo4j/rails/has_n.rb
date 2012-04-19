@@ -143,6 +143,12 @@ module Neo4j
             RUBY
           end
 
+          instance_eval <<-RUBY, __FILE__, __LINE__
+              def #{rel_type}
+                _decl_rels[:'#{rel_type}'].rel_type.to_sym
+              end
+          RUBY
+
           _decl_rels[rel_type.to_sym] = Neo4j::Wrapper::HasN::DeclRel.new(rel_type, true, self)
         end
 
@@ -198,7 +204,7 @@ module Neo4j
 
           instance_eval <<-RUBY, __FILE__, __LINE__
               def #{rel_type}
-                _decl_rels[:'#{rel_type}'].rel_type.to_s
+                _decl_rels[:'#{rel_type}'].rel_type.to_sym
               end
           RUBY
 
