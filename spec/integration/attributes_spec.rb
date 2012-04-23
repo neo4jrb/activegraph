@@ -21,6 +21,16 @@ module Neo4j
         AttributesTestModel.last
       end
 
+      describe "write_attribute" do
+        it "should not require a new transaction" do
+          a = AttributesTestModel.new
+          Neo4j::Rails::Transaction.running?.should be_false
+          a.write_attribute(:name,  "hej")
+          Neo4j::Rails::Transaction.running?.should be_false
+          a.read_attribute(:name).should == "hej"
+          a.should_not be_persisted
+        end
+      end
 
       it "should be possible to override a declared property" do
         # this is done both by devise and I think carrierwave

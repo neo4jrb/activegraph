@@ -26,16 +26,16 @@ module Neo4j
         self.attribute_defaults ||= {}
 
         # save the original [] and []= to use as read/write to Neo4j
-        alias_method :read_attribute, :[]
-        alias_method :write_attribute, :[]=
+        alias_method :read_property_from_db, :[]
+        alias_method :write_property_from_db, :[]=
 
         # wrap the read/write in type conversion
-        alias_method_chain :read_local_property, :type_conversion
-        alias_method_chain :write_local_property, :type_conversion
+        alias_method_chain :read_attribute, :type_conversion
+        alias_method_chain :write_attribute, :type_conversion
 
         # whenever we refer to [] or []=. use our local properties store
-        alias_method :[], :read_local_property
-        alias_method :[]=, :write_local_property
+        alias_method :[], :read_attribute
+        alias_method :[]=, :write_attribute
 
         def self.inherited(sub_klass)
           super
@@ -199,22 +199,22 @@ module Neo4j
 
 
       # Wrap the getter in a conversion from Java to Ruby
-      def read_local_property_with_type_conversion(property)
-        self.class._converter(property).to_ruby(read_local_property_without_type_conversion(property))
+      def read_attribute_with_type_conversion(property)
+        self.class._converter(property).to_ruby(read_attribute_without_type_conversion(property))
       end
 
       # Wrap the setter in a conversion from Ruby to Java
-      def write_local_property_with_type_conversion(property, value)
+      def write_attribute_with_type_conversion(property, value)
         @_properties_before_type_cast[property.to_sym]=value if self.class._decl_props.has_key? property.to_sym
         conv_value = self.class._converter(property.to_sym).to_java(value)
-        write_local_property_without_type_conversion(property, conv_value)
+        write_attribute_without_type_conversion(property, conv_value)
       end
 
 
       # The behaviour of []= changes with a Rails Model, where nothing gets written
       # to Neo4j until the object is saved, during which time all the validations
       # and callbacks are run to ensure correctness
-      def write_local_property(key, value)
+      def write_attribute(key, value)
         key_s = key.to_s
         if !@_properties.has_key?(key_s) || @_properties[key_s] != value
           attribute_will_change!(key_s)
@@ -225,12 +225,12 @@ module Neo4j
 
       # Returns the locally stored value for the key or retrieves the value from
       # the DB if we don't have one
-      def read_local_property(key)
+      def read_attribute(key)
         key = key.to_s
         if @_properties.has_key?(key)
           @_properties[key]
         else
-          @_properties[key] = (persisted? && _java_entity.has_property?(key)) ? read_attribute(key) : attribute_defaults[key]
+          @_properties[key] = (!new_record? && _java_entity.has_property?(key)) ? read_property_from_db(key) : attribute_defaults[key]
         end
       end
 
@@ -362,20 +362,24 @@ module Neo4j
       end
 
 
+      def _classname
+        self.class.to_s
+      end
+
       protected
 
 
       # Ensure any defaults are stored in the DB
       def write_default_attributes
         self.class.attribute_defaults.each do |attribute, value|
-          write_attribute(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class, false)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
+          write_property_from_db(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class, false)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
         end
       end
 
       # Write attributes to the Neo4j DB only if they're altered
       def write_changed_attributes
         @_properties.each do |attribute, value|
-          write_attribute(attribute, value) if changed_attributes.has_key?(attribute)
+          write_property_from_db(attribute, value) if changed_attributes.has_key?(attribute)
         end
       end
 
@@ -390,22 +394,24 @@ module Neo4j
         end
       end
 
-      # TODO THIS IS ONLY NEEDED IN ACTIVEMODEL < 3.2, ?
-      # To get ActiveModel::Dirty to work, we need to be able to call undeclared
-      # properties as though they have get methods
-      def method_missing(method_id, *args, &block)
-        method_name = method_id.to_s
-        if property?(method_name)
-          self[method_name]
-        else
-          super
+      if ActiveModel::VERSION::STRING < "3.2.0"
+        # THIS IS ONLY NEEDED IN ACTIVEMODEL < 3.2
+        # To get ActiveModel::Dirty to work, we need to be able to call undeclared
+        # properties as though they have get methods
+        def method_missing(method_id, *args, &block)
+          method_name = method_id.to_s
+          if property?(method_name)
+            self[method_name]
+          else
+            super
+          end
         end
       end
+
 
       def _invalid_attribute_name?(attr_name)
         attr_name.to_s[0] == ?_ && !self.class._decl_props.include?(attr_name.to_sym)
       end
-
 
 
 
@@ -505,12 +511,8 @@ module Neo4j
         @changed_attributes.clear
       end
 
-      def _classname
-        self.class.to_s
-      end
-
       def _classname=(value)
-        write_local_property_without_type_conversion("_classname", value)
+        write_attribute_without_type_conversion("_classname", value)
       end
 
     end

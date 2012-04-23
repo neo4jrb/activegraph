@@ -11,6 +11,26 @@ module Neo4j
     #      ...
     #  end
     class Transaction
+
+      # Acquires a write lock for entity for this transaction. The lock (returned from this method) can be released manually, but if not it's released automatically when the transaction finishes.
+      # There is no implementation for this here because it's an java method
+      #
+      # @param [Neo4j::Relationship, Neo4j::Node] java_entity the entity to acquire a lock for. If another transaction currently holds a write lock to that entity this call will wait until it's released.
+      # @return [Java::OrgNeo4jGraphdb::Lock] a Lock which optionally can be used to release this lock earlier than when the transaction finishes. If not released (with Lock.release() it's going to be released with the transaction finishes.
+      # @see http://api.neo4j.org/current/org/neo4j/graphdb/Transaction.html#acquireWriteLock(Java::OrgNeo4jGraphdb::PropertyContainer)
+      # @see http://api.neo4j.org/current/org/neo4j/graphdb/Lock.html
+      def acquire_write_lock(java_entity)
+      end
+
+      # Acquires a read lock for entity for this transaction. The lock (returned from this method) can be released manually, but if not it's released automatically when the transaction finishes.
+      # There is no implementation for this here because it's an java method
+      # @param [Neo4j::Relationship, Neo4j::Node] java_entity the entity to acquire a lock for. If another transaction currently hold a write lock to that entity this call will wait until it's released.
+      # @return [Java::OrgNeo4jGraphdb::Lock]  a Lock which optionally can be used to release this lock earlier than when the transaction finishes. If not released (with Lock.release() it's going to be released with the transaction finishes.
+      # @see http://api.neo4j.org/current/org/neo4j/graphdb/Transaction.html#acquireReadLock(Java::OrgNeo4jGraphdb::PropertyContainer)
+      # @see http://api.neo4j.org/current/org/neo4j/graphdb/Lock.html
+      def acquire_read_lock(java_entity)
+      end
+
       class << self
         def current
           Thread.current[:neo4j_transaction]
