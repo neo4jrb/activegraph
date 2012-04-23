@@ -119,6 +119,11 @@ module Neo4j
         end
       end
 
+      # Returns if the entity is currently being updated or created
+      def create_or_updating?
+        !!@_create_or_updating
+      end
+
       protected
 
       def update
@@ -128,6 +133,8 @@ module Neo4j
       end
 
       def create_or_update
+        # since the same model can be created or updated twice from a relationship we have to have this guard
+        @_create_or_updating = true
         result = persisted? ? update : create
         unless result != false
           Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
@@ -135,7 +142,10 @@ module Neo4j
         else
           true
         end
+      ensure
+        @_create_or_updating = nil
       end
+
 
       def set_deleted_properties
         @_deleted = true

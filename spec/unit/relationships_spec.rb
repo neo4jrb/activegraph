@@ -120,9 +120,14 @@ describe Neo4j::Rails::Relationships, :type => :unit do
 
       describe "write_changed_relationships" do
         before do
-          other_node.should_receive(:save).and_return(true)
+          node.should_receive(:create_or_updating?).and_return(false)
           node.should_receive(:save).and_return(true)
+
+          other_node.should_receive(:create_or_updating?).and_return(true)
+          other_node.should_not_receive(:save)
+
           node.write_changed_relationships
+
 
           node.stub(:persisted?).and_return(true)
           node.stub(:new_record?).and_return(false)

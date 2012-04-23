@@ -104,7 +104,7 @@ module Neo4j
       end
 
       def _persist_node(start_or_end_node)
-        (start_or_end_node.new_record? || start_or_end_node.relationships_changed?) ? start_or_end_node.save : true
+        ((start_or_end_node.new_record? || start_or_end_node.relationships_changed?) && !start_or_end_node.create_or_updating?) ? start_or_end_node.save : true
       end
 
     end

@@ -128,7 +128,6 @@ describe "Versioning" do
   end
 
   it "restores an older version with relationships" do
-    pending "Does not work with new active model 3.2"
     ferarri = SportsCar.create!(:name => 'Ferarri')
     ferarri.version(1).incoming(:sports_cars).should be_empty
     porsche = SportsCar.create!(:name => 'Porsche')

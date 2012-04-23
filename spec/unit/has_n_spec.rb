@@ -112,6 +112,9 @@ describe Neo4j::Rails::HasN, :type => :unit do
 
           node.should_receive(:save).and_return(true)
           other.should_receive(:save).and_return(true)
+          node.should_receive(:create_or_updating?).and_return(false)
+          other.should_receive(:create_or_updating?).and_return(false)
+
           node.write_changed_relationships
 
           new_relationship.start_node.should == node
