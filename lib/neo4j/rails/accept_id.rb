@@ -57,7 +57,7 @@ module Neo4j::Rails
         class_eval %Q{
           def #{association_name}_id=(id)
             relation_target_class = self.class._decl_rels[:#{association_name}].target_class
-            association_class =  relation_target_class <= self.class ?  Neo4j::Rails::Model : relation_target_class
+            association_class =  (relation_target_class.nil? || relation_target_class <= self.class) ?  Neo4j::Rails::Model : relation_target_class
             self.#{association_name} = id.present? ? association_class.find(id) : nil
           end
         }, __FILE__, __LINE__
