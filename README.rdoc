@@ -11,17 +11,18 @@ It uses two powerful and mature Java libraries:
 
 == Documentation
 
+==== Version >= 2.0
+
+* {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
+* {YARD}[http://rdoc.info/github/andreasronge/neo4j/master/frames]
+* RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
+
 ==== Version < 2.0.alpha.5
 
 * {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
 * {RDoc}[http://neo4j.rubyforge.org]
 * {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
 * {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
-
-==== Version >= 2.0
-
-* {YARD}[http://rdoc.info/github/andreasronge/neo4j/master/frames]
-* RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
 
 === Presentation Materials and other URLs
 
