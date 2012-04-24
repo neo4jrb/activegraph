@@ -28,6 +28,10 @@ describe "finders", :type => :integration do
     it "find_by_age(a fixnum) should work because age is declared as a Fixnum" do
       findable_class.find_by_age(3).should == @test_3
     end
+
+    it "#find_by_age(a array)" do
+      findable_class.find_by_age([3,2]).should == @test_3
+    end
   end
 
   context "#close_lucene_connections" do

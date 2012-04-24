@@ -102,8 +102,26 @@ module Neo4j
           end
         end
 
+        # Get the indexed entity, creating it (exactly once) if no indexed entity exist.
+        #
+        # @example Creating a Unique node
+        #
+        #   class MyNode < Neo4j::Rails::Model
+        #     property :email, :index => :exact, :unique => true
+        #   end
+        #
+        #   node = MyNode.get_or_create(:email =>'jimmy@gmail.com', :name => 'jimmy')
+        #
+        # @see #put_if_absent
+        def get_or_create(*args)
+          props = args.first
+          raise "Can't get or create entity since #{props.inspect} does not included unique key #{props[unique_factory_key]}'" unless props[unique_factory_key]
+          index = index_for_type(_decl_props[unique_factory_key][:index])
+          Neo4j::Core::Index::UniqueFactory.new(unique_factory_key, index) { |*| create!(*args) }.get_or_create(unique_factory_key, props[unique_factory_key])
+        end
+
         # Same as #create, but raises an error if there is a problem during save.
-        # Returns the object whether saved successfully or not.
+        # @return [Neo4j::Rails::Model, Neo4j::Rails::Relationship]
         def create!(*args)
           new(*args).tap do |o|
             yield o if block_given?
