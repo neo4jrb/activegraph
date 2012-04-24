@@ -14,7 +14,7 @@ module Neo4j
         # See also Neo4j::NodeMixin#has_n which only work with persisted relationships.
         #
         # @example
-        #   class Thing
+        #   class Thing < Neo4j::Rails::Model
         #     has_n(:things)
         #   end
         #
@@ -25,6 +25,7 @@ module Neo4j
         # @example declare a to relationship
         #  class Company
         #    has_n(:employees).to(Person)
+        #    # alternative - has_n(:employees).to("Person")
         #  end
         #
         #  c = Company.new
@@ -45,6 +46,17 @@ module Neo4j
         # @example advanced traversal, using Neo4j::Core::Traversal
         #  c._outgoing(Company.employees).outgoing(:friends).depth.each{ }
         #
+        # @example declare incoming
+        #   class Person < Neo4j::Rails::Model
+        #     has_n(:likes).to(Song)
+        #   end
+        #
+        #   class Song < Neo4j::Rails::Model
+        #     has_n(:people_liking_this_song).from(Person.likes)  # or from(Person, likes)
+        #   end
+        #
+        #   Song.people_liking_this_song.build # creates a Person
+        #
         # @see Neo4j::Rails::Relationships::NodesDSL
         def has_n(*args)
           options = args.extract_options!
@@ -56,6 +68,7 @@ module Neo4j
         # @example
         #  class Person
         #    has_one(:friend).to(OtherClass)
+        #    has_one(:root).from("SomeOtherClassAsString")
         #  end
         #
         # @example
