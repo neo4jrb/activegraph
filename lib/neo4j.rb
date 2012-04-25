@@ -15,6 +15,7 @@ require 'active_model'
 require 'neo4j-core'
 require 'neo4j-wrapper'
 
+require 'neo4j/type_converters/serialize_converter'
 require 'neo4j/rails/rails'
 
 

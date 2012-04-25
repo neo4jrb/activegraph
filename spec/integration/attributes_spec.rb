@@ -7,7 +7,7 @@ module Neo4j
       property :number_property, :type => :float
       property :foo
       property :defaulty, :type => Fixnum, :default => 10
-      validates :number_property, :numericality => { :allow_nil => true }
+      validates :number_property, :numericality => {:allow_nil => true}
 
       def foo=(f)
         self.name = f + 'changed'
@@ -21,11 +21,31 @@ module Neo4j
         AttributesTestModel.last
       end
 
+      describe ":type => :serialize" do
+        before do
+          AttributesTestModel.property :junk, :type => :serialize
+        end
+
+        [["a", 2, {:things => true}],
+         [:hello],
+          [],
+        { 3 => false}
+        ].each do |data|
+          it "should serialize #{data.inspect}" do
+            a = AttributesTestModel.new
+            a.junk = data
+            a.save!
+            a2 = AttributesTestModel.find(a.id)
+            a2.junk.should == data
+          end
+        end
+      end
+
       describe "write_attribute" do
         it "should not require a new transaction" do
           a = AttributesTestModel.new
           Neo4j::Rails::Transaction.running?.should be_false
-          a.write_attribute(:name,  "hej")
+          a.write_attribute(:name, "hej")
           Neo4j::Rails::Transaction.running?.should be_false
           a.read_attribute(:name).should == "hej"
           a.should_not be_persisted
@@ -35,7 +55,7 @@ module Neo4j
       it "should be possible to override a declared property" do
         # this is done both by devise and I think carrierwave
         # http://neo4j.lighthouseapp.com/projects/15548-neo4j/tickets/201-neo4jcarrierwave-neo4j-file-upload-error#ticket-201-2
-        subject.update_attributes(:foo =>'abc')
+        subject.update_attributes(:foo => 'abc')
         subject.save!
         subject.name.should == 'abcchanged'
       end

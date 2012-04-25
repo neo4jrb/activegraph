@@ -244,7 +244,8 @@ module Neo4j
 
         # Declares a property.
         # It support the following hash options:
-        # <tt>:default</tt>,<tt>:null</tt>,<tt>:limit</tt>,<tt>:type</tt>,<tt>:index</tt>,<tt>:converter</tt>
+        # <tt>:default</tt>,<tt>:null</tt>,<tt>:limit</tt>,<tt>:type</tt>,<tt>:index</tt>,<tt>:converter</tt>.
+        # Notice that you do not have to declare properties. You can always set and read properties using the <tt>[]</tt> and <tt>[]=</tt> operators.
         #
         # @example Set the property type,
         #   class Person < Neo4j::RailsModel
@@ -255,11 +256,12 @@ module Neo4j
         #   class Person < Neo4j::RailsModel
         #     property :age, :default => 0
         #   end
+        #
         # @example
         #   class Person < Neo4j::RailsModel
+        #     # Property must be there
         #     property :age, :null => false
         #   end
-        # Property must be there
         #
         # @example Property has a length limit
         #   class Person < Neo4j::RailsModel
@@ -294,6 +296,8 @@ module Neo4j
         #     property :name, :converter => MyConverter
         #   end
         #
+        # @see Neo4j::TypeConverters::SerializeConverter SerializeConverter for using type => :serialize
+        # @see http://rdoc.info/github/andreasronge/neo4j-wrapper/Neo4j/TypeConverters for converters defined in neo4j-wrapper gem (which is included).
         def property(*args)
           options = args.extract_options!
           args.each do |property_sym|

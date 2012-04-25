@@ -48,6 +48,30 @@ describe Neo4j::Rails::Attributes, :type => :unit do
     klass.stub(:load_entity).and_return(new_model)
   end
 
+
+  describe "Converters and :type" do
+    describe "serialize converter" do
+      before do
+        klass.property :stuff, :type => :serialize
+      end
+
+      it "can serialize properties" do
+        n = klass.new
+        n.stuff = {:name => 'hej', :things => [1, 2, 3]}
+        n.stuff.should == {:name => 'hej', :things => [1, 2, 3]}
+        n.save
+        new_node[:stuff].should ==  "--- \n:name: hej\n:things: \n  - 1\n  - 2\n  - 3\n"
+        n.stuff.should == {:name => 'hej', :things => [1, 2, 3]}
+      end
+    end
+
+    describe "unknown type" do
+      it "should raise" do
+        lambda{klass.property :funny, :type => :i_dont_know}.should raise_error
+      end
+    end
+  end
+
   describe "attribute_defaults" do
     it "has a class method that by default returns an empty hash" do
       klass.attribute_defaults.should == {}
