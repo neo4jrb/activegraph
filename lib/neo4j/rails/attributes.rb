@@ -188,7 +188,7 @@ module Neo4j
 
       def property_changed?
         return !@_properties.empty? unless persisted?
-        !!@_properties.keys.find { |k| self._java_node[k] != @_properties[k] }
+        !!@_properties.keys.find { |k| self._java_entity[k] != @_properties[k] }
       end
 
       # Return true if method_name is the name of an appropriate attribute
@@ -376,7 +376,7 @@ module Neo4j
       # Ensure any defaults are stored in the DB
       def write_default_attributes
         self.class.attribute_defaults.each do |attribute, value|
-          write_property_from_db(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class, false)) unless changed_attributes.has_key?(attribute) || _java_node.has_property?(attribute)
+          write_property_from_db(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class, false)) unless changed_attributes.has_key?(attribute) || _java_entity.has_property?(attribute)
         end
       end
 

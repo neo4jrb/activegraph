@@ -854,6 +854,7 @@ describe "Neo4j::Rails::Model relationships", :type => :integration do
     property :required_on_create
     property :required_on_update
     property :created
+    property :role, :default => 'stuntman'
 
     attr_reader :saved
 

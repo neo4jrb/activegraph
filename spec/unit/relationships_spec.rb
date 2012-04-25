@@ -64,7 +64,7 @@ describe Neo4j::Rails::Relationships, :type => :unit do
 
       describe "node.node(:outgoing, :foo)" do
         subject { node.node(:outgoing, :foo)}
-        before { node.stub(:_java_node).and_return(nil)}
+        before { node.stub(:_java_entity).and_return(nil)}
         it { should ==  other_node }
       end
 

@@ -135,7 +135,7 @@ describe Neo4j::Rails::HasN, :type => :unit do
       end
 
       context "node.best_friend" do
-        before { node.stub(:_java_node).and_return(nil) }
+        before { node.stub(:_java_entity).and_return(nil) }
         subject { node.best_friend }
         it { should == other }
       end

@@ -73,7 +73,7 @@ module Neo4j
       end
 
       # Allow to access persisted and unpersisted relationships - like the #outgoing and #incoming method.
-      # To only find all the persisted relationship, node._java_node.rels
+      # To only find all the persisted relationship, node._java_entity.rels
       #
       # @example
       #   node.outgoing(:foo) << node2

@@ -42,9 +42,9 @@ module Neo4j
       # @see http://rdoc.info/github/andreasronge/neo4j-core/Neo4j/Core/Relationship#other_node-instance_method
       def other_node(node)
         if persisted?
-          _java_rel._other_node(node._java_node)
+          _java_rel._other_node(node._java_entity)
         else
-          @_start_node == (node._java_node || node) ? @_end_node : @_start_node
+          @_start_node == (node._java_entity || node) ? @_end_node : @_start_node
         end
       end
 
