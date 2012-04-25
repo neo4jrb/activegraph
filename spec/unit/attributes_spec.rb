@@ -60,7 +60,7 @@ describe Neo4j::Rails::Attributes, :type => :unit do
         n.stuff = {:name => 'hej', :things => [1, 2, 3]}
         n.stuff.should == {:name => 'hej', :things => [1, 2, 3]}
         n.save
-        new_node[:stuff].should ==  "--- \n:name: hej\n:things: \n  - 1\n  - 2\n  - 3\n"
+        new_node[:stuff].should ==  YAML.dump({:name => 'hej', :things => [1, 2, 3]})
         n.stuff.should == {:name => 'hej', :things => [1, 2, 3]}
       end
     end
