@@ -1,3 +1,14 @@
+* Fix for "relationship to :all assigned twice for single instance" #178
+* Fix for callback fire more then once (also means performance increase) #172
+* Support for lucene search on array properties, #118
+* Support for creating unique entities (get_or_create) #143
+* Support for specifying has_n/has_one relationship with Strings instead of Class #160
+* Support for serializer of hash and arrays on properties #185
+* Fix for Neo4j::Rails::Relationship default property, #195
+* Added support for pagination, see the neo4j-will_paginate gem
+* Fixed Rails generators
+* Add Cypher DSL support for is_a?
+
 == 2.0.0.alpha.7 / 2012-04-19
 * fix for Neo4j::Config bug - did not work from rails to set the db location, closes #191
 * has_n and has_one method generate class method returning the name of the relationship as a Symbol, closes #170
