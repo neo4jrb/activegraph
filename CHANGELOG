@@ -1,3 +1,6 @@
+== 2.0.0.alpha.9 / 2012-04-27
+* Fix for rails scaffold generator
+
 == 2.0.0.alpha.8 / 2012-04-27
 * Fix for "relationship to :all assigned twice for single instance" #178
 * Fix for callback fire more then once (=> performance increase) #172

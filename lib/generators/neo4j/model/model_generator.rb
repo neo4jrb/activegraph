@@ -56,7 +56,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
 
 
   def index_fragment(property)
-    if options[:indices].include?(property)
+    if options[:indices] && options[:indices].include?(property)
       ", :index => :exact"
     end
   end
