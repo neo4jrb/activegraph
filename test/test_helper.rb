@@ -19,7 +19,8 @@ Rails.application.config.root = Rails.root
 
 # Call configure to load the settings from
 # Rails.application.config.generators to Rails::Generators
-Rails::Generators.configure!
+config = Rails::Configuration::Generators.new
+Rails::Generators.configure!(config)
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
