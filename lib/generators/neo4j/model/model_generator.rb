@@ -54,14 +54,11 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
     options[:indices]
   end
 
-  def indices_statements
-    puts "indices_statements #{options[:indices].inspect}"
-    txt = ""
-    options[:indices].each do |key|
-      txt << %Q{
-  index :#{key}}
+
+  def index_fragment(property)
+    if options[:indices].include?(property)
+      ", :index => :exact"
     end
-    txt
   end
 
 	def parent?
