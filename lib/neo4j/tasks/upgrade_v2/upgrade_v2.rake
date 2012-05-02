@@ -1,3 +1,5 @@
+puts "LOADING UPGRADE SCRIPT Neo4j"
+
 require File.join(File.dirname(__FILE__), "lib", "upgrade_v2")
 
 namespace(:neo4j) do

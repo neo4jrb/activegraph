@@ -7,7 +7,7 @@ if ARGV.length == 0
   puts <<TEXT
 A tool for upgrading the neo4j database to #{Neo4j::VERSION}.
 Make sure you shutdown the database cleanly before running this script.
-More info:  http://neo4j.rubyforge.org/guides/configuration.html#upgrade-to-a-new-neo4j-version
+More info: https://github.com/andreasronge/neo4j/wiki
 
 Usage   : neo4j-upgrade <location of database>
 Example : neo4j-upgrade db/neo4j-development
