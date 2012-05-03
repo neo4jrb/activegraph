@@ -1,3 +1,8 @@
+== 2.0.0.rc1 / 2012-05-03
+* Fix of rake task to upgrade to 2.0
+* Various Cypher DSL improvements, core(#3,#4,#5), #196
+* Added Neo4j::VERSION
+
 == 2.0.0.alpha.9 / 2012-04-27
 * Fix for rails scaffold generator
 

@@ -16,8 +16,11 @@ module Neo4j
       end
 
       def neo4j_classes
-        abort("Please set the environment variable 'NEO4J_CLASSES' or ruby constant ($NEO4J_CLASSES) before running this task") unless ENV['NEO4J_CLASSES']
-        ENV['NEO4J_CLASSES'].split(',').map(&:strip).map{|c| Neo4j::Wrapper.to_class(c)}
+        if ENV['NEO4J_CLASSES']
+          ENV['NEO4J_CLASSES'].split(',').map(&:strip).map{|c| Neo4j::Wrapper.to_class(c)}
+        else
+          Neo4j::Rails::Model::OrmAdapter.model_classes
+        end
       end
 
       def multi_tenancy_classes
