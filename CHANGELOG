@@ -1,3 +1,7 @@
+== 2.0.0.rc2 / 2012-05-04
+* Enable Identity Map by default
+* Added versioning for Neo4j::Core
+
 == 2.0.0.rc1 / 2012-05-03
 * Fix of rake task to upgrade to 2.0
 * Various Cypher DSL improvements, core(#3,#4,#5), #196
