@@ -1,3 +1,6 @@
+== 2.0.0 / 2012-05-07
+  (same as rc2)
+
 == 2.0.0.rc2 / 2012-05-04
 * Enable Identity Map by default
 * Added versioning for Neo4j::Core
