@@ -99,7 +99,7 @@ Example of creating an Neo4j Application from scratch:
 (make sure you have installed JRuby version >= 1.6.2)
 
  gem install rails
- rails new myapp -m http://andreasronge.github.com/rails3.rb
+ rails new myapp -m http://andreasronge.github.com/neo4j/rails.rb
  cd myapp
  bundle
  rails generate scaffold User name:string email:string
