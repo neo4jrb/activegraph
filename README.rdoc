@@ -13,6 +13,7 @@ It uses two powerful and mature Java libraries:
 
 ==== Version >= 2.0
 
+* {Blog}[http://blog.jayway.com/2012/05/07/neo4j-rb-2-0-an-overview/]
 * {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
 * {YARD}[http://rdoc.info/github/andreasronge/neo4j/master/frames]
 * RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
