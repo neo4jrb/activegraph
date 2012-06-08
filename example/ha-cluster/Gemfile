@@ -1,5 +1,7 @@
 source 'http://rubygems.org'
 
+gem 'neo4j-core', :path => '/home/andreas/projects/neo4j-core'
+gem 'neo4j-wrapper', :path => '/home/andreas/projects/neo4j-wrapper'
 gem 'neo4j', :path => "../.."
 gem 'neo4j-advanced'
 gem 'neo4j-enterprise'

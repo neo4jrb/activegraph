@@ -2,8 +2,8 @@ source :gemcutter
 
 gemspec
 
-#gem 'neo4j-core', :path => '/home/andreas/projects/neo4j-core'
-#gem 'neo4j-wrapper', :path => '/home/andreas/projects/neo4j-wrapper'
+gem 'neo4j-core', :path => '/home/andreas/projects/neo4j-core'
+gem 'neo4j-wrapper', :path => '/home/andreas/projects/neo4j-wrapper'
 
 group 'development' do
   gem 'guard'
