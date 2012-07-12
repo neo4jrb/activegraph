@@ -731,13 +731,16 @@ describe Neo4j::Rails::Model, :type => :integration do
     end
 
     context "a model with two defined property" do
-      it "should return an empty array" do
+      it "should return an array of column objects" do
         columns = create_model do
-          property :foo
-          property :bar
+          property :foo, :index => :exact
+          property :bar, :type => Date
         end.columns
         columns.size.should == 2
-        columns.should include(:foo, :bar)
+        columns.map { |c| c.name.to_sym }.should include(:foo, :bar)
+        columns.map { |c| c.type }.should include("String", "Date")
+        columns.map { |c| c.index }.should include("exact")  
+        columns.map { |c| c.index }.should_not include("fulltext")          
       end
     end
 
