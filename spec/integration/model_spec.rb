@@ -742,6 +742,16 @@ describe Neo4j::Rails::Model, :type => :integration do
         columns.map { |c| c.index }.should include("exact")  
         columns.map { |c| c.index }.should_not include("fulltext")          
       end
+      
+      it "should not update the models _decl_props hash" do
+        a_model = create_model do
+          property :foo, :index => :exact, :type => String
+        end
+        a_model.columns
+        a_model._decl_props.should == {:foo=>{:index=>:exact, :converter=>Neo4j::TypeConverters::StringConverter, :type=>String}}
+      end
+        
+      
     end
 
   end
