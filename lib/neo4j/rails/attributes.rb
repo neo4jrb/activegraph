@@ -18,7 +18,8 @@ module Neo4j
       included do
         include ActiveModel::Dirty # track changes to attributes
         include ActiveModel::MassAssignmentSecurity # handle attribute hash assignment
-
+        
+        
         class << self
           attr_accessor :attribute_defaults
         end
@@ -238,9 +239,10 @@ module Neo4j
       module ClassMethods
         # Returns all defined properties
         def columns
-          self._decl_props.keys
+          columns = []
+          self._decl_props.each { |k,v| v.store(:name, k ); columns << Column.new(v) }
+          columns
         end
-
 
         # Declares a property.
         # It support the following hash options:
