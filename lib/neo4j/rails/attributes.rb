@@ -240,7 +240,8 @@ module Neo4j
         # Returns all defined properties
         def columns
           columns = []
-          self._decl_props.each { |k,v| v.store(:name, k ); columns << Column.new(v) }
+          props = Marshal.load( Marshal.dump(self._decl_props ))
+          props.each { |k,v| v.store(:name, k ); columns << Column.new(v) }
           columns
         end
 
