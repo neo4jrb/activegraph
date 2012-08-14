@@ -57,7 +57,7 @@ module Neo4j
           if self._decl_props[field.to_sym] && self._decl_props[field.to_sym][:type] == Fixnum
             module_eval <<-RUBY, __FILE__, __LINE__
               def self.all_by_#{field}(value)
-                find_with_indexer(:#{field} => value)
+                find_with_indexer_or_traversal(:#{field} => value)
               end
   	  		  def self.find_by_#{field}(value)
 	  	        all_by_#{field}(value).first
@@ -66,7 +66,7 @@ module Neo4j
           else
             module_eval <<-RUBY, __FILE__, __LINE__
               def self.all_by_#{field}(value)
-                find_with_indexer("#{field}: \\"\#{value}\\"")
+                find_with_indexer_or_traversal("#{field}: \\"\#{value}\\"")
               end
 
               def self.find_by_#{field}(value)
@@ -175,13 +175,19 @@ module Neo4j
             if ids
               [find_with_ids(ids)].flatten
             else
-              find_with_indexer(*args, &block)
+              find_with_indexer_or_traversal(*args, &block)
             end
           end
         end
 
         def first(*args, &block)
-          all(*args, &block).first
+          found = all(*args, &block).first
+          if found && args.first.is_a?(Hash) && args.first.include?(:id)
+            # if search for an id then all the other properties must match
+            args.first.find{|k,v| k != :id && found.send(k) != v} ? nil : found
+          else
+            found
+          end
         end
 
         def last(*args)
@@ -245,6 +251,28 @@ module Neo4j
           entity.is_a?(self) and entity.reachable_from_ref_node?
         end
 
+        
+        def use_traversal_finder?(*args)
+          # Conditions for using a traversal:
+          # 1. the first argument is a hash
+          return false unless args.first.is_a?(Hash)
+          
+          # 2. no support for :condition hash
+          return false if args.first.include?(:conditions)
+          
+          # 3. there is at least one property which does not have a lucene index
+          args.first.keys.find{|k| !index?(k)}
+        end
+
+
+        def find_with_indexer_or_traversal(*args, &block)
+          if use_traversal_finder?(*args)
+            find_with_traversal(args.first)
+          else
+            find_with_indexer(*args, &block)
+          end
+        end
+
         def find_with_indexer(*args, &block)
           hits = if args.first.is_a?(Hash) && args.first.include?(:conditions)
                    params = args.first.clone
@@ -260,6 +288,21 @@ module Neo4j
           Thread.current[:neo4j_lucene_connection] ||= []
           Thread.current[:neo4j_lucene_connection] << hits if hits.respond_to?(:close)
           hits
+        end
+
+        def find_with_traversal(conditions)
+          this = self
+          all.query do |cypher|
+            conditions.each_pair do |k,v|
+              if this._decl_rels.keys.include?(k)
+                n = node(v.id)
+                rel_name = rel(this._decl_rels[k].rel_type)
+                this._decl_rels[k].dir == :outgoing ? cypher > rel_name > n : cypher < rel_name < n
+              else
+                cypher[k] == v
+              end
+            end
+          end
         end
 
         # Find the first object or create/initialize it.

@@ -7,8 +7,10 @@ describe "finders", :type => :integration do
     create_model do
       property :name, :index => :exact
       property :age, :type => Fixnum, :index => :exact
+      property :status, :default => 'normal'
       validates_presence_of :name
       has_n(:items)
+      has_n(:items_from).from(:items)
       def to_s
         name
       end
@@ -19,9 +21,46 @@ describe "finders", :type => :integration do
 
   before(:each) do
     @test_0 = findable_class.create!(:name => "Test 0")
-    @test_2 = findable_class.create!(:name => "Test 2")
+    @test_2 = findable_class.create!(:name => "Test 2", :status => 'warning')
     @test_3 = findable_class.create!(:name => "Test 3", :age => 3)
     @test_4 = findable_class.create!(:name => "Test 1")
+
+    @test_2.items << @test_3 << @test_4
+    @test_2.save!
+    @test_4.items << @test_0
+    @test_4.save!
+  end
+
+  context "find without using a lucene index (use cypher)" do
+    it "can find it with #all" do
+      findable_class.all(:status => 'warning').first.should == @test_2
+      findable_class.all(:status => 'normal').to_a.should =~ [@test_0, @test_3, @test_4]
+    end
+
+    it "can find it with #first" do
+      findable_class.first(:status => 'warning').should == @test_2
+    end
+
+    it "can find it with #find" do
+      findable_class.find(:status => 'warning').should == @test_2
+    end
+
+    it 'can find outgoing relationships' do
+      findable_class.all(:items => @test_4).first.should == @test_2
+      findable_class.first(:items => @test_4).should == @test_2
+      findable_class.all(:items => @test_3).first.should == @test_2
+      findable_class.first(:items => @test_3).should == @test_2
+      findable_class.all(:items => @test_2).first.should be_nil
+      findable_class.first(:items => @test_0).should == @test_4
+    end
+
+    it 'can find incoming relationships' do
+      findable_class.all(:items_from => @test_2).to_a.should =~ [@test_3, @test_4]
+    end
+
+    it 'should not find things that should not be found' do
+      findable_class.first(:status => 'oj').should be_nil
+    end
   end
 
   context "index property with type Fixnum, :age, :type => Fixnum" do
