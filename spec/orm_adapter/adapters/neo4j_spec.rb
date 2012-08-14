@@ -3,21 +3,17 @@ require 'orm_adapter/example_app_shared'
 
 module Neo4j
 	module OrmSpec
-		class Note < Neo4j::Rails::Model
-		end
-		
 		class User < Neo4j::Rails::Model
-			index 		:name
-			property 	:name
-			
-			has_n(:notes).to(Note)
+			property :name, :index => :exact
+			property :rating, :type => Fixnum, :index => :exact
+			has_n(:notes).to('Neo4j::OrmSpec::Note')
 		end
 	
 		class Note < Neo4j::Rails::Model
-			index			:body
-			property 	:body
+			property 	:body, :index => :exact
 			
-			has_one(:owner).from(User, :notes)
+			has_one(:owner).from('Neo4j::OrmSpec::User', :notes)
+
 		end
 	
 		# here be the specs!
