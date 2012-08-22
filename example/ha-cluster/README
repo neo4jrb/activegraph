@@ -37,6 +37,8 @@ The master machine is usually the machine that starts first.
 
 If you need to start with a new database, you should clean the zookeeper data folders, type: clean.sh
 
-For more info, see http://wiki.neo4j.org/content/High_Availability_Cluster
+NOTICE - there might be problem running zookeeper on Mac Os X, see https://groups.google.com/forum/?fromgroups=#!topic/neo4j/Kn_tHt3wPL0
+
+For more info, see the HA chapter in the Neo4j Manual, http://docs.neo4j.org/
 
 
