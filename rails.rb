@@ -1,6 +1,6 @@
 # Usage: rails new myapp -m neo4j.rb
 
-NEO4J_VERSION = "2.0.0"
+NEO4J_VERSION = "2.2.0.rc1"
 
 gsub_file 'Gemfile', /gem 'sql.*/, "gem 'neo4j', '#{NEO4J_VERSION}'"
 gsub_file 'Gemfile', /gem 'activerecord.*/, "gem 'neo4j', '#{NEO4J_VERSION}'"
