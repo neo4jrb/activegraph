@@ -302,6 +302,7 @@ module Neo4j
                 cypher[k] == v
               end
             end
+            cypher
           end
         end
 
