@@ -41,6 +41,12 @@ describe Neo4j::Rails::HasN, :type => :unit do
     other_klass.new
   end
 
+  describe 'has_many (alias of has_n)' do
+    it 'works like has_n' do
+      klass.has_many(:friends).to(other_klass)
+      puts klass._decl_rels.inspect
+    end
+  end
   describe "has_one(:best_friend)" do
     it "has a best_friend class method for the relationship type" do
       klass.has_one(:best_friend).to(other_klass)

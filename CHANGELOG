@@ -1,6 +1,11 @@
+
+* Aliased has_many to has_n, #183
+
 == 2.2.0.rc1 / 2012-09-21
 * Use neo4j-core and neo4j-wrapper version 2.2.0.rc1
 * Use the neo4j-cypher gem
+* Better support for Orm Adapter, #212
+* Use Cypher query when finder method does not have a lucene index, #210
 
 == 2.0.1 / 2012-06-06
 * Use neo4j-core and neo4j-wrapper version 2.0.1

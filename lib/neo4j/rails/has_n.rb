@@ -63,6 +63,9 @@ module Neo4j
           define_has_n_methods_for(args.first, options)
         end
 
+
+        alias_method :has_many, :has_n
+
         # Declares ONE incoming or outgoing relationship
         #
         # @example
