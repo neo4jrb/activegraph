@@ -160,10 +160,12 @@ module Neo4j
         else
           true
         end
+      rescue => e
+        Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
+        raise e
       ensure
         @_create_or_updating = nil
       end
-
 
       def set_deleted_properties
         @_deleted = true

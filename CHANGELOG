@@ -1,4 +1,4 @@
-
+* Fixed RSpec issue on JRuby 1.7.x #217
 * Aliased has_many to has_n, #183
 
 == 2.2.0.rc1 / 2012-09-21
