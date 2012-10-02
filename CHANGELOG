@@ -1,3 +1,6 @@
+== 2.2.0 / 2012-10-02
+* Using neo4j-cypher gem (1.0.0)
+* Fix of neo4j-core configuration issue using boolean values #218
 * Fixed RSpec issue on JRuby 1.7.x #217
 * Aliased has_many to has_n, #183
 

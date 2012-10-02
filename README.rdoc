@@ -11,26 +11,16 @@ It uses two powerful and mature Java libraries:
 
 == Documentation
 
-==== Version >= 2.0
-
-* {Blog}[http://blog.jayway.com/2012/05/07/neo4j-rb-2-0-an-overview/]
 * {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
+* {Blog}[http://blog.jayway.com/2012/05/07/neo4j-rb-2-0-an-overview/]
 * {YARD}[http://rdoc.info/github/andreasronge/neo4j/master/frames]
 * RSpecs - There are 2023 RSpecs (478/neo4j-core, 425/neo4j-wrapper and 1120/this gem - 2012 April)
-
-==== Version < 2.0.alpha.5
-
-* {Guides and API}[http://neo4j.rubyforge.org/guides/index.html]
-* {RDoc}[http://neo4j.rubyforge.org]
-* {Blog: Neo4j and Rails 3}[http://blog.jayway.com/2011/03/02/neo4j-rb-1-0-0-and-rails-3/]
-* {Kvitter Example Application}[https://github.com/andreasronge/kvitter/]
-
-=== Presentation Materials and other URLs
-
-* {JRubyConf 2012 May}[http://jrubyconf.com/#speakers]
-* {Presentation: RailsConf 2011}[http://andreasronge.github.com/neo4j-railsconf.pdf]
-* {Nordic Ruby 2010 May 21-23}[http://nordicruby.org/speakers#user_29]
 * {Docs from NeoTechnology}[http://docs.neo4j.org/]
+
+== Example applications
+
+* {The Kvitter Rails 3.2x App}[https://github.com/andreasronge/kvitter] (kvitter = tweets in Swedish) 
+* {Simple Rails 3.0 App}[https://github.com/andreasronge/neo4j-rails-example]
 
 == Why Neo4j.rb or a Graph Database ?
 
@@ -50,7 +40,7 @@ Here are some of the major benefits of Neo4j.rb
 
 == Public API
 
-The neo4j gem depends on the neo4j-wrapper and neo4j-core gems.
+The neo4j gem depends on the neo4j-wrapper and neo4j-core gems and neo4j-cypher gem.
 
 === neo4j gem
 
@@ -106,12 +96,9 @@ Example of creating an Neo4j Application from scratch:
  rails s
  open a webbrowser: http://localhost:3000/users
 
-To run it with Tomcat instead of WEBrick
-
-  gem install trinidad
-  trinidad
 
 The -O flag above means that it will skip active record.
+For more information, read the {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
 
 === {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper]
 
@@ -140,7 +127,7 @@ Example of mapping a ruby class to a node and delaring properties and relationsh
     Person.find("name: andreas").first.name # => 'andreas'
 
 The Neo4j::NodeMixin and Neo4j::RelationshipMixin is implemented in the {neo4j-wrapper}[http://github.com/andreasronge/neo4j-wrapper] gem
-
+For more information, read the {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
 
 === neo4j-core gem
 
@@ -168,6 +155,8 @@ Example of creating a Neo4j::Node
     end
 
 The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http://github.com/andreasronge/neo4j-core] gem.
+
+For more information, read the {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
 
 == Architecture
 
