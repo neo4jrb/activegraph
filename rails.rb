@@ -1,6 +1,6 @@
-# Usage: rails new myapp -m neo4j.rb
+# Usage: rails new myapp -m neo4j.rb -O
 
-NEO4J_VERSION = "2.2.0.rc1"
+NEO4J_VERSION = "2.2.0"
 
 gem_group :development, :test do
   gem "rspec-rails"
