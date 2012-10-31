@@ -31,6 +31,50 @@ describe "finders", :type => :integration do
     @test_4.save!
   end
 
+  describe "reindexing (adding index on old data)" do
+    let(:old_class) do
+      create_model do
+        property :name
+        property :age, :type => Fixnum
+        property :since, :type => Date
+        property :created_at, :type => DateTime # use default type Time
+      end
+    end
+
+    it "can reindex String values" do
+      a = old_class.create(:name => 'a')
+      old_class.property(:name, :index => :exact)
+      old_class.find_by_name('a').should be_nil
+      Neo4j::Transaction.run { a.add_index(:name) }
+      old_class.find_by_name('a').should == a
+    end
+
+    it "can reindex Fixnum values" do
+      a = old_class.create(:age => 42)
+      old_class.property(:age, :index => :exact)
+      old_class.find_by_age(42).should be_nil
+      Neo4j::Transaction.run { a.add_index(:age) }
+      old_class.find_by_age(42).should == a
+    end
+
+    it "can add index on Time created_at" do
+      a = old_class.create! # with no index on created_at
+
+      # add index on created_at
+      old_class.property(:created_at, :type => DateTime, :index => :exact)
+
+      # we can't find it because we need to reindex all old data
+      old_class.find( :all, :created_at => 7.days.ago .. DateTime.now ).count.should == 0
+
+      # add index on one node. You should do this on all old_class nodes !
+      # we should really simplify this !
+      val = old_class._converter(:created_at).to_java(a[:created_at])
+      Neo4j::Transaction.run { a.add_index(:created_at, val) }
+      old_class.find( :all, :created_at => 7.days.ago .. DateTime.now ).count.should == 1
+      old_class.find(:created_at => 7.days.ago .. DateTime.now ).should == a
+    end
+
+  end
   context "find without using a lucene index (use cypher)" do
     it "can find it with #all" do
       findable_class.all(:status => 'warning').first.should == @test_2
