@@ -15,9 +15,8 @@ module Neo4j
       end
 
       def ==(other)
-        new? ? self.__id__ == other.__id__ : _java_entity == (other)
+        new? ? self.__id__ == other.__id__ : super(other)
       end
-
 
     end
   end

@@ -1,3 +1,5 @@
+* Fix for create nodes and relationship using Cypher (neo4j-core #17)
+
 == 2.2.0 / 2012-10-02
 * Using neo4j-cypher gem (1.0.0)
 * Fix of neo4j-core configuration issue using boolean values #218

@@ -30,7 +30,7 @@ module Neo4j
         # Notice, only persisted relationships will be returned.
         def to_other(other)
           raise('node.rels(...).to_other() not allowed on a node that is not persisted') unless @node
-          @node._java_node.rels(@dir).to_other(other)
+          @node._java_node.rels(@dir).to_other(other._java_node)
         end
 
         def delete_all

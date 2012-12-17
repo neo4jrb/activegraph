@@ -48,7 +48,7 @@ module Neo4j
         def to_other(dir, other)
           raise('node.rels(...).to_other() not allowed on a node that is not persisted') if @node.new_record?
           all_relationships(dir).find_all do |rel|
-            rel._other_node(@node) == other
+            rel._other_node(@node) == other._java_node
           end
         end
 
@@ -151,6 +151,7 @@ module Neo4j
         end
 
         def create_relationship_to(to, dir, attributes=nil)
+#          puts "create_relationship_to #{@node.class}/#{@node.neo_id}, to #{to.class}/#{to.neo_id}"
           if dir == :outgoing
             @rel_class.new(@rel_type, @node, to, attributes)
           else

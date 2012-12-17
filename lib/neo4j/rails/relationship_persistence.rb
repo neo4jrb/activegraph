@@ -44,7 +44,7 @@ module Neo4j
         if persisted?
           _java_rel._other_node(node._java_entity)
         else
-          @_start_node == (node._java_entity || node) ? @_end_node : @_start_node
+          @_start_node == node ? @_end_node : @_start_node
         end
       end
 

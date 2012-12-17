@@ -47,7 +47,7 @@ module Neo4j
           it "returns old if it already exists" do
             old = get_or_create_class.get_or_create(:name => 'abc', :email => 'email@old.se')
             new = get_or_create_class.get_or_create(:name => 'def', :email => 'email@old.se')
-            new.should == old
+            new._java_node.should == old._java_node
             new[:name].should == 'abc'
             new[:email].should == 'email@old.se'
           end

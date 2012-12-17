@@ -80,7 +80,7 @@ describe Neo4j::Rails::Model, :type => :unit do
           b = klass.new.mock_save(java_node_b = MockNode.new)
           a.friends << b
 
-          Neo4j::Relationship.should_receive(:new).with(:friends, java_node_a, java_node_b).and_return(MockRelationship.new(:friends, java_node_a, java_node_b))
+          Neo4j::Relationship.should_receive(:new).with(:friends, a, b).and_return(MockRelationship.new(:friends, java_node_a, java_node_b))
           a.save
           java_node_a.should_receive(:_rels).with(:outgoing, :friends).and_return([b])
           a.friends.count.should == 1
