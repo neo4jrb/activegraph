@@ -9,6 +9,9 @@ It uses two powerful and mature Java libraries:
 * {Neo4J}[http://www.neo4j.org] - for persistence and traversal of the graph
 * {Lucene}[http://lucene.apache.org/java/docs/index.html] for querying and indexing.
 
+
+It has been tested with Neo4j version 1.8 ( {see here}[https://github.com/andreasronge/neo4j-core/blob/master/neo4j-core.gemspec]) and JRuby 1.6.7 & 1.7.1 (see Travis)
+
 == Documentation
 
 * {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
