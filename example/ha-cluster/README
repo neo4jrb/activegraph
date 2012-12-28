@@ -3,13 +3,7 @@ A simple High Availability Cluster Example
 
 To run this:
 
-0. First you need the neo4j enterprise JAR files
-  mkdir -p lib
-  bundle install
-  bundle exec ../../bin/neo4j-jars enterprise
-
-1. type: ./start_zookeeper.sh
-This starts 3 java processes (ps -ef | grep java)
+1. Nothing here :)
 
 2. type: irb
 
@@ -32,13 +26,7 @@ This defines the method start which configures neo4j.rb database as a HA databas
 
 11. type: Neo4j.ref_node.props.inspect
 
-Notice that you only can do modification slaves. You should not write to the master.
-The master machine is usually the machine that starts first.
+To check if which machine is master:
 
-If you need to start with a new database, you should clean the zookeeper data folders, type: clean.sh
-
-NOTICE - there might be problem running zookeeper on Mac Os X, see https://groups.google.com/forum/?fromgroups=#!topic/neo4j/Kn_tHt3wPL0
-
-For more info, see the HA chapter in the Neo4j Manual, http://docs.neo4j.org/
-
+   Neo4j.db.graph.isMaster()
 
