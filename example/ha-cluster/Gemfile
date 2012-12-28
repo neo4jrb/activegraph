@@ -1,7 +1,6 @@
 source 'http://rubygems.org'
 
 gem 'neo4j', :path => "../.."
-#gem 'neo4j-core', :path => '../../../neo4j-core'
-
-#gem 'neo4j-advanced', '1.9.M03' # you might have to change this so that it is the same version as neo4j-community
-#gem 'neo4j-enterprise', '1.9.M03'
+gem 'neo4j-community', '1.9.M03'
+gem 'neo4j-advanced', '1.9.M03' 
+gem 'neo4j-enterprise', '1.9.M03'

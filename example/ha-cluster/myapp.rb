@@ -5,10 +5,8 @@ require 'neo4j'
 require 'neo4j-enterprise'
 
 def start(machine_id)
-  #Neo4j::Config.default_file = 'config.yml' # use local config file
-
   # override this default config with this machine configuration
-  Neo4j.config['ha.db'] = true
+  Neo4j.config['enable_ha'] = true
   Neo4j.config['ha.server_id'] = machine_id
   Neo4j.config['ha.server'] = "localhost:600#{machine_id}"
   Neo4j.config['ha.pull_interval'] = '500ms'

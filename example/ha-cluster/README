@@ -3,7 +3,7 @@ A simple High Availability Cluster Example
 
 To run this:
 
-1. Nothing here :)
+1. type: bundle install
 
 2. type: irb
 
