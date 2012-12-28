@@ -350,6 +350,7 @@ describe DateProperties, :type => :integration do
     subject do
       @time      ||= Time.now
       @date_time ||= DateTime.now
+      @utc_date_time ||= @date_time.new_offset(0) # by default it store date as UTC dates
       @date      ||= Date.today
       dp         = DateProperties.create!(:time => @time, :date_time => @date_time, :date_property => @date)
       DateProperties.find(dp.id)
@@ -361,12 +362,12 @@ describe DateProperties, :type => :integration do
     end
 
     it "should have the correct date_time" do
-      subject.date_time.year.should == @date_time.year
-      subject.date_time.month.should == @date_time.month
-      subject.date_time.day.should == @date_time.day
-      subject.date_time.hour.should == @date_time.hour
-      subject.date_time.min.should == @date_time.min
-      subject.date_time.sec.should == @date_time.sec
+      subject.date_time.year.should == @utc_date_time.year
+      subject.date_time.month.should == @utc_date_time.month
+      subject.date_time.day.should == @utc_date_time.day
+      subject.date_time.hour.should == @utc_date_time.hour
+      subject.date_time.min.should == @utc_date_time.min
+      subject.date_time.sec.should == @utc_date_time.sec
       subject.date_time.should be_a(DateTime)
     end
 
