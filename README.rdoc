@@ -3,14 +3,9 @@
 Neo4j.rb is a graph database for JRuby.
 
 You can think of \Neo4j as a high-performance graph engine with all the features of a mature and robust database.
-The programmer works with an object-oriented, flexible network structure rather than with strict and static tables — yet enjoys all the benefits of a fully transactional, enterprise-strength database.
+The programmer works with an object-oriented, flexible network structure rather than with strict and static tables — yet enjoys all the benefits of a fully transactional, enterprise-strength database. This JRuby gem uses the mature {Neo4j Java library}[http://www.neo4j.org].
 
-It uses two powerful and mature Java libraries:
-* {Neo4J}[http://www.neo4j.org] - for persistence and traversal of the graph
-* {Lucene}[http://lucene.apache.org/java/docs/index.html] for querying and indexing.
-
-
-It has been tested with Neo4j version 1.8 ( {see here}[https://github.com/andreasronge/neo4j-core/blob/master/neo4j-core.gemspec]) and JRuby 1.6.7 & 1.7.1 (see Travis)
+It has been tested with Neo4j version 1.8.1 and 1.9.M03 ( {see here}[https://github.com/andreasronge/neo4j-core/blob/master/neo4j-core.gemspec]) and JRuby 1.7.1 (see Travis)
 
 == Documentation
 
@@ -47,16 +42,19 @@ The neo4j gem depends on the neo4j-wrapper and neo4j-core gems and neo4j-cypher 
 
 === neo4j gem
 
-{Neo4j::Rails::Model}
+{Neo4j::Rails::Model}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/Model]
 
-{Neo4j::Rails::Relationship}
+{Neo4j::Rails::Relationship}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/Relationship]
 
-{Neo4j::Rails::Observer}
+{Neo4j::Rails::Observer}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/Observer]
 
-{Neo4j::Railtie}
+{Neo4j::Rails::HaConsole::Railitie}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/HaConsole/Railtie]
 
-{Neo4j::Rails::Versioning}
+{Neo4j::Rails::Versioning}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/Versioning]
 
+{Neo4j::Rails::Compositions::ClassMethods}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/Compositions/ClassMethods]
+
+{Neo4j::Rails::AcceptId}[http://rdoc.info/github/andreasronge/neo4j/Neo4j/Rails/AcceptId]
 
 ==== Example
 
@@ -89,7 +87,6 @@ Make sure you are using JRuby !
 ==== Generate a Rails Application
 
 Example of creating an Neo4j Application from scratch:
-(make sure you have installed JRuby version >= 1.6.2)
 
  gem install rails
  rails new myapp -m http://andreasronge.github.com/neo4j/rails.rb -O
@@ -160,6 +157,11 @@ Example of creating a Neo4j::Node
 The Neo4j::Node and Neo4j::Relationship is implemented in the {neo4j-core}[http://github.com/andreasronge/neo4j-core] gem.
 
 For more information, read the {Github Wiki}[https://github.com/andreasronge/neo4j/wiki]
+
+== Rails/Neo4j.rb in a Cluster ?
+
+Yes, check {Neo4j.rb Ha Cluster}[https://github.com/andreasronge/neo4j/wiki/Neo4j%3A%3Aha-cluster]
+Notice, you don't need to install the Neo4j Server, but it could be a useful tool to visualize the graph.
 
 == Architecture
 
