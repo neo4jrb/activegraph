@@ -17,6 +17,7 @@ It has been tested with Neo4j version 1.8.1 and 1.9.M03 ( {see here}[https://git
 
 == Example applications
 
+* {Neo4j.rb with HA Cluster Screencast}[http://youtu.be/PblrbrT5JNY]
 * {The Kvitter Rails 3.2x App}[https://github.com/andreasronge/kvitter] (kvitter = tweets in Swedish) 
 * {Simple Rails 3.0 App}[https://github.com/andreasronge/neo4j-rails-example]
 
@@ -160,7 +161,7 @@ For more information, read the {Github Wiki}[https://github.com/andreasronge/neo
 
 == Rails/Neo4j.rb in a Cluster ?
 
-Yes, check {Neo4j.rb Ha Cluster}[https://github.com/andreasronge/neo4j/wiki/Neo4j%3A%3Aha-cluster]
+Yes, check {Neo4j.rb Ha Cluster}[https://github.com/andreasronge/neo4j/wiki/Neo4j%3A%3Aha-cluster] or {Screencast}[http://youtu.be/PblrbrT5JNY]
 Notice, you don't need to install the Neo4j Server, but it could be a useful tool to visualize the graph.
 
 == Architecture
