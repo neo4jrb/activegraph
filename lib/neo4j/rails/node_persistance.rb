@@ -41,6 +41,15 @@ module Neo4j
         self
       end
 
+      def freeze_if_deleted
+        unless new_record?
+          Neo4j::IdentityMap.remove_node_by_id(neo_id)
+          unless self.class.load_entity(neo_id)
+            set_deleted_properties
+            freeze
+          end
+        end
+      end
 
       def reload_from_database
         Neo4j::IdentityMap.remove_node_by_id(neo_id)

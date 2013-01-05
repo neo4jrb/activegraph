@@ -56,7 +56,7 @@ describe Neo4j::Rails::Model, :type => :unit do
     its(:new_record?) { should be_false }
     describe "frozen?" do
       it "reloads the node and returns false" do
-        subject.should_receive(:reload).and_return(true)
+        subject.should_receive(:freeze_if_deleted).and_return(true)
         subject.frozen?.should be_false
       end
     end

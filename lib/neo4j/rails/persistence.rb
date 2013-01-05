@@ -74,7 +74,7 @@ module Neo4j
 
       # Returns +true+ if the properties hash has been frozen.
       def frozen?
-        reload unless new_record?
+        freeze_if_deleted
         @_properties.frozen?
       end
 

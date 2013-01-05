@@ -231,9 +231,6 @@ module Neo4j
         if @_properties.has_key?(key)
           @_properties[key]
         else
-          #puts "@_properties #{@_properties}"
-          #puts "attribute_defaults #{attribute_defaults.inspect}"
-          #puts "Key #{key}, self #{self}"
           @_properties[key] = (!new_record? && _java_entity.has_property?(key)) ? read_property_from_db(key) : attribute_defaults[key]
         end
       end
