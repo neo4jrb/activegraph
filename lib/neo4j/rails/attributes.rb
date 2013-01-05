@@ -85,7 +85,7 @@ module Neo4j
       end
 
       def attribute_defaults
-        self.class.attribute_defaults
+        self.class.attribute_defaults || {}
       end
 
       # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -231,6 +231,9 @@ module Neo4j
         if @_properties.has_key?(key)
           @_properties[key]
         else
+          #puts "@_properties #{@_properties}"
+          #puts "attribute_defaults #{attribute_defaults.inspect}"
+          #puts "Key #{key}, self #{self}"
           @_properties[key] = (!new_record? && _java_entity.has_property?(key)) ? read_property_from_db(key) : attribute_defaults[key]
         end
       end
@@ -378,7 +381,7 @@ module Neo4j
 
       # Ensure any defaults are stored in the DB
       def write_default_attributes
-        self.class.attribute_defaults.each do |attribute, value|
+        self.attribute_defaults.each do |attribute, value|
           write_property_from_db(attribute, Neo4j::TypeConverters.convert(value, attribute, self.class, false)) unless changed_attributes.has_key?(attribute) || _java_entity.has_property?(attribute)
         end
       end
