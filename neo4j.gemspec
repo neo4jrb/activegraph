@@ -30,7 +30,7 @@ It comes included with the Apache Lucene document database.
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
 
   s.add_dependency('orm_adapter', ">= 0.0.3")
-  s.add_dependency("activemodel", ">= 3.0.0", "< 3.3")
-  s.add_dependency("railties", ">= 3.0.0", "< 3.3")
+  s.add_dependency("activemodel", ">= 3.0.0", "< 5")
+  s.add_dependency("railties", ">= 3.0.0", "< 5")
   s.add_dependency("neo4j-wrapper", '2.2.3')
 end
