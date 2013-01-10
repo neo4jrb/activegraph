@@ -113,12 +113,11 @@ Example of mapping a ruby class to a node and delaring properties and relationsh
 
     class Person
       include Neo4j::NodeMixin
-      property :name
+      property :name, :index => :exact
       property :city
 
       has_n :friends
       has_one :address
-      index :name
     end
 
     # assume we have an transaction already running !
