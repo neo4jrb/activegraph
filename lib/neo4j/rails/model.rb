@@ -103,7 +103,6 @@ module Neo4j
 
       include Neo4j::NodeMixin
       include ActiveModel::Dirty # track changes to attributes
-      include ActiveModel::MassAssignmentSecurity # handle attribute hash assignment
       include ActiveModel::Observing # enable observers
       include Neo4j::Rails::Identity
       include Neo4j::Rails::Persistence # handles how to save, create and update the model

@@ -17,8 +17,6 @@ module Neo4j
 
       included do
         include ActiveModel::Dirty # track changes to attributes
-        include ActiveModel::MassAssignmentSecurity # handle attribute hash assignment
-        
         
         class << self
           attr_accessor :attribute_defaults

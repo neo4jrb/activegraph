@@ -63,7 +63,6 @@ Example of using Neo4j with Rails 3 (ActiveModel)
 
     class User < Neo4j::Rails::Model
       attr_accessor :password
-      attr_accessible :email, :password, :password_confirmation, :pending_account
 
       after_save   :encrypt_password
 
