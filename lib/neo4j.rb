@@ -11,6 +11,7 @@ require 'active_support/core_ext/class/attribute_accessors'
 require 'active_support/core_ext/class/attribute'
 
 require 'active_model'
+require "rails/observers/active_model/observing"
 
 require 'neo4j/version'
 require 'neo4j-core'

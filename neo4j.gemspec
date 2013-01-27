@@ -33,4 +33,5 @@ It comes included with the Apache Lucene document database.
   s.add_dependency("activemodel", ">= 3.0.0", "< 5")
   s.add_dependency("railties", ">= 3.0.0", "< 5")
   s.add_dependency("neo4j-wrapper", '2.2.3')
+  s.add_dependency('rails-observers', '>= 0.1.1')
 end
