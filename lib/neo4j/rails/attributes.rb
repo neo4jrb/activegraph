@@ -68,8 +68,6 @@ module Neo4j
 
       # Mass-assign attributes.  Stops any protected attributes from being assigned.
       def attributes=(attributes, guard_protected_attributes = true)
-        attributes = sanitize_for_mass_assignment(attributes) if guard_protected_attributes
-
         multi_parameter_attributes = []
         attributes.each do |k, v|
           if k.to_s.include?("(")
