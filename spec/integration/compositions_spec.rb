@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'active_support/core_ext/exception'
+#require 'active_support/core_ext/exception'
 
 describe Neo4j::Rails::Compositions, :type => :integration do
 
