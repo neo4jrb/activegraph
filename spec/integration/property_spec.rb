@@ -28,13 +28,6 @@ class DateProperties < Neo4j::Rails::Model
 
 end
 
-class ProtectedProperties < Neo4j::Rails::Model
-	property :name
-	property :admin, :default => false
-
-	attr_accessible :name
-end
-
 class FixnumProperties < Neo4j::Rails::Model
   property :age, :type => :fixnum
 end
@@ -376,56 +369,6 @@ describe DateProperties, :type => :integration do
       subject.time.should be_a(Time)
     end
   end
-end
-
-describe ProtectedProperties, :type => :integration do
-	context "with mass-assignment of protected properties" do
-		subject do
-			@p ||= ProtectedProperties.create!(:name => "Ben", :admin => true)
-			@p.admin
-		end
-
-		it { should === false }
-	end
-
-	context "with mass-assignment of select properties" do
-		subject do
-			@p ||= ProtectedProperties.create!(:name => "Ben")
-			@p.admin
-		end
-
-		it { should === false }
-	end
-
-	context "when set without the safeguard" do
-		subject do
-			@p ||= ProtectedProperties.create!(:name => "Ben")
-			@p.send(:attributes=, { :admin => true }, false)
-			@p.admin
-		end
-
-		it { should == true }
-	end
-
-	context "when setting using attributes=" do
-		subject do
-			@p ||= ProtectedProperties.create!
-			@p.attributes = { :name => "Ben", :admin => true }
-			@p.admin
-		end
-
-		it { should === false }
-	end
-
-	context "when set using the single assignment" do
-		subject do
-			@p ||= ProtectedProperties.create!
-			@p.admin = true
-			@p.admin
-		end
-
-		it { should == true }
-	end
 end
 
 describe "property_before_type_cast", :type => :integration do
