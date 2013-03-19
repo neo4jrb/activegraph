@@ -562,53 +562,6 @@ describe Neo4j::Rails::Model, :type => :integration do
 
   end
 
-  describe "attr_accessible" do
-    before(:all) do
-      @klass = create_model do
-        attr_accessor :name, :credit_rating
-        attr_protected :credit_rating
-      end
-    end
-
-    it "given attributes are sanitized before assignment in method: attributes" do
-      customer = @klass.new
-      customer.attributes = {"name" => "David", "credit_rating" => "Excellent"}
-      customer.name.should == 'David'
-      customer.credit_rating.should be_nil
-
-      customer.credit_rating= "Average"
-      customer.credit_rating.should == 'Average'
-    end
-
-    it "given attributes are sanitized before assignment in method: new" do
-      customer = @klass.new("name" => "David", "credit_rating" => "Excellent")
-      customer.name.should == 'David'
-      customer.credit_rating.should be_nil
-
-      customer.credit_rating= "Average"
-      customer.credit_rating.should == 'Average'
-    end
-
-    it "given attributes are sanitized before assignment in method: create" do
-      customer = @klass.create("name" => "David", "credit_rating" => "Excellent")
-      customer.name.should == 'David'
-      customer.credit_rating.should be_nil
-
-      customer.credit_rating= "Average"
-      customer.credit_rating.should == 'Average'
-    end
-
-    it "given attributes are sanitized before assignment in method: update_attributes" do
-      customer = @klass.new
-      customer.update_attributes("name" => "David", "credit_rating" => "Excellent")
-      customer.name.should == 'David'
-      customer.credit_rating.should be_nil
-
-      customer.credit_rating= "Average"
-      customer.credit_rating.should == 'Average'
-    end
-  end
-
   describe "has_one, has_n, incoming" do
     before(:all) do
       item = create_model do
