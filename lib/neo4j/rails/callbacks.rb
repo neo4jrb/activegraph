@@ -12,39 +12,27 @@ module Neo4j
         ].freeze
 
       included do
-        [:initialize, :valid?, :create_or_update, :create, :update, :destroy].each do |method|
-          alias_method_chain method, :callbacks
-        end
-
         extend ActiveModel::Callbacks
 
         define_model_callbacks :initialize, :only => :after
         define_model_callbacks :validation, :create, :save, :update, :destroy
       end
 
-      def valid_with_callbacks?(*) #:nodoc:
-        run_callbacks :validation do
-          valid_without_callbacks?
-        end
+      def valid?(*) #:nodoc:
+        run_callbacks(:validation) { super }
       end
 
-      def destroy_with_callbacks #:nodoc:
-        run_callbacks :destroy do
-          destroy_without_callbacks
-        end
+      def destroy #:nodoc:
+        run_callbacks(:destroy) { super }
       end
 
       private
-      def create_or_update_with_callbacks #:nodoc:
-        run_callbacks :save do
-          create_or_update_without_callbacks
-        end
+      def create_or_update #:nodoc:
+        run_callbacks(:save) { super }
       end
 
-      def create_with_callbacks #:nodoc:
-        run_callbacks :create do
-          create_without_callbacks
-        end
+      def create #:nodoc:
+        run_callbacks(:create)  { super }
       end
 
       def update_with_callbacks(*) #:nodoc:
