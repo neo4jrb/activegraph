@@ -117,7 +117,7 @@ module Neo4j
           props = args.first
           raise "Can't get or create entity since #{props.inspect} does not included unique key #{props[unique_factory_key]}'" unless props[unique_factory_key]
           index = index_for_type(_decl_props[unique_factory_key][:index])
-          Neo4j::Core::Index::UniqueFactory.new(unique_factory_key, index) { |*| create!(*args) }.get_or_create(unique_factory_key, props[unique_factory_key])
+          Neo4j::Core::Index::UniqueFactory.new(unique_factory_key, index) { |*| create!(*args) }.get_or_create(unique_factory_key, props[unique_factory_key]).wrapper
         end
 
         # Same as #create, but raises an error if there is a problem during save.
