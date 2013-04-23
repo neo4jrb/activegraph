@@ -18,6 +18,10 @@ module Neo4j
       # Set Rails specific defaults
       cfg.storage_path = "#{app.config.root}/db/neo4j-#{::Rails.env}" unless cfg.storage_path
       Neo4j::Config.setup.merge!(cfg.to_hash)
+      
+      if cfg.auto_start
+        Neo4j.start
+      end
     end
 
     # Instantitate any registered observers after Rails initialization and
