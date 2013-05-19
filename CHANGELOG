@@ -1,3 +1,8 @@
+== 2.2.4 / 2013-05-19
+* get_or_create should return wrapped ruby nodes, alex-klepa, #241, #246
+* Make sure freeze does not have side effects, #235
+* Fix for carrierwave-neo4j (attribute_defaults), #235
+
 == 2.2.3 / 2012-12-28
 * Support for HA cluster with neo4j 1.9.X, #228, #99, #223
 * Make sure the Identity map is cleared after an exception, #214
