@@ -1,4 +1,4 @@
-source :gemcutter
+source 'http://rubygems.org'
 
 gemspec
 
@@ -19,7 +19,6 @@ group 'test' do
   gem "rdoc", ">= 2.5.10"
   gem "rspec", "~> 2.8"
   gem "its" # its(:with, :arguments) { should be_possible }
-  gem 'shoulda-matchers', '~> 1.0'
+  gem 'shoulda-matchers'
   gem "test-unit"
 end
-

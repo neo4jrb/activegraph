@@ -5,7 +5,10 @@ Neo4j.rb is a graph database for JRuby.
 You can think of \Neo4j as a high-performance graph engine with all the features of a mature and robust database.
 The programmer works with an object-oriented, flexible network structure rather than with strict and static tables — yet enjoys all the benefits of a fully transactional, enterprise-strength database. This JRuby gem uses the mature {Neo4j Java library}[http://www.neo4j.org].
 
-It has been tested with Neo4j version 1.8.1 and 1.9.M03 ( {see here}[https://github.com/andreasronge/neo4j-core/blob/master/neo4j-core.gemspec]) and JRuby 1.7.1 (see Travis)
+It has been tested with Neo4j version 1.8.2 and 1.9.M03 ( {see here}[https://github.com/andreasronge/neo4j-core/blob/master/neo4j-core.gemspec]) and JRuby 1.7.4 (see Travis)
+
+Notice, you do not need to install the Neo4j server since this gem comes included with the database.
+However, if you still want to use the Neo4j server (e.g. the admin UI) you can connect the embedded databas with the Neo4j server using a Neo4j HA Cluster (see wiki pages).
 
 == Documentation
 

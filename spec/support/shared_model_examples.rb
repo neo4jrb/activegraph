@@ -84,12 +84,8 @@ share_examples_for "a saveable model" do
     end
 
     context "attributes" do
-      before(:each) do
-        @original_subject = @original_subject.attributes
-      end
-
-      it { should_not include("_neo-id") }
-      it { should_not include("_classname") }
+      it { subject.attributes.should_not include("_neo-id") }
+      it { subject.attributes.should_not include("_classname") }
     end
   end
 end
