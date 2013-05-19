@@ -19,6 +19,6 @@ group 'test' do
   gem "rdoc", ">= 2.5.10"
   gem "rspec", "~> 2.8"
   gem "its" # its(:with, :arguments) { should be_possible }
-  gem 'shoulda-matchers'
+  #gem 'shoulda-matchers', could not get it working with jruby
   gem "test-unit"
 end
