@@ -1,3 +1,7 @@
+== 2.3.0 / 2013-07-18
+* Fix Issue with HA console when ruby-debug is loaded (#261, thekendalmiller)
+* Use 1.9 Neo4j
+
 == 2.2.4 / 2013-05-19
 * get_or_create should return wrapped ruby nodes, alex-klepa, #241, #246
 * Make sure freeze does not have side effects, #235
