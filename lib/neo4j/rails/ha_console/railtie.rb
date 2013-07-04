@@ -7,9 +7,20 @@ module Neo4j
       # Include this in your config/application.rb in order to run a rails console
       # It avoids the Neo4j limitation of only having one process accessing the database by using HA clustering/neo4j-enterprise
       class Railtie < Object::Rails::Railtie
+        
+        console do
+          Neo4j.config.use do |conf|
+            server_id = 2
+            conf['ha.server_id'] = server_id
+            conf['ha.server'] = "localhost:600#{server_id}"
+            conf['ha.cluster_server'] = "localhost:500#{server_id}"
+            conf['storage_path'] = File.expand_path("db/ha_neo_#{server_id}", Object::Rails.root)
+            puts "Re-Config HA cluster, ha.server_id: #{conf['ha.server_id']}, db: #{conf['storage_path']}"
+          end
+        end
 
         config.before_configuration do
-          server_id = ((defined? IRB) || (defined? Pry)) ? 2 : 1
+          server_id = 1
           config.neo4j['enable_ha'] = true
           config.neo4j['ha.server_id'] = server_id
           config.neo4j['ha.server'] = "localhost:600#{server_id}"

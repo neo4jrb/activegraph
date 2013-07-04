@@ -28,20 +28,20 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<orm_adapter>, [">= 0.0.3"])
       s.add_runtime_dependency(%q<activemodel>, ["< 5", ">= 3.0.0", "~> 4.0.0.beta"])
       s.add_runtime_dependency(%q<railties>, ["< 5", ">= 3.0.0", "~> 4.0.0.beta"])
-      s.add_runtime_dependency(%q<neo4j-wrapper>, ["= 2.2.3"])
+      s.add_runtime_dependency(%q<neo4j-wrapper>, ["= 2.3.0"])
       s.add_runtime_dependency(%q<rails-observers>, [">= 0.1.1"])
     else
       s.add_dependency(%q<orm_adapter>, [">= 0.0.3"])
       s.add_dependency(%q<activemodel>, ["< 5", ">= 3.0.0", "~> 4.0.0.beta"])
       s.add_dependency(%q<railties>, ["< 5", ">= 3.0.0", "~> 4.0.0.beta"])
-      s.add_dependency(%q<neo4j-wrapper>, ["= 2.2.3"])
+      s.add_dependency(%q<neo4j-wrapper>, ["= 2.3.0"])
       s.add_dependency(%q<rails-observers>, [">= 0.1.1"])
     end
   else
     s.add_dependency(%q<orm_adapter>, [">= 0.0.3"])
     s.add_dependency(%q<activemodel>, ["< 5", ">= 3.0.0", "~> 4.0.0.beta"])
     s.add_dependency(%q<railties>, ["< 5", ">= 3.0.0", "~> 4.0.0.beta"])
-    s.add_dependency(%q<neo4j-wrapper>, ["= 2.2.3"])
+    s.add_dependency(%q<neo4j-wrapper>, ["= 2.3.0"])
     s.add_dependency(%q<rails-observers>, [">= 0.1.1"])
   end
 end
