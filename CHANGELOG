@@ -1,3 +1,7 @@
+== 2.3.0 / 2013-07-18
+* Fix Issue with HA console when ruby-debug is loaded (#261, thekendalmiller)
+* Use 1.9 Neo4j
+
 == 2.2.3 / 2012-12-28
 * Support for HA cluster with neo4j 1.9.X, #228, #99, #223
 * Make sure the Identity map is cleared after an exception, #214
