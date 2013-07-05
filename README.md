@@ -20,6 +20,7 @@ Notice, you do not need to install the Neo4j server since this gem comes include
 
 * [Neo4j.rb with HA Cluster Screencast](http://youtu.be/PblrbrT5JNY)
 * [The Kvitter Rails 3.2x App](https://github.com/andreasronge/kvitter) (kvitter = tweets in Swedish)
+* [Gritter (Rails 3.2)](https://github.com/saterus/gritter) Another Twitter clone, but with User Auth, Posts, and Follower Recommendations.
 * [Simple Rails 3.0 App](https://github.com/andreasronge/neo4j-rails-example)
 
 ### Why Neo4j.rb or any Graph Database?
@@ -191,6 +192,16 @@ When using Neo4j.rb from Rails you can use the normal Rails `config/application.
 ```ruby
 config.neo4j.storage_path = "#{config.root}/db/neo4j"
 ```
+
+## Deployment
+
+Neo4j.rb uses [Neo4j](http://neo4j.org) in embedded mode. This is great, but means that deploying to Heroku or other restricted environments is out. Luckily, you can use Neo4j.rb running on any number of unrestricted environments.
+
+* [Neo4j.org](http://neo4j.org) has a lot of [instructional videos on dev ops](http://www.neo4j.org/develop/ops) and [deploying your app to production](http://www.neo4j.org/learn/production).
+* [Chris Fitzpatrick](https://github.com/cfitz) has [written up an excellent guide](http://janitor.se/blog/2013/07/04/easier-neo4j-dot-rb-deployments-with-chef-plus-capistrano-plus-torquebox/) for using [Chef](https://github.com/opscode/chef/) to deploy your new Neo4j.rb app to a VPS like [Digital Ocean](https://www.digitalocean.com/), [Linode](https://www.linode.com/), or [EC2](https://aws.amazon.com/ec2/).
+* The [Neo4j Manual](http://docs.neo4j.org/chunked/snapshot/operations.html) has details of the finer points of operations and deployement.
+* [Graph Databases](http://graphdatabases.com/) by [Ian Robinson](https://twitter.com/iansrobinson), [Jim Webber](https://twitter.com/jimwebber), and [Emil Eifrem](https://twitter.com/emileifrem) has a large section on planning, deploying, and scaling your Neo4j database. 
+
 
 ## Contributing
 
