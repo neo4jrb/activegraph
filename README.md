@@ -74,7 +74,7 @@ Example of creating an Neo4j Application from scratch:
 **Make sure you are using JRuby!**
 
 ```bash
-gem install rails
+gem install rails -v '< 4'
 rails new myapp -m http://andreasronge.github.com/neo4j/rails.rb -O
 cd myapp
 bundle
