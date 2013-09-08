@@ -101,7 +101,7 @@ class User < Neo4j::Rails::Model
   # add an exact lucene index on the email property
   property :email, index: :exact
 
-  has_one(:avatar).to(Avator)
+  has_one(:avatar).to(Avatar)
 
   validates :email, presence: true, format: { :with => email_regex }
   validates :email, uniqueness: true, unless: :pending_account?
