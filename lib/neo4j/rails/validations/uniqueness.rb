@@ -5,8 +5,8 @@ module Neo4j
 
       class UniquenessValidator < ActiveModel::EachValidator
         def initialize(options)
+          @validator =  options[:case_sensitive].nil? || options[:case_sensitive] ? ExactMatchValidator : FulltextMatchValidator
           super(options.reverse_merge(:case_sensitive => true))
-            @validator =  options[:case_sensitive].nil? || options[:case_sensitive] ? ExactMatchValidator : FulltextMatchValidator
         end
 
         def setup(klass)
