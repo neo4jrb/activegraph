@@ -8,6 +8,12 @@ It has been tested with Neo4j version 1.8.2 and 1.9.M03 ([see here](https://gith
 
 Notice, you do not need to install the Neo4j server since this gem comes included with the database. However, if you still want to use the Neo4j server (e.g. the admin UI) you can connect the embedded database with the Neo4j server using a [Neo4j HA Cluster](https://github.com/andreasronge/neo4j/wiki/Neo4j%3A%3Aha-cluster).
 
+### Future
+
+See https://github.com/andreasronge/neo4j-core/tree/3.0
+This means that in the future, neo4j.rb will support both neo4j server (MRI and JRuby) and neo4j embedded (only JRuby).
+Also, check the neoid (https://github.com/elado/neoid) which probably will use the neo4j-core v3.0 gem.
+
 ### Documentation
 
 * [Github Wiki](https://github.com/andreasronge/neo4j/wiki)
