@@ -1,6 +1,0 @@
-This example shows how to use the batch inserter and quering the IMDB database using Neo4j.rb.
-
-1. Unpack the imdb database file: install.sh
-2. Import the database: jruby batch_insert.rb
-3. Run some queries on the neo4j database: jruby find.rb
-

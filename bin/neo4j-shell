@@ -1,4 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'neo4j'
-org.neo4j.shell.StartClient.main(ARGV)

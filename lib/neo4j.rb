@@ -1,23 +1,43 @@
-require 'forwardable'
-require 'time'
-require 'date'
-require 'tmpdir'
-
-# Rails
-require 'rails/railtie'
-require 'active_support/concern'
-require 'active_support/core_ext/hash/indifferent_access'
-require 'active_support/core_ext/class/attribute_accessors'
-require 'active_support/core_ext/class/attribute'
-
-require 'active_model'
-
 require 'neo4j/version'
-require 'neo4j-core'
-require 'neo4j-wrapper'
 
-require 'neo4j/type_converters/serialize_converter'
-require 'neo4j/rails/rails'
-require 'neo4j/paginated'
 
-require 'orm_adapter/adapters/neo4j'
+module Neo4j
+  module ActiveModel
+    class UnPersistedNode
+      attr_reader :props
+
+      def initialize(props)
+        @props = props
+      end
+      def neo_id
+        nil
+      end
+
+      def [](key)
+        @props[key]
+      end
+
+      def []=(key,value)
+        @props[key] = value
+      end
+    end
+
+    def self.included(klazz)
+      klazz.send(:include, Neo4j::Wrapper::NodeMixin)
+      klazz.extend(ClassMethods)
+    end
+
+
+    def save
+      init_on_load(Neo4j::Node.create(_unwrapped_node.props))
+    end
+
+    module ClassMethods
+      def new(props={})
+        super().tap do |node|
+          node.init_on_load(UnPersistedNode.new(props))
+        end
+      end
+    end
+  end
+end

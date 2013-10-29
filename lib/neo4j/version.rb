@@ -1,3 +1,3 @@
 module Neo4j
-  VERSION = "2.3.0"
+  VERSION = "3.0.0.alpha.1"
 end

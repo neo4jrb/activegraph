@@ -1,4 +1,0 @@
-This folder contains a very simple test for the Neo4j HA Cluster
-
-It only uses the Java API directly without loading any neo4j gems.
-See, the ../ha-cluster for a better example.
