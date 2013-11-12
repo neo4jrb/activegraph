@@ -11,15 +11,13 @@ module Neo4j
       klazz.extend(Neo4j::ActiveNode::Labels::ClassMethods)
 
       klazz.send(:include, Neo4j::ActiveNode::Properties)
+      klazz.send(:include, Neo4j::EntityEquality)
+      klazz.send(:include, Neo4j::ActiveNode::Callbacks)
 
-      klazz.send(:include, ::ActiveModel::Conversion)
       klazz.extend(ClassMethods)
 
-      klazz.send(:include, Neo4j::EntityEquality)
-      #klazz.extend(ActiveModel::Callbacks)
-
-      # define_model_callbacks :initialize, :only => :after
-      # define_model_callbacks :validation, :create, :save, :update, :destroy
+      # Active Model
+      klazz.send(:include, ::ActiveModel::Conversion)
     end
 
 
