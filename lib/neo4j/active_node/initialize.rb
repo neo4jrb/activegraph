@@ -1,6 +1,6 @@
 module Neo4j::ActiveNode::Initialize
 
-  attr_reader :_persisted_node
+  attr_reader :_persisted_node, :_properties
 
   # called when loading the node from the database
   def init_on_load(persisted_node, properties)
@@ -11,6 +11,12 @@ module Neo4j::ActiveNode::Initialize
   # called when creating a node by #new but not touching the database
   def init_on_new(properties)
     @_properties = properties
+  end
+
+  def initialize(*args)
+    if (args.first.is_a?(Hash))
+      init_on_new(args.first) # properties
+    end
   end
 
   # Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method

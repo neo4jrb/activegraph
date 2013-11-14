@@ -4,6 +4,10 @@ module Neo4j
 
     module Labels
 
+      def labels
+        @_persisted_node.labels
+      end
+
       def self.included(klass)
         @_wrapped_classes ||= []
         @_wrapped_classes << klass

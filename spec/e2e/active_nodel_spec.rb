@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Neo4j::ActiveNode, api: :server do
+describe Neo4j::ActiveNode do
 
   describe 'callbacks' do
     class Company
