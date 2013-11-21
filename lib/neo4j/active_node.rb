@@ -4,30 +4,28 @@ module Neo4j
 #    def_delegator :_unwrapped_node, :neo_id
 
     def self.included(klazz)
+      # Active Attribute
+      klazz.send(:include, ActiveAttr::MassAssignment)
+      klazz.send(:include, ActiveAttr::TypecastedAttributes)
+
       klazz.send(:include, Neo4j::ActiveNode::Initialize)
       klazz.send(:include, Neo4j::ActiveNode::Persistence)
       klazz.extend(Neo4j::ActiveNode::Persistence::ClassMethods)
       klazz.send(:include, Neo4j::ActiveNode::Labels)
       klazz.extend(Neo4j::ActiveNode::Labels::ClassMethods)
 
-      klazz.send(:include, Neo4j::ActiveNode::Properties)
       klazz.send(:include, Neo4j::EntityEquality)
       klazz.send(:include, Neo4j::ActiveNode::Callbacks)
 
-      klazz.extend(ClassMethods)
 
-      # Active Model
+      # Active Model, todo add more
       klazz.send(:include, ::ActiveModel::Conversion)
+
+      # We overwrite the active_attr [] and []= methods here
+      klazz.send(:include, Neo4j::ActiveNode::Properties)
     end
 
 
 
-    module ClassMethods
-      def new(props={})
-        super().tap do |node|
-          node.init_on_new(props)
-        end
-      end
-    end
   end
 end

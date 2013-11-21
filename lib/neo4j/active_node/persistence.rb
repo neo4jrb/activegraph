@@ -2,7 +2,7 @@ module Neo4j::ActiveNode
   module Persistence
 
     def save
-      node = _create_node(_properties)
+      node = _create_node(persistable_attributes)
       init_on_load(node, node.props)
     end
 
@@ -10,12 +10,17 @@ module Neo4j::ActiveNode
       _persisted_node.neo_id if _persisted_node
     end
 
-      def exist?
+    def exist?
       _persisted_node && _persisted_node.exist?
     end
 
-    def del
+    def destroy
       _persisted_node && _persisted_node.del
+    end
+
+    def update(props)
+      @attributes && @attributes.merge!(props.stringify_keys)
+      _persisted_node.props = persistable_attributes
     end
 
     def _create_node(*args)
@@ -25,10 +30,13 @@ module Neo4j::ActiveNode
       session.create_node(props, labels)
     end
 
+    def persistable_attributes
+      (@attributes ? @attributes.merge(attributes) : attributes).reject{|k,v| v.nil?}
+    end
+
     module ClassMethods
       def create(props = {})
-        new().tap do |obj|
-          obj.init_on_new(props)
+        new(props).tap do |obj|
           obj.save
         end
       end

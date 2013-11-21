@@ -4,20 +4,33 @@ module Neo4j
       extend ActiveSupport::Concern
       included do
         # TODO add more support for callbacks
-        [:save].each do |method|
+        [:save, :destroy, :update].each do |method|
           alias_method_chain method, :callbacks
         end
 
         extend ActiveModel::Callbacks
 
-        define_model_callbacks :save
+        define_model_callbacks :save, :destroy, :update
       end
 
-      def save_with_callbacks
+      def save_with_callbacks(*args)
         run_callbacks :save do
-          save_without_callbacks
+          save_without_callbacks(*args)
         end
       end
+
+      def destroy_with_callbacks(*args)
+        run_callbacks :destroy do
+          destroy_without_callbacks(*args)
+        end
+      end
+
+      def update_with_callbacks(*args)
+        run_callbacks :update do
+          update_without_callbacks(*args)
+        end
+      end
+
 
     end
   end

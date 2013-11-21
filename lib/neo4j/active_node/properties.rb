@@ -1,13 +1,14 @@
 module Neo4j::ActiveNode
   module Properties
-    attr_accessor :_properties
-    
-    def [](key)
-      @_properties[key]
+    NoOpTypeCaster = Proc.new{|x| x }
+
+    def []=(k,v)
+      @attributes[k.to_s] = v
     end
 
-    def []=(key,value)
-      @_properties[key]=value
+    def [](k)
+      @attributes[k.to_s]
     end
+
   end
 end

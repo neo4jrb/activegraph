@@ -4,25 +4,39 @@ describe Neo4j::ActiveNode do
 
   describe 'callbacks' do
     class Company
-      attr_accessor :is_called
+      attr_accessor :update_called, :save_called, :destroy_called
       include Neo4j::ActiveNode
 
-      def initialize
-        @is_called = false
+      before_save do
+        @save_called = true
       end
 
-      before_save :foo_save
+      before_update do
+        @update_called = true
+      end
 
-      def foo_save
-        @is_called = true
+      before_destroy do
+        @destroy_called = true
       end
     end
 
-    it 'handles before_create callbacks' do
+    it 'handles before_save callbacks' do
       c = Company.new
-      c.is_called.should be_false
+      c.save_called.should be_nil
       c.save
-      c.is_called.should be_true
+      c.save_called.should be_true
+    end
+
+    it 'handles before_update callbacks' do
+      c = Company.create
+      c.update(:name => 'foo')
+      expect(c.update_called).to be_true
+    end
+
+    it 'handles before_destroy callbacks' do
+      c = Company.create
+      c.destroy
+      expect(c.destroy_called).to be_true
     end
 
   end
@@ -31,6 +45,37 @@ describe Neo4j::ActiveNode do
 
     class Person
       include Neo4j::ActiveNode
+      attribute :name
+      attribute :age, type: Integer
+    end
+
+    it 'generate accessors for declared attribute' do
+      person = Person.new(:name => "hej")
+      expect(person.name).to eq("hej")
+      person.name = 'new name'
+      expect(person.name).to eq("new name")
+    end
+
+    it 'declared attribute can have type conversion' do
+      person = Person.create(age: "40")
+      expect(person.age).to eq(40)
+      person.update(age: '42')
+      expect(person.age).to eq(42)
+    end
+
+    it 'attributes and [] accessors can be combined' do
+      pending "does not store type converted properties"
+      person = Person.create(age: "40")
+      expect(person.age).to eq(40)
+      expect(person[:age]).to eq(40)
+      expect(person['age']).to eq(40)
+      person[:age] = "41"
+      expect(person.age).to eq(41)
+
+      # TODO THESE TWO LINE FAILS
+      expect(person['age']).to eq(41)
+      expect(person[:age]).to eq(41)
+
     end
 
     it 'can persist a new object' do
@@ -60,7 +105,7 @@ describe Neo4j::ActiveNode do
 
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
-      person.del
+      person.destroy
       person.exist?.should be_false
     end
 

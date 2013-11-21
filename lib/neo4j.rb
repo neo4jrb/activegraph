@@ -9,7 +9,7 @@ require 'neo4j/version'
 #require "active_support/inflector"
 #require "active_support/time_with_zone"
 require "active_model"
-
+require 'active_attr'
 require 'neo4j/wrapper'
 require "neo4j/active_node/labels"
 require 'neo4j/active_node/callbacks'
