@@ -1,4 +1,17 @@
 require 'spec_helper'
+require "shared_examples/a_new_model"
+
+describe Neo4j::ActiveNode do
+  class SimpleClass
+    include Neo4j::ActiveNode
+  end
+
+  describe SimpleClass do
+    subject(:clazz) { SimpleClass}
+    include_examples "a new model"
+  end
+
+end
 
 describe Neo4j::ActiveNode do
 
@@ -64,7 +77,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'attributes and [] accessors can be combined' do
-      pending "does not store type converted properties"
+#       pending "does not store type converted properties"
       person = Person.create(age: "40")
       expect(person.age).to eq(40)
       expect(person[:age]).to eq(40)
