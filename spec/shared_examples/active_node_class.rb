@@ -1,4 +1,4 @@
-shared_examples 'a new model' do
+shared_examples 'active node class' do
 
   context 'when created with #new()' do
     let(:new_instance) do
@@ -24,7 +24,7 @@ shared_examples 'a new model' do
       new_instance[:name].should == 'foo'
     end
 
-    it 'allows setting attribtue to nil' do
+    it 'allows setting attributes to nil' do
       new_instance['name'] = nil
       new_instance['name'].should be_nil
       new_instance['name'] = 'foo'

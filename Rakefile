@@ -1,26 +1,25 @@
-srand # Workaround for JRuby bug 1.6.5
-$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
-
 require 'rake'
-require 'rspec/core/rake_task'
 require "bundler/gem_tasks"
-require 'rdoc/task'
+require 'neo4j/tasks/neo4j_server'
 
-require "neo4j/version"
-
-
-desc "Run all specs"
-RSpec::Core::RakeTask.new("spec") do |t|
-  t.rspec_opts = ["-c"]
-  t.pattern = 'spec/**/*_spec.rb'
+desc "Generate YARD documentation"
+task 'yard' do
+  abort("can't generate YARD") unless system('yardoc - README.md')
 end
 
-require 'rake/testtask'
-Rake::TestTask.new(:test_generators) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/*_test.rb'
-  test.verbose = true
+desc "Run neo4j-core specs"
+task 'spec' do
+  success = system('rspec spec')
+  abort("RSpec neo4j failed") unless success
 end
 
-task :default => 'spec'
+task :rm_server_db do
+  FileUtils.rm_rf('./neo4j/data')
+  FileUtils.mkdir_p('./neo4j/data')
+end
+
+desc 'stop, clean db, start'
+task :clean_db => ['neo4j:stop', 'rm_server_db', 'neo4j:start']
+
+task :default => ['spec']
 

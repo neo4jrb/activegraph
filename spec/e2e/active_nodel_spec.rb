@@ -1,5 +1,6 @@
 require 'spec_helper'
-require "shared_examples/a_new_model"
+require "shared_examples/active_node_class"
+require "shared_examples/loadable_model"
 
 describe Neo4j::ActiveNode do
   class SimpleClass
@@ -8,12 +9,46 @@ describe Neo4j::ActiveNode do
 
   describe SimpleClass do
     subject(:clazz) { SimpleClass}
-    include_examples "a new model"
+    include_examples "active node class"
   end
+
+  describe SimpleClass do
+    subject(:model) do
+      SimpleClass.create()
+    end
+
+    include_examples "loadable model"
+  end
+
 
 end
 
+
+# TODO these tests should be moved into the shared examples and refactored in a similar style to the above RSpecs
 describe Neo4j::ActiveNode do
+
+
+  describe 'validations' do
+
+    class IceCream
+      include Neo4j::ActiveNode
+      attribute :flavour
+      validates_presence_of :flavour
+    end
+
+    it 'does not have any errors if its valid' do
+      ice_cream = IceCream.new(flavour: 'strawberry')
+      ice_cream.should be_valid
+      ice_cream.errors.should be_empty
+    end
+
+    it 'does have errors if its not valid' do
+      ice_cream = IceCream.new()
+      ice_cream.should_not be_valid
+      ice_cream.errors.should_not be_empty
+    end
+  end
+
 
   describe 'callbacks' do
     class Company

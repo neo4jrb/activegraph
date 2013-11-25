@@ -6,11 +6,23 @@ Neo4j.rb is a graph database for Ruby (and JRuby)
 
 ### Usage from Ruby
 
-Example, Open a session to the neo4j server database:
+Installation of Neo4j Server and start server:
+
+```
+rake neo4j:install[community-2.0.0,RC1]
+rake neo4j:start
+```
+
+(The Rake task has been copied from architect4r)
+
+
+Example, Open a session to the neo4j server database (in IRB for example)
 
 ```ruby
   Neo4j::Session.open(:server_db, "http://localhost:7474")
 ```
+
+After you have created a session you can now use the database, see below.
 
 ### Usage from JRuby
 
@@ -56,7 +68,7 @@ Example of mapping a Neo4j::Node java object to your own class.
 ```ruby
   # will use Neo4j label 'Person'
   class Person
-    include Neo4j::NodeMixin
+    include Neo4j::ActiveNode
   end
 
   # find all person instances
@@ -68,7 +80,7 @@ Using an index
 ```ruby
   # will use Neo4j label 'Person'
   class Person
-    include Neo4j::NodeMixin
+    include Neo4j::ActiveNode
     index :name
   end
 
@@ -95,7 +107,7 @@ Example of mapping the Baaz ruby class to Neo4j labels 'Foo', 'Bar' and 'Baaz'
   class Baaz
     include Foo
     include Bar
-    include Neo4j::NodeMixin
+    include Neo4j::ActiveNode
   end
 
   Bar.find_nodes(...) # can find Baaz object but also other objects including the Bar mixin.
@@ -106,7 +118,7 @@ Example of inheritance.
 ```ruby
   # will only use the Vehicle label
   class Vehicle
-    include Neo4j::NodeMixin
+    include Neo4j::ActiveNode
   end
 
   # will use both Car and Vehicle labels

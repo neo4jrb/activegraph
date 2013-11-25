@@ -10,12 +10,32 @@ module Neo4j::ActiveNode
       _persisted_node.neo_id if _persisted_node
     end
 
+    alias :id :neo_id
+
     def exist?
       _persisted_node && _persisted_node.exist?
     end
 
+    # Returns +true+ if the object was destroyed.
+    def destroyed?
+      @_deleted || (!new_record? && !exist?)
+    end
+
+    # Returns +true+ if the record is persisted, i.e. it’s not a new record and it was not destroyed
+    def persisted?
+      !new_record? && !destroyed?
+    end
+
+    # Returns +true+ if the record hasn't been saved to Neo4j yet.
+    def new_record?
+      ! _persisted_node
+    end
+
+    alias :new? :new_record?
+
     def destroy
       _persisted_node && _persisted_node.del
+      @_deleted = true
     end
 
     def update(props)
@@ -39,6 +59,12 @@ module Neo4j::ActiveNode
         new(props).tap do |obj|
           obj.save
         end
+      end
+
+      def load_entity(id)
+        instance = Neo4j::Node.load(id)
+        raise "Illegal class loaded" unless instance.kind_of?(self)
+        instance
       end
     end
 

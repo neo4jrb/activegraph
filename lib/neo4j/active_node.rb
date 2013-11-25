@@ -17,15 +17,16 @@ module Neo4j
       klazz.send(:include, Neo4j::EntityEquality)
       klazz.send(:include, Neo4j::ActiveNode::Callbacks)
 
+      klazz.send(:include, ActiveModel::Validations)
+      klazz.send(:include, Neo4j::ActiveNode::Validations)
+
 
       # Active Model, todo add more
-      klazz.send(:include, ::ActiveModel::Conversion)
+      klazz.send(:include, ActiveModel::Conversion)
 
       # We overwrite the active_attr [] and []= methods here
       klazz.send(:include, Neo4j::ActiveNode::Properties)
     end
-
-
 
   end
 end
