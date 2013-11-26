@@ -90,7 +90,7 @@ describe "Labels" do
         result = IndexedTestClass.find(:name, 'kalle2')
         puts "RESULT #{result.inspect}"
         result.to_a.should include(kalle2)
-        kalle2.del
+        kalle2.destroy
         IndexedTestClass.find(:name, 'kalle2').should_not include(kalle2)
       end
     end
