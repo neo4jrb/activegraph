@@ -1,5 +1,5 @@
 require 'spec_helper'
-require "shared_examples/active_node_class"
+require "shared_examples/new_model"
 require "shared_examples/loadable_model"
 
 describe Neo4j::ActiveNode do
@@ -8,18 +8,61 @@ describe Neo4j::ActiveNode do
   end
 
   describe SimpleClass do
-    subject(:clazz) { SimpleClass}
-    include_examples "active node class"
-  end
+    context 'when instantiated with new()' do
+      subject do
+        SimpleClass.new
+      end
 
-  describe SimpleClass do
-    subject(:model) do
-      SimpleClass.create()
+      include_examples "new model"
+
+      it 'does not have any attributes' do
+        subject.attributes.should == {}
+      end
+
+      it 'returns nil when asking for a attribute' do
+        subject['name'].should be_nil
+      end
+
+      it 'can set attributes' do
+        subject['name'] = 'foo'
+        subject['name'].should == 'foo'
+      end
+
+      it 'allows symbols instead of strings in [] and []= operator' do
+        subject[:name] = 'foo'
+        subject['name'].should == 'foo'
+        subject[:name].should == 'foo'
+      end
+
+      it 'allows setting attributes to nil' do
+        subject['name'] = nil
+        subject['name'].should be_nil
+        subject['name'] = 'foo'
+        subject['name'] = nil
+        subject['name'].should be_nil
+      end
+
     end
 
-    include_examples "loadable model"
-  end
+    context 'when saved' do
+      subject do
+        model = SimpleClass.new
+        model.save
+        model
+      end
 
+      include_examples "loadable model"
+    end
+
+    context 'when instantiated with new(name: "foo")' do
+      subject() { SimpleClass.new(name: 'foo')}
+
+      it 'does not allow setting undeclared properties' do
+        # TODO do we really want this behaviour ???
+        subject.props.should == {}
+      end
+    end
+  end
 
 end
 

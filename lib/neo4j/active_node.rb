@@ -26,7 +26,12 @@ module Neo4j
 
       # We overwrite the active_attr [] and []= methods here
       klazz.send(:include, Neo4j::ActiveNode::Properties)
+      klazz.send(:alias_method, :props, :attributes)
+      klazz.instance_eval do
+        alias_method :property, :attribute
+      end
     end
+
 
   end
 end

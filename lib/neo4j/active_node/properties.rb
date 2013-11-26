@@ -14,6 +14,5 @@ module Neo4j::ActiveNode
         @attributes[k.to_s] if @attributes
       end
     end
-
   end
 end

@@ -81,6 +81,7 @@ Using an index
   # will use Neo4j label 'Person'
   class Person
     include Neo4j::ActiveNode
+    property :name
     index :name
   end
 
