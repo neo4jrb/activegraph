@@ -2,6 +2,7 @@ module Neo4j
   module ActiveNode
     # This mixin replace the original save method and performs validation before the save.
     module Validations
+      extend ActiveSupport::Concern
 
       # Implements the ActiveModel::Validation hook method.
       # @see http://rubydoc.info/docs/rails/ActiveModel/Validations:read_attribute_for_validation

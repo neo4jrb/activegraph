@@ -3,6 +3,7 @@ module Neo4j
 
 
     module Labels
+      extend ActiveSupport::Concern
 
       def labels
         @_persisted_node.labels

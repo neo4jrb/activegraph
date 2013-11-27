@@ -1,12 +1,28 @@
 module Neo4j
   module ActiveNode
-    extend Forwardable
+    extend ActiveSupport::Concern
 #    def_delegator :_unwrapped_node, :neo_id
 
-    def self.included(klazz)
+    include ActiveAttr::MassAssignment
+    include ActiveAttr::TypecastedAttributes
+
+    include Neo4j::EntityEquality
+
+    include Neo4j::ActiveNode::Initialize
+    include Neo4j::ActiveNode::Persistence
+    include Neo4j::ActiveNode::Properties
+    include Neo4j::ActiveNode::Labels
+    include Neo4j::ActiveNode::Callbacks
+    include Neo4j::ActiveNode::Validations
+
+    # TODO add more active model support
+    include ActiveModel::Validations
+    include ActiveModel::Conversion
+
+    def self.included42(klazz)
       # Active Attribute
-      klazz.send(:include, ActiveAttr::MassAssignment)
-      klazz.send(:include, ActiveAttr::TypecastedAttributes)
+      #klazz.send(:include, ActiveAttr::MassAssignment)
+      #klazz.send(:include, ActiveAttr::TypecastedAttributes)
 
       klazz.send(:include, Neo4j::ActiveNode::Initialize)
       klazz.send(:include, Neo4j::ActiveNode::Persistence)
@@ -25,12 +41,9 @@ module Neo4j
       klazz.send(:include, ActiveModel::Conversion)
 
       # We overwrite the active_attr [] and []= methods here
-      klazz.send(:include, Neo4j::ActiveNode::Properties)
+      #klazz.send(:include, Neo4j::ActiveNode::Properties)
 
-      def klazz.property(*args)
-        # TODO fix it
-        attribute(*args)
-      end
+      #klazz.send(:alias_method, :props, :attributes)
     end
 
 

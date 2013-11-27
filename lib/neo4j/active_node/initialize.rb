@@ -1,4 +1,5 @@
 module Neo4j::ActiveNode::Initialize
+  extend ActiveSupport::Concern
 
   attr_reader :_persisted_node
 

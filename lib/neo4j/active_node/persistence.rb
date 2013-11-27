@@ -1,5 +1,6 @@
 module Neo4j::ActiveNode
   module Persistence
+    extend ActiveSupport::Concern
 
     def save
       node = _create_node(persistable_attributes)

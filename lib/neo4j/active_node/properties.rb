@@ -1,5 +1,13 @@
 module Neo4j::ActiveNode
   module Properties
+    extend ActiveSupport::Concern
+
+    included do
+      # TODO we probably want do make properties and attributes different
+      alias_method :props, :attributes
+    end
+
+
     NoOpTypeCaster = Proc.new{|x| x }
 
     def []=(k,v)
@@ -14,5 +22,16 @@ module Neo4j::ActiveNode
         @attributes[k.to_s] if @attributes
       end
     end
+
+
+
+    module ClassMethods
+
+      def property(*args)
+        attribute(*args)
+      end
+    end
+
   end
+
 end

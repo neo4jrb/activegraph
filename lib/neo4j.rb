@@ -9,7 +9,7 @@ require 'neo4j/version'
 #require "active_support/inflector"
 #require "active_support/time_with_zone"
 require "active_model"
-
+require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
 
 require 'active_attr'
