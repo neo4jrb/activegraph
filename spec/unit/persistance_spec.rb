@@ -26,7 +26,7 @@ describe Neo4j::ActiveNode::Persistence do
       o.set_attributes('age' => '18')
       expect(o.get_attribute('age')).to eq(18)
       o.set_attributes('unknown' => 'yes')
-      o.persistable_attributes.should == {'age' => 18, 'unknown' => 'yes'}
+      o.props.should == {:age => 18, :unknown => 'yes'}
     end
 
   end

@@ -3,7 +3,7 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
 
     def save
-      node = _create_node(persistable_attributes)
+      node = _create_node(props)
       init_on_load(node, node.props)
     end
 
@@ -41,7 +41,7 @@ module Neo4j::ActiveNode
 
     def update(props)
       @attributes && @attributes.merge!(props.stringify_keys)
-      _persisted_node.props = persistable_attributes
+      _persisted_node.props = props
     end
 
     def _create_node(*args)
@@ -51,8 +51,8 @@ module Neo4j::ActiveNode
       session.create_node(props, labels)
     end
 
-    def persistable_attributes
-      (@attributes ? @attributes.merge(attributes) : attributes).reject{|k,v| v.nil?}
+    def props
+      (@attributes ? @attributes.merge(attributes) : attributes).reject{|k,v| v.nil?}.symbolize_keys
     end
 
     module ClassMethods

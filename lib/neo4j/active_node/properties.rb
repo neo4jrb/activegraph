@@ -3,8 +3,6 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
 
     included do
-      # TODO we probably want do make properties and attributes different
-      alias_method :props, :attributes
     end
 
 
@@ -22,7 +20,6 @@ module Neo4j::ActiveNode
         @attributes[k.to_s] if @attributes
       end
     end
-
 
 
     module ClassMethods

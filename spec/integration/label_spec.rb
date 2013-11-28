@@ -24,6 +24,7 @@ describe "Labels" do
       def self.mapped_label_name
         :some_label
       end
+      extend Neo4j::ActiveNode::Labels::ClassMethods
     end
 
     class SomeLabelClass
@@ -88,7 +89,6 @@ describe "Labels" do
       it 'does not find it if deleted' do
         kalle2 = IndexedTestClass.create(name: 'kalle2')
         result = IndexedTestClass.find(:name, 'kalle2')
-        puts "RESULT #{result.inspect}"
         result.to_a.should include(kalle2)
         kalle2.destroy
         IndexedTestClass.find(:name, 'kalle2').should_not include(kalle2)
@@ -97,6 +97,10 @@ describe "Labels" do
 
     describe 'when finding using a Module' do
 
+      it 'finds it' do
+        thing = SomeLabelClass.create
+        SomeLabelMixin.find_all.should include(thing)
+      end
     end
   end
 
