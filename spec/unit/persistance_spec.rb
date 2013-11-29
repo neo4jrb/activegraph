@@ -20,7 +20,7 @@ describe Neo4j::ActiveNode::Persistence do
     end
   end
 
-  describe 'persistable_attributes' do
+  describe 'props' do
     it 'returns type casted attributes and undeclared attributes' do
       o = clazz.new
       o.set_attributes('age' => '18')

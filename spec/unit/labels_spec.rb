@@ -42,20 +42,6 @@ describe Neo4j::ActiveNode::Labels do
       end
     end
 
-    describe "index" do
-      it "index using the Neo4j::Label object" do
-        pending
-        clazz = Class.new do
-          extend Neo4j::ActiveNode::Labels::ClassMethods
-          def self.to_s
-            "MyClass"
-          end
-        end
-        clazz.should_receive(:fooo)
-        clazz.index(:me)
-
-      end
-    end
   end
 
   describe Neo4j::ActiveNode::Labels::ClassMethods do
@@ -83,10 +69,6 @@ describe Neo4j::ActiveNode::Labels do
         clazz.set_mapped_label_name("foo")
         clazz.mapped_label_name.should == :foo
       end
-    end
-
-    describe 'labels' do
-      it "returns Neo4j::Label objects"
     end
 
     describe 'label' do

@@ -7,11 +7,17 @@ module Neo4j::ActiveNode
       init_on_load(node, node.props)
     end
 
+    def save!
+      save
+    end
+
     def neo_id
       _persisted_node.neo_id if _persisted_node
     end
 
-    alias :id :neo_id
+    def id
+      neo_id.to_s
+    end
 
     def exist?
       _persisted_node && _persisted_node.exist?

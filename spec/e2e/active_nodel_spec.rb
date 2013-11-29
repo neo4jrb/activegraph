@@ -1,6 +1,7 @@
 require 'spec_helper'
 require "shared_examples/new_model"
 require "shared_examples/loadable_model"
+require "shared_examples/saveable_model"
 
 describe Neo4j::ActiveNode do
   class SimpleClass
@@ -14,6 +15,8 @@ describe Neo4j::ActiveNode do
       end
 
       include_examples "new model"
+      include_examples "loadable model"
+      include_examples "saveable model"
 
       it 'does not have any attributes' do
         subject.attributes.should == {}
@@ -42,16 +45,6 @@ describe Neo4j::ActiveNode do
         subject['name'].should be_nil
       end
 
-    end
-
-    context 'when saved' do
-      subject do
-        model = SimpleClass.new
-        model.save
-        model
-      end
-
-      include_examples "loadable model"
     end
 
     context 'when instantiated with new(name: "foo")' do
@@ -142,7 +135,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'finds it using both sub and base class' do
-      pending "it does not wrap with the subclass"
+      #pending "it does not wrap with the subclass"
       s = SubPerson.create
       res = BasePerson.find_all
       res.to_a.should include(s)

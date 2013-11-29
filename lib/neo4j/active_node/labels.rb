@@ -12,6 +12,12 @@ module Neo4j
       def self.included(klass)
         @_wrapped_classes ||= []
         @_wrapped_classes << klass
+        classes = @_wrapped_classes
+        (class << klass
+           self # the meta class
+        end).send(:define_method, :inherited) do |klass|
+          classes << klass
+        end
       end
 
       def self._wrapped_classes
@@ -42,8 +48,14 @@ module Neo4j
           Neo4j::Label.find_all_nodes(mapped_label_name, session)
         end
 
-        def find(key, value, session = Neo4j::Session.current)
-          Neo4j::Label.find_nodes(mapped_label_name, key, value, session)
+        alias_method :all, :find_all
+
+        def find(key, value=nil, session = Neo4j::Session.current)
+          if (value)
+            Neo4j::Label.find_nodes(mapped_label_name, key, value, session)
+          else
+            Neo4j::Node.load(key)
+          end
         end
 
         def index(property)

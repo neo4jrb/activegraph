@@ -5,12 +5,25 @@ module Neo4j::ActiveNode
     included do
     end
 
+    def ==(o)
+      o.class == self.class && o.id == id
+    end
+    alias_method :eql?, :==
+
+
+    # Returns an Enumerable of all (primary) key attributes
+    # or nil if model.persisted? is false
+    def to_key
+      persisted? ? [id] : nil
+    end
+
 
     NoOpTypeCaster = Proc.new{|x| x }
 
     def []=(k,v)
       @attributes ||= ActiveSupport::HashWithIndifferentAccess.new
       @attributes[k.to_s] = v
+      to_key
     end
 
     def [](k)
