@@ -10,7 +10,7 @@ Notice, you do not need to install the Neo4j server since this gem comes include
 
 ### Future
 
-See https://github.com/andreasronge/neo4j-core/tree/3.0
+See https://github.com/andreasronge/neo4j/tree/3.0
 This means that in the future, neo4j.rb will support both neo4j server (MRI and JRuby) and neo4j embedded (only JRuby).
 Also, check the neoid (https://github.com/elado/neoid) which probably will use the neo4j-core v3.0 gem.
 
