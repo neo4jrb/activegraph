@@ -4,8 +4,8 @@ shared_examples 'new model' do
     it { should_not be_persisted }
 
     it "should allow direct access to properties before it is saved" do
-      subject["fur"] = "none"
-      subject["fur"].should == "none"
+      subject[:name] = "none"
+      subject[:name].should == "none"
     end
 
     it "should allow access to all properties before it is saved" do

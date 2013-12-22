@@ -59,12 +59,9 @@ describe "Neo4j::ActiveNode" do
     end
 
 
-    it 'saves undeclared the properties that has been changed with []= operator' do
-      @session.should_receive(:create_node).with({newp:42, foo: 'BAR'}, [:MyThing]).and_return(node)
+    it 'raise ActiveAttr::UnknownAttributeError if trying to set undeclared property' do
       thing = MyThing.new
-      thing[:newp] = 42
-      thing[:foo] = "BAR"
-      thing.save
+      expect{thing[:newp] = 42}.to raise_error(ActiveAttr::UnknownAttributeError)
     end
 
   end

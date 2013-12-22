@@ -50,25 +50,25 @@ describe "Labels" do
       end
     end
 
-    describe 'find_all' do
+    describe 'all' do
       it "finds it without an index" do
         p = TestClass.create
-        TestClass.find_all.to_a.should include(p)
+        TestClass.all.to_a.should include(p)
       end
 
       describe 'when indexed' do
         it 'can find it without using the index' do
           andreas = IndexedTestClass.create(name: 'andreas')
-          result = IndexedTestClass.find_all
+          result = IndexedTestClass.all
           result.should include(andreas)
         end
 
         it 'does not find it if it has been deleted' do
           jimmy = IndexedTestClass.create(name: 'jimmy')
-          result = IndexedTestClass.find_all
+          result = IndexedTestClass.all
           result.should include(jimmy)
           jimmy.destroy
-          IndexedTestClass.find_all.should_not include(jimmy)
+          IndexedTestClass.all.should_not include(jimmy)
         end
       end
     end
@@ -76,7 +76,7 @@ describe "Labels" do
   describe 'find' do
     it "finds it without an index" do
       p = TestClass.create
-      TestClass.find_all.to_a.should include(p)
+      TestClass.all.to_a.should include(p)
     end
 
     describe 'when indexed' do
@@ -99,7 +99,7 @@ describe "Labels" do
 
       it 'finds it' do
         thing = SomeLabelClass.create
-        SomeLabelMixin.find_all.should include(thing)
+        SomeLabelMixin.all.should include(thing)
       end
     end
   end

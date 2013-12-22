@@ -3,11 +3,8 @@ require "bundler/setup"
 require 'rspec'
 require 'fileutils'
 require 'tmpdir'
-#require 'its'
 require 'logger'
 
-#require 'neo4j-server'
-#require 'neo4j-embedded'
 require 'neo4j-core'
 require 'neo4j'
 
@@ -20,6 +17,7 @@ def create_session
   if RUBY_PLATFORM != 'java'
     create_server_session
   else
+    require "neo4j-embedded/embedded_impermanent_session"
     create_embedded_session
   end
 end
@@ -42,22 +40,8 @@ RSpec.configure do |c|
     create_session
   end
 
-  #c.before(:all, api: :embedded) do
-  #  Neo4j::Session.current.close if Neo4j::Session.current
-  #  create_embedded_session
-  #  Neo4j::Session.current.start unless Neo4j::Session.current.running?
-  #end
-  #
-  #c.before(:each, api: :embedded) do
-  #  curr_session = Neo4j::Session.current
-  #  curr_session.close if curr_session && !curr_session.kind_of?(Neo4j::Embedded::EmbeddedSession)
-  #  Neo4j::Session.current || create_embedded_session
-  #  Neo4j::Session.current.start unless Neo4j::Session.current.running?
-  #end
-
   c.before(:each) do
     curr_session = Neo4j::Session.current
-    #curr_session.close if curr_session && !curr_session.kind_of?(Neo4j::Server::CypherSession)
     curr_session || create_session
   end
 

@@ -6,6 +6,7 @@ require "shared_examples/saveable_model"
 describe Neo4j::ActiveNode do
   class SimpleClass
     include Neo4j::ActiveNode
+    property :name
   end
 
   describe SimpleClass do
@@ -19,7 +20,7 @@ describe Neo4j::ActiveNode do
       include_examples "saveable model"
 
       it 'does not have any attributes' do
-        subject.attributes.should == {}
+        subject.attributes.should == {"name" => nil}
       end
 
       it 'returns nil when asking for a attribute' do
@@ -48,7 +49,7 @@ describe Neo4j::ActiveNode do
     end
 
     context 'when instantiated with new(name: "foo")' do
-      subject() { SimpleClass.new(name: 'foo')}
+      subject() { SimpleClass.new(unknown: 'foo')}
 
       it 'does not allow setting undeclared properties' do
         # TODO do we really want this behaviour ???
@@ -59,18 +60,47 @@ describe Neo4j::ActiveNode do
 
 end
 
+class IceLolly
+  include Neo4j::ActiveNode
+  property :flavour
+  property :required_on_create
+  property :required_on_update
+  property :created
 
-# TODO these tests should be moved into the shared examples and refactored in a similar style to the above RSpecs
+  attr_reader :saved
+
+  index :flavour
+
+  validates :flavour, :presence => true
+  validates :required_on_create, :presence => true, :on => :create
+  validates :required_on_update, :presence => true, :on => :update
+
+  # TODO support for create callbacks
+  #before_create :timestamp
+  #after_create :mark_saved
+
+  protected
+  def timestamp
+    self.created = "yep"
+  end
+
+  def mark_saved
+    @saved = true
+  end
+end
+
+
+class IceCream
+  include Neo4j::ActiveNode
+  property :flavour, :index => :exact
+  #has_n(:ingredients).to(Ingredient)
+  validates_presence_of :flavour
+end
+
 describe Neo4j::ActiveNode do
 
 
   describe 'validations' do
-
-    class IceCream
-      include Neo4j::ActiveNode
-      attribute :flavour
-      validates_presence_of :flavour
-    end
 
     it 'does not have any errors if its valid' do
       ice_cream = IceCream.new(flavour: 'strawberry')
@@ -137,11 +167,11 @@ describe Neo4j::ActiveNode do
     it 'finds it using both sub and base class' do
       #pending "it does not wrap with the subclass"
       s = SubPerson.create
-      res = BasePerson.find_all
+      res = BasePerson.all
       res.to_a.should include(s)
 
       # sub class
-      res = SubPerson.find_all
+      res = SubPerson.all
       res.to_a.should include(s)
     end
   end
@@ -169,7 +199,6 @@ describe Neo4j::ActiveNode do
     end
 
     it 'attributes and [] accessors can be combined' do
-#       pending "does not store type converted properties"
       person = Person.create(age: "40")
       expect(person.age).to eq(40)
       expect(person[:age]).to eq(40)
@@ -177,7 +206,6 @@ describe Neo4j::ActiveNode do
       person[:age] = "41"
       expect(person.age).to eq(41)
 
-      # TODO THESE TWO LINE FAILS
       expect(person['age']).to eq(41)
       expect(person[:age]).to eq(41)
 
@@ -233,7 +261,16 @@ describe Neo4j::ActiveNode do
     it "they can be all found" do
       person1 = Person.create(name: 'person1', age: 21)
       person2 = Person.create(name: 'person2', age: 21)
-      Person.find_all.should include(person1, person2)
+      Person.all.should include(person1, person2)
+    end
+
+    it 'saves all declared properties' do
+      person1 = Person.create(name: 'person123', age: 123, unknown: "yes")
+      id = person1.id
+      person = Neo4j::Node.load(id)
+      person.name.should == 'person123'
+      person.age.should == 123
+      expect{person[:unknown]}.to raise_error(ActiveAttr::UnknownAttributeError)
     end
   end
 

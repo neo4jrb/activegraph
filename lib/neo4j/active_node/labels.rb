@@ -44,11 +44,9 @@ module Neo4j
 
       module ClassMethods
 
-        def find_all(session = Neo4j::Session.current)
+        def all(session = Neo4j::Session.current)
           Neo4j::Label.find_all_nodes(mapped_label_name, session)
         end
-
-        alias_method :all, :find_all
 
         def find(key, value=nil, session = Neo4j::Session.current)
           if (value)
@@ -59,7 +57,19 @@ module Neo4j
         end
 
         def index(property)
-          mapped_label.create_index(property)
+          if Neo4j::Session.current
+            _index(property)
+          else
+            Neo4j::Session.add_listener do |event, _|
+              _index(property) if event == :session_available
+            end
+          end
+        end
+
+        def _index(property)
+          existing = mapped_label.indexes[:property_keys]
+          # make sure the property is not indexed twice
+          mapped_label.create_index(property) unless existing.flatten.include?(property)
         end
 
         def mapped_label_names
@@ -71,7 +81,7 @@ module Neo4j
         end
 
         def mapped_label
-          @_label ||= Neo4j::Label.create(mapped_label_name)
+          Neo4j::Label.create(mapped_label_name)
         end
 
         def mapped_label_name
