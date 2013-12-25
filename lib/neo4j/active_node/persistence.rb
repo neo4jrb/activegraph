@@ -11,24 +11,25 @@ module Neo4j::ActiveNode
 
     extend ActiveSupport::Concern
 
+    # Saves the model.
+    #
+    # If the model is new a record gets created in the database, otherwise the existing record gets updated.
+    # If perform_validation is true validations run.
+    # If any of them fail the action is cancelled and save returns false. If the flag is false validations are bypassed altogether. See ActiveRecord::Validations for more information.
+    # There’s a series of callbacks associated with save. If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save
       create_or_update
-      # TODO
-      #node = _create_node(props)
-      #init_on_load(node, node.props)
     end
 
+    # Creates a model with values matching those of the instance attributes and returns its id.
+    # @private
+    # @return true
     def create
       node = _create_node(props)
       init_on_load(node, node.props)
       # Neo4j::IdentityMap.add(node, self)
       # write_changed_relationships
       true
-    end
-
-
-    def update
-      raise "not implemented"
     end
 
     # Persist the object to the database.  Validations and Callbacks are included
@@ -52,13 +53,13 @@ module Neo4j::ActiveNode
       @_create_or_updating = true
       result = persisted? ? update : create
       unless result != false
-        Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
+        Neo4j::Transaction.current.fail if Neo4j::Transaction.current
         false
       else
         true
       end
     rescue => e
-      Neo4j::Rails::Transaction.fail if Neo4j::Rails::Transaction.running?
+      Neo4j::Transaction.current.fail if Neo4j::Transaction.current
       raise e
     ensure
       @_create_or_updating = nil
@@ -98,9 +99,10 @@ module Neo4j::ActiveNode
       @_deleted = true
     end
 
-    def update(props)
-      @attributes && @attributes.merge!(props.stringify_keys)
-      _persisted_node.props = props
+    def update
+      changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
+      _persisted_node.props = changed_props
+      @changed_attributes && @changed_attributes.clear
     end
 
     def _create_node(*args)
@@ -110,9 +112,53 @@ module Neo4j::ActiveNode
       session.create_node(props, labels)
     end
 
+    # @return [Hash] all defined and none nil properties
     def props
-      (@attributes ? @attributes.merge(attributes) : attributes).reject{|k,v| v.nil?}.symbolize_keys
+      attributes.reject{|k,v| v.nil?}.symbolize_keys
     end
+
+    # @return true if the attributes hash has been frozen
+    def frozen?
+      freeze_if_deleted
+      @attributes.frozen?
+    end
+
+    def freeze
+      @attributes.freeze
+      self
+    end
+
+    def freeze_if_deleted
+      unless new_record?
+        # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
+        unless self.class.load_entity(neo_id)
+          @_deleted = true
+          freeze
+        end
+      end
+    end
+
+    def reload_from_database
+      # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
+      if reloaded = self.class.load_entity(neo_id)
+        send(:attributes=, reloaded.attributes, false)
+      end
+      reloaded
+    end
+
+    # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
+    # If saving fails because the resource is invalid then false will be returned.
+    def update_attributes(attributes)
+      self.attributes = attributes
+      save
+    end
+
+    # Same as {#update_attributes}, but raises an exception if saving fails.
+    def update_attributes!(attributes)
+      self.attributes = attributes
+      save!
+    end
+
 
     module ClassMethods
       def create(props = {})
@@ -121,11 +167,18 @@ module Neo4j::ActiveNode
         end
       end
 
-      def load_entity(id)
-        instance = Neo4j::Node.load(id)
-        raise "Illegal class loaded" unless instance.kind_of?(self)
-        instance
+      # Same as #create, but raises an error if there is a problem during save.
+      def create!(*args)
+        new(*args).tap do |o|
+          yield o if block_given?
+          o.save!
+        end
       end
+
+      def load_entity(id)
+        Neo4j::Node.load(id)
+      end
+
     end
 
   end

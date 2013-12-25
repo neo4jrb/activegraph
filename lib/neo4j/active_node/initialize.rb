@@ -6,6 +6,7 @@ module Neo4j::ActiveNode::Initialize
   # called when loading the node from the database
   def init_on_load(persisted_node, properties)
     @_persisted_node = persisted_node
+    @changed_attributes && @changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
   end
 

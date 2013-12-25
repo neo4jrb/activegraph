@@ -27,17 +27,17 @@ describe "Neo4j::ActiveNode" do
 
   describe "create" do
     it "does not store nil values" do
-      node = double('unwrapped_node', props: {a:2})
+      node = double('unwrapped_node', props: {a:999})
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       thing = MyThing.create(a:1)
-      thing.props.should == {a: 2}
+      thing.props.should == {a: 1}
     end
 
     it 'stores undefined attributes' do
-      node = double('unwrapped_node', props: {a:2})
+      node = double('unwrapped_node', props: {a:999})
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       thing = MyThing.create(a:1)
-      thing.attributes.should == {"a" => 2, "x" => nil} # always reads the result from the database
+      thing.attributes.should == {"a" => 1, "x" => nil} # always reads the result from the database
     end
 
     it 'does not allow to set undeclared properties using create' do
@@ -69,11 +69,23 @@ describe "Neo4j::ActiveNode" do
     describe "update" do
       let(:node) { double('unwrapped_node', props: {a:3}) }
 
-      it 'updates local properties and save all changed properties' do
-        @session.should_receive(:create_node).with({}, [:MyThing]).and_return(node)
-        node.should_receive(:props=).with(x: 44, y: 32)
-        thing = MyThing.create()
-        thing.update(x: 44, y: 32)
+      it 'does not save unchanged properties' do
+        @session.should_receive(:create_node).with({a: 'foo', x: 44}, [:MyThing]).and_return(node)
+        thing = MyThing.create(a: 'foo', x: 44)
+
+        # only change X
+        node.should_receive(:props=).with('x' => 32)
+        thing.x=32
+        thing.update()
+      end
+
+      it 'handles nil properties' do
+        @session.should_receive(:create_node).with({a: 'foo', x: 44}, [:MyThing]).and_return(node)
+        thing = MyThing.create(a: 'foo', x: 44)
+
+        node.should_receive(:props=).with('x' => nil)
+        thing.x = nil
+        thing.update()
       end
   end
 end

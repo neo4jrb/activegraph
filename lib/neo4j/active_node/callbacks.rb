@@ -25,9 +25,13 @@ module Neo4j
         end
       end
 
-      def update_with_callbacks(*args)
+      def update_with_callbacks(*) #:nodoc:
+        _run_update_callbacks { update_without_callbacks }
+      end
+
+      def update_with_callbacks(*)
         run_callbacks :update do
-          update_without_callbacks(*args)
+          update_without_callbacks()
         end
       end
 

@@ -48,12 +48,23 @@ module Neo4j
           Neo4j::Label.find_all_nodes(mapped_label_name, session)
         end
 
+        def count(session = Neo4j::Session.current)
+          q = session.query("MATCH (n:`#{mapped_label_name}`) RETURN count(n) AS count")
+          q.to_a[0][:count]
+        end
+
         def find(key, value=nil, session = Neo4j::Session.current)
           if (value)
             Neo4j::Label.find_nodes(mapped_label_name, key, value, session)
           else
             Neo4j::Node.load(key)
           end
+        end
+
+        # Destroy all nodes an connected relationships
+        def destroy_all
+          Neo4j::Session.current._query("MATCH (n:`#{mapped_label_name}`)-[r]-() DELETE n,r")
+          Neo4j::Session.current._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
         def index(property)

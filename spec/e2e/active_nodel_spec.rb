@@ -194,7 +194,8 @@ describe Neo4j::ActiveNode do
     it 'declared attribute can have type conversion' do
       person = Person.create(age: "40")
       expect(person.age).to eq(40)
-      person.update(age: '42')
+      person.age = '42'
+      person.save()
       expect(person.age).to eq(42)
     end
 

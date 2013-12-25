@@ -3,9 +3,12 @@ shared_examples 'new model' do
   context "when unsaved" do
     it { should_not be_persisted }
 
-    it "should allow direct access to properties before it is saved" do
-      subject[:name] = "none"
-      subject[:name].should == "none"
+    it "should not allow write access to undeclared properties" do
+      expect{subject[:unknown] = "none"}.to raise_error(ActiveAttr::UnknownAttributeError)
+    end
+
+    it "should not allow read access to undeclared properties" do
+      expect{subject[:unknown]}.to raise_error(ActiveAttr::UnknownAttributeError)
     end
 
     it "should allow access to all properties before it is saved" do
