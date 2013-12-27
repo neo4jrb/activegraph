@@ -17,14 +17,14 @@ module Neo4j::ActiveNode
     # If perform_validation is true validations run.
     # If any of them fail the action is cancelled and save returns false. If the flag is false validations are bypassed altogether. See ActiveRecord::Validations for more information.
     # There’s a series of callbacks associated with save. If any of the before_* callbacks return false the action is cancelled and save returns false.
-    def save
+    def save(*)
       create_or_update
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
-    def create
+    def create(*)
       node = _create_node(props)
       init_on_load(node, node.props)
       # Neo4j::IdentityMap.add(node, self)

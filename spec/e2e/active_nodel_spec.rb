@@ -3,63 +3,6 @@ require "shared_examples/new_model"
 require "shared_examples/loadable_model"
 require "shared_examples/saveable_model"
 
-describe Neo4j::ActiveNode do
-  class SimpleClass
-    include Neo4j::ActiveNode
-    property :name
-  end
-
-  describe SimpleClass do
-    context 'when instantiated with new()' do
-      subject do
-        SimpleClass.new
-      end
-
-      include_examples "new model"
-      include_examples "loadable model"
-      include_examples "saveable model"
-
-      it 'does not have any attributes' do
-        subject.attributes.should == {"name" => nil}
-      end
-
-      it 'returns nil when asking for a attribute' do
-        subject['name'].should be_nil
-      end
-
-      it 'can set attributes' do
-        subject['name'] = 'foo'
-        subject['name'].should == 'foo'
-      end
-
-      it 'allows symbols instead of strings in [] and []= operator' do
-        subject[:name] = 'foo'
-        subject['name'].should == 'foo'
-        subject[:name].should == 'foo'
-      end
-
-      it 'allows setting attributes to nil' do
-        subject['name'] = nil
-        subject['name'].should be_nil
-        subject['name'] = 'foo'
-        subject['name'] = nil
-        subject['name'].should be_nil
-      end
-
-    end
-
-    context 'when instantiated with new(name: "foo")' do
-      subject() { SimpleClass.new(unknown: 'foo')}
-
-      it 'does not allow setting undeclared properties' do
-        # TODO do we really want this behaviour ???
-        subject.props.should == {}
-      end
-    end
-  end
-
-end
-
 class IceLolly
   include Neo4j::ActiveNode
   property :flavour
@@ -76,8 +19,8 @@ class IceLolly
   validates :required_on_update, :presence => true, :on => :update
 
   # TODO support for create callbacks
-  #before_create :timestamp
-  #after_create :mark_saved
+  before_create :timestamp
+  after_create :mark_saved
 
   protected
   def timestamp
