@@ -30,14 +30,14 @@ describe "Neo4j::ActiveNode" do
       node = double('unwrapped_node', props: {a:999})
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       thing = MyThing.create(a:1)
-      thing.props.should == {a: 1}
+      thing.props.should == {a: 999}
     end
 
     it 'stores undefined attributes' do
       node = double('unwrapped_node', props: {a:999})
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       thing = MyThing.create(a:1)
-      thing.attributes.should == {"a" => 1, "x" => nil} # always reads the result from the database
+      thing.attributes.should == {"a" => 999, "x" => nil} # always reads the result from the database
     end
 
     it 'does not allow to set undeclared properties using create' do
