@@ -20,6 +20,10 @@ describe BasicModel do
   it_should_behave_like "destroyable model"
   it_should_behave_like "updatable model"
 
+  it 'has a label' do
+    subject.class.create!.labels.should == [:BasicModel]
+  end
+
   context "when there's lots of them" do
     before(:each) do
       subject.class.destroy_all

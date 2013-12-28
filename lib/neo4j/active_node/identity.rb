@@ -12,6 +12,16 @@ module Neo4j::ActiveNode
     def to_key
       persisted? ? [id] : nil
     end
+
+    def neo_id
+      _persisted_node.neo_id if _persisted_node
+    end
+
+    def id
+      persisted? ? neo_id.to_s : nil
+    end
+
+
   end
 
 end

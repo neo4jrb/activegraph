@@ -44,8 +44,12 @@ module Neo4j
 
       module ClassMethods
 
-        def all(session = Neo4j::Session.current)
-          Neo4j::Label.find_all_nodes(mapped_label_name, session)
+        def all(args = nil, session = Neo4j::Session.current)
+          if (args)
+            find_by_hash(args, session)
+          else
+            Neo4j::Label.find_all_nodes(mapped_label_name, session)
+          end
         end
 
         def count(session = Neo4j::Session.current)
@@ -53,13 +57,17 @@ module Neo4j
           q.to_a[0][:count]
         end
 
-        def find(key, value=nil, session = Neo4j::Session.current)
-          if (value)
-            Neo4j::Label.find_nodes(mapped_label_name, key, value, session)
-          else
-            Neo4j::Node.load(key)
+        def find(args, session = Neo4j::Session.current)
+          case args
+            when Hash
+              find_by_hash(args, session).first
+            when String, Fixnum
+              Neo4j::Node.load(args)
+            else
+              raise "Unknown argument #{args.class} in find method"
           end
         end
+
 
         # Destroy all nodes an connected relationships
         def destroy_all
@@ -77,14 +85,18 @@ module Neo4j
           end
         end
 
+        def mapped_label_names
+          self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
+        end
+
+        def find_by_hash(hash, session)
+          Neo4j::Label.query(mapped_label_name, {conditions: hash}, session)
+        end
+
         def _index(property)
           existing = mapped_label.indexes[:property_keys]
           # make sure the property is not indexed twice
           mapped_label.create_index(property) unless existing.flatten.include?(property)
-        end
-
-        def mapped_label_names
-          self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
         end
 
         def mapped_labels

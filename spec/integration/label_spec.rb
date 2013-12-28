@@ -81,17 +81,18 @@ describe "Labels" do
 
     describe 'when indexed' do
       it 'can find it using the index' do
+        IndexedTestClass.destroy_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        result = IndexedTestClass.find(:name, 'kalle')
-        result.to_a.should include(kalle)
+        IndexedTestClass.find(name: 'kalle').should == kalle
       end
 
       it 'does not find it if deleted' do
+        IndexedTestClass.destroy_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
-        result = IndexedTestClass.find(:name, 'kalle2')
-        result.to_a.should include(kalle2)
+        result = IndexedTestClass.find(name: 'kalle2')
+        result.should == kalle2
         kalle2.destroy
-        IndexedTestClass.find(:name, 'kalle2').should_not include(kalle2)
+        IndexedTestClass.all(name: 'kalle2').should_not include(kalle2)
       end
     end
 

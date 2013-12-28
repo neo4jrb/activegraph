@@ -33,6 +33,8 @@ end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
 
+Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
+
 RSpec.configure do |c|
 
   c.before(:all) do

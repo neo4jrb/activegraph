@@ -3,7 +3,6 @@ module Neo4j
     module Callbacks #:nodoc:
       extend ActiveSupport::Concern
       included do
-        # TODO add more support for callbacks
         [:initialize, :create_or_update, :create, :update, :destroy].each do |method|
           alias_method_chain method, :callbacks
         end

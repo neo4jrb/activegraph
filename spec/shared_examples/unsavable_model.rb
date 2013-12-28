@@ -5,7 +5,7 @@ share_examples_for "unsaveable model" do
     end
 
     it "should raise an exception" do
-      expect { subject.save! }.should raise_error
+      expect { subject.save! }.to raise_error
     end
   end
 

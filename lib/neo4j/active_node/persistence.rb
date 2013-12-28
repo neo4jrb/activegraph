@@ -65,14 +65,6 @@ module Neo4j::ActiveNode
       @_create_or_updating = nil
     end
 
-    def neo_id
-      _persisted_node.neo_id if _persisted_node
-    end
-
-    def id
-      neo_id.to_s
-    end
-
     def exist?
       _persisted_node && _persisted_node.exist?
     end
@@ -108,7 +100,7 @@ module Neo4j::ActiveNode
     def _create_node(*args)
       session = Neo4j::Session.current
       props = args[0] if args[0].is_a?(Hash)
-      labels = self.class.respond_to?(:mapped_label_names) ? self.class.mapped_label_names : []
+      labels = self.class.mapped_label_names
       session.create_node(props, labels)
     end
 
@@ -138,10 +130,20 @@ module Neo4j::ActiveNode
       end
     end
 
+    def reload
+      return self if new_record?
+      @changed_attributes && @changed_attributes.clear
+      unless reload_from_database
+        @_deleted = true
+        freeze
+      end
+      self
+    end
+
     def reload_from_database
       # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
       if reloaded = self.class.load_entity(neo_id)
-        send(:attributes=, reloaded.attributes, false)
+        send(:attributes=, reloaded.attributes)
       end
       reloaded
     end

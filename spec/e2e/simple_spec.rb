@@ -5,13 +5,14 @@ describe 'simple things', type: :e2e do
     class FooPerson
       include Neo4j::ActiveNode
       property :name
+      index :name
     end
 
-    f = FooPerson.new(name: 'hej hop')
+    f = FooPerson.new(name: 'andreas')
     #f.name = 'hej'
     puts f[:name]
-    puts "F #{f.name}"
     f.save
+    puts "F #{f.name}, labels #{f.labels.inspect}"
     puts f[:name]
 
     puts
