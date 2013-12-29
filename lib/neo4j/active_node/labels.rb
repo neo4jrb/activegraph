@@ -11,14 +11,12 @@ module Neo4j
       end
 
       def self.included(klass)
+        add_wrapped_class(klass)
+      end
+
+      def self.add_wrapped_class(klass)
         @_wrapped_classes ||= []
         @_wrapped_classes << klass
-        classes = @_wrapped_classes
-        (class << klass
-           self # the meta class
-        end).send(:define_method, :inherited) do |klass|
-          classes << klass
-        end
       end
 
       protected
@@ -108,6 +106,10 @@ module Neo4j
           @_label_name || self.to_s.to_sym
         end
 
+        def indexed_labels
+
+        end
+
         protected
 
         def find_by_hash(hash, session)
@@ -115,9 +117,11 @@ module Neo4j
         end
 
         def _index(property)
-          existing = mapped_label.indexes[:property_keys]
-          # make sure the property is not indexed twice
-          mapped_label.create_index(property) unless existing.flatten.include?(property)
+          mapped_labels.each do |label|
+            # make sure the property is not indexed twice
+            existing = label.indexes[:property_keys]
+            label.create_index(property) unless existing.flatten.include?(property)
+          end
         end
 
         def mapped_labels

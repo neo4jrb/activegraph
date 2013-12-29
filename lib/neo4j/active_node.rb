@@ -37,12 +37,14 @@ module Neo4j
     include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Validations
 
-    #included do
-    #  def self.inherited(other)
-    #    attributes.each_pair do |k,v|
-    #      other.attributes[k] = v
-    #    end
-    #  end
-    #end
+    included do
+      def self.inherited(other)
+        attributes.each_pair do |k,v|
+          other.attributes[k] = v
+        end
+        Neo4j::ActiveNode::Labels.add_wrapped_class(other)
+        super
+      end
+    end
   end
 end

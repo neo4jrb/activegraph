@@ -209,29 +209,6 @@ describe Neo4j::ActiveNode do
 
   end
 
-
-  describe 'inheritance' do
-    class BasePerson
-      include Neo4j::ActiveNode
-    end
-
-    class SubPerson < BasePerson
-
-    end
-
-    it 'finds it using both sub and base class' do
-      #pending "it does not wrap with the subclass"
-      s = SubPerson.create
-      res = BasePerson.all
-      res.to_a.should include(s)
-
-      # sub class
-      res = SubPerson.all
-      res.to_a.should include(s)
-    end
-  end
-
-
   describe 'basic persistance' do
 
     Person = UniqueClass.create do

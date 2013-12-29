@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 describe Neo4j::ActiveNode do
   class SimpleClass
     include Neo4j::ActiveNode
