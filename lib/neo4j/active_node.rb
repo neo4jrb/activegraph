@@ -1,4 +1,26 @@
 module Neo4j
+
+  # Makes Neo4j nodes and relationships behave like active record objects.
+  # By including this module in your class it will create a mapping for the node to your ruby class
+  # by using a Neo4j Label with the same name as the class. When the node is loaded from the database it
+  # will check if there is a ruby class for the labels it has.
+  # If there Ruby class with the same name as the label then the Neo4j node will be wrapped
+  # in a new object of that class.
+  #
+  # = ClassMethods
+  # * {Neo4j::ActiveNode::Labels::ClassMethods} defines methods like: <tt>index</tt> and <tt>find</tt>
+  # * {Neo4j::ActiveNode::Persistence::ClassMethods} defines methods like: <tt>create</tt> and <tt>create!</tt>
+  # * {Neo4j::ActiveNode::Property::ClassMethods} defines methods like: <tt>property</tt>.
+  #
+  # @example Create a Ruby wrapper for a Neo4j Node
+  #   class Company
+  #      include Neo4j::ActiveNode
+  #      property :name
+  #   end
+  #   company = Company.new
+  #   company.name = 'My Company AB'
+  #   Company.save
+  #
   module ActiveNode
     extend ActiveSupport::Concern
 
@@ -14,5 +36,13 @@ module Neo4j
     include Neo4j::ActiveNode::Labels
     include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Validations
+
+    #included do
+    #  def self.inherited(other)
+    #    attributes.each_pair do |k,v|
+    #      other.attributes[k] = v
+    #    end
+    #  end
+    #end
   end
 end

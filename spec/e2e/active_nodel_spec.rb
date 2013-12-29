@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class IceLolly
+IceLolly = UniqueClass.create do
   include Neo4j::ActiveNode
   property :flavour
   property :name
@@ -31,9 +31,9 @@ class IceLolly
   end
 end
 
-class ExtendedIceLolly < IceLolly
-  property :extended_property
-end
+#class ExtendedIceLolly < IceLolly
+#  property :extended_property
+#end
 
 describe IceLolly, :type => :integration do
   context "when valid" do
@@ -117,7 +117,34 @@ describe IceLolly, :type => :integration do
 end
 
 
-class IceCream
+#describe ExtendedIceLolly, :type => :integration do
+#
+#  it "should have inherited all the properties" do
+#    subject.attribute_names.should include("flavour")
+#  end
+#
+#  it { should respond_to(:flavour) }
+#
+#  context "when valid" do
+#    subject { ExtendedIceLolly.new(:flavour => "vanilla", :required_on_create => "true", :required_on_update => "true") }
+#
+#    it_should_behave_like "new model"
+#    it_should_behave_like "loadable model"
+#    it_should_behave_like "saveable model"
+#    it_should_behave_like "creatable model"
+#    it_should_behave_like "destroyable model"
+#    it_should_behave_like "updatable model"
+#
+#    context "after being saved" do
+#      before { subject.save }
+#
+#      it { should == subject.class.find(flavour: 'vanilla') }
+#    end
+#  end
+#end
+#
+
+IceCream = UniqueClass.create do
   include Neo4j::ActiveNode
   property :flavour, :index => :exact
   #has_n(:ingredients).to(Ingredient)
@@ -207,7 +234,7 @@ describe Neo4j::ActiveNode do
 
   describe 'basic persistance' do
 
-    class Person
+    Person = UniqueClass.create do
       include Neo4j::ActiveNode
       attribute :name
       attribute :age, type: Integer

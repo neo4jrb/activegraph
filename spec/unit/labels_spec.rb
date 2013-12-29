@@ -66,7 +66,7 @@ describe Neo4j::ActiveNode::Labels do
             "MyClass"
           end
         end
-        clazz.set_mapped_label_name("foo")
+        clazz.send(:set_mapped_label_name, "foo")
         clazz.mapped_label_name.should == :foo
       end
     end
@@ -81,7 +81,7 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         Neo4j::Label.should_receive(:create).with(:MyClass).and_return('foo')
-        clazz.mapped_label.should == 'foo'
+        clazz.send(:mapped_label).should == 'foo'
       end
     end
 

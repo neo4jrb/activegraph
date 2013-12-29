@@ -4,10 +4,11 @@ require 'rspec'
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
+require "active_attr/rspec"
 
 require 'neo4j-core'
 require 'neo4j'
-
+require 'unique_class'
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
@@ -29,11 +30,16 @@ end
 
 def create_server_session
   Neo4j::Session.open(:server_db, "http://localhost:7474")
+  delete_db
 end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
+
+def delete_db
+  Neo4j::Session.current._query('START n = node(*) MATCH n-[r?]-() WHERE ID(n)>0 DELETE n, r;')
+end
 
 RSpec.configure do |c|
 

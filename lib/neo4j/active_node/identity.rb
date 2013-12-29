@@ -6,17 +6,18 @@ module Neo4j::ActiveNode
     end
     alias_method :eql?, :==
 
-
     # Returns an Enumerable of all (primary) key attributes
     # or nil if model.persisted? is false
     def to_key
       persisted? ? [id] : nil
     end
 
+    # @return [Fixnum, nil] the neo4j id of the node if persisted or nil
     def neo_id
-      _persisted_node.neo_id if _persisted_node
+      _persisted_node ? _persisted_node.neo_id : nil
     end
 
+    # @return [String, nil] same as #neo_id
     def id
       persisted? ? neo_id.to_s : nil
     end

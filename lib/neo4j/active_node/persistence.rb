@@ -163,6 +163,8 @@ module Neo4j::ActiveNode
 
 
     module ClassMethods
+      # Creates a saves a new node
+      # @param [Hash] props the properties the new node should have
       def create(props = {})
         new(props).tap do |obj|
           obj.save

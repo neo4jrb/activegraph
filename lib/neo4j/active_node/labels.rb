@@ -2,6 +2,7 @@ module Neo4j
   module ActiveNode
 
 
+    # Provides a mapping between neo4j labels and Ruby classes
     module Labels
       extend ActiveSupport::Concern
 
@@ -19,6 +20,8 @@ module Neo4j
           classes << klass
         end
       end
+
+      protected
 
       def self._wrapped_classes
         @_wrapped_classes || []
@@ -44,6 +47,9 @@ module Neo4j
 
       module ClassMethods
 
+        # Find all nodes/objects of this class, with given search criteria
+        # @param [Hash, nil] args the search critera or nil if finding all
+        # @param [Neo4j::Session] session defaults to the current
         def all(args = nil, session = Neo4j::Session.current)
           if (args)
             find_by_hash(args, session)
@@ -52,11 +58,15 @@ module Neo4j
           end
         end
 
+        # @return [Fixnum] number of nodes of this class
         def count(session = Neo4j::Session.current)
           q = session.query("MATCH (n:`#{mapped_label_name}`) RETURN count(n) AS count")
           q.to_a[0][:count]
         end
 
+        # Same as #all but return only one object
+        # If given a String or Fixnum it will return the object with that neo4j id.
+        # @param [Hash,String,Fixnum] args search criteria
         def find(args, session = Neo4j::Session.current)
           case args
             when Hash
@@ -75,6 +85,8 @@ module Neo4j
           Neo4j::Session.current._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
+        # Creates a Neo4j index on given property
+        # @param [Symbol] property the property we want a Neo4j index on
         def index(property)
           if Neo4j::Session.current
             _index(property)
@@ -85,9 +97,18 @@ module Neo4j
           end
         end
 
+
+        # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
           self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
         end
+
+        # @return [Symbol] the label that this class has which corresponds to a Ruby class
+        def mapped_label_name
+          @_label_name || self.to_s.to_sym
+        end
+
+        protected
 
         def find_by_hash(hash, session)
           Neo4j::Label.query(mapped_label_name, {conditions: hash}, session)
@@ -105,10 +126,6 @@ module Neo4j
 
         def mapped_label
           Neo4j::Label.create(mapped_label_name)
-        end
-
-        def mapped_label_name
-          @_label_name || self.to_s.to_sym
         end
 
         def set_mapped_label_name(name)
