@@ -37,18 +37,22 @@ Example, Open a session to the neo4j embedded database (running in the same JVM)
 
 ## Examples
 
-
 ```ruby
+class Post
+  include Neo4j::ActiveNode
+  property :title
+  property :text, default: 'bla bla bla'
+  property :score, type: Integer, default: 0
 
-  class Person
-    include Neo4j::ActiveModel
-    property :name
+  validates :title, :presence => true
+  validates :score, numericality: { only_integer: true }
+
+  index :title
+
+  before_save do
+    self.score = score * 100
   end
-
-  person = Person.new
-  person.name = 'kalle'
-  person.save
-
+end
 ```
 
 The neo4j gem uses the neo4j-core gem, see https://github.com/andreasronge/neo4j-core
