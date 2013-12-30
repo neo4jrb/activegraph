@@ -55,7 +55,7 @@ The neo4j gem uses the neo4j-core gem, see https://github.com/andreasronge/neo4j
 
 ### Rails Example
 
-See Rails 4 example: https://github.com/andreasronge/neo4j/tree/master/example/blog
+See Rails 4 example: https://github.com/andreasronge/neo4j/tree/3.0/example/blog
 
 
 ## Contributing
