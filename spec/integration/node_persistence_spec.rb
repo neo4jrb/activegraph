@@ -66,7 +66,7 @@ describe "Neo4j::ActiveNode" do
 
   end
 
-    describe "update" do
+    describe "update_model" do
       let(:node) { double('unwrapped_node', props: {a:3}) }
 
       it 'does not save unchanged properties' do
@@ -75,8 +75,8 @@ describe "Neo4j::ActiveNode" do
 
         # only change X
         node.should_receive(:props=).with('x' => 32)
-        thing.x=32
-        thing.update()
+        thing.x = 32
+        thing.send(:update_model)
       end
 
       it 'handles nil properties' do
@@ -85,7 +85,7 @@ describe "Neo4j::ActiveNode" do
 
         node.should_receive(:props=).with('x' => nil)
         thing.x = nil
-        thing.update()
+        thing.send(:update_model)
       end
   end
 end

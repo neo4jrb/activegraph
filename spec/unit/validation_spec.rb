@@ -39,7 +39,7 @@ describe Neo4j::ActiveNode::Validations do
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
         session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
         o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
-        o.save
+        o.save.should be_true
       end
 
       it 'updates node if already persisted before if an attribute was changed' do
@@ -48,28 +48,22 @@ describe Neo4j::ActiveNode::Validations do
         o.stub(:_persisted_node).and_return(node)
         node.should_receive(:exist?).and_return(true)
         node.should_receive(:props=).and_return(name: 'sune')
-        o.save
+        o.save.should be_true
       end
     end
 
     context 'when not valid' do
-      it 'creates a new node if not persisted before' do
+      it 'does not create a new node' do
         o = clazz.new(age: '42')
         o.stub(:_persisted_node).and_return(nil)
-        #node.should_receive(:props).and_return(name: 'kalle2', age: '43')
-        #session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
-        #o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
-        o.save
+        o.save.should be_false
       end
 
-      it 'updates node if already persisted before if an attribute was changed' do
-        pending
+      it 'does not update a node' do
         o = clazz.new
-        o.name = 'sune'
+        o.age = '42'
         o.stub(:_persisted_node).and_return(node)
-        node.should_receive(:exist?).and_return(true)
-        node.should_receive(:props=).and_return(name: 'sune')
-        o.save
+        o.save.should be_false
       end
 
     end

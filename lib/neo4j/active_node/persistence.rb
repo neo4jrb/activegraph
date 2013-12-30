@@ -24,7 +24,7 @@ module Neo4j::ActiveNode
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
-    def create(*)
+    def create_model(*)
       node = _create_node(props)
       init_on_load(node, node.props)
       # Neo4j::IdentityMap.add(node, self)
@@ -51,7 +51,7 @@ module Neo4j::ActiveNode
     def create_or_update
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
-      result = persisted? ? update : create
+      result = persisted? ? update_model : create_model
       unless result != false
         Neo4j::Transaction.current.fail if Neo4j::Transaction.current
         false
@@ -91,7 +91,7 @@ module Neo4j::ActiveNode
       @_deleted = true
     end
 
-    def update
+    def update_model
       if @changed_attributes && !@changed_attributes.empty?
         changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
         _persisted_node.props = changed_props
@@ -152,17 +152,18 @@ module Neo4j::ActiveNode
 
     # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
     # If saving fails because the resource is invalid then false will be returned.
-    def update_attributes(attributes)
+    def update(attributes)
       self.attributes = attributes
       save
     end
+    alias_method :update_attributes, :update
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
-    def update_attributes!(attributes)
+    def update!(attributes)
       self.attributes = attributes
       save!
     end
-
+    alias_method :update_attributes!, :update!
 
     module ClassMethods
       # Creates a saves a new node

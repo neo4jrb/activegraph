@@ -11,9 +11,17 @@ b/
 .bundle
 tmp
 db/
+pkg/
 
+neo4j-db
+log
+doc
+target/
+neo4j/
+.yardoc
 # jedit
 *~
+.ruby-version
 
 # vim
 .*.sw[a-z]
