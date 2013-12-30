@@ -1,10 +1,10 @@
-== README
+## README
 
 This is a very basic Rails application working together with both the server and embedded API of the
 Neo4j Graph Database.
 
 
-=== Neo4j Server
+### Neo4j Server
 
 Install gem dependencies using either MRI or JRuby
 
@@ -27,7 +27,7 @@ rails s
 
 open a browser: http://localhost:3000
 
-=== Neo4j Embedded
+### Neo4j Embedded
 
 Add the following to lines in the `config/application.rb` file:
 
@@ -46,7 +46,7 @@ rails s
 
 open a browser: http://localhost:3000
 
-===
+## Notice
 
-Notice, many features of the 2.x version are not implemented yet, such as relationship
+Many features of the 2.x version are not implemented yet, such as relationship
 (but it is impl. in the neo4j-core layer), or more advanced index and search options.
