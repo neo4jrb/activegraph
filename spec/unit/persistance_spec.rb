@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Persistence do
+  let(:node) { double("a persisted node") }
+
   let(:clazz) do
     Class.new do
       include ActiveAttr::Attributes
@@ -8,49 +10,103 @@ describe Neo4j::ActiveNode::Persistence do
       include ActiveAttr::TypecastedAttributes
       include ActiveAttr::AttributeDefaults
       include Neo4j::ActiveNode::Persistence
+      include Neo4j::ActiveNode::Property
 
       attribute :name
       attribute :age, type: Integer
+    end
+  end
 
-      def write_attribute(key, value)
-        super(key,value)
+  describe 'initialize' do
+    it 'can take a hash of properties' do
+      o = clazz.new(name: 'kalle', age: '42')
+      o.props.should eq(name: 'kalle', age: 42)
+    end
+  end
 
-        #key_s = key.to_s
-        #if !@_properties.has_key?(key_s) || @_properties[key_s] != value
-        #  attribute_will_change!(key_s)
-        #  @_properties[key_s] = value.nil? ? attribute_defaults[key_s] : value
-        #end
-        #value
-      end
+  describe 'save' do
+    let(:session) { double("Session")}
+    before do
+      @session = double("Mock Session")
+      Neo4j::Session.stub(:current).and_return(session)
+    end
 
-      alias_method :[]=, :write_attribute
+    it 'creates a new node if not persisted before' do
+      o = clazz.new(name: 'kalle', age: '42')
+      o.stub(:_persisted_node).and_return(nil)
+      clazz.should_receive(:mapped_label_names).and_return(:MyClass)
+      node.should_receive(:props).and_return(name: 'kalle2', age: '43')
+      session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
+      clazz.any_instance.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
+      o.save
+    end
 
-      def set_attributes(attrs)
-        @attributes = attributes.merge(attrs.stringify_keys)
-      end
+    it 'does not updates node if already persisted before but nothing changed' do
+      o = clazz.new(name: 'kalle', age: '42')
+      o.stub(:_persisted_node).and_return(node)
+      node.should_receive(:exist?).and_return(true)
+      o.save
+    end
 
-      def get_attribute(name)
-        send(:attribute, name)
-      end
+    it 'updates node if already persisted before if an attribute was changed' do
+      o = clazz.new
+      o.name = 'sune'
+      o.stub(:_persisted_node).and_return(node)
+      node.should_receive(:exist?).and_return(true)
+      node.should_receive(:props=).and_return(name: 'sune')
+      o.save
+    end
+
+  end
+
+  describe 'persisted?' do
+    it 'is true if there is a wrapped node and it has not been deleted' do
+      clazz.any_instance.stub(:_persisted_node).and_return(node)
+      o = clazz.new
+      node.should_receive(:exist?).and_return(true)
+      o.persisted?.should eq(true)
+    end
+
+    it 'is false if there is a wrapped node and it but it has been deleted' do
+      clazz.any_instance.stub(:_persisted_node).and_return(node)
+      o = clazz.new
+      node.should_receive(:exist?).and_return(false)
+      o.persisted?.should eq(false)
+    end
+
+    it 'is false if there is not a persisted node' do
+      clazz.any_instance.stub(:_persisted_node).and_return(nil)
+      o = clazz.new
+      o.persisted?.should eq(false)
+    end
+
+  end
+
+  describe 'new_record?' do
+    it 'is true if it does not wrap a persisted node' do
+      clazz.any_instance.stub(:_persisted_node).and_return(nil)
+      o = clazz.new
+      o.new_record?.should eq(true)
+    end
+
+    it 'is false if it does wrap a persisted node' do
+      clazz.any_instance.stub(:_persisted_node).and_return(node)
+      o = clazz.new
+      o.new_record?.should eq(false)
     end
   end
 
   describe 'props' do
-    it 'works' do
+    it 'returns type casted attributes and undeclared attributes' do
       o = clazz.new
-      o[:age] = '42'
-      o[:age] = '41'
-      #o[:name] = 'value'
+      o.age = '18'
+      o.age.should eq(18)
     end
 
-    it 'returns type casted attributes and undeclared attributes' do
-      pending
-      o = clazz.new
-      o.set_attributes('age' => '18')
-      expect(o.get_attribute('age')).to eq(18)
-      o.set_attributes('unknown' => 'yes')
-      o.props.should == {:age => 18, :unknown => 'yes'}
-      o.name = 'hej'
+    it 'does not return undefined properties' do
+      o = clazz.new # name not defined
+      o.age = '18'
+      o.props.should eq({:age => 18})
     end
 
   end

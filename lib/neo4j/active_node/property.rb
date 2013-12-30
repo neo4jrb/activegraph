@@ -5,7 +5,9 @@ module Neo4j::ActiveNode
     include ActiveAttr::Attributes
     include ActiveAttr::MassAssignment
     include ActiveAttr::TypecastedAttributes
+    include ActiveAttr::AttributeDefaults
     include ActiveModel::Dirty
+
 
     def initialize(attributes={}, options={})
       super(attributes, options)
