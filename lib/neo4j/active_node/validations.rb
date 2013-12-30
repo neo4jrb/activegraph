@@ -4,6 +4,9 @@ module Neo4j
     module Validations
       extend ActiveSupport::Concern
 
+      include ActiveModel::Validations
+
+
       # Implements the ActiveModel::Validation hook method.
       # @see http://rubydoc.info/docs/rails/ActiveModel/Validations:read_attribute_for_validation
       def read_attribute_for_validation(key)

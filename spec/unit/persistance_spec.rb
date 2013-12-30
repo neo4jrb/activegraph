@@ -5,15 +5,11 @@ describe Neo4j::ActiveNode::Persistence do
 
   let(:clazz) do
     Class.new do
-      include ActiveAttr::Attributes
-      include ActiveAttr::MassAssignment
-      include ActiveAttr::TypecastedAttributes
-      include ActiveAttr::AttributeDefaults
       include Neo4j::ActiveNode::Persistence
       include Neo4j::ActiveNode::Property
 
-      attribute :name
-      attribute :age, type: Integer
+      property :name
+      property :age, type: Integer
     end
   end
 

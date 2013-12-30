@@ -2,27 +2,90 @@ require 'spec_helper'
 
 describe 'ActiveModel::Lint' do
 
-  let(:model) do
-    clazz = Class.new do
-      include Neo4j::ActiveNode
-    end
-    clazz.new
+  class LintClass
+    include Neo4j::ActiveNode
   end
-  subject { model }
 
+  let(:clazz) { LintClass }
+  let(:model) { LintClass.new }
+
+  #      # Returns an Enumerable of all (primary) key attributes
+  #      # or nil if <tt>model.persisted?</tt> is false. This is used by
+  #      # <tt>dom_id</tt> to generate unique ids for the object.
   describe 'to_key' do
+    subject { model }
     it { should respond_to(:to_key)}
 
+    # "to_key should return nil when `persisted?` returns false"
     describe 'when persisted? returns false' do
       its(:to_key) { should be_nil}
     end
   end
 
+  #      # == Responds to <tt>to_param</tt>
+  #      #
+  #      # Returns a string representing the object's key suitable for use in URLs
+  #      # or +nil+ if <tt>model.persisted?</tt> is +false+.
+  #      #
+  #      # Implementers can decide to either raise an exception or provide a
+  #      # default in case the record uses a composite primary key. There are no
+  #      # tests for this behavior in lint because it doesn't make sense to force
+  #      # any of the possible implementation strategies on the implementer.
+  #      # However, if the resource is not persisted?, then <tt>to_param</tt>
+  #      # should always return +nil+.
+  describe 'to_param' do
+    subject { model }
+    its(:to_param) { should be_nil }
+  end
+
   describe 'to_partial_path' do
+    subject { model }
     it { should respond_to(:to_partial_path)}
     its(:to_partial_path) { should be_kind_of(String)}
   end
 
+  #      # == Responds to <tt>to_partial_path</tt>
+  #      #
+  #      # Returns a string giving a relative path. This is used for looking up
+  #      # partials. For example, a BlogPost model might return "blog_posts/blog_post"
+  #      def test_to_partial_path
+  #        assert model.respond_to?(:to_partial_path), "The model should respond to to_partial_path"
+  #        assert_kind_of String, model.to_partial_path
+  #      end
+  describe 'to_partial_path' do
+    subject { model }
+    it { should respond_to(:to_partial_path)}
+    its(:to_partial_path) { should be_kind_of(String)}
+  end
+
+  #      # == \Errors Testing
+  #      #
+  #      # Returns an object that implements [](attribute) defined which returns an
+  #      # Array of Strings that are the errors for the attribute in question.
+  #      # If localization is used, the Strings should be localized for the current
+  #      # locale. If no error is present, this method should return an empty Array.
+  #      def test_errors_aref
+  #        assert model.respond_to?(:errors), "The model should respond to errors"
+  #        assert model.errors[:hello].is_a?(Array), "errors#[] should return an Array"
+  #      end
+  describe 'errors' do
+    subject { model }
+    it { should respond_to(:errors)}
+    its(:errors) { should be_kind_of(ActiveModel::Errors)}
+  end
+
+  #      # Model.model_name must return a string with some convenience methods:
+  #      # <tt>:human</tt>, <tt>:singular</tt> and <tt>:plural</tt>. Check
+  #      # ActiveModel::Naming for more information.
+  it { clazz.should respond_to(:model_name)}
+
+  describe 'model_name' do
+    subject { clazz.model_name}
+    it { subject.should respond_to(:to_str)}
+    it { subject.human.should respond_to(:to_str)}
+    it { subject.singular.should respond_to(:to_str)}
+    it { subject.plural.should respond_to(:to_str)}
+  end
 end
 
 #module ActiveModel

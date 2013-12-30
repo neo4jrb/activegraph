@@ -1,0 +1,78 @@
+require 'spec_helper'
+
+describe Neo4j::ActiveNode::Validations do
+
+  let(:node) { double("a persisted node") }
+
+  let(:clazz) do
+    Class.new do
+      include Neo4j::ActiveNode::Persistence
+      include Neo4j::ActiveNode::Property
+      include Neo4j::ActiveNode::Validations
+
+      property :name
+      property :age, type: Integer
+
+      validates :name, :presence => true
+
+      def self.mapped_label_names
+        :MyClass
+      end
+
+      def self.model_name
+        ActiveModel::Name.new(self, nil, "MyClass")
+      end
+    end
+  end
+
+  describe 'save' do
+    let(:session) { double("Session")}
+    before do
+      @session = double("Mock Session")
+      Neo4j::Session.stub(:current).and_return(session)
+    end
+
+    context 'when valid' do
+      it 'creates a new node if not persisted before' do
+        o = clazz.new(name: 'kalle', age: '42')
+        o.stub(:_persisted_node).and_return(nil)
+        node.should_receive(:props).and_return(name: 'kalle2', age: '43')
+        session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
+        o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
+        o.save
+      end
+
+      it 'updates node if already persisted before if an attribute was changed' do
+        o = clazz.new
+        o.name = 'sune'
+        o.stub(:_persisted_node).and_return(node)
+        node.should_receive(:exist?).and_return(true)
+        node.should_receive(:props=).and_return(name: 'sune')
+        o.save
+      end
+    end
+
+    context 'when not valid' do
+      it 'creates a new node if not persisted before' do
+        o = clazz.new(age: '42')
+        o.stub(:_persisted_node).and_return(nil)
+        #node.should_receive(:props).and_return(name: 'kalle2', age: '43')
+        #session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
+        #o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
+        o.save
+      end
+
+      it 'updates node if already persisted before if an attribute was changed' do
+        pending
+        o = clazz.new
+        o.name = 'sune'
+        o.stub(:_persisted_node).and_return(node)
+        node.should_receive(:exist?).and_return(true)
+        node.should_receive(:props=).and_return(name: 'sune')
+        o.save
+      end
+
+    end
+  end
+
+end

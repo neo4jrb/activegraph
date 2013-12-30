@@ -23,12 +23,11 @@ module Neo4j
   #
   module ActiveNode
     extend ActiveSupport::Concern
+    extend ActiveModel::Naming
 
-    include ActiveModel::Validations
     include ActiveModel::Conversion
     include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
-
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::Identity
     include Neo4j::ActiveNode::Persistence
