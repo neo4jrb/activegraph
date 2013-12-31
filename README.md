@@ -4,62 +4,8 @@ Neo4j.rb is a graph database for Ruby (and JRuby)
 
 ## Version 3.0
 
-### Usage from Ruby
-
-Installation of Neo4j Server and start server:
-
-```
-rake neo4j:install[community-2.0.0,RC1]
-rake neo4j:start
-```
-
-(The Rake task has been copied from architect4r)
-
-
-Example, Open a session to the neo4j server database (in IRB for example)
-
-```ruby
-  Neo4j::Session.open(:server_db, "http://localhost:7474")
-```
-
-After you have created a session you can now use the database, see below.
-
-### Usage from JRuby
-
-On JRuby you can access the database in two different ways: using the embedded db or the server db.
-
-Example, Open a session to the neo4j embedded database (running in the same JVM)
-
-```ruby
-  session = Neo4j::Session.open(:embedded_db, '/folder/db')
-  session.start
-```
-
-## Examples
-
-```ruby
-class Post
-  include Neo4j::ActiveNode
-  property :title
-  property :text, default: 'bla bla bla'
-  property :score, type: Integer, default: 0
-
-  validates :title, :presence => true
-  validates :score, numericality: { only_integer: true }
-
-  index :title
-
-  before_save do
-    self.score = score * 100
-  end
-end
-```
-
-The neo4j gem uses the neo4j-core gem, see https://github.com/andreasronge/neo4j-core
-
-### Rails Example
-
-See Rails 4 example: https://github.com/andreasronge/neo4j/tree/3.0/example/blog
+* Wiki: //github.com/andreasronge/neo4j/wiki/Neo4j-v3
+* Example: https://github.com/andreasronge/neo4j/tree/3.0/example/blog
 
 
 ## Contributing
