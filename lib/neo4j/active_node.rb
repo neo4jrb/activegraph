@@ -35,6 +35,7 @@ module Neo4j
     include Neo4j::ActiveNode::Labels
     include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Validations
+    include Neo4j::ActiveNode::Rels
 
     included do
       def self.inherited(other)

@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe Neo4j::Wrapper do
+describe Neo4j::Node::Wrapper do
   it "finds the most specific subclass and creates an instance for it" do
     class MyWrapper
-      include Neo4j::Wrapper
+      include Neo4j::Node::Wrapper
       def props
         42
       end

@@ -38,9 +38,8 @@ describe 'Inheritance', type: :e2e do
 
   describe 'all' do
     it 'can find all sub and base classes' do
-      Vehicle.all.should include(@saab, @bike, @volvo)
-      Car.all.should include(@saab, @volvo)
-      Car.all.should_not include(@bike)
+      Vehicle.all.to_a.should =~ [@saab, @bike, @volvo]
+      Car.all.to_a.should =~ [@saab, @volvo]
     end
   end
 end

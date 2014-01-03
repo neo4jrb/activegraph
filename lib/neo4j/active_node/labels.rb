@@ -6,6 +6,8 @@ module Neo4j
     module Labels
       extend ActiveSupport::Concern
 
+      WRAPPED_CLASSES = []
+
       def labels
         @_persisted_node.labels
       end
@@ -15,14 +17,14 @@ module Neo4j
       end
 
       def self.add_wrapped_class(klass)
-        @_wrapped_classes ||= []
-        @_wrapped_classes << klass
+        Neo4j::ActiveNode::Labels::WRAPPED_CLASSES << klass
+        @_wrapped_labels = nil
       end
 
       protected
 
       def self._wrapped_classes
-        @_wrapped_classes || []
+        Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
       end
 
       # @private
@@ -30,6 +32,7 @@ module Neo4j
         @_wrapped_classes=wrapped_classes
       end
 
+      # Only for testing purpose
       # @private
       def self._wrapped_labels=(wl)
         @_wrapped_labels=(wl)
