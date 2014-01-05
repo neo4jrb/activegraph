@@ -36,6 +36,16 @@ module Neo4j
     include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Validations
     include Neo4j::ActiveNode::Rels
+    include Neo4j::ActiveNode::HasN
+
+    def wrapper
+      self
+    end
+
+    def neo4j_obj
+      _persisted_node || raise("Tried to access native neo4j object on a none persisted object")
+    end
+
 
     included do
       def self.inherited(other)

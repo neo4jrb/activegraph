@@ -5,8 +5,8 @@ require 'spec_helper'
 describe "Labels" do
 
   before(:all) do
-    Neo4j::ActiveNode::Labels._wrapped_classes = []
-    Neo4j::ActiveNode::Labels._wrapped_labels = nil
+    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
+    Neo4j::ActiveNode::Labels._wrapped_classes.clear
 
     class TestClass
       include Neo4j::ActiveNode
@@ -34,7 +34,9 @@ describe "Labels" do
     end
   end
 
+
   after(:all) do
+    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
     Object.send(:remove_const, :IndexedTestClass)
     Object.send(:remove_const, :TestClass)
   end

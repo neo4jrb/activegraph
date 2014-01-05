@@ -14,6 +14,8 @@ Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 EMBEDDED_DB_PATH = File.join(Dir.tmpdir, "neo4j-core-java")
 
+I18n.enforce_available_locales = false
+
 def create_session
   if RUBY_PLATFORM != 'java'
     create_server_session

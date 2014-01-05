@@ -9,14 +9,15 @@ module UniqueClass
 	  "#{name}"
 	end
     RUBY
-    Kernel.const_set(name, klass)
+    #Object.send(:remove_const, name) if Object.const_defined?(name)
+    Object.const_set(name, klass) #unless Kernel.const_defined?(name)
     klass
   end
 
   def self.create(class_name=nil, &block)
     clazz = Class.new
     set(clazz, class_name)
-    clazz.class_eval &block
+    clazz.class_eval &block if block
     clazz
   end
 end
