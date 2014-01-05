@@ -9,15 +9,14 @@ b/
 
 .rvmrc
 .bundle
-tmp
-db/
-pkg/
-
-neo4j-db
-log
-doc
-target/
-neo4j/
+/tmp/
+/db/
+/pkg/
+/doc
+/target/
+/neo4j/
+/example/blog/neo4j-db
+/example/blog/log
 .yardoc
 # jedit
 *~
