@@ -21,7 +21,24 @@ describe "has_n" do
     end
 
     context 'when inherited' do
-      it 'inherit declared has_n'
+      class TestHasNBase
+        include Neo4j::ActiveNode
+        has_n :knows
+      end
+
+      class TestHasNSub < TestHasNBase
+
+      end
+
+      it 'inherit declared has_n' do
+        TestHasNSub._decl_rels[:knows].should be_a(Neo4j::ActiveNode::HasN::DeclRel)
+      end
+
+      it 'impl has_n accessor methods' do
+        node = TestHasNSub.new
+        node.should respond_to(:knows)
+        node.should respond_to(:knows_rels)
+      end
     end
   end
 

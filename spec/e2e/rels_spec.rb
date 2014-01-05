@@ -12,6 +12,7 @@ describe 'Neo4j::ActiveNode#rels' do
     @n.create_rel(:friends, @a._persisted_node)
     @a.create_rel(:knows, @b._persisted_node)
   end
+
   it 'delegates #nodes' do
     @n.nodes(dir: :outgoing).to_a.should =~ [@a]
   end
