@@ -197,9 +197,16 @@ module Neo4j
 
         # @private
         def each_node(node, &block)
-          node.rels(dir: dir, type: rel_type).each do |rel|
-            block.call(rel.other_node(node))
-          end
+          node.nodes(dir: dir, type: rel_type).each { |n| block.call(n)}
+        end
+
+        def all_relationships(node)
+          # TODO fix ruby warning - warning: Enumerator.new without a block is deprecated; use Object#to_enum
+          Enumerator.new(self, :each_rel, node)
+        end
+
+        def each_rel(node, &block) #:nodoc:
+          node.rels(dir: dir, type: rel_type).each { |rel| block.call(rel) }
         end
 
         # @private

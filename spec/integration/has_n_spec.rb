@@ -83,17 +83,13 @@ describe "has_n" do
     describe 'node.friends.to_a' do
 
       it 'traverse correct relationships' do
-        core_node.should_receive(:rels).with(dir: :outgoing, type: :friends).and_return([])
+        core_node.should_receive(:nodes).with(dir: :outgoing, type: :friends).and_return([])
         node.friends.to_a.should eq([])
       end
 
       it 'can return wrapped nodes' do
-        core_rel1 = Neo4j::Relationship.new
         friend_node_wrapper = double("friend node wrapper")
-        friend_node = double('friend node', wrapper: friend_node_wrapper)
-        core_rel1.stub(:start_node).and_return(core_node)
-        core_rel1.stub(:end_node).and_return(friend_node)
-        core_node.should_receive(:rels).with(dir: :outgoing, type: :friends).and_return([core_rel1])
+        core_node.should_receive(:nodes).with(dir: :outgoing, type: :friends).and_return([friend_node_wrapper])
         node.friends.to_a.should eq([friend_node_wrapper])
       end
     end
