@@ -1,3 +1,10 @@
+== 3.0.0.alpha.2
+* Support for both embedded (only JRuby) and server API (runs on MRI Ruby !)
+* Simple Rails app now work
+* Support for has_n and has_one method
+* ActiveModel support, callback, validation
+* Declared properties (via active_attr gem)
+
 == 2.3.0 / 2013-07-18
 * Fix Issue with HA console when ruby-debug is loaded (#261, thekendalmiller)
 * Use 1.9 Neo4j
