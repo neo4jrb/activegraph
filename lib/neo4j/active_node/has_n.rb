@@ -15,7 +15,7 @@ module Neo4j::ActiveNode
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
         copy = _decl_rels.clone
-        copy.each_pair{|k,v| copy[k] = v.inherit_new}
+        copy.each_pair { |k, v| copy[k] = v.inherit_new }
         klass.instance_variable_set(:@_decl_rels, copy)
         super
       end
@@ -84,7 +84,55 @@ module Neo4j::ActiveNode
 
         _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, false, clazz)
       end
-    end
 
+
+      # Specifies a relationship between two node classes.
+      # Generates assignment and accessor methods for the given relationship
+      # Old relationship is deleted when a new relationship is assigned.
+      # Both incoming and outgoing relationships can be declared, see {Neo4j::Wrapper::HasN::DeclRel}
+      #
+      # @example
+      #
+      #   class FileNode
+      #      include Neo4j::ActiveNode
+      #      has_one(:folder)
+      #   end
+      #
+      #   file = FileNode.create
+      #   file.folder = Neo4j::Node.create
+      #   file.folder # => the node above
+      #   file.folder_rel # => the relationship object between those nodes
+      #
+      # @return [Neo4j::ActiveNode::HasN::DeclRel] a DSL object where the has_one relationship can be futher specified
+      def has_one(rel_type)
+        clazz = self
+        module_eval(%Q{def #{rel_type}=(value)
+                  dsl = _decl_rels_for(:#{rel_type})
+                  rel = dsl.single_relationship(self)
+                  rel && rel.del
+                  dsl.create_relationship_to(self, value) if value
+              end}, __FILE__, __LINE__)
+
+        module_eval(%Q{def #{rel_type}
+                  dsl = _decl_rels_for('#{rel_type}'.to_sym)
+                  dsl.single_node(self)
+              end}, __FILE__, __LINE__)
+
+        module_eval(%Q{def #{rel_type}_rel
+                  dsl = _decl_rels_for(:#{rel_type})
+                  dsl.single_relationship(self)
+               end}, __FILE__, __LINE__)
+
+        instance_eval(%Q{
+          def #{rel_type}
+            _decl_rels[:#{rel_type}].rel_type
+          end}, __FILE__, __LINE__)
+
+        _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, true, clazz)
+      end
+
+
+    end
   end
+
 end

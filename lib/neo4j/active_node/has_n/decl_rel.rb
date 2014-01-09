@@ -209,6 +209,14 @@ module Neo4j
           node.rels(dir: dir, type: rel_type).each { |rel| block.call(rel) }
         end
 
+        def single_relationship(node)
+          node.rel(dir: dir, type: rel_type)
+        end
+
+        def single_node(node)
+          node.node(dir: dir, type: rel_type)
+        end
+
         # @private
         def _each_node(node, &block) #:nodoc:
           node._rels(dir: dir, type: rel_type).each do |rel|
