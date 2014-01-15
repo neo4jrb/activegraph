@@ -172,7 +172,7 @@ describe Neo4j::ActiveNode do
 
   describe 'callbacks' do
     class Company
-      attr_accessor :update_called, :save_called, :destroy_called
+      attr_accessor :update_called, :save_called, :destroy_called, :validation_called
       include Neo4j::ActiveNode
 
       before_save do
@@ -185,6 +185,10 @@ describe Neo4j::ActiveNode do
 
       before_destroy do
         @destroy_called = true
+      end
+
+      before_validation do
+        @validation_called = true
       end
     end
 
@@ -205,6 +209,12 @@ describe Neo4j::ActiveNode do
       c = Company.create
       c.destroy
       expect(c.destroy_called).to be_true
+    end
+    
+    it 'handles before_validation callbacks' do
+      pending
+      c = Company.create
+      expect(c.validation_called).to be_true
     end
 
   end
