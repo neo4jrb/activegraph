@@ -300,7 +300,16 @@ describe Neo4j::ActiveNode do
       person2 = Neo4j::Node.load(person.neo_id)
       person2[:age].should == 21
     end
-
+    
+    it 'should not clear out existing properties when property is set and saved' do
+      pending "Fails as described in issue #296"
+      person = Person.create(name: 'andreas', age: 21)
+      person.age = 22
+      person.save
+      person2 = Neo4j::Node.load(person.neo_id)
+      person2.age.should == 22
+      person2.name.should == "andreas"
+    end
 
     it "they can be all found" do
       person1 = Person.create(name: 'person1', age: 21)
