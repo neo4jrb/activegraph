@@ -100,7 +100,7 @@ module Neo4j::ActiveNode
     end
 
     def _create_node(*args)
-      session = Neo4j::Session.current
+      session = self.class.neo4j_session
       props = args[0] if args[0].is_a?(Hash)
       labels = self.class.mapped_label_names
       session.create_node(props, labels)
