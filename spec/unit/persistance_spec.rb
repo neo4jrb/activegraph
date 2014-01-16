@@ -30,6 +30,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:_persisted_node).and_return(nil)
+      clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
       session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
