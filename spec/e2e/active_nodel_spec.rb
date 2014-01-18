@@ -302,7 +302,6 @@ describe Neo4j::ActiveNode do
     end
     
     it 'should not clear out existing properties when property is set and saved' do
-      pending "Fails as described in issue #296"
       person = Person.create(name: 'andreas', age: 21)
       person.age = 22
       person.save

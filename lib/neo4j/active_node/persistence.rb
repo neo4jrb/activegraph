@@ -94,7 +94,7 @@ module Neo4j::ActiveNode
     def update_model
       if @changed_attributes && !@changed_attributes.empty?
         changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
-        _persisted_node.props = changed_props
+        _persisted_node.update_props(changed_props)
         @changed_attributes.clear
       end
     end

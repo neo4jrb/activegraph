@@ -47,7 +47,7 @@ describe Neo4j::ActiveNode::Validations do
         o.name = 'sune'
         o.stub(:_persisted_node).and_return(node)
         node.should_receive(:exist?).and_return(true)
-        node.should_receive(:props=).and_return(name: 'sune')
+        node.should_receive(:update_props).and_return(name: 'sune')
         o.save.should be_true
       end
     end
