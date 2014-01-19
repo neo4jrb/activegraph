@@ -2,6 +2,7 @@ require 'coveralls'
 Coveralls.wear!
 require "bundler/setup"
 require 'rspec'
+require 'its'
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
