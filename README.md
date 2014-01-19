@@ -4,9 +4,14 @@ Neo4j.rb is a graph database for Ruby (and JRuby)
 
 ## Version 3.0
 
+Unstable !
+
 * Wiki: https://github.com/andreasronge/neo4j/wiki/Neo4j-v3
 * Example: https://github.com/andreasronge/neo4j/tree/3.0/example/blog
 
+# Version 2.x
+
+This is the stable version, see https://github.com/andreasronge/neo4j/tree/2.x
 
 ## Contributing
 
