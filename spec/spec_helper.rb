@@ -10,6 +10,10 @@ require 'neo4j-core'
 require 'neo4j'
 require 'unique_class'
 
+require 'coveralls'
+
+Coveralls.wear!
+
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 EMBEDDED_DB_PATH = File.join(Dir.tmpdir, "neo4j-core-java")
