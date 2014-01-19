@@ -46,8 +46,8 @@ module Neo4j
 
         # Find all nodes/objects of this class, with given search criteria
         # @param [Hash, nil] args the search critera or nil if finding all
-        # @param [Neo4j::Session] session defaults to the current
-        def all(args = nil, session = Neo4j::Session.current)
+        # @param [Neo4j::Session] session defaults to the model's session
+        def all(args = nil, session = self.neo4j_session)
           if (args)
             find_by_hash(args, session)
           else
@@ -56,7 +56,7 @@ module Neo4j
         end
 
         # @return [Fixnum] number of nodes of this class
-        def count(session = Neo4j::Session.current)
+        def count(session = self.neo4j_session)
           q = session.query("MATCH (n:`#{mapped_label_name}`) RETURN count(n) AS count")
           q.to_a[0][:count]
         end
@@ -64,7 +64,7 @@ module Neo4j
         # Same as #all but return only one object
         # If given a String or Fixnum it will return the object with that neo4j id.
         # @param [Hash,String,Fixnum] args search criteria
-        def find(args, session = Neo4j::Session.current)
+        def find(args, session = self.neo4j_session)
           case args
             when Hash
               find_by_hash(args, session).first
@@ -78,14 +78,14 @@ module Neo4j
 
         # Destroy all nodes an connected relationships
         def destroy_all
-          Neo4j::Session.current._query("MATCH (n:`#{mapped_label_name}`)-[r]-() DELETE n,r")
-          Neo4j::Session.current._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
+          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`)-[r]-() DELETE n,r")
+          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
         # Creates a Neo4j index on given property
         # @param [Symbol] property the property we want a Neo4j index on
         def index(property)
-          if Neo4j::Session.current
+          if self.neo4j_session
             _index(property)
           else
             Neo4j::Session.add_listener do |event, _|
@@ -134,6 +134,7 @@ module Neo4j
         def set_mapped_label_name(name)
           @_label_name = name.to_sym
         end
+
       end
 
     end

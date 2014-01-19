@@ -25,6 +25,10 @@ describe "Labels" do
         :some_label
       end
 
+      def self.neo4j_session
+        Neo4j::Session.current
+      end
+
       extend Neo4j::ActiveNode::Labels::ClassMethods
     end
 
