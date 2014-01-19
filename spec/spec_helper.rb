@@ -1,3 +1,4 @@
+require 'coveralls'
 require 'rubygems'
 require "bundler/setup"
 require 'rspec'
@@ -10,7 +11,6 @@ require 'neo4j-core'
 require 'neo4j'
 require 'unique_class'
 
-require 'coveralls'
 
 Coveralls.wear!
 
