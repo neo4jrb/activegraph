@@ -34,7 +34,7 @@ describe Neo4j::TypeConverters do
 
   describe 'to_db' do
     it 'converts if there is a converter' do
-      date_time = DateTime.civil(2011,3,4,1,2,3,4,5)
+      date_time = DateTime.civil(2011,3,4,1,2,3,0)
       converter_value = Neo4j::TypeConverters.to_db(date_time, DateTime)
       converter_value.should be_a(Fixnum)
     end
