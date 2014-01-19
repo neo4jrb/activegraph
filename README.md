@@ -1,4 +1,4 @@
-# Welcome to Neo4j.rb [![Build Status](https://secure.travis-ci.org/andreasronge/neo4j.png?branch=master)](http://travis-ci.org/andreasronge/neo4j) [![Dependency Status](https://gemnasium.com/andreasronge/neo4j.png)](https://gemnasium.com/andreasronge/neo4j) [![Code Climate](https://codeclimate.com/github/andreasronge/neo4j.png)](https://codeclimate.com/github/andreasronge/neo4j)
+# Welcome to Neo4j.rb [![Build Status](https://secure.travis-ci.org/andreasronge/neo4j.png?branch=master)](http://travis-ci.org/andreasronge/neo4j) [![Coverage Status](https://coveralls.io/repos/andreasronge/neo4j/badge.png)](https://coveralls.io/r/andreasronge/neo4j) [![Code Climate](https://codeclimate.com/github/andreasronge/neo4j.png)](https://codeclimate.com/github/andreasronge/neo4j)
 
 Neo4j.rb is a graph database for Ruby (and JRuby)
 
