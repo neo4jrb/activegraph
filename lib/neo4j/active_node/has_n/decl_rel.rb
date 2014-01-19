@@ -201,8 +201,7 @@ module Neo4j
         end
 
         def all_relationships(node)
-          # TODO fix ruby warning - warning: Enumerator.new without a block is deprecated; use Object#to_enum
-          Enumerator.new(self, :each_rel, node)
+          to_enum(:each_rel, node)
         end
 
         def each_rel(node, &block) #:nodoc:
@@ -218,16 +217,9 @@ module Neo4j
         end
 
         # @private
-        def _each_node(node, &block) #:nodoc:
-          node._rels(dir: dir, type: rel_type).each do |rel|
-            block.call rel._other_node(node)
-          end
-        end
-
-        # @private
-        def create_relationship_to(node, other) # :nodoc:
+        def create_relationship_to(node, other, relationship_props={}) # :nodoc:
           from, to = incoming? ? [other, node] : [node, other]
-          from.create_rel(@rel_type, to)
+          from.create_rel(@rel_type, to, relationship_props)
         end
 
       end

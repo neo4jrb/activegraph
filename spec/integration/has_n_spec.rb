@@ -73,7 +73,7 @@ describe "has_n" do
       it 'creates a new relationship' do
         a_node = double("a node")
 
-        node.should_receive(:create_rel).with(:friends, a_node)
+        node.should_receive(:create_rel).with(:friends, a_node, {})
 
         # when
         node.friends << a_node
