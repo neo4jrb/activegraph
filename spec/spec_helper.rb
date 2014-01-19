@@ -1,5 +1,5 @@
 require 'coveralls'
-require 'rubygems'
+Coveralls.wear!
 require "bundler/setup"
 require 'rspec'
 require 'fileutils'
@@ -12,7 +12,7 @@ require 'neo4j'
 require 'unique_class'
 
 
-Coveralls.wear!
+
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
