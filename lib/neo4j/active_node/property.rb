@@ -23,6 +23,8 @@ module Neo4j::ActiveNode
     module ClassMethods
 
       def property(name, options={})
+        # Magic properties
+        options[:type] = DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
         attribute(name, options)
       end
 
