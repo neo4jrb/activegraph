@@ -79,6 +79,20 @@ module Neo4j
       end
     end
 
+    def convert_properties_to(medium, properties)
+      # Perform type conversion
+      properties = properties.inject({}) do |new_attributes, key_value_pair|
+        attr, value = key_value_pair
+        type = self.class._attribute_type(attr)
+        new_attributes[attr] = if TypeConverters.converters[type].nil?
+                                   value
+                                else
+                                  TypeConverters.send "to_#{medium}", value, type
+                                end
+        new_attributes
+      end
+    end
+
     class << self
 
       # Converts the value to ruby from a Neo4j database value if there is a converter for given type
@@ -105,7 +119,6 @@ module Neo4j
           end
         end
       end
-
     end
   end
 end
