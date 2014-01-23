@@ -10,6 +10,7 @@ module Neo4j::ActiveNode
     end
 
     extend ActiveSupport::Concern
+    include Neo4j::TypeConverters
 
     # Saves the model.
     #
@@ -25,7 +26,8 @@ module Neo4j::ActiveNode
     # @private
     # @return true
     def create_model(*)
-      node = _create_node(props)
+      properties = convert_properties_to :db, props
+      node = _create_node(properties)
       init_on_load(node, node.props)
       # Neo4j::IdentityMap.add(node, self)
       # write_changed_relationships
@@ -94,6 +96,7 @@ module Neo4j::ActiveNode
     def update_model
       if @changed_attributes && !@changed_attributes.empty?
         changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
+        changed_props = convert_properties_to :db, changed_props
         _persisted_node.update_props(changed_props)
         @changed_attributes.clear
       end
