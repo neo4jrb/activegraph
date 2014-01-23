@@ -19,13 +19,20 @@ module Neo4j::ActiveNode
     # If any of them fail the action is cancelled and save returns false. If the flag is false validations are bypassed altogether. See ActiveRecord::Validations for more information.
     # There’s a series of callbacks associated with save. If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
+      # Update magic properties
+      update_magic_properties
       create_or_update
+    end
+
+    def update_magic_properties
+      attributes[:updated_at] = DateTime.now if attributes.key?(:updated_at)
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
     def create_model(*)
+      attributes[:created_at] = DateTime.now if attributes.key?(:created_at)
       properties = convert_properties_to :db, props
       node = _create_node(properties)
       init_on_load(node, node.props)
@@ -96,7 +103,6 @@ module Neo4j::ActiveNode
     def update_model
       if @changed_attributes && !@changed_attributes.empty?
         changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
-        changed_props = convert_properties_to :db, changed_props
         _persisted_node.update_props(changed_props)
         @changed_attributes.clear
       end
