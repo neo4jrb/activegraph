@@ -25,14 +25,14 @@ module Neo4j::ActiveNode
     end
 
     def update_magic_properties
-      attributes[:updated_at] = DateTime.now if attributes.key?(:updated_at)
+      self.updated_at = DateTime.now if respond_to?(:updated_at=)
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
     def create_model(*)
-      attributes[:created_at] = DateTime.now if attributes.key?(:created_at)
+      self.created_at = DateTime.now if respond_to?(:created_at=)
       properties = convert_properties_to :db, props
       node = _create_node(properties)
       init_on_load(node, node.props)
@@ -103,6 +103,7 @@ module Neo4j::ActiveNode
     def update_model
       if @changed_attributes && !@changed_attributes.empty?
         changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
+        changed_props = convert_properties_to :db, changed_props
         _persisted_node.update_props(changed_props)
         @changed_attributes.clear
       end
