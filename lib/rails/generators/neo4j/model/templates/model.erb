@@ -1,0 +1,11 @@
+class <%= class_name %> <%= parent? ? "#{options[:parent].classify}" : "" %>
+    include Neo4j::ActiveNode
+<% attributes.each do |attribute| -%>
+    property :<%= attribute.name %><%= ", :type => #{attribute.type_class}" unless attribute.type_class == 'any' %>
+    <%= index_fragment(attribute.name) %>
+<% end -%>
+<%= has_n_statements if has_n? -%>
+<%= has_one_statements if has_one? -%>
+
+<%= timestamp_statements if timestamps? -%>
+end
