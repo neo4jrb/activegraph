@@ -20,4 +20,3 @@ application generator
 inject_into_file 'config/application.rb', "\nrequire 'neo4j/railtie'", :after => 'require "sprockets/railtie"'
 
 append_to_file 'Rakefile', "require 'neo4j/tasks/neo4j_server'"
-append_to_file 'bin/rails', "require 'rails/generators/neo4j_generator'"
