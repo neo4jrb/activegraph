@@ -48,7 +48,7 @@ module Neo4j
         # @param [Hash, nil] args the search critera or nil if finding all
         # @param [Neo4j::Session] session defaults to the model's session
         def all(args = nil, session = self.neo4j_session)
-          if (args)
+          if args
             find_by_hash(args, session)
           else
             Neo4j::Label.find_all_nodes(mapped_label_name, session)
