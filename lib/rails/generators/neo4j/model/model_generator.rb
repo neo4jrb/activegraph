@@ -31,8 +31,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   def has_n_statements
     txt = ""
     options[:has_n].each do |key|
-      to, from = key.split(':')
-      txt << (from ? "\n  has_n(:#{to}).from(:#{from})\n" : "\n  has_n :#{to}")
+      txt << has_x('has_n', key)
     end
     txt
   end
@@ -41,11 +40,15 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
     options[:has_one]
   end
 
+  def has_x(method, key)
+    to, from = key.split(':')
+    (from ? "\n  #{method}(:#{to}).from(:#{from})\n" : "\n  #{method} :#{to}")
+  end
+
   def has_one_statements
     txt = ""
     options[:has_one].each do |key|
-      to, from = key.split(':')
-      txt << (from ? "\n  has_one(:#{to}).from(:#{from})\n" : "\n  has_one :#{to}")
+      txt << has_x('has_one', key)
     end
     txt
   end
