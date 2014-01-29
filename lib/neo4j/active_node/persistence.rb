@@ -19,20 +19,45 @@ module Neo4j::ActiveNode
     # If any of them fail the action is cancelled and save returns false. If the flag is false validations are bypassed altogether. See ActiveRecord::Validations for more information.
     # There’s a series of callbacks associated with save. If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
-      # Update magic properties
-      update_magic_properties
+      update_magic_properties # Update magic properties
       create_or_update
     end
 
+    # Update magic properties during model updating
     def update_magic_properties
       self.updated_at = DateTime.now if respond_to?(:updated_at=)
+    end
+
+    # Initialize magic properties during model creation
+    def create_magic_properties
+      self.created_at = DateTime.now if respond_to?(:created_at=)
+    end
+
+    # Creates or drops constraints based on the value of each constraint
+    def create_constraints
+      klass = self.class
+      labels = klass.mapped_label_names # Labels mapped to this class
+      labels.each do |label| # For each label
+        klass.constraints.each_pair do |property, constraints| # For each property
+          constraints.each do |constraint| # For each constraint
+            session = klass.neo4j_session # Session associated with this class
+            label = Neo4j::Label.create(label, session) # Create a label object
+            if klass.constraints[constraint]
+              label.create_constraint(property, {type: constraint}, session) # Create the contraint on the label
+            else
+              # if the constraint is false, nil or not present then drop it
+              label.drop_constraint(property, {type: constraint}, session) # Drop the contraint on the label
+          end
+        end
+      end
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
     def create_model(*)
-      self.created_at = DateTime.now if respond_to?(:created_at=)
+      create_magic_properties
+      create_constraints
       properties = convert_properties_to :db, props
       node = _create_node(properties)
       init_on_load(node, node.props)
