@@ -47,6 +47,7 @@ module Neo4j::ActiveNode
             else
               # if the constraint is false, nil or not present then drop it
               label.drop_constraint(property, {type: constraint}, session) # Drop the contraint on the label
+            end
           end
         end
       end
