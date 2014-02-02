@@ -1,17 +1,17 @@
 # Welcome to Neo4j.rb [![Build Status](https://secure.travis-ci.org/andreasronge/neo4j.png?branch=master)](http://travis-ci.org/andreasronge/neo4j) [![Coverage Status](https://coveralls.io/repos/andreasronge/neo4j/badge.png)](https://coveralls.io/r/andreasronge/neo4j) [![Code Climate](https://codeclimate.com/github/andreasronge/neo4j.png)](https://codeclimate.com/github/andreasronge/neo4j)
 
-Neo4j.rb is a graph database for Ruby (and JRuby)
+Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph database](http://www.neo4j.org/). It uses the [neo4j-core](https://github.com/andreasronge/neo4j-core) and [active_attr](https://github.com/cgriego/active_attr) gems.
 
-## Version 3.0
+## Version 3.0.0.alpha.X
 
 Unstable !
 
-* Wiki: https://github.com/andreasronge/neo4j/wiki/Neo4j-v3
-* Example: https://github.com/andreasronge/neo4j/tree/3.0/example/blog
+* [Wiki](https://github.com/andreasronge/neo4j/wiki/Neo4j-v3)
+* [Basic Rails 4 Example](https://github.com/andreasronge/neo4j/blob/master/example/blog/README.md)
 
 ## Version 2.x
 
-This is the stable version, see https://github.com/andreasronge/neo4j/tree/2.x
+For the stabe 2.x version see [here](https://github.com/andreasronge/neo4j/tree/2.x)
 
 ## Contributing
 
