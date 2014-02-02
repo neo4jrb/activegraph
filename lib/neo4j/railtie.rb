@@ -54,10 +54,10 @@ module Neo4j
     initializer "neo4j.start", :after => :load_config_initializers do |app|
       cfg = app.config.neo4j
       # Set Rails specific defaults
-      set_default_session(cfg)
+      Neo4j::Railtie.set_default_session(cfg)
 
       cfg.sessions.each do |session_opts|
-        open_neo4j_session(session_opts)
+        Neo4j::Railtie.open_neo4j_session(session_opts)
       end
     end
   end
