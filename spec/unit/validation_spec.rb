@@ -16,7 +16,7 @@ describe Neo4j::ActiveNode::Validations do
       validates :name, :presence => true
 
       def self.mapped_label_names
-        :MyClass
+        [:MyClass]
       end
 
       def self.model_name
@@ -38,7 +38,7 @@ describe Neo4j::ActiveNode::Validations do
         o.stub(:_persisted_node).and_return(nil)
         clazz.should_receive(:neo4j_session).and_return(session)
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
-        session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
+        session.should_receive(:create_node).with({name: 'kalle', age: 42}, [:MyClass]).and_return(node)
         o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
         o.save.should be_true
       end

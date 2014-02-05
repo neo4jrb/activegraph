@@ -22,10 +22,24 @@ module Neo4j::ActiveNode
 
     module ClassMethods
 
+      def constraints
+        @constraints ||= {}
+      end
+
       def property(name, options={})
         # Magic properties
         options[:type] = DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
+        process_constraints(name, options)
         attribute(name, options)
+      end
+
+      CONSTRAINTS = [:unique]
+
+      def process_constraints(name, options)
+        constraints[name] ||= {}
+        CONSTRAINTS.each do |constraint|
+          constraints[name][constraint] = options[constraint] if options.key?(constraint)
+        end
       end
 
       def attribute!(name, options={})
