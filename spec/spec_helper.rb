@@ -48,6 +48,8 @@ def delete_db
   Neo4j::Session.current._query('START n = node(*) MATCH n-[r?]-() WHERE ID(n)>0 DELETE n, r;')
 end
 
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
+
 RSpec.configure do |c|
 
   c.before(:all) do

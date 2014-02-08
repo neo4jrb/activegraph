@@ -6,6 +6,11 @@ module Neo4j
 
       include ActiveModel::Validations
 
+      module ClassMethods
+        def validates_uniqueness_of(*attr_names)
+          validates_with UniquenessValidator, _merge_attributes(attr_names)
+        end
+      end
 
       # Implements the ActiveModel::Validation hook method.
       # @see http://rubydoc.info/docs/rails/ActiveModel/Validations:read_attribute_for_validation
@@ -32,6 +37,48 @@ module Neo4j
         super(context)
         errors.empty?
       end
+
+      class UniquenessValidator < ::ActiveModel::EachValidator
+        def initialize(options)
+          super(options.reverse_merge(:case_sensitive => true))
+        end
+
+        def setup(klass)
+          @klass = klass
+        end
+
+        def validate_each(record, attribute, value)
+          conditions = scope_conditions(record)
+
+          # TODO: Added as find(:name => nil) throws error
+          value = "" if value == nil
+
+          if options[:case_sensitive]
+            conditions[attribute] = value
+          else
+            conditions[attribute] = /^#{Regexp.escape(value.to_s)}$/i
+          end
+
+          # prevent that same object is returned 
+          # TODO: add negative condtion to not return current record
+          found = @klass.all(conditions).to_a
+          found.delete(record)
+
+          if found.count > 0
+            record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
+          end
+        end
+
+        def message(instance)
+          super || "has already been taken"
+        end
+
+        def scope_conditions(instance)
+          Array(options[:scope] || []).inject({}) do |conditions, key|
+            conditions.merge(key => instance[key])
+          end
+        end
+      end      
 
       private
       def perform_validations(options={})
