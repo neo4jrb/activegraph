@@ -55,7 +55,7 @@ module Neo4j
 
         # Creates a relationship instance between this and the other node.
         # Returns the relationship object
-        def create(other, relationship_props)
+        def create(other, relationship_props = {})
           @decl_rel.create_relationship_to(@node, other, relationship_props)
         end
 

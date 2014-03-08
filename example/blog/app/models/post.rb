@@ -12,4 +12,6 @@ class Post
   before_save do
     self.score = score * 100
   end
+
+  has_n(:comments).to(Comment)
 end
