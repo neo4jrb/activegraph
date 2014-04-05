@@ -169,7 +169,6 @@ describe Neo4j::Rails::Model, :type => :integration do
     end
   end
 
-
   describe "error" do
     it "the validation method 'errors' returns the validation errors" do
       p = IceCream.new
@@ -178,6 +177,32 @@ describe Neo4j::Rails::Model, :type => :integration do
       p.flavour = 'vanilla'
       p.should be_valid
       p.errors.size.should == 0
+    end
+  end
+
+  describe "cache_key method" do
+    describe "unpersisted object" do
+      it "should respond with plural_model/new" do
+        model = IceCreamStamp.new
+        model.cache_key.should eq 'ice_cream_stamps/new'
+      end
+    end
+
+    describe "persisted object" do
+      it "should respond with a valid cache key" do
+        model = IceCreamStamp.create(flavour: "vanilla")
+        #model.flavour = "chocolate" and model.save
+        model.cache_key.should eq "ice_cream_stamps/#{model.id}-#{model.updated_at.utc.to_s(:number)}"
+      end
+
+      context "when changed" do
+        it "should change cache_key value" do
+          model = IceCreamStamp.create(flavour: "vanilla")
+          start = model.cache_key and sleep 1
+          model.flavour = "chocolate" and model.save
+          model.cache_key.should_not eq start
+        end
+      end
     end
   end
 

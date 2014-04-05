@@ -126,6 +126,12 @@ module Neo4j
         persisted? ? neo_id.to_s : nil
       end
 
+      def cache_key
+        return "#{self.class.model_name.cache_key}/new" if new_record?
+        return "#{self.class.model_name.cache_key}/#{id}-#{self.updated_at.utc.to_s(:number)}" if self.respond_to?(:updated_at) && !self.updated_at.blank?
+        "#{self.class.model_name.cache_key}/#{id}"
+      end
+
       def to_model
         self
       end
