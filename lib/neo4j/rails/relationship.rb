@@ -16,6 +16,10 @@ module Neo4j
       include Neo4j::RelationshipMixin
       include ActiveModel::Dirty # track changes to attributes
       include ActiveModel::Observing # enable observers
+      begin
+      include ActiveModel::MassAssignmentSecurity # protected_attributes gem if available
+      rescue NameError
+      end
       include Neo4j::Rails::Identity
       include Neo4j::Rails::Persistence # handles how to save, create and update the model
       include Neo4j::Rails::RelationshipPersistence # handles how to save, create and update the model
