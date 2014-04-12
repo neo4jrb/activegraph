@@ -45,7 +45,7 @@ FileUtils.rm_rf(EMBEDDED_DB_PATH)
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def delete_db
-  Neo4j::Session.current._query('START n = node(*) MATCH n-[r?]-() WHERE ID(n)>0 DELETE n, r;')
+  Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
