@@ -1,8 +1,12 @@
 module UniqueClass
   @@_counter = 1
 
+  def self._unique_random_number
+    "#{Time.now.year}#{Time.now.to_i}#{Time.now.usec.to_s[0..2]}".to_i
+  end
+
   def self.set(klass, name=nil)
-    name ||= "Model_#{@@_counter}"
+    name ||= "Model_#{@@_counter}_#{_unique_random_number}"
     @@_counter += 1
     klass.class_eval <<-RUBY
 	def self.to_s
