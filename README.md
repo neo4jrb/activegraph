@@ -11,11 +11,11 @@ Unstable !
 
 ## Version 2.x
 
-For the stabe 2.x version see [here](https://github.com/andreasronge/neo4j/tree/2.x)
+For the stable 2.x version see [here](https://github.com/andreasronge/neo4j/tree/2.x)
 
 ## Contributing
 
-* Have you found a bug, need help or have a patch ?
+* Have you found a bug, need help, or have a patch ?
 * Just clone neo4j.rb and send me a pull request or email me.
 * Do you need help - send me an email (andreas.ronge at gmail dot com).
 
@@ -25,4 +25,4 @@ For the stabe 2.x version see [here](https://github.com/andreasronge/neo4j/tree/
 * Lucene -  Apache, see the [Lucene Documentation](http://lucene.apache.org/java/docs/features.html).
 * Neo4j - Dual free software/commercial license, see [Lisencing Guide](http://www.neo4j.org/learn/licensing).
 
-**Notice:** there are different license for the `neo4j-community`, `neo4j-advanced`, and `neo4j-enterprise` jar gems. Only the `neo4j-community` gem is by default required.
+**Notice:** There are different licenses for the `neo4j-community`, `neo4j-advanced`, and `neo4j-enterprise` jar gems. Only the `neo4j-community` gem is by default required.
