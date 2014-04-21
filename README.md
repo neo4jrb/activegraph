@@ -11,7 +11,7 @@ Unstable !
 
 ## Version 2.x
 
-For the stable 2.x version see [here](https://github.com/andreasronge/neo4j/tree/2.x)
+For the stable 2.x version, see [here](https://github.com/andreasronge/neo4j/tree/2.x)
 
 ## Contributing
 
@@ -23,6 +23,6 @@ For the stable 2.x version see [here](https://github.com/andreasronge/neo4j/tree
 
 * Neo4j.rb - MIT, see the [LICENSE](http://github.com/andreasronge/neo4j/tree/master/LICENSE).
 * Lucene -  Apache, see the [Lucene Documentation](http://lucene.apache.org/java/docs/features.html).
-* Neo4j - Dual free software/commercial license, see [Lisencing Guide](http://www.neo4j.org/learn/licensing).
+* Neo4j - Dual free software/commercial license, see [Licensing Guide](http://www.neo4j.org/learn/licensing).
 
-**Notice:** There are different licenses for the `neo4j-community`, `neo4j-advanced`, and `neo4j-enterprise` jar gems. Only the `neo4j-community` gem is by default required.
+**Notice:** There are different licenses for the `neo4j-community`, `neo4j-advanced`, and `neo4j-enterprise` jar gems. Only the `neo4j-community` gem is required by default.
