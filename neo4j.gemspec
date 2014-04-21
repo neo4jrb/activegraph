@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/andreasronge/neo4j/tree"
   s.rubyforge_project = 'neo4j'
   s.summary = "A graph database for Ruby"
+  s.license = 'MIT'
   s.description = <<-EOF
 You can think of Neo4j as a high-performance graph engine with all the features of a mature and robust database.
 The programmer works with an object-oriented, flexible network structure rather than with strict and static tables 
@@ -32,7 +33,7 @@ It comes included with the Apache Lucene document database.
   s.add_dependency("activemodel", "~> 4.0.0")
   s.add_dependency("railties", "~> 4.0.0")
   s.add_dependency('active_attr', "~> 0.8")
-  s.add_dependency("neo4j-core", "= 3.0.0.alpha.10")
+  s.add_dependency("neo4j-core", "= 3.0.0.alpha.11")
 
   if RUBY_PLATFORM =~ /java/
     s.add_dependency("neo4j-community", '~> 2.0.0')

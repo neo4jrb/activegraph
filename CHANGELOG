@@ -1,3 +1,7 @@
+== 3.0.0.alpha.4
+* Implemented validates_uniqueness_of (#311)
+* Using neo4j-core version 3.0.0.alpha.11
+
 == 3.0.0.alpha.3
 * Support for rails scaffolds
 * Support for created_at and updated_at (#305)
