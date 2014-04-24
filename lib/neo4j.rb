@@ -30,7 +30,7 @@ require 'neo4j/active_node/has_n/decl_rel'
 require 'neo4j/active_node/has_n/nodes'
 require 'neo4j/active_node'
 
-if defined? Rails::Generators
+if defined? Rails::Generators # defined in 'rails/generators.rb'
   # TODO, not sure this is the correct way of adding rails generators
   # See https://github.com/andreasronge/neo4j/blob/gh-pages/neo4j.rb
   # It is required from the rails config/application file

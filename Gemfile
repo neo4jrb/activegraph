@@ -15,4 +15,5 @@ end
 group 'test' do
   gem "rspec"
   gem "its"
+  gem "test-unit"
 end

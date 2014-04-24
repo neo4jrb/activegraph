@@ -1,5 +1,6 @@
-require 'test_helper'
-require 'generators/neo4j/model/model_generator.rb'
+#require 'test_helper'
+require File.expand_path("../../../test_helper", __FILE__)
+require 'rails/generators/neo4j/model/model_generator.rb'
 
 class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
   destination File.join(Rails.root)
@@ -13,7 +14,7 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/models/account.rb" do |account|
       assert_class "Account", account do |klass|
-        assert_match /Neo4j::Rails::Model/, klass
+        assert_equal 'include Neo4j::ActiveNode', klass
       end
     end
   end
@@ -50,12 +51,13 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
     end
   end  
 
-  test "invoke with model name and --parent option" do
-    content = run_generator %w(Admin --parent User)
-    assert_file "app/models/admin.rb" do |account|
-      assert_class "Admin", account do |klass|
-        assert_match /<\s+User/, klass
-      end
-    end
-  end
+  # test "invoke with model name and --parent option" do
+  #   content = run_generator %w(Admin --parent User)
+  #   assert_file "app/models/admin.rb" do |account|
+  #     puts "ACCOUNT #{account}"
+  #     assert_class "Admin", account do |klass|
+  #       assert_match /<\s+User/, klass
+  #     end
+  #   end
+  # end
 end

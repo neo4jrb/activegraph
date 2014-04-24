@@ -13,6 +13,13 @@ task 'spec' do
   abort("RSpec neo4j failed") unless success
 end
 
+require 'rake/testtask'
+Rake::TestTask.new(:test_generators) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/*_test.rb'
+  test.verbose = true
+end
+
 task :rm_server_db do
   FileUtils.rm_rf('./neo4j/data')
   FileUtils.mkdir_p('./neo4j/data')
