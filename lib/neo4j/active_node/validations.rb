@@ -41,10 +41,7 @@ module Neo4j
       class UniquenessValidator < ::ActiveModel::EachValidator
         def initialize(options)
           super(options.reverse_merge(:case_sensitive => true))
-        end
-
-        def setup(klass)
-          @klass = klass
+          @klass = options[:class]
         end
 
         def validate_each(record, attribute, value)
