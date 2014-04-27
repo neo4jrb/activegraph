@@ -15,10 +15,11 @@ module Neo4j
       def set_default_session(cfg)
         cfg.session_type ||= :server_db
         cfg.session_path ||= "http://localhost:7474"
+        cfg.session_options ||= {}
         cfg.sessions ||= []
 
         if cfg.sessions.empty?
-          cfg.sessions << {type: cfg.session_type, path: cfg.session_path}
+          cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
         end
       end
 
@@ -40,7 +41,7 @@ module Neo4j
         if (session_opts.key? :name)
           session = Neo4j::Session.open_named(session_opts[:type], session_opts[:name], session_opts[:default], session_opts[:path])
         else
-          session = Neo4j::Session.open(session_opts[:type], session_opts[:path])
+          session = Neo4j::Session.open(session_opts[:type], session_opts[:path], session_opts[:options])
         end
 
         start_embedded_session(session) if session_opts[:type] == :embedded_db

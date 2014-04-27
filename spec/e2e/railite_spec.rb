@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Rails
   class Config
-    attr_accessor :neo4j, :session_type, :session_path, :sessions
+    attr_accessor :neo4j, :session_type, :session_path, :sessions, :session_options
   end
 
   class Railtie
@@ -17,16 +17,18 @@ module Rails
 
       def initializer(name, options={}, &block)
         Railtie.init ||= {}
-        Railtie.init[name]  = block
+        Railtie.init[name] = block
       end
 
     end
   end
   class App
     attr_accessor :neo4j
+
     def config
       self
     end
+
     def neo4j
       @neo4j ||= Config.new
     end
@@ -37,15 +39,23 @@ module Rails
 
   describe 'railtie' do
     it 'configures a default Neo4j server_db' do
-      expect(Neo4j::Session).to receive(:open).with(:server_db, "http://localhost:7474")
+      expect(Neo4j::Session).to receive(:open).with(:server_db, 'http://localhost:7474', {})
       app = App.new
       Railtie.init['neo4j.start'].call(app)
     end
 
     it 'allows multi session' do
-      expect(Neo4j::Session).to receive(:open).with(:mysession_type, "asd")
+      expect(Neo4j::Session).to receive(:open).with(:mysession_type, "asd", nil)
       app = App.new
       app.neo4j.sessions = [{type: :mysession_type, path: 'asd'}]
+      Railtie.init['neo4j.start'].call(app)
+    end
+
+    it 'allows sessions with authentication' do
+      expect(Neo4j::Session).to receive(:open).with(:server_db, 'http://localhost:7474', basic_auth: {username: 'user', password: 'password'})
+      app = App.new
+      app.neo4j.sessions = [{type: :server_db, path: 'http://localhost:7474',
+                             options: {basic_auth: {username: 'user', password: 'password'}}}]
       Railtie.init['neo4j.start'].call(app)
     end
 
