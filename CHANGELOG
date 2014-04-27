@@ -1,3 +1,6 @@
+== 3.0.0.alpha.6
+* Support for Heroku URLs, see wiki https://github.com/andreasronge/neo4j/wiki/Neo4j-v3 (#334)
+
 == 3.0.0.alpha.5
 * Added allow session options via 'config.neo4j.session_options' so it can run on heroku (#333)
 * Relaxed Dependencies for Rails 4.1 (#332)
