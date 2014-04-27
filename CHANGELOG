@@ -1,3 +1,8 @@
+== 3.0.0.alpha.5
+* Added allow session options via 'config.neo4j.session_options' so it can run on heroku (#333)
+* Relaxed Dependencies for Rails 4.1 (#332)
+* Using neo4j-core version 3.0.0.alpha.12
+
 == 3.0.0.alpha.4
 * Implemented validates_uniqueness_of (#311)
 * Using neo4j-core version 3.0.0.alpha.11
