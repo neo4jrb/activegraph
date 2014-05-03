@@ -2,7 +2,13 @@ require 'spec_helper'
 
 
 describe 'Inheritance', type: :e2e do
-  class Vehicle
+  class Node 
+    include Neo4j::ActiveNode
+    property :created_at, type: DateTime
+    property :updated_at, type: DateTime
+  end
+  
+  class Vehicle < Node
     include Neo4j::ActiveNode
     property :name, type: String
     index :name
