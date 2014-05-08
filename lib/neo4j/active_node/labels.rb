@@ -21,7 +21,6 @@ module Neo4j
         @_wrapped_labels = nil
       end
 
-
       def self._wrapped_classes
         Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
       end
@@ -94,6 +93,9 @@ module Neo4j
           end
         end
 
+        def index?(index_def)
+          mapped_label.indexes[:property_keys].include?(index_def)
+        end
 
         # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
@@ -112,7 +114,9 @@ module Neo4j
         protected
 
         def find_by_hash(hash, session)
-          Neo4j::Label.query(mapped_label_name, {conditions: hash}, session)
+          # Not happy with this solution.  Would like to see hash format made into something like {conditions: , order: } but even better to have Arel syntax
+          order = hash.delete(:order)
+          Neo4j::Label.query(mapped_label_name, {conditions: hash, order: order}, session)
         end
 
         def _index(property)
