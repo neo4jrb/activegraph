@@ -77,16 +77,7 @@ module Neo4j
       end
 
       def find_with_order(conditions, order)
-        conditions = wild_card_condition if conditions.nil? || conditions.empty?
-
         result = klass.all(conditions.merge(order: order.map {|clause| Hash[*clause] }))
-      end
-
-      def wild_card_condition
-        index_key = klass.attributes.keys.find{|k| klass.index?([k.to_sym]) }
-        raise "Can't perform a order query when there is no lucene index (try cypher or declare an index) on #{klass}" unless index_key
-
-        {index_key => '*'}
       end
 
     end
