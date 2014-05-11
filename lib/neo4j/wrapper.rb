@@ -8,8 +8,9 @@ class Neo4j::Node
       if wrappers.empty?
         self
       else
-        found = wrappers.sort.first
-        wrapped_node = Neo4j::ActiveNode::Labels._wrapped_labels[found].new
+        wrapper_classes = wrappers.map{|w| Neo4j::ActiveNode::Labels._wrapped_labels[w]}
+        most_concrete_class = wrapper_classes.sort.first
+        wrapped_node = most_concrete_class.new
         wrapped_node.init_on_load(self, self.props)
         wrapped_node
       end
