@@ -317,12 +317,9 @@ describe Neo4j::ActiveNode do
     end
 
     it 'saves all declared properties' do
-      person1 = Person.create(name: 'person123', age: 123, unknown: "yes")
-      id = person1.id
-      person = Neo4j::Node.load(id)
-      person.name.should == 'person123'
-      person.age.should == 123
-      expect{person[:unknown]}.to raise_error(ActiveAttr::UnknownAttributeError)
+      expect do
+        Person.create(name: 'person123', age: 123, unknown: "yes")
+      end.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
     end
   end
 

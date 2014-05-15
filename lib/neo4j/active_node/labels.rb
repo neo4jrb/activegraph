@@ -68,7 +68,7 @@ module Neo4j
             when Hash
               find_by_hash(args, session).first
             when String, Fixnum
-              Neo4j::Node.load(args)
+              Neo4j::Node.load(args.to_i)
             else
               raise "Unknown argument #{args.class} in find method"
           end
