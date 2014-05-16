@@ -8,8 +8,23 @@ module Neo4j
 
       WRAPPED_CLASSES = []
 
+      # @return the labels
+      # @see Neo4j-core
       def labels
         @_persisted_node.labels
+      end
+
+      # adds one or more labels
+      # @see Neo4j-core
+      def add_label(*label)
+        @_persisted_node.add_label(*label)
+      end
+
+      # Removes one or more labels
+      # Be careful, don't remove the label representing the Ruby class.
+      # @see Neo4j-core
+      def remove_label(*label)
+        @_persisted_node.remove_label(*label)
       end
 
       def self.included(klass)
