@@ -26,7 +26,7 @@ module Neo4j
   
     describe '[Neo4j orm adapter]', :type => :integration do
       before :each do
-        Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r;')
+        delete_db
       end
 
 #      describe "the OrmAdapter class" do
