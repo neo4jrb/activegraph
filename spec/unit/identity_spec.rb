@@ -30,17 +30,7 @@ describe Neo4j::ActiveNode::Persistence do
 
     context 'a persisted record' do
       before(:each) do
-        clazz.should_receive(:neo4j_session).and_return(session)
-        clazz.should_receive(:mapped_label_names).and_return(:MyClass)
-
-        created_node.should_receive(:props).and_return({})
-
-        session.should_receive(:create_node).with({}, :MyClass).and_return(created_node)
-        clazz.any_instance.should_receive(:init_on_load).with(created_node, {})
-
-        created_node.should_receive(:_persisted_node).at_least(2).times.and_return double(neo_id: 4387, del: true)
-
-        node.save
+        created_node.stub(:_persisted_node).and_return(double(neo_id: 4387, del: true))
       end
 
       it 'should be the neo_id after it is saved' do
