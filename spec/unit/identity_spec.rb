@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Neo4j::ActiveNode::Persistence do
+describe Neo4j::ActiveNode::Identity do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode::Persistence
