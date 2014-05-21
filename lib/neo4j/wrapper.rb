@@ -17,7 +17,7 @@ class Neo4j::Node
     end
 
     def checked_labels_set
-      @checked_labels_set ||= Set.new
+      @@_checked_labels_set ||= Set.new
     end
 
     def check_label(label_name)
