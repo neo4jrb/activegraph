@@ -19,6 +19,10 @@ describe Neo4j::ActiveNode::Persistence do
       o = clazz.new(name: 'kalle', age: '42')
       o.props.should eq(name: 'kalle', age: 42)
     end
+
+    it 'raises an error when given a property which is not defined' do
+      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
+    end
   end
 
   describe 'save' do
