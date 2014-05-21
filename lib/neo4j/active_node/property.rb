@@ -30,7 +30,10 @@ module Neo4j::ActiveNode
     def validate_attributes!(attributes)
       relationship_props = self.class.extract_relationship_attributes!(attributes)
 
-      invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
+      invalid_properties = (attributes.keys.map(&:to_s) - self.attributes.keys).reject do |attribute|
+        self.respond_to?("#{attribute}=")
+      end
+
       raise UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end
 
