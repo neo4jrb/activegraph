@@ -7,7 +7,7 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
-      class InvalidConditionError < StandardError; end
+      class InvalidQueryError < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -130,6 +130,9 @@ module Neo4j
         protected
 
         def find_by_hash(query, session)
+          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :offset, :skip]
+          raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
+
           extract_relationship_conditions!(query)
 
           Neo4j::Label.query(mapped_label_name, query, session)
@@ -152,7 +155,7 @@ module Neo4j
             query[:conditions].dup.each do |key, value|
               if has_relationship?(key)
                 neo_id = value.try(:neo_id) || value
-                raise InvalidConditionError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
+                raise InvalidQueryError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
                 query[:matches] ||= []
                 n_string = "n#{node_num}"

@@ -184,7 +184,7 @@ module Neo4j::ActiveNode
         new(props).tap do |obj|
           obj.save
           relationship_props.each do |prop, value|
-            o.send("#{prop}=", value)
+            obj.send("#{prop}=", value)
           end
         end
       end
