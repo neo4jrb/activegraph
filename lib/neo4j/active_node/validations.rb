@@ -58,7 +58,7 @@ module Neo4j
 
           # prevent that same object is returned 
           # TODO: add negative condtion to not return current record
-          found = @klass.all(conditions).to_a
+          found = @klass.all(conditions: conditions).to_a
           found.delete(record)
 
           if found.count > 0

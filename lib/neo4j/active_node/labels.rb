@@ -7,6 +7,7 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
+      class InvalidConditionError < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -62,7 +63,7 @@ module Neo4j
         # @param [Hash, nil] args the search critera or nil if finding all
         # @param [Neo4j::Session] session defaults to the model's session
         def all(args = nil, session = self.neo4j_session)
-          if (args)
+          if args
             find_by_hash(args, session)
           else
             Neo4j::Label.find_all_nodes(mapped_label_name, session)
@@ -128,10 +129,40 @@ module Neo4j
 
         protected
 
-        def find_by_hash(hash, session)
-          # Not happy with this solution.  Would like to see hash format made into something like {conditions: , order: } but even better to have Arel syntax
-          order = hash.delete(:order)
-          Neo4j::Label.query(mapped_label_name, {conditions: hash, order: order}, session)
+        def find_by_hash(query, session)
+          extract_relationship_conditions!(query)
+
+          Neo4j::Label.query(mapped_label_name, query, session)
+        end
+
+        # Takes out :conditions query keys for associations and creates corresponding :conditions and :matches keys  
+        # example:
+        # class Person
+        #   property :name
+        #   has_n :friend
+        # end
+        #
+        #   :conditions => {name: 'Fred', friend: person}
+        # should result in:
+        #   :conditions => {name => 'Fred', 'id(n1)' => person.id}, :matches => 'n--n1'
+        #
+        def extract_relationship_conditions!(query)
+          node_num = 1
+          if query[:conditions]
+            query[:conditions].dup.each do |key, value|
+              if has_relationship?(key)
+                neo_id = value.try(:neo_id) || value
+                raise InvalidConditionError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
+
+                query[:matches] ||= []
+                n_string = "n#{node_num}"
+                query[:matches] << "n--(#{n_string})"
+                query[:conditions]["id(#{n_string})"] = neo_id
+                query[:conditions].delete(key)
+                node_num += 1
+              end
+            end
+          end
         end
 
         def _index(property)

@@ -31,14 +31,14 @@ describe 'Inheritance', type: :e2e do
   describe 'find' do
     it 'can find using subclass index' do
       @volvo.labels.should =~ [:'InheritanceTest::Car', :'InheritanceTest::Node', :'InheritanceTest::Vehicle']
-      InheritanceTest::Car.find(name: 'volvo').should eq(@volvo)
-      InheritanceTest::Vehicle.find(name: 'volvo').should eq(@volvo)
+      InheritanceTest::Car.find(conditions: {name: 'volvo'}).should eq(@volvo)
+      InheritanceTest::Vehicle.find(conditions: {name: 'volvo'}).should eq(@volvo)
     end
 
     it 'can find using baseclass index' do
       @saab.labels.should =~ [:'InheritanceTest::Car', :'InheritanceTest::Node', :'InheritanceTest::Vehicle']
-      InheritanceTest::Car.find(model: '900').should eq(@saab)
-      InheritanceTest::Vehicle.find(model: '900').should eq(@saab)
+      InheritanceTest::Car.find(conditions: {model: '900'}).should eq(@saab)
+      InheritanceTest::Vehicle.find(conditions: {model: '900'}).should eq(@saab)
     end
 
   end
