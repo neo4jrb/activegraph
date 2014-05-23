@@ -43,4 +43,5 @@ describe "Neo4j::ActiveNode" do
     end
 
   end
+
 end

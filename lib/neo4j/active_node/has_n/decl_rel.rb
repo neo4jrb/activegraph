@@ -197,7 +197,7 @@ module Neo4j
 
         # @private
         def each_node(node, &block)
-          node.nodes(dir: dir, type: rel_type).each { |n| block.call(n)}
+          node.nodes(dir: dir, type: rel_type).each { |n| block.call(n) }
         end
 
         def all_relationships(node)

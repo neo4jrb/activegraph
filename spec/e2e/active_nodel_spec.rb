@@ -58,7 +58,7 @@ describe IceLolly, :type => :integration do
 
       #it { subject.id.should == subject.class.find(flavour: 'vanilla').id}
 
-      it { should == subject.class.find(flavour: 'vanilla') }
+      it { should == subject.class.find(conditions: {flavour: 'vanilla'}) }
 
       it "should be able to modify one of its named attributes" do
         lambda{ subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
@@ -74,7 +74,7 @@ describe IceLolly, :type => :integration do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
-        subject.class.all(flavour: 'vanilla').should include(subject)
+        subject.class.all(conditions: {flavour: 'vanilla'}).should include(subject)
       end
 
       context "and then made invalid" do
@@ -317,12 +317,9 @@ describe Neo4j::ActiveNode do
     end
 
     it 'saves all declared properties' do
-      person1 = Person.create(name: 'person123', age: 123, unknown: "yes")
-      id = person1.id
-      person = Neo4j::Node.load(id)
-      person.name.should == 'person123'
-      person.age.should == 123
-      expect{person[:unknown]}.to raise_error(ActiveAttr::UnknownAttributeError)
+      expect do
+        Person.create(name: 'person123', age: 123, unknown: "yes")
+      end.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
     end
   end
 

@@ -43,7 +43,7 @@ module Neo4j
     end
 
     def neo4j_obj
-      _persisted_node || raise("Tried to access native neo4j object on a none persisted object")
+      _persisted_node || raise("Tried to access native neo4j object on a non persisted object")
     end
 
     module ClassMethods
