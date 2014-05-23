@@ -37,6 +37,12 @@ describe "Labels" do
       include Neo4j::ActiveNode
       include SomeLabelMixin
     end
+
+    class RelationTestClass
+      include Neo4j::ActiveNode
+
+      has_one(:test_class)
+    end
   end
 
 
@@ -89,25 +95,42 @@ describe "Labels" do
       TestClass.all.to_a.should include(p)
     end
 
+    it 'raises an erorr when not passed a valid query key' do
+      expect { IndexedTestClass.find(unknown: 'test') }.to raise_error(Neo4j::ActiveNode::Labels::InvalidQueryError)
+    end
+
     describe 'when indexed' do
       it 'can find it using the index' do
         IndexedTestClass.destroy_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        IndexedTestClass.find(name: 'kalle').should == kalle
+        IndexedTestClass.find(conditions: {name: 'kalle'}).should == kalle
       end
 
       it 'does not find it if deleted' do
         IndexedTestClass.destroy_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
-        result = IndexedTestClass.find(name: 'kalle2')
+        result = IndexedTestClass.find(conditions: {name: 'kalle2'})
         result.should == kalle2
         kalle2.destroy
-        IndexedTestClass.all(name: 'kalle2').should_not include(kalle2)
+        IndexedTestClass.all(conditions: {name: 'kalle2'}).should_not include(kalle2)
       end
     end
 
-    describe 'when finding using a Module' do
+    context 'a relationship' do
+      let!(:n1) { TestClass.create }
+      let!(:n2) { RelationTestClass.create(test_class: n1) }
 
+      it 'finds when association matches' do
+        RelationTestClass.find(conditions: {test_class: n1}).should == n2
+      end
+
+      it 'does not find when association does not match' do
+        RelationTestClass.find(conditions: {test_class: n2}).should be_nil
+      end
+
+    end
+
+    describe 'when finding using a Module' do
       it 'finds it' do
         thing = SomeLabelClass.create
         SomeLabelMixin.all.should include(thing)

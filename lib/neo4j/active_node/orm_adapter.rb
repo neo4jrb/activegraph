@@ -31,10 +31,12 @@ module Neo4j
       def find_first(options = {})
         conditions, order = extract_conditions!(options)
         extract_id!(conditions)
+        order = hasherize_order(order)
+
         if !order.empty?
-          find_with_order(conditions, order).to_a.first
+          klass.find(conditions: conditions, order: order)
         else
-          result = klass.find(conditions)
+          result = klass.find(conditions: conditions)
           result
         end
       end
@@ -43,10 +45,12 @@ module Neo4j
       def find_all(options = {})
         conditions, order, limit, offset = extract_conditions!(options)
         extract_id!(conditions)
+        order = hasherize_order(order)
+
         result = if !order.empty?
-          find_with_order(conditions, order)
+          klass.all(conditions: conditions, order: order, limit: limit, offset: offset)
         else
-          klass.all(conditions)
+          klass.all(conditions: conditions)
         end
 
         if limit && offset
@@ -70,14 +74,14 @@ module Neo4j
 
       private
 
-      def extract_id!(conditions)
-        if id = conditions.delete(:id)
-          conditions[:neo_id] = id 
-        end
+      def hasherize_order(order)
+        (order || []).map {|clause| Hash[*clause] }
       end
 
-      def find_with_order(conditions, order)
-        result = klass.all(conditions.merge(order: order.map {|clause| Hash[*clause] }))
+      def extract_id!(conditions)
+        if id = conditions.delete(:id)
+          conditions['id(n)'] = id 
+        end
       end
 
     end
