@@ -130,12 +130,18 @@ module Neo4j
         protected
 
         def find_by_hash(query, session)
-          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :offset, :skip]
-          raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
+          validate_query!(query)
 
           extract_relationship_conditions!(query)
 
           Neo4j::Label.query(mapped_label_name, query, session)
+        end
+
+        # Raises an error if query is malformed
+        def validate_query!(query)
+          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :offset, :skip]
+
+          raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
         end
 
         # Takes out :conditions query keys for associations and creates corresponding :conditions and :matches keys  
