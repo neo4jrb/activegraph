@@ -23,7 +23,6 @@ module Neo4j::ActiveNode
       end
 
       super(attributes, options)
-      (@changed_attributes || {}).clear
     end
 
     def save_properties
