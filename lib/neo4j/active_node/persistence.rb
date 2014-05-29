@@ -57,6 +57,36 @@ module Neo4j::ActiveNode
       end
     end
 
+    # Convenience method to set attribute and #save at the same time
+    # @param [Symbol, String] Name of the attribute to update
+    # @param [Object] Value to set
+    def update_attribute(attribute, value)
+      send("#{attribute}=", value)
+      self.save
+    end
+
+    # Convenience method to set attribute and #save! at the same time
+    # @param [Symbol, String] Name of the attribute to update
+    # @param [Object] Value to set
+    def update_attribute!(attribute, value)
+      send("#{attribute}=", value)
+      self.save!
+    end
+
+    # Convenience method to set multiple attributes and #save at the same time
+    # @param [Hash] Hash of names and values of attributes to set
+    def update_attributes(attributes)
+      assign_attributes(attributes)
+      self.save
+    end
+
+    # Convenience method to set multiple attributes and #save! at the same time
+    # @param [Hash] Hash of names and values of attributes to set
+    def update_attribute!(attribute, value)
+      assign_attributes(attributes)
+      self.save!
+    end
+
     def create_or_update
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
@@ -207,6 +237,14 @@ module Neo4j::ActiveNode
         Neo4j::Node.load(id)
       end
 
+    end
+
+    private
+
+    def assign_attributes(attributes)
+      attributes.each do |attribute, value|
+        send("#{attribute}=", value)
+      end
     end
 
   end
