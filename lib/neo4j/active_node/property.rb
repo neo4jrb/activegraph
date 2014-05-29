@@ -6,6 +6,7 @@ module Neo4j::ActiveNode
     include ActiveAttr::MassAssignment
     include ActiveAttr::TypecastedAttributes
     include ActiveAttr::AttributeDefaults
+    include ActiveAttr::QueryAttributes
     include ActiveModel::Dirty
 
     class UndefinedPropertyError < RuntimeError
