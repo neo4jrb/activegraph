@@ -28,6 +28,7 @@ module Neo4j
     include ActiveModel::Conversion
     include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
+
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::Identity
     include Neo4j::ActiveNode::Persistence
@@ -61,6 +62,13 @@ module Neo4j
     end
 
     included do
+      self.include_root_in_json = true
+
+
+      def self.i18n_scope
+        :neo4j
+      end
+
       def self.inherited(other)
         attributes.each_pair do |k,v|
           other.attributes[k] = v
