@@ -15,6 +15,10 @@ module Neo4j
         klass._decl_props.keys
       end
 
+      def i18n_scope
+        :neo4j
+      end
+
       # Get an instance by id of the model
       def get!(id)
         klass.find(wrap_key(id)).tap do |node|
