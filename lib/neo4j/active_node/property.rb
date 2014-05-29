@@ -31,6 +31,15 @@ module Neo4j::ActiveNode
       @changed_attributes.clear
     end
 
+
+    # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+    def read_attribute(name)
+      super(name)
+    rescue ActiveAttr::UnknownAttributeError
+      nil
+    end
+    alias_method :[], :read_attribute
+
     private
 
     # Changes attributes hash to remove relationship keys
