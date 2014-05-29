@@ -166,7 +166,7 @@ module Neo4j
                 query[:matches] ||= []
                 n_string = "n#{node_num}"
                 query[:matches] << "n--(#{n_string})"
-                query[:conditions]["id(#{n_string})"] = neo_id
+                query[:conditions]["id(#{n_string})"] = neo_id.to_i
                 query[:conditions].delete(key)
                 node_num += 1
               end

@@ -84,7 +84,7 @@ module Neo4j
 
       def extract_id!(conditions)
         if id = conditions.delete(:id)
-          conditions['id(n)'] = id 
+          conditions['id(n)'] = id.to_i
         end
       end
 
