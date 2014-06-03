@@ -134,7 +134,7 @@ module Neo4j
 
           extract_relationship_conditions!(query)
 
-          Neo4j::Label.query(mapped_label_name, query, session)
+          session.query(query.merge(label: mapped_label_name))
         end
 
         # Raises an error if query is malformed
@@ -144,7 +144,7 @@ module Neo4j
           raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
         end
 
-        # Takes out :conditions query keys for associations and creates corresponding :conditions and :matches keys  
+        # Takes out :conditions query keys for associations and creates corresponding :conditions and :match keys  
         # example:
         # class Person
         #   property :name
@@ -153,7 +153,7 @@ module Neo4j
         #
         #   :conditions => {name: 'Fred', friend: person}
         # should result in:
-        #   :conditions => {name => 'Fred', 'id(n1)' => person.id}, :matches => 'n--n1'
+        #   :conditions => {name => 'Fred', 'id(n1)' => person.id}, :match => 'n--n1'
         #
         def extract_relationship_conditions!(query)
           node_num = 1
@@ -163,9 +163,9 @@ module Neo4j
                 neo_id = value.try(:neo_id) || value
                 raise InvalidQueryError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
-                query[:matches] ||= []
+                query[:match] ||= []
                 n_string = "n#{node_num}"
-                query[:matches] << "n--(#{n_string})"
+                query[:match] << "n--(#{n_string})"
                 query[:conditions]["id(#{n_string})"] = neo_id.to_i
                 query[:conditions].delete(key)
                 node_num += 1
