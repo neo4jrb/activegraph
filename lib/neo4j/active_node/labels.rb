@@ -72,8 +72,8 @@ module Neo4j
 
         # @return [Fixnum] number of nodes of this class
         def count(session = self.neo4j_session)
-          q = session.query("MATCH (n:`#{mapped_label_name}`) RETURN count(n) AS count")
-          q.to_a[0][:count]
+          q = session.query(label: mapped_label_name, return: "count(n) AS count", map_return: :value)
+          q.to_a[0]
         end
 
         # Same as #all but return only one object
@@ -127,7 +127,7 @@ module Neo4j
         protected
 
         def find_by_hash(hash, session)
-          Neo4j::Label.query(mapped_label_name, {conditions: hash}, session)
+          session.query(label: mapped_label_name, conditions: hash)
         end
 
         def _index(property)
