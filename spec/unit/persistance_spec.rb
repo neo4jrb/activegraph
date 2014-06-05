@@ -46,6 +46,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'does not updates node if already persisted before but nothing changed' do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:_persisted_node).and_return(node)
+      o.stub(:changed_attributes).and_return({})
       node.should_receive(:exist?).and_return(true)
       o.save
     end

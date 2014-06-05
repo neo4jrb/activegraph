@@ -2,7 +2,10 @@ source 'http://rubygems.org'
 
 gemspec
 
-# gem 'neo4j-core', :path => '../neo4j-core'
+gem 'pry'
+
+
+gem 'neo4j-core', :path => '../neo4j-core'
 
 gem 'coveralls', require: false
 

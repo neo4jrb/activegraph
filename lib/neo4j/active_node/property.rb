@@ -27,7 +27,7 @@ module Neo4j::ActiveNode
 
     def save_properties
       @previously_changed = changes
-      @changed_attributes.clear
+      changed_attributes.clear
     end
 
 

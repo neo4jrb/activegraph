@@ -131,11 +131,11 @@ module Neo4j::ActiveNode
     end
 
     def update_model
-      if @changed_attributes && !@changed_attributes.empty?
-        changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
+      if changed_attributes && !changed_attributes.empty?
+        changed_props = attributes.select{|k,v| changed_attributes.include?(k)}
         changed_props = convert_properties_to :db, changed_props
         _persisted_node.update_props(changed_props)
-        @changed_attributes.clear
+        changed_attributes.clear
       end
     end
 
@@ -174,7 +174,7 @@ module Neo4j::ActiveNode
 
     def reload
       return self if new_record?
-      @changed_attributes && @changed_attributes.clear
+      changed_attributes && changed_attributes.clear
       unless reload_from_database
         @_deleted = true
         freeze
