@@ -27,8 +27,16 @@ require 'neo4j/active_node/validations'
 require 'neo4j/active_node/rels'
 require 'neo4j/active_node/has_n'
 require 'neo4j/active_node/has_n/decl_rel'
+require 'neo4j/active_node/has_n/rels'
 require 'neo4j/active_node/has_n/nodes'
 require 'neo4j/active_node'
+require 'neo4j/active_rel/initialize'
+require 'neo4j/active_rel/persistence'
+require 'neo4j/active_rel/rel_type'
+require 'neo4j/active_rel/validations'
+require 'neo4j/active_rel/wrapper'
+require 'neo4j/active_rel'
+
 
 if defined? Rails::Generators # defined in 'rails/generators.rb'
   # TODO, not sure this is the correct way of adding rails generators

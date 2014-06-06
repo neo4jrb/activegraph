@@ -75,6 +75,19 @@ module Neo4j
           @decl_rel.create_relationship_to(@node, other)
           self
         end
+
+        def build(other_props = {}, relationship_props = {})
+          @decl_rel.build_relationship_to(@node, other_props, relationship_props)
+        end
+
+        def where(conditions={})
+          match = {between_labels: @decl_rel.target_name,
+                   conditions: {}}
+
+          conditions.each {|k,v| match[:conditions]["p.#{k}"] = v}
+
+          @node.nodes(match)
+        end
       end
 
     end
