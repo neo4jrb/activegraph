@@ -84,12 +84,27 @@ module Neo4j
             when Hash
               find_by_hash(args, session).first
             when String, Fixnum
-              Neo4j::Node.load(args)
+              Neo4j::Node.load(args, mapped_label_name)
             else
               raise "Unknown argument #{args.class} in find method"
           end
         end
 
+        # separated from protected find_by_hash due to optional session
+        def where(args={})
+          session = args.delete(:session) ||
+                    args.delete('session') ||
+                    self.neo4j_session
+          find_by_hash(args, session)
+        end
+
+        def find_or_create(args)
+          find(args) || create(args)
+        end
+
+        def first
+          all.first
+        end
 
         # Destroy all nodes an connected relationships
         def destroy_all

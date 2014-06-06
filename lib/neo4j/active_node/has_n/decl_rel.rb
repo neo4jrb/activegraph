@@ -20,7 +20,7 @@ module Neo4j
       #   class File
       #     include Neo4j::ActiveNode
       #     # declaring a incoming relationship from Folder's relationship files
-      #     has_one(:folder).from(Folder, :files)
+      #     has_one :folder, from: Folder, through: :files)
       #   end
       #
       # The following methods will be generated:
@@ -33,12 +33,15 @@ module Neo4j
       class DeclRel
         attr_reader :source_class, :dir, :rel_type, :method_id
 
-        def initialize(method_id, has_one, source_class)
+        def initialize(method_id, source_class, opts={})
           @method_id = method_id
-          @has_one = has_one
-          @dir = :outgoing
+          @has_one = false
+          @dir = opts[:to] ? :outgoing : :incoming
           @rel_type = method_id.to_sym
           @source_class = source_class
+
+          parse_dir(opts.delete(:to) || opts.delete(:from))
+          parse_through(opts.delete(:through))
         end
 
         def inherit_new
@@ -184,6 +187,20 @@ module Neo4j
           self
         end
 
+        def rel_class
+          @rel_type.to_s.camelize.constantize rescue nil
+        end
+
+        def build_relationship_to(node, other_props={}, relationship_props={}) # :nodoc:
+          built = target_class.new(other_props)
+
+          if klass = rel_class
+            rel = klass.new(relationship_props)
+            rel.start_node, rel.end_node = incoming? ? [built, node] : [node, built]
+          end
+
+          return built, rel ||= nil
+        end
 
         # @private
         def target_name
@@ -194,18 +211,17 @@ module Neo4j
           @target_name && @target_name.split("::").inject(Kernel) { |container, name| container.const_get(name.to_s) }
         end
 
-
-        # @private
         def each_node(node, &block)
-          node.nodes(dir: dir, type: rel_type).each { |n| block.call(n)}
-        end
-
-        def all_relationships(node)
-          to_enum(:each_rel, node)
+          node.nodes(dir: dir, type: rel_type, between_labels: target_class).each { |n| block.call(n)}
         end
 
         def each_rel(node, &block) #:nodoc:
-          node.rels(dir: dir, type: rel_type).each { |rel| block.call(rel) }
+          node.rels(dir: dir, type: rel_type, between_labels: target_class).each { |rel| block.call(rel) }
+        end
+
+        # @private
+        def all_relationships(node)
+          to_enum(:each_rel, node)
         end
 
         def single_relationship(node)
@@ -222,6 +238,37 @@ module Neo4j
           from.create_rel(@rel_type, to, relationship_props)
         end
 
+        # @private
+        def parse_dir(target)
+          case target
+            when /#/
+              @target_name, _ = target.to_s.split("#")
+              @rel_type = target.to_sym
+            when Class, String
+              @target_name = target.to_s
+              @rel_type = "#{@source_class}##{target.to_s}".to_sym
+            when Symbol
+              @target_name = nil
+              @rel_type = target.to_sym
+            else
+              raise "Expected a class or a symbol for, got #{target}/#{target.class}"
+          end
+          self
+        end
+
+        # @private
+        def parse_through(rel_type=nil)
+          case rel_type
+          when Class
+            @rel_type = rel_type.to_s.underscore.to_sym
+          when String
+            @rel_type = rel_type.underscore.to_sym
+          when Symbol
+            @rel_type = rel_type
+          else
+            raise "Expected a class, string, or symbol, got #{rel_type}/#{rel_type.class}"
+          end
+        end
       end
     end
   end
