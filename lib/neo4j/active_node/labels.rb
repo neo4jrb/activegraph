@@ -135,12 +135,11 @@ module Neo4j
           extract_relationship_conditions!(query)
 
           session.query(query.merge(label: mapped_label_name))
-          #session.query(label: mapped_label_name, conditions: hash) # master
         end
 
         # Raises an error if query is malformed
         def validate_query!(query)
-          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :offset, :skip]
+          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :skip]
 
           raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
         end

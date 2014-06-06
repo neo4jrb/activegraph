@@ -52,18 +52,12 @@ module Neo4j
         order = hasherize_order(order)
 
         result = if !order.empty?
-          klass.all(conditions: conditions, order: order, limit: limit, offset: offset)
+          klass.all(conditions: conditions, order: order, limit: limit, skip: offset)
         else
           klass.all(conditions: conditions)
         end
 
-        if limit && offset
-          result.drop(offset).first(limit)
-        elsif limit
-          result.to_a.first(limit)
-        else
-          result.to_a
-        end
+        result.to_a
       end
 
       # Create a model using attributes

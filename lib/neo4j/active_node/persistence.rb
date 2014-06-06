@@ -58,30 +58,31 @@ module Neo4j::ActiveNode
     end
 
     # Convenience method to set attribute and #save at the same time
-    # @param [Symbol, String] Name of the attribute to update
-    # @param [Object] Value to set
+    # @param [Symbol, String] attribute of the attribute to update
+    # @param [Object] value to set
     def update_attribute(attribute, value)
       send("#{attribute}=", value)
       self.save
     end
 
     # Convenience method to set attribute and #save! at the same time
-    # @param [Symbol, String] Name of the attribute to update
-    # @param [Object] Value to set
+    # @param [Symbol, String] attribute of the attribute to update
+    # @param [Object] value to set
     def update_attribute!(attribute, value)
       send("#{attribute}=", value)
       self.save!
     end
 
     # Convenience method to set multiple attributes and #save at the same time
-    # @param [Hash] Hash of names and values of attributes to set
+    # @param [Hash] attributes of names and values of attributes to set
     def update_attributes(attributes)
       assign_attributes(attributes)
       self.save
     end
 
     # Convenience method to set multiple attributes and #save! at the same time
-    # @param [Hash] Hash of names and values of attributes to set
+    # @param [Hash] attribute of names and values of attributes to set
+    # @param [Object] value of names and values of attributes to set
     def update_attribute!(attribute, value)
       assign_attributes(attributes)
       self.save!

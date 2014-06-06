@@ -37,7 +37,7 @@ module Neo4j
 #        end
 #      end
     
-      it_should_behave_like "example app with orm_adapter" do
+      it_should_behave_like "example app with orm_adapter fix" do
         let(:user_class) { User }
         let(:note_class) { Note }
       end
