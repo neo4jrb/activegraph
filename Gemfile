@@ -5,7 +5,7 @@ gemspec
 gem 'pry'
 
 
-gem 'neo4j-core', :path => '../neo4j-core'
+#gem 'neo4j-core', :path => '../neo4j-core'
 
 gem 'coveralls', require: false
 
