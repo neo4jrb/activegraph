@@ -25,7 +25,7 @@ module Neo4j::ActiveNode
     end
 
     def update_magic_properties
-      self.updated_at = DateTime.now if respond_to?(:updated_at=)
+      self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed?
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.

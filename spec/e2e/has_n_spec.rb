@@ -15,7 +15,7 @@ describe 'has_n' do
 
   it 'access nodes via declared has_n method' do
     expect(node.friends.to_a).to eq([])
-    expect(node.friends.empty?()).to be_true
+    expect(node.friends.empty?()).to be true
 
     node.friends << friend1
     expect(node.friends.to_a).to eq([friend1])
@@ -50,7 +50,7 @@ describe 'has_n' do
       end
 
       it 'is not empty' do
-        expect(node.friends.empty?()).to be_false
+        expect(node.friends.empty?()).to be false
       end
 
       it 'removes relationships when given a different list' do
@@ -78,8 +78,8 @@ describe 'has_n' do
       end
 
       it 'has a is_a method' do
-        expect(node.friends.is_a?(Array)).to be_true
-        expect(node.friends.is_a?(String)).to be_false
+        expect(node.friends.is_a?(Array)).to be true
+        expect(node.friends.is_a?(String)).to be false
       end
     end
   end

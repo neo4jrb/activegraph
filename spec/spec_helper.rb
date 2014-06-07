@@ -3,6 +3,7 @@ Coveralls.wear!
 require "bundler/setup"
 require 'rspec'
 require 'its'
+#require 'rspec/its'  Soon ...
 require 'fileutils'
 require 'tmpdir'
 require 'logger'

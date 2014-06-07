@@ -141,7 +141,7 @@ describe "Labels" do
 
 end
 
-#share_examples_for 'Neo4j::ActiveNode with Mixin Index'do
+#shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do
 #  before(:all) do
 #    Neo4j::ActiveNode::Labels._wrapped_classes = []
 #    Neo4j::ActiveNode::Labels._wrapped_labels = nil

@@ -1,7 +1,7 @@
 shared_examples 'saveable model' do
   context "when attempting to save" do
     it "should save ok" do
-      subject.save.should be_true
+      subject.save.should be true
     end
 
     it "should save without raising an exception" do

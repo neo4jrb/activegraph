@@ -16,7 +16,8 @@ group 'development' do
 end
 
 group 'test' do
-  gem "rspec"
+  gem "rspec", '~> 2.0'
+  # gem 'rspec-its' instead of its in rspec 3
   gem "its"
   gem "test-unit"
 end
