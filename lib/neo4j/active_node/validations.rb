@@ -41,7 +41,6 @@ module Neo4j
       class UniquenessValidator < ::ActiveModel::EachValidator
         def initialize(options)
           super(options.reverse_merge(:case_sensitive => true))
-          @klass = options[:class]
         end
 
         def validate_each(record, attribute, value)
@@ -56,9 +55,9 @@ module Neo4j
             conditions[attribute] = /^#{Regexp.escape(value.to_s)}$/i
           end
 
-          # prevent that same object is returned 
+          # prevent that same object is returned
           # TODO: add negative condtion to not return current record
-          found = @klass.all(conditions: conditions).to_a
+          found = record.class.all(conditions: conditions).to_a
           found.delete(record)
 
           if found.count > 0
@@ -75,7 +74,7 @@ module Neo4j
             conditions.merge(key => instance[key])
           end
         end
-      end      
+      end
 
       private
       def perform_validations(options={})
