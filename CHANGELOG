@@ -1,3 +1,10 @@
+* Many improvements, like update_attributes and validation while impl orm_adapter, Brian Underwood
+* Impl orm_adapter API for neo4j so it can be used from for example devise, Brian Underwood (#355)
+* Fix of inheritance of Neo4j::ActiveNode (#307)
+* Expose add_label, and remove_label (#335)
+* Fixed auto loading of classes bug, (#349)
+* Bumped neo4j-core, 3.0.0.alpha.15
+
 == 3.0.0.alpha.6
 * Support for Heroku URLs, see wiki https://github.com/andreasronge/neo4j/wiki/Neo4j-v3 (#334)
 
