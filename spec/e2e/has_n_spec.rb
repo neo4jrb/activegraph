@@ -14,9 +14,11 @@ describe 'has_n' do
   end
 
   it 'access nodes via declared has_n method' do
-    node.friends.to_a.should eq([])
+    expect(node.friends.to_a).to eq([])
+    expect(node.friends.empty?()).to be_true
+
     node.friends << friend1
-    node.friends.to_a.should eq([friend1])
+    expect(node.friends.to_a).to eq([friend1])
   end
 
   it 'access relationships via declared has_n method' do
@@ -47,6 +49,10 @@ describe 'has_n' do
         node.friends = [friend1, friend2]
       end
 
+      it 'is not empty' do
+        expect(node.friends.empty?()).to be_false
+      end
+
       it 'removes relationships when given a different list' do
         friend3 = clazz.create
         node.friends = [friend3]
@@ -61,6 +67,19 @@ describe 'has_n' do
       it 'removes all relationships when given an empty list' do
         node.friends = []
         node.friends.to_a.should =~ []
+      end
+
+      it 'can be accessed via [] operator' do
+        expect([friend1, friend2]).to include(node.friends[0])
+      end
+
+      it 'has a to_s method' do
+        expect(node.friends.to_s).to be_a(String)
+      end
+
+      it 'has a is_a method' do
+        expect(node.friends.is_a?(Array)).to be_true
+        expect(node.friends.is_a?(String)).to be_false
       end
     end
   end

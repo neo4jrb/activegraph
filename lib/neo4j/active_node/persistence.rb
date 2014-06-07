@@ -80,14 +80,6 @@ module Neo4j::ActiveNode
       self.save
     end
 
-    # Convenience method to set multiple attributes and #save! at the same time
-    # @param [Hash] attribute of names and values of attributes to set
-    # @param [Object] value of names and values of attributes to set
-    def update_attribute!(attribute, value)
-      assign_attributes(attributes)
-      self.save!
-    end
-
     def create_or_update
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
