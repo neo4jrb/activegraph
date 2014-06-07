@@ -9,7 +9,7 @@ module Neo4j::ActiveNode::Initialize
   # @param [Hash] properties of the persisted node.
   def init_on_load(persisted_node, properties)
     @_persisted_node = persisted_node
-    @changed_attributes && @changed_attributes.clear
+    changed_attributes && changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
     @attributes = convert_properties_to :ruby, @attributes
   end

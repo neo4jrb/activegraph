@@ -6,6 +6,7 @@ describe Neo4j::ActiveNode::Persistence do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode::Persistence
+      include Neo4j::ActiveNode::HasN
       include Neo4j::ActiveNode::Property
 
       property :name
@@ -17,6 +18,10 @@ describe Neo4j::ActiveNode::Persistence do
     it 'can take a hash of properties' do
       o = clazz.new(name: 'kalle', age: '42')
       o.props.should eq(name: 'kalle', age: 42)
+    end
+
+    it 'raises an error when given a property which is not defined' do
+      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
     end
   end
 
@@ -41,6 +46,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'does not updates node if already persisted before but nothing changed' do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:_persisted_node).and_return(node)
+      o.stub(:changed_attributes).and_return({})
       node.should_receive(:exist?).and_return(true)
       o.save
     end

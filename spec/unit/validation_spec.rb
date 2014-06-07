@@ -7,6 +7,7 @@ describe Neo4j::ActiveNode::Validations do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode::Persistence
+      include Neo4j::ActiveNode::HasN
       include Neo4j::ActiveNode::Property
       include Neo4j::ActiveNode::Validations
 

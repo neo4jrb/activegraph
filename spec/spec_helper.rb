@@ -12,6 +12,7 @@ require 'neo4j-core'
 require 'neo4j'
 require 'unique_class'
 
+require 'pry' if ENV['APP_ENV'] == 'debug'
 
 
 

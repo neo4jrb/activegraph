@@ -42,9 +42,8 @@ describe "Neo4j::ActiveNode" do
 
     it 'does not allow to set undeclared properties using create' do
       node = double('unwrapped_node', props: {})
-      @session.should_receive(:create_node).with({}, [:MyThing]).and_return(node)
-      thing = MyThing.create(bar: 43)
-      thing.props.should == {}
+      @session.should_not_receive(:create_node)
+      expect { MyThing.create(bar: 43) }.to raise_error Neo4j::ActiveNode::Property::UndefinedPropertyError
     end
   end
 

@@ -32,6 +32,11 @@ module Neo4j
           super
         end
 
+        def ==(other)
+          self.to_a == other.to_a
+        end
+        alias_method :eql?, :==
+
         # Required by the Enumerable mixin.
         def each
           @decl_rel.each_node(@node) { |n| yield n } # Should use yield here as passing &block through doesn't always work (why?)

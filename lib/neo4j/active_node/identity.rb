@@ -19,7 +19,8 @@ module Neo4j::ActiveNode
 
     # @return [String, nil] same as #neo_id
     def id
-      persisted? ? neo_id.to_s : nil
+      id = neo_id
+      id.is_a?(Integer) ? id : nil
     end
 
 
