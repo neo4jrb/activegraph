@@ -8,8 +8,17 @@ module Neo4j::ActiveNode
 
     module ClassMethods
 
+
       def has_relationship?(rel_type)
         !!_decl_rels[rel_type]
+      end
+
+      def has_one_relationship?(rel_type)
+        has_relationship?(rel_type) && _decl_rels[rel_type].has_one?
+      end
+
+      def relationship_dir(rel_type)
+        has_relationship?(rel_type) && _decl_rels[rel_type].dir
       end
 
       def _decl_rels

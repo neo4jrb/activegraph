@@ -36,6 +36,6 @@ It comes included with the Apache Lucene document database.
   s.add_dependency("neo4j-core", "= 3.0.0.alpha.14")
 
   if RUBY_PLATFORM =~ /java/
-    s.add_dependency("neo4j-community", '~> 2.0.0')
+    s.add_dependency("neo4j-community", '~> 2.0')
   end
 end

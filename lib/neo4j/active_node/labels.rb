@@ -159,13 +159,16 @@ module Neo4j
           node_num = 1
           if query[:conditions]
             query[:conditions].dup.each do |key, value|
-              if has_relationship?(key)
+              if has_one_relationship?(key)
                 neo_id = value.try(:neo_id) || value
                 raise InvalidQueryError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
                 query[:match] ||= []
                 n_string = "n#{node_num}"
-                query[:match] << "n--(#{n_string})"
+                dir = relationship_dir(key)
+
+                match = dir == :outgoing ? "n-->(#{n_string})" : "n<--(#{n_string})"
+                query[:match] << match
                 query[:conditions]["id(#{n_string})"] = neo_id.to_i
                 query[:conditions].delete(key)
                 node_num += 1
