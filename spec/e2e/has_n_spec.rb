@@ -2,14 +2,43 @@ require 'spec_helper'
 
 describe 'has_n' do
 
-  let(:node) { clazz.create }
-  let(:friend1) { clazz.create }
-  let(:friend2) { clazz.create }
+  let(:node) { clazz_a.create }
+  let(:friend1) { clazz_a.create }
+  let(:friend2) { clazz_a.create }
 
-  let(:clazz) do
+  let(:clazz_b) do
+    UniqueClass.create do
+      include Neo4j::ActiveNode
+    end
+  end
+
+  let(:clazz_a) do
+    knows_type = clazz_b.to_s
     UniqueClass.create do
       include Neo4j::ActiveNode
       has_n :friends
+      has_n(:knows).to(knows_type)
+      has_n(:knows_me).from(:knows)
+    end
+  end
+
+  describe 'rel_type' do
+    it 'creates the correct type' do
+      node.friends << friend1
+      r = node.rel
+      expect(r.rel_type).to eq(:friends)
+    end
+
+    it 'creates the correct type' do
+      node.knows << friend1
+      r = node.rel
+      expect(r.rel_type).to eq(:"#{clazz_a.to_s}#knows")
+    end
+
+    it 'creates correct incoming relationship' do
+      node.knows_me << friend1
+      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:knows)
+      expect(node.rel(dir: :incoming).rel_type).to eq(:knows)
     end
   end
 
@@ -54,7 +83,7 @@ describe 'has_n' do
       end
 
       it 'removes relationships when given a different list' do
-        friend3 = clazz.create
+        friend3 = clazz_a.create
         node.friends = [friend3]
         node.friends.to_a.should =~ [friend3]
       end
@@ -89,7 +118,7 @@ describe 'has_n' do
       r = node.friends.create(friend1, since: 1994)
 
       r[:since].should eq(1994)
-      node.rel(dir: :outgoing, type: clazz.friends).should == r
+      node.rel(dir: :outgoing, type: clazz_a.friends).should == r
     end
   end
 end
