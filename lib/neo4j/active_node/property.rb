@@ -60,7 +60,15 @@ module Neo4j::ActiveNode
 
       def property(name, options={})
         # Magic properties
-        options[:type] = DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
+
+        puts "NAME #{name.inspect}"
+        if name.to_sym == :created_at || name.to_sym == :updated_at
+          options[:type] = DateTime
+        end
+
+        # if (name.to_s == 'remember_created_at')
+        #   binding.pry
+        # end
         attribute(name, options)
       end
 
