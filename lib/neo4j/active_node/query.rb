@@ -10,10 +10,9 @@ module Neo4j
 
       # Returns a Query object with the current node matched the specified variable name
       #
-      # Example
-      #    # Return the names of all of Mike's friends
-      #    # Generates: MATCH (mike:Person), mike-[:friend]-friend WHERE ID(mike) = 123 RETURN friend.name
-      #    mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name) 
+      # @example Return the names of all of Mike's friends
+      #   # Generates: MATCH (mike:Person), mike-[:friend]-friend WHERE ID(mike) = 123 RETURN friend.name
+      #   mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name) 
       #
       # @param var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]
@@ -25,10 +24,9 @@ module Neo4j
 
         # Returns a Query object with all nodes for the model matched as the specified variable name
         #
-        # Example
-        #    # Return the registration number of all cars owned by a person over the age of 30
-        #    # Generates: MATCH (person:Person), person-[:owned]-car WHERE person.age > 30 RETURN car.registration_number
-        #    Person.query_as(:person).where('person.age > 30').match('person-[:owned]-car').return(car: :registration_number)
+        # @example Return the registration number of all cars owned by a person over the age of 30
+        #   # Generates: MATCH (person:Person), person-[:owned]-car WHERE person.age > 30 RETURN car.registration_number
+        #   Person.query_as(:person).where('person.age > 30').match('person-[:owned]-car').return(car: :registration_number)
         #
         # @param var [Symbol, String] The variable name to specify in the query
         # @return [Neo4j::Core::Query]
