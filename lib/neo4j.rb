@@ -28,6 +28,7 @@ require 'neo4j/active_node/rels'
 require 'neo4j/active_node/has_n'
 require 'neo4j/active_node/has_n/decl_rel'
 require 'neo4j/active_node/has_n/nodes'
+require 'neo4j/active_node/query'
 require 'neo4j/active_node'
 
 if defined? Rails::Generators # defined in 'rails/generators.rb'
