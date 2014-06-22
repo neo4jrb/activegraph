@@ -8,7 +8,7 @@ shared_examples 'new model' do
     end
 
     it "should not allow read access to undeclared properties" do
-      expect{subject[:unknown]}.to raise_error(ActiveAttr::UnknownAttributeError)
+      subject[:unknown].should be_nil
     end
 
     it "should allow access to all properties before it is saved" do

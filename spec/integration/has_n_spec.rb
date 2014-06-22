@@ -80,6 +80,22 @@ describe "has_n" do
       end
     end
 
+    describe 'node.friends = [a_node, b_node]' do
+
+      it 'creates a new relationship' do
+        a_node = double("a node")
+        b_node = double("b node")
+
+        node.should_receive(:rels).with({:dir=>:outgoing, :type=>:friends}).and_return([])
+
+        node.should_receive(:create_rel).with(:friends, a_node, {})
+        node.should_receive(:create_rel).with(:friends, b_node, {})
+
+        # when
+        node.friends = [a_node, b_node]
+      end
+    end
+
     describe 'node.friends.to_a' do
 
       it 'traverse correct relationships' do

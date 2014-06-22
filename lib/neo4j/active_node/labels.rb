@@ -7,6 +7,7 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
+      class InvalidQueryError < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -36,7 +37,6 @@ module Neo4j
         @_wrapped_labels = nil
       end
 
-
       def self._wrapped_classes
         Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
       end
@@ -63,7 +63,7 @@ module Neo4j
         # @param [Hash, nil] args the search critera or nil if finding all
         # @param [Neo4j::Session] session defaults to the model's session
         def all(args = nil, session = self.neo4j_session)
-          if (args)
+          if args
             find_by_hash(args, session)
           else
             Neo4j::Label.find_all_nodes(mapped_label_name, session)
@@ -84,7 +84,7 @@ module Neo4j
             when Hash
               find_by_hash(args, session).first
             when String, Fixnum
-              Neo4j::Node.load(args)
+              Neo4j::Node.load(args.to_i)
             else
               raise "Unknown argument #{args.class} in find method"
           end
@@ -109,6 +109,9 @@ module Neo4j
           end
         end
 
+        def index?(index_def)
+          mapped_label.indexes[:property_keys].include?(index_def)
+        end
 
         # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
@@ -126,8 +129,52 @@ module Neo4j
 
         protected
 
-        def find_by_hash(hash, session)
-          session.query(label: mapped_label_name, conditions: hash)
+        def find_by_hash(query, session)
+          validate_query!(query)
+
+          extract_relationship_conditions!(query)
+
+          session.query(query.merge(label: mapped_label_name))
+        end
+
+        # Raises an error if query is malformed
+        def validate_query!(query)
+          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :skip]
+
+          raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
+        end
+
+        # Takes out :conditions query keys for associations and creates corresponding :conditions and :match keys  
+        # example:
+        # class Person
+        #   property :name
+        #   has_n :friend
+        # end
+        #
+        #   :conditions => {name: 'Fred', friend: person}
+        # should result in:
+        #   :conditions => {name => 'Fred', 'id(n1)' => person.id}, :match => 'n--n1'
+        #
+        def extract_relationship_conditions!(query)
+          node_num = 1
+          if query[:conditions]
+            query[:conditions].dup.each do |key, value|
+              if has_one_relationship?(key)
+                neo_id = value.try(:neo_id) || value
+                raise InvalidQueryError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
+
+                query[:match] ||= []
+                n_string = "n#{node_num}"
+                dir = relationship_dir(key)
+
+                match = dir == :outgoing ? "n-->(#{n_string})" : "n<--(#{n_string})"
+                query[:match] << match
+                query[:conditions]["id(#{n_string})"] = neo_id.to_i
+                query[:conditions].delete(key)
+                node_num += 1
+              end
+            end
+          end
         end
 
         def _index(property)

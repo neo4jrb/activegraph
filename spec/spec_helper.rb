@@ -3,6 +3,7 @@ Coveralls.wear!
 require "bundler/setup"
 require 'rspec'
 require 'its'
+#require 'rspec/its'  Soon ...
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
@@ -12,6 +13,7 @@ require 'neo4j-core'
 require 'neo4j'
 require 'unique_class'
 
+require 'pry' if ENV['APP_ENV'] == 'debug'
 
 
 

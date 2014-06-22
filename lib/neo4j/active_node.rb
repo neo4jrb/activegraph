@@ -28,13 +28,14 @@ module Neo4j
     include ActiveModel::Conversion
     include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
+
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::Identity
     include Neo4j::ActiveNode::Persistence
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Labels
-    include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Validations
+    include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Rels
     include Neo4j::ActiveNode::HasN
     include Neo4j::ActiveNode::Query
@@ -44,7 +45,7 @@ module Neo4j
     end
 
     def neo4j_obj
-      _persisted_node || raise("Tried to access native neo4j object on a none persisted object")
+      _persisted_node || raise("Tried to access native neo4j object on a non persisted object")
     end
 
     module ClassMethods
@@ -62,6 +63,13 @@ module Neo4j
     end
 
     included do
+      self.include_root_in_json = true
+
+
+      def self.i18n_scope
+        :neo4j
+      end
+
       def self.inherited(other)
         attributes.each_pair do |k,v|
           other.attributes[k] = v

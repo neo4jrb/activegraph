@@ -29,13 +29,13 @@ It comes included with the Apache Lucene document database.
   s.extra_rdoc_files = %w( README.md )
   s.rdoc_options = ["--quiet", "--title", "Neo4j.rb", "--line-numbers", "--main", "README.rdoc", "--inline-source"]
 
-  s.add_dependency('orm_adapter', "~> 0.4.0")
+  s.add_dependency('orm_adapter', "~> 0.5.0")
   s.add_dependency("activemodel", "~> 4")
   s.add_dependency("railties", "~> 4")
   s.add_dependency('active_attr', "~> 0.8")
-  s.add_dependency("neo4j-core", "= 3.0.0.alpha.14")
+  s.add_dependency("neo4j-core", "= 3.0.0.alpha.16")
 
   if RUBY_PLATFORM =~ /java/
-    s.add_dependency("neo4j-community", '~> 2.0.0')
+    s.add_dependency("neo4j-community", '~> 2.0')
   end
 end

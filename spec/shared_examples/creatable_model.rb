@@ -1,8 +1,8 @@
-share_examples_for "creatable model" do
+shared_examples_for "creatable model" do
   context "when attempting to create" do
 
     it "should create ok" do
-      subject.class.create(subject.attributes).should be_true
+      subject.class.create(subject.attributes).should be_truthy
     end
 
     it "should not raise an exception on #create!" do

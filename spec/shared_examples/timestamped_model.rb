@@ -1,9 +1,9 @@
-share_examples_for "timestamped model" do
+shared_examples_for "timestamped model" do
   before do
     # stub these out so they return the same values all the time
     @time = Time.now
     @tomorrow = Time.now.tomorrow
-    Time.stub!(:now).and_return(@time)
+    Time.stub(:now).and_return(@time)
     subject.save!
   end
 
@@ -17,7 +17,7 @@ share_examples_for "timestamped model" do
 
   context "when updated" do
     before(:each) do
-      Time.stub!(:now).and_return(@tomorrow)
+      Time.stub(:now).and_return(@tomorrow)
     end
 
     it "created_at is not changed" do

@@ -1,7 +1,7 @@
-share_examples_for "unsaveable model" do
+shared_examples_for "unsaveable model" do
   context "when attempting to save" do
     it "should not save ok" do
-      subject.save.should_not be_true
+      subject.save.should_not be true
     end
 
     it "should raise an exception" do

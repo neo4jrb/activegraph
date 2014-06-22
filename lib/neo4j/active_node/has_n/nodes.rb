@@ -14,7 +14,11 @@ module Neo4j
         end
 
         def to_s
-          "HasN::Nodes [#{@decl_rel.dir}, id: #{@node.neo_id} type: #{@decl_rel.rel_type} decl_rel:#{@decl_rel}]"
+          "[#{@decl_rel.dir}, from: #{@node.neo_id} type: #{@decl_rel.rel_type} has_one #{@decl_rel.has_one?}]"
+        end
+
+        def inspect
+          to_s
         end
 
         # Traverse the relationship till the index position
@@ -31,6 +35,11 @@ module Neo4j
           return true if Array == type
           super
         end
+
+        def ==(other)
+          self.to_a == other.to_a
+        end
+        alias_method :eql?, :==
 
         # Required by the Enumerable mixin.
         def each

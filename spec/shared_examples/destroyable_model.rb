@@ -1,4 +1,4 @@
-share_examples_for "destroyable model" do
+shared_examples_for "destroyable model" do
   context "when saved" do
     before :each do
       subject.save!

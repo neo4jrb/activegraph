@@ -54,7 +54,11 @@ module Neo4j
         end
 
         def to_s
-          "DeclRel #{object_id} dir: #{@dir} rel_id: #{@method_id}, rel_type: #{@rel_type}, target_class:#{@target_name}"
+          "DeclRel one #{has_one?}, dir: #{@dir}, rel_id: #{@method_id}, rel_type: #{@rel_type}, target_class:#{@target_name}"
+        end
+
+        def inspect
+          to_s
         end
 
         # @return [true, false]
@@ -197,7 +201,7 @@ module Neo4j
 
         # @private
         def each_node(node, &block)
-          node.nodes(dir: dir, type: rel_type).each { |n| block.call(n)}
+          node.nodes(dir: dir, type: rel_type).each { |n| block.call(n) }
         end
 
         def all_relationships(node)

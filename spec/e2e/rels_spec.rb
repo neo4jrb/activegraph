@@ -35,13 +35,13 @@ describe 'Neo4j::ActiveNode#rels' do
   end
 
   it 'delegates #rel?' do
-    @n.rel?(dir: :outgoing).should be_true
-    @n.rel?(dir: :outgoing, type: :knows).should be_false
+    @n.rel?(dir: :outgoing).should be true
+    @n.rel?(dir: :outgoing, type: :knows).should be false
   end
 
   it 'delegates #rel?' do
-    @n.rel?(dir: :outgoing).should be_true
-    @n.rel?(dir: :outgoing, type: :knows).should be_false
+    @n.rel?(dir: :outgoing).should be true
+    @n.rel?(dir: :outgoing, type: :knows).should be false
   end
 
 end

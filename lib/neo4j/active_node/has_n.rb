@@ -8,6 +8,19 @@ module Neo4j::ActiveNode
 
     module ClassMethods
 
+
+      def has_relationship?(rel_type)
+        !!_decl_rels[rel_type]
+      end
+
+      def has_one_relationship?(rel_type)
+        has_relationship?(rel_type) && _decl_rels[rel_type].has_one?
+      end
+
+      def relationship_dir(rel_type)
+        has_relationship?(rel_type) && _decl_rels[rel_type].dir
+      end
+
       def _decl_rels
         @_decl_rels ||= {}
       end
@@ -50,7 +63,7 @@ module Neo4j::ActiveNode
       #
       #   FolderNode.files #=> 'File#files' the name of the relationship
       #
-      # @example has_n(x).from(class, has_n_name)
+      # @example has_one(x).from(class, has_one_name)
       #
       #   # generate accessor method for traversing and adding relationship on incoming nodes.
       #   class FileNode
@@ -64,18 +77,27 @@ module Neo4j::ActiveNode
       # @return [Neo4j::ActiveNode::HasN::DeclRel] a DSL object where the has_n relationship can be further specified
       def has_n(rel_type)
         clazz = self
+        module_eval(%Q{def #{rel_type}=(values)
+                  #{rel_type}_rels.each {|rel| rel.del }
+
+                  dsl = _decl_rels_for('#{rel_type}'.to_sym)
+                  values.each do |value|
+                    dsl.create_relationship_to(self, value)
+                  end
+              end}, __FILE__, __LINE__)
+
         module_eval(%Q{
                 def #{rel_type}()
                     dsl = _decl_rels_for('#{rel_type}'.to_sym)
                     Neo4j::ActiveNode::HasN::Nodes.new(self, dsl)
                 end}, __FILE__, __LINE__)
 
-
         module_eval(%Q{
                 def #{rel_type}_rels
                     dsl = _decl_rels_for('#{rel_type}'.to_sym)
                     dsl.all_relationships(self)
                 end}, __FILE__, __LINE__)
+
 
         instance_eval(%Q{
           def #{rel_type}

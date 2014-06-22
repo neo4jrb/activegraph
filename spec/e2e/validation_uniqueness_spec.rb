@@ -30,7 +30,7 @@ describe Neo4j::ActiveNode::Validations do
         validates_uniqueness_of :name, :scope => :adult
       end
       o = other_clazz.new("name" => "joe", :adult => true)
-      o.save.should be_true
+      o.save.should be true
 
       o2 = other_clazz.new("name" => "joe", :adult => false)
       o2.should be_valid
@@ -44,7 +44,7 @@ describe Neo4j::ActiveNode::Validations do
 
     it "should allow to update an object" do
       o = @clazz.new("name" => "joe")
-      o.save.should be_true
+      o.save.should be true
 
       @clazz \
         .stub(:first) \
@@ -52,13 +52,13 @@ describe Neo4j::ActiveNode::Validations do
         .and_return(o)
 
       o.name = "joe"
-      o.valid?.should be_true
+      o.valid?.should be true
       o.should_not have_error_on(:name)
     end
 
     it "should fail if object name is not unique" do
       o = @clazz.new("name" => "joe")
-      o.save.should be_true
+      o.save.should be true
 
       @clazz \
         .stub(:first) \
@@ -77,7 +77,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       o = other_clazz.new("name" => "")
-      o.save.should be_true
+      o.save.should be true
 
       other_clazz \
         .stub(:first) \
@@ -96,7 +96,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       o = other_clazz.new('name' => nil)
-      o.save.should be_true
+      o.save.should be true
 
       o2 = other_clazz.new('name' => nil)
       o2.should_not have_error_on(:name)
@@ -110,7 +110,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       o = other_clazz.new("name" => "BLAMMO")
-      o.save.should be_true
+      o.save.should be true
 
       o2 = other_clazz.new("name" => "blammo")
       o2.should_not have_error_on(:name)
@@ -127,7 +127,7 @@ describe Neo4j::ActiveNode::Validations do
 
       it "should fail on entries that differ only in case" do
         o = @clazz.new("name" => "BLAMMO")
-        o.save.should be_true
+        o.save.should be true
 
         o2 = @clazz.new("name" => "blammo")
         o2.should have_error_on(:name)
@@ -145,18 +145,18 @@ describe Neo4j::ActiveNode::Validations do
 
       it "should not always match if Regexp wildcard used" do
         o = @clazz.new("name" => "John")
-        o.save.should be_true
+        o.save.should be true
 
         o2 = @clazz.new("name" => ".*")
-        o2.valid?.should be_true
+        o2.valid?.should be true
       end
 
       it "should check for uniqueness using entire string" do
         o = @clazz.new("name" => "John Doe")
-        o.save.should be_true
+        o.save.should be true
 
         o2 = @clazz.new("name" => "John")
-        o2.valid?.should be_true
+        o2.valid?.should be true
       end
     end
 
@@ -172,7 +172,7 @@ describe Neo4j::ActiveNode::Validations do
 
       it "should fail if the same name exists in the scope" do
         o = @clazz.new("name" => "joe", "scope" => "one")
-        o.save.should be_true
+        o.save.should be true
 
         @clazz \
           .stub(:first) \
@@ -185,7 +185,7 @@ describe Neo4j::ActiveNode::Validations do
 
       it "should pass if the same name exists in a different scope" do
         o = @clazz.new("name" => "joe", "scope" => "one")
-        o.save.should be_true
+        o.save.should be true
 
         @clazz \
           .stub(:first) \
@@ -210,7 +210,7 @@ describe Neo4j::ActiveNode::Validations do
 
       it "should fail if the same name exists in the scope" do
         o = @clazz.new("name" => "joe", "first_scope" => "one", "second_scope" => "two")
-        o.save.should be_true
+        o.save.should be true
 
         @clazz \
           .stub(:first) \
@@ -223,7 +223,7 @@ describe Neo4j::ActiveNode::Validations do
 
       it "should pass if the same name exists in a different scope" do
         o = @clazz.new("name" => "joe", "first_scope" => "one", "second_scope" => "two")
-        o.save.should be_true
+        o.save.should be true
 
         @clazz \
           .stub(:first) \

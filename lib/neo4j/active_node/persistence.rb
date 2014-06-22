@@ -25,7 +25,7 @@ module Neo4j::ActiveNode
     end
 
     def update_magic_properties
-      self.updated_at = DateTime.now if respond_to?(:updated_at=)
+      self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed?
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.
@@ -55,6 +55,29 @@ module Neo4j::ActiveNode
       unless save(*args)
         raise RecordInvalidError.new(self)
       end
+    end
+
+    # Convenience method to set attribute and #save at the same time
+    # @param [Symbol, String] attribute of the attribute to update
+    # @param [Object] value to set
+    def update_attribute(attribute, value)
+      send("#{attribute}=", value)
+      self.save
+    end
+
+    # Convenience method to set attribute and #save! at the same time
+    # @param [Symbol, String] attribute of the attribute to update
+    # @param [Object] value to set
+    def update_attribute!(attribute, value)
+      send("#{attribute}=", value)
+      self.save!
+    end
+
+    # Convenience method to set multiple attributes and #save at the same time
+    # @param [Hash] attributes of names and values of attributes to set
+    def update_attributes(attributes)
+      assign_attributes(attributes)
+      self.save
     end
 
     def create_or_update
@@ -101,11 +124,11 @@ module Neo4j::ActiveNode
     end
 
     def update_model
-      if @changed_attributes && !@changed_attributes.empty?
-        changed_props = attributes.select{|k,v| @changed_attributes.include?(k)}
+      if changed_attributes && !changed_attributes.empty?
+        changed_props = attributes.select{|k,v| changed_attributes.include?(k)}
         changed_props = convert_properties_to :db, changed_props
         _persisted_node.update_props(changed_props)
-        @changed_attributes.clear
+        changed_attributes.clear
       end
     end
 
@@ -144,7 +167,7 @@ module Neo4j::ActiveNode
 
     def reload
       return self if new_record?
-      @changed_attributes && @changed_attributes.clear
+      changed_attributes && changed_attributes.clear
       unless reload_from_database
         @_deleted = true
         freeze
@@ -179,16 +202,27 @@ module Neo4j::ActiveNode
       # Creates a saves a new node
       # @param [Hash] props the properties the new node should have
       def create(props = {})
+        relationship_props = extract_relationship_attributes!(props)
+
         new(props).tap do |obj|
           obj.save
+          relationship_props.each do |prop, value|
+            obj.send("#{prop}=", value)
+          end
         end
       end
 
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
+        props = args[0] || {}
+        relationship_props = extract_relationship_attributes!(props)
+
         new(*args).tap do |o|
           yield o if block_given?
           o.save!
+          relationship_props.each do |prop, value|
+            o.send("#{prop}=", value)
+          end
         end
       end
 
@@ -196,6 +230,14 @@ module Neo4j::ActiveNode
         Neo4j::Node.load(id)
       end
 
+    end
+
+    private
+
+    def assign_attributes(attributes)
+      attributes.each do |attribute, value|
+        send("#{attribute}=", value)
+      end
     end
 
   end

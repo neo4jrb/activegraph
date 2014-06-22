@@ -1,4 +1,4 @@
-share_examples_for "updatable model" do
+shared_examples_for "updatable model" do
   context "when saved" do
     before { subject.save! }
 

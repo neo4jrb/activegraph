@@ -10,6 +10,9 @@ IceLolly = UniqueClass.create do
   property :required_on_update
   property :created
 
+  property :created_at, type: DateTime
+  property :updated_at, type: DateTime
+
   attr_reader :saved
 
   index :flavour
@@ -49,6 +52,7 @@ describe IceLolly, :type => :integration do
     it_should_behave_like "creatable model"
     it_should_behave_like "destroyable model"
     it_should_behave_like "updatable model"
+    it_should_behave_like "timestamped model"
 
     context "after being saved" do
       before do
@@ -58,7 +62,7 @@ describe IceLolly, :type => :integration do
 
       #it { subject.id.should == subject.class.find(flavour: 'vanilla').id}
 
-      it { should == subject.class.find(flavour: 'vanilla') }
+      it { should == subject.class.find(conditions: {flavour: 'vanilla'}) }
 
       it "should be able to modify one of its named attributes" do
         lambda{ subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
@@ -74,14 +78,14 @@ describe IceLolly, :type => :integration do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
-        subject.class.all(flavour: 'vanilla').should include(subject)
+        subject.class.all(conditions: {flavour: 'vanilla'}).should include(subject)
       end
 
       context "and then made invalid" do
         before { subject.required_on_update = nil }
 
         it "shouldn't be updatable" do
-          subject.update_attributes(:flavour => "fish").should_not be_true
+          subject.update_attributes(:flavour => "fish").should_not be true
         end
 
         it "should have the same attribute values after an unsuccessful update and reload" do
@@ -196,25 +200,25 @@ describe Neo4j::ActiveNode do
       c = Company.new
       c.save_called.should be_nil
       c.save
-      c.save_called.should be_true
+      c.save_called.should be true
     end
 
     it 'handles before_update callbacks' do
       c = Company.create
       c.update(:name => 'foo')
-      expect(c.update_called).to be_true
+      expect(c.update_called).to be true
     end
 
     it 'handles before_destroy callbacks' do
       c = Company.create
       c.destroy
-      expect(c.destroy_called).to be_true
+      expect(c.destroy_called).to be true
     end
     
     it 'handles before_validation callbacks' do
-      pending
+#      skip
       c = Company.create
-      expect(c.validation_called).to be_true
+      expect(c.validation_called).to be true
     end
 
   end
@@ -260,7 +264,7 @@ describe Neo4j::ActiveNode do
       person.neo_id.should be_nil
       person.save
       person.neo_id.should be_a(Fixnum)
-      person.exist?.should be_true
+      person.exist?.should be true
     end
 
     it 'can set properties' do
@@ -277,13 +281,13 @@ describe Neo4j::ActiveNode do
       person.neo_id.should be_a(Fixnum)
       person[:name].should == 'andreas'
       person[:age].should == 21
-      person.exist?.should be_true
+      person.exist?.should be true
     end
 
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
-      person.exist?.should be_false
+      person.exist?.should be false
     end
 
     it 'can be loaded by id' do
@@ -317,12 +321,9 @@ describe Neo4j::ActiveNode do
     end
 
     it 'saves all declared properties' do
-      person1 = Person.create(name: 'person123', age: 123, unknown: "yes")
-      id = person1.id
-      person = Neo4j::Node.load(id)
-      person.name.should == 'person123'
-      person.age.should == 123
-      expect{person[:unknown]}.to raise_error(ActiveAttr::UnknownAttributeError)
+      expect do
+        Person.create(name: 'person123', age: 123, unknown: "yes")
+      end.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
     end
   end
 
