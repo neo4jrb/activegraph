@@ -15,9 +15,7 @@ module Neo4j::ActiveNode
     def initialize(attributes={}, options={})
       relationship_props = self.class.extract_relationship_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
-
       validate_attributes!(attributes)
-
       writer_method_props.each do |key, value|
         self.send("#{key}=", value)
       end
@@ -59,12 +57,7 @@ module Neo4j::ActiveNode
     module ClassMethods
 
       def property(name, options={})
-        # Magic properties
-
-        puts "NAME #{name.inspect}"
-        if name.to_sym == :created_at || name.to_sym == :updated_at
-          options[:type] = DateTime
-        end
+        magic_properties(name, options)
 
         # if (name.to_s == 'remember_created_at')
         #   binding.pry
@@ -72,6 +65,7 @@ module Neo4j::ActiveNode
         attribute(name, options)
       end
 
+      #overrides ActiveAttr's attribute! method
       def attribute!(name, options={})
         super(name, options)
         define_method("#{name}=") do |value|
@@ -89,6 +83,24 @@ module Neo4j::ActiveNode
 
           relationship_props
         end
+      end
+
+      private
+
+      # Tweaks properties
+      def magic_properties(name, options)
+        set_stamp_type(name, options)
+        set_time_as_datetime(options)
+      end
+
+      def set_stamp_type(name, options)
+        options[:type] = DateTime if (name.to_sym == :created_at || name.to_sym == :updated_at)
+      end
+
+      # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
+      # Convert it to DateTime in the interest of consistency
+      def set_time_as_datetime(options)
+        options[:type] = DateTime if options[:type] == Time
       end
 
     end

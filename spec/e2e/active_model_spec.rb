@@ -9,9 +9,10 @@ IceLolly = UniqueClass.create do
   property :required_on_create
   property :required_on_update
   property :created
+  property :start, type: Time
 
-  property :created_at, type: DateTime
-  property :updated_at, type: DateTime
+  property :created_at
+  property :updated_at
 
   attr_reader :saved
 
@@ -227,8 +228,9 @@ describe Neo4j::ActiveNode do
 
     Person = UniqueClass.create do
       include Neo4j::ActiveNode
-      attribute :name
-      attribute :age, type: Integer
+      property :name
+      property :age,   type: Integer
+      property :start,  type: Time
     end
 
     it 'generate accessors for declared attribute' do
@@ -236,6 +238,11 @@ describe Neo4j::ActiveNode do
       expect(person.name).to eq("hej")
       person.name = 'new name'
       expect(person.name).to eq("new name")
+    end
+
+    it 'accepts Time type, converts to DateTime' do
+      person = Person.create(start: Time.now)
+      person.start.class.should eq(DateTime)
     end
 
     it 'declared attribute can have type conversion' do
