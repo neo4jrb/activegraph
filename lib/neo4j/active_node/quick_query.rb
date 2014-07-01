@@ -43,11 +43,13 @@ module Neo4j
       # Sends #return to the core query class, then maps the results to an enumerable.
       # This works because it assumes all returned objects will be of the same type.
       # Assumes the @return_obj if nothing is specified.
+      # if you want distinct, pass 'true' as second parameter
       # @example
       #    Student.qq.lessons.return(:n2)
-      #    Student.qq.lessons.return('distinct n2')
-      def return(obj_sym = @return_obj)
-        @quick_query.return(obj_sym).to_a.map{|el| el[obj_sym.to_sym]}
+      #    Student.qq.lessons.return(:n2, true)
+      def return(obj_sym = @return_obj, distinct = false)
+        distinct ? r = "distinct #{obj_sym.to_s}" : r = obj_sym
+        @quick_query.return(r).to_a.map{|el| el[obj_sym.to_sym]}
       end
 
       # Same as return but uses the existing @return_obj
