@@ -1,7 +1,7 @@
 module Neo4j
   module ActiveNode
 
-    def qq(as = 'n1')
+    def qq(as = :n1)
       QuickQuery.new(self, as, self.class)
     end
 
@@ -34,10 +34,11 @@ module Neo4j
         # @param var [Symbol, String] The variable name to specify in the query
         # @return [Neo4j::Core::Query]
         def query_as(var)
+          
           Neo4j::Core::Query.new.match(var => self)
         end
 
-        def qq(as = 'n1')
+        def qq(as = :n1)
           QuickQuery.new(self.name.constantize, as)
         end
       end
