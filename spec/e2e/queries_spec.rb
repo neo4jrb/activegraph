@@ -10,11 +10,11 @@ describe 'Neo4j::ActiveNode#find' do
 
   it 'can find nodes that exists' do
     foo =clazz.create(name: 'foo')
-    expect(clazz.find(conditions: {name: 'foo'})).to eq(foo)
+    expect(clazz.where(name: 'foo').first).to eq(foo)
   end
 
   it 'can not find nodes that does not exists' do
-    expect(clazz.find(conditions: {name: 'unkown'})).to be_nil
+    expect(clazz.where(name: 'unkown').first).to be_nil
   end
 
 end
@@ -45,23 +45,23 @@ describe 'Neo4j::ActiveNode#all' do
   end
 
   it 'can find nodes that exists' do
-    expect(@clazz_a.all(conditions: {score: 1}).to_a).to match_array([@a1])
+    expect(@clazz_a.where(score: 1).to_a).to match_array([@a1])
   end
 
   it 'can sort them' do
-    expect(@clazz_a.all(order: :score).to_a).to eq([@a1, @a2, @a3, @a4])
+    expect(@clazz_a.order(:score).to_a).to eq([@a1, @a2, @a3, @a4])
   end
 
   it 'can skip and limit result' do
-    expect(@clazz_a.all(order: :score, skip: 1,limit: 2).to_a).to eq([@a2, @a3])
+    expect(@clazz_a.order(:score).skip(1).limit(2).to_a).to eq([@a2, @a3])
   end
 
   it 'can find all nodes having a relationship to another node' do
-    expect(@clazz_a.all(conditions: {knows: @b2}).to_a).to match_array([@a3, @a2])
+    expect(@clazz_a.where(knows: @b2).to_a).to match_array([@a3, @a2])
   end
 
   it 'can not find all nodes having a relationship to another node if there are non' do
-    expect(@clazz_b.all(conditions: {knows: @a1}).to_a).to eq([])
+    expect(@clazz_b.where(knows: @a1).to_a).to eq([])
   end
 
 end

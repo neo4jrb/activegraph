@@ -61,7 +61,6 @@ module Neo4j::ActiveNode
       def property(name, options={})
         # Magic properties
 
-        puts "NAME #{name.inspect}"
         if name.to_sym == :created_at || name.to_sym == :updated_at
           options[:type] = DateTime
         end

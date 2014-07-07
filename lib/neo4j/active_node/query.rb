@@ -5,41 +5,6 @@ module Neo4j
       QuickQuery.new(self, as, self.class)
     end
 
-    class QueryProxy
-      def initialize(model)
-        @model = model
-        @chain = []
-      end
-
-      include Enumerable
-      def each
-        query = @model.query_as(:n)
-        @chain.each do |method, args|
-          args.each do |arg|
-            query = query.send(method, n: arg)
-          end
-        end
-        puts 'plucking!'
-        query.pluck(:n).each do |obj|
-          yield obj
-        end
-      end
-
-      def where(*args)
-        build_deeper_query_proxy(:where, args)
-      end
-
-      private
-
-      def build_deeper_query_proxy(method, args)
-        self.dup.tap do |new_query|
-          @chain << [method, args]
-        end
-      end
-
-
-    end
-
     # Helper methods to return Neo4j::Core::Query objects.  A query object can be used to successively build a cypher query
     #
     #    person.query_as(:n).match('n-[:friend]-o').return(o: :name) # Return the names of all the person's friends
@@ -72,8 +37,11 @@ module Neo4j
           neo4j_session.query.match(var => self)
         end
 
-        def where(*args)
-          QueryProxy.new(self).where(*args)
+        Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
+          module_eval(%Q{
+            def #{method}(*args)
+              Neo4j::ActiveNode::Query::QueryProxy.new(self).#{method}(*args)
+            end}, __FILE__, __LINE__)
         end
 
         def qq(as = :n1)
