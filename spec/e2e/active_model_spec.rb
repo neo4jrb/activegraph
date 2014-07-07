@@ -321,10 +321,10 @@ describe Neo4j::ActiveNode do
     end
 
     it "they can be queries" do
-      Person.create(name: 'person1', age: 21)
-      person2 = Person.create(name: 'person2', age: 21)
+      Person.create(name: 'person3', age: 21)
+      person2 = Person.create(name: 'person4', age: 21)
 
-      Person.where(name: 'person2').to_a.should == [person2]
+      Person.where(name: 'person4').to_a.should == [person2]
     end
 
     it 'saves all declared properties' do
