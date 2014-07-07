@@ -72,8 +72,7 @@ module Neo4j
 
         # @return [Fixnum] number of nodes of this class
         def count(session = self.neo4j_session)
-          q = session.query(label: mapped_label_name, return: "count(n) AS count", map_return: :value)
-          q.to_a[0]
+          session.query.match(n: mapped_label_name.to_sym).return("count(n) AS count").first[:count]
         end
 
         # Same as #all but return only one object
