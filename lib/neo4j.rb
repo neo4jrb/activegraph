@@ -15,10 +15,12 @@ require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
 
 require 'active_attr'
+require 'neo4j/config'
 require 'neo4j/wrapper'
 require 'neo4j/type_converters'
 require "neo4j/active_node/labels"
 require 'neo4j/active_node/identity'
+require 'neo4j/active_node/id_property'
 require 'neo4j/active_node/callbacks'
 require 'neo4j/active_node/initialize'
 require 'neo4j/active_node/property'
