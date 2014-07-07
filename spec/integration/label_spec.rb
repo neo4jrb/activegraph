@@ -103,16 +103,16 @@ describe "Labels" do
       it 'can find it using the index' do
         IndexedTestClass.destroy_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        IndexedTestClass.find(conditions: {name: 'kalle'}).should == kalle
+        IndexedTestClass.where(name: 'kalle').first.should == kalle
       end
 
       it 'does not find it if deleted' do
         IndexedTestClass.destroy_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
-        result = IndexedTestClass.find(conditions: {name: 'kalle2'})
+        result = IndexedTestClass.where(name: 'kalle2').first
         result.should == kalle2
         kalle2.destroy
-        IndexedTestClass.all(conditions: {name: 'kalle2'}).should_not include(kalle2)
+        IndexedTestClass.where(name: 'kalle2').should_not include(kalle2)
       end
     end
 
@@ -121,11 +121,11 @@ describe "Labels" do
       let!(:n2) { RelationTestClass.create(test_class: n1) }
 
       it 'finds when association matches' do
-        RelationTestClass.find(conditions: {test_class: n1}).should == n2
+        RelationTestClass.where(test_class: n1).first.should == n2
       end
 
       it 'does not find when association does not match' do
-        RelationTestClass.find(conditions: {test_class: n2}).should be_nil
+        RelationTestClass.where(test_class: n2).first.should be_nil
       end
 
     end

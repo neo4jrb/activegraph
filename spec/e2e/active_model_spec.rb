@@ -320,6 +320,13 @@ describe Neo4j::ActiveNode do
       Person.all.should include(person1, person2)
     end
 
+    it "they can be queries" do
+      Person.create(name: 'person1', age: 21)
+      person2 = Person.create(name: 'person2', age: 21)
+
+      Person.query_as(:p).where(p: {name: 'person2'}).return(:p).to_a.should == [person2]
+    end
+
     it 'saves all declared properties' do
       expect do
         Person.create(name: 'person123', age: 123, unknown: "yes")
