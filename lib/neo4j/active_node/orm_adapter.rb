@@ -49,7 +49,9 @@ module Neo4j
         order = hasherize_order(order)
 
         result = klass.where(conditions)
-        result = result.order(order).limit(limit).skip(offset) unless order.empty?
+        result = result.order(order) unless order.empty?
+        result = result.skip(offset) if offset
+        result = result.limit(limit) if limit
         result.to_a
       end
 
