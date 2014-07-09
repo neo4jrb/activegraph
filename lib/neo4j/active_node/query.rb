@@ -34,7 +34,8 @@ module Neo4j
         # @param var [Symbol, String] The variable name to specify in the query
         # @return [Neo4j::Core::Query]
         def query_as(var)
-          neo4j_session.query.match(var => self)
+          label = self.respond_to?(:mapped_label_name) ? self.mapped_label_name : self
+          neo4j_session.query.match(var => label)
         end
 
         Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|

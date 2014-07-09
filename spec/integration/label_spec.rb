@@ -30,6 +30,7 @@ describe "Labels" do
         Neo4j::Session.current
       end
 
+      extend Neo4j::ActiveNode::Query::ClassMethods
       extend Neo4j::ActiveNode::Labels::ClassMethods
     end
 
@@ -93,10 +94,6 @@ describe "Labels" do
     it "finds it without an index" do
       p = TestClass.create
       TestClass.all.to_a.should include(p)
-    end
-
-    it 'raises an erorr when not passed a valid query key' do
-      expect { IndexedTestClass.find(unknown: 'test') }.to raise_error(Neo4j::ActiveNode::Labels::InvalidQueryError)
     end
 
     describe 'when indexed' do
