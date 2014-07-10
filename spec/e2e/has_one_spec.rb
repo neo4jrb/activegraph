@@ -90,4 +90,81 @@ describe "has_one" do
     end
   end
 
+  describe 'callbacks' do
+    class Student; end
+
+    class Teacher
+      include Neo4j::ActiveNode
+
+      property :student_number, type: Integer
+
+      has_one(:student_before, before: :before_callback).to(Student)
+      has_one(:student_after, after: :after_callback).to(Student)
+
+      private
+
+      def before_callback(from, to)
+        return false if to.age == 20
+
+      end
+
+      def after_callback(from, to)
+        return false if from.student_number == 50
+        from.student_number = 1
+        from.save
+      end
+    end
+
+    class Student
+      include Neo4j::ActiveNode
+
+      property :age
+    end
+
+    let(:teacher) { Teacher.create }
+    let(:student) { Student.create }
+
+    describe 'before' do
+      context 'failing' do
+        before(:each) { student.age = 20 and student.save }
+
+        it 'prevents a relationship from being created if response is explicitly false' do
+          teacher.student_before = student
+          expect(teacher.student_before).to eq nil
+        end
+
+        it 'returns false when the callback explicitly returns false' do
+          expect(teacher.student_before = student).to be_falsey
+        end
+      end
+
+      context 'passing' do
+        before(:each) { student.age = 21 and student.save }
+        
+        it 'creates the relationship when callback response is not explicitly false' do 
+          teacher.student_before = student
+          expect(teacher.student_before).to eq student
+        end
+      end
+    end
+
+    describe 'after' do
+      it 'runs the after callback function' do
+        teacher.student_number = 0 and teacher.save
+        teacher.student_after = student
+        expect(teacher.student_number).to eq 1
+      end
+
+      it 'returns false if the callback explicitly returns false' do
+        teacher.student_number = 50 and teacher.save
+        expect(teacher.student_after = student).to be_falsey
+      end
+
+      it 'returns truthy if the callback returns anything but false' do
+        expect(teacher.student_after = student).to be_truthy
+      end
+    end
+  end
+
+
 end

@@ -81,8 +81,7 @@ module Neo4j
         #
         # @return self
         def <<(other)
-          @decl_rel.create_relationship_to(@node, other)
-          self
+          !@decl_rel.create_relationship_to(@node, other) ? false : self
         end
       end
 
