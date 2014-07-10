@@ -90,9 +90,8 @@ describe 'QuickQuery Queries' do
     let!(:jasmine) { Student.create(name: 'jasmine', age: 5, occupation: 'cat')}
     
     it "updates the specified parameter" do
-      Student.qq.set_props(occupation: 'adult').where(age: 30).return
-      @nc = Student.qq.to_a.first
-      expect(@nc.occupation).to eq 'adult'
+      result = Student.qq.set_props(occupation: 'adult').where(age: 30).to_a
+      expect(result.first.occupation).to eq 'adult'
     end
 
     it "leaves other parameters alone" do
