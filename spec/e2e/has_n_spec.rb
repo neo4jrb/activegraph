@@ -35,14 +35,6 @@ describe 'has_n' do
         from.after_callback_tester = 2
         from.save
       end
-
-      def before_callback_false(from, to)
-        return false
-      end
-
-      def after_callback_false(from, to)
-        return false
-      end
     end
   end
 
