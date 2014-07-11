@@ -33,12 +33,16 @@ module Neo4j
       class DeclRel
         attr_reader :source_class, :dir, :rel_type, :method_id
 
-        def initialize(method_id, has_one, source_class)
+        def initialize(method_id, has_one, source_class, *callbacks)
           @method_id = method_id
           @has_one = has_one
           @dir = :outgoing
           @rel_type = method_id.to_sym
           @source_class = source_class
+          unless callbacks.empty?
+            @before_callback = callbacks.first[:before] || nil
+            @after_callback = callbacks.first[:after] || nil
+          end
         end
 
         def inherit_new
@@ -223,7 +227,23 @@ module Neo4j
         # @private
         def create_relationship_to(node, other, relationship_props={}) # :nodoc:
           from, to = incoming? ? [other, node] : [node, other]
-          from.create_rel(@rel_type, to, relationship_props)
+          before_callback_result = do_before_callback(node, from, to)
+          return false if before_callback_result == false
+
+          result = from.create_rel(@rel_type, to, relationship_props)
+
+          after_callback_result = do_after_callback(node, from, to)
+          after_callback_result == false ? false : result
+        end
+
+        private
+
+        def do_before_callback(caller, from, to)
+          @before_callback ? caller.send(@before_callback, from, to) : true
+        end
+
+        def do_after_callback(caller, from, to)
+          @after_callback ? caller.send(@after_callback, from, to) : true
         end
 
       end
