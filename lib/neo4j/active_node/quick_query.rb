@@ -15,6 +15,7 @@ module Neo4j
         @current_node_index = 2
         @current_rel_index = 1
         @rel_on_deck = nil
+        @return_set = false
         @caller = caller
         @quick_query = caller.query_as(as)
         @identifiers = [@node_on_deck]
@@ -62,26 +63,24 @@ module Neo4j
           }, __FILE__, __LINE__)
       end
 
-      # Sends #return to the core query class, then maps the results to an enumerable.
-      # This works because it assumes all returned objects will be of the same type.
+      # Sends #return to the core query class, does not map to an enumerable.
       # Assumes the @return_obj if nothing is specified.
-      # if you want distinct, pass 'true' as second parameter
+      # if you want distinct, pass boolean true
       # @example
       #    Student.qq.lessons.return(:n2)
       #    Student.qq.lessons.return(:n2, true)
-      #def return(obj_sym = @return_obj, distinct = false)
       def return(*args)
         obj_sym = args.select{|el| el.is_a?(Symbol) }.first || @return_obj
         distinct = args.select{|el| el.is_a?(TrueClass) }.first || false
         
         r = final_return(obj_sym, distinct)
-        @quick_query.return(r).to_a.map{|el| el[obj_sym.to_sym] }
+        @quick_query = @quick_query.return(r)
+        return self
       end
 
-      # Same as return but uses whatever the current @return_obj is
+      # Returns an enumerable of the query. If return has not been set, will set it to the on_deck node
       def to_a(distinct = false)
-        r = final_return(@return_obj, distinct)
-        @quick_query.return(r).to_a.map{|el| el[@return_obj.to_sym]}
+        @return_set ? result : self.return(distinct).to_a
       end
 
       # Same as to_a but with distinct set true
@@ -94,7 +93,7 @@ module Neo4j
       # @param desc_bool [Boolean] boolean to dictate whether to sort descending. Defaults false, use true to descend
       def order(prop_sym, desc_bool = false)
         arg = "#{@return_obj}.#{prop_sym.to_s}"
-        end_arg = desc_bool ? arg + 'DESC' : arg
+        end_arg = desc_bool ? arg + ' DESC' : arg
         @quick_query = @quick_query.order(end_arg)
         return self
       end
@@ -107,7 +106,17 @@ module Neo4j
         result = process_args(args, send_target)
       end
 
+      def result
+        response = @quick_query.response
+        if response.is_a?(Neo4j::Server::CypherResponse)
+          Neo4j::Session.current.search_result_to_enumerable_first_column(response)
+        else
+          Neo4j::Embedded::ResultWrapper.new(response, @quick_query.to_cypher).map{|x| x[0] }
+        end
+      end
+
       def final_return(return_obj, distinct)
+        @return_set = true
         distinct ? "distinct #{return_obj.to_s}" : return_obj.to_sym
       end
 
