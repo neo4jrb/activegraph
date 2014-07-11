@@ -8,6 +8,7 @@ module Neo4j
 
       WRAPPED_CLASSES = []
       class InvalidQueryError < StandardError; end
+      class RecordNotFound < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -77,6 +78,17 @@ module Neo4j
           Neo4j::Node.load(id.to_i)
         end
 
+        # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
+        # @param [Hash] hash of arguments to find 
+        def find_by(*args)
+          self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
+        end
+
+        # Like find_by, except that if no record is found, raises a RecordNotFound error. 
+        def find_by!(*args)
+          a = eval(args.join)
+          find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
+        end
 
         # Destroy all nodes an connected relationships
         def destroy_all

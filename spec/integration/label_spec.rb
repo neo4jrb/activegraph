@@ -135,7 +135,29 @@ describe "Labels" do
     end
   end
 
+  describe 'find_by, find_by!' do
+    before(:all) { @jasmine = IndexedTestClass.create(name: 'jasmine') }
+    
+    describe 'find_by' do
+      it 'finds the expected object' do
+        expect(IndexedTestClass.find_by(name: 'jasmine')).to eq @jasmine
+      end
 
+      it 'returns nil if no results match' do
+        expect(IndexedTestClass.find_by(name: 'foo')).to eq nil
+      end
+    end
+
+    describe 'find_by!' do
+      it 'finds the expected object' do
+        expect(IndexedTestClass.find_by!(name: 'jasmine')).to eq @jasmine
+      end
+
+      it 'raises an error if no results match' do
+        expect{IndexedTestClass.find_by!(name: 'foo')}.to raise_exception Neo4j::ActiveNode::Labels::RecordNotFound
+      end
+    end
+  end
 end
 
 #shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do
