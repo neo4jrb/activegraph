@@ -158,6 +158,40 @@ describe "Labels" do
       end
     end
   end
+
+  describe 'first and last' do
+    before(:all) do
+
+      class FirstLastTestClass
+        include Neo4j::ActiveNode
+        property :name
+      end
+
+      class EmptyTestClass
+        include Neo4j::ActiveNode
+      end
+      
+      @jasmine = FirstLastTestClass.create(name: 'jasmine')
+      FirstLastTestClass.create
+      @lauren = FirstLastTestClass.create(name: 'lauren')
+    end
+
+    describe 'first' do
+      it 'returns the first object created... sort of, see docs' do
+        expect(FirstLastTestClass.first).to eq @jasmine
+      end
+    end
+
+    describe 'last' do
+      it 'returns the last object created... sort of, see docs' do
+        expect(FirstLastTestClass.last).to eq @lauren
+      end
+
+      it 'returns nil when there are no results' do
+        expect(EmptyTestClass.last).to eq nil
+      end
+    end
+  end
 end
 
 #shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do

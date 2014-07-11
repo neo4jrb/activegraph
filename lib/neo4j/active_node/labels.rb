@@ -65,6 +65,16 @@ module Neo4j
           self.query_as(:n).pluck(:n)
         end
 
+        def first
+          self.query_as(:n).limit(1).order('n.neo_id').pluck(:n).first
+        end
+
+        def last
+          count = self.count
+          final_count = count == 0 ? 0 : count - 1
+          self.query_as(:n).order('n.neo_id').skip(final_count).limit(1).pluck(:n).first
+        end
+
         # @return [Fixnum] number of nodes of this class
         def count
           self.query_as(:n).return("count(n) AS count").first.count
