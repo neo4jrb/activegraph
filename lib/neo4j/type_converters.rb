@@ -2,7 +2,6 @@ module Neo4j
 
   module TypeConverters
 
-
     # Converts Date objects to Java long types. Must be timezone UTC.
     class DateConverter
       class << self
@@ -79,13 +78,33 @@ module Neo4j
       end
     end
 
+    # Converts hash to/from JSON
+    class HashConverter
+      class << self
+
+        def convert_type
+          Hash
+        end
+
+        def to_db(value)
+          return nil if value.nil?
+          value.to_json
+        end
+
+        def to_ruby(value)
+          return nil if value.nil?
+          JSON.parse(value, quirks_mode: true)
+        end
+      end
+    end
+
     def convert_properties_to(medium, properties)
       # Perform type conversion
       properties = properties.inject({}) do |new_attributes, key_value_pair|
         attr, value = key_value_pair
-        type = self.class._attribute_type(attr)
+        type = self.respond_to?(:serialized_properties) && self.serialized_properties.include?(attr.to_sym) ? Hash : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
-                                   value
+                                  value
                                 else
                                   TypeConverters.send "to_#{medium}", value, type
                                 end

@@ -65,7 +65,6 @@ module Neo4j::ActiveNode
         attribute(name, options)
       end
 
-      #overrides ActiveAttr's attribute! method
       def attribute!(name, options={})
         super(name, options)
         define_method("#{name}=") do |value|
