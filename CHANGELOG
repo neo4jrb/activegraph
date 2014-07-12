@@ -1,3 +1,12 @@
+== 3.0.0.alpha.8
+* Integration with new Query API from neo4j-core including:
+* - .query_as and #query_as methods to get queries from models (#366)
+* - .qq method for QuickQuery syntax ( https://github.com/andreasronge/neo4j/wiki/Neo4j-v3#quickquery-work-in-progress / #366)
+* Before and after callbacks on associations (#373)
+* .find / .all / .count changed to be more like ActiveRecord
+* .first / .last methods (#378)
+* .find_by / .find_by! (#375)
+
 == 3.0.0.alpha.7
 * Bug fix uniqueness-validator (#356 from JohnKellyFerguson)
 * Many improvements, like update_attributes and validation while impl orm_adapter, Brian Underwood
