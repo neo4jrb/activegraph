@@ -107,6 +107,31 @@ module Neo4j::ActiveNode
         _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, false, clazz)
       end
 
+      def has_many(name, options = {})
+        to, from, through = options.values_at(:to, :from, :through)
+        raise ArgumentError, "Must specify either :to or :from" if not (to || from)
+        raise ArgumentError, "Cannot specify both :to and :from" if to && from
+
+        target_class = to || from
+        direction = to ? :outbound : :inbound
+
+        # TODO: auto-set through when missing
+
+        @has_many_relationships ||= []
+        @has_many_relationships << name
+
+        module_eval(%Q{
+          def #{name}
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, start_object: self, relationship: #{through.inspect}, direction: #{direction.inspect})
+          end}, __FILE__, __LINE__)
+
+        instance_eval(%Q{
+          def #{name}
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, query_proxy: self.query_proxy, relationship: #{through.inspect}, direction: #{direction.inspect})
+          end}, __FILE__, __LINE__)
+
+      end
+
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship
