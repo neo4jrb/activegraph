@@ -32,6 +32,7 @@ module Neo4j
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::Identity
     include Neo4j::ActiveNode::Persistence
+    include Neo4j::ActiveNode::SerializedProperties
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Labels
     include Neo4j::ActiveNode::Validations

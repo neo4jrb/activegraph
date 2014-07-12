@@ -231,6 +231,9 @@ describe Neo4j::ActiveNode do
       property :name
       property :age,   type: Integer
       property :start,  type: Time
+      property :links
+
+      serialize :links
     end
 
     it 'generate accessors for declared attribute' do
@@ -341,4 +344,20 @@ describe Neo4j::ActiveNode do
     end
   end
 
+  describe 'serialization' do
+    let!(:chris) { Person.create(name: 'chris') }
+    
+    it 'correctly identifies properties for serialization' do
+      expect(Person.serialized_properties).to include(:links)
+      expect(chris.serialized_properties).to include(:links)
+    end
+
+    it 'successfully saves and returns hashes' do
+      links = {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' }
+      chris.links = links
+      chris.save
+      expect(chris.links).to eq links
+      expect(chris.links.class).to eq Hash
+    end
+  end
 end
