@@ -65,14 +65,14 @@ module Neo4j
           self.query_as(:n).pluck(:n)
         end
 
+        # Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
         def first
-          self.query_as(:n).limit(1).order('n.neo_id').pluck(:n).first
+          self.query_as(:n).limit(1).order('ID(n)').pluck(:n).first
         end
 
+        # Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
         def last
-          count = self.count
-          final_count = count == 0 ? 0 : count - 1
-          self.query_as(:n).order('n.neo_id').skip(final_count).limit(1).pluck(:n).first
+          self.query_as(:n).order('ID(n) DESC').limit(1).pluck(:n).first
         end
 
         # @return [Fixnum] number of nodes of this class
