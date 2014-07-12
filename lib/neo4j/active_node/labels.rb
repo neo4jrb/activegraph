@@ -8,6 +8,7 @@ module Neo4j
 
       WRAPPED_CLASSES = []
       class InvalidQueryError < StandardError; end
+      class RecordNotFound < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -59,37 +60,45 @@ module Neo4j
 
       module ClassMethods
 
-        # Find all nodes/objects of this class, with given search criteria
-        # @param [Hash, nil] args the search critera or nil if finding all
-        # @param [Neo4j::Session] session defaults to the model's session
-        def all(args = nil, session = self.neo4j_session)
-          if args
-            find_by_hash(args, session)
-          else
-            Neo4j::Label.find_all_nodes(mapped_label_name, session)
-          end
+        # Find all nodes/objects of this class
+        def all
+          self.query_as(:n).pluck(:n)
+        end
+
+        def first
+          self.query_as(:n).limit(1).order('n.neo_id').pluck(:n).first
+        end
+
+        def last
+          count = self.count
+          final_count = count == 0 ? 0 : count - 1
+          self.query_as(:n).order('n.neo_id').skip(final_count).limit(1).pluck(:n).first
         end
 
         # @return [Fixnum] number of nodes of this class
-        def count(session = self.neo4j_session)
-          q = session.query(label: mapped_label_name, return: "count(n) AS count", map_return: :value)
-          q.to_a[0]
+        def count
+          self.query_as(:n).return("count(n) AS count").first.count
         end
 
-        # Same as #all but return only one object
-        # If given a String or Fixnum it will return the object with that neo4j id.
-        # @param [Hash,String,Fixnum] args search criteria
-        def find(args, session = self.neo4j_session)
-          case args
-            when Hash
-              find_by_hash(args, session).first
-            when String, Fixnum
-              Neo4j::Node.load(args.to_i)
-            else
-              raise "Unknown argument #{args.class} in find method"
-          end
+        # Returns the object with the specified neo4j id.
+        # @param [String,Fixnum] neo_id of node to find
+        def find(id)
+          raise "Unknown argument #{id.class} in find method" if not [String, Fixnum].include?(id.class)
+          
+          Neo4j::Node.load(id.to_i)
         end
 
+        # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
+        # @param [Hash] hash of arguments to find 
+        def find_by(*args)
+          self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
+        end
+
+        # Like find_by, except that if no record is found, raises a RecordNotFound error. 
+        def find_by!(*args)
+          a = eval(args.join)
+          find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
+        end
 
         # Destroy all nodes an connected relationships
         def destroy_all
@@ -128,54 +137,6 @@ module Neo4j
         end
 
         protected
-
-        def find_by_hash(query, session)
-          validate_query!(query)
-
-          extract_relationship_conditions!(query)
-
-          session.query(query.merge(label: mapped_label_name))
-        end
-
-        # Raises an error if query is malformed
-        def validate_query!(query)
-          invalid_query_keys = query.keys.map(&:to_sym) - [:conditions, :order, :limit, :skip]
-
-          raise InvalidQueryError, "Invalid query keys: #{invalid_query_keys.join(', ')}" if not invalid_query_keys.empty?
-        end
-
-        # Takes out :conditions query keys for associations and creates corresponding :conditions and :match keys  
-        # example:
-        # class Person
-        #   property :name
-        #   has_n :friend
-        # end
-        #
-        #   :conditions => {name: 'Fred', friend: person}
-        # should result in:
-        #   :conditions => {name => 'Fred', 'id(n1)' => person.id}, :match => 'n--n1'
-        #
-        def extract_relationship_conditions!(query)
-          node_num = 1
-          if query[:conditions]
-            query[:conditions].dup.each do |key, value|
-              if has_one_relationship?(key)
-                neo_id = value.try(:neo_id) || value
-                raise InvalidQueryError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
-
-                query[:match] ||= []
-                n_string = "n#{node_num}"
-                dir = relationship_dir(key)
-
-                match = dir == :outgoing ? "n-->(#{n_string})" : "n<--(#{n_string})"
-                query[:match] << match
-                query[:conditions]["id(#{n_string})"] = neo_id.to_i
-                query[:conditions].delete(key)
-                node_num += 1
-              end
-            end
-          end
-        end
 
         def _index(property)
           mapped_labels.each do |label|

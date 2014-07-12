@@ -63,7 +63,7 @@ describe IceLolly, :type => :integration do
 
       #it { subject.id.should == subject.class.find(flavour: 'vanilla').id}
 
-      it { should == subject.class.find(conditions: {flavour: 'vanilla'}) }
+      it { should == subject.class.where(flavour: 'vanilla').first }
 
       it "should be able to modify one of its named attributes" do
         lambda{ subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
@@ -79,7 +79,7 @@ describe IceLolly, :type => :integration do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
-        subject.class.all(conditions: {flavour: 'vanilla'}).should include(subject)
+        subject.class.where(flavour: 'vanilla').should include(subject)
       end
 
       context "and then made invalid" do
@@ -325,6 +325,13 @@ describe Neo4j::ActiveNode do
       person1 = Person.create(name: 'person1', age: 21)
       person2 = Person.create(name: 'person2', age: 21)
       Person.all.should include(person1, person2)
+    end
+
+    it "they can be queries" do
+      Person.create(name: 'person3', age: 21)
+      person2 = Person.create(name: 'person4', age: 21)
+
+      Person.where(name: 'person4').to_a.should == [person2]
     end
 
     it 'saves all declared properties' do

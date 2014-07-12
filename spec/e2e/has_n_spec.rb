@@ -16,9 +16,25 @@ describe 'has_n' do
     knows_type = clazz_b.to_s
     UniqueClass.create do
       include Neo4j::ActiveNode
+
+      property :before_callback_tester
+      property :after_callback_tester
+
       has_n :friends
       has_n(:knows).to(knows_type)
+      has_n(:knows_callback_before, before: :before_callback).to(knows_type)
+      has_n(:knows_callback_after, after: :after_callback).to(knows_type)
       has_n(:knows_me).from(:knows)
+
+      def before_callback(from, to)
+        return false if from.before_callback_tester == 2
+      end
+
+      def after_callback(from, to)
+        return false if from.after_callback_tester == 'foo'
+        from.after_callback_tester = 2
+        from.save
+      end
     end
   end
 
@@ -119,6 +135,50 @@ describe 'has_n' do
 
       r[:since].should eq(1994)
       node.rel(dir: :outgoing, type: clazz_a.friends).should == r
+    end
+  end
+
+  describe 'callbacks' do
+    describe 'before' do
+      context 'failing' do
+        before(:each) { friend1.before_callback_tester = 2 and friend1.save }
+
+        it 'prevents a relationship from being created if response is explicitly false' do
+          friend1.knows_callback_before << friend2
+          expect(friend1.knows_callback_before.count).to eq 0
+        end
+
+        it 'returns false when the callback explicitly returns false' do
+          friend1.before_callback_tester = 2 and friend1.save
+          expect(friend1.knows_callback_before << friend2).to be_falsey
+        end
+      end
+
+      context 'passing' do
+        before(:each) { friend1.before_callback_tester = 1 and friend1.save }
+        
+        it 'creates the relationship when callback response is not explicitly false' do  
+          friend1.knows_callback_before << friend2
+          expect(friend1.knows_callback_before.count).to eq 1
+        end
+      end
+    end
+
+    describe 'after' do
+      it 'runs the after callback function' do
+        friend1.after_callback_tester = 1 and friend1.save
+        friend1.knows_callback_after << friend2
+        expect(friend1.after_callback_tester).to eq 2
+      end
+
+      it 'returns false if the callback explicitly returns false' do
+        friend1.after_callback_tester = 'foo' and friend1.save
+        expect(friend1.knows_callback_after << friend2).to be_falsey
+      end
+
+      it 'returns truthy if the callback returns anything but false' do
+        expect(friend1.knows_callback_after << friend2).to be_truthy
+      end
     end
   end
 end

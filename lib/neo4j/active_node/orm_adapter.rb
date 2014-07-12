@@ -37,12 +37,9 @@ module Neo4j
         extract_id!(conditions)
         order = hasherize_order(order)
 
-        if !order.empty?
-          klass.find(conditions: conditions, order: order)
-        else
-          result = klass.find(conditions: conditions)
-          result
-        end
+        result = klass.where(conditions)
+        result = result.order(order) unless order.empty?
+        result.first
       end
 
       # Find all models matching conditions
@@ -51,12 +48,10 @@ module Neo4j
         extract_id!(conditions)
         order = hasherize_order(order)
 
-        result = if !order.empty?
-          klass.all(conditions: conditions, order: order, limit: limit, skip: offset)
-        else
-          klass.all(conditions: conditions)
-        end
-
+        result = klass.where(conditions)
+        result = result.order(order) unless order.empty?
+        result = result.skip(offset) if offset
+        result = result.limit(limit) if limit
         result.to_a
       end
 
@@ -78,7 +73,7 @@ module Neo4j
 
       def extract_id!(conditions)
         if id = conditions.delete(:id)
-          conditions['id(n)'] = id.to_i
+          conditions[:neo_id] = id.to_i
         end
       end
 

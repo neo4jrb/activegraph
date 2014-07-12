@@ -30,6 +30,7 @@ describe "Labels" do
         Neo4j::Session.current
       end
 
+      extend Neo4j::ActiveNode::Query::ClassMethods
       extend Neo4j::ActiveNode::Labels::ClassMethods
     end
 
@@ -95,24 +96,20 @@ describe "Labels" do
       TestClass.all.to_a.should include(p)
     end
 
-    it 'raises an erorr when not passed a valid query key' do
-      expect { IndexedTestClass.find(unknown: 'test') }.to raise_error(Neo4j::ActiveNode::Labels::InvalidQueryError)
-    end
-
     describe 'when indexed' do
       it 'can find it using the index' do
         IndexedTestClass.destroy_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        IndexedTestClass.find(conditions: {name: 'kalle'}).should == kalle
+        IndexedTestClass.where(name: 'kalle').first.should == kalle
       end
 
       it 'does not find it if deleted' do
         IndexedTestClass.destroy_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
-        result = IndexedTestClass.find(conditions: {name: 'kalle2'})
+        result = IndexedTestClass.where(name: 'kalle2').first
         result.should == kalle2
         kalle2.destroy
-        IndexedTestClass.all(conditions: {name: 'kalle2'}).should_not include(kalle2)
+        IndexedTestClass.where(name: 'kalle2').should_not include(kalle2)
       end
     end
 
@@ -121,11 +118,11 @@ describe "Labels" do
       let!(:n2) { RelationTestClass.create(test_class: n1) }
 
       it 'finds when association matches' do
-        RelationTestClass.find(conditions: {test_class: n1}).should == n2
+        RelationTestClass.where(test_class: n1).first.should == n2
       end
 
       it 'does not find when association does not match' do
-        RelationTestClass.find(conditions: {test_class: n2}).should be_nil
+        RelationTestClass.where(test_class: n2).first.should be_nil
       end
 
     end
@@ -138,7 +135,63 @@ describe "Labels" do
     end
   end
 
+  describe 'find_by, find_by!' do
+    before(:all) { @jasmine = IndexedTestClass.create(name: 'jasmine') }
+    
+    describe 'find_by' do
+      it 'finds the expected object' do
+        expect(IndexedTestClass.find_by(name: 'jasmine')).to eq @jasmine
+      end
 
+      it 'returns nil if no results match' do
+        expect(IndexedTestClass.find_by(name: 'foo')).to eq nil
+      end
+    end
+
+    describe 'find_by!' do
+      it 'finds the expected object' do
+        expect(IndexedTestClass.find_by!(name: 'jasmine')).to eq @jasmine
+      end
+
+      it 'raises an error if no results match' do
+        expect{IndexedTestClass.find_by!(name: 'foo')}.to raise_exception Neo4j::ActiveNode::Labels::RecordNotFound
+      end
+    end
+  end
+
+  describe 'first and last' do
+    before(:all) do
+
+      class FirstLastTestClass
+        include Neo4j::ActiveNode
+        property :name
+      end
+
+      class EmptyTestClass
+        include Neo4j::ActiveNode
+      end
+      
+      @jasmine = FirstLastTestClass.create(name: 'jasmine')
+      FirstLastTestClass.create
+      @lauren = FirstLastTestClass.create(name: 'lauren')
+    end
+
+    describe 'first' do
+      it 'returns the first object created... sort of, see docs' do
+        expect(FirstLastTestClass.first).to eq @jasmine
+      end
+    end
+
+    describe 'last' do
+      it 'returns the last object created... sort of, see docs' do
+        expect(FirstLastTestClass.last).to eq @lauren
+      end
+
+      it 'returns nil when there are no results' do
+        expect(EmptyTestClass.last).to eq nil
+      end
+    end
+  end
 end
 
 #shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do

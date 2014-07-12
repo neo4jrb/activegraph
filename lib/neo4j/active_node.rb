@@ -38,6 +38,7 @@ module Neo4j
     include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Rels
     include Neo4j::ActiveNode::HasN
+    include Neo4j::ActiveNode::Query
 
     def wrapper
       self
