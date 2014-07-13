@@ -121,13 +121,13 @@ module Neo4j::ActiveNode
         @has_many_relationships << name
 
         module_eval(%Q{
-          def #{name}(var = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, var, start_object: self, relationship: #{through.inspect}, direction: #{direction.inspect})
+          def #{name}
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, start_object: self, relationship: #{through.inspect}, direction: #{direction.inspect})
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
-          def #{name}(var = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, var, query_proxy: self.query_proxy, relationship: #{through.inspect}, direction: #{direction.inspect})
+          def #{name}
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, query_proxy: self.query_proxy, relationship: #{through.inspect}, direction: #{direction.inspect})
           end}, __FILE__, __LINE__)
 
       end

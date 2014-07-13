@@ -100,12 +100,5 @@ describe 'Query API' do
       othmar.lessons_taught.students.where(age: 16).to_a.should == [sandra]
     end
 
-    it 'can allow for filtering mid-association-chain' do
-      othmar.lessons_taught.where(level: 201).students.to_a.should == [sandra]
-    end
-
-    it 'can allow for returning nodes mis-association-chain' do
-      othmar.lessons_taught(:lesson).students.where(age: 16).pluck(:lesson)
-    end
   end
 end
