@@ -114,11 +114,12 @@ module Neo4j
 
         def association_arrow
           if @association_options
+            relationship = @association_options[:through_any] ? '' : "[:#{@association_options[:relationship]}]"
             case direction = @association_options[:direction].to_sym
               when :outbound
-                "-[:#{@association_options[:relationship]}]->"
+                "-#{relationship}->"
               when :inbound
-                "<-[:#{@association_options[:relationship]}]-"
+                "<-#{relationship}-"
               else
                 raise ArgumentError, "Invalid relationship direction: #{direction}"
             end
