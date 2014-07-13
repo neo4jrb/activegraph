@@ -7,7 +7,7 @@ class Lesson
   property :subject
   property :level
 
-  has_many :teachers, from: Teacher, through: :teaches
+  has_many :teachers, from: Teacher, through: :teaching
   has_many :students, from: Student, through: :is_enrolled_for
 
   def self.max_level
@@ -31,7 +31,10 @@ class Teacher
   include Neo4j::ActiveNode
   property :name
 
-  has_many :lessons_taught, to: Lesson, through: :teaches
+  has_many :lessons_teaching, to: Lesson, through: :teaching
+  has_many :lessons_taught, to: Lesson, through: :taught
+
+  has_many :lessions, to: Lesson, through_any: true
 end
 
 describe 'Query API' do
@@ -50,12 +53,13 @@ describe 'Query API' do
     let!(:danny) { Student.create(name: 'Danny', age: 15) }
     let!(:bobby) { Student.create(name: 'Bobby', age: 16) }
     before(:each) do
-      samuels.lessons_taught << ss101
-      samuels.lessons_taught << ss102
-      samuels.lessons_taught << geo103
+      samuels.lessons_teaching << ss101
+      samuels.lessons_teaching << ss102
+      samuels.lessons_teaching << geo103
+      samuels.lessons_taught << math101
 
-      othmar.lessons_taught << math101
-      othmar.lessons_taught << math201
+      othmar.lessons_teaching << math101
+      othmar.lessons_teaching << math201
 
 
       sandra.lessons << math201
@@ -79,35 +83,50 @@ describe 'Query API' do
       Teacher.where(name: /.*Othmar.*/).to_a.should == [othmar]
     end
 
+    it 'returns only objects specified by association' do
+      result = samuels.lessons_teaching.to_a
+      result.size.should == 3
+      result.should include(ss101)
+      result.should include(ss102)
+      result.should include(geo103)
+
+      result = samuels.lessons.to_a
+      result.size.should == 4
+      result.should include(ss101)
+      result.should include(ss102)
+      result.should include(geo103)
+      result.should include(math101)
+    end
+
     it 'can filter on associations' do
-      samuels.lessons_taught.where(level: 101).to_a.should == [ss101]
+      samuels.lessons_teaching.where(level: 101).to_a.should == [ss101]
 
     end
 
     it 'can call class methods on associations' do
-      samuels.lessons_taught.level(101).to_a.should == [ss101]
+      samuels.lessons_teaching.level(101).to_a.should == [ss101]
 
-      samuels.lessons_taught.max_level.should == 103
-      samuels.lessons_taught.where(subject: 'Social Studies').max_level.should == 102
+      samuels.lessons_teaching.max_level.should == 103
+      samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should == 102
     end
 
     it 'can allow association chaining' do
-      result = othmar.lessons_taught.students.to_a
+      result = othmar.lessons_teaching.students.to_a
+      result.size.should == 2
       result.should include(sandra)
       result.should include(danny)
-      result.size.should == 2
 
-      othmar.lessons_taught.students.where(age: 16).to_a.should == [sandra]
+      othmar.lessons_teaching.students.where(age: 16).to_a.should == [sandra]
     end
 
     it 'can allow for filtering mid-association-chain' do
-      othmar.lessons_taught.where(level: 201).students.to_a.should == [sandra]
+      othmar.lessons_teaching.where(level: 201).students.to_a.should == [sandra]
     end
 
     it 'can allow for returning nodes mis-association-chain' do
-      othmar.lessons_taught(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
+      othmar.lessons_teaching(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
 
-      othmar.lessons_taught(:lesson).students(:student).where(age: 16).pluck(:lesson, :student).should == [[math201], [sandra]]
+      othmar.lessons_teaching(:lesson).students(:student).where(age: 16).pluck(:lesson, :student).should == [[math201], [sandra]]
     end
   end
 end
