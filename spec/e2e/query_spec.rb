@@ -106,6 +106,8 @@ describe 'Query API' do
 
     it 'can allow for returning nodes mis-association-chain' do
       othmar.lessons_taught(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
+
+      othmar.lessons_taught(:lesson).students(:student).where(age: 16).pluck(:lesson, :student).should == [[math201], [sandra]]
     end
   end
 end
