@@ -229,9 +229,12 @@ describe Neo4j::ActiveNode do
     Person = UniqueClass.create do
       include Neo4j::ActiveNode
       property :name
-      property :age,   type: Integer
-      property :start,  type: Time
+      property :age,          type: Integer
+      property :start,        type: Time
       property :links
+      property :datetime,     type: DateTime
+      property :date,         type: Date
+      property :numbers
 
       serialize :links
     end
@@ -341,6 +344,38 @@ describe Neo4j::ActiveNode do
       expect do
         Person.create(name: 'person123', age: 123, unknown: "yes")
       end.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
+    end
+
+    describe 'multiparameter attributes' do
+      it 'converts to Date' do
+        person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        expect(person.date).to be_a(Date)
+        expect(person.date.to_s).to eq("2014-07-13")
+      end
+
+      it 'converts to DateTime' do
+        person = Person.create("datetime(1i)"=>"2014", "datetime(2i)"=>"7", "datetime(3i)"=>"13", "datetime(4i)"=>"17", "datetime(5i)"=>"45")
+        expect(person.datetime).to be_a(DateTime)
+        expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
+      end
+
+      it 'raises an error when it receives values it cannot process' do
+        expect do
+          Person.create("foo(1i)"=>"2014", "foo(2i)"=>"2014")
+        end.to raise_error(Neo4j::ActiveNode::Property::MultiparameterAssignmentError)
+      end
+
+      it 'sends values straight through when no type is specified' do
+        person = Person.create("numbers(1i)" => "5", "numbers(2i)" => "23")
+        expect(person.numbers).to be_a(Array)
+        expect(person.numbers).to eq [5, 23]
+      end
+
+      it "leaves standard attributes alone" do
+        person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13", name: 'chris')
+        expect(person.name).to eq 'chris'
+        expect(person.date).to be_a(Date)
+      end
     end
   end
 
