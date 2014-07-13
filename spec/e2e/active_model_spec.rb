@@ -360,4 +360,41 @@ describe Neo4j::ActiveNode do
       expect(chris.links.class).to eq Hash
     end
   end
+
+  describe "cache_key" do
+    describe "unpersisted object" do
+      it "should respond with plural_model/new" do
+        model = IceLolly.new
+        model.cache_key.should eq "#{model.class.model_name.cache_key}/new"
+      end
+    end
+
+    describe "persisted object" do
+      let(:model) { IceLolly.create(flavour: "vanilla", required_on_create: true, required_on_update: true) }
+
+      it "should respond with a valid cache key" do
+        expect(model.cache_key).to eq "#{model.class.model_name.cache_key}/#{model.neo_id}-#{model.updated_at.utc.to_s(:number)}"
+      end
+
+      context "when changed" do
+        it "should change cache_key value" do
+          start = model.cache_key and sleep 1
+          model.flavour = "chocolate" and model.save
+          expect(model.cache_key).to_not eq start
+        end
+      end
+
+      describe 'without updated_at property' do
+        NoStamp = UniqueClass.create do
+          include Neo4j::ActiveNode
+          property :name
+
+        end
+        let (:nostamp) { NoStamp.create }
+        it 'returns cache key without timestamp' do
+          expect(nostamp.cache_key).to eq "#{nostamp.class.model_name.cache_key}/#{nostamp.neo_id}"
+        end
+      end
+    end
+  end
 end
