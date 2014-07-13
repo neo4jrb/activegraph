@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'set'
 class Student; end
 class Teacher; end
 
@@ -34,7 +35,7 @@ class Teacher
   has_many :lessons_teaching, to: Lesson, through: :teaching
   has_many :lessons_taught, to: Lesson, through: :taught
 
-  has_many :lessions, to: Lesson, through_any: true
+  has_many :lessons, to: Lesson, through_any: true
 end
 
 describe 'Query API' do
@@ -84,18 +85,9 @@ describe 'Query API' do
     end
 
     it 'returns only objects specified by association' do
-      result = samuels.lessons_teaching.to_a
-      result.size.should == 3
-      result.should include(ss101)
-      result.should include(ss102)
-      result.should include(geo103)
+      samuels.lessons_teaching.to_set.should == [ss101, ss102, geo103].to_set
 
-      result = samuels.lessons.to_a
-      result.size.should == 4
-      result.should include(ss101)
-      result.should include(ss102)
-      result.should include(geo103)
-      result.should include(math101)
+      samuels.lessons.to_set.should == [ss101, ss102, geo103, math101].to_set
     end
 
     it 'can filter on associations' do
@@ -111,10 +103,7 @@ describe 'Query API' do
     end
 
     it 'can allow association chaining' do
-      result = othmar.lessons_teaching.students.to_a
-      result.size.should == 2
-      result.should include(sandra)
-      result.should include(danny)
+      result = othmar.lessons_teaching.students.to_set.should == [sandra, danny].to_set
 
       othmar.lessons_teaching.students.where(age: 16).to_a.should == [sandra]
     end

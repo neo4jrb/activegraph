@@ -23,6 +23,9 @@ module Neo4j::ActiveNode
       id.is_a?(Integer) ? id : nil
     end
 
+    def hash
+      id.hash
+    end
 
   end
 
