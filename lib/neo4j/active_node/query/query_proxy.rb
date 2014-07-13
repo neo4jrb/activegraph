@@ -5,8 +5,9 @@ module Neo4j
       class QueryProxy
         include Enumerable
 
-        def initialize(model, association_options = nil)
+        def initialize(model, var = nil, association_options = nil)
           @model = model
+          @var = var
           @association_options = association_options
           @chain = []
         end
@@ -17,7 +18,7 @@ module Neo4j
           end
         end
 
-        METHODS = %w[where order skip limit]
+        METHODS = %w[where order skip limit pluck]
 
         METHODS.each do |method|
           module_eval(%Q{
@@ -32,6 +33,8 @@ module Neo4j
       # MATCH (teacher40:`Teacher`), (start:`Lesson`), teacher40-[:teaches]->(start:`Lesson`), (end:`Lesson`) WHERE ID(teacher40) = 40 AND ID(end) = 42 CREATE start-[:teaches]->end
 
         def association_chain_var
+          return @var if @var
+
           if start_object = @association_options[:start_object]
             :"#{start_object.class.name.downcase}#{start_object.neo_id}"
           elsif @association_options[:query_proxy]
