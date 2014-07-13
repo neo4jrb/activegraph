@@ -29,7 +29,9 @@ module Neo4j
         alias_method :offset, :skip
         alias_method :order_by, :order
 
-      # MATCH (teacher40:`Teacher`), (start:`Lesson`), teacher40-[:teaches]->(start:`Lesson`), (end:`Lesson`) WHERE ID(teacher40) = 40 AND ID(end) = 42 CREATE start-[:teaches]->end
+        def pluck(var)
+          self.query_as(:n).pluck(var)
+        end
 
         def association_chain_var
           if start_object = @association_options[:start_object]
