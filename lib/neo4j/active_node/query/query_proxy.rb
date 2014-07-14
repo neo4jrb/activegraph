@@ -38,8 +38,7 @@ module Neo4j
           if start_object = @options[:start_object]
             :"#{start_object.class.name.downcase}#{start_object.neo_id}"
           elsif @options[:query_proxy]
-            @chain_var_num = (@chain_var_num || 0) + 1
-            :"node#{@chain_var_num}"
+            :"node#{_chain_level}"
           else
             raise "Crazy error" # TODO: Better error
           end
@@ -110,9 +109,20 @@ module Neo4j
         end
 
         protected
+        # Methods are underscored to prevent conflict with user class methods
 
-        def add_links(links)
+        def _add_links(links)
           @chain += links
+        end
+
+        def _chain_level
+          if @options[:start_object]
+            1
+          elsif query_proxy = @options[:query_proxy]
+            query_proxy._chain_level + 1
+          else
+            raise "Crazy error" # TODO: Better error
+          end
         end
 
         private
@@ -120,7 +130,7 @@ module Neo4j
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
           args.each do |arg|
-            new_query.add_links(links_for_arg(method, arg))
+            new_query._add_links(links_for_arg(method, arg))
           end
         end
       end
