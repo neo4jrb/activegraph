@@ -108,27 +108,26 @@ module Neo4j::ActiveNode
       end
 
       def has_many(name, options = {})
-        to, from, through, through_any = options.values_at(:to, :from, :through, :through_any)
+        to, from, through = options.values_at(:to, :from, :through)
         raise ArgumentError, "Must specify either :to or :from" if not (to || from)
         raise ArgumentError, "Cannot specify both :to and :from" if to && from
 
         target_class = to || from
         direction = to ? :outbound : :inbound
-        through_any ||= false
 
-        # TODO: auto-set through when missing
+        through = "#{target_class.name}##{name}" if through.nil?
 
         @has_many_relationships ||= []
         @has_many_relationships << name
 
         module_eval(%Q{
           def #{name}
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, start_object: self, through_any: #{through_any}, relationship: #{through.inspect}, direction: #{direction.inspect})
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, start_object: self, relationship: #{through.inspect}, direction: #{direction.inspect})
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
           def #{name}
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, query_proxy: self.query_proxy, through_any: #{through_any}, relationship: #{through.inspect}, direction: #{direction.inspect})
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, query_proxy: self.query_proxy, relationship: #{through.inspect}, direction: #{direction.inspect})
           end}, __FILE__, __LINE__)
 
       end

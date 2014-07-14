@@ -114,7 +114,7 @@ module Neo4j
 
         def association_arrow
           if @association_options
-            relationship = @association_options[:through_any] ? '' : "[:#{@association_options[:relationship]}]"
+            relationship = (@association_options[:relationship] == false) ? '' : "[:#{@association_options[:relationship]}]"
             case direction = @association_options[:direction].to_sym
               when :outbound
                 "-#{relationship}->"

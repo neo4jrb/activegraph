@@ -35,7 +35,7 @@ class Teacher
   has_many :lessons_teaching, to: Lesson, through: :teaching
   has_many :lessons_taught, to: Lesson, through: :taught
 
-  has_many :lessons, to: Lesson, through_any: true
+  has_many :lessons, to: Lesson, through: false
 end
 
 describe 'Query API' do
