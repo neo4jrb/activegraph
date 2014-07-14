@@ -3,6 +3,12 @@ require 'set'
 class Student; end
 class Teacher; end
 
+class Interest
+  include Neo4j::ActiveNode
+
+  property :name
+end
+
 class Lesson
   include Neo4j::ActiveNode
   property :subject
@@ -26,6 +32,8 @@ class Student
   property :age, type: Integer
 
   has_many :lessons, to: Lesson, through: :is_enrolled_for
+
+  has_many :interests, to: Interest
 end
 
 class Teacher
@@ -36,6 +44,8 @@ class Teacher
   has_many :lessons_taught, to: Lesson, through: :taught
 
   has_many :lessons, to: Lesson, through: false
+
+  has_many :interests, to: Interest
 end
 
 describe 'Query API' do
@@ -53,6 +63,11 @@ describe 'Query API' do
     let!(:sandra) { Student.create(name: 'Sandra', age: 16) }
     let!(:danny) { Student.create(name: 'Danny', age: 15) }
     let!(:bobby) { Student.create(name: 'Bobby', age: 16) }
+
+    let!(:reading) { Interest.create(name: 'Reading') }
+    let!(:math) { Interest.create(name: 'Math') }
+    let!(:monster_trucks) { Interest.create(name: 'Monster Trucks') }
+
     before(:each) do
       samuels.lessons_teaching << ss101
       samuels.lessons_teaching << ss102
@@ -70,6 +85,10 @@ describe 'Query API' do
       danny.lessons << ss102
 
       bobby.lessons << ss102
+
+      danny.interests << reading
+      bobby.interests << math
+      othmar.interests << monster_trucks
     end
       
     it 'returns all' do
@@ -103,7 +122,9 @@ describe 'Query API' do
     end
 
     it 'can allow association chaining' do
-      result = othmar.lessons_teaching.students.to_set.should == [sandra, danny].to_set
+      othmar.lessons_teaching.students.to_set.should == [sandra, danny].to_set
+
+      othmar.lessons_teaching.students.interests.to_set.should == [reading].to_set
 
       othmar.lessons_teaching.students.where(age: 16).to_a.should == [sandra]
     end
