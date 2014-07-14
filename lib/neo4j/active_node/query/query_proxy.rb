@@ -30,45 +30,25 @@ module Neo4j
         alias_method :offset, :skip
         alias_method :order_by, :order
 
+        # For getting variables which have been defined as part of the association chain
         def pluck(*args)
           self.query.pluck(*args)
         end
 
-        def association_chain_var
-          if start_object = @options[:start_object]
-            :"#{start_object.class.name.downcase}#{start_object.neo_id}"
-          elsif query_proxy = @options[:query_proxy]
-            query_proxy.var || :"node#{_chain_level}"
-          else
-            raise "Crazy error" # TODO: Better error
-          end
-        end
-
-        def association_query_start(var)
-          if start_object = @options[:start_object]
-            start_object.query_as(var)
-          elsif query_proxy = @options[:query_proxy]
-            query_proxy.query_as(var)
-          else
-            raise "Crazy error" # TODO: Better error
-          end
-        end
-
+        # Like calling #query_as, but for when you don't care about the variable name
         def query
-          query_as(self.var || :result)
+          query_as(self._var || :result)
         end
 
-        def var
-          @options[:var]
-        end
 
+        # Build a Neo4j::Core::Query object for the QueryProxy
         def query_as(var)
           query = if @association
-            chain_var = association_chain_var
-            var = self.var if self.var
-            (association_query_start(chain_var) & query_model_as(var)).match("#{chain_var}#{association_arrow}(#{var}:`#{@model.name}`)")
+            chain_var = _association_chain_var
+            var = self._var if self._var
+            (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}:`#{@model.name}`)")
           else
-            query_model_as(var)
+            _query_model_as(var)
           end
 
           @chain.inject(query) do |query, (method, arg)|
@@ -80,30 +60,23 @@ module Neo4j
           end
         end
 
-        def query_model_as(var)
-          label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-          neo4j_session.query.match(var => label)
-        end
-
+        # Cypher string for the QueryProxy's query
         def to_cypher
           query.to_cypher
         end
 
+        # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
           if @association
             raise ArgumentError, "Node must be of the association's class" if other_node.class != @model
 
-            association_query_start(:start)
+            _association_query_start(:start)
               .match(end: other_node.class)
               .where(end: {neo_id: other_node.neo_id})
-              .create("start#{association_arrow}end").exec
+              .create("start#{_association_arrow}end").exec
           else
             raise "Can only create associations on associations"
           end
-        end
-
-        def association_arrow
-          @association && @association.arrow_cypher
         end
 
         def method_missing(method_name, *args)
@@ -124,11 +97,44 @@ module Neo4j
           @chain += links
         end
 
+        def _query_model_as(var)
+          label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
+          neo4j_session.query.match(var => label)
+        end
+
+        def _association_arrow
+          @association && @association.arrow_cypher
+        end
+
         def _chain_level
           if @options[:start_object]
             1
           elsif query_proxy = @options[:query_proxy]
             query_proxy._chain_level + 1
+          else
+            raise "Crazy error" # TODO: Better error
+          end
+        end
+
+        def _var
+          @options[:var]
+        end
+
+        def _association_chain_var
+          if start_object = @options[:start_object]
+            :"#{start_object.class.name.downcase}#{start_object.neo_id}"
+          elsif query_proxy = @options[:query_proxy]
+            query_proxy._var || :"node#{_chain_level}"
+          else
+            raise "Crazy error" # TODO: Better error
+          end
+        end
+
+        def _association_query_start(var)
+          if start_object = @options[:start_object]
+            start_object.query_as(var)
+          elsif query_proxy = @options[:query_proxy]
+            query_proxy.query_as(var)
           else
             raise "Crazy error" # TODO: Better error
           end
