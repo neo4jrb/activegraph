@@ -125,13 +125,13 @@ module Neo4j::ActiveNode
         @associations[name] = Neo4j::ActiveNode::HasN::Association.new(:has_many, name, relationship, direction)
 
         module_eval(%Q{
-          def #{name}
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, self.class.associations[#{name.inspect}], start_object: self)
+          def #{name}(var = nil)
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, self.class.associations[#{name.inspect}], var: var, start_object: self)
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
-          def #{name}
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, @associations[#{name.inspect}], query_proxy: self.query_proxy)
+          def #{name}(var = nil)
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, @associations[#{name.inspect}], var: var, query_proxy: self.query_proxy)
           end}, __FILE__, __LINE__)
 
       end

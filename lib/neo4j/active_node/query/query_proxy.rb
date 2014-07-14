@@ -5,7 +5,7 @@ module Neo4j
       class QueryProxy
         include Enumerable
 
-        def initialize(model, association = nil, options = nil)
+        def initialize(model, association = nil, options = {})
           @model = model
           @association = association
           @options = options
@@ -13,7 +13,7 @@ module Neo4j
         end
 
         def each
-          query_as(:result).pluck(:result).each do |obj|
+          query.pluck(:result).each do |obj|
             yield obj
           end
         end
@@ -30,15 +30,15 @@ module Neo4j
         alias_method :offset, :skip
         alias_method :order_by, :order
 
-        def pluck(var)
-          self.query_as(:n).pluck(var)
+        def pluck(*args)
+          self.query.pluck(*args)
         end
 
         def association_chain_var
           if start_object = @options[:start_object]
             :"#{start_object.class.name.downcase}#{start_object.neo_id}"
-          elsif @options[:query_proxy]
-            :"node#{_chain_level}"
+          elsif query_proxy = @options[:query_proxy]
+            query_proxy.var || :"node#{_chain_level}"
           else
             raise "Crazy error" # TODO: Better error
           end
@@ -54,9 +54,18 @@ module Neo4j
           end
         end
 
+        def query
+          query_as(self.var || :result)
+        end
+
+        def var
+          @options[:var]
+        end
+
         def query_as(var)
           query = if @association
             chain_var = association_chain_var
+            var = self.var if self.var
             (association_query_start(chain_var) & query_model_as(var)).match("#{chain_var}#{association_arrow}(#{var}:`#{@model.name}`)")
           else
             query_model_as(var)
@@ -77,7 +86,7 @@ module Neo4j
         end
 
         def to_cypher
-          query_as(:n).to_cypher
+          query.to_cypher
         end
 
         def <<(other_node)
