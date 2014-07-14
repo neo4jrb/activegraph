@@ -108,30 +108,35 @@ module Neo4j::ActiveNode
       end
 
       def has_many(name, options = {})
-        to, from, through = options.values_at(:to, :from, :through)
+        name = name.to_sym
+        to, from, relationship = options.values_at(:to, :from, :through)
         raise ArgumentError, "Must specify either :to or :from" if not (to || from)
         raise ArgumentError, "Cannot specify both :to and :from" if to && from
 
         target_class = to || from
         direction = to ? :outbound : :inbound
 
-        through = "#{target_class.name}##{name}" if through.nil?
+        relationship = "#{target_class.name}##{name}" if relationship.nil?
 
         @has_many_relationships ||= []
         @has_many_relationships << name
 
+        @associations ||= {}
+        @associations[name] = Neo4j::ActiveNode::HasN::Association.new(:has_many, name, relationship, direction)
+
         module_eval(%Q{
           def #{name}
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, start_object: self, relationship: #{through.inspect}, direction: #{direction.inspect})
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, self.class.associations[#{name.inspect}], start_object: self)
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
           def #{name}
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, query_proxy: self.query_proxy, relationship: #{through.inspect}, direction: #{direction.inspect})
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class.name}, @associations[#{name.inspect}], query_proxy: self.query_proxy)
           end}, __FILE__, __LINE__)
 
       end
 
+      attr_reader :associations
 
       # Specifies a relationship between two node classes.
       # Generates assignment and accessor methods for the given relationship

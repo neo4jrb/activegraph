@@ -5,9 +5,10 @@ module Neo4j
       class QueryProxy
         include Enumerable
 
-        def initialize(model, association_options = nil)
+        def initialize(model, association = nil, options = nil)
           @model = model
-          @association_options = association_options
+          @association = association
+          @options = options
           @chain = []
         end
 
@@ -34,9 +35,9 @@ module Neo4j
         end
 
         def association_chain_var
-          if start_object = @association_options[:start_object]
+          if start_object = @options[:start_object]
             :"#{start_object.class.name.downcase}#{start_object.neo_id}"
-          elsif @association_options[:query_proxy]
+          elsif @options[:query_proxy]
             @chain_var_num = (@chain_var_num || 0) + 1
             :"node#{@chain_var_num}"
           else
@@ -45,9 +46,9 @@ module Neo4j
         end
 
         def association_query_start(var)
-          if start_object = @association_options[:start_object]
+          if start_object = @options[:start_object]
             start_object.query_as(var)
-          elsif query_proxy = @association_options[:query_proxy]
+          elsif query_proxy = @options[:query_proxy]
             query_proxy.query_as(var)
           else
             raise "Crazy error" # TODO: Better error
@@ -55,7 +56,7 @@ module Neo4j
         end
 
         def query_as(var)
-          query = if @association_options
+          query = if @association
             chain_var = association_chain_var
             (association_query_start(chain_var) & query_model_as(var)).match("#{chain_var}#{association_arrow}(#{var}:`#{@model.name}`)")
           else
@@ -81,7 +82,7 @@ module Neo4j
         end
 
         def <<(other_node)
-          if @association_options
+          if @association
             raise ArgumentError, "Node must be of the association's class" if other_node.class != @model
 
             association_query_start(:start)
@@ -91,6 +92,10 @@ module Neo4j
           else
             raise "Can only create associations on associations"
           end
+        end
+
+        def association_arrow
+          @association && @association.arrow_cypher
         end
 
         def method_missing(method_name, *args)
@@ -111,20 +116,6 @@ module Neo4j
         end
 
         private
-
-        def association_arrow
-          if @association_options
-            relationship = (@association_options[:relationship] == false) ? '' : "[:#{@association_options[:relationship]}]"
-            case direction = @association_options[:direction].to_sym
-              when :outbound
-                "-#{relationship}->"
-              when :inbound
-                "<-#{relationship}-"
-              else
-                raise ArgumentError, "Invalid relationship direction: #{direction}"
-            end
-          end
-        end
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
