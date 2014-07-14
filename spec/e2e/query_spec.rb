@@ -7,6 +7,8 @@ class Interest
   include Neo4j::ActiveNode
 
   property :name
+
+  has_many :interested
 end
 
 class Lesson
@@ -88,7 +90,9 @@ describe 'Query API' do
 
       danny.interests << reading
       bobby.interests << math
-      othmar.interests << monster_trucks
+
+#      samuels.associate(monster_trucks, :interests, intensity: 1)
+#      othmar.associate(monster_trucks, :interests, intensity: 11)
     end
       
     it 'returns all' do
@@ -99,7 +103,7 @@ describe 'Query API' do
       result.should include(othmar)
     end
 
-    it 'can filter' do
+    it 'allows filtering' do
       Teacher.where(name: /.*Othmar.*/).to_a.should == [othmar]
     end
 
@@ -109,19 +113,19 @@ describe 'Query API' do
       samuels.lessons.to_set.should == [ss101, ss102, geo103, math101].to_set
     end
 
-    it 'can filter on associations' do
+    it 'allows filtering on associations' do
       samuels.lessons_teaching.where(level: 101).to_a.should == [ss101]
 
     end
 
-    it 'can call class methods on associations' do
+    it 'allows class methods on associations' do
       samuels.lessons_teaching.level(101).to_a.should == [ss101]
 
       samuels.lessons_teaching.max_level.should == 103
       samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should == 102
     end
 
-    it 'can allow association chaining' do
+    it 'allows association chaining' do
       othmar.lessons_teaching.students.to_set.should == [sandra, danny].to_set
 
       othmar.lessons_teaching.students.interests.to_set.should == [reading].to_set
@@ -129,14 +133,22 @@ describe 'Query API' do
       othmar.lessons_teaching.students.where(age: 16).to_a.should == [sandra]
     end
 
-    it 'can allow for filtering mid-association-chain' do
+    it 'allows for filtering mid-association-chain' do
       othmar.lessons_teaching.where(level: 201).students.to_a.should == [sandra]
     end
 
-    it 'can allow for returning nodes mis-association-chain' do
-      othmar.lessons_teaching(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
+    it 'allows for returning nodes mis-association-chain' do
+      othmar.lessons_teaching.as(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
 
-      othmar.lessons_teaching(:lesson).students(:student).where(age: 16).pluck(:lesson, :student).should == [[math201, sandra]]
+      othmar.lessons_teaching.as(:lesson).students.as(:student).where(age: 16).pluck(:lesson, :student).should == [[math201, sandra]]
+    end
+
+    it 'allows association with properties' do
+      monster_trucks.interested.to_set.should == [samuels, othmar]
+
+      monster_trucks.interested(intensity: 11).to_set.should == [othmar]
+
+      monster_trucks.interested(r: 'r.intensity < 5').to_set.should == [samuels]
     end
   end
 end

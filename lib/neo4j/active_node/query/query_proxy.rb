@@ -40,13 +40,17 @@ module Neo4j
           query_as(self._var || :result)
         end
 
+        def as(var)
+          @options[:var] = var
+        end
 
         # Build a Neo4j::Core::Query object for the QueryProxy
         def query_as(var)
           query = if @association
             chain_var = _association_chain_var
             var = self._var if self._var
-            (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}:`#{@model.name}`)")
+            label_string = @model && ":`#{@model.name}`"
+            (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}#{label_string})")
           else
             _query_model_as(var)
           end
@@ -68,7 +72,7 @@ module Neo4j
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
           if @association
-            raise ArgumentError, "Node must be of the association's class" if other_node.class != @model
+            raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_node.class != @model
 
             _association_query_start(:start)
               .match(end: other_node.class)
@@ -80,7 +84,7 @@ module Neo4j
         end
 
         def method_missing(method_name, *args)
-          if @model.respond_to?(method_name)
+          if @model && @model.respond_to?(method_name)
             @model.query_proxy = self
             result = @model.send(method_name, *args)
             @model.query_proxy = nil
@@ -98,8 +102,12 @@ module Neo4j
         end
 
         def _query_model_as(var)
-          label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-          neo4j_session.query.match(var => label)
+          if @model
+            label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
+            neo4j_session.query.match(var => label)
+          else
+            neo4j_session.query.match(var)
+          end
         end
 
         def _association_arrow
