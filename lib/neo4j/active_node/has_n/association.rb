@@ -15,7 +15,7 @@ module Neo4j
         end
 
         def arrow_cypher
-          relationship_cypher = (@relationship == false) ? '' : "[:#{@relationship}]"
+          relationship_cypher = (@relationship == false) ? '' : "[:`#{@relationship}`]"
           case @direction.to_sym
             when :outbound
               "-#{relationship_cypher}->"
