@@ -37,18 +37,20 @@ module Neo4j
 
         # Like calling #query_as, but for when you don't care about the variable name
         def query
-          query_as(self._var || :result)
+          query_as(@var || :result)
         end
 
         def as(var)
-          @options[:var] = var
+          self.dup.tap do |new_query|
+            new_query.var = var
+          end
         end
 
         # Build a Neo4j::Core::Query object for the QueryProxy
         def query_as(var)
           query = if @association
             chain_var = _association_chain_var
-            var = self._var if self._var
+            var = @var if @var
             label_string = @model && ":`#{@model.name}`"
             (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}#{label_string})")
           else
@@ -97,6 +99,8 @@ module Neo4j
         protected
         # Methods are underscored to prevent conflict with user class methods
 
+        attr_accessor :var
+
         def _add_links(links)
           @chain += links
         end
@@ -124,15 +128,11 @@ module Neo4j
           end
         end
 
-        def _var
-          @options[:var]
-        end
-
         def _association_chain_var
           if start_object = @options[:start_object]
             :"#{start_object.class.name.downcase}#{start_object.neo_id}"
           elsif query_proxy = @options[:query_proxy]
-            query_proxy._var || :"node#{_chain_level}"
+            query_proxy.var || :"node#{_chain_level}"
           else
             raise "Crazy error" # TODO: Better error
           end
