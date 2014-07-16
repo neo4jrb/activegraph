@@ -91,8 +91,8 @@ describe 'Query API' do
       danny.interests << reading
       bobby.interests << math
 
-#      samuels.associate(monster_trucks, :interests, intensity: 1)
-#      othmar.associate(monster_trucks, :interests, intensity: 11)
+      samuels.interests.associate(monster_trucks, intensity: 1)
+      othmar.interests.associate(monster_trucks, intensity: 11)
     end
       
     it 'returns all' do
@@ -107,15 +107,24 @@ describe 'Query API' do
       Teacher.where(name: /.*Othmar.*/).to_a.should == [othmar]
     end
 
+    it 'allows definining of a variable for class as start of QueryProxy chain' do
+      Teacher.as(:t).lessons.where(level: 101).pluck(:t).to_set.should == [samuels, othmar].to_set
+    end
+
     it 'returns only objects specified by association' do
       samuels.lessons_teaching.to_set.should == [ss101, ss102, geo103].to_set
 
       samuels.lessons.to_set.should == [ss101, ss102, geo103, math101].to_set
     end
 
+    it 'allows params' do
+      Teacher.as(:t).where("t.name = {name}").params(name: 'Harold Samuels').to_a.should == [samuels]
+
+      # Example here for params on association
+    end
+
     it 'allows filtering on associations' do
       samuels.lessons_teaching.where(level: 101).to_a.should == [ss101]
-
     end
 
     it 'allows class methods on associations' do
@@ -138,17 +147,15 @@ describe 'Query API' do
     end
 
     it 'allows for returning nodes mis-association-chain' do
-      othmar.lessons_teaching.as(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
+      othmar.lessons_teaching(:lesson).students.where(age: 16).pluck(:lesson).should == [math201]
 
-      othmar.lessons_teaching.as(:lesson).students.as(:student).where(age: 16).pluck(:lesson, :student).should == [[math201, sandra]]
+      othmar.lessons_teaching(:lesson).students(:student).where(age: 16).pluck(:lesson, :student).should == [[math201, sandra]]
     end
 
     it 'allows association with properties' do
-      monster_trucks.interested.to_set.should == [samuels, othmar]
+      monster_trucks.interested.to_set.should == [samuels, othmar].to_set
 
-      monster_trucks.interested(intensity: 11).to_set.should == [othmar]
-
-      monster_trucks.interested(r: 'r.intensity < 5').to_set.should == [samuels]
+      monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).to_set.should == [samuels].to_set
     end
   end
 end

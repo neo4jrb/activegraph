@@ -14,8 +14,16 @@ module Neo4j
           @relationship = relationship_from_options(options)
         end
 
-        def arrow_cypher
-          relationship_cypher = (@relationship == false) ? '' : "[:`#{@relationship}`]"
+        def arrow_cypher(var = nil, properties = {}, create = false)
+          relationship_name = self.relationship_name(create)
+          relationship_name_cypher = ":`#{relationship_name}`" if relationship_name
+
+          properties_string = properties.map do |key, value|
+            "#{key}: #{value.inspect}"
+          end.join(', ')
+          properties_string = " {#{properties_string}}" unless properties_string.empty?
+
+          relationship_cypher = "[#{var}#{relationship_name_cypher}#{properties_string}]"
           case @direction.to_sym
             when :outbound
               "-#{relationship_cypher}->"
@@ -28,12 +36,24 @@ module Neo4j
           end
         end
 
+        def relationship_name(create = false)
+          case @relationship
+          when nil # Need to support false as any relationship
+            if create
+              "#{@target_class ? @target_class.name : 'ANY'}##{@name}"
+            end
+          else
+            @relationship
+          end
+        end
+
         private
         
-        # {to: Person}
-        # {from: Person}
-        # {with: Person}
-        # {direction: :inbound}
+        # Should support:
+        # {to: Model}
+        # {from: Model}
+        # {with: Model}
+        # {direction: [:inbound|:outbound|:bidirectional]}
         def direction_from_options(options)
           to, from, with, direction = options.values_at(:to, :from, :with, :direction)
 
@@ -58,10 +78,7 @@ module Neo4j
         end
 
         def relationship_from_options(options)
-          relationship = options[:through]
-          # Need to support false as matching any relationship
-          relationship = "#{@target_class ? @target_class.name : 'ANY'}##{@name}" if relationship.nil?
-          relationship
+          options[:through]
         end
       end
     end

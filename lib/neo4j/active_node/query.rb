@@ -52,12 +52,16 @@ module Neo4j
             end}, __FILE__, __LINE__)
         end
 
-        def query_proxy
-          @query_proxy || Neo4j::ActiveNode::Query::QueryProxy.new(self)
+        def query_proxy(options = {})
+          @query_proxy || Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)
         end
 
         def qq(as = :n1)
           QuickQuery.new(self.name.constantize, as)
+        end
+
+        def as(node_var)
+          query_proxy(node: node_var)
         end
 
       end

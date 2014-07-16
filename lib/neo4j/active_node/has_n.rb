@@ -6,9 +6,6 @@ module Neo4j::ActiveNode
       self.class._decl_rels[rel_type]
     end
 
-    def associate(node, association_name, properties)
-
-    end
 
     module ClassMethods
 
@@ -124,13 +121,13 @@ module Neo4j::ActiveNode
         target_class_name = association.target_class ? association.target_class.name : 'nil'
 
         module_eval(%Q{
-          def #{name}(*args)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], start_object: self)
+          def #{name}(node = nil, rel = nil)
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], session: self.class.neo4j_session, start_object: self, node: node, rel: rel)
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
-          def #{name}(*args)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], query_proxy: self.query_proxy)
+          def #{name}(node = nil, rel = nil)
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], session: self.neo4j_session, query_proxy: self.query_proxy, node: node, rel: rel)
           end}, __FILE__, __LINE__)
 
       end
