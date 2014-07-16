@@ -120,7 +120,8 @@ describe 'Query API' do
     it 'allows params' do
       Teacher.as(:t).where("t.name = {name}").params(name: 'Harold Samuels').to_a.should == [samuels]
 
-      # Example here for params on association
+      samuels.lessons_teaching(:lesson).where("lesson.level = {level}").params(level: 103).to_a.should == [geo103]
+      samuels.lessons_teaching.where(level: "{level}").params(level: 103).to_a.should == [geo103]
     end
 
     it 'allows filtering on associations' do
