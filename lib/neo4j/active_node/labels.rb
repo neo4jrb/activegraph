@@ -116,6 +116,8 @@ module Neo4j
               _index(property) if event == :session_available
             end
           end
+          @_indexed_properties ||= []
+          @_indexed_properties.push property unless @_indexed_properties.include? property
         end
 
         def index?(index_def)
@@ -135,6 +137,11 @@ module Neo4j
         def indexed_labels
 
         end
+
+        def indexed_properties
+          @_indexed_properties
+        end
+
 
         protected
 
