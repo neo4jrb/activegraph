@@ -78,12 +78,32 @@ module Neo4j
       end
     end
 
-    # Converts hash to/from JSON
-    class HashConverter
+    # Converts hash to/from YAML
+    class YAMLConverter
       class << self
 
         def convert_type
           Hash
+        end
+
+        def to_db(value)
+          return nil if value.nil?
+          Psych.dump(value)
+        end
+
+        def to_ruby(value)
+          return nil if value.nil?
+          Psych.load(value)
+        end
+      end
+    end
+
+    # Converts hash to/from JSON
+    class JSONConverter
+      class << self
+
+        def convert_type
+          JSON
         end
 
         def to_db(value)
@@ -98,11 +118,14 @@ module Neo4j
       end
     end
 
+
+
     def convert_properties_to(medium, properties)
       # Perform type conversion
+      serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
       properties = properties.inject({}) do |new_attributes, key_value_pair|
         attr, value = key_value_pair
-        type = self.respond_to?(:serialized_properties) && self.serialized_properties.include?(attr.to_sym) ? Hash : self.class._attribute_type(attr)
+        type = serialize.has_key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
                                   value
                                 else
