@@ -32,6 +32,7 @@ require 'neo4j/active_node/query/query_proxy'
 require 'neo4j/active_node/query'
 require 'neo4j/active_node/quick_query'
 require 'neo4j/active_node/serialized_properties'
+require 'neo4j/paginated'
 require 'neo4j/active_node'
 
 require 'neo4j/active_node/orm_adapter'

@@ -432,4 +432,23 @@ describe Neo4j::ActiveNode do
       end
     end
   end
+
+  describe "Neo4j::Paginated.create_from" do
+    before {
+      Person.destroy_all
+      i = 1.upto(16).to_a
+      i.each{|i| Person.create(age: i) }
+    }
+    after(:all) { Person.destroy_all }
+    let(:t) { Person.where }
+    let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
+
+    it "returns a Neo4j::Paginated" do
+      expect(p).to be_a(Neo4j::Paginated)
+    end
+
+    it 'returns the expected number of objects' do
+      expect(p.count).to eq 5
+    end
+  end
 end
