@@ -12,8 +12,9 @@ module Neo4j
           @type = type
           @name = name
           @direction = direction_from_options(options)
+          @target_class_name_from_name = name.to_s.classify
           @target_class = begin
-            options[:model] || name.to_s.classify.constantize
+            options[:model] || @target_class_name_from_name.constantize
           rescue NameError
           end
 
@@ -49,7 +50,7 @@ module Neo4j
         def relationship_name(create = false)
           case @relationship
           when nil
-            if create
+            if create || (@target_class && @target_class.name != @target_class_name_from_name)
               "##{@name}"
             end
           else

@@ -36,6 +36,9 @@ class Student
   has_many :lessons, via: :is_enrolled_for
 
   has_many :interests, direction: :outbound
+
+  has_many :favorite_teachers, model: Teacher
+  has_many :hated_teachers, model: Teacher
 end
 
 class Teacher
@@ -115,6 +118,14 @@ describe 'Query API' do
       samuels.lessons_teaching.to_set.should == [ss101, ss102, geo103].to_set
 
       samuels.lessons.to_set.should == [ss101, ss102, geo103, math101].to_set
+    end
+
+    it 'differentiates associations on the same model for the same class' do
+      bobby.favorite_teachers << samuels
+      bobby.hated_teachers << othmar
+
+      bobby.favorite_teachers.to_set.should == [samuels].to_set
+      bobby.hated_teachers.to_set.should == [othmar].to_set
     end
 
     it 'allows params' do
