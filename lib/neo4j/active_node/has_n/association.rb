@@ -21,6 +21,7 @@ module Neo4j
           @relationship = options[:via] || options[:from] || options[:with]
         end
 
+        # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
         def arrow_cypher(var = nil, properties = {}, create = false)
           relationship_name = self.relationship_name(create)
           relationship_name_cypher = ":`#{relationship_name}`" if relationship_name
@@ -48,23 +49,28 @@ module Neo4j
         end
 
         def relationship_name(create = false)
-          case @relationship
-          when nil
-            if create || (@target_class && @target_class.name != @target_class_name_from_name)
-              "##{@name}"
-            end
-          else
-            @relationship
-          end
+          @relationship || (create || exceptional_target_class?) && "##{@name}"
         end
 
         private
         
-        # Should support:
-        # {via: Model}
-        # {from: Model}
-        # {with: Model}
-        # {direction: [:inbound|:outbound|:bidirectional]}
+        # Determine if model class as derived from the association name would be different than the one specified via the model key
+        # @example
+        #   has_many :friends                 # Would return false
+        #   has_many :friends, model: Friend  # Would return false
+        #   has_many :friends, model: Person  # Would return true
+        def exceptional_target_class?
+          @target_class && @target_class.name != @target_class_name_from_name
+        end
+
+        # Determine which direction is desired for the assication from the association options
+        # Can be specified by using the via/from/with keys, or by using the direction key
+        #
+        # @example
+        #   has_many :a, via: Model
+        #   has_many :a, from: Model
+        #   has_many :a, with: Model
+        #   has_many :a, direction: [:inbound|:outbound|:bidirectional]
         def direction_from_options(options)
           via, from, with = options.values_at(:via, :from, :with)
 

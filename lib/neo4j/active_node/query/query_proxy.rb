@@ -62,12 +62,9 @@ module Neo4j
             _query_model_as(var)
           end
 
+          # Build a query chain via the chain, return the result
           @chain.inject(query.params(@params)) do |query, (method, arg)|
-            if arg.respond_to?(:call)
-              query.send(method, arg.call(var))
-            else
-              query.send(method, arg)
-            end
+            query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
         end
 
@@ -103,6 +100,8 @@ module Neo4j
           end
         end
 
+        # QueryProxy objects act as a representation of a model at the class level so we pass through calls
+        # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args)
           if @model && @model.respond_to?(method_name)
             @model.query_proxy = self
