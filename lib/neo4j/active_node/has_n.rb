@@ -10,6 +10,10 @@ module Neo4j::ActiveNode
     module ClassMethods
 
 
+      def has_association?(name)
+        !!@associations[name]
+      end
+
       def has_relationship?(rel_type)
         !!_decl_rels[rel_type]
       end
@@ -110,9 +114,6 @@ module Neo4j::ActiveNode
 
       def has_many(name, options = {})
         name = name.to_sym
-
-        @has_many_relationships ||= []
-        @has_many_relationships << name
 
         association = Neo4j::ActiveNode::HasN::Association.new(:has_many, name, options)
         @associations ||= {}

@@ -199,7 +199,7 @@ module Neo4j
           result = []
           if arg.is_a?(Hash)
             arg.map do |key, value|
-              if @model.has_one_relationship?(key)
+              if @model && @model.has_association?(key)
                 neo_id = value.try(:neo_id) || value
                 raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 

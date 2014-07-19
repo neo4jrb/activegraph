@@ -1,3 +1,5 @@
+require 'active_support/inflector/inflections'
+
 module Neo4j
   module ActiveNode
     module HasN
@@ -10,8 +12,12 @@ module Neo4j
           @type = type
           @name = name
           @direction = direction_from_options(options)
-          @target_class = target_class_from_options(options)
-          @relationship = relationship_from_options(options)
+          @target_class = begin
+            options[:model] || name.to_s.classify.constantize
+          rescue NameError
+          end
+
+          @relationship = options[:via] || options[:from] || options[:with]
         end
 
         def arrow_cypher(var = nil, properties = {}, create = false)
@@ -24,7 +30,11 @@ module Neo4j
           properties_string = " {#{properties_string}}" unless properties_string.empty?
 
           relationship_cypher = "[#{var}#{relationship_name_cypher}#{properties_string}]"
-          case @direction.to_sym
+
+          direction = @direction
+          direction = :outbound if create && @direction == :bidirectional
+
+          case direction.to_sym
             when :outbound
               "-#{relationship_cypher}->"
             when :inbound
@@ -32,15 +42,15 @@ module Neo4j
             when :bidirectional
               "-#{relationship_cypher}-"
             else
-              raise ArgumentError, "Invalid relationship direction: #{@direction.inspect}"
+              raise ArgumentError, "Invalid relationship direction: #{direction.inspect}"
           end
         end
 
         def relationship_name(create = false)
           case @relationship
-          when nil # Need to support false as any relationship
+          when nil
             if create
-              "#{@target_class ? @target_class.name : 'ANY'}##{@name}"
+              "##{@name}"
             end
           else
             @relationship
@@ -50,16 +60,16 @@ module Neo4j
         private
         
         # Should support:
-        # {to: Model}
+        # {via: Model}
         # {from: Model}
         # {with: Model}
         # {direction: [:inbound|:outbound|:bidirectional]}
         def direction_from_options(options)
-          to, from, with, direction = options.values_at(:to, :from, :with, :direction)
+          via, from, with = options.values_at(:via, :from, :with)
 
-          raise ArgumentError, "Can only specify one of :to, :from, and :with" if [to, from, with].compact.size > 1
+          raise ArgumentError, "Can only specify one of :via, :from, and :with" if [via, from, with].compact.size > 1
 
-          if to
+          if via
             :outbound
           elsif from
             :inbound
@@ -73,13 +83,6 @@ module Neo4j
           end
         end
 
-        def target_class_from_options(options)
-          options[:to] || options[:from] || options[:with]
-        end
-
-        def relationship_from_options(options)
-          options[:through]
-        end
       end
     end
   end
