@@ -7,12 +7,12 @@ module Neo4j
         attr_reader :type, :name, :target_class, :relationship, :direction
 
         def initialize(type, direction, name, options = {})
-          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type)
-          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:outbound, :inbound, :bidirectional].include?(direction)
+          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
+          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:outbound, :inbound, :bidirectional].include?(direction.to_sym)
 
-          @type = type
+          @type = type.to_sym
           @name = name
-          @direction = direction
+          @direction = direction.to_sym
           @target_class_name_from_name = name.to_s.classify
           @target_class = begin
             if options[:model_class].nil?
@@ -42,7 +42,7 @@ module Neo4j
           direction = @direction
           direction = :outbound if create && @direction == :bidirectional
 
-          case direction.to_sym
+          case direction
             when :outbound
               "-#{relationship_cypher}->"
             when :inbound
