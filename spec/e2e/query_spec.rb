@@ -8,7 +8,7 @@ class Interest
 
   property :name
 
-  has_many :interested
+  has_many :bidirectional, :interested, model_class: false
 end
 
 class Lesson
@@ -16,8 +16,8 @@ class Lesson
   property :subject
   property :level
 
-  has_many :teachers, from: :teaching
-  has_many :students, from: :is_enrolled_for
+  has_many :inbound, :teachers, type: :teaching
+  has_many :inbound, :students, type: :is_enrolled_for
 
   def self.max_level
     self.query_as(:lesson).pluck('max(lesson.level)').first
@@ -33,24 +33,24 @@ class Student
   property :name
   property :age, type: Integer
 
-  has_many :lessons, via: :is_enrolled_for
+  has_many :outbound, :lessons, type: :is_enrolled_for
 
-  has_many :interests, direction: :outbound
+  has_many :outbound, :interests
 
-  has_many :favorite_teachers, model: Teacher
-  has_many :hated_teachers, model: Teacher
+  has_many :bidirectional, :favorite_teachers, model_class: Teacher
+  has_many :bidirectional, :hated_teachers, model_class: Teacher
 end
 
 class Teacher
   include Neo4j::ActiveNode
   property :name
 
-  has_many :lessons_teaching, via: :teaching, model: Lesson
-  has_many :lessons_taught, via: :taught, model: Lesson
+  has_many :bidirectional, :lessons
 
-  has_many :lessons
+  has_many :outbound, :lessons_teaching, model_class: Lesson
+  has_many :outbound, :lessons_taught, model_class: Lesson
 
-  has_many :interests, direction: :outbound
+  has_many :outbound, :interests
 end
 
 describe 'Query API' do

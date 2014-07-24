@@ -112,10 +112,10 @@ module Neo4j::ActiveNode
         _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, false, clazz)
       end
 
-      def has_many(name, options = {})
+      def has_many(direction, name, options = {})
         name = name.to_sym
 
-        association = Neo4j::ActiveNode::HasN::Association.new(:has_many, name, options)
+        association = Neo4j::ActiveNode::HasN::Association.new(:has_many, direction, name, options)
         @associations ||= {}
         @associations[name] = association
 
