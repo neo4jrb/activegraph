@@ -6,7 +6,6 @@ describe Neo4j::Node::Wrapper do
     obj.extend(Neo4j::Node::Wrapper)
   end
 
-
   describe 'load_class_from_label' do
     it 'find classes' do
       clazz = UniqueClass.create
@@ -42,6 +41,37 @@ describe Neo4j::Node::Wrapper do
   end
 
   describe 'wrapper' do
+    describe "with _classname property" do
+      context 'present on class' do
+        it 'does not call :_class_wrappers' do
+          class CachedClassName
+            include Neo4j::Node::Wrapper
+            def props
+              { _classname: 'CachedClassName'}
+            end
+          end
+
+          expect(wrapper).to_not receive(:_class_wrappers)
+          wrapper = CachedClassName.new
+          wrapper.sorted_wrapper_classes
+        end
+      end
+
+      context "missing on class" do
+        it 'calls :_class_wrappers' do
+          class NotCachedClassName
+            include Neo4j::Node::Wrapper
+            def props
+              { name: 'foo' }
+            end
+          end
+          wrapper = NotCachedClassName.new
+          expect(wrapper).to receive(:_class_wrappers).once
+          wrapper.sorted_wrapper_classes
+        end
+      end
+    end
+
     it 'can find the wrapper even if it is auto loaded' do
       module AutoLoadTest
       end

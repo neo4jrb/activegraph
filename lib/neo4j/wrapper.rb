@@ -4,16 +4,10 @@ class Neo4j::Node
 
     # this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
     def wrapper
-      wrappers = _class_wrappers
-      if wrappers.empty?
-        self
-      else
-        wrapper_classes = wrappers.map{|w| Neo4j::ActiveNode::Labels._wrapped_labels[w]}
-        most_concrete_class = wrapper_classes.sort.first
-        wrapped_node = most_concrete_class.new
-        wrapped_node.init_on_load(self, self.props)
-        wrapped_node
-      end
+      most_concrete_class = sorted_wrapper_classes
+      wrapped_node = most_concrete_class.new
+      wrapped_node.init_on_load(self, self.props)
+      wrapped_node
     end
 
     def checked_labels_set
@@ -25,6 +19,17 @@ class Neo4j::Node
         load_class_from_label(label_name)
         # do this only once
         checked_labels_set.add(label_name)
+      end
+    end
+
+    def sorted_wrapper_classes
+      if self.props.is_a?(Hash) && self.props.has_key?(:_classname)
+        self.props[:_classname].constantize
+      else
+        wrappers = _class_wrappers
+        return self if wrappers.nil?
+        wrapper_classes = wrappers.map{|w| Neo4j::ActiveNode::Labels._wrapped_labels[w]}
+        wrapper_classes.sort.first
       end
     end
 
