@@ -1,6 +1,5 @@
 module Neo4j::ActiveNode
   module Identity
-
     def ==(o)
       o.class == self.class && o.id == id
     end
@@ -17,7 +16,6 @@ module Neo4j::ActiveNode
       _persisted_node ? _persisted_node.neo_id : nil
     end
 
-    # @return [String, nil] same as #neo_id
     def id
       id = neo_id
       id.is_a?(Integer) ? id : nil
@@ -26,7 +24,5 @@ module Neo4j::ActiveNode
     def hash
       id.hash
     end
-
   end
-
 end

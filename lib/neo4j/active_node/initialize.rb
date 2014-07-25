@@ -11,6 +11,7 @@ module Neo4j::ActiveNode::Initialize
     @_persisted_node = persisted_node
     changed_attributes && changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
+    self.default_properties=properties
     @attributes = convert_properties_to :ruby, @attributes
   end
 
