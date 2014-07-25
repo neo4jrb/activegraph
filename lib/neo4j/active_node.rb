@@ -32,6 +32,7 @@ module Neo4j
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::Identity
     include Neo4j::ActiveNode::Persistence
+    include Neo4j::ActiveNode::SerializedProperties
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Query
     include Neo4j::ActiveNode::Labels
@@ -71,11 +72,17 @@ module Neo4j
       end
 
       def self.inherited(other)
+        inherited_indexes(other) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
           other.attributes[k] = v
         end
         Neo4j::ActiveNode::Labels.add_wrapped_class(other)
         super
+      end
+
+      def self.inherited_indexes(other)
+        return if indexed_properties.nil?
+        self.indexed_properties.each {|property| other.index property }
       end
     end
   end

@@ -9,10 +9,11 @@ module Neo4j::ActiveNode
     include ActiveAttr::QueryAttributes
     include ActiveModel::Dirty
 
-    class UndefinedPropertyError < RuntimeError
-    end
+    class UndefinedPropertyError < RuntimeError; end
+    class MultiparameterAssignmentError < StandardError; end
 
     def initialize(attributes={}, options={})
+      attributes = process_attributes(attributes)
       relationship_props = self.class.extract_relationship_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
@@ -22,12 +23,6 @@ module Neo4j::ActiveNode
 
       super(attributes, options)
     end
-
-    def save_properties
-      @previously_changed = changes
-      changed_attributes.clear
-    end
-
 
     # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
     def read_attribute(name)
@@ -54,6 +49,46 @@ module Neo4j::ActiveNode
       end
     end
 
+    # Gives support for Rails date_select, datetime_select, time_select helpers.
+    def process_attributes(attributes = nil)
+      multi_parameter_attributes = {}
+      new_attributes = {}
+      attributes.each_pair do |key, value|
+        if key =~ /\A([^\(]+)\((\d+)([if])\)$/
+          found_key, index = $1, $2.to_i
+          (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
+        else
+          new_attributes[key] = value
+        end
+      end
+
+      multi_parameter_attributes.empty? ? new_attributes : process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
+    end
+
+    def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
+      multi_parameter_attributes.each_pair do |key, values|
+        begin
+          values = (values.keys.min..values.keys.max).map { |i| values[i] }
+          field = self.class.attributes[key.to_sym]
+          new_attributes[key] = instantiate_object(field, values)
+        rescue => e
+          raise MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
+        end
+      end
+      new_attributes
+    end
+
+    def instantiate_object(field, values_with_empty_parameters)
+      return nil if values_with_empty_parameters.all? { |v| v.nil? }
+      values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
+      klass = field[:type]
+      if klass
+        klass.new(*values)
+      else
+        values
+      end
+    end
+
     module ClassMethods
 
       def property(name, options={})
@@ -65,7 +100,6 @@ module Neo4j::ActiveNode
         attribute(name, options)
       end
 
-      #overrides ActiveAttr's attribute! method
       def attribute!(name, options={})
         super(name, options)
         define_method("#{name}=") do |value|

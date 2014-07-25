@@ -8,6 +8,7 @@ module Neo4j
 
       WRAPPED_CLASSES = []
       class InvalidQueryError < StandardError; end
+      class RecordNotFound < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -64,6 +65,16 @@ module Neo4j
           self.query_as(:n).pluck(:n)
         end
 
+        # Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+        def first
+          self.query_as(:n).limit(1).order('ID(n)').pluck(:n).first
+        end
+
+        # Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+        def last
+          self.query_as(:n).order('ID(n) DESC').limit(1).pluck(:n).first
+        end
+
         # @return [Fixnum] number of nodes of this class
         def count
           self.query_as(:n).return("count(n) AS count").first.count
@@ -77,6 +88,17 @@ module Neo4j
           Neo4j::Node.load(id.to_i)
         end
 
+        # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
+        # @param [Hash] hash of arguments to find 
+        def find_by(*args)
+          self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
+        end
+
+        # Like find_by, except that if no record is found, raises a RecordNotFound error. 
+        def find_by!(*args)
+          a = eval(args.join)
+          find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
+        end
 
         # Destroy all nodes an connected relationships
         def destroy_all
@@ -94,6 +116,8 @@ module Neo4j
               _index(property) if event == :session_available
             end
           end
+          @_indexed_properties ||= []
+          @_indexed_properties.push property unless @_indexed_properties.include? property
         end
 
         def index?(index_def)
@@ -113,6 +137,11 @@ module Neo4j
         def indexed_labels
 
         end
+
+        def indexed_properties
+          @_indexed_properties
+        end
+
 
         protected
 

@@ -193,6 +193,16 @@ module Neo4j::ActiveNode
     end
     alias_method :update_attributes!, :update!
 
+    def cache_key
+      if self.new_record?
+        "#{self.class.model_name.cache_key}/new"
+      elsif self.respond_to?(:updated_at) && !self.updated_at.blank?
+        "#{self.class.model_name.cache_key}/#{neo_id}-#{self.updated_at.utc.to_s(:number)}" 
+      else
+        "#{self.class.model_name.cache_key}/#{neo_id}"
+      end
+    end
+
     module ClassMethods
       # Creates a saves a new node
       # @param [Hash] props the properties the new node should have

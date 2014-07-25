@@ -229,8 +229,14 @@ describe Neo4j::ActiveNode do
     Person = UniqueClass.create do
       include Neo4j::ActiveNode
       property :name
-      property :age,   type: Integer
-      property :start,  type: Time
+      property :age,          type: Integer
+      property :start,        type: Time
+      property :links
+      property :datetime,     type: DateTime
+      property :date,         type: Date
+      property :numbers
+
+      serialize :links
     end
 
     it 'generate accessors for declared attribute' do
@@ -339,6 +345,110 @@ describe Neo4j::ActiveNode do
         Person.create(name: 'person123', age: 123, unknown: "yes")
       end.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
     end
+
+    describe 'multiparameter attributes' do
+      it 'converts to Date' do
+        person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        expect(person.date).to be_a(Date)
+        expect(person.date.to_s).to eq("2014-07-13")
+      end
+
+      it 'converts to DateTime' do
+        person = Person.create("datetime(1i)"=>"2014", "datetime(2i)"=>"7", "datetime(3i)"=>"13", "datetime(4i)"=>"17", "datetime(5i)"=>"45")
+        expect(person.datetime).to be_a(DateTime)
+        expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
+      end
+
+      it 'raises an error when it receives values it cannot process' do
+        expect do
+          Person.create("foo(1i)"=>"2014", "foo(2i)"=>"2014")
+        end.to raise_error(Neo4j::ActiveNode::Property::MultiparameterAssignmentError)
+      end
+
+      it 'sends values straight through when no type is specified' do
+        person = Person.create("numbers(1i)" => "5", "numbers(2i)" => "23")
+        expect(person.numbers).to be_a(Array)
+        expect(person.numbers).to eq [5, 23]
+      end
+
+      it "leaves standard attributes alone" do
+        person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13", name: 'chris')
+        expect(person.name).to eq 'chris'
+        expect(person.date).to be_a(Date)
+      end
+    end
   end
 
+  describe 'serialization' do
+    let!(:chris) { Person.create(name: 'chris') }
+    
+    it 'correctly identifies properties for serialization' do
+      expect(Person.serialized_properties).to include(:links)
+      expect(chris.serialized_properties).to include(:links)
+    end
+
+    it 'successfully saves and returns hashes' do
+      links = {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' }
+      chris.links = links
+      chris.save
+      expect(chris.links).to eq links
+      expect(chris.links.class).to eq Hash
+    end
+  end
+
+  describe "cache_key" do
+    describe "unpersisted object" do
+      it "should respond with plural_model/new" do
+        model = IceLolly.new
+        model.cache_key.should eq "#{model.class.model_name.cache_key}/new"
+      end
+    end
+
+    describe "persisted object" do
+      let(:model) { IceLolly.create(flavour: "vanilla", required_on_create: true, required_on_update: true) }
+
+      it "should respond with a valid cache key" do
+        expect(model.cache_key).to eq "#{model.class.model_name.cache_key}/#{model.neo_id}-#{model.updated_at.utc.to_s(:number)}"
+      end
+
+      context "when changed" do
+        it "should change cache_key value" do
+          start = model.cache_key and sleep 1
+          model.flavour = "chocolate" and model.save
+          expect(model.cache_key).to_not eq start
+        end
+      end
+
+      describe 'without updated_at property' do
+        NoStamp = UniqueClass.create do
+          include Neo4j::ActiveNode
+          property :name
+
+        end
+        let (:nostamp) { NoStamp.create }
+        it 'returns cache key without timestamp' do
+          expect(nostamp.cache_key).to eq "#{nostamp.class.model_name.cache_key}/#{nostamp.neo_id}"
+        end
+      end
+    end
+  end
+
+  describe "Neo4j::Paginated.create_from" do
+    before {
+      Person.destroy_all
+      i = 1.upto(16).to_a
+      i.each{|i| Person.create(age: i) }
+    }
+    after(:all) { Person.destroy_all }
+    let(:t) { Person.where }
+    let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
+
+    it "returns a Neo4j::Paginated" do
+      expect(p).to be_a(Neo4j::Paginated)
+    end
+
+    it 'returns the expected number of objects' do
+      expect(p.count).to eq 5
+    end
+  end
 end

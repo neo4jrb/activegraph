@@ -80,7 +80,7 @@ module Neo4j::ActiveNode
       #
       #
       # @return [Neo4j::ActiveNode::HasN::DeclRel] a DSL object where the has_n relationship can be further specified
-      def has_n(rel_type)
+      def has_n(rel_type, *callbacks)
         clazz = self
         module_eval(%Q{def #{rel_type}=(values)
                   #{rel_type}_rels.each {|rel| rel.del }
@@ -108,8 +108,7 @@ module Neo4j::ActiveNode
           def #{rel_type}
             _decl_rels[:#{rel_type}].rel_type
           end}, __FILE__, __LINE__)
-
-        _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, false, clazz)
+        _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, false, clazz, *callbacks)
       end
 
       def has_many(direction, name, options = {})
@@ -153,13 +152,14 @@ module Neo4j::ActiveNode
       #   file.folder_rel # => the relationship object between those nodes
       #
       # @return [Neo4j::ActiveNode::HasN::DeclRel] a DSL object where the has_one relationship can be futher specified
-      def has_one(rel_type)
+      def has_one(rel_type, *callbacks)
         clazz = self
         module_eval(%Q{def #{rel_type}=(value)
+                  return if !value
                   dsl = _decl_rels_for(:#{rel_type})
                   rel = dsl.single_relationship(self)
                   rel && rel.del
-                  dsl.create_relationship_to(self, value) if value
+                  dsl.create_relationship_to(self, value)
               end}, __FILE__, __LINE__)
 
         module_eval(%Q{def #{rel_type}
@@ -177,7 +177,7 @@ module Neo4j::ActiveNode
             _decl_rels[:#{rel_type}].rel_type
           end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, true, clazz)
+        _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, true, clazz, *callbacks)
       end
 
 
