@@ -125,6 +125,10 @@ module Neo4j
       serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
       properties = properties.inject({}) do |new_attributes, key_value_pair|
         attr, value = key_value_pair
+
+        # skip "secret" undeclared attributes such as uuid
+        next new_attributes unless self.class.attributes[attr]
+
         type = serialize.has_key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
                                   value

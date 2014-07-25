@@ -59,7 +59,6 @@ module Neo4j
       end
 
       module ClassMethods
-
         # Find all nodes/objects of this class
         def all
           self.query_as(:n).pluck(:n)
@@ -81,15 +80,15 @@ module Neo4j
         end
 
         # Returns the object with the specified neo4j id.
-        # @param [String,Fixnum] neo_id of node to find
-        def find(id)
-          raise "Unknown argument #{id.class} in find method" if not [String, Fixnum].include?(id.class)
-          
-          Neo4j::Node.load(id.to_i)
+        # @param [String,Fixnum] id of node to find
+        # @param [Neo4j::Session] session optional
+        def find(id, session = self.neo4j_session)
+          raise "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
+          find_by_id(id, session)
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
-        # @param [Hash] hash of arguments to find 
+        # @param [Hash] args of arguments to find
         def find_by(*args)
           self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
         end
@@ -100,24 +99,55 @@ module Neo4j
           find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
         end
 
-        # Destroy all nodes an connected relationships
+        # Destroy all nodes and connected relationships
         def destroy_all
           self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`)-[r]-() DELETE n,r")
           self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
         # Creates a Neo4j index on given property
+        #
+        # This can also be done on the property directly, see Neo4j::ActiveNode::Property::ClassMethods#property.
+        #
         # @param [Symbol] property the property we want a Neo4j index on
-        def index(property)
+        # @param [Hash] conf optional property configuration
+        #
+        # @example
+        #   class Person
+        #      include Neo4j::ActiveNode
+        #      property :name
+        #      index :name
+        #    end
+        #
+        # @example with constraint
+        #   class Person
+        #      include Neo4j::ActiveNode
+        #      property :name
+        #
+        #      # below is same as: index :name, index: :exact, constraint: {type: :unique}
+        #      index :name, constraint: {type: :unique}
+        #    end
+        def index(property, conf = {})
           if self.neo4j_session
-            _index(property)
+            _index(property, conf)
           else
+            # TODO does this really work ??? Looks like this event is never triggered
             Neo4j::Session.add_listener do |event, _|
-              _index(property) if event == :session_available
+              _index(property, conf) if event == :session_available
             end
           end
           @_indexed_properties ||= []
           @_indexed_properties.push property unless @_indexed_properties.include? property
+        end
+
+        # Creates a neo4j constraint on this class for given property
+        #
+        # @example
+        #   Person.constraint :name, type: :unique
+        #
+        def constraint(property, constraints, session = Neo4j::Session.current)
+          label = Neo4j::Label.create(mapped_label_name)
+          label.create_constraint(property, constraints, session)
         end
 
         def index?(index_def)
@@ -134,6 +164,12 @@ module Neo4j
           @_label_name || self.to_s.to_sym
         end
 
+        # @return [Neo4j::Label] the label for this class
+        def mapped_label
+          Neo4j::Label.create(mapped_label_name)
+        end
+
+        # TODO WHY ?
         def indexed_labels
 
         end
@@ -145,20 +181,23 @@ module Neo4j
 
         protected
 
-        def _index(property)
+        def _index(property, conf)
           mapped_labels.each do |label|
             # make sure the property is not indexed twice
             existing = label.indexes[:property_keys]
-            label.create_index(property) unless existing.flatten.include?(property)
+
+            # In neo4j constraint automatically creates an index
+            if conf[:constraint]
+              constraint(property, conf[:constraint])
+            else
+              label.create_index(property) unless existing.flatten.include?(property)
+            end
+
           end
         end
 
         def mapped_labels
           mapped_label_names.map{|label_name| Neo4j::Label.create(label_name)}
-        end
-
-        def mapped_label
-          Neo4j::Label.create(mapped_label_name)
         end
 
         def set_mapped_label_name(name)
