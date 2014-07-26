@@ -11,6 +11,13 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
 
+  before do
+    Neo4j::Config.delete(:id_property)
+    Neo4j::Config.delete(:id_property_type)
+    Neo4j::Config.delete(:id_property_type_value)
+  end
+
+
   describe 'abnormal cases' do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
@@ -55,13 +62,24 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     describe 'when having a configuration' do
-      before do
-        Neo4j::Config[:id_property] = :the_id
-        Neo4j::Config[:id_property_type] = :auto # :uuid # auto: :uuid
-        Neo4j::Config[:id_property_type_value] = :uuid # :uuid # auto: :uuid
+
+      let(:clazz) do
+        UniqueClass.create do
+          include Neo4j::ActiveNode
+        end
       end
 
-      it 'will use the configuration value'
+      before do
+        Neo4j::Config[:id_property] = :the_id
+        Neo4j::Config[:id_property_type] = :auto
+        Neo4j::Config[:id_property_type_value] = :uuid
+      end
+
+      it 'will set the id_property after a session has been created' do
+        node = clazz.new
+        expect(node).to respond_to(:the_id)
+        expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:the_id]])
+      end
     end
   end
 

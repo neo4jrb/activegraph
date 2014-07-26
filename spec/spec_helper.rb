@@ -60,6 +60,7 @@ RSpec.configure do |c|
   end
 
   c.before(:each) do
+    Neo4j::Session._listeners.clear
     curr_session = Neo4j::Session.current
     curr_session || create_session
   end

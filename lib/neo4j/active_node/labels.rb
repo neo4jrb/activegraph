@@ -128,13 +128,8 @@ module Neo4j
         #      index :name, constraint: {type: :unique}
         #    end
         def index(property, conf = {})
-          if self.neo4j_session
+          Neo4j::Session.on_session_available do |_|
             _index(property, conf)
-          else
-            # TODO does this really work ??? Looks like this event is never triggered
-            Neo4j::Session.add_listener do |event, _|
-              _index(property, conf) if event == :session_available
-            end
           end
           @_indexed_properties ||= []
           @_indexed_properties.push property unless @_indexed_properties.include? property
@@ -146,8 +141,10 @@ module Neo4j
         #   Person.constraint :name, type: :unique
         #
         def constraint(property, constraints, session = Neo4j::Session.current)
-          label = Neo4j::Label.create(mapped_label_name)
-          label.create_constraint(property, constraints, session)
+          Neo4j::Session.on_session_available do |_|
+            label = Neo4j::Label.create(mapped_label_name)
+            label.create_constraint(property, constraints, session)
+          end
         end
 
         def index?(index_def)
@@ -167,11 +164,6 @@ module Neo4j
         # @return [Neo4j::Label] the label for this class
         def mapped_label
           Neo4j::Label.create(mapped_label_name)
-        end
-
-        # TODO WHY ?
-        def indexed_labels
-
         end
 
         def indexed_properties

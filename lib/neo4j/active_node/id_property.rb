@@ -73,6 +73,7 @@ module Neo4j::ActiveNode
       extend self
     end
 
+
     module ClassMethods
 
       def find_by_id(key, session = Neo4j::Session.current!)
@@ -89,6 +90,7 @@ module Neo4j::ActiveNode
           self.where(name => key).first
         end
       end
+
     end
 
   end

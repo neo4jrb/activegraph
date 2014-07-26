@@ -1,6 +1,16 @@
 #=== Neo4j.rb configuration settings
 
-id_module: neo_id
+
+# Specify the default 'primary key' of Neo4j::ActiveNode objects
+#
+#id_property: neo_id
+
+
+# Example
+#id_property: my_id
+#id_property_type: :auto
+#id_property_type_value: :uuid
+
 
 # TODO
 # if identity map should be on or not

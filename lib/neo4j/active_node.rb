@@ -82,9 +82,19 @@ module Neo4j
       end
 
       def self.inherited_indexes(other)
-        return if indexed_properties.nil?
-        self.indexed_properties.each {|property| other.index property }
+       return if indexed_properties.nil?
+       self.indexed_properties.each {|property| other.index property }
       end
+
+      Neo4j::Session.on_session_available do |_|
+        name = Neo4j::Config[:id_property]
+        type = Neo4j::Config[:id_property_type]
+        value = Neo4j::Config[:id_property_type_value]
+        if (name && type && value)
+          id_property(name, type => value)
+        end
+      end
+
     end
   end
 end
