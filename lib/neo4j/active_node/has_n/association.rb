@@ -8,7 +8,7 @@ module Neo4j
 
         def initialize(type, direction, name, options = {})
           raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
-          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:outbound, :inbound, :bidirectional].include?(direction.to_sym)
+          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
 
           @type = type.to_sym
           @name = name
@@ -21,10 +21,17 @@ module Neo4j
               options[:model_class]
             end
           rescue NameError
-            raise ArgumentError, "Could not find #{@target_class_name_from_name} class and no model_class specified"
+            raise ArgumentError, "Could not find `#{@target_class_name_from_name}` class and no :model_class specified"
           end
 
-          @relationship_type = options[:type]
+          if options[:type] && options[:origin]
+            raise ArgumentError, "Cannot specify both :type and :origin (#{self.base_declaration})"
+          else
+            @relationship_type = options[:type] && options[:type].to_sym
+            @origin = options[:origin] && options[:origin].to_sym
+
+            validate_origin!
+          end
         end
 
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
@@ -40,14 +47,14 @@ module Neo4j
           relationship_cypher = "[#{var}#{relationship_name_cypher}#{properties_string}]"
 
           direction = @direction
-          direction = :outbound if create && @direction == :bidirectional
+          direction = :out if create && @direction == :both
 
           case direction
-            when :outbound
+            when :out
               "-#{relationship_cypher}->"
-            when :inbound
+            when :in
               "<-#{relationship_cypher}-"
-            when :bidirectional
+            when :both
               "-#{relationship_cypher}-"
             else
               raise ArgumentError, "Invalid relationship direction: #{direction.inspect}"
@@ -55,7 +62,20 @@ module Neo4j
         end
 
         def relationship_type(create = false)
-          @relationship_type || (create || exceptional_target_class?) && "##{@name}"
+          if @relationship_type
+            @relationship_type
+          elsif @origin
+            "##{@origin}"
+          else
+            (create || exceptional_target_class?) && "##{@name}"
+          end
+        end
+
+        # Return basic details about association as declared in the model
+        # @example
+        #   has_many :in, :bands
+        def base_declaration
+          "#{type} #{direction.inspect}, #{name.inspect}"
         end
 
         private
@@ -69,6 +89,21 @@ module Neo4j
           @target_class && @target_class.name != @target_class_name_from_name
         end
 
+        def validate_origin!
+          if @origin
+            if @target_class
+              if association = @target_class.associations[@origin]
+                if @direction == association.direction
+                  raise ArgumentError, "Origin `#{@origin.inspect}` (specified in #{self.base_declaration}) has same direction `#{@direction}`)"
+                end
+              else
+                raise ArgumentError, "Origin `#{@origin.inspect}` association not found for #{@target_class} (specified in #{self.base_declaration})"
+              end
+            else
+              raise ArgumentError, "Cannot use :origin without a model_class (implied or explicit)"
+            end
+          end
+        end
       end
     end
   end
