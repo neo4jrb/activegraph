@@ -55,6 +55,34 @@ end
 
 describe 'Query API' do
   before(:each) { delete_db }
+
+  describe 'association validation' do
+    before(:each) do
+      %w{Foo Bar}.each do |const|
+        stub_const const, Class.new { include Neo4j::ActiveNode }
+      end
+    end
+
+    context 'Foo has an association to Bar' do
+      before(:each) do
+        Foo.has_many :in, :bars, model_class: Bar
+      end
+
+      it { expect { Bar.has_many :out, :foos, origin: :bars }.not_to raise_error }
+      it { expect { Bar.has_many :both, :foos, origin: :bars }.not_to raise_error }
+
+      # No such model Foosr
+      it { expect { Bar.has_many :out, :foosrs, origin: :bars }.to raise_error(ArgumentError) }
+
+      # Specifed origin not found
+      it { expect { Bar.has_many :out, :foos, origin: :barsy }.to raise_error(ArgumentError) }
+
+      # Should raise error when direction is the same
+      it { expect { Bar.has_many :in, :foos, origin: :bars }.to raise_error(ArgumentError) }
+
+    end
+  end
+
   describe 'queries directly on a model class' do
     let!(:samuels) { Teacher.create(name: 'Harold Samuels') }
     let!(:othmar) { Teacher.create(name: 'Ms. Othmar') }
@@ -73,6 +101,7 @@ describe 'Query API' do
     let!(:reading) { Interest.create(name: 'Reading') }
     let!(:math) { Interest.create(name: 'Math') }
     let!(:monster_trucks) { Interest.create(name: 'Monster Trucks') }
+
 
     it 'returns all' do
       result = Teacher.to_a
