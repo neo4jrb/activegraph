@@ -23,55 +23,25 @@ module Neo4j
   #
   module ActiveNode
     extend ActiveSupport::Concern
-    extend ActiveModel::Naming
 
-    include ActiveModel::Conversion
-    include ActiveModel::Serializers::Xml
-    include ActiveModel::Serializers::JSON
-
+    include Neo4j::Library
     include Neo4j::ActiveNode::Initialize
-    include Neo4j::ActiveNode::Identity
     include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::Persistence
     include Neo4j::ActiveNode::SerializedProperties
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Query
     include Neo4j::ActiveNode::Labels
-    include Neo4j::ActiveNode::Validations
     include Neo4j::ActiveNode::Callbacks
+    include Neo4j::ActiveNode::Validations
     include Neo4j::ActiveNode::Rels
     include Neo4j::ActiveNode::HasN
 
-    def wrapper
-      self
-    end
-
     def neo4j_obj
-      _persisted_node || raise("Tried to access native neo4j object on a non persisted object")
-    end
-
-    module ClassMethods
-      def neo4j_session_name (name)
-        @neo4j_session_name = name
-      end
-
-      def neo4j_session
-        if @neo4j_session_name
-          Neo4j::Session.named(@neo4j_session_name) || raise("#{self.name} is configured to use a neo4j session named #{@neo4j_session_name}, but no such session is registered with Neo4j::Session")
-        else
-          Neo4j::Session.current
-        end
-      end
+      _persisted_obj || raise("Tried to access native neo4j object on a non persisted object")
     end
 
     included do
-      self.include_root_in_json = true
-
-
-      def self.i18n_scope
-        :neo4j
-      end
-
       def self.inherited(other)
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|

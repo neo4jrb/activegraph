@@ -24,13 +24,16 @@ module Neo4j
             raise ArgumentError, "Could not find #{@target_class_name_from_name} class and no model_class specified"
           end
 
-          @relationship_type = options[:type]
+          @relationship_type  = options[:type]
+          @relationship_class = options[:rel_class]
         end
 
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
         def arrow_cypher(var = nil, properties = {}, create = false)
           relationship_type = self.relationship_type(create)
           relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
+
+          properties[:_classname] = @relationship_class.name if relationship_class
 
           properties_string = properties.map do |key, value|
             "#{key}: #{value.inspect}"
@@ -56,6 +59,10 @@ module Neo4j
 
         def relationship_type(create = false)
           @relationship_type || (create || exceptional_target_class?) && "##{@name}"
+        end
+
+        def relationship_class
+          @relationship_class
         end
 
         private

@@ -45,7 +45,7 @@ describe Neo4j::ActiveNode do
       subject() { SimpleClass.new(unknown: 'foo')}
 
       it 'does not allow setting undeclared properties' do
-        expect { subject }.to raise_error Neo4j::ActiveNode::Property::UndefinedPropertyError
+        expect { subject }.to raise_error Neo4j::Library::Property::UndefinedPropertyError
       end
     end
   end

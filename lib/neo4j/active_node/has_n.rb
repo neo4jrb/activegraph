@@ -11,6 +11,7 @@ module Neo4j::ActiveNode
 
 
       def has_association?(name)
+        @associations ||= {}
         !!@associations[name]
       end
 

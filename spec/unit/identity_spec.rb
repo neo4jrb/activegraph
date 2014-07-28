@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Neo4j::ActiveNode::Identity do
+describe Neo4j::Library::Identity do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode::Persistence
-      include Neo4j::ActiveNode::Identity
+      include Neo4j::Library::Identity
       include Neo4j::ActiveNode::Property
 
       def id
@@ -25,7 +25,7 @@ describe Neo4j::ActiveNode::Identity do
     let(:created_node) { clazz.new }
 
     before(:each) do
-      node.stub(:_persisted_node).and_return(nil)
+      node.stub(:_persisted_obj).and_return(nil)
     end
 
     it 'should not have an idea before being persisted' do
@@ -34,7 +34,7 @@ describe Neo4j::ActiveNode::Identity do
 
     context 'a persisted record' do
       before(:each) do
-        created_node.stub(:_persisted_node).and_return(double(neo_id: 4387, del: true))
+        created_node.stub(:_persisted_obj).and_return(double(neo_id: 4387, del: true))
       end
 
       it 'should be the neo_id after it is saved' do

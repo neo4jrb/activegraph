@@ -9,8 +9,8 @@ describe 'Neo4j::ActiveNode#rels' do
     @n = clazz.create
     @a = clazz.create
     @b = clazz.create
-    @n.create_rel(:friends, @a._persisted_node)
-    @a.create_rel(:knows, @b._persisted_node)
+    @n.create_rel(:friends, @a._persisted_obj)
+    @a.create_rel(:knows, @b._persisted_obj)
   end
 
   it 'delegates #nodes' do

@@ -1,5 +1,5 @@
 module Neo4j
-  module ActiveNode
+  module ActiveRel
     module Callbacks #:nodoc:
       extend ActiveSupport::Concern
       include Neo4j::Library::Callbacks

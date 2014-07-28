@@ -21,7 +21,7 @@ describe Neo4j::ActiveNode::Persistence do
     end
 
     it 'raises an error when given a property which is not defined' do
-      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::ActiveNode::Property::UndefinedPropertyError)
+      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::Library::Property::UndefinedPropertyError)
     end
   end
 
@@ -34,7 +34,7 @@ describe Neo4j::ActiveNode::Persistence do
 
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.stub(:_persisted_node).and_return(nil)
+      o.stub(:_persisted_obj).and_return(nil)
       clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
@@ -45,7 +45,7 @@ describe Neo4j::ActiveNode::Persistence do
 
     it 'does not updates node if already persisted before but nothing changed' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.stub(:_persisted_node).and_return(node)
+      o.stub(:_persisted_obj).and_return(node)
       o.stub(:changed_attributes).and_return({})
       node.should_receive(:exist?).and_return(true)
       o.save
@@ -54,7 +54,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'updates node if already persisted before if an attribute was changed' do
       o = clazz.new
       o.name = 'sune'
-      o.stub(:_persisted_node).and_return(node)
+      o.stub(:_persisted_obj).and_return(node)
       node.should_receive(:exist?).and_return(true)
       node.should_receive(:update_props).and_return(name: 'sune')
       o.save
@@ -64,21 +64,21 @@ describe Neo4j::ActiveNode::Persistence do
 
   describe 'persisted?' do
     it 'is true if there is a wrapped node and it has not been deleted' do
-      clazz.any_instance.stub(:_persisted_node).and_return(node)
+      clazz.any_instance.stub(:_persisted_obj).and_return(node)
       o = clazz.new
       node.should_receive(:exist?).and_return(true)
       o.persisted?.should eq(true)
     end
 
     it 'is false if there is a wrapped node and it but it has been deleted' do
-      clazz.any_instance.stub(:_persisted_node).and_return(node)
+      clazz.any_instance.stub(:_persisted_obj).and_return(node)
       o = clazz.new
       node.should_receive(:exist?).and_return(false)
       o.persisted?.should eq(false)
     end
 
     it 'is false if there is not a persisted node' do
-      clazz.any_instance.stub(:_persisted_node).and_return(nil)
+      clazz.any_instance.stub(:_persisted_obj).and_return(nil)
       o = clazz.new
       o.persisted?.should eq(false)
     end
@@ -87,13 +87,13 @@ describe Neo4j::ActiveNode::Persistence do
 
   describe 'new_record?' do
     it 'is true if it does not wrap a persisted node' do
-      clazz.any_instance.stub(:_persisted_node).and_return(nil)
+      clazz.any_instance.stub(:_persisted_obj).and_return(nil)
       o = clazz.new
       o.new_record?.should eq(true)
     end
 
     it 'is false if it does wrap a persisted node' do
-      clazz.any_instance.stub(:_persisted_node).and_return(node)
+      clazz.any_instance.stub(:_persisted_obj).and_return(node)
       o = clazz.new
       o.new_record?.should eq(false)
     end
