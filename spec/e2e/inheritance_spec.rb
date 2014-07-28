@@ -49,4 +49,10 @@ describe 'Inheritance', type: :e2e do
       InheritanceTest::Car.all.to_a.should =~ [@saab, @volvo]
     end
   end
+
+  describe 'indexes' do
+    it 'inherits the indexes of the base class' do
+      expect(InheritanceTest::Car.indexed_properties).to include :name
+    end
+  end
 end

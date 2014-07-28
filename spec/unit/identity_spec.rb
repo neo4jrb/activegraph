@@ -6,6 +6,10 @@ describe Neo4j::ActiveNode::Identity do
       include Neo4j::ActiveNode::Persistence
       include Neo4j::ActiveNode::Identity
       include Neo4j::ActiveNode::Property
+
+      def id
+        neo_id
+      end
     end
   end
 

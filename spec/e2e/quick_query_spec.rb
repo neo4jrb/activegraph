@@ -38,7 +38,7 @@ describe 'QuickQuery Queries' do
   end
 
   describe "#qq on instance" do
-    after(:all) { Student.all.each{|s| s.destroy }}
+    after(:all) { Student.destroy_all }
     let(:chris) { Student.create(name: 'chris', age: '30') }
 
     it 'creates a new instance of QuickQuery' do
@@ -51,7 +51,7 @@ describe 'QuickQuery Queries' do
   end
 
   describe "filters and set" do
-    after(:each) { Student.all.each{|s| s.destroy } }
+    after(:each) { Student.destroy_all }
     let!(:chris) { Student.create(name: 'chris', age: 30, occupation: '') }
     let!(:lauren) { Student.create(name: 'lauren', age: 31, occupation: '') }
     let!(:bob) { Student.create(name: 'bob', age: 32, occupation: '') }
@@ -166,7 +166,7 @@ describe 'QuickQuery Queries' do
       let!(:chris) { Student.create(name: 'chris', age: 30) }
       let!(:lauren) { Student.create(name: 'lauren', age: 31) }
       let!(:lesson) { Lesson.create(name: 'ruby 101' ) }
-      after(:all) { Student.all.each{|s| s.destroy} and Lesson.all.each{|l| l.destroy } }
+      after(:all) { Student.destroy_all and Lesson.destroy_all }
 
       it 'allows you query by relationship properties' do
         lesson.students.create(chris, grade: 'd-')
@@ -180,7 +180,7 @@ describe 'QuickQuery Queries' do
   end
 
   describe "return" do
-    after(:each) { Student.all.each{|s| s.destroy } }
+    after(:each) { Student.destroy_all }
 
     let!(:chris) { Student.create(name: 'chris', age: 30) }
     let!(:history) { Lesson.create(name: 'history 101') }
@@ -207,7 +207,7 @@ describe 'QuickQuery Queries' do
   end
 
   describe "to_a and to_a!" do
-    after(:each) { Student.all.each{|s| s.destroy} and Lesson.all.each{|l| l.destroy } }
+    after(:each) { Student.destroy_all and Lesson.destroy_all }
     let!(:history) { Lesson.create(name: 'history 101') } 
     before { ['s1', 's2', 's3', 's4'].each{ |s| Student.create(name: s).lessons << history } }
 

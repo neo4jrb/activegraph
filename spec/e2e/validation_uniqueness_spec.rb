@@ -45,12 +45,6 @@ describe Neo4j::ActiveNode::Validations do
     it "should allow to update an object" do
       o = @clazz.new("name" => "joe")
       o.save.should be true
-
-      @clazz \
-        .stub(:first) \
-        .with(:name => 'joe') \
-        .and_return(o)
-
       o.name = "joe"
       o.valid?.should be true
       o.should_not have_error_on(:name)
