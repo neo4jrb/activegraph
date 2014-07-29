@@ -13,7 +13,8 @@ module Neo4j::ActiveNode
     end
 
     def initialize(attributes={}, options={})
-      relationship_props = self.class.extract_relationship_attributes!(attributes)
+      self.class.extract_association_attributes!(attributes)
+
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
       writer_method_props.each do |key, value|
@@ -77,11 +78,11 @@ module Neo4j::ActiveNode
 
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
-      def extract_relationship_attributes!(attributes)
-        attributes.keys.inject({}) do |relationship_props, key|
-          relationship_props[key] = attributes.delete(key) if self.has_relationship?(key)
+      def extract_association_attributes!(attributes)
+        attributes.keys.inject({}) do |association_props, key|
+          association_props[key] = attributes.delete(key) if self.has_association?(key)
 
-          relationship_props
+          association_props
         end
       end
 

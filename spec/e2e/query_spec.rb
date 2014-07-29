@@ -68,17 +68,37 @@ describe 'Query API' do
         Foo.has_many :in, :bars, model_class: Bar
       end
 
-      it { expect { Bar.has_many :out, :foos, origin: :bars }.not_to raise_error }
-      it { expect { Bar.has_many :both, :foos, origin: :bars }.not_to raise_error }
+      subject { Bar.new }
 
-      # No such model Foosr
-      it { expect { Bar.has_many :out, :foosrs, origin: :bars }.to raise_error(ArgumentError) }
+      context 'other class is opposite direction' do
+        before(:each) { Bar.has_many :out, :foos, origin: :bars }
 
-      # Specifed origin not found
-      it { expect { Bar.has_many :out, :foos, origin: :barsy }.to raise_error(ArgumentError) }
+        it { expect { subject.foos }.not_to raise_error }
+      end
 
-      # Should raise error when direction is the same
-      it { expect { Bar.has_many :in, :foos, origin: :bars }.to raise_error(ArgumentError) }
+      context 'other class is both' do
+        before(:each) { Bar.has_many :both, :foos, origin: :bar }
+
+        it { expect { subject.foos }.not_to raise_error }
+      end
+
+      context 'Assumed model does not exist' do
+        before(:each) { Bar.has_many :out, :foosrs, origin: :bars }
+
+        it { expect { subject.foosrs }.to raise_error(NameError) }
+      end
+
+      context 'Origin does not exist' do
+        before(:each) { Bar.has_many :out, :foos, origin: :barsy }
+
+        it { expect { subject.foos.to_a }.to raise_error(ArgumentError) }
+      end
+
+      context 'Direction is the same' do
+        before(:each) { Bar.has_many :in, :foos, origin: :bars }
+
+        it { expect { subject.foos.to_a }.to raise_error(ArgumentError) }
+      end
 
     end
   end

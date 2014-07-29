@@ -17,9 +17,13 @@ module Neo4j
         end
 
         def each
-          query.pluck(@node_var || :result).each do |obj|
+          self.pluck(@node_var || :result).each do |obj|
             yield obj
           end
+        end
+
+        def ==(value)
+          self.to_a == value
         end
 
         METHODS = %w[where order skip limit]
@@ -75,16 +79,7 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          if @association
-            raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_node.class != @model
-
-            _association_query_start(:start)
-              .match(end: other_node.class)
-              .where(end: {neo_id: other_node.neo_id})
-              .create("start#{_association_arrow({}, true)}end").exec
-          else
-            raise "Can only create associations on associations"
-          end
+          associate(other_node, {})
         end
 
         def associate(other_node, properties)
@@ -155,7 +150,7 @@ module Neo4j
 
         def _association_chain_var
           if start_object = @options[:start_object]
-            :"#{start_object.class.name.downcase}#{start_object.neo_id}"
+            :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
           elsif query_proxy = @options[:query_proxy]
             query_proxy.node_var || :"node#{_chain_level}"
           else

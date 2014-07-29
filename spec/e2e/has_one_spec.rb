@@ -6,13 +6,13 @@ describe "has_one" do
     class HasOneA
       include Neo4j::ActiveNode
       property :name
-      has_n :children
+      has_many :out, :children, model_class: false
     end
 
     class HasOneB
       include Neo4j::ActiveNode
       property :name
-      has_one(:parent).from(:children)
+      has_one :in, :parent, type: :children, model_class: false
     end
 
     it 'find the nodes via the has_one accessor' do
@@ -76,8 +76,8 @@ describe "has_one" do
       include Neo4j::ActiveNode
     end
 
-    Folder1.has_n(:files).to(File1)
-    File1.has_one(:parent).from(Folder1.files)
+    Folder1.has_many :out, :files, model_class: File1
+    File1.has_one :in, :parent, model_class: Folder1, origin: :files
 
     it 'can access nodes via parent has_one relationship' do
       f1 = Folder1.create

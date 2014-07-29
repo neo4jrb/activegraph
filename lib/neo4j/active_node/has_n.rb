@@ -10,7 +10,11 @@ module Neo4j::ActiveNode
     module ClassMethods
 
       def has_association?(name)
-        !!@associations[name]
+        !!associations[name]
+      end
+
+      def associations
+        @associations || {}
       end
 
       def has_relationship?(rel_type)
@@ -120,11 +124,20 @@ module Neo4j::ActiveNode
         @associations ||= {}
         @associations[name] = association
 
-        target_class_name = association.target_class ? association.target_class.name : 'nil'
+        target_class_name = association.target_class_name || 'nil'
 
+        # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
         module_eval(%Q{
           def #{name}(node = nil, rel = nil)
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], session: self.class.neo4j_session, start_object: self, node: node, rel: rel)
+          end
+
+          def #{name}=(other_nodes)
+            #{name}.query_as(:n).delete(:n).exec
+
+            other_nodes.each do |node|
+              #{name} << node
+            end
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
@@ -134,51 +147,35 @@ module Neo4j::ActiveNode
 
       end
 
-      attr_reader :associations
+      def has_one(direction, name, options = {})
+        name = name.to_sym
 
-      # Specifies a relationship between two node classes.
-      # Generates assignment and accessor methods for the given relationship
-      # Old relationship is deleted when a new relationship is assigned.
-      # Both incoming and outgoing relationships can be declared, see {Neo4j::Wrapper::HasN::DeclRel}
-      #
-      # @example
-      #
-      #   class FileNode
-      #      include Neo4j::ActiveNode
-      #      has_one(:folder)
-      #   end
-      #
-      #   file = FileNode.create
-      #   file.folder = Neo4j::Node.create
-      #   file.folder # => the node above
-      #   file.folder_rel # => the relationship object between those nodes
-      #
-      # @return [Neo4j::ActiveNode::HasN::DeclRel] a DSL object where the has_one relationship can be futher specified
-      def has_one(rel_type)
-        clazz = self
-        module_eval(%Q{def #{rel_type}=(value)
-                  dsl = _decl_rels_for(:#{rel_type})
-                  rel = dsl.single_relationship(self)
-                  rel && rel.del
-                  dsl.create_relationship_to(self, value) if value
-              end}, __FILE__, __LINE__)
+        association = Neo4j::ActiveNode::HasN::Association.new(:has_one, direction, name, options)
+        name = name.to_sym
 
-        module_eval(%Q{def #{rel_type}
-                  dsl = _decl_rels_for('#{rel_type}'.to_sym)
-                  dsl.single_node(self)
-              end}, __FILE__, __LINE__)
+        @associations ||= {}
+        @associations[name] = association
 
-        module_eval(%Q{def #{rel_type}_rel
-                  dsl = _decl_rels_for(:#{rel_type})
-                  dsl.single_relationship(self)
-               end}, __FILE__, __LINE__)
+        target_class_name = association.target_class_name || 'nil'
 
-        instance_eval(%Q{
-          def #{rel_type}
-            _decl_rels[:#{rel_type}].rel_type
+        module_eval(%Q{
+          def #{name}=(other_node)
+            #{name}_query_proxy << other_node
+          end
+
+          def #{name}_query_proxy(node = nil, rel = nil)
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], session: self.class.neo4j_session, start_object: self, node: node, rel: rel)
+          end
+
+          def #{name}(node = nil, rel = nil)
+            #{name}_query_proxy(node, rel).first
           end}, __FILE__, __LINE__)
 
-        _decl_rels[rel_type.to_sym] = DeclRel.new(rel_type, true, clazz)
+        instance_eval(%Q{
+          def #{name}(node = nil, rel = nil)
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], session: self.neo4j_session, query_proxy: self.query_proxy, node: node, rel: rel).first
+          end}, __FILE__, __LINE__)
+
       end
 
 

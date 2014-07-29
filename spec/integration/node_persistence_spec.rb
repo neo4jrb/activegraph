@@ -6,7 +6,7 @@ describe "Neo4j::ActiveNode" do
     include Neo4j::ActiveNode
     property :a
     property :x
-    has_one :parent
+    has_one :out, :parent, model_class: false
   end
 
 
