@@ -58,11 +58,13 @@ module Neo4j
         end
 
         def target_class_name
-          @target_class_option
+          @target_class_option.to_s if @target_class_option
         end
 
         def target_class
-          @target_class ||= @target_class_option.constantize if @target_class
+          return @target_class if @target_class
+
+          @target_class = target_class_name.constantize if target_class_name
         rescue NameError
           raise ArgumentError, "Could not find `#{@target_class}` class and no :model_class specified"
         end
@@ -101,10 +103,10 @@ module Neo4j
             if target_class
               if association = target_class.associations[@origin]
                 if @direction == association.direction
-                  raise ArgumentError, "Origin `#{@origin.inspect}` (specified in #{self.base_declaration}) has same direction `#{@direction}`)"
+                  raise ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)"
                 end
               else
-                raise ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{self.base_declaration})"
+                raise ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
               end
             else
               raise ArgumentError, "Cannot use :origin without a model_class (implied or explicit)"

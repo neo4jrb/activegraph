@@ -6,13 +6,13 @@ describe "has_one" do
     class HasOneA
       include Neo4j::ActiveNode
       property :name
-      has_many :out, :children, model_class: false
+      has_many :out, :children, model_class: 'HasOneB'
     end
 
     class HasOneB
       include Neo4j::ActiveNode
       property :name
-      has_one :in, :parent, type: :children, model_class: false
+      has_one :in, :parent, origin: :children, model_class: 'HasOneA'
     end
 
     it 'find the nodes via the has_one accessor' do
@@ -24,7 +24,7 @@ describe "has_one" do
 
       c.parent.should == a
       b.parent.should == a
-      a.children.should =~ [b,c]
+      a.children.to_a.should =~ [b,c]
     end
 
     it 'can create a relationship via the has_one accessor' do
@@ -62,8 +62,10 @@ describe "has_one" do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
-      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
+      b.query_as(:b).match("b<-[:`#children`]-(r)").pluck(:r).should == [a]
+      a.query_as(:a).match("a-[:`#children`]->(r)").pluck(:r).should == [b]
+#      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
+#      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
     end
   end
 
@@ -83,8 +85,9 @@ describe "has_one" do
       f1 = Folder1.create
       file1 = File1.create
       file2 = File1.create
-      f1.files << file1 << file2
-      f1.files.should =~ [file1, file2]
+      f1.files << file1
+      f1.files << file2
+      f1.files.to_a.should =~ [file1, file2]
       file1.parent.should == f1
       file2.parent.should == f1
     end

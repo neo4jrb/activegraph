@@ -144,7 +144,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy._chain_level + 1
           else
-            raise "Crazy error" # TODO: Better error
+            1
           end
         end
 

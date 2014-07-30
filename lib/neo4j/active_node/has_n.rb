@@ -133,7 +133,7 @@ module Neo4j::ActiveNode
           end
 
           def #{name}=(other_nodes)
-            #{name}.query_as(:n).delete(:n).exec
+            #{name}(nil, :r).query_as(:n).delete(:r).exec
 
             other_nodes.each do |node|
               #{name} << node
@@ -160,20 +160,30 @@ module Neo4j::ActiveNode
 
         module_eval(%Q{
           def #{name}=(other_node)
+            #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
+
             #{name}_query_proxy << other_node
           end
 
-          def #{name}_query_proxy(node = nil, rel = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], session: self.class.neo4j_session, start_object: self, node: node, rel: rel)
+          def #{name}_query_proxy(options = {})
+            self.class.#{name}_query_proxy({start_object: self}.merge(options))
+          end
+
+          def #{name}_rel
+            #{name}_query_proxy(rel: :r).pluck(:r).first
           end
 
           def #{name}(node = nil, rel = nil)
-            #{name}_query_proxy(node, rel).first
+            #{name}_query_proxy(node: node, rel: rel).first
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
+          def #{name}_query_proxy(options = {})
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], {session: self.neo4j_session}.merge(options))
+          end
+
           def #{name}(node = nil, rel = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], session: self.neo4j_session, query_proxy: self.query_proxy, node: node, rel: rel).first
+            #{name}_query_proxy(query_proxy: self.query_proxy, node: node, rel: rel)
           end}, __FILE__, __LINE__)
 
       end

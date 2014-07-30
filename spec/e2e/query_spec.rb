@@ -163,8 +163,8 @@ describe 'Query API' do
       end
 
       it 'differentiates associations on the same model for the same class' do
-        bobby.favorite_teachers.to_set.should == [samuels].to_set
-        bobby.hated_teachers.to_set.should == [othmar].to_set
+        bobby.favorite_teachers.to_a.should == [samuels]
+        bobby.hated_teachers.to_a.should == [othmar]
       end
     end
 
