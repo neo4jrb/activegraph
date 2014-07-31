@@ -4,6 +4,9 @@ require 'ostruct'
 module Rails
   class Config
     attr_accessor :neo4j, :session_type, :session_path, :sessions, :session_options
+    def to_hash
+      {}
+    end
   end
 
   class Railtie

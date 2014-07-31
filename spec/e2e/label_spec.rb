@@ -133,16 +133,16 @@ describe "Neo4j::ActiveNode" do
     end
 
     describe 'when inherited' do
-      let(:subclass) do
-        Class.new(clazz)
-      end
+      it 'has an index on both base and subclass' do
+        class Foo1
+          include Neo4j::ActiveNode
+          property :name, index: :exact
+        end
+        class Foo2 < Foo1
 
-      it 'has an index on the baseclass' do
-        expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
-      end
-
-      it 'has an index on the subclass' do
-        expect(subclass.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        end
+        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name]])
       end
 
     end

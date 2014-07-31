@@ -1,5 +1,26 @@
 module Neo4j::ActiveNode
 
+  # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
+  #
+  # @example using generated UUIDs
+  #   class Person
+  #     include Neo4j::ActiveNode
+  #     # creates a 'secret' neo4j property my_uuid which will be used as primary key
+  #     id_property :my_uuid, auto: :uuid
+  #   end
+  #
+  # @example using user defined ids
+  #   class Person
+  #     include Neo4j::ActiveNode
+  #     property :title
+  #     validates :title, :presence => true
+  #     id_property :title_id, on: :title_to_url
+  #
+  #     def title_to_url
+  #       self.title.urlize # uses https://github.com/cheef/string-urlize gem
+  #     end
+  #   end
+  #
   module IdProperty
     extend ActiveSupport::Concern
 
@@ -73,10 +94,11 @@ module Neo4j::ActiveNode
       extend self
     end
 
+
     module ClassMethods
 
-      def find_by_id(key, session = Neo4j::Session.current!)
-        Neo4j::Node.load(key.to_i, session)
+      def find_by_id(key)
+        Neo4j::Node.load(key.to_i)
       end
 
 
@@ -89,6 +111,7 @@ module Neo4j::ActiveNode
           self.where(name => key).first
         end
       end
+
     end
 
   end
