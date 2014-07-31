@@ -81,10 +81,9 @@ module Neo4j
 
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
-        # @param [Neo4j::Session] session optional
-        def find(id, session = self.neo4j_session)
+        def find(id)
           raise "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
-          find_by_id(id, session)
+          find_by_id(id)
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.

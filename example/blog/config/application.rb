@@ -35,5 +35,11 @@ module Blog
 
     #config.neo4j.session_type = :embedded_db
     #config.neo4j.session_path = File.expand_path('neo4j-db', Rails.root)
+
+    # Example of using UUID instead of Neo4j's id (neo_id)
+    # config.neo4j.id_property = :uuid
+    # config.neo4j.id_property_type = :auto
+    # config.neo4j.id_property_type_value = :uuid
+
   end
 end
