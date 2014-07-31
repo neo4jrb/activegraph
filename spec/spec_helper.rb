@@ -54,7 +54,7 @@ Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |c|
 
-  c.before(:all) do
+  c.before(:suite) do
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session
   end
