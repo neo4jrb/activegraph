@@ -61,7 +61,7 @@ describe 'Neo4j::ActiveNode#all' do
   end
 
   it 'can not find all nodes having a relationship to another node if there are non' do
-    expect(@clazz_b.where(knows: @a1).to_a).to eq([])
+    expect(@clazz_b.query_as(:b).match('b<-[:knows]-(r)').pluck(:r)).to eq([])
   end
 
 end
