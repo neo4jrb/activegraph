@@ -22,7 +22,6 @@ require 'neo4j/rel_wrapper'
 require 'neo4j/type_converters'
 require 'neo4j/paginated'
 
-require 'neo4j/library/id_property'
 require 'neo4j/library/callbacks'
 require 'neo4j/library/property'
 require 'neo4j/library/persistence'

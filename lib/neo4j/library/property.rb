@@ -143,7 +143,7 @@ module Neo4j::Library
         # either constraint or index, do not set both
         if options[:constraint]
           raise "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
-          constraint(name, constraint: :unique)
+          constraint(name, type: :unique)
         elsif options[:index]
           raise "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
           index(name, options) if options[:index] == :exact
@@ -211,6 +211,7 @@ module Neo4j::Library
       end
 
     end
+
   end
 
 end

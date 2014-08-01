@@ -33,6 +33,15 @@ describe "Neo4j::ActiveNode" do
       end
     end
 
+    describe 'property :name, constraint: :unique' do
+      it 'delegates to the Neo4j::Label class' do
+        clazz = UniqueClass.create { include Neo4j::ActiveNode}
+        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:name, {type: :unique}, Neo4j::Session.current)
+        clazz.property :name, constraint: :unique
+      end
+    end
+
+
     describe 'property :age, index: :exact, constraint: :unique' do
       let(:clazz) do
         UniqueClass.create do
@@ -41,8 +50,8 @@ describe "Neo4j::ActiveNode" do
       end
 
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
-        clazz.should_not_receive(:index).with(:age, {:index=>:exact})
-        clazz.should_receive(:constraint).with(:age, {constraint: :unique})
+        expect(clazz).to_not receive(:index)
+        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:age, {type: :unique}, Neo4j::Session.current)
         clazz.property :age, index: :exact, constraint: :unique
       end
     end
@@ -56,7 +65,7 @@ describe "Neo4j::ActiveNode" do
 
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
         clazz.should_not_receive(:index).with(:age, {:index=>:exact})
-        clazz.should_receive(:constraint).with(:age, {constraint: :unique})
+        clazz.should_receive(:constraint).with(:age, {type: :unique})
         clazz.property :age, constraint: :unique
       end
     end
@@ -124,17 +133,16 @@ describe "Neo4j::ActiveNode" do
     end
 
     describe 'when inherited' do
-      let(:subclass) do
-        Class.new(clazz)
-      end
+      it 'has an index on both base and subclass' do
+        class Foo1
+          include Neo4j::ActiveNode
+          property :name, index: :exact
+        end
+        class Foo2 < Foo1
 
-      it 'has an index on the baseclass' do
-        expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
-      end
-
-      it 'has an index on the subclass' do
-        puts "subclass.mapped_label #{subclass.mapped_label_name}"
-        expect(subclass.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        end
+        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name]])
       end
 
     end

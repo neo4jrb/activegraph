@@ -65,6 +65,7 @@ module Neo4j
       cfg.sessions.each do |session_opts|
         Neo4j::Railtie.open_neo4j_session(session_opts)
       end
+      Neo4j::Config.setup.merge!(cfg.to_hash)
     end
   end
 end
