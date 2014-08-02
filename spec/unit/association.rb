@@ -20,11 +20,21 @@ describe Neo4j::ActiveNode::HasN::Association do
   context 'has_many' do
     let(:type) { :has_many }
 
+    ### Validations
+
     context 'direction = :invalid' do
       let(:direction) { :invalid }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
+
+    context 'origin and type specified' do
+      let(:options) { {type: :bar, origin: :foo} }
+
+      it { expect { subject }.to raise_error(ArgumentError) }
+    end
+
+
 
     describe '#arrow_cypher' do
       let(:var) { nil }
@@ -86,5 +96,37 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     end
 
+    describe "#target_class_name" do
+      subject { association.target_class_name }
+
+      context "assumed model class" do
+        let(:name) { :burzs }
+
+        it { should == 'Burz' }
+      end
+
+
+      context "specified model class" do
+        context "specified as string" do
+          let(:options) { {model_class: 'Bizzl'} }
+
+          it { should == 'Bizzl' }
+        end
+
+        context "specified as class" do
+          before(:each) do
+            stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
+          end
+
+          let(:options) { {model_class: 'Fizzl'} }
+
+          it { should == 'Fizzl' }
+        end
+      end
+
+    end
+
   end
+
+
 end
