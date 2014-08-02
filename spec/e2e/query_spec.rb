@@ -68,24 +68,30 @@ describe 'Query API' do
         Foo.has_many :in, :bars, model_class: Bar
       end
 
-      subject { Bar.new }
+      subject { Bar.create }
 
       context 'other class is opposite direction' do
         before(:each) { Bar.has_many :out, :foos, origin: :bars }
 
-        it { expect { subject.foos }.not_to raise_error }
+        it { expect { subject.foos.to_a }.not_to raise_error }
       end
 
       context 'other class is both' do
-        before(:each) { Bar.has_many :both, :foos, origin: :bar }
+        before(:each) { Bar.has_many :both, :foos, origin: :bars }
 
-        it { expect { subject.foos }.not_to raise_error }
+        it { expect { subject.foos.to_a }.not_to raise_error }
       end
 
       context 'Assumed model does not exist' do
         before(:each) { Bar.has_many :out, :foosrs, origin: :bars }
 
-        it { expect { subject.foosrs }.to raise_error(NameError) }
+        it { expect { subject.foosrs.to_a }.to raise_error(NameError) }
+      end
+
+      context 'Specified model does not exist' do
+        before(:each) { Bar.has_many :out, :foosrs, model_class: 'Foosrs', origin: :bars }
+
+        it { expect { subject.foosrs.to_a }.to raise_error(NameError) }
       end
 
       context 'Origin does not exist' do
