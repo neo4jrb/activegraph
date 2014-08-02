@@ -21,7 +21,7 @@ module Neo4j
                           end
 
           if options[:type] && options[:origin]
-            raise ArgumentError, "Cannot specify both :type and :origin (#{self.base_declaration})"
+            raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})"
           else
             @relationship_type = options[:type] && options[:type].to_sym
             @origin = options[:origin] && options[:origin].to_sym
