@@ -52,8 +52,6 @@ module Neo4j
               "<-#{relationship_cypher}-"
             when :both
               "-#{relationship_cypher}-"
-            else
-              raise ArgumentError, "Invalid relationship direction: #{direction.inspect}"
           end
         end
 
