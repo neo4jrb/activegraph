@@ -80,6 +80,12 @@ describe Neo4j::ActiveNode::HasN::Association do
           it { should == '-[fooy {foo: 1, bar: "test"}]->' }
         end
 
+        context 'relationship type given' do
+          let(:options) { {type: :new_type} }
+
+          it { should == '-[fooy:`new_type`]->' }
+        end
+
         context 'creation' do
           let(:create) { true }
 
