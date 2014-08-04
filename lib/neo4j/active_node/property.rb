@@ -174,6 +174,14 @@ module Neo4j::ActiveNode
         end
       end
 
+      def cache_class
+        @cached_class = true
+      end
+
+      def cached_class?
+        @cached_class || !!Neo4j::Config[:cache_class_names]
+      end
+
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_relationship_attributes!(attributes)

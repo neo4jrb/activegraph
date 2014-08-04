@@ -24,3 +24,10 @@ identity_map: false
 # If set to true neo4j.rb automatically timestamps create and update operations if the model has properties named created_at/created_on or updated_at/updated_on
 # (similar to ActiveRecord).
 timestamps: true
+
+# Store a property on objects to cache their ActiveNode/ActiveRel class. It prevents each object load from requiring two database queries.
+# Strings shorter than 44 characters are classified, so this will have almost no impact on disk footprint. See http://docs.neo4j.org/chunked/stable/short-strings.html.
+# Alternatively, call class method Neo4j::ActiveNode:cache_class to set this on specific models.
+# By default, this property is called _classname, set as symbol to override.
+cache_class_names: false
+# class_name_property:  :_classname

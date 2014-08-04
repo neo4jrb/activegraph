@@ -224,6 +224,59 @@ describe Neo4j::ActiveNode do
 
   end
 
+  describe 'cached classnames' do
+    CachedClass = UniqueClass.create do
+      include Neo4j::ActiveNode
+      cache_class
+    end
+
+    UncachedClass = UniqueClass.create do
+      include Neo4j::ActiveNode
+    end
+
+    context 'with cache_class set in model' do
+      let(:test) { CachedClass.create }
+      before { @unwrapped = Neo4j::Node._load(test.id) }
+      it 'responds true to :cached_class?' do
+        expect(CachedClass.cached_class?).to be_truthy
+      end
+
+      it 'sets _classname property equal to class name' do
+        expect(@unwrapped[:_classname]).to eq test.class.name
+      end
+
+      it 'removes the _classname property from the wrapped class' do
+        expect(test.props).to_not have_key(:_classname)
+      end
+    end
+
+    context 'without cache_class set in model' do
+      let(:test) { UncachedClass.create }
+      before { @unwrapped = Neo4j::Node._load(test.id) }
+
+      it 'response false to :cached_class?' do
+        expect(UncachedClass.cached_class?).to be_falsey
+      end
+
+      it "does not set _classname on the node" do
+        expect(@unwrapped.props).to_not have_key(:_classname)
+      end
+    end
+
+    context 'with "cache_class_names" set in config' do
+      ConfigSetsCache = UniqueClass.create do
+        include Neo4j::ActiveNode
+        property :name
+      end
+
+      it 'sets "cached_class?" true' do
+        expect(ConfigSetsCache.cached_class?).to be_falsey
+        Neo4j::Config[:cache_class_names] = true
+        expect(ConfigSetsCache.cached_class?).to be_truthy
+      end
+    end
+  end
+
   describe 'basic persistance' do
 
     Person = UniqueClass.create do
