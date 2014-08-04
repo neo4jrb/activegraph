@@ -125,7 +125,7 @@ describe 'has_n' do
   end
 
   describe "me.friends.create(name: 'Joe')" do
-    # Should be able to create both relationship and node off of an association
+    # TODO: Should be able to create both relationship and node off of an association
     # Maybe .create / .push for creating relationship / node (respectively)
     # Maybe should be able to create relationships by passing either node object or hash of values
   end
