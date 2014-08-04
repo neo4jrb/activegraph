@@ -80,6 +80,14 @@ module Neo4j
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
           associate(other_node, {})
+
+          self
+        end
+
+        def [](index)
+          # TODO: Maybe for this and other methods, use array if already loaded, otherwise
+          # use OFFSET and LIMIT 1?
+          self.to_a[index]
         end
 
         def associate(other_node, properties)
