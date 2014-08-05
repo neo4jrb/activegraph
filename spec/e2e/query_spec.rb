@@ -243,8 +243,8 @@ describe 'Query API' do
 
     context 'othmar likes moster trucks more than samuels' do
       before(:each) do
-        samuels.interests.associate(monster_trucks, intensity: 1)
-        othmar.interests.associate(monster_trucks, intensity: 11)
+        samuels.interests.create(monster_trucks, intensity: 1)
+        othmar.interests.create(monster_trucks, intensity: 11)
       end
 
       # Should get both

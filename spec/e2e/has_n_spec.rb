@@ -12,6 +12,8 @@ describe 'has_n' do
     #knows_type = clazz_b
     UniqueClass.create do
       include Neo4j::ActiveNode
+      property :name
+
       has_many :both, :friends, model_class: false
       has_many :out, :knows, model_class: self
       has_many :in, :knows_me, origin: :knows, model_class: self
@@ -114,19 +116,48 @@ describe 'has_n' do
     end
   end
 
-  describe 'me.friends.associate(other, since: 1994)' do
-    it 'creates a new relationship with given properties' do
-      r = node.friends.associate(friend1, since: 1994)
+  describe 'me.friends#create(other, since: 1994)' do
+    describe "creating relationships to existing nodes" do
+      it 'creates a new relationship when given existing nodes and given properties' do
+        node.friends.create(friend1, since: 1994)
 
-      r = node.rel(dir: :outgoing, type: '#friends')
+        r = node.rel(dir: :outgoing, type: '#friends')
 
-      r[:since].should eq(1994)
+        r[:since].should eq(1994)
+      end
+
+      it 'creates new relationships when given an array of nodes and given properties' do
+        node.friends.create([friend1, friend2], since: 1995)
+
+        rs = node.rels(dir: :outgoing, type: '#friends')
+
+        rs.map(&:end_node).should =~ [friend1, friend2]
+        rs.each do |r|
+          r[:since].should eq(1995)
+        end
+      end
     end
-  end
 
-  describe "me.friends.create(name: 'Joe')" do
-    # TODO: Should be able to create both relationship and node off of an association
-    # Maybe .create / .push for creating relationship / node (respectively)
-    # Maybe should be able to create relationships by passing either node object or hash of values
+    describe "creating relationships and nodes at the same time" do
+      it 'creates a new relationship when given unpersisted node and given properties' do
+        node.friends.create(clazz_a.new(name: 'Brad'), {since: 1996})
+
+        r = node.rel(dir: :outgoing, type: '#friends')
+
+        r[:since].should eq(1996)
+        r.end_node.name.should == 'Brad'
+      end
+
+      it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
+        node.friends.create([clazz_a.new(name: 'James'), clazz_a.new(name: 'Cat')], {since: 1997})
+
+        rs = node.rels(dir: :outgoing, type: '#friends')
+
+        rs.map(&:end_node).map(&:name).should =~ ['James', 'Cat']
+        rs.each do |r|
+          r[:since].should eq(1997)
+        end
+      end
+    end
   end
 end
