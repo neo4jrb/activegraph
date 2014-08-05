@@ -252,7 +252,10 @@ describe Neo4j::ActiveNode do
 
     context 'without cache_class set in model' do
       let(:test) { UncachedClass.create }
-      before { @unwrapped = Neo4j::Node._load(test.id) }
+      before { 
+        Neo4j::Config[:cache_class_names] = false
+        @unwrapped = Neo4j::Node._load(test.id) 
+      }
 
       it 'response false to :cached_class?' do
         expect(UncachedClass.cached_class?).to be_falsey
@@ -269,7 +272,8 @@ describe Neo4j::ActiveNode do
         property :name
       end
 
-      it 'sets "cached_class?" true' do
+      it 'the response of "cached_class?" changes' do
+        Neo4j::Config[:cache_class_names] = false
         expect(ConfigSetsCache.cached_class?).to be_falsey
         Neo4j::Config[:cache_class_names] = true
         expect(ConfigSetsCache.cached_class?).to be_truthy
