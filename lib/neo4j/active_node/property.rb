@@ -174,12 +174,8 @@ module Neo4j::ActiveNode
         end
       end
 
-      def cache_class
-        @cached_class = true
-      end
-
       def cached_class?
-        @cached_class || !!Neo4j::Config[:cache_class_names]
+        !!Neo4j::Config[:cache_class_names]
       end
 
       # Extracts keys from attributes hash which are relationships of the model
