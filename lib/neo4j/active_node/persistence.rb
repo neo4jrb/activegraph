@@ -28,6 +28,7 @@ module Neo4j::ActiveNode
     # @return true
     def create_model(*)
       set_timestamps
+      create_magic_properties
       properties = convert_properties_to :db, props
       node = _create_node(properties)
       init_on_load(node, node.props)
@@ -131,6 +132,7 @@ module Neo4j::ActiveNode
       session = self.class.neo4j_session
       props = self.class.default_property_values(self)
       props.merge!(args[0]) if args[0].is_a?(Hash)
+      set_classname(props)
       labels = self.class.mapped_label_names
       session.create_node(props, labels)
     end
@@ -243,8 +245,13 @@ module Neo4j::ActiveNode
     def create_magic_properties
 
     end
+
     def update_magic_properties
       self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed?
+    end
+
+    def set_classname(props)
+      props[Neo4j::Config.class_name_property] = self.class.name if self.class.cached_class?
     end
 
     def assign_attributes(attributes)

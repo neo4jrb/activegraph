@@ -12,6 +12,7 @@ describe "Neo4j::ActiveNode" do
 
   before do
     @session = double("Mock Session", create_node: nil)
+    MyThing.stub(:cached_class?).and_return(false)
     Neo4j::Session.stub(:current).and_return(@session)
   end
 
