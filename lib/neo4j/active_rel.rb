@@ -12,6 +12,7 @@ module Neo4j
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Validations
     include Neo4j::ActiveRel::IdProperty
+    include Neo4j::ActiveRel::Query
 
     def neo4j_obj
       _persisted_obj || raise("Tried to access native neo4j object on a non persisted object")

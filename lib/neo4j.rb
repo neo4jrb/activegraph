@@ -35,6 +35,7 @@ require 'neo4j/active_rel/initialize'
 require 'neo4j/active_rel/property'
 require 'neo4j/active_rel/persistence'
 require 'neo4j/active_rel/validations'
+require 'neo4j/active_rel/query'
 require 'neo4j/active_rel'
 
 require 'neo4j/active_node/labels'
