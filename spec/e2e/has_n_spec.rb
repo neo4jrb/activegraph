@@ -160,4 +160,47 @@ describe 'has_n' do
       end
     end
   end
+
+
+  describe 'callbacks' do
+    let(:clazz_c) do
+      #knows_type = clazz_b
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+        property :name
+
+        has_many :out, :knows, model_class: self, before: :before_callback
+        has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
+        has_many :in, :knows_me2, origin: :knows, model_class: self, before: :false_callback
+
+        def before_callback(from, to)
+        end
+
+        def after_callback(from, to)
+        end
+
+        def false_callback(from, to)
+          false
+        end
+      end
+    end
+
+    let(:node) { clazz_a.create }
+    let(:friend1) { clazz_a.create }
+    let(:friend2) { clazz_a.create }
+
+    it 'should call before_callback when node added to #knows association' do
+      expect(node).to receive(:before_callback).with(node, friend1) { node.knows.to_a.size.should == 0 }
+
+      node.knows << friend1
+    end
+
+    it 'should call before_callback when node added to #knows association' do
+      expect(node).to receive(:after_callback).with(node, friend1) { node.knows.to_a.size.should == 1 }
+
+      node.knows << friend1
+    end
+
+
+  end
 end

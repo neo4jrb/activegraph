@@ -20,6 +20,8 @@ module Neo4j
                             options[:model_class]
                           end
 
+          setup_callbacks_from_options!(options)
+
           if options[:type] && options[:origin]
             raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})"
           else
@@ -67,8 +69,19 @@ module Neo4j
           raise ArgumentError, "Could not find `#{@target_class}` class and no :model_class specified"
         end
 
+        def callback(type)
+
+        end
+
         private
         
+        def setup_callbacks_from_options!(options)
+          # https://github.com/andreasronge/neo4j/issues/369
+          # https://github.com/andreasronge/neo4j/wiki/Neo4j-v3#relationship-callbacks
+          @before_create = options[:before]
+          @after_create = options[:after]
+        end
+
         def relationship_type(create = false)
           if @relationship_type
             @relationship_type
@@ -93,6 +106,8 @@ module Neo4j
         #   has_many :friends, model_class: Friend  # Would return false
         #   has_many :friends, model_class: Person  # Would return true
         def exceptional_target_class?
+          # TODO: Exceptional if target_class.nil?? (when model_class false)
+
           target_class && target_class.name != @target_class_name_from_name
         end
 

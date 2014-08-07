@@ -100,10 +100,14 @@ module Neo4j
               Neo4j::Transaction.run do
                 other_node.save if not other_node.persisted?
 
+                @association.callback(:before)
+
                 _association_query_start(:start)
                   .match(end: other_node.class)
                   .where(end: {neo_id: other_node.neo_id})
                   .create("start#{_association_arrow(properties, true)}end").exec
+
+                @association.callback(:after)
               end
             end
           else
