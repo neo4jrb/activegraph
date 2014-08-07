@@ -97,7 +97,7 @@ module Neo4j
             raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
 
             other_nodes.each do |other_node|
-              Neo4j::Transaction.run do |tx|
+              Neo4j::Transaction.run do
                 other_node.save if not other_node.persisted?
 
                 _association_query_start(:start)
@@ -214,9 +214,9 @@ module Neo4j
                 raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
                 n_string = "n#{node_num}"
-                dir = @model.relationship_dir(key)
+                dir = @model.associations[key].direction
 
-                arrow = dir == :outgoing ? '-->' : '<--'
+                arrow = dir == :out ? '-->' : '<--'
                 result << [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }]
                 result << [:where, ->(v) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1

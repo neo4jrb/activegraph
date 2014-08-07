@@ -2,11 +2,6 @@ module Neo4j::ActiveNode
   module HasN
     extend ActiveSupport::Concern
 
-    def _decl_rels_for(rel_type)
-      self.class._decl_rels[rel_type]
-    end
-
-
     module ClassMethods
 
       def has_association?(name)
@@ -17,27 +12,10 @@ module Neo4j::ActiveNode
         @associations || {}
       end
 
-      def has_relationship?(rel_type)
-        !!_decl_rels[rel_type]
-      end
-
-      def has_one_relationship?(rel_type)
-        has_relationship?(rel_type) && _decl_rels[rel_type].has_one?
-      end
-
-      def relationship_dir(rel_type)
-        has_relationship?(rel_type) && _decl_rels[rel_type].dir
-      end
-
-      def _decl_rels
-        @_decl_rels ||= {}
-      end
-
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
-        copy = _decl_rels.clone
-        copy.each_pair { |k, v| copy[k] = v.inherit_new }
-        klass.instance_variable_set(:@_decl_rels, copy)
+        klass.instance_variable_set(:@associations, associations.clone)
+
         super
       end
 
