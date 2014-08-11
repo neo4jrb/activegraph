@@ -199,11 +199,11 @@ module Neo4j::Library
       props[:_classname] = self.class.name if self.class.cached_class?
     end
 
-    def assign_attributes(attributes)
-      attributes.each do |attribute, value|
-        send("#{attribute}=", value)
-      end
-    end
+    # def assign_attributes(attributes)
+    #   attributes.each do |attribute, value|
+    #     send("#{attribute}=", value)
+    #   end
+    # end
 
     def set_timestamps
       self.created_at = DateTime.now if respond_to?(:created_at=)

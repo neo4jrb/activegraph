@@ -3,16 +3,24 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
     include Neo4j::Library::Persistence
 
-    def save(*)
-      if inbound.nil? || outbound.nil?
-        return false
+    class RelInvalidError < RuntimeError
+      attr_reader :record
+
+      def initialize(record)
+        @record = record
+        super(@record.errors.full_messages.join(", "))
       end
+    end
+
+    def save(*)
       update_magic_properties
       create_or_update
     end
 
-    def save!(*)
-      #raise RecordInvalidError.new(self) unless save(*)
+    def save!(*args)
+      unless save(*args)
+        raise RelInvalidError.new(self)
+      end
     end
 
     def create_model(*)
@@ -24,28 +32,36 @@ module Neo4j::ActiveRel
       true
     end
 
+    module ClassMethods
+
+      # Creates a new relationship between objects
+      # @param [Hash] props the properties the new relationship should have
+      def create(props = {})
+        relationship_props = extract_relationship_attributes!(props) || {}
+        new(props).tap do |obj|
+          relationship_props.each do |prop, value|
+            obj.send("#{prop}=", value)
+          end
+          obj.save
+        end
+      end
+
+      # Same as #create, but raises an error if there is a problem during save.
+      def create!(*args)
+        unless create(*args)
+          raise RelInvalidError.new(self)
+        end
+      end
+    end
+
+    private 
+
     def _create_rel(*args)
       session = self.class.neo4j_session
       props = self.class.default_property_values(self)
       props.merge!(args[0]) if args[0].is_a?(Hash)
       set_classname(props)
       outbound.create_rel(rel_type, inbound, props)
-    end
-
-    module ClassMethods
-
-      # Creates a new relationship between objects
-      # @param [Hash] props the properties the new relationship should have
-      def create(outbound, inbound, props = {})
-        return false unless outbound.is_a?(outbound_class) && inbound.is_a?(inbound_class)
-        outbound.create_rel(@rel_type, inbound, props)
-      end
-
-      # Same as #create, but raises an error if there is a problem during save.
-      def create!(*args)
-        return false unless outbound.is_a?(outbound_class) && inbound.is_a?(inbound_class)
-        raise RecordInvalidError.new(self) unless outbound.create_rel(@rel_type, inbound, props)
-      end
     end
   end
 end

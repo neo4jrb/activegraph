@@ -3,5 +3,15 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
     include Neo4j::Library::Property
 
+    module ClassMethods
+      # Extracts keys from attributes hash which are relationships of the model
+      # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
+      def extract_relationship_attributes!(attributes)
+        attributes.keys.inject({}) do |relationship_props, key|
+          relationship_props[key] = attributes.delete(key) if self.has_relationship?(key)
+          relationship_props
+        end
+      end
+    end
   end
 end

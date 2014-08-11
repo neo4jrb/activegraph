@@ -17,9 +17,8 @@ module Neo4j::Library
       relationship_props = self.class.extract_relationship_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
-      writer_method_props.each do |key, value|
-        self.send("#{key}=", value)
-      end
+      send_props(writer_method_props) unless writer_method_props.nil?
+      send_props(relationship_props) unless relationship_props.nil?
 
       super(attributes, options)
     end
@@ -48,6 +47,11 @@ module Neo4j::Library
       # _persisted_obj.props.reject{|key| !keys.include?(key)}
     end
 
+    def send_props(hash)
+      hash.each do |key, value|
+        self.send("#{key}=", value)
+      end
+    end
 
     private
 
@@ -180,16 +184,6 @@ module Neo4j::Library
 
       def cached_class?
         @cached_class || false
-      end
-
-      # Extracts keys from attributes hash which are relationships of the model
-      # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
-      def extract_relationship_attributes!(attributes)
-        attributes.keys.inject({}) do |relationship_props, key|
-          relationship_props[key] = attributes.delete(key) if self.has_relationship?(key)
-
-          relationship_props
-        end
       end
 
       private
