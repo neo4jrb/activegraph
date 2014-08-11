@@ -9,24 +9,23 @@ module Neo4j
         def initialize(type, direction, name, options = {})
           raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
           raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
-
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
+          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
+
           @target_class_name_from_name = name.to_s.classify
-          @target_class_option = if options[:model_class].nil?
-                            @target_class_name_from_name
-                          elsif options[:model_class]
-                            options[:model_class]
-                          end
+          @target_class_option = target_class_option(options)
+          @callbacks = {before: options[:before], after: options[:after]}
+          @relationship_type = options[:type] && options[:type].to_sym
+          @origin = options[:origin] && options[:origin].to_sym
+        end
 
-          setup_callbacks_from_options!(options)
-
-          if options[:type] && options[:origin]
-            raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})"
-          else
-            @relationship_type = options[:type] && options[:type].to_sym
-            @origin = options[:origin] && options[:origin].to_sym
+        def target_class_option(options)
+          if options[:model_class].nil?
+            @target_class_name_from_name
+          elsif options[:model_class]
+            options[:model_class]
           end
         end
 
@@ -37,24 +36,9 @@ module Neo4j
           relationship_type = relationship_type(create)
           relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
 
-          properties_string = properties.map do |key, value|
-            "#{key}: #{value.inspect}"
-          end.join(', ')
-          properties_string = " {#{properties_string}}" unless properties_string.empty?
-
-          relationship_cypher = "[#{var}#{relationship_name_cypher}#{properties_string}]"
-
-          direction = @direction
-          direction = :out if create && @direction == :both
-
-          case direction
-            when :out
-              "-#{relationship_cypher}->"
-            when :in
-              "<-#{relationship_cypher}-"
-            when :both
-              "-#{relationship_cypher}-"
-          end
+          properties_string = get_properties_string(properties)
+          relationship_cypher = get_relationship_cypher(var, relationship_name_cypher, properties_string)
+          get_direction(relationship_cypher, create) 
         end
 
         def target_class_name
@@ -79,13 +63,30 @@ module Neo4j
         end
 
         private
-        
-        def setup_callbacks_from_options!(options)
-          # https://github.com/andreasronge/neo4j/issues/369
-          # https://github.com/andreasronge/neo4j/wiki/Neo4j-v3#relationship-callbacks
-          @callbacks = {before: options[:before], after: options[:after]}
+
+        def get_direction(relationship_cypher, create)
+          dir = (create && @direction == :both) ? :out : @direction
+          case dir
+          when :out
+            "-#{relationship_cypher}->"
+          when :in
+            "<-#{relationship_cypher}-"
+          when :both
+            "-#{relationship_cypher}-"
+          end
         end
 
+        def get_relationship_cypher(var, relationship_name_cypher, properties_string)
+          "[#{var}#{relationship_name_cypher}#{properties_string}]"
+        end
+
+        def get_properties_string(properties)
+          p = properties.map do |key, value|
+            "#{key}: #{value.inspect}"
+          end.join(', ')
+          p.size == 0 ? '' : " {#{p}}"
+        end
+      
         def relationship_type(create = false)
           if @relationship_type
             @relationship_type
