@@ -93,4 +93,41 @@ describe "has_one" do
     end
   end
 
+  describe 'callbacks' do
+    class CallbackUser
+      include Neo4j::ActiveNode
+
+      has_one :out, :best_friend, model_class: self, before: :before_callback
+      has_one :in, :best_friend_of, origin: :best_friend, model_class: self, after: :after_callback
+      has_one :in, :failing_assoc,  origin: :best_friend, model_class: self, before: :false_before_callback
+
+      def before_callback(other)
+      end
+
+      def after_callback(other)
+      end
+
+      def false_before_callback(other)
+        return false
+      end
+    end
+
+    let(:node1) { CallbackUser.create }
+    let(:node2) { CallbackUser.create }
+
+    it 'calls before callback' do
+      expect(node1).to receive(:before_callback).with(node2)
+      node1.best_friend = node2
+    end
+
+    it 'calls after callback' do
+      expect(node1).to receive(:after_callback).with(node2)
+      node1.best_friend_of = node2
+    end
+
+    it 'prevents the relationship from beign created if a before callback returns false' do
+      node1.failing_assoc = node2
+      expect(node1.failing_assoc).to be_nil
+    end
+  end
 end

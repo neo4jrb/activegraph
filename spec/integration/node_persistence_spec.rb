@@ -54,7 +54,7 @@ describe "Neo4j::ActiveNode" do
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
       @session.should_receive(:_query).exactly(2).times
-      @session.should_receive(:begin_tx)
+      #@session.should_receive(:begin_tx)
       thing = MyThing.create(a: 1,  parent: parent)
       thing.props.should == {a: 999}
     end
@@ -68,7 +68,7 @@ describe "Neo4j::ActiveNode" do
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
       @session.should_receive(:_query).exactly(2).times
-      @session.should_receive(:begin_tx)
+      #@session.should_receive(:begin_tx)
 
       thing = MyThing.create(a: 1,  parent: parent)
       thing.props.should == {a: 999}

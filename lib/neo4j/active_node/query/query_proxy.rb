@@ -91,27 +91,23 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          if @association
-            other_nodes = [other_nodes].flatten
+          raise "Can only create associations on associations" unless @association
+          other_nodes = [other_nodes].flatten
 
-            raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
+          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
+          other_nodes.each do |other_node|
+            #Neo4j::Transaction.run do
+              other_node.save if not other_node.persisted?
 
-            other_nodes.each do |other_node|
-              Neo4j::Transaction.run do
-                other_node.save if not other_node.persisted?
+              return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
-                @association.callback(:before)
+              _association_query_start(:start)
+                .match(end: other_node.class)
+                .where(end: {neo_id: other_node.neo_id})
+                .create("start#{_association_arrow(properties, true)}end").exec
 
-                _association_query_start(:start)
-                  .match(end: other_node.class)
-                  .where(end: {neo_id: other_node.neo_id})
-                  .create("start#{_association_arrow(properties, true)}end").exec
-
-                @association.callback(:after)
-              end
-            end
-          else
-            raise "Can only create associations on associations"
+              @association.perform_callback(@options[:start_object], other_node, :after)
+            #end
           end
         end
 

@@ -139,9 +139,15 @@ describe 'has_n' do
     end
 
     describe "creating relationships and nodes at the same time" do
+      let(:node2) { double("unpersisted node", props: { name: 'Brad' } )}
+
       it 'creates a new relationship when given unpersisted node and given properties' do
         node.friends.create(clazz_a.new(name: 'Brad'), {since: 1996})
+        #node2.stub(:persisted?).and_return(false)
+        #node2.stub(:save).and_return(true)
+        #node2.stub(:neo_id).and_return(2)
 
+        #node.friends.create(node2, since: 1996)
         r = node.rel(dir: :outgoing, type: '#friends')
 
         r[:since].should eq(1996)
@@ -171,15 +177,15 @@ describe 'has_n' do
 
         has_many :out, :knows, model_class: self, before: :before_callback
         has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
-        has_many :in, :knows_me2, origin: :knows, model_class: self, before: :false_callback
+        has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
 
-        def before_callback(from, to)
+        def before_callback(other)
         end
 
-        def after_callback(from, to)
+        def after_callback(other)
         end
 
-        def false_callback(from, to)
+        def false_callback(other)
           false
         end
       end
@@ -189,18 +195,22 @@ describe 'has_n' do
     let(:friend1) { clazz_a.create }
     let(:friend2) { clazz_a.create }
 
-    it 'should call before_callback when node added to #knows association' do
-      expect(node).to receive(:before_callback).with(node, friend1) { node.knows.to_a.size.should == 0 }
+    let(:callback_friend1) { clazz_c.create }
+    let(:callback_friend2) { clazz_c.create }
 
-      node.knows << friend1
+    it 'calls before_callback when node added to #knows association' do
+      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should == 0 }
+      callback_friend1.knows << callback_friend2
     end
 
-    it 'should call before_callback when node added to #knows association' do
-      expect(node).to receive(:after_callback).with(node, friend1) { node.knows.to_a.size.should == 1 }
-
-      node.knows << friend1
+    it 'calls after_callback when node added to #knows association' do
+      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { callback_friend2.knows.to_a.size.should == 1 }
+      callback_friend1.knows_me << callback_friend2
     end
 
-
+    it 'prevents the association from being created if before returns "false" explicitly' do
+      callback_friend1.will_fail << callback_friend2
+      expect(callback_friend1.knows_me.to_a.size).to eq 0
+    end
   end
 end

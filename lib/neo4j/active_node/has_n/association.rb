@@ -70,7 +70,12 @@ module Neo4j
         end
 
         def callback(type)
+          @callbacks[type]
+        end
 
+        def perform_callback(caller, other_node, type)
+          return if callback(type).nil?
+          caller.send(callback(type), other_node)
         end
 
         private
@@ -78,8 +83,7 @@ module Neo4j
         def setup_callbacks_from_options!(options)
           # https://github.com/andreasronge/neo4j/issues/369
           # https://github.com/andreasronge/neo4j/wiki/Neo4j-v3#relationship-callbacks
-          @before_create = options[:before]
-          @after_create = options[:after]
+          @callbacks = {before: options[:before], after: options[:after]}
         end
 
         def relationship_type(create = false)
