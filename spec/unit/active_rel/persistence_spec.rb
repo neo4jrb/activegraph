@@ -20,8 +20,8 @@ describe Neo4j::ActiveRel::Persistence do
       include Neo4j::ActiveRel::Persistence
       include Neo4j::ActiveRel::Property
 
-      inbound_class Class
-      outbound_class Class
+      from_class Class
+      to_class   Class
 
       type :friends_with
 
@@ -43,7 +43,7 @@ describe Neo4j::ActiveRel::Persistence do
 
   describe 'save' do
     it 'creates a relationship if not already persisted' do
-      start_props = { outbound: node1, inbound: node2, friends_since: 'sunday', level: 9001 }
+      start_props = { from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001 }
       end_props   = { friends_since: 'sunday', level: 9001, _classname: Class }
       r = clazz.new(start_props)
       expect(node1).to receive(:create_rel).with(:friends_with, node2, {friends_since: 'sunday', level: 9001}).and_return(rel)
@@ -52,7 +52,7 @@ describe Neo4j::ActiveRel::Persistence do
     end
 
     it 'does not update the rel if nothing changes' do
-      r = clazz.new(inbound: node1, outbound: node2, friends_since: 'sunday', level: 9001)
+      r = clazz.new(to_node: node1, from_node: node2, friends_since: 'sunday', level: 9001)
       r.stub(:_persisted_obj).and_return(rel)
       r.stub(:changed_attributes).and_return({})
       expect(rel).to receive(:exist?).and_return(true)
@@ -60,7 +60,7 @@ describe Neo4j::ActiveRel::Persistence do
     end
 
     it 'commits changes to an existing relationship' do
-      r = clazz.new(inbound: node1, outbound: node2, friends_since: 'forever')
+      r = clazz.new(to_node: node1, from_node: node2, friends_since: 'forever')
       r.stub(:_persisted_obj).and_return(rel)
       expect(rel).to receive(:exist?).and_return(true)
       expect(rel).to receive(:update_props).and_return(friends_since: 'forever')
@@ -80,10 +80,10 @@ describe Neo4j::ActiveRel::Persistence do
 
   describe 'create' do
     it 'creates a new relationship' do
-      expect(clazz).to receive(:extract_relationship_attributes!).twice.and_return(outbound: node1, inbound: node2)
+      expect(clazz).to receive(:extract_relationship_attributes!).twice.and_return(from_node: node1, to_node: node2)
       node1.stub(:create_rel).and_return(rel)
       rel.stub(:props).and_return(friends_since: 'yesterday', level: 5)
-      expect(clazz.create(outbound: node1, inbound: node2, friends_since: 'yesterday', level: 5)).to be_truthy
+      expect(clazz.create(from_node: node1, to_node: node2, friends_since: 'yesterday', level: 5)).to be_truthy
     end
   end
 

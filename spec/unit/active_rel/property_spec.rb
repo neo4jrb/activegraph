@@ -17,23 +17,23 @@ describe Neo4j::ActiveRel::Property do
   end
 
   describe 'instance methods' do
-    describe 'related nodes inbound/outbound' do
+    describe 'related nodes to/from' do
       it 'creates setters' do
-        expect(clazz.new).to respond_to(:inbound=)
-        expect(clazz.new).to respond_to(:outbound=)
+        expect(clazz.new).to respond_to(:to_node=)
+        expect(clazz.new).to respond_to(:from_node=)
       end
 
       it 'creates getters' do
-        expect(clazz.new).to respond_to(:inbound)
-        expect(clazz.new).to respond_to(:outbound)
+        expect(clazz.new).to respond_to(:to_node)
+        expect(clazz.new).to respond_to(:from_node)
       end
 
-      it 'returns the @inbound and @outbound values' do
+      it 'returns the @to and @from values' do
         r = clazz.new
-        r.instance_variable_set(:@inbound, 'n1')
-        r.instance_variable_set(:@outbound, 'n2')
-        expect(r.inbound).to eq 'n1'
-        expect(r.outbound).to eq 'n2'
+        r.instance_variable_set(:@to_node, 'n1')
+        r.instance_variable_set(:@from_node, 'n2')
+        expect(r.to_node).to eq 'n1'
+        expect(r.from_node).to eq 'n2'
       end
     end
 
@@ -44,15 +44,15 @@ describe Neo4j::ActiveRel::Property do
       end
     end
 
-    describe 'inbound_class and outbound_class' do
+    describe 'to_class and from_class' do
       context 'when passed valid model classes' do
-        it 'sets @outbound_class and @inbound_class' do
-          expect(clazz.instance_variable_get(:@outbound_class)).to be_nil
-          expect(clazz.instance_variable_get(:@inbound_class)).to be_nil
-          clazz.outbound_class Object
-          clazz.inbound_class Object
-          expect(clazz.instance_variable_get(:@outbound_class)).to eq Object
-          expect(clazz.instance_variable_get(:@inbound_class)).to eq Object
+        it 'sets @from_class and @to_class' do
+          expect(clazz.instance_variable_get(:@from_class)).to be_nil
+          expect(clazz.instance_variable_get(:@to_class)).to be_nil
+          clazz.from_class Object
+          clazz.to_class Object
+          expect(clazz.instance_variable_get(:@from_class)).to eq Object
+          expect(clazz.instance_variable_get(:@to_class)).to eq Object
         end
       end
 
@@ -68,10 +68,10 @@ describe Neo4j::ActiveRel::Property do
 
   describe 'class methods' do
     describe 'extract_relationship_attributes!' do
-      it 'returns the inbound and outbound keys and values' do
-        expect(clazz.extract_relationship_attributes!({inbound: 'test', outbound: 'test', name: 'chris'})).to eq(inbound: 'test', outbound: 'test')
-        expect(clazz.extract_relationship_attributes!({inbound: 'test', name: 'chris'})).to eq(inbound: 'test')
-        expect(clazz.extract_relationship_attributes!({outbound: 'test', name: 'chris'})).to eq(outbound: 'test')
+      it 'returns the from and to keys and values' do
+        expect(clazz.extract_relationship_attributes!({to_node: 'test', from_node: 'test', name: 'chris'})).to eq(to_node: 'test', from_node: 'test')
+        expect(clazz.extract_relationship_attributes!({to_node: 'test', name: 'chris'})).to eq(to_node: 'test')
+        expect(clazz.extract_relationship_attributes!({from_node: 'test', name: 'chris'})).to eq(from_node: 'test')
       end
     end
 
