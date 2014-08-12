@@ -18,28 +18,49 @@ module Neo4j::ActiveRel
       end
 
       # TODO make this not awful
-      def where(args)
-        @query = self._outbound_class.query_as(:n1).match("(#{cypher_node_string(:outbound)})-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)})").where(Hash["r1" => args])
+      def where(args={})
+        if self._from_class == :any
+          @query = Neo4j::Session.query("MATCH n1-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)}) WHERE #{where_string(args)} RETURN r1")
+        else
+          @query = self._from_class.query_as(:n1).match("(#{cypher_node_string(:outbound)})-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)})").where(Hash["r1" => args])
+        end
         return self
       end
 
       def each
-        @query.pluck(:r1).each {|r| yield r }
+        if self._from_class == :any
+          @query.map{|r| r.r1 }.each{|r| yield r }
+        else
+          @query.pluck(:r1).each {|r| yield r }
+        end
       end
 
       def first
-        @query.pluck(:r1).first
+        if self._from_class == :any
+          @query.map{|r| r.r1 }.first
+        else
+          @query.pluck(:r1).first
+        end
       end
 
       def cypher_node_string(dir)
         case dir
         when :outbound
-          node_identifier, dir_class = 'n1', self._outbound_class
+          node_identifier, dir_class = 'n1', self._from_class
         when :inbound
-          node_identifier, dir_class = 'n2', self._inbound_class
+          node_identifier, dir_class = 'n2', self._to_class
         end
         dir_class == :any ? node_identifier : "#{node_identifier}:`#{dir_class.name}`"
       end
+
+      private
+
+      def where_string(args)
+        args.map do |k, v|
+          v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'"
+        end.join(', ')
+      end
+
     end
   end
 end

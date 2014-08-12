@@ -10,8 +10,6 @@ describe Neo4j::ActiveRel::Query do
   end
 
   before do
-    clazz.stub(:_outbound_class).and_return(Object)
-    clazz.stub(:_inbound_class).and_return(Object)
     clazz.stub(:_type).and_return('mytype')
     clazz.stub(:neo4j_session).and_return(session)
   end
@@ -31,39 +29,81 @@ describe Neo4j::ActiveRel::Query do
   end
 
   describe 'where' do
-    it 'calls :query_as on the outbound node' do
-      expect(Object).to receive(:query_as).with(:n1).and_return(Object)
-      expect(Object).to receive(:match).and_return(Object)
-      expect(Object).to receive(:where).and_return({})
-      clazz.where(name: 'superman')
+    context 'with class :any' do
+      it 'calls Neo4j::Session.query' do
+        expect(clazz).to receive(:_from_class).and_return(:any)
+        expect(clazz).to receive(:_to_class).and_return(:any)
+        expect(Neo4j::Session).to receive(:query)
+        clazz.where(name: 'superman')
+      end
+    end
+
+    context 'with a model' do
+      it 'calls :query_as on the outbound node' do
+        expect(clazz).to receive(:_from_class).exactly(3).times.and_return(Object)
+        expect(clazz).to receive(:_to_class).and_return(Object)
+
+        expect(Object).to receive(:query_as).with(:n1).and_return(Object)
+        expect(Object).to receive(:match).and_return(Object)
+        expect(Object).to receive(:where).and_return({})
+        clazz.where(name: 'superman')
+      end
     end
   end
 
   describe 'each' do
-    it 'calls pluck and each' do
-      h = {}
-      clazz.instance_variable_set(:@query, QueryProxyDouble)
-      expect(QueryProxyDouble).to receive(:pluck).with(:r1).and_return(h)
-      expect(h).to receive(:each)
-      clazz.each
+    context 'with class :any' do
+      it 'calls map and each' do
+        h = {}
+        expect(clazz).to receive(:_from_class).and_return(:any)
+        clazz.instance_variable_set(:@query, QueryProxyDouble)
+        expect(QueryProxyDouble).to receive(:map).and_return(h)
+        expect(h).to receive(:each)
+        clazz.each
+      end
+    end
+
+    context 'with a model' do
+      it 'calls pluck and each' do
+        h = {}
+        expect(clazz).to receive(:_from_class).and_return(Object)
+        clazz.instance_variable_set(:@query, QueryProxyDouble)
+        expect(QueryProxyDouble).to receive(:pluck).with(:r1).and_return(h)
+        expect(h).to receive(:each)
+        clazz.each
+      end
     end
   end
 
   describe 'first' do
-    it 'calls pluck and first' do
-      h = {}
-      clazz.instance_variable_set(:@query, QueryProxyDouble)
-      expect(QueryProxyDouble).to receive(:pluck).with(:r1).and_return(h)
-      expect(h).to receive(:first)
-      clazz.first
+    context 'with class :any' do
+      it 'calls map and first' do
+        h = {}
+        expect(clazz).to receive(:_from_class).and_return(:any)
+        clazz.instance_variable_set(:@query, QueryProxyDouble)
+        expect(QueryProxyDouble).to receive(:map).and_return(h)
+        expect(h).to receive(:each)
+        clazz.first
+      end
+    end
+
+    context 'with a model' do
+      it 'calls pluck and first' do
+        h = {}
+        expect(clazz).to receive(:_from_class).and_return(Object)
+        clazz.instance_variable_set(:@query, QueryProxyDouble)
+        expect(QueryProxyDouble).to receive(:pluck).with(:r1).and_return(h)
+        expect(h).to receive(:first)
+        clazz.first
+      end
     end
   end
 
   describe 'cypher node string' do
     context 'when class is :any' do
       it 'returns the node identifier by itself' do
-        clazz.stub(:_outbound_class).and_return(:any)
-        clazz.stub(:_inbound_class).and_return(:any)
+        expect(clazz).to receive(:_from_class).and_return(:any)
+        expect(clazz).to receive(:_to_class).and_return(:any)
 
         expect(clazz.cypher_node_string(:outbound)).to eq 'n1'
         expect(clazz.cypher_node_string(:inbound)).to eq 'n2'
@@ -72,9 +112,23 @@ describe Neo4j::ActiveRel::Query do
 
     context 'when class is an object' do
       it 'returns the node_identifier with the backtick-wrapped class name' do
+        expect(clazz).to receive(:_from_class).and_return(Object)
+        expect(clazz).to receive(:_to_class).and_return(Object)
+
         expect(clazz.cypher_node_string(:outbound)).to eq 'n1:`Object`'
         expect(clazz.cypher_node_string(:inbound)).to eq 'n2:`Object`'
       end
+    end
+  end
+
+  describe 'where_string' do
+    it 'makes a hash a valid cypher where string' do
+      expect(clazz.send(:where_string, {foo: 'foo'})).to eq "r1.foo = 'foo'"
+      expect(clazz.send(:where_string, {foo: 'foo', bar: 'bar'})).to eq "r1.foo = 'foo', r1.bar = 'bar'"
+    end
+
+    it 'does not wrap integers in quotes' do
+      expect(clazz.send(:where_string, {foo: 'foo', age: 2})).to eq "r1.foo = 'foo', r1.age = 2"
     end
   end
 end
