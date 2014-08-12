@@ -30,24 +30,24 @@ describe Neo4j::ActiveRel::Callbacks do
     end
 
     it 'raises an error if unpersisted and outbound is not valid' do
-      clazz.any_instance.stub_chain('inbound.neo_id')
-      clazz.any_instance.stub_chain('outbound').and_return(nil)
+      clazz.any_instance.stub_chain('to_node.neo_id')
+      clazz.any_instance.stub_chain('from_node').and_return(nil)
       expect do
         clazz.new.save
       end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
     end
 
     it 'raises an error if unpersisted and inbound is not valid' do
-      clazz.any_instance.stub_chain('outbound.neo_id')
-      clazz.any_instance.stub_chain('inbound').and_return(nil)
+      clazz.any_instance.stub_chain('from_node.neo_id')
+      clazz.any_instance.stub_chain('to_node').and_return(nil)
       expect do
         clazz.new.save
       end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
     end
 
     it 'does not raise an error if inbound and outbound are valid' do
-      clazz.any_instance.stub_chain('outbound.neo_id')
-      clazz.any_instance.stub_chain('inbound.neo_id')
+      clazz.any_instance.stub_chain('from_node.neo_id')
+      clazz.any_instance.stub_chain('to_node.neo_id')
       expect do
         clazz.new.save
       end.not_to raise_error
