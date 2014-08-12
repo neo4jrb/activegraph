@@ -17,8 +17,9 @@ module Neo4j::ActiveRel
         Neo4j::Relationship.load(key.to_i, session)
       end
 
+      # TODO make this not awful
       def where(args)
-        @query = self._outbound_class.query_as(:n1).match("(n1:`#{self._outbound_class.name}`)-[r1:`#{self._type}`]->(n2:`#{self._inbound_class.name}`)").where(Hash["r1" => args])
+        @query = self._outbound_class.query_as(:n1).match("(#{cypher_node_string(:outbound)})-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)})").where(Hash["r1" => args])
         return self
       end
 
@@ -28,6 +29,16 @@ module Neo4j::ActiveRel
 
       def first
         @query.pluck(:r1).first
+      end
+
+      def cypher_node_string(dir)
+        case dir
+        when :outbound
+          node_identifier, dir_class = 'n1', self._outbound_class
+        when :inbound
+          node_identifier, dir_class = 'n2', self._inbound_class
+        end
+        dir_class == :any ? node_identifier : "#{node_identifier}:`#{dir_class.name}`"
       end
     end
   end

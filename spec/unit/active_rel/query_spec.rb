@@ -58,4 +58,23 @@ describe Neo4j::ActiveRel::Query do
       clazz.first
     end
   end
+
+  describe 'cypher node string' do
+    context 'when class is :any' do
+      it 'returns the node identifier by itself' do
+        clazz.stub(:_outbound_class).and_return(:any)
+        clazz.stub(:_inbound_class).and_return(:any)
+
+        expect(clazz.cypher_node_string(:outbound)).to eq 'n1'
+        expect(clazz.cypher_node_string(:inbound)).to eq 'n2'
+      end
+    end
+
+    context 'when class is an object' do
+      it 'returns the node_identifier with the backtick-wrapped class name' do
+        expect(clazz.cypher_node_string(:outbound)).to eq 'n1:`Object`'
+        expect(clazz.cypher_node_string(:inbound)).to eq 'n2:`Object`'
+      end
+    end
+  end
 end
