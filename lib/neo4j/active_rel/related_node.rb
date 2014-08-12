@@ -12,10 +12,10 @@ module Neo4j::ActiveRel
       @node = valid_node_param?(node) ? node : (raise InvalidParameterError.new(self))
     end
 
-    # def == (obj)
-    #   loaded? ? @node : loaded
-    #   @node == obj
-    # end
+    def == (obj)
+      loaded if @node.is_a?(Fixnum)
+      @node == obj
+    end
 
     def loaded
       @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
