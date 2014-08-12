@@ -11,8 +11,8 @@ module Neo4j::ActiveRel
       end
     end
 
-    def rel_type
-      self.class._rel_type
+    def type
+      self.class._type
     end
 
     module ClassMethods
@@ -32,11 +32,11 @@ module Neo4j::ActiveRel
         define_method("_#{direction}_class") { instance_variable_get "@#{direction}_class" }
       end
 
-      def rel_type(type = nil)
+      def type(type = nil)
         @rel_type = type
       end
 
-      def _rel_type
+      def _type
         @rel_type
       end
 

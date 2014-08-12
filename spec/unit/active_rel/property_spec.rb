@@ -38,8 +38,8 @@ describe Neo4j::ActiveRel::Property do
 
     describe 'rel_type' do
       it 'returns the relationship type set in class' do
-        clazz.rel_type 'myrel'
-        expect(clazz.new.rel_type).to eq 'myrel'
+        clazz.type 'myrel'
+        expect(clazz.new.type).to eq 'myrel'
       end
     end
   end
@@ -53,17 +53,17 @@ describe Neo4j::ActiveRel::Property do
       end
     end
 
-    describe 'rel_type' do
+    describe 'type' do
       it 'sets @rel_type' do
-        clazz.rel_type 'myrel'
+        clazz.type 'myrel'
         expect(clazz.instance_variable_get(:@rel_type)).to eq 'myrel'
       end
     end
 
-    describe '_rel_type' do
+    describe '_type' do
       it 'returns the currently set rel type' do
-        clazz.rel_type 'myrel'
-        expect(clazz._rel_type).to eq 'myrel'
+        clazz.type 'myrel'
+        expect(clazz._type).to eq 'myrel'
       end
     end
 

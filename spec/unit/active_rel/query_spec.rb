@@ -12,7 +12,7 @@ describe Neo4j::ActiveRel::Query do
   before do
     clazz.stub(:_outbound_class).and_return(Object)
     clazz.stub(:_inbound_class).and_return(Object)
-    clazz.stub(:_rel_type).and_return('mytype')
+    clazz.stub(:_type).and_return('mytype')
     clazz.stub(:neo4j_session).and_return(session)
   end
 

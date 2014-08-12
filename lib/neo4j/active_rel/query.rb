@@ -18,7 +18,7 @@ module Neo4j::ActiveRel
       end
 
       def where(args)
-        @query = self._outbound_class.query_as(:n1).match("(n1:`#{self._outbound_class.name}`)-[r1:`#{self._rel_type}`]->(n2:`#{self._inbound_class.name}`)").where(Hash["r1" => args])
+        @query = self._outbound_class.query_as(:n1).match("(n1:`#{self._outbound_class.name}`)-[r1:`#{self._type}`]->(n2:`#{self._inbound_class.name}`)").where(Hash["r1" => args])
         return self
       end
 

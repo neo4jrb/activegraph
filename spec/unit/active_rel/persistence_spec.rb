@@ -23,7 +23,7 @@ describe Neo4j::ActiveRel::Persistence do
       inbound_class Class
       outbound_class Class
 
-      rel_type :friends_with
+      type :friends_with
 
       property :friends_since
       property :level, type: Integer
