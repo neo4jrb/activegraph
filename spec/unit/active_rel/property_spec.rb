@@ -12,6 +12,7 @@ describe Neo4j::ActiveRel::Property do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveRel::Property
+
     end
   end
 
@@ -36,10 +37,31 @@ describe Neo4j::ActiveRel::Property do
       end
     end
 
-    describe 'rel_type' do
+    describe 'type' do
       it 'returns the relationship type set in class' do
         clazz.type 'myrel'
         expect(clazz.new.type).to eq 'myrel'
+      end
+    end
+
+    describe 'inbound_class and outbound_class' do
+      context 'when passed valid model classes' do
+        it 'sets @outbound_class and @inbound_class' do
+          expect(clazz.instance_variable_get(:@outbound_class)).to be_nil
+          expect(clazz.instance_variable_get(:@inbound_class)).to be_nil
+          clazz.outbound_class Object
+          clazz.inbound_class Object
+          expect(clazz.instance_variable_get(:@outbound_class)).to eq Object
+          expect(clazz.instance_variable_get(:@inbound_class)).to eq Object
+        end
+      end
+
+      context 'when passed invalid classes' do
+        it 'is pending'
+      end
+
+      context 'when passed :any' do
+        it 'is pending'
       end
     end
   end
