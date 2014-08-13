@@ -8,8 +8,6 @@ gem 'neo4j-core', :git => 'https://github.com/andreasronge/neo4j-core.git'
 
 gem 'coveralls', require: false
 
-gem 'activesupport'
-
 group 'development' do
   gem 'pry'
   gem 'os' # for neo4j-server rake task
