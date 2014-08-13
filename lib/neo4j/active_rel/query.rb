@@ -29,7 +29,7 @@ module Neo4j::ActiveRel
 
       def each
         if self._from_class == :any
-          @query.map{|r| r.r1 }.each{|r| yield r }
+          @query.map(&:r1).each{|r| yield r }
         else
           @query.pluck(:r1).each {|r| yield r }
         end
@@ -37,7 +37,7 @@ module Neo4j::ActiveRel
 
       def first
         if self._from_class == :any
-          @query.map{|r| r.r1 }.first
+          @query.map(&:r1).first
         else
           @query.pluck(:r1).first
         end
