@@ -10,22 +10,33 @@ module Neo4j
           @association = association
           @options = options
           @node_var = options[:node]
-          @rel_var = options[:rel]
+          @rel_var = options[:rel] || _rel_chain_var
           @session = options[:session]
           @chain = []
           @params = {}
         end
 
-        def each
-          self.pluck(@node_var || :result).each do |obj|
-            yield obj
+        def each(rel = nil, &block)
+          if rel
+            self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
+              yield obj, rel
+            end
+          else
+            self.pluck(@node_var || :result).each do |obj|
+              yield obj
+            end
           end
         end
 
-        def each_with_rel
-          raise "No relationship identifier specified" unless @rel_var
-          self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
-            yield obj, rel
+        def each_with_rel(&block)
+          each(true, &block)
+        end
+
+        def select_with_rel(&block)
+          if block_given?
+            each(true, &block).select(&block)
+          else
+            each(true){|n, r|}.select
           end
         end
 
@@ -191,6 +202,10 @@ module Neo4j
           end
         end
 
+        def _rel_chain_var
+          :"rel#{_chain_level - 1}"
+        end
+
         private
 
         def build_deeper_query_proxy(method, args)
@@ -217,6 +232,7 @@ module Neo4j
           if arg.is_a?(Hash)
             arg.map do |key, value|
               if @model && @model.has_association?(key)
+
                 neo_id = value.try(:neo_id) || value
                 raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
