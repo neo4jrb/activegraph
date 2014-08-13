@@ -1,10 +1,6 @@
 module Neo4j
   module ActiveNode
 
-    def qq(as = :n1)
-      QuickQuery.new(self, as, self.class)
-    end
-
     # Helper methods to return Neo4j::Core::Query objects.  A query object can be used to successively build a cypher query
     #
     #    person.query_as(:n).match('n-[:friend]-o').return(o: :name) # Return the names of all the person's friends
@@ -54,10 +50,6 @@ module Neo4j
 
         def query_proxy(options = {})
           @query_proxy || Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)
-        end
-
-        def qq(as = :n1)
-          QuickQuery.new(self.name.constantize, as)
         end
 
         def as(node_var)
