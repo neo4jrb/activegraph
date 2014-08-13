@@ -13,18 +13,50 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
     end
   end
 
-  describe 'select_with_rel' do
-    it 'passes true to :each and calls :select' do
-      expect(qp).to receive(:each).with(true).and_return([node, rel])
-      expect(qp.select_with_rel.to_a).to eq [node, rel]
+  describe 'each_rel' do
+    context 'without a block' do
+      it 'calls to_enum, sends :each with node false, rel true' do
+        expect(qp).to receive(:to_enum).with(:each, false, true)
+        qp.each_rel
+      end
     end
 
-    it 'selects pairs of objects that match the criteria' do
-      expect(qp).to receive(:each).exactly(2).times.with(true).and_return([[node, rel]])
-      expect(node).to receive(:foo).exactly(2).times
-      expect(rel).not_to receive(:foo)
-      expect(qp.select_with_rel{|n, r| n.foo == 'bar' }).to eq [[node, rel]]
-      expect(qp.select_with_rel{|n, r| n.foo == 'foo'}).to eq []
+    context 'with a block' do
+      it 'sends the block to :each with node false, rel true' do
+        expect(qp).not_to receive(:to_enum)
+        expect(qp).to receive(:each).with(false, true)
+        qp.each_rel{|r| }
+      end
+
+      it 'calls pluck and executes the block' do
+        expect(qp).to receive(:pluck).and_return([rel])
+        expect(rel).to receive(:name)
+        qp.each_rel{|r| r.name }
+      end
+    end
+  end
+
+  describe 'each_with_rel' do
+    context 'without a block' do
+      it 'calls to_enum, sends :each with node true, rel true' do
+        expect(qp).to receive(:to_enum).with(:each, true, true)
+        qp.each_with_rel
+      end
+    end
+
+    context 'with a block' do
+      it 'sends the block to :each with node true, rel true' do
+        expect(qp).not_to receive(:to_enum)
+        expect(qp).to receive(:each).with(true, true)
+        qp.each_with_rel{|n, r| }
+      end
+
+      it 'calls pluck and executes the block' do
+        expect(qp).to receive(:pluck).and_return([node, rel])
+        expect(node).to receive(:name)
+        expect(rel).to receive(:name)
+        qp.each_with_rel{|n, r| n.name and r.name }        
+      end
     end
   end
 

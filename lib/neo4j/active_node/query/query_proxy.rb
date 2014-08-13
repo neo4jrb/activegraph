@@ -16,28 +16,25 @@ module Neo4j
           @params = {}
         end
 
-        def each(rel = nil, &block)
-          if rel
+        def each(node = true, rel = nil, &block)
+          if node && rel
             self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
               yield obj, rel
             end
           else
-            self.pluck(@node_var || :result).each do |obj|
+            pluck_this = !rel ? (@node_var || :result) : @rel_var
+            self.pluck(pluck_this).each do |obj|
               yield obj
             end
           end
         end
 
-        def each_with_rel(&block)
-          each(true, &block)
+        def each_rel(&block)
+          block_given? ? each(false, true, &block) : to_enum(:each, false, true)
         end
 
-        def select_with_rel(&block)
-          if block_given?
-            each(true, &block).select(&block)
-          else
-            each(true){|n, r|}.select
-          end
+        def each_with_rel(&block)
+          block_given? ? each(true, true, &block) : to_enum(:each, true, true)
         end
 
         def ==(value)
