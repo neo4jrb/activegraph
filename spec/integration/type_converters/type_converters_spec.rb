@@ -14,6 +14,14 @@ describe Neo4j::TypeConverters do
     it 'has converters for Date' do
       Neo4j::TypeConverters.converters[Date].should eq(Neo4j::TypeConverters::DateConverter)
     end
+
+    it 'has converters for JSON' do
+      Neo4j::TypeConverters.converters[JSON].should eq(Neo4j::TypeConverters::JSONConverter)
+    end
+
+    it 'has converters for YAML' do
+      Neo4j::TypeConverters.converters[Hash].should eq(Neo4j::TypeConverters::YAMLConverter)
+    end
   end
 
   describe 'to_ruby' do
@@ -44,6 +52,33 @@ describe Neo4j::TypeConverters do
     end
   end
 
+  describe Neo4j::TypeConverters::JSONConverter do
+    subject { Neo4j::TypeConverters::JSONConverter }
+
+    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' } }
+
+    it 'translates from and to database' do
+      db_value = Neo4j::TypeConverters::JSONConverter.to_db(links)
+      ruby_value = Neo4j::TypeConverters::JSONConverter.to_ruby(db_value)
+      db_value.class.should eq String
+      ruby_value.class.should eq Hash
+      ruby_value['neo4j'].should eq 'http://www.neo4j.org'
+    end
+  end
+
+  describe Neo4j::TypeConverters::YAMLConverter do
+    subject { Neo4j::TypeConverters::YAMLConverter }
+
+    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' } }
+
+    it 'translates from and to database' do
+      db_value = Neo4j::TypeConverters::YAMLConverter.to_db(links)
+      ruby_value = Neo4j::TypeConverters::YAMLConverter.to_ruby(db_value)
+      db_value.class.should eq String
+      ruby_value.class.should eq Hash
+      ruby_value[:neo4j].should eq 'http://www.neo4j.org'
+    end
+  end
 
   describe Neo4j::TypeConverters::DateConverter do
     subject { Neo4j::TypeConverters::DateConverter }

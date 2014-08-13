@@ -9,11 +9,11 @@ module Neo4j::ActiveNode
     include ActiveAttr::QueryAttributes
     include ActiveModel::Dirty
 
-    class UndefinedPropertyError < RuntimeError
-    end
+    class UndefinedPropertyError < RuntimeError; end
+    class MultiparameterAssignmentError < StandardError; end
 
     def initialize(attributes={}, options={})
-      self.class.extract_association_attributes!(attributes)
+      attributes = process_attributes(attributes)
 
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
@@ -24,12 +24,6 @@ module Neo4j::ActiveNode
       super(attributes, options)
     end
 
-    def save_properties
-      @previously_changed = changes
-      changed_attributes.clear
-    end
-
-
     # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
     def read_attribute(name)
       super(name)
@@ -37,6 +31,23 @@ module Neo4j::ActiveNode
       nil
     end
     alias_method :[], :read_attribute
+
+    def default_properties=(properties)
+      keys = self.class.default_properties.keys
+      @default_properties = properties.reject{|key| !keys.include?(key)}
+    end
+
+    def default_property(key)
+      keys = self.class.default_properties.keys
+      keys.include?(key.to_sym) ? default_properties[key.to_sym] : nil
+    end
+
+    def default_properties
+      @default_properties ||= {}
+      # keys = self.class.default_properties.keys
+      # _persisted_node.props.reject{|key| !keys.include?(key)}
+    end
+
 
     private
 
@@ -55,18 +66,105 @@ module Neo4j::ActiveNode
       end
     end
 
-    module ClassMethods
-
-      def property(name, options={})
-        magic_properties(name, options)
-
-        # if (name.to_s == 'remember_created_at')
-        #   binding.pry
-        # end
-        attribute(name, options)
+    # Gives support for Rails date_select, datetime_select, time_select helpers.
+    def process_attributes(attributes = nil)
+      multi_parameter_attributes = {}
+      new_attributes = {}
+      attributes.each_pair do |key, value|
+        if key =~ /\A([^\(]+)\((\d+)([if])\)$/
+          found_key, index = $1, $2.to_i
+          (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
+        else
+          new_attributes[key] = value
+        end
       end
 
-      #overrides ActiveAttr's attribute! method
+      multi_parameter_attributes.empty? ? new_attributes : process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
+    end
+
+    def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
+      multi_parameter_attributes.each_pair do |key, values|
+        begin
+          values = (values.keys.min..values.keys.max).map { |i| values[i] }
+          field = self.class.attributes[key.to_sym]
+          new_attributes[key] = instantiate_object(field, values)
+        rescue => e
+          raise MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
+        end
+      end
+      new_attributes
+    end
+
+    def instantiate_object(field, values_with_empty_parameters)
+      return nil if values_with_empty_parameters.all? { |v| v.nil? }
+      values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
+      klass = field[:type]
+      if klass
+        klass.new(*values)
+      else
+        values
+      end
+    end
+
+    module ClassMethods
+
+      # Defines a property on the class
+      #
+      # See active_attr gem for allowed options, e.g which type
+      # Notice, in Neo4j you don't have to declare properties before using them, see the neo4j-core api.
+      #
+      # @example Without type
+      #    class Person
+      #      # declare a property which can have any value
+      #      property :name
+      #    end
+      #
+      # @example With type and a default value
+      #    class Person
+      #      # declare a property which can have any value
+      #      property :score, type: Integer, default: 0
+      #    end
+      #
+      # @example With an index
+      #    class Person
+      #      # declare a property which can have any value
+      #      property :name, index: :exact
+      #    end
+      #
+      # @example With a constraint
+      #    class Person
+      #      # declare a property which can have any value
+      #      property :name, constraint: :unique
+      #    end
+      def property(name, options={})
+        magic_properties(name, options)
+        attribute(name, options)
+
+        # either constraint or index, do not set both
+        if options[:constraint]
+          raise "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
+          constraint(name, type: :unique)
+        elsif options[:index]
+          raise "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
+          index(name, options) if options[:index] == :exact
+        end
+      end
+
+      def default_property(name, &block)
+        default_properties[name] = block
+      end
+
+      # @return [Hash<Symbol,Proc>]
+      def default_properties
+        @default_property ||= {}
+      end
+
+      def default_property_values(instance)
+        default_properties.inject({}) do |result,pair|
+          result.tap{|obj| obj[pair[0]] = pair[1].call(instance)}
+        end
+      end
+
       def attribute!(name, options={})
         super(name, options)
         define_method("#{name}=") do |value|
@@ -74,6 +172,10 @@ module Neo4j::ActiveNode
           send("#{name}_will_change!") unless typecast_value == read_attribute(name)
           super(value)
         end
+      end
+
+      def cached_class?
+        !!Neo4j::Config[:cache_class_names]
       end
 
       # Extracts keys from attributes hash which are relationships of the model

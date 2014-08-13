@@ -135,7 +135,63 @@ describe "Labels" do
     end
   end
 
+  describe 'find_by, find_by!' do
+    before(:all) { @jasmine = IndexedTestClass.create(name: 'jasmine') }
+    
+    describe 'find_by' do
+      it 'finds the expected object' do
+        expect(IndexedTestClass.find_by(name: 'jasmine')).to eq @jasmine
+      end
 
+      it 'returns nil if no results match' do
+        expect(IndexedTestClass.find_by(name: 'foo')).to eq nil
+      end
+    end
+
+    describe 'find_by!' do
+      it 'finds the expected object' do
+        expect(IndexedTestClass.find_by!(name: 'jasmine')).to eq @jasmine
+      end
+
+      it 'raises an error if no results match' do
+        expect{IndexedTestClass.find_by!(name: 'foo')}.to raise_exception Neo4j::ActiveNode::Labels::RecordNotFound
+      end
+    end
+  end
+
+  describe 'first and last' do
+    before(:all) do
+
+      class FirstLastTestClass
+        include Neo4j::ActiveNode
+        property :name
+      end
+
+      class EmptyTestClass
+        include Neo4j::ActiveNode
+      end
+      
+      @jasmine = FirstLastTestClass.create(name: 'jasmine')
+      FirstLastTestClass.create
+      @lauren = FirstLastTestClass.create(name: 'lauren')
+    end
+
+    describe 'first' do
+      it 'returns the first object created... sort of, see docs' do
+        expect(FirstLastTestClass.first).to eq @jasmine
+      end
+    end
+
+    describe 'last' do
+      it 'returns the last object created... sort of, see docs' do
+        expect(FirstLastTestClass.last).to eq @lauren
+      end
+
+      it 'returns nil when there are no results' do
+        expect(EmptyTestClass.last).to eq nil
+      end
+    end
+  end
 end
 
 #shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do

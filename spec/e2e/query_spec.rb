@@ -155,9 +155,8 @@ describe 'Query API' do
         before(:each) { samuels.lessons_taught << math101 }
 
         it 'returns only objects specified by association' do
-          samuels.lessons_teaching.to_set.should == [ss101, ss102].to_set
-
-          samuels.lessons.to_set.should == [ss101, ss102, math101].to_set
+          expect(samuels.lessons_teaching).to eq [ss101, ss102]
+          expect(samuels.lessons).to eq [ss101, ss102, math101]
         end
       end
     end
@@ -248,11 +247,10 @@ describe 'Query API' do
       end
 
       # Should get both
-      it { monster_trucks.interested.to_set.should == [samuels, othmar].to_set }
+      it { monster_trucks.interested.should == [samuels, othmar] }
 
       # Variable assignment and filtering on a relationship
       it { monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).should == [samuels] }
     end
   end
 end
-

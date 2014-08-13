@@ -35,6 +35,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:_persisted_node).and_return(nil)
+      clazz.stub(:cached_class?).and_return(false)
       clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
@@ -60,6 +61,26 @@ describe Neo4j::ActiveNode::Persistence do
       o.save
     end
 
+    describe 'with cached_class? true' do
+      it 'adds a _classname property' do
+        clazz.stub(:cached_class?).and_return(true)
+        start_props = { name: 'jasmine', age: 5 }
+        end_props   = { name: 'jasmine', age: 5, _classname: 'MyClass' }
+        o = clazz.new
+
+        o.stub(:props).and_return(start_props)
+        o.class.stub(:name).and_return('MyClass') #set_classname looks for this
+        o.stub(:_persisted_node).and_return(nil)
+        clazz.stub(:neo4j_session).and_return(session)
+
+        clazz.stub(:mapped_label_names).and_return(:MyClass)
+        expect(session).to receive(:create_node).with(end_props, :MyClass).and_return(node)
+        expect(o).to receive(:init_on_load).with(node, end_props)
+        expect(node).to receive(:props).and_return(end_props)
+
+        o.save
+      end
+    end
   end
 
   describe 'persisted?' do

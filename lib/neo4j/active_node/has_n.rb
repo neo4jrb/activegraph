@@ -52,7 +52,6 @@ module Neo4j::ActiveNode
           def #{name}(node = nil, rel = nil)
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, @associations[#{name.inspect}], session: self.neo4j_session, query_proxy: self.query_proxy, node: node, rel: rel)
           end}, __FILE__, __LINE__)
-
       end
 
       def has_one(direction, name, options = {})
@@ -69,7 +68,6 @@ module Neo4j::ActiveNode
         module_eval(%Q{
           def #{name}=(other_node)
             #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
-
             #{name}_query_proxy << other_node
           end
 
@@ -93,7 +91,6 @@ module Neo4j::ActiveNode
           def #{name}(node = nil, rel = nil)
             #{name}_query_proxy(query_proxy: self.query_proxy, node: node, rel: rel)
           end}, __FILE__, __LINE__)
-
       end
 
 

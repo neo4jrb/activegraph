@@ -62,7 +62,7 @@ module Rails
           when 'text' then
             'String'
           when 'integer', 'number', 'fixnum' then
-            'Fixnum'
+            'Integer'
           when 'float' then
             'Float'
           else

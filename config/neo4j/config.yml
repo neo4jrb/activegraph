@@ -1,98 +1,33 @@
 #=== Neo4j.rb configuration settings
 
-# The folder location of the neo4j and lucene database
-storage_path: db
 
-# If enable neo4j.rb will create _all relationship to all instances inheriting from Neo4j::Rails::Model
-# If disabled all custom rules will also be unavailable.
-enable_rules: true
+# Examples of not using the Neo4j id (neo_id)
 
+# Generated UUID stored as a neo4j property on my_id
+#id_property: my_id
+#id_property_type: :auto
+#id_property_type_value: :uuid
+
+# Example, (probably more useful directly on Neo4j::ActiveNode classes instead as a global configuration)
+#id_property: title_id
+#id_property_type: :on
+#id_property_type_value: :some_method
+
+# TODO
 # if identity map should be on or not
 # It may impact the performance. Using the identity map will keep all loaded wrapper node/relationship
 # object in memory for each thread and transaction - which may speed up or slow down operations.
 identity_map: false
 
+# TODO
 # When using the Neo4j::Model you can let neo4j automatically set timestamps when updating/creating nodes.
 # If set to true neo4j.rb automatically timestamps create and update operations if the model has properties named created_at/created_on or updated_at/updated_on
 # (similar to ActiveRecord).
 timestamps: true
 
-# Configuration for lucene
-lucene: { fulltext: { provider: lucene,
-                      type: fulltext },
-          exact:    { provider: lucene,
-                       type: exact}
-}
-
-## If online backup should be available, if it is the Online JAR file will be loaded,
-## Notice it must be either 'true' or 'false' as string
-#enable_online_backup: 'false'
-#
-##use the clustered Neo4j GraphDatabase (org.neo4j.kernel.HighlyAvailableGraphDatabase)
-#ha.db: false
-#
-## Example of HA Configuration, see http://wiki.neo4j.org/content/High_Availability_Cluster
-## This is only used when ha.db is set to true
-#ha.server_id: 2
-#ha.server: 'localhost:6002'
-#ha.coordinators: 'localhost:2181,localhost:2182,localhost:2183'
-#
-## if enabled you can use the bin/neo4j-shell command to access the database
-#enable_remote_shell: "port=9332"
-#
-##===Memory mapped I/O settings===
-#
-##Each file in the Neo store can use memory mapped I/O for reading/writing.
-##Best performance is achived if the full file can be memory mapped but if
-##there isn't enough memory for that Neo will try and make the best use of
-##the memory it gets (regions of the file that get accessed often will more
-##likley be memory mapped).
-#
-##For high traversal speed it is important to have the nodestore.db and
-##relationshipstore.db files.
-#
-#neostore.nodestore.db.mapped_memory: 25M
-#neostore.relationshipstore.db.mapped_memory: 50M
-#neostore.propertystore.db.mapped_memory: 90M
-#neostore.propertystore.db.index.mapped_memory: 1M
-#neostore.propertystore.db.index.keys.mapped_memory: 1M
-#neostore.propertystore.db.strings.mapped_memory: 130M
-#neostore.propertystore.db.arrays.mapped_memory: 130M
-#
-#
-##: ": ": "Cache settings: ": ": "
-#
-##use adaptive caches YES|NO. Let Neo try make best use of available heap.
-#use_adaptive_cache: YES
-#
-##heap usage/max heap size ratio. Neo will increase caches while ratio
-##is less and decrease if greater. Default 0.77 seems to be a good over
-##all ratio of heap usage to avoid GC trashing. Larger heaps may allow for
-##a higher ratio while tiny heaps may need even less.
-#adaptive_cache_heap_ratio: 0.77
-#
-##how aggressive Neo will decrease caches once heap ratio reached
-#adaptive_cache_manager_decrease_ratio: 1.15
-#
-##how aggresive Neo will increase caches if ratio isn't yet reached
-#adaptive_cache_manager_increase_ratio: 1.1
-#
-##if no requests are made to Neo this is the amount of time in ms Neo will wait
-##before it checks the heap usage and adapts the caches if needed
-#adaptive_cache_worker_sleep_time: 3000
-#
-##minimum size (number of nodes) of node cache. If adaptive cache is in use
-##node cache will not be decreased under this value
-#min_node_cache_size: 0
-#
-##minimum size (number of relationships) of relationship cache. If adaptive
-##cache is in use relationship cache will not be decreased under this value
-#min_relationship_cache_size: 0
-#
-##maximum size (number of nodes) of node cache. If adaptive cache is not in
-##use the node cache will not be increased above this value
-#max_node_cache_size: 1500
-#
-##maximum size (number of relationship) of node cache. If adaptive cache is
-##not in use the relationship cache will not be increased above this value
-#max_relationship_cache_size: 3500
+# Store a property on objects to cache their ActiveNode/ActiveRel class. It prevents each object load from requiring two database queries.
+# Strings shorter than 44 characters are classified, so this will have almost no impact on disk footprint. See http://docs.neo4j.org/chunked/stable/short-strings.html.
+# Alternatively, call class method Neo4j::ActiveNode:cache_class to set this on specific models.
+# By default, this property is called _classname, set as symbol to override.
+cache_class_names: true
+# class_name_property:  :_classname
