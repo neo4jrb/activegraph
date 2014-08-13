@@ -22,6 +22,13 @@ module Neo4j
           end
         end
 
+        def each_with_rel
+          raise "No relationship identifier specified" unless @rel_var
+          self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
+            yield obj, rel
+          end
+        end
+
         def ==(value)
           self.to_a == value
         end
