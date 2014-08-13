@@ -19,28 +19,28 @@ module Neo4j::ActiveRel
 
       # TODO make this not awful
       def where(args={})
-        if self._from_class == :any
-          @query = Neo4j::Session.query("MATCH n1-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)}) WHERE #{where_string(args)} RETURN r1")
+        @query = if self._from_class == :any
+          Neo4j::Session.query("MATCH n1-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)}) WHERE #{where_string(args)} RETURN r1")
         else
-          @query = self._from_class.query_as(:n1).match("(#{cypher_node_string(:outbound)})-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)})").where(Hash["r1" => args])
+          self._from_class.query_as(:n1).match("(#{cypher_node_string(:outbound)})-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)})").where(Hash["r1" => args])
         end
         return self
       end
 
       def each
         if self._from_class == :any
-          @query.map(&:r1).each{|r| yield r }
+          @query.map(&:r1)
         else
-          @query.pluck(:r1).each {|r| yield r }
-        end
+          @query.pluck(:r1)
+        end.each {|r| yield r }
       end
 
       def first
         if self._from_class == :any
-          @query.map(&:r1).first
+          @query.map(&:r1)
         else
-          @query.pluck(:r1).first
-        end
+          @query.pluck(:r1)
+        end.first
       end
 
       def cypher_node_string(dir)
