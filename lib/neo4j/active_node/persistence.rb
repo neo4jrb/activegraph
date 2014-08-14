@@ -9,6 +9,7 @@ module Neo4j::ActiveNode
     def create_model(*)
       create_magic_properties
       set_timestamps
+      create_magic_properties
       properties = convert_properties_to :db, props
       node = _create_node(properties)
       init_on_load(node, node.props)
@@ -30,11 +31,11 @@ module Neo4j::ActiveNode
       # Creates a saves a new node
       # @param [Hash] props the properties the new node should have
       def create(props = {})
-        relationship_props = extract_relationship_attributes!(props)
+        association_props = extract_association_attributes!(props)
 
         new(props).tap do |obj|
           obj.save
-          relationship_props.each do |prop, value|
+          association_props.each do |prop, value|
             obj.send("#{prop}=", value)
           end
         end
@@ -43,12 +44,12 @@ module Neo4j::ActiveNode
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
         props = args[0] || {}
-        relationship_props = extract_relationship_attributes!(props)
+        association_props = extract_association_attributes!(props)
 
         new(*args).tap do |o|
           yield o if block_given?
           o.save!
-          relationship_props.each do |prop, value|
+          association_props.each do |prop, value|
             o.send("#{prop}=", value)
           end
         end

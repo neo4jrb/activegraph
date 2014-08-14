@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'has_many' do
+describe 'has_n' do
 
   let(:clazz_b) do
     UniqueClass.create do
@@ -44,7 +44,7 @@ describe 'has_many' do
     end
   end
 
-  it 'access nodes via declared has_many method' do
+  it 'access nodes via declared has_n method' do
     expect(node.friends.to_a).to eq([])
     expect(node.friends.any?()).to be false
 
@@ -52,7 +52,7 @@ describe 'has_many' do
     expect(node.friends.to_a).to eq([friend1])
   end
 
-  it 'access relationships via declared has_many method' do
+  it 'access relationships via declared has_n method' do
     node.friends_rels.to_a.should eq([])
     node.friends << friend1
     rels = node.friends_rels

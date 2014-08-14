@@ -37,7 +37,7 @@ module Neo4j::ActiveRel
       # Creates a new relationship between objects
       # @param [Hash] props the properties the new relationship should have
       def create(props = {})
-        relationship_props = extract_relationship_attributes!(props) || {}
+        relationship_props = extract_association_attributes!(props) || {}
         new(props).tap do |obj|
           relationship_props.each do |prop, value|
             obj.send("#{prop}=", value)

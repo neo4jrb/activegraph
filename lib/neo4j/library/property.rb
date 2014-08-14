@@ -14,7 +14,7 @@ module Neo4j::Library
 
     def initialize(attributes={}, options={})
       attributes = process_attributes(attributes)
-      relationship_props = self.class.extract_relationship_attributes!(attributes)
+      relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
       send_props(writer_method_props) unless writer_method_props.nil?
@@ -178,12 +178,8 @@ module Neo4j::Library
         end
       end
 
-      def cache_class
-        @cached_class = true
-      end
-
       def cached_class?
-        @cached_class || false
+        !!Neo4j::Config[:cache_class_names]
       end
 
       private

@@ -46,7 +46,7 @@ describe Neo4j::ActiveRel::Persistence do
       start_props = { from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001 }
       end_props   = { friends_since: 'sunday', level: 9001, _classname: Class }
       r = clazz.new(start_props)
-      expect(node1).to receive(:create_rel).with(:friends_with, node2, {friends_since: 'sunday', level: 9001}).and_return(rel)
+      expect(node1).to receive(:create_rel).with(:friends_with, node2, {friends_since: 'sunday', level: 9001, _classname: nil}).and_return(rel)
       rel.stub(:props).and_return(end_props)
       expect(r.save).to be_truthy 
     end
@@ -80,7 +80,7 @@ describe Neo4j::ActiveRel::Persistence do
 
   describe 'create' do
     it 'creates a new relationship' do
-      expect(clazz).to receive(:extract_relationship_attributes!).twice.and_return(from_node: node1, to_node: node2)
+      expect(clazz).to receive(:extract_association_attributes!).twice.and_return(from_node: node1, to_node: node2)
       node1.stub(:create_rel).and_return(rel)
       rel.stub(:props).and_return(friends_since: 'yesterday', level: 5)
       expect(clazz.create(from_node: node1, to_node: node2, friends_since: 'yesterday', level: 5)).to be_truthy

@@ -109,6 +109,10 @@ module Neo4j
         @configuration
       end
 
+      def class_name_property
+        Neo4j::Config[:class_name_property] || :_classname
+      end
+
     end
   end
 

@@ -18,7 +18,7 @@ describe Neo4j::ActiveRel::Callbacks do
   end
 
   let(:clazz) do
-    class Bar < Foo
+    class MyBar < Foo
       include Neo4j::ActiveRel::Callbacks
     end
   end

@@ -13,7 +13,7 @@ module Neo4j
 
       index :name
 
-      has_n(:notes).to('Neo4j::OrmSpec::Note')
+      has_many :out, :notes, model_class: 'Neo4j::OrmSpec::Note'
     end
   
     class Note
@@ -21,7 +21,7 @@ module Neo4j
 
       property  :body, :index => :exact
       
-      has_one(:owner).from('Neo4j::OrmSpec::User', :notes)
+      has_one :in, :owner, type: :notes, model_class: 'Neo4j::OrmSpec::User'
     end
   
     describe '[Neo4j orm adapter]', :type => :integration do

@@ -6,13 +6,13 @@ describe "has_one" do
     class HasOneA
       include Neo4j::ActiveNode
       property :name
-      has_n :children
+      has_many :out, :children, model_class: 'HasOneB'
     end
 
     class HasOneB
       include Neo4j::ActiveNode
       property :name
-      has_one(:parent).from(:children)
+      has_one :in, :parent, origin: :children, model_class: 'HasOneA'
     end
 
     it 'find the nodes via the has_one accessor' do
@@ -24,7 +24,7 @@ describe "has_one" do
 
       c.parent.should == a
       b.parent.should == a
-      a.children.should =~ [b,c]
+      a.children.to_a.should =~ [b,c]
     end
 
     it 'can create a relationship via the has_one accessor' do
@@ -62,8 +62,10 @@ describe "has_one" do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
-      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
+      b.query_as(:b).match("b<-[:`#children`]-(r)").pluck(:r).should == [a]
+      a.query_as(:a).match("a-[:`#children`]->(r)").pluck(:r).should == [b]
+#      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
+#      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
     end
   end
 
@@ -76,82 +78,56 @@ describe "has_one" do
       include Neo4j::ActiveNode
     end
 
-    Folder1.has_n(:files).to(File1)
-    File1.has_one(:parent).from(Folder1.files)
+    Folder1.has_many :out, :files, model_class: File1
+    File1.has_one :in, :parent, model_class: Folder1, origin: :files
 
     it 'can access nodes via parent has_one relationship' do
       f1 = Folder1.create
       file1 = File1.create
       file2 = File1.create
-      f1.files << file1 << file2
-      f1.files.should =~ [file1, file2]
+      f1.files << file1
+      f1.files << file2
+      f1.files.to_a.should =~ [file1, file2]
       file1.parent.should == f1
       file2.parent.should == f1
     end
   end
 
   describe 'callbacks' do
-    class Student; end
-
-    class Teacher
+    class CallbackUser
       include Neo4j::ActiveNode
 
-      property :student_number, type: Integer
+      has_one :out, :best_friend, model_class: self, before: :before_callback
+      has_one :in, :best_friend_of, origin: :best_friend, model_class: self, after: :after_callback
+      has_one :in, :failing_assoc,  origin: :best_friend, model_class: self, before: :false_before_callback
 
-      has_one(:student_before, before: :before_callback).to(Student)
-      has_one(:student_after, after: :after_callback).to(Student)
-
-      private
-
-      def before_callback(from, to)
-        return false if to.age == 20
-
+      def before_callback(other)
       end
 
-      def after_callback(from, to)
-        return false if from.student_number == 50
-        from.student_number = 1
-        from.save
+      def after_callback(other)
+      end
+
+      def false_before_callback(other)
+        return false
       end
     end
 
-    class Student
-      include Neo4j::ActiveNode
+    let(:node1) { CallbackUser.create }
+    let(:node2) { CallbackUser.create }
 
-      property :age
+    it 'calls before callback' do
+      expect(node1).to receive(:before_callback).with(node2)
+      node1.best_friend = node2
     end
 
-    let(:teacher) { Teacher.create }
-    let(:student) { Student.create }
-
-    describe 'before' do
-      context 'failing' do
-        before(:each) { student.age = 20 and student.save }
-
-        it 'prevents a relationship from being created if response is explicitly false' do
-          teacher.student_before = student
-          expect(teacher.student_before).to eq nil
-        end
-      end
-
-      context 'passing' do
-        before(:each) { student.age = 21 and student.save }
-        
-        it 'creates the relationship when callback response is not explicitly false' do 
-          teacher.student_before = student
-          expect(teacher.student_before).to eq student
-        end
-      end
+    it 'calls after callback' do
+      expect(node1).to receive(:after_callback).with(node2)
+      node1.best_friend_of = node2
     end
 
-    describe 'after' do
-      it 'runs the after callback function' do
-        teacher.student_number = 0 and teacher.save
-        teacher.student_after = student
-        expect(teacher.student_number).to eq 1
-      end
+    it 'prevents the relationship from beign created if a before callback returns false' do
+      node1.failing_assoc = node2
+      expect(node1.failing_assoc).to be_nil
     end
   end
-
-
 end

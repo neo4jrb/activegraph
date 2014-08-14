@@ -225,37 +225,41 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'cached classnames' do
-    CachedClass = UniqueClass.create do
-      include Neo4j::ActiveNode
-      cache_class
-    end
-
-    UncachedClass = UniqueClass.create do
+    CacheTest = UniqueClass.create do
       include Neo4j::ActiveNode
     end
 
-    context 'with cache_class set in model' do
-      let(:test) { CachedClass.create }
-      before { @unwrapped = Neo4j::Node._load(test.id) }
+    context 'with cache_class set in config' do
+      before do
+        Neo4j::Config[:cache_class_names] = true
+        @cached = CacheTest.create
+        @unwrapped = Neo4j::Node._load(@cached.id)
+      end
+
       it 'responds true to :cached_class?' do
-        expect(CachedClass.cached_class?).to be_truthy
+        expect(CacheTest.cached_class?).to be_truthy
       end
 
       it 'sets _classname property equal to class name' do
-        expect(@unwrapped[:_classname]).to eq test.class.name
+        expect(@unwrapped[:_classname]).to eq @cached.class.name
       end
 
       it 'removes the _classname property from the wrapped class' do
-        expect(test.props).to_not have_key(:_classname)
+        expect(@cached.props).to_not have_key(:_classname)
       end
     end
 
     context 'without cache_class set in model' do
-      let(:test) { UncachedClass.create }
-      before { @unwrapped = Neo4j::Node._load(test.id) }
+      before do
+        Neo4j::Config[:cache_class_names] = false
+        @uncached = CacheTest.create
+        @unwrapped = Neo4j::Node._load(@uncached.id)
+      end
+
+      before { Neo4j::Config[:cache_class_names] = false }
 
       it 'response false to :cached_class?' do
-        expect(UncachedClass.cached_class?).to be_falsey
+        expect(CacheTest.cached_class?).to be_falsey
       end
 
       it "does not set _classname on the node" do

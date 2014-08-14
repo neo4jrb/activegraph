@@ -10,16 +10,35 @@ module Neo4j
           @association = association
           @options = options
           @node_var = options[:node]
-          @rel_var = options[:rel]
+          @rel_var = options[:rel] || _rel_chain_var
           @session = options[:session]
           @chain = []
           @params = {}
         end
 
-        def each
-          query.pluck(@node_var || :result).each do |obj|
-            yield obj
+        def each(node = true, rel = nil, &block)
+          if node && rel
+            self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
+              yield obj, rel
+            end
+          else
+            pluck_this = !rel ? (@node_var || :result) : @rel_var
+            self.pluck(pluck_this).each do |obj|
+              yield obj
+            end
           end
+        end
+
+        def each_rel(&block)
+          block_given? ? each(false, true, &block) : to_enum(:each, false, true)
+        end
+
+        def each_with_rel(&block)
+          block_given? ? each(true, true, &block) : to_enum(:each, true, true)
+        end
+
+        def ==(value)
+          self.to_a == value
         end
 
         METHODS = %w[where order skip limit]
@@ -75,28 +94,35 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          if @association
-            raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_node.class != @model
+          create(other_node, {})
 
-            _association_query_start(:start)
-              .match(end: other_node.class)
-              .where(end: {neo_id: other_node.neo_id})
-              .create("start#{_association_arrow({}, true)}end").exec
-          else
-            raise "Can only create associations on associations"
-          end
+          self
         end
 
-        def associate(other_node, properties)
-          if @association
-            raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_node.class != @model
+        def [](index)
+          # TODO: Maybe for this and other methods, use array if already loaded, otherwise
+          # use OFFSET and LIMIT 1?
+          self.to_a[index]
+        end
 
-            _association_query_start(:start)
-              .match(end: other_node.class)
-              .where(end: {neo_id: other_node.neo_id})
-              .create("start#{_association_arrow(properties, true)}end").exec
-          else
-            raise "Can only create associations on associations"
+        def create(other_nodes, properties)
+          raise "Can only create associations on associations" unless @association
+          other_nodes = [other_nodes].flatten
+
+          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
+          other_nodes.each do |other_node|
+            #Neo4j::Transaction.run do
+              other_node.save if not other_node.persisted?
+
+              return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
+
+              _association_query_start(:start)
+                .match(end: other_node.class)
+                .where(end: {neo_id: other_node.neo_id})
+                .create("start#{_association_arrow(properties, true)}end").exec
+
+              @association.perform_callback(@options[:start_object], other_node, :after)
+            #end
           end
         end
 
@@ -149,13 +175,13 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy._chain_level + 1
           else
-            raise "Crazy error" # TODO: Better error
+            1
           end
         end
 
         def _association_chain_var
           if start_object = @options[:start_object]
-            :"#{start_object.class.name.downcase}#{start_object.neo_id}"
+            :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
           elsif query_proxy = @options[:query_proxy]
             query_proxy.node_var || :"node#{_chain_level}"
           else
@@ -171,6 +197,10 @@ module Neo4j
           else
             raise "Crazy error" # TODO: Better error
           end
+        end
+
+        def _rel_chain_var
+          :"rel#{_chain_level - 1}"
         end
 
         private
@@ -199,13 +229,14 @@ module Neo4j
           if arg.is_a?(Hash)
             arg.map do |key, value|
               if @model && @model.has_association?(key)
+
                 neo_id = value.try(:neo_id) || value
                 raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
                 n_string = "n#{node_num}"
-                dir = @model.relationship_dir(key)
+                dir = @model.associations[key].direction
 
-                arrow = dir == :outgoing ? '-->' : '<--'
+                arrow = dir == :out ? '-->' : '<--'
                 result << [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }]
                 result << [:where, ->(v) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1

@@ -6,12 +6,13 @@ describe "Neo4j::ActiveNode" do
     include Neo4j::ActiveNode
     property :a
     property :x
-    has_one :parent
+    has_one :out, :parent, model_class: false
   end
 
 
   before do
     @session = double("Mock Session", create_node: nil)
+    MyThing.stub(:cached_class?).and_return(false)
     Neo4j::Session.stub(:current).and_return(@session)
   end
 
@@ -48,21 +49,28 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'can create relationships' do
-      parent = double("parent node")
-      node = double('unwrapped_node', props: {a: 999}, rel: nil)
-      expect(node).to receive(:create_rel).with(:parent, parent, {})
+      parent = double("parent node", neo_id: 1, persisted?: true)
+      node = double('unwrapped_node', props: {a: 999}, rel: nil, neo_id: 2)
+
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
+      @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
+      @session.should_receive(:_query).exactly(2).times
+      #@session.should_receive(:begin_tx)
       thing = MyThing.create(a: 1,  parent: parent)
       thing.props.should == {a: 999}
     end
 
     it 'will delete old relationship before creating a new one' do
-      parent = double("parent node")
+      parent = double("parent node", neo_id: 1, persisted?: true)
       old_rel = double("old relationship")
-      expect(old_rel).to receive(:del)
-      node = double('unwrapped_node', props: {a: 999}, rel: old_rel)
-      expect(node).to receive(:create_rel).with(:parent, parent, {})
+
+      node = double('unwrapped_node', props: {a: 999}, rel: old_rel, neo_id: 2)
+
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
+      @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
+      @session.should_receive(:_query).exactly(2).times
+      #@session.should_receive(:begin_tx)
+
       thing = MyThing.create(a: 1,  parent: parent)
       thing.props.should == {a: 999}
     end
@@ -168,4 +176,6 @@ describe "Neo4j::ActiveNode" do
 
 
 end
+
+
 

@@ -42,7 +42,7 @@ describe "Labels" do
     class RelationTestClass
       include Neo4j::ActiveNode
 
-      has_one(:test_class)
+      has_one :in, :test_class
     end
   end
 
