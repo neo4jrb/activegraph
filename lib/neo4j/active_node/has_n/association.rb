@@ -84,6 +84,7 @@ module Neo4j
         end
 
         def get_properties_string(properties)
+          properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
           p = properties.map do |key, value|
             "#{key}: #{value.inspect}"
           end.join(', ')
