@@ -1,10 +1,6 @@
 module Neo4j
   module ActiveNode
 
-    def qq(as = :n1)
-      QuickQuery.new(self, as, self.class)
-    end
-
     # Helper methods to return Neo4j::Core::Query objects.  A query object can be used to successively build a cypher query
     #
     #    person.query_as(:n).match('n-[:friend]-o').return(o: :name) # Return the names of all the person's friends
@@ -25,6 +21,14 @@ module Neo4j
       end
 
       module ClassMethods
+        include Enumerable
+
+        attr_writer :query_proxy
+
+        def each
+          self.query_as(:n).pluck(:n).each {|o| yield o }
+        end
+
         # Returns a Query object with all nodes for the model matched as the specified variable name
         #
         # @example Return the registration number of all cars owned by a person over the age of 30
@@ -34,20 +38,24 @@ module Neo4j
         # @param var [Symbol, String] The variable name to specify in the query
         # @return [Neo4j::Core::Query]
         def query_as(var)
-          label = self.respond_to?(:mapped_label_name) ? self.mapped_label_name : self
-          neo4j_session.query.match(var => label)
+          query_proxy.query_as(var)
         end
 
         Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
           module_eval(%Q{
             def #{method}(*args)
-              Neo4j::ActiveNode::Query::QueryProxy.new(self).#{method}(*args)
+              self.query_proxy.#{method}(*args)
             end}, __FILE__, __LINE__)
         end
 
-        def qq(as = :n1)
-          QuickQuery.new(self.name.constantize, as)
+        def query_proxy(options = {})
+          @query_proxy || Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)
         end
+
+        def as(node_var)
+          query_proxy(node: node_var)
+        end
+
       end
     end
   end

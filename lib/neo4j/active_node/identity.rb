@@ -20,6 +20,5 @@ module Neo4j::ActiveNode
       id = neo_id
       id.is_a?(Integer) ? id : nil
     end
-
   end
 end
