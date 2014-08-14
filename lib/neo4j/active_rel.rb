@@ -4,7 +4,7 @@ module Neo4j
   module ActiveRel
     extend ActiveSupport::Concern
 
-    include Neo4j::Library
+    include Neo4j::Shared
     include Neo4j::ActiveRel::Initialize
     include Neo4j::ActiveRel::Property
     include Neo4j::ActiveRel::Persistence

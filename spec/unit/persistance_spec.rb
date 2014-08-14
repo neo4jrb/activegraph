@@ -21,7 +21,7 @@ describe Neo4j::ActiveNode::Persistence do
     end
 
     it 'raises an error when given a property which is not defined' do
-      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::Library::Property::UndefinedPropertyError)
+      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
     end
   end
 

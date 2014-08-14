@@ -1,5 +1,5 @@
 module Neo4j
-  module Library
+  module Shared
     module Validations
       extend ActiveSupport::Concern
       include ActiveModel::Validations

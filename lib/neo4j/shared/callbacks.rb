@@ -1,5 +1,5 @@
 module Neo4j
-  module Library
+  module Shared
     module Callbacks #:nodoc:
       extend ActiveSupport::Concern
 

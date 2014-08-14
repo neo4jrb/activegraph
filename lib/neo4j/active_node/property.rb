@@ -1,7 +1,7 @@
 module Neo4j::ActiveNode
   module Property
     extend ActiveSupport::Concern
-    include Neo4j::Library::Property
+    include Neo4j::Shared::Property
 
     module ClassMethods
 

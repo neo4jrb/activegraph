@@ -3,7 +3,7 @@ module Neo4j
     # This mixin replace the original save method and performs validation before the save.
     module Validations
       extend ActiveSupport::Concern
-      include Neo4j::Library::Validations
+      include Neo4j::Shared::Validations
 
 
       # @return [Boolean] true if valid

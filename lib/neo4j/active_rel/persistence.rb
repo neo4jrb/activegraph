@@ -1,7 +1,7 @@
 module Neo4j::ActiveRel
   module Persistence
     extend ActiveSupport::Concern
-    include Neo4j::Library::Persistence
+    include Neo4j::Shared::Persistence
 
     class RelInvalidError < RuntimeError
       attr_reader :record

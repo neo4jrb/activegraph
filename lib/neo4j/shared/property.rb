@@ -1,4 +1,4 @@
-module Neo4j::Library
+module Neo4j::Shared
   module Property
     extend ActiveSupport::Concern
 

@@ -387,7 +387,7 @@ describe Neo4j::ActiveNode do
     it 'saves all declared properties' do
       expect do
         Person.create(name: 'person123', age: 123, unknown: "yes")
-      end.to raise_error(Neo4j::Library::Property::UndefinedPropertyError)
+      end.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
     end
 
     describe 'multiparameter attributes' do
@@ -406,7 +406,7 @@ describe Neo4j::ActiveNode do
       it 'raises an error when it receives values it cannot process' do
         expect do
           Person.create("foo(1i)"=>"2014", "foo(2i)"=>"2014")
-        end.to raise_error(Neo4j::Library::Property::MultiparameterAssignmentError)
+        end.to raise_error(Neo4j::Shared::Property::MultiparameterAssignmentError)
       end
 
       it 'sends values straight through when no type is specified' do

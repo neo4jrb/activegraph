@@ -45,7 +45,7 @@ describe "Neo4j::ActiveNode" do
     it 'does not allow to set undeclared properties using create' do
       node = double('unwrapped_node', props: {})
       @session.should_not_receive(:create_node)
-      expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Library::Property::UndefinedPropertyError
+      expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end
 
     it 'can create relationships' do
@@ -169,7 +169,7 @@ describe "Neo4j::ActiveNode" do
 
     it 'does raise an exception if not valid' do
       thing.stub(:valid?).and_return(false)
-      expect{thing.update_attribute!(:a, 42)}.to raise_error(Neo4j::Library::Persistence::RecordInvalidError)
+      expect{thing.update_attribute!(:a, 42)}.to raise_error(Neo4j::Shared::Persistence::RecordInvalidError)
     end
 
   end

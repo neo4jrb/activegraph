@@ -1,5 +1,5 @@
 module Neo4j
-  module Library
+  module Shared
     extend ActiveSupport::Concern
     extend ActiveModel::Naming
 
@@ -7,7 +7,7 @@ module Neo4j
     include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
 
-    include Neo4j::Library::Identity
+    include Neo4j::Shared::Identity
 
     module ClassMethods
       def neo4j_session_name (name)

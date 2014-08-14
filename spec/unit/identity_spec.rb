@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Neo4j::Library::Identity do
+describe Neo4j::Shared::Identity do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode::Persistence
-      include Neo4j::Library::Identity
+      include Neo4j::Shared::Identity
       include Neo4j::ActiveNode::Property
 
       def id

@@ -2,7 +2,7 @@
 module Neo4j::ActiveRel
   module Property
     extend ActiveSupport::Concern
-    include Neo4j::Library::Property
+    include Neo4j::Shared::Property
 
     %w[to_node from_node].each do |direction|
       define_method("#{direction}") { instance_variable_get("@#{direction}") }

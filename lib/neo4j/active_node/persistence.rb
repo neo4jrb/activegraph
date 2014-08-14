@@ -1,7 +1,7 @@
 module Neo4j::ActiveNode
   module Persistence
     extend ActiveSupport::Concern
-    include Neo4j::Library::Persistence
+    include Neo4j::Shared::Persistence
 
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private

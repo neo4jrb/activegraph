@@ -1,4 +1,4 @@
-module Neo4j::Library
+module Neo4j::Shared
   module Identity
     def ==(o)
       o.class == self.class && o.id == id
