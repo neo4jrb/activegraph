@@ -62,6 +62,16 @@ module Neo4j
           caller.send(callback(type), other_node)
         end
 
+        def relationship_type(create = false)
+          if @relationship_type
+            @relationship_type
+          elsif @origin
+            origin_type
+          else
+            (create || exceptional_target_class?) && "##{@name}"
+          end
+        end
+
         private
 
         def get_direction(relationship_cypher, create)
@@ -86,15 +96,9 @@ module Neo4j
           end.join(', ')
           p.size == 0 ? '' : " {#{p}}"
         end
-      
-        def relationship_type(create = false)
-          if @relationship_type
-            @relationship_type
-          elsif @origin
-            "##{@origin}"
-          else
-            (create || exceptional_target_class?) && "##{@name}"
-          end
+
+        def origin_type
+          target_class.associations[@origin].relationship_type
         end
 
         # Return basic details about association as declared in the model
