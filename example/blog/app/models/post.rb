@@ -21,5 +21,5 @@ class Post
   #   self.title.urlize # uses https://github.com/cheef/string-urlize gem
   # end
 
-  has_n(:comments).to(Comment)
+  has_many :out, :comments, type: 'stated_opinions', rel_class: PostComment
 end
