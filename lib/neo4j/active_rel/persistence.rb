@@ -12,6 +12,8 @@ module Neo4j::ActiveRel
       end
     end
 
+    class ModelClassInvalidError < RuntimeError; end
+
     def save(*)
       update_magic_properties
       create_or_update
@@ -24,6 +26,7 @@ module Neo4j::ActiveRel
     end
 
     def create_model(*)
+      confirm_node_classes
       create_magic_properties
       set_timestamps
       properties = convert_properties_to :db, props
@@ -55,6 +58,16 @@ module Neo4j::ActiveRel
     end
 
     private 
+
+    def confirm_node_classes
+      [from_node, to_node].each do |node|
+        check = from_node == node ? :_from_class : :_to_class
+        next if self.class.send(check) == :any
+        unless self.class.send(check) == node.class        
+          raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(check)}" 
+        end
+      end
+    end
 
     def _create_rel(*args)
       session = self.class.neo4j_session

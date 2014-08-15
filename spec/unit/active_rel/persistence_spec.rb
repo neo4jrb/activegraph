@@ -46,6 +46,7 @@ describe Neo4j::ActiveRel::Persistence do
       start_props = { from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001 }
       end_props   = { friends_since: 'sunday', level: 9001, _classname: Class }
       r = clazz.new(start_props)
+      r.stub(:confirm_node_classes).and_return(:true)
       expect(node1).to receive(:create_rel).with(:friends_with, node2, {friends_since: 'sunday', level: 9001, _classname: nil}).and_return(rel)
       rel.stub(:props).and_return(end_props)
       expect(r.save).to be_truthy 
@@ -66,6 +67,60 @@ describe Neo4j::ActiveRel::Persistence do
       expect(rel).to receive(:update_props).and_return(friends_since: 'forever')
       expect(r.save).to be_truthy
     end
+
+    describe 'confirming model types' do
+      before(:all) do
+        class ThisClass; end
+        class ThatClass; end
+      end
+      let(:this_class_node) { ThisClass.new }
+      let(:that_class_node) { ThatClass.new }
+
+      context 'with unexpected types' do
+        before do
+          clazz.from_class ThatClass
+          clazz.to_class ThisClass
+        end
+
+        let(:r) { clazz.new(from_node: this_class_node, to_node: that_class_node) }
+
+        it 'raises an error' do
+          expect(that_class_node).not_to receive(:create_rel)
+          expect{r.save}.to raise_error(Neo4j::ActiveRel::Persistence::ModelClassInvalidError)
+        end
+      end
+
+      context 'with expected types' do
+        before do
+          clazz.from_class ThisClass
+          clazz.to_class ThatClass
+        end
+
+        let(:r) { clazz.new(from_node: this_class_node, to_node: that_class_node) }
+
+        it 'does not raise an error' do
+          expect(this_class_node).to receive(:class).and_return(ThisClass)
+          clazz.any_instance.stub(:_create_rel)
+          clazz.any_instance.stub(:init_on_load)
+          expect{r.save}.not_to raise_error
+        end
+
+        context 'with :any types' do
+          before do
+            clazz.from_class :any
+            clazz.to_class :any
+          end
+
+          it 'does not check the classes of the nodes' do
+            expect(this_class_node).not_to receive(:class)
+            expect(that_class_node).not_to receive(:class)
+            clazz.any_instance.stub(:_create_rel)
+            clazz.any_instance.stub(:init_on_load)
+            expect{r.save}.not_to raise_error 
+          end
+        end
+      end
+    end
   end
 
   describe 'save!' do
@@ -81,6 +136,7 @@ describe Neo4j::ActiveRel::Persistence do
   describe 'create' do
     it 'creates a new relationship' do
       expect(clazz).to receive(:extract_association_attributes!).twice.and_return(from_node: node1, to_node: node2)
+      clazz.any_instance.stub(:confirm_node_classes).and_return(:true)
       node1.stub(:create_rel).and_return(rel)
       rel.stub(:props).and_return(friends_since: 'yesterday', level: 5)
       expect(clazz.create(from_node: node1, to_node: node2, friends_since: 'yesterday', level: 5)).to be_truthy
