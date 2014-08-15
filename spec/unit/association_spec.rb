@@ -144,6 +144,13 @@ describe Neo4j::ActiveNode::HasN::Association do
         expect(start.send(:origin_type)).to eq 'MyRel'
       end
     end
+
+    describe 'relationship_class' do
+      it 'returns the value of @relationship_class' do
+        association.instance_variable_set(:@relationship_class, :foo)
+        expect(association.send(:relationship_class)).to eq :foo
+      end
+    end
   end
 
 

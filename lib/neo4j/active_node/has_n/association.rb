@@ -7,22 +7,13 @@ module Neo4j
         attr_reader :type, :name, :relationship, :direction
 
         def initialize(type, direction, name, options = {})
-          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
-          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
+          check_valid_type_and_dir(type, direction)
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
-          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
-
           @target_class_name_from_name = name.to_s.classify
-          @target_class_option = target_class_option(options)
-          @callbacks = {before: options[:before], after: options[:after]}
-          @relationship_type = options[:type] && options[:type].to_sym
-          @origin = options[:origin] && options[:origin].to_sym
-          @relationship_type  = options[:type]
-          @relationship_class = options[:rel_class]
+          set_vars_from_options(options)
         end
-
 
         def target_class_option(options)
           if options[:model_class].nil?
@@ -110,6 +101,20 @@ module Neo4j
         end
 
         private
+
+        def check_valid_type_and_dir(type, direction)
+          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
+          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
+        end
+
+        def set_vars_from_options(options)
+          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
+          @target_class_option = target_class_option(options)
+          @callbacks = {before: options[:before], after: options[:after]}
+          @origin = options[:origin] && options[:origin].to_sym
+          @relationship_type  = options[:type] && options[:type].to_sym
+          @relationship_class = options[:rel_class]
+        end
         
         # Return basic details about association as declared in the model
         # @example
