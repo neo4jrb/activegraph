@@ -16,11 +16,7 @@ module Neo4j
         end
 
         def target_class_option(options)
-          if options[:model_class].nil?
-            @target_class_name_from_name
-          elsif options[:model_class]
-            options[:model_class]
-          end
+          options[:model_class].nil? ? @target_class_name_from_name : options[:model_class]
         end
 
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
@@ -29,7 +25,6 @@ module Neo4j
 
           relationship_type = relationship_type(create)
           relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
-
           properties_string = get_properties_string(properties)
           relationship_cypher = get_relationship_cypher(var, relationship_name_cypher, properties_string)
           get_direction(relationship_cypher, create) 
@@ -57,9 +52,12 @@ module Neo4j
         end
 
         def relationship_type(create = false)
-          if @relationship_type
+          case
+          when @relationship_class
+            @relationship_class._type
+          when @relationship_type
             @relationship_type
-          elsif @origin
+          when @origin
             origin_type
           else
             (create || exceptional_target_class?) && "##{@name}"
@@ -87,6 +85,7 @@ module Neo4j
         def get_properties_string(properties)
           properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
           p = properties.map do |key, value|
+            next if key == :_classname
             "#{key}: #{value.inspect}"
           end.join(', ')
           p.size == 0 ? '' : " {#{p}}"
@@ -102,18 +101,13 @@ module Neo4j
 
         private
 
-        def check_valid_type_and_dir(type, direction)
-          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
-          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
-        end
-
         def set_vars_from_options(options)
-          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
+          validate_option_combinations(options)
           @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
-          @relationship_type  = options[:type] && options[:type].to_sym
           @relationship_class = options[:rel_class]
+          @relationship_type  = options[:type] && options[:type].to_sym
         end
         
         # Return basic details about association as declared in the model
@@ -121,6 +115,17 @@ module Neo4j
         #   has_many :in, :bands
         def base_declaration
           "#{type} #{direction.inspect}, #{name.inspect}"
+        end
+
+        def check_valid_type_and_dir(type, direction)
+          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
+          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
+        end
+
+        def validate_option_combinations(options)
+          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
+          raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
+          raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key

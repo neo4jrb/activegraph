@@ -34,6 +34,18 @@ describe Neo4j::ActiveNode::HasN::Association do
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
+    context 'type and rel_class specified' do
+      let(:options) { {type: :foo, origin: :bar} }
+
+      it { expect { subject }.to raise_error(ArgumentError) }
+    end
+
+    context 'origin and rel_class specified' do
+      let(:options) { {origin: :foo, rel_class: :bar} }
+
+      it { expect{ subject }.to raise_error(ArgumentError) }
+    end
+
 
 
     describe '#arrow_cypher' do
@@ -42,6 +54,14 @@ describe Neo4j::ActiveNode::HasN::Association do
       let(:create) { false }
 
       subject { association.arrow_cypher(var, properties, create) }
+      before do
+        class MyRel
+          def self._type
+            'ar_type'
+          end
+        end
+      end
+
 
       it { should == '-[]->' }
 
@@ -84,6 +104,12 @@ describe Neo4j::ActiveNode::HasN::Association do
           let(:options) { {type: :new_type} }
 
           it { should == '-[fooy:`new_type`]->' }
+        end
+
+        context 'rel_class given' do
+          let(:options) { { rel_class: MyRel } }
+
+          it { should == '-[fooy:`ar_type`]->' }
         end
 
         context 'creation' do
