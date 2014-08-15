@@ -10,7 +10,6 @@ module Neo4j
     include Neo4j::ActiveRel::Persistence
     include Neo4j::ActiveRel::Validations
     include Neo4j::ActiveRel::Callbacks
-    include Neo4j::ActiveRel::IdProperty
     include Neo4j::ActiveRel::Query
 
     class FrozenRelError < StandardError; end

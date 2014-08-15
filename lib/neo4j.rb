@@ -29,7 +29,6 @@ require 'neo4j/shared/validations'
 require 'neo4j/shared/identity'
 require 'neo4j/shared'
 
-require 'neo4j/active_rel/id_property'
 require 'neo4j/active_rel/callbacks'
 require 'neo4j/active_rel/initialize'
 require 'neo4j/active_rel/property'
