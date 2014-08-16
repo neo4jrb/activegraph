@@ -1,3 +1,11 @@
+== 3.0.0.alpha.9
+* Complete rewrite of the query api, see wiki page (#406, chris, brian)
+* Performance improvements (#382,#400, #402, chris)
+* idproperty - user defined primary keys (#396,#389)
+* Reimplementation of Neo4j::Config
+* Serialization of node properties (#381)
+* Better first,last syntax (#379)
+
 == 3.0.0.alpha.8
 * Integration with new Query API from neo4j-core including:
 * - .query_as and #query_as methods to get queries from models (#366)

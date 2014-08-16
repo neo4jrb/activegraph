@@ -5,4 +5,5 @@ class Comment
 
   index :title
   has_one :in, :post, origin: :comments, rel_class: PostComment
+
 end

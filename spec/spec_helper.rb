@@ -65,6 +65,12 @@ RSpec.configure do |c|
     curr_session || create_session
   end
 
+  c.after(:each) do
+    if Neo4j::Transaction.current
+      puts "WARNING forgot to close transaction"
+      Neo4j::Transaction.current.close
+    end
+  end
 
 end
 

@@ -22,4 +22,5 @@ class Post
   # end
 
   has_many :out, :comments, type: 'stated_opinions', rel_class: PostComment
+
 end
