@@ -11,6 +11,9 @@ module Neo4j::Shared
 
     class UndefinedPropertyError < RuntimeError; end
     class MultiparameterAssignmentError < StandardError; end
+    class IllegalPropertyError < StandardError; end
+
+    ILLEGAL_PROPS = %w[from_node to_node start_node end_node]
 
     def initialize(attributes={}, options={})
       attributes = process_attributes(attributes)
@@ -141,17 +144,10 @@ module Neo4j::Shared
       #      property :name, constraint: :unique
       #    end
       def property(name, options={})
+        check_illegal_prop(name)
         magic_properties(name, options)
         attribute(name, options)
-
-        # either constraint or index, do not set both
-        if options[:constraint]
-          raise "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
-          constraint(name, type: :unique)
-        elsif options[:index]
-          raise "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
-          index(name, options) if options[:index] == :exact
-        end
+        constraint_or_index(name, options)
       end
 
       def default_property(name, &block)
@@ -183,6 +179,23 @@ module Neo4j::Shared
       end
 
       private
+
+      def constraint_or_index(name, options)
+        # either constraint or index, do not set both
+        if options[:constraint]
+          raise "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
+          constraint(name, type: :unique)
+        elsif options[:index]
+          raise "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
+          index(name, options) if options[:index] == :exact
+        end
+      end
+
+      def check_illegal_prop(name)
+        if ILLEGAL_PROPS.include?(name.to_s)
+          raise IllegalPropertyError, "#{name} is an illegal property"
+        end
+      end
 
       # Tweaks properties
       def magic_properties(name, options)
