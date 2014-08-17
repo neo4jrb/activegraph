@@ -21,6 +21,11 @@ class Post
   #   self.title.urlize # uses https://github.com/cheef/string-urlize gem
   # end
 
+  # Relationship name is defined in PostComment
+  # Generates a comments accessor methods for navigating/querying 'stated_opinions' outgoing relationships
   has_many :out, :comments, rel_class: PostComment
+
+  # or if you don't need to use ActiveRel models:
+  # has_many :out, :comments
 
 end

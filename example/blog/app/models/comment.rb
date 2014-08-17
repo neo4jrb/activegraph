@@ -4,6 +4,9 @@ class Comment
   property :text
 
   index :title
-  has_one :in, :post, origin: :comments, rel_class: PostComment
+  has_one :in, :post, rel_class: PostComment
+
+  # or if PostComment is not needed
+  # has_one :in, :post
 
 end

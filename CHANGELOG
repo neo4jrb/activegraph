@@ -1,3 +1,6 @@
+== 3.0.0.alpha.10
+* ActiveRel support, see Wiki pages (chris #393)
+
 == 3.0.0.alpha.9
 * Complete rewrite of the query api, see wiki page (#406, chris, brian)
 * Performance improvements (#382,#400, #402, chris)
