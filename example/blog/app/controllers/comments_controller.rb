@@ -14,10 +14,16 @@ class CommentsController < ApplicationController
 
     respond_to do |format|
       if @comment.save
-        # create a relationship with a created property between post and comment
-        @post.comments.create(@comment, :created => Time.now.to_i)
-        # alternative
+        # using the ActiveRel model to create the relationship
+        # callbacks, validations would run
+        # it will be timestamped as any other model since a :created_at property is present
+        PostComment.create(from_node: @post, to_node: @comment)
+        # alternatives
         # @post.comments << @comment
+        # or
+        # create a relationship with a created property between post and comment
+        # @post.comments.create(@comment, :created => Time.now.to_i)
+
 
         format.html { redirect_to @post, notice: 'Comment was successfully created.' }
         format.json { render action: 'show', status: :created, location: @comment }

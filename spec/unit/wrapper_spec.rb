@@ -6,7 +6,6 @@ describe Neo4j::Node::Wrapper do
     obj.extend(Neo4j::Node::Wrapper)
   end
 
-
   describe 'load_class_from_label' do
     it 'find classes' do
       clazz = UniqueClass.create

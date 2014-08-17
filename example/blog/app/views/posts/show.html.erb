@@ -9,6 +9,8 @@
   <b>Text:</b>
   <%= @post.text %>
 
+  <br />
+
   <b>Score:</b>
   <%= @post.score %>
 
@@ -16,23 +18,18 @@
 
 <h3>Comments</h3>
 
-<table>
+<!--Without rels, @post.each -->
+<!--Finding all relationships: @post.comments.each_rel-->
+<!--Finding, alternative all relationship, a.rels(dir: :outgoing, type: Post.comments)-->
 
-  <!--Finding all relationship: @post.comments_rel-->
-  <!--Finding, alternative all relationship, a.rels(dir: :outgoing, type: Post.comments)-->
-
-<% @post.comments.each do |comment| %>
-      <tr>
-        <td>
-          <%=  comment.title  %>
-        </td>
-
-        <td>
-          <%= link_to 'Destroy', [@post,comment], method: :delete%>
-        </td>
-      </tr>
+<% @post.comments.each_with_rel do |comment, rel| %>
+  <strong>Title</strong>&nbsp;<%=  comment.title  %><br />
+  <strong>Created at</strong>&nbsp;<%= rel.created_at.strftime("%D, %H:%m") %><br />
+  <%= link_to 'Destroy', [@post,comment], method: :delete%>
+  &nbsp;<br />
+  &nbsp;<br />
 <% end %>
-</table>
+
 
 <p>
   <%= link_to 'New Comment', new_post_comment_path(@post) %>

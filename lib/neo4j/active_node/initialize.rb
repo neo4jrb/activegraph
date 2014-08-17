@@ -2,13 +2,13 @@ module Neo4j::ActiveNode::Initialize
   extend ActiveSupport::Concern
   include Neo4j::TypeConverters
 
-  attr_reader :_persisted_node
+  attr_reader :_persisted_obj
 
   # called when loading the node from the database
   # @param [Neo4j::Node] persisted_node the node this class wraps
   # @param [Hash] properties of the persisted node.
   def init_on_load(persisted_node, properties)
-    @_persisted_node = persisted_node
+    @_persisted_obj = persisted_node
     changed_attributes && changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
     self.default_properties=properties
