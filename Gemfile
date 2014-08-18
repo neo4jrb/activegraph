@@ -4,7 +4,7 @@ gemspec
 
 
 #gem 'neo4j-core', path: '../neo4j-core'
-gem 'neo4j-core', :git => 'https://github.com/andreasronge/neo4j-core.git'
+#gem 'neo4j-core', :git => 'https://github.com/andreasronge/neo4j-core.git'
 #gem 'orm_adapter', :path => '../orm_adapter'
 
 gem 'coveralls', require: false
