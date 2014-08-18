@@ -477,6 +477,49 @@ describe Neo4j::ActiveNode do
     end
   end
 
+  describe 'node with rel_class set' do
+    class ToClass; end
+    class MyRelClass; end
+
+    class FromClass
+      include Neo4j::ActiveNode
+      has_many :out, :others, model_class: ToClass, rel_class: MyRelClass
+    end
+
+    class ToClass
+      include Neo4j::ActiveNode
+      has_many :in, :others, model_class: FromClass, rel_class: MyRelClass
+    end
+
+    class MyRelClass
+      include Neo4j::ActiveRel
+      from_class FromClass
+      to_class ToClass
+      type 'rel_class_type'
+    end
+
+    context 'with rel created from node' do
+      it 'returns the activerel class' do
+        f1 = FromClass.create
+        t1 = ToClass.create
+        f1.others << t1
+        expect(f1.rels.first).to be_a(MyRelClass)
+      end
+    end
+
+    context 'with rel created from activerel' do
+      let(:from_node) { FromClass.create }
+      let(:to_node) { ToClass.create }
+
+      it 'creates the rel' do
+        rel = MyRelClass.create(from_node: from_node, to_node: to_node)
+        expect(rel.from_node).to eq from_node
+        expect(rel.to_node).to eq to_node
+        expect(rel.persisted?).to be_truthy
+      end
+    end
+  end
+
   describe "Neo4j::Paginated.create_from" do
     before {
       Person.destroy_all
