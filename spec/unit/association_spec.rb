@@ -109,7 +109,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         context 'rel_class given' do
           let(:options) { { rel_class: MyRel } }
 
-          it { should == '-[fooy:`ar_type`]->' }
+          it { should == '-[fooy:`ar_type` {_classname: "MyRel"}]->' }
         end
 
         context 'creation' do
