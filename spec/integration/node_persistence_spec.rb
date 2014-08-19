@@ -51,7 +51,7 @@ describe "Neo4j::ActiveNode" do
     it 'can create relationships' do
       parent = double("parent node", neo_id: 1, persisted?: true)
       node = double('unwrapped_node', props: {a: 999}, rel: nil, neo_id: 2)
-
+      node.class.stub(:mapped_label_name).and_return('MyThing')
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
       @session.should_receive(:_query).exactly(2).times
@@ -66,9 +66,11 @@ describe "Neo4j::ActiveNode" do
 
       node = double('unwrapped_node', props: {a: 999}, rel: old_rel, neo_id: 2)
 
+      node.class.stub(:mapped_label_name).and_return('MyThing')
       @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
       @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
       @session.should_receive(:_query).exactly(2).times
+
       #@session.should_receive(:begin_tx)
 
       thing = MyThing.create(a: 1,  parent: parent)
