@@ -2,6 +2,8 @@ module Neo4j::ActiveNode
   module HasN
     extend ActiveSupport::Concern
 
+    class NonPersistedNodeError < StandardError; end
+
     module ClassMethods
 
       def has_association?(name)
@@ -33,6 +35,7 @@ module Neo4j::ActiveNode
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
         module_eval(%Q{
           def #{name}(node = nil, rel = nil)
+            return [].freeze unless self.persisted?
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name}, self.class.associations[#{name.inspect}], session: self.class.neo4j_session, start_object: self, node: node, rel: rel)
           end
 
@@ -67,6 +70,7 @@ module Neo4j::ActiveNode
 
         module_eval(%Q{
           def #{name}=(other_node)
+            raise(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self.persisted?
             #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
             #{name}_query_proxy << other_node
           end
@@ -80,6 +84,7 @@ module Neo4j::ActiveNode
           end
 
           def #{name}(node = nil, rel = nil)
+            return nil unless self.persisted?
             #{name}_query_proxy(node: node, rel: rel).first
           end}, __FILE__, __LINE__)
 
