@@ -520,7 +520,7 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'include?' do
+  describe 'include?, exists?' do
     #goofy names to differentiate from same classes used elsewhere
     before(:all) do
       class IncludeLesson; end
@@ -548,16 +548,35 @@ describe Neo4j::ActiveNode do
     let!(:mr_jones) { IncludeTeacher.create }
     let!(:mr_adams) { IncludeTeacher.create }
 
-    it 'correctly reports when a node is included in a query result' do
-      jimmy.lessons << science
-      science.teachers << mr_adams
-      expect(jimmy.lessons.include?(science)).to be_truthy
-      expect(jimmy.lessons.include?(math)).to be_falsey
-      expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
-      expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
-      expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
-      expect(IncludeTeacher.include?(mr_jones)).to be_truthy
-      expect(IncludeTeacher.include?(math)).to be_falsey
+    describe 'include?' do
+      it 'correctly reports when a node is included in a query result' do
+        jimmy.lessons << science
+        science.teachers << mr_adams
+        expect(jimmy.lessons.include?(science)).to be_truthy
+        expect(jimmy.lessons.include?(math)).to be_falsey
+        expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
+        expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
+        expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
+        expect(IncludeTeacher.include?(mr_jones)).to be_truthy
+        expect(IncludeTeacher.include?(math)).to be_falsey
+      end
+    end
+
+    describe 'exists?' do
+      it 'can be run on a query' do
+        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+        expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
+      end
+
+      it 'can be run with a neo_id' do
+        expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
+        expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
+      end
+
+      it 'can be called by the class with a neo_id' do
+        expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
+        expect(IncludeLesson.exists?(8675309)).to be_falsey
+      end
     end
   end
 

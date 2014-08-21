@@ -83,6 +83,12 @@ module Neo4j
           self.query_as(:n).limit(1).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count == 1
         end
 
+        def exists?(node_id=nil)
+          start_q = self.query_as(:n)
+          end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
+          end_q.return("COUNT(n) AS count").first.count > 0
+        end
+
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
