@@ -560,6 +560,12 @@ describe Neo4j::ActiveNode do
         expect(IncludeTeacher.include?(mr_jones)).to be_truthy
         expect(IncludeTeacher.include?(math)).to be_falsey
       end
+
+      it 'works with multiple relationships to the same object' do
+        jimmy.lessons << science
+        jimmy.lessons << science
+        expect(jimmy.lessons.include?(science)).to be_truthy
+      end
     end
 
     describe 'exists?' do

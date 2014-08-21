@@ -80,7 +80,7 @@ module Neo4j
         end
 
         def include?(other)
-          self.query_as(:n).limit(1).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count == 1
+          self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
         end
 
         def exists?(node_id=nil)
