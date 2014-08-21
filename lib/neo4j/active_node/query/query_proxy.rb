@@ -130,6 +130,10 @@ module Neo4j
           call_class_method(:count)
         end
 
+        def include?(other)
+          call_class_method(:include?, *other)
+        end
+
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args)

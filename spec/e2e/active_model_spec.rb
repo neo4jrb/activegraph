@@ -520,6 +520,44 @@ describe Neo4j::ActiveNode do
     end
   end
 
+  describe 'include?' do
+    before(:all) do
+      class Student
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, type: 'lessons'
+      end
+
+      class Lesson
+        include Neo4j::ActiveNode
+        property :name
+        has_many :in, :students, origin: :lessons
+        has_many :in, :teachers, origin: :lessons
+      end
+
+      class Teacher
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, type: 'teaching_lesson'
+      end
+    end
+    let!(:jimmy)    { Student.create }
+    let!(:math)     { Lesson.create(name: 'math') }
+    let!(:science)  { Lesson.create(name: 'science') }
+    let!(:mr_jones) { Teacher.create }
+    let!(:mr_adams) { Teacher.create }
+
+    it 'correctly reports when a node is included in a query result' do
+      jimmy.lessons << science
+      science.teachers << mr_adams
+      expect(jimmy.lessons.include?(science)).to be_truthy
+      expect(jimmy.lessons.include?(math)).to be_falsey
+      expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
+      expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
+      expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
+      expect(Teacher.include?(mr_jones)).to be_truthy
+      expect(Teacher.include?(math)).to be_falsey
+    end
+  end
+
   describe "Neo4j::Paginated.create_from" do
     before {
       Person.destroy_all
