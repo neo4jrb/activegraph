@@ -224,4 +224,33 @@ describe 'has_n' do
       expect(callback_friend1.knows_me.to_a.size).to eq 0
     end
   end
+
+  describe 'using mapped_label_name' do
+    let(:clazz_c) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+
+        has_many :in, :furrs, model_class: 'ClazzD'
+      end
+    end
+
+    let(:c1) { clazz_c.create }
+
+    it 'should use the mapped_label_name' do
+      clazz_d = UniqueClass.create do
+        include Neo4j::ActiveNode
+
+        set_mapped_label_name 'Fuur'
+      end
+
+      stub_const 'ClazzD', clazz_d
+
+      d1 = ClazzD.create
+
+      c1.furrs << d1
+
+      c1.furrs.to_a.should == [d1]
+    end
+
+  end
 end

@@ -75,7 +75,7 @@ module Neo4j
 
           query = if @association
             chain_var = _association_chain_var
-            label_string = @model && ":`#{@model.name}`"
+            label_string = @model && ":`#{@model.mapped_label_name}`"
             (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}#{label_string})")
           else
             _query_model_as(var)
@@ -117,7 +117,7 @@ module Neo4j
               return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
               _association_query_start(:start)
-                .match(end: other_node.class)
+                .match(end: other_node.class.mapped_label_name)
                 .where(end: {neo_id: other_node.neo_id})
                 .create("start#{_association_arrow(properties, true)}end").exec
 
@@ -126,14 +126,15 @@ module Neo4j
           end
         end
 
+        def count
+          call_class_method(:count)
+        end
+
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args)
           if @model && @model.respond_to?(method_name)
-            @model.query_proxy = self
-            result = @model.send(method_name, *args)
-            @model.query_proxy = nil
-            result
+            call_class_method(method_name, *args)
           else
             super
           end
@@ -204,6 +205,13 @@ module Neo4j
         end
 
         private
+
+        def call_class_method(method_name, *args)
+          @model.query_proxy = self
+          result = @model.send(method_name, *args)
+          @model.query_proxy = nil
+          result
+        end
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
