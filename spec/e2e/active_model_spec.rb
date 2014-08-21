@@ -520,6 +520,47 @@ describe Neo4j::ActiveNode do
     end
   end
 
+  describe 'include?' do
+    #goofy names to differentiate from same classes used elsewhere
+    before(:all) do
+      class IncludeLesson; end
+      class IncludeTeacher; end
+      class IncludeStudent
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+      end
+
+      class IncludeLesson
+        include Neo4j::ActiveNode
+        property :name
+        has_many :in, :students, model_class: IncludeStudent, origin: :lessons
+        has_many :in, :teachers, model_class: IncludeTeacher, origin: :lessons
+      end
+
+      class IncludeTeacher
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
+      end
+    end
+    let!(:jimmy)    { IncludeStudent.create }
+    let!(:math)     { IncludeLesson.create(name: 'math') }
+    let!(:science)  { IncludeLesson.create(name: 'science') }
+    let!(:mr_jones) { IncludeTeacher.create }
+    let!(:mr_adams) { IncludeTeacher.create }
+
+    it 'correctly reports when a node is included in a query result' do
+      jimmy.lessons << science
+      science.teachers << mr_adams
+      expect(jimmy.lessons.include?(science)).to be_truthy
+      expect(jimmy.lessons.include?(math)).to be_falsey
+      expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
+      expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
+      expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
+      expect(IncludeTeacher.include?(mr_jones)).to be_truthy
+      expect(IncludeTeacher.include?(math)).to be_falsey
+    end
+  end
+
   describe "Neo4j::Paginated.create_from" do
     before {
       Person.destroy_all

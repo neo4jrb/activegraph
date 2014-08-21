@@ -24,6 +24,17 @@ describe 'has_n' do
   let(:friend1) { clazz_a.create }
   let(:friend2) { clazz_a.create }
 
+  describe 'non-persisted node' do
+    let(:unsaved_node) { clazz_a.new }
+    it 'returns an empty array' do
+      expect(unsaved_node.friends).to eq []
+    end
+
+    it 'has a frozen array' do
+      expect{unsaved_node.friends << friend1}.to raise_error(RuntimeError)
+    end
+  end
+
   describe 'rel_type' do
     it 'creates the correct type' do
       node.friends << friend1

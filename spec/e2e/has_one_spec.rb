@@ -15,6 +15,17 @@ describe "has_one" do
       has_one :in, :parent, origin: :children, model_class: 'HasOneA'
     end
 
+    context 'with non-persisted node' do
+      let(:unsaved_node) { HasOneB.new }
+      it 'returns a nil object' do
+        expect(unsaved_node.parent).to eq nil
+      end
+
+      it 'raises an error when trying to create a relationship' do
+        expect{unsaved_node.parent = HasOneA.create}.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
+      end
+    end
+
     it 'find the nodes via the has_one accessor' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
