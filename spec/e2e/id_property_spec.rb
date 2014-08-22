@@ -263,8 +263,8 @@ describe Neo4j::ActiveNode::IdProperty do
     end
   end
 
-  describe 'inheritence' do
-    let(:clazz1) do
+  describe 'inheritance' do
+    before(:all) do
       module IdProp
         Teacher = UniqueClass.create do
           include Neo4j::ActiveNode
@@ -276,22 +276,14 @@ describe Neo4j::ActiveNode::IdProperty do
         end
 
         class Substitute < Teacher; end
-      end
-    end
 
-    let(:clazz2) do
-      module IdProp
         Vehicle = UniqueClass.create do
           include Neo4j::ActiveNode
           id_property :my_id, auto: :uuid
         end
 
         class Car < Vehicle; end
-      end
-    end
 
-    let(:clazz3) do
-      module IdProp
         Fruit = UniqueClass.create do
           include Neo4j::ActiveNode
           id_property :my_id
@@ -301,17 +293,22 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
+    after(:all) do
+      IdProp::Teacher.destroy_all
+      IdProp::Car.destroy_all
+      IdProp::Apple.destroy_all
+    end
 
     it 'inherits the base id_property' do
-      expect(clazz1::IdProp::Substitute.create.my_id).to eq 'an id'
+      expect(IdProp::Substitute.create.my_id).to eq 'an id'
     end
 
     it 'works with auto uuid' do
-      expect(clazz2::IdProp::Car.create.my_id).not_to be_nil
+      expect(IdProp::Car.create.my_id).not_to be_nil
     end
 
     it 'works without conf specified' do
-      expect(clazz3::IdProp::Apple.create.my_id).not_to be_nil
+      expect(IdProp::Apple.create.my_id).not_to be_nil
     end
   end
 
