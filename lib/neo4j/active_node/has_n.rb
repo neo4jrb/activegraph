@@ -69,7 +69,7 @@ module HasN
                                                        query_proxy: self.query_proxy,
                                                        node: node,
                                                        rel: rel,
-                                                       context: (self.query_proxy ? self.query_proxy.context : '#{self.name}') + '##{name}'
+                                                       context: context
                                                      })
           end}, __FILE__, __LINE__)
       end
