@@ -8,6 +8,7 @@ module Neo4j
         def initialize(model, association = nil, options = {})
           @model = model
           @association = association
+          @context = options.delete(:context)
           @options = options
           @node_var = options[:node]
           @rel_var = options[:rel] || _rel_chain_var
@@ -148,6 +149,8 @@ module Neo4j
           end
         end
 
+        attr_reader :context
+
         protected
         # Methods are underscored to prevent conflict with user class methods
 
@@ -168,7 +171,7 @@ module Neo4j
           else
             var
           end
-          _session.query(context: @options[:context]).match(match_arg)
+          _session.query(context: @context).match(match_arg)
         end
 
         def _session
@@ -212,6 +215,8 @@ module Neo4j
         def _rel_chain_var
           :"rel#{_chain_level - 1}"
         end
+
+        attr_writer :context
 
         private
 

@@ -68,7 +68,7 @@ module HasN
                                                        query_proxy: self.query_proxy,
                                                        node: node,
                                                        rel: rel,
-                                                       context: '#{self.name}##{name}'
+                                                       context: (self.query_proxy ? self.query_proxy.context : '#{self.name}') + '##{name}'
                                                      })
           end}, __FILE__, __LINE__)
       end
@@ -101,18 +101,19 @@ module HasN
 
           def #{name}(node = nil, rel = nil)
             return nil unless self.persisted?
-            #{name}_query_proxy(node: node, rel: rel).first
+            #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}').first
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
           def #{name}_query_proxy(options = {})
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
                                                      @associations[#{name.inspect}],
-                                                     {session: self.neo4j_session, context: '#{self.name}##{name}'}.merge(options))
+                                                     {session: self.neo4j_session}.merge(options))
           end
 
           def #{name}(node = nil, rel = nil)
-            #{name}_query_proxy(query_proxy: self.query_proxy, node: node, rel: rel)
+            context = (self.query_proxy && self.query_proxy.context ? self.query_proxy.context : '#{self.name}') + '##{name}'
+            #{name}_query_proxy(query_proxy: self.query_proxy, node: node, rel: rel, context: context)
           end}, __FILE__, __LINE__)
       end
 
