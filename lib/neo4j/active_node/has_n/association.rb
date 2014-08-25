@@ -117,8 +117,8 @@ module Neo4j
         end
 
         def check_valid_type_and_dir(type, direction)
-          raise ArgumentError, "Invalid association type: #{type.inspect}" if not [:has_many, :has_one].include?(type.to_sym)
-          raise ArgumentError, "Invalid direction: #{direction.inspect}" if not [:out, :in, :both].include?(direction.to_sym)
+          raise ArgumentError, "Invalid association type: #{type.inspect} (valid value: :has_many and :has_one)" if not [:has_many, :has_one].include?(type.to_sym)
+          raise ArgumentError, "Invalid direction: #{direction.inspect} (valid value: :out, :in, and :both)" if not [:out, :in, :both].include?(direction.to_sym)
         end
 
         def validate_option_combinations(options)
