@@ -126,8 +126,8 @@ module Neo4j
           end
         end
 
-        def count
-          call_class_method(:count)
+        def count(distinct = nil)
+          call_class_method(:count, distinct)
         end
 
         def include?(other)
