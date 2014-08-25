@@ -83,10 +83,12 @@ module Neo4j
         end
 
         def include?(other)
+          raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
           self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
         end
 
         def exists?(node_id=nil)
+          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
           start_q = self.query_as(:n)
           end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
           end_q.return("COUNT(n) AS count").first.count > 0
