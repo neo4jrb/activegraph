@@ -520,7 +520,7 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'include?, exists?' do
+  describe 'include?, exists?, count' do
     #goofy names to differentiate from same classes used elsewhere
     before(:all) do
       class IncludeLesson; end
@@ -582,6 +582,21 @@ describe Neo4j::ActiveNode do
       it 'can be called by the class with a neo_id' do
         expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
         expect(IncludeLesson.exists?(8675309)).to be_falsey
+      end
+    end
+
+    describe 'count' do
+      before{ 3.times { jimmy.lessons << science }}
+      it 'tells you the number of matching objects' do
+        expect(jimmy.lessons.count).to eq(3)
+      end
+
+      it 'can tell you the number of distinct matching objects' do
+        expect(jimmy.lessons.count(:distinct)).to eq 1
+      end
+
+      it 'raises an exception if a bad parameter is passed' do
+        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
       end
     end
   end
