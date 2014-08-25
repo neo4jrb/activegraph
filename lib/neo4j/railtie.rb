@@ -76,7 +76,7 @@ module Neo4j
 
       ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |name, start, finish, id, payload|
         ms = (finish - start) * 1000
-        Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]} (#{payload[:params].inspect})"
+        Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]}" + (payload[:params].size > 0 ? ' | ' + payload[:params].inspect : '')
       end
     end
   end
