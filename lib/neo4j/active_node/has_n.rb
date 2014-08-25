@@ -1,47 +1,50 @@
 module Neo4j::ActiveNode
-  module HasN
-    extend ActiveSupport::Concern
+module HasN
+  extend ActiveSupport::Concern
 
-    module ClassMethods
+  class NonPersistedNodeError < StandardError; end
 
-      def has_association?(name)
-        !!associations[name]
-      end
+  module ClassMethods
 
-      def associations
-        @associations || {}
-      end
+    def has_association?(name)
+      !!associations[name]
+    end
 
-      # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
-      def inherited(klass)
-        klass.instance_variable_set(:@associations, associations.clone)
+    def associations
+      @associations || {}
+    end
 
-        super
-      end
+    # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
+    def inherited(klass)
+      klass.instance_variable_set(:@associations, associations.clone)
 
-      def has_many(direction, name, options = {})
-        name = name.to_sym
+      super
+    end
 
-        association = Neo4j::ActiveNode::HasN::Association.new(:has_many, direction, name, options)
-        name = name.to_sym
+    def has_many(direction, name, options = {})
+      name = name.to_sym
 
-        @associations ||= {}
-        @associations[name] = association
+      association = Neo4j::ActiveNode::HasN::Association.new(:has_many, direction, name, options)
+      name = name.to_sym
 
-        target_class_name = association.target_class_name || 'nil'
+      @associations ||= {}
+      @associations[name] = association
 
-        # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
-        module_eval(%Q{
-          def #{name}(node = nil, rel = nil)
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
-                                                     self.class.associations[#{name.inspect}],
-                                                     {
-                                                       session: self.class.neo4j_session,
-                                                       start_object: self,
-                                                       node: node,
-                                                       rel: rel,
-                                                       context: '#{self.name}##{name}'
-                                                     })
+      target_class_name = association.target_class_name || 'nil'
+
+      # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
+      module_eval(%Q{
+        def #{name}(node = nil, rel = nil)
+          return [].freeze unless self.persisted?
+          Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
+                                                   self.class.associations[#{name.inspect}],
+                                                   {
+                                                     session: self.class.neo4j_session,
+                                                     start_object: self,
+                                                     node: node,
+                                                     rel: rel,
+                                                     context: '#{self.name}##{name}'
+                                                   })
           end
 
           def #{name}=(other_nodes)
@@ -83,6 +86,7 @@ module Neo4j::ActiveNode
 
         module_eval(%Q{
           def #{name}=(other_node)
+            raise(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self.persisted?
             #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
             #{name}_query_proxy << other_node
           end
@@ -96,6 +100,7 @@ module Neo4j::ActiveNode
           end
 
           def #{name}(node = nil, rel = nil)
+            return nil unless self.persisted?
             #{name}_query_proxy(node: node, rel: rel).first
           end}, __FILE__, __LINE__)
 

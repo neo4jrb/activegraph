@@ -9,6 +9,7 @@ module Neo4j
       WRAPPED_CLASSES = []
       class InvalidQueryError < StandardError; end
       class RecordNotFound < StandardError; end
+      class InvalidParameterError < StandardError; end
 
       # @return the labels
       # @see Neo4j-core
@@ -75,8 +76,22 @@ module Neo4j
         end
 
         # @return [Fixnum] number of nodes of this class
-        def count
-          self.query_as(:n).return("count(n) AS count").first.count
+        def count(distinct = nil)
+          raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+          q = distinct.nil? ? "n" : "DISTINCT n"
+          self.query_as(:n).return("count(#{q}) AS count").first.count
+        end
+
+        def include?(other)
+          raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
+          self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
+        end
+
+        def exists?(node_id=nil)
+          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
+          start_q = self.query_as(:n)
+          end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
+          end_q.return("COUNT(n) AS count").first.count > 0
         end
 
         # Returns the object with the specified neo4j id.

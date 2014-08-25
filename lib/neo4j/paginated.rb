@@ -10,7 +10,7 @@ module Neo4j
     def self.create_from(source, page, per_page)
       #partial = source.drop((page-1) * per_page).first(per_page)
       partial = source.skip(page-1).limit(per_page)
-      Paginated.new(partial, source.count, page)
+      Paginated.new(partial, source.instance_variable_get(:@model).count, page)
     end
 
     delegate :each, :to => :items

@@ -520,6 +520,95 @@ describe Neo4j::ActiveNode do
     end
   end
 
+  describe 'include?, exists?, count' do
+    #goofy names to differentiate from same classes used elsewhere
+    before(:all) do
+      class IncludeLesson; end
+      class IncludeTeacher; end
+      class IncludeStudent
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+      end
+
+      class IncludeLesson
+        include Neo4j::ActiveNode
+        property :name
+        has_many :in, :students, model_class: IncludeStudent, origin: :lessons
+        has_many :in, :teachers, model_class: IncludeTeacher, origin: :lessons
+      end
+
+      class IncludeTeacher
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
+      end
+    end
+    let!(:jimmy)    { IncludeStudent.create }
+    let!(:math)     { IncludeLesson.create(name: 'math') }
+    let!(:science)  { IncludeLesson.create(name: 'science') }
+    let!(:mr_jones) { IncludeTeacher.create }
+    let!(:mr_adams) { IncludeTeacher.create }
+
+    describe 'include?' do
+      it 'correctly reports when a node is included in a query result' do
+        jimmy.lessons << science
+        science.teachers << mr_adams
+        expect(jimmy.lessons.include?(science)).to be_truthy
+        expect(jimmy.lessons.include?(math)).to be_falsey
+        expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
+        expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
+        expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
+        expect(IncludeTeacher.include?(mr_jones)).to be_truthy
+        expect(IncludeTeacher.include?(math)).to be_falsey
+      end
+
+      it 'works with multiple relationships to the same object' do
+        jimmy.lessons << science
+        jimmy.lessons << science
+        expect(jimmy.lessons.include?(science)).to be_truthy
+      end
+
+      it 'raises an error if something other than a node is given' do
+        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+      end
+    end
+
+    describe 'exists?' do
+      it 'can be run on a query' do
+        expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
+        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+      end
+
+      it 'can be run with a neo_id' do
+        expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
+        expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
+      end
+
+      it 'can be called by the class with a neo_id' do
+        expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
+        expect(IncludeLesson.exists?(8675309)).to be_falsey
+      end
+
+      it 'raises an error if something other than a neo id is given' do
+        expect{IncludeLesson.exists?(:fooooo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+      end
+    end
+
+    describe 'count' do
+      before{ 3.times { jimmy.lessons << science }}
+      it 'tells you the number of matching objects' do
+        expect(jimmy.lessons.count).to eq(3)
+      end
+
+      it 'can tell you the number of distinct matching objects' do
+        expect(jimmy.lessons.count(:distinct)).to eq 1
+      end
+
+      it 'raises an exception if a bad parameter is passed' do
+        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+      end
+    end
+  end
+
   describe "Neo4j::Paginated.create_from" do
     before {
       Person.destroy_all

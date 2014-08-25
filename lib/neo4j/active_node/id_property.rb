@@ -101,10 +101,9 @@ module Neo4j::ActiveNode
         Neo4j::Node.load(key.to_i)
       end
 
-
       def id_property(name, conf = {})
+        @id_property_info = {name: name, type: conf}
         TypeMethods.define_id_methods(self, name, conf)
-
         constraint name, type: :unique
 
         self.define_singleton_method(:find_by_id) do |key|
@@ -112,8 +111,11 @@ module Neo4j::ActiveNode
         end
       end
 
-    end
+      def id_property_info
+        @id_property_info ||= false
+      end
 
+    end
   end
 
 end

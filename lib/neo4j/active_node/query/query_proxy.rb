@@ -126,8 +126,16 @@ module Neo4j
           end
         end
 
-        def count
-          call_class_method(:count)
+        def count(distinct = nil)
+          call_class_method(:count, distinct)
+        end
+
+        def include?(other)
+          call_class_method(:include?, other)
+        end
+
+        def exists?(node_id=nil)
+          call_class_method(:exists?, node_id)
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
