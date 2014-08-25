@@ -566,12 +566,16 @@ describe Neo4j::ActiveNode do
         jimmy.lessons << science
         expect(jimmy.lessons.include?(science)).to be_truthy
       end
+
+      it 'raises an error if something other than a node is given' do
+        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+      end
     end
 
     describe 'exists?' do
       it 'can be run on a query' do
-        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
         expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
+        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
       end
 
       it 'can be run with a neo_id' do
@@ -582,6 +586,10 @@ describe Neo4j::ActiveNode do
       it 'can be called by the class with a neo_id' do
         expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
         expect(IncludeLesson.exists?(8675309)).to be_falsey
+      end
+
+      it 'raises an error if something other than a neo id is given' do
+        expect{IncludeLesson.exists?(:fooooo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
       end
     end
 
