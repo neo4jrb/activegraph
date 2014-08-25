@@ -61,6 +61,7 @@ module HasN
 
         instance_eval(%Q{
           def #{name}(node = nil, rel = nil)
+            context = (self.query_proxy && self.query_proxy.context ? self.query_proxy.context : '#{self.name}') + '##{name}'
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
                                                      @associations[#{name.inspect}],
                                                      {
