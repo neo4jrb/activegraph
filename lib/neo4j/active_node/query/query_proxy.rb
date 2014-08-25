@@ -117,9 +117,9 @@ module Neo4j
 
               return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
-              _association_query_start(:start)
-                .match(end: other_node.class.mapped_label_name)
-                .where(end: {neo_id: other_node.neo_id})
+              start_object = @options[:start_object]
+              _session.query(context: @options[:context])
+                .start(start: "node(#{start_object.neo_id})", end: "node(#{other_node.neo_id})")
                 .create("start#{_association_arrow(properties, true)}end").exec
 
               @association.perform_callback(@options[:start_object], other_node, :after)
