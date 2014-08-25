@@ -154,12 +154,13 @@ module Neo4j
         end
 
         def _query_model_as(var)
-          if @model
+          match_arg = if @model
             label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-            _session.query.match(var => label)
+            {var => label}
           else
-            _session.query.match(var)
+            var
           end
+          _session.query(context: @options[:context]).match(match_arg)
         end
 
         def _session

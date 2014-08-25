@@ -1,3 +1,5 @@
+require 'active_support/notifications'
+
 module Neo4j
     class Railtie < ::Rails::Railtie
     config.neo4j = ActiveSupport::OrderedOptions.new
@@ -66,6 +68,16 @@ module Neo4j
         Neo4j::Railtie.open_neo4j_session(session_opts)
       end
       Neo4j::Config.setup.merge!(cfg.to_hash)
+
+      clear = "\e[0m"
+      red = "\e[31m"
+      yellow = "\e[33m"
+      cyan = "\e[36m"
+
+      ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |name, start, finish, id, payload|
+        ms = (finish - start) * 1000
+        Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]} (#{payload[:params].inspect})"
+      end
     end
   end
 end
