@@ -14,7 +14,7 @@ module Neo4j
           @rel_var = options[:rel] || _rel_chain_var
           @session = options[:session]
           @chain = []
-          @params = {}
+          @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
         def each(node = true, rel = nil, &block)
