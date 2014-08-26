@@ -16,6 +16,17 @@ require 'unique_class'
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
 
+class MockLogger
+  def info(*args)
+  end
+end
+
+module Rails
+  def self.logger
+    MockLogger.new
+  end
+end
+
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
