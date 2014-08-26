@@ -12,10 +12,10 @@ Install gem dependencies using either MRI or JRuby
 bundle install
 ```
 
-Start and install database:
+Start and install development database:
 
 ```
-rake neo4j:install[community-2.0.0]
+rake neo4j:install[community-2.1.3]
 rake neo4j:start
 ```
 
@@ -25,7 +25,7 @@ Start rails:
 rails s
 ```
 
-open a browser: http://localhost:3000
+open a browser: http://localhost:3000, or http://localhost:7474 for the admin UI
 
 ### Neo4j Embedded
 
@@ -45,6 +45,29 @@ rails s
 ```
 
 open a browser: http://localhost:3000
+
+
+## Testing
+
+Install a Neo4j test server
+
+```
+rake neo4j:install[community-2.1.3,test]
+```
+
+Configure it using a different server port e.g. 7475
+
+```
+rake neo4j:config[test,7475]
+```
+
+Edit the test configuration `config/environments/test'
+
+```
+config.neo4j.session_type = :server_db
+config.neo4j.session_path = 'http://localhost:7475'
+```
+
 
 ## Notice
 

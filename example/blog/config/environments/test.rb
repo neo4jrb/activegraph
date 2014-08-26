@@ -33,4 +33,8 @@ Blog::Application.configure do
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
+
+  config.neo4j.session_type = :server_db
+  config.neo4j.session_path = 'http://localhost:7475'
+
 end
