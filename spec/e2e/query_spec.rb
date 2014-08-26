@@ -251,6 +251,12 @@ describe 'Query API' do
 
       # Variable assignment and filtering on a relationship
       it { monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).should == [samuels] }
+
+      it 'considers symbols as node fields for order' do
+        monster_trucks.interested(:person).order(:name).pluck(:person).should == [samuels, othmar]
+        monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person).should == [othmar, samuels]
+      end
     end
+
   end
 end

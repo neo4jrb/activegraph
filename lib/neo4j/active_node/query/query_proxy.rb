@@ -273,7 +273,7 @@ module Neo4j
         end
 
         def links_for_order_arg(arg)
-          [[:order, ->(v) { {v => arg} }]]
+          [[:order, ->(v) { arg.is_a?(String) ? arg : {v => arg} }]]
         end
 
 
