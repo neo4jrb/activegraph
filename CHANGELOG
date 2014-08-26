@@ -1,3 +1,6 @@
+* Warn if no session is available
+* Fix broken == and equality
+
 == 3.0.0.alpha.11
 * Bug fixes
 

@@ -6,6 +6,7 @@ module Neo4j
 
     include Neo4j::Shared
     include Neo4j::ActiveRel::Initialize
+    include Neo4j::Shared::Identity
     include Neo4j::ActiveRel::Property
     include Neo4j::ActiveRel::Persistence
     include Neo4j::ActiveRel::Validations

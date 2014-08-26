@@ -46,6 +46,7 @@ describe Neo4j::ActiveNode::IdProperty do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        property :name
       end
     end
 
@@ -58,6 +59,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
     it 'can find by id uses the neo_id' do
       node = clazz.create!
+      node.name = 'kalle'
       expect(clazz.find_by_id(node.id)).to eq(node)
     end
 

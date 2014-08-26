@@ -25,6 +25,7 @@ module Neo4j
     extend ActiveSupport::Concern
 
     include Neo4j::Shared
+    include Neo4j::Shared::Identity
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::SerializedProperties
