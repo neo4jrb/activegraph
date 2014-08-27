@@ -169,7 +169,7 @@ module Neo4j
         end
 
         def index?(index_def)
-          mapped_label.indexes[:property_keys].include?(index_def)
+          mapped_label.indexes[:property_keys].include?([index_def])
         end
 
         # @return [Array{Symbol}] all the labels that this class has
