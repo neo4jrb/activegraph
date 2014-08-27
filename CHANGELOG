@@ -1,5 +1,14 @@
+== 3.0.0.rc.2
+* Use newer neo4j-core release
+
+== 3.0.0.rc.1
+* Support for count, size, length, empty, blank? for has_many relationship
+* Support for rails logger of cypher queries in development
+* Support for distinct count
+* Optimized methods: https://github.com/andreasronge/neo4j/wiki/Optimized-Methods
+* Queries should respect mapped label names (#421)
 * Warn if no session is available
-* Fix broken == and equality
+* Fix broken == and equality (#424)
 
 == 3.0.0.alpha.11
 * Bug fixes

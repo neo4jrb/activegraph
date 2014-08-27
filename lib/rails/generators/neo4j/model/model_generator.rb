@@ -9,7 +9,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   class_option :parent,     :type => :string, :desc => "The parent class for the generated model"
   class_option :indices,    :type => :array,  :desc => "The properties which should be indexed"
   class_option :has_one,    :type => :array,  :desc => "A list of has_one relationships"
-  class_option :has_n,      :type => :array,  :desc => "A list of has_n relationships"
+  class_option :has_many,   :type => :array,  :desc => "A list of has_many relationships"
 
   def create_model_file
     template "model.erb", File.join('app/models', "#{singular_name}.rb")
@@ -24,14 +24,14 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
     options[:timestamps]
   end
 
-  def has_n?
-    options[:has_n]
+  def has_many?
+    options[:has_many]
   end
 
-  def has_n_statements
+  def has_many_statements
     txt = ""
-    options[:has_n].each do |key|
-      txt << has_x('has_n', key)
+    options[:has_many].each do |key|
+      txt << has_x('has_many', key)
     end
     txt
   end

@@ -2,22 +2,31 @@
 
 Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph database](http://www.neo4j.org/). It uses the [neo4j-core](https://github.com/andreasronge/neo4j-core) and [active_attr](https://github.com/cgriego/active_attr) gems.
 
-## Version 3.0.0.alpha.X
+## Documentation version 3.0.0.rc
 
-Unstable !
+* [Wiki](https://github.com/andreasronge/neo4j/wiki/Neo4j.rb-v3-Introduction)
 
-* [Wiki](https://github.com/andreasronge/neo4j/wiki/Neo4j-v3)
-* [Basic Rails 4 Example](https://github.com/andreasronge/neo4j/blob/master/example/blog/README.md)
+## Documentation Old stable version 2.x
 
-## Version 2.x
+* [README](https://github.com/andreasronge/neo4j/tree/2.x)
+* [Wiki](https://github.com/andreasronge/neo4j/wiki/Neo4j%3A%3ARails-Introduction)
 
-For the stable 2.x version, see [here](https://github.com/andreasronge/neo4j/tree/2.x)
+## Support
+
+* [Neo4j.rb mailing list](https://groups.google.com/forum/#!forum/neo4jrb)
+* Consulting support ? ask any of the developers
+
+## Developers
+
+* [Andreas Ronge](https://github.com/andreasronge)
+* [Brian Underwood](https://github.com/cheerfulstoic)
+* [Chris Grigg](https://github.com/subvertallchris)
+
 
 ## Contributing
 
-* Have you found a bug, need help, or have a patch ?
-* Just clone neo4j.rb and send me a pull request or email me.
-* Do you need help - send me an email (andreas.ronge at gmail dot com).
+Pull request with high test coverage and good [code climate](https://codeclimate.com/github/andreasronge/neo4j) values will be accepted faster.
+
 
 ## License
 

@@ -7,7 +7,7 @@ module HasN
   module ClassMethods
 
     def has_association?(name)
-      !!associations[name]
+      !!associations[name.to_sym]
     end
 
     def associations
@@ -25,7 +25,6 @@ module HasN
       name = name.to_sym
 
       association = Neo4j::ActiveNode::HasN::Association.new(:has_many, direction, name, options)
-      name = name.to_sym
 
       @associations ||= {}
       @associations[name] = association
@@ -78,7 +77,6 @@ module HasN
         name = name.to_sym
 
         association = Neo4j::ActiveNode::HasN::Association.new(:has_one, direction, name, options)
-        name = name.to_sym
 
         @associations ||= {}
         @associations[name] = association
