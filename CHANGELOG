@@ -1,3 +1,6 @@
+== 3.0.0.rc.2
+* Use newer neo4j-core release
+
 == 3.0.0.rc.1
 * Support for count, size, length, empty, blank? for has_many relationship
 * Support for rails logger of cypher queries in development
