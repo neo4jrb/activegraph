@@ -34,7 +34,7 @@ It comes included with the Apache Lucene document database.
   s.add_dependency("activesupport", "~> 4")
   s.add_dependency("railties", "~> 4")
   s.add_dependency('active_attr', "~> 0.8")
-  s.add_dependency("neo4j-core", "= 3.0.0.alpha.19")
+  s.add_dependency("neo4j-core", "= 3.0.0.rc.4")
 
   if RUBY_PLATFORM =~ /java/
     s.add_dependency("neo4j-community", '~> 2.0')
