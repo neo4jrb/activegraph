@@ -82,7 +82,7 @@ describe Neo4j::ActiveNode::Labels do
       it "return the class name if not given a label name" do
         clazz = Class.new do
           extend Neo4j::ActiveNode::Labels::ClassMethods
-          def self.to_s
+          def self.name
             "MyClass"
           end
         end
@@ -122,7 +122,7 @@ describe Neo4j::ActiveNode::Labels do
       it 'returns the label of a class' do
         clazz = Class.new do
           extend Neo4j::ActiveNode::Labels::ClassMethods
-          def self.to_s
+          def self.name
             "mylabel"
           end
         end
@@ -175,7 +175,7 @@ describe Neo4j::ActiveNode::Labels do
           include module1
           include module2
 
-          def self.to_s
+          def self.name
             "module"
           end
         end
