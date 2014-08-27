@@ -110,7 +110,13 @@ module Neo4j
           raise "Can only create associations on associations" unless @association
           other_nodes = [other_nodes].flatten
 
-          other_nodes.map! {|other_node| other_node.is_a?(Integer) ? @model.find(other_node) : other_node }
+          other_nodes.map! do |other_node|
+            if other_node.is_a?(Neo4j::ActiveNode)
+              other_node
+            else
+              @model.find(other_node)
+            end
+          end
 
           raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
           other_nodes.each do |other_node|
