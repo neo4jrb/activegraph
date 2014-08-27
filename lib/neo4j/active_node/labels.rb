@@ -81,6 +81,13 @@ module Neo4j
           q = distinct.nil? ? "n" : "DISTINCT n"
           self.query_as(:n).return("count(#{q}) AS count").first.count
         end
+        alias_method :size,   :count
+        alias_method :length, :count
+
+        def empty?
+          !self.exists?
+        end
+        alias_method :blank?, :empty?
 
         def include?(other)
           raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
@@ -162,7 +169,7 @@ module Neo4j
         end
 
         def index?(index_def)
-          mapped_label.indexes[:property_keys].include?(index_def)
+          mapped_label.indexes[:property_keys].include?([index_def])
         end
 
         # @return [Array{Symbol}] all the labels that this class has
