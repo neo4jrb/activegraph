@@ -2,7 +2,7 @@
 
 #NEO4J_VERSION = "3.0.0.alpha.2"
 
-gem "neo4j", '3.0.0.alpha.9'
+gem "neo4j", '~> 3.0.0'
 
 
 generator = %q[
