@@ -148,6 +148,20 @@ describe "Neo4j::ActiveNode" do
     end
   end
 
+  describe 'index?' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+        property :name
+        index :name
+      end
+    end
+
+    it 'indicates whether a property is indexed' do
+      expect(clazz.index?(:name)).to be_truthy
+      expect(clazz.index?(:foo)).to be_falsey
+    end
+  end
 
   describe 'add_label' do
     it "can add one label" do
