@@ -525,6 +525,7 @@ describe Neo4j::ActiveNode do
     before(:all) do
       class IncludeLesson; end
       class IncludeTeacher; end
+      class IncludeEmptyClass; end
       class IncludeStudent
         include Neo4j::ActiveNode
         has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
@@ -541,12 +542,26 @@ describe Neo4j::ActiveNode do
         include Neo4j::ActiveNode
         has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
       end
+
+      class IncludeEmptyClass
+        include Neo4j::ActiveNode
+        has_many :out, :lessons, model_class: IncludeLesson
+      end
     end
     let!(:jimmy)    { IncludeStudent.create }
     let!(:math)     { IncludeLesson.create(name: 'math') }
     let!(:science)  { IncludeLesson.create(name: 'science') }
     let!(:mr_jones) { IncludeTeacher.create }
     let!(:mr_adams) { IncludeTeacher.create }
+
+    describe 'first and last' do
+      it 'returns objects across multiple associations' do
+        jimmy.lessons << science
+        science.teachers << mr_adams
+        expect(jimmy.lessons.teachers.first).to eq mr_adams
+        expect(mr_adams.lessons.students.last).to eq jimmy
+      end
+    end
 
     describe 'include?' do
       it 'correctly reports when a node is included in a query result' do
@@ -568,11 +583,16 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an error if something other than a node is given' do
-        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
       end
     end
 
     describe 'exists?' do
+      it 'can run on a class' do
+        expect(IncludeEmptyClass.empty?).to be_truthy
+        expect(IncludeLesson.empty?).to be_falsey
+      end
+      
       it 'can be run on a query' do
         expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
         expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
@@ -612,7 +632,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an exception if a bad parameter is passed' do
-        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
       end
 
       it 'is used by length and size' do

@@ -1,8 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
-
+      class InvalidParameterError < StandardError; end
       class QueryProxy
+
         include Enumerable
 
         def initialize(model, association = nil, options = {})
@@ -127,22 +128,39 @@ module Neo4j
           end
         end
 
-        def count(distinct = nil)
-          call_class_method(:count, distinct)
+        #TODO: Get these out of here
+        def first
+          self.query_as(:n).limit(1).order('ID(n)').pluck(:n).first
         end
-        alias_method :size, :count
+
+        def last
+          self.query_as(:n).limit(1).order('ID(n) DESC').pluck(:n).first
+        end
+
+        # @return [Fixnum] number of nodes of this class
+        def count(distinct = nil)
+          raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+          q = distinct.nil? ? "n" : "DISTINCT n"
+          self.query_as(:n).return("count(#{q}) AS count").first.count
+        end
+        alias_method :size,   :count
         alias_method :length, :count
 
+        def empty?
+          !self.exists?
+        end
+        alias_method :blank?, :empty?
+
         def include?(other)
-          call_class_method(:include?, other)
+          raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
+          self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
         end
 
         def exists?(node_id=nil)
-          call_class_method(:exists?, node_id)
-        end
-
-        def empty?
-          call_class_method(:empty?)
+          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
+          start_q = self.query_as(:n)
+          end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
+          end_q.return("COUNT(n) AS count").first.count > 0
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
