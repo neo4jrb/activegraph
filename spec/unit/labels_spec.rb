@@ -107,7 +107,7 @@ describe Neo4j::ActiveNode::Labels do
       it "wraps the mapped_label_name in a Neo4j::Label object" do
         clazz = Class.new do
           extend Neo4j::ActiveNode::Labels::ClassMethods
-          def self.to_s
+          def self.name
             "MyClass"
           end
         end

@@ -172,7 +172,7 @@ module Neo4j
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
         def mapped_label_name
-          @_label_name || self.to_s.to_sym
+          @_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
         end
 
         # @return [Neo4j::Label] the label for this class
