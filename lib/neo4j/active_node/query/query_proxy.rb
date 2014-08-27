@@ -111,10 +111,11 @@ module Neo4j
           other_nodes = [other_nodes].flatten
 
           other_nodes.map! do |other_node|
-            if other_node.is_a?(Neo4j::ActiveNode)
-              other_node
-            else
+            case other_node
+            when Integer, String
               @model.find(other_node)
+            else
+              other_node
             end
           end
 
