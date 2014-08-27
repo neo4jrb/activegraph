@@ -3,16 +3,9 @@ require 'spec_helper'
 describe Neo4j::ActiveNode::Query::QueryProxy do
   let (:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
   let (:session) { double("A session")}
-  let(:query_result) { double("the result of calling :query")}
-  let (:node) { double("A node object", foo: 'bar' ) }
+  let (:query_result) { double("the result of calling :query")}
+  let (:node) { double("A node object", foo: 'bar', neo_id: true ) }
   let (:rel)  { double("A rel object")}
-
-  describe 'include?' do
-    it 'calls the include? method in labels.rb' do
-      expect(qp).to receive(:call_class_method).with(:include?, node).and_return(true)
-      qp.include?(node)
-    end
-  end
 
   describe 'each_with_rel' do
     it 'yields a node and rel object' do
