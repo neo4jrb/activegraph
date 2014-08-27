@@ -61,15 +61,9 @@ Configure it using a different server port e.g. 7475
 rake neo4j:config[test,7475]
 ```
 
-Edit the test configuration `config/environments/test'
+Edit the test configuration `config/environments/test`
 
 ```
 config.neo4j.session_type = :server_db
 config.neo4j.session_path = 'http://localhost:7475'
 ```
-
-
-## Notice
-
-Many features of the 2.x version are not implemented yet, such as relationship
-(but it is impl. in the neo4j-core layer), or more advanced index and search options.
