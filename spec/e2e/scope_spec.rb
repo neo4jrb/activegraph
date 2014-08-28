@@ -24,7 +24,7 @@ describe 'Neo4j::NodeMixin::Scope' do
 
   describe 'Person.scope :level, -> (num) { where(level: num)}' do
     before(:all) do
-      Person.scope :level, -> (num) { where(level_num: num)}
+      Person.scope :level, ->(num) { where(level_num: num)}
     end
 
     describe 'Person.level(3)' do
@@ -36,7 +36,7 @@ describe 'Neo4j::NodeMixin::Scope' do
 
   describe 'Person.scope :in_order, -> { order(level: num)}' do
     before(:all) do
-      Person.scope :in_order, -> (identifier){ order("#{identifier}.level_num DESC")}
+      Person.scope :in_order, ->(identifier){ order("#{identifier}.level_num DESC")}
     end
 
     describe 'Person.in_order' do
@@ -48,7 +48,7 @@ describe 'Neo4j::NodeMixin::Scope' do
 
   describe 'Person.scope :great_students, -> (identifier) { where("#{identifier}.score > 41")' do
     before(:all) do
-      Person.scope :great_students, -> (identifier) { where("#{identifier}.score > 41") }
+      Person.scope :great_students, ->(identifier) { where("#{identifier}.score > 41") }
     end
 
 

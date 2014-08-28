@@ -20,7 +20,7 @@ module Neo4j::ActiveNode
       #   a_person.friends.top_students.friends.to_a
       #
       # @example Argument for scopes
-      #   Person.scope :level, -> (num) { where(level_num: num)}
+      #   Person.scope :level, ->(num) { where(level_num: num)}
       #
       # @example Argument as a cypher identifier
       #   class Person
@@ -28,7 +28,7 @@ module Neo4j::ActiveNode
       #     property :name
       #     property :score
       #     has_many :out, :friends, model_class: self
-      #     scope :great_students, -> (identifier) { where("#{identifier}.score > 41") }
+      #     scope :great_students, ->(identifier) { where("#{identifier}.score > 41") }
       #   end
       #   Person.as(:all_people).great_students(:all_people).to_a
       #

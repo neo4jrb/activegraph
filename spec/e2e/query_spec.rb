@@ -23,7 +23,7 @@ class Lesson
     (query_proxy || self).query_as(:lesson).pluck('max(lesson.level)').first
   end
 
-  scope :level_number, -> (num) { where(level: num)}
+  scope :level_number, ->(num) { where(level: num)}
 end
 
 class Student
