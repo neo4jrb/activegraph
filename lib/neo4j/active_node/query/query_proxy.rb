@@ -254,9 +254,8 @@ module Neo4j
         private
 
         def call_class_method(method_name, *args)
-          @model.query_proxy = self
+          args[2] = self
           result = @model.send(method_name, *args)
-          @model.query_proxy = nil
           result
         end
 

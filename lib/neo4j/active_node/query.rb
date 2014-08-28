@@ -23,7 +23,7 @@ module Neo4j
       module ClassMethods
         include Enumerable
 
-        attr_writer :query_proxy
+        #attr_writer :query_proxy
 
         def each
           self.query_as(:n).pluck(:n).each {|o| yield o }
@@ -49,7 +49,7 @@ module Neo4j
         end
 
         def query_proxy(options = {})
-          @query_proxy || Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)
+          Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)
         end
 
         def as(node_var)
