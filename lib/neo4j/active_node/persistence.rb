@@ -13,6 +13,8 @@ module Neo4j::ActiveNode
       properties = convert_properties_to :db, props
       node = _create_node(properties)
       init_on_load(node, node.props)
+      send_props(@_association_attributes) if @_association_attributes
+      @_association_attributes = nil
       # Neo4j::IdentityMap.add(node, self)
       # write_changed_relationships
       true

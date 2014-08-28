@@ -21,7 +21,7 @@ module Neo4j::Shared
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
       send_props(writer_method_props) unless writer_method_props.nil?
-      send_props(relationship_props) unless relationship_props.nil?
+      send_props(relationship_props) if persisted? and not relationship_props.nil?
 
       super(attributes, options)
     end

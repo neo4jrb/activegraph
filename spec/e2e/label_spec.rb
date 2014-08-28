@@ -196,4 +196,27 @@ describe "Neo4j::ActiveNode" do
 
   end
 
+  describe 'setting association values via initialize' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+        property :name
+        has_one :out, :foo
+      end
+    end
+
+    it 'indicates whether a property is indexed' do
+      stub_const('::Foo', Class.new { include Neo4j::ActiveNode })
+
+      o = clazz.new(name: 'Jim', foo: 2)
+
+      o.name.should == 'Jim'
+      o.foo.should be_nil
+
+      o.save!
+
+      o.name.should == 'Jim'
+      o.foo.should be_nil
+    end
+  end
 end
