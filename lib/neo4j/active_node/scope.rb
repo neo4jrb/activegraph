@@ -76,9 +76,11 @@ module Neo4j::ActiveNode
         @target = target
       end
 
-
-      def where(params={})
-        (@query_proxy || @target).where(params)
+      Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
+        module_eval(%Q{
+            def #{method}(params={})
+              (@query_proxy || @target).#{method}(params)
+            end}, __FILE__, __LINE__)
       end
     end
   end
