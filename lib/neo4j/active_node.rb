@@ -37,6 +37,7 @@ module Neo4j
     include Neo4j::ActiveNode::Labels
     include Neo4j::ActiveNode::Rels
     include Neo4j::ActiveNode::HasN
+    include Neo4j::ActiveNode::Scope
 
     def neo4j_obj
       _persisted_obj || raise("Tried to access native neo4j object on a non persisted object")

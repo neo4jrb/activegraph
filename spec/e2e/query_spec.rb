@@ -19,13 +19,11 @@ class Lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
 
-  def self.max_level
-    self.query_as(:lesson).pluck('max(lesson.level)').first
+  def self.max_level(num=nil, _=nil, query_proxy=nil)
+    (query_proxy || self).query_as(:lesson).pluck('max(lesson.level)').first
   end
 
-  def self.level(num)
-    self.where(level: num)
-  end
+  scope :level_number, ->(num) { where(level: num)}
 end
 
 class Student
@@ -190,7 +188,7 @@ describe 'Query API' do
       end
 
       it 'allows class methods on associations' do
-        samuels.lessons_teaching.level(101).to_a.should == [ss101]
+        samuels.lessons_teaching.level_number(101).to_a.should == [ss101]
 
         samuels.lessons_teaching.max_level.should == 103
         samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should == 101
@@ -227,6 +225,19 @@ describe 'Query API' do
 
           # Two variable assignments
           it { othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student).should == [[math101, danny]] }
+        end
+
+        describe 'on classes' do
+          before(:each) do
+            danny.lessons << math101
+            bobby.lessons << math101
+            sandra.lessons << ss101
+          end
+
+          context 'students, age 15, who are taking level 101 lessons' do
+            it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
+            it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+          end
         end
       end
 
