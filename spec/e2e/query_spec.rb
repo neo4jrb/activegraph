@@ -226,6 +226,19 @@ describe 'Query API' do
           # Two variable assignments
           it { othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student).should == [[math101, danny]] }
         end
+
+        describe 'on classes' do
+          before(:each) do
+            danny.lessons << math101
+            bobby.lessons << math101
+            sandra.lessons << ss101
+          end
+
+          context 'students, age 15, who are taking level 101 lessons' do
+            it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
+            it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+          end
+        end
       end
 
       context 'othmar is also teaching math 201, brian is taking it' do
