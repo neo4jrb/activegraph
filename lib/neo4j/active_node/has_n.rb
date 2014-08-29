@@ -101,7 +101,7 @@ module HasN
             #{name}_query_proxy(rel: :r).pluck(:r).first
           end
 
-          def #{name}(node = nil, rel = nil, query_proxy = nil)
+          def #{name}(node = nil, rel = nil)
             return nil unless self.persisted?
             #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}').first
           end}, __FILE__, __LINE__)

@@ -18,13 +18,17 @@ module Neo4j
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
+        def identity
+          @node_var || :result
+        end
+
         def each(node = true, rel = nil, &block)
           if node && rel
-            self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
+            self.pluck(identity, @rel_var).each do |obj, rel|
               yield obj, rel
             end
           else
-            pluck_this = !rel ? (@node_var || :result) : @rel_var
+            pluck_this = !rel ? identity : @rel_var
             self.pluck(pluck_this).each do |obj|
               yield obj
             end
@@ -68,13 +72,12 @@ module Neo4j
 
         # Like calling #query_as, but for when you don't care about the variable name
         def query
-          query_as(@node_var || :result)
+          query_as(identity)
         end
 
         # Build a Neo4j::Core::Query object for the QueryProxy
         def query_as(var)
           var = @node_var if @node_var
-
           query = if @association
             chain_var = _association_chain_var
             label_string = @model && ":`#{@model.mapped_label_name}`"
@@ -139,11 +142,11 @@ module Neo4j
 
         #TODO: Get these out of here
         def first
-          self.query_as(:n).limit(1).order('ID(n)').pluck(:n).first
+          self.order("ID(#{identity})").limit(1).pluck(identity).first
         end
 
         def last
-          self.query_as(:n).limit(1).order('ID(n) DESC').pluck(:n).first
+          self.order("ID(#{identity}) DESC").limit(1).pluck(identity).first
         end
 
         # @return [Fixnum] number of nodes of this class

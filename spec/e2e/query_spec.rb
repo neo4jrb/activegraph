@@ -246,15 +246,19 @@ describe 'Query API' do
           context 'with has_one' do
             before do
               math101.teachers_pet = bobby
+              ss101.teachers_pet = sandra
+              bobby.lessons << geo103
               bobby.hated_teachers << othmar
+              sandra.hated_teachers << samuels
             end
 
             context 'on instances' do
-              it { math101.teachers_pet(:l).lessons.where(level: 101).pluck(:l).should == [bobby] }
+              it { math101.teachers_pet(:l).lessons.where(level: 103).should == [geo103] }
             end
 
             context 'on class' do
-              it { Lesson.where(level: 101).teachers_pet.hated_teachers.should == [othmar] }
+              # Lessons of level 101 that have a teachers pet, age 16, whose hated teachers include Ms Othmar... Who hates Mrs Othmar!?
+              it { Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should == [bobby] }
             end
           end
         end
