@@ -59,6 +59,7 @@ Configure it using a different server port e.g. 7475
 
 ```
 rake neo4j:config[test,7475]
+rake neo4j:start[test]
 ```
 
 Edit the test configuration `config/environments/test`
