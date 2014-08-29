@@ -528,6 +528,7 @@ describe Neo4j::ActiveNode do
       class IncludeEmptyClass; end
       class IncludeStudent
         include Neo4j::ActiveNode
+        property :name
         has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
       end
 
@@ -548,7 +549,7 @@ describe Neo4j::ActiveNode do
         has_many :out, :lessons, model_class: IncludeLesson
       end
     end
-    let!(:jimmy)    { IncludeStudent.create }
+    let!(:jimmy)    { IncludeStudent.create(name: 'Jimmy') }
     let!(:math)     { IncludeLesson.create(name: 'math') }
     let!(:science)  { IncludeLesson.create(name: 'science') }
     let!(:mr_jones) { IncludeTeacher.create }
@@ -580,6 +581,12 @@ describe Neo4j::ActiveNode do
         jimmy.lessons << science
         jimmy.lessons << science
         expect(jimmy.lessons.include?(science)).to be_truthy
+      end
+
+      it 'allows you to check for an identifier in the middle of a chain' do
+        jimmy.lessons << science
+        science.teachers << mr_adams
+        expect(IncludeLesson.as(:l).students.where(name: 'Jimmy').include?(science, :l)).to be_truthy
       end
 
       it 'raises an error if something other than a node is given' do
@@ -622,22 +629,31 @@ describe Neo4j::ActiveNode do
     end
 
     describe 'count' do
-      before{ 3.times { jimmy.lessons << science }}
+      before(:all) do
+        @john = IncludeStudent.create(name: 'Paul')
+        @history = IncludeLesson.create(name: 'history')
+        3.times { @john.lessons << @history }
+      end
+
       it 'tells you the number of matching objects' do
-        expect(jimmy.lessons.count).to eq(3)
+        expect(@john.lessons.count).to eq(3)
       end
 
       it 'can tell you the number of distinct matching objects' do
-        expect(jimmy.lessons.count(:distinct)).to eq 1
+        expect(@john.lessons.count(:distinct)).to eq 1
       end
 
       it 'raises an exception if a bad parameter is passed' do
-        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
+        expect{@john.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
       end
 
-      it 'is used by length and size' do
-        expect(jimmy.lessons.size).to eq(3)
-        expect(jimmy.lessons.length).to eq(3)
+      it 'works on an object earlier in the chain' do
+        expect(IncludeStudent.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
+      end
+
+      it 'is aliased by length and size' do
+        expect(@john.lessons.size).to eq(3)
+        expect(@john.lessons.length).to eq(3)
       end
     end
   end

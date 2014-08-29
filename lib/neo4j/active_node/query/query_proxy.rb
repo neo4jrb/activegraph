@@ -140,39 +140,48 @@ module Neo4j
           end
         end
 
-        #TODO: Get these out of here
-        def first
-          self.order("ID(#{identity})").limit(1).pluck(identity).first
+        def query_target(target)
+          target.nil? ? identity : target
         end
 
-        def last
-          self.order("ID(#{identity}) DESC").limit(1).pluck(identity).first
+        def first(target=nil)
+          target = query_target(target)
+          self.order("ID(#{target})").limit(1).pluck(target).first
+        end
+
+        def last(target=nil)
+          target = query_target(target)
+          self.order("ID(#{target}) DESC").limit(1).pluck(target).first
         end
 
         # @return [Fixnum] number of nodes of this class
-        def count(distinct = nil)
+        def count(distinct=nil, target=nil)
           raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-          q = distinct.nil? ? "n" : "DISTINCT n"
-          self.query_as(:n).return("count(#{q}) AS count").first.count
+          target = query_target(target)
+          q = distinct.nil? ? target : "DISTINCT #{target}"
+          self.query.return("count(#{q}) AS count").first.count
         end
         alias_method :size,   :count
         alias_method :length, :count
 
-        def empty?
-          !self.exists?
+        def empty?(target=nil)
+          target = query_target(target)
+          !self.exists?(nil, target)
         end
         alias_method :blank?, :empty?
 
-        def include?(other)
+        def include?(other, target=nil)
           raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-          self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
+          target = query_target(target)
+          self.where("ID(#{target}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{target}) AS count").first.count > 0
         end
 
-        def exists?(node_id=nil)
+        def exists?(node_id=nil, target=nil)
           raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
-          start_q = self.query_as(:n)
-          end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
-          end_q.return("COUNT(n) AS count").first.count > 0
+          target = query_target(target)
+          start_q = self.query
+          end_q = node_id.nil? ? start_q : start_q.where("ID(#{target}) = #{node_id}")
+          end_q.return("COUNT(#{target}) AS count").first.count > 0
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
