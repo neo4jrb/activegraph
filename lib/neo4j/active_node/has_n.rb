@@ -61,7 +61,7 @@ module HasN
         instance_eval(%Q{
           def #{name}(node = nil, rel = nil, proxy_obj = nil)
             query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(#{self.name}, nil, { 
-                  session: self.neo4j_session, query_proxy: query_proxy, context: '#{self.name}' + '##{name}' 
+                  session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
                 })
             context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
@@ -101,7 +101,7 @@ module HasN
             #{name}_query_proxy(rel: :r).pluck(:r).first
           end
 
-          def #{name}(node = nil, rel = nil, query_proxy = nil)
+          def #{name}(node = nil, rel = nil)
             return nil unless self.persisted?
             #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}').first
           end}, __FILE__, __LINE__)
