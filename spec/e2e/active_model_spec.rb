@@ -583,7 +583,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an error if something other than a node is given' do
-        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
+        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
       end
     end
 
@@ -609,7 +609,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an error if something other than a neo id is given' do
-        expect{IncludeLesson.exists?(:fooooo)}.to raise_error(Neo4j::ActiveNode::Labels::InvalidParameterError)
+        expect{IncludeLesson.exists?(:fooooo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
       end
 
       it 'is called by :blank? and :empty?' do
@@ -632,7 +632,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an exception if a bad parameter is passed' do
-        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
+        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
       end
 
       it 'is used by length and size' do
