@@ -39,6 +39,7 @@ require 'neo4j/active_rel/related_node'
 require 'neo4j/active_rel'
 
 require 'neo4j/active_node/query_methods'
+require 'neo4j/active_node/query/query_proxy_methods'
 require 'neo4j/active_node/labels'
 require 'neo4j/active_node/id_property'
 require 'neo4j/active_node/callbacks'

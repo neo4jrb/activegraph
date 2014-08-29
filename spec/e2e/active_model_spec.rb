@@ -590,7 +590,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an error if something other than a node is given' do
-        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
+        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
       end
     end
 
@@ -644,7 +644,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an exception if a bad parameter is passed' do
-        expect{@john.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::InvalidParameterError)
+        expect{@john.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
       end
 
       it 'works on an object earlier in the chain' do
