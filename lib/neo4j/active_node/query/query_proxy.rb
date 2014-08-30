@@ -1,10 +1,10 @@
 module Neo4j
   module ActiveNode
     module Query
-      class InvalidParameterError < StandardError; end
       class QueryProxy
 
         include Enumerable
+        include Neo4j::ActiveNode::Query::QueryProxyMethods
 
         def initialize(model, association = nil, options = {})
           @model = model
@@ -18,13 +18,17 @@ module Neo4j
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
+        def identity
+          @node_var || :result
+        end
+
         def each(node = true, rel = nil, &block)
           if node && rel
-            self.pluck((@node_var || :result), @rel_var).each do |obj, rel|
+            self.pluck(identity, @rel_var).each do |obj, rel|
               yield obj, rel
             end
           else
-            pluck_this = !rel ? (@node_var || :result) : @rel_var
+            pluck_this = !rel ? identity : @rel_var
             self.pluck(pluck_this).each do |obj|
               yield obj
             end
@@ -68,13 +72,12 @@ module Neo4j
 
         # Like calling #query_as, but for when you don't care about the variable name
         def query
-          query_as(@node_var || :result)
+          query_as(identity)
         end
 
         # Build a Neo4j::Core::Query object for the QueryProxy
         def query_as(var)
           var = @node_var if @node_var
-
           query = if @association
             chain_var = _association_chain_var
             label_string = @model && ":`#{@model.mapped_label_name}`"
@@ -135,41 +138,6 @@ module Neo4j
               @association.perform_callback(@options[:start_object], other_node, :after)
             #end
           end
-        end
-
-        #TODO: Get these out of here
-        def first
-          self.query_as(:n).limit(1).order('ID(n)').pluck(:n).first
-        end
-
-        def last
-          self.query_as(:n).limit(1).order('ID(n) DESC').pluck(:n).first
-        end
-
-        # @return [Fixnum] number of nodes of this class
-        def count(distinct = nil)
-          raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-          q = distinct.nil? ? "n" : "DISTINCT n"
-          self.query_as(:n).return("count(#{q}) AS count").first.count
-        end
-        alias_method :size,   :count
-        alias_method :length, :count
-
-        def empty?
-          !self.exists?
-        end
-        alias_method :blank?, :empty?
-
-        def include?(other)
-          raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-          self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
-        end
-
-        def exists?(node_id=nil)
-          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
-          start_q = self.query_as(:n)
-          end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
-          end_q.return("COUNT(n) AS count").first.count > 0
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls

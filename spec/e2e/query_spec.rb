@@ -16,6 +16,8 @@ class Lesson
   property :subject
   property :level
 
+  has_one  :out, :teachers_pet, model_class: Student, type: 'favorite_student'
+  has_many :in, :unhappy_teachers, model_class: Teacher, origin: :dreaded_lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
 
@@ -37,6 +39,7 @@ class Student
 
   has_many :both, :favorite_teachers, model_class: Teacher
   has_many :both, :hated_teachers, model_class: Teacher
+  has_many :in,   :winning_lessons, model_class: Lesson, origin: :teachers_pet
 end
 
 class Teacher
@@ -49,6 +52,7 @@ class Teacher
   has_many :out, :lessons_taught, model_class: Lesson
 
   has_many :out, :interests
+  has_one  :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
 end
 
 describe 'Query API' do
@@ -237,6 +241,25 @@ describe 'Query API' do
           context 'students, age 15, who are taking level 101 lessons' do
             it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
             it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+          end
+
+          context 'with has_one' do
+            before do
+              math101.teachers_pet = bobby
+              ss101.teachers_pet = sandra
+              bobby.lessons << geo103
+              bobby.hated_teachers << othmar
+              sandra.hated_teachers << samuels
+            end
+
+            context 'on instances' do
+              it { math101.teachers_pet(:l).lessons.where(level: 103).should == [geo103] }
+            end
+
+            context 'on class' do
+              # Lessons of level 101 that have a teachers pet, age 16, whose hated teachers include Ms Othmar... Who hates Mrs Othmar!?
+              it { Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should == [bobby] }
+            end
           end
         end
       end

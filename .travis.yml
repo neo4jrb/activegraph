@@ -1,8 +1,5 @@
-script: "bundle exec rake neo4j:install['community-2.1.2'] neo4j:start default --trace"
+script: "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81c20c27df6e6ab5c60bff2c8 && export JRUBY_OPTS='-X+O -J-Djruby.launch.inproc=false' && bundle exec rake neo4j:install['community-2.1.2'] neo4j:start default --trace"
 language: ruby
-env:
-  - JRUBY_OPTS='-X+O -J-Djruby.launch.inproc=false'
-  - CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81c20c27df6e6ab5c60bff2c8 
 rvm:
   - 2.1.1
   - jruby-19mode
