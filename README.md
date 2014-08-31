@@ -1,15 +1,15 @@
-# Welcome to Neo4j.rb [![Build Status](https://secure.travis-ci.org/neo4jrb/neo4j.png?branch=master)](http://travis-ci.org/andreasronge/neo4j) [![Test Coverage](https://codeclimate.com/github/neo4jrb/neo4j/badges/coverage.svg)](https://codeclimate.com/github/neo4jrb/neo4j) [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.png)](https://codeclimate.com/github/andreasronge/neo4j)
+# Welcome to Neo4j.rb [![Build Status](https://secure.travis-ci.org/neo4jrb/neo4j.png?branch=master)](http://travis-ci.org/neo4jrb/neo4j) [![Test Coverage](https://codeclimate.com/github/neo4jrb/neo4j/badges/coverage.svg)](https://codeclimate.com/github/neo4jrb/neo4j) [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.png)](https://codeclimate.com/github/andreasronge/neo4j)
 
-Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph database](http://www.neo4j.org/). It uses the [neo4j-core](https://github.com/andreasronge/neo4j-core) and [active_attr](https://github.com/cgriego/active_attr) gems.
+Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph database](http://www.neo4j.org/). It uses the [neo4j-core](https://github.com/neo4jrb/neo4j-core) and [active_attr](https://github.com/cgriego/active_attr) gems.
 
 ## Documentation version 3.0.0.rc
 
-* [Wiki](https://github.com/andreasronge/neo4j/wiki/Neo4j.rb-v3-Introduction)
+* [Wiki](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v3-Introduction)
 
 ## Documentation Old stable version 2.x
 
-* [README](https://github.com/andreasronge/neo4j/tree/2.x)
-* [Wiki](https://github.com/andreasronge/neo4j/wiki/Neo4j%3A%3ARails-Introduction)
+* [README](https://github.com/neo4jrb/neo4j/tree/2.x)
+* [Wiki](https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3ARails-Introduction)
 
 ## Support
 
