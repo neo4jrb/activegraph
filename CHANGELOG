@@ -1,3 +1,8 @@
+== 3.0.0.rc.3
+* thread safety improvements
+* scope and general refactoring
+* Added ability to create relationships on init (persisted on save)
+
 == 3.0.0.rc.2
 * Use newer neo4j-core release
 
