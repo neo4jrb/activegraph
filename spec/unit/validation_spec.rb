@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Neo4j::ActiveNode::Validations do
 
   let(:node) { double("a persisted node") }
+  before(:each) { clazz.any_instance.stub(:_persisted_obj).and_return(nil) }
 
   let(:clazz) do
     Class.new do

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Persistence do
-  let(:node) { double("a persisted node") }
+  let(:node) { double("a persisted node", exist?: true) }
 
   let(:clazz) do
     Class.new do
@@ -34,7 +34,6 @@ describe Neo4j::ActiveNode::Persistence do
 
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.stub(:_persisted_obj).and_return(nil)
       clazz.stub(:cached_class?).and_return(false)
       clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
@@ -70,7 +69,6 @@ describe Neo4j::ActiveNode::Persistence do
 
         o.stub(:props).and_return(start_props)
         o.class.stub(:name).and_return('MyClass') #set_classname looks for this
-        o.stub(:_persisted_obj).and_return(nil)
         clazz.stub(:neo4j_session).and_return(session)
 
         clazz.stub(:mapped_label_names).and_return(:MyClass)
@@ -99,7 +97,6 @@ describe Neo4j::ActiveNode::Persistence do
     end
 
     it 'is false if there is not a persisted node' do
-      clazz.any_instance.stub(:_persisted_obj).and_return(nil)
       o = clazz.new
       o.persisted?.should eq(false)
     end
@@ -108,7 +105,6 @@ describe Neo4j::ActiveNode::Persistence do
 
   describe 'new_record?' do
     it 'is true if it does not wrap a persisted node' do
-      clazz.any_instance.stub(:_persisted_obj).and_return(nil)
       o = clazz.new
       o.new_record?.should eq(true)
     end
