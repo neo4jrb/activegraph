@@ -6,7 +6,7 @@ gemspec
 #gem 'neo4j-core', :git => 'https://github.com/andreasronge/neo4j-core.git'
 #gem 'orm_adapter', :path => '../orm_adapter'
 
-gem 'coveralls', require: false
+#gem 'coveralls', require: false
 
 group 'development' do
   gem 'pry'
@@ -16,6 +16,7 @@ group 'development' do
 end
 
 group 'test' do
+  gem "codeclimate-test-reporter", require: nil
   gem "rspec", '~> 2.0'
   # gem 'rspec-its' instead of its in rspec 3
   gem "its"
