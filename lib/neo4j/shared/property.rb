@@ -15,13 +15,16 @@ module Neo4j::Shared
 
     ILLEGAL_PROPS = %w[from_node to_node start_node end_node]
 
+    attr_reader :_persisted_obj
+
     def initialize(attributes={}, options={})
       attributes = process_attributes(attributes)
-      relationship_props = self.class.extract_association_attributes!(attributes)
+      @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
       send_props(writer_method_props) unless writer_method_props.nil?
-      send_props(relationship_props) if persisted? and not relationship_props.nil?
+
+      @_persisted_obj = nil
 
       super(attributes, options)
     end

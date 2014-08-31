@@ -157,8 +157,8 @@ describe 'Query API' do
         before(:each) { samuels.lessons_taught << math101 }
 
         it 'returns only objects specified by association' do
-          expect(samuels.lessons_teaching).to eq [ss101, ss102]
-          expect(samuels.lessons).to eq [ss101, ss102, math101]
+          expect(samuels.lessons_teaching.to_a).to eq [ss101, ss102]
+          expect(samuels.lessons.to_a).to eq [ss101, ss102, math101]
         end
       end
     end
