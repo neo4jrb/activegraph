@@ -10,6 +10,7 @@ describe 'Neo4j::Transaction' do
       end
     end
 
+    #:nocov:
     it 'returns  hash values inside but outside it has the node value after commit' do
 
       if Neo4j::Session.current.db_type == :server_db
@@ -33,5 +34,6 @@ describe 'Neo4j::Transaction' do
       end
 
     end
+    #:nocov:
   end
 end

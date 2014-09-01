@@ -2,15 +2,6 @@ require 'spec_helper'
 
 describe Neo4j::ActiveNode::IdProperty do
 
-  describe 'when no id_property' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-      end
-    end
-  end
-
-
   before do
     Neo4j::Config.delete(:id_property)
     Neo4j::Config.delete(:id_property_type)

@@ -20,5 +20,14 @@ Rake::TestTask.new(:test_generators) do |test|
   test.verbose = true
 end
 
+desc 'Generate coverage report'
+task 'coverage' do
+  ENV['COVERAGE'] = 'true'
+  rm_rf "coverage/"
+  task = Rake::Task['spec']
+  task.reenable
+  task.invoke
+end
+
 task :default => ['spec']
 
