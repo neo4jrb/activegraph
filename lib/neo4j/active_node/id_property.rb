@@ -111,8 +111,16 @@ module Neo4j::ActiveNode
         end
       end
 
+      def has_id_property?
+        !id_property_info.empty?
+      end
+
       def id_property_info
-        @id_property_info ||= false
+        @id_property_info ||= {}
+      end
+
+      def primary_key
+        id_property_info[:name] || :id
       end
 
     end

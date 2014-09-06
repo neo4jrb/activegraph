@@ -54,6 +54,14 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(clazz.find_by_id(node.id)).to eq(node)
     end
 
+    it 'returns :id as primary_key' do
+      expect(clazz.primary_key).to eq :id
+    end
+
+    it 'responds false to has_id_property' do
+      expect(clazz.has_id_property?).to be_falsey
+    end
+
     describe 'when having a configuration' do
 
       let(:clazz) do
@@ -117,6 +125,14 @@ describe Neo4j::ActiveNode::IdProperty do
         node = clazz.new
         node.myid = '42'
         expect(node.id).to be_nil
+      end
+
+      it 'is returned by primary_key' do
+        expect(clazz.primary_key).to eq :myid
+      end
+
+      it 'makes the class respond true to has_id_property?' do
+        expect(clazz.has_id_property?).to be_truthy
       end
     end
 
