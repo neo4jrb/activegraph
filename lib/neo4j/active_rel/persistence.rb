@@ -3,14 +3,7 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
     include Neo4j::Shared::Persistence
 
-    class RelInvalidError < RuntimeError
-      attr_reader :record
-
-      def initialize(record)
-        @record = record
-        super(@record.errors.full_messages.join(", "))
-      end
-    end
+    class RelInvalidError < RuntimeError; end
 
     class ModelClassInvalidError < RuntimeError; end
 
