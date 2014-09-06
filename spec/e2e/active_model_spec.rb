@@ -549,6 +549,22 @@ describe Neo4j::ActiveNode do
           expect(MyRelClass.all).to eq [@rel1, @rel2]
         end
       end
+
+      describe 'find' do
+        it 'returns the rel' do
+          expect(MyRelClass.find(@rel1.neo_id)).to eq @rel1
+        end
+      end
+
+      describe 'first, last' do
+        it 'returns the first-ish result' do
+          expect(MyRelClass.first).to eq @rel1
+        end
+
+        it 'returns the last-ish result' do
+          expect(MyRelClass.last).to eq @rel2
+        end
+      end
     end
   end
 

@@ -33,18 +33,18 @@ module Neo4j::ActiveRel
       end
 
       def first
-        all_query.limit(1).order("ID(r1)").pluck(:r1)
+        all_query.limit(1).order("ID(r1)").pluck(:r1).first
       end
 
       def last
-        all_query.limit(1).order("ID(r1) DESC").pluck(:r1)
+        all_query.limit(1).order("ID(r1) DESC").pluck(:r1).first
       end
+
+      private
 
       def all_query
         Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
       end
-
-      private
 
       def cypher_string(dir = :outbound)
         case dir
