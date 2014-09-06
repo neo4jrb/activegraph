@@ -3,7 +3,6 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
 
     module ClassMethods
-      include Enumerable
 
       # Returns the object with the specified neo4j id.
       # @param [String,Fixnum] id of node to find
@@ -13,52 +12,64 @@ module Neo4j::ActiveRel
         find_by_id(id, session)
       end
 
+      # Loads the relationship using its neo_id.
       def find_by_id(key, session = Neo4j::Session.current!)
         Neo4j::Relationship.load(key.to_i, session)
       end
 
-      # TODO make this not awful
+      # Performs a very basic match on the relationship.
+      # This is not executed lazily, it will immediately return matching objects.
+      # To use a string, prefix the property with "r1"
+      # @example Match with a string
+      #   MyRelClass.where('r1.grade > r1')
       def where(args={})
-        @query = if self._from_class == :any
-          Neo4j::Session.query("MATCH n1-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)}) WHERE #{where_string(args)} RETURN r1")
-        else
-          self._from_class.query_as(:n1).match("(#{cypher_node_string(:outbound)})-[r1:`#{self._type}`]->(#{cypher_node_string(:inbound)})").where(Hash["r1" => args])
-        end
-        return self
+        Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}").where(where_string(args)).pluck(:r1)
       end
 
-      def each
-        if self._from_class == :any
-          @query.map(&:r1)
-        else
-          @query.pluck(:r1)
-        end.each {|r| yield r }
+      # Performs a basic match on the relationship, returning all results.
+      # This is not executed lazily, it will immediately return matching objects.
+      def all
+        all_query.pluck(:r1)
       end
 
       def first
-        if self._from_class == :any
-          @query.map(&:r1)
-        else
-          @query.pluck(:r1)
-        end.first
+        all_query.limit(1).order("ID(r1)").pluck(:r1).first
       end
 
-      def cypher_node_string(dir)
-        case dir
-        when :outbound
-          node_identifier, dir_class = 'n1', self._from_class
-        when :inbound
-          node_identifier, dir_class = 'n2', self._to_class
-        end
-        dir_class == :any ? node_identifier : "#{node_identifier}:`#{dir_class.name}`"
+      def last
+        all_query.limit(1).order("ID(r1) DESC").pluck(:r1).first
       end
 
       private
 
+      def all_query
+        Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+      end
+
+      def cypher_string(dir = :outbound)
+        case dir
+        when :outbound
+          identifier = '(n1'
+          identifier + (_from_class == :any ? ')' : cypher_label(:outbound))
+        when :inbound
+          identifier = '(n2'
+          identifier + (_to_class == :any ? ')' : cypher_label(:inbound))
+        end 
+      end
+
+      def cypher_label(dir = :outbound)
+        target_class = dir == :outbound ? _from_class : _to_class
+        ":`#{target_class.mapped_label_name}`)"
+      end
+
       def where_string(args)
-        args.map do |k, v|
-          v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'"
-        end.join(', ')
+        if args.is_a?(Hash)
+          args.map do |k, v|
+            v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'"
+          end.join(', ')
+        else 
+          args
+        end
       end
 
     end

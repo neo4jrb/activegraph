@@ -495,27 +495,75 @@ describe Neo4j::ActiveNode do
       include Neo4j::ActiveRel
       from_class FromClass
       to_class ToClass
+      property :score
       type 'rel_class_type'
     end
 
+    let(:from_node) { FromClass.create }
+    let(:to_node) { ToClass.create }
+
     context 'with rel created from node' do
+      let(:f1) { FromClass.create }
+      let(:t1) { ToClass.create }
+      before { f1.others << t1 }
+      after { f1.destroy and t1.destroy }
+
       it 'returns the activerel class' do
-        f1 = FromClass.create
-        t1 = ToClass.create
-        f1.others << t1
         expect(f1.rels.first).to be_a(MyRelClass)
       end
     end
 
     context 'with rel created from activerel' do
-      let(:from_node) { FromClass.create }
-      let(:to_node) { ToClass.create }
-
+      let(:rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
+      after { rel.destroy }
       it 'creates the rel' do
-        rel = MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(rel.from_node).to eq from_node
         expect(rel.to_node).to eq to_node
         expect(rel.persisted?).to be_truthy
+      end
+    end
+
+    describe 'ActiveRel queries' do
+      before do
+        Neo4j::Config[:cache_class_names] = true
+        @rel1 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 99)
+        @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
+      end
+
+      after { [@rel1, @rel2].each{|r| r.destroy} }
+
+      describe 'where' do
+        it 'returns the matching objects' do
+          expect(MyRelClass.where(score: 99)).to eq [@rel1]
+        end
+
+        context 'with a string' do
+          it 'returns the matching rels' do
+            expect(MyRelClass.where('r1.score > 48')).to eq [@rel1, @rel2]
+          end
+        end
+      end
+
+      describe 'all' do
+        it 'returns all rels' do
+          expect(MyRelClass.all).to eq [@rel1, @rel2]
+        end
+      end
+
+      describe 'find' do
+        it 'returns the rel' do
+          expect(MyRelClass.find(@rel1.neo_id)).to eq @rel1
+        end
+      end
+
+      describe 'first, last' do
+        it 'returns the first-ish result' do
+          expect(MyRelClass.first).to eq @rel1
+        end
+
+        it 'returns the last-ish result' do
+          expect(MyRelClass.last).to eq @rel2
+        end
       end
     end
   end
