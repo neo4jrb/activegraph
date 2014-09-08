@@ -130,7 +130,7 @@ describe Neo4j::ActiveRel::Persistence do
             expect(that_class_node).not_to receive(:class)
             clazz.any_instance.stub(:_create_rel)
             clazz.any_instance.stub(:init_on_load)
-            expect{r.save}.not_to raise_error 
+            expect { r.save }.not_to raise_error
           end
 
           it 'does not check the classes of the nodes' do

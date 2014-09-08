@@ -6,7 +6,7 @@ module Neo4j::ActiveRel
     %w[to_node from_node].each do |direction|
       define_method("#{direction}") { instance_variable_get("@#{direction}") }
       define_method("#{direction}=") do |argument|
-        raise FrozenRelError, "Relationship start/end nodes cannot be changed once persisted" if self.persisted?
+        raise FrozenRelError, 'Relationship start/end nodes cannot be changed once persisted' if self.persisted?
         instance_variable_set("@#{direction}", argument)
       end
     end
@@ -26,7 +26,6 @@ module Neo4j::ActiveRel
     end
 
     module ClassMethods
-
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_association_attributes!(attributes)
