@@ -253,4 +253,29 @@ describe 'has_n' do
     end
 
   end
+
+  describe 'reflections' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+        has_many :in,  :in_things, model_class: self, type: 'things'
+        has_many :out, :out_things, model_class: self, type: 'things'
+
+        has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
+      end
+    end
+
+    it 'responds to :reflections' do
+      expect{clazz.reflections}.not_to raise_error
+    end
+
+    it 'responds with a hash' do
+      expect(clazz.reflections).to be_a(Hash)
+    end
+
+    it 'contains a key for each association' do
+      expect(clazz.reflections).to have_key(:in_things)
+      expect(clazz.reflections).to have_key(:out_things)
+    end
+  end
 end

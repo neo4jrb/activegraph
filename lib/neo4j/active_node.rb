@@ -30,6 +30,7 @@ module Neo4j
     include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::SerializedProperties
     include Neo4j::ActiveNode::Property
+    include Neo4j::ActiveNode::Reflection
     include Neo4j::ActiveNode::Persistence
     include Neo4j::ActiveNode::Validations
     include Neo4j::ActiveNode::Callbacks

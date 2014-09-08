@@ -12,6 +12,7 @@ module Neo4j
           @name = name
           @direction = direction.to_sym
           @target_class_name_from_name = name.to_s.classify
+
           set_vars_from_options(options)
         end
 
@@ -64,6 +65,10 @@ module Neo4j
           end
         end
 
+        def relationship_class
+          @relationship_class
+        end
+
         private
 
         def get_direction(relationship_cypher, create)
@@ -92,10 +97,6 @@ module Neo4j
 
         def origin_type
           target_class.associations[@origin].relationship_type
-        end
-
-        def relationship_class
-          @relationship_class
         end
 
         private
