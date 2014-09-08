@@ -98,25 +98,49 @@ describe Neo4j::ActiveRel::Persistence do
 
         let(:r) { clazz.new(from_node: this_class_node, to_node: that_class_node) }
 
-        it 'does not raise an error' do
+        def model_stubs_and_expectations
           expect(this_class_node).to receive(:class).and_return(ThisClass)
           clazz.any_instance.stub(:_create_rel)
           clazz.any_instance.stub(:init_on_load)
           expect{r.save}.not_to raise_error
         end
 
-        context 'with :any types' do
+        it 'does not raise an error' do
+          model_stubs_and_expectations
+        end
+
+        it 'converts strings to constants' do
+          clazz.from_class 'ThisClass'
+          model_stubs_and_expectations
+        end
+
+        it 'converts symbols to constants' do
+          clazz.from_class :ThisClass
+          model_stubs_and_expectations
+        end
+
+        context 'with :any or false types' do
           before do
             clazz.from_class :any
             clazz.to_class :any
           end
 
-          it 'does not check the classes of the nodes' do
+          def any_stubs_and_expectations
             expect(this_class_node).not_to receive(:class)
             expect(that_class_node).not_to receive(:class)
             clazz.any_instance.stub(:_create_rel)
             clazz.any_instance.stub(:init_on_load)
             expect{r.save}.not_to raise_error 
+          end
+
+          it 'does not check the classes of the nodes' do
+            any_stubs_and_expectations
+          end
+
+          it 'accepts false instead of :any' do
+            clazz.from_class false
+            clazz.to_class false
+            any_stubs_and_expectations
           end
         end
       end

@@ -55,14 +55,6 @@ describe Neo4j::ActiveRel::Property do
           expect(clazz.instance_variable_get(:@to_class)).to eq Object
         end
       end
-
-      context 'when passed invalid classes' do
-        it 'is pending'
-      end
-
-      context 'when passed :any' do
-        it 'is pending'
-      end
     end
   end
 
