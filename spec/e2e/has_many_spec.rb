@@ -2,14 +2,7 @@ require 'spec_helper'
 
 describe 'has_n' do
 
-  let(:clazz_b) do
-    UniqueClass.create do
-      include Neo4j::ActiveNode
-    end
-  end
-
   let(:clazz_a) do
-    #knows_type = clazz_b
     UniqueClass.create do
       include Neo4j::ActiveNode
       property :name
@@ -181,7 +174,6 @@ describe 'has_n' do
 
   describe 'callbacks' do
     let(:clazz_c) do
-      #knows_type = clazz_b
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
@@ -252,30 +244,5 @@ describe 'has_n' do
       c1.furrs.to_a.should == [d1]
     end
 
-  end
-
-  describe 'reflections' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-        has_many :in,  :in_things, model_class: self, type: 'things'
-        has_many :out, :out_things, model_class: self, type: 'things'
-
-        has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
-      end
-    end
-
-    it 'responds to :reflections' do
-      expect{clazz.reflections}.not_to raise_error
-    end
-
-    it 'responds with a hash' do
-      expect(clazz.reflections).to be_a(Hash)
-    end
-
-    it 'contains a key for each association' do
-      expect(clazz.reflections).to have_key(:in_things)
-      expect(clazz.reflections).to have_key(:out_things)
-    end
   end
 end
