@@ -564,12 +564,24 @@ describe Neo4j::ActiveNode do
         it 'returns the last-ish result' do
           expect(MyRelClass.last).to eq @rel2
         end
+
+        context 'with from_class and to_class as strings and constants' do
+          it 'converts the strings to constants and runs the query' do
+            MyRelClass.from_class 'FromClass'
+            MyRelClass.to_class 'ToClass'
+            expect(MyRelClass.where(score: 99)).to eq [@rel1]
+
+            MyRelClass.from_class :FromClass
+            MyRelClass.to_class :ToClass
+            expect(MyRelClass.where(score: 99)).to eq [@rel1]
+          end
+        end
       end
     end
   end
 
   describe 'include?, exists?, count' do
-    #goofy names to differentiate from same classes used elsewhere
+    # goofy names to differentiate from same classes used elsewhere
     before(:all) do
       class IncludeLesson; end
       class IncludeTeacher; end
@@ -638,7 +650,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an error if something other than a node is given' do
-        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+        expect { IncludeStudent.lessons.include?(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
       end
     end
 
@@ -664,7 +676,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an error if something other than a neo id is given' do
-        expect{IncludeLesson.exists?(:fooooo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        expect { IncludeLesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
       end
 
       it 'is called by :blank? and :empty?' do
@@ -692,7 +704,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'raises an exception if a bad parameter is passed' do
-        expect{@john.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+        expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
       end
 
       it 'works on an object earlier in the chain' do
@@ -707,11 +719,12 @@ describe Neo4j::ActiveNode do
   end
 
   describe "Neo4j::Paginated.create_from" do
-    before {
+    before do
       Person.destroy_all
       i = 1.upto(16).to_a
-      i.each{|i| Person.create(age: i) }
-    }
+      i.each{ |count| Person.create(age: count) }
+    end
+
     after(:all) { Person.destroy_all }
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
