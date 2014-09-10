@@ -45,7 +45,7 @@ module Neo4j
 
     included do
       def self.inherited(other)
-        inherit_id_property(other) if self.has_id_property?
+        inherit_id_property(other)
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
           other.attributes[k] = v
@@ -60,7 +60,7 @@ module Neo4j
       end
 
       def self.inherit_id_property(other)
-        id_prop = self.id_property_info
+        id_prop = id_property_info
         conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
         other.id_property id_prop[:name], conf
       end

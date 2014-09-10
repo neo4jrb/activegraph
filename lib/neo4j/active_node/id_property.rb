@@ -1,3 +1,5 @@
+require 'neo4j/object_id'
+
 module Neo4j::ActiveNode
 
   # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
@@ -31,8 +33,14 @@ module Neo4j::ActiveNode
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
-          raise "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
-          define_uuid_method(clazz, name)
+          case conf[:auto]
+          when :object_id
+            define_id_method(:object_id, clazz, name)
+          when :uuid
+            define_id_method(:uuid, clazz, name)
+          else
+            raise "only :object_id and :uuid auto id_property allowed, got `#{conf[:auto]}`"
+          end
         else conf.empty?
           define_property_method(clazz, name)
         end
@@ -62,10 +70,17 @@ module Neo4j::ActiveNode
       end
 
 
-      def define_uuid_method(clazz, name)
+      def define_id_method(type, clazz, name)
+        generator_call_string = case type
+                                when :uuid
+                                  '::SecureRandom.uuid'
+                                when :object_id
+                                  '::Neo4j::ObjectId.object_id'
+                                end
+
         clazz.module_eval(%Q{
           default_property :#{name} do
-             ::SecureRandom.uuid
+            #{generator_call_string}
           end
 
           def #{name}
@@ -94,11 +109,14 @@ module Neo4j::ActiveNode
       extend self
     end
 
-
     module ClassMethods
 
-      def find_by_id(key)
-        Neo4j::Node.load(key.to_i)
+      def find_by_neo_id(id)
+        Neo4j::Node.load(id.to_i)
+      end
+
+      def find_by_id(id)
+        self.where(primary_key => id).first
       end
 
       def id_property(name, conf = {})
@@ -111,17 +129,17 @@ module Neo4j::ActiveNode
         end
       end
 
-      def has_id_property?
-        !id_property_info.empty?
-      end
-
       def id_property_info
-        @id_property_info ||= {}
+        id_property(:uuid, auto: :object_id) unless @id_property_info
+
+        @id_property_info
       end
 
-      def primary_key
-        id_property_info[:name] || :id
+      def id_property_name
+        id_property_info[:name]
       end
+
+      alias_method :primary_key, :id_property_name
 
     end
   end

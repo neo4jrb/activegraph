@@ -17,8 +17,7 @@ module Neo4j::Shared
     end
 
     def id
-      id = neo_id
-      id.is_a?(Integer) ? id : nil
+      read_attribute(self.class.id_property_name)
     end
 
     def hash

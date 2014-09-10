@@ -41,25 +41,21 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
-    it 'uses the neo_id as id after save' do
+    it 'defaults to uuid after save' do
       node = clazz.new
       expect(node.id).to eq(nil)
       node.save!
-      expect(node.id).to eq(node.neo_id)
+      expect(node.id).to eq(node.uuid)
     end
 
-    it 'can find by id uses the neo_id' do
+    it 'can find by id uses the uuid' do
       node = clazz.create!
       node.name = 'kalle'
-      expect(clazz.find_by_id(node.id)).to eq(node)
+      expect(clazz.find_by_id(node.uuid)).to eq(node)
     end
 
-    it 'returns :id as primary_key' do
-      expect(clazz.primary_key).to eq :id
-    end
-
-    it 'responds false to has_id_property' do
-      expect(clazz.has_id_property?).to be_falsey
+    it 'returns :uuid as primary_key' do
+      expect(clazz.primary_key).to eq :uuid
     end
 
     describe 'when having a configuration' do
@@ -129,10 +125,6 @@ describe Neo4j::ActiveNode::IdProperty do
 
       it 'is returned by primary_key' do
         expect(clazz.primary_key).to eq :myid
-      end
-
-      it 'makes the class respond true to has_id_property?' do
-        expect(clazz.has_id_property?).to be_truthy
       end
     end
 
