@@ -86,7 +86,7 @@ describe Neo4j::ActiveRel::Persistence do
 
         it 'raises an error' do
           expect(that_class_node).not_to receive(:create_rel)
-          expect{r.save}.to raise_error(Neo4j::ActiveRel::Persistence::ModelClassInvalidError)
+          expect { r.save }.to raise_error(Neo4j::ActiveRel::Persistence::ModelClassInvalidError)
         end
       end
 
@@ -102,9 +102,9 @@ describe Neo4j::ActiveRel::Persistence do
           expect(this_class_node).to receive(:class).at_least(1).times.and_return(ThisClass)
           clazz.any_instance.stub(:_create_rel)
           clazz.any_instance.stub(:init_on_load)
-          expect{r.save}.not_to raise_error
+          expect { r.save }.not_to raise_error
           r.friends_since = 2014
-          expect{r.save}.not_to raise_error
+          expect { r.save }.not_to raise_error
         end
 
         it 'does not raise an error' do
@@ -130,7 +130,7 @@ describe Neo4j::ActiveRel::Persistence do
             clazz.from_class 'ThizFoo'
             clazz.any_instance.stub(:_create_rel)
             clazz.any_instance.stub(:init_on_load)
-            expect{r.save}.to raise_error NameError
+            expect { r.save }.to raise_error NameError
           end
         end
 
