@@ -564,6 +564,18 @@ describe Neo4j::ActiveNode do
         it 'returns the last-ish result' do
           expect(MyRelClass.last).to eq @rel2
         end
+
+        context 'with from_class and to_class as strings and constants' do
+          it 'converts the strings to constants and runs the query' do
+            MyRelClass.from_class 'FromClass'
+            MyRelClass.to_class 'ToClass'
+            expect(MyRelClass.where(score: 99)).to eq [@rel1]
+
+            MyRelClass.from_class :FromClass
+            MyRelClass.to_class :ToClass
+            expect(MyRelClass.where(score: 99)).to eq [@rel1]
+          end
+        end
       end
     end
   end

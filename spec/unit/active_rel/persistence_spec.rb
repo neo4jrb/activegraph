@@ -96,12 +96,14 @@ describe Neo4j::ActiveRel::Persistence do
           clazz.to_class ThatClass
         end
 
-        let(:r) { clazz.new(from_node: this_class_node, to_node: that_class_node) }
+        let(:r) { clazz.new(from_node: this_class_node, to_node: that_class_node, friends_since: 2002) }
 
         def model_stubs_and_expectations
-          expect(this_class_node).to receive(:class).and_return(ThisClass)
+          expect(this_class_node).to receive(:class).at_least(1).times.and_return(ThisClass)
           clazz.any_instance.stub(:_create_rel)
           clazz.any_instance.stub(:init_on_load)
+          expect{r.save}.not_to raise_error
+          r.friends_since = 2014
           expect{r.save}.not_to raise_error
         end
 
@@ -109,14 +111,27 @@ describe Neo4j::ActiveRel::Persistence do
           model_stubs_and_expectations
         end
 
-        it 'converts strings to constants' do
-          clazz.from_class 'ThisClass'
-          model_stubs_and_expectations
-        end
-
         it 'converts symbols to constants' do
           clazz.from_class :ThisClass
           model_stubs_and_expectations
+        end
+
+        context 'with string types' do
+          before do
+            clazz.from_class 'ThisClass'
+            clazz.to_class 'ThatClass'
+          end
+
+          it 'does not raise an error' do
+            model_stubs_and_expectations
+          end
+
+          it 'raises an error if a string class is given that does not exist' do
+            clazz.from_class 'ThizFoo'
+            clazz.any_instance.stub(:_create_rel)
+            clazz.any_instance.stub(:init_on_load)
+            expect{r.save}.to raise_error NameError
+          end
         end
 
         context 'with :any or false types' do
