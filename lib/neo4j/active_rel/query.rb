@@ -58,8 +58,19 @@ module Neo4j::ActiveRel
       end
 
       def cypher_label(dir = :outbound)
-        target_class = dir == :outbound ? _from_class : _to_class
+        target_class = dir == :outbound ? as_constant(_from_class) : as_constant(_to_class)
         ":`#{target_class.mapped_label_name}`)"
+      end
+
+      def as_constant(given_class)
+        case
+        when given_class.is_a?(String)
+          given_class.constantize
+        when given_class.is_a?(Symbol)
+          given_class.to_s.constantize
+        else
+          given_class
+        end
       end
 
       def where_string(args)
