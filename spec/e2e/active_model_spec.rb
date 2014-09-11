@@ -233,7 +233,7 @@ describe Neo4j::ActiveNode do
       before do
         Neo4j::Config[:cache_class_names] = true
         @cached = CacheTest.create
-        @unwrapped = Neo4j::Node._load(@cached.id)
+        @unwrapped = Neo4j::Node._load(@cached.neo_id)
       end
 
       it 'responds true to :cached_class?' do
@@ -253,7 +253,7 @@ describe Neo4j::ActiveNode do
       before do
         Neo4j::Config[:cache_class_names] = false
         @uncached = CacheTest.create
-        @unwrapped = Neo4j::Node._load(@uncached.id)
+        @unwrapped = Neo4j::Node._load(@uncached.neo_id)
       end
 
       before { Neo4j::Config[:cache_class_names] = false }

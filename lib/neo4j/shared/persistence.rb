@@ -135,8 +135,8 @@ module Neo4j::Shared
 
     def freeze_if_deleted
       unless new_record?
-        # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-        unless self.class.load_entity(neo_id)
+        # TODO - Neo4j::IdentityMap.remove_node_by_id(id)
+        unless self.class.find_by_id(id)
           @_deleted = true
           freeze
         end
@@ -154,8 +154,8 @@ module Neo4j::Shared
     end
 
     def reload_from_database
-      # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-      if reloaded = self.class.load_entity(neo_id)
+      # TODO - Neo4j::IdentityMap.remove_node_by_id(id)
+      if reloaded = self.class.find_by_id(id)
         send(:attributes=, reloaded.attributes)
       end
       reloaded

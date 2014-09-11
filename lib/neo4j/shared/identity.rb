@@ -17,7 +17,12 @@ module Neo4j::Shared
     end
 
     def id
-      read_attribute(self.class.id_property_name)
+      if self.class.respond_to?(:id_property_name) # ActiveNode
+        read_attribute(self.class.id_property_name)
+      else # ActiveRel
+        id = neo_id
+        id.is_a?(Integer) ? id : nil
+      end
     end
 
     def hash

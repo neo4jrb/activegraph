@@ -80,12 +80,5 @@ describe Neo4j::ActiveRel::Property do
         expect(clazz._type).to eq 'myrel'
       end
     end
-
-    describe 'load_entity' do
-      it 'aliases Neo4j::Node.load' do
-        expect(Neo4j::Node).to receive(:load).with(1).and_return(true)
-        clazz.load_entity(1)
-      end
-    end
   end
 end

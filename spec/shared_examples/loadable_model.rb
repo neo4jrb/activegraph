@@ -5,7 +5,7 @@ shared_examples 'loadable model' do
       subject.save
     end
 
-    it "should load_entity a previously stored node" do
+    it "should find_by_id a previously stored node" do
       result = subject.class.find(subject.id)
       result.should == subject
       result.should be_persisted

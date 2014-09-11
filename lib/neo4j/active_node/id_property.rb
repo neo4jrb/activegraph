@@ -26,7 +26,6 @@ module Neo4j::ActiveNode
   module IdProperty
     extend ActiveSupport::Concern
 
-
     module TypeMethods
       def define_id_methods(clazz, name, conf)
         validate_conf(conf)
@@ -75,7 +74,7 @@ module Neo4j::ActiveNode
                                 when :uuid
                                   '::SecureRandom.uuid'
                                 when :object_id
-                                  '::Neo4j::ObjectId.object_id'
+                                  '::Neo4j::ObjectId.generate_object_id'
                                 end
 
         clazz.module_eval(%Q{
@@ -130,8 +129,6 @@ module Neo4j::ActiveNode
       end
 
       def id_property_info
-        id_property(:uuid, auto: :object_id) unless @id_property_info
-
         @id_property_info
       end
 

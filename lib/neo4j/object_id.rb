@@ -3,7 +3,9 @@ module Neo4j
     @@mutex = Mutex.new
     @@counter = 0
 
-    def object_id
+    # Code taken from https://github.com/subvertallchris/neo4j-even_easier_id
+    # which was taken from a ruby implementation of MongoDB's ObjectId generator
+    def self.generate_object_id
       require 'digest'
       require 'socket'
 
