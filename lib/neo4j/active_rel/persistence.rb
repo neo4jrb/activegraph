@@ -24,7 +24,7 @@ module Neo4j::ActiveRel
       set_timestamps
       properties = convert_properties_to :db, props
       rel = _create_rel(from_node, to_node, properties)
-      init_on_load(rel, to_node, from_node, @rel_type)
+      init_on_load(rel, from_node, to_node, @rel_type)
       true
     end
 

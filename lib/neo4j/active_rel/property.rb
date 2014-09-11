@@ -59,9 +59,9 @@ module Neo4j::ActiveRel
 
     private
 
-    def load_nodes(start_node = nil, end_node = nil)
-      @from_node = RelatedNode.new(end_node)
-      @to_node = RelatedNode.new(start_node)
+    def load_nodes(from_node = nil, to_node = nil)
+      @from_node = RelatedNode.new(from_node)
+      @to_node = RelatedNode.new(to_node)
     end
   end
 end

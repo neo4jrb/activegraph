@@ -537,6 +537,12 @@ describe Neo4j::ActiveNode do
           expect(MyRelClass.where(score: 99)).to eq [@rel1]
         end
 
+        it 'has the appropriate from and to nodes' do
+          rel = MyRelClass.where(score: 99).first
+          expect(rel.from_node).to eq from_node
+          expect(rel.to_node).to eq to_node
+        end
+
         context 'with a string' do
           it 'returns the matching rels' do
             expect(MyRelClass.where('r1.score > 48')).to eq [@rel1, @rel2]
