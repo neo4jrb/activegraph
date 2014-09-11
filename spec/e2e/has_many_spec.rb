@@ -2,14 +2,7 @@ require 'spec_helper'
 
 describe 'has_n' do
 
-  let(:clazz_b) do
-    UniqueClass.create do
-      include Neo4j::ActiveNode
-    end
-  end
-
   let(:clazz_a) do
-    #knows_type = clazz_b
     UniqueClass.create do
       include Neo4j::ActiveNode
       property :name
@@ -181,7 +174,6 @@ describe 'has_n' do
 
   describe 'callbacks' do
     let(:clazz_c) do
-      #knows_type = clazz_b
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
