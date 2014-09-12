@@ -141,8 +141,8 @@ describe "Neo4j::ActiveNode" do
         class Foo2 < Foo1
 
         end
-        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name]])
-        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
       end
 
     end
