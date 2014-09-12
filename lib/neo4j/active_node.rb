@@ -44,25 +44,25 @@ module Neo4j
     end
 
     included do
-      def self.inherited(other)
-        inherit_id_property(other)
-        inherited_indexes(other) if self.respond_to?(:indexed_properties)
+      def self.inherited(subclass)
+        inherit_id_property(subclass)
+        inherited_indexes(subclass) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
-          other.attributes[k] = v
+          subclass.attributes[k] = v
         end
-        Neo4j::ActiveNode::Labels.add_wrapped_class(other)
+        Neo4j::ActiveNode::Labels.add_wrapped_class(subclass)
         super
       end
 
-      def self.inherited_indexes(other)
+      def self.inherited_indexes(subclass)
        return if indexed_properties.nil?
-       self.indexed_properties.each {|property| other.index property }
+       self.indexed_properties.each {|property| subclass.index property }
       end
 
-      def self.inherit_id_property(other)
+      def self.inherit_id_property(subclass)
         id_prop = id_property_info
-        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
-        other.id_property id_prop[:name], conf
+        conf = id_prop[:type].empty? ? {auto: :object_id} : id_prop[:type]
+        subclass.id_property id_prop[:name], conf
       end
 
       Neo4j::Session.on_session_available do |_|
