@@ -393,13 +393,13 @@ describe Neo4j::ActiveNode do
     describe 'multiparameter attributes' do
       it 'converts to Date' do
         person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
-        expect(person.date).to be_a(Date)
-        expect(person.date.to_s).to eq("2014-07-13")
+        expect(person.date).to be_a Date
+        expect(person.date.to_s).to eq "2014-07-13"
       end
 
       it 'converts to DateTime' do
         person = Person.create("datetime(1i)"=>"2014", "datetime(2i)"=>"7", "datetime(3i)"=>"13", "datetime(4i)"=>"17", "datetime(5i)"=>"45")
-        expect(person.datetime).to be_a(DateTime)
+        expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
 
@@ -411,14 +411,22 @@ describe Neo4j::ActiveNode do
 
       it 'sends values straight through when no type is specified' do
         person = Person.create("numbers(1i)" => "5", "numbers(2i)" => "23")
-        expect(person.numbers).to be_a(Array)
+        expect(person.numbers).to be_a Array
         expect(person.numbers).to eq [5, 23]
       end
 
       it "leaves standard attributes alone" do
         person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13", name: 'chris')
         expect(person.name).to eq 'chris'
-        expect(person.date).to be_a(Date)
+        expect(person.date).to be_a Date
+      end
+
+      it 'converts on update in addition to create' do
+        person = Person.create
+        person.update_attributes("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        person.save
+        expect(person.date).to be_a Date
+        expect(person.date.to_s).to eq "2014-07-13"
       end
     end
   end
@@ -530,7 +538,7 @@ describe Neo4j::ActiveNode do
         @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
       end
 
-      after { [@rel1, @rel2].each{|r| r.destroy} }
+      after { [@rel1, @rel2].each{ |r| r.destroy } }
 
       describe 'where' do
         it 'returns the matching objects' do
