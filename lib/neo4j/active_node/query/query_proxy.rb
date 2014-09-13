@@ -6,6 +6,10 @@ module Neo4j
         include Enumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
 
+        # The most recent node to start a QueryProxy chain.
+        # Will be nil when using QueryProxy chains on class methods.
+        attr_reader :caller
+
         def initialize(model, association = nil, options = {})
           @model = model
           @association = association
@@ -14,6 +18,7 @@ module Neo4j
           @node_var = options[:node]
           @rel_var = options[:rel] || _rel_chain_var
           @session = options[:session]
+          @caller = options[:caller]
           @chain = []
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
@@ -22,16 +27,24 @@ module Neo4j
           @node_var || :result
         end
 
+        def enumerable_query(node, rel = nil)
+          pluck_this = rel.nil? ? [node] : [node, rel]
+          return self.pluck(*pluck_this) if @association.nil? || caller.nil?
+          cypher_string = self.to_cypher_with_params(pluck_this)
+          association_collection = caller.association_instance_get(cypher_string, @association)
+          if association_collection.nil?
+            association_collection = self.pluck(*pluck_this)
+            caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
+          end
+          association_collection
+        end
+
         def each(node = true, rel = nil, &block)
           if node && rel
-            self.pluck(identity, @rel_var).each do |obj, rel|
-              yield obj, rel
-            end
+            enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
           else
             pluck_this = !rel ? identity : @rel_var
-            self.pluck(pluck_this).each do |obj|
-              yield obj
-            end
+            enumerable_query(pluck_this).each { |obj| yield obj }
           end
         end
 
@@ -97,6 +110,14 @@ module Neo4j
           query.to_cypher
         end
 
+        # Returns a string of the cypher query with return objects and params
+        # @param [Array] columns array containing symbols of identifiers used in the query
+        # @return [String]
+        def to_cypher_with_params(columns = [:result])
+          final_query = query.return_query(columns)
+          "#{final_query.to_cypher} | params: #{final_query.send(:merge_params)}"
+        end
+
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
           create(other_node, {})
@@ -131,6 +152,7 @@ module Neo4j
               return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
               start_object = @options[:start_object]
+              start_object.clear_association_cache
               _session.query(context: @options[:context])
                 .start(start: "node(#{start_object.neo_id})", end: "node(#{other_node.neo_id})")
                 .create("start#{_association_arrow(properties, true)}end").exec
