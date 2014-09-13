@@ -38,6 +38,7 @@ module HasN
   # @param [Enumerable] collection_result The result of the query after calling :each
   # @param [Neo4j::ActiveNode::HasN::Association] association_obj The association traversed to create the result
   def association_instance_set(cypher_string, collection_result, association_obj)
+    return collection_result if Neo4j::Transaction.current
     cache_key = cypher_hash(cypher_string)
     reflection = association_reflection(association_obj)
     return if reflection.nil?
@@ -46,6 +47,7 @@ module HasN
     else
       @association_cache[reflection.name] = { cache_key => collection_result }
     end
+    collection_result
   end
 
   def association_reflection(association_obj)
@@ -162,7 +164,14 @@ module HasN
 
           def #{name}(node = nil, rel = nil)
             return nil unless self.persisted?
-            #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}').first
+            result = #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}')
+            association = self.class.reflect_on_association(__method__)
+            query_return = association_instance_get(result.to_cypher_with_params, association)
+            if query_return.nil?
+              association_instance_set(result.to_cypher_with_params, result.first, association)
+            else
+              query_return
+            end
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{

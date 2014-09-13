@@ -10,6 +10,7 @@ describe 'Association Cache' do
       property :name
       has_many :out, :lessons, model_class: Lesson
       has_many :in, :exams, model_class: Exam, origin: :students
+      has_one  :out, :favorite_lesson, model_class: Lesson
     end
 
     class Lesson
@@ -40,6 +41,7 @@ describe 'Association Cache' do
     [math_exam, science_exam].each { |exam| billy.exams << exam }
     math.exams_given << math_exam
     science.exams_given << science_exam
+    billy.favorite_lesson = math
   end
 
   context 'with no results' do
@@ -63,98 +65,133 @@ describe 'Association Cache' do
   end
 
   context 'with a matching query' do
-    before { billy.lessons.to_a }
+    describe 'using has_one' do
+      before { billy.favorite_lesson }
 
-    it 'populates the association cache' do
-      expect(cache).not_to be_empty
-    end
-
-    it 'creates a hash based on the cypher that generated the query' do
-      hash_string = billy.cypher_hash(billy.lessons.to_cypher_with_params)
-      expect(cache).to have_key(:lessons)
-      expect(cache[:lessons]).to have_key(hash_string)
-      expect(cache[:lessons][hash_string]).to eq billy.lessons.to_a
-    end
-
-    context 'with additional queries' do
-      let!(:original_query) { billy.lessons }
-      let!(:original_hash_string) { billy.cypher_hash(original_query.to_cypher_with_params) }
-      let!(:level_query)      { billy.lessons.where(level: 102) }
-      let!(:new_hash_string)  { billy.cypher_hash(level_query.to_cypher_with_params) }
-      let!(:new_query_result) { level_query.to_a }
-
-      it 'adds an additional key to the hash of the association when the query changes' do
-        expect(new_query_result).to eq [science]
-        expect(cache[:lessons]).to have_key(original_hash_string)
-        expect(cache[:lessons]).to have_key(new_hash_string)
-        expect(cache[:lessons][new_hash_string]).to eq new_query_result
+      it 'populates the association cache' do
+        expect(cache).not_to be_empty
       end
 
-      it 'returns the exected result' do
-        expect(original_query.to_a).to eq [math, science]
-        expect(new_query_result).to eq [science]
-      end
-
-      it 'leaves existing cache results intact' do
-        expect(cache[:lessons]).to have_key(original_hash_string)
-        expect(cache[:lessons]).to have_key(new_hash_string)
-      end
-
-      it 'does not communicate with the database if @association_cache already contains a key matching the hash' do
-        query_proxy = billy.lessons
-        expect(query_proxy).to receive(:pluck).exactly(1).times.and_return [math, science]
-        query_proxy.to_a
+      it 'draws from cache, not server, when results are found' do
         billy.reload
-        query_proxy.to_a
+        query_proxy = Neo4j::ActiveNode::Query::QueryProxy
+        expect(billy).to receive(:association_instance_get).and_return nil
+        billy.favorite_lesson
+
+        expect(billy).to receive(:association_instance_get).and_return math
+        billy.favorite_lesson
       end
     end
 
-    it 'clears when the node is saved' do
-      billy.save
-      expect(cache).to be_empty
-    end
+    describe 'using has_many' do
+      before { billy.lessons.to_a }
 
-    it 'clears when reload is called' do
-      billy.reload
-      expect(cache).to be_empty
-    end
-
-    it 'does not cache chained results in the starting node cache' do
-      starting_cache = billy.association_cache.dup
-      billy.lessons.exams_given.to_a
-      expect(starting_cache).to eq cache
-    end
-
-    it 'does not break the saving of related objects' do
-      billy.lessons.each do |l|
-        l.level = 201
-        l.save
+      it 'populates the association cache' do
+        expect(cache).not_to be_empty
       end
-      math.reload
-      expect(math.level).to eq 201
-    end
 
-    describe 'returning with rel' do
-      before { billy.reload }
-
-      it 'differentiates between a query returning a node and node + rel' do
-        cache_without_rel = billy.association_cache.dup
-        billy.reload # clear association cache
-
-        query_with_identifiers = billy.lessons(:node, :rel)
-        query_with_identifiers.each_with_rel.to_a # add new entry to cache
-        expected_key = billy.cypher_hash(query_with_identifiers.to_cypher_with_params([:node, :rel]))
-        expect(cache[:lessons]).to have_key(expected_key)
-        expect(cache_without_rel).not_to eq billy.association_cache
+      it 'creates a hash based on the cypher that generated the query' do
+        hash_string = billy.cypher_hash(billy.lessons.to_cypher_with_params)
+        expect(cache).to have_key(:lessons)
+        expect(cache[:lessons]).to have_key(hash_string)
+        expect(cache[:lessons][hash_string]).to eq billy.lessons.to_a
       end
-    end
 
-    describe 'association_instance_get_by_reflection' do
-      it 'returns all results from the association_cache using an association name' do
-        result = billy.association_instance_get_by_reflection(:lessons)
-        query_hash = billy.cypher_hash(billy.lessons.to_cypher_with_params)
-        expect(result).to have_key query_hash
-        expect(result[query_hash]).to eq [math, science]
+      context 'with additional queries' do
+        let!(:original_query) { billy.lessons }
+        let!(:original_hash_string) { billy.cypher_hash(original_query.to_cypher_with_params) }
+        let!(:level_query)      { billy.lessons.where(level: 102) }
+        let!(:new_hash_string)  { billy.cypher_hash(level_query.to_cypher_with_params) }
+        let!(:new_query_result) { level_query.to_a }
+
+        it 'adds an additional key to the hash of the association when the query changes' do
+          expect(new_query_result).to eq [science]
+          expect(cache[:lessons]).to have_key(original_hash_string)
+          expect(cache[:lessons]).to have_key(new_hash_string)
+          expect(cache[:lessons][new_hash_string]).to eq new_query_result
+        end
+
+        it 'returns the exected result' do
+          expect(original_query.to_a).to eq [math, science]
+          expect(new_query_result).to eq [science]
+        end
+
+        it 'leaves existing cache results intact' do
+          expect(cache[:lessons]).to have_key(original_hash_string)
+          expect(cache[:lessons]).to have_key(new_hash_string)
+        end
+
+        it 'does not communicate with the database if @association_cache already contains a key matching the hash' do
+          query_proxy = billy.lessons
+          expect(query_proxy).to receive(:pluck).exactly(1).times.and_return [math, science]
+          query_proxy.to_a
+          billy.reload
+          query_proxy.to_a
+        end
+      end
+
+      it 'clears when the node is saved' do
+        billy.save
+        expect(cache).to be_empty
+      end
+
+      it 'clears when reload is called' do
+        billy.reload
+        expect(cache).to be_empty
+      end
+
+      it 'does not cache chained results in the starting node cache' do
+        starting_cache = billy.association_cache.dup
+        billy.lessons.exams_given.to_a
+        expect(starting_cache).to eq cache
+      end
+
+      it 'does not break the saving of related objects' do
+        billy.lessons.each do |l|
+          l.level = 201
+          l.save
+        end
+        math.reload
+        expect(math.level).to eq 201
+      end
+
+      describe 'returning with rel' do
+        before { billy.reload }
+
+        it 'differentiates between a query returning a node and node + rel' do
+          cache_without_rel = billy.association_cache.dup
+          billy.reload # clear association cache
+
+          query_with_identifiers = billy.lessons(:node, :rel)
+          query_with_identifiers.each_with_rel.to_a # add new entry to cache
+          expected_key = billy.cypher_hash(query_with_identifiers.to_cypher_with_params([:node, :rel]))
+          expect(cache[:lessons]).to have_key(expected_key)
+          expect(cache_without_rel).not_to eq billy.association_cache
+        end
+      end
+
+      describe 'association_instance_get_by_reflection' do
+        it 'returns all results from the association_cache using an association name' do
+          result = billy.association_instance_get_by_reflection(:lessons)
+          query_hash = billy.cypher_hash(billy.lessons.to_cypher_with_params)
+          expect(result).to have_key query_hash
+          expect(result[query_hash]).to eq [math, science]
+        end
+      end
+
+      context 'within a transaction' do
+        it 'does not set results' do
+          billy.reload
+          tx = Neo4j::Transaction.new
+            history = CachingSpec::Lesson.create(subject: 'history', level: 101 )
+            billy.lessons << history
+            billy.lessons.to_a # would typically cache results
+          tx.close
+          expect(cache).to be_empty
+          expect(billy.lessons.include?(history)).to be_truthy
+          billy.lessons.to_a
+          expect(cache).not_to be_empty
+        end
       end
     end
   end
