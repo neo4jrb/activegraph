@@ -1,5 +1,3 @@
-require 'neo4j/object_id'
-
 module Neo4j::ActiveNode
 
   # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
@@ -32,13 +30,10 @@ module Neo4j::ActiveNode
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
-          case conf[:auto]
-          when :object_id
-            define_id_method(:object_id, clazz, name)
-          when :uuid
-            define_id_method(:uuid, clazz, name)
+          if conf[:auto] == :uuid
+            define_uuid_method(clazz, name)
           else
-            raise "only :object_id and :uuid auto id_property allowed, got `#{conf[:auto]}`"
+            raise "only ::uuid auto id_property allowed, got `#{conf[:auto]}`"
           end
         else conf.empty?
           define_property_method(clazz, name)
@@ -69,17 +64,10 @@ module Neo4j::ActiveNode
       end
 
 
-      def define_id_method(type, clazz, name)
-        generator_call_string = case type
-                                when :uuid
-                                  '::SecureRandom.uuid'
-                                when :object_id
-                                  '::Neo4j::ObjectId.generate_object_id'
-                                end
-
+      def define_uuid_method(clazz, name)
         clazz.module_eval(%Q{
           default_property :#{name} do
-            #{generator_call_string}
+            ::SecureRandom.uuid
           end
 
           def #{name}
@@ -129,7 +117,7 @@ module Neo4j::ActiveNode
       end
 
       def id_property_info
-        id_property(:uuid, auto: :object_id) if not @id_property_info
+        id_property(:uuid, auto: :uuid) if not @id_property_info
 
         @id_property_info
       end

@@ -39,7 +39,7 @@ module Neo4j::Shared
 
     def default_properties=(properties)
       keys = self.class.default_properties.keys
-      @default_properties = properties.reject{|key| !keys.include?(key)}
+      @default_properties = properties.select {|key| keys.include?(key) }
     end
 
     def default_property(key)
@@ -162,8 +162,8 @@ module Neo4j::Shared
       end
 
       def default_property_values(instance)
-        default_properties.inject({}) do |result,pair|
-          result.tap{|obj| obj[pair[0]] = pair[1].call(instance)}
+        default_properties.each_with_object({}) do |(key, block), result|
+          result[key] = block.call(instance)
         end
       end
 

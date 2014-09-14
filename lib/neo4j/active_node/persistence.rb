@@ -7,6 +7,7 @@ module Neo4j::ActiveNode
     # @private
     # @return true
     def create_model(*)
+      self.class.id_property_info
       create_magic_properties
       set_timestamps
       create_magic_properties

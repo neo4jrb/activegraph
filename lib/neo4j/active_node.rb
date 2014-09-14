@@ -61,7 +61,7 @@ module Neo4j
 
       def self.inherit_id_property(subclass)
         id_prop = id_property_info
-        conf = id_prop[:type].empty? ? {auto: :object_id} : id_prop[:type]
+        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
         subclass.id_property id_prop[:name], conf
       end
 
