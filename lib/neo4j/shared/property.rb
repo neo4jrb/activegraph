@@ -43,12 +43,11 @@ module Neo4j::Shared
     end
 
     def default_property(key)
-      keys = self.class.default_properties.keys
-      keys.include?(key.to_sym) ? default_properties[key.to_sym] : nil
+      default_properties[key.to_sym]
     end
 
     def default_properties
-      @default_properties ||= {}
+      @default_properties ||= Hash.new(nil)
       # keys = self.class.default_properties.keys
       # _persisted_obj.props.reject{|key| !keys.include?(key)}
     end
