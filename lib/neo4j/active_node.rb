@@ -44,6 +44,8 @@ module Neo4j
     end
 
     included do
+      id_property(:uuid, auto: :uuid)
+
       def self.inherited(subclass)
         inherit_id_property(subclass)
         inherited_indexes(subclass) if self.respond_to?(:indexed_properties)

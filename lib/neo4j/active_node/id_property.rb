@@ -117,8 +117,6 @@ module Neo4j::ActiveNode
       end
 
       def id_property_info
-        id_property(:uuid, auto: :uuid) if not @id_property_info
-
         @id_property_info
       end
 
