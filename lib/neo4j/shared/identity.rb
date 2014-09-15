@@ -18,7 +18,7 @@ module Neo4j::Shared
 
     def id
       if self.class.respond_to?(:id_property_name) # ActiveNode
-        read_attribute(self.class.id_property_name)
+        read_attribute(self.class.id_property_name.to_sym)
       else # ActiveRel
         id = neo_id
         id.is_a?(Integer) ? id : nil

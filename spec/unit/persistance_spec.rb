@@ -40,7 +40,6 @@ describe Neo4j::ActiveNode::Persistence do
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
       session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
       clazz.any_instance.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
-      clazz.should_receive(:id_property_info)
       o.save
     end
 
@@ -76,8 +75,6 @@ describe Neo4j::ActiveNode::Persistence do
         expect(session).to receive(:create_node).with(end_props, :MyClass).and_return(node)
         expect(o).to receive(:init_on_load).with(node, end_props)
         expect(node).to receive(:props).and_return(end_props)
-
-        expect(clazz).to receive(:id_property_info)
 
         o.save
       end

@@ -27,7 +27,6 @@ module Neo4j
     include Neo4j::Shared
     include Neo4j::Shared::Identity
     include Neo4j::ActiveNode::Initialize
-    include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::SerializedProperties
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Persistence
@@ -35,6 +34,7 @@ module Neo4j
     include Neo4j::ActiveNode::Callbacks
     include Neo4j::ActiveNode::Query
     include Neo4j::ActiveNode::Labels
+    include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::Rels
     include Neo4j::ActiveNode::HasN
     include Neo4j::ActiveNode::Scope
@@ -44,10 +44,8 @@ module Neo4j
     end
 
     included do
-      id_property(:uuid, auto: :uuid)
-
       def self.inherited(subclass)
-        inherit_id_property(subclass)
+        inherit_id_property(subclass) if self.has_id_property? 
         inherited_indexes(subclass) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
           subclass.attributes[k] = v

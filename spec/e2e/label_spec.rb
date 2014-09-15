@@ -35,8 +35,8 @@ describe "Neo4j::ActiveNode" do
 
     describe 'property :name, constraint: :unique' do
       it 'delegates to the Neo4j::Label class' do
-        clazz = UniqueClass.create { include Neo4j::ActiveNode}
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:name, {type: :unique}, Neo4j::Session.current)
+        clazz = UniqueClass.create { include Neo4j::ActiveNode }
+        Neo4j::Label.any_instance.stub(:create_constraint)
         clazz.property :name, constraint: :unique
       end
     end
@@ -51,7 +51,7 @@ describe "Neo4j::ActiveNode" do
 
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
         expect(clazz).to_not receive(:index)
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:age, {type: :unique}, Neo4j::Session.current)
+        Neo4j::Label.any_instance.stub(:create_constraint)
         clazz.property :age, index: :exact, constraint: :unique
       end
     end
@@ -65,7 +65,7 @@ describe "Neo4j::ActiveNode" do
 
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
         clazz.should_not_receive(:index).with(:age, {:index=>:exact})
-        clazz.should_receive(:constraint).with(:age, {type: :unique})
+        clazz.stub(:constraint)
         clazz.property :age, constraint: :unique
       end
     end
@@ -124,12 +124,12 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'creates an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
+      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
     end
 
     it 'does not create index on other classes' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
-      expect(other_class.mapped_label.indexes).to eq(:property_keys => [])
+      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+      expect(other_class.mapped_label.indexes).to eq(:property_keys => [[:uuid]])
     end
 
     describe 'when inherited' do

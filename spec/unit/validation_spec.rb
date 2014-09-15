@@ -40,7 +40,6 @@ describe Neo4j::ActiveNode::Validations do
         o.stub(:_persisted_obj).and_return(nil)
         clazz.stub(:cached_class?).and_return(false)
         clazz.should_receive(:neo4j_session).and_return(session)
-        clazz.should_receive(:id_property_info)
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
         session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
         o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")

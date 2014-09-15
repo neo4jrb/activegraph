@@ -1,3 +1,6 @@
+require 'defined'
+Defined.enable!
+
 module Neo4j::ActiveNode
 
   # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
@@ -108,20 +111,38 @@ module Neo4j::ActiveNode
 
       def id_property(name, conf = {})
         @id_property_info = {name: name, type: conf}
-        TypeMethods.define_id_methods(self, name, conf)
-        constraint name, type: :unique
+      end
 
-        self.define_singleton_method(:find_by_id) do |key|
-          self.where(name => key).first
-        end
+      def has_id_property?
+        !id_property_info.empty?
       end
 
       def id_property_info
-        @id_property_info
+        @id_property_info ||= {name: :uuid, type: {auto: :uuid}}
       end
 
       def id_property_name
         id_property_info[:name]
+      end
+
+      def constraints_defined
+        @constraints_defined ||= []
+      end
+
+      # Callback provided by the `defined` gem
+      def defined(file, line, method)
+        name = id_property_info[:name]
+        conf = id_property_info[:type]
+
+        TypeMethods.define_id_methods(self, name, conf)
+        if constraints_defined.include?(name.to_sym)
+          constraint name, type: :unique
+          constraints_defined << name.to_sym
+        end
+
+        self.define_singleton_method(:find_by_id) do |key|
+          self.where(name => key).first
+        end
       end
 
       alias_method :primary_key, :id_property_name
