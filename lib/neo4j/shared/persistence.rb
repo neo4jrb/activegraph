@@ -66,13 +66,6 @@ module Neo4j::Shared
       self.save!
     end
 
-    # Convenience method to set multiple attributes and #save at the same time
-    # @param [Hash] attributes of names and values of attributes to set
-    def update_attributes(attributes)
-      assign_attributes(attributes)
-      self.save
-    end
-
     def create_or_update
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
@@ -164,29 +157,33 @@ module Neo4j::Shared
     # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
     # If saving fails because the resource is invalid then false will be returned.
     def update(attributes)
-      self.attributes = attributes
+      self.attributes = process_attributes(attributes)
       save
     end
     alias_method :update_attributes, :update
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
     def update!(attributes)
-      self.attributes = attributes
+      self.attributes = process_attributes(attributes)
       save!
     end
     alias_method :update_attributes!, :update!
 
     def cache_key
       if self.new_record?
-        "#{self.class.model_name.cache_key}/new"
+        "#{model_cache_key}/new"
       elsif self.respond_to?(:updated_at) && !self.updated_at.blank?
-        "#{self.class.model_name.cache_key}/#{neo_id}-#{self.updated_at.utc.to_s(:number)}" 
+        "#{model_cache_key}/#{neo_id}-#{self.updated_at.utc.to_s(:number)}"
       else
-        "#{self.class.model_name.cache_key}/#{neo_id}"
+        "#{model_cache_key}/#{neo_id}"
       end
     end
 
     private
+
+    def model_cache_key
+      self.class.model_name.cache_key
+    end
 
     def create_magic_properties
     end
@@ -199,16 +196,9 @@ module Neo4j::Shared
       props[:_classname] = self.class.name if self.class.cached_class?
     end
 
-    # def assign_attributes(attributes)
-    #   attributes.each do |attribute, value|
-    #     send("#{attribute}=", value)
-    #   end
-    # end
-
     def set_timestamps
       self.created_at = DateTime.now if respond_to?(:created_at=)
       self.updated_at = self.created_at if respond_to?(:updated_at=)
     end
-
   end
 end

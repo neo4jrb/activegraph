@@ -5,7 +5,6 @@ module HasN
   class NonPersistedNodeError < StandardError; end
 
   module ClassMethods
-
     def has_association?(name)
       !!associations[name.to_sym]
     end
@@ -25,11 +24,11 @@ module HasN
       name = name.to_sym
 
       association = Neo4j::ActiveNode::HasN::Association.new(:has_many, direction, name, options)
-
       @associations ||= {}
       @associations[name] = association
 
       target_class_name = association.target_class_name || 'nil'
+      create_reflection(:has_many, name, association)
 
       # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
       module_eval(%Q{
@@ -44,11 +43,11 @@ module HasN
                                                      rel: rel,
                                                      context: '#{self.name}##{name}'
                                                    })
+
           end
 
           def #{name}=(other_nodes)
             #{name}(nil, :r).query_as(:n).delete(:r).exec
-
             other_nodes.each do |node|
               #{name} << node
             end
@@ -80,11 +79,11 @@ module HasN
         name = name.to_sym
 
         association = Neo4j::ActiveNode::HasN::Association.new(:has_one, direction, name, options)
-
         @associations ||= {}
         @associations[name] = association
 
         target_class_name = association.target_class_name || 'nil'
+        create_reflection(:has_one, name, association)
 
         module_eval(%Q{
           def #{name}=(other_node)
@@ -118,8 +117,6 @@ module HasN
             #{name}_query_proxy(query_proxy: query_proxy, node: node, rel: rel, context: context)
           end}, __FILE__, __LINE__)
       end
-
-
     end
   end
 

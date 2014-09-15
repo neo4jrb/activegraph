@@ -393,13 +393,13 @@ describe Neo4j::ActiveNode do
     describe 'multiparameter attributes' do
       it 'converts to Date' do
         person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
-        expect(person.date).to be_a(Date)
-        expect(person.date.to_s).to eq("2014-07-13")
+        expect(person.date).to be_a Date
+        expect(person.date.to_s).to eq "2014-07-13"
       end
 
       it 'converts to DateTime' do
         person = Person.create("datetime(1i)"=>"2014", "datetime(2i)"=>"7", "datetime(3i)"=>"13", "datetime(4i)"=>"17", "datetime(5i)"=>"45")
-        expect(person.datetime).to be_a(DateTime)
+        expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
 
@@ -411,14 +411,22 @@ describe Neo4j::ActiveNode do
 
       it 'sends values straight through when no type is specified' do
         person = Person.create("numbers(1i)" => "5", "numbers(2i)" => "23")
-        expect(person.numbers).to be_a(Array)
+        expect(person.numbers).to be_a Array
         expect(person.numbers).to eq [5, 23]
       end
 
       it "leaves standard attributes alone" do
         person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13", name: 'chris')
         expect(person.name).to eq 'chris'
-        expect(person.date).to be_a(Date)
+        expect(person.date).to be_a Date
+      end
+
+      it 'converts on update in addition to create' do
+        person = Person.create
+        person.update_attributes("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        person.save
+        expect(person.date).to be_a Date
+        expect(person.date.to_s).to eq "2014-07-13"
       end
     end
   end
@@ -530,11 +538,17 @@ describe Neo4j::ActiveNode do
         @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
       end
 
-      after { [@rel1, @rel2].each{|r| r.destroy} }
+      after { [@rel1, @rel2].each{ |r| r.destroy } }
 
       describe 'where' do
         it 'returns the matching objects' do
           expect(MyRelClass.where(score: 99)).to eq [@rel1]
+        end
+
+        it 'has the appropriate from and to nodes' do
+          rel = MyRelClass.where(score: 99).first
+          expect(rel.from_node).to eq from_node
+          expect(rel.to_node).to eq to_node
         end
 
         context 'with a string' do
@@ -735,6 +749,69 @@ describe Neo4j::ActiveNode do
 
     it 'returns the expected number of objects' do
       expect(p.count).to eq 5
+    end
+  end
+
+  describe 'reflections' do
+    module ReflectionsSpecs
+
+      class RelClass; end
+
+      class MyClass
+        include Neo4j::ActiveNode
+        has_many :in,  :in_things, model_class: self, type: 'things'
+        has_many :out, :out_things, model_class: self, type: 'things'
+
+        has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
+        has_many :out, :things_with_rel_class, model_class: self, rel_class: RelClass
+        has_one  :out, :one_thing, model_class: self, type: 'one_thing'
+      end
+
+      class RelClass
+        include Neo4j::ActiveRel
+        from_class :any
+        to_class :any
+        type 'things'
+      end
+    end
+
+    let(:clazz) { ReflectionsSpecs::MyClass }
+    let(:rel_clazz) { ReflectionsSpecs::RelClass }
+
+    it 'responds to :reflections' do
+      expect{clazz.reflections}.not_to raise_error
+    end
+
+    it 'responds with a hash' do
+      expect(clazz.reflections).to be_a(Hash)
+    end
+
+    it 'contains a key for each association' do
+      expect(clazz.reflections).to have_key(:in_things)
+      expect(clazz.reflections).to have_key(:out_things)
+    end
+
+    it 'returns information about a given association' do
+      reflection = clazz.reflect_on_association(:in_things)
+      expect(reflection).to be_a(Neo4j::ActiveNode::Reflection::AssociationReflection)
+      expect(reflection.klass).to eq clazz
+      expect(reflection.class_name).to eq clazz.name
+      expect(reflection.type).to eq :things
+      expect(reflection.collection?).to be_truthy
+      expect(reflection.validate?).to be_truthy
+
+      reflection = clazz.reflect_on_association(:one_thing)
+      expect(reflection.collection?).to be_falsey
+    end
+
+    it 'returns a reflection for each association' do
+      expect(clazz.reflect_on_all_associations.count).to eq 5
+    end
+
+    it 'recognizes rel classes' do
+      reflection = clazz.reflect_on_association(:things_with_rel_class)
+      expect(reflection.rel_klass).to eq rel_clazz
+      expect(reflection.rel_class_name).to eq rel_clazz.name
     end
   end
 end
