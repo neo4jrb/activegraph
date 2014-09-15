@@ -135,7 +135,7 @@ module Neo4j::ActiveNode
         conf = id_property_info[:type]
 
         TypeMethods.define_id_methods(self, name, conf)
-        if constraints_defined.include?(name.to_sym)
+        unless constraints_defined.include?(name.to_sym)
           constraint name, type: :unique
           constraints_defined << name.to_sym
         end
