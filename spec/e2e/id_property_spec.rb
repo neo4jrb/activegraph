@@ -99,7 +99,7 @@ describe Neo4j::ActiveNode::IdProperty do
     it 'throws exception if the same uuid is generated when saving node' do
       clazz.create(myid: 'z')
       a = clazz.new(myid: 'z')
-      expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::Shared::Persistence::RecordInvalidError)
+      expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
 
     describe 'property myid' do
