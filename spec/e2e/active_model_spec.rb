@@ -669,36 +669,52 @@ describe Neo4j::ActiveNode do
     end
 
     describe 'exists?' do
-      it 'can run on a class' do
-        expect(IncludeEmptyClass.empty?).to be_truthy
-        expect(IncludeLesson.empty?).to be_falsey
-      end
+      context 'class methods' do
+        it 'can run by a class' do
+          expect(IncludeEmptyClass.empty?).to be_truthy
+          expect(IncludeLesson.empty?).to be_falsey
+        end
+
+        it 'can be called with a property and value' do
+          expect(IncludeLesson.exists?(name: 'math')).to be_truthy
+          expect(IncludeLesson.exists?(name: 'boat repair')).to be_falsey
+        end
       
-      it 'can be run on a query' do
-        expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
-        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+        it 'can be called on the class with a neo_id' do
+          expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
+          expect(IncludeLesson.exists?(8675309)).to be_falsey
+        end
+
+        it 'raises an error if something other than a neo id is given' do
+          expect { IncludeLesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        end
       end
 
-      it 'can be run with a neo_id' do
-        expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
-      end
+      context 'QueryProxy methods' do
+        it 'can be called on a query' do
+          expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
+          expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+        end
 
-      it 'can be called by the class with a neo_id' do
-        expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.exists?(8675309)).to be_falsey
-      end
+        it 'can be called with property and value' do
+          expect(jimmy.lessons.exists?(name: 'science')).to be_falsey
+          jimmy.lessons << science
+          expect(jimmy.lessons.exists?(name: 'science')).to be_truthy
+          expect(jimmy.lessons.exists?(name: 'bomb disarming')).to be_falsey
+        end
 
-      it 'raises an error if something other than a neo id is given' do
-        expect { IncludeLesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
-      end
+        it 'can be called with a neo_id' do
+          expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
+          expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
+        end
 
-      it 'is called by :blank? and :empty?' do
-        expect(jimmy.lessons.blank?).to be_truthy
-        expect(jimmy.lessons.empty?).to be_truthy
-        jimmy.lessons << science
-        expect(jimmy.lessons.blank?).to be_falsey
-        expect(jimmy.lessons.empty?).to be_falsey
+        it 'is called by :blank? and :empty?' do
+          expect(jimmy.lessons.blank?).to be_truthy
+          expect(jimmy.lessons.empty?).to be_truthy
+          jimmy.lessons << science
+          expect(jimmy.lessons.blank?).to be_falsey
+          expect(jimmy.lessons.empty?).to be_falsey
+        end
       end
     end
 

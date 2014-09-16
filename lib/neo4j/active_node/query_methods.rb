@@ -3,11 +3,11 @@ module Neo4j
     module QueryMethods
       class InvalidParameterError < StandardError; end
 
-      def exists?(node_id=nil)
-        raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
-        start_q = self.query_as(:n)
-        end_q = node_id.nil? ? start_q : start_q.where("ID(n) = #{node_id}")
-        end_q.return("COUNT(n) AS count").first.count > 0
+      def exists?(node_condition=nil)
+        raise(InvalidParameterError, ':exists? only accepts ids or conditions') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
+        query_start = exists_query_start(node_condition)
+        start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
+        start_q.return("COUNT(n) AS count").first.count > 0
       end
 
       # Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -41,7 +41,18 @@ module Neo4j
         self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
       end
 
+      private
 
+      def exists_query_start(node_condition)
+        case
+        when node_condition.class == Fixnum
+          self.query_as(:n).where("ID(n) = #{node_condition}")
+        when node_condition.class == Hash
+          self.where(node_condition.keys.first => node_condition.values.first)
+        else
+          self.query_as(:n)
+        end
+      end
     end
   end
 end

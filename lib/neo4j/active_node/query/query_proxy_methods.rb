@@ -4,11 +4,6 @@ module Neo4j
       module QueryProxyMethods
         class InvalidParameterError < StandardError; end
 
-        def query_with_target(target, &block)
-          target = target.nil? ? identity : target
-          block.yield(target)
-        end
-
         def first(target=nil)
           query_with_target(target) { |target| first_and_last("ID(#{target})", target) }
         end
@@ -46,12 +41,29 @@ module Neo4j
           end
         end
 
-        def exists?(node_id=nil, target=nil)
-          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_id.is_a?(Integer) || node_id.nil?
+        def exists?(node_condition=nil, target=nil)
+          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
           query_with_target(target) do |target|
-            start_q = self.query
-            end_q = node_id.nil? ? start_q : start_q.where("ID(#{target}) = #{node_id}")
-            end_q.return("COUNT(#{target}) AS count").first.count > 0
+            start_q = exists_query_start(self, node_condition, target)
+            start_q.query.return("COUNT(#{target}) AS count").first.count > 0
+          end
+        end
+
+        private
+
+        def query_with_target(target, &block)
+          target = target.nil? ? identity : target
+          block.yield(target)
+        end
+
+        def exists_query_start(origin, condition, target)
+          case
+          when condition.class == Fixnum
+            self.where("ID(#{target}) = #{condition}")
+          when condition.class == Hash
+            self.where(condition.keys.first => condition.values.first)
+          else
+            self
           end
         end
       end
