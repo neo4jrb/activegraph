@@ -32,6 +32,7 @@ describe 'Neo4j::Transaction' do
       end
 
       if Neo4j::Session.current.db_type == :embedded_db
+        clazz
         tx = Neo4j::Transaction.new
         a = clazz.create name: 'a'
         b = clazz.create name: 'b'
