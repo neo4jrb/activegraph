@@ -129,7 +129,6 @@ module Neo4j::ActiveNode
 
       def setup_id_property_constraint
         name = id_property_info[:name]
-        puts "setting up constraint `#{name}` for #{self.name}"
         constraint name, type: :unique
       end
 
