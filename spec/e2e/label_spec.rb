@@ -144,6 +144,9 @@ describe "Neo4j::ActiveNode" do
 
     describe 'when inherited' do
       it 'has an index on both base and subclass' do
+        Neo4j::Session.current.query('DROP CONSTRAINT ON (f:Foo1) ASSERT f.uuid IS UNIQUE ')
+        Neo4j::Session.current.query('DROP CONSTRAINT ON (f:Foo2) ASSERT f.uuid IS UNIQUE ')
+
         class Foo1
           include Neo4j::ActiveNode
           id_property :uuid
