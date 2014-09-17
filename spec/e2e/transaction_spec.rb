@@ -5,6 +5,8 @@ describe 'Neo4j::Transaction' do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
+
         property :name
         has_one :out, :thing, model_class: self
       end
