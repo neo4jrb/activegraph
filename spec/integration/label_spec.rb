@@ -11,12 +11,15 @@ describe "Labels" do
 
     class TestClass
       include Neo4j::ActiveNode
+      id_property :uuid
     end
 
     Neo4j::Label.create(:IndexedTestClass).drop_index(:name)
 
     class IndexedTestClass
       include Neo4j::ActiveNode
+      id_property :uuid
+
       property :name
       index :name # will index using the IndexedTestClass label
     end
@@ -36,11 +39,13 @@ describe "Labels" do
 
     class SomeLabelClass
       include Neo4j::ActiveNode
+      id_property :uuid
       include SomeLabelMixin
     end
 
     class RelationTestClass
       include Neo4j::ActiveNode
+      id_property :uuid
 
       has_one :in, :test_class
     end
@@ -164,11 +169,14 @@ describe "Labels" do
 
       class FirstLastTestClass
         include Neo4j::ActiveNode
+        id_property :uuid
+
         property :name
       end
 
       class EmptyTestClass
         include Neo4j::ActiveNode
+        id_property :uuid
       end
       
       @jasmine = FirstLastTestClass.create(name: 'jasmine')

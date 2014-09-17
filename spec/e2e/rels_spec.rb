@@ -4,6 +4,7 @@ describe 'Neo4j::ActiveNode#rels' do
   before(:all) do
     clazz = UniqueClass.create do
       include Neo4j::ActiveNode
+      id_property :uuid
     end
 
     @n = clazz.create

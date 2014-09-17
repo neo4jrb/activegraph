@@ -146,6 +146,8 @@ describe "Neo4j::ActiveNode" do
       it 'has an index on both base and subclass' do
         class Foo1
           include Neo4j::ActiveNode
+          id_property :uuid
+
           property :name, index: :exact
         end
         class Foo2 < Foo1

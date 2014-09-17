@@ -4,6 +4,7 @@ describe "Neo4j::ActiveNode" do
 
   class MyThing
     include Neo4j::ActiveNode
+    id_property :uuid
     property :a
     property :x
     has_one :out, :parent, model_class: false
@@ -30,7 +31,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'undefined properties are found with the attributes method' do
-      MyThing.new(a: '4').attributes.should == {'a' => '4', 'x' => nil}
+      MyThing.new(a: '4').attributes.should == {'a' => '4', 'x' => nil, 'uuid' => nil}
     end
 
   end
@@ -44,10 +45,10 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'stores undefined attributes' do
-      node = double('unwrapped_node', props: {a: 999})
+      node = double('unwrapped_node', props: {a: 999, 'uuid' => 'secure1234'})
       @session.should_receive(:create_node).with({uuid: 'secure1234', a: 1}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
-      thing.attributes.should == {"a" => 999, "x" => nil} # always reads the result from the database
+      thing.attributes.should == {"a" => 999, "x" => nil, 'uuid' => 'secure1234'} # always reads the result from the database
     end
 
     it 'does not allow to set undeclared properties using create' do
