@@ -37,6 +37,7 @@ describe Neo4j::ActiveNode::IdProperty do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
       end
     end
@@ -78,73 +79,6 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:the_id]])
       end
     end
-  end
-
-  describe 'id_property :myid' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-        id_property :myid
-      end
-    end
-
-    it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:myid]])
-    end
-
-    it 'throws exception if the same uuid is generated when saving node' do
-      clazz.create(myid: 'z')
-      a = clazz.new(myid: 'z')
-      expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::Shared::Persistence::RecordInvalidError)
-    end
-
-    describe 'property myid' do
-      it 'is not defined when before save ' do
-        node = clazz.new
-        expect(node.myid).to be_nil
-      end
-
-      it 'can be set' do
-        node = clazz.new
-        node.myid = '42'
-        expect(node.myid).to eq('42')
-      end
-
-      it 'can be saved after set' do
-        node = clazz.new
-        node.myid = '42'
-        node.save!
-        expect(node.myid).to eq('42')
-      end
-
-      it 'is same as id' do
-        node = clazz.new
-        node.myid = '42'
-        expect(node.id).to be_nil
-      end
-
-      it 'is returned by primary_key' do
-        expect(clazz.primary_key).to eq :myid
-      end
-    end
-
-    describe 'find_by_id' do
-      it 'finds it if it exists' do
-        node1 = clazz.create(myid: 'a')
-        node2 = clazz.create(myid: 'b')
-        node3 = clazz.create(myid: 'c')
-        found = clazz.find_by_id('b')
-        expect(found).to eq(node2)
-      end
-
-      it 'does not find it if it does not exist' do
-        node = clazz.create(myid: 'd')
-        found = clazz.find_by_id('something else')
-        expect(found).to be_nil
-      end
-
-    end
-
   end
 
 
@@ -205,11 +139,11 @@ describe Neo4j::ActiveNode::IdProperty do
 
   end
 
-  describe 'id_property :my_uuid, auto: :uuid' do
+  describe 'id_property :my_uuid' do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
-        id_property :my_uuid, auto: :uuid
+        id_property :my_uuid
       end
     end
 
@@ -280,7 +214,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
         Vehicle = UniqueClass.create do
           include Neo4j::ActiveNode
-          id_property :my_id, auto: :uuid
+          id_property :my_id
         end
 
         class Car < Vehicle; end

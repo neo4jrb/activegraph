@@ -5,12 +5,14 @@ describe "has_one" do
   describe 'has_one(:parent).from(:children)' do
     class HasOneA
       include Neo4j::ActiveNode
+      id_property :uuid
       property :name
       has_many :out, :children, model_class: 'HasOneB'
     end
 
     class HasOneB
       include Neo4j::ActiveNode
+      id_property :uuid
       property :name
       has_one :in, :parent, origin: :children, model_class: 'HasOneA'
     end
@@ -83,10 +85,12 @@ describe "has_one" do
   describe 'has_one(:parent).from(Folder.files)' do
     class Folder1
       include Neo4j::ActiveNode
+      id_property :uuid
     end
 
     class File1
       include Neo4j::ActiveNode
+      id_property :uuid
     end
 
     Folder1.has_many :out, :files, model_class: File1
@@ -107,6 +111,7 @@ describe "has_one" do
   describe 'callbacks' do
     class CallbackUser
       include Neo4j::ActiveNode
+      id_property :uuid
 
       has_one :out, :best_friend, model_class: self, before: :before_callback
       has_one :in, :best_friend_of, origin: :best_friend, model_class: self, after: :after_callback

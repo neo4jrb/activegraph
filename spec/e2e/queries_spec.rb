@@ -4,6 +4,7 @@ describe 'Neo4j::ActiveNode#find' do
   let(:clazz) do
     UniqueClass.create do
       include Neo4j::ActiveNode
+      id_property :uuid
       property :name
     end
   end
@@ -24,6 +25,7 @@ describe 'Neo4j::ActiveNode#all' do
   def create_clazz
     UniqueClass.create do
       include Neo4j::ActiveNode
+      id_property :uuid
       property :name
       property :score, type: Integer
       yield self

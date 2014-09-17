@@ -5,6 +5,8 @@ describe 'Inheritance', type: :e2e do
   module InheritanceTest
     class Node
       include Neo4j::ActiveNode
+      id_property :uuid
+
       property :created_at, type: DateTime
       property :updated_at, type: DateTime
     end

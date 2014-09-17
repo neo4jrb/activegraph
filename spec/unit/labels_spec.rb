@@ -47,6 +47,7 @@ describe Neo4j::ActiveNode::Labels do
     describe 'index and inheritance' do
       class MyBaseClass
         include Neo4j::ActiveNode
+        id_property :uuid
         property :things
       end
       class MySubClass < MyBaseClass

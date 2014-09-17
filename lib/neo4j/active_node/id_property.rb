@@ -1,6 +1,3 @@
-require 'defined'
-Defined.enable!
-
 module Neo4j::ActiveNode
 
   # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
@@ -32,14 +29,8 @@ module Neo4j::ActiveNode
         validate_conf(conf)
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
-        elsif conf[:auto]
-          if conf[:auto] == :uuid
-            define_uuid_method(clazz, name)
-          else
-            raise "only ::uuid auto id_property allowed, got `#{conf[:auto]}`"
-          end
-        else conf.empty?
-          define_property_method(clazz, name)
+        else
+          define_uuid_method(clazz, name)
         end
       end
 
@@ -55,27 +46,18 @@ module Neo4j::ActiveNode
         end
       end
 
-      def define_property_method(clazz, name)
-        clazz.module_eval(%Q{
-          def id
-            persisted? ? #{name} : nil
-          end
-
-          property :#{name}
-          validates_uniqueness_of :#{name}
-        }, __FILE__, __LINE__)
-      end
-
 
       def define_uuid_method(clazz, name)
         clazz.module_eval(%Q{
+          property :#{name}
+
           default_property :#{name} do
             ::SecureRandom.uuid
           end
 
-          def #{name}
-             default_property :#{name}
-          end
+          #def #{name}
+          #   default_property :#{name}
+          #end
 
           alias_method :id, :#{name}
         }, __FILE__, __LINE__)
@@ -83,9 +65,11 @@ module Neo4j::ActiveNode
 
       def define_custom_method(clazz, name, on)
         clazz.module_eval(%Q{
+          #property :#{name}
+
           default_property :#{name} do |instance|
-             raise "Specifying custom id_property #{name} on none existing method #{on}" unless instance.respond_to?(:#{on})
-             instance.#{on}
+            raise "Specifying custom id_property #{name} on none existing method #{on}" unless instance.respond_to?(:#{on})
+            instance.#{on}
           end
 
           def #{name}
@@ -110,39 +94,37 @@ module Neo4j::ActiveNode
       end
 
       def id_property(name, conf = {})
-        @id_property_info = {name: name, type: conf}
-      end
+        raise 'Cannot call id_property twice for the same model' if !@id_property_info && self.respond_to?(:id_property_defined?)
 
-      def has_id_property?
-        !id_property_info.empty?
+        @id_property_info = {name: name, type: conf}
+
+        setup_defined_id_property
       end
 
       def id_property_info
-        @id_property_info ||= {name: :uuid, type: {auto: :uuid}}
+        raise "You must define an id_property for your model (#{self.name})" if not (@id_property_info || self.respond_to?(:id_property_defined?))
+
+        @id_property_info || (superclass.respond_to?(:id_property_info) && superclass.id_property_info)
       end
 
       def id_property_name
         id_property_info[:name]
       end
 
-      def constraints_defined
-        @constraints_defined ||= []
-      end
-
       # Callback provided by the `defined` gem
-      def defined(file, line, method)
+      def setup_defined_id_property
         name = id_property_info[:name]
         conf = id_property_info[:type]
 
         TypeMethods.define_id_methods(self, name, conf)
-        unless constraints_defined.include?(name.to_sym)
-          constraint name, type: :unique
-          constraints_defined << name.to_sym
-        end
+
+        constraint name, type: :unique
 
         self.define_singleton_method(:find_by_id) do |key|
           self.where(name => key).first
         end
+
+        self.define_singleton_method(:id_property_defined?) { true }
       end
 
       alias_method :primary_key, :id_property_name

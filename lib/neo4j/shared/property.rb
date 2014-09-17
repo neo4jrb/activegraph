@@ -158,7 +158,11 @@ module Neo4j::Shared
 
       # @return [Hash<Symbol,Proc>]
       def default_properties
-        @default_property ||= {}
+        @default_property ||= if superclass.respond_to?(:default_properties) && !superclass.default_properties.empty?
+                                superclass.default_properties
+                              else
+                                {}
+                              end
       end
 
       def default_property_values(instance)

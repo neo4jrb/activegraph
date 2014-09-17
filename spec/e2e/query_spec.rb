@@ -5,6 +5,7 @@ class Teacher; end
 
 class Interest
   include Neo4j::ActiveNode
+  id_property :uuid
 
   property :name
 
@@ -13,6 +14,8 @@ end
 
 class Lesson
   include Neo4j::ActiveNode
+  id_property :uuid
+
   property :subject
   property :level
 
@@ -30,6 +33,8 @@ end
 
 class Student
   include Neo4j::ActiveNode
+  id_property :uuid
+
   property :name
   property :age, type: Integer
 
@@ -44,6 +49,8 @@ end
 
 class Teacher
   include Neo4j::ActiveNode
+  id_property :uuid
+
   property :name
 
   has_many :both, :lessons
@@ -61,7 +68,7 @@ describe 'Query API' do
   describe 'association validation' do
     before(:each) do
       %w{Foo Bar}.each do |const|
-        stub_const const, Class.new { include Neo4j::ActiveNode }
+        stub_const const, Class.new { include Neo4j::ActiveNode; id_property :uuid }
       end
     end
 

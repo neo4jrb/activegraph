@@ -145,7 +145,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'does not update it if it is not valid' do
-      expect(@session).to receive(:create_label).and_return(label)
+      @session.stub(:create_label) { label }
       thing.stub(:valid?).and_return(false)
       expect(thing.update_attribute(:a, 42)).to be false
     end
@@ -165,7 +165,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'does not update it if it is not valid' do
-      expect(@session).to receive(:create_label).and_return(label)
+      @session.stub(:create_label) { label }
       thing.stub(:valid?).and_return(false)
       expect(thing.update_attributes(a: 42)).to be false
     end
@@ -185,7 +185,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'does raise an exception if not valid' do
-      expect(@session).to receive(:create_label).and_return(label)
+      @session.stub(:create_label) { label }
       thing.stub(:valid?).and_return(false)
       expect{thing.update_attribute!(:a, 42)}.to raise_error(Neo4j::Shared::Persistence::RecordInvalidError)
     end

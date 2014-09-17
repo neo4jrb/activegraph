@@ -2,6 +2,7 @@ require 'spec_helper'
 
 IceLolly = UniqueClass.create do
   include Neo4j::ActiveNode
+  id_property :uuid
   property :flavour
   property :name
   property :a
@@ -272,6 +273,7 @@ describe Neo4j::ActiveNode do
 
     Person = UniqueClass.create do
       include Neo4j::ActiveNode
+      id_property :uuid
       property :name
       property :age,          type: Integer
       property :start,        type: Time
@@ -491,11 +493,15 @@ describe Neo4j::ActiveNode do
 
     class FromClass
       include Neo4j::ActiveNode
+      id_property :uuid
+
       has_many :out, :others, model_class: ToClass, rel_class: MyRelClass
     end
 
     class ToClass
       include Neo4j::ActiveNode
+      id_property :uuid
+
       has_many :in, :others, model_class: FromClass, rel_class: MyRelClass
     end
 
@@ -602,12 +608,14 @@ describe Neo4j::ActiveNode do
       class IncludeEmptyClass; end
       class IncludeStudent
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
         has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
       end
 
       class IncludeLesson
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
         has_many :in, :students, model_class: IncludeStudent, origin: :lessons
         has_many :in, :teachers, model_class: IncludeTeacher, origin: :lessons
@@ -615,11 +623,13 @@ describe Neo4j::ActiveNode do
 
       class IncludeTeacher
         include Neo4j::ActiveNode
+        id_property :uuid
         has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
       end
 
       class IncludeEmptyClass
         include Neo4j::ActiveNode
+        id_property :uuid
         has_many :out, :lessons, model_class: IncludeLesson
       end
     end
@@ -759,6 +769,8 @@ describe Neo4j::ActiveNode do
 
       class MyClass
         include Neo4j::ActiveNode
+        id_property :uuid
+
         has_many :in,  :in_things, model_class: self, type: 'things'
         has_many :out, :out_things, model_class: self, type: 'things'
 

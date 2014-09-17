@@ -5,6 +5,7 @@ describe "Neo4j::ActiveNode" do
   let(:clazz) do
     UniqueClass.create do
       include Neo4j::ActiveNode
+      id_property :uuid
     end
   end
 
@@ -24,6 +25,7 @@ describe "Neo4j::ActiveNode" do
       let(:clazz) do
         UniqueClass.create do
           include Neo4j::ActiveNode
+          id_property :uuid
         end
       end
 
@@ -35,7 +37,10 @@ describe "Neo4j::ActiveNode" do
 
     describe 'property :name, constraint: :unique' do
       it 'delegates to the Neo4j::Label class' do
-        clazz = UniqueClass.create { include Neo4j::ActiveNode }
+        clazz = UniqueClass.create do
+          include Neo4j::ActiveNode
+          id_property :uuid
+        end
         Neo4j::Label.any_instance.stub(:create_constraint)
         clazz.property :name, constraint: :unique
       end
@@ -46,6 +51,7 @@ describe "Neo4j::ActiveNode" do
       let(:clazz) do
         UniqueClass.create do
           include Neo4j::ActiveNode
+          id_property :uuid
         end
       end
 
@@ -60,6 +66,7 @@ describe "Neo4j::ActiveNode" do
       let(:clazz) do
         UniqueClass.create do
           include Neo4j::ActiveNode
+          id_property :uuid
         end
       end
 
@@ -77,6 +84,7 @@ describe "Neo4j::ActiveNode" do
     let(:clazz_with_constraint) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
         constraint :name, type: :unique
 
@@ -112,6 +120,7 @@ describe "Neo4j::ActiveNode" do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
         index :name
       end
@@ -120,6 +129,7 @@ describe "Neo4j::ActiveNode" do
     let(:other_class) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
       end
     end
 
@@ -152,6 +162,7 @@ describe "Neo4j::ActiveNode" do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
         index :name
       end
@@ -200,13 +211,14 @@ describe "Neo4j::ActiveNode" do
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
         has_one :out, :foo
       end
     end
 
     it 'indicates whether a property is indexed' do
-      stub_const('::Foo', Class.new { include Neo4j::ActiveNode })
+      stub_const('::Foo', Class.new { include Neo4j::ActiveNode; id_property :uuid })
 
       o = clazz.new(name: 'Jim', foo: 2)
 

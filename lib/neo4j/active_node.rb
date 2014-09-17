@@ -46,7 +46,8 @@ module Neo4j
 
     included do
       def self.inherited(subclass)
-        inherit_id_property(subclass) if self.has_id_property? 
+        #inherit_id_property(subclass)
+
         inherited_indexes(subclass) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
           subclass.attributes[k] = v
@@ -61,9 +62,7 @@ module Neo4j
       end
 
       def self.inherit_id_property(subclass)
-        id_prop = id_property_info
-        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
-        subclass.id_property id_prop[:name], conf
+        subclass.setup_defined_id_property
       end
 
       Neo4j::Session.on_session_available do |_|

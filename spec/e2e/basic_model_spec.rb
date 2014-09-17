@@ -7,6 +7,8 @@ require 'shared_examples/destroyable_model'
 
 class BasicModel
   include Neo4j::ActiveNode
+  id_property :uuid
+
   property :name
   property :a
   property :b

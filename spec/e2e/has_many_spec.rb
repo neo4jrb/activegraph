@@ -5,6 +5,7 @@ describe 'has_n' do
   let(:clazz_a) do
     UniqueClass.create do
       include Neo4j::ActiveNode
+      id_property :uuid
       property :name
 
       has_many :both, :friends, model_class: false
@@ -176,6 +177,7 @@ describe 'has_n' do
     let(:clazz_c) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
         property :name
 
         has_many :out, :knows, model_class: self, before: :before_callback
@@ -221,6 +223,7 @@ describe 'has_n' do
     let(:clazz_c) do
       UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
 
         has_many :in, :furrs, model_class: 'ClazzD'
       end
@@ -231,6 +234,7 @@ describe 'has_n' do
     it 'should use the mapped_label_name' do
       clazz_d = UniqueClass.create do
         include Neo4j::ActiveNode
+        id_property :uuid
 
         set_mapped_label_name 'Fuur'
       end
