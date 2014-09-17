@@ -7,6 +7,7 @@ module Neo4j
   module OrmSpec
     class User
       include Neo4j::ActiveNode
+      id_property :uuid
 
       property :name, :index => :exact
       property :rating, :type => Integer, :index => :exact
@@ -18,6 +19,7 @@ module Neo4j
   
     class Note
       include Neo4j::ActiveNode
+      id_property :uuid
 
       property  :body, :index => :exact
       
