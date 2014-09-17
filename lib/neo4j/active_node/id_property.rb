@@ -118,13 +118,19 @@ module Neo4j::ActiveNode
 
         TypeMethods.define_id_methods(self, name, conf)
 
-        constraint name, type: :unique
+        setup_id_property_constraint
 
         self.define_singleton_method(:find_by_id) do |key|
           self.where(name => key).first
         end
 
         self.define_singleton_method(:id_property_defined?) { true }
+      end
+
+      def setup_id_property_constraint
+        name = id_property_info[:name]
+        puts "setting up constraint `#{name}` for #{self.name}"
+        constraint name, type: :unique
       end
 
       alias_method :primary_key, :id_property_name

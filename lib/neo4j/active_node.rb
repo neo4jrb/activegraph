@@ -46,7 +46,7 @@ module Neo4j
 
     included do
       def self.inherited(subclass)
-        #inherit_id_property(subclass)
+        subclass.setup_id_property_constraint
 
         inherited_indexes(subclass) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
@@ -59,10 +59,6 @@ module Neo4j
       def self.inherited_indexes(subclass)
        return if indexed_properties.nil?
        self.indexed_properties.each {|property| subclass.index property }
-      end
-
-      def self.inherit_id_property(subclass)
-        subclass.setup_defined_id_property
       end
 
       Neo4j::Session.on_session_available do |_|
