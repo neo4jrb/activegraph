@@ -14,6 +14,7 @@ module Neo4j
     end
 
     delegate :each, :to => :items
+    delegate :pluck, :to => :items
     delegate :size, :[], :to => :items
   end
 end
