@@ -98,6 +98,7 @@ module Neo4j::ActiveNode
       def load_entity(id)
         Neo4j::Node.load(id)
       end
+
     end
 
     private

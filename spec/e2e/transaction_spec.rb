@@ -12,18 +12,25 @@ describe 'Neo4j::Transaction' do
 
     #:nocov:
     it 'returns  hash values inside but outside it has the node value after commit' do
+      i = 0
+      SecureRandom.stub(:uuid) do
+        i += 1
+        "secure1234_#{i}"
+      end
 
       if Neo4j::Session.current.db_type == :server_db
+        clazz
         tx = Neo4j::Transaction.new
         a = clazz.create name: 'a'
         b = clazz.create name: 'b'
         a.thing = b
-        expect(a.thing).to eq("name"=>"b", "_classname"=>clazz.to_s)
+        expect(a.thing).to eq("name"=>"b", "_classname"=>clazz.to_s, "uuid" => "secure1234_2")
         tx.close
         expect(a.thing).to eq(b)
       end
 
       if Neo4j::Session.current.db_type == :embedded_db
+        clazz
         tx = Neo4j::Transaction.new
         a = clazz.create name: 'a'
         b = clazz.create name: 'b'

@@ -51,18 +51,24 @@ module Neo4j::ActiveNode
       end
 
       def define_property_method(clazz, name)
+        clear_methods(clazz, name)
+
         clazz.module_eval(%Q{
           def id
             persisted? ? #{name} : nil
           end
 
-          property :#{name}
           validates_uniqueness_of :#{name}
+
+          property :#{name}
         }, __FILE__, __LINE__)
+
       end
 
 
       def define_uuid_method(clazz, name)
+        clear_methods(clazz, name)
+
         clazz.module_eval(%Q{
           default_property :#{name} do
              ::SecureRandom.uuid
@@ -77,6 +83,8 @@ module Neo4j::ActiveNode
       end
 
       def define_custom_method(clazz, name, on)
+        clear_methods(clazz, name)
+
         clazz.module_eval(%Q{
           default_property :#{name} do |instance|
              raise "Specifying custom id_property #{name} on none existing method #{on}" unless instance.respond_to?(:#{on})
@@ -91,6 +99,20 @@ module Neo4j::ActiveNode
         }, __FILE__, __LINE__)
       end
 
+      def clear_methods(clazz, name)
+        if clazz.method_defined?(name)
+          clazz.module_eval(%Q{
+            undef_method :#{name}
+          }, __FILE__, __LINE__)
+        end
+
+        if clazz.attribute_names.include?(name.to_s)
+          clazz.module_eval(%Q{
+            undef_property :#{name}
+          }, __FILE__, __LINE__)
+        end
+      end
+
       extend self
     end
 
@@ -98,10 +120,12 @@ module Neo4j::ActiveNode
     module ClassMethods
 
       def find_by_id(key)
-        Neo4j::Node.load(key.to_i)
+        self.where(id_property_name => key).first
       end
 
       def id_property(name, conf = {})
+        drop_constraint(id_property_name, type: :unique) if @id_property_info
+
         @id_property_info = {name: name, type: conf}
         TypeMethods.define_id_methods(self, name, conf)
         constraint name, type: :unique
@@ -119,9 +143,11 @@ module Neo4j::ActiveNode
         @id_property_info ||= {}
       end
 
-      def primary_key
-        id_property_info[:name] || :id
+      def id_property_name
+        id_property_info[:name]
       end
+
+      alias_method :primary_key, :id_property_name
 
     end
   end

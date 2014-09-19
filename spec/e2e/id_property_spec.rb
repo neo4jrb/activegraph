@@ -42,10 +42,11 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'uses the neo_id as id after save' do
+      SecureRandom.stub(:uuid) { 'secure123' }
       node = clazz.new
       expect(node.id).to eq(nil)
       node.save!
-      expect(node.id).to eq(node.neo_id)
+      expect(node.id).to eq('secure123')
     end
 
     it 'can find by id uses the neo_id' do
@@ -55,11 +56,11 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'returns :id as primary_key' do
-      expect(clazz.primary_key).to eq :id
+      expect(clazz.primary_key).to eq :uuid
     end
 
     it 'responds false to has_id_property' do
-      expect(clazz.has_id_property?).to be_falsey
+      expect(clazz.has_id_property?).to be_truthy
     end
 
     describe 'when having a configuration' do
@@ -295,6 +296,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
         Fruit = UniqueClass.create do
           include Neo4j::ActiveNode
+
           id_property :my_id
         end
 

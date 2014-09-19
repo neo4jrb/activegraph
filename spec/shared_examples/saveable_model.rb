@@ -30,7 +30,7 @@ shared_examples 'saveable model' do
     end
 
     it { should be_persisted }
-    it { should == subject.class.load_entity(subject.id) }
+    it { should == subject.class.find_by_id(subject.id) }
     it { should be_valid }
 
     it "should be found in the database" do
