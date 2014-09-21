@@ -71,8 +71,13 @@ module Neo4j
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
-          raise "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
-          find_by_id(id)
+          map_id = -> (object) { object.respond_to?(:id) ? object.send(:id) : object }
+
+          if id.is_a?(Array)
+            find_by_ids(id.map {|o| map_id.call(o) })
+          else
+            find_by_id(map_id.call(id))
+          end
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
