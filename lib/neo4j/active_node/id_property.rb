@@ -124,7 +124,10 @@ module Neo4j::ActiveNode
       end
 
       def id_property(name, conf = {})
-        drop_constraint(id_property_name, type: :unique) if @id_property_info
+        begin
+          drop_constraint(id_property_name, type: :unique) if has_id_property?
+        rescue Neo4j::Server::CypherResponse::ResponseError
+        end
 
         @id_property_info = {name: name, type: conf}
         TypeMethods.define_id_methods(self, name, conf)
@@ -136,7 +139,7 @@ module Neo4j::ActiveNode
       end
 
       def has_id_property?
-        !id_property_info.empty?
+        id_property_info && !id_property_info.empty?
       end
 
       def id_property_info
