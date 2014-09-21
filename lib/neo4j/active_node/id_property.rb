@@ -125,7 +125,11 @@ module Neo4j::ActiveNode
 
       def id_property(name, conf = {})
         begin
-          drop_constraint(id_property_name, type: :unique) if has_id_property?
+          if has_id_property?
+            unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
+              drop_constraint(id_property_name, type: :unique)
+            end
+          end
         rescue Neo4j::Server::CypherResponse::ResponseError
         end
 
