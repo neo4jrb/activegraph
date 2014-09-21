@@ -47,25 +47,24 @@ module Neo4j
           print "#{total} nodes left.  Last batch: #{time_per_node && (time_per_node * 1000.0).round(1)}ms / node\r"
 
           return if total == 0
-          to_set = total > max_per_batch ? max_per_batch : total
-          new_ids = [].tap do | ids_array|
-                      to_set.times { ids_array.push "'#{new_id_for(model)}'" }
-                    end
-            begin
-              last_time_taken = Benchmark.realtime do
-                Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{property})
-                  with COLLECT(n) as nodes, [#{new_ids.join(',')}] as ids
-                  FOREACH(i in range(0,#{to_set - 1})| 
-                    FOREACH(node in [nodes[i]]|
-                      SET node.#{property} = ids[i]))
-                  RETURN distinct(true)
-                  LIMIT #{to_set}")
-              end
-            rescue Neo4j::Server::CypherResponse::ResponseError, Net::ReadTimeout
-              new_max_per_batch = (max_per_batch * 0.8).round
-              puts "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
-              max_per_batch = new_max_per_batch
+          to_set = [total, max_per_batch].min
+          new_ids = to_set.times.map { "'#{new_id_for(model)}'" }
+
+          begin
+            last_time_taken = Benchmark.realtime do
+              Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{property})
+                with COLLECT(n) as nodes, [#{new_ids.join(',')}] as ids
+                FOREACH(i in range(0,#{to_set - 1})| 
+                  FOREACH(node in [nodes[i]]|
+                    SET node.#{property} = ids[i]))
+                RETURN distinct(true)
+                LIMIT #{to_set}")
             end
+          rescue Neo4j::Server::CypherResponse::ResponseError, Faraday::TimeoutError
+            new_max_per_batch = (max_per_batch * 0.8).round
+            puts "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
+            max_per_batch = new_max_per_batch
+          end
         end
       end
 
