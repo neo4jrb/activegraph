@@ -45,7 +45,6 @@ module Neo4j
     end
 
     included do
-      id_property :uuid, auto: :uuid
       def self.inherited(other)
         inherit_id_property(other) if self.has_id_property?
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
@@ -68,6 +67,8 @@ module Neo4j
       end
 
       Neo4j::Session.on_session_available do |_|
+        id_property :uuid, auto: :uuid
+
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]
