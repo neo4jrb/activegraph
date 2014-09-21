@@ -67,6 +67,8 @@ module Neo4j
       end
 
       Neo4j::Session.on_session_available do |_|
+        id_property :uuid, auto: :uuid
+
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]
