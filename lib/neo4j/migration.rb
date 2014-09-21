@@ -20,7 +20,7 @@ module Neo4j
       def setup
         FileUtils.mkdir_p("db/neo4j-migrate")
         unless File.file?(models_filename)
-          File.open(models_filename, 'w') do |file| 
+          File.open(models_filename, 'w') do |file|
             file.write("# Provide models to which IDs should be added.\n# It will only modify nodes that do not have IDs. There is no danger of overwriting data.\n# models: [Student,Lesson,Teacher,Exam]\nmodels: []")
           end
         end
@@ -36,7 +36,7 @@ module Neo4j
         until total == 0
           total = Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{property}) RETURN COUNT(n) as ids").first.ids
           return if total == 0
-          to_set = total > 900 ? 900 : total
+          to_set = total > max_per_batch ? max_per_batch : total
           new_ids = [].tap do | ids_array|
                       to_set.times { ids_array.push "'#{new_id_for(model)}'" }
                     end
@@ -48,6 +48,10 @@ module Neo4j
             RETURN distinct(true)
             limit #{to_set}")
         end
+      end
+
+      def max_per_batch
+        900
       end
 
       def new_id_for(model)
