@@ -5,6 +5,7 @@ module Neo4j
 
         include Enumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
+        include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
