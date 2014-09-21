@@ -56,6 +56,10 @@ module Neo4j
 
     end
 
+    rake_tasks do
+      load 'neo4j/tasks/neo4j_server.rake'
+      load 'neo4j/tasks/rails.rake'
+    end
 
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
