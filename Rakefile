@@ -1,6 +1,5 @@
 require 'rake'
 require "bundler/gem_tasks"
-load 'neo4j/tasks/neo4j_server.rake'
 
 desc "Generate YARD documentation"
 task 'yard' do

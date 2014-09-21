@@ -12,7 +12,7 @@ module Neo4j
 
     rake_tasks do
       load 'neo4j/tasks/neo4j_server.rake'
-      load 'neo4j/tasks/rails.rake'
+      load 'neo4j/tasks/migration.rake'
     end
 
     class << self
@@ -32,7 +32,7 @@ module Neo4j
         end
 
         if cfg.sessions.empty?
-          cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
+          cfg.sessions << { type: cfg.session_type, path: cfg.session_path, options: cfg.session_options }
         end
       end
 
@@ -51,11 +51,11 @@ module Neo4j
           raise "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
         end
 
-        if (session_opts.key? :name)
-          session = Neo4j::Session.open_named(session_opts[:type], session_opts[:name], session_opts[:default], session_opts[:path])
-        else
-          session = Neo4j::Session.open(session_opts[:type], session_opts[:path], session_opts[:options])
-        end
+        session = if session_opts.key?(:name)
+                    Neo4j::Session.open_named(session_opts[:type], session_opts[:name], session_opts[:default], session_opts[:path])
+                  else
+                    Neo4j::Session.open(session_opts[:type], session_opts[:path], session_opts[:options])
+                  end
 
         start_embedded_session(session) if session_opts[:type] == :embedded_db
       end
