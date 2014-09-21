@@ -33,7 +33,7 @@ module Neo4j
       def add_ids_to(model)
         require 'benchmark'
 
-        max_per_batch = (ENV['MAX_PER_BATCH'] || max_per_batch).to_i
+        max_per_batch = (ENV['MAX_PER_BATCH'] || default_max_per_batch).to_i
 
         label = model.mapped_label_name
         property = model.primary_key
@@ -52,8 +52,8 @@ module Neo4j
 
           return if nodes_left == 0
           to_set = [nodes_left, max_per_batch].min
-          new_ids = to_set.times.map { new_id_for(model) }
 
+          new_ids = to_set.times.map { new_id_for(model) }
           begin
             last_time_taken = Benchmark.realtime do
               Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{property})
@@ -72,7 +72,7 @@ module Neo4j
         end
       end
 
-      def max_per_batch
+      def default_max_per_batch
         900
       end
 
