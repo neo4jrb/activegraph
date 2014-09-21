@@ -1,12 +1,18 @@
 require 'active_support/notifications'
+require 'rails/railtie'
 
 module Neo4j
-    class Railtie < ::Rails::Railtie
+  class Railtie < ::Rails::Railtie
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     # Add ActiveModel translations to the I18n load_path
     initializer "i18n" do |app|
     	config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
+    end
+
+    rake_tasks do
+      load 'neo4j/tasks/neo4j_server.rake'
+      load 'neo4j/tasks/rails.rake'
     end
 
     class << self
@@ -54,11 +60,6 @@ module Neo4j
         start_embedded_session(session) if session_opts[:type] == :embedded_db
       end
 
-    end
-
-    rake_tasks do
-      load 'neo4j/tasks/neo4j_server.rake'
-      load 'neo4j/tasks/rails.rake'
     end
 
     # Starting Neo after :load_config_initializers allows apps to
