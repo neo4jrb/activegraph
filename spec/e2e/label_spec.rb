@@ -124,12 +124,12 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'creates an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
+      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
     end
 
     it 'does not create index on other classes' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
-      expect(other_class.mapped_label.indexes).to eq(:property_keys => [])
+      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+      expect(other_class.mapped_label.indexes).to eq(:property_keys => [[:uuid]])
     end
 
     describe 'when inherited' do
@@ -141,8 +141,8 @@ describe "Neo4j::ActiveNode" do
         class Foo2 < Foo1
 
         end
-        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name]])
-        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
       end
 
     end

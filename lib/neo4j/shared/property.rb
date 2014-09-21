@@ -153,6 +153,16 @@ module Neo4j::Shared
         constraint_or_index(name, options)
       end
 
+      def undef_property(name)
+        raise ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
+
+        attribute_methods(name).each do |method|
+          undef_method(method)
+        end
+
+        undef_constraint_or_index(name)
+      end
+
       def default_property(name, &block)
         default_properties[name] = block
       end

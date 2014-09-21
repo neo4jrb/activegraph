@@ -12,12 +12,12 @@ module Neo4j
 
       # Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
       def first
-        self.query_as(:n).limit(1).order('ID(n)').pluck(:n).first
+        self.query_as(:n).limit(1).order(n: primary_key).pluck(:n).first
       end
 
       # Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
       def last
-        self.query_as(:n).limit(1).order('ID(n) DESC').pluck(:n).first
+        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
       end
 
       # @return [Fixnum] number of nodes of this class
@@ -38,7 +38,7 @@ module Neo4j
 
       def include?(other)
         raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-        self.query_as(:n).where("ID(n) = #{other.neo_id}").return("count(n) AS count").first.count > 0
+        self.query_as(:n).where(n: {primary_key => other.id}).return("count(n) AS count").first.count > 0
       end
 
       private
