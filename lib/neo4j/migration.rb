@@ -37,17 +37,21 @@ module Neo4j
 
         label = model.mapped_label_name
         property = model.primary_key
-        total = 1
+        nodes_left = 1
         last_time_taken = nil
 
-        until total == 0
-          total = Neo4j::Session.query.match(n: label).where("NOT has(n.#{property})").return("COUNT(n) AS ids").first.ids
+        until nodes_left == 0
+          nodes_left = Neo4j::Session.query.match(n: label).where("NOT has(n.#{property})").return("COUNT(n) AS ids").first.ids
 
           time_per_node = last_time_taken / max_per_batch if last_time_taken
-          print "#{total} nodes left.  Last batch: #{time_per_node && (time_per_node * 1000.0).round(1)}ms / node\r"
+          print "Running first batch...\r"
+          if time_per_node
+            eta_seconds = (nodes_left * time_per_node).round
+            print "#{nodes_left} nodes left.  Last batch: #{(time_per_node * 1000.0).round(1)}ms / node (ETA: #{eta_seconds / 60} minutes)\r"
+          end
 
-          return if total == 0
-          to_set = [total, max_per_batch].min
+          return if nodes_left == 0
+          to_set = [nodes_left, max_per_batch].min
           new_ids = to_set.times.map { "'#{new_id_for(model)}'" }
 
           begin
