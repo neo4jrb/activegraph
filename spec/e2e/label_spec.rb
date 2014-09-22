@@ -219,4 +219,35 @@ describe "Neo4j::ActiveNode" do
       o.foo.should be_nil
     end
   end
+
+  describe '.find' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+      end
+    end
+
+    let(:object1) { clazz.create }
+    let(:object2) { clazz.create }
+
+    describe 'finding individual records' do
+      it 'by id' do
+        clazz.find(object1.id).should == object1
+      end
+
+      it 'by object' do
+        clazz.find(object1).should == object1
+      end
+    end
+
+    describe 'finding multiple records' do
+      it 'by id' do
+        clazz.find([object1.id, object2.id]).to_set.should == [object1, object2].to_set
+      end
+
+      it 'by object' do
+        clazz.find([object1, object2]).to_set.should == [object1, object2].to_set
+      end
+    end
+  end
 end
