@@ -163,12 +163,20 @@ module Neo4j::Shared
       end
 
       def default_property(name, &block)
+        reset_default_properties(name) if default_properties.respond_to?(:size)
         default_properties[name] = block
       end
 
       # @return [Hash<Symbol,Proc>]
       def default_properties
         @default_property ||= {}
+      end
+
+      def reset_default_properties(name_to_keep)
+        default_properties.each_key do |property|
+          undef_method(property) unless property == name_to_keep
+        end
+        @default_property = {}
       end
 
       def default_property_values(instance)
