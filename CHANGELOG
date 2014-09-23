@@ -1,3 +1,13 @@
+== 3.0.0.rc.4
+* UUIDs are now automatically specified on models as neo IDs won't be reliable
+in future versions of neo4j
+* Migrations now supported (including built-in migrations to migrate UUIDs and
+insert the _classname property which is used for performance)
+* Association reflection
+* Model.find supports ids/node objects as well as arrays of id/node objects
+* rake tasks now get automatically included into rails app
+
+
 == 3.0.0.rc.3
 * thread safety improvements
 * scope and general refactoring
