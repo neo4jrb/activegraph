@@ -41,6 +41,12 @@ module Neo4j
         self.query_as(:n).where(n: {primary_key => other.id}).return("count(n) AS count").first.count > 0
       end
 
+      def find_in_batches(options = {})
+        self.query_as(:n).return(:n).find_in_batches(:n, primary_key, options) do |batch|
+          yield batch.map(&:n)
+        end
+      end
+
       private
 
       def exists_query_start(node_condition)
