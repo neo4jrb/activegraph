@@ -37,7 +37,7 @@ module Neo4j
         def include?(other, target=nil)
           raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
           query_with_target(target) do |target|
-            self.query.where(target => {@model.primary_key => other.id}).return("count(#{target}) AS count").first.count > 0
+            self.where("#{target}.#{other.class.primary_key} = {other_node_id}").params(other_node_id: other.id).query.return("count(#{target}) as count").first.count > 0
           end
         end
 
