@@ -1,6 +1,7 @@
 require 'rake'
 require "bundler/gem_tasks"
-require 'neo4j/tasks/neo4j_server'
+load 'neo4j/tasks/neo4j_server.rake'
+load 'neo4j/tasks/migration.rake'
 
 desc "Generate YARD documentation"
 task 'yard' do
@@ -18,6 +19,15 @@ Rake::TestTask.new(:test_generators) do |test|
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/*_test.rb'
   test.verbose = true
+end
+
+desc 'Generate coverage report'
+task 'coverage' do
+  ENV['COVERAGE'] = 'true'
+  rm_rf "coverage/"
+  task = Rake::Task['spec']
+  task.reenable
+  task.invoke
 end
 
 task :default => ['spec']

@@ -3,10 +3,11 @@ source 'http://rubygems.org'
 gemspec
 
 #gem 'neo4j-core', path: '../neo4j-core'
-#gem 'neo4j-core', :git => 'https://github.com/andreasronge/neo4j-core.git'
+gem 'neo4j-core', git: 'https://github.com/neo4jrb/neo4j-core'
 #gem 'orm_adapter', :path => '../orm_adapter'
 
-#gem 'coveralls', require: false
+gem 'coveralls', require: false
+
 
 group 'development' do
   gem 'pry'
@@ -16,9 +17,9 @@ group 'development' do
 end
 
 group 'test' do
-  gem "codeclimate-test-reporter", require: nil
+  gem 'simplecov', require: false
+  gem 'simplecov-html', require: false
   gem "rspec", '~> 2.0'
-  # gem 'rspec-its' instead of its in rspec 3
   gem "its"
   gem "test-unit"
 end

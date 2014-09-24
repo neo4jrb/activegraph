@@ -1,13 +1,17 @@
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
+# To run coverage via travis
+require 'coveralls'
+Coveralls.wear!
 
-#require 'coveralls'
-#Coveralls.wear!
+# To run it manually via Rake
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+  SimpleCov.start
+end
 
 require "bundler/setup"
 require 'rspec'
 require 'its'
-#require 'rspec/its'  Soon ...
 require 'fileutils'
 require 'tmpdir'
 require 'logger'

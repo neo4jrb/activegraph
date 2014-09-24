@@ -55,23 +55,15 @@ describe Neo4j::ActiveRel::Property do
           expect(clazz.instance_variable_get(:@to_class)).to eq Object
         end
       end
-
-      context 'when passed invalid classes' do
-        it 'is pending'
-      end
-
-      context 'when passed :any' do
-        it 'is pending'
-      end
     end
   end
 
   describe 'class methods' do
     describe 'extract_relationship_attributes!' do
       it 'returns the from and to keys and values' do
-        expect(clazz.extract_association_attributes!({to_node: 'test', from_node: 'test', name: 'chris'})).to eq(to_node: 'test', from_node: 'test')
-        expect(clazz.extract_association_attributes!({to_node: 'test', name: 'chris'})).to eq(to_node: 'test')
-        expect(clazz.extract_association_attributes!({from_node: 'test', name: 'chris'})).to eq(from_node: 'test')
+        expect(clazz.extract_association_attributes!({ to_node: 'test', from_node: 'test', name: 'chris' })).to eq(to_node: 'test', from_node: 'test')
+        expect(clazz.extract_association_attributes!({ to_node: 'test', name: 'chris' })).to eq(to_node: 'test')
+        expect(clazz.extract_association_attributes!({ from_node: 'test', name: 'chris' })).to eq(from_node: 'test')
       end
     end
 

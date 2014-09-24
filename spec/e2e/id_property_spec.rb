@@ -2,15 +2,6 @@ require 'spec_helper'
 
 describe Neo4j::ActiveNode::IdProperty do
 
-  describe 'when no id_property' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-      end
-    end
-  end
-
-
   before do
     Neo4j::Config.delete(:id_property)
     Neo4j::Config.delete(:id_property_type)
@@ -51,16 +42,25 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'uses the neo_id as id after save' do
+      SecureRandom.stub(:uuid) { 'secure123' }
       node = clazz.new
       expect(node.id).to eq(nil)
       node.save!
-      expect(node.id).to eq(node.neo_id)
+      expect(node.id).to eq('secure123')
     end
 
     it 'can find by id uses the neo_id' do
       node = clazz.create!
       node.name = 'kalle'
       expect(clazz.find_by_id(node.id)).to eq(node)
+    end
+
+    it 'returns :id as primary_key' do
+      expect(clazz.primary_key).to eq :uuid
+    end
+
+    it 'responds false to has_id_property' do
+      expect(clazz.has_id_property?).to be_truthy
     end
 
     describe 'when having a configuration' do
@@ -100,7 +100,7 @@ describe Neo4j::ActiveNode::IdProperty do
     it 'throws exception if the same uuid is generated when saving node' do
       clazz.create(myid: 'z')
       a = clazz.new(myid: 'z')
-      expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::Shared::Persistence::RecordInvalidError)
+      expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
 
     describe 'property myid' do
@@ -126,6 +126,22 @@ describe Neo4j::ActiveNode::IdProperty do
         node = clazz.new
         node.myid = '42'
         expect(node.id).to be_nil
+      end
+
+      it 'is returned by primary_key' do
+        expect(clazz.primary_key).to eq :myid
+      end
+
+      it 'makes the class respond true to has_id_property?' do
+        expect(clazz.has_id_property?).to be_truthy
+      end
+
+      it 'removes any previously declared properties' do
+        clazz.id_property :my_property, auto: :uuid
+        clazz.id_property :another_property, auto: :uuid
+        node = clazz.create
+        expect(node.respond_to?(:uuid)).to be_falsey
+        expect(node.respond_to?(:my_property)).to be_falsey
       end
     end
 
@@ -288,6 +304,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
         Fruit = UniqueClass.create do
           include Neo4j::ActiveNode
+
           id_property :my_id
         end
 

@@ -15,13 +15,16 @@ module Neo4j::Shared
 
     ILLEGAL_PROPS = %w[from_node to_node start_node end_node]
 
+    attr_reader :_persisted_obj
+
     def initialize(attributes={}, options={})
       attributes = process_attributes(attributes)
-      relationship_props = self.class.extract_association_attributes!(attributes)
+      @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
       send_props(writer_method_props) unless writer_method_props.nil?
-      send_props(relationship_props) unless relationship_props.nil?
+
+      @_persisted_obj = nil
 
       super(attributes, options)
     end
@@ -36,16 +39,15 @@ module Neo4j::Shared
 
     def default_properties=(properties)
       keys = self.class.default_properties.keys
-      @default_properties = properties.reject{|key| !keys.include?(key)}
+      @default_properties = properties.select {|key| keys.include?(key) }
     end
 
     def default_property(key)
-      keys = self.class.default_properties.keys
-      keys.include?(key.to_sym) ? default_properties[key.to_sym] : nil
+      default_properties[key.to_sym]
     end
 
     def default_properties
-      @default_properties ||= {}
+      @default_properties ||= Hash.new(nil)
       # keys = self.class.default_properties.keys
       # _persisted_obj.props.reject{|key| !keys.include?(key)}
     end
@@ -150,7 +152,18 @@ module Neo4j::Shared
         constraint_or_index(name, options)
       end
 
+      def undef_property(name)
+        raise ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
+
+        attribute_methods(name).each do |method|
+          undef_method(method)
+        end
+
+        undef_constraint_or_index(name)
+      end
+
       def default_property(name, &block)
+        reset_default_properties(name) if default_properties.respond_to?(:size)
         default_properties[name] = block
       end
 
@@ -159,9 +172,16 @@ module Neo4j::Shared
         @default_property ||= {}
       end
 
+      def reset_default_properties(name_to_keep)
+        default_properties.each_key do |property|
+          undef_method(property) unless property == name_to_keep
+        end
+        @default_property = {}
+      end
+
       def default_property_values(instance)
-        default_properties.inject({}) do |result,pair|
-          result.tap{|obj| obj[pair[0]] = pair[1].call(instance)}
+        default_properties.each_with_object({}) do |(key, block),result|
+          result[key] = block.call(instance)
         end
       end
 

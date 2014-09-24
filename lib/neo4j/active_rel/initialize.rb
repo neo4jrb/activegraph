@@ -10,12 +10,12 @@ module Neo4j::ActiveRel
     # @param [Neo4j::Relationship] start_node the starting node in the relationship.
     # @param [Neo4j::Relationship] end_node the ending node in the relationship
     # @param [String] type the relationship type
-    def init_on_load(persisted_rel, start_node_id, end_node_id, type)
+    def init_on_load(persisted_rel, from_node_id, to_node_id, type)
       @_persisted_obj = persisted_rel
       @rel_type = type
       changed_attributes && changed_attributes.clear
       @attributes = attributes.merge(persisted_rel.props.stringify_keys)
-      load_nodes(start_node_id, end_node_id)
+      load_nodes(from_node_id, to_node_id)
       self.default_properties = persisted_rel.props
       @attributes = convert_properties_to :ruby, @attributes
     end

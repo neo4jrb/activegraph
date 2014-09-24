@@ -233,7 +233,7 @@ describe Neo4j::ActiveNode do
       before do
         Neo4j::Config[:cache_class_names] = true
         @cached = CacheTest.create
-        @unwrapped = Neo4j::Node._load(@cached.id)
+        @unwrapped = Neo4j::Node._load(@cached.neo_id)
       end
 
       it 'responds true to :cached_class?' do
@@ -253,7 +253,7 @@ describe Neo4j::ActiveNode do
       before do
         Neo4j::Config[:cache_class_names] = false
         @uncached = CacheTest.create
-        @unwrapped = Neo4j::Node._load(@uncached.id)
+        @unwrapped = Neo4j::Node._load(@uncached.neo_id)
       end
 
       before { Neo4j::Config[:cache_class_names] = false }
@@ -393,13 +393,13 @@ describe Neo4j::ActiveNode do
     describe 'multiparameter attributes' do
       it 'converts to Date' do
         person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
-        expect(person.date).to be_a(Date)
-        expect(person.date.to_s).to eq("2014-07-13")
+        expect(person.date).to be_a Date
+        expect(person.date.to_s).to eq "2014-07-13"
       end
 
       it 'converts to DateTime' do
         person = Person.create("datetime(1i)"=>"2014", "datetime(2i)"=>"7", "datetime(3i)"=>"13", "datetime(4i)"=>"17", "datetime(5i)"=>"45")
-        expect(person.datetime).to be_a(DateTime)
+        expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
 
@@ -411,14 +411,22 @@ describe Neo4j::ActiveNode do
 
       it 'sends values straight through when no type is specified' do
         person = Person.create("numbers(1i)" => "5", "numbers(2i)" => "23")
-        expect(person.numbers).to be_a(Array)
+        expect(person.numbers).to be_a Array
         expect(person.numbers).to eq [5, 23]
       end
 
       it "leaves standard attributes alone" do
         person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13", name: 'chris')
         expect(person.name).to eq 'chris'
-        expect(person.date).to be_a(Date)
+        expect(person.date).to be_a Date
+      end
+
+      it 'converts on update in addition to create' do
+        person = Person.create
+        person.update_attributes("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        person.save
+        expect(person.date).to be_a Date
+        expect(person.date.to_s).to eq "2014-07-13"
       end
     end
   end
@@ -495,40 +503,108 @@ describe Neo4j::ActiveNode do
       include Neo4j::ActiveRel
       from_class FromClass
       to_class ToClass
+      property :score
       type 'rel_class_type'
     end
 
+    let(:from_node) { FromClass.create }
+    let(:to_node) { ToClass.create }
+
     context 'with rel created from node' do
+      let(:f1) { FromClass.create }
+      let(:t1) { ToClass.create }
+      before { f1.others << t1 }
+      after { f1.destroy and t1.destroy }
+
       it 'returns the activerel class' do
-        f1 = FromClass.create
-        t1 = ToClass.create
-        f1.others << t1
         expect(f1.rels.first).to be_a(MyRelClass)
       end
     end
 
     context 'with rel created from activerel' do
-      let(:from_node) { FromClass.create }
-      let(:to_node) { ToClass.create }
-
+      let(:rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
+      after { rel.destroy }
       it 'creates the rel' do
-        rel = MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(rel.from_node).to eq from_node
         expect(rel.to_node).to eq to_node
         expect(rel.persisted?).to be_truthy
       end
     end
+
+    describe 'ActiveRel queries' do
+      before do
+        Neo4j::Config[:cache_class_names] = true
+        @rel1 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 99)
+        @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
+      end
+
+      after { [@rel1, @rel2].each{ |r| r.destroy } }
+
+      describe 'where' do
+        it 'returns the matching objects' do
+          expect(MyRelClass.where(score: 99)).to eq [@rel1]
+        end
+
+        it 'has the appropriate from and to nodes' do
+          rel = MyRelClass.where(score: 99).first
+          expect(rel.from_node).to eq from_node
+          expect(rel.to_node).to eq to_node
+        end
+
+        context 'with a string' do
+          it 'returns the matching rels' do
+            expect(MyRelClass.where('r1.score > 48')).to eq [@rel1, @rel2]
+          end
+        end
+      end
+
+      describe 'all' do
+        it 'returns all rels' do
+          expect(MyRelClass.all).to eq [@rel1, @rel2]
+        end
+      end
+
+      describe 'find' do
+        it 'returns the rel' do
+          expect(MyRelClass.find(@rel1.neo_id)).to eq @rel1
+        end
+      end
+
+      describe 'first, last' do
+        it 'returns the first-ish result' do
+          expect(MyRelClass.first).to eq @rel1
+        end
+
+        it 'returns the last-ish result' do
+          expect(MyRelClass.last).to eq @rel2
+        end
+
+        context 'with from_class and to_class as strings and constants' do
+          it 'converts the strings to constants and runs the query' do
+            MyRelClass.from_class 'FromClass'
+            MyRelClass.to_class 'ToClass'
+            expect(MyRelClass.where(score: 99)).to eq [@rel1]
+
+            MyRelClass.from_class :FromClass
+            MyRelClass.to_class :ToClass
+            expect(MyRelClass.where(score: 99)).to eq [@rel1]
+          end
+        end
+      end
+    end
   end
 
   describe 'include?, exists?, count' do
-    #goofy names to differentiate from same classes used elsewhere
+    # goofy names to differentiate from same classes used elsewhere
     before(:all) do
       class IncludeLesson; end
       class IncludeTeacher; end
       class IncludeEmptyClass; end
       class IncludeStudent
         include Neo4j::ActiveNode
+        property :name
         has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+        has_many :out, :things, model_class: false, type: 'lessons'
       end
 
       class IncludeLesson
@@ -548,7 +624,7 @@ describe Neo4j::ActiveNode do
         has_many :out, :lessons, model_class: IncludeLesson
       end
     end
-    let!(:jimmy)    { IncludeStudent.create }
+    let!(:jimmy)    { IncludeStudent.create(name: 'Jimmy') }
     let!(:math)     { IncludeLesson.create(name: 'math') }
     let!(:science)  { IncludeLesson.create(name: 'science') }
     let!(:mr_jones) { IncludeTeacher.create }
@@ -582,72 +658,112 @@ describe Neo4j::ActiveNode do
         expect(jimmy.lessons.include?(science)).to be_truthy
       end
 
+      it 'returns correctly when model_class is false' do
+        woodworking = IncludeLesson.create(name: 'woodworking')
+        expect(jimmy.things.include?(woodworking)).to be_falsey
+        jimmy.lessons << woodworking
+        expect(jimmy.things.include?(woodworking)).to be_truthy
+        woodworking.destroy
+      end
+
+      it 'allows you to check for an identifier in the middle of a chain' do
+        jimmy.lessons << science
+        science.teachers << mr_adams
+        expect(IncludeLesson.as(:l).students.where(name: 'Jimmy').include?(science, :l)).to be_truthy
+      end
+
       it 'raises an error if something other than a node is given' do
-        expect{IncludeStudent.lessons.include?(:foo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        expect { IncludeStudent.lessons.include?(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
       end
     end
 
     describe 'exists?' do
-      it 'can run on a class' do
-        expect(IncludeEmptyClass.empty?).to be_truthy
-        expect(IncludeLesson.empty?).to be_falsey
-      end
+      context 'class methods' do
+        it 'can run by a class' do
+          expect(IncludeEmptyClass.empty?).to be_truthy
+          expect(IncludeLesson.empty?).to be_falsey
+        end
+
+        it 'can be called with a property and value' do
+          expect(IncludeLesson.exists?(name: 'math')).to be_truthy
+          expect(IncludeLesson.exists?(name: 'boat repair')).to be_falsey
+        end
       
-      it 'can be run on a query' do
-        expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
-        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+        it 'can be called on the class with a neo_id' do
+          expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
+          expect(IncludeLesson.exists?(8675309)).to be_falsey
+        end
+
+        it 'raises an error if something other than a neo id is given' do
+          expect { IncludeLesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        end
       end
 
-      it 'can be run with a neo_id' do
-        expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
-      end
+      context 'QueryProxy methods' do
+        it 'can be called on a query' do
+          expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
+          expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+        end
 
-      it 'can be called by the class with a neo_id' do
-        expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.exists?(8675309)).to be_falsey
-      end
+        it 'can be called with property and value' do
+          expect(jimmy.lessons.exists?(name: 'science')).to be_falsey
+          jimmy.lessons << science
+          expect(jimmy.lessons.exists?(name: 'science')).to be_truthy
+          expect(jimmy.lessons.exists?(name: 'bomb disarming')).to be_falsey
+        end
 
-      it 'raises an error if something other than a neo id is given' do
-        expect{IncludeLesson.exists?(:fooooo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
-      end
+        it 'can be called with a neo_id' do
+          expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
+          expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
+        end
 
-      it 'is called by :blank? and :empty?' do
-        expect(jimmy.lessons.blank?).to be_truthy
-        expect(jimmy.lessons.empty?).to be_truthy
-        jimmy.lessons << science
-        expect(jimmy.lessons.blank?).to be_falsey
-        expect(jimmy.lessons.empty?).to be_falsey
+        it 'is called by :blank? and :empty?' do
+          expect(jimmy.lessons.blank?).to be_truthy
+          expect(jimmy.lessons.empty?).to be_truthy
+          jimmy.lessons << science
+          expect(jimmy.lessons.blank?).to be_falsey
+          expect(jimmy.lessons.empty?).to be_falsey
+        end
       end
     end
 
     describe 'count' do
-      before{ 3.times { jimmy.lessons << science }}
+      before(:all) do
+        @john = IncludeStudent.create(name: 'Paul')
+        @history = IncludeLesson.create(name: 'history')
+        3.times { @john.lessons << @history }
+      end
+
       it 'tells you the number of matching objects' do
-        expect(jimmy.lessons.count).to eq(3)
+        expect(@john.lessons.count).to eq(3)
       end
 
       it 'can tell you the number of distinct matching objects' do
-        expect(jimmy.lessons.count(:distinct)).to eq 1
+        expect(@john.lessons.count(:distinct)).to eq 1
       end
 
       it 'raises an exception if a bad parameter is passed' do
-        expect{jimmy.lessons.count(:foo)}.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
       end
 
-      it 'is used by length and size' do
-        expect(jimmy.lessons.size).to eq(3)
-        expect(jimmy.lessons.length).to eq(3)
+      it 'works on an object earlier in the chain' do
+        expect(IncludeStudent.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
+      end
+
+      it 'is aliased by length and size' do
+        expect(@john.lessons.size).to eq(3)
+        expect(@john.lessons.length).to eq(3)
       end
     end
   end
 
   describe "Neo4j::Paginated.create_from" do
-    before {
+    before do
       Person.destroy_all
       i = 1.upto(16).to_a
-      i.each{|i| Person.create(age: i) }
-    }
+      i.each{ |count| Person.create(age: count) }
+    end
+
     after(:all) { Person.destroy_all }
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
@@ -658,6 +774,69 @@ describe Neo4j::ActiveNode do
 
     it 'returns the expected number of objects' do
       expect(p.count).to eq 5
+    end
+  end
+
+  describe 'reflections' do
+    module ReflectionsSpecs
+
+      class RelClass; end
+
+      class MyClass
+        include Neo4j::ActiveNode
+        has_many :in,  :in_things, model_class: self, type: 'things'
+        has_many :out, :out_things, model_class: self, type: 'things'
+
+        has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
+        has_many :out, :things_with_rel_class, model_class: self, rel_class: RelClass
+        has_one  :out, :one_thing, model_class: self, type: 'one_thing'
+      end
+
+      class RelClass
+        include Neo4j::ActiveRel
+        from_class :any
+        to_class :any
+        type 'things'
+      end
+    end
+
+    let(:clazz) { ReflectionsSpecs::MyClass }
+    let(:rel_clazz) { ReflectionsSpecs::RelClass }
+
+    it 'responds to :reflections' do
+      expect{clazz.reflections}.not_to raise_error
+    end
+
+    it 'responds with a hash' do
+      expect(clazz.reflections).to be_a(Hash)
+    end
+
+    it 'contains a key for each association' do
+      expect(clazz.reflections).to have_key(:in_things)
+      expect(clazz.reflections).to have_key(:out_things)
+    end
+
+    it 'returns information about a given association' do
+      reflection = clazz.reflect_on_association(:in_things)
+      expect(reflection).to be_a(Neo4j::ActiveNode::Reflection::AssociationReflection)
+      expect(reflection.klass).to eq clazz
+      expect(reflection.class_name).to eq clazz.name
+      expect(reflection.type).to eq :things
+      expect(reflection.collection?).to be_truthy
+      expect(reflection.validate?).to be_truthy
+
+      reflection = clazz.reflect_on_association(:one_thing)
+      expect(reflection.collection?).to be_falsey
+    end
+
+    it 'returns a reflection for each association' do
+      expect(clazz.reflect_on_all_associations.count).to eq 5
+    end
+
+    it 'recognizes rel classes' do
+      reflection = clazz.reflect_on_association(:things_with_rel_class)
+      expect(reflection.rel_klass).to eq rel_clazz
+      expect(reflection.rel_class_name).to eq rel_clazz.name
     end
   end
 end

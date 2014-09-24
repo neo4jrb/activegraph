@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Neo4j::ActiveNode::Validations do
 
   let(:node) { double("a persisted node") }
+  before(:each) { clazz.any_instance.stub(:_persisted_obj).and_return(nil) }
 
   let(:clazz) do
     Class.new do
@@ -49,7 +50,7 @@ describe Neo4j::ActiveNode::Validations do
         o = clazz.new
         o.name = 'sune'
         o.stub(:_persisted_obj).and_return(node)
-        node.should_receive(:exist?).and_return(true)
+        node.should_receive(:exist?).at_least(1).times.and_return(true)
         node.should_receive(:update_props).and_return(name: 'sune')
         o.save.should be true
       end

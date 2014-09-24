@@ -73,7 +73,7 @@ module Neo4j
 
       def extract_id!(conditions)
         if id = conditions.delete(:id)
-          conditions[:neo_id] = id.to_i
+          conditions[klass.id_property_name.to_sym] = id
         end
       end
 

@@ -30,6 +30,7 @@ module Neo4j
     include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::SerializedProperties
     include Neo4j::ActiveNode::Property
+    include Neo4j::ActiveNode::Reflection
     include Neo4j::ActiveNode::Persistence
     include Neo4j::ActiveNode::Validations
     include Neo4j::ActiveNode::Callbacks
@@ -45,7 +46,7 @@ module Neo4j
 
     included do
       def self.inherited(other)
-        inherit_id_property(other) if self.id_property_info
+        inherit_id_property(other) if self.has_id_property?
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
         attributes.each_pair do |k,v|
           other.attributes[k] = v
@@ -66,6 +67,8 @@ module Neo4j
       end
 
       Neo4j::Session.on_session_available do |_|
+        id_property :uuid, auto: :uuid unless self.has_id_property?
+
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]

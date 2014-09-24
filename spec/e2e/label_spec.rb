@@ -124,12 +124,12 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'creates an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
+      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
     end
 
     it 'does not create index on other classes' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name]])
-      expect(other_class.mapped_label.indexes).to eq(:property_keys => [])
+      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+      expect(other_class.mapped_label.indexes).to eq(:property_keys => [[:uuid]])
     end
 
     describe 'when inherited' do
@@ -141,8 +141,8 @@ describe "Neo4j::ActiveNode" do
         class Foo2 < Foo1
 
         end
-        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name]])
-        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name]])
+        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
       end
 
     end
@@ -196,4 +196,58 @@ describe "Neo4j::ActiveNode" do
 
   end
 
+  describe 'setting association values via initialize' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+        property :name
+        has_one :out, :foo
+      end
+    end
+
+    it 'indicates whether a property is indexed' do
+      stub_const('::Foo', Class.new { include Neo4j::ActiveNode })
+
+      o = clazz.new(name: 'Jim', foo: 2)
+
+      o.name.should == 'Jim'
+      o.foo.should be_nil
+
+      o.save!
+
+      o.name.should == 'Jim'
+      o.foo.should be_nil
+    end
+  end
+
+  describe '.find' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+      end
+    end
+
+    let(:object1) { clazz.create }
+    let(:object2) { clazz.create }
+
+    describe 'finding individual records' do
+      it 'by id' do
+        clazz.find(object1.id).should == object1
+      end
+
+      it 'by object' do
+        clazz.find(object1).should == object1
+      end
+    end
+
+    describe 'finding multiple records' do
+      it 'by id' do
+        clazz.find([object1.id, object2.id]).to_set.should == [object1, object2].to_set
+      end
+
+      it 'by object' do
+        clazz.find([object1, object2]).to_set.should == [object1, object2].to_set
+      end
+    end
+  end
 end
