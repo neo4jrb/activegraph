@@ -31,19 +31,12 @@ module Neo4j
           # TODO: Added as find(:name => nil) throws error
           value = "" if value == nil
 
-          if options[:case_sensitive]
-            conditions[attribute] = value
-          else
-            conditions[attribute] = /^#{Regexp.escape(value.to_s)}$/i
-          end
+          conditions[attribute] = options[:case_sensitive] ? value : /^#{Regexp.escape(value.to_s)}$/i
 
           # prevent that same object is returned
           # TODO: add negative condtion to not return current record
           found = record.class.where(conditions).to_a.select{|f| f.neo_id != record.neo_id}
-
-          if found.count > 0
-            record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value))
-          end
+          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value)) if found.count > 0
         end
 
         def message(instance)

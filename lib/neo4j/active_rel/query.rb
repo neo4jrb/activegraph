@@ -54,7 +54,7 @@ module Neo4j::ActiveRel
         when :inbound
           identifier = '(n2'
           identifier + (_to_class == :any ? ')' : cypher_label(:inbound))
-        end 
+        end
       end
 
       def cypher_label(dir = :outbound)
@@ -63,10 +63,10 @@ module Neo4j::ActiveRel
       end
 
       def as_constant(given_class)
-        case
-        when given_class.is_a?(String)
+        case given_class
+        when String
           given_class.constantize
-        when given_class.is_a?(Symbol)
+        when Symbol
           given_class.to_s.constantize
         else
           given_class
@@ -74,11 +74,10 @@ module Neo4j::ActiveRel
       end
 
       def where_string(args)
-        if args.is_a?(Hash)
-          args.map do |k, v|
-            v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'"
-          end.join(', ')
-        else 
+        case args
+        when Hash
+          args.map { |k, v| v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'" }.join(', ')
+        else
           args
         end
       end
