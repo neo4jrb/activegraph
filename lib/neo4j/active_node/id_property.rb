@@ -42,12 +42,8 @@ module Neo4j::ActiveNode
 
       def validate_conf(conf)
         return if conf.empty?
-
         raise "Expected a Hash, got #{conf.class} (#{conf.to_s}) for id_property" unless conf.is_a?(Hash)
-
-        unless conf.include?(:auto) || conf.include?(:on)
-          raise "Illegal value #{conf.inspect} for id_property, expected :on or :auto"
-        end
+        raise "Illegal value #{conf.inspect} for id_property, expected :on or :auto" unless conf.include?(:auto) || conf.include?(:on)
       end
 
       def define_property_method(clazz, name)

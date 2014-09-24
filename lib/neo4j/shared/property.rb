@@ -108,11 +108,7 @@ module Neo4j::Shared
       return nil if values_with_empty_parameters.all? { |v| v.nil? }
       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
       klass = field[:type]
-      if klass
-        klass.new(*values)
-      else
-        values
-      end
+      klass ? klass.new(*values) : values
     end
 
     module ClassMethods

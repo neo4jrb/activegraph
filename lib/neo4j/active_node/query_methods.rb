@@ -44,10 +44,10 @@ module Neo4j
       private
 
       def exists_query_start(node_condition)
-        case
-        when node_condition.class == Fixnum
+        case node_condition
+        when Fixnum
           self.query_as(:n).where("ID(n) = #{node_condition}")
-        when node_condition.class == Hash
+        when Hash
           self.where(node_condition.keys.first => node_condition.values.first)
         else
           self.query_as(:n)
