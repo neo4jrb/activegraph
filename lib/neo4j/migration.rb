@@ -1,5 +1,18 @@
 module Neo4j
   class Migration
+
+    def migrate
+      raise 'not implemented'
+    end
+
+    def output(string = '')
+      puts string unless !!ENV['silenced']
+    end
+
+    def print_output(string)
+      print string unless !!ENV['silenced']
+    end
+
     class AddIdProperty < Neo4j::Migration
       attr_reader :models_filename
 
@@ -9,12 +22,12 @@ module Neo4j
 
       def migrate
         models = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(models_filename))[:models]
-        puts "This task will add an ID Property every node in the given file."
-        puts "It may take a significant amount of time, please be patient."
+        output "This task will add an ID Property every node in the given file."
+        output "It may take a significant amount of time, please be patient."
         models.each do |model|
-          puts
-          puts
-          puts "Adding IDs to #{model}"
+          output
+          output
+          output "Adding IDs to #{model}"
           add_ids_to model.constantize
         end
       end
@@ -44,10 +57,10 @@ module Neo4j
           nodes_left = Neo4j::Session.query.match(n: label).where("NOT has(n.#{property})").return("COUNT(n) AS ids").first.ids
 
           time_per_node = last_time_taken / max_per_batch if last_time_taken
-          print "Running first batch...\r"
+          print_output "Running first batch...\r"
           if time_per_node
             eta_seconds = (nodes_left * time_per_node).round
-            print "#{nodes_left} nodes left.  Last batch: #{(time_per_node * 1000.0).round(1)}ms / node (ETA: #{eta_seconds / 60} minutes)\r"
+            print_output "#{nodes_left} nodes left.  Last batch: #{(time_per_node * 1000.0).round(1)}ms / node (ETA: #{eta_seconds / 60} minutes)\r"
           end
 
           return if nodes_left == 0
@@ -58,7 +71,7 @@ module Neo4j
             last_time_taken = id_batch_set(label, property, new_ids, to_set)
           rescue Neo4j::Server::CypherResponse::ResponseError, Faraday::TimeoutError
             new_max_per_batch = (max_per_batch * 0.8).round
-            puts "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
+            output "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
             max_per_batch = new_max_per_batch
           end
         end
@@ -92,7 +105,6 @@ module Neo4j
     end
 
     class AddClassnames < Neo4j::Migration
-      attr_reader :classnames_filename, :classnames_filepath
 
       def initialize
         @classnames_filename = 'add_classnames.yml'
@@ -100,33 +112,34 @@ module Neo4j
       end
 
       def migrate
-        puts "Adding classnames. This make take some time."
+        output "Adding classnames. This make take some time."
         execute(true)
       end
 
       def test
-        puts "TESTING! No queries will be executed."
+        output "TESTING! No queries will be executed."
         execute(false)
       end
 
       def setup
-        puts "Creating file #{classnames_filepath}. Please use this as the migration guide."
+        output "Creating file #{classnames_filepath}. Please use this as the migration guide."
         FileUtils.mkdir_p("db/neo4j-migrate")
-        unless File.file?(@classnames_filepath)
+        unless File.file?(classnames_filepath)
           source = File.join(File.dirname(__FILE__), "..", "..", "config", "neo4j", classnames_filename)
           FileUtils.copy_file(source, classnames_filepath)
         end
       end
 
       private
+      attr_reader :classnames_filename, :classnames_filepath, :model_map
 
       def execute(migrate = false)
         file_init
         map = []
-        map.push :nodes         if @model_map[:nodes]
-        map.push :relationships if @model_map[:relationships]
+        map.push :nodes         if model_map[:nodes]
+        map.push :relationships if model_map[:relationships]
         map.each do |type|
-          @model_map[type].each do |action, labels|
+          model_map[type].each do |action, labels|
             do_classnames(action, labels, type, migrate)
           end
         end
@@ -135,7 +148,7 @@ module Neo4j
       def do_classnames(action, labels, type, migrate = false)
         method = type == :nodes ? :node_cypher : :rel_cypher
         labels.each do |label|
-          puts cypher = self.send(method, label, action)
+          output cypher = self.send(method, label, action)
           execute_cypher(cypher) if migrate
         end
       end
@@ -146,7 +159,7 @@ module Neo4j
 
       def node_cypher(label, action)
         where, phrase_start = action_variables(action, 'n')
-        puts "#{phrase_start} _classname '#{label}' on nodes with matching label:"
+        output "#{phrase_start} _classname '#{label}' on nodes with matching label:"
         "MATCH (n:`#{label}`) #{where} SET n._classname = '#{label}' RETURN COUNT(n) as modified"
       end
 
@@ -161,13 +174,13 @@ module Neo4j
         to_cypher = to ? "(to:`#{to}`)" : "(to)"
         type = "[r:`#{value[:type]}`]"
         where, phrase_start = action_variables(action, 'r')
-        puts "#{phrase_start} _classname '#{label}' where type is '#{value[:type]}' using cypher:"
+        output "#{phrase_start} _classname '#{label}' where type is '#{value[:type]}' using cypher:"
         "MATCH #{from_cypher}-#{type}->#{to_cypher} #{where} SET r._classname = '#{label}' return COUNT(r) as modified"
       end
 
       def execute_cypher(query_string)
-        puts "Modified #{Neo4j::Session.query(query_string).first.modified} records"
-        puts ""
+        output "Modified #{Neo4j::Session.query(query_string).first.modified} records"
+        output ""
       end
 
       def action_variables(action, identifier)
