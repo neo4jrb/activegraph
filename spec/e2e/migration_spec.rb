@@ -136,8 +136,6 @@ describe 'migration tasks' do
     let(:ronnie)   { MigrationSpecs::User.create(name: 'Ronnie') }
     let(:children) { MigrationSpecs::Song.create(name: 'Children of the Sea') }
     let(:neon)     { MigrationSpecs::Song.create(name: 'Neon Knights') }
-    let!(:geezer)   {  }
-    let!(:country)  {  }
 
     before do
       Rails.stub_chain(:root, :join).and_return('/hd/gems/rails/add_classnames.yml')
@@ -158,7 +156,7 @@ describe 'migration tasks' do
 
     describe 'nodes' do
       it 'adds given classname to nodes' do
-        Neo4j::Session.query('CREATE (n:`MigrationSpecs::User`) set n.name = "Geezer"')
+        Neo4j::Session.query('CREATE (n:`MigrationSpecs::User`) set n.name = "Geezer" return n')
         geezer_query = MigrationSpecs::classname_count('MigrationSpecs::User')
         expect(geezer_query.call).to eq 0
         clazz.new.migrate
@@ -166,7 +164,7 @@ describe 'migration tasks' do
       end
 
       it 'replaces given classnames' do
-        Neo4j::Session.query('CREATE (n:`MigrationSpecs::Song`) set n.name = "Country Girl", n._classname = "Wrong"')
+        Neo4j::Session.query('CREATE (n:`MigrationSpecs::Song`) set n.name = "Country Girl", n._classname = "Wrong" return n')
         country_query = MigrationSpecs::classname_count('MigrationSpecs::Song')
         expect(country_query.call).to eq 0
         clazz.new.migrate
