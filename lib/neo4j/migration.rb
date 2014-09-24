@@ -82,9 +82,14 @@ module Neo4j
         900
       end
 
+      def make_new_uniq_id
+        @id_generator ||= IdGenerator::Builder.new(strategy=:secure_random_uuid)
+        @id_generator.call
+      end
+
       def new_id_for(model)
         if model.id_property_info[:type][:auto]
-          SecureRandom::uuid
+          make_new_uniq_id
         else
           model.new.send(model.id_property_info[:type][:on])
         end
@@ -141,7 +146,7 @@ module Neo4j
       end
 
       def file_init
-        @model_map = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(classnames_filepath)) 
+        @model_map = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(classnames_filepath))
       end
 
       def node_cypher(label, action)
