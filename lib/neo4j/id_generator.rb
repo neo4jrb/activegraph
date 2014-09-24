@@ -19,6 +19,14 @@ module Neo4j
 
       end
 
+      class SecureRandomHex < Strategy
+
+        def self.make_uniq
+          SecureRandom.hex
+        end
+
+      end
+
     end
 
     UnknowIdGeneratorStrategy = Class.new(StandardError)
@@ -27,6 +35,7 @@ module Neo4j
 
       AVAILABLE_STRATEGIES = {
         :secure_random_uuid => IdGenerator::Strategies::SecureRandomUUID
+        :secure_random_hex => IdGenerator::Strategies::SecureRandomHex
       }
 
       def initialize(strategy=:secure_random_uuid)
