@@ -91,5 +91,11 @@ RSpec.configure do |c|
     end
   end
 
+  c.exclusion_filter = {
+      :api => lambda do |ed|
+        RUBY_PLATFORM == 'java' && ed == :server
+      end
+  }
+
 end
 

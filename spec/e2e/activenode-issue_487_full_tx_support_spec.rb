@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'wrapped nodes in transactions' do
+describe 'wrapped nodes in transactions', api: :server do
   module TransactionNode
     class Student
       include Neo4j::ActiveNode
