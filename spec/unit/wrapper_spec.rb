@@ -96,7 +96,7 @@ describe Neo4j::Node::Wrapper do
       class MyWrapper
         include Neo4j::Node::Wrapper
         def props
-          42
+          { value: 42 }
         end
       end
       class B
@@ -118,7 +118,7 @@ describe Neo4j::Node::Wrapper do
       allow(Neo4j::ActiveNode::Labels).to receive(:_wrapped_labels).and_return(label_mapping)
 
       wrapper.should_receive(:_class_wrappers).and_return(label_mapping.keys)
-      D.any_instance.should_receive(:init_on_load).with(wrapper, 42)
+      D.any_instance.should_receive(:init_on_load).with(wrapper, { value: 42 })
       wrapper.wrapper
     end
   end

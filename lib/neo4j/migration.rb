@@ -79,7 +79,8 @@ module Neo4j
 
       def id_batch_set(label, property, new_ids, to_set)
         Benchmark.realtime do
-          Neo4j::Transaction.run do
+          begin
+            tx = Neo4j::Transaction.new
             Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{property})
               with COLLECT(n) as nodes, #{new_ids} as ids
               FOREACH(i in range(0,#{to_set - 1})|
@@ -87,6 +88,8 @@ module Neo4j
                   SET node.#{property} = ids[i]))
               RETURN distinct(true)
               LIMIT #{to_set}")
+          ensure
+            tx.close
           end
         end
       end
