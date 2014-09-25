@@ -57,6 +57,7 @@ require 'neo4j/active_node/query'
 require 'neo4j/active_node/serialized_properties'
 require 'neo4j/active_node/scope'
 require 'neo4j/active_node'
+require 'neo4j/server/cypher_transaction_node'
 
 require 'neo4j/active_node/orm_adapter'
 require 'rails/generators'
