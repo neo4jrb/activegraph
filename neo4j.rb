@@ -1,8 +1,6 @@
 # Usage: rails new myapp -m neo4j.rb -O
 
-#NEO4J_VERSION = "3.0.0.alpha.2"
-
-gem "neo4j", '~> 3.0.0.rc.2'
+gem "neo4j", '~> 3.0.0'
 
 
 generator = %q[
