@@ -86,7 +86,7 @@ module Neo4j
           self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
         end
 
-        # Like find_by, except that if no record is found, raises a RecordNotFound error. 
+        # Like find_by, except that if no record is found, raises a RecordNotFound error.
         def find_by!(*args)
           a = eval(args.join)
           find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"

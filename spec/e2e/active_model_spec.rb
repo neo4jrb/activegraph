@@ -604,6 +604,7 @@ describe Neo4j::ActiveNode do
         include Neo4j::ActiveNode
         property :name
         has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+        has_many :out, :things, model_class: false, type: 'lessons'
       end
 
       class IncludeLesson
@@ -655,6 +656,14 @@ describe Neo4j::ActiveNode do
         jimmy.lessons << science
         jimmy.lessons << science
         expect(jimmy.lessons.include?(science)).to be_truthy
+      end
+
+      it 'returns correctly when model_class is false' do
+        woodworking = IncludeLesson.create(name: 'woodworking')
+        expect(jimmy.things.include?(woodworking)).to be_falsey
+        jimmy.lessons << woodworking
+        expect(jimmy.things.include?(woodworking)).to be_truthy
+        woodworking.destroy
       end
 
       it 'allows you to check for an identifier in the middle of a chain' do
