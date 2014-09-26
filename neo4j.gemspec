@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.summary = "A graph database for Ruby"
   s.license = 'MIT'
   s.description = <<-EOF
-A Neo4j OGM for use in Ruby on Rails and Rack frameworks, intended as a complete replacement for ActiveRecord.
+A Neo4j OGM (Object Graph Mapper) for use in Ruby on Rails and Rack frameworks, intended as a complete replacement for ActiveRecord.
   EOF
 
   s.require_path = 'lib'
