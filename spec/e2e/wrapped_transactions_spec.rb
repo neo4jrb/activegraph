@@ -50,10 +50,6 @@ describe 'wrapped nodes in transactions', api: :server do
     expect(@john.id).not_to be_nil
   end
 
-  it 'returns the activenode object as the delegator' do
-    expect(@john._persisted_obj.delegator).to eq @john
-  end
-
   it 'returns its :labels' do
     expect(@john.neo_id).not_to be_nil
     expect(@john.labels).to eq [@Student.name.to_sym]
