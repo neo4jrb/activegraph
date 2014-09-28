@@ -157,7 +157,8 @@ IceCream = UniqueClass.create do
 end
 
 describe Neo4j::ActiveNode do
-
+  # before(:each) { @tx = Neo4j::Transaction.new }
+  # after(:each) { @tx.close }
 
   describe 'validations' do
 
@@ -344,7 +345,7 @@ describe Neo4j::ActiveNode do
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
-      person.exist?.should be false
+      person.persisted?.should be false
     end
 
     it 'can be loaded by id' do
@@ -380,7 +381,6 @@ describe Neo4j::ActiveNode do
     it "they can be queries" do
       Person.create(name: 'person3', age: 21)
       person2 = Person.create(name: 'person4', age: 21)
-
       Person.where(name: 'person4').to_a.should == [person2]
     end
 
@@ -517,7 +517,7 @@ describe Neo4j::ActiveNode do
       after { f1.destroy and t1.destroy }
 
       it 'returns the activerel class' do
-        expect(f1.rels.first).to be_a(MyRelClass)
+        expect(f1.others_rels.first).to be_a(MyRelClass)
       end
     end
 
@@ -553,14 +553,16 @@ describe Neo4j::ActiveNode do
 
         context 'with a string' do
           it 'returns the matching rels' do
-            expect(MyRelClass.where('r1.score > 48')).to eq [@rel1, @rel2]
+            query = MyRelClass.where('r1.score > 48')
+            expect(query).to include(@rel1, @rel2)
           end
         end
       end
 
       describe 'all' do
         it 'returns all rels' do
-          expect(MyRelClass.all).to eq [@rel1, @rel2]
+          query = MyRelClass.all
+          expect(query).to include(@rel1, @rel2)
         end
       end
 

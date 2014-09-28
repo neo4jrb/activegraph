@@ -14,7 +14,7 @@ module Neo4j::ActiveRel
 
       # Loads the relationship using its neo_id.
       def find_by_id(key, session = Neo4j::Session.current!)
-        Neo4j::Relationship.load(key.to_i, session)
+        session.query("MATCH ()-[r]-() WHERE ID(r) = #{key.to_i} RETURN r LIMIT 1").first.r
       end
 
       # Performs a very basic match on the relationship.
