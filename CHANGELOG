@@ -1,3 +1,6 @@
+== 3.0.1
+* Removed reference to neo4j-core from Gemfile and set neo4j.gemspec to use neo4j-core ~>3.0.0
+
 == 3.0.0
 No change from rc 4
 
