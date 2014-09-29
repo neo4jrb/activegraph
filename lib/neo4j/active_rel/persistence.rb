@@ -7,6 +7,8 @@ module Neo4j::ActiveRel
 
     class ModelClassInvalidError < RuntimeError; end
 
+    def clear_association_cache; end
+
     def save(*)
       update_magic_properties
       create_or_update

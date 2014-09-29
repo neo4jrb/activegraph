@@ -523,12 +523,33 @@ describe Neo4j::ActiveNode do
 
     context 'with rel created from activerel' do
       let(:rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
-      after { rel.destroy }
+
+      after(:each) { rel.destroy }
       it 'creates the rel' do
         expect(rel.from_node).to eq from_node
         expect(rel.to_node).to eq to_node
         expect(rel.persisted?).to be_truthy
       end
+
+      it 'update the rel' do
+        rel.score = 9000
+        rel.save and rel.reload
+        expect(rel.score).to eq 9000
+      end
+
+      # it 'does not update every rel' do
+      #   first_rel_id = rel.id
+      #   second_rel   = MyRelClass.create(from_node: from_node, to_node: to_node)
+      #   scores = [9000, 400, 5000]
+      #   editing_rel = from_node.others.each_rel.first
+      #   editing_rel.score = scores[1] and editing_rel.save
+
+      #   rel = Neo4j::Relationship.load(first_rel_id)
+      #   second_rel = Neo4j::Relationship.load(second_rel.id)
+      #   expect(rel.score).to eq 400
+      #   expect(second_rel.score).to eq nil
+      #   second_rel.destroy
+      # end
     end
 
     describe 'ActiveRel queries' do
