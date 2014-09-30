@@ -226,6 +226,7 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'cached classnames' do
+    after(:all) { Neo4j::Config[:cache_class_names] = true }
     CacheTest = UniqueClass.create do
       include Neo4j::ActiveNode
     end
