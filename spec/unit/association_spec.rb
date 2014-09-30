@@ -40,11 +40,12 @@ describe Neo4j::ActiveNode::HasN::Association do
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
-    context 'origin and rel_class specified' do
-      let(:options) { {origin: :foo, rel_class: :bar} }
-
-      it { expect{ subject }.to raise_error(ArgumentError) }
-    end
+# See issue 494
+#    context 'origin and rel_class specified' do
+#      let(:options) { {origin: :foo, rel_class: :bar} }
+#
+#      it { expect{ subject }.to raise_error(ArgumentError) }
+#    end
 
 
 
