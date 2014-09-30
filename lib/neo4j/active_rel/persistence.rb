@@ -65,17 +65,6 @@ module Neo4j::ActiveRel
       _rel_creation_query(from_node, to_node, props)
     end
 
-    def _rel_creation_query(from_node, to_node, props)
-      from_class = from_node.class
-      to_class = to_node.class
-      Neo4j::Session.query.match(n1: from_class.mapped_label_name, n2: to_class.mapped_label_name)
-        .where("n1.#{from_class.primary_key} = {from_node_id}")
-        .where("n2.#{to_class.primary_key} = {to_node_id}")
-        .params(from_node_id: from_node.id, to_node_id: to_node.id)
-        .create("(n1)-[r:`#{type}`]->(n2)")
-        .with('r').set(r: props).return(:r).first.r
-    end
-
     def class_as_constant(type)
       given_class = self.class.send(type)
       case given_class
@@ -91,5 +80,19 @@ module Neo4j::ActiveRel
     def allows_any_class?(type)
       self.class.send(type) == :any || self.class.send(type) == false
     end
+
+    private
+
+    def _rel_creation_query(from_node, to_node, props)
+      from_class = from_node.class
+      to_class = to_node.class
+      Neo4j::Session.query.match(n1: from_class.mapped_label_name, n2: to_class.mapped_label_name)
+        .where("n1.#{from_class.primary_key} = {from_node_id}")
+        .where("n2.#{to_class.primary_key} = {to_node_id}")
+        .params(from_node_id: from_node.id, to_node_id: to_node.id)
+        .create("(n1)-[r:`#{type}`]->(n2)")
+        .with('r').set(r: props).return(:r).first.r
+    end
+
   end
 end

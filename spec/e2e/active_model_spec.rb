@@ -551,6 +551,10 @@ describe Neo4j::ActiveNode do
       #   expect(second_rel.score).to eq nil
       #   second_rel.destroy
       # end
+
+      it 'has a valid _persisted_obj' do
+        expect(rel._persisted_obj).not_to be_nil
+      end
     end
 
     describe 'ActiveRel queries' do
