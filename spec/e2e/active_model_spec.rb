@@ -226,6 +226,7 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'cached classnames' do
+    after(:all) { Neo4j::Config[:cache_class_names] = true }
     CacheTest = UniqueClass.create do
       include Neo4j::ActiveNode
     end
@@ -550,6 +551,10 @@ describe Neo4j::ActiveNode do
       #   expect(second_rel.score).to eq nil
       #   second_rel.destroy
       # end
+
+      it 'has a valid _persisted_obj' do
+        expect(rel._persisted_obj).not_to be_nil
+      end
     end
 
     describe 'ActiveRel queries' do

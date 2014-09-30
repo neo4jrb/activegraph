@@ -24,7 +24,7 @@ module Neo4j::ActiveRel
       set_timestamps
       properties = convert_properties_to :db, props
       rel = _create_rel(from_node, to_node, properties)
-      init_on_load(rel, from_node, to_node, @rel_type)
+      init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
       true
     end
 
@@ -62,7 +62,7 @@ module Neo4j::ActiveRel
       props = self.class.default_property_values(self)
       props.merge!(args[0]) if args[0].is_a?(Hash)
       set_classname(props)
-      from_node.create_rel(type, to_node, props)
+      _rel_creation_query(from_node, to_node, props)
     end
 
     def class_as_constant(type)
@@ -80,5 +80,19 @@ module Neo4j::ActiveRel
     def allows_any_class?(type)
       self.class.send(type) == :any || self.class.send(type) == false
     end
+
+    private
+
+    def _rel_creation_query(from_node, to_node, props)
+      from_class = from_node.class
+      to_class = to_node.class
+      Neo4j::Session.query.match(n1: from_class.mapped_label_name, n2: to_class.mapped_label_name)
+        .where("n1.#{from_class.primary_key} = {from_node_id}")
+        .where("n2.#{to_class.primary_key} = {to_node_id}")
+        .params(from_node_id: from_node.id, to_node_id: to_node.id)
+        .create("(n1)-[r:`#{type}`]->(n2)")
+        .with('r').set(r: props).return(:r).first.r
+    end
+
   end
 end
