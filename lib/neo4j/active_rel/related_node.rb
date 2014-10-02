@@ -13,6 +13,10 @@ module Neo4j::ActiveRel
       @node == obj
     end
 
+    def neo_id
+      loaded? ? @node.neo_id : @node
+    end
+
     def loaded
       @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
     end

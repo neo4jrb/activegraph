@@ -557,7 +557,7 @@ describe Neo4j::ActiveNode do
       end
     end
 
-    describe 'ActiveRel queries' do
+    describe 'ActiveRel and its queries' do
       before do
         Neo4j::Config[:cache_class_names] = true
         @rel1 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 99)
@@ -565,6 +565,14 @@ describe Neo4j::ActiveNode do
       end
 
       after { [@rel1, @rel2].each{ |r| r.destroy } }
+
+      describe 'related nodes' do
+        it 'does not load when calling neo_id' do
+          reloaded = MyRelClass.find(@rel1.neo_id)
+          expect(reloaded.from_node.neo_id).to eq from_node.neo_id
+          expect(reloaded.from_node.loaded?).to be_falsey
+        end
+      end
 
       describe 'where' do
         it 'returns the matching objects' do
