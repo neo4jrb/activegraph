@@ -183,10 +183,10 @@ describe 'migration tasks' do
 
       it 'overwrites given classnames on rels' do
         neon.singers << ronnie
+        expect(neon.singers(:o).pluck(:o).first).to eq ronnie
         expect(neon.singers(:o, :r).pluck(:r).first).to be_a(MigrationSpecs::SecondRelClass)
-        expect(neon.new_singers.count).to eq 0
         clazz.new.migrate
-        expect(neon.new_singers.count).to eq 1
+        expect(neon.new_singers(:o).pluck(:o).first).to eq ronnie
         expect(neon.new_singers(:o, :r).pluck(:r).first).to be_a(MigrationSpecs::ThirdRelClass)
       end
     end
