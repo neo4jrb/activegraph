@@ -565,12 +565,15 @@ describe Neo4j::ActiveNode do
       end
 
       after { [@rel1, @rel2].each{ |r| r.destroy } }
-
       describe 'related nodes' do
         it 'does not load when calling neo_id' do
-          reloaded = MyRelClass.find(@rel1.neo_id)
-          expect(reloaded.from_node.neo_id).to eq from_node.neo_id
-          expect(reloaded.from_node.loaded?).to be_falsey
+          unless Neo4j::Session.current.db_type == :embedded_db
+            reloaded = MyRelClass.find(@rel1.neo_id)
+            puts reloaded.from_node.loaded?
+            expect(reloaded.from_node).not_to be_loaded
+            expect(reloaded.from_node.neo_id).to eq from_node.neo_id
+            expect(reloaded.from_node.loaded?).to be_falsey
+          end
         end
       end
 
