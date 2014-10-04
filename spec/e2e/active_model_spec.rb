@@ -566,7 +566,10 @@ describe Neo4j::ActiveNode do
 
       after { [@rel1, @rel2].each{ |r| r.destroy } }
       describe 'related nodes' do
-        it 'does not load when calling neo_id' do
+        # We only run this test in the Server environment. Embedded's loading of
+        # relationships works differently, so we aren't as concerned with whether
+        # it is loading two extra nodes.
+        it 'does not load when calling neo_id from Neo4j Server' do
           unless Neo4j::Session.current.db_type == :embedded_db
             reloaded = MyRelClass.find(@rel1.neo_id)
             puts reloaded.from_node.loaded?
