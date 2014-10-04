@@ -29,13 +29,13 @@ describe Neo4j::ActiveNode::HasN::Association do
     end
 
     context 'origin and type specified' do
-      let(:options) { {type: :bar, origin: :foo} }
+      let(:options) { { type: :bar, origin: :foo } }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
     context 'type and rel_class specified' do
-      let(:options) { {type: :foo, origin: :bar} }
+      let(:options) { { type: :foo, origin: :bar } }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
@@ -84,7 +84,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         it { should == '-[:`#default`]->' }
 
         context 'properties given' do
-          let(:properties) { {foo: 1, bar: 'test'} }
+          let(:properties) { { foo: 1, bar: 'test' } }
 
           it { should == '-[:`#default` {foo: 1, bar: "test"}]->' }
         end
@@ -96,13 +96,13 @@ describe Neo4j::ActiveNode::HasN::Association do
         it { should == '-[fooy]->' }
 
         context 'properties given' do
-          let(:properties) { {foo: 1, bar: 'test'} }
+          let(:properties) { { foo: 1, bar: 'test' } }
 
           it { should == '-[fooy {foo: 1, bar: "test"}]->' }
         end
 
         context 'relationship type given' do
-          let(:options) { {type: :new_type} }
+          let(:options) { { type: :new_type } }
 
           it { should == '-[fooy:`new_type`]->' }
         end
@@ -110,7 +110,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         context 'rel_class given' do
           let(:options) { { rel_class: MyRel } }
 
-          it { should == '-[fooy:`ar_type` {_classname: "MyRel"}]->' }
+          it { should == '-[fooy:`ar_type`]->' }
         end
 
         context 'creation' do
@@ -119,7 +119,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           it { should == '-[fooy:`#default`]->' }
 
           context 'properties given' do
-            let(:properties) { {foo: 1, bar: 'test'} }
+            let(:properties) { { foo: 1, bar: 'test' } }
 
             it { should == '-[fooy:`#default` {foo: 1, bar: "test"}]->' }
           end
@@ -141,7 +141,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
       context "specified model class" do
         context "specified as string" do
-          let(:options) { {model_class: 'Bizzl'} }
+          let(:options) { { model_class: 'Bizzl' } }
 
           it { should == 'Bizzl' }
         end
@@ -151,7 +151,7 @@ describe Neo4j::ActiveNode::HasN::Association do
             stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
           end
 
-          let(:options) { {model_class: 'Fizzl'} }
+          let(:options) { { model_class: 'Fizzl' } }
 
           it { should == 'Fizzl' }
         end

@@ -135,7 +135,7 @@ module Neo4j
         def create(other_nodes, properties)
           raise "Can only create associations on associations" unless @association
           other_nodes = [other_nodes].flatten
-
+          properties = @association.inject_classname(properties)
           other_nodes = other_nodes.map do |other_node|
             case other_node
             when Integer, String

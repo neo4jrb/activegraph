@@ -23,7 +23,6 @@ module Neo4j
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
         def arrow_cypher(var = nil, properties = {}, create = false)
           validate_origin!
-
           relationship_type = relationship_type(create)
           relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
           properties_string = get_properties_string(properties)
@@ -69,6 +68,11 @@ module Neo4j
           @relationship_class
         end
 
+        def inject_classname(properties)
+          properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
+          properties
+        end
+
         private
 
         def get_direction(relationship_cypher, create)
@@ -88,7 +92,6 @@ module Neo4j
         end
 
         def get_properties_string(properties)
-          properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
           p = properties.map do |key, value|
             "#{key}: #{value.inspect}"
           end.join(', ')
