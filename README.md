@@ -13,8 +13,9 @@ Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph da
 
 ## Support
 
+* Open an [issue](https://github.com/neo4jrb/neo4j/issues), post to [Stack Overflow](http://stackoverflow.com/questions/tagged/neo4j+ruby), or contact one of the developers.
 * [Neo4j.rb mailing list](https://groups.google.com/forum/#!forum/neo4jrb)
-* Consulting support ? ask any of the developers
+* Consulting support? Ask any of the developers, info below.
 
 ## Developers
 
