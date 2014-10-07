@@ -36,11 +36,6 @@ module Neo4j
 
       alias_method :blank?, :empty?
 
-      def include?(other)
-        raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-        self.query_as(:n).where(n: {primary_key => other.id}).return("count(n) AS count").first.count > 0
-      end
-
       private
 
       def exists_query_start(node_condition)
