@@ -31,22 +31,17 @@ module Neo4j
       alias_method :length, :count
 
       def empty?
-        !self.exists?
+        !self.all.exists?
       end
 
       alias_method :blank?, :empty?
-
-      def include?(other)
-        raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-        self.query_as(:n).where(n: {primary_key => other.id}).return("count(n) AS count").first.count > 0
-      end
 
       private
 
       def exists_query_start(node_condition)
         case node_condition
         when Fixnum
-          self.query_as(:n).where("ID(n) = #{node_condition}")
+          self.query_as(:n).where("ID(n)" => node_condition)
         when Hash
           self.where(node_condition.keys.first => node_condition.values.first)
         else

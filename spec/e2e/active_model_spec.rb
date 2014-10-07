@@ -689,8 +689,8 @@ describe Neo4j::ActiveNode do
         expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
         expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
         expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
-        expect(IncludeTeacher.include?(mr_jones)).to be_truthy
-        expect(IncludeTeacher.include?(math)).to be_falsey
+        expect(IncludeTeacher.all.include?(mr_jones)).to be_truthy
+        expect(IncludeTeacher.all.include?(math)).to be_falsey
       end
 
       it 'works with multiple relationships to the same object' do
