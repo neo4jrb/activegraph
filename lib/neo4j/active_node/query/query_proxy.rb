@@ -145,7 +145,7 @@ module Neo4j
             end
           end.compact
 
-          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
+          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
             #Neo4j::Transaction.run do
               other_node.save if not other_node.persisted?
