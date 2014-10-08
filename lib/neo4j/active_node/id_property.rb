@@ -115,6 +115,10 @@ module Neo4j::ActiveNode
 
     module ClassMethods
 
+      def find_by_neo_id(id)
+        Neo4j::Node.load(id)
+      end
+
       def find_by_id(id)
         self.where(id_property_name => id).first
       end

@@ -22,7 +22,7 @@ module Neo4j
       end
 
       def queried_labels
-        self.class.query_as(:result).where("result.#{id_property_name} = '#{self.id}'").return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
+        self.class.query_as(:result).where("ID(result)" => self.neo_id).return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
       end
 
       # adds one or more labels
@@ -72,10 +72,8 @@ module Neo4j
 
         # Find all nodes/objects of this class
         def all
-          self.query_as(:n).pluck(:n)
+          self.as(:n)
         end
-
-
 
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find

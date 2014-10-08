@@ -17,18 +17,10 @@ module Neo4j
       # @param var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]
       def query_as(var)
-        self.class.query_as(var).where("ID(#{var}) = #{self.neo_id}")
+        self.class.query_as(var).where("ID(#{var})" => self.neo_id)
       end
 
       module ClassMethods
-        include Enumerable
-
-        #attr_writer :query_proxy
-
-        def each
-          self.query_as(:n).pluck(:n).each {|o| yield o }
-        end
-
         # Returns a Query object with all nodes for the model matched as the specified variable name
         #
         # @example Return the registration number of all cars owned by a person over the age of 30
