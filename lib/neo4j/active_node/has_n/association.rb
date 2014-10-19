@@ -54,7 +54,7 @@ module Neo4j
         def relationship_type(create = false)
           case
           when @relationship_class
-            @relationship_class._type
+            relationship_class_type
           when @relationship_type
             @relationship_type
           when @origin
@@ -66,6 +66,11 @@ module Neo4j
 
         def relationship_class
           @relationship_class
+        end
+
+        def relationship_class_type
+          @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
+          @relationship_class._type
         end
 
         def inject_classname(properties)
