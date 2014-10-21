@@ -13,11 +13,19 @@ module Neo4j
       print string unless !!ENV['silenced']
     end
 
+    def default_path
+      Rails.root if defined? Rails
+    end
+
+    def joined_path(path)
+      File.join(path, 'db', 'neo4j-migrate')
+    end
+
     class AddIdProperty < Neo4j::Migration
       attr_reader :models_filename
 
-      def initialize
-        @models_filename = File.join(Rails.root.join('db', 'neo4j-migrate'), 'add_id_property.yml')
+      def initialize(path = default_path)
+        @models_filename = File.join(joined_path(path), 'add_id_property.yml')
       end
 
       def migrate
@@ -109,9 +117,9 @@ module Neo4j
 
     class AddClassnames < Neo4j::Migration
 
-      def initialize
+      def initialize(path = default_path)
         @classnames_filename = 'add_classnames.yml'
-        @classnames_filepath = File.join(Rails.root.join('db', 'neo4j-migrate'), classnames_filename)
+        @classnames_filepath = File.join(joined_path(path), classnames_filename)
       end
 
       def migrate
