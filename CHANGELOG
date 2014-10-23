@@ -1,3 +1,13 @@
+== 3.0.2
+* "Model#all" now evaluates lazily, models no longer include Enumerable
+* Faster, more efficient uniqueness validations
+* Adjusted many common queries to use params, will improve performance
+* ActiveRel fixes: create uses Core Query instead of Core's `rels` method, `{ classname: #{_classname} }` no longer inserted into every query, find related node IDs without loading the nodes 
+* Allow inheritance when checking model class on a relation (Andrew Jones)
+* Provided migrations will use Rake.original_dir instead of Rails.env to provide better compatibility with frameworks other than Rails
+* rel_class option in ActiveNode models will now accept string of a model name
+* Additional bug fixes
+
 == 3.0.1
 * Removed reference to neo4j-core from Gemfile and set neo4j.gemspec to use neo4j-core ~>3.0.0
 
