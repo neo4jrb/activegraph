@@ -79,7 +79,6 @@ describe 'migration tasks' do
 
     it 'loads an initialization file' do
       expect(Rails).to receive(:root).and_return(path)
-      expect(path).to receive(:join).with('db', 'neo4j-migrate').and_return(full_path)
       expect { clazz.new }.not_to raise_error
     end
 
