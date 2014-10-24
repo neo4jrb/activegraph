@@ -2,7 +2,7 @@
 
 Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph database](http://www.neo4j.org/). It uses the [neo4j-core](https://github.com/neo4jrb/neo4j-core) and [active_attr](https://github.com/cgriego/active_attr) gems.
 
-Winner of a 2014 Graphie for "Best Community Contribution" at Neo4j's Graph Connect conference!
+Winner of a 2014 Graphie for "Best Community Contribution" at Neo4j's [Graph Connect](http://graphconnect.com) conference!
 ![2014 Graphie](http://i.imgur.com/CkOoTTYm.jpg)
 
 ## Modern (3.X) Documentation
