@@ -191,7 +191,7 @@ module Neo4j::Shared
       end
 
       def cached_class?
-        !!Neo4j::Config[:cache_class_names]
+        !!Neo4j::Config[:cache_class_names] && neo4j_session.version < '2.1.5'
       end
 
       private

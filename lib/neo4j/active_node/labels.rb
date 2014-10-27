@@ -38,9 +38,9 @@ module Neo4j
         @_persisted_obj.remove_label(*label)
       end
 
-      def self.included(klass)
-        add_wrapped_class(klass)
-      end
+#      def self.included(klass)
+#        add_wrapped_class(klass)
+#      end
 
       def self.add_wrapped_class(klass)
         _wrapped_classes << klass

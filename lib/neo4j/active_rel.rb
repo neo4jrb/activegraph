@@ -12,6 +12,7 @@ module Neo4j
     include Neo4j::ActiveRel::Validations
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Query
+    include Neo4j::ActiveRel::Type
 
     class FrozenRelError < StandardError; end
 
@@ -26,6 +27,8 @@ module Neo4j
 
     included do
       def self.inherited(other)
+        Neo4j::ActiveRel::Type.add_type_class(other)
+
         super
       end
 

@@ -5,7 +5,7 @@ class Neo4j::Relationship
       props.symbolize_keys!
       return self unless props.is_a?(Hash) && props.has_key?(Neo4j::Config.class_name_property)
       begin
-        found_class = props[Neo4j::Config.class_name_property].constantize
+        found_class = self.class._type_classes[wrapped_rel.rel_type] || props[Neo4j::Config.class_name_property].constantize
       rescue NameError
         return self
       end
