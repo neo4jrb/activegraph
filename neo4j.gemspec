@@ -31,7 +31,7 @@ A Neo4j OGM (Object-Graph-Mapper) for use in Ruby on Rails and Rack frameworks, 
   s.add_dependency("activesupport", "~> 4")
   s.add_dependency("railties", "~> 4")
   s.add_dependency('active_attr', "~> 0.8")
-  s.add_dependency("neo4j-core", "~> 3.0.0")
+  s.add_dependency("neo4j-core", "~> 3.0.2")
 
   if RUBY_PLATFORM =~ /java/
     s.add_dependency("neo4j-community", '~> 2.0')

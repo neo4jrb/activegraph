@@ -33,10 +33,9 @@ module Neo4j
 
           conditions[attribute] = options[:case_sensitive] ? value : /^#{Regexp.escape(value.to_s)}$/i
 
-          # prevent that same object is returned
-          # TODO: add negative condtion to not return current record
-          found = record.class.where(conditions).to_a.select{|f| f.neo_id != record.neo_id}
-          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value)) if found.count > 0
+          found = record.class.as(:result).where(conditions)
+          found = found.where("NOT ID(result) = {record_neo_id}").params(record_neo_id: record.neo_id) if record.persisted?
+          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value)) if found.exists?
         end
 
         def message(instance)

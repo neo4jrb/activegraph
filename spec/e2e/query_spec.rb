@@ -131,9 +131,9 @@ describe 'Query API' do
     let!(:monster_trucks) { Interest.create(name: 'Monster Trucks') }
 
 
-    it 'returns all' do
-      result = Teacher.to_a
-
+    it 'evaluates `all` lazily' do
+      result = Teacher.all
+      expect(result).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
       result.size.should == 2
       result.should include(samuels)
       result.should include(othmar)
