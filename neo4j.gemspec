@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
 
   s.authors  = "Andreas Ronge"
   s.email    = 'andreas.ronge@gmail.com'
-  s.homepage = "https://github.com/andreasronge/neo4j/"
+  s.homepage = "https://github.com/neo4jrb/neo4j/"
   s.rubyforge_project = 'neo4j'
   s.summary = "A graph database for Ruby"
   s.license = 'MIT'
