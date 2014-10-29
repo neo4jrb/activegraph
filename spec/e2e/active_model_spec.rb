@@ -343,6 +343,22 @@ describe Neo4j::ActiveNode do
       person.exist?.should be true
     end
 
+    it 'can find or create by...' do
+      expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
+      expect { Person.find_or_create_by(name: 'Donovan', age: 30) }.to change { Person.count }
+      expect(Person.find_by(name: 'Donovan', age: 30)).not_to be_falsey
+    end
+
+    # This also works for create! and find_by_or_create/find_by_or_create!
+    it 'can create using a block' do
+      person = Person.create do |p|
+        p.name = 'Wilson'
+        p.age = 50
+      end
+      expect(person.persisted?).to be_truthy
+      expect(person.name).to eq 'Wilson'
+    end
+
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
