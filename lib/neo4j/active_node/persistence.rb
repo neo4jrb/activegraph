@@ -95,6 +95,16 @@ module Neo4j::ActiveNode
         end
       end
 
+      # Finds the first node with the given attributes, or calls create if none found
+      def find_or_create_by(attributes, &block)
+        find_by(attributes) || create(attributes, &block)
+      end
+
+      # Same as #find_or_create_by, but calls #create! so it raises an error if there is a problem during save.
+      def find_or_create_by!(attributes, &block)
+        find_by(attributes) || create!(attributes, &block)
+      end
+
       def load_entity(id)
         Neo4j::Node.load(id)
       end
