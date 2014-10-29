@@ -68,7 +68,7 @@ module Neo4j::ActiveNode
     end
 
     module ClassMethods
-      # Creates a saves a new node
+      # Creates and saves a new node
       # @param [Hash] props the properties the new node should have
       def create(props = {})
         association_props = extract_association_attributes!(props)
