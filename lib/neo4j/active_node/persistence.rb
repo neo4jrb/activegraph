@@ -70,10 +70,11 @@ module Neo4j::ActiveNode
     module ClassMethods
       # Creates and saves a new node
       # @param [Hash] props the properties the new node should have
-      def create(props = {})
+      def create(props = {}, &block)
         association_props = extract_association_attributes!(props)
 
         new(props).tap do |obj|
+          yield obj if block_given?
           obj.save
           association_props.each do |prop, value|
             obj.send("#{prop}=", value)
@@ -82,7 +83,7 @@ module Neo4j::ActiveNode
       end
 
       # Same as #create, but raises an error if there is a problem during save.
-      def create!(*args)
+      def create!(*args, &block)
         props = args[0] || {}
         association_props = extract_association_attributes!(props)
 
