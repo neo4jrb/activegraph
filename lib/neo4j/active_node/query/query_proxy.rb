@@ -174,11 +174,10 @@ module Neo4j
         end
 
         attr_reader :context
+        attr_reader :node_var
 
         protected
         # Methods are underscored to prevent conflict with user class methods
-
-        attr_reader :node_var
 
         def _add_params(params)
           @params = @params.merge(params)
