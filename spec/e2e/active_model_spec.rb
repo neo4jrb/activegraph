@@ -832,6 +832,25 @@ describe Neo4j::ActiveNode do
     it 'returns the expected number of objects' do
       expect(p.count).to eq 5
     end
+
+    describe 'ordered pagination' do
+      before do
+        Person.destroy_all
+        ['Alice', 'Bob', 'Carol', 'David'].each { |name| Person.create(name: name) }
+      end
+
+      it 'allows ordering with a symbol' do
+        person = Neo4j::Paginated.create_from(Person.all, 1, 2, :name)
+        expect(person.count).to eq 2
+        expect(person.first.name).to eq 'Alice'
+      end
+
+      it 'allows ordering with a hash' do
+        person = Neo4j::Paginated.create_from(Person.all, 1, 2, name: :desc)
+        expect(person.count).to eq 2
+        expect(person.first.name).to eq 'David'
+      end
+    end
   end
 
   describe 'reflections' do
