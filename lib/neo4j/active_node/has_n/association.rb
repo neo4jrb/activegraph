@@ -114,11 +114,7 @@ module Neo4j
           @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
-          @relationship_class = if options[:rel_class].is_a?(String)
-                                  options[:rel_class].constantize
-                                else
-                                  options[:rel_class]
-                                end
+          @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
         end
 
