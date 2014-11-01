@@ -343,6 +343,22 @@ describe Neo4j::ActiveNode do
       person.exist?.should be true
     end
 
+    it 'can find or create by...' do
+      expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
+      expect { Person.find_or_create_by(name: 'Donovan', age: 30) }.to change { Person.count }
+      expect(Person.find_by(name: 'Donovan', age: 30)).not_to be_falsey
+    end
+
+    # This also works for create! and find_by_or_create/find_by_or_create!
+    it 'can create using a block' do
+      person = Person.create do |p|
+        p.name = 'Wilson'
+        p.age = 50
+      end
+      expect(person.persisted?).to be_truthy
+      expect(person.name).to eq 'Wilson'
+    end
+
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
@@ -815,6 +831,25 @@ describe Neo4j::ActiveNode do
 
     it 'returns the expected number of objects' do
       expect(p.count).to eq 5
+    end
+
+    describe 'ordered pagination' do
+      before do
+        Person.destroy_all
+        ['Alice', 'Bob', 'Carol', 'David'].each { |name| Person.create(name: name) }
+      end
+
+      it 'allows ordering with a symbol' do
+        person = Neo4j::Paginated.create_from(Person.all, 1, 2, :name)
+        expect(person.count).to eq 2
+        expect(person.first.name).to eq 'Alice'
+      end
+
+      it 'allows ordering with a hash' do
+        person = Neo4j::Paginated.create_from(Person.all, 1, 2, name: :desc)
+        expect(person.count).to eq 2
+        expect(person.first.name).to eq 'David'
+      end
     end
   end
 

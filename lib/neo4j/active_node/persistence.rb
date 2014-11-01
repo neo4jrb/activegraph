@@ -68,12 +68,13 @@ module Neo4j::ActiveNode
     end
 
     module ClassMethods
-      # Creates a saves a new node
+      # Creates and saves a new node
       # @param [Hash] props the properties the new node should have
-      def create(props = {})
+      def create(props = {}, &block)
         association_props = extract_association_attributes!(props)
 
         new(props).tap do |obj|
+          yield obj if block_given?
           obj.save
           association_props.each do |prop, value|
             obj.send("#{prop}=", value)
@@ -82,7 +83,7 @@ module Neo4j::ActiveNode
       end
 
       # Same as #create, but raises an error if there is a problem during save.
-      def create!(*args)
+      def create!(*args, &block)
         props = args[0] || {}
         association_props = extract_association_attributes!(props)
 
@@ -93,6 +94,16 @@ module Neo4j::ActiveNode
             o.send("#{prop}=", value)
           end
         end
+      end
+
+      # Finds the first node with the given attributes, or calls create if none found
+      def find_or_create_by(attributes, &block)
+        find_by(attributes) || create(attributes, &block)
+      end
+
+      # Same as #find_or_create_by, but calls #create! so it raises an error if there is a problem during save.
+      def find_or_create_by!(attributes, &block)
+        find_by(attributes) || create!(attributes, &block)
       end
 
       def load_entity(id)

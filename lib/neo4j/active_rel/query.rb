@@ -23,7 +23,11 @@ module Neo4j::ActiveRel
       # @example Match with a string
       #   MyRelClass.where('r1.grade > r1')
       def where(args={})
-        Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}").where(where_string(args)).pluck(:r1)
+        where_query.where(where_string(args)).pluck(:r1)
+      end
+
+      def array_load(ids_array)
+        where_query.where("ID(r1) IN {ids_array}").params(ids_array: ids_array).pluck(:r1)
       end
 
       # Performs a basic match on the relationship, returning all results.
@@ -41,6 +45,10 @@ module Neo4j::ActiveRel
       end
 
       private
+
+      def where_query
+        Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+      end
 
       def all_query
         Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
