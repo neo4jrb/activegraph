@@ -47,6 +47,12 @@ module Neo4j
         end
       end
 
+      def find_each(options = {})
+        self.query_as(:n).return(:n).find_each(:n, primary_key, options) do |batch|
+          yield batch.n
+        end
+      end
+
       private
 
       def exists_query_start(node_condition)
