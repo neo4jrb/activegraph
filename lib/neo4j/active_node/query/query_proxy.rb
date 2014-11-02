@@ -135,7 +135,7 @@ module Neo4j
         def create(other_nodes, properties)
           raise "Can only create associations on associations" unless @association
           other_nodes = [other_nodes].flatten
-
+          properties = @association.inject_classname(properties)
           other_nodes = other_nodes.map do |other_node|
             case other_node
             when Integer, String
@@ -145,7 +145,7 @@ module Neo4j
             end
           end.compact
 
-          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| other_node.class != @model }
+          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
             #Neo4j::Transaction.run do
               other_node.save if not other_node.persisted?
@@ -174,11 +174,10 @@ module Neo4j
         end
 
         attr_reader :context
+        attr_reader :node_var
 
         protected
         # Methods are underscored to prevent conflict with user class methods
-
-        attr_reader :node_var
 
         def _add_params(params)
           @params = @params.merge(params)

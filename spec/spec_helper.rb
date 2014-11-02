@@ -1,6 +1,8 @@
 # To run coverage via travis
-require 'coveralls'
-Coveralls.wear!
+# require 'coveralls'
+# Coveralls.wear!
+require 'simplecov'
+SimpleCov.start
 
 # To run it manually via Rake
 if ENV['COVERAGE']
@@ -90,6 +92,12 @@ RSpec.configure do |c|
       Neo4j::Transaction.current.close
     end
   end
+
+  c.exclusion_filter = {
+      :api => lambda do |ed|
+        RUBY_PLATFORM == 'java' && ed == :server
+      end
+  }
 
 end
 

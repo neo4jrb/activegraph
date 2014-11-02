@@ -7,10 +7,16 @@ module Neo4j
       @items, @total, @current_page = items, total, current_page
     end
 
-    def self.create_from(source, page, per_page)
+    def self.create_from(source, page, per_page, order = nil)
       #partial = source.drop((page-1) * per_page).first(per_page)
+      target = source.node_var
       partial = source.skip(page-1).limit(per_page)
-      Paginated.new(partial, source.count, page)
+      ordered_partial, ordered_source = if order
+                                          [partial.order_by(order), source.query.with("#{target} as #{target}").pluck("COUNT(#{target})").first]
+                                        else
+                                          [partial, source.count]
+                                        end
+      Paginated.new(ordered_partial, ordered_source, page)
     end
 
     delegate :each, :to => :items

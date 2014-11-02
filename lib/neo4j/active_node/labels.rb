@@ -13,7 +13,16 @@ module Neo4j
       # @return the labels
       # @see Neo4j-core
       def labels
-        @_persisted_obj.labels
+        if @_persisted_obj.labels.nil?
+          r = queried_labels
+          @_persisted_obj.labels = r
+        else
+          @_persisted_obj.labels
+        end
+      end
+
+      def queried_labels
+        self.class.query_as(:result).where("ID(result)" => self.neo_id).return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
       end
 
       # adds one or more labels
@@ -63,10 +72,8 @@ module Neo4j
 
         # Find all nodes/objects of this class
         def all
-          self.query_as(:n).pluck(:n)
+          self.as(:n)
         end
-
-
 
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
@@ -86,7 +93,7 @@ module Neo4j
           self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
         end
 
-        # Like find_by, except that if no record is found, raises a RecordNotFound error. 
+        # Like find_by, except that if no record is found, raises a RecordNotFound error.
         def find_by!(*args)
           a = eval(args.join)
           find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"

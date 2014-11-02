@@ -3,6 +3,7 @@ class Neo4j::Node
 
     # this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
     def wrapper
+      self.props.symbolize_keys!
       most_concrete_class = sorted_wrapper_classes
       return self unless most_concrete_class
       wrapped_node = most_concrete_class.new

@@ -14,7 +14,7 @@ module Neo4j::ActiveRel
 
       # Loads the relationship using its neo_id.
       def find_by_id(key, session = Neo4j::Session.current!)
-        Neo4j::Relationship.load(key.to_i, session)
+        session.query.match("()-[r]-()").where("ID(r)" => key.to_i).limit(1).return(:r).first.r
       end
 
       # Performs a very basic match on the relationship.
@@ -23,7 +23,11 @@ module Neo4j::ActiveRel
       # @example Match with a string
       #   MyRelClass.where('r1.grade > r1')
       def where(args={})
-        Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}").where(where_string(args)).pluck(:r1)
+        where_query.where(where_string(args)).pluck(:r1)
+      end
+
+      def array_load(ids_array)
+        where_query.where("ID(r1) IN {ids_array}").params(ids_array: ids_array).pluck(:r1)
       end
 
       # Performs a basic match on the relationship, returning all results.
@@ -42,6 +46,10 @@ module Neo4j::ActiveRel
 
       private
 
+      def where_query
+        Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+      end
+
       def all_query
         Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
       end
@@ -54,7 +62,7 @@ module Neo4j::ActiveRel
         when :inbound
           identifier = '(n2'
           identifier + (_to_class == :any ? ')' : cypher_label(:inbound))
-        end 
+        end
       end
 
       def cypher_label(dir = :outbound)
@@ -63,10 +71,10 @@ module Neo4j::ActiveRel
       end
 
       def as_constant(given_class)
-        case
-        when given_class.is_a?(String)
+        case given_class
+        when String
           given_class.constantize
-        when given_class.is_a?(Symbol)
+        when Symbol
           given_class.to_s.constantize
         else
           given_class
@@ -74,11 +82,10 @@ module Neo4j::ActiveRel
       end
 
       def where_string(args)
-        if args.is_a?(Hash)
-          args.map do |k, v|
-            v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'"
-          end.join(', ')
-        else 
+        case args
+        when Hash
+          args.map { |k, v| v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'" }.join(', ')
+        else
           args
         end
       end

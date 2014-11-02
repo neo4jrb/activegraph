@@ -61,7 +61,7 @@ module Neo4j::ActiveNode
 
       def _call_scope_context(eval_context, query_params, proc)
         if proc.arity == 1
-          eval_context.instance_exec(query_params,&proc)
+          eval_context.instance_exec(query_params, &proc)
         else
           eval_context.instance_exec(&proc)
         end

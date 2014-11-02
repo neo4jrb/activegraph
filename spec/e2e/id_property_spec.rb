@@ -135,6 +135,14 @@ describe Neo4j::ActiveNode::IdProperty do
       it 'makes the class respond true to has_id_property?' do
         expect(clazz.has_id_property?).to be_truthy
       end
+
+      it 'removes any previously declared properties' do
+        clazz.id_property :my_property, auto: :uuid
+        clazz.id_property :another_property, auto: :uuid
+        node = clazz.create
+        expect(node.respond_to?(:uuid)).to be_falsey
+        expect(node.respond_to?(:my_property)).to be_falsey
+      end
     end
 
     describe 'find_by_id' do
@@ -151,7 +159,14 @@ describe Neo4j::ActiveNode::IdProperty do
         found = clazz.find_by_id('something else')
         expect(found).to be_nil
       end
+    end
 
+    describe 'find_by_neo_id' do
+      it 'loads by the neo id' do
+        node1 = clazz.create
+        found = clazz.find_by_neo_id(node1.neo_id)
+        expect(found).to eq node1
+      end
     end
 
   end

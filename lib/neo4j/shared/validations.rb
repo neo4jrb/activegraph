@@ -28,13 +28,13 @@ module Neo4j
         super(context)
         errors.empty?
       end
-      
+
       private
-      
+
       def perform_validations(options={})
         perform_validation = case options
-                               when Hash
-                                 options[:validate] != false
+                             when Hash
+                               options[:validate] != false
                              end
 
         if perform_validation

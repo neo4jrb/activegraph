@@ -157,7 +157,8 @@ IceCream = UniqueClass.create do
 end
 
 describe Neo4j::ActiveNode do
-
+  # before(:each) { @tx = Neo4j::Transaction.new }
+  # after(:each) { @tx.close }
 
   describe 'validations' do
 
@@ -225,6 +226,7 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'cached classnames' do
+    after(:all) { Neo4j::Config[:cache_class_names] = true }
     CacheTest = UniqueClass.create do
       include Neo4j::ActiveNode
     end
@@ -341,10 +343,26 @@ describe Neo4j::ActiveNode do
       person.exist?.should be true
     end
 
+    it 'can find or create by...' do
+      expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
+      expect { Person.find_or_create_by(name: 'Donovan', age: 30) }.to change { Person.count }
+      expect(Person.find_by(name: 'Donovan', age: 30)).not_to be_falsey
+    end
+
+    # This also works for create! and find_by_or_create/find_by_or_create!
+    it 'can create using a block' do
+      person = Person.create do |p|
+        p.name = 'Wilson'
+        p.age = 50
+      end
+      expect(person.persisted?).to be_truthy
+      expect(person.name).to eq 'Wilson'
+    end
+
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
-      person.exist?.should be false
+      person.persisted?.should be false
     end
 
     it 'can be loaded by id' do
@@ -380,7 +398,6 @@ describe Neo4j::ActiveNode do
     it "they can be queries" do
       Person.create(name: 'person3', age: 21)
       person2 = Person.create(name: 'person4', age: 21)
-
       Person.where(name: 'person4').to_a.should == [person2]
     end
 
@@ -517,21 +534,46 @@ describe Neo4j::ActiveNode do
       after { f1.destroy and t1.destroy }
 
       it 'returns the activerel class' do
-        expect(f1.rels.first).to be_a(MyRelClass)
+        expect(f1.others_rels.first).to be_a(MyRelClass)
       end
     end
 
     context 'with rel created from activerel' do
       let(:rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
-      after { rel.destroy }
+
+      after(:each) { rel.destroy }
       it 'creates the rel' do
         expect(rel.from_node).to eq from_node
         expect(rel.to_node).to eq to_node
         expect(rel.persisted?).to be_truthy
       end
+
+      it 'update the rel' do
+        rel.score = 9000
+        rel.save and rel.reload
+        expect(rel.score).to eq 9000
+      end
+
+      # it 'does not update every rel' do
+      #   first_rel_id = rel.id
+      #   second_rel   = MyRelClass.create(from_node: from_node, to_node: to_node)
+      #   scores = [9000, 400, 5000]
+      #   editing_rel = from_node.others.each_rel.first
+      #   editing_rel.score = scores[1] and editing_rel.save
+
+      #   rel = Neo4j::Relationship.load(first_rel_id)
+      #   second_rel = Neo4j::Relationship.load(second_rel.id)
+      #   expect(rel.score).to eq 400
+      #   expect(second_rel.score).to eq nil
+      #   second_rel.destroy
+      # end
+
+      it 'has a valid _persisted_obj' do
+        expect(rel._persisted_obj).not_to be_nil
+      end
     end
 
-    describe 'ActiveRel queries' do
+    describe 'ActiveRel and its queries' do
       before do
         Neo4j::Config[:cache_class_names] = true
         @rel1 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 99)
@@ -539,6 +581,19 @@ describe Neo4j::ActiveNode do
       end
 
       after { [@rel1, @rel2].each{ |r| r.destroy } }
+      describe 'related nodes' do
+        # We only run this test in the Server environment. Embedded's loading of
+        # relationships works differently, so we aren't as concerned with whether
+        # it is loading two extra nodes.
+        it 'does not load when calling neo_id from Neo4j Server' do
+          unless Neo4j::Session.current.db_type == :embedded_db
+            reloaded = MyRelClass.find(@rel1.neo_id)
+            expect(reloaded.from_node).not_to be_loaded
+            expect(reloaded.from_node.neo_id).to eq from_node.neo_id
+            expect(reloaded.from_node.loaded?).to be_falsey
+          end
+        end
+      end
 
       describe 'where' do
         it 'returns the matching objects' do
@@ -553,14 +608,16 @@ describe Neo4j::ActiveNode do
 
         context 'with a string' do
           it 'returns the matching rels' do
-            expect(MyRelClass.where('r1.score > 48')).to eq [@rel1, @rel2]
+            query = MyRelClass.where('r1.score > 48')
+            expect(query).to include(@rel1, @rel2)
           end
         end
       end
 
       describe 'all' do
         it 'returns all rels' do
-          expect(MyRelClass.all).to eq [@rel1, @rel2]
+          query = MyRelClass.all
+          expect(query).to include(@rel1, @rel2)
         end
       end
 
@@ -604,6 +661,7 @@ describe Neo4j::ActiveNode do
         include Neo4j::ActiveNode
         property :name
         has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+        has_many :out, :things, model_class: false, type: 'lessons'
       end
 
       class IncludeLesson
@@ -647,14 +705,22 @@ describe Neo4j::ActiveNode do
         expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
         expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
         expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
-        expect(IncludeTeacher.include?(mr_jones)).to be_truthy
-        expect(IncludeTeacher.include?(math)).to be_falsey
+        expect(IncludeTeacher.all.include?(mr_jones)).to be_truthy
+        expect(IncludeTeacher.all.include?(math)).to be_falsey
       end
 
       it 'works with multiple relationships to the same object' do
         jimmy.lessons << science
         jimmy.lessons << science
         expect(jimmy.lessons.include?(science)).to be_truthy
+      end
+
+      it 'returns correctly when model_class is false' do
+        woodworking = IncludeLesson.create(name: 'woodworking')
+        expect(jimmy.things.include?(woodworking)).to be_falsey
+        jimmy.lessons << woodworking
+        expect(jimmy.things.include?(woodworking)).to be_truthy
+        woodworking.destroy
       end
 
       it 'allows you to check for an identifier in the middle of a chain' do
@@ -765,6 +831,25 @@ describe Neo4j::ActiveNode do
 
     it 'returns the expected number of objects' do
       expect(p.count).to eq 5
+    end
+
+    describe 'ordered pagination' do
+      before do
+        Person.destroy_all
+        ['Alice', 'Bob', 'Carol', 'David'].each { |name| Person.create(name: name) }
+      end
+
+      it 'allows ordering with a symbol' do
+        person = Neo4j::Paginated.create_from(Person.all, 1, 2, :name)
+        expect(person.count).to eq 2
+        expect(person.first.name).to eq 'Alice'
+      end
+
+      it 'allows ordering with a hash' do
+        person = Neo4j::Paginated.create_from(Person.all, 1, 2, name: :desc)
+        expect(person.count).to eq 2
+        expect(person.first.name).to eq 'David'
+      end
     end
   end
 

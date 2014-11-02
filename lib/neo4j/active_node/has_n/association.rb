@@ -23,7 +23,6 @@ module Neo4j
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
         def arrow_cypher(var = nil, properties = {}, create = false)
           validate_origin!
-
           relationship_type = relationship_type(create)
           relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
           properties_string = get_properties_string(properties)
@@ -55,7 +54,7 @@ module Neo4j
         def relationship_type(create = false)
           case
           when @relationship_class
-            @relationship_class._type
+            relationship_class_type
           when @relationship_type
             @relationship_type
           when @origin
@@ -67,6 +66,16 @@ module Neo4j
 
         def relationship_class
           @relationship_class
+        end
+
+        def relationship_class_type
+          @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
+          @relationship_class._type
+        end
+
+        def inject_classname(properties)
+          properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
+          properties
         end
 
         private
@@ -88,7 +97,6 @@ module Neo4j
         end
 
         def get_properties_string(properties)
-          properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
           p = properties.map do |key, value|
             "#{key}: #{value.inspect}"
           end.join(', ')
@@ -124,8 +132,8 @@ module Neo4j
 
         def validate_option_combinations(options)
           raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
-          raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
-          raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+          # raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class] see issue #494
+          # raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key

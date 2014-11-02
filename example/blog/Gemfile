@@ -29,7 +29,7 @@ gem 'turbolinks'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
 
-gem 'neo4j', path: '../..'
+gem 'neo4j'
 
 # gem 'neo4j-core', path: '../../../neo4j-core'
 

@@ -11,12 +11,12 @@ Gem::Specification.new do |s|
 
   s.authors  = "Andreas Ronge"
   s.email    = 'andreas.ronge@gmail.com'
-  s.homepage = "https://github.com/andreasronge/neo4j/"
+  s.homepage = "https://github.com/neo4jrb/neo4j/"
   s.rubyforge_project = 'neo4j'
   s.summary = "A graph database for Ruby"
   s.license = 'MIT'
   s.description = <<-EOF
-A Neo4j OGM for use in Ruby on Rails and Rack frameworks, intended as a complete replacement for ActiveRecord.
+A Neo4j OGM (Object-Graph-Mapper) for use in Ruby on Rails and Rack frameworks, intended as a complete replacement for ActiveRecord.
   EOF
 
   s.require_path = 'lib'
@@ -31,7 +31,7 @@ A Neo4j OGM for use in Ruby on Rails and Rack frameworks, intended as a complete
   s.add_dependency("activesupport", "~> 4")
   s.add_dependency("railties", "~> 4")
   s.add_dependency('active_attr', "~> 0.8")
-  s.add_dependency("neo4j-core", "= 3.0.0.rc.4")
+  s.add_dependency("neo4j-core", "~> 3.0.2")
 
   if RUBY_PLATFORM =~ /java/
     s.add_dependency("neo4j-community", '~> 2.0')
