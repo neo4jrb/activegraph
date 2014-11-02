@@ -190,8 +190,11 @@ module Neo4j::Shared
         end
       end
 
-      def cached_class?
-        !!Neo4j::Config[:cache_class_names] && neo4j_session.version < '2.1.5'
+      # The check_version argument is meant to be temporary.
+      # I would like to roll out support to ActiveNode first and then ActiveRel later
+      # as it involves bigger changes
+      def cached_class?(check_version = true)
+        !!Neo4j::Config[:cache_class_names] && (check_version ? neo4j_session.version < '2.1.5' : true)
       end
 
       private

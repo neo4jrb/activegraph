@@ -156,8 +156,8 @@ module Neo4j::Shared
       self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed?
     end
 
-    def set_classname(props)
-      props[:_classname] = self.class.name if self.class.cached_class?
+    def set_classname(props, check_version = true)
+      props[:_classname] = self.class.name if self.class.cached_class?(check_version)
     end
 
     def set_timestamps

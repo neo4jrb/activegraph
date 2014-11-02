@@ -61,7 +61,7 @@ module Neo4j::ActiveRel
     def _create_rel(from_node, to_node, *args)
       props = self.class.default_property_values(self)
       props.merge!(args[0]) if args[0].is_a?(Hash)
-      set_classname(props)
+      set_classname(props, false)
       _rel_creation_query(from_node, to_node, props)
     end
 
