@@ -216,7 +216,7 @@ describe Neo4j::ActiveNode do
       c.destroy
       expect(c.destroy_called).to be true
     end
-    
+
     it 'handles before_validation callbacks' do
 #      skip
       c = Company.create
@@ -379,7 +379,7 @@ describe Neo4j::ActiveNode do
       person2 = Neo4j::Node.load(person.neo_id)
       person2[:age].should == 21
     end
-    
+
     it 'should not clear out existing properties when property is set and saved' do
       person = Person.create(name: 'andreas', age: 21)
       person.age = 22
@@ -450,7 +450,7 @@ describe Neo4j::ActiveNode do
 
   describe 'serialization' do
     let!(:chris) { Person.create(name: 'chris') }
-    
+
     it 'correctly identifies properties for serialization' do
       expect(Person.serialized_properties).to include(:links)
       expect(chris.serialized_properties).to include(:links)
@@ -514,6 +514,7 @@ describe Neo4j::ActiveNode do
     class ToClass
       include Neo4j::ActiveNode
       has_many :in, :others, model_class: FromClass, rel_class: MyRelClass
+      has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
     end
 
     class MyRelClass
@@ -536,6 +537,11 @@ describe Neo4j::ActiveNode do
       it 'returns the activerel class' do
         expect(f1.others_rels.first).to be_a(MyRelClass)
       end
+
+      it 'correctly interprets strings as class names' do
+        t1.string_others << f1
+        expect(t1.string_others.count).to eq 2
+      end
     end
 
     context 'with rel created from activerel' do
@@ -553,20 +559,6 @@ describe Neo4j::ActiveNode do
         rel.save and rel.reload
         expect(rel.score).to eq 9000
       end
-
-      # it 'does not update every rel' do
-      #   first_rel_id = rel.id
-      #   second_rel   = MyRelClass.create(from_node: from_node, to_node: to_node)
-      #   scores = [9000, 400, 5000]
-      #   editing_rel = from_node.others.each_rel.first
-      #   editing_rel.score = scores[1] and editing_rel.save
-
-      #   rel = Neo4j::Relationship.load(first_rel_id)
-      #   second_rel = Neo4j::Relationship.load(second_rel.id)
-      #   expect(rel.score).to eq 400
-      #   expect(second_rel.score).to eq nil
-      #   second_rel.destroy
-      # end
 
       it 'has a valid _persisted_obj' do
         expect(rel._persisted_obj).not_to be_nil
@@ -745,7 +737,7 @@ describe Neo4j::ActiveNode do
           expect(IncludeLesson.exists?(name: 'math')).to be_truthy
           expect(IncludeLesson.exists?(name: 'boat repair')).to be_falsey
         end
-      
+
         it 'can be called on the class with a neo_id' do
           expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
           expect(IncludeLesson.exists?(8675309)).to be_falsey
@@ -865,6 +857,7 @@ describe Neo4j::ActiveNode do
 
         has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
         has_many :out, :things_with_rel_class, model_class: self, rel_class: RelClass
+        has_many :out, :string_rel_class, model_class: self, rel_class: 'RelClass'
         has_one  :out, :one_thing, model_class: self, type: 'one_thing'
       end
 
@@ -906,7 +899,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'returns a reflection for each association' do
-      expect(clazz.reflect_on_all_associations.count).to eq 5
+      expect(clazz.reflect_on_all_associations.count).to eq 6
     end
 
     it 'recognizes rel classes' do
