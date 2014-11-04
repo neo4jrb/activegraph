@@ -190,29 +190,6 @@ module Neo4j::Shared
         end
       end
 
-      # Determines whether a model should insert a _classname property. This can be used to override the automatic matching of returned
-      # objects to models.
-      def cached_class?(check_version = true)
-        uses_classname? || (!!Neo4j::Config[:cache_class_names] && (check_version ? neo4j_session.version < '2.1.5' : true))
-      end
-
-      # @return [Boolean] status of whether this model will add a _classname property
-      def uses_classname?
-        Neo4j::Shared::Persistence::USES_CLASSNAME.include?(self.name)
-      end
-
-      # Adds this model to the USES_CLASSNAME array. When new rels/nodes are created, a _classname property will be added. This will override the
-      # automatic matching of label/rel type to model.
-      def set_classname
-        Neo4j::Shared::Persistence::USES_CLASSNAME << self.name
-      end
-
-      # Removes this model from the USES_CLASSNAME array. When new rels/nodes are create, no _classname property will be injected. Upon returning of
-      # the object from the database, it will be matched to a model using its relationship type or labels.
-      def unset_classname
-        Neo4j::Shared::Persistence::USES_CLASSNAME.delete self.name
-      end
-
       private
 
       def constraint_or_index(name, options)
