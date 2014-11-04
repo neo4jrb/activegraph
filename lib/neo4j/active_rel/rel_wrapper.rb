@@ -5,8 +5,8 @@ class Neo4j::Relationship
       props.symbolize_keys!
       # return self unless props.is_a?(Hash)
       begin
-        found_class = most_concrete_class
-        wrapped_rel = found_class.constantize.new
+        most_concrete_class = sorted_wrapper_classes
+        wrapped_rel = most_concrete_class.constantize.new
       rescue NameError
         return self
       end
@@ -17,7 +17,7 @@ class Neo4j::Relationship
 
     private
 
-    def most_concrete_class
+    def sorted_wrapper_classes
       props[Neo4j::Config.class_name_property] || class_from_type
     end
 
