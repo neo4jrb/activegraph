@@ -55,7 +55,7 @@ module Neo4j::ActiveRel
       [from_node, to_node].each do |node|
         type = from_node == node ? :_from_class : :_to_class
         next if allows_any_class?(type)
-        raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class
+        raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class || node.class.ancestors.include?(class_as_constant(type))
       end
     end
 

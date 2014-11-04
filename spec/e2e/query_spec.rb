@@ -290,6 +290,51 @@ describe 'Query API' do
         monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person).should == [othmar, samuels]
       end
     end
+  end
 
+  describe 'batch finding' do
+    let!(:ss101) { Lesson.create(subject: 'Social Studies', level: 101) }
+    let!(:ss102) { Lesson.create(subject: 'Social Studies', level: 102) }
+    let!(:math101) { Lesson.create(subject: 'Math', level: 101) }
+    let!(:math201) { Lesson.create(subject: 'Math', level: 201) }
+    let!(:geo103) { Lesson.create(subject: 'Geography', level: 103) }
+
+    describe 'find_in_batches' do
+      {
+        1 => 5,
+        2 => 3,
+        3 => 2,
+        4 => 2,
+        5 => 1,
+        6 => 1
+      }.each do |batch_size, expected_yields|
+        context "batch size of #{batch_size}" do
+          it "yields #{expected_yields} times" do
+            expect do |block|
+              Lesson.find_in_batches(batch_size: batch_size, &block)
+            end.to yield_control.exactly(expected_yields).times
+          end
+        end
+      end
+    end
+
+    describe 'find_each' do
+      {
+        1 => 5,
+        2 => 5,
+        3 => 5,
+        4 => 5,
+        5 => 5,
+        6 => 5
+      }.each do |batch_size, expected_yields|
+        context "batch size of #{batch_size}" do
+          it "yields #{expected_yields} times" do
+            expect do |block|
+              Lesson.find_each(batch_size: batch_size, &block)
+            end.to yield_control.exactly(expected_yields).times
+          end
+        end
+      end
+    end
   end
 end
