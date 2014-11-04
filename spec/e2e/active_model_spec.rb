@@ -216,7 +216,7 @@ describe Neo4j::ActiveNode do
       c.destroy
       expect(c.destroy_called).to be true
     end
-    
+
     it 'handles before_validation callbacks' do
 #      skip
       c = Company.create
@@ -260,10 +260,10 @@ describe Neo4j::ActiveNode do
         let(:db_version) { '2.1.5' }
 
         it 'responds false to :cached_class?' do
-          expect(CacheTest.cached_class?).to be_false
+          expect(CacheTest.cached_class?).to be_falsey
         end
 
-        it 'sets _classname property equal to class name' do
+        it 'does not set _classname' do
           expect(@unwrapped[:_classname]).to be_nil
         end
 
@@ -401,7 +401,7 @@ describe Neo4j::ActiveNode do
       person2 = Neo4j::Node.load(person.neo_id)
       person2[:age].should == 21
     end
-    
+
     it 'should not clear out existing properties when property is set and saved' do
       person = Person.create(name: 'andreas', age: 21)
       person.age = 22
@@ -472,7 +472,7 @@ describe Neo4j::ActiveNode do
 
   describe 'serialization' do
     let!(:chris) { Person.create(name: 'chris') }
-    
+
     it 'correctly identifies properties for serialization' do
       expect(Person.serialized_properties).to include(:links)
       expect(chris.serialized_properties).to include(:links)
@@ -524,13 +524,16 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'node with rel_class set' do
+  describe 'ActiveRel, rel_class, and returning relationships' do
     class ToClass; end
     class MyRelClass; end
+    class InferredRelClass; end
 
     class FromClass
       include Neo4j::ActiveNode
       has_many :out, :others, model_class: ToClass, rel_class: MyRelClass
+      has_many :out, :unwrapped_others, model_class: ToClass
+      has_many :out, :inferred_classes, model_class: ToClass, rel_class: InferredRelClass
     end
 
     class ToClass
@@ -546,8 +549,34 @@ describe Neo4j::ActiveNode do
       type 'rel_class_type'
     end
 
+    class InferredRelClass
+      include Neo4j::ActiveRel
+      from_class FromClass
+      to_class ToClass
+      property :score
+    end
+
     let(:from_node) { FromClass.create }
     let(:to_node) { ToClass.create }
+
+    context 'without rel class set' do
+      it 'returns an unwrapped relationship' do
+        from_node.unwrapped_others << to_node
+        unwrapped_type =  if Neo4j::Session.current.db_type == :server_db
+                            Neo4j::Server::CypherRelationship
+                          else
+                            Neo4j::Embedded::EmbeddedRelationship
+                          end
+          expect(from_node.rels.first).to be_a(unwrapped_type)
+      end
+    end
+
+    context 'without type set' do
+      it 'sets the relationship type based on rel class name' do
+        from_node.inferred_classes << to_node
+        expect(from_node.inferred_classes.to_cypher).to include('#inferred_rel_class')
+      end
+    end
 
     context 'with rel created from node' do
       let(:f1) { FromClass.create }
@@ -767,7 +796,7 @@ describe Neo4j::ActiveNode do
           expect(IncludeLesson.exists?(name: 'math')).to be_truthy
           expect(IncludeLesson.exists?(name: 'boat repair')).to be_falsey
         end
-      
+
         it 'can be called on the class with a neo_id' do
           expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
           expect(IncludeLesson.exists?(8675309)).to be_falsey

@@ -24,6 +24,7 @@ module Neo4j::ActiveRel
       set_timestamps
       properties = convert_properties_to :db, props
       rel = _create_rel(from_node, to_node, properties)
+      return self unless rel.respond_to?(:_persisted_obj)
       init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
       true
     end
@@ -61,7 +62,7 @@ module Neo4j::ActiveRel
     def _create_rel(from_node, to_node, *args)
       props = self.class.default_property_values(self)
       props.merge!(args[0]) if args[0].is_a?(Hash)
-      set_classname(props, false)
+      set_classname(props, true)
       _rel_creation_query(from_node, to_node, props)
     end
 

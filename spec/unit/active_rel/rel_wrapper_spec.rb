@@ -22,16 +22,11 @@ describe Neo4j::Relationship::Wrapper do
     expect(r.props).to eq name: 'superman'
   end
 
-  it 'looks for a _classname key' do
-    expect(r.props).to receive(:has_key?).with(:_classname)
-    r.wrapper
-  end
-
-  it 'returns self when unable to find a valid _classname' do
+  it 'returns self when unable to find a valid class' do
     expect(r.wrapper).to eq(r)
   end
 
-  it 'calls init_on_load when finding a valid _classname' do
+  it 'calls init_on_load when finding a valid model from _classname' do
     r.stub(:props).and_return(name: 'superman', _classname: 'RelClass')
     expect(r).to receive(:_start_node_id)
     expect(r).to receive(:_end_node_id)
