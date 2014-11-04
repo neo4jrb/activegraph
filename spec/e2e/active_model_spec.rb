@@ -528,12 +528,14 @@ describe Neo4j::ActiveNode do
     class ToClass; end
     class MyRelClass; end
     class InferredRelClass; end
+    class ExplicitClassname; end
 
     class FromClass
       include Neo4j::ActiveNode
       has_many :out, :others, model_class: ToClass, rel_class: MyRelClass
       has_many :out, :unwrapped_others, model_class: ToClass
       has_many :out, :inferred_classes, model_class: ToClass, rel_class: InferredRelClass
+      has_many :out, :explicit_classes, model_class: ToClass, rel_class: ExplicitClassname
     end
 
     class ToClass
@@ -557,6 +559,14 @@ describe Neo4j::ActiveNode do
       property :score
     end
 
+    class ExplicitClassname
+      include Neo4j::ActiveRel
+      from_class FromClass
+      to_class ToClass
+      set_classname
+      type '#inferred_rel_class'
+    end
+
     let(:from_node) { FromClass.create }
     let(:to_node) { ToClass.create }
 
@@ -576,6 +586,25 @@ describe Neo4j::ActiveNode do
       it 'sets the relationship type based on rel class name' do
         from_node.inferred_classes << to_node
         expect(from_node.inferred_classes.to_cypher).to include('#inferred_rel_class')
+      end
+    end
+
+    describe 'set_classname/unset_classname' do
+      it 'changes the cached_class? value' do
+        expect(InferredRelClass.cached_class?).to be_falsey
+        InferredRelClass.set_classname
+        expect(InferredRelClass.cached_class?).to be_truthy
+        InferredRelClass.unset_classname
+        expect(InferredRelClass.cached_class?).to be_falsey
+      end
+    end
+
+    context 'when classname is set explicitly' do
+      after { from_node.explicit_classes.each_rel { |r| r.destroy } }
+
+      it 'classname overrides relationship type to determine model' do
+        from_node.explicit_classes << to_node
+        expect(from_node.explicit_classes.each_rel.first).to be_a(ExplicitClassname)
       end
     end
 

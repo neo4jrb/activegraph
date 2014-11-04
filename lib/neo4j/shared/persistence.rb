@@ -4,6 +4,8 @@ module Neo4j::Shared
     extend ActiveSupport::Concern
     include Neo4j::TypeConverters
 
+    USES_CLASSNAME = []
+
     def update_model
       if changed_attributes && !changed_attributes.empty?
         changed_props = attributes.select{|k,v| changed_attributes.include?(k)}
