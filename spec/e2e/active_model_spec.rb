@@ -232,7 +232,7 @@ describe Neo4j::ActiveNode do
     end
 
     context 'with cache_class set in config' do
-      before(:each) { Neo4j::Server::CypherSession.any_instance.stub(version: db_version) }
+      before { Neo4j::Session.current.class.any_instance.stub(version: db_version) }
 
       before do
         Neo4j::Config[:cache_class_names] = true
@@ -569,16 +569,44 @@ describe Neo4j::ActiveNode do
 
     let(:from_node) { FromClass.create }
     let(:to_node) { ToClass.create }
+    context 'server version 2.1.5' do
+      context 'without rel class set' do
+        let(:db_version) { '2.1.5' }
+        before { Neo4j::Session.current.class.any_instance.stub(version: db_version) }
 
-    context 'without rel class set' do
-      it 'returns an unwrapped relationship' do
-        from_node.unwrapped_others << to_node
-        unwrapped_type =  if Neo4j::Session.current.db_type == :server_db
-                            Neo4j::Server::CypherRelationship
-                          else
-                            Neo4j::Embedded::EmbeddedRelationship
-                          end
+        context 'server version 2.1.5' do
+          it 'changes the cached_class? value' do
+            expect(InferredRelClass.cached_class?).to be_falsey
+            InferredRelClass.set_classname
+            expect(InferredRelClass.cached_class?).to be_truthy
+            InferredRelClass.unset_classname
+            expect(InferredRelClass.cached_class?).to be_falsey
+          end
+        end
+
+        it 'returns an unwrapped relationship' do
+          from_node.unwrapped_others << to_node
+          unwrapped_type =  if Neo4j::Session.current.db_type == :server_db
+                              Neo4j::Server::CypherRelationship
+                            else
+                              Java::OrgNeo4jKernelImplCore::RelationshipProxy
+                            end
+
           expect(from_node.rels.first).to be_a(unwrapped_type)
+        end
+      end
+
+      context 'server version 2.1.4' do
+        let(:db_version) { '2.1.4' }
+        before { Neo4j::Session.current.class.any_instance.stub(version: db_version) }
+
+        it 'does not change the cached_class value' do
+          expect(InferredRelClass.cached_class?).to be_truthy
+          InferredRelClass.set_classname
+          expect(InferredRelClass.cached_class?).to be_truthy
+          InferredRelClass.unset_classname
+          expect(InferredRelClass.cached_class?).to be_truthy
+        end
       end
     end
 
@@ -590,13 +618,7 @@ describe Neo4j::ActiveNode do
     end
 
     describe 'set_classname/unset_classname' do
-      it 'changes the cached_class? value' do
-        expect(InferredRelClass.cached_class?).to be_falsey
-        InferredRelClass.set_classname
-        expect(InferredRelClass.cached_class?).to be_truthy
-        InferredRelClass.unset_classname
-        expect(InferredRelClass.cached_class?).to be_falsey
-      end
+
     end
 
     context 'when classname is set explicitly' do
