@@ -49,6 +49,12 @@ module Neo4j
           end
         end
 
+        def delete_all(identifier = nil)
+          target = identifier || rel_identity
+          self.query.delete(target).exec
+          self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
+        end
+
         private
 
         def query_with_target(target, &block)
