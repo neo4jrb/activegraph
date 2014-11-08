@@ -28,6 +28,10 @@ module Neo4j
           @node_var || :result
         end
 
+        def rel_identity
+          @rel_var
+        end
+
         def enumerable_query(node, rel = nil)
           pluck_this = rel.nil? ? [node] : [node, rel]
           return self.pluck(*pluck_this) if @association.nil? || caller.nil?
