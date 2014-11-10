@@ -40,11 +40,11 @@ describe Neo4j::ActiveNode::Query do
 
   describe '#query_as' do
     it 'generates a basic query' do
-      @classA.new.query_as(:q).to_cypher.should == 'MATCH (q:`Person`) WHERE ID(q) = {ID_q}'
+      @classA.new.query_as(:q).to_cypher.should == 'MATCH (q:`Person`) WHERE ID(q) = {ID_q_}'
     end
 
     it 'can be built upon' do
-      @classA.new.query_as(:q).match('q--p').return(p: :name).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE ID(q) = {ID_q} RETURN p.name'
+      @classA.new.query_as(:q).match('q--p').return(p: :name).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE ID(q) = {ID_q_} RETURN p.name'
     end
   end
 
