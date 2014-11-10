@@ -53,15 +53,15 @@ module Neo4j
         # but will leave nodes intact. Be careful with the optional param, it will destroy nodes if you give it a node identifier.
         # @param [String,Symbol] the optional identifier of the link in the chain to delete.
         def delete_all(identifier = nil)
-          target = identifier || rel_identity
-          self.query.delete(target).exec
+          target = identifier || identity
+          self.query.with(target).match("(#{target})-[#{target}_rels]-()").delete("#{target}, #{target}_rels").exec
           self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
         end
 
         private
 
         def query_with_target(target, &block)
-          target = target.nil? ? identity : target
+          target = target || identity
           block.yield(target)
         end
 
