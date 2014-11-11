@@ -202,7 +202,14 @@ describe 'QueryProxy methods' do
     it 'can target a specific identifier' do
       @tom.lessons(:l).teachers.where(name: 'Mr Adams').delete_all(:l)
       expect(@tom.lessons.include?(@math)).to be_falsey
+      expect(@math).not_to be_persisted
       expect(@tom.lessons.include?(@science)).to be_truthy
+    end
+
+    it 'can target relationships' do
+      @tom.lessons(:l, :r).teachers.where(name: 'Mr Adams').delete_all(:r)
+      expect(@tom.lessons.include?(@math)).to be_falsey
+      expect(@math).to be_persisted
     end
   end
 end

@@ -49,13 +49,18 @@ module Neo4j
           end
         end
 
-        # Removes the last relationship in an association. When Cypher ID is omitted, it will remove the last relationship in the chain
-        # but will leave nodes intact. Be careful with the optional param, it will destroy nodes if you give it a node identifier.
+        # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
+        # The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
         # @param [String,Symbol] the optional identifier of the link in the chain to delete.
         def delete_all(identifier = nil)
-          target = identifier || identity
-          self.query.with(target).match("(#{target})-[#{target}_rels]-()").delete("#{target}, #{target}_rels").exec
-          self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
+          query_with_target(identifier) do |target|
+            begin
+              self.query.with(target).match("(#{target})-[#{target}_rels]-()").delete("#{target}, #{target}_rels").exec
+            rescue Neo4j::Session::CypherError
+              self.query.delete(target).exec
+            end
+            self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
+          end
         end
 
         private
