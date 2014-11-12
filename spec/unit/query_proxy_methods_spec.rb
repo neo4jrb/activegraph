@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'QueryProxy methods' do
+describe 'query_proxy_methods' do
   # goofy names to differentiate from same classes used elsewhere
   before(:all) do
     class IncludeLesson; end
@@ -22,7 +22,6 @@ describe 'QueryProxy methods' do
 
     class IncludeTeacher
       include Neo4j::ActiveNode
-      property :name
       has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
     end
 

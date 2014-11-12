@@ -66,8 +66,7 @@ module Neo4j
         private
 
         def query_with_target(target, &block)
-          target = target || identity
-          block.yield(target)
+          block.yield(target || identity)
         end
 
         def exists_query_start(origin, condition, target)

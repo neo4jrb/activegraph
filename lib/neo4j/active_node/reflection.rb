@@ -1,5 +1,5 @@
 module Neo4j::ActiveNode
-  # A reflection contains information about an association. 
+  # A reflection contains information about an association.
   # They are often used in connection with form builders to determine associated classes.
   # This module contains methods related to the creation and retrieval of reflections.
   module Reflection

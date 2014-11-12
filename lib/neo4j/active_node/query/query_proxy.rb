@@ -11,6 +11,27 @@ module Neo4j
         # Will be nil when using QueryProxy chains on class methods.
         attr_reader :caller
 
+        # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
+        # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
+        # QueryProxy provides ActiveRecord-like methods for common patterns. When it's not handling CRUD for relationships and queries, it
+        # provides ActiveNode's association chaining (`student.lessons.teachers.where(age: 30).hobbies`) and enjoys long walks on the
+        # beach.
+        #
+        # It should not ever be necessary to instantiate a new QueryProxy object directly, it always happens as a result of
+        # calling a method that makes use of it.
+        #
+        # @param [Constant] model The class which included ActiveNode (typically a model, hence the name) from which the query
+        # originated.
+        # @param [Neo4j::ActiveNode::HasN::Association] association The ActiveNode association (an object created by a <tt>has_one</tt> or
+        # <tt>has_many</tt>) that created this object.
+        # @param [Hash] options Additional options pertaining to the QueryProxy object. These may include:
+        # * node_var: A string or symbol to be used by Cypher within its query string as an identifier
+        # * rel_var:  Same as above but pertaining to a relationship identifier
+        # * session: The session to be used for this query
+        # * caller:  The node instance at the start of the QueryProxy chain
+        # * query_proxy: An existing QueryProxy chain upon which this new object should be built
+        #
+        # QueryProxy objects are evaluated lazily.
         def initialize(model, association = nil, options = {})
           @model = model
           @association = association
@@ -24,14 +45,21 @@ module Neo4j
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
+        # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
+        # in the QueryProxy chain.
         def identity
           @node_var || :result
         end
 
+        # The relationship identifier most recently used by the QueryProxy chain.
         def rel_identity
           @rel_var
         end
 
+        # Executes the query against the database if the results are not already present in a node's association cache. This method is
+        # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
+        # @param [String,Symbol] node The string or symbol of the node to return from the database.
+        # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
         def enumerable_query(node, rel = nil)
           pluck_this = rel.nil? ? [node] : [node, rel]
           return self.pluck(*pluck_this) if @association.nil? || caller.nil?
@@ -44,6 +72,10 @@ module Neo4j
           association_collection
         end
 
+        # Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
+        # The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
+        # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
+        # @return [Enumerable] An enumerable containing some combination of nodes and rels.
         def each(node = true, rel = nil, &block)
           if node && rel
             enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
@@ -53,14 +85,23 @@ module Neo4j
           end
         end
 
+        # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
+        # For example, to return the relationship between a given student and their lessons:
+        #   student.lessons.each_rel do |rel|
+        # @return [Enumerable] An enumerable containing any number of applicable relationship objects.
         def each_rel(&block)
           block_given? ? each(false, true, &block) : to_enum(:each, false, true)
         end
 
+        # When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
+        # For example, to return a lesson and each relationship to a given student:
+        #   student.lessons.each_with_rel do |lesson, rel|
         def each_with_rel(&block)
           block_given? ? each(true, true, &block) : to_enum(:each, true, true)
         end
 
+        # Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
+        # would be comparing the QueryProxy objects, not the lessons themselves.
         def ==(value)
           self.to_a == value
         end
@@ -93,7 +134,10 @@ module Neo4j
           query_as(identity)
         end
 
-        # Build a Neo4j::Core::Query object for the QueryProxy
+        # Build a Neo4j::Core::Query object for the QueryProxy. This is necessary when you want to take an existing QueryProxy chain
+        # and work with it from the more powerful (but less friendly) Neo4j::Core::Query.
+        # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
+        #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
           var = @node_var if @node_var
           query = if @association
@@ -110,7 +154,7 @@ module Neo4j
           end
         end
 
-        # Cypher string for the QueryProxy's query
+        # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         def to_cypher
           query.to_cypher
         end
