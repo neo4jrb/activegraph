@@ -89,12 +89,12 @@ describe Neo4j::Config do
   describe 'options' do
     describe 'include_root_in_json' do
       it 'defaults to true' do
-        expect(Neo4j::Config.include_root_in_json).to be_falsey
+        expect(Neo4j::Config.include_root_in_json).to be_truthy
       end
 
       it 'respects config' do
-        Neo4j::Config[:include_root_in_json] = true
-        expect(Neo4j::Config.include_root_in_json).to be_truthy
+        Neo4j::Config[:include_root_in_json] = false
+        expect(Neo4j::Config.include_root_in_json).to be_falsey
       end
     end
   end
