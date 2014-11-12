@@ -113,7 +113,9 @@ module Neo4j
         Neo4j::Config[:class_name_property] || :_classname
       end
 
+      def include_root_in_json
+        Neo4j::Config[:include_root_in_json] || false
+      end
     end
   end
-
 end

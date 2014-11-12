@@ -8,7 +8,6 @@ describe Neo4j::Config do
     end
   end
 
-
   describe 'when using a different existing config' do
     before do
       Neo4j::Config.default_file = File.expand_path(File.join(File.dirname(__FILE__), "config.yml"))
@@ -83,6 +82,19 @@ describe Neo4j::Config do
       it 'deletes all' do
         Neo4j::Config.delete_all
         expect(Neo4j::Config.configuration).to eq({})
+      end
+    end
+  end
+
+  describe 'options' do
+    describe 'include_root_in_json' do
+      it 'defaults to true' do
+        expect(Neo4j::Config.include_root_in_json).to be_falsey
+      end
+
+      it 'respects config' do
+        Neo4j::Config[:include_root_in_json] = true
+        expect(Neo4j::Config.include_root_in_json).to be_truthy
       end
     end
   end
