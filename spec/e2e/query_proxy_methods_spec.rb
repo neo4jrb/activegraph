@@ -6,17 +6,18 @@ describe 'query_proxy_methods' do
     class IncludeLesson; end
     class IncludeTeacher; end
     class IncludeEmptyClass; end
+    class IncludeEnrolledIn; end
     class IncludeStudent
       include Neo4j::ActiveNode
       property :name
-      has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+      has_many :out, :lessons, model_class: IncludeLesson, rel_class: IncludeEnrolledIn
       has_many :out, :things, model_class: false, type: 'lessons'
     end
 
     class IncludeLesson
       include Neo4j::ActiveNode
       property :name
-      has_many :in, :students, model_class: IncludeStudent, origin: :lessons
+      has_many :in, :students, model_class: IncludeStudent, rel_class: IncludeEnrolledIn
       has_many :in, :teachers, model_class: IncludeTeacher, origin: :lessons
     end
 
@@ -29,6 +30,13 @@ describe 'query_proxy_methods' do
     class IncludeEmptyClass
       include Neo4j::ActiveNode
       has_many :out, :lessons, model_class: IncludeLesson
+    end
+
+    class IncludeEnrolledIn
+      include Neo4j::ActiveRel
+      from_class IncludeStudent
+      to_class IncludeLesson
+      type 'lessons'
     end
   end
   let!(:jimmy)    { IncludeStudent.create(name: 'Jimmy') }
@@ -211,5 +219,35 @@ describe 'query_proxy_methods' do
       expect(@tom.lessons.include?(@math)).to be_falsey
       expect(@math).to be_persisted
     end
+  end
+
+  describe 'match_to and first_rel_to' do
+    before(:all) do
+      @john = IncludeStudent.create(name: 'Paul')
+      @history = IncludeLesson.create(name: 'history')
+      @math = IncludeLesson.create(name: 'math')
+      @john.lessons << @history
+    end
+
+    describe 'match_to' do
+      it 'returns a QueryProxy object' do
+        expect(@john.lessons.match_to(@history)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+      end
+
+      it 'generates a match to the given node' do
+        expect(@john.lessons.match_to(@history).first).to eq @history
+      end
+    end
+
+    describe 'first_rel_to' do
+      it 'returns the first relationship across a QueryProxy chain to a given node' do
+        expect(@john.lessons.first_rel_to(@history)).to be_a IncludeEnrolledIn
+      end
+
+      it 'returns nil when nothing matches' do
+        expect(@john.lessons.first_rel_to(@math)).to be_nil
+      end
+    end
+
   end
 end
