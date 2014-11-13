@@ -33,7 +33,7 @@ module Neo4j::ActiveNode
         elsif conf[:auto]
           raise "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
           define_uuid_method(clazz, name)
-        else conf.empty?
+        elsif conf.empty?
           define_property_method(clazz, name)
         end
       end
