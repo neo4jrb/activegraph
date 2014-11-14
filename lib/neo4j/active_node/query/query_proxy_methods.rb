@@ -72,7 +72,7 @@ module Neo4j
         # Gives you the first relationship between the last link of a QueryProxy chain and a given node
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id} RETURN r`
         def first_rel_to(node)
-          self.where(neo_id: node.neo_id).pluck(rel_identity).first
+          self.where(neo_id: node.neo_id).limit(1).pluck(rel_identity).first
         end
 
         private
