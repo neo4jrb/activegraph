@@ -27,7 +27,7 @@ module Neo4j
           relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
           properties_string = get_properties_string(properties)
           relationship_cypher = get_relationship_cypher(var, relationship_name_cypher, properties_string)
-          get_direction(relationship_cypher, create) 
+          get_direction(relationship_cypher, create)
         end
 
         def target_class_name
@@ -73,8 +73,12 @@ module Neo4j
           @relationship_class._type
         end
 
+        def relationship_class_name
+          @relationship_class_name ||= @relationship_class.respond_to?(:constantize) ? @relationship_class : @relationship_class.name
+        end
+
         def inject_classname(properties)
-          properties[Neo4j::Config.class_name_property] = @relationship_class.name if @relationship_class
+          properties[Neo4j::Config.class_name_property] = relationship_class_name if @relationship_class
           properties
         end
 
@@ -117,7 +121,7 @@ module Neo4j
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
         end
-        
+
         # Return basic details about association as declared in the model
         # @example
         #   has_many :in, :bands

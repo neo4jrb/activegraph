@@ -4,8 +4,8 @@ module Neo4j::ActiveRel
     include Neo4j::Shared::Persistence
 
     class RelInvalidError < RuntimeError; end
-
     class ModelClassInvalidError < RuntimeError; end
+    class RelCreateFailedError < RuntimeError; end
 
     def clear_association_cache; end
 
@@ -54,7 +54,7 @@ module Neo4j::ActiveRel
       [from_node, to_node].each do |node|
         type = from_node == node ? :_from_class : :_to_class
         next if allows_any_class?(type)
-        raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class
+        raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class || node.class.ancestors.include?(class_as_constant(type))
       end
     end
 
@@ -86,12 +86,16 @@ module Neo4j::ActiveRel
     def _rel_creation_query(from_node, to_node, props)
       from_class = from_node.class
       to_class = to_node.class
-      Neo4j::Session.query.match(n1: from_class.mapped_label_name, n2: to_class.mapped_label_name)
-        .where("n1.#{from_class.primary_key} = {from_node_id}")
-        .where("n2.#{to_class.primary_key} = {to_node_id}")
-        .params(from_node_id: from_node.id, to_node_id: to_node.id)
-        .create("(n1)-[r:`#{type}`]->(n2)")
-        .with('r').set(r: props).return(:r).first.r
+      begin
+        Neo4j::Session.query.match(n1: from_class.mapped_label_name, n2: to_class.mapped_label_name)
+          .where("n1.#{from_class.primary_key} = {from_node_id}")
+          .where("n2.#{to_class.primary_key} = {to_node_id}")
+          .params(from_node_id: from_node.id, to_node_id: to_node.id)
+          .create("(n1)-[r:`#{type}`]->(n2)")
+          .with('r').set(r: props).return(:r).first.r
+      rescue NoMethodError
+        raise RelCreateFailedError, "Unable to create relationship. from_node: #{from_node}, to_node: #{to_node}"
+      end
     end
 
   end

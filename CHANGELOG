@@ -1,8 +1,17 @@
+== 3.0.3
+* Gemspec has been updated to require neo4j-core 3.0.5
+* Added `find_in_batches`
+* Pagination has been updated to allow better ordering. Relaunch of neo4j-will_paginate as neo4j-will_paginate_redux is imminent!
+* Everything is better: `create`'s handling of blocks, better behavior from `count`, better ActiveRel from_class/to_class checks, better handling of rel_class strings, and more
+* Added a new find_or_create_by class method
+
+Big thanks to new contributors Miha Rekar and Michael Perez! Also check out or Github issues, where we're discussing changes for 3.1.0. https://github.com/neo4jrb/neo4j/issues
+
 == 3.0.2
 * "Model#all" now evaluates lazily, models no longer include Enumerable
 * Faster, more efficient uniqueness validations
 * Adjusted many common queries to use params, will improve performance
-* ActiveRel fixes: create uses Core Query instead of Core's `rels` method, `{ classname: #{_classname} }` no longer inserted into every query, find related node IDs without loading the nodes 
+* ActiveRel fixes: create uses Core Query instead of Core's `rels` method, `{ classname: #{_classname} }` no longer inserted into every query, find related node IDs without loading the nodes
 * Allow inheritance when checking model class on a relation (Andrew Jones)
 * Provided migrations will use Rake.original_dir instead of Rails.env to provide better compatibility with frameworks other than Rails
 * rel_class option in ActiveNode models will now accept string of a model name
