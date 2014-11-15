@@ -27,24 +27,20 @@ module Neo4j::ActiveNode
 
     module TypeMethods
       def define_id_methods(clazz, name, conf)
-        validate_conf(conf)
+        raise "Expected a Hash, got #{conf.class} (#{conf.to_s}) for id_property" unless conf.is_a?(Hash)
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
           raise "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
           define_uuid_method(clazz, name)
-        else conf.empty?
+        elsif conf.empty?
           define_property_method(clazz, name)
+        else
+          raise "Illegal value #{conf.inspect} for id_property, expected :on or :auto"
         end
       end
 
       private
-
-      def validate_conf(conf)
-        return if conf.empty?
-        raise "Expected a Hash, got #{conf.class} (#{conf.to_s}) for id_property" unless conf.is_a?(Hash)
-        raise "Illegal value #{conf.inspect} for id_property, expected :on or :auto" unless conf.include?(:auto) || conf.include?(:on)
-      end
 
       def define_property_method(clazz, name)
         clear_methods(clazz, name)

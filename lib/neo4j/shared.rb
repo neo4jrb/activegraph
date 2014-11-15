@@ -22,7 +22,7 @@ module Neo4j
     end
 
     included do
-      self.include_root_in_json = true
+      self.include_root_in_json = Neo4j::Config.include_root_in_json
 
       def self.i18n_scope
         :neo4j
