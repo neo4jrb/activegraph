@@ -106,6 +106,25 @@ module Neo4j
           end
         end
 
+
+        # Scope all queries to the current scope.
+        #
+        #   Comment.where(post_id: 1).scoping do
+        #     Comment.first
+        #   end
+        #
+        # TODO: unscoped
+        # Please check unscoped if you want to remove all previous scopes (including
+        # the default_scope) during the execution of a block.
+        def scoping
+          previous, @model.current_scope = @model.current_scope, self
+          yield
+        ensure
+          @model.current_scope = previous
+        end
+
+
+
         # Cypher string for the QueryProxy's query
         def to_cypher
           query.to_cypher
@@ -165,9 +184,9 @@ module Neo4j
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
-        def method_missing(method_name, *args)
+        def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
-            call_class_method(method_name, *args)
+            scoping { @model.public_send(method_name, *args, &block) }
           else
             super
           end
@@ -242,12 +261,6 @@ module Neo4j
         attr_writer :context
 
         private
-
-        def call_class_method(method_name, *args)
-          args[2] = self
-          result = @model.send(method_name, *args)
-          result
-        end
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|

@@ -70,11 +70,6 @@ module Neo4j
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
 
-        # Find all nodes/objects of this class
-        def all
-          self.as(:n)
-        end
-
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
@@ -175,6 +170,18 @@ module Neo4j
 
         def indexed_properties
           @_indexed_properties
+        end
+
+        def base_class
+          unless self < Neo4j::ActiveNode
+            raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
+          end
+
+          if superclass == Object
+            self
+          else
+            superclass.base_class
+          end
         end
 
 
