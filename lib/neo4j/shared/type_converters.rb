@@ -1,5 +1,4 @@
-module Neo4j
-
+module Neo4j::Shared
   module TypeConverters
 
     # Converts Date objects to Java long types. Must be timezone UTC.
@@ -155,10 +154,10 @@ module Neo4j
 
       def converters
         @converters ||= begin
-          Neo4j::TypeConverters.constants.find_all do |c|
-            Neo4j::TypeConverters.const_get(c).respond_to?(:convert_type)
+          Neo4j::Shared::TypeConverters.constants.find_all do |c|
+            Neo4j::Shared::TypeConverters.const_get(c).respond_to?(:convert_type)
           end.map do  |c|
-            Neo4j::TypeConverters.const_get(c)
+            Neo4j::Shared::TypeConverters.const_get(c)
           end.inject({}) do |ack, t|
             ack[t.convert_type] = t
             ack
