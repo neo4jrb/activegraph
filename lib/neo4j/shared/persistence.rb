@@ -2,7 +2,7 @@ module Neo4j::Shared
   module Persistence
 
     extend ActiveSupport::Concern
-    include Neo4j::TypeConverters
+    include Neo4j::Shared::TypeConverters
 
     USES_CLASSNAME = []
 
@@ -158,6 +158,7 @@ module Neo4j::Shared
       self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed?
     end
 
+    # Inserts the _classname property into an object's properties during object creation.
     def set_classname(props, check_version = true)
       props[:_classname] = self.class.name if self.class.cached_class?(check_version)
     end
@@ -181,6 +182,13 @@ module Neo4j::Shared
 
       # Adds this model to the USES_CLASSNAME array. When new rels/nodes are created, a _classname property will be added. This will override the
       # automatic matching of label/rel type to model.
+      #
+      # You'd want to do this if you have multiple models for the same label or relationship type. When it comes to labels, there isn't really any
+      # reason to do this because you can have multiple labels; on the other hand, an argument can be made for doing this with relationships since
+      # rel type is a bit more restrictive.
+      #
+      # It could also be speculated that there's a slight performance boost to using _classname since the gem immediately knows what model is responsible
+      # for a returned object. At the same time, it is a bit restrictive and changing it can be a bit of a PITA. Use carefully!
       def set_classname
         Neo4j::Shared::Persistence::USES_CLASSNAME << self.name
       end

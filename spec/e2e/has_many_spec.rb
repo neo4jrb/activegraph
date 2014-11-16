@@ -32,19 +32,19 @@ describe 'has_n' do
     it 'creates the correct type' do
       node.friends << friend1
       r = node.rel
-      expect(r.rel_type).to eq(:'#friends')
+      expect(r.rel_type).to eq(:'FRIENDS')
     end
 
     it 'creates the correct type' do
       node.knows << friend1
       r = node.rel
-      expect(r.rel_type).to eq(:'#knows')
+      expect(r.rel_type).to eq(:'KNOWS')
     end
 
     it 'creates correct incoming relationship' do
       node.knows_me << friend1
-      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:'#knows')
-      expect(node.rel(dir: :incoming).rel_type).to eq(:'#knows')
+      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:'KNOWS')
+      expect(node.rel(dir: :incoming).rel_type).to eq(:'KNOWS')
     end
   end
 
@@ -125,7 +125,7 @@ describe 'has_n' do
       it 'creates a new relationship when given existing nodes and given properties' do
         node.friends.create(friend1, since: 1994)
 
-        r = node.rel(dir: :outgoing, type: '#friends')
+        r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
         r[:since].should eq(1994)
       end
@@ -133,7 +133,7 @@ describe 'has_n' do
       it 'creates new relationships when given an array of nodes and given properties' do
         node.friends.create([friend1, friend2], since: 1995)
 
-        rs = node.rels(dir: :outgoing, type: '#friends')
+        rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
         rs.map(&:end_node).should =~ [friend1, friend2]
         rs.each do |r|
@@ -152,7 +152,7 @@ describe 'has_n' do
         #node2.stub(:neo_id).and_return(2)
 
         #node.friends.create(node2, since: 1996)
-        r = node.rel(dir: :outgoing, type: '#friends')
+        r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
         r[:since].should eq(1996)
         r.end_node.name.should == 'Brad'
@@ -161,7 +161,7 @@ describe 'has_n' do
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
         node.friends.create([clazz_a.new(name: 'James'), clazz_a.new(name: 'Cat')], {since: 1997})
 
-        rs = node.rels(dir: :outgoing, type: '#friends')
+        rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
         rs.map(&:end_node).map(&:name).should =~ ['James', 'Cat']
         rs.each do |r|
