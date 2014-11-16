@@ -22,7 +22,7 @@ class Neo4j::Relationship
     end
 
     def class_from_type
-      Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type.downcase] || rel_type.camelize
+      Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || rel_type.camelize
     end
   end
 
