@@ -31,7 +31,7 @@ module Neo4j
         # @param type [String] sets the relationship type when creating relationships via this class
         def type(given_type = self.name, auto = false)
           use_type = auto ? decorated_rel_type(given_type) : given_type
-          mapped_type_name use_type
+          add_wrapped_class use_type
           @rel_type = use_type
         end
 
@@ -47,10 +47,6 @@ module Neo4j
 
         def _wrapped_classes
           Neo4j::ActiveRel::Types::WRAPPED_CLASSES
-        end
-
-        def mapped_type_name(type)
-          add_wrapped_class(type)
         end
       end
     end
