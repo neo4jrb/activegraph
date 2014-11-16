@@ -51,6 +51,9 @@ module Neo4j
         attributes.each_pair do |k,v|
           other.attributes[k] = v
         end
+        if self.respond_to?(:serialized_properties)
+          inherit_serialized_properties(other)
+        end
         Neo4j::ActiveNode::Labels.add_wrapped_class(other)
         super
       end
@@ -58,6 +61,12 @@ module Neo4j
       def self.inherited_indexes(other)
        return if indexed_properties.nil?
        self.indexed_properties.each {|property| other.index property }
+      end
+
+      def self.inherit_serialized_properties(other)
+        serialized_properties.each do |k, v|
+          other.serialize k, v
+        end
       end
 
       def self.inherit_id_property(other)
