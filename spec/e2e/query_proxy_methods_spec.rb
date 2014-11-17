@@ -265,6 +265,16 @@ describe 'query_proxy_methods' do
           expect(@john.lessons.match_to(nil).first).to be_nil
         end
       end
+
+      context 'on Model.all' do
+        it 'works with a node' do
+          expect(IncludeLesson.all.match_to(@history).first).to eq @history
+        end
+
+        it 'works with an id' do
+          expect(IncludeLesson.all.match_to(@history.id).first).to eq @history
+        end
+      end
     end
 
     describe 'first_rel_to' do
