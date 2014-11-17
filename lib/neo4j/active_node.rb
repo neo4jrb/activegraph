@@ -28,7 +28,7 @@ module Neo4j
     include Neo4j::Shared::Identity
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::IdProperty
-    include Neo4j::ActiveNode::SerializedProperties
+    include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Reflection
     include Neo4j::ActiveNode::Persistence

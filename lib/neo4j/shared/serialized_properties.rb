@@ -1,4 +1,4 @@
-module Neo4j::ActiveNode
+module Neo4j::Shared
   module SerializedProperties
     extend ActiveSupport::Concern
 
