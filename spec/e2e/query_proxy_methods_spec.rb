@@ -232,10 +232,38 @@ describe 'query_proxy_methods' do
     describe 'match_to' do
       it 'returns a QueryProxy object' do
         expect(@john.lessons.match_to(@history)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+        expect(@john.lessons.match_to(@history.id)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+        expect(@john.lessons.match_to(nil)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
       end
 
-      it 'generates a match to the given node' do
-        expect(@john.lessons.match_to(@history).first).to eq @history
+      context 'with a valid node' do
+        it 'generates a match to the given node' do
+          expect(@john.lessons.match_to(@history).to_cypher).to include('AND ID(result) =')
+        end
+
+        it 'matches the object' do
+          expect(@john.lessons.match_to(@history).limit(1).first).to eq @history
+        end
+      end
+
+      context 'with an id' do
+        it 'generates cypher using the primary key' do
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include('AND result.uuid =')
+        end
+
+        it 'matches' do
+          expect(@john.lessons.match_to(@history.id).limit(1).first).to eq @history
+        end
+      end
+
+      context 'with a null object' do
+        it 'generates cypher with 1 = 2' do
+          expect(@john.lessons.match_to(nil).to_cypher).to include('AND 1 = 2')
+        end
+
+        it 'matches nil' do
+          expect(@john.lessons.match_to(nil).first).to be_nil
+        end
       end
     end
 

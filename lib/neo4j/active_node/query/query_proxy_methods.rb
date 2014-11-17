@@ -66,7 +66,14 @@ module Neo4j
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
-          self.where(neo_id: node.neo_id)
+          if node.respond_to?(:neo_id)
+            self.where(neo_id: node.neo_id)
+          elsif !node.nil?
+            self.where(self.association.target_class.primary_key => node)
+          else
+            # support for null object pattern
+            self.where('1 = 2')
+          end
         end
 
         # Gives you the first relationship between the last link of a QueryProxy chain and a given node
