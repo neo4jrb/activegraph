@@ -59,6 +59,8 @@ require 'neo4j/active_node/scope'
 require 'neo4j/active_node'
 
 require 'neo4j/active_node/orm_adapter'
-require 'rails/generators'
-require 'rails/generators/neo4j_generator'
+if defined?(Rails)
+  require 'rails/generators'
+  require 'rails/generators/neo4j_generator'
+end
 
