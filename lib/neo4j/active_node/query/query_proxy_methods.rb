@@ -64,6 +64,10 @@ module Neo4j
         end
 
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
+        # The `node` param can be a persisted ActiveNode instance, any string or integer, or nil.
+        # When it's a node, it'll use the object's neo_id, which is fastest. When not nil, it'll figure out the
+        # primary key of that model. When nil, it uses `1 = 2` to prevent matching all records, which is the default
+        # behavior when nil is passed to `where` in QueryProxy.
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
           if node.respond_to?(:neo_id)
