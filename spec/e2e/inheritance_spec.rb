@@ -11,7 +11,9 @@ describe 'Inheritance', type: :e2e do
 
     class Vehicle < Node
       property :name, type: String
+      property :specs # Hash
       index :name
+      serialize :specs
     end
 
     class Car < Vehicle
@@ -53,6 +55,20 @@ describe 'Inheritance', type: :e2e do
   describe 'indexes' do
     it 'inherits the indexes of the base class' do
       expect(InheritanceTest::Car.indexed_properties).to include :name
+    end
+  end
+
+  describe 'serialization' do
+    let!(:toyota) {
+      InheritanceTest::Car.create(name: 'toyota', model: 'camry')
+    }
+
+    it 'successfully saves and returns hashes from the base class' do
+      specs = { weight: 3000, doors: 4 }
+      toyota.specs = specs
+      toyota.save
+      expect(toyota.specs).to eq specs
+      expect(toyota.specs.class).to eq Hash
     end
   end
 end
