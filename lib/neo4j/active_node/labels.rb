@@ -131,8 +131,7 @@ module Neo4j
           Neo4j::Session.on_session_available do |_|
             _index(property, conf)
           end
-          @_indexed_properties ||= []
-          @_indexed_properties.push property unless @_indexed_properties.include? property
+          indexed_properties.push property unless indexed_properties.include? property
         end
 
         # Creates a neo4j constraint on this class for given property
@@ -174,9 +173,8 @@ module Neo4j
         end
 
         def indexed_properties
-          @_indexed_properties
+          @_indexed_properties ||= []
         end
-
 
         protected
 
