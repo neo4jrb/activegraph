@@ -12,6 +12,10 @@ module Neo4j::ActiveNode
         @serialize || {}
       end
 
+      def serialized_properties=(serialize_hash)
+        @serialize = serialize_hash.clone
+      end
+
       def serialize(name, coder = JSON)
         @serialize ||= {}
         @serialize[name] = coder

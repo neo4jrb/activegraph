@@ -64,9 +64,7 @@ module Neo4j
       end
 
       def self.inherit_serialized_properties(other)
-        serialized_properties.each do |k, v|
-          other.serialize k, v
-        end
+        other.serialized_properties = self.serialized_properties
       end
 
       def self.inherit_id_property(other)
