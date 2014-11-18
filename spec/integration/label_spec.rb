@@ -88,6 +88,10 @@ describe "Labels" do
         IndexedTestClass.all.should_not include(jimmy)
       end
     end
+
+    it 'allows changing of the node identifier' do
+      expect(TestClass.all.query_as(:id_test).to_cypher).to include 'id_test'
+    end
   end
 
   describe 'find' do

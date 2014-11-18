@@ -72,7 +72,7 @@ module Neo4j
 
         # Find all nodes/objects of this class
         def all
-          self.as(:n)
+          Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, {})
         end
 
         # Returns the object with the specified neo4j id.
