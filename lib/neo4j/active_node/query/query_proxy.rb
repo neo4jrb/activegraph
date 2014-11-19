@@ -203,8 +203,8 @@ module Neo4j
               start_object = @options[:start_object]
               start_object.clear_association_cache
               _session.query(context: @options[:context])
-                .match("(start), (end)")
-                .where("ID(start) = {start_id} AND ID(end) = {end_id}").params(start_id: start_object.neo_id, end_id: other_node.neo_id)
+                .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
+                .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
                 .create("start#{_association_arrow(properties, true)}end").exec
 
               @association.perform_callback(@options[:start_object], other_node, :after)
@@ -347,9 +347,10 @@ module Neo4j
           [[:order, ->(v) { arg.is_a?(String) ? arg : {v => arg} }]]
         end
 
-
+        def match_string(node)
+          ":`#{node.class.mapped_label_name}`" if node.class.respond_to?(:mapped_label_name)
+        end
       end
-
     end
   end
 end
