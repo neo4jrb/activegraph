@@ -71,7 +71,7 @@ module Neo4j
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
           if node.respond_to?(:neo_id)
-            self.where("ID(#{identity}) = {match_to_node_id}").params(match_to_node_id: node.neo_id)
+            self.where(neo_id: node.neo_id)
           elsif !node.nil?
             id_key = self.association.nil? ? model.primary_key : self.association.target_class.primary_key
             self.where(id_key => node)

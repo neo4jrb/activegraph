@@ -24,6 +24,7 @@ describe 'query_proxy_methods' do
     class IncludeTeacher
       include Neo4j::ActiveNode
       property :name
+      property :age, type: Integer
       has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
     end
 
@@ -273,6 +274,24 @@ describe 'query_proxy_methods' do
 
         it 'works with an id' do
           expect(IncludeLesson.all.match_to(@history.id).first).to eq @history
+        end
+      end
+
+      describe 'complex chains' do
+        before do
+          jimmy.lessons << math
+          math.teachers << mr_jones
+          mr_jones.age = 40
+          mr_jones.save
+
+          jimmy.lessons << science
+          science.teachers << mr_adams
+          mr_adams.age = 50
+          mr_adams.save
+        end
+
+        it 'works with a chain starting with `all`' do
+          expect(IncludeStudent.all.match_to(jimmy).lessons(:l).match_to(math).teachers.where(age: 40).first).to eq mr_jones
         end
       end
     end
