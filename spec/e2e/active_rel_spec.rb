@@ -19,8 +19,11 @@ describe 'ActiveRel' do
     include Neo4j::ActiveRel
     from_class FromClass
     to_class ToClass
-    property :score
     type 'rel_class_type'
+
+    property :score
+    property :links
+    serialize :links
   end
 
   let(:from_node) { FromClass.create }
@@ -30,6 +33,17 @@ describe 'ActiveRel' do
     it 'raises an error when it cannot create a rel' do
       expect(from_node).to receive(:id).at_least(1).times.and_return(nil)
       expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
+    end
+  end
+
+  describe 'properties' do
+    it 'serializes' do
+      rel = MyRelClass.create(from_node: from_node, to_node: to_node)
+      rel.links = { search: 'https://google.com', social: 'https://twitter.com' }
+      expect{ rel.save }.not_to raise_error
+      rel.reload
+      expect(rel.links).to be_a(Hash)
+      rel.destroy
     end
   end
 
