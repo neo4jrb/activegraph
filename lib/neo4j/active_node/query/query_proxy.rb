@@ -203,7 +203,8 @@ module Neo4j
               start_object = @options[:start_object]
               start_object.clear_association_cache
               _session.query(context: @options[:context])
-                .start(start: "node(#{start_object.neo_id})", end: "node(#{other_node.neo_id})")
+                .match("(start), (end)")
+                .where("ID(start) = {start_id} AND ID(end) = {end_id}").params(start_id: start_object.neo_id, end_id: other_node.neo_id)
                 .create("start#{_association_arrow(properties, true)}end").exec
 
               @association.perform_callback(@options[:start_object], other_node, :after)
