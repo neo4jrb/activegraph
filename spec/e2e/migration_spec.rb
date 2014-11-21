@@ -174,10 +174,10 @@ describe 'migration tasks' do
     describe 'relationships' do
       it 'adds given classnames to rels' do
         tony.songs << children
-        expect(tony.songs(:s, :r).pluck(:r).first._persisted_obj.props).not_to have_key(:_classname)
+        expect(tony.songs(:s, :r).pluck(:r).first).not_to be_a(MigrationSpecs::FirstRelClass)
         expect(tony.songs.first).to eq children
         clazz.new.migrate
-        expect(tony.songs(:s, :r).pluck(:r).first._persisted_obj.props).to have_key(:_classname)
+        expect(tony.songs(:s, :r).pluck(:r).first).to be_a(MigrationSpecs::FirstRelClass)
       end
 
       it 'overwrites given classnames on rels' do

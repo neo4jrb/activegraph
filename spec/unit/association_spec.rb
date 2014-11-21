@@ -81,12 +81,12 @@ describe Neo4j::ActiveNode::HasN::Association do
       context 'creation' do
         let(:create) { true }
 
-        it { should == '-[:`DEFAULT`]->' }
+        it { should == '-[:`#default`]->' }
 
         context 'properties given' do
           let(:properties) { { foo: 1, bar: 'test' } }
 
-          it { should == '-[:`DEFAULT` {foo: 1, bar: "test"}]->' }
+          it { should == '-[:`#default` {foo: 1, bar: "test"}]->' }
         end
       end
 
@@ -116,12 +116,12 @@ describe Neo4j::ActiveNode::HasN::Association do
         context 'creation' do
           let(:create) { true }
 
-          it { should == '-[fooy:`DEFAULT`]->' }
+          it { should == '-[fooy:`#default`]->' }
 
           context 'properties given' do
             let(:properties) { { foo: 1, bar: 'test' } }
 
-            it { should == '-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->' }
+            it { should == '-[fooy:`#default` {foo: 1, bar: "test"}]->' }
           end
 
         end

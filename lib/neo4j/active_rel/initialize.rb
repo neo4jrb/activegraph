@@ -1,7 +1,7 @@
 module Neo4j::ActiveRel
   module Initialize
     extend ActiveSupport::Concern
-    include Neo4j::Shared::TypeConverters
+    include Neo4j::TypeConverters
 
     attr_reader :_persisted_obj
 
