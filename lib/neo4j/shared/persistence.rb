@@ -164,8 +164,9 @@ module Neo4j::Shared
     end
 
     def set_timestamps
-      self.created_at ||= DateTime.now if respond_to?(:created_at=)
-      self.updated_at ||= DateTime.now if respond_to?(:updated_at=)
+      now = DateTime.now
+      self.created_at ||= now if respond_to?(:created_at=)
+      self.updated_at ||= now if respond_to?(:updated_at=)
     end
 
     module ClassMethods
