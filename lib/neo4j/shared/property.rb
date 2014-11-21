@@ -216,7 +216,7 @@ module Neo4j::Shared
       end
 
       def set_stamp_type(name, options)
-        options[:type] = DateTime if (name.to_sym == :created_at || name.to_sym == :updated_at)
+        options[:type] ||= DateTime if (name.to_sym == :created_at || name.to_sym == :updated_at)
       end
 
       # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
