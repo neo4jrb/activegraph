@@ -190,6 +190,10 @@ module Neo4j::Shared
         end
       end
 
+      def cached_class?
+        !!Neo4j::Config[:cache_class_names]
+      end
+
       private
 
       def constraint_or_index(name, options)
