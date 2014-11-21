@@ -23,4 +23,42 @@ describe Neo4j::Shared::Property do
       clazz.method_defined?(:bar?).should be false
     end
   end
+
+  describe 'types for timestamps' do
+    context 'when type is undefined' do
+      before do
+        clazz.property :created_at
+        clazz.property :updated_at
+      end
+
+      it 'sets type to DateTime' do
+        expect(clazz.attributes[:created_at][:type]).to eq(DateTime)
+        expect(clazz.attributes[:updated_at][:type]).to eq(DateTime)
+      end
+    end
+
+    context 'when type is defined' do
+      before do
+        clazz.property :created_at, type: Date
+        clazz.property :updated_at, type: Date
+      end
+
+      it 'does not change type' do
+        expect(clazz.attributes[:created_at][:type]).to eq(Date)
+        expect(clazz.attributes[:updated_at][:type]).to eq(Date)
+      end
+    end
+
+    context 'for Time type' do
+      before do
+        clazz.property :created_at, type: Time
+        clazz.property :updated_at, type: Time
+      end
+
+      it 'changes type to DateTime' do
+        expect(clazz.attributes[:created_at][:type]).to eq(DateTime)
+        expect(clazz.attributes[:updated_at][:type]).to eq(DateTime)
+      end
+    end
+  end
 end
