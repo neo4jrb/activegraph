@@ -232,22 +232,44 @@ describe Neo4j::ActiveNode do
     end
 
     context 'with cache_class set in config' do
+      before { Neo4j::Session.current.class.any_instance.stub(version: db_version) }
+
       before do
         Neo4j::Config[:cache_class_names] = true
         @cached = CacheTest.create
         @unwrapped = Neo4j::Node._load(@cached.neo_id)
       end
 
-      it 'responds true to :cached_class?' do
-        expect(CacheTest.cached_class?).to be_truthy
+      context 'server version 2.1.4' do
+        let(:db_version) { '2.1.4' }
+
+        it 'responds true to :cached_class?' do
+          expect(CacheTest.cached_class?).to be_truthy
+        end
+
+        it 'sets _classname property equal to class name' do
+          expect(@unwrapped[:_classname]).to eq @cached.class.name
+        end
+
+        it 'removes the _classname property from the wrapped class' do
+          expect(@cached.props).to_not have_key(:_classname)
+        end
       end
 
-      it 'sets _classname property equal to class name' do
-        expect(@unwrapped[:_classname]).to eq @cached.class.name
-      end
+      context 'server version 2.1.5' do
+        let(:db_version) { '2.1.5' }
 
-      it 'removes the _classname property from the wrapped class' do
-        expect(@cached.props).to_not have_key(:_classname)
+        it 'responds false to :cached_class?' do
+          expect(CacheTest.cached_class?).to be_falsey
+        end
+
+        it 'does not set _classname' do
+          expect(@unwrapped[:_classname]).to be_nil
+        end
+
+        it 'removes the _classname property from the wrapped class' do
+          expect(@cached.props).to_not have_key(:_classname)
+        end
       end
     end
 
