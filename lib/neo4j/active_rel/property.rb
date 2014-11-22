@@ -42,16 +42,6 @@ module Neo4j::ActiveRel
       alias_method :start_class,  :from_class
       alias_method :end_class,    :to_class
 
-      # @param type [String] sets the relationship type when creating relationships via this class
-      def type(type = nil)
-        @rel_type = type
-      end
-
-      # @return [String] a string representing the relationship type that will be created
-      def _type
-        @rel_type
-      end
-
       def load_entity(id)
         Neo4j::Node.load(id)
       end

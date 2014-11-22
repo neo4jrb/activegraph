@@ -31,3 +31,5 @@ timestamps: true
 # By default, this property is called _classname, set as symbol to override.
 cache_class_names: true
 # class_name_property:  :_classname
+
+transform_rel_type: :upcase

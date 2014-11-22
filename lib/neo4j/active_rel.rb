@@ -13,6 +13,7 @@ module Neo4j
     include Neo4j::ActiveRel::Validations
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Query
+    include Neo4j::ActiveRel::Types
 
     class FrozenRelError < StandardError; end
 
@@ -29,8 +30,6 @@ module Neo4j
       def self.inherited(other)
         super
       end
-
-      cache_class unless cached_class?
     end
   end
 end
