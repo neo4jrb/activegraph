@@ -44,7 +44,15 @@ module Neo4j::Shared
 
         def to_ruby(value)
           return nil if value.nil?
-          t = Time.at(value).utc
+          t = case value
+              when Fixnum
+                Time.at(value).utc
+              when String
+                DateTime.strptime(value, '%Y-%m-%d %H:%M:%S %z')
+              else
+                raise ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
+              end
+
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
         end
 
