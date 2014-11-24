@@ -166,6 +166,10 @@ describe 'query_proxy_methods' do
       expect(IncludeStudent.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
     end
 
+    it 'works with order clause' do
+      expect{ IncludeStudent.order(name: :asc).count }.not_to raise_error
+    end
+
     it 'is aliased by length and size' do
       expect(@john.lessons.size).to eq(3)
       expect(@john.lessons.length).to eq(3)
