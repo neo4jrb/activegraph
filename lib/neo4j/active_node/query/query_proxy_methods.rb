@@ -21,7 +21,7 @@ module Neo4j
           raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |target|
             q = distinct.nil? ? target : "DISTINCT #{target}"
-            self.query.pluck("count(#{q}) AS #{target}").first
+            self.query.reorder.pluck("count(#{q}) AS #{target}").first
           end
         end
 
