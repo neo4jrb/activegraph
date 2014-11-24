@@ -139,7 +139,6 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          var = @node_var if @node_var
           query = if @association
             chain_var = _association_chain_var
             label_string = @model && ":`#{@model.mapped_label_name}`"
