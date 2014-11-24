@@ -9,7 +9,7 @@ module Neo4j
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
-        attr_reader :caller
+        attr_reader :caller, :association, :model
 
         # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
         # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
@@ -222,7 +222,8 @@ module Neo4j
               start_object = @options[:start_object]
               start_object.clear_association_cache
               _session.query(context: @options[:context])
-                .start(start: "node(#{start_object.neo_id})", end: "node(#{other_node.neo_id})")
+                .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
+                .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
                 .create("start#{_association_arrow(properties, true)}end").exec
 
               @association.perform_callback(@options[:start_object], other_node, :after)
@@ -359,9 +360,10 @@ module Neo4j
           [[:order, ->(v) { arg.is_a?(String) ? arg : {v => arg} }]]
         end
 
-
+        def match_string(node)
+          ":`#{node.class.mapped_label_name}`" if node.class.respond_to?(:mapped_label_name)
+        end
       end
-
     end
   end
 end

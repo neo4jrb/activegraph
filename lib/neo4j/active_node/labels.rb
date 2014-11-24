@@ -70,6 +70,11 @@ module Neo4j
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
 
+        # Find all nodes/objects of this class
+        def all
+          Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, {})
+        end
+
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
@@ -126,8 +131,7 @@ module Neo4j
           Neo4j::Session.on_session_available do |_|
             _index(property, conf)
           end
-          @_indexed_properties ||= []
-          @_indexed_properties.push property unless @_indexed_properties.include? property
+          indexed_properties.push property unless indexed_properties.include? property
         end
 
         # Creates a neo4j constraint on this class for given property
@@ -169,9 +173,10 @@ module Neo4j
         end
 
         def indexed_properties
-          @_indexed_properties
+          @_indexed_properties ||= []
         end
 
+<<<<<<< HEAD
         def base_class
           unless self < Neo4j::ActiveNode
             raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
@@ -185,6 +190,8 @@ module Neo4j
         end
 
 
+=======
+>>>>>>> master
         protected
 
         def _index(property, conf)

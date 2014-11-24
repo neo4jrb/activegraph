@@ -47,7 +47,7 @@ module Neo4j::ActiveNode
 
         clazz.module_eval(%Q{
           def id
-            persisted? ? #{name} : nil
+            persisted? ? #{name.to_sym == :id ? 'attribute(\'id\')' : name} : nil
           end
 
           validates_uniqueness_of :#{name}

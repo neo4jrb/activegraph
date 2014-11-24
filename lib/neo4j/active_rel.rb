@@ -7,11 +7,13 @@ module Neo4j
     include Neo4j::Shared
     include Neo4j::ActiveRel::Initialize
     include Neo4j::Shared::Identity
+    include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveRel::Property
     include Neo4j::ActiveRel::Persistence
     include Neo4j::ActiveRel::Validations
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Query
+    include Neo4j::ActiveRel::Types
 
     class FrozenRelError < StandardError; end
 
@@ -28,8 +30,6 @@ module Neo4j
       def self.inherited(other)
         super
       end
-
-      cache_class unless cached_class?
     end
   end
 end

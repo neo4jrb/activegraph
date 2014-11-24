@@ -6,29 +6,38 @@ describe 'query_proxy_methods' do
     class IncludeLesson; end
     class IncludeTeacher; end
     class IncludeEmptyClass; end
+    class IncludeEnrolledIn; end
     class IncludeStudent
       include Neo4j::ActiveNode
       property :name
-      has_many :out, :lessons, model_class: IncludeLesson, type: 'lessons'
+      has_many :out, :lessons, model_class: IncludeLesson, rel_class: IncludeEnrolledIn
       has_many :out, :things, model_class: false, type: 'lessons'
     end
 
     class IncludeLesson
       include Neo4j::ActiveNode
       property :name
-      has_many :in, :students, model_class: IncludeStudent, origin: :lessons
+      has_many :in, :students, model_class: IncludeStudent, rel_class: IncludeEnrolledIn
       has_many :in, :teachers, model_class: IncludeTeacher, origin: :lessons
     end
 
     class IncludeTeacher
       include Neo4j::ActiveNode
       property :name
+      property :age, type: Integer
       has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
     end
 
     class IncludeEmptyClass
       include Neo4j::ActiveNode
       has_many :out, :lessons, model_class: IncludeLesson
+    end
+
+    class IncludeEnrolledIn
+      include Neo4j::ActiveRel
+      from_class IncludeStudent
+      to_class IncludeLesson
+      type 'lessons'
     end
   end
   let!(:jimmy)    { IncludeStudent.create(name: 'Jimmy') }
@@ -157,6 +166,10 @@ describe 'query_proxy_methods' do
       expect(IncludeStudent.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
     end
 
+    it 'works with order clause' do
+      expect{ IncludeStudent.order(name: :asc).count }.not_to raise_error
+    end
+
     it 'is aliased by length and size' do
       expect(@john.lessons.size).to eq(3)
       expect(@john.lessons.length).to eq(3)
@@ -211,5 +224,91 @@ describe 'query_proxy_methods' do
       expect(@tom.lessons.include?(@math)).to be_falsey
       expect(@math).to be_persisted
     end
+  end
+
+  describe 'match_to and first_rel_to' do
+    before(:all) do
+      @john = IncludeStudent.create(name: 'Paul')
+      @history = IncludeLesson.create(name: 'history')
+      @math = IncludeLesson.create(name: 'math')
+      @john.lessons << @history
+    end
+
+    describe 'match_to' do
+      it 'returns a QueryProxy object' do
+        expect(@john.lessons.match_to(@history)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+        expect(@john.lessons.match_to(@history.id)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+        expect(@john.lessons.match_to(nil)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+      end
+
+      context 'with a valid node' do
+        it 'generates a match to the given node' do
+          expect(@john.lessons.match_to(@history).to_cypher).to include('AND ID(result) =')
+        end
+
+        it 'matches the object' do
+          expect(@john.lessons.match_to(@history).limit(1).first).to eq @history
+        end
+      end
+
+      context 'with an id' do
+        it 'generates cypher using the primary key' do
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include('AND result.uuid =')
+        end
+
+        it 'matches' do
+          expect(@john.lessons.match_to(@history.id).limit(1).first).to eq @history
+        end
+      end
+
+      context 'with a null object' do
+        it 'generates cypher with 1 = 2' do
+          expect(@john.lessons.match_to(nil).to_cypher).to include('AND 1 = 2')
+        end
+
+        it 'matches nil' do
+          expect(@john.lessons.match_to(nil).first).to be_nil
+        end
+      end
+
+      context 'on Model.all' do
+        it 'works with a node' do
+          expect(IncludeLesson.all.match_to(@history).first).to eq @history
+        end
+
+        it 'works with an id' do
+          expect(IncludeLesson.all.match_to(@history.id).first).to eq @history
+        end
+      end
+
+      describe 'complex chains' do
+        before do
+          jimmy.lessons << math
+          math.teachers << mr_jones
+          mr_jones.age = 40
+          mr_jones.save
+
+          jimmy.lessons << science
+          science.teachers << mr_adams
+          mr_adams.age = 50
+          mr_adams.save
+        end
+
+        it 'works with a chain starting with `all`' do
+          expect(IncludeStudent.all.match_to(jimmy).lessons(:l).match_to(math).teachers.where(age: 40).first).to eq mr_jones
+        end
+      end
+    end
+
+    describe 'first_rel_to' do
+      it 'returns the first relationship across a QueryProxy chain to a given node' do
+        expect(@john.lessons.first_rel_to(@history)).to be_a IncludeEnrolledIn
+      end
+
+      it 'returns nil when nothing matches' do
+        expect(@john.lessons.first_rel_to(@math)).to be_nil
+      end
+    end
+
   end
 end

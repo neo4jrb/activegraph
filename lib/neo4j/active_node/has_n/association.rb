@@ -4,6 +4,7 @@ module Neo4j
   module ActiveNode
     module HasN
       class Association
+        include Neo4j::Shared::RelTypeConverters
         attr_reader :type, :name, :relationship, :direction
 
         def initialize(type, direction, name, options = {})
@@ -60,7 +61,7 @@ module Neo4j
           when @origin
             origin_type
           else
-            (create || exceptional_target_class?) && "##{@name}"
+            (create || exceptional_target_class?) && decorated_rel_type(@name)
           end
         end
 
