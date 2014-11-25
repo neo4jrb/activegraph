@@ -1,6 +1,6 @@
 module Neo4j
 
-  # Makes Neo4j nodes and relationships behave like active record objects.
+  # Makes Neo4j nodes and relationships behave like ActiveRecord objects.
   # By including this module in your class it will create a mapping for the node to your ruby class
   # by using a Neo4j Label with the same name as the class. When the node is loaded from the database it
   # will check if there is a ruby class for the labels it has.
@@ -77,7 +77,8 @@ module Neo4j
         value = Neo4j::Config[:id_property_type_value]
         id_property(name, type => value) if (name && type && value)
       end
-
     end
+
+    ActiveSupport.run_load_hooks(:active_node, self)
   end
 end
