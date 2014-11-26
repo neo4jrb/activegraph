@@ -66,4 +66,3 @@ if defined?(Rails)
   require 'rails/generators'
   require 'rails/generators/neo4j_generator'
 end
-
