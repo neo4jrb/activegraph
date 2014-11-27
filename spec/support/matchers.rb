@@ -1,4 +1,4 @@
-#:nocov:
+# :nocov:
 RSpec::Matchers.define :have_error_on do |*args|
   @message = nil
   @attributes = [args]
@@ -17,4 +17,4 @@ RSpec::Matchers.define :have_error_on do |*args|
     end
   end
 end
-#:nocov:
+# :nocov:

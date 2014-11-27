@@ -40,14 +40,11 @@ describe Neo4j::ActiveNode::HasN::Association do
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
-# See issue 494
-#    context 'origin and rel_class specified' do
-#      let(:options) { {origin: :foo, rel_class: :bar} }
-#
-#      it { expect{ subject }.to raise_error(ArgumentError) }
-#    end
+    context 'origin and rel_class specified' do
+      let(:options) { {origin: :foo, rel_class: :bar} }
 
-
+      it { expect{ subject }.to raise_error(ArgumentError) }
+    end
 
     describe '#arrow_cypher' do
       let(:var) { nil }
@@ -156,7 +153,17 @@ describe Neo4j::ActiveNode::HasN::Association do
           it { should == 'Fizzl' }
         end
       end
+    end
 
+    describe 'target_class' do
+      # subject { association.target_class }
+
+      context 'with invalid target class name' do
+        it 'raises an error' do
+          expect(association).to receive(:target_class_name).at_least(1).times.and_return('BadObject')
+          expect { association.target_class }.to raise_error ArgumentError
+        end
+      end
     end
 
     describe 'origin_type' do

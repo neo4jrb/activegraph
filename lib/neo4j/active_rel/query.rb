@@ -26,10 +26,6 @@ module Neo4j::ActiveRel
         where_query.where(where_string(args)).pluck(:r1)
       end
 
-      def array_load(ids_array)
-        where_query.where("ID(r1) IN {ids_array}").params(ids_array: ids_array).pluck(:r1)
-      end
-
       # Performs a basic match on the relationship, returning all results.
       # This is not executed lazily, it will immediately return matching objects.
       def all

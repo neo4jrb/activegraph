@@ -13,17 +13,13 @@ module Neo4j
       # @return the labels
       # @see Neo4j-core
       def labels
-        if @_persisted_obj.labels.nil?
-          r = queried_labels
-          @_persisted_obj.labels = r
-        else
-          @_persisted_obj.labels
-        end
+        @_persisted_obj.labels
       end
 
-      def queried_labels
-        self.class.query_as(:result).where("ID(result)" => self.neo_id).return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
-      end
+      # this is handled by core, leaving it now for posterity
+      # def queried_labels
+      #   self.class.query_as(:result).where("ID(result)" => self.neo_id).return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
+      # end
 
       # adds one or more labels
       # @see Neo4j-core
