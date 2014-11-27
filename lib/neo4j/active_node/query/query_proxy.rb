@@ -106,7 +106,7 @@ module Neo4j
           self.to_a == value
         end
 
-        METHODS = %w[where order skip limit]
+        METHODS = %w[where rel_where order skip limit]
 
         METHODS.each do |method|
           module_eval(%Q{
@@ -320,7 +320,7 @@ module Neo4j
           node_num = 1
           result = []
           if arg.is_a?(Hash)
-            arg.map do |key, value|
+            arg.each do |key, value|
               if @model && @model.has_association?(key)
 
                 neo_id = value.try(:neo_id) || value
@@ -336,6 +336,18 @@ module Neo4j
               else
                 result << [:where, ->(v) { {v => {key => value}}}]
               end
+            end
+          elsif arg.is_a?(String)
+            result << [:where, arg]
+          end
+          result
+        end
+
+        def links_for_rel_where_arg(arg)
+          result = []
+          if arg.is_a?(Hash)
+            arg.each do |key, value|
+              result << [:where, ->(v) {{ rel_identity => { key => value }}}]
             end
           elsif arg.is_a?(String)
             result << [:where, arg]
