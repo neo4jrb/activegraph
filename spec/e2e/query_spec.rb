@@ -256,13 +256,34 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
+            rel = danny.lessons(:l, :r).pluck(:r).first
+            rel[:grade] = 65
+
             bobby.lessons << math101
+            rel = bobby.lessons(:l, :r).pluck(:r).first
+            rel[:grade] = 71
+
+            math101.teachers << othmar
+            rel = math101.teachers(:t, :r).pluck(:r).first
+            rel[:since] = 2001
+
             sandra.lessons << ss101
           end
 
           context 'students, age 15, who are taking level 101 lessons' do
             it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
             it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+          end
+
+          context 'Students enrolled in math 101 with grade 65' do
+            # with automatic identifier
+            it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should == [danny] }
+
+            # with manual identifier
+            it { Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student).should == [danny] }
+
+            # with multiple instances of rel_where
+            it { Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t).should == [othmar] }
           end
 
           context 'with has_one' do
