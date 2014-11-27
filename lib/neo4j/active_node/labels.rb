@@ -176,6 +176,19 @@ module Neo4j
           @_indexed_properties ||= []
         end
 
+        def base_class
+          unless self < Neo4j::ActiveNode
+            raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
+          end
+
+          if superclass == Object
+            self
+          else
+            superclass.base_class
+          end
+        end
+
+
         protected
 
         def _index(property, conf)

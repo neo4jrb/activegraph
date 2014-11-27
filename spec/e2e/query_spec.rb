@@ -21,8 +21,12 @@ class Lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
 
-  def self.max_level(num=nil, _=nil, query_proxy=nil)
-    (query_proxy || self).query_as(:lesson).pluck('max(lesson.level)').first
+  def self.max_level(num=nil)
+    all.query_as(:lesson).pluck('max(lesson.level)').first
+  end
+
+  def self.ordered_by_subject
+    all.order(:subject)
   end
 
   scope :level_number, ->(num) { where(level: num)}
@@ -199,6 +203,21 @@ describe 'Query API' do
 
         samuels.lessons_teaching.max_level.should == 103
         samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should == 101
+      end
+
+      it 'allows chaining of scopes and then class methods' do
+        samuels.lessons_teaching.level_number(101).max_level.should == 101
+        samuels.lessons_teaching.level_number(103).max_level.should == 103
+      end
+
+      context 'samuels also teaching math 201' do
+        before(:each) do
+          samuels.lessons_teaching << math101
+        end
+
+        it 'allows chaining of class methods and then scopes' do
+          samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should == [math101, ss101]
+        end
       end
     end
 
