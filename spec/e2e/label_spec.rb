@@ -11,10 +11,12 @@ describe "Neo4j::ActiveNode" do
   let(:label_name) do
     clazz.to_s.to_sym
   end
-  
+
   describe "labels" do
-    it "returns the label of the class" do
-      expect(clazz.create.labels).to eq([label_name])
+    context 'with _persisted_obj.labels present' do
+      it "returns the label of the class" do
+        expect(clazz.create.labels).to eq([label_name])
+      end
     end
   end
 

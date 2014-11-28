@@ -232,22 +232,44 @@ describe Neo4j::ActiveNode do
     end
 
     context 'with cache_class set in config' do
+      before { Neo4j::Session.current.class.any_instance.stub(version: db_version) }
+
       before do
         Neo4j::Config[:cache_class_names] = true
         @cached = CacheTest.create
         @unwrapped = Neo4j::Node._load(@cached.neo_id)
       end
 
-      it 'responds true to :cached_class?' do
-        expect(CacheTest.cached_class?).to be_truthy
+      context 'server version 2.1.4' do
+        let(:db_version) { '2.1.4' }
+
+        it 'responds true to :cached_class?' do
+          expect(CacheTest.cached_class?).to be_truthy
+        end
+
+        it 'sets _classname property equal to class name' do
+          expect(@unwrapped[:_classname]).to eq @cached.class.name
+        end
+
+        it 'removes the _classname property from the wrapped class' do
+          expect(@cached.props).to_not have_key(:_classname)
+        end
       end
 
-      it 'sets _classname property equal to class name' do
-        expect(@unwrapped[:_classname]).to eq @cached.class.name
-      end
+      context 'server version 2.1.5' do
+        let(:db_version) { '2.1.5' }
 
-      it 'removes the _classname property from the wrapped class' do
-        expect(@cached.props).to_not have_key(:_classname)
+        it 'responds false to :cached_class?' do
+          expect(CacheTest.cached_class?).to be_falsey
+        end
+
+        it 'does not set _classname' do
+          expect(@unwrapped[:_classname]).to be_nil
+        end
+
+        it 'removes the _classname property from the wrapped class' do
+          expect(@cached.props).to_not have_key(:_classname)
+        end
       end
     end
 
@@ -283,6 +305,8 @@ describe Neo4j::ActiveNode do
       property :numbers
 
       serialize :links
+      # Need this validation for create!
+      validates_presence_of :name
     end
 
     it 'generate accessors for declared attribute' do
@@ -319,7 +343,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'can persist a new object' do
-      person = Person.new
+      person = Person.new(name: 'John')
       person.neo_id.should be_nil
       person.save
       person.neo_id.should be_a(Fixnum)
@@ -347,6 +371,12 @@ describe Neo4j::ActiveNode do
       expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
       expect { Person.find_or_create_by(name: 'Donovan', age: 30) }.to change { Person.count }
       expect(Person.find_by(name: 'Donovan', age: 30)).not_to be_falsey
+    end
+
+    it 'can find or create by... AGGRESSIVELY' do
+      expect(Person.find_by(name: 'Darcy', age: 5)).to be_falsey
+      expect { Person.find_or_create_by!(name: 'Darcy', age: 30) }.to change { Person.count }
+      expect { Person.find_or_create_by!(name: nil) }.to raise_error
     end
 
     # This also works for create! and find_by_or_create/find_by_or_create!
@@ -506,7 +536,7 @@ describe Neo4j::ActiveNode do
     before do
       Person.destroy_all
       i = 1.upto(16).to_a
-      i.each{ |count| Person.create(age: count) }
+      i.each{ |count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
     after(:all) { Person.destroy_all }

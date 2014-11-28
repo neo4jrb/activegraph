@@ -4,6 +4,7 @@ module Neo4j
   module ActiveNode
     module HasN
       class Association
+        include Neo4j::Shared::RelTypeConverters
         attr_reader :type, :name, :relationship, :direction
 
         def initialize(type, direction, name, options = {})
@@ -60,7 +61,7 @@ module Neo4j
           when @origin
             origin_type
           else
-            (create || exceptional_target_class?) && "##{@name}"
+            (create || exceptional_target_class?) && decorated_rel_type(@name)
           end
         end
 
@@ -136,8 +137,8 @@ module Neo4j
 
         def validate_option_combinations(options)
           raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
-          # raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class] see issue #494
-          # raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+          raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
+          raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key

@@ -9,7 +9,7 @@ module Neo4j
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
-        attr_reader :caller
+        attr_reader :caller, :association, :model
 
         # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
         # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
@@ -50,6 +50,7 @@ module Neo4j
         def identity
           @node_var || :result
         end
+        alias_method :node_identity, :identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
         def rel_identity
@@ -106,7 +107,7 @@ module Neo4j
           self.to_a == value
         end
 
-        METHODS = %w[where order skip limit]
+        METHODS = %w[where rel_where order skip limit]
 
         METHODS.each do |method|
           module_eval(%Q{
@@ -114,7 +115,8 @@ module Neo4j
               build_deeper_query_proxy(:#{method}, args)
             end}, __FILE__, __LINE__)
         end
-
+        # Since there is a rel_where method, it seems only natural for there to be node_where
+        alias_method :node_where, :where
         alias_method :offset, :skip
         alias_method :order_by, :order
 
@@ -139,7 +141,6 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          var = @node_var if @node_var
           query = if @association
             chain_var = _association_chain_var
             label_string = @model && ":`#{@model.mapped_label_name}`"
@@ -153,6 +154,25 @@ module Neo4j
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
         end
+
+
+        # Scope all queries to the current scope.
+        #
+        #   Comment.where(post_id: 1).scoping do
+        #     Comment.first
+        #   end
+        #
+        # TODO: unscoped
+        # Please check unscoped if you want to remove all previous scopes (including
+        # the default_scope) during the execution of a block.
+        def scoping
+          previous, @model.current_scope = @model.current_scope, self
+          yield
+        ensure
+          @model.current_scope = previous
+        end
+
+
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         def to_cypher
@@ -203,7 +223,8 @@ module Neo4j
               start_object = @options[:start_object]
               start_object.clear_association_cache
               _session.query(context: @options[:context])
-                .start(start: "node(#{start_object.neo_id})", end: "node(#{other_node.neo_id})")
+                .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
+                .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
                 .create("start#{_association_arrow(properties, true)}end").exec
 
               @association.perform_callback(@options[:start_object], other_node, :after)
@@ -213,9 +234,10 @@ module Neo4j
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
-        def method_missing(method_name, *args)
+        def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
-            call_class_method(method_name, *args)
+            args[2] = self if @model.has_association?(method_name) || @model.has_scope?(method_name)
+            scoping { @model.public_send(method_name, *args, &block) }
           else
             super
           end
@@ -291,12 +313,6 @@ module Neo4j
 
         private
 
-        def call_class_method(method_name, *args)
-          args[2] = self
-          result = @model.send(method_name, *args)
-          result
-        end
-
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
             args.each do |arg|
@@ -319,7 +335,7 @@ module Neo4j
           node_num = 1
           result = []
           if arg.is_a?(Hash)
-            arg.map do |key, value|
+            arg.each do |key, value|
               if @model && @model.has_association?(key)
 
                 neo_id = value.try(:neo_id) || value
@@ -341,14 +357,23 @@ module Neo4j
           end
           result
         end
+        alias_method :links_for_node_where_arg, :links_for_where_arg
+
+        # We don't accept strings here. If you want to use a string, just use where.
+        def links_for_rel_where_arg(arg)
+          arg.each_with_object([]) do |(key, value), result|
+            result << [:where, ->(v) {{ rel_identity => { key => value }}}]
+          end
+        end
 
         def links_for_order_arg(arg)
           [[:order, ->(v) { arg.is_a?(String) ? arg : {v => arg} }]]
         end
 
-
+        def match_string(node)
+          ":`#{node.class.mapped_label_name}`" if node.class.respond_to?(:mapped_label_name)
+        end
       end
-
     end
   end
 end

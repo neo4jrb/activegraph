@@ -113,7 +113,10 @@ module Neo4j
         Neo4j::Config[:class_name_property] || :_classname
       end
 
+      def include_root_in_json
+        # we use ternary because a simple || will always evaluate true
+        Neo4j::Config[:include_root_in_json].nil? ? true : Neo4j::Config[:include_root_in_json]
+      end
     end
   end
-
 end

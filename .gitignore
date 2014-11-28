@@ -21,6 +21,7 @@ b/
 # jedit
 *~
 .ruby-version
+.ruby-gemset
 
 # vim
 .*.sw[a-z]

@@ -1,17 +1,20 @@
 module Neo4j
 
   # Makes Neo4j Relationships more or less act like ActiveRecord objects.
+  # See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
   module ActiveRel
     extend ActiveSupport::Concern
 
     include Neo4j::Shared
     include Neo4j::ActiveRel::Initialize
     include Neo4j::Shared::Identity
+    include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveRel::Property
     include Neo4j::ActiveRel::Persistence
     include Neo4j::ActiveRel::Validations
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Query
+    include Neo4j::ActiveRel::Types
 
     class FrozenRelError < StandardError; end
 
@@ -28,8 +31,8 @@ module Neo4j
       def self.inherited(other)
         super
       end
-
-      cache_class unless cached_class?
     end
+
+    ActiveSupport.run_load_hooks(:active_rel, self)
   end
 end

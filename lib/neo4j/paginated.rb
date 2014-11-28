@@ -8,9 +8,8 @@ module Neo4j
     end
 
     def self.create_from(source, page, per_page, order = nil)
-      #partial = source.drop((page-1) * per_page).first(per_page)
-      target = source.node_var
-      partial = source.skip(page-1).limit(per_page)
+      target = source.node_var || source.identity
+      partial = source.skip((page - 1) * per_page).limit(per_page)
       ordered_partial, ordered_source = if order
                                           [partial.order_by(order), source.query.with("#{target} as #{target}").pluck("COUNT(#{target})").first]
                                         else

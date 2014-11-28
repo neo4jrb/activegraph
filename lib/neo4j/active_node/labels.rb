@@ -13,17 +13,13 @@ module Neo4j
       # @return the labels
       # @see Neo4j-core
       def labels
-        if @_persisted_obj.labels.nil?
-          r = queried_labels
-          @_persisted_obj.labels = r
-        else
-          @_persisted_obj.labels
-        end
+        @_persisted_obj.labels
       end
 
-      def queried_labels
-        self.class.query_as(:result).where("ID(result)" => self.neo_id).return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
-      end
+      # this is handled by core, leaving it now for posterity
+      # def queried_labels
+      #   self.class.query_as(:result).where("ID(result)" => self.neo_id).return("LABELS(result) as result_labels").first.result_labels.map(&:to_sym)
+      # end
 
       # adds one or more labels
       # @see Neo4j-core
@@ -72,7 +68,7 @@ module Neo4j
 
         # Find all nodes/objects of this class
         def all
-          self.as(:n)
+          Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, {})
         end
 
         # Returns the object with the specified neo4j id.
@@ -131,8 +127,7 @@ module Neo4j
           Neo4j::Session.on_session_available do |_|
             _index(property, conf)
           end
-          @_indexed_properties ||= []
-          @_indexed_properties.push property unless @_indexed_properties.include? property
+          indexed_properties.push property unless indexed_properties.include? property
         end
 
         # Creates a neo4j constraint on this class for given property
@@ -174,7 +169,19 @@ module Neo4j
         end
 
         def indexed_properties
-          @_indexed_properties
+          @_indexed_properties ||= []
+        end
+
+        def base_class
+          unless self < Neo4j::ActiveNode
+            raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
+          end
+
+          if superclass == Object
+            self
+          else
+            superclass.base_class
+          end
         end
 
 

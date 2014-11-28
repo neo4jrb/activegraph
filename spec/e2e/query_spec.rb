@@ -21,8 +21,12 @@ class Lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
 
-  def self.max_level(num=nil, _=nil, query_proxy=nil)
-    (query_proxy || self).query_as(:lesson).pluck('max(lesson.level)').first
+  def self.max_level(num=nil)
+    all.query_as(:lesson).pluck('max(lesson.level)').first
+  end
+
+  def self.ordered_by_subject
+    all.order(:subject)
   end
 
   scope :level_number, ->(num) { where(level: num)}
@@ -157,8 +161,11 @@ describe 'Query API' do
         before(:each) { samuels.lessons_taught << math101 }
 
         it 'returns only objects specified by association' do
-          expect(samuels.lessons_teaching.to_a).to eq [ss101, ss102]
-          expect(samuels.lessons.to_a).to eq [ss101, ss102, math101]
+          expect(samuels.lessons_teaching.to_a).to include(ss101, ss102)
+          expect(samuels.lessons_teaching.count).to eq 2
+
+          expect(samuels.lessons.to_a).to include(ss101, ss102, math101)
+          expect(samuels.lessons.to_a.count).to eq 3
         end
       end
     end
@@ -197,6 +204,21 @@ describe 'Query API' do
         samuels.lessons_teaching.max_level.should == 103
         samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should == 101
       end
+
+      it 'allows chaining of scopes and then class methods' do
+        samuels.lessons_teaching.level_number(101).max_level.should == 101
+        samuels.lessons_teaching.level_number(103).max_level.should == 103
+      end
+
+      context 'samuels also teaching math 201' do
+        before(:each) do
+          samuels.lessons_teaching << math101
+        end
+
+        it 'allows chaining of class methods and then scopes' do
+          samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should == [math101, ss101]
+        end
+      end
     end
 
     describe 'association chaining' do
@@ -234,13 +256,38 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
+            rel = danny.lessons(:l, :r).pluck(:r).first
+            rel[:grade] = 65
+
             bobby.lessons << math101
+            rel = bobby.lessons(:l, :r).pluck(:r).first
+            rel[:grade] = 71
+
+            math101.teachers << othmar
+            rel = math101.teachers(:t, :r).pluck(:r).first
+            rel[:since] = 2001
+
             sandra.lessons << ss101
           end
 
           context 'students, age 15, who are taking level 101 lessons' do
             it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
             it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+            it do
+              Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should ==
+              Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
+            end
+          end
+
+          context 'Students enrolled in math 101 with grade 65' do
+            # with automatic identifier
+            it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should == [danny] }
+
+            # with manual identifier
+            it { Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student).should == [danny] }
+
+            # with multiple instances of rel_where
+            it { Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t).should == [othmar] }
           end
 
           context 'with has_one' do

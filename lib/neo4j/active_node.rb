@@ -1,6 +1,6 @@
 module Neo4j
 
-  # Makes Neo4j nodes and relationships behave like active record objects.
+  # Makes Neo4j nodes and relationships behave like ActiveRecord objects.
   # By including this module in your class it will create a mapping for the node to your ruby class
   # by using a Neo4j Label with the same name as the class. When the node is loaded from the database it
   # will check if there is a ruby class for the labels it has.
@@ -28,7 +28,7 @@ module Neo4j
     include Neo4j::Shared::Identity
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::IdProperty
-    include Neo4j::ActiveNode::SerializedProperties
+    include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveNode::Property
     include Neo4j::ActiveNode::Reflection
     include Neo4j::ActiveNode::Persistence
@@ -48,21 +48,24 @@ module Neo4j
       def self.inherited(other)
         inherit_id_property(other) if self.has_id_property?
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
-        attributes.each_pair do |k,v|
-          other.attributes[k] = v
-        end
+        attributes.each_pair { |k,v| other.attributes[k] = v }
+        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
         Neo4j::ActiveNode::Labels.add_wrapped_class(other)
         super
       end
 
       def self.inherited_indexes(other)
        return if indexed_properties.nil?
-       self.indexed_properties.each {|property| other.index property }
+       self.indexed_properties.each { |property| other.index property }
+      end
+
+      def self.inherit_serialized_properties(other)
+        other.serialized_properties = self.serialized_properties
       end
 
       def self.inherit_id_property(other)
         id_prop = self.id_property_info
-        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
+        conf = id_prop[:type].empty? ? { auto: :uuid } : id_prop[:type]
         other.id_property id_prop[:name], conf
       end
 
@@ -72,11 +75,10 @@ module Neo4j
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]
-        if (name && type && value)
-          id_property(name, type => value)
-        end
+        id_property(name, type => value) if (name && type && value)
       end
-
     end
+
+    ActiveSupport.run_load_hooks(:active_node, self)
   end
 end
