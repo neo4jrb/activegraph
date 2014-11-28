@@ -61,4 +61,28 @@ describe Neo4j::Shared::Property do
       end
     end
   end
+
+  describe '#typecasting' do
+    context 'with custom typecaster' do
+      let(:typecaster) do
+        Class.new do
+          def call(value)
+            value.to_s.upcase
+          end
+        end
+      end
+
+      let(:instance) { clazz.new }
+
+      before do
+        allow(clazz).to receive(:extract_association_attributes!)
+        clazz.property :some_property, typecaster: typecaster.new
+      end
+
+      it 'uses custom typecaster' do
+        instance.some_property = 'test'
+        expect(instance.some_property).to eq('TEST')
+      end
+    end
+  end
 end
