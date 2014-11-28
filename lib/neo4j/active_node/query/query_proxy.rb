@@ -50,6 +50,7 @@ module Neo4j
         def identity
           @node_var || :result
         end
+        alias_method :node_identity, :identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
         def rel_identity
@@ -114,7 +115,8 @@ module Neo4j
               build_deeper_query_proxy(:#{method}, args)
             end}, __FILE__, __LINE__)
         end
-
+        # Since there is a rel_where method, it seems only natural for there to be node_where
+        alias_method :node_where, :where
         alias_method :offset, :skip
         alias_method :order_by, :order
 
@@ -355,17 +357,13 @@ module Neo4j
           end
           result
         end
+        alias_method :links_for_node_where_arg, :links_for_where_arg
 
+        # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
-          result = []
-          if arg.is_a?(Hash)
-            arg.each do |key, value|
-              result << [:where, ->(v) {{ rel_identity => { key => value }}}]
-            end
-          elsif arg.is_a?(String)
-            result << [:where, arg]
+          arg.each_with_object([]) do |(key, value), result|
+            result << [:where, ->(v) {{ rel_identity => { key => value }}}]
           end
-          result
         end
 
         def links_for_order_arg(arg)
