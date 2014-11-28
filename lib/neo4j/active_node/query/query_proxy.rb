@@ -362,7 +362,7 @@ module Neo4j
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(v) {{ identifier => { key => value }}}]
+            result << [:where, ->(v) {{ rel_identity => { key => value }}}]
           end
         end
 
