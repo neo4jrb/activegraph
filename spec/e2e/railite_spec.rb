@@ -15,10 +15,6 @@ module Rails
     class << self
       #attr_reader :init, :config
 
-      def config
-        Railtie.conf ||= Config.new
-      end
-
       def initializer(name, options={}, &block)
         Railtie.init ||= {}
         Railtie.init[name] = block

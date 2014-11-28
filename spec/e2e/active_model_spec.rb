@@ -305,6 +305,8 @@ describe Neo4j::ActiveNode do
       property :numbers
 
       serialize :links
+      # Need this validation for create!
+      validates_presence_of :name
     end
 
     it 'generate accessors for declared attribute' do
@@ -341,7 +343,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'can persist a new object' do
-      person = Person.new
+      person = Person.new(name: 'John')
       person.neo_id.should be_nil
       person.save
       person.neo_id.should be_a(Fixnum)
@@ -369,6 +371,12 @@ describe Neo4j::ActiveNode do
       expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
       expect { Person.find_or_create_by(name: 'Donovan', age: 30) }.to change { Person.count }
       expect(Person.find_by(name: 'Donovan', age: 30)).not_to be_falsey
+    end
+
+    it 'can find or create by... AGGRESSIVELY' do
+      expect(Person.find_by(name: 'Darcy', age: 5)).to be_falsey
+      expect { Person.find_or_create_by!(name: 'Darcy', age: 30) }.to change { Person.count }
+      expect { Person.find_or_create_by!(name: nil) }.to raise_error
     end
 
     # This also works for create! and find_by_or_create/find_by_or_create!
@@ -528,7 +536,7 @@ describe Neo4j::ActiveNode do
     before do
       Person.destroy_all
       i = 1.upto(16).to_a
-      i.each{ |count| Person.create(age: count) }
+      i.each{ |count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
     after(:all) { Person.destroy_all }

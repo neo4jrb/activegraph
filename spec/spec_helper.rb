@@ -1,6 +1,6 @@
 # To run coverage via travis
-# require 'coveralls'
-# Coveralls.wear!
+require 'coveralls'
+Coveralls.wear!
 require 'simplecov'
 SimpleCov.start
 
