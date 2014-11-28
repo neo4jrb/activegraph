@@ -273,6 +273,10 @@ describe 'Query API' do
           context 'students, age 15, who are taking level 101 lessons' do
             it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
             it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+            it do
+              Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should ==
+              Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
+            end
           end
 
           context 'Students enrolled in math 101 with grade 65' do
