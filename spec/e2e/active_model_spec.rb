@@ -367,6 +367,15 @@ describe Neo4j::ActiveNode do
       person.exist?.should be true
     end
 
+    # Escaping strings is handled by neo4j-core but more tests never hurt.
+    # If this fails, it likely suggests a problem in that gem.
+    it 'can save properties with apostrophes' do
+      person = Person.create(name: "D'Amore-Schamberger")
+      person.reload
+      expect(person).to be_persisted
+      expect(person.name).to eq "D'Amore-Schamberger"
+    end
+
     it 'can find or create by...' do
       expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
       expect { Person.find_or_create_by(name: 'Donovan', age: 30) }.to change { Person.count }
