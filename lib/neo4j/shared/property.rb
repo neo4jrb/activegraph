@@ -184,7 +184,7 @@ module Neo4j::Shared
       def attribute!(name, options={})
         super(name, options)
         define_method("#{name}=") do |value|
-          typecast_value = typecast_attribute(typecaster_for(self.class._attribute_type(name)), value)
+          typecast_value = typecast_attribute(_attribute_typecaster(name), value)
           send("#{name}_will_change!") unless typecast_value == read_attribute(name)
           super(value)
         end
