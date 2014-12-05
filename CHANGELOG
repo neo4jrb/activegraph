@@ -1,3 +1,16 @@
+== 4.0.0.rc.1
+This release introduces API changes that may be considered breaking under certain conditions. See See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction.
+Please use https://github.com/neo4jrb/neo4j/issues for support regarding this update! You can also reach us on Twitter: @neo4jrb (Brian) and @subvertallmedia (Chris).
+* Default behavior changed: relationship types default to all caps, no prepending of "#". This behavior can be changed.
+* ActiveRel models no longer require explicit calling of `type`. When missing, the model will infer a type using the class name following the same rules used to determine automatic relationship types from ActiveNode models.
+* _classname properties will not be added automatically if you are using a version Neo4j >= 2.1.5. Instead, models are found using labels or relationship type. This is a potentially breaking change, particularly where ActiveRel is concerned. See the link at the beginning of this message for the steps required to work around this.
+* Query scopes are now chainable! Call `all` at the start of your scope or method to take advantage of this.
+* Changes required for Neo4j 2.2.
+* Support for custom typecasters.
+* New method `rel_where`, expanded behavior of `match_to` and `first_rel_to`
+* Implemented ActiveSupport load hooks.
+* Assorted performance improvements and refactoring.
+
 == 3.0.4
 * Gemspec requires the latest neo4j-core.
 * Fixed a pagination bug — thanks, @chrisgogreen!
