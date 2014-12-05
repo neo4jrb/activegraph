@@ -47,6 +47,23 @@ describe 'ActiveRel' do
     end
   end
 
+  describe 'types' do
+    class AutomaticRelType
+      include Neo4j::ActiveRel
+      from_class FromClass
+      to_class ToClass
+    end
+
+    it 'allows omission of `type`' do
+      expect(AutomaticRelType._type).to eq 'AUTOMATIC_REL_TYPE'
+    end
+
+    it 'uses `type` to override the default type' do
+      AutomaticRelType.type 'NEW_TYPE'
+      expect(AutomaticRelType._type).to eq 'NEW_TYPE'
+    end
+  end
+
   describe 'associations with rel_class set' do
     context 'with rel created from node' do
       let(:f1) { FromClass.create }
