@@ -112,7 +112,8 @@ describe 'Association Cache' do
         end
 
         it 'returns the exected result' do
-          expect(original_query.to_a).to eq [math, science]
+          expect(original_query.count).to eq 2
+          expect(original_query.to_a).to include(math, science)
           expect(new_query_result).to eq [science]
         end
 
@@ -175,7 +176,8 @@ describe 'Association Cache' do
           result = billy.association_instance_get_by_reflection(:lessons)
           query_hash = billy.cypher_hash(billy.lessons.to_cypher_with_params)
           expect(result).to have_key query_hash
-          expect(result[query_hash]).to eq [math, science]
+          expect(result[query_hash].count).to eq 2
+          expect(result[query_hash]).to include(math, science)
         end
       end
 
