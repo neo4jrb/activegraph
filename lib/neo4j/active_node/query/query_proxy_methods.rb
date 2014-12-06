@@ -71,27 +71,39 @@ module Neo4j
         # @param [#neo_id, String, Enumerable] node A node, a string representing a node's ID, or an enumerable of nodes or IDs.
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
-          if node.respond_to?(:neo_id)
-            self.where(neo_id: node.neo_id)
-          elsif !node.nil?
-            id_key = self.association.nil? ? model.primary_key : self.association.target_class.primary_key
-            if node.is_a?(Array)
-              node = node.first.respond_to?(:id) ? node.map!(&:id) : node
-            end
-            self.where(id_key => node)
-          else
-            # support for null object pattern
-            self.where('1 = 2')
-          end
+          where_arg = if node.respond_to?(:neo_id)
+                        { neo_id: node.neo_id }
+                      elsif !node.nil?
+                        id_key = association_id_key
+                        node = ids_array(node) if node.is_a?(Array)
+                        { id_key => node }
+                      else
+                        # support for null object pattern
+                        '1 = 2'
+                      end
+          self.where(where_arg)
         end
 
         # Gives you the first relationship between the last link of a QueryProxy chain and a given node
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id} RETURN r`
+        # @param [#neo_id, String, Enumerable] node An object to be sent to `match_to`. See params for that method.
+        # @return A relationship (ActiveRel, CypherRelationship, EmbeddedRelationship) or nil.
         def first_rel_to(node)
           self.match_to(node).limit(1).pluck(rel_identity).first
         end
 
         private
+
+        # @return [String] The primary key of a the current QueryProxy's model or target class
+        def association_id_key
+          self.association.nil? ? model.primary_key : self.association.target_class.primary_key
+        end
+
+        # @param [Enumerable] node An enumerable of nodes or ids.
+        # @return [Array] An array after having `id` called on each object
+        def ids_array(node)
+          node.first.respond_to?(:id) ? node.map!(&:id) : node
+        end
 
         def query_with_target(target, &block)
           block.yield(target || identity)
