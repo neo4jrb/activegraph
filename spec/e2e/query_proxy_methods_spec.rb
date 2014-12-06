@@ -261,6 +261,26 @@ describe 'query_proxy_methods' do
         end
       end
 
+      context 'with an array' do
+        context 'of nodes' do
+          after { @john.lessons.first_rel_to(@math).destroy }
+
+          it 'generates cypher using IN with the IDs of contained nodes' do
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include ('AND result.uuid IN')
+            expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
+            @john.lessons << @math
+            expect(@john.lessons.match_to([@history, @math]).to_a.count).to eq 2
+            expect(@john.lessons.match_to([@history, @math]).to_a).to include(@history, @math)
+          end
+        end
+
+        context 'of IDs' do
+          it 'allows an array of IDs' do
+            expect(@john.lessons.match_to([@history.id]).to_a).to eq [@history]
+          end
+        end
+      end
+
       context 'with a null object' do
         it 'generates cypher with 1 = 2' do
           expect(@john.lessons.match_to(nil).to_cypher).to include('AND 1 = 2')

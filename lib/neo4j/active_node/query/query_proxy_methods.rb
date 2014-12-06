@@ -68,12 +68,16 @@ module Neo4j
         # When it's a node, it'll use the object's neo_id, which is fastest. When not nil, it'll figure out the
         # primary key of that model. When nil, it uses `1 = 2` to prevent matching all records, which is the default
         # behavior when nil is passed to `where` in QueryProxy.
+        # @param [#neo_id, String, Enumerable] node A node, a string representing a node's ID, or an enumerable of nodes or IDs.
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
           if node.respond_to?(:neo_id)
             self.where(neo_id: node.neo_id)
           elsif !node.nil?
             id_key = self.association.nil? ? model.primary_key : self.association.target_class.primary_key
+            if node.is_a?(Array)
+              node = node.first.respond_to?(:id) ? node.map!(&:id) : node
+            end
             self.where(id_key => node)
           else
             # support for null object pattern
