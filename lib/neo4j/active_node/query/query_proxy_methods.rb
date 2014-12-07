@@ -105,8 +105,8 @@ module Neo4j
           node.first.respond_to?(:id) ? node.map!(&:id) : node
         end
 
-        def query_with_target(target, &block)
-          block.yield(target || identity)
+        def query_with_target(target)
+          yield(target || identity)
         end
 
         def exists_query_start(origin, condition, target)
