@@ -110,10 +110,9 @@ module Neo4j
         end
 
         def exists_query_start(origin, condition, target)
-          case
-          when condition.class == Fixnum
+          if condition.class == Fixnum
             self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
-          when condition.class == Hash
+          elsif condition.class == Hash
             self.where(condition.keys.first => condition.values.first)
           else
             self
