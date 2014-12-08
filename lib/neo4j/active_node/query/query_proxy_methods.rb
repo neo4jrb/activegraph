@@ -59,7 +59,7 @@ module Neo4j
             rescue Neo4j::Session::CypherError
               self.query.delete(target).exec
             end
-            self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
+            clear_caller_cache
           end
         end
 
@@ -100,7 +100,23 @@ module Neo4j
         end
         alias_method :all_rels_to, :rels_to
 
+        # Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
+        def delete(node)
+          self.match_to(node).query.delete(rel_identity).exec
+          clear_caller_cache
+        end
+
+        # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
+        def destroy(node)
+          self.rels_to(node).map!(&:destroy)
+          clear_caller_cache
+        end
+
         private
+
+        def clear_caller_cache
+          self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
+        end
 
         # @return [String] The primary key of a the current QueryProxy's model or target class
         def association_id_key

@@ -38,6 +38,10 @@ describe 'query_proxy_methods' do
       from_class IncludeStudent
       to_class IncludeLesson
       type 'lessons'
+
+      after_destroy :destroy_called
+
+      def destroy_called; end
     end
   end
   let!(:jimmy)    { IncludeStudent.create(name: 'Jimmy') }
@@ -343,5 +347,46 @@ describe 'query_proxy_methods' do
       end
     end
 
+    describe 'delete, destroy' do
+      before { @john.lessons << @history unless @john.lessons.include?(@history) }
+
+      describe 'delete' do
+        it 'removes relationships between a node and the last link of the QP chain from the server' do
+          expect_any_instance_of(IncludeEnrolledIn).not_to receive(:destroy_called)
+          expect(@john.lessons.include?(@history)).to be_truthy
+          @john.lessons.delete(@history)
+          expect(@john.lessons.include?(@history)).to be_falsey
+
+          # let's just be sure it's not deleting the nodes...
+          expect(@john).to be_persisted
+          expect(@history).to be_persisted
+        end
+
+        it 'accepts an array' do
+          @john.lessons << @math
+          @john.lessons.delete([@math, @history])
+          expect(@john.lessons.to_a).not_to include(@math, @history)
+        end
+      end
+
+      describe 'destroy' do
+        it 'returns relationships and destroys them in Ruby, executing callbacks in the process' do
+          expect(@john.lessons.include?(@history)).to be_truthy
+          expect_any_instance_of(IncludeEnrolledIn).to receive(:destroy_called)
+          @john.lessons.destroy(@history)
+          expect(@john.lessons.include?(@history)).to be_falsey
+
+          # let's just be sure it's not deleting the nodes...
+          expect(@john).to be_persisted
+          expect(@history).to be_persisted
+        end
+
+        it 'accepts an array' do
+          @john.lessons << @math
+          @john.lessons.destroy([@math, @history])
+          expect(@john.lessons.to_a).not_to include(@math, @history)
+        end
+      end
+    end
   end
 end
