@@ -92,6 +92,14 @@ module Neo4j
           self.match_to(node).limit(1).pluck(rel_identity).first
         end
 
+        # Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
+        # @param [#neo_id, String, Enumerable] node An object to be sent to `match_to`. See params for that method.
+        # @return An enumerable of relationship objects.
+        def rels_to(node)
+          self.match_to(node).pluck(rel_identity)
+        end
+        alias :all_rels_to, :rels_to
+
         private
 
         # @return [String] The primary key of a the current QueryProxy's model or target class

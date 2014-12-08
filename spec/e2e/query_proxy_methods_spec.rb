@@ -330,5 +330,18 @@ describe 'query_proxy_methods' do
       end
     end
 
+    # also aliased as `all_rels_to`
+    describe 'rels_to' do
+      before { 3.times { @john.lessons << @history } }
+      it 'returns all relationships across a QueryProxy chain to a given node' do
+        all_rels = @john.lessons.rels_to(@history)
+        expect(all_rels).to be_a(Enumerable)
+        expect(all_rels.count).to eq @john.lessons.match_to(@history).count
+        @john.lessons.all_rels_to(@history).map(&:destroy)
+        @john.clear_association_cache
+        expect(@john.lessons.all_rels_to(@history)).to be_empty
+      end
+    end
+
   end
 end
