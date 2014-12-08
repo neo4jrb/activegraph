@@ -98,7 +98,7 @@ module Neo4j
         def rels_to(node)
           self.match_to(node).pluck(rel_identity)
         end
-        alias :all_rels_to, :rels_to
+        alias_method :all_rels_to, :rels_to
 
         private
 
