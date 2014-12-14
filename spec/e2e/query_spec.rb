@@ -348,12 +348,32 @@ describe 'Query API' do
     end
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
-
     it 'builds a new QueryProxy object upon an existing Core::Query object' do
       combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
       combined_strings = "#{core_query.to_cypher} #{query_proxy.to_cypher}"
 
       expect(combined_strings).to eq combined_query.to_cypher
+    end
+
+    let(:brian) { Student.create(name: 'Brian') }
+    let(:othmar) { Teacher.create(name: 'Ms Othmar') }
+    let(:math201) { Lesson.create(subject: 'Math 201') }
+
+    before do
+      brian.lessons << math201
+      math201.teachers << othmar
+    end
+
+    it 'safely handles the `result` identifier' do
+      expect(brian.lessons.query.proxy_as(Lesson, :l).teachers.first).to eq othmar
+    end
+
+    describe 'optional matches' do
+      let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
+      let(:combined_strings) { "#{core_query.to_cypher} OPTIONAL #{query_proxy.to_cypher}" }
+      it 'can create an optional match' do
+        expect(combined_strings).to eq combined_query.to_cypher
+      end
     end
   end
 
