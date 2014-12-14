@@ -9,7 +9,7 @@ module Neo4j
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
-        attr_reader :caller, :association, :model
+        attr_reader :caller, :association, :model, :starting_query
 
         # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
         # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
@@ -42,6 +42,7 @@ module Neo4j
           @session = options[:session]
           @caller = options[:caller]
           @chain = []
+          @starting_query = options[:starting_query]
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
@@ -142,19 +143,17 @@ module Neo4j
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
           query = if @association
-            chain_var = _association_chain_var
-            label_string = @model && ":`#{@model.mapped_label_name}`"
-            (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}#{label_string})")
-          else
-            _query_model_as(var)
-          end
-
+                    chain_var = _association_chain_var
+                    label_string = @model && ":`#{@model.mapped_label_name}`"
+                    (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}#{label_string})")
+                  else
+                    starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+                  end
           # Build a query chain via the chain, return the result
           @chain.inject(query.params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
         end
-
 
         # Scope all queries to the current scope.
         #

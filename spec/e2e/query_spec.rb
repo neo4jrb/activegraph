@@ -340,6 +340,23 @@ describe 'Query API' do
     end
   end
 
+  describe 'Core::Query#proxy_as' do
+    let(:core_query) do
+      Neo4j::Session.current.query
+      .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
+      .with(:other_end, :s)
+    end
+
+    let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
+
+    it 'builds a new QueryProxy object upon an existing Core::Query object' do
+      combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
+      combined_strings = "#{core_query.to_cypher} #{query_proxy.to_cypher}"
+
+      expect(combined_strings).to eq combined_query.to_cypher
+    end
+  end
+
   describe 'batch finding' do
     let!(:ss101) { Lesson.create(subject: 'Social Studies', level: 101) }
     let!(:ss102) { Lesson.create(subject: 'Social Studies', level: 102) }

@@ -10,6 +10,7 @@ require 'neo4j/version'
 #require "active_support/time_with_zone"
 
 require "neo4j-core"
+require 'neo4j/core/query'
 require "active_model"
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
