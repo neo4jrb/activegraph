@@ -1,3 +1,12 @@
+== 4.0.0.rc.2
+This release builds on features introduced in the first RC. We are releasing this as another RC because the API may be tweaked before release.
+* New `proxy_as` for Core::Query to build QueryProxy chains onto Core::Query objects! 
+* Using `proxy_as`, new `optional` method in QueryProxy to use the `OPTIONAL MATCH` Cypher function.  
+* `match_to` and methods that depend on it now support arrays of nodes or IDs.
+* New `rels_to`/`all_rels_to` methods.
+* New `delete` and `destroy` methods in QueryProxy to easily remove relationships.
+* Serialized objects will include IDs by default.
+
 == 4.0.0.rc.1
 This release introduces API changes that may be considered breaking under certain conditions. See See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction.
 Please use https://github.com/neo4jrb/neo4j/issues for support regarding this update! You can also reach us on Twitter: @neo4jrb (Brian) and @subvertallmedia (Chris).
