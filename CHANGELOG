@@ -1,3 +1,7 @@
+== 4.0.0.rc.3
+Released minutes after rc.2 to catch one late addition!
+* Adds serialization support for QueryProxy.
+
 == 4.0.0.rc.2
 This release builds on features introduced in the first RC. We are releasing this as another RC because the API may be tweaked before release.
 * New `proxy_as` for Core::Query to build QueryProxy chains onto Core::Query objects! 
