@@ -9,7 +9,7 @@ module Neo4j
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
-        attr_reader :caller, :association, :model
+        attr_reader :caller, :association, :model, :starting_query
 
         # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
         # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
@@ -42,13 +42,15 @@ module Neo4j
           @session = options[:session]
           @caller = options[:caller]
           @chain = []
+          @starting_query = options[:starting_query]
+          @optional = options[:optional]
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
         # in the QueryProxy chain.
         def identity
-          @node_var || :result
+          @node_var || _result_string
         end
         alias_method :node_identity, :identity
 
@@ -142,19 +144,17 @@ module Neo4j
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
           query = if @association
-            chain_var = _association_chain_var
-            label_string = @model && ":`#{@model.mapped_label_name}`"
-            (_association_query_start(chain_var) & _query_model_as(var)).match("#{chain_var}#{_association_arrow}(#{var}#{label_string})")
-          else
-            _query_model_as(var)
-          end
-
+                    chain_var = _association_chain_var
+                    label_string = @model && ":`#{@model.mapped_label_name}`"
+                    (_association_query_start(chain_var) & _query_model_as(var)).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
+                  else
+                    starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+                  end
           # Build a query chain via the chain, return the result
           @chain.inject(query.params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
         end
-
 
         # Scope all queries to the current scope.
         #
@@ -182,7 +182,7 @@ module Neo4j
         # Returns a string of the cypher query with return objects and params
         # @param [Array] columns array containing symbols of identifiers used in the query
         # @return [String]
-        def to_cypher_with_params(columns = [:result])
+        def to_cypher_with_params(columns = [self.identity])
           final_query = query.return_query(columns)
           "#{final_query.to_cypher} | params: #{final_query.send(:merge_params)}"
         end
@@ -243,6 +243,10 @@ module Neo4j
           end
         end
 
+        def optional?
+          @optional == true
+        end
+
         attr_reader :context
         attr_reader :node_var
 
@@ -259,12 +263,23 @@ module Neo4j
 
         def _query_model_as(var)
           match_arg = if @model
-            label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-            {var => label}
+                        label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
+                        { var => label }
+                      else
+                        var
+                      end
+          _session.query(context: @context).send(_match_type, match_arg)
+        end
+
+        # TODO: Refactor this. Too much happening here.
+        def _result_string
+          if self.association
+            "result_#{self.association.name}".to_sym
+          elsif self.model
+            "result_#{self.model.name.tr!(':', '')}".to_sym
           else
-            var
+            :result
           end
-          _session.query(context: @context).match(match_arg)
         end
 
         def _session
@@ -276,9 +291,7 @@ module Neo4j
         end
 
         def _chain_level
-          if @options[:start_object]
-            1
-          elsif query_proxy = @options[:query_proxy]
+          if query_proxy = @options[:query_proxy]
             query_proxy._chain_level + 1
           else
             1
@@ -307,6 +320,10 @@ module Neo4j
 
         def _rel_chain_var
           :"rel#{_chain_level - 1}"
+        end
+
+        def _match_type
+          @optional ? :optional_match : :match
         end
 
         attr_writer :context
