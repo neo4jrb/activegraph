@@ -11,6 +11,10 @@ module Neo4j::Shared
       self.class.serialized_properties
     end
 
+    def serializable_hash(*args)
+      super.merge(id: id)
+    end
+
     module ClassMethods
       def serialized_properties
         @serialize || {}
