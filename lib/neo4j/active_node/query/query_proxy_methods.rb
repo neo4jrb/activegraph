@@ -112,6 +112,15 @@ module Neo4j
           clear_caller_cache
         end
 
+        # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
+        # TODO: It's silly that we have to call constantize here. There should be a better way of finding the target class of the destination.
+        def optional(association, node_id = nil)
+          target_qp = self.send(association)
+          model = target_qp.name.constantize
+          var = node_id || target_qp.identity
+          self.query.proxy_as(model, var, true)
+        end
+
         private
 
         def clear_caller_cache

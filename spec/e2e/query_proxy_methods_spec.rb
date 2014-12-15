@@ -149,7 +149,7 @@ describe 'query_proxy_methods' do
 
   describe 'count' do
     before(:all) do
-      @john = IncludeStudent.create(name: 'Paul')
+      @john = IncludeStudent.create(name: 'John')
       @history = IncludeLesson.create(name: 'history')
       3.times { @john.lessons << @history }
     end
@@ -247,7 +247,7 @@ describe 'query_proxy_methods' do
 
       context 'with a valid node' do
         it 'generates a match to the given node' do
-          expect(@john.lessons.match_to(@history).to_cypher).to include('AND ID(result) =')
+          expect(@john.lessons.match_to(@history).to_cypher).to include('AND ID(result_lessons) =')
         end
 
         it 'matches the object' do
@@ -257,7 +257,7 @@ describe 'query_proxy_methods' do
 
       context 'with an id' do
         it 'generates cypher using the primary key' do
-          expect(@john.lessons.match_to(@history.id).to_cypher).to include('AND result.uuid =')
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include('AND result_lessons.uuid =')
         end
 
         it 'matches' do
@@ -270,7 +270,7 @@ describe 'query_proxy_methods' do
           after { @john.lessons.first_rel_to(@math).destroy }
 
           it 'generates cypher using IN with the IDs of contained nodes' do
-            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include ('AND result.uuid IN')
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include ('AND result_lessons.uuid IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
             expect(@john.lessons.match_to([@history, @math]).to_a.count).to eq 2
@@ -386,6 +386,42 @@ describe 'query_proxy_methods' do
           @john.lessons.destroy([@math, @history])
           expect(@john.lessons.to_a).not_to include(@math, @history)
         end
+      end
+    end
+  end
+
+  describe 'optional' do
+    before(:all) do
+      @lauren = IncludeStudent.create(name: 'Lauren')
+      @math = IncludeLesson.create(name: 'Math')
+      @science = IncludeLesson.create(name: 'Science')
+      @johnson = IncludeTeacher.create(name: 'Mr. Johnson', age: 40)
+      @clancy = IncludeTeacher.create(name: 'Mr. Clancy', age: 50)
+
+      @lauren.lessons << [@math, @science]
+      @math.teachers << @johnson
+      @science.teachers << @clancy
+    end
+
+    it 'starts a new optional match' do
+      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).lessons(:l).pluck('distinct l, t')
+      expect(result.count).to eq 2
+
+      expect(result[0][0]).not_to be_nil
+      # The order of results changes between Neo4j 2.1.6 and 2.2.0.
+      # Until we stop supporting 2.1.6, this workaround is necessary.
+      if result[0][0] == @science
+        expect(result[0][0]).to eq @science
+        expect(result[0][1]).to be_nil
+
+        expect(result[1][0]).to eq @math
+        expect(result[1][1]).to eq @johnson
+      elsif
+        expect(result[0][0]).to eq @math
+        expect(result[0][1]).to eq @johnson
+
+        expect(result[1][0]).to eq @science
+        expect(result[1][1]).to be_nil
       end
     end
   end

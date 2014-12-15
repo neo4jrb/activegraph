@@ -119,7 +119,7 @@ module HasN
 
         instance_eval(%Q{
           def #{name}(node = nil, rel = nil, proxy_obj = nil)
-            query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(#{self.name}, nil, { 
+            query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(#{self.name}, nil, {
                   session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
                 })
             context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
@@ -131,6 +131,7 @@ module HasN
                                                        node: node,
                                                        rel: rel,
                                                        context: context,
+                                                       optional: query_proxy.optional?,
                                                        caller: query_proxy.caller
                                                      })
           end}, __FILE__, __LINE__)
@@ -167,11 +168,7 @@ module HasN
             result = #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}')
             association = self.class.reflect_on_association(__method__)
             query_return = association_instance_get(result.to_cypher_with_params, association)
-            if query_return.nil?
-              association_instance_set(result.to_cypher_with_params, result.first, association)
-            else
-              query_return
-            end
+            query_return || association_instance_set(result.to_cypher_with_params, result.first, association)
           end}, __FILE__, __LINE__)
 
         instance_eval(%Q{
