@@ -24,3 +24,4 @@ generator = %q[
 ]
 
 inject_into_file 'config/application.rb', generator, :after => '[:password]'
+
