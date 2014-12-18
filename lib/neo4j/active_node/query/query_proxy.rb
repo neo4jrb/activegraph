@@ -279,7 +279,7 @@ module Neo4j
         def _result_string
           if self.association
             "result_#{self.association.name}".to_sym
-          elsif self.model
+          elsif self.model && self.model.name
             "result_#{self.model.name.tr!(':', '')}".to_sym
           else
             :result
