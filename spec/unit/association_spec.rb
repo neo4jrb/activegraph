@@ -132,7 +132,7 @@ describe Neo4j::ActiveNode::HasN::Association do
       context "assumed model class" do
         let(:name) { :burzs }
 
-        it { should == 'Burz' }
+        it { should == '::Burz' }
       end
 
 
@@ -140,7 +140,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         context "specified as string" do
           let(:options) { { model_class: 'Bizzl' } }
 
-          it { should == 'Bizzl' }
+          it { should == '::Bizzl' }
         end
 
         context "specified as class" do
@@ -150,7 +150,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
           let(:options) { { model_class: 'Fizzl' } }
 
-          it { should == 'Fizzl' }
+          it { should == '::Fizzl' }
         end
       end
     end

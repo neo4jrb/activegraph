@@ -18,7 +18,17 @@ module Neo4j
         end
 
         def target_class_option(options)
-          options[:model_class].nil? ? @target_class_name_from_name : options[:model_class]
+          if options[:model_class].nil?
+            if @target_class_name_from_name
+              "::#{@target_class_name_from_name}"
+            else
+              @target_class_name_from_name
+            end
+          elsif options[:model_class] == false
+            false
+          else
+            "::#{options[:model_class]}"
+          end
         end
 
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
