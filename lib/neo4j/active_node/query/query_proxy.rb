@@ -279,8 +279,10 @@ module Neo4j
         def _result_string
           if self.association
             "result_#{self.association.name}".to_sym
-          elsif self.model
-            "result_#{self.model.name.tr!(':', '')}".to_sym
+          elsif self.model && self.model.name
+            label = "result_#{self.model.name}"
+            label.downcase!.tr!(':', '')
+            label.to_sym
           else
             :result
           end
