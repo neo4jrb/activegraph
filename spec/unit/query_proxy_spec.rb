@@ -6,6 +6,19 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   let (:query_result) { double("the result of calling :query")}
   let (:node) { double("A node object", foo: 'bar', neo_id: true ) }
   let (:rel)  { double("A rel object")}
+  let (:user_model) { double("A fake user model") }
+
+  describe 'label generation' do
+    before do
+      stub_const('User::Foo', user_model)
+      user_model.stub(:name).and_return('User::Foo')
+    end
+
+    it 'returns a correctly-formatted label' do
+      expect(qp).to receive(:model).at_least(1).times.and_return(User::Foo)
+      expect(qp.send(:_result_string)).to eq :result_userfoo
+    end
+  end
 
   describe 'each_with_rel' do
     it 'yields a node and rel object' do
