@@ -548,7 +548,7 @@ describe Neo4j::ActiveNode do
       i.each{ |count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
-    after(:all) { Person.delete_al }
+    after(:all) { Person.delete_all }
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
 
