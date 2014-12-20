@@ -95,10 +95,16 @@ module Neo4j
           find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
         end
 
-        # Destroy all nodes and connected relationships
-        def destroy_all
+        # Deletes all nodes and connected relationships from Cypher.
+        def delete_all
           self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`)-[r]-() DELETE n,r")
           self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
+        end
+
+        # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
+        # one database query per node in the database, more if callbacks require them.
+        def destroy_all
+          self.all.each { |n| n.destroy }
         end
 
         # Creates a Neo4j index on given property

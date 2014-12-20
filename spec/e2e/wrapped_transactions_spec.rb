@@ -30,8 +30,8 @@ describe 'wrapped nodes in transactions', api: :server do
   before(:all) do
     @Student = TransactionNode::Student
     @Teacher = TransactionNode::Teacher
-    @Student.destroy_all
-    @Teacher.destroy_all
+    @Student.delete_all
+    @Teacher.delete_all
 
     @Student.create(name: 'John')
     @Teacher.create(name: 'Mr Jones')

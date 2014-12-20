@@ -102,13 +102,13 @@ describe "Labels" do
 
     describe 'when indexed' do
       it 'can find it using the index' do
-        IndexedTestClass.destroy_all
+        IndexedTestClass.delete_all
         kalle = IndexedTestClass.create(name: 'kalle')
         IndexedTestClass.where(name: 'kalle').first.should == kalle
       end
 
       it 'does not find it if deleted' do
-        IndexedTestClass.destroy_all
+        IndexedTestClass.delete_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
         result = IndexedTestClass.where(name: 'kalle2').first
         result.should == kalle2
