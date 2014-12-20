@@ -57,7 +57,7 @@ describe IceLolly, :type => :integration do
 
     context "after being saved" do
       before do
-        subject.class.destroy_all
+        subject.class.delete_all
         subject.save
       end
 
@@ -543,12 +543,12 @@ describe Neo4j::ActiveNode do
 
   describe "Neo4j::Paginated.create_from" do
     before do
-      Person.destroy_all
+      Person.delete_all
       i = 1.upto(16).to_a
       i.each{ |count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
-    after(:all) { Person.destroy_all }
+    after(:all) { Person.delete_al }
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
 
@@ -562,7 +562,7 @@ describe Neo4j::ActiveNode do
 
     describe 'ordered pagination' do
       before do
-        Person.destroy_all
+        Person.delete_all
         ['Alice', 'Bob', 'Carol', 'David'].each { |name| Person.create(name: name) }
       end
 

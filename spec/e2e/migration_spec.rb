@@ -41,7 +41,7 @@ describe 'migration tasks' do
         include Neo4j::ActiveRel
         from_class false
         to_class false
-        type 'singers' 
+        type 'singers'
       end
 
       class ThirdRelClass
@@ -122,8 +122,8 @@ describe 'migration tasks' do
   describe 'AddClassnames class' do
     let(:full_path) { '/hd/gems/rails/add_classnames.yml' }
     let(:clazz) { Neo4j::Migration::AddClassnames }
-    let(:map_template) do 
-      {  
+    let(:map_template) do
+      {
         nodes: { 'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song'] },
         relationships: {
           'add' =>       {  'MigrationSpecs::FirstRelClass' => { :type => 'songs' } },
@@ -144,10 +144,7 @@ describe 'migration tasks' do
       clazz.any_instance.instance_variable_set(:@model_map, map_template)
     end
 
-    after(:each) do
-      MigrationSpecs::User.destroy_all
-      MigrationSpecs::Song.destroy_all
-    end
+    after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each { |c| c.delete_all } }
 
     it 'loads an initialization file' do
       expect{ clazz.new }.not_to raise_error

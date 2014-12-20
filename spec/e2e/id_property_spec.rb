@@ -28,7 +28,6 @@ describe Neo4j::ActiveNode::IdProperty do
           end
         end.to raise_error(/Illegal value/)
       end
-
     end
   end
 
@@ -168,7 +167,6 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(found).to eq node1
       end
     end
-
   end
 
 
@@ -214,7 +212,6 @@ describe Neo4j::ActiveNode::IdProperty do
         node.save
         expect(node.id).to eq(node.my_id)
       end
-
     end
 
 
@@ -226,7 +223,6 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(clazz.find_by_id(node.my_id)).to eq(:some_node)
       end
     end
-
   end
 
   describe 'id_property :my_uuid, auto: :uuid' do
@@ -267,7 +263,6 @@ describe Neo4j::ActiveNode::IdProperty do
         node.save
         expect(node.id).to eq(node.my_uuid)
       end
-
     end
 
     describe 'find_by_id' do
@@ -284,7 +279,6 @@ describe Neo4j::ActiveNode::IdProperty do
         found = clazz.find_by_id('something else')
         expect(found).to be_nil
       end
-
     end
   end
 
@@ -319,11 +313,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
-    after(:all) do
-      IdProp::Teacher.destroy_all
-      IdProp::Car.destroy_all
-      IdProp::Apple.destroy_all
-    end
+    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple].each { |c| c.delete_all } }
 
     it 'inherits the base id_property' do
       expect(IdProp::Substitute.create.my_id).to eq 'an id'
@@ -337,5 +327,4 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(IdProp::Apple.create.my_id).not_to be_nil
     end
   end
-
 end

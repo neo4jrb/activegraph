@@ -26,20 +26,26 @@ describe BasicModel do
 
   context "when there's lots of them" do
     before(:each) do
-      subject.class.destroy_all
-      subject.class.create!
-      subject.class.create!
-      subject.class.create!
+      subject.class.delete_all
+      3.times { subject.class.create! }
     end
 
     it "should be possible to #count" do
       subject.class.count.should == 3
     end
 
-    it "should be possible to #destroy_all" do
-      subject.class.all.to_a.size.should == 3
+    it "should be possible to #delete_all" do
+      expect(subject.class).not_to receive(:all)
+      expect(subject.class.count).to eq 3
+      subject.class.delete_all
+      expect(subject.class.count).to eq 0
+    end
+
+    it 'should be possible to #destroy_all' do
+      expect(subject.class).to receive(:all).and_return(subject.class.all)
+      expect(subject.class.count).to eq 3
       subject.class.destroy_all
-      subject.class.all.to_a.should be_empty
+      expect(subject.class.count).to eq 0
     end
   end
 end
