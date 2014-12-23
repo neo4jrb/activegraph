@@ -2,4 +2,5 @@ script: "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81
 language: ruby
 rvm:
   - 2.1.5
+  - 1.9.3
   - jruby-19mode
