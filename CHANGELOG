@@ -1,3 +1,8 @@
+== 4.0.0.rc.4
+* _classname property is disabled by default for ActiveRel! It had been disabled for ActiveNode, this just evens the score.
+* Fixes a bug to create better `result` labels in Cypher.
+* Made the `delete_all` and `destroy_all` ActiveNode class methods consistent with their ActiveRecord counterparts. `destroy_all` previously performed its deletes in Cypher but it should have been returning nodes to Ruby and calling `destroy`. `delete_all` didn't exist at all.
+
 == 4.0.0.rc.3
 Released minutes after rc.2 to catch one late addition!
 * Adds serialization support for QueryProxy.
