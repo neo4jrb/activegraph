@@ -18,11 +18,11 @@ shared_examples_for "timestamped model" do
     end
 
     it "should have set updated_at" do
-      subject.updated_at.to_i.should == Time.now.to_i
+      subject.updated_at.to_i.should == @time.to_i
     end
 
     it "should have set created_at" do
-      subject.created_at.to_i == Time.now.to_i
+      subject.created_at.to_i == @time.to_i
     end
 
     context "when updated" do
