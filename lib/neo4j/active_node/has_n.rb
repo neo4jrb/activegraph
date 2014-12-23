@@ -124,7 +124,7 @@ module HasN
                 })
             context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
-                                                     @associations[#{name.inspect}],
+                                                     associations[#{name.inspect}],
                                                      {
                                                        session: self.neo4j_session,
                                                        query_proxy: query_proxy,
@@ -174,7 +174,7 @@ module HasN
         instance_eval(%Q{
           def #{name}_query_proxy(options = {})
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
-                                                     @associations[#{name.inspect}],
+                                                     associations[#{name.inspect}],
                                                      {session: self.neo4j_session}.merge(options))
           end
 
