@@ -43,11 +43,11 @@ describe Neo4j::ActiveNode::Persistence do
       o.save
     end
 
-    it 'does not updates node if already persisted before but nothing changed' do
+    it 'does not update persisted node if nothing changed' do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:_persisted_obj).and_return(node)
       o.stub(:changed_attributes).and_return({})
-      node.should_receive(:exist?).and_return(true)
+      expect(node).not_to receive(:update_props).with(anything())
       o.save
     end
 
@@ -55,8 +55,7 @@ describe Neo4j::ActiveNode::Persistence do
       o = clazz.new
       o.name = 'sune'
       o.stub(:_persisted_obj).and_return(node)
-      node.should_receive(:exist?).and_return(true)
-      node.should_receive(:update_props).and_return(name: 'sune')
+      expect(node).to receive(:update_props).and_return(name: 'sune')
       o.save
     end
 
