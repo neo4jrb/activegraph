@@ -135,7 +135,7 @@ module Neo4j::ActiveNode
                                                        caller: query_proxy.caller
                                                      })
           end}, __FILE__, __LINE__)
-        end
+      end
 
       def has_one(direction, name, options = {})
         name = name.to_sym
