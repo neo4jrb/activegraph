@@ -60,3 +60,9 @@ Style/SingleLineBlockParams:
 # Reason: Switched `extend self` to `module_function` in id_property.rb but that caused errors
 Style/ModuleFunction:
   Enabled: false
+
+# Configuration parameters: AllowSafeAssignment.
+# Reason: I'm a proud user of assignment in conditionals.
+Lint/AssignmentInCondition:
+  Enabled: true
+
