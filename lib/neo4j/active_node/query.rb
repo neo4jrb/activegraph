@@ -12,7 +12,7 @@ module Neo4j
       #
       # @example Return the names of all of Mike's friends
       #   # Generates: MATCH (mike:Person), mike-[:friend]-friend WHERE ID(mike) = 123 RETURN friend.name
-      #   mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name) 
+      #   mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name)
       #
       # @param var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]

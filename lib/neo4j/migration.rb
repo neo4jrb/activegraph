@@ -166,7 +166,7 @@ module Neo4j
       end
 
       def file_init
-        @model_map = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(classnames_filepath)) 
+        @model_map = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(classnames_filepath))
       end
 
       def node_cypher(label, action)

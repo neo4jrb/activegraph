@@ -141,7 +141,7 @@ describe 'Labels' do
 
   describe 'find_by, find_by!' do
     before(:all) { @jasmine = IndexedTestClass.create(name: 'jasmine') }
-    
+
     describe 'find_by' do
       it 'finds the expected object' do
         expect(IndexedTestClass.find_by(name: 'jasmine')).to eq @jasmine
@@ -174,7 +174,7 @@ describe 'Labels' do
       class EmptyTestClass
         include Neo4j::ActiveNode
       end
-      
+
       @jasmine = FirstLastTestClass.create(name: 'jasmine')
       @middle = FirstLastTestClass.create
       @lauren = FirstLastTestClass.create(name: 'lauren')

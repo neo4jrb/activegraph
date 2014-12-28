@@ -49,7 +49,7 @@ describe Neo4j::ActiveRel::Persistence do
       r.stub(:confirm_node_classes).and_return(:true)
       expect(node1).to receive(:create_rel).with(:friends_with, node2, friends_since: 'sunday', level: 9001, _classname: nil).and_return(rel)
       rel.stub(:props).and_return(end_props)
-      expect(r.save).to be_truthy 
+      expect(r.save).to be_truthy
     end
 
     it 'does not update the rel if nothing changes' do
@@ -186,7 +186,7 @@ describe Neo4j::ActiveRel::Persistence do
     it 'raises an exception if invalid' do
       clazz.stub(:create).and_return(false)
       clazz.stub_chain('errors.full_messages').and_return([])
-      expect do 
+      expect do
         clazz.create!
       end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
     end

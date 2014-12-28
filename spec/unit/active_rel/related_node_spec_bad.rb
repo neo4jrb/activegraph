@@ -96,7 +96,7 @@ describe Neo4j::ActiveRel::RelatedNode do
 
   context 'when invalid' do
     it 'does not accept an invalid initialization param' do
-      expect do 
+      expect do
         RelatedNode.new(foo: 'bar')
       end.to raise_error(Neo4j::ActiveRel::RelatedNode::InvalidParameterError)
     end

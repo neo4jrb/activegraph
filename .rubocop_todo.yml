@@ -223,11 +223,6 @@ Style/RegexpLiteral:
 Style/SingleLineBlockParams:
   Enabled: false
 
-# Offense count: 20
-# Cop supports --auto-correct.
-Style/TrailingWhitespace:
-  Enabled: false
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, Whitelist.

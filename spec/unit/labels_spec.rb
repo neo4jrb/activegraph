@@ -7,15 +7,15 @@ describe Neo4j::ActiveNode::Labels do
 
     @classA = Class.new do
       include Neo4j::ActiveNode::Labels
-      def self.mapped_label_name 
-        'A' 
+      def self.mapped_label_name
+        'A'
       end
     end
 
     @classB = Class.new do
       include Neo4j::ActiveNode::Labels
-      def self.mapped_label_name 
-        'B' 
+      def self.mapped_label_name
+        'B'
       end
     end
   end

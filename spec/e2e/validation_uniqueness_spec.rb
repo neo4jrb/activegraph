@@ -228,6 +228,6 @@ describe Neo4j::ActiveNode::Validations do
         o2.should_not have_error_on(:name)
       end
     end
-  end  
+  end
 
 end
