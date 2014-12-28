@@ -47,7 +47,7 @@ describe Neo4j::ActiveNode::Persistence do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:_persisted_obj).and_return(node)
       o.stub(:changed_attributes).and_return({})
-      expect(node).not_to receive(:update_props).with(anything())
+      expect(node).not_to receive(:update_props).with(anything)
       o.save
     end
 

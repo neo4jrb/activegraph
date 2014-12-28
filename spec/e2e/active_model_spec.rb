@@ -170,7 +170,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'does have errors if its not valid' do
-      ice_cream = IceCream.new()
+      ice_cream = IceCream.new
       ice_cream.should_not be_valid
       ice_cream.errors.should_not be_empty
     end
@@ -326,7 +326,7 @@ describe Neo4j::ActiveNode do
       person = Person.create(age: "40")
       expect(person.age).to eq(40)
       person.age = '42'
-      person.save()
+      person.save
       expect(person.age).to eq(42)
     end
 
