@@ -117,72 +117,72 @@ module HasN
             #{name}(nil, :r).pluck(:r)
           end}, __FILE__, __LINE__)
 
-        instance_eval(%{
-          def #{name}(node = nil, rel = nil, proxy_obj = nil)
-            query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(::#{self.name}, nil, {
-                  session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
-                })
-            context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
-                                                     associations[#{name.inspect}],
-                                                     {
-                                                       session: self.neo4j_session,
-                                                       query_proxy: query_proxy,
-                                                       node: node,
-                                                       rel: rel,
-                                                       context: context,
-                                                       optional: query_proxy.optional?,
-                                                       caller: query_proxy.caller
-                                                     })
-          end}, __FILE__, __LINE__)
+      instance_eval(%{
+        def #{name}(node = nil, rel = nil, proxy_obj = nil)
+          query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(::#{self.name}, nil, {
+                session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
+              })
+          context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
+          Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
+                                                   associations[#{name.inspect}],
+                                                   {
+                                                     session: self.neo4j_session,
+                                                     query_proxy: query_proxy,
+                                                     node: node,
+                                                     rel: rel,
+                                                     context: context,
+                                                     optional: query_proxy.optional?,
+                                                     caller: query_proxy.caller
+                                                   })
+        end}, __FILE__, __LINE__)
       end
 
-      def has_one(direction, name, options = {})
-        name = name.to_sym
+    def has_one(direction, name, options = {})
+      name = name.to_sym
 
-        association = Neo4j::ActiveNode::HasN::Association.new(:has_one, direction, name, options)
-        @associations ||= {}
-        @associations[name] = association
+      association = Neo4j::ActiveNode::HasN::Association.new(:has_one, direction, name, options)
+      @associations ||= {}
+      @associations[name] = association
 
-        target_class_name = association.target_class_name || 'nil'
-        create_reflection(:has_one, name, association)
+      target_class_name = association.target_class_name || 'nil'
+      create_reflection(:has_one, name, association)
 
-        module_eval(%{
-          def #{name}=(other_node)
-            raise(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
-            clear_association_cache
-            #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
-            #{name}_query_proxy << other_node
-          end
+      module_eval(%{
+        def #{name}=(other_node)
+          raise(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
+          clear_association_cache
+          #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
+          #{name}_query_proxy << other_node
+        end
 
-          def #{name}_query_proxy(options = {})
-            self.class.#{name}_query_proxy({start_object: self}.merge(options))
-          end
+        def #{name}_query_proxy(options = {})
+          self.class.#{name}_query_proxy({start_object: self}.merge(options))
+        end
 
-          def #{name}_rel
-            #{name}_query_proxy(rel: :r).pluck(:r).first
-          end
+        def #{name}_rel
+          #{name}_query_proxy(rel: :r).pluck(:r).first
+        end
 
-          def #{name}(node = nil, rel = nil)
-            return nil unless self._persisted_obj
-            result = #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}')
-            association = self.class.reflect_on_association(__method__)
-            query_return = association_instance_get(result.to_cypher_with_params, association)
-            query_return || association_instance_set(result.to_cypher_with_params, result.first, association)
-          end}, __FILE__, __LINE__)
+        def #{name}(node = nil, rel = nil)
+          return nil unless self._persisted_obj
+          result = #{name}_query_proxy(node: node, rel: rel, context: '#{self.name}##{name}')
+          association = self.class.reflect_on_association(__method__)
+          query_return = association_instance_get(result.to_cypher_with_params, association)
+          query_return || association_instance_set(result.to_cypher_with_params, result.first, association)
+        end}, __FILE__, __LINE__)
 
-        instance_eval(%{
-          def #{name}_query_proxy(options = {})
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
-                                                     associations[#{name.inspect}],
-                                                     {session: self.neo4j_session}.merge(options))
-          end
+      instance_eval(%{
+        def #{name}_query_proxy(options = {})
+          Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
+                                                   associations[#{name.inspect}],
+                                                   {session: self.neo4j_session}.merge(options))
+        end
 
-          def #{name}(node = nil, rel = nil, query_proxy = nil)
-            context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
-            #{name}_query_proxy(query_proxy: query_proxy, node: node, rel: rel, context: context)
-          end}, __FILE__, __LINE__)
-      end
+        def #{name}(node = nil, rel = nil, query_proxy = nil)
+          context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
+          #{name}_query_proxy(query_proxy: query_proxy, node: node, rel: rel, context: context)
+        end}, __FILE__, __LINE__)
+    end
     end
   end
 

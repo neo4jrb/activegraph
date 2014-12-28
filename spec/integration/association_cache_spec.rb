@@ -185,9 +185,9 @@ describe 'Association Cache' do
         it 'does not set results' do
           billy.reload
           tx = Neo4j::Transaction.new
-            history = CachingSpec::Lesson.create(subject: 'history', level: 101 )
-            billy.lessons << history
-            billy.lessons.to_a # would typically cache results
+          history = CachingSpec::Lesson.create(subject: 'history', level: 101 )
+          billy.lessons << history
+          billy.lessons.to_a # would typically cache results
           tx.close
           expect(cache).to be_empty
           expect(billy.lessons.include?(history)).to be_truthy
