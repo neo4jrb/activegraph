@@ -233,11 +233,6 @@ Style/TrivialAccessors:
 Style/UnlessElse:
   Enabled: false
 
-# Offense count: 11
-# Cop supports --auto-correct.
-Style/UnneededPercentQ:
-  Enabled: false
-
 # Offense count: 8
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/VariableName:

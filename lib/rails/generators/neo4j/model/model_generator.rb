@@ -70,14 +70,14 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   end
 
   def timestamp_statements
-    %q(
+    '
   property :created_at, type: DateTime
   # property :created_on, type: Date
 
   property :updated_at, type: DateTime
   # property :updated_on, type: Date
 
-)
+'
   end
 
   hook_for :test_framework
