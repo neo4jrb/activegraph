@@ -58,7 +58,7 @@ module Neo4j::Shared
       !_persisted_obj
     end
 
-    alias :new? :new_record?
+    alias_method :new?, :new_record?
 
     def destroy
       _persisted_obj && _persisted_obj.del
