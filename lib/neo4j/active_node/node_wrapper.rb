@@ -31,7 +31,7 @@ class Neo4j::Node
       else
         wrappers = _class_wrappers
         return self if wrappers.nil?
-        wrapper_classes = wrappers.map{|w| Neo4j::ActiveNode::Labels._wrapped_labels[w]}
+        wrapper_classes = wrappers.map {|w| Neo4j::ActiveNode::Labels._wrapped_labels[w]}
         wrapper_classes.sort.first
       end
     end

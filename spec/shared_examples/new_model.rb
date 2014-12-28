@@ -4,7 +4,7 @@ shared_examples 'new model' do
     it { should_not be_persisted }
 
     it "should not allow write access to undeclared properties" do
-      expect{subject[:unknown] = "none"}.to raise_error(ActiveAttr::UnknownAttributeError)
+      expect {subject[:unknown] = "none"}.to raise_error(ActiveAttr::UnknownAttributeError)
     end
 
     it "should not allow read access to undeclared properties" do
@@ -16,7 +16,7 @@ shared_examples 'new model' do
     end
 
     it "should allow properties to be accessed with a symbol" do
-      lambda{ subject.props[:test] = true }.should_not raise_error
+      lambda { subject.props[:test] = true }.should_not raise_error
     end
   end
 

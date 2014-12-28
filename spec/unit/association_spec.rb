@@ -43,7 +43,7 @@ describe Neo4j::ActiveNode::HasN::Association do
     context 'origin and rel_class specified' do
       let(:options) { {origin: :foo, rel_class: :bar} }
 
-      it { expect{ subject }.to raise_error(ArgumentError) }
+      it { expect { subject }.to raise_error(ArgumentError) }
     end
 
     describe '#arrow_cypher' do

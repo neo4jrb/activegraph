@@ -36,7 +36,7 @@ describe 'Neo4j::NodeMixin::Scope' do
 
   describe 'Person.scope :in_order, -> { order(level: num)}' do
     before(:all) do
-      Person.scope :in_order, ->(identifier){ order("#{identifier}.level_num DESC")}
+      Person.scope :in_order, ->(identifier) { order("#{identifier}.level_num DESC")}
     end
 
     describe 'Person.in_order' do

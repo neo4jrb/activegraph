@@ -55,7 +55,7 @@ describe 'Association Cache' do
   context 'on a class' do
     describe 'association_cache method' do
       it 'raises an error because it is only for instances' do
-        expect{CachingSpec::Student.association_cache}.to raise_error
+        expect {CachingSpec::Student.association_cache}.to raise_error
       end
     end
 

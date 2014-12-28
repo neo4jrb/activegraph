@@ -64,7 +64,7 @@ describe 'migration tasks' do
 
   describe 'base Migration class' do
     it 'raises an error' do
-      expect{Neo4j::Migration.new.migrate}.to raise_error 'not implemented'
+      expect {Neo4j::Migration.new.migrate}.to raise_error 'not implemented'
     end
   end
 
@@ -148,7 +148,7 @@ describe 'migration tasks' do
     after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each { |c| c.delete_all } }
 
     it 'loads an initialization file' do
-      expect{ clazz.new }.not_to raise_error
+      expect { clazz.new }.not_to raise_error
     end
 
     describe 'nodes' do

@@ -67,7 +67,7 @@ describe IceLolly, type: :integration do
       it { should == subject.class.where(flavour: 'vanilla').first }
 
       it "should be able to modify one of its named attributes" do
-        lambda{ subject.update_attributes!(flavour: 'horse') }.should_not raise_error
+        lambda { subject.update_attributes!(flavour: 'horse') }.should_not raise_error
         subject.flavour.should == 'horse'
       end
 
@@ -546,7 +546,7 @@ describe Neo4j::ActiveNode do
     before do
       Person.delete_all
       i = 1.upto(16).to_a
-      i.each{ |count| Person.create(name: "Billy-#{i}", age: count) }
+      i.each { |count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
     after(:all) { Person.delete_all }

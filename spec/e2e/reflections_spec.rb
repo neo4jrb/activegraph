@@ -28,7 +28,7 @@ describe 'reflections' do
   let(:rel_clazz) { ReflectionsSpecs::RelClass }
 
   it 'responds to :reflections' do
-    expect{clazz.reflections}.not_to raise_error
+    expect {clazz.reflections}.not_to raise_error
   end
 
   it 'responds with a hash' do

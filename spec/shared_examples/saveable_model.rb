@@ -5,7 +5,7 @@ shared_examples 'saveable model' do
     end
 
     it "should save without raising an exception" do
-      expect{ subject.save! }.to_not raise_error
+      expect { subject.save! }.to_not raise_error
     end
 
     context "after save" do

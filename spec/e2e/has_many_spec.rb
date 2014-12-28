@@ -24,7 +24,7 @@ describe 'has_n' do
     end
 
     it 'has a frozen array' do
-      expect{unsaved_node.friends << friend1}.to raise_error(RuntimeError)
+      expect {unsaved_node.friends << friend1}.to raise_error(RuntimeError)
     end
   end
 

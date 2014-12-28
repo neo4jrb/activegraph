@@ -13,13 +13,13 @@ describe Neo4j::ActiveRel do
   end
 
   it 'can be included in a module' do
-    expect{clazz.new}.not_to raise_error
+    expect {clazz.new}.not_to raise_error
   end
 
   describe 'neo4j_obj' do
     context 'on a non-persisted node' do
       it 'raises an error' do
-        expect{clazz.new.neo4j_obj}.to raise_error
+        expect {clazz.new.neo4j_obj}.to raise_error
       end
     end
   end

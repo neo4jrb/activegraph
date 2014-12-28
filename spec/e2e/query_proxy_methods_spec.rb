@@ -171,7 +171,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'works with order clause' do
-      expect{ IncludeStudent.order(name: :asc).count }.not_to raise_error
+      expect { IncludeStudent.order(name: :asc).count }.not_to raise_error
     end
 
     it 'is aliased by length and size' do

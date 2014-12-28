@@ -209,7 +209,7 @@ module Neo4j
         end
 
         def mapped_labels
-          mapped_label_names.map{|label_name| Neo4j::Label.create(label_name)}
+          mapped_label_names.map {|label_name| Neo4j::Label.create(label_name)}
         end
 
         def set_mapped_label_name(name)
