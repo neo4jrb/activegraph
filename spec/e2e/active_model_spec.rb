@@ -218,7 +218,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'handles before_validation callbacks' do
-#      skip
+      #      skip
       c = Company.create
       expect(c.validation_called).to be true
     end

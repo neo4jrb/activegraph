@@ -133,11 +133,6 @@ Style/ClassVars:
 Style/CommentAnnotation:
   Enabled: false
 
-# Offense count: 5
-# Cop supports --auto-correct.
-Style/CommentIndentation:
-  Enabled: false
-
 # Offense count: 3
 # Cop supports --auto-correct.
 Style/DeprecatedHashMethods:

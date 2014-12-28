@@ -75,8 +75,8 @@ describe "has_one" do
       b.parent = a
       b.query_as(:b).match("b<-[:`CHILDREN`]-(r)").pluck(:r).should == [a]
       a.query_as(:a).match("a-[:`CHILDREN`]->(r)").pluck(:r).should == [b]
-#      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
-#      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
+      #      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
+      #      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
     end
   end
 
