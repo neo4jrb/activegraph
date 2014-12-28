@@ -9,7 +9,7 @@ RSpec::Matchers.define :have_error_on do |*args|
 
   match do |model|
     model.valid?
-    @has_errors = @attributes.detect {|attribute| model.errors[attribute[0]].present? }
+    @has_errors = @attributes.detect { |attribute| model.errors[attribute[0]].present? }
     if @message
       !!@has_errors && model.errors[@has_errors[0]].include?(@has_errors[1])
     else

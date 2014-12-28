@@ -74,10 +74,10 @@ module Neo4j
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
-          map_id = proc {|object| object.respond_to?(:id) ? object.send(:id) : object }
+          map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
           if id.is_a?(Array)
-            find_by_ids(id.map {|o| map_id.call(o) })
+            find_by_ids(id.map { |o| map_id.call(o) })
           else
             find_by_id(map_id.call(id))
           end
@@ -161,7 +161,7 @@ module Neo4j
 
         # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
-          self.ancestors.find_all {|a| a.respond_to?(:mapped_label_name) }.map {|a| a.mapped_label_name.to_sym }
+          self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
         end
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
@@ -209,7 +209,7 @@ module Neo4j
         end
 
         def mapped_labels
-          mapped_label_names.map {|label_name| Neo4j::Label.create(label_name) }
+          mapped_label_names.map { |label_name| Neo4j::Label.create(label_name) }
         end
 
         def set_mapped_label_name(name)

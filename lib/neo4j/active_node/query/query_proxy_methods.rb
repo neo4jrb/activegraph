@@ -5,11 +5,11 @@ module Neo4j
         class InvalidParameterError < StandardError; end
 
         def first(target = nil)
-          query_with_target(target) {|target| first_and_last("ID(#{target})", target) }
+          query_with_target(target) { |target| first_and_last("ID(#{target})", target) }
         end
 
         def last(target = nil)
-          query_with_target(target) {|target| first_and_last("ID(#{target}) DESC", target) }
+          query_with_target(target) { |target| first_and_last("ID(#{target}) DESC", target) }
         end
 
         def first_and_last(order, target)
@@ -29,7 +29,7 @@ module Neo4j
         alias_method :length, :count
 
         def empty?(target = nil)
-          query_with_target(target) {|target| !self.exists?(nil, target) }
+          query_with_target(target) { |target| !self.exists?(nil, target) }
         end
 
         alias_method :blank?, :empty?

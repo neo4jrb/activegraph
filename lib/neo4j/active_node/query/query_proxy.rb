@@ -81,10 +81,10 @@ module Neo4j
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
         def each(node = true, rel = nil, &block)
           if node && rel
-            enumerable_query(identity, @rel_var).each {|obj, rel| yield obj, rel }
+            enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
           else
             pluck_this = !rel ? identity : @rel_var
-            enumerable_query(pluck_this).each {|obj| yield obj }
+            enumerable_query(pluck_this).each { |obj| yield obj }
           end
         end
 
@@ -213,7 +213,7 @@ module Neo4j
             end
           end.compact
 
-          fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
+          fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
             # Neo4j::Transaction.run do
             other_node.save unless other_node.neo_id
@@ -233,7 +233,7 @@ module Neo4j
         end
 
         def read_attribute_for_serialization(*args)
-          to_a.map {|o| o.read_attribute_for_serialization(*args) }
+          to_a.map { |o| o.read_attribute_for_serialization(*args) }
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls

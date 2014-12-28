@@ -39,7 +39,7 @@ module Neo4j::Shared
 
     def default_properties=(properties)
       keys = self.class.default_properties.keys
-      @default_properties = properties.select {|key| keys.include?(key) }
+      @default_properties = properties.select { |key| keys.include?(key) }
     end
 
     def default_property(key)
@@ -92,7 +92,7 @@ module Neo4j::Shared
     def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
       multi_parameter_attributes.each_pair do |key, values|
         begin
-          values = (values.keys.min..values.keys.max).map {|i| values[i] }
+          values = (values.keys.min..values.keys.max).map { |i| values[i] }
           field = self.class.attributes[key.to_sym]
           new_attributes[key] = instantiate_object(field, values)
         rescue => e
@@ -104,7 +104,7 @@ module Neo4j::Shared
 
     def instantiate_object(field, values_with_empty_parameters)
       return nil if values_with_empty_parameters.all?(&:nil?)
-      values = values_with_empty_parameters.collect {|v| v.nil? ? 1 : v }
+      values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
       klass = field[:type]
       klass ? klass.new(*values) : values
     end

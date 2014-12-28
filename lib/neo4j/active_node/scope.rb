@@ -116,7 +116,7 @@ module Neo4j::ActiveNode
       VALID_SCOPE_TYPES = [:current_scope, :ignore_default_scope]
 
       def initialize
-        @registry = Hash.new {|hash, key| hash[key] = {} }
+        @registry = Hash.new { |hash, key| hash[key] = {} }
       end
 
       # Obtains the value for a given +scope_name+ and +variable_name+.

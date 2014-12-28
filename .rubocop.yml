@@ -14,12 +14,6 @@ Style/HashSyntax:
   EnforcedStyle: ruby19
 
 # Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, EnforcedStyleForEmptyBraces, SpaceBeforeBlockParameters.
-Style/SpaceInsideBlockBraces:
-  Enabled: true
-  SpaceBeforeBlockParameters: false
-
-# Cop supports --auto-correct.
 Style/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space

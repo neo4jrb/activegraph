@@ -31,13 +31,13 @@ class Neo4j::Node
       else
         wrappers = _class_wrappers
         return self if wrappers.nil?
-        wrapper_classes = wrappers.map {|w| Neo4j::ActiveNode::Labels._wrapped_labels[w] }
+        wrapper_classes = wrappers.map { |w| Neo4j::ActiveNode::Labels._wrapped_labels[w] }
         wrapper_classes.sort.first
       end
     end
 
     def load_class_from_label(label_name)
-      label_name.to_s.split('::').inject(Kernel) {|container, name| container.const_get(name.to_s) }
+      label_name.to_s.split('::').inject(Kernel) { |container, name| container.const_get(name.to_s) }
     rescue NameError
       nil
     end

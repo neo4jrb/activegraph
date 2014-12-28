@@ -68,7 +68,7 @@ module Neo4j
       private
 
       def hasherize_order(order)
-        (order || []).map {|clause| Hash[*clause] }
+        (order || []).map { |clause| Hash[*clause] }
       end
 
       def extract_id!(conditions)
