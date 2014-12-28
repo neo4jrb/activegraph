@@ -105,8 +105,8 @@ module Neo4j
 
         # Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
         # would be comparing the QueryProxy objects, not the lessons themselves.
-        def ==(value)
-          self.to_a == value
+        def ==(other)
+          self.to_a == other
         end
 
         METHODS = %w(where rel_where order skip limit)

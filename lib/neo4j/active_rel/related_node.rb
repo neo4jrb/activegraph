@@ -19,9 +19,9 @@ module Neo4j::ActiveRel
     end
 
     # Loads the node if needed, then conducts comparison.
-    def ==(obj)
+    def ==(other)
       loaded if @node.is_a?(Fixnum)
-      @node == obj
+      @node == other
     end
 
     # Returns the neo_id of a given node without loading.

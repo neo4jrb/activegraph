@@ -147,10 +147,6 @@ Style/Lambda:
 Style/MultilineBlockChain:
   Enabled: false
 
-# Offense count: 3
-Style/OpMethod:
-  Enabled: false
-
 # Offense count: 10
 # Configuration parameters: NamePrefix, NamePrefixBlacklist.
 Style/PredicateName:
