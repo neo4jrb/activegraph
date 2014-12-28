@@ -163,7 +163,7 @@ describe 'has_n' do
 
         rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
-        rs.map(&:end_node).map(&:name).should =~ ['James', 'Cat']
+        rs.map(&:end_node).map(&:name).should =~ %w(James Cat)
         rs.each do |r|
           r[:since].should eq(1997)
         end

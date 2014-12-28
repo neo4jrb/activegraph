@@ -238,8 +238,3 @@ Style/UnlessElse:
 Style/VariableName:
   Enabled: false
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: WordRegex.
-Style/WordArray:
-  MinSize: 4
