@@ -27,7 +27,7 @@ module Neo4j::ActiveNode
 
     module TypeMethods
       def define_id_methods(clazz, name, conf)
-        raise "Expected a Hash, got #{conf.class} (#{conf.to_s}) for id_property" unless conf.is_a?(Hash)
+        raise "Expected a Hash, got #{conf.class} (#{conf}) for id_property" unless conf.is_a?(Hash)
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
