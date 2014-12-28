@@ -64,7 +64,7 @@ describe 'Query API' do
 
   describe 'association validation' do
     before(:each) do
-      %w{Foo Bar}.each do |const|
+      %w(Foo Bar).each do |const|
         stub_const const, Class.new { include Neo4j::ActiveNode }
       end
     end

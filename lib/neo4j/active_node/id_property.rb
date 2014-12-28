@@ -45,7 +45,7 @@ module Neo4j::ActiveNode
       def define_property_method(clazz, name)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%{
+        clazz.module_eval(%(
           def id
             _persisted_obj ? #{name.to_sym == :id ? 'attribute(\'id\')' : name} : nil
           end
@@ -53,7 +53,7 @@ module Neo4j::ActiveNode
           validates_uniqueness_of :#{name}
 
           property :#{name}
-        }, __FILE__, __LINE__)
+                ), __FILE__, __LINE__)
 
       end
 
@@ -61,7 +61,7 @@ module Neo4j::ActiveNode
       def define_uuid_method(clazz, name)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%{
+        clazz.module_eval(%(
           default_property :#{name} do
              ::SecureRandom.uuid
           end
@@ -71,7 +71,7 @@ module Neo4j::ActiveNode
           end
 
           alias_method :id, :#{name}
-        }, __FILE__, __LINE__)
+                ), __FILE__, __LINE__)
       end
 
       def define_custom_method(clazz, name, on)
@@ -93,15 +93,15 @@ module Neo4j::ActiveNode
 
       def clear_methods(clazz, name)
         if clazz.method_defined?(name)
-          clazz.module_eval(%{
+          clazz.module_eval(%(
             undef_method :#{name}
-          }, __FILE__, __LINE__)
+                    ), __FILE__, __LINE__)
         end
 
         if clazz.attribute_names.include?(name.to_s)
-          clazz.module_eval(%{
+          clazz.module_eval(%(
             undef_property :#{name}
-          }, __FILE__, __LINE__)
+                    ), __FILE__, __LINE__)
         end
       end
 

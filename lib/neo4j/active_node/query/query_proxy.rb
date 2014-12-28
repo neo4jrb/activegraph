@@ -109,7 +109,7 @@ module Neo4j
           self.to_a == value
         end
 
-        METHODS = %w[where rel_where order skip limit]
+        METHODS = %w(where rel_where order skip limit)
 
         METHODS.each do |method|
           module_eval(%{

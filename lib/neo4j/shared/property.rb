@@ -13,7 +13,7 @@ module Neo4j::Shared
     class MultiparameterAssignmentError < StandardError; end
     class IllegalPropertyError < StandardError; end
 
-    ILLEGAL_PROPS = %w[from_node to_node start_node end_node]
+    ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
 
     attr_reader :_persisted_obj
 

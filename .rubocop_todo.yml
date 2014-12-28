@@ -199,12 +199,6 @@ Style/MultilineBlockChain:
 Style/OpMethod:
   Enabled: false
 
-# Offense count: 11
-# Cop supports --auto-correct.
-# Configuration parameters: PreferredDelimiters.
-Style/PercentLiteralDelimiters:
-  Enabled: false
-
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/PerlBackrefs:
