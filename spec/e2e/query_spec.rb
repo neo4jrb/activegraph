@@ -275,7 +275,7 @@ describe 'Query API' do
             it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
             it do
               Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should ==
-              Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
+                Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
             end
           end
 
@@ -343,8 +343,8 @@ describe 'Query API' do
   describe 'Core::Query#proxy_as' do
     let(:core_query) do
       Neo4j::Session.current.query
-      .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
-      .with(:other_end, :s)
+        .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
+        .with(:other_end, :s)
     end
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
