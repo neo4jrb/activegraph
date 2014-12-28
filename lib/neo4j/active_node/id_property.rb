@@ -105,7 +105,7 @@ module Neo4j::ActiveNode
         end
       end
 
-      module_function
+      extend self
     end
 
 

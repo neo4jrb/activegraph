@@ -56,3 +56,7 @@ Style/PerlBackrefs:
 Style/SingleLineBlockParams:
   Enabled: false
 
+# Offense count: 1
+# Reason: Switched `extend self` to `module_function` in id_property.rb but that caused errors
+Style/ModuleFunction:
+  Enabled: false
