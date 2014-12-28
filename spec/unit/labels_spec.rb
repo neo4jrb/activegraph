@@ -5,14 +5,14 @@ describe Neo4j::ActiveNode::Labels do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
     Neo4j::ActiveNode::Labels._wrapped_classes.clear
 
-    @classA = Class.new do
+    @class_a = Class.new do
       include Neo4j::ActiveNode::Labels
       def self.mapped_label_name
         'A'
       end
     end
 
-    @classB = Class.new do
+    @class_b = Class.new do
       include Neo4j::ActiveNode::Labels
       def self.mapped_label_name
         'B'
@@ -31,15 +31,15 @@ describe Neo4j::ActiveNode::Labels do
 
       it 'store included classes' do
         Neo4j::ActiveNode::Labels._wrapped_classes
-        Neo4j::ActiveNode::Labels._wrapped_classes.should =~ [@classA, @classB]
+        Neo4j::ActiveNode::Labels._wrapped_classes.should =~ [@class_a, @class_b]
       end
     end
 
     describe '_wrapped_labels' do
 
       it 'returns a hash of labels and classes' do
-        Neo4j::ActiveNode::Labels._wrapped_labels[:A].should eq(@classA)
-        Neo4j::ActiveNode::Labels._wrapped_labels[:B].should eq(@classB)
+        Neo4j::ActiveNode::Labels._wrapped_labels[:A].should eq(@class_a)
+        Neo4j::ActiveNode::Labels._wrapped_labels[:B].should eq(@class_b)
       end
     end
 
@@ -129,13 +129,13 @@ describe Neo4j::ActiveNode::Labels do
       end
 
       it 'returns all labels for inherited ancestors which have a label method' do
-        baseClass = Class.new do
+        base_class = Class.new do
           def self.mapped_label_name
             'base'
           end
         end
 
-        middleClass = Class.new(baseClass) do
+        middle_class = Class.new(base_class) do
           extend Neo4j::ActiveNode::Labels::ClassMethods
 
           def self.mapped_label_name
@@ -143,7 +143,7 @@ describe Neo4j::ActiveNode::Labels do
           end
         end
 
-        topClass = Class.new(middleClass) do
+        top_class = Class.new(middle_class) do
           extend Neo4j::ActiveNode::Labels::ClassMethods
 
           def self.mapped_label_name
@@ -152,8 +152,8 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         # notice the order is important since it will try to load and map in that order
-        middleClass.mapped_label_names.should eq([:middle, :base])
-        topClass.mapped_label_names.should eq([:top, :middle, :base])
+        middle_class.mapped_label_names.should eq([:middle, :base])
+        top_class.mapped_label_names.should eq([:top, :middle, :base])
       end
 
       it 'returns all labels for included modules which have a label class method' do

@@ -167,8 +167,3 @@ Style/RegexpLiteral:
 Style/TrivialAccessors:
   Enabled: false
 
-# Offense count: 8
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-Style/VariableName:
-  Enabled: false
-

@@ -28,31 +28,31 @@ describe 'wrapped nodes in transactions', api: :server do
   end
 
   before(:all) do
-    @Student = TransactionNode::Student
-    @Teacher = TransactionNode::Teacher
-    @Student.delete_all
-    @Teacher.delete_all
+    @student = TransactionNode::Student
+    @teacher = TransactionNode::Teacher
+    @student.delete_all
+    @teacher.delete_all
 
-    @Student.create(name: 'John')
-    @Teacher.create(name: 'Mr Jones')
+    @student.create(name: 'John')
+    @teacher.create(name: 'Mr Jones')
     begin
       tx = Neo4j::Transaction.new
-      @john = @Student.first
-      @jones = @Teacher.first
+      @john = @student.first
+      @jones = @teacher.first
     ensure
       tx.close
     end
   end
 
   it 'can load a node within a transaction' do
-    expect(@john).to be_a(@Student)
+    expect(@john).to be_a(@student)
     expect(@john.name).to eq 'John'
     expect(@john.id).not_to be_nil
   end
 
   it 'returns its :labels' do
     expect(@john.neo_id).not_to be_nil
-    expect(@john.labels).to eq [@Student.name.to_sym]
+    expect(@john.labels).to eq [@student.name.to_sym]
   end
 
   it 'responds positively to exist?' do
@@ -83,10 +83,10 @@ describe 'wrapped nodes in transactions', api: :server do
       starting_count = @john.teachers_rels.count
       begin
         tx = Neo4j::Transaction.new
-        retrieved_rel = @john.teachers.each_rel do |r|
-                          r.appreciation = 9001
-                          r.save
-                        end
+        @john.teachers.each_rel do |r|
+          r.appreciation = 9001
+          r.save
+        end
       ensure
         tx.close
       end
