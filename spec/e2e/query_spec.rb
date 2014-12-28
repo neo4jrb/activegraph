@@ -16,7 +16,7 @@ class Lesson
   property :subject
   property :level
 
-  has_one  :out, :teachers_pet, model_class: Student, type: 'favorite_student'
+  has_one :out, :teachers_pet, model_class: Student, type: 'favorite_student'
   has_many :in, :unhappy_teachers, model_class: Teacher, origin: :dreaded_lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
@@ -56,7 +56,7 @@ class Teacher
   has_many :out, :lessons_taught, model_class: Lesson
 
   has_many :out, :interests
-  has_one  :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
+  has_one :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
 end
 
 describe 'Query API' do

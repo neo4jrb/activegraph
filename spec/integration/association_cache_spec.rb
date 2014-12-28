@@ -10,7 +10,7 @@ describe 'Association Cache' do
       property :name
       has_many :out, :lessons, model_class: Lesson
       has_many :in, :exams, model_class: Exam, origin: :students
-      has_one  :out, :favorite_lesson, model_class: Lesson
+      has_one :out, :favorite_lesson, model_class: Lesson
     end
 
     class Lesson

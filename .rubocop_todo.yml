@@ -223,11 +223,6 @@ Style/RegexpLiteral:
 Style/SingleLineBlockParams:
   Enabled: false
 
-# Offense count: 6
-# Cop supports --auto-correct.
-Style/SingleSpaceBeforeFirstArg:
-  Enabled: false
-
 # Offense count: 3
 # Cop supports --auto-correct.
 Style/SpaceAfterColon:

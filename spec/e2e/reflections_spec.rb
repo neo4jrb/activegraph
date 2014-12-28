@@ -13,7 +13,7 @@ describe 'reflections' do
       has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
       has_many :out, :things_with_rel_class, model_class: self, rel_class: RelClass
       has_many :out, :string_rel_class, model_class: self, rel_class: 'RelClass'
-      has_one  :out, :one_thing, model_class: self, type: 'one_thing'
+      has_one :out, :one_thing, model_class: self, type: 'one_thing'
     end
 
     class RelClass

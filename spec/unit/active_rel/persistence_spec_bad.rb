@@ -21,7 +21,7 @@ describe Neo4j::ActiveRel::Persistence do
       include Neo4j::ActiveRel::Property
 
       from_class Class
-      to_class   Class
+      to_class Class
 
       type :friends_with
 

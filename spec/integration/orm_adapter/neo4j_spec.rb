@@ -19,7 +19,7 @@ module Neo4j
     class Note
       include Neo4j::ActiveNode
 
-      property  :body, index: :exact
+      property :body, index: :exact
       
       has_one :in, :owner, type: :notes, model_class: 'Neo4j::OrmSpec::User'
     end
