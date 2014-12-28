@@ -16,6 +16,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   end
 
   protected
+
   def migration?
     false
   end

@@ -26,6 +26,7 @@ IceLolly = UniqueClass.create do
   after_create :mark_saved
 
   protected
+
   def timestamp
     self.created = "yep"
   end

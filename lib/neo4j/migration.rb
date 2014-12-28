@@ -142,6 +142,7 @@ module Neo4j
       end
 
       private
+
       attr_reader :classnames_filename, :classnames_filepath, :model_map
 
       def execute(migrate = false)

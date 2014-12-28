@@ -255,6 +255,7 @@ module Neo4j
         attr_reader :node_var
 
         protected
+
         # Methods are underscored to prevent conflict with user class methods
 
         def _add_params(params)
