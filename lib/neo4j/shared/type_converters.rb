@@ -130,7 +130,7 @@ module Neo4j::Shared
     def convert_properties_to(medium, properties)
       # Perform type conversion
       serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
-      properties = properties.inject({}) do |new_attributes, key_value_pair|
+      properties = properties.each_with_object({}) do |key_value_pair, new_attributes|
         attr, value = key_value_pair
 
         # skip "secret" undeclared attributes such as uuid
@@ -141,8 +141,7 @@ module Neo4j::Shared
                                  value
                                else
                                  TypeConverters.send "to_#{medium}", value, type
-                                end
-        new_attributes
+                               end
       end
     end
 
@@ -166,9 +165,8 @@ module Neo4j::Shared
             Neo4j::Shared::TypeConverters.const_get(c).respond_to?(:convert_type)
           end.map do  |c|
             Neo4j::Shared::TypeConverters.const_get(c)
-          end.inject({}) do |ack, t|
+          end.each_with_object({}) do |t, ack|
             ack[t.convert_type] = t
-            ack
           end
         end
       end

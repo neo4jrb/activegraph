@@ -68,10 +68,8 @@ module Neo4j::Shared
     end
 
     def extract_writer_methods!(attributes)
-      attributes.keys.inject({}) do |writer_method_props, key|
+      attributes.keys.each_with_object({}) do |key, writer_method_props|
         writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
-
-        writer_method_props
       end
     end
 
