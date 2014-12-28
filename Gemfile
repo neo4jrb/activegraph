@@ -14,6 +14,9 @@ group 'development' do
   gem 'os' # for neo4j-server rake task
   gem 'rake'
   gem 'yard'
+
+  gem 'guard'
+  gem 'guard-rubocop'
 end
 
 group 'test' do
