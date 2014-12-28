@@ -41,10 +41,6 @@ Lint/UnusedMethodArgument:
 Lint/UselessAssignment:
   Enabled: false
 
-# Offense count: 40
-Lint/Void:
-  Enabled: false
-
 # Offense count: 17
 Metrics/AbcSize:
   Max: 35

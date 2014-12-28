@@ -7,7 +7,7 @@ shared_examples 'loadable model' do
 
     it 'should load_entity a previously stored node' do
       result = subject.class.find(subject.id)
-      result.should == subject
+      result.should eq(subject)
       result.should be_persisted
     end
   end

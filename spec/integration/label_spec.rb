@@ -58,7 +58,7 @@ describe 'Labels' do
   describe 'create' do
     it 'automatically sets a label' do
       p = TestClass.create
-      p.labels.to_a.should == [:TestClass]
+      p.labels.to_a.should eq([:TestClass])
     end
 
     it 'sets label for mixin classes' do
@@ -104,14 +104,14 @@ describe 'Labels' do
       it 'can find it using the index' do
         IndexedTestClass.delete_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        IndexedTestClass.where(name: 'kalle').first.should == kalle
+        IndexedTestClass.where(name: 'kalle').first.should eq(kalle)
       end
 
       it 'does not find it if deleted' do
         IndexedTestClass.delete_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
         result = IndexedTestClass.where(name: 'kalle2').first
-        result.should == kalle2
+        result.should eq(kalle2)
         kalle2.destroy
         IndexedTestClass.where(name: 'kalle2').should_not include(kalle2)
       end
@@ -122,7 +122,7 @@ describe 'Labels' do
       let!(:n2) { RelationTestClass.create(test_class: n1) }
 
       it 'finds when association matches' do
-        RelationTestClass.where(test_class: n1).first.should == n2
+        RelationTestClass.where(test_class: n1).first.should eq(n2)
       end
 
       it 'does not find when association does not match' do

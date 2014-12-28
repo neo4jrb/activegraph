@@ -62,8 +62,8 @@ module Rails
     it 'allows sessions with authentication' do
       cfg = OpenStruct.new(session_path: 'http://user:password@localhost:7474')
       Neo4j::Railtie.set_default_session(cfg)
-      cfg.session_path.should == 'http://localhost:7474'
-      cfg.session_options.should == {basic_auth: {username: 'user', password: 'password'}}
+      cfg.session_path.should eq('http://localhost:7474')
+      cfg.session_options.should eq(basic_auth: {username: 'user', password: 'password'})
     end
 
     it 'allows named session' do
