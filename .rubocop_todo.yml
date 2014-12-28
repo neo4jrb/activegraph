@@ -223,12 +223,6 @@ Style/RegexpLiteral:
 Style/SingleLineBlockParams:
   Enabled: false
 
-# Offense count: 10
-# Cop supports --auto-correct.
-# Configuration parameters: IgnoredMethods.
-Style/SymbolProc:
-  Enabled: false
-
 # Offense count: 39
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.

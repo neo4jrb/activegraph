@@ -110,7 +110,7 @@ describe 'ActiveRel' do
       @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
     end
 
-    after { [@rel1, @rel2].each {|r| r.destroy } }
+    after { [@rel1, @rel2].each(&:destroy) }
 
     describe 'related nodes' do
       # We only run this test in the Server environment. Embedded's loading of

@@ -23,7 +23,7 @@ describe 'Inheritance', type: :e2e do
   end
 
   before(:each) do
-    [InheritanceTest::Car, InheritanceTest::Vehicle].each {|c| c.delete_all }
+    [InheritanceTest::Car, InheritanceTest::Vehicle].each(&:delete_all)
     @bike = InheritanceTest::Vehicle.create(name: 'bike')
     @volvo = InheritanceTest::Car.create(name: 'volvo', model: 'v60')
     @saab = InheritanceTest::Car.create(name: 'saab', model: '900')

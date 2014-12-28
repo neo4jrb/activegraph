@@ -104,7 +104,7 @@ module Neo4j
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
         # one database query per node in the database, more if callbacks require them.
         def destroy_all
-          self.all.each {|n| n.destroy }
+          self.all.each(&:destroy)
         end
 
         # Creates a Neo4j index on given property

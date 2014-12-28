@@ -45,7 +45,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
       it 'calls pluck and executes the block' do
         expect(qp).to receive(:pluck).and_return([rel])
         expect(rel).to receive(:name)
-        qp.each_rel {|r| r.name }
+        qp.each_rel(&:name)
       end
     end
   end

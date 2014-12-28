@@ -182,7 +182,7 @@ describe 'query_proxy_methods' do
 
   describe 'delete_all' do
     before do
-      [IncludeStudent, IncludeLesson, IncludeTeacher].each {|c| c.delete_all }
+      [IncludeStudent, IncludeLesson, IncludeTeacher].each(&:delete_all)
       @tom = IncludeStudent.create(name: 'Tom')
       @math = IncludeLesson.create(name: 'Math')
       @science = IncludeLesson.create(name: 'Science')

@@ -5,7 +5,7 @@ namespace :neo4j do
   task :migrate, [:task_name, :subtask] => :environment do |_, args|
     path = Rake.original_dir
     migration_task = args[:task_name]
-    task_name_constant = migration_task.split('_').map {|word| word.capitalize }.join('')
+    task_name_constant = migration_task.split('_').map(&:capitalize).join('')
     begin
       migration_class = "Neo4j::Migration::#{task_name_constant}".constantize
       rescue NameError
