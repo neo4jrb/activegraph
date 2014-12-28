@@ -108,7 +108,7 @@ module Neo4j
 
       def new_id_for(model)
         if model.id_property_info[:type][:auto]
-          SecureRandom::uuid
+          SecureRandom.uuid
         else
           model.new.send(model.id_property_info[:type][:on])
         end
