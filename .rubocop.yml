@@ -13,14 +13,12 @@ Style/HashSyntax:
   Enabled: true
   EnforcedStyle: ruby19
 
-# Offense count: 109
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles, EnforcedStyleForEmptyBraces, SpaceBeforeBlockParameters.
 Style/SpaceInsideBlockBraces:
   Enabled: true
   SpaceBeforeBlockParameters: false
 
-# Offense count: 122
 # Cop supports --auto-correct.
 Style/SpaceInsideHashLiteralBraces:
   Enabled: true
@@ -31,13 +29,11 @@ Style/SpaceInsideHashLiteralBraces:
 # Don't intend to fix these:
 #---------------------------
 
-# Offense count: 64
 # Cop supports --auto-correct.
 # Reason: Double spaces can be useful for grouping code
 Style/EmptyLines:
   Enabled: false
 
-# Offense count: 10
 # Cop supports --auto-correct.
 # Reason: I have very big opinions on this one.  See:
 #   https://github.com/bbatsov/ruby-style-guide/issues/329
@@ -45,19 +41,16 @@ Style/EmptyLines:
 Style/NegatedIf:
   Enabled: false
 
-# Offense count: 7
 # Cop supports --auto-correct.
 # Reason: I'm fine either way on this, but could maybe be convinced that this should be enforced
 Style/Not:
   Enabled: false
 
-# Offense count: 4
 # Cop supports --auto-correct.
 # Reason: I'm fine with this
 Style/PerlBackrefs:
   Enabled: false
 
-# Offense count: 1
 # Configuration parameters: Methods.
 # Reason: We should be able to specify full variable names, even if it's only one line
 Style/SingleLineBlockParams:
