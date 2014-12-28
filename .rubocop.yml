@@ -32,3 +32,9 @@ Style/EmptyLines:
 Style/NegatedIf:
   Enabled: false
 
+# Offense count: 7
+# Cop supports --auto-correct.
+# Reason: I'm fine either way on this, but could maybe be convinced that this should be enforced
+Style/Not:
+  Enabled: false
+
