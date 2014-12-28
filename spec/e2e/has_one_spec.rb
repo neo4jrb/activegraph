@@ -33,8 +33,8 @@ describe 'has_one' do
       a.children << b
       a.children << c
 
-      c.parent.should == a
-      b.parent.should == a
+      c.parent.should eq(a)
+      b.parent.should eq(a)
       a.children.to_a.should =~ [b, c]
     end
 
@@ -42,8 +42,8 @@ describe 'has_one' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.parent.should == a
-      a.children.to_a.should == [b]
+      b.parent.should eq(a)
+      a.children.to_a.should eq([b])
     end
 
     it 'can return relationship object via parent_rel' do
@@ -51,7 +51,7 @@ describe 'has_one' do
       b = HasOneB.create(name: 'b')
       b.parent = a
       rel = b.parent_rel
-      rel.other_node(b).should == a
+      rel.other_node(b).should eq(a)
     end
 
     it 'deletes previous parent relationship' do
@@ -73,10 +73,10 @@ describe 'has_one' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.query_as(:b).match('b<-[:`CHILDREN`]-(r)').pluck(:r).should == [a]
-      a.query_as(:a).match('a-[:`CHILDREN`]->(r)').pluck(:r).should == [b]
-      #      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
-      #      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
+      b.query_as(:b).match('b<-[:`CHILDREN`]-(r)').pluck(:r).should eq([a])
+      a.query_as(:a).match('a-[:`CHILDREN`]->(r)').pluck(:r).should eq([b])
+      #      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should eq([a])
+      #      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should eq([b])
     end
   end
 
@@ -99,8 +99,8 @@ describe 'has_one' do
       f1.files << file1
       f1.files << file2
       f1.files.to_a.should =~ [file1, file2]
-      file1.parent.should == f1
-      file2.parent.should == f1
+      file1.parent.should eq(f1)
+      file2.parent.should eq(f1)
     end
   end
 

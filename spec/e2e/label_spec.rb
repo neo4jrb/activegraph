@@ -212,12 +212,12 @@ describe 'Neo4j::ActiveNode' do
 
       o = clazz.new(name: 'Jim', foo: 2)
 
-      o.name.should == 'Jim'
+      o.name.should eq('Jim')
       o.foo.should be_nil
 
       o.save!
 
-      o.name.should == 'Jim'
+      o.name.should eq('Jim')
       o.foo.should be_nil
     end
   end
@@ -234,21 +234,21 @@ describe 'Neo4j::ActiveNode' do
 
     describe 'finding individual records' do
       it 'by id' do
-        clazz.find(object1.id).should == object1
+        clazz.find(object1.id).should eq(object1)
       end
 
       it 'by object' do
-        clazz.find(object1).should == object1
+        clazz.find(object1).should eq(object1)
       end
     end
 
     describe 'finding multiple records' do
       it 'by id' do
-        clazz.find([object1.id, object2.id]).to_set.should == [object1, object2].to_set
+        clazz.find([object1.id, object2.id]).to_set.should eq([object1, object2].to_set)
       end
 
       it 'by object' do
-        clazz.find([object1, object2]).to_set.should == [object1, object2].to_set
+        clazz.find([object1, object2]).to_set.should eq([object1, object2].to_set)
       end
     end
   end

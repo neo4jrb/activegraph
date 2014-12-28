@@ -38,8 +38,8 @@ describe Neo4j::ActiveNode::Labels do
     describe '_wrapped_labels' do
 
       it 'returns a hash of labels and classes' do
-        Neo4j::ActiveNode::Labels._wrapped_labels[:A].should == @classA
-        Neo4j::ActiveNode::Labels._wrapped_labels[:B].should == @classB
+        Neo4j::ActiveNode::Labels._wrapped_labels[:A].should eq(@classA)
+        Neo4j::ActiveNode::Labels._wrapped_labels[:B].should eq(@classB)
       end
     end
 
@@ -90,7 +90,7 @@ describe Neo4j::ActiveNode::Labels do
             'MyClass'
           end
         end
-        clazz.mapped_label_name.should == :MyClass
+        clazz.mapped_label_name.should eq(:MyClass)
       end
     end
 
@@ -98,7 +98,7 @@ describe Neo4j::ActiveNode::Labels do
       it 'sets the label name and overrides the class name' do
         clazz = Class.new { extend Neo4j::ActiveNode::Labels::ClassMethods }
         clazz.send(:set_mapped_label_name, 'foo')
-        clazz.mapped_label_name.should == :foo
+        clazz.mapped_label_name.should eq(:foo)
       end
     end
 
@@ -112,7 +112,7 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         Neo4j::Label.should_receive(:create).with(:MyClass).and_return('foo')
-        clazz.send(:mapped_label).should == 'foo'
+        clazz.send(:mapped_label).should eq('foo')
       end
     end
 
@@ -125,7 +125,7 @@ describe Neo4j::ActiveNode::Labels do
             'mylabel'
           end
         end
-        clazz.mapped_label_names.should == [:mylabel]
+        clazz.mapped_label_names.should eq([:mylabel])
       end
 
       it 'returns all labels for inherited ancestors which have a label method' do
@@ -152,8 +152,8 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         # notice the order is important since it will try to load and map in that order
-        middleClass.mapped_label_names.should == [:middle, :base]
-        topClass.mapped_label_names.should == [:top, :middle, :base]
+        middleClass.mapped_label_names.should eq([:middle, :base])
+        topClass.mapped_label_names.should eq([:top, :middle, :base])
       end
 
       it 'returns all labels for included modules which have a label class method' do

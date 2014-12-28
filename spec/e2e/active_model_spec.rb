@@ -62,13 +62,13 @@ describe IceLolly, type: :integration do
         subject.save
       end
 
-      # it { subject.id.should == subject.class.find(flavour: 'vanilla').id}
+      # it { subject.id.should eq(subject.class.find(flavour: 'vanilla').id)}
 
-      it { should == subject.class.where(flavour: 'vanilla').first }
+      it { should eq(subject.class.where(flavour: 'vanilla').first) }
 
       it 'should be able to modify one of its named attributes' do
         lambda { subject.update_attributes!(flavour: 'horse') }.should_not raise_error
-        subject.flavour.should == 'horse'
+        subject.flavour.should eq('horse')
       end
 
       it 'should not have the extended property' do
@@ -92,7 +92,7 @@ describe IceLolly, type: :integration do
 
         it 'should have the same attribute values after an unsuccessful update and reload' do
           subject.update_attributes(flavour: 'fish')
-          subject.reload.flavour.should == 'vanilla'
+          subject.reload.flavour.should eq('vanilla')
           subject.required_on_update.should_not be_nil
         end
 
@@ -144,7 +144,7 @@ end
 #    context "after being saved" do
 #      before { subject.save }
 #
-#      it { should == subject.class.find(flavour: 'vanilla') }
+#      it { should eq(subject.class.find(flavour: 'vanilla')) }
 #    end
 #  end
 # end
@@ -353,18 +353,18 @@ describe Neo4j::ActiveNode do
 
     it 'can set properties' do
       person = Person.new(name: 'andreas', age: 21)
-      person[:name].should == 'andreas'
-      person[:age].should == 21
+      person[:name].should eq('andreas')
+      person[:age].should eq(21)
       person.save
-      person[:name].should == 'andreas'
-      person[:age].should == 21
+      person[:name].should eq('andreas')
+      person[:age].should eq(21)
     end
 
     it 'can create the node' do
       person = Person.create(name: 'andreas', age: 21)
       person.neo_id.should be_a(Fixnum)
-      person[:name].should == 'andreas'
-      person[:age].should == 21
+      person[:name].should eq('andreas')
+      person[:age].should eq(21)
       person.exist?.should be true
     end
 
@@ -408,8 +408,8 @@ describe Neo4j::ActiveNode do
     it 'can be loaded by id' do
       person1 = Person.create(name: 'andreas', age: 21)
       person2 = Neo4j::Node.load(person1.neo_id)
-      person2.neo_id.should == person1.neo_id
-      person2.should == person1
+      person2.neo_id.should eq(person1.neo_id)
+      person2.should eq(person1)
     end
 
     it 'does not persist updated properties until they are saved' do
@@ -417,7 +417,7 @@ describe Neo4j::ActiveNode do
       person[:age] = 22
 
       person2 = Neo4j::Node.load(person.neo_id)
-      person2[:age].should == 21
+      person2[:age].should eq(21)
     end
 
     it 'should not clear out existing properties when property is set and saved' do
@@ -425,8 +425,8 @@ describe Neo4j::ActiveNode do
       person.age = 22
       person.save
       person2 = Neo4j::Node.load(person.neo_id)
-      person2.age.should == 22
-      person2.name.should == 'andreas'
+      person2.age.should eq(22)
+      person2.name.should eq('andreas')
     end
 
     it 'they can be all found' do
@@ -438,7 +438,7 @@ describe Neo4j::ActiveNode do
     it 'they can be queries' do
       Person.create(name: 'person3', age: 21)
       person2 = Person.create(name: 'person4', age: 21)
-      Person.where(name: 'person4').to_a.should == [person2]
+      Person.where(name: 'person4').to_a.should eq([person2])
     end
 
     it 'saves all declared properties' do

@@ -60,10 +60,10 @@ describe 'has_n' do
     node.friends_rels.to_a.should eq([])
     node.friends << friend1
     rels = node.friends_rels
-    rels.count.should == 1
+    rels.count.should eq(1)
     rel = rels.first
-    rel.start_node.should == node
-    rel.end_node.should == friend1
+    rel.start_node.should eq(node)
+    rel.end_node.should eq(friend1)
   end
 
   describe 'me.friends << friend_1 << friend' do
@@ -155,7 +155,7 @@ describe 'has_n' do
         r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
         r[:since].should eq(1996)
-        r.end_node.name.should == 'Brad'
+        r.end_node.name.should eq('Brad')
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
@@ -202,12 +202,12 @@ describe 'has_n' do
     let(:callback_friend2) { clazz_c.create }
 
     it 'calls before_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should == 0 }
+      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should eq(0) }
       callback_friend1.knows << callback_friend2
     end
 
     it 'calls after_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { callback_friend2.knows.to_a.size.should == 1 }
+      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { callback_friend2.knows.to_a.size.should eq(1) }
       callback_friend1.knows_me << callback_friend2
     end
 
@@ -241,7 +241,7 @@ describe 'has_n' do
 
       c1.furrs << d1
 
-      c1.furrs.to_a.should == [d1]
+      c1.furrs.to_a.should eq([d1])
     end
 
   end
