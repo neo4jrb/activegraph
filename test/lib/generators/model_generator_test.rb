@@ -1,4 +1,4 @@
-#require 'test_helper'
+# require 'test_helper'
 require File.expand_path("../../../test_helper", __FILE__)
 require 'rails/generators/neo4j/model/model_generator.rb'
 

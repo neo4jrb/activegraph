@@ -13,7 +13,7 @@ module Rails
     cattr_accessor :init, :conf
 
     class << self
-      #attr_reader :init, :config
+      # attr_reader :init, :config
 
       def initializer(name, options={}, &block)
         Railtie.init ||= {}

@@ -147,11 +147,11 @@ describe 'has_n' do
 
       it 'creates a new relationship when given unpersisted node and given properties' do
         node.friends.create(clazz_a.new(name: 'Brad'), since: 1996)
-        #node2.stub(:persisted?).and_return(false)
-        #node2.stub(:save).and_return(true)
-        #node2.stub(:neo_id).and_return(2)
+        # node2.stub(:persisted?).and_return(false)
+        # node2.stub(:save).and_return(true)
+        # node2.stub(:neo_id).and_return(2)
 
-        #node.friends.create(node2, since: 1996)
+        # node.friends.create(node2, since: 1996)
         r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
         r[:since].should eq(1996)

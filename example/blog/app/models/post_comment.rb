@@ -4,7 +4,7 @@ class PostComment
   from_class Post
   to_class Comment
 
-  #or
+  # or
   # start_class Post
   # end_class Comment
 

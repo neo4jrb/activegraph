@@ -36,9 +36,9 @@ IceLolly = UniqueClass.create do
   end
 end
 
-#class ExtendedIceLolly < IceLolly
+# class ExtendedIceLolly < IceLolly
 #  property :extended_property
-#end
+# end
 
 describe IceLolly, type: :integration do
   context "when valid" do
@@ -62,7 +62,7 @@ describe IceLolly, type: :integration do
         subject.save
       end
 
-      #it { subject.id.should == subject.class.find(flavour: 'vanilla').id}
+      # it { subject.id.should == subject.class.find(flavour: 'vanilla').id}
 
       it { should == subject.class.where(flavour: 'vanilla').first }
 
@@ -123,7 +123,7 @@ describe IceLolly, type: :integration do
 end
 
 
-#describe ExtendedIceLolly, :type => :integration do
+# describe ExtendedIceLolly, :type => :integration do
 #
 #  it "should have inherited all the properties" do
 #    subject.attribute_names.should include("flavour")
@@ -147,13 +147,13 @@ end
 #      it { should == subject.class.find(flavour: 'vanilla') }
 #    end
 #  end
-#end
+# end
 #
 
 IceCream = UniqueClass.create do
   include Neo4j::ActiveNode
   property :flavour, index: :exact
-  #has_n(:ingredients).to(Ingredient)
+  # has_n(:ingredients).to(Ingredient)
   validates_presence_of :flavour
 end
 

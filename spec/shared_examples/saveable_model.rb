@@ -39,9 +39,9 @@ shared_examples 'saveable model' do
 
     it { should respond_to(:to_param) }
 
-    #it "should respond to primary_key" do
+    # it "should respond to primary_key" do
     #  subject.class.should respond_to(:primary_key)
-    #end
+    # end
 
     it "should render as XML" do
       subject.to_xml.should =~ /^<\?xml version=/

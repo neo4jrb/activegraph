@@ -215,7 +215,7 @@ module Neo4j
 
           raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
-            #Neo4j::Transaction.run do
+            # Neo4j::Transaction.run do
             other_node.save unless other_node.neo_id
 
             return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
@@ -228,7 +228,7 @@ module Neo4j
               .create("start#{_association_arrow(properties, true)}end").exec
 
             @association.perform_callback(@options[:start_object], other_node, :after)
-            #end
+            # end
           end
         end
 

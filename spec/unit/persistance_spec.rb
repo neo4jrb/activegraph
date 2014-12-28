@@ -67,7 +67,7 @@ describe Neo4j::ActiveNode::Persistence do
         o = clazz.new
 
         o.stub(:props).and_return(start_props)
-        o.class.stub(:name).and_return('MyClass') #set_classname looks for this
+        o.class.stub(:name).and_return('MyClass') # set_classname looks for this
         clazz.stub(:neo4j_session).and_return(session)
 
         clazz.stub(:mapped_label_names).and_return(:MyClass)

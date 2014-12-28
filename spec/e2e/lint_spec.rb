@@ -88,7 +88,7 @@ describe 'ActiveModel::Lint' do
   end
 end
 
-#module ActiveModel
+# module ActiveModel
 #  module Lint
 #    # == Active \Model \Lint \Tests
 #    #
@@ -208,4 +208,4 @@ end
 #      end
 #    end
 #  end
-#end
+# end

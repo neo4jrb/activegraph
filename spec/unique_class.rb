@@ -13,8 +13,8 @@ module UniqueClass
     "#{name}"
   end
     RUBY
-    #Object.send(:remove_const, name) if Object.const_defined?(name)
-    Object.const_set(name, klass) #unless Kernel.const_defined?(name)
+    # Object.send(:remove_const, name) if Object.const_defined?(name)
+    Object.const_set(name, klass) # unless Kernel.const_defined?(name)
     klass
   end
 

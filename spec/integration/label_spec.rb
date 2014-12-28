@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 
-#tests = Proc.new do
+# tests = Proc.new do
 describe "Labels" do
 
   before(:all) do
@@ -198,7 +198,7 @@ describe "Labels" do
   end
 end
 
-#shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do
+# shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do
 #  before(:all) do
 #    Neo4j::ActiveNode::Labels._wrapped_classes = []
 #    Neo4j::ActiveNode::Labels._wrapped_labels = nil
@@ -229,14 +229,14 @@ end
 #    BarIndexedLabel.find(:baaz, 'hej2').should_not include(hej)
 #    TestClassWithBar.find(:baaz, 'hej2').should_not include(hej)
 #  end
-#end
+# end
 
-#describe 'Neo4j::ActiveNode, server', api: :server do
+# describe 'Neo4j::ActiveNode, server', api: :server do
 #  it_behaves_like 'Neo4j::ActiveNode'
 #  it_behaves_like "Neo4j::ActiveNode with Mixin Index"
-#end
+# end
 #
-#describe 'Neo4j::ActiveNode, embedded', api: :embedded do
+# describe 'Neo4j::ActiveNode, embedded', api: :embedded do
 #  it_behaves_like 'Neo4j::ActiveNode'
 #  it_behaves_like "Neo4j::ActiveNode with Mixin Index"
-#end
+# end
