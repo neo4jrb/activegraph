@@ -105,4 +105,3 @@ describe 'Neo4j::NodeMixin::Scope' do
   end
   # end
 end
-

@@ -49,4 +49,3 @@ describe Neo4j::ActiveNode::Query do
   end
 
 end
-
