@@ -9,7 +9,7 @@ describe 'Neo4j::ActiveNode#find' do
   end
 
   it 'can find nodes that exists' do
-    foo =clazz.create(name: 'foo')
+    foo = clazz.create(name: 'foo')
     expect(clazz.where(name: 'foo').first).to eq(foo)
   end
 

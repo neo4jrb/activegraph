@@ -52,7 +52,7 @@ module Neo4j
       # Only for testing purpose
       # @private
       def self._wrapped_labels=(wl)
-        @_wrapped_labels=(wl)
+        @_wrapped_labels = (wl)
       end
 
       def self._wrapped_labels

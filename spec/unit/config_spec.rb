@@ -14,7 +14,7 @@ describe Neo4j::Config do
     end
 
     after do
-      Neo4j::Config.default_file= Neo4j::Config::DEFAULT_FILE
+      Neo4j::Config.default_file = Neo4j::Config::DEFAULT_FILE
     end
 
     describe 'defaults' do

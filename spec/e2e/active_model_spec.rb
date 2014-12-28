@@ -449,20 +449,20 @@ describe Neo4j::ActiveNode do
 
     describe 'multiparameter attributes' do
       it 'converts to Date' do
-        person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        person = Person.create("date(1i)" => "2014", "date(2i)" => "7", "date(3i)" => "13")
         expect(person.date).to be_a Date
         expect(person.date.to_s).to eq "2014-07-13"
       end
 
       it 'converts to DateTime' do
-        person = Person.create("datetime(1i)"=>"2014", "datetime(2i)"=>"7", "datetime(3i)"=>"13", "datetime(4i)"=>"17", "datetime(5i)"=>"45")
+        person = Person.create("datetime(1i)" => "2014", "datetime(2i)" => "7", "datetime(3i)" => "13", "datetime(4i)" => "17", "datetime(5i)" => "45")
         expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
 
       it 'raises an error when it receives values it cannot process' do
         expect do
-          Person.create("foo(1i)"=>"2014", "foo(2i)"=>"2014")
+          Person.create("foo(1i)" => "2014", "foo(2i)" => "2014")
         end.to raise_error(Neo4j::Shared::Property::MultiparameterAssignmentError)
       end
 
@@ -473,14 +473,14 @@ describe Neo4j::ActiveNode do
       end
 
       it "leaves standard attributes alone" do
-        person = Person.create("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13", name: 'chris')
+        person = Person.create("date(1i)" => "2014", "date(2i)" => "7", "date(3i)" => "13", name: 'chris')
         expect(person.name).to eq 'chris'
         expect(person.date).to be_a Date
       end
 
       it 'converts on update in addition to create' do
         person = Person.create
-        person.update_attributes("date(1i)"=>"2014", "date(2i)"=>"7", "date(3i)"=>"13")
+        person.update_attributes("date(1i)" => "2014", "date(2i)" => "7", "date(3i)" => "13")
         person.save
         expect(person.date).to be_a Date
         expect(person.date.to_s).to eq "2014-07-13"

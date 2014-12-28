@@ -223,11 +223,6 @@ Style/RegexpLiteral:
 Style/SingleLineBlockParams:
   Enabled: false
 
-# Offense count: 29
-# Cop supports --auto-correct.
-Style/SpaceAroundOperators:
-  Enabled: false
-
 # Offense count: 37
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
