@@ -38,3 +38,9 @@ Style/NegatedIf:
 Style/Not:
   Enabled: false
 
+# Offense count: 4
+# Cop supports --auto-correct.
+# Reason: I'm fine with this
+Style/PerlBackrefs:
+  Enabled: false
+

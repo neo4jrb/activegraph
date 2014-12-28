@@ -199,11 +199,6 @@ Style/MultilineBlockChain:
 Style/OpMethod:
   Enabled: false
 
-# Offense count: 4
-# Cop supports --auto-correct.
-Style/PerlBackrefs:
-  Enabled: false
-
 # Offense count: 10
 # Configuration parameters: NamePrefix, NamePrefixBlacklist.
 Style/PredicateName:
