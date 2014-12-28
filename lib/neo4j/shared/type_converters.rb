@@ -138,9 +138,9 @@ module Neo4j::Shared
 
         type = serialize.key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
-                                  value
+                                 value
                                else
-                                  TypeConverters.send "to_#{medium}", value, type
+                                 TypeConverters.send "to_#{medium}", value, type
                                 end
         new_attributes
       end

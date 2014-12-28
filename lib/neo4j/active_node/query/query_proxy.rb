@@ -215,19 +215,19 @@ module Neo4j
 
           raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
-              #Neo4j::Transaction.run do
-              other_node.save unless other_node.neo_id
+            #Neo4j::Transaction.run do
+            other_node.save unless other_node.neo_id
 
-              return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
+            return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
-              start_object = @options[:start_object]
-              start_object.clear_association_cache
-              _session.query(context: @options[:context])
-                .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
-                .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
-                .create("start#{_association_arrow(properties, true)}end").exec
+            start_object = @options[:start_object]
+            start_object.clear_association_cache
+            _session.query(context: @options[:context])
+              .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
+              .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
+              .create("start#{_association_arrow(properties, true)}end").exec
 
-              @association.perform_callback(@options[:start_object], other_node, :after)
+            @association.perform_callback(@options[:start_object], other_node, :after)
             #end
           end
         end

@@ -7,7 +7,7 @@ module Neo4j
 
     # Add ActiveModel translations to the I18n load_path
     initializer "i18n" do |app|
-    	config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
+    	 config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
     end
 
     rake_tasks do

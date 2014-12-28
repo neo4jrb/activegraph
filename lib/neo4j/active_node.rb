@@ -55,8 +55,8 @@ module Neo4j
       end
 
       def self.inherited_indexes(other)
-       return if indexed_properties.nil?
-       self.indexed_properties.each { |property| other.index property }
+        return if indexed_properties.nil?
+        self.indexed_properties.each { |property| other.index property }
       end
 
       def self.inherit_serialized_properties(other)

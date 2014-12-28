@@ -7,10 +7,10 @@ namespace :neo4j do
     migration_task = args[:task_name]
     task_name_constant = migration_task.split('_').map { |word| word.capitalize }.join('')
     begin
-    migration_class = "Neo4j::Migration::#{task_name_constant}".constantize
-    rescue NameError
-      load File.join(path, 'db', 'neo4j-migrate', "#{migration_task}.rb")
-      migration_class = "#{task_name_constant}".constantize
+      migration_class = "Neo4j::Migration::#{task_name_constant}".constantize
+      rescue NameError
+        load File.join(path, 'db', 'neo4j-migrate', "#{migration_task}.rb")
+        migration_class = "#{task_name_constant}".constantize
     end
     migration = migration_class.new(path)
 

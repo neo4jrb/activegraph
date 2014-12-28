@@ -113,9 +113,9 @@ describe Neo4j::ActiveNode::Validations do
     context "with :case_sensitive => false" do
       before do
         @clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
-        property :name
-        validates_uniqueness_of :name, case_sensitive: false
+          include Neo4j::ActiveNode
+          property :name
+          validates_uniqueness_of :name, case_sensitive: false
         end
       end
 
@@ -157,10 +157,10 @@ describe Neo4j::ActiveNode::Validations do
     context "scoped by a single attribute" do
       before do
         @clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
-        property :name
-        property :scope
-        validates_uniqueness_of :name, scope: :scope
+          include Neo4j::ActiveNode
+          property :name
+          property :scope
+          validates_uniqueness_of :name, scope: :scope
         end
       end
 
@@ -194,11 +194,11 @@ describe Neo4j::ActiveNode::Validations do
     context "scoped by a multiple attributes" do
       before do
         @clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
-        property :name
-        property :first_scope
-        property :second_scope
-        validates_uniqueness_of :name, scope: [:first_scope, :second_scope]
+          include Neo4j::ActiveNode
+          property :name
+          property :first_scope
+          property :second_scope
+          validates_uniqueness_of :name, scope: [:first_scope, :second_scope]
         end
       end
 
