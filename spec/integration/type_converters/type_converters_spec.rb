@@ -83,7 +83,7 @@ describe Neo4j::Shared::TypeConverters do
   describe Neo4j::Shared::TypeConverters::DateConverter do
     subject { Neo4j::Shared::TypeConverters::DateConverter }
 
-    let(:now) { Time.at(1352538487).utc.to_date }
+    let(:now) { Time.at(1_352_538_487).utc.to_date }
 
     it 'translate from and to database' do
       db_value = Neo4j::Shared::TypeConverters::DateConverter.to_db(now)
@@ -112,7 +112,7 @@ describe Neo4j::Shared::TypeConverters do
     subject { Neo4j::Shared::TypeConverters::TimeConverter }
 
     before(:each) do
-      @dt = 1352538487
+      @dt = 1_352_538_487
       @hr = 3600
     end
 

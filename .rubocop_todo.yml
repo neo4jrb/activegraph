@@ -196,11 +196,6 @@ Style/MultilineBlockChain:
   Enabled: false
 
 # Offense count: 3
-# Cop supports --auto-correct.
-Style/NumericLiterals:
-  MinDigits: 11
-
-# Offense count: 3
 Style/OpMethod:
   Enabled: false
 

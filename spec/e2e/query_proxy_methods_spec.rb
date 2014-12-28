@@ -111,7 +111,7 @@ describe 'query_proxy_methods' do
 
       it 'can be called on the class with a neo_id' do
         expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.exists?(8675309)).to be_falsey
+        expect(IncludeLesson.exists?(8_675_309)).to be_falsey
       end
 
       it 'raises an error if something other than a neo id is given' do
