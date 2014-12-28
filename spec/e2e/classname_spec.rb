@@ -55,7 +55,7 @@ describe '_classname property' do
   end
 
   after(:all) do
-    [ClassnameSpec::Lesson, ClassnameSpec::Student].each { |m| m.delete_all }
+    [ClassnameSpec::Lesson, ClassnameSpec::Student].each {|m| m.delete_all }
   end
 
   # these specs will fail if tested against Neo4j < 2.1.5

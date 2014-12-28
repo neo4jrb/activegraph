@@ -59,12 +59,12 @@ describe 'migration tasks' do
   end
 
   let(:Rails) { double('Doubles the Rails constant') }
-  let(:File)  { double('Doubles the File constant')}
+  let(:File)  { double('Doubles the File constant') }
   let(:path)  { '/hd/gems/rails' }
 
   describe 'base Migration class' do
     it 'raises an error' do
-      expect {Neo4j::Migration.new.migrate}.to raise_error 'not implemented'
+      expect { Neo4j::Migration.new.migrate }.to raise_error 'not implemented'
     end
   end
 
@@ -145,7 +145,7 @@ describe 'migration tasks' do
       clazz.any_instance.instance_variable_set(:@model_map, map_template)
     end
 
-    after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each { |c| c.delete_all } }
+    after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each {|c| c.delete_all } }
 
     it 'loads an initialization file' do
       expect { clazz.new }.not_to raise_error

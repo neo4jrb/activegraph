@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveRel::Property do
-  let(:session) { double("Session")}
+  let(:session) { double("Session") }
 
   before do
     @session = double('Mock Session')

@@ -80,7 +80,7 @@ module Neo4j::ActiveRel
       def where_string(args)
         case args
         when Hash
-          args.map { |k, v| v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'" }.join(', ')
+          args.map {|k, v| v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'" }.join(', ')
         else
           args
         end

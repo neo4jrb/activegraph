@@ -546,7 +546,7 @@ describe Neo4j::ActiveNode do
     before do
       Person.delete_all
       i = 1.upto(16).to_a
-      i.each { |count| Person.create(name: "Billy-#{i}", age: count) }
+      i.each {|count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
     after(:all) { Person.delete_all }
@@ -564,7 +564,7 @@ describe Neo4j::ActiveNode do
     describe 'ordered pagination' do
       before do
         Person.delete_all
-        ['Alice', 'Bob', 'Carol', 'David'].each { |name| Person.create(name: name) }
+        ['Alice', 'Bob', 'Carol', 'David'].each {|name| Person.create(name: name) }
       end
 
       it 'allows ordering with a symbol' do

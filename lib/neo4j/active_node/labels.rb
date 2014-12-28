@@ -104,7 +104,7 @@ module Neo4j
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
         # one database query per node in the database, more if callbacks require them.
         def destroy_all
-          self.all.each { |n| n.destroy }
+          self.all.each {|n| n.destroy }
         end
 
         # Creates a Neo4j index on given property
@@ -161,7 +161,7 @@ module Neo4j
 
         # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
-          self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
+          self.ancestors.find_all {|a| a.respond_to?(:mapped_label_name) }.map {|a| a.mapped_label_name.to_sym }
         end
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
@@ -209,7 +209,7 @@ module Neo4j
         end
 
         def mapped_labels
-          mapped_label_names.map {|label_name| Neo4j::Label.create(label_name)}
+          mapped_label_names.map {|label_name| Neo4j::Label.create(label_name) }
         end
 
         def set_mapped_label_name(name)

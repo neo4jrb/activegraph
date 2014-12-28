@@ -27,7 +27,7 @@ end
 lib_dir = File.join(Dir.pwd, 'lib')
 fail "Expected a lib folder where to copy the jars file, mkdir #{lib_dir}? " unless File.exist?(lib_dir)
 
-files = $CLASSPATH.find_all {|x| x =~ /\.jar$/}.collect {|y| y.sub('file:', '')}
-files.each {|file| FileUtils.cp(file, lib_dir)}
+files = $CLASSPATH.find_all {|x| x =~ /\.jar$/ }.collect {|y| y.sub('file:', '') }
+files.each {|file| FileUtils.cp(file, lib_dir) }
 
 puts "copied #{files.size} files to #{lib_dir}"

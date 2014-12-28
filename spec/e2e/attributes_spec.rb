@@ -42,7 +42,7 @@ describe Neo4j::ActiveNode do
     end
 
     context 'when instantiated with new(name: "foo")' do
-      subject { SimpleClass.new(unknown: 'foo')}
+      subject { SimpleClass.new(unknown: 'foo') }
 
       it 'does not allow setting undeclared properties' do
         expect { subject }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError

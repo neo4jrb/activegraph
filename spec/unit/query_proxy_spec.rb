@@ -2,10 +2,10 @@ require 'spec_helper'
 
 describe Neo4j::ActiveNode::Query::QueryProxy do
   let (:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
-  let (:session) { double("A session")}
-  let (:query_result) { double("the result of calling :query")}
+  let (:session) { double("A session") }
+  let (:query_result) { double("the result of calling :query") }
   let (:node) { double("A node object", foo: 'bar', neo_id: true ) }
-  let (:rel)  { double("A rel object")}
+  let (:rel)  { double("A rel object") }
   let (:user_model) { double("A fake user model") }
 
   describe 'label generation' do
@@ -85,7 +85,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe '_association_chain_var' do
     context 'when missing start_object and query_proxy' do
       it 'raises a crazy error' do
-        expect {qp.send(:_association_chain_var)}.to raise_error 'Crazy error'
+        expect { qp.send(:_association_chain_var) }.to raise_error 'Crazy error'
       end
 
       it 'needs a better error than "crazy error"'
@@ -95,7 +95,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe '_association_query_start' do
     context 'when missing start_object and query_proxy' do
       it 'raises a crazy error' do
-        expect {qp.send(:_association_query_start, nil)}.to raise_error 'Crazy error'
+        expect { qp.send(:_association_query_start, nil) }.to raise_error 'Crazy error'
       end
 
       it 'needs a better error than "crazy error"'

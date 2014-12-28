@@ -29,7 +29,7 @@ class Lesson
     all.order(:subject)
   end
 
-  scope :level_number, ->(num) { where(level: num)}
+  scope :level_number, ->(num) { where(level: num) }
 end
 
 class Student

@@ -29,7 +29,7 @@ module Neo4j::ActiveNode
       # Returns an array containing one reflection for each association declared in the model.
       def reflect_on_all_associations(macro = nil)
         association_reflections = reflections.values
-        macro ? association_reflections.select { |reflection| reflection.macro == macro } : association_reflections
+        macro ? association_reflections.select {|reflection| reflection.macro == macro } : association_reflections
       end
     end
 

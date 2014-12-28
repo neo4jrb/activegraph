@@ -22,7 +22,7 @@ Rails.application.config.root = Rails.root
 config = Rails::Configuration::Generators.new
 Rails::Generators.configure!(config)
 
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f }
 
 def copy_routes
   routes = File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'routes.rb'))

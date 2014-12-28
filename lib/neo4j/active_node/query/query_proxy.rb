@@ -81,10 +81,10 @@ module Neo4j
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
         def each(node = true, rel = nil, &block)
           if node && rel
-            enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
+            enumerable_query(identity, @rel_var).each {|obj, rel| yield obj, rel }
           else
             pluck_this = !rel ? identity : @rel_var
-            enumerable_query(pluck_this).each { |obj| yield obj }
+            enumerable_query(pluck_this).each {|obj| yield obj }
           end
         end
 
@@ -373,7 +373,7 @@ module Neo4j
                 result << [:where, ->(v) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1
               else
-                result << [:where, ->(v) { {v => {key => value}}}]
+                result << [:where, ->(v) { {v => {key => value}} }]
               end
             end
           elsif arg.is_a?(String)
@@ -386,7 +386,7 @@ module Neo4j
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(v) {{ rel_identity => { key => value }}}]
+            result << [:where, ->(v) { { rel_identity => { key => value }} }]
           end
         end
 

@@ -169,8 +169,8 @@ describe Neo4j::ActiveNode::HasN::Association do
     describe 'origin_type' do
       let(:start) {  Neo4j::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
       let(:myclass) { double("another activenode class") }
-      let(:myassoc) { double("an association object" )}
-      let(:assoc_details) { double("the result of calling :associations", relationship_type: 'MyRel')}
+      let(:myassoc) { double("an association object" ) }
+      let(:assoc_details) { double("the result of calling :associations", relationship_type: 'MyRel') }
       it 'examines the specified association to determine type' do
         expect(start).to receive(:target_class).and_return(myclass)
         expect(myclass).to receive(:associations).and_return(myassoc)

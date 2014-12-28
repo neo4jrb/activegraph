@@ -35,7 +35,7 @@ module Neo4j::ActiveRel
       end
 
       %w(to_class from_class).each do |direction|
-        define_method("#{direction}") { |argument| instance_variable_set("@#{direction}", argument) }
+        define_method("#{direction}") {|argument| instance_variable_set("@#{direction}", argument) }
         define_method("_#{direction}") { instance_variable_get "@#{direction}" }
       end
 

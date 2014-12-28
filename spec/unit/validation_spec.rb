@@ -28,7 +28,7 @@ describe Neo4j::ActiveNode::Validations do
   end
 
   describe 'save' do
-    let(:session) { double("Session")}
+    let(:session) { double("Session") }
     before do
       @session = double("Mock Session")
       Neo4j::Session.stub(:current).and_return(session)

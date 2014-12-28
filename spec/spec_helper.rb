@@ -38,7 +38,7 @@ module Rails
 end
 
 
-Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
+Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each {|f| require f }
 
 EMBEDDED_DB_PATH = File.join(Dir.tmpdir, "neo4j-core-java")
 
@@ -65,13 +65,13 @@ end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
 
-Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
+Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each {|f| require f }
 
 def delete_db
   Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
-Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
 
 RSpec.configure do |c|
 

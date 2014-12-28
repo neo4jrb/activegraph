@@ -22,7 +22,7 @@ describe "has_one" do
       end
 
       it 'raises an error when trying to create a relationship' do
-        expect {unsaved_node.parent = HasOneA.create}.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
+        expect { unsaved_node.parent = HasOneA.create }.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
       end
     end
 

@@ -37,8 +37,8 @@ describe 'Association Cache' do
   let(:cache)     { billy.association_cache }
 
   before do
-    [math, science].each { |lesson| billy.lessons << lesson }
-    [math_exam, science_exam].each { |exam| billy.exams << exam }
+    [math, science].each {|lesson| billy.lessons << lesson }
+    [math_exam, science_exam].each {|exam| billy.exams << exam }
     math.exams_given << math_exam
     science.exams_given << science_exam
     billy.favorite_lesson = math
@@ -55,7 +55,7 @@ describe 'Association Cache' do
   context 'on a class' do
     describe 'association_cache method' do
       it 'raises an error because it is only for instances' do
-        expect {CachingSpec::Student.association_cache}.to raise_error
+        expect { CachingSpec::Student.association_cache }.to raise_error
       end
     end
 

@@ -175,7 +175,7 @@ describe "Neo4j::ActiveNode" do
 
     it 'does raise an exception if not valid' do
       thing.stub(:valid?).and_return(false)
-      expect {thing.update_attribute!(:a, 42)}.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
+      expect { thing.update_attribute!(:a, 42) }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
   end
 end

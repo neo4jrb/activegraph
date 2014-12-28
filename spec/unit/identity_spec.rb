@@ -14,7 +14,7 @@ describe Neo4j::Shared::Identity do
   end
 
   describe '#id' do
-    let(:session) { double("Session")}
+    let(:session) { double("Session") }
     before do
       @session = double("Mock Session")
       Neo4j::Session.stub(:current).and_return(session)

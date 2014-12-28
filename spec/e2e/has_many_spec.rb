@@ -24,7 +24,7 @@ describe 'has_n' do
     end
 
     it 'has a frozen array' do
-      expect {unsaved_node.friends << friend1}.to raise_error(RuntimeError)
+      expect { unsaved_node.friends << friend1 }.to raise_error(RuntimeError)
     end
   end
 
@@ -143,7 +143,7 @@ describe 'has_n' do
     end
 
     describe "creating relationships and nodes at the same time" do
-      let(:node2) { double("unpersisted node", props: { name: 'Brad' } )}
+      let(:node2) { double("unpersisted node", props: { name: 'Brad' } ) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
         node.friends.create(clazz_a.new(name: 'Brad'), since: 1996)

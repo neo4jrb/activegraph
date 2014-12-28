@@ -313,7 +313,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
-    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple].each { |c| c.delete_all } }
+    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple].each {|c| c.delete_all } }
 
     it 'inherits the base id_property' do
       expect(IdProp::Substitute.create.my_id).to eq 'an id'

@@ -8,7 +8,7 @@ module Neo4j::Shared
 
     def update_model
       if changed_attributes && !changed_attributes.empty?
-        changed_props = attributes.select {|k, v| changed_attributes.include?(k)}
+        changed_props = attributes.select {|k, v| changed_attributes.include?(k) }
         changed_props = convert_properties_to :db, changed_props
         _persisted_obj.update_props(changed_props)
         changed_attributes.clear
@@ -77,7 +77,7 @@ module Neo4j::Shared
 
     # @return [Hash] all defined and none nil properties
     def props
-      attributes.reject {|k, v| v.nil?}.symbolize_keys
+      attributes.reject {|k, v| v.nil? }.symbolize_keys
     end
 
     # @return true if the attributes hash has been frozen

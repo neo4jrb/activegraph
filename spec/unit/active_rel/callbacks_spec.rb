@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveRel::Callbacks do
-  let(:session) { double("Session")}
+  let(:session) { double("Session") }
   let(:node1) { double("Node1") }
   let(:node2) { double("Node2") }
 

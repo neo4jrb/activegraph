@@ -4,7 +4,7 @@ shared_examples 'new model' do
     it { should_not be_persisted }
 
     it "should not allow write access to undeclared properties" do
-      expect {subject[:unknown] = "none"}.to raise_error(ActiveAttr::UnknownAttributeError)
+      expect { subject[:unknown] = "none" }.to raise_error(ActiveAttr::UnknownAttributeError)
     end
 
     it "should not allow read access to undeclared properties" do
