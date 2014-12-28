@@ -6,7 +6,7 @@ module Neo4j::ActiveNode
 
       def initialize(record)
         @record = record
-        super(@record.errors.full_messages.join(", "))
+        super(@record.errors.full_messages.join(', '))
       end
     end
 

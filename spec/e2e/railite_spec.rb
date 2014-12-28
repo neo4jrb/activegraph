@@ -45,7 +45,7 @@ module Rails
     end
 
     it 'allows multi session' do
-      expect(Neo4j::Session).to receive(:open).with(:mysession_type, "asd", nil)
+      expect(Neo4j::Session).to receive(:open).with(:mysession_type, 'asd', nil)
       app = App.new
       app.neo4j.sessions = [{type: :mysession_type, path: 'asd'}]
       Railtie.init['neo4j.start'].call(app)

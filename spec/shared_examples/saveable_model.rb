@@ -1,27 +1,27 @@
 shared_examples 'saveable model' do
-  context "when attempting to save" do
-    it "should save ok" do
+  context 'when attempting to save' do
+    it 'should save ok' do
       subject.save.should be true
     end
 
-    it "should save without raising an exception" do
+    it 'should save without raising an exception' do
       expect { subject.save! }.to_not raise_error
     end
 
-    context "after save" do
+    context 'after save' do
       before(:each) { subject.save }
 
       it { should be_valid }
 
       it { should == subject.class.find(subject.id.to_s) }
 
-      it "should be included in all" do
+      it 'should be included in all' do
         subject.class.all.to_a.should include(subject)
       end
     end
   end
 
-  context "after being saved" do
+  context 'after being saved' do
     # make sure it looks like an ActiveModel model
     include ActiveModel::Lint::Tests
 
@@ -33,7 +33,7 @@ shared_examples 'saveable model' do
     it { should == subject.class.find_by_id(subject.id) }
     it { should be_valid }
 
-    it "should be found in the database" do
+    it 'should be found in the database' do
       subject.class.all.to_a.should include(subject)
     end
 
@@ -43,7 +43,7 @@ shared_examples 'saveable model' do
     #  subject.class.should respond_to(:primary_key)
     # end
 
-    it "should render as XML" do
+    it 'should render as XML' do
       subject.to_xml.should =~ /^<\?xml version=/
     end
 

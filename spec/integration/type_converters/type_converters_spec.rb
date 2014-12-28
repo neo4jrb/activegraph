@@ -116,22 +116,22 @@ describe Neo4j::Shared::TypeConverters do
       @hr = 3600
     end
 
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07-06:00")) { should === @dt + 6 * @hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07-04:00")) { should === @dt + 4 * @hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07-02:00")) { should === @dt + 2 * @hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+00:00")) { should === @dt }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+02:00")) { should === @dt - 2 * @hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+04:00")) { should === @dt - 4 * @hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+06:00")) { should === @dt - 6 * @hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { should === @dt + 6 * @hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { should === @dt + 4 * @hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { should === @dt + 2 * @hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { should === @dt }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { should === @dt - 2 * @hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { should === @dt - 4 * @hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { should === @dt - 6 * @hr }
 
     describe 'to_ruby' do
       it 'translate a fixnum back to DateTime' do
-        subject.to_ruby(@dt + 6 * @hr).should eq(DateTime.parse("2012-11-10T09:08:07-06:00"))
+        subject.to_ruby(@dt + 6 * @hr).should eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
       end
     end
 
     it 'translate from and to database' do
-      value = DateTime.parse("2012-11-10T09:08:07+00:00") # only utc support
+      value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
       db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
       ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
       ruby_value.class.should eq(DateTime)

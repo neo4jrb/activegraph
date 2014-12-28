@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Query do
-  let(:session) { double("Session") }
+  let(:session) { double('Session') }
 
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes

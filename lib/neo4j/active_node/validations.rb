@@ -29,17 +29,17 @@ module Neo4j
           conditions = scope_conditions(record)
 
           # TODO: Added as find(:name => nil) throws error
-          value = "" if value.nil?
+          value = '' if value.nil?
 
           conditions[attribute] = options[:case_sensitive] ? value : /^#{Regexp.escape(value.to_s)}$/i
 
           found = record.class.as(:result).where(conditions)
-          found = found.where("NOT ID(result) = {record_neo_id}").params(record_neo_id: record.neo_id) if record.persisted?
+          found = found.where('NOT ID(result) = {record_neo_id}').params(record_neo_id: record.neo_id) if record.persisted?
           record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(value: value)) if found.exists?
         end
 
         def message(instance)
-          super || "has already been taken"
+          super || 'has already been taken'
         end
 
         def scope_conditions(instance)

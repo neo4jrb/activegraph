@@ -201,7 +201,7 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          fail "Can only create associations on associations" unless @association
+          fail 'Can only create associations on associations' unless @association
           other_nodes = [other_nodes].flatten
           properties = @association.inject_classname(properties)
           other_nodes = other_nodes.map do |other_node|
@@ -223,7 +223,7 @@ module Neo4j
             start_object = @options[:start_object]
             start_object.clear_association_cache
             _session.query(context: @options[:context])
-              .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
+              .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where('ID(start) = {start_id} AND ID(end) = {end_id}')
               .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
               .create("start#{_association_arrow(properties, true)}end").exec
 
@@ -311,7 +311,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.node_var || :"node#{_chain_level}"
           else
-            fail "Crazy error" # TODO: Better error
+            fail 'Crazy error' # TODO: Better error
           end
         end
 
@@ -321,7 +321,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.query_as(var)
           else
-            fail "Crazy error" # TODO: Better error
+            fail 'Crazy error' # TODO: Better error
           end
         end
 

@@ -189,9 +189,9 @@ describe 'Query API' do
       end
 
       it 'allows params' do
-        Teacher.as(:t).where("t.name = {name}").params(name: 'Harold Samuels').to_a.should == [samuels]
+        Teacher.as(:t).where('t.name = {name}').params(name: 'Harold Samuels').to_a.should == [samuels]
 
-        samuels.lessons_teaching(:lesson).where("lesson.level = {level}").params(level: 103).to_a.should == [geo103]
+        samuels.lessons_teaching(:lesson).where('lesson.level = {level}').params(level: 103).to_a.should == [geo103]
       end
 
       it 'allows filtering on associations' do

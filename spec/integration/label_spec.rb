@@ -2,7 +2,7 @@ require 'spec_helper'
 
 
 # tests = Proc.new do
-describe "Labels" do
+describe 'Labels' do
 
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes.dup
@@ -61,14 +61,14 @@ describe "Labels" do
       p.labels.to_a.should == [:TestClass]
     end
 
-    it "sets label for mixin classes" do
+    it 'sets label for mixin classes' do
       p = SomeLabelClass.create
       p.labels.to_a.should =~ [:SomeLabelClass, :some_label]
     end
   end
 
   describe 'all' do
-    it "finds it without an index" do
+    it 'finds it without an index' do
       p = TestClass.create
       TestClass.all.to_a.should include(p)
     end
@@ -95,7 +95,7 @@ describe "Labels" do
   end
 
   describe 'find' do
-    it "finds it without an index" do
+    it 'finds it without an index' do
       p = TestClass.create
       TestClass.all.to_a.should include(p)
     end

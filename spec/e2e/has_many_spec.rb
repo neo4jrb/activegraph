@@ -121,7 +121,7 @@ describe 'has_n' do
   end
 
   describe 'me.friends#create(other, since: 1994)' do
-    describe "creating relationships to existing nodes" do
+    describe 'creating relationships to existing nodes' do
       it 'creates a new relationship when given existing nodes and given properties' do
         node.friends.create(friend1, since: 1994)
 
@@ -142,8 +142,8 @@ describe 'has_n' do
       end
     end
 
-    describe "creating relationships and nodes at the same time" do
-      let(:node2) { double("unpersisted node", props: {name: 'Brad'}) }
+    describe 'creating relationships and nodes at the same time' do
+      let(:node2) { double('unpersisted node', props: {name: 'Brad'}) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
         node.friends.create(clazz_a.new(name: 'Brad'), since: 1996)

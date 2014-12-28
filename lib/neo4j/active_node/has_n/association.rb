@@ -184,7 +184,7 @@ module Neo4j
                 fail ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
               end
             else
-              fail ArgumentError, "Cannot use :origin without a model_class (implied or explicit)"
+              fail ArgumentError, 'Cannot use :origin without a model_class (implied or explicit)'
             end
           end
         end

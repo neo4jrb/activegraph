@@ -14,7 +14,7 @@ module Neo4j::ActiveRel
 
       # Loads the relationship using its neo_id.
       def find_by_id(key, session = Neo4j::Session.current!)
-        session.query.match("()-[r]-()").where("ID(r)" => key.to_i).limit(1).return(:r).first.r
+        session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
       end
 
       # Performs a very basic match on the relationship.
@@ -33,11 +33,11 @@ module Neo4j::ActiveRel
       end
 
       def first
-        all_query.limit(1).order("ID(r1)").pluck(:r1).first
+        all_query.limit(1).order('ID(r1)').pluck(:r1).first
       end
 
       def last
-        all_query.limit(1).order("ID(r1) DESC").pluck(:r1).first
+        all_query.limit(1).order('ID(r1) DESC').pluck(:r1).first
       end
 
       private

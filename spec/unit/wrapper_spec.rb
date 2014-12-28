@@ -13,7 +13,7 @@ describe Neo4j::Node::Wrapper do
     end
 
     it 'returns nil if there is no class' do
-      wrapper.load_class_from_label("some_unknown_class").should be_nil
+      wrapper.load_class_from_label('some_unknown_class').should be_nil
     end
 
     it 'will auto load' do
@@ -21,7 +21,7 @@ describe Neo4j::Node::Wrapper do
       end
       path = File.join(File.dirname(__FILE__), 'auto_load_test_a')
       AutoLoadTest.autoload(:MyClass, path)
-      wrapper.load_class_from_label("AutoLoadTest::MyClass").should eq(AutoLoadTest::MyClass)
+      wrapper.load_class_from_label('AutoLoadTest::MyClass').should eq(AutoLoadTest::MyClass)
     end
   end
 
@@ -41,7 +41,7 @@ describe Neo4j::Node::Wrapper do
   end
 
   describe 'wrapper' do
-    describe "with class_name_property" do
+    describe 'with class_name_property' do
       context 'when set in config.yml' do
         it 'looks for a property with the same name' do
           wrapper.stub(:props).and_return(_defined_property_name: 'Bar')
@@ -72,7 +72,7 @@ describe Neo4j::Node::Wrapper do
         end
       end
 
-      context "when using default and missing on class" do
+      context 'when using default and missing on class' do
         it 'calls :_class_wrappers' do
           expect(wrapper).to receive(:_class_wrappers).once
           wrapper.stub(:props).and_return({})
@@ -92,7 +92,7 @@ describe Neo4j::Node::Wrapper do
       obj.should be_kind_of(AutoLoadTest::MyWrapperClass)
     end
 
-    it "finds the most specific subclass and creates an instance for it"do
+    it 'finds the most specific subclass and creates an instance for it'do
       class MyWrapper
         include Neo4j::Node::Wrapper
         def props

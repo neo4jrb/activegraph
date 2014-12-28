@@ -7,7 +7,7 @@ module Neo4j
   #
   class Config
 
-    DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "config", "neo4j", "config.yml"))
+    DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
 
     class << self
 

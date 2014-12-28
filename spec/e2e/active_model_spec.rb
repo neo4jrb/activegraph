@@ -28,7 +28,7 @@ IceLolly = UniqueClass.create do
   protected
 
   def timestamp
-    self.created = "yep"
+    self.created = 'yep'
   end
 
   def mark_saved
@@ -41,22 +41,22 @@ end
 # end
 
 describe IceLolly, type: :integration do
-  context "when valid" do
+  context 'when valid' do
     before :each do
-      subject.flavour = "vanilla"
-      subject.required_on_create = "true"
-      subject.required_on_update = "true"
+      subject.flavour = 'vanilla'
+      subject.required_on_create = 'true'
+      subject.required_on_update = 'true'
     end
 
-    it_should_behave_like "new model"
-    it_should_behave_like "loadable model"
-    it_should_behave_like "saveable model"
-    it_should_behave_like "creatable model"
-    it_should_behave_like "destroyable model"
-    it_should_behave_like "updatable model"
-    it_should_behave_like "timestamped model"
+    it_should_behave_like 'new model'
+    it_should_behave_like 'loadable model'
+    it_should_behave_like 'saveable model'
+    it_should_behave_like 'creatable model'
+    it_should_behave_like 'destroyable model'
+    it_should_behave_like 'updatable model'
+    it_should_behave_like 'timestamped model'
 
-    context "after being saved" do
+    context 'after being saved' do
       before do
         subject.class.delete_all
         subject.save
@@ -66,16 +66,16 @@ describe IceLolly, type: :integration do
 
       it { should == subject.class.where(flavour: 'vanilla').first }
 
-      it "should be able to modify one of its named attributes" do
+      it 'should be able to modify one of its named attributes' do
         lambda { subject.update_attributes!(flavour: 'horse') }.should_not raise_error
         subject.flavour.should == 'horse'
       end
 
-      it "should not have the extended property" do
-        subject.attributes.should_not include("extended_property")
+      it 'should not have the extended property' do
+        subject.attributes.should_not include('extended_property')
       end
 
-      it "should respond to class.all" do
+      it 'should respond to class.all' do
         subject.class.respond_to?(:all)
       end
 
@@ -83,42 +83,42 @@ describe IceLolly, type: :integration do
         subject.class.where(flavour: 'vanilla').should include(subject)
       end
 
-      context "and then made invalid" do
+      context 'and then made invalid' do
         before { subject.required_on_update = nil }
 
         it "shouldn't be updatable" do
-          subject.update_attributes(flavour: "fish").should_not be true
+          subject.update_attributes(flavour: 'fish').should_not be true
         end
 
-        it "should have the same attribute values after an unsuccessful update and reload" do
-          subject.update_attributes(flavour: "fish")
-          subject.reload.flavour.should == "vanilla"
+        it 'should have the same attribute values after an unsuccessful update and reload' do
+          subject.update_attributes(flavour: 'fish')
+          subject.reload.flavour.should == 'vanilla'
           subject.required_on_update.should_not be_nil
         end
 
       end
     end
 
-    context "after create" do
+    context 'after create' do
       before :each do
         @obj = subject.class.create!(subject.attributes)
       end
 
-      it "should have run the #timestamp callback" do
+      it 'should have run the #timestamp callback' do
         @obj.created.should_not be_nil
       end
 
-      it "should have run the #mark_saved callback" do
+      it 'should have run the #mark_saved callback' do
         @obj.saved.should_not be_nil
       end
     end
   end
 
-  context "when invalid" do
-    it_should_behave_like "new model"
-    it_should_behave_like "unsaveable model"
-    it_should_behave_like "uncreatable model"
-    it_should_behave_like "non-updatable model"
+  context 'when invalid' do
+    it_should_behave_like 'new model'
+    it_should_behave_like 'unsaveable model'
+    it_should_behave_like 'uncreatable model'
+    it_should_behave_like 'non-updatable model'
   end
 end
 
@@ -287,7 +287,7 @@ describe Neo4j::ActiveNode do
         expect(CacheTest.cached_class?).to be_falsey
       end
 
-      it "does not set _classname on the node" do
+      it 'does not set _classname on the node' do
         expect(@unwrapped.props).to_not have_key(:_classname)
       end
     end
@@ -311,10 +311,10 @@ describe Neo4j::ActiveNode do
     end
 
     it 'generate accessors for declared attribute' do
-      person = Person.new(name: "hej")
-      expect(person.name).to eq("hej")
+      person = Person.new(name: 'hej')
+      expect(person.name).to eq('hej')
       person.name = 'new name'
-      expect(person.name).to eq("new name")
+      expect(person.name).to eq('new name')
     end
 
     it 'accepts Time type, converts to DateTime' do
@@ -323,7 +323,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'declared attribute can have type conversion' do
-      person = Person.create(age: "40")
+      person = Person.create(age: '40')
       expect(person.age).to eq(40)
       person.age = '42'
       person.save
@@ -331,11 +331,11 @@ describe Neo4j::ActiveNode do
     end
 
     it 'attributes and [] accessors can be combined' do
-      person = Person.create(age: "40")
+      person = Person.create(age: '40')
       expect(person.age).to eq(40)
       expect(person[:age]).to eq(40)
       expect(person['age']).to eq(40)
-      person[:age] = "41"
+      person[:age] = '41'
       expect(person.age).to eq(41)
 
       expect(person['age']).to eq(41)
@@ -426,16 +426,16 @@ describe Neo4j::ActiveNode do
       person.save
       person2 = Neo4j::Node.load(person.neo_id)
       person2.age.should == 22
-      person2.name.should == "andreas"
+      person2.name.should == 'andreas'
     end
 
-    it "they can be all found" do
+    it 'they can be all found' do
       person1 = Person.create(name: 'person1', age: 21)
       person2 = Person.create(name: 'person2', age: 21)
       Person.all.should include(person1, person2)
     end
 
-    it "they can be queries" do
+    it 'they can be queries' do
       Person.create(name: 'person3', age: 21)
       person2 = Person.create(name: 'person4', age: 21)
       Person.where(name: 'person4').to_a.should == [person2]
@@ -443,47 +443,47 @@ describe Neo4j::ActiveNode do
 
     it 'saves all declared properties' do
       expect do
-        Person.create(name: 'person123', age: 123, unknown: "yes")
+        Person.create(name: 'person123', age: 123, unknown: 'yes')
       end.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
     end
 
     describe 'multiparameter attributes' do
       it 'converts to Date' do
-        person = Person.create("date(1i)" => "2014", "date(2i)" => "7", "date(3i)" => "13")
+        person = Person.create('date(1i)' => '2014', 'date(2i)' => '7', 'date(3i)' => '13')
         expect(person.date).to be_a Date
-        expect(person.date.to_s).to eq "2014-07-13"
+        expect(person.date.to_s).to eq '2014-07-13'
       end
 
       it 'converts to DateTime' do
-        person = Person.create("datetime(1i)" => "2014", "datetime(2i)" => "7", "datetime(3i)" => "13", "datetime(4i)" => "17", "datetime(5i)" => "45")
+        person = Person.create('datetime(1i)' => '2014', 'datetime(2i)' => '7', 'datetime(3i)' => '13', 'datetime(4i)' => '17', 'datetime(5i)' => '45')
         expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
 
       it 'raises an error when it receives values it cannot process' do
         expect do
-          Person.create("foo(1i)" => "2014", "foo(2i)" => "2014")
+          Person.create('foo(1i)' => '2014', 'foo(2i)' => '2014')
         end.to raise_error(Neo4j::Shared::Property::MultiparameterAssignmentError)
       end
 
       it 'sends values straight through when no type is specified' do
-        person = Person.create("numbers(1i)" => "5", "numbers(2i)" => "23")
+        person = Person.create('numbers(1i)' => '5', 'numbers(2i)' => '23')
         expect(person.numbers).to be_a Array
         expect(person.numbers).to eq [5, 23]
       end
 
-      it "leaves standard attributes alone" do
-        person = Person.create("date(1i)" => "2014", "date(2i)" => "7", "date(3i)" => "13", name: 'chris')
+      it 'leaves standard attributes alone' do
+        person = Person.create('date(1i)' => '2014', 'date(2i)' => '7', 'date(3i)' => '13', name: 'chris')
         expect(person.name).to eq 'chris'
         expect(person.date).to be_a Date
       end
 
       it 'converts on update in addition to create' do
         person = Person.create
-        person.update_attributes("date(1i)" => "2014", "date(2i)" => "7", "date(3i)" => "13")
+        person.update_attributes('date(1i)' => '2014', 'date(2i)' => '7', 'date(3i)' => '13')
         person.save
         expect(person.date).to be_a Date
-        expect(person.date.to_s).to eq "2014-07-13"
+        expect(person.date.to_s).to eq '2014-07-13'
       end
     end
   end
@@ -505,25 +505,25 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe "cache_key" do
-    describe "unpersisted object" do
-      it "should respond with plural_model/new" do
+  describe 'cache_key' do
+    describe 'unpersisted object' do
+      it 'should respond with plural_model/new' do
         model = IceLolly.new
         model.cache_key.should eq "#{model.class.model_name.cache_key}/new"
       end
     end
 
-    describe "persisted object" do
-      let(:model) { IceLolly.create(flavour: "vanilla", required_on_create: true, required_on_update: true) }
+    describe 'persisted object' do
+      let(:model) { IceLolly.create(flavour: 'vanilla', required_on_create: true, required_on_update: true) }
 
-      it "should respond with a valid cache key" do
+      it 'should respond with a valid cache key' do
         expect(model.cache_key).to eq "#{model.class.model_name.cache_key}/#{model.neo_id}-#{model.updated_at.utc.to_s(:number)}"
       end
 
-      context "when changed" do
-        it "should change cache_key value" do
+      context 'when changed' do
+        it 'should change cache_key value' do
           start = model.cache_key && sleep(1)
-          model.flavour = "chocolate" && model.save
+          model.flavour = 'chocolate' && model.save
           expect(model.cache_key).to_not eq start
         end
       end
@@ -542,7 +542,7 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe "Neo4j::Paginated.create_from" do
+  describe 'Neo4j::Paginated.create_from' do
     before do
       Person.delete_all
       i = 1.upto(16).to_a
@@ -553,7 +553,7 @@ describe Neo4j::ActiveNode do
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
 
-    it "returns a Neo4j::Paginated" do
+    it 'returns a Neo4j::Paginated' do
       expect(p).to be_a(Neo4j::Paginated)
     end
 

@@ -6,7 +6,7 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     # Add ActiveModel translations to the I18n load_path
-    initializer "i18n" do |app|
+    initializer 'i18n' do |app|
       config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
     end
 
@@ -22,7 +22,7 @@ module Neo4j
 
       def set_default_session(cfg)
         cfg.session_type ||= :server_db
-        cfg.session_path ||= "http://localhost:7474"
+        cfg.session_path ||= 'http://localhost:7474'
         cfg.session_options ||= {}
         cfg.sessions ||= []
 
@@ -64,7 +64,7 @@ module Neo4j
 
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
-    initializer "neo4j.start", after: :load_config_initializers do |app|
+    initializer 'neo4j.start', after: :load_config_initializers do |app|
       cfg = app.config.neo4j
       # Set Rails specific defaults
       Neo4j::Railtie.set_default_session(cfg)

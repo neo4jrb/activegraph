@@ -126,24 +126,24 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     end
 
-    describe "#target_class_name" do
+    describe '#target_class_name' do
       subject { association.target_class_name }
 
-      context "assumed model class" do
+      context 'assumed model class' do
         let(:name) { :burzs }
 
         it { should == '::Burz' }
       end
 
 
-      context "specified model class" do
-        context "specified as string" do
+      context 'specified model class' do
+        context 'specified as string' do
           let(:options) { {model_class: 'Bizzl'} }
 
           it { should == '::Bizzl' }
         end
 
-        context "specified as class" do
+        context 'specified as class' do
           before(:each) do
             stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
           end
@@ -168,9 +168,9 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     describe 'origin_type' do
       let(:start) {  Neo4j::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
-      let(:myclass) { double("another activenode class") }
-      let(:myassoc) { double("an association object") }
-      let(:assoc_details) { double("the result of calling :associations", relationship_type: 'MyRel') }
+      let(:myclass) { double('another activenode class') }
+      let(:myassoc) { double('an association object') }
+      let(:assoc_details) { double('the result of calling :associations', relationship_type: 'MyRel') }
       it 'examines the specified association to determine type' do
         expect(start).to receive(:target_class).and_return(myclass)
         expect(myclass).to receive(:associations).and_return(myassoc)

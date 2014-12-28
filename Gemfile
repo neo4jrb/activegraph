@@ -22,7 +22,7 @@ end
 group 'test' do
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
-  gem "rspec", '~> 2.0'
-  gem "its"
-  gem "test-unit"
+  gem 'rspec', '~> 2.0'
+  gem 'its'
+  gem 'test-unit'
 end

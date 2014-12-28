@@ -20,7 +20,7 @@ elsif ARGV.include?('advanced')
 elsif ARGV.include?('enterprise')
   require 'neo4j-enterprise' # not really needed
 else
-  puts "Expected community, advanced, enterprise"
+  puts 'Expected community, advanced, enterprise'
   exit -1
 end
 

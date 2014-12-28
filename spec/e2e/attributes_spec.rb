@@ -13,7 +13,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'does not have any attributes' do
-        subject.attributes.should == {"name" => nil}
+        subject.attributes.should == {'name' => nil}
       end
 
       it 'returns nil when asking for a attribute' do

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 
-describe "Neo4j::ActiveNode" do
+describe 'Neo4j::ActiveNode' do
   let(:clazz) do
     UniqueClass.create do
       include Neo4j::ActiveNode
@@ -12,9 +12,9 @@ describe "Neo4j::ActiveNode" do
     clazz.to_s.to_sym
   end
 
-  describe "labels" do
+  describe 'labels' do
     context 'with _persisted_obj.labels present' do
-      it "returns the label of the class" do
+      it 'returns the label of the class' do
         expect(clazz.create.labels).to eq([label_name])
       end
     end
@@ -166,13 +166,13 @@ describe "Neo4j::ActiveNode" do
   end
 
   describe 'add_label' do
-    it "can add one label" do
+    it 'can add one label' do
       node = clazz.create
       node.add_label(:foo)
       expect(node.labels).to match_array([label_name, :foo])
     end
 
-    it "can add two label" do
+    it 'can add two label' do
       node = clazz.create
       node.add_label(:foo, :bar)
       expect(node.labels).to match_array([label_name, :foo, :bar])
@@ -182,14 +182,14 @@ describe "Neo4j::ActiveNode" do
 
 
   describe 'remove_label' do
-    it "can remove one label" do
+    it 'can remove one label' do
       node = clazz.create
       node.add_label(:foo)
       node.remove_label(:foo)
       expect(node.labels).to match_array([label_name])
     end
 
-    it "can add two label" do
+    it 'can add two label' do
       node = clazz.create
       node.add_label(:foo, :bar, :baaz)
       node.remove_label(:foo, :baaz)

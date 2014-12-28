@@ -10,7 +10,7 @@ describe Neo4j::Config do
 
   describe 'when using a different existing config' do
     before do
-      Neo4j::Config.default_file = File.expand_path(File.join(File.dirname(__FILE__), "config.yml"))
+      Neo4j::Config.default_file = File.expand_path(File.join(File.dirname(__FILE__), 'config.yml'))
     end
 
     after do

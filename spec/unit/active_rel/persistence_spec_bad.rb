@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveRel::Persistence do
-  let(:session) { double("Session") }
+  let(:session) { double('Session') }
   let(:node1) { double('first persisted node') }
   let(:node2) { double('second persisted node') }
   let(:rel)   { double('a persisted rel')  }

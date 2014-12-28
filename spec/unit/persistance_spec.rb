@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Persistence do
-  let(:node) { double("a persisted node", exist?: true) }
+  let(:node) { double('a persisted node', exist?: true) }
 
   let(:clazz) do
     Class.new do
@@ -26,9 +26,9 @@ describe Neo4j::ActiveNode::Persistence do
   end
 
   describe 'save' do
-    let(:session) { double("Session") }
+    let(:session) { double('Session') }
     before do
-      @session = double("Mock Session")
+      @session = double('Mock Session')
       Neo4j::Session.stub(:current).and_return(session)
     end
 
@@ -39,7 +39,7 @@ describe Neo4j::ActiveNode::Persistence do
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
       session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
-      clazz.any_instance.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
+      clazz.any_instance.should_receive(:init_on_load).with(node, age: '43', name: 'kalle2')
       o.save
     end
 

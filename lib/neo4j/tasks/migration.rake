@@ -1,7 +1,7 @@
 require 'neo4j/migration'
 
 namespace :neo4j do
-  desc "Run a script against the database to perform system-wide changes"
+  desc 'Run a script against the database to perform system-wide changes'
   task :migrate, [:task_name, :subtask] => :environment do |_, args|
     path = Rake.original_dir
     migration_task = args[:task_name]
