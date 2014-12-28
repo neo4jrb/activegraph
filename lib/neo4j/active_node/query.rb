@@ -34,7 +34,7 @@ module Neo4j
         end
 
         Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
-          module_eval(%Q{
+          module_eval(%{
             def #{method}(*args)
               self.query_proxy.#{method}(*args)
             end}, __FILE__, __LINE__)

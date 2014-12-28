@@ -89,7 +89,7 @@ module HasN
       create_reflection(:has_many, name, association)
 
       # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
-      module_eval(%Q{
+      module_eval(%{
         def #{name}(node = nil, rel = nil)
           return [].freeze unless self._persisted_obj
           Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
@@ -117,7 +117,7 @@ module HasN
             #{name}(nil, :r).pluck(:r)
           end}, __FILE__, __LINE__)
 
-        instance_eval(%Q{
+        instance_eval(%{
           def #{name}(node = nil, rel = nil, proxy_obj = nil)
             query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(::#{self.name}, nil, {
                   session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
@@ -147,7 +147,7 @@ module HasN
         target_class_name = association.target_class_name || 'nil'
         create_reflection(:has_one, name, association)
 
-        module_eval(%Q{
+        module_eval(%{
           def #{name}=(other_node)
             raise(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
             clear_association_cache
@@ -171,7 +171,7 @@ module HasN
             query_return || association_instance_set(result.to_cypher_with_params, result.first, association)
           end}, __FILE__, __LINE__)
 
-        instance_eval(%Q{
+        instance_eval(%{
           def #{name}_query_proxy(options = {})
             Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
                                                      associations[#{name.inspect}],

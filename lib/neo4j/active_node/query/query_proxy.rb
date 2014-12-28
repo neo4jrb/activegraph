@@ -112,7 +112,7 @@ module Neo4j
         METHODS = %w[where rel_where order skip limit]
 
         METHODS.each do |method|
-          module_eval(%Q{
+          module_eval(%{
             def #{method}(*args)
               build_deeper_query_proxy(:#{method}, args)
             end}, __FILE__, __LINE__)

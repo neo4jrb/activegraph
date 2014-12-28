@@ -110,12 +110,6 @@ Style/AccessorMethodName:
 Style/AsciiComments:
   Enabled: false
 
-# Offense count: 14
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-Style/BarePercentLiterals:
-  Enabled: false
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Style/BlockComments:
