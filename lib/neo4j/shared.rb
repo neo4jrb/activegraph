@@ -8,7 +8,7 @@ module Neo4j
     include ActiveModel::Serializers::JSON
 
     module ClassMethods
-      def neo4j_session_name (name)
+      def neo4j_session_name(name)
         @neo4j_session_name = name
       end
 

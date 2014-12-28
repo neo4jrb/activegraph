@@ -19,7 +19,7 @@ module Neo4j::ActiveRel
     end
 
     # Loads the node if needed, then conducts comparison.
-    def == (obj)
+    def ==(obj)
       loaded if @node.is_a?(Fixnum)
       @node == obj
     end
