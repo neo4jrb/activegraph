@@ -112,11 +112,6 @@ Style/AsciiComments:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Style/BlockComments:
-  Enabled: false
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Style/Blocks:
   Enabled: false
 
