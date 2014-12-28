@@ -75,9 +75,7 @@ module Neo4j
           end
         end
 
-        def relationship_class
-          @relationship_class
-        end
+        attr_reader :relationship_class
 
         def relationship_class_type
           @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
