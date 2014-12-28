@@ -9,9 +9,9 @@ module UniqueClass
     name ||= "Model_#{@@_counter}_#{_unique_random_number}"
     @@_counter += 1
     klass.class_eval <<-RUBY
-	def self.to_s
-	  "#{name}"
-	end
+  def self.to_s
+    "#{name}"
+  end
     RUBY
     #Object.send(:remove_const, name) if Object.const_defined?(name)
     Object.const_set(name, klass) #unless Kernel.const_defined?(name)
