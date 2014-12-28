@@ -125,7 +125,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'does not return undefined properties' do
       o = clazz.new # name not defined
       o.age = '18'
-      o.props.should eq({:age => 18})
+      o.props.should eq(:age => 18)
     end
 
   end

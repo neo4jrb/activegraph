@@ -47,7 +47,7 @@ describe Neo4j::ActiveRel::Persistence do
       end_props   = { friends_since: 'sunday', level: 9001, _classname: Class }
       r = clazz.new(start_props)
       r.stub(:confirm_node_classes).and_return(:true)
-      expect(node1).to receive(:create_rel).with(:friends_with, node2, {friends_since: 'sunday', level: 9001, _classname: nil}).and_return(rel)
+      expect(node1).to receive(:create_rel).with(:friends_with, node2, friends_since: 'sunday', level: 9001, _classname: nil).and_return(rel)
       rel.stub(:props).and_return(end_props)
       expect(r.save).to be_truthy 
     end

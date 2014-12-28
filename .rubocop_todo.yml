@@ -110,12 +110,6 @@ Style/AccessorMethodName:
 Style/AsciiComments:
   Enabled: false
 
-# Offense count: 17
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-Style/BracesAroundHashParameters:
-  Enabled: false
-
 # Offense count: 7
 Style/CaseEquality:
   Enabled: false
