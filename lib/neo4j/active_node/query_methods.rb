@@ -3,7 +3,7 @@ module Neo4j
     module QueryMethods
       class InvalidParameterError < StandardError; end
 
-      def exists?(node_condition=nil)
+      def exists?(node_condition = nil)
         fail(InvalidParameterError, ':exists? only accepts ids or conditions') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
         query_start = exists_query_start(node_condition)
         start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start

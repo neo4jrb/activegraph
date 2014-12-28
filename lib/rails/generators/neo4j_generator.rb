@@ -19,11 +19,11 @@ class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
     "#{klass}.all"
   end
 
-  def self.find(klass, params=nil)
+  def self.find(klass, params = nil)
     "#{klass}.find(#{params})"
   end
 
-  def self.build(klass, params=nil)
+  def self.build(klass, params = nil)
     if params
       "#{klass}.new(#{params})"
     else
@@ -35,7 +35,7 @@ class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
     "#{name}.save"
   end
 
-  def update_attributes(params=nil)
+  def update_attributes(params = nil)
     "#{name}.update_attributes(#{params})"
   end
 

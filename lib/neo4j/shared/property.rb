@@ -17,7 +17,7 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
-    def initialize(attributes={}, options={})
+    def initialize(attributes = {}, options = {})
       attributes = process_attributes(attributes)
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
@@ -141,7 +141,7 @@ module Neo4j::Shared
       #      # declare a property which can have any value
       #      property :name, constraint: :unique
       #    end
-      def property(name, options={})
+      def property(name, options = {})
         check_illegal_prop(name)
         magic_properties(name, options)
         attribute(name, options)
@@ -181,7 +181,7 @@ module Neo4j::Shared
         end
       end
 
-      def attribute!(name, options={})
+      def attribute!(name, options = {})
         super(name, options)
         define_method("#{name}=") do |value|
           typecast_value = typecast_attribute(_attribute_typecaster(name), value)

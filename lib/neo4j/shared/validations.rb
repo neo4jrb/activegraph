@@ -14,7 +14,7 @@ module Neo4j
       # @param [Hash] options the options to create a message with.
       # @option options [true, false] :validate if false no validation will take place
       # @return [Boolean] true if it saved it successfully
-      def save(options={})
+      def save(options = {})
         result = perform_validations(options) ? super : false
         if !result
           Neo4j::Transaction.current.failure if Neo4j::Transaction.current
@@ -31,7 +31,7 @@ module Neo4j
 
       private
 
-      def perform_validations(options={})
+      def perform_validations(options = {})
         perform_validation = case options
                              when Hash
                                options[:validate] != false

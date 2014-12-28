@@ -22,7 +22,7 @@ module Neo4j::ActiveRel
       # To use a string, prefix the property with "r1"
       # @example Match with a string
       #   MyRelClass.where('r1.grade > r1')
-      def where(args={})
+      def where(args = {})
         where_query.where(where_string(args)).pluck(:r1)
       end
 

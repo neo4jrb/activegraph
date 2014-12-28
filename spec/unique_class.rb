@@ -5,7 +5,7 @@ module UniqueClass
     "#{Time.now.year}#{Time.now.to_i}#{Time.now.usec.to_s[0..2]}".to_i
   end
 
-  def self.set(klass, name=nil)
+  def self.set(klass, name = nil)
     name ||= "Model_#{@@_counter}_#{_unique_random_number}"
     @@_counter += 1
     klass.class_eval <<-RUBY
@@ -18,7 +18,7 @@ module UniqueClass
     klass
   end
 
-  def self.create(class_name=nil, &block)
+  def self.create(class_name = nil, &block)
     clazz = Class.new
     set(clazz, class_name)
     clazz.class_eval &block if block
