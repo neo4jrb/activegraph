@@ -414,7 +414,7 @@ describe 'query_proxy_methods' do
 
         expect(result[1][0]).to eq @math
         expect(result[1][1]).to eq @johnson
-      elsif
+      else
         expect(result[0][0]).to eq @math
         expect(result[0][1]).to eq @johnson
 
