@@ -37,11 +37,9 @@ class Neo4j::Node
     end
 
     def load_class_from_label(label_name)
-      begin
-        label_name.to_s.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
-      rescue NameError
-        nil
-      end
+      label_name.to_s.split("::").inject(Kernel) {|container, name| container.const_get(name.to_s) }
+    rescue NameError
+      nil
     end
 
     def _class_wrappers
