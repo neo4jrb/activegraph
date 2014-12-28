@@ -209,12 +209,6 @@ Style/PredicateName:
 Style/RaiseArgs:
   Enabled: false
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowMultipleReturnValues.
-Style/RedundantReturn:
-  Enabled: false
-
 # Offense count: 84
 # Cop supports --auto-correct.
 Style/RedundantSelf:

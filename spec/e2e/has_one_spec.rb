@@ -119,7 +119,7 @@ describe "has_one" do
       end
 
       def false_before_callback(other)
-        return false
+        false
       end
     end
 
