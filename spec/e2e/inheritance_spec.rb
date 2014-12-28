@@ -58,9 +58,9 @@ describe 'Inheritance', type: :e2e do
   end
 
   describe 'serialization' do
-    let!(:toyota) {
+    let!(:toyota) do
       InheritanceTest::Car.create(name: 'toyota', model: 'camry')
-    }
+    end
 
     it 'successfully saves and returns hashes from the base class' do
       specs = { weight: 3000, doors: 4 }
