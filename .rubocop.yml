@@ -64,5 +64,5 @@ Style/ModuleFunction:
 # Configuration parameters: AllowSafeAssignment.
 # Reason: I'm a proud user of assignment in conditionals.
 Lint/AssignmentInCondition:
-  Enabled: true
+  Enabled: false
 
