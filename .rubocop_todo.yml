@@ -178,10 +178,6 @@ Style/IfUnlessModifier:
 Style/Lambda:
   Enabled: false
 
-# Offense count: 1
-Style/ModuleFunction:
-  Enabled: false
-
 # Offense count: 2
 Style/MultilineBlockChain:
   Enabled: false
