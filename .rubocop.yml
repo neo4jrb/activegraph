@@ -57,3 +57,9 @@ Style/Not:
 Style/PerlBackrefs:
   Enabled: false
 
+# Offense count: 1
+# Configuration parameters: Methods.
+# Reason: We should be able to specify full variable names, even if it's only one line
+Style/SingleLineBlockParams:
+  Enabled: false
+
