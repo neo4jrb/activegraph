@@ -24,8 +24,8 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
 
     assert_file 'app/models/account.rb' do |account|
       assert_class 'Account', account do |klass|
-        assert_match /property :name/, klass
-        assert_match /property :age, :type => Fixnum/, klass
+        assert_match(/property :name/, klass)
+        assert_match(/property :age, :type => Fixnum/, klass)
       end
     end
   end
@@ -45,8 +45,8 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
 
     assert_file 'app/models/account.rb' do |account|
       assert_class 'Account', account do |klass|
-        assert_match /property :created_at/, klass
-        assert_match /property :updated_at/, klass
+        assert_match(/property :created_at/, klass)
+        assert_match(/property :updated_at/, klass)
       end
     end
   end
