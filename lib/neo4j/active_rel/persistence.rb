@@ -15,7 +15,7 @@ module Neo4j::ActiveRel
     end
 
     def save!(*args)
-      fail RelInvalidError.new(self) unless save(*args)
+      fail RelInvalidError, self unless save(*args)
     end
 
     def create_model(*)
@@ -45,7 +45,7 @@ module Neo4j::ActiveRel
 
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
-        fail RelInvalidError.new(self) unless create(*args)
+        fail RelInvalidError, self unless create(*args)
       end
     end
 

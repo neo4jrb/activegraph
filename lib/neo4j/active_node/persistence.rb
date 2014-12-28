@@ -37,7 +37,7 @@ module Neo4j::ActiveNode
     # @see Neo4j::Rails::Callbacks Neo4j::Rails::Callbacks - for callbacks
     def save!(*args)
       unless save(*args)
-        fail RecordInvalidError.new(self)
+        fail RecordInvalidError, self
       end
     end
 
