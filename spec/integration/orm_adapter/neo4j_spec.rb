@@ -29,13 +29,13 @@ module Neo4j
         delete_db
       end
 
-#      describe "the OrmAdapter class" do
-#        subject { Neo4j::ActiveNode::OrmAdapter }
-#  
-#        specify "#model_classes should return all of the model classes (that are not in except_classes)" do
-#          subject.model_classes.should include(User, Note)
-#        end
-#      end
+      #      describe "the OrmAdapter class" do
+      #        subject { Neo4j::ActiveNode::OrmAdapter }
+      #  
+      #        specify "#model_classes should return all of the model classes (that are not in except_classes)" do
+      #          subject.model_classes.should include(User, Note)
+      #        end
+      #      end
     
       it_should_behave_like "example app with orm_adapter fix" do
         let(:user_class) { User }
