@@ -44,7 +44,7 @@ describe Neo4j::Node::Wrapper do
     describe "with class_name_property" do
       context 'when set in config.yml' do
         it 'looks for a property with the same name' do
-          wrapper.stub(:props).and_return(_defined_property_name: 'Bar' )
+          wrapper.stub(:props).and_return(_defined_property_name: 'Bar')
           Bar = Object
           Neo4j::Config.stub(:class_name_property).and_return(:_defined_property_name)
           expect(wrapper.props).to receive(:has_key?).with(:_defined_property_name).and_return true
@@ -54,7 +54,7 @@ describe Neo4j::Node::Wrapper do
       end
 
       context 'when using default and present on class' do
-        before { wrapper.stub(:props).and_return( _classname: 'CachedClassName') }
+        before { wrapper.stub(:props).and_return(_classname: 'CachedClassName') }
         CachedClassName = Object
 
         it 'does not call :_class_wrappers' do
@@ -118,7 +118,7 @@ describe Neo4j::Node::Wrapper do
       allow(Neo4j::ActiveNode::Labels).to receive(:_wrapped_labels).and_return(label_mapping)
 
       wrapper.should_receive(:_class_wrappers).and_return(label_mapping.keys)
-      D.any_instance.should_receive(:init_on_load).with(wrapper,  value: 42 )
+      D.any_instance.should_receive(:init_on_load).with(wrapper,  value: 42)
       wrapper.wrapper
     end
   end
