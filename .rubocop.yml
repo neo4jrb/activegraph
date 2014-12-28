@@ -1,1 +1,10 @@
 inherit_from: .rubocop_todo.yml
+
+# Don't intend to fix these:
+
+# Offense count: 64
+# Cop supports --auto-correct.
+# Reason: Double spaces can be useful for grouping code
+Style/EmptyLines:
+  Enabled: false
+
