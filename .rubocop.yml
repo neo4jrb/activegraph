@@ -24,3 +24,11 @@ Style/HashSyntax:
 Style/EmptyLines:
   Enabled: false
 
+# Offense count: 10
+# Cop supports --auto-correct.
+# Reason: I have very big opinions on this one.  See:
+#   https://github.com/bbatsov/ruby-style-guide/issues/329
+#   https://github.com/bbatsov/ruby-style-guide/pull/325
+Style/NegatedIf:
+  Enabled: false
+
