@@ -29,7 +29,7 @@ module Neo4j
           conditions = scope_conditions(record)
 
           # TODO: Added as find(:name => nil) throws error
-          value = "" if value == nil
+          value = "" if value.nil?
 
           conditions[attribute] = options[:case_sensitive] ? value : /^#{Regexp.escape(value.to_s)}$/i
 

@@ -195,11 +195,6 @@ Style/ModuleFunction:
 Style/MultilineBlockChain:
   Enabled: false
 
-# Offense count: 3
-# Cop supports --auto-correct.
-Style/NilComparison:
-  Enabled: false
-
 # Offense count: 7
 # Cop supports --auto-correct.
 Style/Not:
