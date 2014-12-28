@@ -8,7 +8,7 @@ module Neo4j::ActiveRel
       # @param [String,Fixnum] id of node to find
       # @param [Neo4j::Session] session optional
       def find(id, session = self.neo4j_session)
-        raise "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
+        fail "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
         find_by_id(id, session)
       end
 

@@ -50,7 +50,7 @@ module Neo4j::Shared
               when String
                 DateTime.strptime(value, '%Y-%m-%d %H:%M:%S %z')
               else
-                raise ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
+                fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
               end
 
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)

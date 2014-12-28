@@ -41,7 +41,7 @@ module Neo4j
     include Neo4j::ActiveNode::Scope
 
     def neo4j_obj
-      _persisted_obj || raise("Tried to access native neo4j object on a non persisted object")
+      _persisted_obj || fail("Tried to access native neo4j object on a non persisted object")
     end
 
     included do

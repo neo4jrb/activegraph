@@ -22,7 +22,7 @@ module Neo4j
       # Get an instance by id of the model
       def get!(id)
         klass.find(wrap_key(id)).tap do |node|
-          raise "No record found" if node.nil?
+          fail "No record found" if node.nil?
         end
       end
 

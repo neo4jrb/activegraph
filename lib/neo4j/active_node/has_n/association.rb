@@ -152,14 +152,14 @@ module Neo4j
         end
 
         def check_valid_type_and_dir(type, direction)
-          raise ArgumentError, "Invalid association type: #{type.inspect} (valid value: :has_many and :has_one)" if not [:has_many, :has_one].include?(type.to_sym)
-          raise ArgumentError, "Invalid direction: #{direction.inspect} (valid value: :out, :in, and :both)" if not [:out, :in, :both].include?(direction.to_sym)
+          fail ArgumentError, "Invalid association type: #{type.inspect} (valid value: :has_many and :has_one)" if not [:has_many, :has_one].include?(type.to_sym)
+          fail ArgumentError, "Invalid direction: #{direction.inspect} (valid value: :out, :in, and :both)" if not [:out, :in, :both].include?(direction.to_sym)
         end
 
         def validate_option_combinations(options)
-          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
-          raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
-          raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+          fail ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
+          fail ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
+          fail ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key
@@ -178,13 +178,13 @@ module Neo4j
             if target_class
               if association = target_class.associations[@origin]
                 if @direction == association.direction
-                  raise ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)"
+                  fail ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)"
                 end
               else
-                raise ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
+                fail ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
               end
             else
-              raise ArgumentError, "Cannot use :origin without a model_class (implied or explicit)"
+              fail ArgumentError, "Cannot use :origin without a model_class (implied or explicit)"
             end
           end
         end

@@ -201,7 +201,7 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          raise "Can only create associations on associations" unless @association
+          fail "Can only create associations on associations" unless @association
           other_nodes = [other_nodes].flatten
           properties = @association.inject_classname(properties)
           other_nodes = other_nodes.map do |other_node|
@@ -213,7 +213,7 @@ module Neo4j
             end
           end.compact
 
-          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
+          fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
             # Neo4j::Transaction.run do
             other_node.save unless other_node.neo_id
@@ -311,7 +311,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.node_var || :"node#{_chain_level}"
           else
-            raise "Crazy error" # TODO: Better error
+            fail "Crazy error" # TODO: Better error
           end
         end
 
@@ -321,7 +321,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.query_as(var)
           else
-            raise "Crazy error" # TODO: Better error
+            fail "Crazy error" # TODO: Better error
           end
         end
 
@@ -363,7 +363,7 @@ module Neo4j
               if @model && @model.has_association?(key)
 
                 neo_id = value.try(:neo_id) || value
-                raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
+                fail ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
                 n_string = "n#{node_num}"
                 dir = @model.associations[key].direction

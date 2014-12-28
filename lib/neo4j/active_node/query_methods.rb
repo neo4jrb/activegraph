@@ -4,7 +4,7 @@ module Neo4j
       class InvalidParameterError < StandardError; end
 
       def exists?(node_condition=nil)
-        raise(InvalidParameterError, ':exists? only accepts ids or conditions') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
+        fail(InvalidParameterError, ':exists? only accepts ids or conditions') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
         query_start = exists_query_start(node_condition)
         start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
         start_q.return("COUNT(n) AS count").first.count > 0
@@ -22,7 +22,7 @@ module Neo4j
 
       # @return [Fixnum] number of nodes of this class
       def count(distinct = nil)
-        raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
         q = distinct.nil? ? "n" : "DISTINCT n"
         self.query_as(:n).return("count(#{q}) AS count").first.count
       end

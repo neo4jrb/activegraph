@@ -48,7 +48,7 @@ module Neo4j
 
       def open_neo4j_session(session_opts)
         if !java_platform? && session_opts[:type] == :embedded_db
-          raise "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
+          fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
         end
 
         session = if session_opts.key?(:name)

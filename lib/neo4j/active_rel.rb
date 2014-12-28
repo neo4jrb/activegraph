@@ -24,7 +24,7 @@ module Neo4j
     end
 
     def neo4j_obj
-      _persisted_obj || raise("Tried to access native neo4j object on a non persisted object")
+      _persisted_obj || fail("Tried to access native neo4j object on a non persisted object")
     end
 
     included do

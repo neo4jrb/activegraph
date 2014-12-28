@@ -218,12 +218,6 @@ Style/RedundantSelf:
 Style/RegexpLiteral:
   MaxSlashes: 0
 
-# Offense count: 48
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-Style/SignalException:
-  Enabled: false
-
 # Offense count: 1
 # Configuration parameters: Methods.
 Style/SingleLineBlockParams:

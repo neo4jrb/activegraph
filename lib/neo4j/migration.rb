@@ -2,7 +2,7 @@ module Neo4j
   class Migration
 
     def migrate
-      raise 'not implemented'
+      fail 'not implemented'
     end
 
     def output(string = '')
@@ -179,7 +179,7 @@ module Neo4j
         label = hash[0]
         value = hash[1]
         from = value[:from]
-        raise "All relationships require a 'type'" unless value[:type]
+        fail "All relationships require a 'type'" unless value[:type]
 
         from_cypher = from ? "(from:`#{from}`)" : "(from)"
         to = value[:to]
@@ -202,7 +202,7 @@ module Neo4j
         when 'add'
           ["WHERE NOT HAS(#{identifier}._classname)", 'Adding']
         else
-          raise "Invalid action #{action} specified"
+          fail "Invalid action #{action} specified"
         end
       end
     end

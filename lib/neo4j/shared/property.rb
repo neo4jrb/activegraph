@@ -64,7 +64,7 @@ module Neo4j::Shared
     # Raises an error if there are any keys left which haven't been defined as properties on the model
     def validate_attributes!(attributes)
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
-      raise UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
+      fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end
 
     def extract_writer_methods!(attributes)
@@ -149,7 +149,7 @@ module Neo4j::Shared
       end
 
       def undef_property(name)
-        raise ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
+        fail ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
 
         attribute_methods(name).each do |method|
           undef_method(method)
@@ -195,17 +195,17 @@ module Neo4j::Shared
       def constraint_or_index(name, options)
         # either constraint or index, do not set both
         if options[:constraint]
-          raise "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
+          fail "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
           constraint(name, type: :unique)
         elsif options[:index]
-          raise "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
+          fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
           index(name, options) if options[:index] == :exact
         end
       end
 
       def check_illegal_prop(name)
         if ILLEGAL_PROPS.include?(name.to_s)
-          raise IllegalPropertyError, "#{name} is an illegal property"
+          fail IllegalPropertyError, "#{name} is an illegal property"
         end
       end
 

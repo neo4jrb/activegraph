@@ -92,7 +92,7 @@ module Neo4j
         # Like find_by, except that if no record is found, raises a RecordNotFound error.
         def find_by!(*args)
           a = eval(args.join)
-          find_by(args) || raise(RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results")
+          find_by(args) || fail(RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results")
         end
 
         # Deletes all nodes and connected relationships from Cypher.
@@ -180,7 +180,7 @@ module Neo4j
 
         def base_class
           unless self < Neo4j::ActiveNode
-            raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
+            fail "#{name} doesn't belong in a hierarchy descending from ActiveNode"
           end
 
           if superclass == Object

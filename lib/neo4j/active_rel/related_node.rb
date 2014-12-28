@@ -15,7 +15,7 @@ module Neo4j::ActiveRel
     #
     # Initialization with a node doesn't appear to happen in the code. TODO: maybe find out why this is an option.
     def initialize(node = nil)
-      @node = valid_node_param?(node) ? node : (raise InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node' )
+      @node = valid_node_param?(node) ? node : (fail InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node' )
     end
 
     # Loads the node if needed, then conducts comparison.
