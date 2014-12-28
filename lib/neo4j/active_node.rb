@@ -75,7 +75,7 @@ module Neo4j
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]
-        id_property(name, type => value) if (name && type && value)
+        id_property(name, type => value) if name && type && value
       end
     end
 
