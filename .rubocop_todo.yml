@@ -139,11 +139,6 @@ Style/FileName:
 Style/GuardClause:
   Enabled: false
 
-# Offense count: 2
-# Configuration parameters: MaxLineLength.
-Style/IfUnlessModifier:
-  Enabled: false
-
 # Offense count: 13
 Style/Lambda:
   Enabled: false
