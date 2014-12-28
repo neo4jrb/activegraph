@@ -23,10 +23,6 @@ Lint/Eval:
 Lint/HandleExceptions:
   Enabled: false
 
-# Offense count: 8
-Lint/ParenthesesAsGroupedExpression:
-  Enabled: false
-
 # Offense count: 11
 Lint/ShadowingOuterLocalVariable:
   Enabled: false

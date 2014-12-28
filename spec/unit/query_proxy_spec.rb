@@ -1,12 +1,12 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Query::QueryProxy do
-  let (:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
-  let (:session) { double('A session') }
-  let (:query_result) { double('the result of calling :query') }
-  let (:node) { double('A node object', foo: 'bar', neo_id: true) }
-  let (:rel)  { double('A rel object') }
-  let (:user_model) { double('A fake user model') }
+  let(:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
+  let(:session) { double('A session') }
+  let(:query_result) { double('the result of calling :query') }
+  let(:node) { double('A node object', foo: 'bar', neo_id: true) }
+  let(:rel)  { double('A rel object') }
+  let(:user_model) { double('A fake user model') }
 
   describe 'label generation' do
     before do

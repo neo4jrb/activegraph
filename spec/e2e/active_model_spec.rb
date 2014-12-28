@@ -534,7 +534,7 @@ describe Neo4j::ActiveNode do
           property :name
 
         end
-        let (:nostamp) { NoStamp.create }
+        let(:nostamp) { NoStamp.create }
         it 'returns cache key without timestamp' do
           expect(nostamp.cache_key).to eq "#{nostamp.class.model_name.cache_key}/#{nostamp.neo_id}"
         end
