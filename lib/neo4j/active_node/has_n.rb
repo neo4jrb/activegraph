@@ -183,7 +183,7 @@ module Neo4j::ActiveNode
             #{name}_query_proxy(query_proxy: query_proxy, node: node, rel: rel, context: context)
           end}, __FILE__, __LINE__)
       end
-      end
     end
+  end
 
 end
