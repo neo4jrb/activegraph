@@ -62,8 +62,8 @@ describe Neo4j::ActiveNode::Persistence do
     describe 'with cached_class? true' do
       it 'adds a _classname property' do
         clazz.stub(:cached_class?).and_return(true)
-        start_props = { name: 'jasmine', age: 5 }
-        end_props   = { name: 'jasmine', age: 5, _classname: 'MyClass' }
+        start_props = {name: 'jasmine', age: 5}
+        end_props   = {name: 'jasmine', age: 5, _classname: 'MyClass'}
         o = clazz.new
 
         o.stub(:props).and_return(start_props)

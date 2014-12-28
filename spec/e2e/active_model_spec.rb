@@ -497,7 +497,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'successfully saves and returns hashes' do
-      links = {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' }
+      links = {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'}
       chris.links = links
       chris.save
       expect(chris.links).to eq links

@@ -10,6 +10,7 @@ inherit_from: .rubocop_todo.yml
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/HashSyntax:
+  Enabled: true
   EnforcedStyle: ruby19
 
 # Offense count: 109
@@ -19,6 +20,11 @@ Style/SpaceInsideBlockBraces:
   Enabled: true
   SpaceBeforeBlockParameters: false
 
+# Offense count: 122
+# Cop supports --auto-correct.
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: true
+  EnforcedStyle: no_space
 
 
 #---------------------------

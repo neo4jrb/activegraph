@@ -72,11 +72,11 @@ module Neo4j
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
           where_arg = if node.respond_to?(:neo_id)
-                        { neo_id: node.neo_id }
+                        {neo_id: node.neo_id}
                       elsif !node.nil?
                         id_key = association_id_key
                         node = ids_array(node) if node.is_a?(Array)
-                        { id_key => node }
+                        {id_key => node}
                       else
                         # support for null object pattern
                         '1 = 2'

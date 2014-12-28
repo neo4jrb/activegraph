@@ -34,7 +34,7 @@ describe Neo4j::ActiveNode::Query do
     end
 
     it 'can be built upon' do
-      @classA.query_as(:q).match('q--p').where(p: { name: 'Brian' }).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE p.name = {p_name}'
+      @classA.query_as(:q).match('q--p').where(p: {name: 'Brian'}).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE p.name = {p_name}'
     end
   end
 

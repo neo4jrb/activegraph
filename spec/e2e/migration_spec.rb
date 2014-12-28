@@ -71,7 +71,7 @@ describe 'migration tasks' do
   describe 'AddIdProperty class' do
     let(:full_path) { '/hd/gems/rails/add_id_property.yml' }
     let(:clazz) { Neo4j::Migration::AddIdProperty }
-    let(:map_template) { { models: ['MigrationSpecs::User', 'MigrationSpecs::Song'] } }
+    let(:map_template) { {models: ['MigrationSpecs::User', 'MigrationSpecs::Song']} }
 
     before do
       Rails.stub_chain(:root, :join).and_return('/hd/gems/rails/add_id_property.yml')
@@ -125,10 +125,10 @@ describe 'migration tasks' do
     let(:clazz) { Neo4j::Migration::AddClassnames }
     let(:map_template) do
       {
-        nodes: { 'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song'] },
+        nodes: {'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song']},
         relationships: {
-          'add' =>       {  'MigrationSpecs::FirstRelClass' => { type: 'songs' } },
-          'overwrite' => { 'MigrationSpecs::ThirdRelClass' => { type: 'singers' } }
+          'add' =>       {'MigrationSpecs::FirstRelClass' => {type: 'songs'}},
+          'overwrite' => {'MigrationSpecs::ThirdRelClass' => {type: 'singers'}}
         }
       }
     end

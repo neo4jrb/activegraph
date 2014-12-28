@@ -55,7 +55,7 @@ describe Neo4j::Shared::TypeConverters do
   describe Neo4j::Shared::TypeConverters::JSONConverter do
     subject { Neo4j::Shared::TypeConverters::JSONConverter }
 
-    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' } }
+    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'} }
 
     it 'translates from and to database' do
       db_value = Neo4j::Shared::TypeConverters::JSONConverter.to_db(links)
@@ -69,7 +69,7 @@ describe Neo4j::Shared::TypeConverters do
   describe Neo4j::Shared::TypeConverters::YAMLConverter do
     subject { Neo4j::Shared::TypeConverters::YAMLConverter }
 
-    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' } }
+    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'} }
 
     it 'translates from and to database' do
       db_value = Neo4j::Shared::TypeConverters::YAMLConverter.to_db(links)

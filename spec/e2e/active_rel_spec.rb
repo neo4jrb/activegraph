@@ -39,7 +39,7 @@ describe 'ActiveRel' do
   describe 'properties' do
     it 'serializes' do
       rel = MyRelClass.create(from_node: from_node, to_node: to_node)
-      rel.links = { search: 'https://google.com', social: 'https://twitter.com' }
+      rel.links = {search: 'https://google.com', social: 'https://twitter.com'}
       expect { rel.save }.not_to raise_error
       rel.reload
       expect(rel.links).to be_a(Hash)

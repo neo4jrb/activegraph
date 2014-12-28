@@ -63,7 +63,7 @@ describe 'Inheritance', type: :e2e do
     end
 
     it 'successfully saves and returns hashes from the base class' do
-      specs = { weight: 3000, doors: 4 }
+      specs = {weight: 3000, doors: 4}
       toyota.specs = specs
       toyota.save
       expect(toyota.specs).to eq specs

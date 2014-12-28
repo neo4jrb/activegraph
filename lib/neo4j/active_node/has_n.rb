@@ -45,7 +45,7 @@ module Neo4j::ActiveNode
       if @association_cache[reflection.name]
         @association_cache[reflection.name][cache_key] = collection_result
       else
-        @association_cache[reflection.name] = { cache_key => collection_result }
+        @association_cache[reflection.name] = {cache_key => collection_result}
       end
       collection_result
     end

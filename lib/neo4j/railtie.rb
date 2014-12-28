@@ -27,12 +27,12 @@ module Neo4j
         cfg.sessions ||= []
 
         unless (uri = URI(cfg.session_path)).user.blank?
-          cfg.session_options.reverse_merge!( basic_auth: { username: uri.user, password: uri.password } )
+          cfg.session_options.reverse_merge!( basic_auth: {username: uri.user, password: uri.password} )
           cfg.session_path = cfg.session_path.gsub("#{uri.user}:#{uri.password}@", '')
         end
 
         if cfg.sessions.empty?
-          cfg.sessions << { type: cfg.session_type, path: cfg.session_path, options: cfg.session_options }
+          cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
         end
       end
 

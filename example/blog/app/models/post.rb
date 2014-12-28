@@ -5,7 +5,7 @@ class Post
   property :score, type: Integer, default: 0  # See ActiveAttr gem for arguments
 
   validates :title, presence: true
-  validates :score, numericality: { only_integer: true }
+  validates :score, numericality: {only_integer: true}
 
   index :title
 

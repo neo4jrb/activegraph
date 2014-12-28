@@ -43,8 +43,8 @@ describe Neo4j::ActiveRel::Persistence do
 
   describe 'save' do
     it 'creates a relationship if not already persisted' do
-      start_props = { from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001 }
-      end_props   = { friends_since: 'sunday', level: 9001, _classname: Class }
+      start_props = {from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001}
+      end_props   = {friends_since: 'sunday', level: 9001, _classname: Class}
       r = clazz.new(start_props)
       r.stub(:confirm_node_classes).and_return(:true)
       expect(node1).to receive(:create_rel).with(:friends_with, node2, friends_since: 'sunday', level: 9001, _classname: nil).and_return(rel)

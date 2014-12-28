@@ -96,7 +96,7 @@ describe Neo4j::Node::Wrapper do
       class MyWrapper
         include Neo4j::Node::Wrapper
         def props
-          { value: 42 }
+          {value: 42}
         end
       end
       class B
