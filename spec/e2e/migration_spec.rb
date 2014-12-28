@@ -127,8 +127,8 @@ describe 'migration tasks' do
       {
         nodes: { 'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song'] },
         relationships: {
-          'add' =>       {  'MigrationSpecs::FirstRelClass' => { :type => 'songs' } },
-          'overwrite' => { 'MigrationSpecs::ThirdRelClass' => { :type => 'singers' } }
+          'add' =>       {  'MigrationSpecs::FirstRelClass' => { type: 'songs' } },
+          'overwrite' => { 'MigrationSpecs::ThirdRelClass' => { type: 'singers' } }
         }
       }
     end

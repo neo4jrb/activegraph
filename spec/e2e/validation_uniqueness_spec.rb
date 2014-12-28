@@ -27,7 +27,7 @@ describe Neo4j::ActiveNode::Validations do
         include Neo4j::ActiveNode
         property :name
         property :adult
-        validates_uniqueness_of :name, :scope => :adult
+        validates_uniqueness_of :name, scope: :adult
       end
       o = other_clazz.new("name" => "joe", :adult => true)
       o.save.should be true
@@ -37,8 +37,8 @@ describe Neo4j::ActiveNode::Validations do
     end
 
     it "should work with i18n taken message" do
-      @clazz.create(:name => 'joe')
-      o = @clazz.create(:name => 'joe')
+      @clazz.create(name: 'joe')
+      o = @clazz.create(name: 'joe')
       o.should have_error_on(:name, 'has already been taken')
     end
 
@@ -56,7 +56,7 @@ describe Neo4j::ActiveNode::Validations do
 
       @clazz \
         .stub(:first) \
-        .with(:name => 'joe') \
+        .with(name: 'joe') \
         .and_return(o)
 
       o2 = @clazz.new("name" => "joe")
@@ -67,7 +67,7 @@ describe Neo4j::ActiveNode::Validations do
       other_clazz = UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
-        validates_uniqueness_of :name, :allow_blank => :true
+        validates_uniqueness_of :name, allow_blank: :true
       end
 
       o = other_clazz.new("name" => "")
@@ -75,7 +75,7 @@ describe Neo4j::ActiveNode::Validations do
 
       other_clazz \
         .stub(:first) \
-        .with(:name => '') \
+        .with(name: '') \
         .and_return(o)
 
       o2 = other_clazz.new("name" => "")
@@ -86,7 +86,7 @@ describe Neo4j::ActiveNode::Validations do
       other_clazz = UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
-        validates_uniqueness_of :name, :allow_nil => :true
+        validates_uniqueness_of :name, allow_nil: :true
       end
 
       o = other_clazz.new('name' => nil)
@@ -115,7 +115,7 @@ describe Neo4j::ActiveNode::Validations do
         @clazz = UniqueClass.create do
         include Neo4j::ActiveNode
           property :name
-          validates_uniqueness_of :name, :case_sensitive => false
+          validates_uniqueness_of :name, case_sensitive: false
         end
       end
 
@@ -160,7 +160,7 @@ describe Neo4j::ActiveNode::Validations do
         include Neo4j::ActiveNode
           property :name
           property :scope
-          validates_uniqueness_of :name, :scope => :scope
+          validates_uniqueness_of :name, scope: :scope
         end
       end
 
@@ -170,7 +170,7 @@ describe Neo4j::ActiveNode::Validations do
 
         @clazz \
           .stub(:first) \
-          .with(:name => 'joe', :scope => "one") \
+          .with(name: 'joe', scope: "one") \
           .and_return(o)
 
         o2 = @clazz.new("name" => "joe", "scope" => "one")
@@ -183,7 +183,7 @@ describe Neo4j::ActiveNode::Validations do
 
         @clazz \
           .stub(:first) \
-          .with(:name => 'joe', :scope => 'two') \
+          .with(name: 'joe', scope: 'two') \
           .and_return(nil)
 
         o2 = @clazz.new("name" => "joe", "scope" => "two")
@@ -198,7 +198,7 @@ describe Neo4j::ActiveNode::Validations do
           property :name
           property :first_scope
           property :second_scope
-          validates_uniqueness_of :name, :scope => [:first_scope, :second_scope]
+          validates_uniqueness_of :name, scope: [:first_scope, :second_scope]
         end
       end
 
@@ -208,7 +208,7 @@ describe Neo4j::ActiveNode::Validations do
 
         @clazz \
           .stub(:first) \
-          .with(:name => 'joe', :first_scope => 'one', :second_scope => 'two') \
+          .with(name: 'joe', first_scope: 'one', second_scope: 'two') \
           .and_return(o)
 
         o2 = @clazz.new("name" => "joe", "first_scope" => "one", "second_scope" => "two")
@@ -221,7 +221,7 @@ describe Neo4j::ActiveNode::Validations do
 
         @clazz \
           .stub(:first) \
-          .with(:name => 'joe', :first_scope => 'one', :second_scope => 'one') \
+          .with(name: 'joe', first_scope: 'one', second_scope: 'one') \
           .and_return(nil)
 
         o2 = @clazz.new("name" => "joe", "first_scope" => "one", "second_scope" => "one")

@@ -22,7 +22,7 @@ module Neo4j
 
       class UniquenessValidator < ::ActiveModel::EachValidator
         def initialize(options)
-          super(options.reverse_merge(:case_sensitive => true))
+          super(options.reverse_merge(case_sensitive: true))
         end
 
         def validate_each(record, attribute, value)
@@ -35,7 +35,7 @@ module Neo4j
 
           found = record.class.as(:result).where(conditions)
           found = found.where("NOT ID(result) = {record_neo_id}").params(record_neo_id: record.neo_id) if record.persisted?
-          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(:value => value)) if found.exists?
+          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(value: value)) if found.exists?
         end
 
         def message(instance)

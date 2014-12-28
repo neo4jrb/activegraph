@@ -30,7 +30,7 @@ describe "Neo4j::ActiveNode" do
       end
 
       it 'creates an index' do
-        clazz.should_receive(:index).with(:age, :index=>:exact)
+        clazz.should_receive(:index).with(:age, index: :exact)
         clazz.property :age, index: :exact
       end
     end
@@ -66,7 +66,7 @@ describe "Neo4j::ActiveNode" do
       end
 
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
-        clazz.should_not_receive(:index).with(:age, :index=>:exact)
+        clazz.should_not_receive(:index).with(:age, index: :exact)
         clazz.should_receive(:constraint).with(:age, type: :unique)
         clazz.property :age, constraint: :unique
       end
@@ -126,12 +126,12 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'creates an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
     end
 
     it 'does not create index on other classes' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
-      expect(other_class.mapped_label.indexes).to eq(:property_keys => [[:uuid]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
+      expect(other_class.mapped_label.indexes).to eq(property_keys: [[:uuid]])
     end
 
     describe 'when inherited' do
@@ -143,8 +143,8 @@ describe "Neo4j::ActiveNode" do
         class Foo2 < Foo1
 
         end
-        expect(Foo1.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
-        expect(Foo2.mapped_label.indexes).to eq(:property_keys => [[:name], [:uuid]])
+        expect(Foo1.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
+        expect(Foo2.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
       end
 
     end

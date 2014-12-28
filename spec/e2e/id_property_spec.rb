@@ -79,7 +79,7 @@ describe Neo4j::ActiveNode::IdProperty do
       it 'will set the id_property after a session has been created' do
         node = clazz.new
         expect(node).to respond_to(:the_id)
-        expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:the_id]])
+        expect(clazz.mapped_label.indexes).to eq(property_keys: [[:the_id]])
       end
     end
   end
@@ -93,7 +93,7 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:myid]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:myid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -183,7 +183,7 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:my_id]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:my_id]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -234,7 +234,7 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:my_uuid]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:my_uuid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do

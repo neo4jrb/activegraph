@@ -15,7 +15,7 @@ shared_examples_for "creatable model" do
     end
 
     it "should accept attributes to be set" do
-      model = subject.class.create(subject.attributes.merge(:name => "Ben"))
+      model = subject.class.create(subject.attributes.merge(name: "Ben"))
       model[:name].should == "Ben"
     end
   end

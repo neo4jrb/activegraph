@@ -19,7 +19,7 @@ describe "Neo4j::ActiveNode" do
 
   describe 'new' do
     it 'does not allow setting undeclared properties' do
-      MyThing.new(a: '4').props.should == {:a => '4'}
+      MyThing.new(a: '4').props.should == {a: '4'}
     end
 
     it 'undefined properties are found with the attributes method' do

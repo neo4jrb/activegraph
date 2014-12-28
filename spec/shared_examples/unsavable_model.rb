@@ -21,11 +21,11 @@ shared_examples_for "unsaveable model" do
 
   context "without validation" do
     it "should save ok" do
-      subject.save(:validate => false).should == true
+      subject.save(validate: false).should == true
     end
 
     it "shouldn't cause an exception while saving" do
-      lambda { subject.save!(:validate => false) }.should_not raise_error
+      lambda { subject.save!(validate: false) }.should_not raise_error
     end
   end
 end

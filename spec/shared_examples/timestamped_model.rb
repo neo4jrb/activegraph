@@ -31,17 +31,17 @@ shared_examples_for "timestamped model" do
       end
 
       it "created_at is not changed" do
-        lambda { subject.update_attributes!(:a => 1, :b => 2) }.should_not change(subject, :created_at)
+        lambda { subject.update_attributes!(a: 1, b: 2) }.should_not change(subject, :created_at)
       end
 
       it "should have altered the updated_at property" do
-        lambda { subject.update_attributes!(:a => 1, :b => 2) }.should change(subject, :updated_at)
+        lambda { subject.update_attributes!(a: 1, b: 2) }.should change(subject, :updated_at)
       end
 
       context "with explicitly changed updated_at property" do
         it "does not overwrite updated_at property" do
           subject.updated_at = Time.now
-          expect { subject.update_attributes!(:a => 1, :b => 2) }.not_to change(subject, :updated_at)
+          expect { subject.update_attributes!(a: 1, b: 2) }.not_to change(subject, :updated_at)
         end
       end
 

@@ -31,5 +31,5 @@ task 'coverage' do
   task.invoke
 end
 
-task :default => ['spec']
+task default: ['spec']
 

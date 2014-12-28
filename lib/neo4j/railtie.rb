@@ -64,7 +64,7 @@ module Neo4j
 
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
-    initializer "neo4j.start", :after => :load_config_initializers do |app|
+    initializer "neo4j.start", after: :load_config_initializers do |app|
       cfg = app.config.neo4j
       # Set Rails specific defaults
       Neo4j::Railtie.set_default_session(cfg)

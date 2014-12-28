@@ -1,6 +1,22 @@
 inherit_from: .rubocop_todo.yml
 
+
+
+#---------------------------
+# Style configuration
+#---------------------------
+
+# Offense count: 169
+# Cop supports --auto-correct.
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/HashSyntax:
+  EnforcedStyle: ruby19
+
+
+
+#---------------------------
 # Don't intend to fix these:
+#---------------------------
 
 # Offense count: 64
 # Cop supports --auto-correct.

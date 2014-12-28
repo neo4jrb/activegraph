@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Post, :type => :model do
+RSpec.describe Post, type: :model do
   it "will run the test with a empty database" do
     ruby = Post.create!(title: "Ruby")
     expect(ruby.title).to eq("Ruby")

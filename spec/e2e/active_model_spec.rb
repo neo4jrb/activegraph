@@ -18,9 +18,9 @@ IceLolly = UniqueClass.create do
 
   index :flavour
 
-  validates :flavour, :presence => true
-  validates :required_on_create, :presence => true, :on => :create
-  validates :required_on_update, :presence => true, :on => :update
+  validates :flavour, presence: true
+  validates :required_on_create, presence: true, on: :create
+  validates :required_on_update, presence: true, on: :update
 
   before_create :timestamp
   after_create :mark_saved
@@ -40,7 +40,7 @@ end
 #  property :extended_property
 #end
 
-describe IceLolly, :type => :integration do
+describe IceLolly, type: :integration do
   context "when valid" do
     before :each do
       subject.flavour = "vanilla"
@@ -67,7 +67,7 @@ describe IceLolly, :type => :integration do
       it { should == subject.class.where(flavour: 'vanilla').first }
 
       it "should be able to modify one of its named attributes" do
-        lambda{ subject.update_attributes!(:flavour => 'horse') }.should_not raise_error
+        lambda{ subject.update_attributes!(flavour: 'horse') }.should_not raise_error
         subject.flavour.should == 'horse'
       end
 
@@ -87,11 +87,11 @@ describe IceLolly, :type => :integration do
         before { subject.required_on_update = nil }
 
         it "shouldn't be updatable" do
-          subject.update_attributes(:flavour => "fish").should_not be true
+          subject.update_attributes(flavour: "fish").should_not be true
         end
 
         it "should have the same attribute values after an unsuccessful update and reload" do
-          subject.update_attributes(:flavour => "fish")
+          subject.update_attributes(flavour: "fish")
           subject.reload.flavour.should == "vanilla"
           subject.required_on_update.should_not be_nil
         end
@@ -152,7 +152,7 @@ end
 
 IceCream = UniqueClass.create do
   include Neo4j::ActiveNode
-  property :flavour, :index => :exact
+  property :flavour, index: :exact
   #has_n(:ingredients).to(Ingredient)
   validates_presence_of :flavour
 end
@@ -208,7 +208,7 @@ describe Neo4j::ActiveNode do
 
     it 'handles before_update callbacks' do
       c = Company.create
-      c.update(:name => 'foo')
+      c.update(name: 'foo')
       expect(c.update_called).to be true
     end
 
@@ -311,7 +311,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'generate accessors for declared attribute' do
-      person = Person.new(:name => "hej")
+      person = Person.new(name: "hej")
       expect(person.name).to eq("hej")
       person.name = 'new name'
       expect(person.name).to eq("new name")

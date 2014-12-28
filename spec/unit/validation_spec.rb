@@ -15,7 +15,7 @@ describe Neo4j::ActiveNode::Validations do
       property :name
       property :age, type: Integer
 
-      validates :name, :presence => true
+      validates :name, presence: true
 
       def self.mapped_label_names
         :MyClass
