@@ -69,7 +69,7 @@ describe 'ActiveRel' do
       let(:f1) { FromClass.create }
       let(:t1) { ToClass.create }
       before { f1.others << t1 }
-      after { f1.destroy and t1.destroy }
+      after { f1.destroy && t1.destroy }
 
       it 'returns the activerel class' do
         expect(f1.others_rels.first).to be_a(MyRelClass)
@@ -93,7 +93,7 @@ describe 'ActiveRel' do
 
       it 'update the rel' do
         rel.score = 9000
-        rel.save and rel.reload
+        rel.save && rel.reload
         expect(rel.score).to eq 9000
       end
 

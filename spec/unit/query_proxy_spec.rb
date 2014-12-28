@@ -69,7 +69,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
         expect(qp).to receive(:pluck).and_return([node, rel])
         expect(node).to receive(:name)
         expect(rel).to receive(:name)
-        qp.each_with_rel{|n, r| n.name and r.name }
+        qp.each_with_rel{|n, r| n.name && r.name }
       end
     end
   end
