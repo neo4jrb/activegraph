@@ -131,7 +131,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'updates given property' do
-      expect(@session).to receive(:create_node).with({a:42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(@session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing.update(a: 42)
     end
 
@@ -150,7 +150,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'updates given properties' do
-      expect(@session).to receive(:create_node).with({a:42, x: 'hej', uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(@session).to receive(:create_node).with({a: 42, x: 'hej', uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing.update_attributes(a: 42, x: 'hej')
     end
 
@@ -169,7 +169,7 @@ describe "Neo4j::ActiveNode" do
     end
 
     it 'updates given property' do
-      expect(@session).to receive(:create_node).with({a:42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(@session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing.update_attribute!(:a, 42)
     end
 
