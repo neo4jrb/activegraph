@@ -35,7 +35,7 @@ module Neo4j::Shared
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
       result = _persisted_obj ? update_model : create_model
-      unless result != false
+      if result == false
         Neo4j::Transaction.current.fail if Neo4j::Transaction.current
         false
       else
