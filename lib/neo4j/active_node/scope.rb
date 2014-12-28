@@ -56,7 +56,7 @@ module Neo4j::ActiveNode
       end
 
       def has_scope?(name)
-        _scope.has_key?(name.to_sym)
+        _scope.key?(name.to_sym)
       end
 
       def _scope

@@ -136,7 +136,7 @@ module Neo4j::Shared
         # skip "secret" undeclared attributes such as uuid
         next new_attributes unless self.class.attributes[attr]
 
-        type = serialize.has_key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
+        type = serialize.key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
                                   value
                                 else
