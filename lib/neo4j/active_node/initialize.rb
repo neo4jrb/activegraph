@@ -23,5 +23,3 @@ module Neo4j::ActiveNode::Initialize
   end
 
 end
-
-

@@ -32,4 +32,3 @@ task 'coverage' do
 end
 
 task default: ['spec']
-

@@ -401,4 +401,3 @@ module Neo4j
     end
   end
 end
-
