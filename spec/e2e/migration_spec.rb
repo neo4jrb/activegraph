@@ -53,7 +53,7 @@ describe 'migration tasks' do
       end
 
       def self.classname_count(label)
-        Proc.new { Neo4j::Session.query("MATCH (n:`#{label}`) WHERE n._classname = '#{label}' RETURN COUNT(n) as countable").first.countable }
+        proc { Neo4j::Session.query("MATCH (n:`#{label}`) WHERE n._classname = '#{label}' RETURN COUNT(n) as countable").first.countable }
       end
     end
   end

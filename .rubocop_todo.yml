@@ -204,11 +204,6 @@ Style/OpMethod:
 Style/PredicateName:
   Enabled: false
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Style/Proc:
-  Enabled: false
-
 # Offense count: 3
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/RaiseArgs:

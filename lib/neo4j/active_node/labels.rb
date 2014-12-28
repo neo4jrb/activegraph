@@ -74,7 +74,7 @@ module Neo4j
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
-          map_id = Proc.new {|object| object.respond_to?(:id) ? object.send(:id) : object }
+          map_id = proc {|object| object.respond_to?(:id) ? object.send(:id) : object }
 
           if id.is_a?(Array)
             find_by_ids(id.map {|o| map_id.call(o) })
