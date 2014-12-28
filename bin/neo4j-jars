@@ -21,7 +21,7 @@ elsif ARGV.include?('enterprise')
   require 'neo4j-enterprise' # not really needed
 else
   puts 'Expected community, advanced, enterprise'
-  exit -1
+  exit(-1)
 end
 
 lib_dir = File.join(Dir.pwd, 'lib')

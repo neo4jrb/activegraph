@@ -21,7 +21,7 @@ module UniqueClass
   def self.create(class_name = nil, &block)
     clazz = Class.new
     set(clazz, class_name)
-    clazz.class_eval &block if block
+    clazz.class_eval(&block) if block
     clazz
   end
 end
