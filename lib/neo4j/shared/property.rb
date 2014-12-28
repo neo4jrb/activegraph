@@ -176,7 +176,7 @@ module Neo4j::Shared
       end
 
       def default_property_values(instance)
-        default_properties.each_with_object({}) do |(key, block),result|
+        default_properties.each_with_object({}) do |(key, block), result|
           result[key] = block.call(instance)
         end
       end

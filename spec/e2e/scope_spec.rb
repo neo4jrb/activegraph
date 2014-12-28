@@ -41,7 +41,7 @@ describe 'Neo4j::NodeMixin::Scope' do
 
     describe 'Person.in_order' do
       it 'returns person in order' do
-        expect(Person.as(:people).in_order(:people).to_a).to eq([@b2,@b1,@b,@a])
+        expect(Person.as(:people).in_order(:people).to_a).to eq([@b2, @b1, @b, @a])
       end
     end
   end

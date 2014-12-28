@@ -35,7 +35,7 @@ describe "has_one" do
 
       c.parent.should == a
       b.parent.should == a
-      a.children.to_a.should =~ [b,c]
+      a.children.to_a.should =~ [b, c]
     end
 
     it 'can create a relationship via the has_one accessor' do
