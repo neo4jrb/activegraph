@@ -47,7 +47,7 @@ describe Neo4j::Node::Wrapper do
           wrapper.stub(:props).and_return(_defined_property_name: 'Bar')
           Bar = Object
           Neo4j::Config.stub(:class_name_property).and_return(:_defined_property_name)
-          expect(wrapper.props).to receive(:has_key?).with(:_defined_property_name).and_return true
+          expect(wrapper.props).to receive(:key?).with(:_defined_property_name).and_return true
 
           expect(wrapper.sorted_wrapper_classes).to eq Bar
         end
@@ -63,7 +63,7 @@ describe Neo4j::Node::Wrapper do
         end
 
         it 'looks for a key called "_classname"' do
-          expect(wrapper.props).to receive(:has_key?).with(:_classname).and_return true
+          expect(wrapper.props).to receive(:key?).with(:_classname).and_return true
           wrapper.sorted_wrapper_classes
         end
 
