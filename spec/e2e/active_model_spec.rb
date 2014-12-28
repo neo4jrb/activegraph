@@ -521,7 +521,7 @@ describe Neo4j::ActiveNode do
 
       context "when changed" do
         it "should change cache_key value" do
-          start = model.cache_key && sleep 1
+          start = model.cache_key && sleep(1)
           model.flavour = "chocolate" && model.save
           expect(model.cache_key).to_not eq start
         end
