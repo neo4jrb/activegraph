@@ -94,8 +94,7 @@ module Neo4j::ActiveNode
         @associations[name] = association
 
         target_class_name = association.target_class_name || 'nil'
-        create_reflection(:has_many, name, association)
-        association.add_destroy_callbacks(self)
+        create_reflection(:has_many, name, association, self)
 
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
         module_eval(%{
@@ -154,8 +153,7 @@ module Neo4j::ActiveNode
         @associations[name] = association
 
         target_class_name = association.target_class_name || 'nil'
-        create_reflection(:has_one, name, association)
-        association.add_destroy_callbacks(self)
+        create_reflection(:has_one, name, association, self)
 
         module_eval(%{
           def #{name}=(other_node)
