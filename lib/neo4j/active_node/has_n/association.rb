@@ -13,7 +13,6 @@ module Neo4j
           @name = name
           @direction = direction.to_sym
           @target_class_name_from_name = name.to_s.classify
-
           apply_vars_from_options(options)
         end
 
@@ -102,21 +101,26 @@ module Neo4j
           properties
         end
 
-        APPROVED_DEPENDENT_TYPES = [:delete, :delete_orphans, :destroy_orphans, :destroy]
-
         def add_destroy_callbacks(model)
           return if dependent.nil?
-          fail "Unknown dependent option #{dependent}" unless APPROVED_DEPENDENT_TYPES.include?(dependent)
+
+          # Bound value for procs
           association_name = name
-          if dependent == :delete
-            model.before_destroy lambda { |o| o.send(association_name).delete_all }
-          elsif dependent == :delete_orphans
-            model.before_destroy lambda { |o| o.send(association_name, :n).unique_nodes(:recurring_rel).delete('n, recurring_rel').exec }
-          elsif dependent == :destroy
-            model.before_destroy lambda { |o| o.send(association_name).each(&:destroy) }
-          elsif dependent == :destroy_orphans
-            model.before_destroy lambda { |o| o.send(association_name, :n).unique_nodes.pluck(:n).each(&:destroy) }
-          end
+
+          fn = case dependent
+               when :delete
+                 proc { |o| o.send(association_name).delete_all }
+               when :delete_orphans
+                 proc { |o| o.send(association_name, :n).unique_nodes(:recurring_rel).delete('n, recurring_rel').exec }
+               when :destroy
+                 proc { |o| o.send(association_name).each(&:destroy) }
+               when :destroy_orphans
+                 proc { |o| o.send(association_name, :n).unique_nodes.pluck(:n).each(&:destroy) }
+               else
+                 fail "Unknown dependent option #{dependent}"
+               end
+
+          model.before_destroy fn
         end
 
         private
@@ -151,7 +155,6 @@ module Neo4j
         private
 
         def apply_vars_from_options(options)
-          validate_option_combinations(options)
           @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
@@ -176,6 +179,11 @@ module Neo4j
           fail ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
           fail ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
           fail ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+        end
+
+        VALID_DEPENDENT_TYPES = [:delete, :delete_orphans, :destroy_orphans, :destroy, nil]
+        def validate_dependent(value)
+          fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not VALID_DEPENDENT_TYPES.include?(value)
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key
