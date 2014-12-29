@@ -1,0 +1,5 @@
+---
+rules:
+  ignore:
+    - space_inside_closing_curly_brace_missing
+    - space_inside_opening_curly_brace_missing
