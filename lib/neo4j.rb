@@ -1,17 +1,17 @@
 require 'neo4j/version'
 
-#require "delegate"
-#require "time"
-#require "set"
+# require "delegate"
+# require "time"
+# require "set"
 #
-#require "active_support/core_ext"
-#require "active_support/json"
-#require "active_support/inflector"
-#require "active_support/time_with_zone"
+# require "active_support/core_ext"
+# require "active_support/json"
+# require "active_support/inflector"
+# require "active_support/time_with_zone"
 
-require "neo4j-core"
+require 'neo4j-core'
 require 'neo4j/core/query'
-require "active_model"
+require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
 

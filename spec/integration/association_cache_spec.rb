@@ -10,7 +10,7 @@ describe 'Association Cache' do
       property :name
       has_many :out, :lessons, model_class: Lesson
       has_many :in, :exams, model_class: Exam, origin: :students
-      has_one  :out, :favorite_lesson, model_class: Lesson
+      has_one :out, :favorite_lesson, model_class: Lesson
     end
 
     class Lesson
@@ -30,7 +30,7 @@ describe 'Association Cache' do
   end
 
   let(:billy)     { CachingSpec::Student.create(name: 'Billy') }
-  let(:math)      { CachingSpec::Lesson.create(subject: 'math', level: 101 ) }
+  let(:math)      { CachingSpec::Lesson.create(subject: 'math', level: 101) }
   let(:science)   { CachingSpec::Lesson.create(subject: 'science', level: 102) }
   let(:math_exam) { CachingSpec::Exam.create(name: 'Math Exam') }
   let(:science_exam) { CachingSpec::Exam.create(name: 'Science Exam') }
@@ -55,7 +55,7 @@ describe 'Association Cache' do
   context 'on a class' do
     describe 'association_cache method' do
       it 'raises an error because it is only for instances' do
-        expect{CachingSpec::Student.association_cache}.to raise_error
+        expect { CachingSpec::Student.association_cache }.to raise_error
       end
     end
 
@@ -185,9 +185,9 @@ describe 'Association Cache' do
         it 'does not set results' do
           billy.reload
           tx = Neo4j::Transaction.new
-            history = CachingSpec::Lesson.create(subject: 'history', level: 101 )
-            billy.lessons << history
-            billy.lessons.to_a # would typically cache results
+          history = CachingSpec::Lesson.create(subject: 'history', level: 101)
+          billy.lessons << history
+          billy.lessons.to_a # would typically cache results
           tx.close
           expect(cache).to be_empty
           expect(billy.lessons.include?(history)).to be_truthy

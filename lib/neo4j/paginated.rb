@@ -18,8 +18,8 @@ module Neo4j
       Paginated.new(ordered_partial, ordered_source, page)
     end
 
-    delegate :each, :to => :items
-    delegate :pluck, :to => :items
-    delegate :size, :[], :to => :items
+    delegate :each, to: :items
+    delegate :pluck, to: :items
+    delegate :size, :[], to: :items
   end
 end

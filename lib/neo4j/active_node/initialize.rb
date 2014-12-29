@@ -11,7 +11,7 @@ module Neo4j::ActiveNode::Initialize
     @association_cache = {}
     changed_attributes && changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
-    self.default_properties=properties
+    self.default_properties = properties
     @attributes = convert_properties_to :ruby, @attributes
   end
 
@@ -23,5 +23,3 @@ module Neo4j::ActiveNode::Initialize
   end
 
 end
-
-

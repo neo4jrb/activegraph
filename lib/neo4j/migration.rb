@@ -2,7 +2,7 @@ module Neo4j
   class Migration
 
     def migrate
-      raise 'not implemented'
+      fail 'not implemented'
     end
 
     def output(string = '')
@@ -30,8 +30,8 @@ module Neo4j
 
       def migrate
         models = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(models_filename))[:models]
-        output "This task will add an ID Property every node in the given file."
-        output "It may take a significant amount of time, please be patient."
+        output 'This task will add an ID Property every node in the given file.'
+        output 'It may take a significant amount of time, please be patient.'
         models.each do |model|
           output
           output
@@ -41,7 +41,7 @@ module Neo4j
       end
 
       def setup
-        FileUtils.mkdir_p("db/neo4j-migrate")
+        FileUtils.mkdir_p('db/neo4j-migrate')
         unless File.file?(models_filename)
           File.open(models_filename, 'w') do |file|
             file.write("# Provide models to which IDs should be added.\n# It will only modify nodes that do not have IDs. There is no danger of overwriting data.\n# models: [Student,Lesson,Teacher,Exam]\nmodels: []")
@@ -62,7 +62,7 @@ module Neo4j
         last_time_taken = nil
 
         until nodes_left == 0
-          nodes_left = Neo4j::Session.query.match(n: label).where("NOT has(n.#{property})").return("COUNT(n) AS ids").first.ids
+          nodes_left = Neo4j::Session.query.match(n: label).where("NOT has(n.#{property})").return('COUNT(n) AS ids').first.ids
 
           time_per_node = last_time_taken / max_per_batch if last_time_taken
           print_output "Running first batch...\r"
@@ -108,7 +108,7 @@ module Neo4j
 
       def new_id_for(model)
         if model.id_property_info[:type][:auto]
-          SecureRandom::uuid
+          SecureRandom.uuid
         else
           model.new.send(model.id_property_info[:type][:on])
         end
@@ -123,25 +123,26 @@ module Neo4j
       end
 
       def migrate
-        output "Adding classnames. This make take some time."
+        output 'Adding classnames. This make take some time.'
         execute(true)
       end
 
       def test
-        output "TESTING! No queries will be executed."
+        output 'TESTING! No queries will be executed.'
         execute(false)
       end
 
       def setup
         output "Creating file #{classnames_filepath}. Please use this as the migration guide."
-        FileUtils.mkdir_p("db/neo4j-migrate")
+        FileUtils.mkdir_p('db/neo4j-migrate')
         unless File.file?(classnames_filepath)
-          source = File.join(File.dirname(__FILE__), "..", "..", "config", "neo4j", classnames_filename)
+          source = File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', classnames_filename)
           FileUtils.copy_file(source, classnames_filepath)
         end
       end
 
       private
+
       attr_reader :classnames_filename, :classnames_filepath, :model_map
 
       def execute(migrate = false)
@@ -165,7 +166,7 @@ module Neo4j
       end
 
       def file_init
-        @model_map = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(classnames_filepath)) 
+        @model_map = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(classnames_filepath))
       end
 
       def node_cypher(label, action)
@@ -178,11 +179,11 @@ module Neo4j
         label = hash[0]
         value = hash[1]
         from = value[:from]
-        raise "All relationships require a 'type'" unless value[:type]
+        fail "All relationships require a 'type'" unless value[:type]
 
-        from_cypher = from ? "(from:`#{from}`)" : "(from)"
+        from_cypher = from ? "(from:`#{from}`)" : '(from)'
         to = value[:to]
-        to_cypher = to ? "(to:`#{to}`)" : "(to)"
+        to_cypher = to ? "(to:`#{to}`)" : '(to)'
         type = "[r:`#{value[:type]}`]"
         where, phrase_start = action_variables(action, 'r')
         output "#{phrase_start} _classname '#{label}' where type is '#{value[:type]}' using cypher:"
@@ -191,7 +192,7 @@ module Neo4j
 
       def execute_cypher(query_string)
         output "Modified #{Neo4j::Session.query(query_string).first.modified} records"
-        output ""
+        output ''
       end
 
       def action_variables(action, identifier)
@@ -201,7 +202,7 @@ module Neo4j
         when 'add'
           ["WHERE NOT HAS(#{identifier}._classname)", 'Adding']
         else
-          raise "Invalid action #{action} specified"
+          fail "Invalid action #{action} specified"
         end
       end
     end

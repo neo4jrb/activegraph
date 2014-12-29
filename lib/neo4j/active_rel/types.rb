@@ -41,7 +41,7 @@ module Neo4j
         end
 
         def add_wrapped_class(type)
-          #_wrapped_classes[type.to_sym.downcase] = self.name
+          # _wrapped_classes[type.to_sym.downcase] = self.name
           _wrapped_classes[type.to_sym] = self.name
         end
 

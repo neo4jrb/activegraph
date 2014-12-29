@@ -52,7 +52,7 @@ module Neo4j
       # Only for testing purpose
       # @private
       def self._wrapped_labels=(wl)
-        @_wrapped_labels=(wl)
+        @_wrapped_labels = (wl)
       end
 
       def self._wrapped_labels
@@ -74,10 +74,10 @@ module Neo4j
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
-          map_id = Proc.new {|object| object.respond_to?(:id) ? object.send(:id) : object }
+          map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
           if id.is_a?(Array)
-            find_by_ids(id.map {|o| map_id.call(o) })
+            find_by_ids(id.map { |o| map_id.call(o) })
           else
             find_by_id(map_id.call(id))
           end
@@ -92,7 +92,7 @@ module Neo4j
         # Like find_by, except that if no record is found, raises a RecordNotFound error.
         def find_by!(*args)
           a = eval(args.join)
-          find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
+          find_by(args) || fail(RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results")
         end
 
         # Deletes all nodes and connected relationships from Cypher.
@@ -104,7 +104,7 @@ module Neo4j
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
         # one database query per node in the database, more if callbacks require them.
         def destroy_all
-          self.all.each { |n| n.destroy }
+          self.all.each(&:destroy)
         end
 
         # Creates a Neo4j index on given property
@@ -180,7 +180,7 @@ module Neo4j
 
         def base_class
           unless self < Neo4j::ActiveNode
-            raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
+            fail "#{name} doesn't belong in a hierarchy descending from ActiveNode"
           end
 
           if superclass == Object
@@ -209,7 +209,7 @@ module Neo4j
         end
 
         def mapped_labels
-          mapped_label_names.map{|label_name| Neo4j::Label.create(label_name)}
+          mapped_label_names.map { |label_name| Neo4j::Label.create(label_name) }
         end
 
         def set_mapped_label_name(name)

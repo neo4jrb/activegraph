@@ -27,16 +27,16 @@ module Neo4j::ActiveNode
 
     module TypeMethods
       def define_id_methods(clazz, name, conf)
-        raise "Expected a Hash, got #{conf.class} (#{conf.to_s}) for id_property" unless conf.is_a?(Hash)
+        fail "Expected a Hash, got #{conf.class} (#{conf}) for id_property" unless conf.is_a?(Hash)
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
-          raise "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
+          fail "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
           define_uuid_method(clazz, name)
         elsif conf.empty?
           define_property_method(clazz, name)
         else
-          raise "Illegal value #{conf.inspect} for id_property, expected :on or :auto"
+          fail "Illegal value #{conf.inspect} for id_property, expected :on or :auto"
         end
       end
 
@@ -45,7 +45,7 @@ module Neo4j::ActiveNode
       def define_property_method(clazz, name)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%Q{
+        clazz.module_eval(%(
           def id
             _persisted_obj ? #{name.to_sym == :id ? 'attribute(\'id\')' : name} : nil
           end
@@ -53,7 +53,7 @@ module Neo4j::ActiveNode
           validates_uniqueness_of :#{name}
 
           property :#{name}
-        }, __FILE__, __LINE__)
+                ), __FILE__, __LINE__)
 
       end
 
@@ -61,7 +61,7 @@ module Neo4j::ActiveNode
       def define_uuid_method(clazz, name)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%Q{
+        clazz.module_eval(%(
           default_property :#{name} do
              ::SecureRandom.uuid
           end
@@ -71,13 +71,13 @@ module Neo4j::ActiveNode
           end
 
           alias_method :id, :#{name}
-        }, __FILE__, __LINE__)
+                ), __FILE__, __LINE__)
       end
 
       def define_custom_method(clazz, name, on)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%Q{
+        clazz.module_eval(%{
           default_property :#{name} do |instance|
              raise "Specifying custom id_property #{name} on none existing method #{on}" unless instance.respond_to?(:#{on})
              instance.#{on}
@@ -93,15 +93,15 @@ module Neo4j::ActiveNode
 
       def clear_methods(clazz, name)
         if clazz.method_defined?(name)
-          clazz.module_eval(%Q{
+          clazz.module_eval(%(
             undef_method :#{name}
-          }, __FILE__, __LINE__)
+                    ), __FILE__, __LINE__)
         end
 
         if clazz.attribute_names.include?(name.to_s)
-          clazz.module_eval(%Q{
+          clazz.module_eval(%(
             undef_property :#{name}
-          }, __FILE__, __LINE__)
+                    ), __FILE__, __LINE__)
         end
       end
 

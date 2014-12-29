@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveRel::Property do
-  let(:session) { double("Session")}
+  let(:session) { double('Session') }
 
   before do
     @session = double('Mock Session')
@@ -67,9 +67,9 @@ describe Neo4j::ActiveRel::Property do
   describe 'class methods' do
     describe 'extract_relationship_attributes!' do
       it 'returns the from and to keys and values' do
-        expect(clazz.extract_association_attributes!({ to_node: 'test', from_node: 'test', name: 'chris' })).to eq(to_node: 'test', from_node: 'test')
-        expect(clazz.extract_association_attributes!({ to_node: 'test', name: 'chris' })).to eq(to_node: 'test')
-        expect(clazz.extract_association_attributes!({ from_node: 'test', name: 'chris' })).to eq(from_node: 'test')
+        expect(clazz.extract_association_attributes!(to_node: 'test', from_node: 'test', name: 'chris')).to eq(to_node: 'test', from_node: 'test')
+        expect(clazz.extract_association_attributes!(to_node: 'test', name: 'chris')).to eq(to_node: 'test')
+        expect(clazz.extract_association_attributes!(from_node: 'test', name: 'chris')).to eq(from_node: 'test')
       end
     end
 

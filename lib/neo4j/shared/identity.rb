@@ -1,7 +1,7 @@
 module Neo4j::Shared
   module Identity
-    def ==(o)
-      o.class == self.class && o.id == id
+    def ==(other)
+      other.class == self.class && other.id == id
     end
     alias_method :eql?, :==
 

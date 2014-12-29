@@ -23,7 +23,7 @@ describe 'Inheritance', type: :e2e do
   end
 
   before(:each) do
-    [InheritanceTest::Car, InheritanceTest::Vehicle].each { |c| c.delete_all }
+    [InheritanceTest::Car, InheritanceTest::Vehicle].each(&:delete_all)
     @bike = InheritanceTest::Vehicle.create(name: 'bike')
     @volvo = InheritanceTest::Car.create(name: 'volvo', model: 'v60')
     @saab = InheritanceTest::Car.create(name: 'saab', model: '900')
@@ -58,12 +58,12 @@ describe 'Inheritance', type: :e2e do
   end
 
   describe 'serialization' do
-    let!(:toyota) {
+    let!(:toyota) do
       InheritanceTest::Car.create(name: 'toyota', model: 'camry')
-    }
+    end
 
     it 'successfully saves and returns hashes from the base class' do
-      specs = { weight: 3000, doors: 4 }
+      specs = {weight: 3000, doors: 4}
       toyota.specs = specs
       toyota.save
       expect(toyota.specs).to eq specs

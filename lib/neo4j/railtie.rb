@@ -6,8 +6,8 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     # Add ActiveModel translations to the I18n load_path
-    initializer "i18n" do |app|
-    	config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
+    initializer 'i18n' do |app|
+      config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
     end
 
     rake_tasks do
@@ -22,17 +22,17 @@ module Neo4j
 
       def set_default_session(cfg)
         cfg.session_type ||= :server_db
-        cfg.session_path ||= "http://localhost:7474"
+        cfg.session_path ||= 'http://localhost:7474'
         cfg.session_options ||= {}
         cfg.sessions ||= []
 
         unless (uri = URI(cfg.session_path)).user.blank?
-          cfg.session_options.reverse_merge!({ basic_auth: { username: uri.user, password: uri.password } })
+          cfg.session_options.reverse_merge!(basic_auth: {username: uri.user, password: uri.password})
           cfg.session_path = cfg.session_path.gsub("#{uri.user}:#{uri.password}@", '')
         end
 
         if cfg.sessions.empty?
-          cfg.sessions << { type: cfg.session_type, path: cfg.session_path, options: cfg.session_options }
+          cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
         end
       end
 
@@ -48,7 +48,7 @@ module Neo4j
 
       def open_neo4j_session(session_opts)
         if !java_platform? && session_opts[:type] == :embedded_db
-          raise "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
+          fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
         end
 
         session = if session_opts.key?(:name)
@@ -64,7 +64,7 @@ module Neo4j
 
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
-    initializer "neo4j.start", :after => :load_config_initializers do |app|
+    initializer 'neo4j.start', after: :load_config_initializers do |app|
       cfg = app.config.neo4j
       # Set Rails specific defaults
       Neo4j::Railtie.set_default_session(cfg)

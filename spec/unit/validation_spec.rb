@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Neo4j::ActiveNode::Validations do
 
-  let(:node) { double("a persisted node") }
+  let(:node) { double('a persisted node') }
   before(:each) { clazz.any_instance.stub(:_persisted_obj).and_return(nil) }
 
   let(:clazz) do
@@ -15,22 +15,22 @@ describe Neo4j::ActiveNode::Validations do
       property :name
       property :age, type: Integer
 
-      validates :name, :presence => true
+      validates :name, presence: true
 
       def self.mapped_label_names
         :MyClass
       end
 
       def self.model_name
-        ActiveModel::Name.new(self, nil, "MyClass")
+        ActiveModel::Name.new(self, nil, 'MyClass')
       end
     end
   end
 
   describe 'save' do
-    let(:session) { double("Session")}
+    let(:session) { double('Session') }
     before do
-      @session = double("Mock Session")
+      @session = double('Mock Session')
       Neo4j::Session.stub(:current).and_return(session)
     end
 
@@ -42,7 +42,7 @@ describe Neo4j::ActiveNode::Validations do
         clazz.should_receive(:neo4j_session).and_return(session)
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
         session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
-        o.should_receive(:init_on_load).with(node, age: "43", name: "kalle2")
+        o.should_receive(:init_on_load).with(node, age: '43', name: 'kalle2')
         o.save.should be true
       end
 

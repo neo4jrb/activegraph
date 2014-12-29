@@ -3,10 +3,10 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
     include Neo4j::Shared::Property
 
-    def initialize(attributes={}, options={})
+    def initialize(attributes = {}, options = {})
       super(attributes, options)
 
-      send_props(@relationship_props) if persisted? and not @relationship_props.nil?
+      send_props(@relationship_props) if persisted? && !@relationship_props.nil?
     end
 
     module ClassMethods

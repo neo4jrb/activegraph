@@ -8,36 +8,36 @@ module Neo4j
     class User
       include Neo4j::ActiveNode
 
-      property :name, :index => :exact
-      property :rating, :type => Integer, :index => :exact
+      property :name, index: :exact
+      property :rating, type: Integer, index: :exact
 
       index :name
 
       has_many :out, :notes, model_class: 'Neo4j::OrmSpec::Note'
     end
-  
+
     class Note
       include Neo4j::ActiveNode
 
-      property  :body, :index => :exact
-      
+      property :body, index: :exact
+
       has_one :in, :owner, type: :notes, model_class: 'Neo4j::OrmSpec::User'
     end
-  
-    describe '[Neo4j orm adapter]', :type => :integration do
+
+    describe '[Neo4j orm adapter]', type: :integration do
       before :each do
         delete_db
       end
 
-#      describe "the OrmAdapter class" do
-#        subject { Neo4j::ActiveNode::OrmAdapter }
-#  
-#        specify "#model_classes should return all of the model classes (that are not in except_classes)" do
-#          subject.model_classes.should include(User, Note)
-#        end
-#      end
-    
-      it_should_behave_like "example app with orm_adapter fix" do
+      #      describe "the OrmAdapter class" do
+      #        subject { Neo4j::ActiveNode::OrmAdapter }
+      #
+      #        specify "#model_classes should return all of the model classes (that are not in except_classes)" do
+      #          subject.model_classes.should include(User, Note)
+      #        end
+      #      end
+
+      it_should_behave_like 'example app with orm_adapter fix' do
         let(:user_class) { User }
         let(:note_class) { Note }
       end

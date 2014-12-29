@@ -29,13 +29,13 @@ describe Neo4j::ActiveNode::HasN::Association do
     end
 
     context 'origin and type specified' do
-      let(:options) { { type: :bar, origin: :foo } }
+      let(:options) { {type: :bar, origin: :foo} }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
     context 'type and rel_class specified' do
-      let(:options) { { type: :foo, origin: :bar } }
+      let(:options) { {type: :foo, origin: :bar} }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
@@ -43,7 +43,7 @@ describe Neo4j::ActiveNode::HasN::Association do
     context 'origin and rel_class specified' do
       let(:options) { {origin: :foo, rel_class: :bar} }
 
-      it { expect{ subject }.to raise_error(ArgumentError) }
+      it { expect { subject }.to raise_error(ArgumentError) }
     end
 
     describe '#arrow_cypher' do
@@ -81,7 +81,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         it { should == '-[:`DEFAULT`]->' }
 
         context 'properties given' do
-          let(:properties) { { foo: 1, bar: 'test' } }
+          let(:properties) { {foo: 1, bar: 'test'} }
 
           it { should == '-[:`DEFAULT` {foo: 1, bar: "test"}]->' }
         end
@@ -93,19 +93,19 @@ describe Neo4j::ActiveNode::HasN::Association do
         it { should == '-[fooy]->' }
 
         context 'properties given' do
-          let(:properties) { { foo: 1, bar: 'test' } }
+          let(:properties) { {foo: 1, bar: 'test'} }
 
           it { should == '-[fooy {foo: 1, bar: "test"}]->' }
         end
 
         context 'relationship type given' do
-          let(:options) { { type: :new_type } }
+          let(:options) { {type: :new_type} }
 
           it { should == '-[fooy:`new_type`]->' }
         end
 
         context 'rel_class given' do
-          let(:options) { { rel_class: MyRel } }
+          let(:options) { {rel_class: MyRel} }
 
           it { should == '-[fooy:`ar_type`]->' }
         end
@@ -116,7 +116,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           it { should == '-[fooy:`DEFAULT`]->' }
 
           context 'properties given' do
-            let(:properties) { { foo: 1, bar: 'test' } }
+            let(:properties) { {foo: 1, bar: 'test'} }
 
             it { should == '-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->' }
           end
@@ -126,29 +126,29 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     end
 
-    describe "#target_class_name" do
+    describe '#target_class_name' do
       subject { association.target_class_name }
 
-      context "assumed model class" do
+      context 'assumed model class' do
         let(:name) { :burzs }
 
         it { should == '::Burz' }
       end
 
 
-      context "specified model class" do
-        context "specified as string" do
-          let(:options) { { model_class: 'Bizzl' } }
+      context 'specified model class' do
+        context 'specified as string' do
+          let(:options) { {model_class: 'Bizzl'} }
 
           it { should == '::Bizzl' }
         end
 
-        context "specified as class" do
+        context 'specified as class' do
           before(:each) do
             stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
           end
 
-          let(:options) { { model_class: 'Fizzl' } }
+          let(:options) { {model_class: 'Fizzl'} }
 
           it { should == '::Fizzl' }
         end
@@ -168,9 +168,9 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     describe 'origin_type' do
       let(:start) {  Neo4j::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
-      let(:myclass) { double("another activenode class") }
-      let(:myassoc) { double("an association object" )}
-      let(:assoc_details) { double("the result of calling :associations", relationship_type: 'MyRel')}
+      let(:myclass) { double('another activenode class') }
+      let(:myassoc) { double('an association object') }
+      let(:assoc_details) { double('the result of calling :associations', relationship_type: 'MyRel') }
       it 'examines the specified association to determine type' do
         expect(start).to receive(:target_class).and_return(myclass)
         expect(myclass).to receive(:associations).and_return(myassoc)

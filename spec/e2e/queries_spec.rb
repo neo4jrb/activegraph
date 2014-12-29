@@ -9,7 +9,7 @@ describe 'Neo4j::ActiveNode#find' do
   end
 
   it 'can find nodes that exists' do
-    foo =clazz.create(name: 'foo')
+    foo = clazz.create(name: 'foo')
     expect(clazz.where(name: 'foo').first).to eq(foo)
   end
 
@@ -32,8 +32,8 @@ describe 'Neo4j::ActiveNode#all' do
 
 
   before(:all) do
-    @clazz_a = create_clazz {|c| c.has_one :out, :knows, model_class: false }
-    @clazz_b = create_clazz {|c| c.has_many :in, :known_by, model_class: false }
+    @clazz_a = create_clazz { |c| c.has_one :out, :knows, model_class: false }
+    @clazz_b = create_clazz { |c| c.has_many :in, :known_by, model_class: false }
 
     @b2 = @clazz_b.create(name: 'b2', score: '2')
     @b1 = @clazz_b.create(name: 'b1', score: '1')

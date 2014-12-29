@@ -24,7 +24,7 @@ describe 'has_n' do
     end
 
     it 'has a frozen array' do
-      expect{unsaved_node.friends << friend1}.to raise_error(RuntimeError)
+      expect { unsaved_node.friends << friend1 }.to raise_error(RuntimeError)
     end
   end
 
@@ -50,7 +50,7 @@ describe 'has_n' do
 
   it 'access nodes via declared has_n method' do
     expect(node.friends.to_a).to eq([])
-    expect(node.friends.any?()).to be false
+    expect(node.friends.any?).to be false
 
     node.friends << friend1
     expect(node.friends.to_a).to eq([friend1])
@@ -60,10 +60,10 @@ describe 'has_n' do
     node.friends_rels.to_a.should eq([])
     node.friends << friend1
     rels = node.friends_rels
-    rels.count.should == 1
+    rels.count.should eq(1)
     rel = rels.first
-    rel.start_node.should == node
-    rel.end_node.should == friend1
+    rel.start_node.should eq(node)
+    rel.end_node.should eq(friend1)
   end
 
   describe 'me.friends << friend_1 << friend' do
@@ -85,7 +85,7 @@ describe 'has_n' do
       end
 
       it 'is not empty' do
-        expect(node.friends.any?()).to be true
+        expect(node.friends.any?).to be true
       end
 
       it 'removes relationships when given a different list' do
@@ -121,7 +121,7 @@ describe 'has_n' do
   end
 
   describe 'me.friends#create(other, since: 1994)' do
-    describe "creating relationships to existing nodes" do
+    describe 'creating relationships to existing nodes' do
       it 'creates a new relationship when given existing nodes and given properties' do
         node.friends.create(friend1, since: 1994)
 
@@ -142,28 +142,28 @@ describe 'has_n' do
       end
     end
 
-    describe "creating relationships and nodes at the same time" do
-      let(:node2) { double("unpersisted node", props: { name: 'Brad' } )}
+    describe 'creating relationships and nodes at the same time' do
+      let(:node2) { double('unpersisted node', props: {name: 'Brad'}) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
-        node.friends.create(clazz_a.new(name: 'Brad'), {since: 1996})
-        #node2.stub(:persisted?).and_return(false)
-        #node2.stub(:save).and_return(true)
-        #node2.stub(:neo_id).and_return(2)
+        node.friends.create(clazz_a.new(name: 'Brad'), since: 1996)
+        # node2.stub(:persisted?).and_return(false)
+        # node2.stub(:save).and_return(true)
+        # node2.stub(:neo_id).and_return(2)
 
-        #node.friends.create(node2, since: 1996)
+        # node.friends.create(node2, since: 1996)
         r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
         r[:since].should eq(1996)
-        r.end_node.name.should == 'Brad'
+        r.end_node.name.should eq('Brad')
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
-        node.friends.create([clazz_a.new(name: 'James'), clazz_a.new(name: 'Cat')], {since: 1997})
+        node.friends.create([clazz_a.new(name: 'James'), clazz_a.new(name: 'Cat')], since: 1997)
 
         rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
-        rs.map(&:end_node).map(&:name).should =~ ['James', 'Cat']
+        rs.map(&:end_node).map(&:name).should =~ %w(James Cat)
         rs.each do |r|
           r[:since].should eq(1997)
         end
@@ -202,12 +202,12 @@ describe 'has_n' do
     let(:callback_friend2) { clazz_c.create }
 
     it 'calls before_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should == 0 }
+      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should eq(0) }
       callback_friend1.knows << callback_friend2
     end
 
     it 'calls after_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { callback_friend2.knows.to_a.size.should == 1 }
+      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { callback_friend2.knows.to_a.size.should eq(1) }
       callback_friend1.knows_me << callback_friend2
     end
 
@@ -241,7 +241,7 @@ describe 'has_n' do
 
       c1.furrs << d1
 
-      c1.furrs.to_a.should == [d1]
+      c1.furrs.to_a.should eq([d1])
     end
 
   end

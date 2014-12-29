@@ -50,7 +50,7 @@ module Neo4j::Shared
               when String
                 DateTime.strptime(value, '%Y-%m-%d %H:%M:%S %z')
               else
-                raise ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
+                fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
               end
 
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
@@ -130,19 +130,18 @@ module Neo4j::Shared
     def convert_properties_to(medium, properties)
       # Perform type conversion
       serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
-      properties = properties.inject({}) do |new_attributes, key_value_pair|
+      properties = properties.each_with_object({}) do |key_value_pair, new_attributes|
         attr, value = key_value_pair
 
         # skip "secret" undeclared attributes such as uuid
         next new_attributes unless self.class.attributes[attr]
 
-        type = serialize.has_key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
+        type = serialize.key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
-                                  value
-                                else
-                                  TypeConverters.send "to_#{medium}", value, type
-                                end
-        new_attributes
+                                 value
+                               else
+                                 TypeConverters.send "to_#{medium}", value, type
+                               end
       end
     end
 
@@ -166,9 +165,8 @@ module Neo4j::Shared
             Neo4j::Shared::TypeConverters.const_get(c).respond_to?(:convert_type)
           end.map do  |c|
             Neo4j::Shared::TypeConverters.const_get(c)
-          end.inject({}) do |ack, t|
+          end.each_with_object({}) do |t, ack|
             ack[t.convert_type] = t
-            ack
           end
         end
       end

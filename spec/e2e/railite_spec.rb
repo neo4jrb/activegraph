@@ -13,9 +13,9 @@ module Rails
     cattr_accessor :init, :conf
 
     class << self
-      #attr_reader :init, :config
+      # attr_reader :init, :config
 
-      def initializer(name, options={}, &block)
+      def initializer(name, options = {}, &block)
         Railtie.init ||= {}
         Railtie.init[name] = block
       end
@@ -45,7 +45,7 @@ module Rails
     end
 
     it 'allows multi session' do
-      expect(Neo4j::Session).to receive(:open).with(:mysession_type, "asd", nil)
+      expect(Neo4j::Session).to receive(:open).with(:mysession_type, 'asd', nil)
       app = App.new
       app.neo4j.sessions = [{type: :mysession_type, path: 'asd'}]
       Railtie.init['neo4j.start'].call(app)
@@ -62,8 +62,8 @@ module Rails
     it 'allows sessions with authentication' do
       cfg = OpenStruct.new(session_path: 'http://user:password@localhost:7474')
       Neo4j::Railtie.set_default_session(cfg)
-      cfg.session_path.should == 'http://localhost:7474'
-      cfg.session_options.should == {basic_auth: {username: 'user', password: 'password'}}
+      cfg.session_path.should eq('http://localhost:7474')
+      cfg.session_options.should eq(basic_auth: {username: 'user', password: 'password'})
     end
 
     it 'allows named session' do

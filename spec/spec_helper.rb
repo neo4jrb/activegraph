@@ -11,13 +11,13 @@ if ENV['COVERAGE']
   SimpleCov.start
 end
 
-require "bundler/setup"
+require 'bundler/setup'
 require 'rspec'
 require 'its'
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
-require "active_attr/rspec"
+require 'active_attr/rspec'
 
 require 'neo4j-core'
 require 'neo4j'
@@ -40,7 +40,7 @@ end
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
-EMBEDDED_DB_PATH = File.join(Dir.tmpdir, "neo4j-core-java")
+EMBEDDED_DB_PATH = File.join(Dir.tmpdir, 'neo4j-core-java')
 
 I18n.enforce_available_locales = false
 
@@ -48,7 +48,7 @@ def create_session
   if RUBY_PLATFORM != 'java'
     create_server_session
   else
-    require "neo4j-embedded/embedded_impermanent_session"
+    require 'neo4j-embedded/embedded_impermanent_session'
     create_embedded_session
   end
 end
@@ -59,7 +59,7 @@ def create_embedded_session
 end
 
 def create_server_session
-  Neo4j::Session.open(:server_db, "http://localhost:7474")
+  Neo4j::Session.open(:server_db, 'http://localhost:7474')
   delete_db
 end
 
@@ -71,7 +71,7 @@ def delete_db
   Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
-Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
+Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 RSpec.configure do |c|
 
@@ -88,16 +88,15 @@ RSpec.configure do |c|
 
   c.after(:each) do
     if Neo4j::Transaction.current
-      puts "WARNING forgot to close transaction"
+      puts 'WARNING forgot to close transaction'
       Neo4j::Transaction.current.close
     end
   end
 
   c.exclusion_filter = {
-      :api => lambda do |ed|
-        RUBY_PLATFORM == 'java' && ed == :server
-      end
+    api: lambda do |ed|
+      RUBY_PLATFORM == 'java' && ed == :server
+    end
   }
 
 end
-

@@ -15,7 +15,7 @@ module Neo4j::ActiveRel
     end
 
     def save!(*args)
-      raise RelInvalidError.new(self) unless save(*args)
+      fail RelInvalidError, self unless save(*args)
     end
 
     def create_model(*)
@@ -45,7 +45,7 @@ module Neo4j::ActiveRel
 
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
-        raise RelInvalidError.new(self) unless create(*args)
+        fail RelInvalidError, self unless create(*args)
       end
     end
 
@@ -55,7 +55,7 @@ module Neo4j::ActiveRel
       [from_node, to_node].each do |node|
         type = from_node == node ? :_from_class : :_to_class
         next if allows_any_class?(type)
-        raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class || node.class.ancestors.include?(class_as_constant(type))
+        fail ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class || node.class.ancestors.include?(class_as_constant(type))
       end
     end
 

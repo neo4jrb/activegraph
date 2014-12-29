@@ -1,21 +1,22 @@
-require File.join(File.dirname(__FILE__), '..', '..', '..', '..','neo4j.rb')
+require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
 
 class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
-  argument :attributes, :type => :array, :default => [], :banner => "field:type field:type"
+  argument :attributes, type: :array, default: [], banner: 'field:type field:type'
 
   check_class_collision
 
-  class_option :timestamps, :type => :boolean
-  class_option :parent,     :type => :string, :desc => "The parent class for the generated model"
-  class_option :indices,    :type => :array,  :desc => "The properties which should be indexed"
-  class_option :has_one,    :type => :array,  :desc => "A list of has_one relationships"
-  class_option :has_many,   :type => :array,  :desc => "A list of has_many relationships"
+  class_option :timestamps, type: :boolean
+  class_option :parent,     type: :string, desc: 'The parent class for the generated model'
+  class_option :indices,    type: :array,  desc: 'The properties which should be indexed'
+  class_option :has_one,    type: :array,  desc: 'A list of has_one relationships'
+  class_option :has_many,   type: :array,  desc: 'A list of has_many relationships'
 
   def create_model_file
-    template "model.erb", File.join('app/models', "#{singular_name}.rb")
+    template 'model.erb', File.join('app/models', "#{singular_name}.rb")
   end
 
   protected
+
   def migration?
     false
   end
@@ -29,7 +30,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   end
 
   def has_many_statements
-    txt = ""
+    txt = ''
     options[:has_many].each do |key|
       txt << has_x('has_many', key)
     end
@@ -46,7 +47,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   end
 
   def has_one_statements
-    txt = ""
+    txt = ''
     options[:has_one].each do |key|
       txt << has_x('has_one', key)
     end
@@ -69,13 +70,14 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   end
 
   def timestamp_statements
-    %q{
+    '
   property :created_at, type: DateTime
   # property :created_on, type: Date
 
   property :updated_at, type: DateTime
   # property :updated_on, type: Date
-}
+
+'
   end
 
   hook_for :test_framework

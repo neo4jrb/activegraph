@@ -8,7 +8,7 @@ module Neo4j::Shared
 
     def update_model
       if changed_attributes && !changed_attributes.empty?
-        changed_props = attributes.select{|k,v| changed_attributes.include?(k)}
+        changed_props = attributes.select { |k, v| changed_attributes.include?(k) }
         changed_props = convert_properties_to :db, changed_props
         _persisted_obj.update_props(changed_props)
         changed_attributes.clear
@@ -35,7 +35,7 @@ module Neo4j::Shared
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
       result = _persisted_obj ? update_model : create_model
-      unless result != false
+      if result == false
         Neo4j::Transaction.current.fail if Neo4j::Transaction.current
         false
       else
@@ -58,7 +58,7 @@ module Neo4j::Shared
       !_persisted_obj
     end
 
-    alias :new? :new_record?
+    alias_method :new?, :new_record?
 
     def destroy
       _persisted_obj && _persisted_obj.del
@@ -77,7 +77,7 @@ module Neo4j::Shared
 
     # @return [Hash] all defined and none nil properties
     def props
-      attributes.reject{|k,v| v.nil?}.symbolize_keys
+      attributes.reject { |k, v| v.nil? }.symbolize_keys
     end
 
     # @return true if the attributes hash has been frozen

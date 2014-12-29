@@ -105,14 +105,14 @@ module Neo4j
 
         # Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
         # would be comparing the QueryProxy objects, not the lessons themselves.
-        def ==(value)
-          self.to_a == value
+        def ==(other)
+          self.to_a == other
         end
 
-        METHODS = %w[where rel_where order skip limit]
+        METHODS = %w(where rel_where order skip limit)
 
         METHODS.each do |method|
-          module_eval(%Q{
+          module_eval(%{
             def #{method}(*args)
               build_deeper_query_proxy(:#{method}, args)
             end}, __FILE__, __LINE__)
@@ -201,7 +201,7 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          raise "Can only create associations on associations" unless @association
+          fail 'Can only create associations on associations' unless @association
           other_nodes = [other_nodes].flatten
           properties = @association.inject_classname(properties)
           other_nodes = other_nodes.map do |other_node|
@@ -213,27 +213,27 @@ module Neo4j
             end
           end.compact
 
-          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
+          fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
-            #Neo4j::Transaction.run do
-              other_node.save unless other_node.neo_id
+            # Neo4j::Transaction.run do
+            other_node.save unless other_node.neo_id
 
-              return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
+            return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
-              start_object = @options[:start_object]
-              start_object.clear_association_cache
-              _session.query(context: @options[:context])
-                .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
-                .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
-                .create("start#{_association_arrow(properties, true)}end").exec
+            start_object = @options[:start_object]
+            start_object.clear_association_cache
+            _session.query(context: @options[:context])
+              .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where('ID(start) = {start_id} AND ID(end) = {end_id}')
+              .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
+              .create("start#{_association_arrow(properties, true)}end").exec
 
-              @association.perform_callback(@options[:start_object], other_node, :after)
-            #end
+            @association.perform_callback(@options[:start_object], other_node, :after)
+            # end
           end
         end
 
         def read_attribute_for_serialization(*args)
-          to_a.map {|o| o.read_attribute_for_serialization(*args) }
+          to_a.map { |o| o.read_attribute_for_serialization(*args) }
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
@@ -255,6 +255,7 @@ module Neo4j
         attr_reader :node_var
 
         protected
+
         # Methods are underscored to prevent conflict with user class methods
 
         def _add_params(params)
@@ -268,7 +269,7 @@ module Neo4j
         def _query_model_as(var)
           match_arg = if @model
                         label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-                        { var => label }
+                        {var => label}
                       else
                         var
                       end
@@ -310,7 +311,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.node_var || :"node#{_chain_level}"
           else
-            raise "Crazy error" # TODO: Better error
+            fail 'Crazy error' # TODO: Better error
           end
         end
 
@@ -320,7 +321,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.query_as(var)
           else
-            raise "Crazy error" # TODO: Better error
+            fail 'Crazy error' # TODO: Better error
           end
         end
 
@@ -362,7 +363,7 @@ module Neo4j
               if @model && @model.has_association?(key)
 
                 neo_id = value.try(:neo_id) || value
-                raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
+                fail ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
 
                 n_string = "n#{node_num}"
                 dir = @model.associations[key].direction
@@ -372,7 +373,7 @@ module Neo4j
                 result << [:where, ->(v) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1
               else
-                result << [:where, ->(v) { {v => {key => value}}}]
+                result << [:where, ->(v) { {v => {key => value}} }]
               end
             end
           elsif arg.is_a?(String)
@@ -385,7 +386,7 @@ module Neo4j
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(v) {{ rel_identity => { key => value }}}]
+            result << [:where, ->(v) { {rel_identity => {key => value}} }]
           end
         end
 
@@ -400,4 +401,3 @@ module Neo4j
     end
   end
 end
-

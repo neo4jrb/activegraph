@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 
-#tests = Proc.new do
-describe "Labels" do
+# tests = Proc.new do
+describe 'Labels' do
 
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes.dup
@@ -58,17 +58,17 @@ describe "Labels" do
   describe 'create' do
     it 'automatically sets a label' do
       p = TestClass.create
-      p.labels.to_a.should == [:TestClass]
+      p.labels.to_a.should eq([:TestClass])
     end
 
-    it "sets label for mixin classes" do
+    it 'sets label for mixin classes' do
       p = SomeLabelClass.create
       p.labels.to_a.should =~ [:SomeLabelClass, :some_label]
     end
   end
 
   describe 'all' do
-    it "finds it without an index" do
+    it 'finds it without an index' do
       p = TestClass.create
       TestClass.all.to_a.should include(p)
     end
@@ -95,7 +95,7 @@ describe "Labels" do
   end
 
   describe 'find' do
-    it "finds it without an index" do
+    it 'finds it without an index' do
       p = TestClass.create
       TestClass.all.to_a.should include(p)
     end
@@ -104,14 +104,14 @@ describe "Labels" do
       it 'can find it using the index' do
         IndexedTestClass.delete_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        IndexedTestClass.where(name: 'kalle').first.should == kalle
+        IndexedTestClass.where(name: 'kalle').first.should eq(kalle)
       end
 
       it 'does not find it if deleted' do
         IndexedTestClass.delete_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
         result = IndexedTestClass.where(name: 'kalle2').first
-        result.should == kalle2
+        result.should eq(kalle2)
         kalle2.destroy
         IndexedTestClass.where(name: 'kalle2').should_not include(kalle2)
       end
@@ -122,7 +122,7 @@ describe "Labels" do
       let!(:n2) { RelationTestClass.create(test_class: n1) }
 
       it 'finds when association matches' do
-        RelationTestClass.where(test_class: n1).first.should == n2
+        RelationTestClass.where(test_class: n1).first.should eq(n2)
       end
 
       it 'does not find when association does not match' do
@@ -141,7 +141,7 @@ describe "Labels" do
 
   describe 'find_by, find_by!' do
     before(:all) { @jasmine = IndexedTestClass.create(name: 'jasmine') }
-    
+
     describe 'find_by' do
       it 'finds the expected object' do
         expect(IndexedTestClass.find_by(name: 'jasmine')).to eq @jasmine
@@ -158,7 +158,7 @@ describe "Labels" do
       end
 
       it 'raises an error if no results match' do
-        expect{IndexedTestClass.find_by!(name: 'foo')}.to raise_exception Neo4j::ActiveNode::Labels::RecordNotFound
+        expect { IndexedTestClass.find_by!(name: 'foo') }.to raise_exception Neo4j::ActiveNode::Labels::RecordNotFound
       end
     end
   end
@@ -174,7 +174,7 @@ describe "Labels" do
       class EmptyTestClass
         include Neo4j::ActiveNode
       end
-      
+
       @jasmine = FirstLastTestClass.create(name: 'jasmine')
       @middle = FirstLastTestClass.create
       @lauren = FirstLastTestClass.create(name: 'lauren')
@@ -198,7 +198,7 @@ describe "Labels" do
   end
 end
 
-#shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do
+# shared_examples_for 'Neo4j::ActiveNode with Mixin Index'do
 #  before(:all) do
 #    Neo4j::ActiveNode::Labels._wrapped_classes = []
 #    Neo4j::ActiveNode::Labels._wrapped_labels = nil
@@ -229,14 +229,14 @@ end
 #    BarIndexedLabel.find(:baaz, 'hej2').should_not include(hej)
 #    TestClassWithBar.find(:baaz, 'hej2').should_not include(hej)
 #  end
-#end
+# end
 
-#describe 'Neo4j::ActiveNode, server', api: :server do
+# describe 'Neo4j::ActiveNode, server', api: :server do
 #  it_behaves_like 'Neo4j::ActiveNode'
 #  it_behaves_like "Neo4j::ActiveNode with Mixin Index"
-#end
+# end
 #
-#describe 'Neo4j::ActiveNode, embedded', api: :embedded do
+# describe 'Neo4j::ActiveNode, embedded', api: :embedded do
 #  it_behaves_like 'Neo4j::ActiveNode'
 #  it_behaves_like "Neo4j::ActiveNode with Mixin Index"
-#end
+# end

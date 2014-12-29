@@ -38,7 +38,7 @@ module Neo4j::ActiveNode
       def scope(name, proc)
         _scope[name.to_sym] = proc
 
-        module_eval(%Q{
+        module_eval(%{
           def #{name}(query_params=nil, _=nil, query_proxy=nil)
             eval_context = ScopeEvalContext.new(self, query_proxy || self.class.query_proxy)
             proc = self.class._scope[:"#{name}"]
@@ -46,7 +46,7 @@ module Neo4j::ActiveNode
           end
         }, __FILE__, __LINE__)
 
-        instance_eval(%Q{
+        instance_eval(%{
           def #{name}(query_params=nil, _=nil, query_proxy=nil)
             eval_context = ScopeEvalContext.new(self, query_proxy || self.query_proxy)
             proc = _scope[:"#{name}"]
@@ -56,7 +56,7 @@ module Neo4j::ActiveNode
       end
 
       def has_scope?(name)
-        _scope.has_key?(name.to_sym)
+        _scope.key?(name.to_sym)
       end
 
       def _scope
@@ -98,7 +98,7 @@ module Neo4j::ActiveNode
       end
 
       Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
-        module_eval(%Q{
+        module_eval(%{
             def #{method}(params={})
               @target.all.scoping do
                 (@query_proxy || @target).#{method}(params)
@@ -135,7 +135,7 @@ module Neo4j::ActiveNode
 
       def raise_invalid_scope_type!(scope_type)
         if !VALID_SCOPE_TYPES.include?(scope_type)
-          raise ArgumentError, "Invalid scope type '#{scope_type}' sent to the registry. Scope types must be included in VALID_SCOPE_TYPES"
+          fail ArgumentError, "Invalid scope type '#{scope_type}' sent to the registry. Scope types must be included in VALID_SCOPE_TYPES"
         end
       end
     end
