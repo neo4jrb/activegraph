@@ -61,7 +61,6 @@ describe 'association dependent delete/destroy' do
       @billy.reload
     end
 
-    require 'pry'
     it 'deletes all associated records that do not have other relationships of the same type from Cypher' do
       [@math, @science].each { |l| expect(l).to be_persisted }
       @billy.destroy
