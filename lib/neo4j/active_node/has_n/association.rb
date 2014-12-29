@@ -108,15 +108,15 @@ module Neo4j
           return if dependent.nil?
           fail "Unknown dependent option #{dependent}" unless APPROVED_DEPENDENT_TYPES.include?(dependent)
           association_name = name
-          action =  if dependent == :delete
-                      model.before_destroy lambda { |o| o.send(association_name).delete_all }
-                    elsif dependent == :delete_orphans
-                      model.before_destroy lambda { |o| o.send(association_name, :n).unique_nodes(:recurring_rel).delete('n, recurring_rel').exec }
-                    elsif dependent == :destroy
-                      model.before_destroy lambda { |o| o.send(association_name).each { |n| n.destroy } }
-                    elsif dependent == :destroy_orphans
-                      model.before_destroy lambda { |o| o.send(association_name, :n).unique_nodes.pluck(:n).each { |n| n.destroy } }
-                    end
+          if dependent == :delete
+            model.before_destroy lambda { |o| o.send(association_name).delete_all }
+          elsif dependent == :delete_orphans
+            model.before_destroy lambda { |o| o.send(association_name, :n).unique_nodes(:recurring_rel).delete('n, recurring_rel').exec }
+          elsif dependent == :destroy
+            model.before_destroy lambda { |o| o.send(association_name).each(&:destroy) }
+          elsif dependent == :destroy_orphans
+            model.before_destroy lambda { |o| o.send(association_name, :n).unique_nodes.pluck(:n).each(&:destroy) }
+          end
         end
 
         private
@@ -153,7 +153,7 @@ module Neo4j
         def apply_vars_from_options(options)
           validate_option_combinations(options)
           @target_class_option = target_class_option(options)
-          @callbacks = { before: options[:before], after: options[:after] }
+          @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym

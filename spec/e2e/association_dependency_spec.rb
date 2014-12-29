@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe 'association dependent delete/destroy' do
   module DependentSpec
-    CALL_COUNT = { called: 0 }
+    CALL_COUNT = {called: 0}
 
     class Student
       include Neo4j::ActiveNode
