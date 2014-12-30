@@ -74,7 +74,6 @@ module Neo4j::ActiveNode
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
         klass.instance_variable_set(:@associations, associations.clone)
-
         super
       end
 
@@ -86,7 +85,7 @@ module Neo4j::ActiveNode
         @associations[name] = association
 
         target_class_name = association.target_class_name || 'nil'
-        create_reflection(:has_many, name, association)
+        create_reflection(:has_many, name, association, self)
 
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
         module_eval(%{
@@ -145,7 +144,7 @@ module Neo4j::ActiveNode
         @associations[name] = association
 
         target_class_name = association.target_class_name || 'nil'
-        create_reflection(:has_one, name, association)
+        create_reflection(:has_one, name, association, self)
 
         module_eval(%{
           def #{name}=(other_node)
@@ -185,5 +184,4 @@ module Neo4j::ActiveNode
       end
     end
   end
-
 end

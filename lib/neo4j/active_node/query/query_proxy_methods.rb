@@ -63,6 +63,17 @@ module Neo4j
           end
         end
 
+        # This will match nodes who only have a single relationship of a given type.
+        # It's used  by `dependent: :delete_orphans` and `dependent: :destroy_orphans` and may not have much utility otherwise.
+        # @param [Symbol] other_rel_identifier The identifier to use to reference the second relationship in the match.
+        # @return [Neo4j::Core::Query] A Core::Query object.
+        def unique_nodes(other_rel_identifier = :recurring_rel)
+          self.query.break.match("(part2)-[#{other_rel_identifier}:`#{association.relationship_type}`]-(#{identity})")
+            .with("#{identity}, COUNT(#{other_rel_identifier}) as c").break
+            .where(c: 1).break
+            .match("#{identity}-[#{other_rel_identifier}]-()")
+        end
+
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
         # The `node` param can be a persisted ActiveNode instance, any string or integer, or nil.
         # When it's a node, it'll use the object's neo_id, which is fastest. When not nil, it'll figure out the
