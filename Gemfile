@@ -2,12 +2,11 @@ source 'http://rubygems.org'
 
 gemspec
 
-# gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
+gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
 # gem 'neo4j-core', git: 'https://github.com/neo4jrb/neo4j-core'
 # gem 'orm_adapter', :path => '../orm_adapter'
 
 gem 'coveralls', require: false
-
 
 group 'development' do
   gem 'pry'
