@@ -9,11 +9,13 @@ describe 'Neo4j::ActiveNode' do
   end
 
 
+  let(:transaction) { double('Mock transaction', close: true) }
+  let(:session) { double('Mock Session', create_node: nil, begin_tx: transaction) }
+
   before do
     SecureRandom.stub(:uuid) { 'secure123' }
-    @session = double('Mock Session', create_node: nil)
     MyThing.stub(:cached_class?).and_return(false)
-    Neo4j::Session.stub(:current).and_return(@session)
+    Neo4j::Session.stub(:current).and_return(session)
   end
 
   describe 'new' do
@@ -29,20 +31,21 @@ describe 'Neo4j::ActiveNode' do
   describe 'create' do
     it 'does not store nil values' do
       node = double('unwrapped_node', props: {a: 999})
-      @session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
       thing.props.should == {a: 999}
     end
 
     it 'stores undefined attributes' do
       node = double('unwrapped_node', props: {a: 999})
-      @session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
       thing.attributes.should == {'a' => 999, 'x' => nil} # always reads the result from the database
     end
 
     it 'does not allow to set undeclared properties using create' do
-      @session.should_not_receive(:create_node)
+      node = double('unwrapped_node', props: {})
+      session.should_not_receive(:create_node)
       expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end
 
@@ -52,10 +55,10 @@ describe 'Neo4j::ActiveNode' do
     #   node = double('unwrapped_node', props: {a: 999}, rel: nil, neo_id: 2)
     #   node.class.stub(:mapped_label_name).and_return('MyThing')
     #   node.stub(:exist?).and_return(true)
-    #   @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
-    #   @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
-    #   @session.should_receive(:_query).at_most(1000)
-    #   #@session.should_receive(:begin_tx)
+    #   session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
+    #   session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
+    #   session.should_receive(:_query).at_most(1000)
+    #   #session.should_receive(:begin_tx)
     #   thing = MyThing.create(a: 1,  parent: parent)
     #   thing.props.should == {a: 999}
     # end
@@ -68,11 +71,11 @@ describe 'Neo4j::ActiveNode' do
 
     #   node.class.stub(:mapped_label_name).and_return('MyThing')
     #   node.stub(:exist?).and_return(true)
-    #   @session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
-    #   @session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
-    #   @session.should_receive(:_query).exactly(2).times
+    #   session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
+    #   session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
+    #   session.should_receive(:_query).exactly(2).times
 
-    #   #@session.should_receive(:begin_tx)
+    #   #session.should_receive(:begin_tx)
 
     #   thing = MyThing.create(a: 1,  parent: parent)
     #   thing.props.should == {a: 999}
@@ -83,7 +86,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'saves declared the properties that has been changed with []= operator' do
-      @session.should_receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      session.should_receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.new
       thing[:x] = 42
       thing.save
@@ -100,7 +103,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'does not save unchanged properties' do
-      @session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
       # only change X
@@ -110,7 +113,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'handles nil properties' do
-      @session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
       node.should_receive(:update_props).with('x' => nil)
@@ -127,7 +130,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'updates given property' do
-      expect(@session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing.update(a: 42)
     end
 
@@ -145,7 +148,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'updates given properties' do
-      expect(@session).to receive(:create_node).with({a: 42, x: 'hej', uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 42, x: 'hej', uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing.update_attributes(a: 42, x: 'hej')
     end
 
@@ -163,7 +166,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'updates given property' do
-      expect(@session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing.update_attribute!(:a, 42)
     end
 
