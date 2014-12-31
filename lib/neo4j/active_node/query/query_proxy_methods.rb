@@ -89,20 +89,20 @@ module Neo4j
         # @param [#neo_id, String, Enumerable] node An object to be sent to `match_to`. See params for that method.
         # @return A relationship (ActiveRel, CypherRelationship, EmbeddedRelationship) or nil.
         def first_rel_to(node)
-          self.match_to(node).limit(1).pluck(rel_identity).first
+          self.match_to(node).limit(1).pluck(rel_var).first
         end
 
         # Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
         # @param [#neo_id, String, Enumerable] node An object to be sent to `match_to`. See params for that method.
         # @return An enumerable of relationship objects.
         def rels_to(node)
-          self.match_to(node).pluck(rel_identity)
+          self.match_to(node).pluck(rel_var)
         end
         alias_method :all_rels_to, :rels_to
 
         # Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
         def delete(node)
-          self.match_to(node).query.delete(rel_identity).exec
+          self.match_to(node).query.delete(rel_var).exec
           clear_caller_cache
         end
 
