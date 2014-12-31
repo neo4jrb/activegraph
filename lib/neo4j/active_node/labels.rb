@@ -84,15 +84,14 @@ module Neo4j
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
-        # @param [Hash] args of arguments to find
-        def find_by(*args)
-          self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
+        # @param Hash args of arguments to find
+        def find_by(values)
+          self.query_as(:n).where(n: values).limit(1).pluck(:n).first
         end
 
         # Like find_by, except that if no record is found, raises a RecordNotFound error.
-        def find_by!(*args)
-          a = eval(args.join)
-          find_by(args) || fail(RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results")
+        def find_by!(values)
+          find_by(values) || fail(RecordNotFound, "#{self.query_as(:n).where(n: values).limit(1).to_cypher} returned no results")
         end
 
         # Deletes all nodes and connected relationships from Cypher.
