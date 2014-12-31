@@ -25,7 +25,7 @@ Metrics/BlockNesting:
 # Offense count: 2
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 263
+  Max: 265
 
 # Offense count: 5
 Metrics/CyclomaticComplexity:
@@ -124,11 +124,5 @@ Style/PredicateName:
 # Offense count: 84
 # Cop supports --auto-correct.
 Style/RedundantSelf:
-  Enabled: false
-
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, Whitelist.
-Style/TrivialAccessors:
   Enabled: false
 

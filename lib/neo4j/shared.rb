@@ -8,7 +8,11 @@ module Neo4j
     include ActiveModel::Serializers::JSON
 
     module ClassMethods
+      attr_writer :neo4j_session_name
+
       def neo4j_session_name(name)
+        ActiveSupport::Deprecation.warn 'neo4j_session_name is deprecated and may be removed from future releases, use neo4j_session_name= instead.', caller
+
         @neo4j_session_name = name
       end
 

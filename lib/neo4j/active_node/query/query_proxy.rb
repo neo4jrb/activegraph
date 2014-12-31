@@ -55,9 +55,13 @@ module Neo4j
         alias_method :node_identity, :identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
+        attr_reader :rel_var
         def rel_identity
+          ActiveSupport::Deprecation.warn 'rel_identity is deprecated and may be removed from future releases, use rel_var instead.', caller
+
           @rel_var
         end
+
 
         # Executes the query against the database if the results are not already present in a node's association cache. This method is
         # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
@@ -386,7 +390,7 @@ module Neo4j
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(v) { {rel_identity => {key => value}} }]
+            result << [:where, ->(v) { {rel_var => {key => value}} }]
           end
         end
 

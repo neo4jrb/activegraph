@@ -36,9 +36,8 @@ module Neo4j
         end
 
         # @return [String] a string representing the relationship type that will be created
-        def _type
-          @rel_type
-        end
+        attr_reader :rel_type
+        alias_method :_type, :rel_type # Should be deprecated
 
         def add_wrapped_class(type)
           # _wrapped_classes[type.to_sym.downcase] = self.name
