@@ -23,7 +23,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe 'each_with_rel' do
     it 'yields a node and rel object' do
       expect(qp).to receive(:pluck).and_return([node, rel])
-      expect(qp.each_with_rel { |n, r| }).to eq [node, rel]
+      expect(qp.each_with_rel {}).to eq [node, rel]
     end
   end
 
@@ -39,7 +39,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
       it 'sends the block to :each with node false, rel true' do
         expect(qp).not_to receive(:to_enum)
         expect(qp).to receive(:each).with(false, true)
-        qp.each_rel { |r| }
+        qp.each_rel {}
       end
 
       it 'calls pluck and executes the block' do
@@ -62,7 +62,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
       it 'sends the block to :each with node true, rel true' do
         expect(qp).not_to receive(:to_enum)
         expect(qp).to receive(:each).with(true, true)
-        qp.each_with_rel { |n, r| }
+        qp.each_with_rel {}
       end
 
       it 'calls pluck and executes the block' do

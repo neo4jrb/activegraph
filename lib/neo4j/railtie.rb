@@ -6,7 +6,7 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     # Add ActiveModel translations to the I18n load_path
-    initializer 'i18n' do |app|
+    initializer 'i18n' do
       config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
     end
 
@@ -78,7 +78,7 @@ module Neo4j
       yellow = "\e[33m"
       cyan = "\e[36m"
 
-      ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |name, start, finish, id, payload|
+      ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |_, start, finish, _id, payload|
         ms = (finish - start) * 1000
         Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]}" + (payload[:params].size > 0 ? ' | ' + payload[:params].inspect : '')
       end

@@ -21,7 +21,7 @@ module Neo4j
       # which will completely bypass this whole process.
       WRAPPED_CLASSES = {}
 
-      included do |klazz|
+      included do
         type self.name, true
       end
 

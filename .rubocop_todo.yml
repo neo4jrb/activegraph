@@ -9,11 +9,6 @@
 Lint/HandleExceptions:
   Enabled: false
 
-# Offense count: 15
-# Cop supports --auto-correct.
-Lint/UnusedBlockArgument:
-  Enabled: false
-
 # Offense count: 17
 Metrics/AbcSize:
   Max: 35

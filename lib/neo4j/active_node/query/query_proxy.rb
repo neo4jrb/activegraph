@@ -374,7 +374,7 @@ module Neo4j
 
                 arrow = dir == :out ? '-->' : '<--'
                 result << [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }]
-                result << [:where, ->(v) { {"ID(#{n_string})" => neo_id.to_i} }]
+                result << [:where, ->(_) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1
               else
                 result << [:where, ->(v) { {v => {key => value}} }]
@@ -390,7 +390,7 @@ module Neo4j
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(v) { {rel_var => {key => value}} }]
+            result << [:where, ->(_) { {rel_var => {key => value}} }]
           end
         end
 
