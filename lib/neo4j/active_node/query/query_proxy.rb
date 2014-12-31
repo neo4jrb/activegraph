@@ -364,16 +364,8 @@ module Neo4j
           if arg.is_a?(Hash)
             arg.each do |key, value|
               if @model && @model.has_association?(key)
+                result += links_for_association(key, value, "n#{node_num}")
 
-                neo_id = value.try(:neo_id) || value
-                fail ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
-
-                n_string = "n#{node_num}"
-                dir = @model.associations[key].direction
-
-                arrow = dir == :out ? '-->' : '<--'
-                result << [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }]
-                result << [:where, ->(_) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1
               else
                 result << [:where, ->(v) { {v => {key => value}} }]
@@ -385,6 +377,19 @@ module Neo4j
           result
         end
         alias_method :links_for_node_where_arg, :links_for_where_arg
+
+        def links_for_association(name, value, n_string)
+          neo_id = value.try(:neo_id) || value
+          fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
+
+          dir = @model.associations[name].direction
+
+          arrow = dir == :out ? '-->' : '<--'
+          [
+            [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }],
+            [:where, ->(_) { {"ID(#{n_string})" => neo_id.to_i} }]
+          ]
+        end
 
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
