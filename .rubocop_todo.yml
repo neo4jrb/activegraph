@@ -6,11 +6,6 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 2
-# Cop supports --auto-correct.
-Lint/BlockAlignment:
-  Enabled: false
-
-# Offense count: 2
 Lint/Eval:
   Enabled: false
 

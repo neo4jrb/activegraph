@@ -71,8 +71,8 @@ describe 'wrapped nodes in transactions', api: :server do
       begin
         tx = Neo4j::Transaction.new
         retrieved_rel = @john.teachers.each_rel do |r|
-                          expect(r).to be_a(TransactionNode::StudentTeacher)
-                        end
+          expect(r).to be_a(TransactionNode::StudentTeacher)
+        end
       ensure
         tx.close
       end
