@@ -172,19 +172,14 @@ module Neo4j
         end
 
         def validate_origin!
-          if @origin
-            if target_class
-              if association = target_class.associations[@origin]
-                if @direction == association.direction
-                  fail ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)"
-                end
-              else
-                fail ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
-              end
-            else
-              fail ArgumentError, 'Cannot use :origin without a model_class (implied or explicit)'
-            end
-          end
+          return if not @origin
+
+          fail ArgumentError, 'Cannot use :origin without a model_class (implied or explicit)' if not target_class
+
+          association = target_class.associations[@origin]
+          fail ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})" if not association
+
+          fail ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)" if @direction == association.direction
         end
       end
     end

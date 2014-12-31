@@ -18,10 +18,6 @@ Lint/UnusedBlockArgument:
 Metrics/AbcSize:
   Max: 35
 
-# Offense count: 1
-Metrics/BlockNesting:
-  Max: 4
-
 # Offense count: 2
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
