@@ -17,6 +17,7 @@ group 'development' do
 
   gem 'guard'
   gem 'guard-rubocop'
+  gem 'guard-rspec'
 end
 
 group 'test' do

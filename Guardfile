@@ -23,7 +23,13 @@
 #
 # and, you'll have to watch "config/Guardfile" instead of "Guardfile"
 
-guard :rubocop, cli: '--auto-correct' do
-  watch(/.+\\.rb$/)
-  watch(%r{(?:.+/)?\.rubocop.*\.yml$}) { |m| File.dirname(m[0]) }
+guard :rubocop, cli: '--auto-correct --display-cop-names' do
+  watch(/.+\.rb$/)
+  watch(/(?:.+\/)?\.rubocop.*\.yml$/) { |m| File.dirname(m[0]) }
+end
+
+guard :rspec, cmd: 'bundle exec rspec' do
+  watch(/^spec\/.+_spec\.rb$/)
+  watch(/^lib\/(.+)\.rb/)     { |m| "spec/lib/#{m[1]}_spec.rb" }
+  watch('spec/spec_helper.rb')  { 'spec' }
 end
