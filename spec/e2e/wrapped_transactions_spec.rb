@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'wrapped nodes in transactions', api: :server do
+describe 'wrapped nodes in transactions' do
   module TransactionNode
     class Teacher; end
     class StudentTeacher; end
