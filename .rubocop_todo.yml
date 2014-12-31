@@ -40,10 +40,6 @@ Metrics/PerceivedComplexity:
 Style/AccessorMethodName:
   Enabled: false
 
-# Offense count: 2
-Style/AsciiComments:
-  Enabled: false
-
 # Offense count: 7
 Style/CaseEquality:
   Enabled: false

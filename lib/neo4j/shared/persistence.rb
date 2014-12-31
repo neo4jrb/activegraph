@@ -48,7 +48,7 @@ module Neo4j::Shared
       @_create_or_updating = nil
     end
 
-    # Returns +true+ if the record is persisted, i.e. it’s not a new record and it was not destroyed
+    # Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
     def persisted?
       !new_record? && !destroyed?
     end

@@ -18,7 +18,7 @@ module Neo4j::ActiveNode
     # If the model is new a record gets created in the database, otherwise the existing record gets updated.
     # If perform_validation is true validations run.
     # If any of them fail the action is cancelled and save returns false. If the flag is false validations are bypassed altogether. See ActiveRecord::Validations for more information.
-    # There’s a series of callbacks associated with save. If any of the before_* callbacks return false the action is cancelled and save returns false.
+    # There's a series of callbacks associated with save. If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
       update_magic_properties
       clear_association_cache
