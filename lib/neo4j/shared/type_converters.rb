@@ -1,10 +1,8 @@
 module Neo4j::Shared
   module TypeConverters
-
     # Converts Date objects to Java long types. Must be timezone UTC.
     class DateConverter
       class << self
-
         def convert_type
           Date
         end
@@ -18,14 +16,12 @@ module Neo4j::Shared
           return nil if value.nil?
           Time.at(value).utc.to_date
         end
-
       end
     end
 
     # Converts DateTime objects to and from Java long types. Must be timezone UTC.
     class DateTimeConverter
       class << self
-
         def convert_type
           DateTime
         end
@@ -55,13 +51,11 @@ module Neo4j::Shared
 
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
         end
-
       end
     end
 
     class TimeConverter
       class << self
-
         def convert_type
           Time
         end
@@ -81,14 +75,12 @@ module Neo4j::Shared
           return nil if value.nil?
           Time.at(value).utc
         end
-
       end
     end
 
     # Converts hash to/from YAML
     class YAMLConverter
       class << self
-
         def convert_type
           Hash
         end
@@ -108,7 +100,6 @@ module Neo4j::Shared
     # Converts hash to/from JSON
     class JSONConverter
       class << self
-
         def convert_type
           JSON
         end
@@ -147,7 +138,6 @@ module Neo4j::Shared
     end
 
     class << self
-
       # Converts the value to ruby from a Neo4j database value if there is a converter for given type
       def to_ruby(value, type = nil)
         found_converter = converters[type]

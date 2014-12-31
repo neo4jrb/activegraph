@@ -1,10 +1,8 @@
 module Neo4j::Shared
-
   # This module controls changes to relationship type based on Neo4j::Config.transform_rel_type.
   # It's used whenever a rel type is automatically determined based on ActiveRel model name or
   # association type.
   module RelTypeConverters
-
     def decorated_rel_type(type)
       @decorated_rel_type ||= Neo4j::Shared::RelTypeConverters.decorated_rel_type(type)
     end

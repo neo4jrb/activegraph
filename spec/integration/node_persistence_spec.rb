@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'Neo4j::ActiveNode' do
-
   class MyThing
     include Neo4j::ActiveNode
     property :a
@@ -25,7 +24,6 @@ describe 'Neo4j::ActiveNode' do
     it 'undefined properties are found with the attributes method' do
       MyThing.new(a: '4').attributes.should == {'a' => '4', 'x' => nil}
     end
-
   end
 
   describe 'create' do
@@ -96,7 +94,6 @@ describe 'Neo4j::ActiveNode' do
       thing = MyThing.new
       expect { thing[:newp] = 42 }.to raise_error(ActiveAttr::UnknownAttributeError)
     end
-
   end
 
   describe 'update_model' do
@@ -138,7 +135,6 @@ describe 'Neo4j::ActiveNode' do
       thing.stub(:valid?).and_return(false)
       expect(thing.update_attribute(:a, 42)).to be false
     end
-
   end
 
   describe 'update_attributes' do
@@ -157,7 +153,6 @@ describe 'Neo4j::ActiveNode' do
       thing.stub(:valid?).and_return(false)
       expect(thing.update_attributes(a: 42)).to be false
     end
-
   end
 
   describe 'update_attribute!' do

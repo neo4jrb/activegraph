@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'works well together with Neo4j::Core' do
-
   let(:clazz) do
     UniqueClass.create do
       include Neo4j::ActiveNode
@@ -23,5 +22,4 @@ describe 'works well together with Neo4j::Core' do
     obj.stuff << node
     expect(obj.stuff.to_a).to eq([node])
   end
-
 end

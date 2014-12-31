@@ -1,5 +1,4 @@
 module Neo4j::ActiveNode
-
   # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
   #
   # @example using generated UUIDs
@@ -54,7 +53,6 @@ module Neo4j::ActiveNode
 
           property :#{name}
                 ), __FILE__, __LINE__)
-
       end
 
 
@@ -110,7 +108,6 @@ module Neo4j::ActiveNode
 
 
     module ClassMethods
-
       def find_by_neo_id(id)
         Neo4j::Node.load(id)
       end
@@ -155,8 +152,6 @@ module Neo4j::ActiveNode
       end
 
       alias_method :primary_key, :id_property_name
-
     end
   end
-
 end

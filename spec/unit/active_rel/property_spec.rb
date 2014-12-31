@@ -11,14 +11,12 @@ describe Neo4j::ActiveRel::Property do
 
   let(:clazz) do
     Class.new do
-
       def self.name
         'Clazz'
       end
 
       include Neo4j::ActiveRel::Property
       include Neo4j::ActiveRel::Types
-
     end
   end
 

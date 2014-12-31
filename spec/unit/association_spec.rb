@@ -120,10 +120,8 @@ describe Neo4j::ActiveNode::HasN::Association do
 
             it { should == '-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->' }
           end
-
         end
       end
-
     end
 
     describe '#target_class_name' do
@@ -186,6 +184,4 @@ describe Neo4j::ActiveNode::HasN::Association do
       end
     end
   end
-
-
 end

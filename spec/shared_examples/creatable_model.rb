@@ -1,6 +1,5 @@
 shared_examples_for 'creatable model' do
   context 'when attempting to create' do
-
     it 'should create ok' do
       subject.class.create(subject.attributes).should be_truthy
     end

@@ -2,7 +2,6 @@ require 'spec_helper'
 
 describe 'reflections' do
   module ReflectionsSpecs
-
     class RelClass; end
 
     class MyClass

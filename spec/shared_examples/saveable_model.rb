@@ -46,6 +46,5 @@ shared_examples 'saveable model' do
     it 'should render as XML' do
       subject.to_xml.should =~ /^<\?xml version=/
     end
-
   end
 end

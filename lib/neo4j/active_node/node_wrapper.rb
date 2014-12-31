@@ -1,7 +1,6 @@
 class Neo4j::Node
   # The wrapping process is what transforms a raw CypherNode or EmbeddedNode from Neo4j::Core into a healthy ActiveNode (or ActiveRel) object.
   module Wrapper
-
     # this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
     def wrapper
       self.props.symbolize_keys!

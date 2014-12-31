@@ -40,6 +40,5 @@ module Blog
     # config.neo4j.id_property = :uuid
     # config.neo4j.id_property_type = :auto
     # config.neo4j.id_property_type_value = :uuid
-
   end
 end

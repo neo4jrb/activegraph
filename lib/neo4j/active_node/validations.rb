@@ -48,7 +48,6 @@ module Neo4j
           end
         end
       end
-
     end
   end
 end

@@ -1,5 +1,4 @@
 module Neo4j
-
   # Makes Neo4j nodes and relationships behave like ActiveRecord objects.
   # By including this module in your class it will create a mapping for the node to your ruby class
   # by using a Neo4j Label with the same name as the class. When the node is loaded from the database it

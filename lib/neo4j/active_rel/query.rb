@@ -3,7 +3,6 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
 
     module ClassMethods
-
       # Returns the object with the specified neo4j id.
       # @param [String,Fixnum] id of node to find
       # @param [Neo4j::Session] session optional
@@ -85,7 +84,6 @@ module Neo4j::ActiveRel
           args
         end
       end
-
     end
   end
 end

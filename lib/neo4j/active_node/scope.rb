@@ -5,7 +5,6 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
 
     module ClassMethods
-
       # Similar to ActiveRecord scope
       #
       # @example without argument
@@ -88,7 +87,6 @@ module Neo4j::ActiveNode
           self.as(:n)
         end
       end
-
     end
 
     class ScopeEvalContext
@@ -139,6 +137,5 @@ module Neo4j::ActiveNode
         end
       end
     end
-
   end
 end

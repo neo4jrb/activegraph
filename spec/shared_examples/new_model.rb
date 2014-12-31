@@ -1,5 +1,4 @@
 shared_examples 'new model' do
-
   context 'when unsaved' do
     it { should_not be_persisted }
 
@@ -19,5 +18,4 @@ shared_examples 'new model' do
       lambda { subject.props[:test] = true }.should_not raise_error
     end
   end
-
 end

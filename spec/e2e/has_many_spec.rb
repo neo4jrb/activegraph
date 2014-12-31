@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'has_n' do
-
   let(:clazz_a) do
     UniqueClass.create do
       include Neo4j::ActiveNode
@@ -243,6 +242,5 @@ describe 'has_n' do
 
       c1.furrs.to_a.should eq([d1])
     end
-
   end
 end

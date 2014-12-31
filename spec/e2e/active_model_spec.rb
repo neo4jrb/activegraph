@@ -95,7 +95,6 @@ describe IceLolly, type: :integration do
           subject.reload.flavour.should eq('vanilla')
           subject.required_on_update.should_not be_nil
         end
-
       end
     end
 
@@ -162,7 +161,6 @@ describe Neo4j::ActiveNode do
   # after(:each) { @tx.close }
 
   describe 'validations' do
-
     it 'does not have any errors if its valid' do
       ice_cream = IceCream.new(flavour: 'strawberry')
       ice_cream.should be_valid
@@ -223,7 +221,6 @@ describe Neo4j::ActiveNode do
       c = Company.create
       expect(c.validation_called).to be true
     end
-
   end
 
   describe 'cached classnames' do
@@ -294,7 +291,6 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'basic persistance' do
-
     Person = UniqueClass.create do
       include Neo4j::ActiveNode
       property :name
@@ -340,7 +336,6 @@ describe Neo4j::ActiveNode do
 
       expect(person['age']).to eq(41)
       expect(person[:age]).to eq(41)
-
     end
 
     it 'can persist a new object' do
@@ -532,7 +527,6 @@ describe Neo4j::ActiveNode do
         NoStamp = UniqueClass.create do
           include Neo4j::ActiveNode
           property :name
-
         end
         let(:nostamp) { NoStamp.create }
         it 'returns cache key without timestamp' do
@@ -580,5 +574,4 @@ describe Neo4j::ActiveNode do
       end
     end
   end
-
 end

@@ -76,7 +76,6 @@ module Neo4j
           conditions[klass.id_property_name.to_sym] = id
         end
       end
-
     end
   end
 end

@@ -18,7 +18,6 @@ describe Neo4j::Shared::Identity do
     before do
       @session = double('Mock Session')
       Neo4j::Session.stub(:current).and_return(session)
-
     end
 
     let(:node) { clazz.new }

@@ -1,6 +1,5 @@
 module Neo4j
   module ActiveRel
-
     # provides mapping of type to model name
     module Types
       extend ActiveSupport::Concern

@@ -1,16 +1,12 @@
 module Neo4j
-
-
   # == Keeps configuration for neo4j
   #
   # == Configurations keys
   #
   class Config
-
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
 
     class << self
-
       # @return [Fixnum] The location of the default configuration file.
       def default_file
         @default_file ||= DEFAULT_FILE

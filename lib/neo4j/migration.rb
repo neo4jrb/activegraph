@@ -1,6 +1,5 @@
 module Neo4j
   class Migration
-
     def migrate
       fail 'not implemented'
     end
@@ -116,7 +115,6 @@ module Neo4j
     end
 
     class AddClassnames < Neo4j::Migration
-
       def initialize(path = default_path)
         @classnames_filename = 'add_classnames.yml'
         @classnames_filepath = File.join(joined_path(path), classnames_filename)

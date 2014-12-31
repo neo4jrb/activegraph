@@ -1,6 +1,5 @@
 module Neo4j::Shared
   module Persistence
-
     extend ActiveSupport::Concern
     include Neo4j::Shared::TypeConverters
 

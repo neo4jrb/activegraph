@@ -35,6 +35,5 @@ module Neo4j
         run_callbacks(:update) { super }
       end
     end
-
   end
 end

@@ -1,5 +1,4 @@
 class Neo4j::Relationship
-
   module Wrapper
     def wrapper
       props.symbolize_keys!
@@ -25,5 +24,4 @@ class Neo4j::Relationship
       Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || rel_type.camelize
     end
   end
-
 end

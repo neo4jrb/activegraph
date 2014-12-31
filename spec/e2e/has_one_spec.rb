@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'has_one' do
-
   describe 'has_one(:parent).from(:children)' do
     class HasOneA
       include Neo4j::ActiveNode

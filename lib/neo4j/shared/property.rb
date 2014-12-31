@@ -110,7 +110,6 @@ module Neo4j::Shared
     end
 
     module ClassMethods
-
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
@@ -222,9 +221,6 @@ module Neo4j::Shared
       def set_time_as_datetime(options)
         options[:type] = DateTime if options[:type] == Time
       end
-
     end
-
   end
-
 end

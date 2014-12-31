@@ -21,7 +21,6 @@
 #   end
 #
 shared_examples_for 'example app with orm_adapter fix' do
-
   def create_model(klass, attrs = {})
     klass.create!(attrs)
   end

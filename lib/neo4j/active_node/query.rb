@@ -1,6 +1,5 @@
 module Neo4j
   module ActiveNode
-
     # Helper methods to return Neo4j::Core::Query objects.  A query object can be used to successively build a cypher query
     #
     #    person.query_as(:n).match('n-[:friend]-o').return(o: :name) # Return the names of all the person's friends
@@ -47,7 +46,6 @@ module Neo4j
         def as(node_var)
           query_proxy(node: node_var)
         end
-
       end
     end
   end

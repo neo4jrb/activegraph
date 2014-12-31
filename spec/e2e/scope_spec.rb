@@ -58,7 +58,6 @@ describe 'Neo4j::NodeMixin::Scope' do
       end
       it { is_expected.to match_array([@a, @b, @b1, @b2]) }
     end
-
   end
 
   describe 'Person.scope :top_students, -> { where(score: 42)}' do
@@ -101,7 +100,6 @@ describe 'Neo4j::NodeMixin::Scope' do
       end
       it { is_expected.to match_array([@b, @b1, @b2]) }
     end
-
   end
   # end
 end

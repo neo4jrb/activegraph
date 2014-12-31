@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::Shared::TypeConverters do
-
   describe 'converters' do
     it 'has converters for DateTime' do
       Neo4j::Shared::TypeConverters.converters[DateTime].should eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
@@ -137,8 +136,5 @@ describe Neo4j::Shared::TypeConverters do
       ruby_value.class.should eq(DateTime)
       ruby_value.to_s.should eq(value.to_s)
     end
-
-
-
   end
 end

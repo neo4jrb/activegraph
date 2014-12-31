@@ -27,5 +27,4 @@ class Post
 
   # or if you don't need to use ActiveRel models:
   # has_many :out, :comments
-
 end

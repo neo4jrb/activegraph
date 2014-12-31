@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Validations do
-
   before do
     @clazz = UniqueClass.create do
       include Neo4j::ActiveNode
@@ -229,5 +228,4 @@ describe Neo4j::ActiveNode::Validations do
       end
     end
   end
-
 end

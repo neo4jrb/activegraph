@@ -36,6 +36,5 @@ describe 'rel type conversion' do
         expect(clazz.new.decorated_rel_type('RelType')).to eq 'RelType'
       end
     end
-
   end
 end

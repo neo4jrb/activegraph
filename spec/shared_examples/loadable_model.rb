@@ -1,5 +1,4 @@
 shared_examples 'loadable model' do
-
   context 'when saved' do
     before :each do
       subject.save
@@ -11,5 +10,4 @@ shared_examples 'loadable model' do
       result.should be_persisted
     end
   end
-
 end

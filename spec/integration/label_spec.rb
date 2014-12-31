@@ -3,7 +3,6 @@ require 'spec_helper'
 
 # tests = Proc.new do
 describe 'Labels' do
-
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes.dup
     Neo4j::ActiveNode::Labels._wrapped_labels = nil
@@ -128,7 +127,6 @@ describe 'Labels' do
       it 'does not find when association does not match' do
         RelationTestClass.where(test_class: n2).first.should be_nil
       end
-
     end
 
     describe 'when finding using a Module' do
@@ -165,7 +163,6 @@ describe 'Labels' do
 
   describe 'first and last' do
     before(:all) do
-
       class FirstLastTestClass
         include Neo4j::ActiveNode
         property :name

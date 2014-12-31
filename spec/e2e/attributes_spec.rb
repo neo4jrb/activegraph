@@ -38,7 +38,6 @@ describe Neo4j::ActiveNode do
         subject['name'] = nil
         subject['name'].should be_nil
       end
-
     end
 
     context 'when instantiated with new(name: "foo")' do
@@ -49,5 +48,4 @@ describe Neo4j::ActiveNode do
       end
     end
   end
-
 end

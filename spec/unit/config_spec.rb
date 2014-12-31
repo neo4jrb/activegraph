@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::Config do
-
   describe 'default_file' do
     it 'should exist' do
       expect(File.exist?(Neo4j::Config.default_file)).to eq(true)

@@ -6,5 +6,4 @@ RSpec.describe Post, type: :model do
     expect(ruby.title).to eq('Ruby')
     expect(Post.count).to eq(1)
   end
-
 end

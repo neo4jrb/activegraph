@@ -43,5 +43,4 @@ describe 'Neo4j::ActiveNode#rels' do
     @n.rel?(dir: :outgoing).should be true
     @n.rel?(dir: :outgoing, type: :knows).should be false
   end
-
 end

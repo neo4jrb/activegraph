@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::IdProperty do
-
   before do
     Neo4j::Config.delete(:id_property)
     Neo4j::Config.delete(:id_property_type)
@@ -63,7 +62,6 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     describe 'when having a configuration' do
-
       let(:clazz) do
         UniqueClass.create do
           include Neo4j::ActiveNode

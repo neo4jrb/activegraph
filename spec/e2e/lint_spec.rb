@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'ActiveModel::Lint' do
-
   class LintClass
     include Neo4j::ActiveNode
   end

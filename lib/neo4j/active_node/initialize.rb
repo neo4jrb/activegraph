@@ -21,5 +21,4 @@ module Neo4j::ActiveNode::Initialize
   def wrapper
     self
   end
-
 end

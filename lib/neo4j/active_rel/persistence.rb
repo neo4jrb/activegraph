@@ -30,7 +30,6 @@ module Neo4j::ActiveRel
     end
 
     module ClassMethods
-
       # Creates a new relationship between objects
       # @param [Hash] props the properties the new relationship should have
       def create(props = {})
@@ -98,6 +97,5 @@ module Neo4j::ActiveRel
         raise RelCreateFailedError, "Unable to create relationship. from_node: #{from_node}, to_node: #{to_node}"
       end
     end
-
   end
 end

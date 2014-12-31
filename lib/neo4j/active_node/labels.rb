@@ -1,7 +1,5 @@
 module Neo4j
   module ActiveNode
-
-
     # Provides a mapping between neo4j labels and Ruby classes
     module Labels
       extend ActiveSupport::Concern
@@ -203,7 +201,6 @@ module Neo4j
             else
               label.create_index(property) unless existing.flatten.include?(property)
             end
-
           end
         end
 
@@ -214,10 +211,7 @@ module Neo4j
         def set_mapped_label_name(name)
           @_label_name = name.to_sym
         end
-
       end
-
     end
-
   end
 end

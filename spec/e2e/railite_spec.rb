@@ -19,7 +19,6 @@ module Rails
         Railtie.init ||= {}
         Railtie.init[name] = block
       end
-
     end
   end
   class App

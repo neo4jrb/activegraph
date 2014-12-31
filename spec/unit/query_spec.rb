@@ -47,5 +47,4 @@ describe Neo4j::ActiveNode::Query do
       @class_a.new.query_as(:q).match('q--p').return(p: :name).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE ID(q) = {ID_q} RETURN p.name'
     end
   end
-
 end

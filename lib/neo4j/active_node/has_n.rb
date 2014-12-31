@@ -185,5 +185,4 @@ module Neo4j::ActiveNode
       end
     end
   end
-
 end

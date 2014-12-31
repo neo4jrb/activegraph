@@ -1,5 +1,4 @@
 module Neo4j
-
   # Makes Neo4j Relationships more or less act like ActiveRecord objects.
   # See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
   module ActiveRel

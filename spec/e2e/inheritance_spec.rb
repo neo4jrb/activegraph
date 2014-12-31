@@ -41,7 +41,6 @@ describe 'Inheritance', type: :e2e do
       InheritanceTest::Car.where(model: '900').first.should eq(@saab)
       InheritanceTest::Vehicle.where(model: '900').first.should eq(@saab)
     end
-
   end
 
   describe 'all' do

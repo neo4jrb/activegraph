@@ -59,7 +59,6 @@ module Neo4j
 
         start_embedded_session(session) if session_opts[:type] == :embedded_db
       end
-
     end
 
     # Starting Neo after :load_config_initializers allows apps to

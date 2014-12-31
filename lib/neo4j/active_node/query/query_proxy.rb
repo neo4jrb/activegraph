@@ -2,7 +2,6 @@ module Neo4j
   module ActiveNode
     module Query
       class QueryProxy
-
         include Enumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches

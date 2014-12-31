@@ -99,7 +99,6 @@ describe Neo4j::ActiveNode::Persistence do
       o = clazz.new
       o.persisted?.should eq(false)
     end
-
   end
 
   describe 'new_record?' do
@@ -127,7 +126,5 @@ describe Neo4j::ActiveNode::Persistence do
       o.age = '18'
       o.props.should eq(age: 18)
     end
-
   end
-
 end

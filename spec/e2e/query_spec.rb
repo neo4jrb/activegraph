@@ -111,7 +111,6 @@ describe 'Query API' do
 
         it { expect { subject.foos.to_a }.to raise_error(ArgumentError) }
       end
-
     end
   end
 

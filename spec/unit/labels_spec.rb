@@ -26,9 +26,7 @@ describe Neo4j::ActiveNode::Labels do
   end
 
   describe 'include' do
-
     describe '_wrapped_classes' do
-
       it 'store included classes' do
         Neo4j::ActiveNode::Labels._wrapped_classes
         Neo4j::ActiveNode::Labels._wrapped_classes.should =~ [@class_a, @class_b]
@@ -36,18 +34,15 @@ describe Neo4j::ActiveNode::Labels do
     end
 
     describe '_wrapped_labels' do
-
       it 'returns a hash of labels and classes' do
         Neo4j::ActiveNode::Labels._wrapped_labels[:A].should eq(@class_a)
         Neo4j::ActiveNode::Labels._wrapped_labels[:B].should eq(@class_b)
       end
     end
-
   end
 
 
   describe Neo4j::ActiveNode::Labels::ClassMethods do
-
     describe 'index and inheritance' do
       class MyBaseClass
         include Neo4j::ActiveNode
@@ -117,7 +112,6 @@ describe Neo4j::ActiveNode::Labels do
     end
 
     describe 'mapped_label_names' do
-
       it 'returns the label of a class' do
         clazz = Class.new do
           extend Neo4j::ActiveNode::Labels::ClassMethods
@@ -181,7 +175,6 @@ describe Neo4j::ActiveNode::Labels do
 
         clazz.mapped_label_names.should =~ [:module, :module1, :module2]
       end
-
     end
   end
 end

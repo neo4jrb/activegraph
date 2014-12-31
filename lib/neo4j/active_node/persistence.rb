@@ -1,6 +1,5 @@
 module Neo4j::ActiveNode
   module Persistence
-
     class RecordInvalidError < RuntimeError
       attr_reader :record
 
@@ -107,10 +106,8 @@ module Neo4j::ActiveNode
       def load_entity(id)
         Neo4j::Node.load(id)
       end
-
     end
 
     private
-
   end
 end

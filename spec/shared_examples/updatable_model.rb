@@ -10,5 +10,4 @@ shared_examples_for 'updatable model' do
       end
     end
   end
-
 end

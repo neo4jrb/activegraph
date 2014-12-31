@@ -74,7 +74,6 @@ end
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 RSpec.configure do |c|
-
   c.before(:suite) do
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session
@@ -98,5 +97,4 @@ RSpec.configure do |c|
       RUBY_PLATFORM == 'java' && ed == :server
     end
   }
-
 end

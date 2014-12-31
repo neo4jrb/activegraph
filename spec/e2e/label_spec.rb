@@ -21,7 +21,6 @@ describe 'Neo4j::ActiveNode' do
   end
 
   describe 'property' do
-
     describe 'property :age, index: :exact' do
       let(:clazz) do
         UniqueClass.create do
@@ -71,7 +70,6 @@ describe 'Neo4j::ActiveNode' do
         clazz.property :age, constraint: :unique
       end
     end
-
   end
 
 
@@ -97,7 +95,6 @@ describe 'Neo4j::ActiveNode' do
         clazz_with_constraint.create(name: 'foobar1')
         expect { clazz_with_constraint.create(name: 'foobar2') }.to_not raise_error
       end
-
     end
 
     describe 'index :colour, constraint: {type: :unique}' do
@@ -106,11 +103,9 @@ describe 'Neo4j::ActiveNode' do
         expect { clazz_with_constraint.create(colour: 'red') }.to raise_error
       end
     end
-
   end
 
   describe 'index' do
-
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode
@@ -141,12 +136,10 @@ describe 'Neo4j::ActiveNode' do
           property :name, index: :exact
         end
         class Foo2 < Foo1
-
         end
         expect(Foo1.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
         expect(Foo2.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
       end
-
     end
   end
 
@@ -177,7 +170,6 @@ describe 'Neo4j::ActiveNode' do
       node.add_label(:foo, :bar)
       expect(node.labels).to match_array([label_name, :foo, :bar])
     end
-
   end
 
 
@@ -195,7 +187,6 @@ describe 'Neo4j::ActiveNode' do
       node.remove_label(:foo, :baaz)
       expect(node.labels).to match_array([label_name, :bar])
     end
-
   end
 
   describe 'setting association values via initialize' do
