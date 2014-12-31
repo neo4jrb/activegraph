@@ -140,14 +140,14 @@ module Neo4j
         # @example
         #   Person.constraint :name, type: :unique
         #
-        def constraint(property, constraints, session = Neo4j::Session.current)
+        def constraint(property, constraints)
           Neo4j::Session.on_session_available do |session|
             label = Neo4j::Label.create(mapped_label_name)
             label.create_constraint(property, constraints, session)
           end
         end
 
-        def drop_constraint(property, constraint, session = Neo4j::Session.current)
+        def drop_constraint(property, constraint)
           Neo4j::Session.on_session_available do |session|
             label = Neo4j::Label.create(mapped_label_name)
             label.drop_constraint(property, constraint, session)

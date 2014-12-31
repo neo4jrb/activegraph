@@ -5,11 +5,11 @@ module Neo4j
         class InvalidParameterError < StandardError; end
 
         def first(target = nil)
-          query_with_target(target) { |target| first_and_last("ID(#{target})", target) }
+          query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
         end
 
         def last(target = nil)
-          query_with_target(target) { |target| first_and_last("ID(#{target}) DESC", target) }
+          query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
         end
 
         def first_and_last(order, target)
@@ -19,9 +19,9 @@ module Neo4j
         # @return [Fixnum] number of nodes of this class
         def count(distinct = nil, target = nil)
           fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-          query_with_target(target) do |target|
-            q = distinct.nil? ? target : "DISTINCT #{target}"
-            self.query.reorder.pluck("count(#{q}) AS #{target}").first
+          query_with_target(target) do |var|
+            q = distinct.nil? ? var : "DISTINCT #{var}"
+            self.query.reorder.pluck("count(#{q}) AS #{var}").first
           end
         end
 
@@ -29,23 +29,23 @@ module Neo4j
         alias_method :length, :count
 
         def empty?(target = nil)
-          query_with_target(target) { |target| !self.exists?(nil, target) }
+          query_with_target(target) { |var| !self.exists?(nil, var) }
         end
 
         alias_method :blank?, :empty?
 
         def include?(other, target = nil)
           fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-          query_with_target(target) do |target|
-            self.where("ID(#{target}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{target}) as count").first.count > 0
+          query_with_target(target) do |var|
+            self.where("ID(#{var}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{var}) as count").first.count > 0
           end
         end
 
         def exists?(node_condition = nil, target = nil)
           fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
-          query_with_target(target) do |target|
-            start_q = exists_query_start(self, node_condition, target)
-            start_q.query.return("COUNT(#{target}) AS count").first.count > 0
+          query_with_target(target) do |var|
+            start_q = exists_query_start(self, node_condition, var)
+            start_q.query.return("COUNT(#{var}) AS count").first.count > 0
           end
         end
 

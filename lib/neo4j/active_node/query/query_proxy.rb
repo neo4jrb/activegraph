@@ -76,14 +76,14 @@ module Neo4j
         end
 
         # Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
-        # The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
+        # The <tt>return_node</tt> and <tt>return_rel</tt> params are typically used by those other methods but there's nothing stopping you from
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
-        def each(node = true, rel = nil, &block)
-          if node && rel
+        def each(return_node = true, return_rel = false, &block)
+          if return_node && return_rel
             enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
           else
-            pluck_this = !rel ? identity : @rel_var
+            pluck_this = !return_rel ? identity : @rel_var
             enumerable_query(pluck_this).each { |obj| yield obj }
           end
         end
@@ -143,15 +143,15 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          query = if @association
-                    chain_var = _association_chain_var
-                    label_string = @model && ":`#{@model.mapped_label_name}`"
-                    (_association_query_start(chain_var) & _query_model_as(var)).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
-                  else
-                    starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
-                  end
+          base_query = if @association
+                         chain_var = _association_chain_var
+                         label_string = @model && ":`#{@model.mapped_label_name}`"
+                         (_association_query_start(chain_var) & _query_model_as(var)).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
+                       else
+                         starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+                       end
           # Build a query chain via the chain, return the result
-          @chain.inject(query.params(@params)) do |query, (method, arg)|
+          @chain.inject(base_query.params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
         end

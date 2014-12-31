@@ -1,10 +1,10 @@
 # :nocov:
-RSpec::Matchers.define :have_error_on do |*args|
+RSpec::Matchers.define :have_error_on do |*attributes|
   @message = nil
-  @attributes = [args]
+  @attributes = [attributes]
 
-  chain :or do |*args|
-    @attributes << args
+  chain :or do |*or_attributes|
+    @attributes << or_attributes
   end
 
   match do |model|

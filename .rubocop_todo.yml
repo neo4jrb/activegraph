@@ -9,10 +9,6 @@
 Lint/HandleExceptions:
   Enabled: false
 
-# Offense count: 11
-Lint/ShadowingOuterLocalVariable:
-  Enabled: false
-
 # Offense count: 15
 # Cop supports --auto-correct.
 Lint/UnusedBlockArgument:
