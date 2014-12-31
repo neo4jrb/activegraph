@@ -14,11 +14,6 @@ Lint/HandleExceptions:
 Lint/UnusedBlockArgument:
   Enabled: false
 
-# Offense count: 15
-# Cop supports --auto-correct.
-Lint/UnusedMethodArgument:
-  Enabled: false
-
 # Offense count: 22
 Lint/UselessAssignment:
   Enabled: false

@@ -112,13 +112,13 @@ describe 'has_one' do
       has_one :in, :best_friend_of, origin: :best_friend, model_class: self, after: :after_callback
       has_one :in, :failing_assoc,  origin: :best_friend, model_class: self, before: :false_before_callback
 
-      def before_callback(other)
+      def before_callback(_other)
       end
 
-      def after_callback(other)
+      def after_callback(_other)
       end
 
-      def false_before_callback(other)
+      def false_before_callback(_other)
         false
       end
     end

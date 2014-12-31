@@ -182,13 +182,13 @@ describe 'has_n' do
         has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
         has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
 
-        def before_callback(other)
+        def before_callback(_other)
         end
 
-        def after_callback(other)
+        def after_callback(_other)
         end
 
-        def false_callback(other)
+        def false_callback(_other)
           false
         end
       end

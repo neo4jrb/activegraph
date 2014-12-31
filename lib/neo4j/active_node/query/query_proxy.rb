@@ -79,7 +79,7 @@ module Neo4j
         # The <tt>return_node</tt> and <tt>return_rel</tt> params are typically used by those other methods but there's nothing stopping you from
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
-        def each(return_node = true, return_rel = false, &block)
+        def each(return_node = true, return_rel = false)
           if return_node && return_rel
             enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
           else

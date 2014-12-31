@@ -21,7 +21,7 @@ class Lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
 
-  def self.max_level(num = nil)
+  def self.max_level
     all.query_as(:lesson).pluck('max(lesson.level)').first
   end
 
