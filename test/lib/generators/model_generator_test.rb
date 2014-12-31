@@ -10,7 +10,7 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
   setup :copy_routes
 
   test 'invoke with model name' do
-    content = run_generator %w(Account)
+    run_generator %w(Account)
 
     assert_file 'app/models/account.rb' do |account|
       assert_class 'Account', account do |klass|
@@ -20,7 +20,7 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
   end
 
   test 'invoke with model name and attributes' do
-    content = run_generator %w(Account name:string age:integer)
+    run_generator %w(Account name:string age:integer)
 
     assert_file 'app/models/account.rb' do |account|
       assert_class 'Account', account do |klass|
@@ -41,7 +41,7 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
   end
 
   test 'invoke with model name and --timestamps option' do
-    content = run_generator %w(Account --timestamps)
+    run_generator %w(Account --timestamps)
 
     assert_file 'app/models/account.rb' do |account|
       assert_class 'Account', account do |klass|

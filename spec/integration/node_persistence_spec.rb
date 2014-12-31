@@ -44,7 +44,6 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'does not allow to set undeclared properties using create' do
-      node = double('unwrapped_node', props: {})
       @session.should_not_receive(:create_node)
       expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end

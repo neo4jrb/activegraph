@@ -98,7 +98,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
     it 'throws exception if the same uuid is generated when saving node' do
       clazz.create(myid: 'z')
-      a = clazz.new(myid: 'z')
+      clazz.new(myid: 'z')
       expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
 
@@ -146,15 +146,16 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        node1 = clazz.create(myid: 'a')
-        node2 = clazz.create(myid: 'b')
-        node3 = clazz.create(myid: 'c')
+        clazz.create(myid: 'a')
+        node_b = clazz.create(myid: 'b')
+        clazz.create(myid: 'c')
         found = clazz.find_by_id('b')
-        expect(found).to eq(node2)
+        expect(found).to eq(node_b)
       end
 
       it 'does not find it if it does not exist' do
-        node = clazz.create(myid: 'd')
+        clazz.create(myid: 'd')
+
         found = clazz.find_by_id('something else')
         expect(found).to be_nil
       end
@@ -267,15 +268,17 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        node1 = clazz.create
-        node2 = clazz.create
-        node3 = clazz.create
-        found = clazz.find_by_id(node2.my_uuid)
-        expect(found).to eq(node2)
+        clazz.create
+        node = clazz.create
+        clazz.create
+
+        found = clazz.find_by_id(node.my_uuid)
+        expect(found).to eq(node)
       end
 
       it 'does not find it if it does not exist' do
-        node = clazz.create
+        clazz.create
+
         found = clazz.find_by_id('something else')
         expect(found).to be_nil
       end

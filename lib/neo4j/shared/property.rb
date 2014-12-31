@@ -95,7 +95,7 @@ module Neo4j::Shared
           values = (values.keys.min..values.keys.max).map { |i| values[i] }
           field = self.class.attributes[key.to_sym]
           new_attributes[key] = instantiate_object(field, values)
-        rescue => e
+        rescue
           raise MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
         end
       end

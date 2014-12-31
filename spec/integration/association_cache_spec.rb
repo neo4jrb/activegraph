@@ -74,7 +74,6 @@ describe 'Association Cache' do
 
       it 'draws from cache, not server, when results are found' do
         billy.reload
-        query_proxy = Neo4j::ActiveNode::Query::QueryProxy
         expect(billy).to receive(:association_instance_get).and_return nil
         billy.favorite_lesson
 

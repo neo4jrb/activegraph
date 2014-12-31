@@ -130,7 +130,8 @@ module Neo4j::Shared
     def convert_properties_to(medium, properties)
       # Perform type conversion
       serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
-      properties = properties.each_with_object({}) do |key_value_pair, new_attributes|
+
+      properties.each_with_object({}) do |key_value_pair, new_attributes|
         attr, value = key_value_pair
 
         # skip "secret" undeclared attributes such as uuid

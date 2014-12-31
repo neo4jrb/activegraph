@@ -75,7 +75,6 @@ module Neo4j
       Neo4j::Config.setup.merge!(cfg.to_hash)
 
       clear = "\e[0m"
-      red = "\e[31m"
       yellow = "\e[33m"
       cyan = "\e[36m"
 

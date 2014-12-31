@@ -14,10 +14,6 @@ Lint/HandleExceptions:
 Lint/UnusedBlockArgument:
   Enabled: false
 
-# Offense count: 22
-Lint/UselessAssignment:
-  Enabled: false
-
 # Offense count: 17
 Metrics/AbcSize:
   Max: 35
