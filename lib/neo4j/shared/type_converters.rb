@@ -162,12 +162,11 @@ module Neo4j::Shared
 
       def converters
         @converters ||= begin
-          Neo4j::Shared::TypeConverters.constants.find_all do |c|
-            Neo4j::Shared::TypeConverters.const_get(c).respond_to?(:convert_type)
-          end.map do  |c|
-            Neo4j::Shared::TypeConverters.const_get(c)
-          end.each_with_object({}) do |t, ack|
-            ack[t.convert_type] = t
+          Neo4j::Shared::TypeConverters.constants.each_with_object({}) do |constant_name, result|
+            constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
+            if constant.respond_to?(:convert_type)
+              result[constant.convert_type] = constant
+            end
           end
         end
       end
