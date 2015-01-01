@@ -49,11 +49,6 @@ Style/Documentation:
 Style/DoubleNegation:
   Enabled: false
 
-# Offense count: 3
-# Configuration parameters: Exclude.
-Style/FileName:
-  Enabled: false
-
 # Offense count: 13
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:

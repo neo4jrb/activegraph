@@ -18,6 +18,10 @@ Style/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space
 
+# I think this one is broken...
+Style/FileName:
+  Enabled: false
+
 #---------------------------
 # Don't intend to fix these:
 #---------------------------
