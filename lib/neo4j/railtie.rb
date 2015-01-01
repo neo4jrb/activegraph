@@ -46,18 +46,20 @@ module Neo4j
         session.start
       end
 
-      def open_neo4j_session(session_opts)
-        if !java_platform? && session_opts[:type] == :embedded_db
+      def open_neo4j_session(options)
+        type, name, default, path = options.values_at(:type, :name, :default, :path)
+
+        if !java_platform? && type == :embedded_db
           fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
         end
 
-        session = if session_opts.key?(:name)
-                    Neo4j::Session.open_named(session_opts[:type], session_opts[:name], session_opts[:default], session_opts[:path])
+        session = if options.key?(:name)
+                    Neo4j::Session.open_named(type, name, default, path)
                   else
-                    Neo4j::Session.open(session_opts[:type], session_opts[:path], session_opts[:options])
+                    Neo4j::Session.open(type, path, options[:options])
                   end
 
-        start_embedded_session(session) if session_opts[:type] == :embedded_db
+        start_embedded_session(session) if type == :embedded_db
       end
     end
 
