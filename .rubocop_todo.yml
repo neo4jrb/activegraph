@@ -45,10 +45,6 @@ Style/ClassVars:
 Style/Documentation:
   Enabled: false
 
-# Offense count: 7
-Style/DoubleNegation:
-  Enabled: false
-
 # Offense count: 13
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
