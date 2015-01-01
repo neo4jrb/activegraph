@@ -92,7 +92,7 @@ describe Neo4j::ActiveNode::Labels do
     describe 'set_mapped_label_name' do
       it 'sets the label name and overrides the class name' do
         clazz = Class.new { extend Neo4j::ActiveNode::Labels::ClassMethods }
-        clazz.send(:set_mapped_label_name, 'foo')
+        clazz.send(:mapped_label_name=, 'foo')
         clazz.mapped_label_name.should eq(:foo)
       end
     end

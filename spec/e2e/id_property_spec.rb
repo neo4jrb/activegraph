@@ -57,8 +57,8 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(clazz.primary_key).to eq :uuid
     end
 
-    it 'responds false to has_id_property' do
-      expect(clazz.has_id_property?).to be_truthy
+    it 'responds false to id_property' do
+      expect(clazz.id_property?).to be_truthy
     end
 
     describe 'when having a configuration' do
@@ -129,8 +129,8 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(clazz.primary_key).to eq :myid
       end
 
-      it 'makes the class respond true to has_id_property?' do
-        expect(clazz.has_id_property?).to be_truthy
+      it 'makes the class respond true to id_property?' do
+        expect(clazz.id_property?).to be_truthy
       end
 
       it 'removes any previously declared properties' do

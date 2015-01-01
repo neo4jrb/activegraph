@@ -54,7 +54,15 @@ module Neo4j::ActiveNode
         }, __FILE__, __LINE__)
       end
 
+      # rubocop:disable Style/PredicateName
       def has_scope?(name)
+        ActiveSupport::Deprecation.warn 'has_scope? is deprecated and may be removed from future releases, use scope? instead.', caller
+
+        scope?(name)
+      end
+      # rubocop:enable Style/PredicateName
+
+      def scope?(name)
         _scope.key?(name.to_sym)
       end
 

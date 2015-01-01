@@ -122,7 +122,7 @@ module Neo4j::ActiveNode
 
       def id_property(name, conf = {})
         begin
-          if has_id_property?
+          if id_property?
             unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
               drop_constraint(id_property_name, type: :unique)
             end
@@ -139,7 +139,15 @@ module Neo4j::ActiveNode
         end
       end
 
+      # rubocop:disable Style/PredicateName
       def has_id_property?
+        ActiveSupport::Deprecation.warn 'has_id_property? is deprecated and may be removed from future releases, use id_property? instead.', caller
+
+        id_property?
+      end
+      # rubocop:enable Style/PredicateName
+
+      def id_property?
         id_property_info && !id_property_info.empty?
       end
 

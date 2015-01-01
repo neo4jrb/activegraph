@@ -63,7 +63,15 @@ module Neo4j::ActiveNode
     end
 
     module ClassMethods
+      # rubocop:disable Style/PredicateName
       def has_association?(name)
+        ActiveSupport::Deprecation.warn 'has_association? is deprecated and may be removed from future releases, use association? instead.', caller
+
+        association?(name)
+      end
+      # rubocop:enable Style/PredicateName
+
+      def association?(name)
         !!associations[name.to_sym]
       end
 
@@ -78,6 +86,7 @@ module Neo4j::ActiveNode
         super
       end
 
+      # rubocop:disable Style/PredicateName
       def has_many(direction, name, options = {})
         name = name.to_sym
 
@@ -183,6 +192,7 @@ module Neo4j::ActiveNode
             #{name}_query_proxy(query_proxy: query_proxy, node: node, rel: rel, context: context)
           end}, __FILE__, __LINE__)
       end
+      # rubocop:enable Style/PredicateName
     end
   end
 end

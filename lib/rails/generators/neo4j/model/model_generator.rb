@@ -25,6 +25,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
     options[:timestamps]
   end
 
+  # rubocop:disable Style/PredicateName
   def has_many?
     options[:has_many]
   end
@@ -53,6 +54,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
     end
     txt
   end
+  # rubocop:enable Style/PredicateName
 
   def indices?
     options[:indices]

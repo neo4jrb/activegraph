@@ -243,7 +243,7 @@ module Neo4j
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
-            args[2] = self if @model.has_association?(method_name) || @model.has_scope?(method_name)
+            args[2] = self if @model.association?(method_name) || @model.scope?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
             super
@@ -363,7 +363,7 @@ module Neo4j
           result = []
           if arg.is_a?(Hash)
             arg.each do |key, value|
-              if @model && @model.has_association?(key)
+              if @model && @model.association?(key)
                 result += links_for_association(key, value, "n#{node_num}")
 
                 node_num += 1
