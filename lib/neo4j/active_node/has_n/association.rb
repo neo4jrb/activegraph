@@ -14,7 +14,7 @@ module Neo4j
           @direction = direction.to_sym
           @target_class_name_from_name = name.to_s.classify
 
-          set_vars_from_options(options)
+          apply_vars_from_options(options)
         end
 
         def target_class_option(options)
@@ -133,7 +133,7 @@ module Neo4j
 
         private
 
-        def set_vars_from_options(options)
+        def apply_vars_from_options(options)
           validate_option_combinations(options)
           @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}

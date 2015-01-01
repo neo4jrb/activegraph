@@ -231,7 +231,7 @@ describe 'has_n' do
       clazz_d = UniqueClass.create do
         include Neo4j::ActiveNode
 
-        set_mapped_label_name 'Fuur'
+        self.mapped_label_name = 'Fuur'
       end
 
       stub_const 'ClazzD', clazz_d

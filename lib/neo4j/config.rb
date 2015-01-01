@@ -29,13 +29,12 @@ module Neo4j
 
       # Reads from the default_file if configuration is not set already
       # @return [Hash] the configuration
-      def get_or_setup_configuration
-        @configuration ||= setup
-      end
-
-      # @return [Hash] the configuration
       def configuration
-        @configuration || {}
+        return @configuration if @configuration
+
+        @configuration = ActiveSupport::HashWithIndifferentAccess.new
+        @configuration.merge!(defaults)
+        @configuration
       end
 
       # Yields the configuration
@@ -60,14 +59,14 @@ module Neo4j
       # @param [Symbol] key the key to set the parameter for
       # @param val the value of the parameter.
       def []=(key, val)
-        get_or_setup_configuration[key.to_s] = val
+        configuration[key.to_s] = val
       end
 
 
       # @param [Symbol] key The key of the config entry value we want
       # @return the the value of a config entry
       def [](key)
-        get_or_setup_configuration[key.to_s]
+        configuration[key.to_s]
       end
 
 
@@ -76,7 +75,7 @@ module Neo4j
       # @param [Symbol] key the key of the configuration entry to delete
       # @return The value of the removed entry.
       def delete(key)
-        get_or_setup_configuration.delete(key)
+        configuration.delete(key)
       end
 
 
@@ -90,19 +89,12 @@ module Neo4j
 
       # @return [Hash] The config as a hash.
       def to_hash
-        get_or_setup_configuration.to_hash
+        configuration.to_hash
       end
 
       # @return [String] The config as a YAML
       def to_yaml
-        get_or_setup_configuration.to_yaml
-      end
-
-      # @return The a new configuration using default values as a hash.
-      def setup
-        @configuration = ActiveSupport::HashWithIndifferentAccess.new
-        @configuration.merge!(defaults)
-        @configuration
+        configuration.to_yaml
       end
 
       def class_name_property

@@ -163,7 +163,7 @@ module Neo4j
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
         def mapped_label_name
-          @_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
+          @mapped_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
         end
 
         # @return [Neo4j::Label] the label for this class
@@ -208,9 +208,17 @@ module Neo4j
           mapped_label_names.map { |label_name| Neo4j::Label.create(label_name) }
         end
 
-        def set_mapped_label_name(name)
-          @_label_name = name.to_sym
+        def mapped_label_name=(name)
+          @mapped_label_name = name.to_sym
         end
+
+        # rubocop:disable Style/AccessorMethodName
+        def set_mapped_label_name(name)
+          ActiveSupport::Deprecation.warn 'set_mapped_label_name is deprecated and may be removed from future releases, use self.mapped_label_name= instead.', caller
+
+          self.mapped_label_name = name
+        end
+        # rubocop:enable Style/AccessorMethodName
       end
     end
   end

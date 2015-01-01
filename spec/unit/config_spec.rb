@@ -80,7 +80,7 @@ describe Neo4j::Config do
     describe 'delete_all' do
       it 'deletes all' do
         Neo4j::Config.delete_all
-        expect(Neo4j::Config.configuration).to eq({})
+        expect(Neo4j::Config.configuration).to eq('my_conf' => 'My value')
       end
     end
   end

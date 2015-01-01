@@ -208,17 +208,10 @@ module Neo4j::Shared
 
       # Tweaks properties
       def magic_properties(name, options)
-        set_stamp_type(name, options)
-        set_time_as_datetime(options)
-      end
-
-      def set_stamp_type(name, options)
         options[:type] ||= DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
-      end
 
-      # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
-      # Convert it to DateTime in the interest of consistency
-      def set_time_as_datetime(options)
+        # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
+        # Convert it to DateTime in the interest of consistency
         options[:type] = DateTime if options[:type] == Time
       end
     end

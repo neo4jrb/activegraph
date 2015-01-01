@@ -20,7 +20,7 @@ module Neo4j
         RUBY_PLATFORM =~ /java/
       end
 
-      def set_default_session(cfg)
+      def setup_default_session(cfg)
         cfg.session_type ||= :server_db
         cfg.session_path ||= 'http://localhost:7474'
         cfg.session_options ||= {}
@@ -68,12 +68,12 @@ module Neo4j
     initializer 'neo4j.start', after: :load_config_initializers do |app|
       cfg = app.config.neo4j
       # Set Rails specific defaults
-      Neo4j::Railtie.set_default_session(cfg)
+      Neo4j::Railtie.setup_default_session(cfg)
 
       cfg.sessions.each do |session_opts|
         Neo4j::Railtie.open_neo4j_session(session_opts)
       end
-      Neo4j::Config.setup.merge!(cfg.to_hash)
+      Neo4j::Config.configuration.merge!(cfg.to_hash)
 
       clear = "\e[0m"
       yellow = "\e[33m"

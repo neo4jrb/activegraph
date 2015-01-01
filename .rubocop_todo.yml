@@ -32,10 +32,6 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Max: 45
 
-# Offense count: 5
-Style/AccessorMethodName:
-  Enabled: false
-
 # Offense count: 26
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/ClassAndModuleChildren:
