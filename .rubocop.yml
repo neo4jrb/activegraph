@@ -18,7 +18,6 @@ Style/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space
 
-
 #---------------------------
 # Don't intend to fix these:
 #---------------------------
@@ -58,5 +57,9 @@ Style/ModuleFunction:
 # Configuration parameters: AllowSafeAssignment.
 # Reason: I'm a proud user of assignment in conditionals.
 Lint/AssignmentInCondition:
+  Enabled: false
+
+# Reason: Fine with any sort of lambda syntax
+Style/Lambda:
   Enabled: false
 

@@ -59,10 +59,6 @@ Style/FileName:
 Style/GuardClause:
   Enabled: false
 
-# Offense count: 13
-Style/Lambda:
-  Enabled: false
-
 # Offense count: 10
 # Configuration parameters: NamePrefix, NamePrefixBlacklist.
 Style/PredicateName:
