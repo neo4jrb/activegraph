@@ -112,9 +112,9 @@ module Neo4j
                when :delete_orphans
                  proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).query.delete(:n, :other_rel).exec }
                when :destroy
-                 proc { |o| o.send(assoc.name).each(&:destroy) }
+                 proc { |o| o.send(assoc.name).each_for_destruction(o) { |node| node.destroy } }
                when :destroy_orphans
-                 proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).pluck(:n).each(&:destroy) }
+                 proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).each_for_destruction(o) { |node| node.destroy } }
                else
                  fail "Unknown dependent option #{dependent}"
                end

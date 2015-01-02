@@ -18,7 +18,7 @@ module Neo4j
         run_callbacks(:destroy) { super }
       rescue => e
         @_deleted = false
-        tx.failure
+        tx.mark_failed
         raise
       ensure
         tx.close if tx
