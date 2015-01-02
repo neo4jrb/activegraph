@@ -22,12 +22,4 @@ module Neo4j::ActiveNode::Initialize
   def wrapper
     self
   end
-
-  def dependent_children
-    @dependent_children ||= []
-  end
-
-  def called_by=(node)
-    @called_by = node
-  end
 end
