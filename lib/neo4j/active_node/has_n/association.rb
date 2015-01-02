@@ -103,19 +103,18 @@ module Neo4j
 
         def add_destroy_callbacks(model)
           return if dependent.nil?
-
           # Bound value for procs
-          association_name = name
+          assoc = self
 
           fn = case dependent
                when :delete
-                 proc { |o| o.send(association_name).delete_all }
+                 proc { |o| o.send(assoc.name).delete_all }
                when :delete_orphans
-                 proc { |o| o.send(association_name, :n).unique_nodes(:recurring_rel).delete('n, recurring_rel').exec }
+                 proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).query.delete(:n, :other_rel).exec }
                when :destroy
-                 proc { |o| o.send(association_name).each(&:destroy) }
+                 proc { |o| o.send(assoc.name).each(&:destroy) }
                when :destroy_orphans
-                 proc { |o| o.send(association_name, :n).unique_nodes.pluck(:n).each(&:destroy) }
+                 proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).pluck(:n).each(&:destroy) }
                else
                  fail "Unknown dependent option #{dependent}"
                end
