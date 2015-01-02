@@ -152,8 +152,22 @@ describe 'Query API' do
         samuels.lessons_teaching << ss102
       end
 
-      it 'allows definining of a variable for class as start of QueryProxy chain' do
-        Teacher.as(:t).lessons.where(level: 101).pluck(:t).should eq([samuels])
+      describe '`:as`' do
+        context 'on a class' do
+          it 'allows defining of a variable for class as start of QueryProxy chain' do
+            Teacher.as(:t).lessons.where(level: 101).pluck(:t).should eq([samuels])
+          end
+        end
+
+        context 'on an instance' do
+          it 'allows defining of a variable for an instance as start of a QueryProxy chain' do
+            expect(samuels.as(:s).pluck(:s).first).to eq samuels
+          end
+
+          it 'sets the `:caller` method' do
+            expect(samuels.as(:s).caller).to eq samuels
+          end
+        end
       end
 
       context 'samuels taught math 101 lesson' do
