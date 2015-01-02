@@ -1,6 +1,7 @@
 module Neo4j::ActiveNode::Initialize
   extend ActiveSupport::Concern
   include Neo4j::Shared::TypeConverters
+  attr_reader :called_by
 
   # called when loading the node from the database
   # @param [Neo4j::Node] persisted_node the node this class wraps
@@ -22,4 +23,11 @@ module Neo4j::ActiveNode::Initialize
     self
   end
 
+  def dependent_children
+    @dependent_children ||= []
+  end
+
+  def called_by=(node)
+    @called_by = node
+  end
 end
