@@ -5,22 +5,6 @@ module Neo4j
       module QueryProxyEnumerable
         include Enumerable
 
-        # Executes the query against the database if the results are not already present in a node's association cache. This method is
-        # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
-        # @param [String,Symbol] node The string or symbol of the node to return from the database.
-        # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
-        def enumerable_query(node, rel = nil)
-          pluck_this = rel.nil? ? [node] : [node, rel]
-          return self.pluck(*pluck_this) if @association.nil? || caller.nil?
-          cypher_string = self.to_cypher_with_params(pluck_this)
-          association_collection = caller.association_instance_get(cypher_string, @association)
-          if association_collection.nil?
-            association_collection = self.pluck(*pluck_this)
-            caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
-          end
-          association_collection
-        end
-
         # Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
         # The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
@@ -73,6 +57,24 @@ module Neo4j
         # For getting variables which have been defined as part of the association chain
         def pluck(*args)
           self.query.pluck(*args)
+        end
+
+        private
+
+        # Executes the query against the database if the results are not already present in a node's association cache. This method is
+        # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
+        # @param [String,Symbol] node The string or symbol of the node to return from the database.
+        # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
+        def enumerable_query(node, rel = nil)
+          pluck_this = rel.nil? ? [node] : [node, rel]
+          return self.pluck(*pluck_this) if @association.nil? || caller.nil?
+          cypher_string = self.to_cypher_with_params(pluck_this)
+          association_collection = caller.association_instance_get(cypher_string, @association)
+          if association_collection.nil?
+            association_collection = self.pluck(*pluck_this)
+            caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
+          end
+          association_collection
         end
       end
     end
