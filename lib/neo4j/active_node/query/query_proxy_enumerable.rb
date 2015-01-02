@@ -33,21 +33,6 @@ module Neo4j
           block_given? ? each(true, true, &block) : to_enum(:each, true, true)
         end
 
-        # Used as part of `dependent: :destroy` and may not have any utility otherwise.
-        # It keeps track of the node responsible for a cascading `destroy` process.
-        # @param [#dependent_children] caller The node that called this method. Typically, we would use QueryProxy's `caller` method
-        # but this is not always available, so we require it explicitly.
-        def each_for_destruction(owning_node)
-          target = owning_node.called_by || owning_node
-          enumerable_query(identity).each do |obj|
-            # Cypher can return nil objects, check for empty results
-            next if !obj || target.dependent_children.include?(obj)
-            obj.called_by = target
-            target.dependent_children << obj
-            yield obj
-          end
-        end
-
         # Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
         # would be comparing the QueryProxy objects, not the lessons themselves.
         def ==(other)

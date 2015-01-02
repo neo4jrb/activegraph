@@ -63,31 +63,6 @@ module Neo4j
           end
         end
 
-        # This will match nodes who only have a single relationship of a given type.
-        # It's used  by `dependent: :delete_orphans` and `dependent: :destroy_orphans` and may not have much utility otherwise.
-        # @param [Neo4j::ActiveNode::HasN::Association] association The Association object used throughout the match.
-        # @param [String, Symbol] other_node The identifier to use for the other end of the chain.
-        # @param [String, Symbol] other_rel The identifier to use for the relationship in the optional match.
-        # @return [Neo4j::ActiveNode::Query::QueryProxy]
-        def unique_nodes(association, self_identifer, other_node, other_rel)
-          fail 'Only supported by in QueryProxy chains started by an instance' unless caller
-          both_string = "-[:`#{association.relationship_type}`]-"
-          in_string = "<#{both_string}"
-          out_string = "#{both_string}>"
-          primary_rel, inverse_rel =  case association.direction
-                                      when :out
-                                        [out_string, in_string]
-                                      when :in
-                                        [in_string, out_string]
-                                      else
-                                        [both_string, both_string]
-                                      end
-
-          query.with(identity).proxy_as_optional(caller.class, self_identifer)
-            .send(association.name, other_node, other_rel)
-            .where("NOT EXISTS((#{self_identifer})#{primary_rel}(#{other_node})#{inverse_rel}())")
-        end
-
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
         # The `node` param can be a persisted ActiveNode instance, any string or integer, or nil.
         # When it's a node, it'll use the object's neo_id, which is fastest. When not nil, it'll figure out the

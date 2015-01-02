@@ -5,6 +5,7 @@ module Neo4j
     module HasN
       class Association
         include Neo4j::Shared::RelTypeConverters
+        include Neo4j::ActiveNode::Dependent::AssociationMethods
         attr_reader :type, :name, :relationship, :direction, :dependent
 
         def initialize(type, direction, name, options = {})
@@ -99,27 +100,6 @@ module Neo4j
           return properties unless @relationship_class
           properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_clazz.cached_class?(true)
           properties
-        end
-
-        def add_destroy_callbacks(model)
-          return if dependent.nil?
-          # Bound value for procs
-          assoc = self
-
-          fn = case dependent
-               when :delete
-                 proc { |o| o.send(assoc.name).delete_all }
-               when :delete_orphans
-                 proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).query.delete(:n, :other_rel).exec }
-               when :destroy
-                 proc { |o| o.send(assoc.name).each_for_destruction(o) { |node| node.destroy } }
-               when :destroy_orphans
-                 proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).each_for_destruction(o) { |node| node.destroy } }
-               else
-                 fail "Unknown dependent option #{dependent}"
-               end
-
-          model.before_destroy fn
         end
 
         private
