@@ -21,7 +21,7 @@ module Neo4j
         tx.failure
         raise
       ensure
-        tx.close unless tx.nil?
+        tx.close if tx
       end
 
       def touch(*) #:nodoc:

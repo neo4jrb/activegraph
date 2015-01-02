@@ -65,13 +65,27 @@ module Neo4j
 
         # This will match nodes who only have a single relationship of a given type.
         # It's used  by `dependent: :delete_orphans` and `dependent: :destroy_orphans` and may not have much utility otherwise.
-        # @param [Symbol] other_rel_identifier The identifier to use to reference the second relationship in the match.
-        # @return [Neo4j::Core::Query] A Core::Query object.
-        def unique_nodes(other_rel_identifier = :recurring_rel)
-          self.query.break.match("(part2)-[#{other_rel_identifier}:`#{association.relationship_type}`]-(#{identity})")
-            .with("#{identity}, COUNT(#{other_rel_identifier}) as c").break
-            .where(c: 1).break
-            .match("#{identity}-[#{other_rel_identifier}]-()")
+        # @param [Neo4j::ActiveNode::HasN::Association] association The Association object used throughout the match.
+        # @param [String, Symbol] other_node The identifier to use for the other end of the chain.
+        # @param [String, Symbol] other_rel The identifier to use for the relationship in the optional match.
+        # @return [Neo4j::ActiveNode::Query::QueryProxy]
+        def unique_nodes(association, self_identifer, other_node, other_rel)
+          fail 'Only supported by in QueryProxy chains started by an instance' unless caller
+          both_string = "-[:`#{association.relationship_type}`]-"
+          in_string = "<#{both_string}"
+          out_string = "#{both_string}>"
+          primary_rel, inverse_rel =  case association.direction
+                                      when :out
+                                        [out_string, in_string]
+                                      when :in
+                                        [in_string, out_string]
+                                      else
+                                        [both_string, both_string]
+                                      end
+
+          query.with(identity).proxy_as_optional(caller.class, self_identifer)
+            .send(association.name, other_node, other_rel)
+            .where("NOT EXISTS((#{self_identifer})#{out_string}(#{other_node})#{in_string}())")
         end
 
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
