@@ -88,12 +88,12 @@ module Neo4j::ActiveNode
       # rubocop:disable Style/PredicateName
       def has_many(direction, name, options = {})
         name = name.to_sym
-        association, target_class_name = builder(:has_many, direction, name, options)
+        association = build_association(:has_many, direction, name, options)
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
         module_eval(%{
           def #{name}(node = nil, rel = nil)
             return [].freeze unless self._persisted_obj
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{association.target_class_name_or_nil},
                                                      self.class.associations[#{name.inspect}],
                                                      {
                                                        session: self.class.neo4j_session,
@@ -123,7 +123,7 @@ module Neo4j::ActiveNode
                   session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
                 })
             context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{association.target_class_name_or_nil},
                                                      associations[#{name.inspect}],
                                                      {
                                                        session: self.neo4j_session,
@@ -139,7 +139,7 @@ module Neo4j::ActiveNode
 
       def has_one(direction, name, options = {})
         name = name.to_sym
-        association, target_class_name = builder(:has_one, direction, name, options)
+        association = build_association(:has_one, direction, name, options)
 
         module_eval(%{
           def #{name}=(other_node)
@@ -167,7 +167,7 @@ module Neo4j::ActiveNode
 
         instance_eval(%{
           def #{name}_query_proxy(options = {})
-            Neo4j::ActiveNode::Query::QueryProxy.new(#{target_class_name},
+            Neo4j::ActiveNode::Query::QueryProxy.new(#{association.target_class_name_or_nil},
                                                      associations[#{name.inspect}],
                                                      {session: self.neo4j_session}.merge(options))
           end
@@ -181,14 +181,12 @@ module Neo4j::ActiveNode
 
       private
 
-      def builder(macro, direction, name, options)
+      def build_association(macro, direction, name, options)
         association = Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options)
         @associations ||= {}
         @associations[name] = association
-
-        target_class_name = association.target_class_name || 'nil'
         create_reflection(macro, name, association, self)
-        [association, target_class_name]
+        association
       end
     end
   end

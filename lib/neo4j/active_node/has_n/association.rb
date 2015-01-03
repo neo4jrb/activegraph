@@ -42,7 +42,11 @@ module Neo4j
         end
 
         def target_class_name
-          @target_class_option.to_s if @target_class_option
+          @target_class_name ||= @target_class_option.to_s if @target_class_option
+        end
+
+        def target_class_name_or_nil
+          @target_class_name_or_nil ||= target_class_name || 'nil'
         end
 
         def target_class
