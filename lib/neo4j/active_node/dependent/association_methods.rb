@@ -10,11 +10,11 @@ module Neo4j
 
           fn = case dependent
                when :delete
-                 proc { |o| o.send(assoc.name).delete_all }
+                 proc { |o| o.send("#{assoc.name}_query_proxy").delete_all }
                when :delete_orphans
                  proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).query.delete(:n, :other_rel).exec }
                when :destroy
-                 proc { |o| o.send(assoc.name).each_for_destruction(o) { |node| node.destroy } }
+                 proc { |o| o.send("#{assoc.name}_query_proxy").each_for_destruction(o) { |node| node.destroy } }
                when :destroy_orphans
                  proc { |o| o.as(:self).unique_nodes(assoc, :self, :n, :other_rel).each_for_destruction(o) { |node| node.destroy } }
                else

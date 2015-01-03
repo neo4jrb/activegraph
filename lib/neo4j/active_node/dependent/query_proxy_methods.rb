@@ -39,7 +39,7 @@ module Neo4j
                                       end
 
           query.with(identity).proxy_as_optional(caller.class, self_identifer)
-            .send(association.name, other_node, other_rel)
+            .send("#{association.name}", other_node, other_rel)
             .where("NOT EXISTS((#{self_identifer})#{primary_rel}(#{other_node})#{inverse_rel}())")
         end
       end
