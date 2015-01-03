@@ -112,13 +112,12 @@ module Neo4j::ActiveNode
                                                      })
 
             end
+            alias :#{name}_query_proxy :#{name}
 
             def #{name}=(other_nodes)
               #{name}(nil, :r).query_as(:n).delete(:r).exec
               clear_association_cache
-              other_nodes.each do |node|
-                #{name} << node
-              end
+              other_nodes.each { |node| #{name} << node }
             end
 
             def #{name}_rels

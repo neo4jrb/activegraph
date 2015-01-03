@@ -1,15 +1,40 @@
 require 'spec_helper'
 
 describe 'association dependent delete/destroy' do
+  # In these tests, we mimic an event management system. It has a few requirements:
+  #
+  # -A User can have many Tours and Bands
+  # -A Tour can have many Routes and Bands
+  # -A Route must have exactly one Tour
+  # -A Route can have many Stops
+  # -A Stop can be part of many Routes and must have at least one
+  # -A Band can be a part of many tours but must have at least one User
+  # -Everything can be commented on. When an object is destroyed, all comments can be deleted in the database.
   module DependentSpec
     CALL_COUNT = {called: 0}
+
+    class User
+      include Neo4j::ActiveNode
+      property :name
+      has_many :out, :tours, model_class: 'DependentSpec::Tour', type: 'BOOKED_TOUR', dependent: :destroy_orphans
+      has_many :out, :bands, model_class: 'DependentSpec::Band', type: 'MANAGES_BAND', dependent: :destroy_orphans
+      has_many :out, :comments, model_class: 'DependentSpec::Comment', type: 'HAS_COMMENT', dependent: :destroy
+    end
+
+    class Tour
+      include Neo4j::ActiveNode
+      property :name
+      has_many :out, :routes, model_class: 'DependentSpec::Route', type: 'HAS_ROUTE', dependent: :destroy
+      has_many :out, :bands, model_class: 'DependentSpec::Band', type: 'HAS_BAND'
+      has_many :out, :comments, model_class: 'DependentSpec::Comment', type: 'HAS_COMMENT', dependent: :destroy
+    end
 
     class Route
       include Neo4j::ActiveNode
       property :name
-      property :call_count, type: Integer
-
-      has_many :out, :stops, model_class: 'DependentSpec::Stop', type: 'STOPS_AT'
+      has_one :in,  :tour,  model_class: 'DependentSpec::Tour', origin: :routes
+      has_many :out, :stops, model_class: 'DependentSpec::Stop', type: 'STOPS_AT', dependent: :destroy_orphans
+      has_many :out, :comments, model_class: 'DependentSpec::Comment', type: 'HAS_COMMENT', dependent: :destroy
     end
 
     class Stop
@@ -17,163 +42,140 @@ describe 'association dependent delete/destroy' do
       after_destroy lambda { DependentSpec::CALL_COUNT[:called] += 1 }
       property :city
       has_many :in, :routes, model_class: 'DependentSpec::Route', origin: :stops
+      has_many :out, :comments, model_class: 'DependentSpec::Comment', type: 'HAS_COMMENT', dependent: :destroy
+      has_one :out, :poorly_modeled_thing, model_class: 'DependentSpec::BadModel', type: 'HAS_TERRIBLE_MODEL', dependent: :delete
+      has_many :out, :poorly_modeled_things, model_class: 'DependentSpec::BadModel', type: 'HAS_TERRIBLE_MODELS', dependent: :delete
     end
 
-    class << self
-      def setup_callback(dependent_type)
-        DependentSpec::Route.has_many :out, :stops,  model_class: 'DependentSpec::Stop', type: 'STOPS_AT', dependent: dependent_type
-      end
+    class Band
+      include Neo4j::ActiveNode
+      property :name
+      has_many :in, :tours, model_class: 'DependentSpec::Tour', origin: :bands
+      has_many :in, :users, model_class: 'DependentSpec::User', origin: :bands
+      has_many :out, :comments, model_class: 'DependentSpec::Comment', type: 'HAS_COMMENT', dependent: :destroy
+    end
 
-      def setup_looping_callback(dependent_type)
-        DependentSpec::Stop.has_many :in, :routes,  model_class: 'DependentSpec::Route', origin: :stops, dependent: dependent_type
-      end
+    # There's no reason that we'd have this model responsible for destroying users.
+    # We will use this to prove that the callbacks are not called when we delete the Stop that owns this
+    class BadModel
+      include Neo4j::ActiveNode
+      has_one :out, :user, model_class: 'DependentSpec::User', type: 'HAS_A_USER', dependent: :destroy
+      has_many :out, :users, model_class: 'DependentSpec::User', type: 'HAS_USERS', dependent: :destroy
+    end
+
+    class Comment
+      include Neo4j::ActiveNode
+      property :note
+      # In the real world, there would be no reason to setup a dependency here since you'd never want to delete
+      # the topic of a comment just because the topic is destroyed.
+      # For the purpose of these tests, we're setting this to demonstrate that we are protected against loops.
+      has_one :in, :topic, model_class: false, type: 'HAS_COMMENT', dependent: :destroy
     end
   end
 
-  before do
+  def initial_setup
+    @user = DependentSpec::User.create(name: 'Grzesiek')
+    @tour = DependentSpec::Tour.create(name: 'Absu and Woe')
+    @user.tours << @tour
+    @woe = DependentSpec::Band.create(name: 'Woe')
+    @absu = DependentSpec::Band.create(name: 'Absu')
+
+    [@woe, @absu].each do |band|
+      @user.bands << band
+      @tour.bands << band
+    end
+  end
+
+  def routing_setup
+    [DependentSpec::Route, DependentSpec::Stop].each(&:delete_all)
     DependentSpec::CALL_COUNT[:called] = 0
-    @route1 = DependentSpec::Route.create(name: 'Route 1')
-    @route2 = DependentSpec::Route.create(name: 'Route 2')
+
+    @route1 = DependentSpec::Route.create(name: 'Primary Route')
+    @route2 = DependentSpec::Route.create(name: 'Secondary Route')
+    @tour.routes << [@route1, @route2]
+
     @philly = DependentSpec::Stop.create(city: 'Philadelphia')
-    @boston = DependentSpec::Stop.create(city: 'Boston')
-    @route1.stops << @philly
-    @route1.stops << @boston
-    @route2.stops << @boston
+    @brooklyn = DependentSpec::Stop.create(city: 'Brooklyn')
+    @nyc = DependentSpec::Stop.create(city: 'Manhattan') # Pro Tip from Chris: No good metal shows happen in Manhattan.
+    @providence = DependentSpec::Stop.create(city: 'Providence')
+    @boston = DependentSpec::Stop.create(city: 'Boston') # Boston is iffy, too.
+
+    # We always play Philly. Great DIY scene. If we can't get Brooklyn or Providence, we can do Manhattan and Boston.
+    @route1.stops << [@philly, @brooklyn, @providence]
+    @route2.stops << [@philly, @nyc, @boston]
   end
 
-  describe 'dependent: :delete' do
-    before do
-      DependentSpec::Route.reset_callbacks(:destroy)
-      DependentSpec.setup_callback(:delete)
-      @route1.reload
+  describe 'Grzesiek is booking a tour for his bands' do
+    before(:all) do
+      initial_setup
     end
 
-    it 'deletes all association records from within Cypher' do
-      DependentSpec::Route.before_destroy.clear
-      [@philly, @boston].each { |l| expect(l).to be_persisted }
-      @route1.destroy
-      [@philly, @boston].each { |l| expect(l).not_to be_persisted }
-      expect(DependentSpec::CALL_COUNT[:called]).to eq 0
-    end
-  end
-
-
-  describe 'dependent: :delete_orphans' do
-    before do
-      DependentSpec::Route.reset_callbacks(:destroy)
-      DependentSpec.setup_callback(:delete_orphans)
-      @route1.reload
-    end
-
-    it 'deletes all associated records that do not have other relationships of the same type from Cypher' do
-      [@philly, @boston].each { |l| expect(l).to be_persisted }
-      @route1.destroy
-      expect(@philly).not_to be_persisted
-      expect(@boston).to be_persisted
-      expect(DependentSpec::CALL_COUNT[:called]).to eq 0
-    end
-  end
-
-  describe 'dependent: :destroy' do
-    before do
-      DependentSpec::Route.reset_callbacks(:destroy)
-      DependentSpec.setup_callback(:destroy)
-      @route1.reload
-    end
-
-    it 'destroys all associated records from Ruby' do
-      DependentSpec::Route.before_destroy.clear
-      [@philly, @boston].each { |l| expect(l).to be_persisted }
-      @route1.destroy
-      [@philly, @boston].each { |l| expect(l).not_to be_persisted }
-      expect(DependentSpec::CALL_COUNT[:called]).to eq 2
-    end
-  end
-
-  describe 'dependent :destroy_orphans' do
-    before do
-      DependentSpec::Route.reset_callbacks(:destroy)
-      DependentSpec.setup_callback(:destroy_orphans)
-      @route1.reload
-    end
-
-    it 'destroys all associated records that do not have other relationships of the same type from Ruby' do
-      [@philly, @boston].each { |l| expect(l).to be_persisted }
-      @route1.destroy
-      expect(@philly).not_to be_persisted
-      expect(@boston).to be_persisted
-      expect(DependentSpec::CALL_COUNT[:called]).to eq 1
-    end
-  end
-
-  describe 'nested dependencies' do
-    module DependentSpec
-      class Stop
-        has_many :out, :bands, model_class: 'DependentSpec::Band', dependent: :destroy_orphans
-      end
-
-      class Route
-        has_many :in, :bands, model_class: 'DependentSpec::Band', origin: :routes
-      end
-
-      class Band
-        include Neo4j::ActiveNode
-        has_many :in, :stops, model_class: 'DependentSpec::Stop', origin: :bands
-        has_many :out, :routes, model_class: 'DependentSpec::Route', type: 'ON_ROUTE', depdent: :destroy
-      end
-    end
-
-    context 'one level down' do
+    describe 'its primary route stops at every city except NYC and Boston, secondary route includes NYC/Boston' do
       before do
-        DependentSpec::Route.reset_callbacks(:destroy)
-        DependentSpec.setup_callback(:destroy)
-        DependentSpec.setup_looping_callback(:destroy)
-        [@route1, @philly, @boston].each(&:reload)
+        routing_setup
       end
 
-      it 'do not loop endlessly' do
-        [@route1, @philly, @boston].each { |node| expect(node).to be_persisted }
-        expect { @route1.destroy }.not_to raise_error
-        expect(@philly).not_to be_persisted
-        expect(@boston).not_to be_persisted
-        expect(DependentSpec::CALL_COUNT[:called]).to eq 2
-      end
-    end
-
-    context 'depdencies within dependencies' do
-      describe 'route1 stops everywhere, band4 only plays the last stop' do
+      context 'and he destroys a Stop with one of those weird BadModels' do
         before do
-          DependentSpec::Route.reset_callbacks(:destroy)
-          DependentSpec.setup_callback(:destroy_orphans)
-          [DependentSpec::Band, DependentSpec::Route, DependentSpec::Stop].each(&:delete_all)
-          @route1 = DependentSpec::Route.create
-          @route2 = DependentSpec::Route.create
-          @stop1 = DependentSpec::Stop.create
-          @stop2 = DependentSpec::Stop.create
-          @stop3 = DependentSpec::Stop.create
-          @stop4 = DependentSpec::Stop.create
-          @stop5 = DependentSpec::Stop.create
-          @route1.stops << [@stop1, @stop2, @stop3, @stop4, @stop5]
-          @route2.stops << [@stop1, @stop2, @stop3]
-
-          @band1 = DependentSpec::Band.create
-          @band2 = DependentSpec::Band.create
-          @band3 = DependentSpec::Band.create
-          [@band1, @band2, @band3].each do |band|
-            band.stops << [@stop1, @stop2]
-          end
-
-          @band4 = DependentSpec::Band.create
-          @stop5.bands << @band4
+          bad = DependentSpec::BadModel.create
+          bad.user = @user
+          bad.users << @user
+          @boston.poorly_modeled_thing = bad
         end
 
-        it 'only destroys stop4, stop5, and band 4' do
-          expect { @route1.destroy }.not_to raise_error
-          [@band1, @band2, @band3].each { |band| expect(band).to be_persisted }
-          expect(@band4).not_to be_persisted
+        it 'deletes the BadModel in Cypher and does not kill his user account' do
+          @boston.destroy
+          expect(@user).to be_persisted
+          expect(DependentSpec::BadModel.count).to eq 0
+        end
+      end
 
-          [@stop1, @stop2, @stop3].each { |stop| expect(stop).to be_persisted }
-          [@stop4, @stop5].each { |stop| expect(stop).not_to be_persisted }
+      context 'the secondary route is destroyed' do
+        before do
+          expect(@philly).to be_persisted
+          [@nyc, @boston].each { |stop| expect(stop).to be_persisted }
+        end
+
+        it 'destroys @nyc and @boston but not @philly' do
+          expect { @route2.destroy }.not_to raise_error
+          expect(@philly).to be_persisted
+          [@nyc, @boston].each { |stop| expect(stop).not_to be_persisted }
+        end
+
+        it 'destroys the linked comment without everything blowing up' do
+          @boston.comments << DependentSpec::Comment.create(note: 'I really hope we do not have to play Boston.')
+          expect(DependentSpec::Comment.count).to eq 1
+          expect { @route2.destroy }.not_to raise_error
+          expect(DependentSpec::Comment.count).to eq 0
+        end
+      end
+    end
+
+    context 'things are going terribly' do
+      describe 'Grzesiek, in frustration, destroys his account' do
+        it 'destroys all bands, tours, routes, stops, and comments' do
+          expect { @user.destroy }.not_to raise_error
+          expect(DependentSpec::Tour.count).to eq 0
+          expect(DependentSpec::Route.count).to eq 0
+          expect(DependentSpec::Stop.count).to eq 0
+          expect(DependentSpec::Comment.count).to eq 0
+          expect(DependentSpec::Band.count).to eq 0
+        end
+      end
+
+      context 'G recreates his account but bails on this tour' do
+        before do
+          initial_setup
+          routing_setup
+        end
+
+        it 'destroys all routes, stops, and comments' do
+          expect { @tour.destroy }.not_to raise_error
+          expect(DependentSpec::Tour.count).to eq 0
+          expect(DependentSpec::Route.count).to eq 0
+          expect(DependentSpec::Stop.count).to eq 0
+          expect(DependentSpec::Comment.count).to eq 0
+          expect(DependentSpec::Band.count).to eq 2
         end
       end
     end
