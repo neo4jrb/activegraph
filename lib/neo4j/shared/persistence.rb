@@ -61,6 +61,7 @@ module Neo4j::Shared
     alias :new? :new_record?
 
     def destroy
+      freeze
       _persisted_obj && _persisted_obj.del
       @_deleted = true
     end
@@ -82,23 +83,12 @@ module Neo4j::Shared
 
     # @return true if the attributes hash has been frozen
     def frozen?
-      freeze_if_deleted
       @attributes.frozen?
     end
 
     def freeze
       @attributes.freeze
       self
-    end
-
-    def freeze_if_deleted
-      unless new_record?
-        # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-        unless self.class.load_entity(neo_id)
-          @_deleted = true
-          freeze
-        end
-      end
     end
 
     def reload
