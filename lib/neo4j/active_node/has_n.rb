@@ -63,6 +63,7 @@ module Neo4j::ActiveNode
     end
 
     module ClassMethods
+      # :nocov:
       # rubocop:disable Style/PredicateName
       def has_association?(name)
         ActiveSupport::Deprecation.warn 'has_association? is deprecated and may be removed from future releases, use association? instead.', caller
@@ -70,6 +71,7 @@ module Neo4j::ActiveNode
         association?(name)
       end
       # rubocop:enable Style/PredicateName
+      # :nocov:
 
       def association?(name)
         !!associations[name.to_sym]

@@ -180,4 +180,10 @@ describe 'association dependent delete/destroy' do
       end
     end
   end
+
+  describe 'invalid options' do
+    it 'raises an error when an invalid option is passed' do
+      expect { DependentSpec::Stop.has_many(:out, :fooz, dependent: :foo).to raise_error }
+    end
+  end
 end

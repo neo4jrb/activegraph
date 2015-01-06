@@ -16,6 +16,18 @@ describe 'has_n' do
   let(:friend1) { clazz_a.create }
   let(:friend2) { clazz_a.create }
 
+  describe 'association?' do
+    context 'with a present association' do
+      subject { clazz_a.association?(:friends) }
+      it { is_expected.to be_truthy }
+    end
+
+    context 'with a missing association' do
+      subject { clazz_a.association?(:fooz) }
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe 'non-persisted node' do
     let(:unsaved_node) { clazz_a.new }
     it 'returns an empty array' do
@@ -169,7 +181,6 @@ describe 'has_n' do
       end
     end
   end
-
 
   describe 'callbacks' do
     let(:clazz_c) do
