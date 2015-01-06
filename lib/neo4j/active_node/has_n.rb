@@ -93,33 +93,39 @@ module Neo4j::ActiveNode
         module_eval(%{
           def #{name}(node = nil, rel = nil)
             return [].freeze unless self._persisted_obj
+            #{name}_query_proxy(node: node, rel: rel)
+          end
+
+          def #{name}_query_proxy(options = {})
             Neo4j::ActiveNode::Query::QueryProxy.new(#{association.target_class_name_or_nil},
                                                      self.class.associations[#{name.inspect}],
                                                      {
                                                        session: self.class.neo4j_session,
                                                        start_object: self,
-                                                       node: node,
-                                                       rel: rel,
+                                                       node: options[:node],
+                                                       rel: options[:rel],
                                                        context: '#{self.name}##{name}',
                                                        caller: self
                                                      })
+          end
 
-            end
-            alias :#{name}_query_proxy :#{name}
+          def #{name}=(other_nodes)
+            #{name}(nil, :r).query_as(:n).delete(:r).exec
+            clear_association_cache
+            other_nodes.each { |node| #{name} << node }
+          end
 
-            def #{name}=(other_nodes)
-              #{name}(nil, :r).query_as(:n).delete(:r).exec
-              clear_association_cache
-              other_nodes.each { |node| #{name} << node }
-            end
-
-            def #{name}_rels
-              #{name}(nil, :r).pluck(:r)
-            end}, __FILE__, __LINE__)
+          def #{name}_rels
+            #{name}(nil, :r).pluck(:r)
+          end}, __FILE__, __LINE__)
 
         instance_eval(%{
           def #{name}(node = nil, rel = nil, proxy_obj = nil)
-            query_proxy = proxy_obj || Neo4j::ActiveNode::Query::QueryProxy.new(::#{self.name}, nil, {
+            #{name}_query_proxy(node: node, rel: rel, proxy_obj: proxy_obj)
+          end
+
+          def #{name}_query_proxy(options = {})
+            query_proxy = options[:proxy_obj] || Neo4j::ActiveNode::Query::QueryProxy.new(::#{self.name}, nil, {
                   session: self.neo4j_session, query_proxy: nil, context: '#{self.name}' + '##{name}'
                 })
             context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
@@ -128,8 +134,8 @@ module Neo4j::ActiveNode
                                                      {
                                                        session: self.neo4j_session,
                                                        query_proxy: query_proxy,
-                                                       node: node,
-                                                       rel: rel,
+                                                       node: options[:node],
+                                                       rel: options[:rel],
                                                        context: context,
                                                        optional: query_proxy.optional?,
                                                        caller: query_proxy.caller
