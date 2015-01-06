@@ -188,11 +188,11 @@ module Neo4j::ActiveNode
       private
 
       def build_association(macro, direction, name, options)
-        association = Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options)
-        @associations ||= {}
-        @associations[name] = association
-        create_reflection(macro, name, association, self)
-        association
+        Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
+          @associations ||= {}
+          @associations[name] = association
+          create_reflection(macro, name, association, self)
+        end
       end
     end
   end
