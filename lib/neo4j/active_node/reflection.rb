@@ -15,8 +15,9 @@ module Neo4j::ActiveNode
       # @param macro [Symbol] the association type, :has_many or :has_one
       # @param name [Symbol] the association name
       # @param association_object [Neo4j::ActiveNode::HasN::Association] the association object created in the course of creating this reflection
-      def create_reflection(macro, name, association_object)
+      def create_reflection(macro, name, association_object, model)
         self.reflections = self.reflections.merge(name => AssociationReflection.new(macro, name, association_object))
+        association_object.add_destroy_callbacks(model)
       end
 
       private :create_reflection

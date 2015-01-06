@@ -179,6 +179,7 @@ describe Neo4j::ActiveNode do
     class Company
       attr_accessor :update_called, :save_called, :destroy_called, :validation_called
       include Neo4j::ActiveNode
+      property :name
 
       before_save do
         @save_called = true
@@ -220,6 +221,48 @@ describe Neo4j::ActiveNode do
       #      skip
       c = Company.create
       expect(c.validation_called).to be true
+    end
+
+    context 'that raise errors' do
+      before do
+        [:create, :update, :destroy].each { |m| Company.reset_callbacks(m) }
+      end
+
+      it 'rolls back node creation' do
+        starting_count = Company.count
+        expect { Company.create }.not_to raise_error
+        expect(Company.count).not_to eq starting_count
+        starting_count += 1
+
+        Company.after_create { fail }
+        expect { Company.create }.to raise_error
+        expect(Company.count).to eq starting_count
+      end
+
+      it 'rolls back node update' do
+        c = Company.create(name: 'Daylight Dies')
+        expect(c.name).to eq 'Daylight Dies'
+        c.name = 'Katatonia'
+        expect { c.save }.not_to raise_error
+        expect(c.name).to eq 'Katatonia'
+        Company.after_update { fail }
+
+        c.name = 'October Tide'
+        expect { c.save }.to raise_error
+        c.reload
+        expect(c.name).to eq 'Katatonia'
+      end
+
+      it 'rolls back node destroy' do
+        c = Company.create
+        expect(c).to be_persisted
+        expect { c.destroy }.not_to raise_error
+        expect(c).not_to be_persisted
+        Company.after_destroy { fail }
+        c = Company.create
+        expect { c.destroy }.to raise_error
+        expect(c).to be_persisted
+      end
     end
   end
 

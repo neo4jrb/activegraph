@@ -5,15 +5,15 @@ module Neo4j
     module HasN
       class Association
         include Neo4j::Shared::RelTypeConverters
-        attr_reader :type, :name, :relationship, :direction
+        include Neo4j::ActiveNode::Dependent::AssociationMethods
+        attr_reader :type, :name, :relationship, :direction, :dependent
 
         def initialize(type, direction, name, options = {})
-          check_valid_type_and_dir(type, direction)
+          validate_init_arguments(type, direction, options)
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
           @target_class_name_from_name = name.to_s.classify
-
           apply_vars_from_options(options)
         end
 
@@ -42,7 +42,11 @@ module Neo4j
         end
 
         def target_class_name
-          @target_class_option.to_s if @target_class_option
+          @target_class_name ||= @target_class_option.to_s if @target_class_option
+        end
+
+        def target_class_name_or_nil
+          @target_class_name_or_nil ||= target_class_name || 'nil'
         end
 
         def target_class
@@ -134,12 +138,12 @@ module Neo4j
         private
 
         def apply_vars_from_options(options)
-          validate_option_combinations(options)
           @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
+          @dependent = options[:dependent]
         end
 
         # Return basic details about association as declared in the model
@@ -147,6 +151,11 @@ module Neo4j
         #   has_many :in, :bands
         def base_declaration
           "#{type} #{direction.inspect}, #{name.inspect}"
+        end
+
+        def validate_init_arguments(type, direction, options)
+          validate_option_combinations(options)
+          check_valid_type_and_dir(type, direction)
         end
 
         def check_valid_type_and_dir(type, direction)
@@ -158,6 +167,11 @@ module Neo4j
           fail ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
           fail ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
           fail ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+        end
+
+        VALID_DEPENDENT_TYPES = [:delete, :delete_orphans, :destroy_orphans, :destroy, nil]
+        def validate_dependent(value)
+          fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not VALID_DEPENDENT_TYPES.include?(value)
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key
