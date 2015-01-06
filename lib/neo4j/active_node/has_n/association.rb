@@ -9,7 +9,7 @@ module Neo4j
         attr_reader :type, :name, :relationship, :direction, :dependent
 
         def initialize(type, direction, name, options = {})
-          check_valid_type_and_dir(type, direction)
+          validate_init_arguments(type, direction, options)
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
@@ -151,6 +151,11 @@ module Neo4j
         #   has_many :in, :bands
         def base_declaration
           "#{type} #{direction.inspect}, #{name.inspect}"
+        end
+
+        def validate_init_arguments(type, direction, options)
+          validate_option_combinations(options)
+          check_valid_type_and_dir(type, direction)
         end
 
         def check_valid_type_and_dir(type, direction)

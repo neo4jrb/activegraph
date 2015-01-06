@@ -1,7 +1,6 @@
 module Neo4j
   module ActiveNode
     module Dependent
-
       # duck for has_one
       def each_for_destruction(_)
         self
@@ -11,9 +10,7 @@ module Neo4j
         @dependent_children ||= []
       end
 
-      def called_by=(node)
-        @called_by = node
-      end
+      attr_writer :called_by
     end
   end
 end

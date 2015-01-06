@@ -2,7 +2,6 @@ module Neo4j
   module ActiveNode
     module Query
       class QueryProxy
-
         include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
@@ -50,6 +49,7 @@ module Neo4j
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
         # in the QueryProxy chain.
+        attr_reader :node_var
         def identity
           @node_var || _result_string
         end
@@ -199,7 +199,6 @@ module Neo4j
         end
 
         attr_reader :context
-        attr_reader :node_var
 
         protected
 

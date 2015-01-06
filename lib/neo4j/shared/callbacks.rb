@@ -16,7 +16,7 @@ module Neo4j
       def destroy #:nodoc:
         tx = Neo4j::Transaction.new
         run_callbacks(:destroy) { super }
-      rescue => e
+      rescue
         @_deleted = false
         tx.mark_failed
         raise

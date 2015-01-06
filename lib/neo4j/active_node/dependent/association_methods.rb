@@ -2,7 +2,6 @@ module Neo4j
   module ActiveNode
     module Dependent
       module AssociationMethods
-
         def add_destroy_callbacks(model)
           return if dependent.nil?
           # Bound value for procs
