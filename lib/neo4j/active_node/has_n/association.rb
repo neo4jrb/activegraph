@@ -106,6 +106,10 @@ module Neo4j
           properties
         end
 
+        def unique?
+          !!@unique
+        end
+
         private
 
         def get_direction(relationship_cypher, create)
@@ -144,6 +148,7 @@ module Neo4j
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
           @dependent = options[:dependent]
+          @unique = options[:unique]
         end
 
         # Return basic details about association as declared in the model

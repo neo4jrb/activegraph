@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'has_n' do
+describe 'has_many' do
   let(:clazz_a) do
     UniqueClass.create do
       include Neo4j::ActiveNode
@@ -36,6 +36,20 @@ describe 'has_n' do
 
     it 'has a frozen array' do
       expect { unsaved_node.friends << friend1 }.to raise_error(RuntimeError)
+    end
+  end
+
+  describe 'unique: true' do
+    before { clazz_a.reflect_on_association(:friends).association.instance_variable_set(:@unique, true) }
+    after  { clazz_a.reflect_on_association(:friends).association.instance_variable_set(:@unique, false) }
+
+
+    it 'only creates one relationship between two nodes' do
+      expect(friend1.friends.count).to eq 0
+      friend1.friends << friend2
+      expect(friend1.friends.count).to eq 1
+      friend1.friends << friend2
+      expect(friend1.friends.count).to eq 1
     end
   end
 
