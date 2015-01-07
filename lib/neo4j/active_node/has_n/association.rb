@@ -106,6 +106,10 @@ module Neo4j
           properties
         end
 
+        def unique?
+          @origin ? origin_association.unique? : !!@unique
+        end
+
         private
 
         def get_direction(relationship_cypher, create)
@@ -131,8 +135,12 @@ module Neo4j
           p.size == 0 ? '' : " {#{p}}"
         end
 
+        def origin_association
+          target_class.associations[@origin]
+        end
+
         def origin_type
-          target_class.associations[@origin].relationship_type
+          origin_association.relationship_type
         end
 
         private
@@ -144,6 +152,7 @@ module Neo4j
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
           @dependent = options[:dependent]
+          @unique = options[:unique]
         end
 
         # Return basic details about association as declared in the model
@@ -190,7 +199,7 @@ module Neo4j
 
           fail ArgumentError, 'Cannot use :origin without a model_class (implied or explicit)' if not target_class
 
-          association = target_class.associations[@origin]
+          association = origin_association
           fail ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})" if not association
 
           fail ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)" if @direction == association.direction

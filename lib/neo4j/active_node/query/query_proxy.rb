@@ -172,7 +172,7 @@ module Neo4j
             _session.query(context: @options[:context])
               .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where('ID(start) = {start_id} AND ID(end) = {end_id}')
               .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
-              .create("start#{_association_arrow(properties, true)}end").exec
+              .send(create_method, "start#{_association_arrow(properties, true)}end").exec
 
             @association.perform_callback(@options[:start_object], other_node, :after)
             # end
@@ -282,6 +282,10 @@ module Neo4j
         attr_writer :context
 
         private
+
+        def create_method
+          association.unique? ? :create_unique : :create
+        end
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|

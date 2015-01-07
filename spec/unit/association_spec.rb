@@ -183,5 +183,19 @@ describe Neo4j::ActiveNode::HasN::Association do
         expect(association.send(:relationship_class)).to eq :foo
       end
     end
+
+    describe 'unique' do
+      context 'true' do
+        let(:options) { {unique: true} }
+
+        it { expect(subject).to be_unique }
+      end
+
+      context 'false' do
+        let(:options) { {unique: false} }
+
+        it { expect(subject).not_to be_unique }
+      end
+    end
   end
 end

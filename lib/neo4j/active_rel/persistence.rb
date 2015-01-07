@@ -91,11 +91,15 @@ module Neo4j::ActiveRel
           .where("n1.#{from_class.primary_key} = {from_node_id}")
           .where("n2.#{to_class.primary_key} = {to_node_id}")
           .params(from_node_id: from_node.id, to_node_id: to_node.id)
-          .create("(n1)-[r:`#{type}`]->(n2)")
+          .send(create_method, ("(n1)-[r:`#{type}`]->(n2)"))
           .with('r').set(r: props).return(:r).first.r
-      rescue NoMethodError
-        raise RelCreateFailedError, "Unable to create relationship. from_node: #{from_node}, to_node: #{to_node}"
+      rescue NoMethodError => e
+        raise RelCreateFailedError, "Unable to create relationship. from_node: #{from_node}, to_node: #{to_node}, error: #{e}"
       end
+    end
+
+    def create_method
+      self.class.unique? ? :create_unique : :create
     end
   end
 end

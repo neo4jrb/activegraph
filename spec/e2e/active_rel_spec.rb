@@ -34,6 +34,22 @@ describe 'ActiveRel' do
       expect(from_node).to receive(:id).at_least(1).times.and_return(nil)
       expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
     end
+
+    describe 'creates_unique_rel' do
+      after do
+        MyRelClass.instance_variable_set(:@unique, false)
+        [from_node, to_node].each(&:destroy)
+      end
+
+      it 'creates a unique relationship between to nodes' do
+        expect(from_node.others.count).to eq 0
+        MyRelClass.create(from_node: from_node, to_node: to_node)
+        expect(from_node.others.count).to eq 1
+        MyRelClass.creates_unique_rel
+        MyRelClass.create(from_node: from_node, to_node: to_node)
+        expect(from_node.others.count).to eq 1
+      end
+    end
   end
 
   describe 'properties' do

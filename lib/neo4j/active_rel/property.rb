@@ -45,6 +45,14 @@ module Neo4j::ActiveRel
       def load_entity(id)
         Neo4j::Node.load(id)
       end
+
+      def creates_unique_rel
+        @unique = true
+      end
+
+      def unique?
+        !!@unique
+      end
     end
 
     private
