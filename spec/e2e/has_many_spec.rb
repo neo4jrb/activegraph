@@ -40,16 +40,26 @@ describe 'has_many' do
   end
 
   describe 'unique: true' do
-    before { clazz_a.reflect_on_association(:friends).association.instance_variable_set(:@unique, true) }
-    after  { clazz_a.reflect_on_association(:friends).association.instance_variable_set(:@unique, false) }
-
+    before { clazz_a.reflect_on_association(:knows).association.instance_variable_set(:@unique, true) }
+    after do
+      clazz_a.reflect_on_association(:knows).association.instance_variable_set(:@unique, false)
+      [friend1, friend2].each(&:destroy)
+    end
 
     it 'only creates one relationship between two nodes' do
-      expect(friend1.friends.count).to eq 0
-      friend1.friends << friend2
-      expect(friend1.friends.count).to eq 1
-      friend1.friends << friend2
-      expect(friend1.friends.count).to eq 1
+      expect(friend1.knows.count).to eq 0
+      friend1.knows << friend2
+      expect(friend1.knows.count).to eq 1
+      friend1.knows << friend2
+      expect(friend1.knows.count).to eq 1
+    end
+
+    it 'is respected with an association using origin' do
+      expect(friend1.knows.count).to eq 0
+      friend2.knows_me << friend1
+      expect(friend1.knows.count).to eq 1
+      friend2.knows_me << friend1
+      expect(friend1.knows.count).to eq 1
     end
   end
 
