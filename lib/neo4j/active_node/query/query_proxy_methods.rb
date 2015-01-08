@@ -121,6 +121,19 @@ module Neo4j
           self.query.proxy_as(model, var, true)
         end
 
+        def includes(association_name)
+          starting_id = identity
+          child_id = :"#{identity}_child"
+          query.proxy_as_optional(model, starting_id).send(association_name, child_id).prepopulate(association_name, starting_id, child_id)
+        end
+
+        protected
+
+        def prepopulate(association_name, target_identifier, child_identifier)
+          @preloader ||= Neo4j::ActiveNode::Query::QueryProxyPreloader.new(self, target_identifier, child_identifier)
+          preloader.queue(association_name)
+        end
+
         private
 
         def clear_caller_cache
