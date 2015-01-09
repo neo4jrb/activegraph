@@ -6,8 +6,8 @@ module Neo4j
 
       def save(*args)
         unless self.persisted? || (from_node.respond_to?(:neo_id) && to_node.respond_to?(:neo_id))
-          raise Neo4j::ActiveRel::Persistence::RelInvalidError, 'from_node and to_node must be node objects'
-        end 
+          fail Neo4j::ActiveRel::Persistence::RelInvalidError, 'from_node and to_node must be node objects'
+        end
         super(*args)
       end
     end

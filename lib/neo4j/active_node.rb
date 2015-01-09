@@ -1,5 +1,4 @@
 module Neo4j
-
   # Makes Neo4j nodes and relationships behave like ActiveRecord objects.
   # By including this module in your class it will create a mapping for the node to your ruby class
   # by using a Neo4j Label with the same name as the class. When the node is loaded from the database it
@@ -39,24 +38,25 @@ module Neo4j
     include Neo4j::ActiveNode::Rels
     include Neo4j::ActiveNode::HasN
     include Neo4j::ActiveNode::Scope
+    include Neo4j::ActiveNode::Dependent
 
     def neo4j_obj
-      _persisted_obj || raise("Tried to access native neo4j object on a non persisted object")
+      _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
     included do
       def self.inherited(other)
-        inherit_id_property(other) if self.has_id_property?
+        inherit_id_property(other) if self.id_property?
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
-        attributes.each_pair { |k,v| other.attributes[k] = v }
+        attributes.each_pair { |k, v| other.attributes[k] = v }
         inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
         Neo4j::ActiveNode::Labels.add_wrapped_class(other)
         super
       end
 
       def self.inherited_indexes(other)
-       return if indexed_properties.nil?
-       self.indexed_properties.each { |property| other.index property }
+        return if indexed_properties.nil?
+        self.indexed_properties.each { |property| other.index property }
       end
 
       def self.inherit_serialized_properties(other)
@@ -65,17 +65,17 @@ module Neo4j
 
       def self.inherit_id_property(other)
         id_prop = self.id_property_info
-        conf = id_prop[:type].empty? ? { auto: :uuid } : id_prop[:type]
+        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
         other.id_property id_prop[:name], conf
       end
 
       Neo4j::Session.on_session_available do |_|
-        id_property :uuid, auto: :uuid unless self.has_id_property?
+        id_property :uuid, auto: :uuid unless self.id_property?
 
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]
-        id_property(name, type => value) if (name && type && value)
+        id_property(name, type => value) if name && type && value
       end
     end
 

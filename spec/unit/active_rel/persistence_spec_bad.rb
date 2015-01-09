@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveRel::Persistence do
-  let(:session) { double("Session")}
+  let(:session) { double('Session') }
   let(:node1) { double('first persisted node') }
-  let(:node2) { double('second persisted node')}
+  let(:node2) { double('second persisted node') }
   let(:rel)   { double('a persisted rel')  }
 
   before do
@@ -21,7 +21,7 @@ describe Neo4j::ActiveRel::Persistence do
       include Neo4j::ActiveRel::Property
 
       from_class Class
-      to_class   Class
+      to_class Class
 
       type :friends_with
 
@@ -43,13 +43,13 @@ describe Neo4j::ActiveRel::Persistence do
 
   describe 'save' do
     it 'creates a relationship if not already persisted' do
-      start_props = { from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001 }
-      end_props   = { friends_since: 'sunday', level: 9001, _classname: Class }
+      start_props = {from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001}
+      end_props   = {friends_since: 'sunday', level: 9001, _classname: Class}
       r = clazz.new(start_props)
       r.stub(:confirm_node_classes).and_return(:true)
-      expect(node1).to receive(:create_rel).with(:friends_with, node2, {friends_since: 'sunday', level: 9001, _classname: nil}).and_return(rel)
+      expect(node1).to receive(:create_rel).with(:friends_with, node2, friends_since: 'sunday', level: 9001, _classname: nil).and_return(rel)
       rel.stub(:props).and_return(end_props)
-      expect(r.save).to be_truthy 
+      expect(r.save).to be_truthy
     end
 
     it 'does not update the rel if nothing changes' do
@@ -186,7 +186,7 @@ describe Neo4j::ActiveRel::Persistence do
     it 'raises an exception if invalid' do
       clazz.stub(:create).and_return(false)
       clazz.stub_chain('errors.full_messages').and_return([])
-      expect do 
+      expect do
         clazz.create!
       end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
     end

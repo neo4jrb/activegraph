@@ -2,10 +2,10 @@ module Neo4j
   module ActiveNode
     module Query
       class QueryProxy
-
-        include Enumerable
+        include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
+        include Neo4j::ActiveNode::Dependent::QueryProxyMethods
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
@@ -49,82 +49,18 @@ module Neo4j
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
         # in the QueryProxy chain.
+        attr_reader :node_var
         def identity
           @node_var || _result_string
         end
         alias_method :node_identity, :identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
+        attr_reader :rel_var
         def rel_identity
+          ActiveSupport::Deprecation.warn 'rel_identity is deprecated and may be removed from future releases, use rel_var instead.', caller
+
           @rel_var
-        end
-
-        # Executes the query against the database if the results are not already present in a node's association cache. This method is
-        # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
-        # @param [String,Symbol] node The string or symbol of the node to return from the database.
-        # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
-        def enumerable_query(node, rel = nil)
-          pluck_this = rel.nil? ? [node] : [node, rel]
-          return self.pluck(*pluck_this) if @association.nil? || caller.nil?
-          cypher_string = self.to_cypher_with_params(pluck_this)
-          association_collection = caller.association_instance_get(cypher_string, @association)
-          if association_collection.nil?
-            association_collection = self.pluck(*pluck_this)
-            caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
-          end
-          association_collection
-        end
-
-        # Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
-        # The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
-        # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
-        # @return [Enumerable] An enumerable containing some combination of nodes and rels.
-        def each(node = true, rel = nil, &block)
-          if node && rel
-            enumerable_query(identity, @rel_var).each { |obj, rel| yield obj, rel }
-          else
-            pluck_this = !rel ? identity : @rel_var
-            enumerable_query(pluck_this).each { |obj| yield obj }
-          end
-        end
-
-        # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
-        # For example, to return the relationship between a given student and their lessons:
-        #   student.lessons.each_rel do |rel|
-        # @return [Enumerable] An enumerable containing any number of applicable relationship objects.
-        def each_rel(&block)
-          block_given? ? each(false, true, &block) : to_enum(:each, false, true)
-        end
-
-        # When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
-        # For example, to return a lesson and each relationship to a given student:
-        #   student.lessons.each_with_rel do |lesson, rel|
-        def each_with_rel(&block)
-          block_given? ? each(true, true, &block) : to_enum(:each, true, true)
-        end
-
-        # Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
-        # would be comparing the QueryProxy objects, not the lessons themselves.
-        def ==(value)
-          self.to_a == value
-        end
-
-        METHODS = %w[where rel_where order skip limit]
-
-        METHODS.each do |method|
-          module_eval(%Q{
-            def #{method}(*args)
-              build_deeper_query_proxy(:#{method}, args)
-            end}, __FILE__, __LINE__)
-        end
-        # Since there is a rel_where method, it seems only natural for there to be node_where
-        alias_method :node_where, :where
-        alias_method :offset, :skip
-        alias_method :order_by, :order
-
-        # For getting variables which have been defined as part of the association chain
-        def pluck(*args)
-          self.query.pluck(*args)
         end
 
         def params(params)
@@ -143,15 +79,15 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          query = if @association
-                    chain_var = _association_chain_var
-                    label_string = @model && ":`#{@model.mapped_label_name}`"
-                    (_association_query_start(chain_var) & _query_model_as(var)).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
-                  else
-                    starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
-                  end
+          base_query = if @association
+                         chain_var = _association_chain_var
+                         label_string = @model && ":`#{@model.mapped_label_name}`"
+                         (_association_query_start(chain_var) & _query_model_as(var)).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
+                       else
+                         starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+                       end
           # Build a query chain via the chain, return the result
-          @chain.inject(query.params(@params)) do |query, (method, arg)|
+          @chain.inject(base_query.params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
         end
@@ -172,7 +108,18 @@ module Neo4j
           @model.current_scope = previous
         end
 
+        METHODS = %w(where rel_where order skip limit)
 
+        METHODS.each do |method|
+          module_eval(%{
+            def #{method}(*args)
+              build_deeper_query_proxy(:#{method}, args)
+            end}, __FILE__, __LINE__)
+        end
+        # Since there is a rel_where method, it seems only natural for there to be node_where
+        alias_method :node_where, :where
+        alias_method :offset, :skip
+        alias_method :order_by, :order
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         def to_cypher
@@ -201,7 +148,7 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          raise "Can only create associations on associations" unless @association
+          fail 'Can only create associations on associations' unless @association
           other_nodes = [other_nodes].flatten
           properties = @association.inject_classname(properties)
           other_nodes = other_nodes.map do |other_node|
@@ -213,34 +160,34 @@ module Neo4j
             end
           end.compact
 
-          raise ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? {|other_node| !other_node.is_a?(@model) }
+          fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
           other_nodes.each do |other_node|
-            #Neo4j::Transaction.run do
-              other_node.save if not other_node.persisted?
+            # Neo4j::Transaction.run do
+            other_node.save unless other_node.neo_id
 
-              return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
+            return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
 
-              start_object = @options[:start_object]
-              start_object.clear_association_cache
-              _session.query(context: @options[:context])
-                .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where("ID(start) = {start_id} AND ID(end) = {end_id}")
-                .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
-                .create("start#{_association_arrow(properties, true)}end").exec
+            start_object = @options[:start_object]
+            start_object.clear_association_cache
+            _session.query(context: @options[:context])
+              .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where('ID(start) = {start_id} AND ID(end) = {end_id}')
+              .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
+              .send(create_method, "start#{_association_arrow(properties, true)}end").exec
 
-              @association.perform_callback(@options[:start_object], other_node, :after)
-            #end
+            @association.perform_callback(@options[:start_object], other_node, :after)
+            # end
           end
         end
 
         def read_attribute_for_serialization(*args)
-          to_a.map {|o| o.read_attribute_for_serialization(*args) }
+          to_a.map { |o| o.read_attribute_for_serialization(*args) }
         end
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
-            args[2] = self if @model.has_association?(method_name) || @model.has_scope?(method_name)
+            args[2] = self if @model.association?(method_name) || @model.scope?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
             super
@@ -252,9 +199,9 @@ module Neo4j
         end
 
         attr_reader :context
-        attr_reader :node_var
 
         protected
+
         # Methods are underscored to prevent conflict with user class methods
 
         def _add_params(params)
@@ -268,7 +215,7 @@ module Neo4j
         def _query_model_as(var)
           match_arg = if @model
                         label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-                        { var => label }
+                        {var => label}
                       else
                         var
                       end
@@ -310,7 +257,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.node_var || :"node#{_chain_level}"
           else
-            raise "Crazy error" # TODO: Better error
+            fail 'Crazy error' # TODO: Better error
           end
         end
 
@@ -320,7 +267,7 @@ module Neo4j
           elsif query_proxy = @options[:query_proxy]
             query_proxy.query_as(var)
           else
-            raise "Crazy error" # TODO: Better error
+            fail 'Crazy error' # TODO: Better error
           end
         end
 
@@ -335,6 +282,10 @@ module Neo4j
         attr_writer :context
 
         private
+
+        def create_method
+          association.unique? ? :create_unique : :create
+        end
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
@@ -359,20 +310,12 @@ module Neo4j
           result = []
           if arg.is_a?(Hash)
             arg.each do |key, value|
-              if @model && @model.has_association?(key)
+              if @model && @model.association?(key)
+                result += links_for_association(key, value, "n#{node_num}")
 
-                neo_id = value.try(:neo_id) || value
-                raise ArgumentError, "Invalid value for '#{key}' condition" if not neo_id.is_a?(Integer)
-
-                n_string = "n#{node_num}"
-                dir = @model.associations[key].direction
-
-                arrow = dir == :out ? '-->' : '<--'
-                result << [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }]
-                result << [:where, ->(v) { {"ID(#{n_string})" => neo_id.to_i} }]
                 node_num += 1
               else
-                result << [:where, ->(v) { {v => {key => value}}}]
+                result << [:where, ->(v) { {v => {key => value}} }]
               end
             end
           elsif arg.is_a?(String)
@@ -382,10 +325,23 @@ module Neo4j
         end
         alias_method :links_for_node_where_arg, :links_for_where_arg
 
+        def links_for_association(name, value, n_string)
+          neo_id = value.try(:neo_id) || value
+          fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
+
+          dir = @model.associations[name].direction
+
+          arrow = dir == :out ? '-->' : '<--'
+          [
+            [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }],
+            [:where, ->(_) { {"ID(#{n_string})" => neo_id.to_i} }]
+          ]
+        end
+
         # We don't accept strings here. If you want to use a string, just use where.
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(v) {{ rel_identity => { key => value }}}]
+            result << [:where, ->(_) { {rel_var => {key => value}} }]
           end
         end
 
@@ -400,4 +356,3 @@ module Neo4j
     end
   end
 end
-

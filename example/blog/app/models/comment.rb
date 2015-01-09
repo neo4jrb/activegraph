@@ -8,5 +8,4 @@ class Comment
 
   # or if PostComment is not needed
   # has_one :in, :post
-
 end

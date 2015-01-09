@@ -3,7 +3,6 @@ module Neo4j::ActiveRel
   # It's important (or maybe not really IMPORTANT, but at least worth mentioning) that calling method_missing
   # will result in a query to load the node if the node is not already loaded.
   class RelatedNode
-
     class InvalidParameterError < StandardError; end
 
     # ActiveRel's related nodes can be initialized with nothing, an integer, or a fully wrapped node.
@@ -15,13 +14,13 @@ module Neo4j::ActiveRel
     #
     # Initialization with a node doesn't appear to happen in the code. TODO: maybe find out why this is an option.
     def initialize(node = nil)
-      @node = valid_node_param?(node) ? node : (raise InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node' )
+      @node = valid_node_param?(node) ? node : (fail InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node')
     end
 
     # Loads the node if needed, then conducts comparison.
-    def == (obj)
+    def ==(other)
       loaded if @node.is_a?(Fixnum)
-      @node == obj
+      @node == other
     end
 
     # Returns the neo_id of a given node without loading.

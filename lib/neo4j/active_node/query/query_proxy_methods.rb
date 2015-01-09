@@ -4,12 +4,12 @@ module Neo4j
       module QueryProxyMethods
         class InvalidParameterError < StandardError; end
 
-        def first(target=nil)
-          query_with_target(target) { |target| first_and_last("ID(#{target})", target) }
+        def first(target = nil)
+          query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
         end
 
-        def last(target=nil)
-          query_with_target(target) { |target| first_and_last("ID(#{target}) DESC", target) }
+        def last(target = nil)
+          query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
         end
 
         def first_and_last(order, target)
@@ -17,35 +17,35 @@ module Neo4j
         end
 
         # @return [Fixnum] number of nodes of this class
-        def count(distinct=nil, target=nil)
-          raise(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-          query_with_target(target) do |target|
-            q = distinct.nil? ? target : "DISTINCT #{target}"
-            self.query.reorder.pluck("count(#{q}) AS #{target}").first
+        def count(distinct = nil, target = nil)
+          fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+          query_with_target(target) do |var|
+            q = distinct.nil? ? var : "DISTINCT #{var}"
+            self.query.reorder.pluck("count(#{q}) AS #{var}").first
           end
         end
 
         alias_method :size,   :count
         alias_method :length, :count
 
-        def empty?(target=nil)
-          query_with_target(target) { |target| !self.exists?(nil, target) }
+        def empty?(target = nil)
+          query_with_target(target) { |var| !self.exists?(nil, var) }
         end
 
         alias_method :blank?, :empty?
 
-        def include?(other, target=nil)
-          raise(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
-          query_with_target(target) do |target|
-            self.where("ID(#{target}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{target}) as count").first.count > 0
+        def include?(other, target = nil)
+          fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
+          query_with_target(target) do |var|
+            self.where("ID(#{var}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{var}) as count").first.count > 0
           end
         end
 
-        def exists?(node_condition=nil, target=nil)
-          raise(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
-          query_with_target(target) do |target|
-            start_q = exists_query_start(self, node_condition, target)
-            start_q.query.return("COUNT(#{target}) AS count").first.count > 0
+        def exists?(node_condition = nil, target = nil)
+          fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
+          query_with_target(target) do |var|
+            start_q = exists_query_start(node_condition, var)
+            start_q.query.return("COUNT(#{var}) AS count").first.count > 0
           end
         end
 
@@ -72,11 +72,11 @@ module Neo4j
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
           where_arg = if node.respond_to?(:neo_id)
-                        { neo_id: node.neo_id }
+                        {neo_id: node.neo_id}
                       elsif !node.nil?
                         id_key = association_id_key
                         node = ids_array(node) if node.is_a?(Array)
-                        { id_key => node }
+                        {id_key => node}
                       else
                         # support for null object pattern
                         '1 = 2'
@@ -89,20 +89,20 @@ module Neo4j
         # @param [#neo_id, String, Enumerable] node An object to be sent to `match_to`. See params for that method.
         # @return A relationship (ActiveRel, CypherRelationship, EmbeddedRelationship) or nil.
         def first_rel_to(node)
-          self.match_to(node).limit(1).pluck(rel_identity).first
+          self.match_to(node).limit(1).pluck(rel_var).first
         end
 
         # Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
         # @param [#neo_id, String, Enumerable] node An object to be sent to `match_to`. See params for that method.
         # @return An enumerable of relationship objects.
         def rels_to(node)
-          self.match_to(node).pluck(rel_identity)
+          self.match_to(node).pluck(rel_var)
         end
         alias_method :all_rels_to, :rels_to
 
         # Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
         def delete(node)
-          self.match_to(node).query.delete(rel_identity).exec
+          self.match_to(node).query.delete(rel_var).exec
           clear_caller_cache
         end
 
@@ -142,10 +142,11 @@ module Neo4j
           yield(target || identity)
         end
 
-        def exists_query_start(origin, condition, target)
-          if condition.class == Fixnum
+        def exists_query_start(condition, target)
+          case condition
+          when Fixnum
             self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
-          elsif condition.class == Hash
+          when Hash
             self.where(condition.keys.first => condition.values.first)
           else
             self

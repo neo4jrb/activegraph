@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'works well together with Neo4j::Core' do
-
   let(:clazz) do
     UniqueClass.create do
       include Neo4j::ActiveNode
@@ -13,7 +12,7 @@ describe 'works well together with Neo4j::Core' do
     obj = clazz.create
     node = Neo4j::Node.create
     obj.stuff << node
-    result = Neo4j::Session.query.match(:n).where("ID(n) = #{obj.neo_id}").match("(n)-[:stuff]->(m)").pluck(:m)
+    result = Neo4j::Session.query.match(:n).where("ID(n) = #{obj.neo_id}").match('(n)-[:stuff]->(m)').pluck(:m)
     expect(result).to eq([node])
   end
 
@@ -23,5 +22,4 @@ describe 'works well together with Neo4j::Core' do
     obj.stuff << node
     expect(obj.stuff.to_a).to eq([node])
   end
-
 end

@@ -16,12 +16,12 @@ class Lesson
   property :subject
   property :level
 
-  has_one  :out, :teachers_pet, model_class: Student, type: 'favorite_student'
+  has_one :out, :teachers_pet, model_class: Student, type: 'favorite_student'
   has_many :in, :unhappy_teachers, model_class: Teacher, origin: :dreaded_lesson
   has_many :in, :teachers, type: :teaching
   has_many :in, :students, type: :is_enrolled_for
 
-  def self.max_level(num=nil)
+  def self.max_level
     all.query_as(:lesson).pluck('max(lesson.level)').first
   end
 
@@ -29,7 +29,7 @@ class Lesson
     all.order(:subject)
   end
 
-  scope :level_number, ->(num) { where(level: num)}
+  scope :level_number, ->(num) { where(level: num) }
 end
 
 class Student
@@ -56,7 +56,7 @@ class Teacher
   has_many :out, :lessons_taught, model_class: Lesson
 
   has_many :out, :interests
-  has_one  :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
+  has_one :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
 end
 
 describe 'Query API' do
@@ -64,7 +64,7 @@ describe 'Query API' do
 
   describe 'association validation' do
     before(:each) do
-      %w{Foo Bar}.each do |const|
+      %w(Foo Bar).each do |const|
         stub_const const, Class.new { include Neo4j::ActiveNode }
       end
     end
@@ -111,7 +111,6 @@ describe 'Query API' do
 
         it { expect { subject.foos.to_a }.to raise_error(ArgumentError) }
       end
-
     end
   end
 
@@ -138,13 +137,13 @@ describe 'Query API' do
     it 'evaluates `all` lazily' do
       result = Teacher.all
       expect(result).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
-      result.size.should == 2
+      result.size.should eq(2)
       result.should include(samuels)
       result.should include(othmar)
     end
 
     it 'allows filtering' do
-      Teacher.where(name: /.*Othmar.*/).to_a.should == [othmar]
+      Teacher.where(name: /.*Othmar.*/).to_a.should eq([othmar])
     end
 
     context 'samuels teaching soc 101 and 102 lessons' do
@@ -153,8 +152,22 @@ describe 'Query API' do
         samuels.lessons_teaching << ss102
       end
 
-      it 'allows definining of a variable for class as start of QueryProxy chain' do
-        Teacher.as(:t).lessons.where(level: 101).pluck(:t).should == [samuels]
+      describe '`:as`' do
+        context 'on a class' do
+          it 'allows defining of a variable for class as start of QueryProxy chain' do
+            Teacher.as(:t).lessons.where(level: 101).pluck(:t).should eq([samuels])
+          end
+        end
+
+        context 'on an instance' do
+          it 'allows defining of a variable for an instance as start of a QueryProxy chain' do
+            expect(samuels.as(:s).pluck(:s).first).to eq samuels
+          end
+
+          it 'sets the `:caller` method' do
+            expect(samuels.as(:s).caller).to eq samuels
+          end
+        end
       end
 
       context 'samuels taught math 101 lesson' do
@@ -177,8 +190,8 @@ describe 'Query API' do
       end
 
       it 'differentiates associations on the same model for the same class' do
-        bobby.favorite_teachers.to_a.should == [samuels]
-        bobby.hated_teachers.to_a.should == [othmar]
+        bobby.favorite_teachers.to_a.should eq([samuels])
+        bobby.hated_teachers.to_a.should eq([othmar])
       end
     end
 
@@ -189,25 +202,25 @@ describe 'Query API' do
       end
 
       it 'allows params' do
-        Teacher.as(:t).where("t.name = {name}").params(name: 'Harold Samuels').to_a.should == [samuels]
+        Teacher.as(:t).where('t.name = {name}').params(name: 'Harold Samuels').to_a.should eq([samuels])
 
-        samuels.lessons_teaching(:lesson).where("lesson.level = {level}").params(level: 103).to_a.should == [geo103]
+        samuels.lessons_teaching(:lesson).where('lesson.level = {level}').params(level: 103).to_a.should eq([geo103])
       end
 
       it 'allows filtering on associations' do
-        samuels.lessons_teaching.where(level: 101).to_a.should == [ss101]
+        samuels.lessons_teaching.where(level: 101).to_a.should eq([ss101])
       end
 
       it 'allows class methods on associations' do
-        samuels.lessons_teaching.level_number(101).to_a.should == [ss101]
+        samuels.lessons_teaching.level_number(101).to_a.should eq([ss101])
 
-        samuels.lessons_teaching.max_level.should == 103
-        samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should == 101
+        samuels.lessons_teaching.max_level.should eq(103)
+        samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should eq(101)
       end
 
       it 'allows chaining of scopes and then class methods' do
-        samuels.lessons_teaching.level_number(101).max_level.should == 101
-        samuels.lessons_teaching.level_number(103).max_level.should == 103
+        samuels.lessons_teaching.level_number(101).max_level.should eq(101)
+        samuels.lessons_teaching.level_number(103).max_level.should eq(103)
       end
 
       context 'samuels also teaching math 201' do
@@ -216,7 +229,7 @@ describe 'Query API' do
         end
 
         it 'allows chaining of class methods and then scopes' do
-          samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should == [math101, ss101]
+          samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should eq([math101, ss101])
         end
       end
     end
@@ -229,14 +242,14 @@ describe 'Query API' do
           before(:each) { bobby.lessons << math101 }
           before(:each) { sandra.lessons << ss101 }
 
-          it { othmar.lessons_teaching.students.to_a.should == [bobby] }
+          it { othmar.lessons_teaching.students.to_a.should eq([bobby]) }
 
           context 'bobby likes to read, sandra likes math' do
             before(:each) { bobby.interests << reading }
             before(:each) { sandra.interests << math }
 
             # Simple association chaining on three levels
-            it { othmar.lessons_teaching.students.interests.to_a.should == [reading] }
+            it { othmar.lessons_teaching.students.interests.to_a.should eq([reading]) }
           end
         end
 
@@ -244,13 +257,13 @@ describe 'Query API' do
           before(:each) { danny.lessons << math101 }
 
           # Filtering on last association
-          it { othmar.lessons_teaching.students.where(age: 15).to_a.should == [danny] }
+          it { othmar.lessons_teaching.students.where(age: 15).to_a.should eq([danny]) }
 
           # Mid-association variable assignment when filtering later
-          it { othmar.lessons_teaching(:lesson).students.where(age: 15).pluck(:lesson).should == [math101] }
+          it { othmar.lessons_teaching(:lesson).students.where(age: 15).pluck(:lesson).should eq([math101]) }
 
           # Two variable assignments
-          it { othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student).should == [[math101, danny]] }
+          it { othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student).should eq([[math101, danny]]) }
         end
 
         describe 'on classes' do
@@ -271,23 +284,23 @@ describe 'Query API' do
           end
 
           context 'students, age 15, who are taking level 101 lessons' do
-            it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should == [danny] }
-            it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not == [[othmar]] }
+            it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should eq([danny]) }
+            it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not eq([[othmar]]) }
             it do
               Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should ==
-              Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
+                Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
             end
           end
 
           context 'Students enrolled in math 101 with grade 65' do
             # with automatic identifier
-            it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should == [danny] }
+            it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should eq([danny]) }
 
             # with manual identifier
-            it { Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student).should == [danny] }
+            it { Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student).should eq([danny]) }
 
             # with multiple instances of rel_where
-            it { Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t).should == [othmar] }
+            it { Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t).should eq([othmar]) }
           end
 
           context 'with has_one' do
@@ -300,12 +313,12 @@ describe 'Query API' do
             end
 
             context 'on instances' do
-              it { math101.teachers_pet(:l).lessons.where(level: 103).should == [geo103] }
+              it { math101.teachers_pet(:l).lessons.where(level: 103).should eq([geo103]) }
             end
 
             context 'on class' do
               # Lessons of level 101 that have a teachers pet, age 16, whose hated teachers include Ms Othmar... Who hates Mrs Othmar!?
-              it { Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should == [bobby] }
+              it { Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should eq([bobby]) }
             end
           end
         end
@@ -316,7 +329,7 @@ describe 'Query API' do
         before(:each) { brian.lessons << math201 }
 
         # Mid-association filtering
-        it { othmar.lessons_teaching.where(level: 201).students.to_a.should == [brian] }
+        it { othmar.lessons_teaching.where(level: 201).students.to_a.should eq([brian]) }
       end
     end
 
@@ -327,15 +340,15 @@ describe 'Query API' do
       end
 
       # Should get both
-      it { monster_trucks.interested.count.should == 2 }
+      it { monster_trucks.interested.count.should eq(2) }
       it { monster_trucks.interested.to_a.should include(samuels, othmar) }
 
       # Variable assignment and filtering on a relationship
-      it { monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).should == [samuels] }
+      it { monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).should eq([samuels]) }
 
       it 'considers symbols as node fields for order' do
-        monster_trucks.interested(:person).order(:name).pluck(:person).should == [samuels, othmar]
-        monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person).should == [othmar, samuels]
+        monster_trucks.interested(:person).order(:name).pluck(:person).should eq([samuels, othmar])
+        monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person).should eq([othmar, samuels])
       end
     end
   end
@@ -343,8 +356,8 @@ describe 'Query API' do
   describe 'Core::Query#proxy_as' do
     let(:core_query) do
       Neo4j::Session.current.query
-      .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
-      .with(:other_end, :s)
+        .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
+        .with(:other_end, :s)
     end
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }

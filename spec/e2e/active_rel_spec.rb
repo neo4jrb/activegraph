@@ -34,13 +34,29 @@ describe 'ActiveRel' do
       expect(from_node).to receive(:id).at_least(1).times.and_return(nil)
       expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
     end
+
+    describe 'creates_unique_rel' do
+      after do
+        MyRelClass.instance_variable_set(:@unique, false)
+        [from_node, to_node].each(&:destroy)
+      end
+
+      it 'creates a unique relationship between to nodes' do
+        expect(from_node.others.count).to eq 0
+        MyRelClass.create(from_node: from_node, to_node: to_node)
+        expect(from_node.others.count).to eq 1
+        MyRelClass.creates_unique_rel
+        MyRelClass.create(from_node: from_node, to_node: to_node)
+        expect(from_node.others.count).to eq 1
+      end
+    end
   end
 
   describe 'properties' do
     it 'serializes' do
       rel = MyRelClass.create(from_node: from_node, to_node: to_node)
-      rel.links = { search: 'https://google.com', social: 'https://twitter.com' }
-      expect{ rel.save }.not_to raise_error
+      rel.links = {search: 'https://google.com', social: 'https://twitter.com'}
+      expect { rel.save }.not_to raise_error
       rel.reload
       expect(rel.links).to be_a(Hash)
       rel.destroy
@@ -69,7 +85,7 @@ describe 'ActiveRel' do
       let(:f1) { FromClass.create }
       let(:t1) { ToClass.create }
       before { f1.others << t1 }
-      after { f1.destroy and t1.destroy }
+      after { f1.destroy && t1.destroy }
 
       it 'returns the activerel class' do
         expect(f1.others_rels.first).to be_a(MyRelClass)
@@ -93,7 +109,7 @@ describe 'ActiveRel' do
 
       it 'update the rel' do
         rel.score = 9000
-        rel.save and rel.reload
+        rel.save && rel.reload
         expect(rel.score).to eq 9000
       end
 
@@ -110,7 +126,7 @@ describe 'ActiveRel' do
       @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
     end
 
-    after { [@rel1, @rel2].each{ |r| r.destroy } }
+    after { [@rel1, @rel2].each(&:destroy) }
 
     describe 'related nodes' do
       # We only run this test in the Server environment. Embedded's loading of

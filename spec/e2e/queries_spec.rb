@@ -9,14 +9,13 @@ describe 'Neo4j::ActiveNode#find' do
   end
 
   it 'can find nodes that exists' do
-    foo =clazz.create(name: 'foo')
+    foo = clazz.create(name: 'foo')
     expect(clazz.where(name: 'foo').first).to eq(foo)
   end
 
   it 'can not find nodes that does not exists' do
     expect(clazz.where(name: 'unkown').first).to be_nil
   end
-
 end
 
 
@@ -32,8 +31,8 @@ describe 'Neo4j::ActiveNode#all' do
 
 
   before(:all) do
-    @clazz_a = create_clazz {|c| c.has_one :out, :knows, model_class: false }
-    @clazz_b = create_clazz {|c| c.has_many :in, :known_by, model_class: false }
+    @clazz_a = create_clazz { |c| c.has_one :out, :knows, model_class: false }
+    @clazz_b = create_clazz { |c| c.has_many :in, :known_by, model_class: false }
 
     @b2 = @clazz_b.create(name: 'b2', score: '2')
     @b1 = @clazz_b.create(name: 'b1', score: '1')
@@ -63,5 +62,4 @@ describe 'Neo4j::ActiveNode#all' do
   it 'can not find all nodes having a relationship to another node if there are non' do
     expect(@clazz_b.query_as(:b).match('b<-[:knows]-(r)').pluck(:r)).to eq([])
   end
-
 end

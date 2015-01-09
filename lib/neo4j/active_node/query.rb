@@ -1,6 +1,5 @@
 module Neo4j
   module ActiveNode
-
     # Helper methods to return Neo4j::Core::Query objects.  A query object can be used to successively build a cypher query
     #
     #    person.query_as(:n).match('n-[:friend]-o').return(o: :name) # Return the names of all the person's friends
@@ -12,12 +11,25 @@ module Neo4j
       #
       # @example Return the names of all of Mike's friends
       #   # Generates: MATCH (mike:Person), mike-[:friend]-friend WHERE ID(mike) = 123 RETURN friend.name
-      #   mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name) 
+      #   mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name)
       #
       # @param var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]
-      def query_as(var)
-        self.class.query_as(var).where("ID(#{var})" => self.neo_id)
+      def query_as(node_var)
+        self.class.query_as(node_var).where("ID(#{node_var})" => self.neo_id)
+      end
+
+      # Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
+      # This method does not exist within QueryProxy and can only be used to start a new chain.
+      #
+      # @example Start a new QueryProxy chain with the first identifier set manually
+      #   # Generates: MATCH (s:`Student`), (l:`Lesson`), s-[rel1:`ENROLLED_IN`]->(l:`Lesson`) WHERE ID(s) = {neo_id_17963}
+      #   student.as(:s).lessons(:l)
+      #
+      # @param [String, Symbol] node_var The identifier to use within the QueryProxy object
+      # @return [Neo4j::ActiveNode::Query::QueryProxy]
+      def as(node_var)
+        self.class.query_proxy(node: node_var, caller: self).match_to(self)
       end
 
       module ClassMethods
@@ -34,7 +46,7 @@ module Neo4j
         end
 
         Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
-          module_eval(%Q{
+          module_eval(%{
             def #{method}(*args)
               self.query_proxy.#{method}(*args)
             end}, __FILE__, __LINE__)
@@ -44,10 +56,19 @@ module Neo4j
           Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)
         end
 
+        # Start a new QueryProxy with the starting identifier set to the given argument.
+        # This method does not exist within QueryProxy, it can only be called at the class level to create a new QP object.
+        # To set an identifier within a QueryProxy chain, give it as the first argument to a chained association.
+        #
+        # @example Start a new QueryProxy where the first identifier is set manually.
+        #   # Generates: MATCH (s:`Student`), (result_lessons:`Lesson`), s-[rel1:`ENROLLED_IN`]->(result_lessons:`Lesson`)
+        #   Student.as(:s).lessons
+        #
+        # @param [String, Symbol] node_var A string or symbol to use as the starting identifier.
+        # @return [Neo4j::ActiveNode::Query::QueryProxy]
         def as(node_var)
           query_proxy(node: node_var)
         end
-
       end
     end
   end

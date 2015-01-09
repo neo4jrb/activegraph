@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::Shared::TypeConverters do
-
   describe 'converters' do
     it 'has converters for DateTime' do
       Neo4j::Shared::TypeConverters.converters[DateTime].should eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
@@ -42,7 +41,7 @@ describe Neo4j::Shared::TypeConverters do
 
   describe 'to_db' do
     it 'converts if there is a converter' do
-      date_time = DateTime.civil(2011,3,4,1,2,3,0)
+      date_time = DateTime.civil(2011, 3, 4, 1, 2, 3, 0)
       converter_value = Neo4j::Shared::TypeConverters.to_db(date_time, DateTime)
       converter_value.should be_a(Fixnum)
     end
@@ -55,7 +54,7 @@ describe Neo4j::Shared::TypeConverters do
   describe Neo4j::Shared::TypeConverters::JSONConverter do
     subject { Neo4j::Shared::TypeConverters::JSONConverter }
 
-    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' } }
+    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'} }
 
     it 'translates from and to database' do
       db_value = Neo4j::Shared::TypeConverters::JSONConverter.to_db(links)
@@ -69,7 +68,7 @@ describe Neo4j::Shared::TypeConverters do
   describe Neo4j::Shared::TypeConverters::YAMLConverter do
     subject { Neo4j::Shared::TypeConverters::YAMLConverter }
 
-    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/' } }
+    let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'} }
 
     it 'translates from and to database' do
       db_value = Neo4j::Shared::TypeConverters::YAMLConverter.to_db(links)
@@ -83,7 +82,7 @@ describe Neo4j::Shared::TypeConverters do
   describe Neo4j::Shared::TypeConverters::DateConverter do
     subject { Neo4j::Shared::TypeConverters::DateConverter }
 
-    let(:now) { Time.at(1352538487).utc.to_date }
+    let(:now) { Time.at(1_352_538_487).utc.to_date }
 
     it 'translate from and to database' do
       db_value = Neo4j::Shared::TypeConverters::DateConverter.to_db(now)
@@ -112,33 +111,30 @@ describe Neo4j::Shared::TypeConverters do
     subject { Neo4j::Shared::TypeConverters::TimeConverter }
 
     before(:each) do
-      @dt = 1352538487
+      @dt = 1_352_538_487
       @hr = 3600
     end
 
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07-06:00")) { should === @dt + 6*@hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07-04:00")) { should === @dt + 4*@hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07-02:00")) { should === @dt + 2*@hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+00:00")) { should === @dt }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+02:00")) { should === @dt - 2*@hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+04:00")) { should === @dt - 4*@hr }
-    its(:to_db, DateTime.parse("2012-11-10T09:08:07+06:00")) { should === @dt - 6*@hr }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { should eq(@dt + 6 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { should eq(@dt + 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { should eq(@dt + 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { should eq(@dt) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { should eq(@dt - 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { should eq(@dt - 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { should eq(@dt - 6 * @hr) }
 
     describe 'to_ruby' do
       it 'translate a fixnum back to DateTime' do
-        subject.to_ruby(@dt + 6*@hr).should eq(DateTime.parse("2012-11-10T09:08:07-06:00"))
+        subject.to_ruby(@dt + 6 * @hr).should eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
       end
     end
 
     it 'translate from and to database' do
-      value = DateTime.parse("2012-11-10T09:08:07+00:00") # only utc support
+      value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
       db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
       ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
       ruby_value.class.should eq(DateTime)
       ruby_value.to_s.should eq(value.to_s)
     end
-
-
-
   end
 end

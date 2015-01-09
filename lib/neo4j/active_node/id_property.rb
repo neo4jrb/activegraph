@@ -1,5 +1,4 @@
 module Neo4j::ActiveNode
-
   # This module makes it possible to use other IDs than the build it neo4j id (neo_id)
   #
   # @example using generated UUIDs
@@ -27,16 +26,16 @@ module Neo4j::ActiveNode
 
     module TypeMethods
       def define_id_methods(clazz, name, conf)
-        raise "Expected a Hash, got #{conf.class} (#{conf.to_s}) for id_property" unless conf.is_a?(Hash)
+        fail "Expected a Hash, got #{conf.class} (#{conf}) for id_property" unless conf.is_a?(Hash)
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
-          raise "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
+          fail "only :uuid auto id_property allowed, got #{conf[:auto]}" unless conf[:auto] == :uuid
           define_uuid_method(clazz, name)
         elsif conf.empty?
           define_property_method(clazz, name)
         else
-          raise "Illegal value #{conf.inspect} for id_property, expected :on or :auto"
+          fail "Illegal value #{conf.inspect} for id_property, expected :on or :auto"
         end
       end
 
@@ -45,23 +44,22 @@ module Neo4j::ActiveNode
       def define_property_method(clazz, name)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%Q{
+        clazz.module_eval(%(
           def id
-            persisted? ? #{name.to_sym == :id ? 'attribute(\'id\')' : name} : nil
+            _persisted_obj ? #{name.to_sym == :id ? 'attribute(\'id\')' : name} : nil
           end
 
           validates_uniqueness_of :#{name}
 
           property :#{name}
-        }, __FILE__, __LINE__)
-
+                ), __FILE__, __LINE__)
       end
 
 
       def define_uuid_method(clazz, name)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%Q{
+        clazz.module_eval(%(
           default_property :#{name} do
              ::SecureRandom.uuid
           end
@@ -71,13 +69,13 @@ module Neo4j::ActiveNode
           end
 
           alias_method :id, :#{name}
-        }, __FILE__, __LINE__)
+                ), __FILE__, __LINE__)
       end
 
       def define_custom_method(clazz, name, on)
         clear_methods(clazz, name)
 
-        clazz.module_eval(%Q{
+        clazz.module_eval(%{
           default_property :#{name} do |instance|
              raise "Specifying custom id_property #{name} on none existing method #{on}" unless instance.respond_to?(:#{on})
              instance.#{on}
@@ -93,15 +91,15 @@ module Neo4j::ActiveNode
 
       def clear_methods(clazz, name)
         if clazz.method_defined?(name)
-          clazz.module_eval(%Q{
+          clazz.module_eval(%(
             undef_method :#{name}
-          }, __FILE__, __LINE__)
+                    ), __FILE__, __LINE__)
         end
 
         if clazz.attribute_names.include?(name.to_s)
-          clazz.module_eval(%Q{
+          clazz.module_eval(%(
             undef_property :#{name}
-          }, __FILE__, __LINE__)
+                    ), __FILE__, __LINE__)
         end
       end
 
@@ -110,7 +108,6 @@ module Neo4j::ActiveNode
 
 
     module ClassMethods
-
       def find_by_neo_id(id)
         Neo4j::Node.load(id)
       end
@@ -125,7 +122,7 @@ module Neo4j::ActiveNode
 
       def id_property(name, conf = {})
         begin
-          if has_id_property?
+          if id_property?
             unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
               drop_constraint(id_property_name, type: :unique)
             end
@@ -142,7 +139,15 @@ module Neo4j::ActiveNode
         end
       end
 
+      # rubocop:disable Style/PredicateName
       def has_id_property?
+        ActiveSupport::Deprecation.warn 'has_id_property? is deprecated and may be removed from future releases, use id_property? instead.', caller
+
+        id_property?
+      end
+      # rubocop:enable Style/PredicateName
+
+      def id_property?
         id_property_info && !id_property_info.empty?
       end
 
@@ -155,8 +160,6 @@ module Neo4j::ActiveNode
       end
 
       alias_method :primary_key, :id_property_name
-
     end
   end
-
 end

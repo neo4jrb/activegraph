@@ -1,10 +1,8 @@
 module Neo4j::Shared
   module TypeConverters
-
     # Converts Date objects to Java long types. Must be timezone UTC.
     class DateConverter
       class << self
-
         def convert_type
           Date
         end
@@ -18,14 +16,12 @@ module Neo4j::Shared
           return nil if value.nil?
           Time.at(value).utc.to_date
         end
-
       end
     end
 
     # Converts DateTime objects to and from Java long types. Must be timezone UTC.
     class DateTimeConverter
       class << self
-
         def convert_type
           DateTime
         end
@@ -50,18 +46,16 @@ module Neo4j::Shared
               when String
                 DateTime.strptime(value, '%Y-%m-%d %H:%M:%S %z')
               else
-                raise ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
+                fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
               end
 
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
         end
-
       end
     end
 
     class TimeConverter
       class << self
-
         def convert_type
           Time
         end
@@ -81,14 +75,12 @@ module Neo4j::Shared
           return nil if value.nil?
           Time.at(value).utc
         end
-
       end
     end
 
     # Converts hash to/from YAML
     class YAMLConverter
       class << self
-
         def convert_type
           Hash
         end
@@ -108,7 +100,6 @@ module Neo4j::Shared
     # Converts hash to/from JSON
     class JSONConverter
       class << self
-
         def convert_type
           JSON
         end
@@ -130,24 +121,23 @@ module Neo4j::Shared
     def convert_properties_to(medium, properties)
       # Perform type conversion
       serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
-      properties = properties.inject({}) do |new_attributes, key_value_pair|
+
+      properties.each_with_object({}) do |key_value_pair, new_attributes|
         attr, value = key_value_pair
 
         # skip "secret" undeclared attributes such as uuid
         next new_attributes unless self.class.attributes[attr]
 
-        type = serialize.has_key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
+        type = serialize.key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
         new_attributes[attr] = if TypeConverters.converters[type].nil?
-                                  value
-                                else
-                                  TypeConverters.send "to_#{medium}", value, type
-                                end
-        new_attributes
+                                 value
+                               else
+                                 TypeConverters.send "to_#{medium}", value, type
+                               end
       end
     end
 
     class << self
-
       # Converts the value to ruby from a Neo4j database value if there is a converter for given type
       def to_ruby(value, type = nil)
         found_converter = converters[type]
@@ -162,13 +152,11 @@ module Neo4j::Shared
 
       def converters
         @converters ||= begin
-          Neo4j::Shared::TypeConverters.constants.find_all do |c|
-            Neo4j::Shared::TypeConverters.const_get(c).respond_to?(:convert_type)
-          end.map do  |c|
-            Neo4j::Shared::TypeConverters.const_get(c)
-          end.inject({}) do |ack, t|
-            ack[t.convert_type] = t
-            ack
+          Neo4j::Shared::TypeConverters.constants.each_with_object({}) do |constant_name, result|
+            constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
+            if constant.respond_to?(:convert_type)
+              result[constant.convert_type] = constant
+            end
           end
         end
       end

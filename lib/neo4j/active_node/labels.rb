@@ -1,7 +1,5 @@
 module Neo4j
   module ActiveNode
-
-
     # Provides a mapping between neo4j labels and Ruby classes
     module Labels
       extend ActiveSupport::Concern
@@ -52,7 +50,7 @@ module Neo4j
       # Only for testing purpose
       # @private
       def self._wrapped_labels=(wl)
-        @_wrapped_labels=(wl)
+        @_wrapped_labels = (wl)
       end
 
       def self._wrapped_labels
@@ -74,25 +72,24 @@ module Neo4j
         # Returns the object with the specified neo4j id.
         # @param [String,Fixnum] id of node to find
         def find(id)
-          map_id = Proc.new {|object| object.respond_to?(:id) ? object.send(:id) : object }
+          map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
           if id.is_a?(Array)
-            find_by_ids(id.map {|o| map_id.call(o) })
+            find_by_ids(id.map { |o| map_id.call(o) })
           else
             find_by_id(map_id.call(id))
           end
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
-        # @param [Hash] args of arguments to find
-        def find_by(*args)
-          self.query_as(:n).where(n: eval(args.join)).limit(1).pluck(:n).first
+        # @param Hash args of arguments to find
+        def find_by(values)
+          self.query_as(:n).where(n: values).limit(1).pluck(:n).first
         end
 
         # Like find_by, except that if no record is found, raises a RecordNotFound error.
-        def find_by!(*args)
-          a = eval(args.join)
-          find_by(args) or raise RecordNotFound, "#{self.query_as(:n).where(n: a).limit(1).to_cypher} returned no results"
+        def find_by!(values)
+          find_by(values) || fail(RecordNotFound, "#{self.query_as(:n).where(n: values).limit(1).to_cypher} returned no results")
         end
 
         # Deletes all nodes and connected relationships from Cypher.
@@ -104,7 +101,7 @@ module Neo4j
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
         # one database query per node in the database, more if callbacks require them.
         def destroy_all
-          self.all.each { |n| n.destroy }
+          self.all.each(&:destroy)
         end
 
         # Creates a Neo4j index on given property
@@ -141,14 +138,14 @@ module Neo4j
         # @example
         #   Person.constraint :name, type: :unique
         #
-        def constraint(property, constraints, session = Neo4j::Session.current)
+        def constraint(property, constraints)
           Neo4j::Session.on_session_available do |session|
             label = Neo4j::Label.create(mapped_label_name)
             label.create_constraint(property, constraints, session)
           end
         end
 
-        def drop_constraint(property, constraint, session = Neo4j::Session.current)
+        def drop_constraint(property, constraint)
           Neo4j::Session.on_session_available do |session|
             label = Neo4j::Label.create(mapped_label_name)
             label.drop_constraint(property, constraint, session)
@@ -166,7 +163,7 @@ module Neo4j
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
         def mapped_label_name
-          @_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
+          @mapped_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
         end
 
         # @return [Neo4j::Label] the label for this class
@@ -180,7 +177,7 @@ module Neo4j
 
         def base_class
           unless self < Neo4j::ActiveNode
-            raise "#{name} doesn't belong in a hierarchy descending from ActiveNode"
+            fail "#{name} doesn't belong in a hierarchy descending from ActiveNode"
           end
 
           if superclass == Object
@@ -204,21 +201,25 @@ module Neo4j
             else
               label.create_index(property) unless existing.flatten.include?(property)
             end
-
           end
         end
 
         def mapped_labels
-          mapped_label_names.map{|label_name| Neo4j::Label.create(label_name)}
+          mapped_label_names.map { |label_name| Neo4j::Label.create(label_name) }
         end
 
+        def mapped_label_name=(name)
+          @mapped_label_name = name.to_sym
+        end
+
+        # rubocop:disable Style/AccessorMethodName
         def set_mapped_label_name(name)
-          @_label_name = name.to_sym
+          ActiveSupport::Deprecation.warn 'set_mapped_label_name is deprecated and may be removed from future releases, use self.mapped_label_name= instead.', caller
+
+          self.mapped_label_name = name
         end
-
+        # rubocop:enable Style/AccessorMethodName
       end
-
     end
-
   end
 end

@@ -1,17 +1,17 @@
 require 'neo4j/version'
 
-#require "delegate"
-#require "time"
-#require "set"
+# require "delegate"
+# require "time"
+# require "set"
 #
-#require "active_support/core_ext"
-#require "active_support/json"
-#require "active_support/inflector"
-#require "active_support/time_with_zone"
+# require "active_support/core_ext"
+# require "active_support/json"
+# require "active_support/inflector"
+# require "active_support/time_with_zone"
 
-require "neo4j-core"
+require 'neo4j-core'
 require 'neo4j/core/query'
-require "active_model"
+require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
 
@@ -43,8 +43,12 @@ require 'neo4j/active_rel/related_node'
 require 'neo4j/active_rel/types'
 require 'neo4j/active_rel'
 
+require 'neo4j/active_node/dependent'
+require 'neo4j/active_node/dependent/query_proxy_methods'
+require 'neo4j/active_node/dependent/association_methods'
 require 'neo4j/active_node/query_methods'
 require 'neo4j/active_node/query/query_proxy_methods'
+require 'neo4j/active_node/query/query_proxy_enumerable'
 require 'neo4j/active_node/query/query_proxy_find_in_batches'
 require 'neo4j/active_node/labels'
 require 'neo4j/active_node/id_property'

@@ -18,20 +18,20 @@ describe 'Neo4j::ActiveNode#rels' do
   end
 
   it 'delegates #node' do
-    @n.node(dir: :outgoing).should == @a
+    @n.node(dir: :outgoing).should eq(@a)
   end
 
   it 'delegates #rels' do
     rels = @n.rels(dir: :outgoing)
-    rels.count.should == 1
-    rels.first.end_node.should == @a
-    rels.first.start_node.should == @n
+    rels.count.should eq(1)
+    rels.first.end_node.should eq(@a)
+    rels.first.start_node.should eq(@n)
   end
 
   it 'delegates #rel' do
     rel = @n.rel(dir: :outgoing)
-    rel.end_node.should == @a
-    rel.start_node.should == @n
+    rel.end_node.should eq(@a)
+    rel.start_node.should eq(@n)
   end
 
   it 'delegates #rel?' do
@@ -43,5 +43,4 @@ describe 'Neo4j::ActiveNode#rels' do
     @n.rel?(dir: :outgoing).should be true
     @n.rel?(dir: :outgoing, type: :knows).should be false
   end
-
 end

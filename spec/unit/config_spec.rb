@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::Config do
-
   describe 'default_file' do
     it 'should exist' do
       expect(File.exist?(Neo4j::Config.default_file)).to eq(true)
@@ -10,11 +9,11 @@ describe Neo4j::Config do
 
   describe 'when using a different existing config' do
     before do
-      Neo4j::Config.default_file = File.expand_path(File.join(File.dirname(__FILE__), "config.yml"))
+      Neo4j::Config.default_file = File.expand_path(File.join(File.dirname(__FILE__), 'config.yml'))
     end
 
     after do
-      Neo4j::Config.default_file= Neo4j::Config::DEFAULT_FILE
+      Neo4j::Config.default_file = Neo4j::Config::DEFAULT_FILE
     end
 
     describe 'defaults' do
@@ -81,7 +80,7 @@ describe Neo4j::Config do
     describe 'delete_all' do
       it 'deletes all' do
         Neo4j::Config.delete_all
-        expect(Neo4j::Config.configuration).to eq({})
+        expect(Neo4j::Config.configuration).to eq('my_conf' => 'My value')
       end
     end
   end

@@ -1,6 +1,5 @@
 module Neo4j
   module ActiveRel
-
     # provides mapping of type to model name
     module Types
       extend ActiveSupport::Concern
@@ -21,7 +20,7 @@ module Neo4j
       # which will completely bypass this whole process.
       WRAPPED_CLASSES = {}
 
-      included do |klazz|
+      included do
         type self.name, true
       end
 
@@ -36,12 +35,11 @@ module Neo4j
         end
 
         # @return [String] a string representing the relationship type that will be created
-        def _type
-          @rel_type
-        end
+        attr_reader :rel_type
+        alias_method :_type, :rel_type # Should be deprecated
 
         def add_wrapped_class(type)
-          #_wrapped_classes[type.to_sym.downcase] = self.name
+          # _wrapped_classes[type.to_sym.downcase] = self.name
           _wrapped_classes[type.to_sym] = self.name
         end
 

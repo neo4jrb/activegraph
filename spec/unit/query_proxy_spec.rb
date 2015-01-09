@@ -1,12 +1,12 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Query::QueryProxy do
-  let (:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
-  let (:session) { double("A session")}
-  let (:query_result) { double("the result of calling :query")}
-  let (:node) { double("A node object", foo: 'bar', neo_id: true ) }
-  let (:rel)  { double("A rel object")}
-  let (:user_model) { double("A fake user model") }
+  let(:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
+  let(:session) { double('A session') }
+  let(:query_result) { double('the result of calling :query') }
+  let(:node) { double('A node object', foo: 'bar', neo_id: true) }
+  let(:rel)  { double('A rel object') }
+  let(:user_model) { double('A fake user model') }
 
   describe 'label generation' do
     before do
@@ -23,7 +23,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe 'each_with_rel' do
     it 'yields a node and rel object' do
       expect(qp).to receive(:pluck).and_return([node, rel])
-      expect(qp.each_with_rel{|n, r| }).to eq [node, rel]
+      expect(qp.each_with_rel {}).to eq [node, rel]
     end
   end
 
@@ -39,13 +39,13 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
       it 'sends the block to :each with node false, rel true' do
         expect(qp).not_to receive(:to_enum)
         expect(qp).to receive(:each).with(false, true)
-        qp.each_rel{|r| }
+        qp.each_rel {}
       end
 
       it 'calls pluck and executes the block' do
         expect(qp).to receive(:pluck).and_return([rel])
         expect(rel).to receive(:name)
-        qp.each_rel{|r| r.name }
+        qp.each_rel(&:name)
       end
     end
   end
@@ -62,14 +62,14 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
       it 'sends the block to :each with node true, rel true' do
         expect(qp).not_to receive(:to_enum)
         expect(qp).to receive(:each).with(true, true)
-        qp.each_with_rel{|n, r| }
+        qp.each_with_rel {}
       end
 
       it 'calls pluck and executes the block' do
         expect(qp).to receive(:pluck).and_return([node, rel])
         expect(node).to receive(:name)
         expect(rel).to receive(:name)
-        qp.each_with_rel{|n, r| n.name and r.name }
+        qp.each_with_rel { |n, r| n.name && r.name }
       end
     end
   end
@@ -85,7 +85,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe '_association_chain_var' do
     context 'when missing start_object and query_proxy' do
       it 'raises a crazy error' do
-        expect{qp.send(:_association_chain_var)}.to raise_error 'Crazy error'
+        expect { qp.send(:_association_chain_var) }.to raise_error 'Crazy error'
       end
 
       it 'needs a better error than "crazy error"'
@@ -95,7 +95,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe '_association_query_start' do
     context 'when missing start_object and query_proxy' do
       it 'raises a crazy error' do
-        expect{qp.send(:_association_query_start, nil)}.to raise_error 'Crazy error'
+        expect { qp.send(:_association_query_start, nil) }.to raise_error 'Crazy error'
       end
 
       it 'needs a better error than "crazy error"'

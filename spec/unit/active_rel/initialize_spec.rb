@@ -14,5 +14,4 @@ describe Neo4j::ActiveRel::Initialize do
       expect(r.wrapper).to eq r
     end
   end
-
 end

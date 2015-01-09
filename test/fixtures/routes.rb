@@ -1,4 +1,4 @@
-TestApp.routes.draw do |map|
+TestApp.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

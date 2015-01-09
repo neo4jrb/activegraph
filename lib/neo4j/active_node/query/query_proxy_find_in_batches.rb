@@ -13,7 +13,6 @@ module Neo4j
             yield result
           end
         end
-
       end
     end
   end

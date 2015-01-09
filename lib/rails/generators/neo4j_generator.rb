@@ -19,11 +19,11 @@ class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
     "#{klass}.all"
   end
 
-  def self.find(klass, params=nil)
+  def self.find(klass, params = nil)
     "#{klass}.find(#{params})"
   end
 
-  def self.build(klass, params=nil)
+  def self.build(klass, params = nil)
     if params
       "#{klass}.new(#{params})"
     else
@@ -35,7 +35,7 @@ class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
     "#{name}.save"
   end
 
-  def update_attributes(params=nil)
+  def update_attributes(params = nil)
     "#{name}.update_attributes(#{params})"
   end
 
@@ -53,20 +53,20 @@ module Rails
     class GeneratedAttribute #:nodoc:
       def type_class
         case type.to_s.downcase
-          when 'any' then
-            'any'
-          when 'datetime' then
-            'DateTime'
-          when 'date' then
-            'Date'
-          when 'text' then
-            'String'
-          when 'integer', 'number', 'fixnum' then
-            'Integer'
-          when 'float' then
-            'Float'
-          else
-            'String'
+        when 'any' then
+          'any'
+        when 'datetime' then
+          'DateTime'
+        when 'date' then
+          'Date'
+        when 'text' then
+          'String'
+        when 'integer', 'number', 'fixnum' then
+          'Integer'
+        when 'float' then
+          'Float'
+        else
+          'String'
         end
       end
     end

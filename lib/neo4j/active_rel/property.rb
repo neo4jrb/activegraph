@@ -3,10 +3,10 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
     include Neo4j::Shared::Property
 
-    %w[to_node from_node].each do |direction|
+    %w(to_node from_node).each do |direction|
       define_method("#{direction}") { instance_variable_get("@#{direction}") }
       define_method("#{direction}=") do |argument|
-        raise FrozenRelError, 'Relationship start/end nodes cannot be changed once persisted' if self.persisted?
+        fail FrozenRelError, 'Relationship start/end nodes cannot be changed once persisted' if self.persisted?
         instance_variable_set("@#{direction}", argument)
       end
     end
@@ -34,7 +34,7 @@ module Neo4j::ActiveRel
         end
       end
 
-      %w[to_class from_class].each do |direction|
+      %w(to_class from_class).each do |direction|
         define_method("#{direction}") { |argument| instance_variable_set("@#{direction}", argument) }
         define_method("_#{direction}") { instance_variable_get "@#{direction}" }
       end
@@ -44,6 +44,14 @@ module Neo4j::ActiveRel
 
       def load_entity(id)
         Neo4j::Node.load(id)
+      end
+
+      def creates_unique_rel
+        @unique = true
+      end
+
+      def unique?
+        !!@unique
       end
     end
 

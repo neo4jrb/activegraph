@@ -5,16 +5,16 @@ module Neo4j
     module HasN
       class Association
         include Neo4j::Shared::RelTypeConverters
-        attr_reader :type, :name, :relationship, :direction
+        include Neo4j::ActiveNode::Dependent::AssociationMethods
+        attr_reader :type, :name, :relationship, :direction, :dependent
 
         def initialize(type, direction, name, options = {})
-          check_valid_type_and_dir(type, direction)
+          validate_init_arguments(type, direction, options)
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
           @target_class_name_from_name = name.to_s.classify
-
-          set_vars_from_options(options)
+          apply_vars_from_options(options)
         end
 
         def target_class_option(options)
@@ -42,7 +42,11 @@ module Neo4j
         end
 
         def target_class_name
-          @target_class_option.to_s if @target_class_option
+          @target_class_name ||= @target_class_option.to_s if @target_class_option
+        end
+
+        def target_class_name_or_nil
+          @target_class_name_or_nil ||= target_class_name || 'nil'
         end
 
         def target_class
@@ -75,9 +79,7 @@ module Neo4j
           end
         end
 
-        def relationship_class
-          @relationship_class
-        end
+        attr_reader :relationship_class
 
         def relationship_class_type
           @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
@@ -102,6 +104,10 @@ module Neo4j
           return properties unless @relationship_class
           properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_clazz.cached_class?(true)
           properties
+        end
+
+        def unique?
+          @origin ? origin_association.unique? : !!@unique
         end
 
         private
@@ -129,19 +135,24 @@ module Neo4j
           p.size == 0 ? '' : " {#{p}}"
         end
 
+        def origin_association
+          target_class.associations[@origin]
+        end
+
         def origin_type
-          target_class.associations[@origin].relationship_type
+          origin_association.relationship_type
         end
 
         private
 
-        def set_vars_from_options(options)
-          validate_option_combinations(options)
+        def apply_vars_from_options(options)
           @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
+          @dependent = options[:dependent]
+          @unique = options[:unique]
         end
 
         # Return basic details about association as declared in the model
@@ -151,15 +162,25 @@ module Neo4j
           "#{type} #{direction.inspect}, #{name.inspect}"
         end
 
+        def validate_init_arguments(type, direction, options)
+          validate_option_combinations(options)
+          check_valid_type_and_dir(type, direction)
+        end
+
         def check_valid_type_and_dir(type, direction)
-          raise ArgumentError, "Invalid association type: #{type.inspect} (valid value: :has_many and :has_one)" if not [:has_many, :has_one].include?(type.to_sym)
-          raise ArgumentError, "Invalid direction: #{direction.inspect} (valid value: :out, :in, and :both)" if not [:out, :in, :both].include?(direction.to_sym)
+          fail ArgumentError, "Invalid association type: #{type.inspect} (valid value: :has_many and :has_one)" if not [:has_many, :has_one].include?(type.to_sym)
+          fail ArgumentError, "Invalid direction: #{direction.inspect} (valid value: :out, :in, and :both)" if not [:out, :in, :both].include?(direction.to_sym)
         end
 
         def validate_option_combinations(options)
-          raise ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
-          raise ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
-          raise ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+          fail ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
+          fail ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
+          fail ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+        end
+
+        VALID_DEPENDENT_TYPES = [:delete, :delete_orphans, :destroy_orphans, :destroy, nil]
+        def validate_dependent(value)
+          fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not VALID_DEPENDENT_TYPES.include?(value)
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key
@@ -174,22 +195,16 @@ module Neo4j
         end
 
         def validate_origin!
-          if @origin
-            if target_class
-              if association = target_class.associations[@origin]
-                if @direction == association.direction
-                  raise ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)"
-                end
-              else
-                raise ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
-              end
-            else
-              raise ArgumentError, "Cannot use :origin without a model_class (implied or explicit)"
-            end
-          end
+          return if not @origin
+
+          fail ArgumentError, 'Cannot use :origin without a model_class (implied or explicit)' if not target_class
+
+          association = origin_association
+          fail ArgumentError, "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})" if not association
+
+          fail ArgumentError, "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)" if @direction == association.direction
         end
       end
     end
   end
 end
-

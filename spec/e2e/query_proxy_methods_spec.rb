@@ -111,7 +111,7 @@ describe 'query_proxy_methods' do
 
       it 'can be called on the class with a neo_id' do
         expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.exists?(8675309)).to be_falsey
+        expect(IncludeLesson.exists?(8_675_309)).to be_falsey
       end
 
       it 'raises an error if something other than a neo id is given' do
@@ -171,7 +171,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'works with order clause' do
-      expect{ IncludeStudent.order(name: :asc).count }.not_to raise_error
+      expect { IncludeStudent.order(name: :asc).count }.not_to raise_error
     end
 
     it 'is aliased by length and size' do
@@ -182,7 +182,7 @@ describe 'query_proxy_methods' do
 
   describe 'delete_all' do
     before do
-      [IncludeStudent, IncludeLesson, IncludeTeacher].each { |c| c.delete_all }
+      [IncludeStudent, IncludeLesson, IncludeTeacher].each(&:delete_all)
       @tom = IncludeStudent.create(name: 'Tom')
       @math = IncludeLesson.create(name: 'Math')
       @science = IncludeLesson.create(name: 'Science')
@@ -268,7 +268,7 @@ describe 'query_proxy_methods' do
           after { @john.lessons.first_rel_to(@math).destroy }
 
           it 'generates cypher using IN with the IDs of contained nodes' do
-            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include ('AND result_lessons.uuid IN')
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('AND result_lessons.uuid IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
             expect(@john.lessons.match_to([@history, @math]).to_a.count).to eq 2
@@ -414,7 +414,7 @@ describe 'query_proxy_methods' do
 
         expect(result[1][0]).to eq @math
         expect(result[1][1]).to eq @johnson
-      elsif
+      else
         expect(result[0][0]).to eq @math
         expect(result[0][1]).to eq @johnson
 

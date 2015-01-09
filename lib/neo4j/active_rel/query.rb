@@ -3,18 +3,17 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
 
     module ClassMethods
-
       # Returns the object with the specified neo4j id.
       # @param [String,Fixnum] id of node to find
       # @param [Neo4j::Session] session optional
       def find(id, session = self.neo4j_session)
-        raise "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
+        fail "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
         find_by_id(id, session)
       end
 
       # Loads the relationship using its neo_id.
       def find_by_id(key, session = Neo4j::Session.current!)
-        session.query.match("()-[r]-()").where("ID(r)" => key.to_i).limit(1).return(:r).first.r
+        session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
       end
 
       # Performs a very basic match on the relationship.
@@ -22,7 +21,7 @@ module Neo4j::ActiveRel
       # To use a string, prefix the property with "r1"
       # @example Match with a string
       #   MyRelClass.where('r1.grade > r1')
-      def where(args={})
+      def where(args = {})
         where_query.where(where_string(args)).pluck(:r1)
       end
 
@@ -33,11 +32,11 @@ module Neo4j::ActiveRel
       end
 
       def first
-        all_query.limit(1).order("ID(r1)").pluck(:r1).first
+        all_query.limit(1).order('ID(r1)').pluck(:r1).first
       end
 
       def last
-        all_query.limit(1).order("ID(r1) DESC").pluck(:r1).first
+        all_query.limit(1).order('ID(r1) DESC').pluck(:r1).first
       end
 
       private
@@ -85,7 +84,6 @@ module Neo4j::ActiveRel
           args
         end
       end
-
     end
   end
 end

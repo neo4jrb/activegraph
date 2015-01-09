@@ -15,7 +15,7 @@ module Neo4j::ActiveRel
     end
 
     def save!(*args)
-      raise RelInvalidError.new(self) unless save(*args)
+      fail RelInvalidError, self unless save(*args)
     end
 
     def create_model(*)
@@ -30,7 +30,6 @@ module Neo4j::ActiveRel
     end
 
     module ClassMethods
-
       # Creates a new relationship between objects
       # @param [Hash] props the properties the new relationship should have
       def create(props = {})
@@ -45,7 +44,7 @@ module Neo4j::ActiveRel
 
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
-        raise RelInvalidError.new(self) unless create(*args)
+        fail RelInvalidError, self unless create(*args)
       end
     end
 
@@ -55,7 +54,7 @@ module Neo4j::ActiveRel
       [from_node, to_node].each do |node|
         type = from_node == node ? :_from_class : :_to_class
         next if allows_any_class?(type)
-        raise ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class || node.class.ancestors.include?(class_as_constant(type))
+        fail ModelClassInvalidError, "Node class was #{node.class}, expected #{self.class.send(type)}" unless class_as_constant(type) == node.class || node.class.ancestors.include?(class_as_constant(type))
       end
     end
 
@@ -92,12 +91,15 @@ module Neo4j::ActiveRel
           .where("n1.#{from_class.primary_key} = {from_node_id}")
           .where("n2.#{to_class.primary_key} = {to_node_id}")
           .params(from_node_id: from_node.id, to_node_id: to_node.id)
-          .create("(n1)-[r:`#{type}`]->(n2)")
+          .send(create_method, ("(n1)-[r:`#{type}`]->(n2)"))
           .with('r').set(r: props).return(:r).first.r
-      rescue NoMethodError
-        raise RelCreateFailedError, "Unable to create relationship. from_node: #{from_node}, to_node: #{to_node}"
+      rescue NoMethodError => e
+        raise RelCreateFailedError, "Unable to create relationship. from_node: #{from_node}, to_node: #{to_node}, error: #{e}"
       end
     end
 
+    def create_method
+      self.class.unique? ? :create_unique : :create
+    end
   end
 end

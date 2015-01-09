@@ -53,25 +53,25 @@ describe 'migration tasks' do
       end
 
       def self.classname_count(label)
-        Proc.new { Neo4j::Session.query("MATCH (n:`#{label}`) WHERE n._classname = '#{label}' RETURN COUNT(n) as countable").first.countable }
+        proc { Neo4j::Session.query("MATCH (n:`#{label}`) WHERE n._classname = '#{label}' RETURN COUNT(n) as countable").first.countable }
       end
     end
   end
 
   let(:Rails) { double('Doubles the Rails constant') }
-  let(:File)  { double('Doubles the File constant')}
+  let(:File)  { double('Doubles the File constant') }
   let(:path)  { '/hd/gems/rails' }
 
   describe 'base Migration class' do
     it 'raises an error' do
-      expect{Neo4j::Migration.new.migrate}.to raise_error 'not implemented'
+      expect { Neo4j::Migration.new.migrate }.to raise_error 'not implemented'
     end
   end
 
   describe 'AddIdProperty class' do
     let(:full_path) { '/hd/gems/rails/add_id_property.yml' }
     let(:clazz) { Neo4j::Migration::AddIdProperty }
-    let(:map_template) { { models: ['MigrationSpecs::User','MigrationSpecs::Song'] } }
+    let(:map_template) { {models: ['MigrationSpecs::User', 'MigrationSpecs::Song']} }
 
     before do
       Rails.stub_chain(:root, :join).and_return('/hd/gems/rails/add_id_property.yml')
@@ -125,10 +125,10 @@ describe 'migration tasks' do
     let(:clazz) { Neo4j::Migration::AddClassnames }
     let(:map_template) do
       {
-        nodes: { 'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song'] },
+        nodes: {'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song']},
         relationships: {
-          'add' =>       {  'MigrationSpecs::FirstRelClass' => { :type => 'songs' } },
-          'overwrite' => { 'MigrationSpecs::ThirdRelClass' => { :type => 'singers' } }
+          'add' =>       {'MigrationSpecs::FirstRelClass' => {type: 'songs'}},
+          'overwrite' => {'MigrationSpecs::ThirdRelClass' => {type: 'singers'}}
         }
       }
     end
@@ -145,16 +145,16 @@ describe 'migration tasks' do
       clazz.any_instance.instance_variable_set(:@model_map, map_template)
     end
 
-    after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each { |c| c.delete_all } }
+    after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each(&:delete_all) }
 
     it 'loads an initialization file' do
-      expect{ clazz.new }.not_to raise_error
+      expect { clazz.new }.not_to raise_error
     end
 
     describe 'nodes' do
       it 'adds given classname to nodes' do
         Neo4j::Session.query('CREATE (n:`MigrationSpecs::User`) set n.name = "Geezer" return n')
-        geezer_query = MigrationSpecs::classname_count('MigrationSpecs::User')
+        geezer_query = MigrationSpecs.classname_count('MigrationSpecs::User')
         expect(geezer_query.call).to eq 0
         clazz.new.migrate
         expect(geezer_query.call).to eq 1
@@ -162,7 +162,7 @@ describe 'migration tasks' do
 
       it 'replaces given classnames' do
         Neo4j::Session.query('CREATE (n:`MigrationSpecs::Song`) set n.name = "Country Girl", n._classname = "Wrong" return n')
-        country_query = MigrationSpecs::classname_count('MigrationSpecs::Song')
+        country_query = MigrationSpecs.classname_count('MigrationSpecs::Song')
         expect(country_query.call).to eq 0
         clazz.new.migrate
         expect(country_query.call).to eq 1

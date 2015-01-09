@@ -1,0 +1,72 @@
+inherit_from: .rubocop_todo.yml
+
+
+
+#---------------------------
+# Style configuration
+#---------------------------
+
+# Cop supports --auto-correct.
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/HashSyntax:
+  Enabled: true
+  EnforcedStyle: ruby19
+
+# Cop supports --auto-correct.
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: true
+  EnforcedStyle: no_space
+
+# I think this one is broken...
+Style/FileName:
+  Enabled: false
+
+#---------------------------
+# Don't intend to fix these:
+#---------------------------
+
+# Cop supports --auto-correct.
+# Reason: Double spaces can be useful for grouping code
+Style/EmptyLines:
+  Enabled: false
+
+# Cop supports --auto-correct.
+# Reason: I have very big opinions on this one.  See:
+#   https://github.com/bbatsov/ruby-style-guide/issues/329
+#   https://github.com/bbatsov/ruby-style-guide/pull/325
+Style/NegatedIf:
+  Enabled: false
+
+# Cop supports --auto-correct.
+# Reason: I'm fine either way on this, but could maybe be convinced that this should be enforced
+Style/Not:
+  Enabled: false
+
+# Cop supports --auto-correct.
+# Reason: I'm fine with this
+Style/PerlBackrefs:
+  Enabled: false
+
+# Configuration parameters: Methods.
+# Reason: We should be able to specify full variable names, even if it's only one line
+Style/SingleLineBlockParams:
+  Enabled: false
+
+# Reason: Switched `extend self` to `module_function` in id_property.rb but that caused errors
+Style/ModuleFunction:
+  Enabled: false
+
+# Configuration parameters: AllowSafeAssignment.
+# Reason: I'm a proud user of assignment in conditionals.
+Lint/AssignmentInCondition:
+  Enabled: false
+
+# Reason: Fine with any sort of lambda syntax
+Style/Lambda:
+  Enabled: false
+
+# Reason: I'm proud to be part of the double negative Ruby tradition
+Style/DoubleNegation:
+  Enabled: false
+
+

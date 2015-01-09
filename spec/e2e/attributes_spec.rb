@@ -13,7 +13,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'does not have any attributes' do
-        subject.attributes.should == {"name" => nil}
+        subject.attributes.should eq('name' => nil)
       end
 
       it 'returns nil when asking for a attribute' do
@@ -22,13 +22,13 @@ describe Neo4j::ActiveNode do
 
       it 'can set attributes' do
         subject['name'] = 'foo'
-        subject['name'].should == 'foo'
+        subject['name'].should eq('foo')
       end
 
       it 'allows symbols instead of strings in [] and []= operator' do
         subject[:name] = 'foo'
-        subject['name'].should == 'foo'
-        subject[:name].should == 'foo'
+        subject['name'].should eq('foo')
+        subject[:name].should eq('foo')
       end
 
       it 'allows setting attributes to nil' do
@@ -38,16 +38,14 @@ describe Neo4j::ActiveNode do
         subject['name'] = nil
         subject['name'].should be_nil
       end
-
     end
 
     context 'when instantiated with new(name: "foo")' do
-      subject() { SimpleClass.new(unknown: 'foo')}
+      subject { SimpleClass.new(unknown: 'foo') }
 
       it 'does not allow setting undeclared properties' do
         expect { subject }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
       end
     end
   end
-
 end

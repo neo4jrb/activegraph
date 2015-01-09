@@ -13,11 +13,11 @@ module Neo4j::Shared
     class MultiparameterAssignmentError < StandardError; end
     class IllegalPropertyError < StandardError; end
 
-    ILLEGAL_PROPS = %w[from_node to_node start_node end_node]
+    ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
 
     attr_reader :_persisted_obj
 
-    def initialize(attributes={}, options={})
+    def initialize(attributes = {}, options = {})
       attributes = process_attributes(attributes)
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
@@ -39,7 +39,7 @@ module Neo4j::Shared
 
     def default_properties=(properties)
       keys = self.class.default_properties.keys
-      @default_properties = properties.select {|key| keys.include?(key) }
+      @default_properties = properties.select { |key| keys.include?(key) }
     end
 
     def default_property(key)
@@ -64,14 +64,12 @@ module Neo4j::Shared
     # Raises an error if there are any keys left which haven't been defined as properties on the model
     def validate_attributes!(attributes)
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
-      raise UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
+      fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end
 
     def extract_writer_methods!(attributes)
-      attributes.keys.inject({}) do |writer_method_props, key|
+      attributes.keys.each_with_object({}) do |key, writer_method_props|
         writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
-
-        writer_method_props
       end
     end
 
@@ -97,7 +95,7 @@ module Neo4j::Shared
           values = (values.keys.min..values.keys.max).map { |i| values[i] }
           field = self.class.attributes[key.to_sym]
           new_attributes[key] = instantiate_object(field, values)
-        rescue => e
+        rescue
           raise MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
         end
       end
@@ -105,14 +103,13 @@ module Neo4j::Shared
     end
 
     def instantiate_object(field, values_with_empty_parameters)
-      return nil if values_with_empty_parameters.all? { |v| v.nil? }
+      return nil if values_with_empty_parameters.all?(&:nil?)
       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
       klass = field[:type]
       klass ? klass.new(*values) : values
     end
 
     module ClassMethods
-
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
@@ -141,7 +138,7 @@ module Neo4j::Shared
       #      # declare a property which can have any value
       #      property :name, constraint: :unique
       #    end
-      def property(name, options={})
+      def property(name, options = {})
         check_illegal_prop(name)
         magic_properties(name, options)
         attribute(name, options)
@@ -149,7 +146,7 @@ module Neo4j::Shared
       end
 
       def undef_property(name)
-        raise ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
+        fail ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
 
         attribute_methods(name).each do |method|
           undef_method(method)
@@ -176,12 +173,12 @@ module Neo4j::Shared
       end
 
       def default_property_values(instance)
-        default_properties.each_with_object({}) do |(key, block),result|
+        default_properties.each_with_object({}) do |(key, block), result|
           result[key] = block.call(instance)
         end
       end
 
-      def attribute!(name, options={})
+      def attribute!(name, options = {})
         super(name, options)
         define_method("#{name}=") do |value|
           typecast_value = typecast_attribute(_attribute_typecaster(name), value)
@@ -195,38 +192,28 @@ module Neo4j::Shared
       def constraint_or_index(name, options)
         # either constraint or index, do not set both
         if options[:constraint]
-          raise "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
+          fail "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
           constraint(name, type: :unique)
         elsif options[:index]
-          raise "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
+          fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
           index(name, options) if options[:index] == :exact
         end
       end
 
       def check_illegal_prop(name)
         if ILLEGAL_PROPS.include?(name.to_s)
-          raise IllegalPropertyError, "#{name} is an illegal property"
+          fail IllegalPropertyError, "#{name} is an illegal property"
         end
       end
 
       # Tweaks properties
       def magic_properties(name, options)
-        set_stamp_type(name, options)
-        set_time_as_datetime(options)
-      end
+        options[:type] ||= DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
 
-      def set_stamp_type(name, options)
-        options[:type] ||= DateTime if (name.to_sym == :created_at || name.to_sym == :updated_at)
-      end
-
-      # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
-      # Convert it to DateTime in the interest of consistency
-      def set_time_as_datetime(options)
+        # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
+        # Convert it to DateTime in the interest of consistency
         options[:type] = DateTime if options[:type] == Time
       end
-
     end
-
   end
-
 end

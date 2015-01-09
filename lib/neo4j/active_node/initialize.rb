@@ -1,6 +1,7 @@
 module Neo4j::ActiveNode::Initialize
   extend ActiveSupport::Concern
   include Neo4j::Shared::TypeConverters
+  attr_reader :called_by
 
   # called when loading the node from the database
   # @param [Neo4j::Node] persisted_node the node this class wraps
@@ -11,7 +12,7 @@ module Neo4j::ActiveNode::Initialize
     @association_cache = {}
     changed_attributes && changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
-    self.default_properties=properties
+    self.default_properties = properties
     @attributes = convert_properties_to :ruby, @attributes
   end
 
@@ -21,7 +22,4 @@ module Neo4j::ActiveNode::Initialize
   def wrapper
     self
   end
-
 end
-
-

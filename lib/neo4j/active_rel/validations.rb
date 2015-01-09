@@ -3,7 +3,6 @@ module Neo4j
     module Validations
       extend ActiveSupport::Concern
       include Neo4j::Shared::Validations
-
     end
   end
 end

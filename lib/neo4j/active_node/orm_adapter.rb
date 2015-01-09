@@ -22,7 +22,7 @@ module Neo4j
       # Get an instance by id of the model
       def get!(id)
         klass.find(wrap_key(id)).tap do |node|
-          raise "No record found" if node.nil?
+          fail 'No record found' if node.nil?
         end
       end
 
@@ -68,7 +68,7 @@ module Neo4j
       private
 
       def hasherize_order(order)
-        (order || []).map {|clause| Hash[*clause] }
+        (order || []).map { |clause| Hash[*clause] }
       end
 
       def extract_id!(conditions)
@@ -76,8 +76,6 @@ module Neo4j
           conditions[klass.id_property_name.to_sym] = id
         end
       end
-
     end
   end
 end
-

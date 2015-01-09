@@ -9,12 +9,19 @@ module Neo4j
 
       included do
         include ActiveModel::Validations::Callbacks
-        define_model_callbacks :initialize, :find, :only => :after
+        define_model_callbacks :initialize, :find, only: :after
         define_model_callbacks :save, :create, :update, :destroy
       end
 
       def destroy #:nodoc:
+        tx = Neo4j::Transaction.new
         run_callbacks(:destroy) { super }
+      rescue
+        @_deleted = false
+        tx.mark_failed
+        raise
+      ensure
+        tx.close if tx
       end
 
       def touch(*) #:nodoc:
@@ -28,13 +35,16 @@ module Neo4j
       end
 
       def create_model #:nodoc:
-        run_callbacks(:create) { super }
+        Neo4j::Transaction.run do
+          run_callbacks(:create) { super }
+        end
       end
 
       def update_model(*) #:nodoc:
-        run_callbacks(:update) { super }
+        Neo4j::Transaction.run do
+          run_callbacks(:update) { super }
+        end
       end
     end
-
   end
 end

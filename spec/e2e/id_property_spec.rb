@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::IdProperty do
-
   before do
     Neo4j::Config.delete(:id_property)
     Neo4j::Config.delete(:id_property_type)
@@ -58,12 +57,11 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(clazz.primary_key).to eq :uuid
     end
 
-    it 'responds false to has_id_property' do
-      expect(clazz.has_id_property?).to be_truthy
+    it 'responds false to id_property' do
+      expect(clazz.id_property?).to be_truthy
     end
 
     describe 'when having a configuration' do
-
       let(:clazz) do
         UniqueClass.create do
           include Neo4j::ActiveNode
@@ -79,7 +77,7 @@ describe Neo4j::ActiveNode::IdProperty do
       it 'will set the id_property after a session has been created' do
         node = clazz.new
         expect(node).to respond_to(:the_id)
-        expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:the_id]])
+        expect(clazz.mapped_label.indexes).to eq(property_keys: [[:the_id]])
       end
     end
   end
@@ -93,12 +91,12 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:myid]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:myid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
       clazz.create(myid: 'z')
-      a = clazz.new(myid: 'z')
+      clazz.new(myid: 'z')
       expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
 
@@ -131,8 +129,8 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(clazz.primary_key).to eq :myid
       end
 
-      it 'makes the class respond true to has_id_property?' do
-        expect(clazz.has_id_property?).to be_truthy
+      it 'makes the class respond true to id_property?' do
+        expect(clazz.id_property?).to be_truthy
       end
 
       it 'removes any previously declared properties' do
@@ -146,15 +144,16 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        node1 = clazz.create(myid: 'a')
-        node2 = clazz.create(myid: 'b')
-        node3 = clazz.create(myid: 'c')
+        clazz.create(myid: 'a')
+        node_b = clazz.create(myid: 'b')
+        clazz.create(myid: 'c')
         found = clazz.find_by_id('b')
-        expect(found).to eq(node2)
+        expect(found).to eq(node_b)
       end
 
       it 'does not find it if it does not exist' do
-        node = clazz.create(myid: 'd')
+        clazz.create(myid: 'd')
+
         found = clazz.find_by_id('something else')
         expect(found).to be_nil
       end
@@ -183,7 +182,7 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:my_id]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:my_id]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -234,7 +233,7 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(:property_keys => [[:my_uuid]])
+      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:my_uuid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -267,15 +266,17 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        node1 = clazz.create
-        node2 = clazz.create
-        node3 = clazz.create
-        found = clazz.find_by_id(node2.my_uuid)
-        expect(found).to eq(node2)
+        clazz.create
+        node = clazz.create
+        clazz.create
+
+        found = clazz.find_by_id(node.my_uuid)
+        expect(found).to eq(node)
       end
 
       it 'does not find it if it does not exist' do
-        node = clazz.create
+        clazz.create
+
         found = clazz.find_by_id('something else')
         expect(found).to be_nil
       end
@@ -313,7 +314,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
-    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple].each { |c| c.delete_all } }
+    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple].each(&:delete_all) }
 
     it 'inherits the base id_property' do
       expect(IdProp::Substitute.create.my_id).to eq 'an id'

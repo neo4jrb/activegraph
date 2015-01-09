@@ -1,6 +1,5 @@
 module Neo4j::Shared
   module Persistence
-
     extend ActiveSupport::Concern
     include Neo4j::Shared::TypeConverters
 
@@ -8,7 +7,7 @@ module Neo4j::Shared
 
     def update_model
       if changed_attributes && !changed_attributes.empty?
-        changed_props = attributes.select{|k,v| changed_attributes.include?(k)}
+        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
         changed_props = convert_properties_to :db, changed_props
         _persisted_obj.update_props(changed_props)
         changed_attributes.clear
@@ -34,21 +33,21 @@ module Neo4j::Shared
     def create_or_update
       # since the same model can be created or updated twice from a relationship we have to have this guard
       @_create_or_updating = true
-      result = persisted? ? update_model : create_model
-      unless result != false
-        Neo4j::Transaction.current.fail if Neo4j::Transaction.current
+      result = _persisted_obj ? update_model : create_model
+      if result == false
+        Neo4j::Transaction.current.failure if Neo4j::Transaction.current
         false
       else
         true
       end
     rescue => e
-      Neo4j::Transaction.current.fail if Neo4j::Transaction.current
+      Neo4j::Transaction.current.failure if Neo4j::Transaction.current
       raise e
     ensure
       @_create_or_updating = nil
     end
 
-    # Returns +true+ if the record is persisted, i.e. it’s not a new record and it was not destroyed
+    # Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
     def persisted?
       !new_record? && !destroyed?
     end
@@ -58,7 +57,7 @@ module Neo4j::Shared
       !_persisted_obj
     end
 
-    alias :new? :new_record?
+    alias_method :new?, :new_record?
 
     def destroy
       freeze
@@ -78,7 +77,7 @@ module Neo4j::Shared
 
     # @return [Hash] all defined and none nil properties
     def props
-      attributes.reject{|k,v| v.nil?}.symbolize_keys
+      attributes.reject { |_, v| v.nil? }.symbolize_keys
     end
 
     # @return true if the attributes hash has been frozen
@@ -103,7 +102,7 @@ module Neo4j::Shared
     end
 
     def reload_from_database
-      # TODO - Neo4j::IdentityMap.remove_node_by_id(neo_id)
+      # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
       if reloaded = self.class.load_entity(neo_id)
         send(:attributes=, reloaded.attributes)
       end

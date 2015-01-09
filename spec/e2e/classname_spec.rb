@@ -55,7 +55,7 @@ describe '_classname property' do
   end
 
   after(:all) do
-    [ClassnameSpec::Lesson, ClassnameSpec::Student].each { |m| m.delete_all }
+    [ClassnameSpec::Lesson, ClassnameSpec::Student].each(&:delete_all)
   end
 
   # these specs will fail if tested against Neo4j < 2.1.5
@@ -89,7 +89,6 @@ describe '_classname property' do
         expect(rel._persisted_obj.props).not_to have_key(:_classname)
       end
 
-      require 'pry'
       it 'is the expected type' do
         expect(rel).to be_a(ClassnameSpec::StudentLesson)
       end
@@ -102,7 +101,6 @@ describe '_classname property' do
         expect(rel._persisted_obj.props).to have_key(:_classname)
       end
 
-      require 'pry'
       it 'is the expected type' do
         expect(rel).to be_a(ClassnameSpec::EnrolledInClassname)
       end

@@ -13,7 +13,7 @@ describe Neo4j::Node::Wrapper do
     end
 
     it 'returns nil if there is no class' do
-      wrapper.load_class_from_label("some_unknown_class").should be_nil
+      wrapper.load_class_from_label('some_unknown_class').should be_nil
     end
 
     it 'will auto load' do
@@ -21,7 +21,7 @@ describe Neo4j::Node::Wrapper do
       end
       path = File.join(File.dirname(__FILE__), 'auto_load_test_a')
       AutoLoadTest.autoload(:MyClass, path)
-      wrapper.load_class_from_label("AutoLoadTest::MyClass").should eq(AutoLoadTest::MyClass)
+      wrapper.load_class_from_label('AutoLoadTest::MyClass').should eq(AutoLoadTest::MyClass)
     end
   end
 
@@ -41,20 +41,20 @@ describe Neo4j::Node::Wrapper do
   end
 
   describe 'wrapper' do
-    describe "with class_name_property" do
+    describe 'with class_name_property' do
       context 'when set in config.yml' do
         it 'looks for a property with the same name' do
-          wrapper.stub(:props).and_return({_defined_property_name: 'Bar' })
+          wrapper.stub(:props).and_return(_defined_property_name: 'Bar')
           Bar = Object
           Neo4j::Config.stub(:class_name_property).and_return(:_defined_property_name)
-          expect(wrapper.props).to receive(:has_key?).with(:_defined_property_name).and_return true
+          expect(wrapper.props).to receive(:key?).with(:_defined_property_name).and_return true
 
           expect(wrapper.sorted_wrapper_classes).to eq Bar
         end
       end
 
       context 'when using default and present on class' do
-        before { wrapper.stub(:props).and_return({ _classname: 'CachedClassName'}) }
+        before { wrapper.stub(:props).and_return(_classname: 'CachedClassName') }
         CachedClassName = Object
 
         it 'does not call :_class_wrappers' do
@@ -63,7 +63,7 @@ describe Neo4j::Node::Wrapper do
         end
 
         it 'looks for a key called "_classname"' do
-          expect(wrapper.props).to receive(:has_key?).with(:_classname).and_return true
+          expect(wrapper.props).to receive(:key?).with(:_classname).and_return true
           wrapper.sorted_wrapper_classes
         end
 
@@ -72,7 +72,7 @@ describe Neo4j::Node::Wrapper do
         end
       end
 
-      context "when using default and missing on class" do
+      context 'when using default and missing on class' do
         it 'calls :_class_wrappers' do
           expect(wrapper).to receive(:_class_wrappers).once
           wrapper.stub(:props).and_return({})
@@ -92,11 +92,11 @@ describe Neo4j::Node::Wrapper do
       obj.should be_kind_of(AutoLoadTest::MyWrapperClass)
     end
 
-    it "finds the most specific subclass and creates an instance for it"do
+    it 'finds the most specific subclass and creates an instance for it'do
       class MyWrapper
         include Neo4j::Node::Wrapper
         def props
-          { value: 42 }
+          {value: 42}
         end
       end
       class B
@@ -118,7 +118,7 @@ describe Neo4j::Node::Wrapper do
       allow(Neo4j::ActiveNode::Labels).to receive(:_wrapped_labels).and_return(label_mapping)
 
       wrapper.should_receive(:_class_wrappers).and_return(label_mapping.keys)
-      D.any_instance.should_receive(:init_on_load).with(wrapper, { value: 42 })
+      D.any_instance.should_receive(:init_on_load).with(wrapper,  value: 42)
       wrapper.wrapper
     end
   end

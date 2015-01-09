@@ -1,7 +1,6 @@
 require 'spec_helper'
 
-describe "has_one" do
-
+describe 'has_one' do
   describe 'has_one(:parent).from(:children)' do
     class HasOneA
       include Neo4j::ActiveNode
@@ -22,7 +21,7 @@ describe "has_one" do
       end
 
       it 'raises an error when trying to create a relationship' do
-        expect{unsaved_node.parent = HasOneA.create}.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
+        expect { unsaved_node.parent = HasOneA.create }.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
       end
     end
 
@@ -33,17 +32,17 @@ describe "has_one" do
       a.children << b
       a.children << c
 
-      c.parent.should == a
-      b.parent.should == a
-      a.children.to_a.should =~ [b,c]
+      c.parent.should eq(a)
+      b.parent.should eq(a)
+      a.children.to_a.should =~ [b, c]
     end
 
     it 'can create a relationship via the has_one accessor' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.parent.should == a
-      a.children.to_a.should == [b]
+      b.parent.should eq(a)
+      a.children.to_a.should eq([b])
     end
 
     it 'can return relationship object via parent_rel' do
@@ -51,7 +50,7 @@ describe "has_one" do
       b = HasOneB.create(name: 'b')
       b.parent = a
       rel = b.parent_rel
-      rel.other_node(b).should == a
+      rel.other_node(b).should eq(a)
     end
 
     it 'deletes previous parent relationship' do
@@ -73,10 +72,10 @@ describe "has_one" do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.query_as(:b).match("b<-[:`CHILDREN`]-(r)").pluck(:r).should == [a]
-      a.query_as(:a).match("a-[:`CHILDREN`]->(r)").pluck(:r).should == [b]
-#      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should == [a]
-#      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should == [b]
+      b.query_as(:b).match('b<-[:`CHILDREN`]-(r)').pluck(:r).should eq([a])
+      a.query_as(:a).match('a-[:`CHILDREN`]->(r)').pluck(:r).should eq([b])
+      #      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should eq([a])
+      #      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should eq([b])
     end
   end
 
@@ -99,8 +98,8 @@ describe "has_one" do
       f1.files << file1
       f1.files << file2
       f1.files.to_a.should =~ [file1, file2]
-      file1.parent.should == f1
-      file2.parent.should == f1
+      file1.parent.should eq(f1)
+      file2.parent.should eq(f1)
     end
   end
 
@@ -112,14 +111,14 @@ describe "has_one" do
       has_one :in, :best_friend_of, origin: :best_friend, model_class: self, after: :after_callback
       has_one :in, :failing_assoc,  origin: :best_friend, model_class: self, before: :false_before_callback
 
-      def before_callback(other)
+      def before_callback(_other)
       end
 
-      def after_callback(other)
+      def after_callback(_other)
       end
 
-      def false_before_callback(other)
-        return false
+      def false_before_callback(_other)
+        false
       end
     end
 
