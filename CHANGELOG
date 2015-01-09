@@ -1,3 +1,6 @@
+== 4.0.0
+* Change neo4j-core dependency from 3.1.0 to 4.0.0.
+
 == 4.0.0.rc.4
 * _classname property is disabled by default for ActiveRel! It had been disabled for ActiveNode, this just evens the score.
 * Fixes a bug to create better `result` labels in Cypher.
@@ -9,8 +12,8 @@ Released minutes after rc.2 to catch one late addition!
 
 == 4.0.0.rc.2
 This release builds on features introduced in the first RC. We are releasing this as another RC because the API may be tweaked before release.
-* New `proxy_as` for Core::Query to build QueryProxy chains onto Core::Query objects! 
-* Using `proxy_as`, new `optional` method in QueryProxy to use the `OPTIONAL MATCH` Cypher function.  
+* New `proxy_as` for Core::Query to build QueryProxy chains onto Core::Query objects!
+* Using `proxy_as`, new `optional` method in QueryProxy to use the `OPTIONAL MATCH` Cypher function.
 * `match_to` and methods that depend on it now support arrays of nodes or IDs.
 * New `rels_to`/`all_rels_to` methods.
 * New `delete` and `destroy` methods in QueryProxy to easily remove relationships.
