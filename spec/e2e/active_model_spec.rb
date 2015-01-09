@@ -254,14 +254,16 @@ describe Neo4j::ActiveNode do
       end
 
       it 'rolls back node destroy' do
-        c = Company.create
+        c = Company.create(name: 'Foo')
         expect(c).to be_persisted
         expect { c.destroy }.not_to raise_error
         expect(c).not_to be_persisted
         Company.after_destroy { fail }
-        c = Company.create
+        c = Company.create(name: 'Foo')
         expect { c.destroy }.to raise_error
         expect(c).to be_persisted
+        expect(c).not_to be_frozen
+        expect(c).not_to be_changed
       end
     end
   end

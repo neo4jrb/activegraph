@@ -18,6 +18,7 @@ module Neo4j
         run_callbacks(:destroy) { super }
       rescue
         @_deleted = false
+        @attributes = @attributes.dup
         tx.mark_failed
         raise
       ensure
