@@ -1,3 +1,13 @@
+== 4.1.0
+This release includes many performance fixes and new features. The most notable:
+* Huge stylist cleanup/refactoring by Brian on the entire gem by Brian armed with Rubocop. See http://neo4jrb.io/blog/2014/12/29/stay-out-of-trouble.html.
+* Every node create, update, and destroy is now wrapped in a transaction. See http://neo4jrb.io/blog/2015/01/06/transactions_everywhere.html.
+* New `dependent` options for associations: `:delete`, `:destroy`, `:delete_orphans`, `:destroy_orphans`. See http://neo4jrb.io/blog/2015/01/07/association_dependent_options.html.
+* New `unique: true` option for associations, `creates_unique_rel` class method for ActiveRel. Both of these will result in relationship creation Cypher using "CREATE UNIQUE" instead of "CREATE".
+* Fixed an n+1 query issue during node creation and update.
+* Dieter simplified some code related to frozen attributes. See https://github.com/neo4jrb/neo4j/pull/655.
+We now have a new website online at http://neo4jrb.io! Keep an eye on it for news and blogs related to this and other projects.
+
 == 4.0.0
 * Change neo4j-core dependency from 3.1.0 to 4.0.0.
 
