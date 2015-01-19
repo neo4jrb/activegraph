@@ -35,7 +35,7 @@ describe Neo4j::Shared::TypeConverters do
     end
 
     it 'returns the same value if there is no converter' do
-      Neo4j::Shared::TypeConverters.to_ruby(42, Fixnum).should eq(42)
+      Neo4j::Shared::TypeConverters.to_ruby(42, Integer).should eq(42)
     end
   end
 
@@ -43,11 +43,11 @@ describe Neo4j::Shared::TypeConverters do
     it 'converts if there is a converter' do
       date_time = DateTime.civil(2011, 3, 4, 1, 2, 3, 0)
       converter_value = Neo4j::Shared::TypeConverters.to_db(date_time, DateTime)
-      converter_value.should be_a(Fixnum)
+      converter_value.should be_a(Integer)
     end
 
     it 'returns the same value if there is no converter' do
-      Neo4j::Shared::TypeConverters.to_ruby(42, Fixnum).should eq(42)
+      Neo4j::Shared::TypeConverters.to_ruby(42, Integer).should eq(42)
     end
   end
 
@@ -124,7 +124,7 @@ describe Neo4j::Shared::TypeConverters do
     its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { should eq(@dt - 6 * @hr) }
 
     describe 'to_ruby' do
-      it 'translate a fixnum back to DateTime' do
+      it 'translate a Integer back to DateTime' do
         subject.to_ruby(@dt + 6 * @hr).should eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
       end
     end

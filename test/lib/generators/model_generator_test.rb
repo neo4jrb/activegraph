@@ -25,16 +25,16 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
     assert_file 'app/models/account.rb' do |account|
       assert_class 'Account', account do |klass|
         assert_match(/property :name/, klass)
-        assert_match(/property :age, :type => Fixnum/, klass)
+        assert_match(/property :age, :type => Integer/, klass)
       end
     end
   end
 
   test 'attribute types' do
     assert_equal 'Date', create_generated_attribute(:date).type_class
-    assert_equal 'Fixnum', create_generated_attribute(:integer).type_class
-    assert_equal 'Fixnum', create_generated_attribute(:number).type_class
-    assert_equal 'Fixnum', create_generated_attribute(:fixnum).type_class
+    assert_equal 'Integer', create_generated_attribute(:integer).type_class
+    assert_equal 'Integer', create_generated_attribute(:number).type_class
+    assert_equal 'Integer', create_generated_attribute(:Integer).type_class
     assert_equal 'DateTime', create_generated_attribute(:datetime).type_class
     assert_equal 'String', create_generated_attribute(:string).type_class
     assert_equal 'String', create_generated_attribute(:no_exist).type_class

@@ -16,7 +16,7 @@ module Neo4j
           self.order(order).limit(1).pluck(target).first
         end
 
-        # @return [Fixnum] number of nodes of this class
+        # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
           fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
@@ -42,7 +42,7 @@ module Neo4j
         end
 
         def exists?(node_condition = nil, target = nil)
-          fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Fixnum) || node_condition.is_a?(Hash) || node_condition.nil?
+          fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
             start_q.query.return("COUNT(#{var}) AS count").first.count > 0
@@ -144,7 +144,7 @@ module Neo4j
 
         def exists_query_start(condition, target)
           case condition
-          when Fixnum
+          when Integer
             self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
           when Hash
             self.where(condition.keys.first => condition.values.first)
