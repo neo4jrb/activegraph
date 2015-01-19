@@ -137,6 +137,10 @@ module Neo4j::Shared
       end
     end
 
+    def self.included(base)
+      init
+    end
+
     class << self
       # Converts the value to ruby from a Neo4j database value if there is a converter for given type
       def to_ruby(value, type = nil)
@@ -150,15 +154,22 @@ module Neo4j::Shared
         found_converter ? found_converter.to_db(value) : value
       end
 
-      def converters
-        @converters ||= begin
-          Neo4j::Shared::TypeConverters.constants.each_with_object({}) do |constant_name, result|
-            constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
-            if constant.respond_to?(:convert_type)
-              result[constant.convert_type] = constant
-            end
-          end
+      def add_converter(converter)
+        @converters ||= {}
+        @converters[converter.convert_type] = converter
+      end
+
+      def init
+        return if @converters
+        Neo4j::Shared::TypeConverters.constants.each do |constant_name|
+          constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
+          add_converter(constant) if constant.respond_to?(:convert_type)
         end
+      end
+
+      def converters
+        init
+        @converters
       end
     end
   end

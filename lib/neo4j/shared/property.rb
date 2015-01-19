@@ -141,6 +141,7 @@ module Neo4j::Shared
       def property(name, options = {})
         check_illegal_prop(name)
         magic_properties(name, options)
+        type_converter(options)
         attribute(name, options)
         constraint_or_index(name, options)
       end
@@ -213,6 +214,13 @@ module Neo4j::Shared
         # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
         # Convert it to DateTime in the interest of consistency
         options[:type] = DateTime if options[:type] == Time
+      end
+
+      def type_converter(options)
+        if options[:type_converter]
+          Neo4j::Shared::TypeConverters.add_converter(options[:type_converter])
+          options[:typecaster] = ActiveAttr::Typecasting::ObjectTypecaster.new
+        end
       end
     end
   end

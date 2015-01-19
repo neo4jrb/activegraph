@@ -85,4 +85,45 @@ describe Neo4j::Shared::Property do
       end
     end
   end
+
+  describe '#custom type converter' do
+    let(:converter) do
+      Class.new do
+        class << self
+          def convert_type
+            Range
+          end
+
+          def to_db(value)
+            value.to_s
+          end
+
+          def to_ruby(value)
+            ends = value.to_s.split('..').map{|d| Integer(d)}
+            ends[0]..ends[1]
+          end
+        end
+      end
+    end
+
+    let(:instance) { clazz.new }
+
+    before do
+      allow(clazz).to receive(:extract_association_attributes!)
+      clazz.property :range, type_converter: converter
+    end
+
+    it 'sets active_attr typecaster to ObjectTypecaster' do
+      expect(clazz.attributes[:range][:typecaster]).to be_a(ActiveAttr::Typecasting::ObjectTypecaster)
+    end
+
+    it 'adds new converter' do
+      expect(Neo4j::Shared::TypeConverters.converters[Range]).to eq(converter)
+    end
+
+    it 'returns object of a proper type' do
+      instance.range = 1..3
+      expect(instance.range).to be_a(Range)
+    end
+  end
 end
