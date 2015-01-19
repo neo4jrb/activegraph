@@ -26,7 +26,7 @@ module Neo4j::Shared
           DateTime
         end
 
-        # Converts the given DateTime (UTC) value to an Fixnum.
+        # Converts the given DateTime (UTC) value to an Integer.
         # DateTime values are automatically converted to UTC.
         def to_db(value)
           return nil if value.nil?
@@ -41,7 +41,7 @@ module Neo4j::Shared
         def to_ruby(value)
           return nil if value.nil?
           t = case value
-              when Fixnum
+              when Integer
                 Time.at(value).utc
               when String
                 DateTime.strptime(value, '%Y-%m-%d %H:%M:%S %z')
@@ -60,7 +60,7 @@ module Neo4j::Shared
           Time
         end
 
-        # Converts the given DateTime (UTC) value to an Fixnum.
+        # Converts the given DateTime (UTC) value to an Integer.
         # Only utc times are supported !
         def to_db(value)
           return nil if value.nil?
