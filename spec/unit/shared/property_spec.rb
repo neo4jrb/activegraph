@@ -99,7 +99,7 @@ describe Neo4j::Shared::Property do
           end
 
           def to_ruby(value)
-            ends = value.to_s.split('..').map{|d| Integer(d)}
+            ends = value.to_s.split('..').map { |d| Integer(d) }
             ends[0]..ends[1]
           end
         end

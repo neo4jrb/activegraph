@@ -137,7 +137,7 @@ module Neo4j::Shared
       end
     end
 
-    def self.included(base)
+    def self.included(_base)
       init
     end
 
