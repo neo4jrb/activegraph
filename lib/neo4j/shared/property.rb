@@ -217,9 +217,11 @@ module Neo4j::Shared
       end
 
       def type_converter(options)
-        if options[:type_converter]
-          Neo4j::Shared::TypeConverters.add_converter(options[:type_converter])
-          options[:typecaster] = ActiveAttr::Typecasting::ObjectTypecaster.new
+        converter = options[:type_converter]
+        if converter
+          options[:type]        = converter.convert_type
+          options[:typecaster]  = ActiveAttr::Typecasting::ObjectTypecaster.new
+          Neo4j::Shared::TypeConverters.add_converter(converter)
         end
       end
     end
