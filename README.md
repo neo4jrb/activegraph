@@ -8,11 +8,9 @@ For a general overview see our website: http://neo4jrb.io/
 Winner of a 2014 Graphie for "Best Community Contribution" at Neo4j's [Graph Connect](http://graphconnect.com) conference!
 ![2014 Graphie](http://i.imgur.com/CkOoTTYm.jpg)
 
-## Coming Soon: v4!
+Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction) and in the [announcement message](http://neo4jrb.io/blog/2015/01/09/neo4j-rb_v4-1_released.html). It will take a little time before all documentation is updated to reflect the new release but unless otherwise noted, all 3.X documentation is totally valid for v4.
 
-The master branch of this repo now holds stable builds of the v4 version of the gem. Its changes are outlined at [here](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction). Unless otherwise noted, all 3.X documentation is totally valid. v4 discussion will happen [https://github.com/neo4jrb/neo4j/issues/596](https://github.com/neo4jrb/neo4j/issues/596) but if you have any concerns, please contact us directly.
-
-## Modern (3.X) Documentation
+## Modern (3.x/4.X) Documentation
 
 * [Website](http://neo4jrb.io/) (for an introduction)
 * [Wiki](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v3-Introduction)
