@@ -70,6 +70,8 @@ describe 'ActiveRel' do
       to_class ToClass
     end
 
+    class InheritedRelClass < AutomaticRelType; end
+
     it 'allows omission of `type`' do
       expect(AutomaticRelType._type).to eq 'AUTOMATIC_REL_TYPE'
     end
@@ -77,6 +79,10 @@ describe 'ActiveRel' do
     it 'uses `type` to override the default type' do
       AutomaticRelType.type 'NEW_TYPE'
       expect(AutomaticRelType._type).to eq 'NEW_TYPE'
+    end
+
+    it 'uses the defined class name when inheriting' do
+      expect(InheritedRelClass._type).to eq 'INHERITED_REL_CLASS'
     end
   end
 
