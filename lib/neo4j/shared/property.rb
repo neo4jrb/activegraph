@@ -222,7 +222,7 @@ module Neo4j::Shared
       end
 
       def type_converter(options)
-        converter = options[:type_converter]
+        converter = options[:serializer]
         return unless converter
         options[:type]        = converter.convert_type
         options[:typecaster]  = ActiveAttr::Typecasting::ObjectTypecaster.new

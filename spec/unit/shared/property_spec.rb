@@ -111,7 +111,7 @@ describe Neo4j::Shared::Property do
     let(:range)     { 1..3 }
 
     before do
-      clazz.property :range, type_converter: converter
+      clazz.property :range, serializer: converter
     end
 
     it 'sets active_attr typecaster to ObjectTypecaster' do
