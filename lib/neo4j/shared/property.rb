@@ -53,9 +53,7 @@ module Neo4j::Shared
     end
 
     def send_props(hash)
-      hash.each do |key, value|
-        self.send("#{key}=", value)
-      end
+      hash.each { |key, value| self.send("#{key}=", value) }
     end
 
     private
@@ -228,7 +226,7 @@ module Neo4j::Shared
         return unless converter
         options[:type]        = converter.convert_type
         options[:typecaster]  = ActiveAttr::Typecasting::ObjectTypecaster.new
-        Neo4j::Shared::TypeConverters.add_converter(converter)
+        Neo4j::Shared::TypeConverters.register_converter(converter)
       end
 
       def magic_typecast(name, options)

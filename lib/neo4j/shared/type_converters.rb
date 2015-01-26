@@ -112,15 +112,14 @@ module Neo4j::Shared
 
       properties.each_with_object({}) do |(attr, value), new_attributes|
         next new_attributes if skip_conversion?(attr, value)
-        primitive = primitive_type(attr.to_sym)
-        new_attributes[attr] = converted_property(primitive, value, converter)
+        new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
       end
     end
 
     private
 
     def converted_property(type, value, converter)
-      TypeConverters.converters[type].nil? ? value : TypeConverters.send(converter, value, type)
+      TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
     end
 
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
@@ -135,52 +134,37 @@ module Neo4j::Shared
       end
     end
 
+    # Returns true if the property isn't defined in the model or it's both nil and unchanged.
     def skip_conversion?(attr, value)
       !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
     end
 
-    def self.included(_base)
-      init
-    end
-
     class << self
+      def included(_)
+        return if @converters
+        @converters = {}
+        Neo4j::Shared::TypeConverters.constants.each do |constant_name|
+          constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
+          register_converter(constant) if constant.respond_to?(:convert_type)
+        end
+      end
+
       def typecaster_for(primitive_type)
         converters.key?(primitive_type) ? converters[primitive_type] : nil
       end
 
-      # Converts the value to ruby from a Neo4j database value if there is a converter for given type
-      def to_ruby(value, type = nil)
+      # @param [Symbol] direction either :to_ruby or :to_other
+      def to_other(direction, value, type)
+        fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
         found_converter = converters[type]
-        found_converter ? found_converter.to_ruby(value) : value
-      end
-
-      # Converts the value to a Neo4j database value from ruby if there is a converter for given type
-      def to_db(value, type = nil)
-        found_converter = converters[type]
-        found_converter ? found_converter.to_db(value) : value
-      end
-
-      def add_converter(converter)
-        @converters ||= {}
-        @converters[converter.convert_type] = converter
-      end
-
-      def init
-        return if @converters
-        Neo4j::Shared::TypeConverters.constants.each do |constant_name|
-          constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
-          add_converter(constant) if constant.respond_to?(:convert_type)
-        end
+        found_converter ? found_converter.send(direction, value) : value
       end
 
       def register_converter(converter)
         converters[converter.convert_type] = converter
       end
 
-      def converters
-        init
-        @converters
-      end
+      attr_reader :converters
     end
   end
 end
