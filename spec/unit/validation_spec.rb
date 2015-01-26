@@ -37,6 +37,8 @@ describe Neo4j::ActiveNode::Validations do
       it 'creates a new node if not persisted before' do
         o = clazz.new(name: 'kalle', age: '42')
         o.stub(:_persisted_obj).and_return(nil)
+        o.stub(:serialized_properties).and_return({})
+        o.serialized_properties
         clazz.stub(:cached_class?).and_return(false)
         clazz.should_receive(:neo4j_session).and_return(session)
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
@@ -49,6 +51,7 @@ describe Neo4j::ActiveNode::Validations do
         o = clazz.new
         o.name = 'sune'
         o.stub(:_persisted_obj).and_return(node)
+        o.stub(:serialized_properties).and_return({})
         node.should_receive(:update_props).and_return(name: 'sune')
         o.save.should be true
       end

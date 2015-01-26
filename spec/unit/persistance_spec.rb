@@ -34,6 +34,7 @@ describe Neo4j::ActiveNode::Persistence do
 
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
+      o.stub(:serialized_properties).and_return({})
       clazz.stub(:cached_class?).and_return(false)
       clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
@@ -54,6 +55,7 @@ describe Neo4j::ActiveNode::Persistence do
     it 'updates node if already persisted before if an attribute was changed' do
       o = clazz.new
       o.name = 'sune'
+      o.stub(:serialized_properties).and_return({})
       o.stub(:_persisted_obj).and_return(node)
       expect(node).to receive(:update_props).and_return(name: 'sune')
       o.save
@@ -67,6 +69,7 @@ describe Neo4j::ActiveNode::Persistence do
         o = clazz.new
 
         o.stub(:props).and_return(start_props)
+        o.stub(:serialized_properties).and_return({})
         o.class.stub(:name).and_return('MyClass') # set_classname looks for this
         clazz.stub(:neo4j_session).and_return(session)
 

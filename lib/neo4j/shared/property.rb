@@ -109,6 +109,10 @@ module Neo4j::Shared
       klass ? klass.new(*values) : values
     end
 
+    def magic_typecast_properties
+      self.class.magic_typecast_properties
+    end
+
     module ClassMethods
       # Defines a property on the class
       #
@@ -187,6 +191,10 @@ module Neo4j::Shared
         end
       end
 
+      def magic_typecast_properties
+        @magic_typecast_properties ||= {}
+      end
+
       private
 
       def constraint_or_index(name, options)
@@ -201,18 +209,25 @@ module Neo4j::Shared
       end
 
       def check_illegal_prop(name)
-        if ILLEGAL_PROPS.include?(name.to_s)
-          fail IllegalPropertyError, "#{name} is an illegal property"
-        end
+        fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
       end
 
       # Tweaks properties
       def magic_properties(name, options)
+        magic_typecast(name, options)
         options[:type] ||= DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
 
         # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
         # Convert it to DateTime in the interest of consistency
         options[:type] = DateTime if options[:type] == Time
+      end
+
+      def magic_typecast(name, options)
+        typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
+        return unless typecaster && typecaster.respond_to?(:primitive_type)
+        magic_typecast_properties[name] = options[:type]
+        options[:type] = typecaster.primitive_type
+        options[:typecaster] = typecaster
       end
     end
   end
