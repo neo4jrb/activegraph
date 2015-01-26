@@ -8,12 +8,10 @@ module Neo4j::Shared
         end
 
         def to_db(value)
-          return nil if value.nil?
           Time.utc(value.year, value.month, value.day).to_i
         end
 
         def to_ruby(value)
-          return nil if value.nil?
           Time.at(value).utc.to_date
         end
       end
@@ -26,10 +24,9 @@ module Neo4j::Shared
           DateTime
         end
 
-        # Converts the given DateTime (UTC) value to an Fixnum.
+        # Converts the given DateTime (UTC) value to an Integer.
         # DateTime values are automatically converted to UTC.
         def to_db(value)
-          return nil if value.nil?
           value = value.new_offset(0) if value.respond_to?(:new_offset)
           if value.class == Date
             Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
@@ -38,13 +35,13 @@ module Neo4j::Shared
           end
         end
 
+        DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S %z'
         def to_ruby(value)
-          return nil if value.nil?
           t = case value
-              when Fixnum
+              when Integer
                 Time.at(value).utc
               when String
-                DateTime.strptime(value, '%Y-%m-%d %H:%M:%S %z')
+                DateTime.strptime(value, DATETIME_FORMAT)
               else
                 fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
               end
@@ -60,10 +57,9 @@ module Neo4j::Shared
           Time
         end
 
-        # Converts the given DateTime (UTC) value to an Fixnum.
+        # Converts the given DateTime (UTC) value to an Integer.
         # Only utc times are supported !
         def to_db(value)
-          return nil if value.nil?
           if value.class == Date
             Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
           else
@@ -72,7 +68,6 @@ module Neo4j::Shared
         end
 
         def to_ruby(value)
-          return nil if value.nil?
           Time.at(value).utc
         end
       end
@@ -86,12 +81,10 @@ module Neo4j::Shared
         end
 
         def to_db(value)
-          return nil if value.nil?
           Psych.dump(value)
         end
 
         def to_ruby(value)
-          return nil if value.nil?
           Psych.load(value)
         end
       end
@@ -105,36 +98,45 @@ module Neo4j::Shared
         end
 
         def to_db(value)
-          return nil if value.nil?
           value.to_json
         end
 
         def to_ruby(value)
-          return nil if value.nil?
           JSON.parse(value, quirks_mode: true)
         end
       end
     end
 
-
-
     def convert_properties_to(medium, properties)
-      # Perform type conversion
-      serialize = self.respond_to?(:serialized_properties) ? self.serialized_properties : {}
+      converter = medium == :ruby ? :to_ruby : :to_db
 
-      properties.each_with_object({}) do |key_value_pair, new_attributes|
-        attr, value = key_value_pair
-
-        # skip "secret" undeclared attributes such as uuid
-        next new_attributes unless self.class.attributes[attr]
-
-        type = serialize.key?(attr.to_sym) ? serialize[attr.to_sym] : self.class._attribute_type(attr)
-        new_attributes[attr] = if TypeConverters.converters[type].nil?
-                                 value
-                               else
-                                 TypeConverters.send "to_#{medium}", value, type
-                               end
+      properties.each_with_object({}) do |(attr, value), new_attributes|
+        next new_attributes if skip_conversion?(attr, value)
+        primitive = primitive_type(attr.to_sym)
+        new_attributes[attr] = converted_property(primitive, value, converter)
       end
+    end
+
+    private
+
+    def converted_property(type, value, converter)
+      TypeConverters.converters[type].nil? ? value : TypeConverters.send(converter, value, type)
+    end
+
+    # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
+    def primitive_type(attr)
+      case
+      when serialized_properties.key?(attr)
+        serialized_properties[attr]
+      when magic_typecast_properties.key?(attr)
+        self.class.magic_typecast_properties[attr]
+      else
+        self.class._attribute_type(attr)
+      end
+    end
+
+    def skip_conversion?(attr, value)
+      !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
     end
 
     def self.included(_base)
@@ -142,6 +144,10 @@ module Neo4j::Shared
     end
 
     class << self
+      def typecaster_for(primitive_type)
+        converters.key?(primitive_type) ? converters[primitive_type] : nil
+      end
+
       # Converts the value to ruby from a Neo4j database value if there is a converter for given type
       def to_ruby(value, type = nil)
         found_converter = converters[type]
@@ -165,6 +171,10 @@ module Neo4j::Shared
           constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
           add_converter(constant) if constant.respond_to?(:convert_type)
         end
+      end
+
+      def register_converter(converter)
+        converters[converter.convert_type] = converter
       end
 
       def converters

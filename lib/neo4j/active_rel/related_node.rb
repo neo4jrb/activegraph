@@ -19,7 +19,7 @@ module Neo4j::ActiveRel
 
     # Loads the node if needed, then conducts comparison.
     def ==(other)
-      loaded if @node.is_a?(Fixnum)
+      loaded if @node.is_a?(Integer)
       @node == other
     end
 

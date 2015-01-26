@@ -11,7 +11,7 @@ module Neo4j::Shared
       persisted? ? [id] : nil
     end
 
-    # @return [Fixnum, nil] the neo4j id of the node if persisted or nil
+    # @return [Integer, nil] the neo4j id of the node if persisted or nil
     def neo_id
       _persisted_obj ? _persisted_obj.neo_id : nil
     end

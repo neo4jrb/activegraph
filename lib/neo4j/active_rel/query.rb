@@ -4,10 +4,10 @@ module Neo4j::ActiveRel
 
     module ClassMethods
       # Returns the object with the specified neo4j id.
-      # @param [String,Fixnum] id of node to find
+      # @param [String,Integer] id of node to find
       # @param [Neo4j::Session] session optional
       def find(id, session = self.neo4j_session)
-        fail "Unknown argument #{id.class} in find method (expected String or Fixnum)" if not [String, Fixnum].include?(id.class)
+        fail "Unknown argument #{id.class} in find method (expected String or Integer)" if !(id.is_a?(String) || id.is_a?(Integer))
         find_by_id(id, session)
       end
 

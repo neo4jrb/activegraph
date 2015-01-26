@@ -387,7 +387,7 @@ describe Neo4j::ActiveNode do
       person = Person.new(name: 'John')
       person.neo_id.should be_nil
       person.save
-      person.neo_id.should be_a(Fixnum)
+      person.neo_id.should be_a(Integer)
       person.exist?.should be true
     end
 
@@ -402,7 +402,7 @@ describe Neo4j::ActiveNode do
 
     it 'can create the node' do
       person = Person.create(name: 'andreas', age: 21)
-      person.neo_id.should be_a(Fixnum)
+      person.neo_id.should be_a(Integer)
       person[:name].should eq('andreas')
       person[:age].should eq(21)
       person.exist?.should be true

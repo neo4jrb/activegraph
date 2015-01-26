@@ -70,7 +70,7 @@ module Neo4j
         end
 
         # Returns the object with the specified neo4j id.
-        # @param [String,Fixnum] id of node to find
+        # @param [String,Integer] id of node to find
         def find(id)
           map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
