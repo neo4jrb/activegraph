@@ -13,7 +13,10 @@ module Neo4j
         end
 
         def first_and_last(order, target)
-          self.order(order).limit(1).pluck(target).first
+          # We're avoiding multiparam return because I want to create one fewer array objects as is.
+          return_method = preloader ? :preload : :pluck
+          arg           = preloader ? nil : target
+          self.order(order).limit(1).send(return_method, arg).first
         end
 
         # @return [Integer] number of nodes of this class
@@ -121,10 +124,10 @@ module Neo4j
           self.query.proxy_as(model, var, true)
         end
 
-        def includes(association_name)
-          starting_id = identity
-          child_id = :"#{identity}_child"
-          query.proxy_as_optional(model, starting_id).send(association_name, child_id).prepopulate(association_name, starting_id, child_id)
+        def includes(association_name, given_parent_id = nil, given_rel_id = nil, given_child_id = nil)
+          starting_id = given_parent_id || identity
+          child_id = given_child_id || :"#{identity}_child"
+          query.proxy_as_optional(model, starting_id).send(association_name, child_id, given_rel_id).prepopulate(association_name, starting_id, child_id)
         end
 
         protected
@@ -152,7 +155,8 @@ module Neo4j
         end
 
         def query_with_target(target)
-          yield(target || identity)
+          use_identity = preloader ? preloader.target_id : identity
+          yield(target || use_identity)
         end
 
         def exists_query_start(condition, target)

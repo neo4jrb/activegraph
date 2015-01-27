@@ -44,6 +44,16 @@ module Neo4j
           self.query.pluck(*args)
         end
 
+        protected
+
+        def preload(rel)
+          pluck_this = rel.nil? ? [preloader.target_id, "collect(#{preloader.child_id})"] : [preloader.target_id, "collect(#{preloader.child_id})", rel]
+          self.pluck(*pluck_this).tap do |result|
+            result.each { |target, child| preloader.replay(target, child) }
+            result.map!(&:first) if rel.nil?
+          end
+        end
+
         private
 
         # Executes the query against the database if the results are not already present in a node's association cache. This method is
@@ -65,15 +75,6 @@ module Neo4j
           collection = self.pluck(*pluck_this)
           caller.association_instance_set(cypher_string, collection, @association) unless collection.empty?
           collection
-        end
-
-        require 'pry'
-        def preload(rel)
-          pluck_this = rel.nil? ? [preloader.target_id, "collect(#{preloader.child_id})"] : [preloader.target_id, "collect(#{preloader.child_id})", rel]
-          result = self.pluck(*pluck_this)
-          result.each { |target, child| preloader.replay(target, child) }
-          result.map!(&:first) if rel.nil?
-          result
         end
       end
     end

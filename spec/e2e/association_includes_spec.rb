@@ -52,6 +52,10 @@ describe 'association .includes method' do
     expect(band.association_cache[:members].values.first.first).to eq(maynard)
   end
 
+  it 'accepts a symbol for node_id'
+  it 'accepts a symbol for child_id'
+  it 'accepts a symbol for the rel between the node and child'
+
   it 'works on instances' do
     members = tool.members.includes(:instruments).to_a
     expect(members.first.association_cache[:instruments]).not_to be_empty
@@ -66,6 +70,19 @@ describe 'association .includes method' do
       else
         fail 'unexpected results'
       end
+    end
+  end
+
+  describe 'first' do
+    it 'returns the first match and populates its association cache' do
+      result = tool.members.where(name: 'Maynard').includes(:instruments).where(name: 'Vocals').first
+      expect(result).to eq maynard
+      # require 'pry'; binding.pry
+      # This might seem odd but I'm tired and it's a way to get to the contents of the association cache.
+      # TODO: Fix it. In the meantime...
+      # association_cache = { instruments: { long_cypher_integer: [preloaded_node(s)] }}]
+      # In this case, the preloaded node == vocals
+      expect(result.association_cache[:instruments].first.last.first).to eq vocals
     end
   end
 end

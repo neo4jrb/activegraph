@@ -11,8 +11,15 @@ module Neo4j
           @queued_methods = {}
         end
 
+        # Saved for now for posterity.
+        # def queue(method_name, *args)
+        #   queued_methods[method_name] = args unless Enumerable.method_defined?(method_name) || Enumerator.method_defined?(method_name)
+        #   self
+        # end
+
+        # This should only be called once, when `includes` is called, so leave it alone. In the future, it may be used to filter the included query.
         def queue(method_name, *args)
-          queued_methods[method_name] = args unless Enumerable.method_defined?(method_name) || Enumerator.method_defined?(method_name)
+          queued_methods[method_name] = args
           self
         end
 
@@ -23,12 +30,16 @@ module Neo4j
           returned_node.association_instance_set(cypher_string, child, returned_node.class.associations[queued_methods.keys.first])
         end
 
+        # def method_missing(method_name, *args, &block)
+        #   queue(method_name, *args)
+        #   caller.send(method_name, *args, &block)
+        # rescue
+        #   queued_methods.delete(method_name)
+        #   raise
+        # end
+
         def method_missing(method_name, *args, &block)
-          queue(method_name, *args)
           caller.send(method_name, *args, &block)
-        rescue
-          queued_methods.delete(method_name)
-          raise
         end
       end
     end
