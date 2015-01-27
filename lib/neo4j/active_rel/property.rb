@@ -46,6 +46,7 @@ module Neo4j::ActiveRel
         Neo4j::Node.load(id)
       end
 
+      # When this is called, all relationships created from the ActiveRel model will use "CREATE UNIQUE" instead of "CREATE" in Cypher.
       def creates_unique_rel
         @unique = true
       end

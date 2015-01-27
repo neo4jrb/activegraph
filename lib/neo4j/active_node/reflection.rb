@@ -12,16 +12,16 @@ module Neo4j::ActiveNode
 
     # Adds methods to the class related to creating and retrieving reflections.
     module ClassMethods
-      # @param macro [Symbol] the association type, :has_many or :has_one
-      # @param name [Symbol] the association name
-      # @param association_object [Neo4j::ActiveNode::HasN::Association] the association object created in the course of creating this reflection
+      # @param [Symbol] macro the association type, :has_many or :has_one
+      # @param [Symbol] name the association name
+      # @param [Neo4j::ActiveNode::HasN::Association] association_object the association object created in the course of creating this reflection
       def create_reflection(macro, name, association_object, model)
         self.reflections = self.reflections.merge(name => AssociationReflection.new(macro, name, association_object))
         association_object.add_destroy_callbacks(model)
       end
 
       private :create_reflection
-      # @param [Symbol] an association declared on the model
+      # @param [Symbol] association an association declared on the model
       # @return [Neo4j::ActiveNode::Reflection::AssociationReflection] of the given association
       def reflect_on_association(association)
         reflections[association.to_sym]

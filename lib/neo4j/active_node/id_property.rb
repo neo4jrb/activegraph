@@ -22,8 +22,6 @@ module Neo4j::ActiveNode
   #
   module IdProperty
     extend ActiveSupport::Concern
-
-
     module TypeMethods
       def define_id_methods(clazz, name, conf)
         fail "Expected a Hash, got #{conf.class} (#{conf}) for id_property" unless conf.is_a?(Hash)

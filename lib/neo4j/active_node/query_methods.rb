@@ -15,7 +15,7 @@ module Neo4j
         self.query_as(:n).limit(1).order(n: primary_key).pluck(:n).first
       end
 
-      # Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      # Returns the last node of this class. Note that this may not be the first node created since Neo4j recycles IDs.
       def last
         self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
       end

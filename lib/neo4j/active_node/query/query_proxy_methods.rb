@@ -1,22 +1,28 @@
 module Neo4j
   module ActiveNode
     module Query
+      # This module defines methods that are either unique to QueryProxy or change enumerable methods' behavior to exploit
+      # Neo4j features. For example, #first will limit the query to 1 result on the server; #count returns a count from the server,
+      # etc,...
       module QueryProxyMethods
         class InvalidParameterError < StandardError; end
 
+        # The first node matched by the QueryProxy.
+        # @param [Symbol, String] target The identifier describing the "link" of a QueryProxy chain to be returned.
+        # Note that this may also refer to a relationship identifier.
         def first(target = nil)
           query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
         end
 
+        # The last node matched by the QueryProxy.
+        # @param [Symbol, String] target see #first
         def last(target = nil)
           query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
         end
 
-        def first_and_last(order, target)
-          self.order(order).limit(1).pluck(target).first
-        end
-
         # @return [Integer] number of nodes of this class
+        # @param [Symbol] distinct Send `:distinct` if COUNT should use DISTINCT to limit results.
+        # @param [String, Symbol] target Identifier defined earlier in the QueryProxy chain to be counted.
         def count(distinct = nil, target = nil)
           fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
@@ -28,12 +34,15 @@ module Neo4j
         alias_method :size,   :count
         alias_method :length, :count
 
+        # @return [Boolean] Would the QueryProxy return results?
         def empty?(target = nil)
           query_with_target(target) { |var| !self.exists?(nil, var) }
         end
 
         alias_method :blank?, :empty?
 
+        # @param [#neo_id] other A node to check for inclusion in the QueryProxy
+        # @return [Boolean]
         def include?(other, target = nil)
           fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
           query_with_target(target) do |var|
@@ -51,7 +60,7 @@ module Neo4j
 
         # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
         # The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
-        # @param [String,Symbol] the optional identifier of the link in the chain to delete.
+        # @param [String,Symbol] identifier the optional identifier of the link in the chain to delete.
         def delete_all(identifier = nil)
           query_with_target(identifier) do |target|
             begin
@@ -122,6 +131,10 @@ module Neo4j
         end
 
         private
+
+        def first_and_last(order, target)
+          self.order(order).limit(1).pluck(target).first
+        end
 
         def clear_caller_cache
           self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
