@@ -1,4 +1,9 @@
 module Neo4j::ActiveRel
+  # Querying from ActiveRel isn't exactly recommended, but this module is included because it felt odd to completely omit some very basic,
+  # obvious query methods. Generally speaking, if you find yourself in a situation that you need to query based on a rel class,
+  # you are treating that relationship like a node and should probably add another node to your data model.
+  #
+  # As a result of our own feeling that this module might not really need to exist, these methods are all very, very basic.
   module Query
     extend ActiveSupport::Concern
 

@@ -22,9 +22,13 @@ module Neo4j
       super
     end
 
+    # (see Neo4j::ActiveNode#neo4j_obj)
+    # @return [Neo4j::Server::CypherRelationship, Neo4j::Embedded::EmbeddedRelationship]
     def neo4j_obj
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
+
+    private
 
     included do
       def self.inherited(other)

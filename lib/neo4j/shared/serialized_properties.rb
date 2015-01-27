@@ -28,6 +28,17 @@ module Neo4j::Shared
         @serialize ||= {}
         @serialize[name] = coder
       end
+
+      private
+
+      def inherited(other)
+        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
+        super(other)
+      end
+
+      def inherit_serialized_properties(other)
+        other.serialized_properties = self.serialized_properties
+      end
     end
   end
 end

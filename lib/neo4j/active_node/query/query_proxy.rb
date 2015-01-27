@@ -63,6 +63,8 @@ module Neo4j
           @rel_var
         end
 
+        # Sets parameterized values set during a Cypher `WHERE` statement.
+        # @param [Hash] params The key should match the parameter used in Cypher's WHERE, the value is its value.
         def params(params)
           self.dup.tap do |new_query|
             new_query._add_params(params)

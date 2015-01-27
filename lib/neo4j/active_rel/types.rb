@@ -14,7 +14,8 @@ module Neo4j
       # and Lesson is 'EnrolledIn'." After all, that is a big part of why we have models, right? To make our lives easier?
       #
       # A model is added to WRAPPED_CLASSES when it is initalized AND when the `type` class method is called within a model. This means that
-      # it's possible a model will be added twice: once with the rel_type version of the model name, again with the custom type. deal_with_it.gif.
+      # it's possible a model will be added twice: once with the rel_type version of the model name, again with the custom type.
+      # It's such an uncommon mistake that we don't have logic to prevent it, so... Don't do that.
       #
       # As an alternative to this, you can call the `set_classname` class method to insert a `_classname` property into your relationship,
       # which will completely bypass this whole process.
@@ -31,7 +32,8 @@ module Neo4j
           other.type other.name, true
         end
 
-        # @param type [String] sets the relationship type when creating relationships via this class
+        # @param [String] given_type Sets the relationship type when creating relationships via this class
+        # @param [Boolean] auto Determines whether the relationship type conform to system defaults.
         def type(given_type = self.name, auto = false)
           use_type = auto ? decorated_rel_type(given_type) : given_type
           add_wrapped_class use_type

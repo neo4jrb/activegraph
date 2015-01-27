@@ -7,6 +7,7 @@ module Neo4j::ActiveRel
     class ModelClassInvalidError < RuntimeError; end
     class RelCreateFailedError < RuntimeError; end
 
+    # ActiveRel does not have an association cache instance method. This is here to provide compatibility with shared methods.
     def clear_association_cache; end
 
     def save(*)
@@ -80,8 +81,6 @@ module Neo4j::ActiveRel
     def allows_any_class?(type)
       self.class.send(type) == :any || self.class.send(type) == false
     end
-
-    private
 
     def _rel_creation_query(from_node, to_node, props)
       from_class = from_node.class

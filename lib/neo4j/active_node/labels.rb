@@ -1,6 +1,6 @@
 module Neo4j
   module ActiveNode
-    # Provides a mapping between neo4j labels and Ruby classes
+    # Provides a mapping between Neo4j labels and Ruby classes.
     module Labels
       extend ActiveSupport::Concern
 
@@ -41,6 +41,7 @@ module Neo4j
         @_wrapped_labels = nil
       end
 
+      # All of the known classes using ActiveNode.
       def self._wrapped_classes
         Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
       end
@@ -64,6 +65,21 @@ module Neo4j
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
 
+        def inherited(other)
+          inherited_indexes(other) if self.respond_to?(:indexed_properties)
+          Neo4j::ActiveNode::Labels.add_wrapped_class(other)
+          super(other)
+        end
+        private :inherited
+
+        # Ensures indexed properties from a parent are inherited by the child. Indexes are bound to labels,
+        # so they need to be redeclared in this case.
+        def inherited_indexes(other)
+          return if indexed_properties.nil?
+          self.indexed_properties.each { |property| other.index property }
+        end
+        private :inherited_indexes
+
         # Find all nodes/objects of this class
         def all
           Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, {})
@@ -81,8 +97,9 @@ module Neo4j
           end
         end
 
-        # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
-        # @param Hash args of arguments to find
+        # Finds the first record matching the specified conditions.
+        # There is no implied ordering so if order matters, you should specify it yourself.
+        # @param [Hash] values Keys should match properties declared on the node, values are... their values.
         def find_by(values)
           self.query_as(:n).where(n: values).limit(1).pluck(:n).first
         end
@@ -127,9 +144,7 @@ module Neo4j
         #      index :name, constraint: {type: :unique}
         #    end
         def index(property, conf = {})
-          Neo4j::Session.on_session_available do |_|
-            _index(property, conf)
-          end
+          Neo4j::Session.on_session_available { |_| _index(property, conf) }
           indexed_properties.push property unless indexed_properties.include? property
         end
 
@@ -176,15 +191,8 @@ module Neo4j
         end
 
         def base_class
-          unless self < Neo4j::ActiveNode
-            fail "#{name} doesn't belong in a hierarchy descending from ActiveNode"
-          end
-
-          if superclass == Object
-            self
-          else
-            superclass.base_class
-          end
+          fail "#{name} doesn't belong in a hierarchy descending from ActiveNode" unless self < Neo4j::ActiveNode
+          superclass == Object ? self : superclass.base_class
         end
 
 

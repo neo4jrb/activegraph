@@ -1,10 +1,13 @@
 module Neo4j
-  # Makes Neo4j nodes and relationships behave like ActiveRecord objects.
-  # By including this module in your class it will create a mapping for the node to your ruby class
-  # by using a Neo4j Label with the same name as the class. When the node is loaded from the database it
-  # will check if there is a ruby class for the labels it has.
-  # If there Ruby class with the same name as the label then the Neo4j node will be wrapped
-  # in a new object of that class.
+  # Adds ActiveRecord-like methods to Ruby classes to easily work with Neo4j objects. Where possible,
+  # it follows ActiveRecord's behavior to make things easy and predictable.
+  #
+  # Like classes inheriting from ActiveRecord::Base, classes including Neo4j::ActiveNode are able to create,
+  # return, update, and destroy Neo4j nodes using provided methods. Node models can also define associations to
+  # other models and use callbacks and validations.
+  #
+  # Class names are directly mapped to label names with Neo4j: a `Student` class will create Student nodes.
+  # When a node is returned from the database, the label(s) is/are used to to determine what model to load.
   #
   # = ClassMethods
   # * {Neo4j::ActiveNode::Labels::ClassMethods} defines methods like: <tt>index</tt> and <tt>find</tt>
@@ -40,33 +43,21 @@ module Neo4j
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent
 
+    # Every wrapped node and relationship has an underlying unwrapped CypherNode/CypherRelationship or EmbeddedNode/EmbeddedRelationship object.
+    # This method provides access to that.
+    # The unwrapped object is useful for performing actions that aren't easy or possible with Active*-wrapped objects, like
+    # accessing undeclared properties.
+    # @return [Neo4j::Server::CypherNode, Neo4j::Embedded::EmbeddedNode]
     def neo4j_obj
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
+    private
+
     included do
       def self.inherited(other)
-        inherit_id_property(other) if self.id_property?
-        inherited_indexes(other) if self.respond_to?(:indexed_properties)
+        super(other)
         attributes.each_pair { |k, v| other.attributes[k] = v }
-        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
-        Neo4j::ActiveNode::Labels.add_wrapped_class(other)
-        super
-      end
-
-      def self.inherited_indexes(other)
-        return if indexed_properties.nil?
-        self.indexed_properties.each { |property| other.index property }
-      end
-
-      def self.inherit_serialized_properties(other)
-        other.serialized_properties = self.serialized_properties
-      end
-
-      def self.inherit_id_property(other)
-        id_prop = self.id_property_info
-        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
-        other.id_property id_prop[:name], conf
       end
 
       Neo4j::Session.on_session_available do |_|

@@ -7,7 +7,7 @@ module Neo4j::ActiveRel
 
     # ActiveRel's related nodes can be initialized with nothing, an integer, or a fully wrapped node.
     #
-    # Initialization with nothing happens when a new, non-persisted ActiveRel object is first initialized.
+    # Initialization with nil happens when a new, non-persisted ActiveRel object is first initialized.
     #
     # Initialization with an integer happens when a relationship is loaded from the database. It loads using the ID
     # because that is provided by the Cypher response and does not require an extra query.
