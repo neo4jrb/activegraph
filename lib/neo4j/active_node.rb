@@ -56,27 +56,8 @@ module Neo4j
 
     included do
       def self.inherited(other)
-        inherit_id_property(other) if self.id_property?
-        inherited_indexes(other) if self.respond_to?(:indexed_properties)
+        super(other)
         attributes.each_pair { |k, v| other.attributes[k] = v }
-        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
-        Neo4j::ActiveNode::Labels.add_wrapped_class(other)
-        super
-      end
-
-      def self.inherited_indexes(other)
-        return if indexed_properties.nil?
-        self.indexed_properties.each { |property| other.index property }
-      end
-
-      def self.inherit_serialized_properties(other)
-        other.serialized_properties = self.serialized_properties
-      end
-
-      def self.inherit_id_property(other)
-        id_prop = self.id_property_info
-        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
-        other.id_property id_prop[:name], conf
       end
 
       Neo4j::Session.on_session_available do |_|

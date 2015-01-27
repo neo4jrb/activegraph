@@ -106,6 +106,17 @@ module Neo4j::ActiveNode
 
 
     module ClassMethods
+      def inherited(other)
+        inherit_id_property(other) if self.id_property?
+        super(other)
+      end
+
+      def inherit_id_property(other)
+        id_prop = self.id_property_info
+        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
+        other.id_property id_prop[:name], conf
+      end
+
       def find_by_neo_id(id)
         Neo4j::Node.load(id)
       end
