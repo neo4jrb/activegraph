@@ -8,15 +8,12 @@ module Neo4j
         def initialize(query_proxy, child_id)
           @caller = query_proxy
           @target_id = caller.identity
-          @child_id = child_id
+          @child_id = child_id || :"#{target_id}_child"
           @queued_methods = {}
         end
 
-        def initial_queue(params)
-          @target_id = caller.identity
-          @child_id = params[:child_id] || :"#{target_id}_child"
-          association_name = params[:association]
-          rel_id = params[:rel_id]
+        def initial_queue(association_name, rel_id, given_child_id)
+          @child_id = given_child_id || :"#{target_id}_child"
           @caller = caller.query.proxy_as_optional(caller.model, target_id).send(association_name, child_id, rel_id)
           caller.instance_variable_set(:@preloader, self)
           queue association_name
