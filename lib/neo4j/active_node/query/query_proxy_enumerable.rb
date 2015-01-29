@@ -47,6 +47,7 @@ module Neo4j
         protected
 
         def preload(rel)
+          # require 'pry'; binding.pry
           pluck_this = rel.nil? ? [preloader.target_id, "collect(#{preloader.child_id})"] : [preloader.target_id, "collect(#{preloader.child_id})", rel]
           self.pluck(*pluck_this).tap do |result|
             result.each { |target, child| preloader.replay(target, child) }
