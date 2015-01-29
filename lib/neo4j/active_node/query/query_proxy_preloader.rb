@@ -3,6 +3,7 @@ module Neo4j
     module Query
       class QueryProxyPreloader
         attr_reader :queued_methods, :caller, :target_id, :child_id
+        delegate :each, :each_with_rel, :each_rel, :to_a, :first, :last, :to_cypher, to: :caller
 
         def initialize(query_proxy, target_id, child_id)
           @caller = query_proxy
@@ -21,10 +22,6 @@ module Neo4j
           queued_methods.each { |method, args| @chained_node = @chained_node.send(method, *args) }
           cypher_string = @chained_node.to_cypher_with_params([@chained_node.identity])
           returned_node.association_instance_set(cypher_string, child, returned_node.class.associations[queued_methods.keys.first])
-        end
-
-        def method_missing(method_name, *args, &block)
-          caller.send(method_name, *args, &block)
         end
       end
     end
