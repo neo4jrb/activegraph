@@ -124,19 +124,19 @@ module Neo4j
           self.query.proxy_as(model, var, true)
         end
 
-        def includes(association_name, given_child_id = nil, given_rel_id = nil)
-          prepopulate(false, association_name, given_child_id, given_rel_id)
+        def includes(association_name, given_child_id = nil, rel_id = nil)
+          prepopulate(false, association_name, given_child_id, rel_id)
         end
 
-        def includes_filtered(association_name, given_child_id = nil, given_rel_id = nil)
-          prepopulate(true, association_name, given_child_id, given_rel_id)
+        def includes_filtered(association_name, given_child_id = nil, rel_id = nil)
+          prepopulate(true, association_name, given_child_id, rel_id)
         end
 
         protected
 
-        def prepopulate(filtered, association_name, child_id, rel_id)
+        def prepopulate(filtered, association_name, given_child_id, rel_id)
           preloader_class = filtered ? Neo4j::ActiveNode::Query::QueryProxyFilteredPreloader : Neo4j::ActiveNode::Query::QueryProxyPreloader
-          preloader_class.new(self, child_id).tap { |p| p.initial_queue(association_name, child_id, rel_id) }
+          preloader_class.new(self, given_child_id).tap { |p| p.initial_queue(association_name, given_child_id, rel_id) }
         end
 
         private

@@ -5,7 +5,7 @@ module Neo4j
         attr_reader :queued_methods, :caller, :target_id, :child_id
         delegate :each, :each_with_rel, :each_rel, :to_a, :first, :last, :to_cypher, to: :caller
 
-        def initialize(query_proxy, child_id)
+        def initialize(query_proxy, given_child_id)
           @caller = query_proxy
           @target_id = caller.identity
           @child_id = child_id || :"#{target_id}_child"
@@ -13,11 +13,10 @@ module Neo4j
         end
 
         def initial_queue(association_name, given_child_id, rel_id)
-          @child_id = given_child_id || :"#{target_id}_child"
+          @child_id = given_child_id || child_id
           @caller = caller.query.proxy_as_optional(caller.model, target_id).send(association_name, child_id, rel_id)
           caller.instance_variable_set(:@preloader, self)
           queue association_name
-          self
         end
 
         def queue(method_name, *args)
