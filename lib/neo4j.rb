@@ -31,6 +31,7 @@ require 'neo4j/shared/persistence'
 require 'neo4j/shared/validations'
 require 'neo4j/shared/identity'
 require 'neo4j/shared/serialized_properties'
+require 'neo4j/shared/typecaster'
 require 'neo4j/shared'
 
 require 'neo4j/active_rel/callbacks'

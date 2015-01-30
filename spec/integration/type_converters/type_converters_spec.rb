@@ -26,7 +26,7 @@ describe Neo4j::Shared::TypeConverters do
   describe 'to_ruby' do
     it 'converts if there is a converter' do
       date_time = Time.utc(2011, 3, 2, 10, 0, 0).to_i
-      converter_value = Neo4j::Shared::TypeConverters.to_ruby(date_time, DateTime)
+      converter_value = Neo4j::Shared::TypeConverters.to_other(:to_ruby, date_time, DateTime)
       converter_value.should be_a(DateTime)
       converter_value.year.should eq(2011)
       converter_value.month.should eq(3)
@@ -35,19 +35,19 @@ describe Neo4j::Shared::TypeConverters do
     end
 
     it 'returns the same value if there is no converter' do
-      Neo4j::Shared::TypeConverters.to_ruby(42, Integer).should eq(42)
+      Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer).should eq(42)
     end
   end
 
   describe 'to_db' do
     it 'converts if there is a converter' do
       date_time = DateTime.civil(2011, 3, 4, 1, 2, 3, 0)
-      converter_value = Neo4j::Shared::TypeConverters.to_db(date_time, DateTime)
+      converter_value = Neo4j::Shared::TypeConverters.to_other(:to_db, date_time, DateTime)
       converter_value.should be_a(Integer)
     end
 
     it 'returns the same value if there is no converter' do
-      Neo4j::Shared::TypeConverters.to_ruby(42, Integer).should eq(42)
+      Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer).should eq(42)
     end
   end
 
