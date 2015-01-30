@@ -1,3 +1,9 @@
+== 4.1.2
+* Fixes two bugs related to inheritance: one regarding ActiveRel classes and relationship types, the other regarding ActiveNode primary_key properties not being set when a model is loaded prior to Neo4j session.
+
+== 4.1.1
+* Switches use of Fixnum to Integer to improve 32-bit support
+
 == 4.1.0
 This release includes many performance fixes and new features. The most notable:
 * Huge stylist cleanup/refactoring by Brian on the entire gem by Brian armed with Rubocop. See http://neo4jrb.io/blog/2014/12/29/stay-out-of-trouble.html.
