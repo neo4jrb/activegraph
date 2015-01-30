@@ -46,7 +46,7 @@ module Neo4j
 
     included do
       def self.inherited(other)
-        inherit_id_property(other) if self.id_property?
+        inherit_id_property(other)
         inherited_indexes(other) if self.respond_to?(:indexed_properties)
         attributes.each_pair { |k, v| other.attributes[k] = v }
         inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
@@ -64,9 +64,12 @@ module Neo4j
       end
 
       def self.inherit_id_property(other)
-        id_prop = self.id_property_info
-        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
-        other.id_property id_prop[:name], conf
+        Neo4j::Session.on_session_available do |_|
+          return unless self.id_property?
+          id_prop = self.id_property_info
+          conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
+          other.id_property id_prop[:name], conf
+        end
       end
 
       Neo4j::Session.on_session_available do |_|
