@@ -114,7 +114,7 @@ describe 'association inclusion' do
   end
 
   it 'does not break the association cache of the calling node' do
-    members = tool.members.includes(:instruments).to_a
+    tool.members.includes(:instruments).to_a
     expect(tool.association_cache[:members].first.last.first).to be_a(AISMember)
   end
 
