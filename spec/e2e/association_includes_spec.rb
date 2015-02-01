@@ -7,20 +7,32 @@ describe 'association inclusion' do
   class AISBand
     include Neo4j::ActiveNode
     property :name
-    has_many :out, :members, model_class: 'AISMember'
+    has_many :out, :members, model_class: 'AISMember', rel_class: 'AISHasMember'
   end
 
   class AISMember
     include Neo4j::ActiveNode
     property :name
-    has_many :in, :bands, model_class: 'AISBand', origin: :members
-    has_many :out, :instruments, model_class: 'AISInstrument'
+    has_many :in, :bands, model_class: 'AISBand', rel_class: 'AISHasMember'
+    has_many :out, :instruments, model_class: 'AISInstrument', rel_class: 'AISPlays'
   end
 
   class AISInstrument
     include Neo4j::ActiveNode
     property :name
-    has_many :in, :members, model_class: 'AISMember', origin: :instruments
+    has_many :in, :members, model_class: 'AISMember', rel_class: 'AISPlays'
+  end
+
+  class AISHasMember
+    include Neo4j::ActiveRel
+    from_class AISBand
+    to_class AISMember
+  end
+
+  class AISPlays
+    include Neo4j::ActiveRel
+    from_class AISMember
+    to_class AISInstrument
   end
 
   let!(:tool)     { AISBand.create(name: 'Tool') }
@@ -48,14 +60,6 @@ describe 'association inclusion' do
         expect(band.association_cache[:members].values.first).to include(maynard, adam, danny)
       end
     end
-
-    context '.includes_filtered' do
-      it 'preloads the association cache' do
-        band = AISBand.where(name: 'Tool').includes_filtered(:members).to_a.first
-        expect(band.association_cache[:members]).not_to be_empty
-        expect(band.association_cache[:members].values.first).to include(maynard, adam, danny)
-      end
-    end
   end
 
   # This is the only difference between `includes` and `includes_filtered`
@@ -66,11 +70,15 @@ describe 'association inclusion' do
       end
     end
 
-    context '.includes_filtered' do
+    context '.includes with block for filtering' do
       it 'can filter the match' do
-        band = AISBand.where(name: 'Tool').includes_filtered(:members).where(name: 'Maynard').to_a.first
+        band = AISBand.where(name: 'Tool').includes(:members) { |members| members.where(name: 'Maynard') }.to_a.first
         expect(band.association_cache[:members].values.first.count).to eq 1
         expect(band.association_cache[:members].values.first.first).to eq(maynard)
+      end
+
+      it 'explodes when trying to include within the block' do
+        expect { AISBand.all.includes(:members) { |members| members.includes(:instruments) } }.to raise_error
       end
     end
   end
@@ -82,11 +90,12 @@ describe 'association inclusion' do
 
   it 'accepts a symbol for the rel between the parent and child' do
     q = AISBand.as(:a).where(name: 'Tool').includes(:members, nil, :included_foo_rel)
-    expect(q.to_cypher).to include '-[included_foo_rel:`MEMBERS`]->'
+    expect(q.to_cypher).to include '-[included_foo_rel:`AIS_HAS_MEMBER`]->'
   end
 
-  it 'works on instances' do
-    members = tool.members.includes_filtered(:instruments).to_a
+  it 'preloades on instances' do
+    members = tool.members.includes(:instruments).to_a
+    expect(tool.association_cache).not_to be_empty
     expect(members.first.association_cache[:instruments]).not_to be_empty
     members.each do |member|
       case member
@@ -102,6 +111,11 @@ describe 'association inclusion' do
     end
   end
 
+  it 'does not break the association cache of the calling node' do
+    members = tool.members.includes(:instruments).to_a
+    expect(tool.association_cache[:members].first.last.first).to be_a(AISMember)
+  end
+
   describe 'first' do
     it 'returns the first match and populates its association cache' do
       result = tool.members.where(name: 'Maynard').includes(:instruments).first
@@ -114,14 +128,18 @@ describe 'association inclusion' do
     end
   end
 
-  # describe 'each_with_rel' do
-  #   it 'preloads rels' do
-  #     result = tool.members.where(name: 'Maynard').includes(:instruments).each_with_rel do |member, rel|
-  #       expect(member).to be_a(AISMember)
-  #       expect(rel).to be_a(Neo4j::Server::CypherRelationship)
-  #     end
-  #     # require 'pry'; binding.pry
-  #     # result
-  #   end
-  # end
+  describe 'each_with_rel' do
+    it 'preloads rels' do
+      tool.members.where(name: 'Maynard').includes(:instruments).each_with_rel do |member, rel|
+        expect(member).to be_a(AISMember)
+        expect(rel).to be_a(AISHasMember)
+        expect(member.association_cache[:instruments].count).to eq 1
+        member.instruments.each_with_rel do |instrument, instrument_rel|
+          expect(instrument).to be_a(AISInstrument)
+          expect(instrument_rel).to be_a(AISPlays)
+        end
+        expect(member.association_cache[:instruments].count).to eq 1
+      end
+    end
+  end
 end

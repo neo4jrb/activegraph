@@ -47,11 +47,20 @@ module Neo4j
         protected
 
         def preload(rel)
-          # require 'pry'; binding.pry
-          pluck_this = rel.nil? ? [preloader.target_id, "collect(#{preloader.child_id})"] : [preloader.target_id, "collect(#{preloader.child_id})", rel]
+          pluck_this = rel.nil? ? [preloader.target_id, "collect(#{preloader.child_id})"] : [preloader.target_id, preloader.rel_id, "collect(#{preloader.child_id})", "collect(#{rel})"]
+          return preload_pluck(pluck_this, rel) if @association.nil? || caller.nil?
+          cypher_string = self.to_cypher_with_params(pluck_this)
+          caller.association_instance_get(cypher_string, @association) || preload_set_association_instance(pluck_this, rel, cypher_string)
+        end
+
+        def preload_pluck(pluck_this, rel)
           self.pluck(*pluck_this).tap do |result|
-            result.each { |target, child| preloader.replay(target, child) }
-            result.map!(&:first) if rel.nil?
+            if rel
+              result.each { |target, _returned_rel, child, child_rel| preloader.replay_with_rel(target, child, child_rel) }
+            else
+              result.each { |target, child| preloader.replay(target, child) }
+              result.map!(&:first)
+            end
           end
         end
 
@@ -75,6 +84,12 @@ module Neo4j
         def set_association_instance(pluck_this, cypher_string)
           collection = self.pluck(*pluck_this)
           caller.association_instance_set(cypher_string, collection, @association) unless collection.empty?
+          collection
+        end
+
+        def preload_set_association_instance(pluck_this, rel, cypher_string)
+          collection = self.preload_pluck(pluck_this, rel)
+          caller.association_instance_set(cypher_string, collection, preloader.last_association) unless collection.empty?
           collection
         end
       end

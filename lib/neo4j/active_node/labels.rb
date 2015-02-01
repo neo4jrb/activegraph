@@ -127,9 +127,7 @@ module Neo4j
         #      index :name, constraint: {type: :unique}
         #    end
         def index(property, conf = {})
-          Neo4j::Session.on_session_available do |_|
-            _index(property, conf)
-          end
+          Neo4j::Session.on_session_available { |_| _index(property, conf) }
           indexed_properties.push property unless indexed_properties.include? property
         end
 

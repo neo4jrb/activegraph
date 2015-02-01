@@ -127,6 +127,12 @@ module Neo4j
           query.to_cypher
         end
 
+        # The caller is the node that originated a QueryProxy chain. It is lost when `query.proxy_as`, so this you easily reset it.
+        def inject_caller(new_caller)
+          @caller = new_caller
+          self
+        end
+
         # Returns a string of the cypher query with return objects and params
         # @param [Array] columns array containing symbols of identifiers used in the query
         # @return [String]

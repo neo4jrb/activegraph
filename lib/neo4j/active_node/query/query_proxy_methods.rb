@@ -125,18 +125,16 @@ module Neo4j
         end
 
         def includes(association_name, given_child_id = nil, rel_id = nil)
-          prepopulate(false, association_name, given_child_id, rel_id)
-        end
-
-        def includes_filtered(association_name, given_child_id = nil, rel_id = nil)
-          prepopulate(true, association_name, given_child_id, rel_id)
+          p = prepopulate(association_name, given_child_id, rel_id)
+          block_given? ? yield(p.proxy) : p
         end
 
         protected
 
-        def prepopulate(filtered, association_name, given_child_id, rel_id)
-          preloader_class = filtered ? Neo4j::ActiveNode::Query::QueryProxyFilteredPreloader : Neo4j::ActiveNode::Query::QueryProxyPreloader
-          preloader_class.new(self, given_child_id).tap { |p| p.initial_queue(association_name, given_child_id, rel_id) }
+        def prepopulate(association_name, given_child_id, rel_id)
+          Neo4j::ActiveNode::Query::QueryProxyPreloader.new(self, given_child_id).tap do |p|
+            p.initial_queue(association_name, given_child_id, rel_id)
+          end
         end
 
         private
