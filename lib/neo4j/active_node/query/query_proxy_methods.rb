@@ -154,8 +154,8 @@ module Neo4j
         protected
 
         def prepopulate(association_name, given_child_id, rel_id, optional)
-          Neo4j::ActiveNode::Query::QueryProxyPreloader.new(self).tap do |p|
-            p.initial_queue(association_name, given_child_id, rel_id, optional)
+          Neo4j::ActiveNode::Query::QueryProxyPreloader.new(self, given_child_id).tap do |p|
+            p.initial_queue(association_name, rel_id, optional)
           end
         end
 

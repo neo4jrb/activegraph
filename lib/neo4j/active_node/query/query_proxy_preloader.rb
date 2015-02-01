@@ -28,12 +28,20 @@ module Neo4j
         attr_reader :queued_methods, :caller, :target_id, :child_id, :rel_id, :proxy, :last_association
         delegate :each, :each_with_rel, :each_rel, :to_a, :first, :last, :to_cypher, to: :caller
 
-        # During initialization, we capture pieces of the QueryProxy before making changes to it.
+        # During initialization, we capture pieces of the QueryProxy before making changes to it and set a few variables
+        # * `caller`, the untouched QueryProxy
+        # * `target_id`, the Cypher ID of the original target of the QueryProxy chain before `includes` was called
+        # * `child_id`, the Cypher ID to use for the preload Cypher MATCH
+        # * `rel_id`, the Cypher ID of the relationship between the target and the link of the QP chain that called it.
+        # * `last_association`, the QueryProxy association that was called as part of the QueryProxy chain, if one exists
+        # * `queued_methods`, a hash that will contain methods called on the preloaded association
         # @param [#to_cypher] query_proxy The QueryProxy object as it existed before this object was created
-        def initialize(query_proxy)
+        # @param [String, Symbol] given_rel_id The identifier used for the relationship between target and child.
+        def initialize(query_proxy, given_child_id = nil)
           @caller = query_proxy
           @target_id = caller.identity
-          @child_id = :"#{target_id}_child"
+          @child_id = given_child_id || :"#{target_id}_child"
+          @rel_id = caller.rel_var
           @last_association = query_proxy.association
           @queued_methods = {}
         end
@@ -41,17 +49,12 @@ module Neo4j
         # The initial queue sets up the first, most important, pieces of the OPTIONAL MATCH used to "preload" associations.
         # @param [String, Symbol] association_name The association name given to `includes`
         # @param [String, Symbol] given_child_id The identifier used for the "child" in the Cypher query. The child is the target of the new match.
-        # @param [String, Symbol] given_rel_id The identifier used for the relationship between target and child.
         # @param [Boolean] optional Controls whether this query will use OPTIONAL MATCH or MATCH.
-        def initial_queue(association_name, given_child_id, given_rel_id, optional)
-          @child_id = given_child_id || child_id
-          @rel_id = given_rel_id || caller.rel_var
+        def initial_queue(association_name, given_rel_id, optional)
           # Unfortunate naming here. The first `caller` is the original QP object, the second is the node that started the query, if one exists.
-          node_caller = caller.caller
-          query_method = optional ? :proxy_as_optional : :proxy_as
-          @caller = caller.query.send(query_method, caller.model, target_id).send(association_name, child_id, given_rel_id)
-          caller.inject_caller(node_caller)
-          caller.instance_variable_set(:@preloader, self)
+          build_new_qp(optional) do |query_method|
+            @caller = caller.query.send(query_method, caller.model, target_id).send(association_name, child_id, given_rel_id)
+          end
           queue association_name
           @proxy = QueryProxyProxy.new(caller)
           self
@@ -71,6 +74,13 @@ module Neo4j
         end
 
         private
+
+        def build_new_qp(optional)
+          node_caller = caller.caller
+          yield optional ? :proxy_as_optional : :proxy_as
+          caller.inject_caller(node_caller)
+          caller.instance_variable_set(:@preloader, self)
+        end
 
         # To insert the eagerly loaded nodes and rels into the target's association cache, we need to replay every action called during/after `includes`.
         # The `queued_methods` hash holds those. We can use `queue` to set that.
