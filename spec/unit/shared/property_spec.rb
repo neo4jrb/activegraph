@@ -85,4 +85,56 @@ describe Neo4j::Shared::Property do
       end
     end
   end
+
+  describe '#custom type converter' do
+    let(:converter) do
+      Class.new do
+        class << self
+          def convert_type
+            Range
+          end
+
+          def to_db(value)
+            value.to_s
+          end
+
+          def to_ruby(value)
+            ends = value.to_s.split('..').map { |d| Integer(d) }
+            ends[0]..ends[1]
+          end
+        end
+      end
+    end
+
+    let(:clazz)     { Class.new { include Neo4j::ActiveNode } }
+    let(:instance)  { clazz.new }
+    let(:range)     { 1..3 }
+
+    before do
+      clazz.property :range, serializer: converter
+    end
+
+    it 'sets active_attr typecaster to ObjectTypecaster' do
+      expect(clazz.attributes[:range][:typecaster]).to be_a(ActiveAttr::Typecasting::ObjectTypecaster)
+    end
+
+    it 'adds new converter' do
+      expect(Neo4j::Shared::TypeConverters.converters[Range]).to eq(converter)
+    end
+
+    it 'returns object of a proper type' do
+      instance.range = range
+      expect(instance.range).to be_a(Range)
+    end
+
+    it 'uses type converter to serialize node' do
+      instance.range = range
+      expect(instance.convert_properties_to(:db, instance.props)[:range]).to eq(range.to_s)
+    end
+
+    it 'uses type converter to deserialize node' do
+      instance.range = range.to_s
+      expect(instance.convert_properties_to(:ruby, instance.props)[:range]).to eq(range)
+    end
+  end
 end

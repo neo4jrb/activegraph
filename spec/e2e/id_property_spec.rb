@@ -327,5 +327,28 @@ describe Neo4j::ActiveNode::IdProperty do
     it 'works without conf specified' do
       expect(IdProp::Apple.create.my_id).not_to be_nil
     end
+
+    context 'when a session is not started' do
+      it 'waits until the session is loaded, then sets id property' do
+        Neo4j::Session.current.close
+
+        module IdProp
+          class Executive
+            include Neo4j::ActiveNode
+            id_property :my_id, on: :my_method
+
+            def my_method
+              'an id'
+            end
+          end
+
+          class CEO < Executive; end
+        end
+
+        expect(IdProp::CEO.primary_key).to be_nil
+        create_session
+        expect(IdProp::CEO.primary_key).not_to be_nil
+      end
+    end
   end
 end
