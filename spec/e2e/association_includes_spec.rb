@@ -144,4 +144,29 @@ describe 'association inclusion' do
       end
     end
   end
+
+  describe 'includes vs includes_required' do
+    before { AISBand.create(name: 'Memberless') }
+
+    describe 'includes' do
+      it 'loads the target and opportunistically preloads where matches exist' do
+        all_bands = AISBand.all.includes(:members)
+        expect(all_bands.to_a.count).to eq 2
+        all_bands.each do |band|
+          expect(band.association_cache[:members].first.last).not_to be_empty if band.name == 'Tool'
+          expect(band.association_cache[:members].first.last).to be_empty if band.name == 'Memberless'
+        end
+      end
+    end
+
+    describe 'includes_required' do
+      it 'only returns targets where it can preload' do
+        all_bands = AISBand.all.includes_required(:members)
+        expect(all_bands.to_a.count).to eq 1
+        t = all_bands.first
+        expect(t).to eq tool
+        expect(t.association_cache[:members].first.last).not_to be_empty
+      end
+    end
+  end
 end

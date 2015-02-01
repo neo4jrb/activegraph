@@ -83,13 +83,16 @@ module Neo4j
 
         def set_association_instance(pluck_this, cypher_string)
           collection = self.pluck(*pluck_this)
-          caller.association_instance_set(cypher_string, collection, @association) unless collection.empty?
-          collection
+          commit_association_instance(cypher_string, collection, @association)
         end
 
         def preload_set_association_instance(pluck_this, rel, cypher_string)
           collection = self.preload_pluck(pluck_this, rel)
-          caller.association_instance_set(cypher_string, collection, preloader.last_association) unless collection.empty?
+          commit_association_instance(cypher_string, collection, preloader.last_association)
+        end
+
+        def commit_association_instance(cypher_string, collection, association_object)
+          caller.association_instance_set(cypher_string, collection, association_object) unless collection.empty?
           collection
         end
       end
