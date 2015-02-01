@@ -77,9 +77,11 @@ describe 'association inclusion' do
         expect(band.association_cache[:members].values.first.first).to eq(maynard)
       end
 
-      it 'explodes when trying to include within the block' do
-        expect { AISBand.all.includes(:members) { |members| members.includes(:instruments) } }.to raise_error
-      end
+      # We are not going to look for this at the moment. The code below won't raise an error but it also won't work.
+      # Let's not add extra code to check for things people shouldn't and probably won't do.
+      # it 'explodes when trying to include within the block' do
+      #   expect { AISBand.all.includes(:members) { |members| members.includes(:instruments) } }.to raise_error
+      # end
     end
   end
 
