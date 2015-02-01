@@ -48,6 +48,10 @@ module Neo4j
         end
       end
 
+      def includes(association_name)
+        all.eager_load(association_name)
+      end
+
       private
 
       def exists_query_start(node_condition)

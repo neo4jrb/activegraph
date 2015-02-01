@@ -9,7 +9,7 @@ module Neo4j
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
-        attr_reader :caller, :association, :model, :starting_query
+        attr_reader :caller, :association, :model, :starting_query, :preloader
 
         # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
         # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
@@ -35,16 +35,17 @@ module Neo4j
         def initialize(model, association = nil, options = {})
           @model = model
           @association = association
-          @context = options.delete(:context)
-          @options = options
+          @context  = options.delete(:context)
+          @options  = options
           @node_var = options[:node]
-          @rel_var = options[:rel] || _rel_chain_var
-          @session = options[:session]
-          @caller = options[:caller]
-          @chain = []
+          @rel_var  = options[:rel] || _rel_chain_var
+          @session  = options[:session]
+          @caller   = options[:caller]
+          @chain    = []
           @starting_query = options[:starting_query]
-          @optional = options[:optional]
-          @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
+          @optional  = options[:optional]
+          @preloader = options[:query_proxy].preloader if options[:query_proxy]
+          @params    = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
@@ -124,6 +125,12 @@ module Neo4j
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         def to_cypher
           query.to_cypher
+        end
+
+        # The caller is the node that originated a QueryProxy chain. It is lost when `query.proxy_as`, so this you easily reset it.
+        def inject_caller(new_caller)
+          @caller = new_caller
+          self
         end
 
         # Returns a string of the cypher query with return objects and params

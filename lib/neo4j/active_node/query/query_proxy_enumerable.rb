@@ -9,7 +9,7 @@ module Neo4j
         # The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
-        def each(node = true, rel = nil, &_block)
+        def each(node = true, rel = nil)
           if node && rel
             enumerable_query(identity, rel_var).each { |returned_node, returned_rel| yield returned_node, returned_rel }
           else
@@ -44,6 +44,26 @@ module Neo4j
           self.query.pluck(*args)
         end
 
+        protected
+
+        def preload(rel)
+          pluck_this = rel.nil? ? [preloader.target_id, "collect(#{preloader.child_id})"] : [preloader.target_id, preloader.rel_id, "collect(#{preloader.child_id})", "collect(#{rel})"]
+          return preload_pluck(pluck_this, rel) if @association.nil? || caller.nil?
+          cypher_string = self.to_cypher_with_params(pluck_this)
+          caller.association_instance_get(cypher_string, @association) || preload_set_association_instance(pluck_this, rel, cypher_string)
+        end
+
+        def preload_pluck(pluck_this, rel)
+          self.pluck(*pluck_this).tap do |result|
+            if rel
+              result.each { |target, _returned_rel, child, child_rel| preloader.replay(target, [child << child_rel.first], true) }
+            else
+              result.each { |target, child| preloader.replay(target, child) }
+              result.map!(&:first)
+            end
+          end
+        end
+
         private
 
         # Executes the query against the database if the results are not already present in a node's association cache. This method is
@@ -51,15 +71,29 @@ module Neo4j
         # @param [String,Symbol] node The string or symbol of the node to return from the database.
         # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
         def enumerable_query(node, rel = nil)
-          pluck_this = rel.nil? ? [node] : [node, rel]
-          return self.pluck(*pluck_this) if @association.nil? || caller.nil?
-          cypher_string = self.to_cypher_with_params(pluck_this)
-          association_collection = caller.association_instance_get(cypher_string, @association)
-          if association_collection.nil?
-            association_collection = self.pluck(*pluck_this)
-            caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
+          if preloader
+            preload(rel)
+          else
+            pluck_this = rel.nil? ? [node] : [node, rel]
+            return self.pluck(*pluck_this) if @association.nil? || caller.nil?
+            cypher_string = self.to_cypher_with_params(pluck_this)
+            caller.association_instance_get(cypher_string, @association) || set_association_instance(pluck_this, cypher_string)
           end
-          association_collection
+        end
+
+        def set_association_instance(pluck_this, cypher_string)
+          collection = self.pluck(*pluck_this)
+          commit_association_instance(cypher_string, collection, @association)
+        end
+
+        def preload_set_association_instance(pluck_this, rel, cypher_string)
+          collection = self.preload_pluck(pluck_this, rel)
+          commit_association_instance(cypher_string, collection, preloader.last_association)
+        end
+
+        def commit_association_instance(cypher_string, collection, association_object)
+          caller.association_instance_set(cypher_string, collection, association_object) unless collection.empty?
+          collection
         end
       end
     end

@@ -13,7 +13,10 @@ module Neo4j
         end
 
         def first_and_last(order, target)
-          self.order(order).limit(1).pluck(target).first
+          # We're avoiding multiparam return because I want to create one fewer array objects as is.
+          return_method = preloader ? :preload : :pluck
+          arg           = preloader ? nil : target
+          self.order(order).limit(1).send(return_method, arg).first
         end
 
         # @return [Integer] number of nodes of this class
@@ -121,6 +124,41 @@ module Neo4j
           self.query.proxy_as(model, var, true)
         end
 
+        # Preloads the nodes returned by a QueryProxy chain with the nodes matched to THOSE nodes using the given association.
+        # Use a block to filter this match.
+        # The match will use OPTIONAL MATCH, meaning it will return the primary target of the QueryProxy regardless of whether it is able to
+        # opportunistically load related nodes. If you only want to return nodes with preloaded content, see `includes_required`.
+        # @param [String, Symbol] association_name The association name to call on the most recent link of the QueryProxy chain for preloading.
+        # @param [String, Symbol] given_child_id The identifier to use in the new match to refer to the "child" node, AKA the preloaded nodes
+        # @param [String, Symbol] rel_id The identifier to use for the relationship between the target node and its preloaded children
+        # Example:
+        #   student.lessons.includes(:teachers)
+        #   Student.all.includes(:lessons)
+        #   # Filter preloaded nodes with a block. Block param represents the QueryProxy object.
+        #   # You CANNOT call `includes` again here. It'll happen sooner or later.
+        #   Student.all.includes(:lessons) { |lessons| lessons.where(subject: 'Math') }
+        def includes(association_name, given_child_id = nil, rel_id = nil)
+          p = prepopulate(association_name, given_child_id, rel_id, true)
+          block_given? ? yield(p.proxy) : p
+        end
+
+        # Like `includes` but it will use MATCH instead of OPTIONAL MATCH in its Cypher Query. Use this if you do not want to return
+        # any nodes that do not also have associations with preloaded content. For example:
+        #   # Load all students and preload their lessons but ONLY those those students enrolled in in math.
+        #   Student.all.includes_required(:lessons) { |lesson| lesson.where(subject: 'Math') }
+        def includes_required(association_name, given_child_id = nil, rel_id = nil)
+          p = prepopulate(association_name, given_child_id, rel_id, false)
+          block_given? ? yield(p.proxy) : p
+        end
+
+        protected
+
+        def prepopulate(association_name, given_child_id, rel_id, optional)
+          Neo4j::ActiveNode::Query::QueryProxyPreloader.new(self, given_child_id).tap do |p|
+            p.initial_queue(association_name, rel_id, optional)
+          end
+        end
+
         private
 
         def clear_caller_cache
@@ -139,7 +177,8 @@ module Neo4j
         end
 
         def query_with_target(target)
-          yield(target || identity)
+          use_identity = preloader ? preloader.target_id : identity
+          yield(target || use_identity)
         end
 
         def exists_query_start(condition, target)
