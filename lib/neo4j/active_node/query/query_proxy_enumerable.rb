@@ -56,7 +56,7 @@ module Neo4j
         def preload_pluck(pluck_this, rel)
           self.pluck(*pluck_this).tap do |result|
             if rel
-              result.each { |target, _returned_rel, child, child_rel| preloader.replay_with_rel(target, child, child_rel) }
+              result.each { |target, _returned_rel, child, child_rel| preloader.replay(target, [child << child_rel.first], true) }
             else
               result.each { |target, child| preloader.replay(target, child) }
               result.map!(&:first)

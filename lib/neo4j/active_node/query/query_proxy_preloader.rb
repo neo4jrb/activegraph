@@ -29,17 +29,10 @@ module Neo4j
           queued_methods[method_name] = args
         end
 
-        def replay(returned_node, child)
-          replay_queued(returned_node)
+        def replay(returned_node, collection, rel = false)
+          params = replay_queued(returned_node, rel)
           association_obj = returned_node.class.associations[queued_methods.keys.first]
-          returned_node.association_instance_set(replay_cypher_string([@chained_node_association.identity]), child, association_obj)
-        end
-
-        def replay_with_rel(returned_node, child, child_rel)
-          replay_queued(returned_node)
-          stash = [child + child_rel]
-          association_obj = returned_node.class.associations[queued_methods.keys.first]
-          returned_node.association_instance_set(replay_cypher_string([@chained_node_association.identity, rel_id]), stash, association_obj)
+          returned_node.association_instance_set(replay_cypher_string(params), collection, association_obj)
         end
 
         private
@@ -48,9 +41,10 @@ module Neo4j
           @chained_node_association.to_cypher_with_params(params_array)
         end
 
-        def replay_queued(returned_node)
+        def replay_queued(returned_node, rel)
           @chained_node = returned_node
           queued_methods.each { |method, args| @chained_node_association = @chained_node.send(method, *args) }
+          rel ? [@chained_node_association.identity, rel_id] : [@chained_node_association.identity]
         end
       end
     end
