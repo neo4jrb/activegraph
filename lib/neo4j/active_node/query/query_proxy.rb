@@ -82,7 +82,7 @@ module Neo4j
           base_query = if @association
                          chain_var = _association_chain_var
                          label_string = @model && ":`#{@model.mapped_label_name}`"
-                         (_association_query_start(chain_var) & _query_model_as(var)).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
+                         (_association_query_start(chain_var) & _query).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
                        else
                          starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
                        end
@@ -219,7 +219,11 @@ module Neo4j
                       else
                         var
                       end
-          _session.query(context: @context).send(_match_type, match_arg)
+          _query.send(_match_type, match_arg)
+        end
+
+        def _query
+          _session.query(context: @context)
         end
 
         # TODO: Refactor this. Too much happening here.
