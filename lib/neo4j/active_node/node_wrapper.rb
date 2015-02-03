@@ -11,15 +11,13 @@ class Neo4j::Node
       wrapped_node
     end
 
-    def checked_labels_set
-      @@_checked_labels_set ||= Set.new
-    end
+    CHECKED_LABELS_SET = Set.new
 
     def check_label(label_name)
-      unless checked_labels_set.include?(label_name)
+      unless CHECKED_LABELS_SET.include?(label_name)
         load_class_from_label(label_name)
         # do this only once
-        checked_labels_set.add(label_name)
+        CHECKED_LABELS_SET.add(label_name)
       end
     end
 

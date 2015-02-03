@@ -37,10 +37,6 @@ Metrics/MethodLength:
 Style/ClassAndModuleChildren:
   Enabled: false
 
-# Offense count: 3
-Style/ClassVars:
-  Enabled: false
-
 # Offense count: 155
 Style/Documentation:
   Enabled: false
