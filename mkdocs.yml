@@ -1,1 +1,8 @@
 site_name: Neo4j.rb
+site_url: http://neo4jrb.io/
+repo_url: https://github.com/neo4jrb/neo4j
+site_description: An active model wrapper for the Neo4j Graph Database for Ruby.
+pages:
+- ['index.md', 'Introduction']
+
+site_dir: docs_site
