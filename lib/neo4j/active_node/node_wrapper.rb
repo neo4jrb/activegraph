@@ -14,11 +14,11 @@ class Neo4j::Node
     CHECKED_LABELS_SET = Set.new
 
     def check_label(label_name)
-      unless CHECKED_LABELS_SET.include?(label_name)
-        load_class_from_label(label_name)
-        # do this only once
-        CHECKED_LABELS_SET.add(label_name)
-      end
+      return if CHECKED_LABELS_SET.include?(label_name)
+
+      load_class_from_label(label_name)
+      # do this only once
+      CHECKED_LABELS_SET.add(label_name)
     end
 
     # Makes the determination of whether to use <tt>_classname</tt> (or whatever is defined by config) or the node's labels.

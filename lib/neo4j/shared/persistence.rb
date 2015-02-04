@@ -6,12 +6,12 @@ module Neo4j::Shared
     USES_CLASSNAME = []
 
     def update_model
-      if changed_attributes && !changed_attributes.empty?
-        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-        changed_props = convert_properties_to :db, changed_props
-        _persisted_obj.update_props(changed_props)
-        changed_attributes.clear
-      end
+      return if !changed_attributes || changed_attributes.empty?
+
+      changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
+      changed_props = convert_properties_to :db, changed_props
+      _persisted_obj.update_props(changed_props)
+      changed_attributes.clear
     end
 
     # Convenience method to set attribute and #save at the same time

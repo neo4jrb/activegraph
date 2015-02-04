@@ -41,10 +41,11 @@ module Neo4j
 
       def setup
         FileUtils.mkdir_p('db/neo4j-migrate')
-        unless File.file?(models_filename)
-          File.open(models_filename, 'w') do |file|
-            file.write("# Provide models to which IDs should be added.\n# It will only modify nodes that do not have IDs. There is no danger of overwriting data.\n# models: [Student,Lesson,Teacher,Exam]\nmodels: []")
-          end
+
+        return if File.file?(models_filename)
+
+        File.open(models_filename, 'w') do |file|
+          file.write("# Provide models to which IDs should be added.\n# It will only modify nodes that do not have IDs. There is no danger of overwriting data.\n# models: [Student,Lesson,Teacher,Exam]\nmodels: []")
         end
       end
 
@@ -133,10 +134,11 @@ module Neo4j
       def setup
         output "Creating file #{classnames_filepath}. Please use this as the migration guide."
         FileUtils.mkdir_p('db/neo4j-migrate')
-        unless File.file?(classnames_filepath)
-          source = File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', classnames_filename)
-          FileUtils.copy_file(source, classnames_filepath)
-        end
+
+        return if File.file?(classnames_filepath)
+
+        source = File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', classnames_filename)
+        FileUtils.copy_file(source, classnames_filepath)
       end
 
       private

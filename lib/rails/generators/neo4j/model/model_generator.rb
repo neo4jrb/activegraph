@@ -62,9 +62,9 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
 
 
   def index_fragment(property)
-    if options[:indices] && options[:indices].include?(property)
-      "index :#{property}"
-    end
+    return if !options[:indices] || !options[:indices].include?(property)
+
+    "index :#{property}"
   end
 
   def parent?

@@ -90,17 +90,8 @@ module Neo4j::ActiveNode
       end
 
       def clear_methods(clazz, name)
-        if clazz.method_defined?(name)
-          clazz.module_eval(%(
-            undef_method :#{name}
-                    ), __FILE__, __LINE__)
-        end
-
-        if clazz.attribute_names.include?(name.to_s)
-          clazz.module_eval(%(
-            undef_property :#{name}
-                    ), __FILE__, __LINE__)
-        end
+        clazz.module_eval(%(undef_method :#{name}), __FILE__, __LINE__) if clazz.method_defined?(name)
+        clazz.module_eval(%(undef_property :#{name}), __FILE__, __LINE__) if clazz.attribute_names.include?(name.to_s)
       end
 
       extend self
