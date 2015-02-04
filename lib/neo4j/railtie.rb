@@ -33,8 +33,8 @@ module Neo4j
 
         return if !cfg.sessions.empty?
 
-          cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
-        end
+        cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
+      end
 
 
       def start_embedded_session(session)
