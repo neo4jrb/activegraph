@@ -37,13 +37,11 @@ module Neo4j
           @association = association
           @context = options.delete(:context)
           @options = options
-          @node_var = options[:node]
+
+          @node_var, @session, @caller, @starting_query, @optional = options.values_at(:node, :session, :caller, :starting_query, :optional)
           @rel_var = options[:rel] || _rel_chain_var
-          @session = options[:session]
-          @caller = options[:caller]
+
           @chain = []
-          @starting_query = options[:starting_query]
-          @optional = options[:optional]
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
@@ -79,17 +77,23 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          base_query = if @association
-                         chain_var = _association_chain_var
-                         label_string = @model && ":`#{@model.mapped_label_name}`"
-                         (_association_query_start(chain_var) & _query).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
-                       else
-                         starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
-                       end
-          # Build a query chain via the chain, return the result
-          @chain.inject(base_query.params(@params)) do |query, (method, arg)|
+          @chain.inject(base_query(var).params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
+        end
+
+        def base_query(var)
+          if @association
+            chain_var = _association_chain_var
+            (_association_query_start(chain_var) & _query).send(_match_type,
+                                                                "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
+          else
+            starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+          end
+        end
+
+        def _model_label_string
+          @model && ":`#{@model.mapped_label_name}`"
         end
 
         # Scope all queries to the current scope.

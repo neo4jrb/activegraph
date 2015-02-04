@@ -9,10 +9,6 @@
 Lint/HandleExceptions:
   Enabled: false
 
-# Offense count: 17
-Metrics/AbcSize:
-  Max: 35
-
 # Offense count: 2
 # Configuration parameters: CountComments.
 Metrics/ClassLength:

@@ -26,6 +26,12 @@ module Neo4j
         end
 
         def validate_each(record, attribute, value)
+          return unless found(record, attribute, value).exists?
+
+          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(value: value))
+        end
+
+        def found(record, attribute, value)
           conditions = scope_conditions(record)
 
           # TODO: Added as find(:name => nil) throws error
@@ -34,8 +40,8 @@ module Neo4j
           conditions[attribute] = options[:case_sensitive] ? value : /^#{Regexp.escape(value.to_s)}$/i
 
           found = record.class.as(:result).where(conditions)
-          found = found.where('NOT ID(result) = {record_neo_id}').params(record_neo_id: record.neo_id) if record.persisted?
-          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(value: value)) if found.exists?
+          found = found.where('ID(result) <> {record_neo_id}').params(record_neo_id: record.neo_id) if record.persisted?
+          found
         end
 
         def message(instance)
