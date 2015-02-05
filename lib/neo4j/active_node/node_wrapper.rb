@@ -4,11 +4,11 @@ class Neo4j::Node
     # this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
     def wrapper
       self.props.symbolize_keys!
-      most_concrete_class = sorted_wrapper_classes
-      return self unless most_concrete_class
-      wrapped_node = most_concrete_class.new
-      wrapped_node.init_on_load(self, self.props)
-      wrapped_node
+      found_class = class_to_wrap
+      return self if not found_class
+      found_class.new.tap do |wrapped_node|
+        wrapped_node.init_on_load(self, self.props)
+      end
     end
 
     CHECKED_LABELS_SET = Set.new
@@ -22,15 +22,8 @@ class Neo4j::Node
     end
 
     # Makes the determination of whether to use <tt>_classname</tt> (or whatever is defined by config) or the node's labels.
-    def sorted_wrapper_classes
-      if self.props.is_a?(Hash) && self.props.key?(Neo4j::Config.class_name_property)
-        self.props[Neo4j::Config.class_name_property].constantize
-      else
-        wrappers = _class_wrappers
-        return self if wrappers.nil?
-        wrapper_classes = wrappers.map { |w| Neo4j::ActiveNode::Labels._wrapped_labels[w] }
-        wrapper_classes.sort.first
-      end
+    def class_to_wrap
+      named_class || sorted_wrapper_class
     end
 
     def load_class_from_label(label_name)
@@ -44,6 +37,20 @@ class Neo4j::Node
         check_label(label_name)
         Neo4j::ActiveNode::Labels._wrapped_labels[label_name].class == Class
       end
+    end
+
+    private
+
+    def named_class
+      property = Neo4j::Config.class_name_property
+
+      self.props[property].constantize if self.props.is_a?(Hash) && self.props.key?(property)
+    end
+
+    def sorted_wrapper_class
+      wrappers = _class_wrappers
+      return self if wrappers.nil?
+      wrappers.map { |w| Neo4j::ActiveNode::Labels._wrapped_labels[w] }.sort.first
     end
   end
 end

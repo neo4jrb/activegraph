@@ -49,7 +49,7 @@ describe Neo4j::Node::Wrapper do
           Neo4j::Config.stub(:class_name_property).and_return(:_defined_property_name)
           expect(wrapper.props).to receive(:key?).with(:_defined_property_name).and_return true
 
-          expect(wrapper.sorted_wrapper_classes).to eq Bar
+          expect(wrapper.class_to_wrap).to eq Bar
         end
       end
 
@@ -59,16 +59,16 @@ describe Neo4j::Node::Wrapper do
 
         it 'does not call :_class_wrappers' do
           expect(wrapper).to_not receive(:_class_wrappers)
-          wrapper.sorted_wrapper_classes
+          wrapper.class_to_wrap
         end
 
         it 'looks for a key called "_classname"' do
           expect(wrapper.props).to receive(:key?).with(:_classname).and_return true
-          wrapper.sorted_wrapper_classes
+          wrapper.class_to_wrap
         end
 
         it 'returns the constantized value of "_classname"' do
-          expect(wrapper.sorted_wrapper_classes).to eq CachedClassName
+          expect(wrapper.class_to_wrap).to eq CachedClassName
         end
       end
 
@@ -76,7 +76,7 @@ describe Neo4j::Node::Wrapper do
         it 'calls :_class_wrappers' do
           expect(wrapper).to receive(:_class_wrappers).once
           wrapper.stub(:props).and_return({})
-          wrapper.sorted_wrapper_classes
+          wrapper.class_to_wrap
         end
       end
     end
