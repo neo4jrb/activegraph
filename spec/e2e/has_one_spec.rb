@@ -20,8 +20,30 @@ describe 'has_one' do
         expect(unsaved_node.parent).to eq nil
       end
 
-      it 'raises an error when trying to create a relationship' do
-        expect { unsaved_node.parent = HasOneA.create }.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
+      context 'with disabled auto-saving and without hook' do
+        it 'raises an error when trying to create a relationship' do
+          expect { unsaved_node.parent = HasOneA.create }.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
+        end
+      end
+
+      context 'with enabled auto-saving' do
+        before  { Neo4j::Config[:autosave_on_assignment] = true }
+        after   { Neo4j::Config[:autosave_on_assignment] = false }
+
+        it 'saves the node' do
+          expect { unsaved_node.parent = HasOneA.create }.to change(unsaved_node, :persisted?).from(false).to(true)
+        end
+      end
+
+      context 'with a hook' do
+        let(:error) { Exception.new('Custom error') }
+        let(:hook)  { ->(_) { fail error } }
+        before  { Neo4j::Config[:hook_for_non_persisted_node] = hook }
+        after   { Neo4j::Config[:hook_for_non_persisted_node] = nil }
+
+        it 'calls hook' do
+          expect { unsaved_node.parent = HasOneA.create }.to raise_error(error)
+        end
       end
     end
 
