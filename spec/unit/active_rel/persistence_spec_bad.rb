@@ -98,22 +98,27 @@ describe Neo4j::ActiveRel::Persistence do
 
         let(:r) { clazz.new(from_node: this_class_node, to_node: that_class_node, friends_since: 2002) }
 
-        def model_stubs_and_expectations
+        def model_stubs
           expect(this_class_node).to receive(:class).at_least(1).times.and_return(ThisClass)
           clazz.any_instance.stub(:_create_rel)
           clazz.any_instance.stub(:init_on_load)
+        end
+
+        def model_expectations
           expect { r.save }.not_to raise_error
           r.friends_since = 2014
           expect { r.save }.not_to raise_error
         end
 
         it 'does not raise an error' do
-          model_stubs_and_expectations
+          model_stubs
+          model_expectations
         end
 
         it 'converts symbols to constants' do
           clazz.from_class :ThisClass
-          model_stubs_and_expectations
+          model_stubs
+          model_expectations
         end
 
         context 'with string types' do
@@ -123,7 +128,8 @@ describe Neo4j::ActiveRel::Persistence do
           end
 
           it 'does not raise an error' do
-            model_stubs_and_expectations
+            model_stubs
+            model_expectations
           end
 
           it 'raises an error if a string class is given that does not exist' do
@@ -140,22 +146,23 @@ describe Neo4j::ActiveRel::Persistence do
             clazz.to_class :any
           end
 
-          def any_stubs_and_expectations
+          def any_stubs
             expect(this_class_node).not_to receive(:class)
             expect(that_class_node).not_to receive(:class)
             clazz.any_instance.stub(:_create_rel)
             clazz.any_instance.stub(:init_on_load)
-            expect { r.save }.not_to raise_error
           end
 
           it 'does not check the classes of the nodes' do
-            any_stubs_and_expectations
+            any_stubs
+            expect { r.save }.not_to raise_error
           end
 
           it 'accepts false instead of :any' do
             clazz.from_class false
             clazz.to_class false
-            any_stubs_and_expectations
+            any_stubs
+            expect { r.save }.not_to raise_error
           end
         end
       end

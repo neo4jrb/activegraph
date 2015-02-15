@@ -1,3 +1,5 @@
+require 'benchmark'
+
 module Neo4j
   class Migration
     def migrate
@@ -52,54 +54,56 @@ module Neo4j
       private
 
       def add_ids_to(model)
-        require 'benchmark'
-
         max_per_batch = (ENV['MAX_PER_BATCH'] || default_max_per_batch).to_i
 
         label = model.mapped_label_name
-        property = model.primary_key
-        nodes_left = 1
         last_time_taken = nil
 
-        until nodes_left == 0
-          nodes_left = Neo4j::Session.query.match(n: label).where("NOT has(n.#{property})").return('COUNT(n) AS ids').first.ids
+        until (nodes_left = idless_count(label, model.primary_key)) == 0
+          print_status(last_time_taken, max_per_batch, nodes_left)
 
-          time_per_node = last_time_taken / max_per_batch if last_time_taken
-          print_output "Running first batch...\r"
-          if time_per_node
-            eta_seconds = (nodes_left * time_per_node).round
-            print_output "#{nodes_left} nodes left.  Last batch: #{(time_per_node * 1000.0).round(1)}ms / node (ETA: #{eta_seconds / 60} minutes)\r"
-          end
-
-          return if nodes_left == 0
-          to_set = [nodes_left, max_per_batch].min
-
-          new_ids = to_set.times.map { new_id_for(model) }
-          begin
-            last_time_taken = id_batch_set(label, property, new_ids, to_set)
-          rescue Neo4j::Server::CypherResponse::ResponseError, Faraday::TimeoutError
-            new_max_per_batch = (max_per_batch * 0.8).round
-            output "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
-            max_per_batch = new_max_per_batch
+          count = [nodes_left, max_per_batch].min
+          last_time_taken = Benchmark.realtime do
+            max_per_batch = id_batch_set(label, model.primary_key, count.times.map { new_id_for(model) }, count)
           end
         end
       end
 
-      def id_batch_set(label, property, new_ids, to_set)
-        Benchmark.realtime do
-          begin
-            tx = Neo4j::Transaction.new
-            Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{property})
-              with COLLECT(n) as nodes, #{new_ids} as ids
-              FOREACH(i in range(0,#{to_set - 1})|
-                FOREACH(node in [nodes[i]]|
-                  SET node.#{property} = ids[i]))
-              RETURN distinct(true)
-              LIMIT #{to_set}")
-          ensure
-            tx.close
-          end
-        end
+      def idless_count(label, id_property)
+        Neo4j::Session.query.match(n: label).where("NOT has(n.#{id_property})").pluck('COUNT(n) AS ids').first
+      end
+
+      def print_status(last_time_taken, max_per_batch, nodes_left)
+        time_per_node = last_time_taken / max_per_batch if last_time_taken
+        message = if time_per_node
+                    eta_seconds = (nodes_left * time_per_node).round
+                    "#{nodes_left} nodes left.  Last batch: #{(time_per_node * 1000.0).round(1)}ms / node (ETA: #{eta_seconds / 60} minutes)\r"
+                  else
+                    "Running first batch...\r"
+                  end
+
+        print_output message
+      end
+
+
+      def id_batch_set(label, id_property, new_ids, count)
+        tx = Neo4j::Transaction.new
+
+        Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{id_property})
+          with COLLECT(n) as nodes, #{new_ids} as ids
+          FOREACH(i in range(0,#{count - 1})|
+            FOREACH(node in [nodes[i]]|
+              SET node.#{id_property} = ids[i]))
+          RETURN distinct(true)
+          LIMIT #{count}")
+
+        count
+      rescue Neo4j::Server::CypherResponse::ResponseError, Faraday::TimeoutError
+        new_max_per_batch = (max_per_batch * 0.8).round
+        output "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
+        new_max_per_batch
+      ensure
+        tx.close
       end
 
       def default_max_per_batch

@@ -21,19 +21,24 @@ module Neo4j
       end
 
       def setup_default_session(cfg)
+        setup_config_defaults!(cfg)
+
+        return if !cfg.sessions.empty?
+
+        cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
+      end
+
+      def setup_config_defaults!(cfg)
         cfg.session_type ||= :server_db
         cfg.session_path ||= 'http://localhost:7474'
         cfg.session_options ||= {}
         cfg.sessions ||= []
 
-        unless (uri = URI(cfg.session_path)).user.blank?
-          cfg.session_options.reverse_merge!(basic_auth: {username: uri.user, password: uri.password})
-          cfg.session_path = cfg.session_path.gsub("#{uri.user}:#{uri.password}@", '')
-        end
+        uri = URI(cfg.session_path)
+        return if uri.user.blank?
 
-        return if !cfg.sessions.empty?
-
-        cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
+        cfg.session_options.reverse_merge!(basic_auth: {username: uri.user, password: uri.password})
+        cfg.session_path = cfg.session_path.gsub("#{uri.user}:#{uri.password}@", '')
       end
 
 

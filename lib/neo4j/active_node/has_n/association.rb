@@ -151,7 +151,7 @@ module Neo4j
           @origin = options[:origin] && options[:origin].to_sym
           @relationship_class = options[:rel_class]
           @relationship_type  = options[:type] && options[:type].to_sym
-          @dependent = options[:dependent]
+          @dependent = options[:dependent].try(:to_sym)
           @unique = options[:unique]
         end
 
@@ -164,6 +164,7 @@ module Neo4j
 
         def validate_init_arguments(type, direction, options)
           validate_option_combinations(options)
+          validate_dependent(options[:dependent].try(:to_sym))
           check_valid_type_and_dir(type, direction)
         end
 
@@ -176,11 +177,6 @@ module Neo4j
           fail ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
           fail ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
           fail ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
-        end
-
-        VALID_DEPENDENT_TYPES = [:delete, :delete_orphans, :destroy_orphans, :destroy, nil]
-        def validate_dependent(value)
-          fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not VALID_DEPENDENT_TYPES.include?(value)
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key
