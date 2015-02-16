@@ -94,15 +94,17 @@ describe 'association dependent delete/destroy' do
     @route2 = DependentSpec::Route.create(name: 'Secondary Route')
     @tour.routes << [@route1, @route2]
 
-    @philly = DependentSpec::Stop.create(city: 'Philadelphia')
-    @brooklyn = DependentSpec::Stop.create(city: 'Brooklyn')
-    @nyc = DependentSpec::Stop.create(city: 'Manhattan') # Pro Tip from Chris: No good metal shows happen in Manhattan.
-    @providence = DependentSpec::Stop.create(city: 'Providence')
-    @boston = DependentSpec::Stop.create(city: 'Boston') # Boston is iffy, too.
+
+    # Pro Tip from Chris: No good metal shows happen in Manhattan.
+    # Boston is iffy, too.
+    city_names = %w(Philadelphia Brooklyn Manhattan Providence Boston)
+    city_names.each_with_object({}) do |city_name, _stops|
+      instance_variable_set("@#{city_name.downcase}", DependentSpec::Stop.create(city: 'Philadelphia'))
+    end
 
     # We always play Philly. Great DIY scene. If we can't get Brooklyn or Providence, we can do Manhattan and Boston.
-    @route1.stops << [@philly, @brooklyn, @providence]
-    @route2.stops << [@philly, @nyc, @boston]
+    @route1.stops << [@philadelphia, @brooklyn, @providence]
+    @route2.stops << [@philadelphia, @manhattan, @boston]
   end
 
   describe 'Grzesiek is booking a tour for his bands' do
@@ -132,14 +134,14 @@ describe 'association dependent delete/destroy' do
 
       context 'the secondary route is destroyed' do
         before do
-          expect(@philly).to be_persisted
-          [@nyc, @boston].each { |stop| expect(stop).to be_persisted }
+          expect(@philadelphia).to be_persisted
+          [@manhattan, @boston].each { |stop| expect(stop).to be_persisted }
         end
 
-        it 'destroys @nyc and @boston but not @philly' do
+        it 'destroys @manhattan and @boston but not @philadelphia' do
           expect { @route2.destroy }.not_to raise_error
-          expect(@philly).to be_persisted
-          [@nyc, @boston].each { |stop| expect(stop).not_to be_persisted }
+          expect(@philadelphia).to be_persisted
+          [@manhattan, @boston].each { |stop| expect(stop).not_to be_persisted }
         end
 
         it 'destroys the linked comment without everything blowing up' do

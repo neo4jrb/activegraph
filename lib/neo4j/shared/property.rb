@@ -90,8 +90,8 @@ module Neo4j::Shared
     def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
       multi_parameter_attributes.each_pair do |key, values|
         begin
-          values = (values.keys.min..values.keys.max).map { |i| values[i] }
           field = self.class.attributes[key.to_sym]
+          values = (values.keys.min..values.keys.max).map { |i| values[i] }
           new_attributes[key] = instantiate_object(field, values)
         rescue
           raise MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"

@@ -37,13 +37,11 @@ module Neo4j
           @association = association
           @context = options.delete(:context)
           @options = options
-          @node_var = options[:node]
+
+          @node_var, @session, @caller, @starting_query, @optional = options.values_at(:node, :session, :caller, :starting_query, :optional)
           @rel_var = options[:rel] || _rel_chain_var
-          @session = options[:session]
-          @caller = options[:caller]
+
           @chain = []
-          @starting_query = options[:starting_query]
-          @optional = options[:optional]
           @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
         end
 
@@ -79,17 +77,23 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          base_query = if @association
-                         chain_var = _association_chain_var
-                         label_string = @model && ":`#{@model.mapped_label_name}`"
-                         (_association_query_start(chain_var) & _query).send(_match_type, "#{chain_var}#{_association_arrow}(#{var}#{label_string})")
-                       else
-                         starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
-                       end
-          # Build a query chain via the chain, return the result
-          @chain.inject(base_query.params(@params)) do |query, (method, arg)|
+          @chain.inject(base_query(var).params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
+        end
+
+        def base_query(var)
+          if @association
+            chain_var = _association_chain_var
+            (_association_query_start(chain_var) & _query).send(_match_type,
+                                                                "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
+          else
+            starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+          end
+        end
+
+        def _model_label_string
+          @model && ":`#{@model.mapped_label_name}`"
         end
 
         # Scope all queries to the current scope.
@@ -149,34 +153,40 @@ module Neo4j
 
         def create(other_nodes, properties)
           fail 'Can only create associations on associations' unless @association
-          other_nodes = [other_nodes].flatten
+          other_nodes = _nodeify(*other_nodes)
+
           properties = @association.inject_classname(properties)
-          other_nodes = other_nodes.map do |other_node|
-            case other_node
-            when Integer, String
-              @model.find(other_node)
-            else
-              other_node
-            end
-          end.compact
 
           fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+
+          start_object = @options[:start_object]
+
           other_nodes.each do |other_node|
             # Neo4j::Transaction.run do
             other_node.save unless other_node.neo_id
 
-            return false if @association.perform_callback(@options[:start_object], other_node, :before) == false
+            return false if @association.perform_callback(start_object, other_node, :before) == false
 
-            start_object = @options[:start_object]
             start_object.clear_association_cache
-            _session.query(context: @options[:context])
-              .match("(start#{match_string(start_object)}), (end#{match_string(other_node)})").where('ID(start) = {start_id} AND ID(end) = {end_id}')
-              .params(start_id: start_object.neo_id, end_id: other_node.neo_id)
-              .send(create_method, "start#{_association_arrow(properties, true)}end").exec
 
-            @association.perform_callback(@options[:start_object], other_node, :after)
+            _create_relationship(start_object, other_node, properties)
+
+            @association.perform_callback(start_object, other_node, :after)
             # end
           end
+        end
+
+        def _nodeify(*args)
+          [args].flatten.map do |arg|
+            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
+          end.compact
+        end
+
+        def _create_relationship(start_object, other_node, properties)
+          _session.query(context: @options[:context])
+            .match(:start, :end)
+            .where(start: {neo_id: start_object.neo_id}, end: {neo_id: other_node.neo_id})
+            .send(create_method, "start#{_association_arrow(properties, true)}end").exec
         end
 
         def read_attribute_for_serialization(*args)
@@ -248,11 +258,7 @@ module Neo4j
         end
 
         def _chain_level
-          if query_proxy = @options[:query_proxy]
-            query_proxy._chain_level + 1
-          else
-            1
-          end
+          (query_proxy = @options[:query_proxy]) ? (query_proxy._chain_level + 1) : 1
         end
 
         def _association_chain_var

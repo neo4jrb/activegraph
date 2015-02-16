@@ -28,11 +28,11 @@ module Neo4j::Shared
         # DateTime values are automatically converted to UTC.
         def to_db(value)
           value = value.new_offset(0) if value.respond_to?(:new_offset)
-          if value.class == Date
-            Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
-          else
-            Time.utc(value.year, value.month, value.day, value.hour, value.min, value.sec).to_i
-          end
+
+          args = [value.year, value.month, value.day]
+          args += (value.class == Date ? [0, 0, 0] : [value.hour, value.min, value.sec])
+
+          Time.utc(*args).to_i
         end
 
         DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S %z'
