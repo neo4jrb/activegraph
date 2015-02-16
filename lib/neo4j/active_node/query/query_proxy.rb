@@ -184,7 +184,7 @@ module Neo4j
 
         def _create_relationship(start_object, other_node, properties)
           _session.query(context: @options[:context])
-            .match(start: match_label(start_object), end: match_label(other_node))
+            .match(:start, :end)
             .where(start: {neo_id: start_object.neo_id}, end: {neo_id: other_node.neo_id})
             .send(create_method, "start#{_association_arrow(properties, true)}end").exec
         end
@@ -360,7 +360,13 @@ module Neo4j
         end
 
         def match_label(node)
-          node.class.mapped_label_name if node.class.respond_to?(:mapped_label_name)
+          if node.class.respond_to?(:mapped_label_name)
+            node.class.mapped_label_name
+          elsif node.respond_to?(:labels)
+            node.labels.first
+          else
+            ''
+          end
         end
 
         def match_string(node)
