@@ -359,16 +359,6 @@ module Neo4j
           [[:order, ->(v) { arg.is_a?(String) ? arg : {v => arg} }]]
         end
 
-        def match_label(node)
-          if node.class.respond_to?(:mapped_label_name)
-            node.class.mapped_label_name
-          elsif node.respond_to?(:labels)
-            node.labels.first
-          else
-            ''
-          end
-        end
-
         def match_string(node)
           ":`#{node.class.mapped_label_name}`" if node.class.respond_to?(:mapped_label_name)
         end
