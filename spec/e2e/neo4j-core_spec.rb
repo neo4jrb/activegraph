@@ -12,7 +12,7 @@ describe 'works well together with Neo4j::Core' do
     obj = clazz.create
     node = Neo4j::Node.create
     obj.stuff << node
-    result = Neo4j::Session.query.match(:n).where("ID(n) = {obj_neo_id}").params(obj_neo_id: obj.neo_id).match('(n)-[:stuff]->(m)')
+    result = Neo4j::Session.query.match(:n).where('ID(n) = {obj_neo_id}').params(obj_neo_id: obj.neo_id).match('(n)-[:stuff]->(m)')
     result = result.pluck(:m)
     expect(result).to eq([node])
   end
