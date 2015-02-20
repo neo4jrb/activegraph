@@ -93,7 +93,11 @@ module Neo4j
         end
 
         def _model_label_string
-          @model && ":`#{@model.mapped_label_name}`"
+          if @model
+            @model.mapped_label_names.map do |mapped_label_name|
+              ":`#{mapped_label_name}`"
+            end.join
+          end
         end
 
         # Scope all queries to the current scope.
@@ -224,8 +228,8 @@ module Neo4j
 
         def _query_model_as(var)
           match_arg = if @model
-                        label = @model.respond_to?(:mapped_label_name) ? @model.mapped_label_name : @model
-                        {var => label}
+                        labels = @model.respond_to?(:mapped_label_names) ? @model.mapped_label_names : @model
+                        {var => labels}
                       else
                         var
                       end

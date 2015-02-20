@@ -59,6 +59,19 @@ class Teacher
   has_one :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
 end
 
+class GitHub
+  include Neo4j::ActiveNode
+end
+class StackOverflow
+  include Neo4j::ActiveNode
+end
+class GitHubUser < GitHub
+  self.mapped_label_name = 'User'
+end
+class StackOverflowUser < StackOverflow
+  self.mapped_label_name = 'User'
+end
+
 describe 'Query API' do
   before(:each) { delete_db }
 
@@ -230,6 +243,20 @@ describe 'Query API' do
 
         it 'allows chaining of class methods and then scopes' do
           samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should eq([math101, ss101])
+        end
+      end
+    end
+
+    describe 'multiple labels' do
+      context 'one user each in GitHub and StackOverflow' do
+        before(:each) do
+          GitHubUser.create
+          StackOverflowUser.create
+        end
+
+        it 'Should only find one of each' do
+          GitHubUser.count.should == 1
+          StackOverflowUser.count.should == 1
         end
       end
     end
