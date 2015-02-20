@@ -255,8 +255,8 @@ describe 'Query API' do
         end
 
         it 'Should only find one of each' do
-          GitHubUser.count.should == 1
-          StackOverflowUser.count.should == 1
+          GitHubUser.count.should eq(1)
+          StackOverflowUser.count.should eq(1)
         end
       end
     end

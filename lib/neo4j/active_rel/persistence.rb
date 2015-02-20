@@ -75,9 +75,8 @@ module Neo4j::ActiveRel
     def _rel_creation_query(from_node, to_node, props)
       from_class, to_class = [from_node.class, to_node.class]
 
-      Neo4j::Session.query.match(
-                            n1: {from_class.mapped_label_name => {from_class.primary_key => from_node.id}},
-                            n2: {to_class.mapped_label_name => {to_class.primary_key => to_node.id}})
+      Neo4j::Session.query.match(n1: {from_class.mapped_label_name => {from_class.primary_key => from_node.id}},
+                                 n2: {to_class.mapped_label_name => {to_class.primary_key => to_node.id}})
         .send(create_method, "n1-[r:`#{type}`]->n2")
         .with('r').set(r: props).pluck(:r).first
     end
