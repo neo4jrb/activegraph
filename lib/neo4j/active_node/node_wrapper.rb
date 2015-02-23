@@ -3,8 +3,7 @@ class Neo4j::Node
   module Wrapper
     # this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
     def wrapper
-      self.props.symbolize_keys!
-      found_class = class_to_wrap
+      found_class = known_class || class_to_wrap
       return self if not found_class
       found_class.new.tap do |wrapped_node|
         wrapped_node.init_on_load(self, self.props)
@@ -15,8 +14,8 @@ class Neo4j::Node
 
     def check_label(label_name)
       return if CHECKED_LABELS_SET.include?(label_name)
-
       load_class_from_label(label_name)
+
       # do this only once
       CHECKED_LABELS_SET.add(label_name)
     end
@@ -41,6 +40,10 @@ class Neo4j::Node
 
     private
 
+    def known_class
+      Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS[labels]
+    end
+
     def named_class
       property = Neo4j::Config.class_name_property
 
@@ -50,7 +53,17 @@ class Neo4j::Node
     def sorted_wrapper_class
       wrappers = _class_wrappers
       return self if wrappers.nil?
+      mapped_wrappers(wrappers).tap do |destination_wrapper|
+        register_class_for_labels(labels, destination_wrapper)
+      end
+    end
+
+    def mapped_wrappers(wrappers)
       wrappers.map { |w| Neo4j::ActiveNode::Labels._wrapped_labels[w] }.sort.first
+    end
+
+    def register_class_for_labels(labels, destination_wrapper)
+      Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS[labels] = destination_wrapper
     end
   end
 end
