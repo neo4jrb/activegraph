@@ -6,6 +6,7 @@ describe 'Node Wrapping' do
   end
 
   let(:user) { NWUser.create }
+  before(:all) { Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS.clear }
 
   after do
     NWUser.delete_all
@@ -13,10 +14,6 @@ describe 'Node Wrapping' do
   end
 
   describe 'KNOWN_LABELS_MAP' do
-    it 'starts empty' do
-      expect(Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS).to be_empty
-    end
-
     context 'when a class is discovered' do
       before { NWUser.create }
 
