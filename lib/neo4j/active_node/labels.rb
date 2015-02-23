@@ -5,6 +5,7 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
+      KNOWN_LABEL_MAPS = {}
       class InvalidQueryError < StandardError; end
       class RecordNotFound < StandardError; end
 

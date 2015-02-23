@@ -98,6 +98,10 @@ describe Neo4j::Node::Wrapper do
         def props
           {value: 42}
         end
+
+        def labels
+          [:MyWrapper]
+        end
       end
       class B
       end
