@@ -68,7 +68,7 @@ module Neo4j::ActiveNode
       # Creates and saves a new node
       # @param [Hash] props the properties the new node should have
       def create(props = {})
-        association_props = extract_association_attributes!(props)
+        association_props = extract_association_attributes!(props) || {}
 
         new(props).tap do |obj|
           yield obj if block_given?
@@ -82,7 +82,7 @@ module Neo4j::ActiveNode
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
         props = args[0] || {}
-        association_props = extract_association_attributes!(props)
+        association_props = extract_association_attributes!(props) || {}
 
         new(*args).tap do |o|
           yield o if block_given?

@@ -7,7 +7,7 @@ module Neo4j::ActiveNode::Initialize
   # @param [Neo4j::Node] persisted_node the node this class wraps
   # @param [Hash] properties of the persisted node.
   def init_on_load(persisted_node, properties)
-    @_association_attributes = self.class.extract_association_attributes!(properties)
+    self.class.extract_association_attributes!(properties)
     @_persisted_obj = persisted_node
     changed_attributes && changed_attributes.clear
     @attributes = attributes.merge(properties.stringify_keys)
