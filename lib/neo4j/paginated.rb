@@ -4,7 +4,9 @@ module Neo4j
     attr_reader :items, :total, :current_page
 
     def initialize(items, total, current_page)
-      @items, @total, @current_page = items, total, current_page
+      @items = items
+      @total = total
+      @current_page = current_page
     end
 
     def self.create_from(source, page, per_page, order = nil)
