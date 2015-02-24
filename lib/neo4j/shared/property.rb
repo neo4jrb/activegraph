@@ -66,7 +66,7 @@ module Neo4j::Shared
     end
 
     def extract_writer_methods!(attributes)
-      Hash.new.tap do |writer_method_props|
+      {}.tap do |writer_method_props|
         attributes.each_key do |key|
           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
         end
