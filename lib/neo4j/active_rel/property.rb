@@ -29,8 +29,10 @@ module Neo4j::ActiveRel
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_association_attributes!(attributes)
-        attributes.keys.each_with_object({}) do |key, relationship_props|
-          relationship_props[key] = attributes.delete(key) if [:from_node, :to_node].include?(key)
+        Hash.new.tap do |relationship_props|
+          attributes.each_key do |key|
+            relationship_props[key] = attributes.delete(key) if [:from_node, :to_node].include?(key)
+          end
         end
       end
 

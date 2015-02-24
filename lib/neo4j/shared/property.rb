@@ -66,8 +66,10 @@ module Neo4j::Shared
     end
 
     def extract_writer_methods!(attributes)
-      attributes.keys.each_with_object({}) do |key, writer_method_props|
-        writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
+      Hash.new.tap do |writer_method_props|
+        attributes.each_key do |key|
+          writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
+        end
       end
     end
 
@@ -77,7 +79,8 @@ module Neo4j::Shared
       new_attributes = {}
       attributes.each_pair do |key, value|
         if key =~ /\A([^\(]+)\((\d+)([if])\)$/
-          found_key, index = $1, $2.to_i
+          found_key = $1
+          index = $2.to_i
           (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
         else
           new_attributes[key] = value
