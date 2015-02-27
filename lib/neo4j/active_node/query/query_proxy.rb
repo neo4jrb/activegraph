@@ -67,7 +67,7 @@ module Neo4j
 
         def params(params)
           self.dup.tap do |new_query|
-            @params.merge!(params)
+            new_query._add_params(params)
           end
         end
 
@@ -215,6 +215,9 @@ module Neo4j
         protected
 
         # Methods are underscored to prevent conflict with user class methods
+        def _add_params(params)
+          @params = @params.merge(params)
+        end
 
         def _add_links(links)
           @chain += links
