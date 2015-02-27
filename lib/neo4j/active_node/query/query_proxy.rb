@@ -38,12 +38,16 @@ module Neo4j
           @context = options.delete(:context)
           @options = options
 
-          @node_var, @session, @caller, @starting_query, @optional = options.values_at(:node, :session, :caller, :starting_query, :optional)
+          @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy =
+            options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy)
+
           @rel_var = options[:rel] || _rel_chain_var
 
           @chain = []
-          @params = options[:query_proxy] ? options[:query_proxy].instance_variable_get('@params') : {}
+          @params = @query_proxy ? @query_proxy.instance_variable_get('@params') : {}
         end
+
+        attr_reader :start_object, :query_proxy
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
         # in the QueryProxy chain.
@@ -63,7 +67,7 @@ module Neo4j
 
         def params(params)
           self.dup.tap do |new_query|
-            new_query._add_params(params)
+            @params.merge!(params)
           end
         end
 
@@ -159,19 +163,17 @@ module Neo4j
 
           fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
 
-          start_object = @options[:start_object]
-
           other_nodes.each do |other_node|
             # Neo4j::Transaction.run do
             other_node.save unless other_node.neo_id
 
-            return false if @association.perform_callback(start_object, other_node, :before) == false
+            return false if @association.perform_callback(@start_object, other_node, :before) == false
 
-            start_object.clear_association_cache
+            @start_object.clear_association_cache
 
-            _create_relationship(start_object, other_node, properties)
+            _create_relationship(other_node, properties)
 
-            @association.perform_callback(start_object, other_node, :after)
+            @association.perform_callback(@start_object, other_node, :after)
             # end
           end
         end
@@ -182,10 +184,10 @@ module Neo4j
           end.compact
         end
 
-        def _create_relationship(start_object, other_node, properties)
+        def _create_relationship(other_node, properties)
           _session.query(context: @options[:context])
             .match(:start, :end)
-            .where(start: {neo_id: start_object.neo_id}, end: {neo_id: other_node.neo_id})
+            .where(start: {neo_id: @start_object.neo_id}, end: {neo_id: other_node.neo_id})
             .send(create_method, "start#{_association_arrow(properties, true)}end").exec
         end
 
@@ -214,10 +216,6 @@ module Neo4j
 
         # Methods are underscored to prevent conflict with user class methods
 
-        def _add_params(params)
-          @params = @params.merge(params)
-        end
-
         def _add_links(links)
           @chain += links
         end
@@ -238,15 +236,10 @@ module Neo4j
 
         # TODO: Refactor this. Too much happening here.
         def _result_string
-          if self.association
-            "result_#{self.association.name}".to_sym
-          elsif self.model && self.model.name
-            label = "result_#{self.model.name}"
-            label.downcase!.tr!(':', '')
-            label.to_sym
-          else
-            :result
-          end
+          s = (self.association && self.association.name) ||
+              (self.model && self.model.name) || ''
+
+          s ? "result_#{s}".downcase.tr(':', '').to_sym : :result
         end
 
         def _session
@@ -258,24 +251,22 @@ module Neo4j
         end
 
         def _chain_level
-          (query_proxy = @options[:query_proxy]) ? (query_proxy._chain_level + 1) : 1
+          @query_proxy ? (@query_proxy._chain_level + 1) : 1
         end
 
         def _association_chain_var
-          if start_object = @options[:start_object]
+          if start_object
             :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
-          elsif query_proxy = @options[:query_proxy]
-            query_proxy.node_var || :"node#{_chain_level}"
+          elsif @query_proxy
+            @query_proxy.node_var || :"node#{_chain_level}"
           else
             fail 'Crazy error' # TODO: Better error
           end
         end
 
         def _association_query_start(var)
-          if start_object = @options[:start_object]
-            start_object.query_as(var)
-          elsif query_proxy = @options[:query_proxy]
-            query_proxy.query_as(var)
+          if object = (start_object || @query_proxy)
+            object.query_as(var)
           else
             fail 'Crazy error' # TODO: Better error
           end
