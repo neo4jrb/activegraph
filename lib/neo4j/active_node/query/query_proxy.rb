@@ -112,7 +112,7 @@ module Neo4j
           @model.current_scope = previous
         end
 
-        METHODS = %w(where rel_where order skip limit)
+        METHODS = %w(where rel_where order rel_order skip limit)
 
         METHODS.each do |method|
           module_eval(%{
@@ -120,8 +120,9 @@ module Neo4j
               build_deeper_query_proxy(:#{method}, args)
             end}, __FILE__, __LINE__)
         end
-        # Since there is a rel_where method, it seems only natural for there to be node_where
+        # Since there is a rel_where and rel_order method, it seems only natural for there to be node_where and node_order
         alias_method :node_where, :where
+        alias_method :node_order, :order
         alias_method :offset, :skip
         alias_method :order_by, :order
 
@@ -352,6 +353,13 @@ module Neo4j
         def links_for_rel_where_arg(arg)
           arg.each_with_object([]) do |(key, value), result|
             result << [:where, ->(_) { {rel_var => {key => value}} }]
+          end
+        end
+
+        # We don't accept strings here. If you want to use a string, just use order.
+        def links_for_rel_order_arg(arg)
+          arg.each_with_object([]) do |(key, value), result|
+            result << [:order, ->(_) { {rel_var => {key => value}} }]
           end
         end
 
