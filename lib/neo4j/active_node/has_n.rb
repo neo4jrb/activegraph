@@ -50,6 +50,10 @@ module Neo4j::ActiveNode
       collection_result
     end
 
+    def association_instance_fetch(cypher_string, association_obj, &block)
+      association_instance_get(cypher_string, association_obj) || association_instance_set(cypher_string, block.call, association_obj)
+    end
+
     def association_reflection(association_obj)
       self.class.reflect_on_association(association_obj.name)
     end
@@ -144,15 +148,13 @@ module Neo4j::ActiveNode
 
           result = association_query_proxy(name, node: node, rel: rel)
           association_reflection = self.class.reflect_on_association(__method__)
-          query_return = association_instance_get(result.to_cypher_with_params, association_reflection)
-          query_return || association_instance_set(result.to_cypher_with_params, result.first, association_reflection)
+          association_instance_fetch(result.to_cypher_with_params, association_reflection) { result.first }
         end
 
         # Class methods
         klass = class << self; self; end
         klass.instance_eval do
           define_method(name) do |node = nil, rel = nil, query_proxy = nil|
-            context = (query_proxy && query_proxy.context ? query_proxy.context : self.class.name) + "##{name}"
             association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel, context: context)
           end
         end
@@ -181,6 +183,5 @@ module Neo4j::ActiveNode
         end
       end
     end
-
   end
 end
