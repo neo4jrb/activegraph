@@ -152,8 +152,8 @@ module Neo4j::ActiveNode
       # rubocop:enable Style/PredicateName
 
       def association_query_proxy(name, options = {})
-        query_proxy = options[:proxy_obj] || Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize, nil,
-                                                                                      session: neo4j_session, query_proxy: nil, context: "#{self.class.name}##{name}")
+        query_proxy = options[:proxy_obj] || default_association_proxy_obj(name)
+
         Neo4j::ActiveNode::Query::QueryProxy.new(associations[name].target_class_or_nil,
                                                  associations[name],
                                                  {session: neo4j_session,
@@ -161,6 +161,14 @@ module Neo4j::ActiveNode
                                                   context: "#{query_proxy.context || self.class.name}##{name}",
                                                   optional: query_proxy.optional?,
                                                   caller: query_proxy.caller}.merge(options))
+      end
+
+      def default_association_proxy_obj(name)
+        Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize,
+                                                 nil,
+                                                 session: neo4j_session,
+                                                 query_proxy: nil,
+                                                 context: "#{self.class.name}##{name}")
       end
 
       private
