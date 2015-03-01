@@ -101,7 +101,6 @@ module Neo4j::ActiveNode
         build_association(:has_many, direction, name, options)
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
 
-        # Instance methods
         define_method(name) do |node = nil, rel = nil|
           return [].freeze unless self._persisted_obj
 
@@ -114,12 +113,15 @@ module Neo4j::ActiveNode
           other_nodes.each { |node| send(name) << node }
         end
 
-        # Class methods
+        define_class_method(name) do |node = nil, rel = nil, proxy_obj = nil|
+          association_query_proxy(name, node: node, rel: rel, proxy_obj: proxy_obj)
+        end
+      end
+
+      def define_class_method(*args, &block)
         klass = class << self; self; end
         klass.instance_eval do
-          define_method(name) do |node = nil, rel = nil, proxy_obj = nil|
-            association_query_proxy(name, node: node, rel: rel, proxy_obj: proxy_obj)
-          end
+          define_method(*args, &block)
         end
       end
 
@@ -127,7 +129,6 @@ module Neo4j::ActiveNode
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
-        # Instance methods
         define_method("#{name}=") do |other_node|
           fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
           clear_association_cache
@@ -144,12 +145,8 @@ module Neo4j::ActiveNode
                                      self.class.reflect_on_association(__method__)) { result.first }
         end
 
-        # Class methods
-        klass = class << self; self; end
-        klass.instance_eval do
-          define_method(name) do |node = nil, rel = nil, query_proxy = nil|
-            association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel, context: context)
-          end
+        define_class_method(name) do |node = nil, rel = nil, query_proxy = nil|
+          association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel, context: context)
         end
       end
       # rubocop:enable Style/PredicateName
