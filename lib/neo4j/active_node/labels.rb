@@ -57,7 +57,7 @@ module Neo4j
       end
 
       def self.model_for_labels(labels)
-        MODELS_FOR_LABELS_CACHE.fetch(labels.to_set.hash) do
+        MODELS_FOR_LABELS_CACHE.fetch(labels.sort_by(&:to_s).hash) do
           models = WRAPPED_MODELS.select do |model|
             (model.mapped_label_names - labels).size == 0
           end
