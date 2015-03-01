@@ -101,10 +101,10 @@ module Neo4j::ActiveNode
         build_association(:has_many, direction, name, options)
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
 
-        define_method(name) do |node = nil, rel = nil|
+        define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
 
-          association_query_proxy(name, node: node, rel: rel, caller: self)
+          association_query_proxy(name, {node: node, rel: rel, caller: self}.merge(options))
         end
 
         define_method("#{name}=") do |other_nodes|
@@ -137,16 +137,16 @@ module Neo4j::ActiveNode
           query_proxy << other_node
         end
 
-        define_method(name) do |node = nil, rel = nil|
+        define_method(name) do |node = nil, rel = nil, options = {}|
           return nil unless self._persisted_obj
 
-          result = association_query_proxy(name, node: node, rel: rel)
+          result = association_query_proxy(name, {node: node, rel: rel}.merge(options))
           association_instance_fetch(result.to_cypher_with_params,
                                      self.class.reflect_on_association(__method__)) { result.first }
         end
 
         define_class_method(name) do |node = nil, rel = nil, query_proxy = nil|
-          association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel, context: context)
+          association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel)
         end
       end
       # rubocop:enable Style/PredicateName

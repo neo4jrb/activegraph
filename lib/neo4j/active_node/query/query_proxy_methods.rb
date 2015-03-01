@@ -114,11 +114,8 @@ module Neo4j
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
         # TODO: It's silly that we have to call constantize here. There should be a better way of finding the target class of the destination.
-        def optional(association, node_id = nil)
-          target_qp = self.send(association)
-          model = target_qp.name.constantize
-          var = node_id || target_qp.identity
-          self.query.proxy_as(model, var, true)
+        def optional(association, node_var = nil, rel_var = nil)
+          self.send(association, node_var, rel_var, optional: true)
         end
 
         private
