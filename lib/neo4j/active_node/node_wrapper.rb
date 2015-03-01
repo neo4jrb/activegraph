@@ -23,7 +23,7 @@ class Neo4j::Node
     private
 
     def load_classes_from_labels
-      labels.each {|label| label.to_s.constantize }
+      labels.each { |label| label.to_s.constantize }
     rescue NameError
       nil
     end

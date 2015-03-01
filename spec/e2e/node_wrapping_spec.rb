@@ -38,7 +38,7 @@ describe 'Node Wrapping' do
 
   context 'A labeled exists' do
     let(:labels) { [] }
-    let(:label_string) { labels.map {|label| ":`#{label}`" }.join }
+    let(:label_string) { labels.map { |label| ":`#{label}`" }.join }
 
     before do
       Neo4j::Session.query.create("(n#{label_string})").exec
@@ -56,10 +56,10 @@ describe 'Node Wrapping' do
 
       %w(Random GitHub) => NodeWrappingSpec::GitHub,
       %w(Admin User StackOverflow) => NodeWrappingSpec::StackOverflowUser,
-      %w(Admin StackOverflow) => NodeWrappingSpec::StackOverflow,
+      %w(Admin StackOverflow) => NodeWrappingSpec::StackOverflow
 
     }.each do |l, model|
-      label_list = l.map {|lab| ":#{lab}" }.to_sentence
+      label_list = l.map { |lab| ":#{lab}" }.to_sentence
       context "labels #{label_list}" do
         let(:labels) { l }
 

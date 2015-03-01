@@ -55,9 +55,11 @@ module Neo4j
       end
 
       def self.model_for_labels(labels)
-        WRAPPED_MODELS.select do |model|
+        models = WRAPPED_MODELS.select do |model|
           (model.mapped_label_names - labels).size == 0
-        end.sort_by do |model|
+        end
+
+        models.sort_by do |model|
           (model.mapped_label_names & labels).size
         end.last
       end
