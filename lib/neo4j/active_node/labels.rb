@@ -5,7 +5,19 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
-      KNOWN_LABEL_MAPS = {}
+
+      WRAPPED_MODELS = []
+
+      included do |model|
+        def self.inherited(model)
+          add_wrapped_class(model)
+
+          super
+        end
+
+        Neo4j::ActiveNode::Labels.add_wrapped_class(model)
+      end
+
       class InvalidQueryError < StandardError; end
       class RecordNotFound < StandardError; end
 
@@ -33,34 +45,24 @@ module Neo4j
         @_persisted_obj.remove_label(*label)
       end
 
-      def self.included(klass)
-        add_wrapped_class(klass)
-      end
-
-      def self.add_wrapped_class(klass)
-        _wrapped_classes << klass
-        @_wrapped_labels = nil
+      def self.add_wrapped_class(model)
+        _wrapped_classes << model
+        WRAPPED_MODELS << model
       end
 
       def self._wrapped_classes
         Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
       end
 
+      def self.model_for_labels(labels)
+        WRAPPED_MODELS.select do |model|
+          (model.mapped_label_names - labels).size == 0
+        end.sort_by do |model|
+          (model.mapped_label_names & labels).size
+        end.last
+      end
+
       protected
-
-      # Only for testing purpose
-      # @private
-      def self._wrapped_labels=(wl)
-        @_wrapped_labels = (wl)
-      end
-
-      def self._wrapped_labels
-        @_wrapped_labels ||=  _wrapped_classes.inject({}) do |ack, clazz|
-          ack.tap do |a|
-            a[clazz.mapped_label_name.to_sym] = clazz if clazz.respond_to?(:mapped_label_name)
-          end
-        end
-      end
 
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
