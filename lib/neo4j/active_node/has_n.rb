@@ -116,10 +116,6 @@ module Neo4j::ActiveNode
           other_nodes.each { |node| send(name) << node }
         end
 
-        define_method("#{name}_rels") do
-          send(name, nil, :r).pluck(:r)
-        end
-
         # Class methods
         klass = class << self; self; end
         klass.instance_eval do
@@ -158,10 +154,6 @@ module Neo4j::ActiveNode
 
         define_method("#{name}_query_proxy") do |options = {}|
           self.class.send("#{name}_query_proxy", {start_object: self}.merge(options))
-        end
-
-        define_method("#{name}_rel") do
-          send("#{name}_query_proxy", rel: :r).pluck(:r).first
         end
 
         define_method(name) do |node = nil, rel = nil|

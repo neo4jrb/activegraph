@@ -80,7 +80,7 @@ describe 'wrapped nodes in transactions' do
     end
 
     it 'does not create an additional relationship after load then save' do
-      starting_count = @john.teachers_rels.count
+      starting_count = @john.teachers.rels.count
       begin
         tx = Neo4j::Transaction.new
         @john.teachers.each_rel do |r|
@@ -91,7 +91,7 @@ describe 'wrapped nodes in transactions' do
         tx.close
       end
       @john.reload
-      expect(@john.teachers_rels.count).to eq starting_count
+      expect(@john.teachers.rels.count).to eq starting_count
     end
   end
 end

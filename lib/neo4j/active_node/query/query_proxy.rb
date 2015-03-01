@@ -178,6 +178,16 @@ module Neo4j
           end
         end
 
+        def rels
+          fail 'Cannot get rels without a relationship variable.' if !@rel_var
+
+          pluck(@rel_var)
+        end
+
+        def rel
+          rels.first
+        end
+
         def _nodeify(*args)
           [args].flatten.map do |arg|
             (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
