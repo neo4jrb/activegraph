@@ -8,6 +8,8 @@ module Neo4j
 
       WRAPPED_MODELS = []
 
+      MODELS_FOR_LABELS_CACHE = ActiveSupport::Cache::MemoryStore.new
+
       included do |model|
         def self.inherited(model)
           add_wrapped_class(model)
@@ -55,13 +57,15 @@ module Neo4j
       end
 
       def self.model_for_labels(labels)
-        models = WRAPPED_MODELS.select do |model|
-          (model.mapped_label_names - labels).size == 0
-        end
+        MODELS_FOR_LABELS_CACHE.fetch(labels.to_set.hash) do
+          models = WRAPPED_MODELS.select do |model|
+            (model.mapped_label_names - labels).size == 0
+          end
 
-        models.sort_by do |model|
-          (model.mapped_label_names & labels).size
-        end.last
+          models.sort_by do |model|
+            (model.mapped_label_names & labels).size
+          end.last
+        end
       end
 
       protected
