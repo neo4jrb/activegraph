@@ -1,39 +1,95 @@
 require 'spec_helper'
 
 describe 'Node Wrapping' do
-  class NWUser
-    include Neo4j::ActiveNode
+  module NodeWrappingSpec
+    class Post
+      include Neo4j::ActiveNode
+    end
+
+    class GitHub
+      include Neo4j::ActiveNode
+      self.mapped_label_name = 'GitHub'
+    end
+
+    class StackOverflow
+      include Neo4j::ActiveNode
+      self.mapped_label_name = 'StackOverflow'
+    end
+
+    class GitHubUser < GitHub
+      self.mapped_label_name = 'User'
+    end
+
+    class GitHubAdmin < GitHubUser
+      self.mapped_label_name = 'Admin'
+    end
+
+    class StackOverflowUser < StackOverflow
+      self.mapped_label_name = 'User'
+    end
   end
 
-  let(:user) { NWUser.create }
-  before(:all) { Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS.clear }
 
   after do
-    NWUser.delete_all
-    Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS.clear
+    NodeWrappingSpec::Post.delete_all
+    NodeWrappingSpec::GitHubUser.delete_all
+    NodeWrappingSpec::StackOverflowUser.delete_all
   end
 
-  describe 'KNOWN_LABELS_MAP' do
-    context 'when a class is discovered' do
-      before { NWUser.create }
+  context 'A labeled exists' do
+    let(:labels) { [] }
+    let(:label_string) { labels.map { |label| ":`#{label}`" }.join }
 
-      it 'loads the node and adds the labels, class to the hash' do
-        node = NWUser.first
-        expect(Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS).not_to be_empty
-        expect(Neo4j::ActiveNode::Labels::KNOWN_LABEL_MAPS[node.labels]).to eq NWUser
-      end
+    before do
+      Neo4j::Session.query.create("(n#{label_string})").exec
+    end
 
-      # There appears to be a bug in JRuby that's keeping this from working.
-      # We are testing it in MRI, we can confirm that it works as intended in JRuby.
-      # If it didn't, all tests would fail.
-      if RUBY_PLATFORM != 'java'
-        it 'prevents subsequent calls to sorted_wrapper_class' do
-          expect_any_instance_of(Neo4j::Node).to receive(:sorted_wrapper_class)
-          NWUser.first
-          expect_any_instance_of(Neo4j::Node).not_to receive(:sorted_wrapper_class)
-          NWUser.first
+    let(:result) { Neo4j::Session.query.match("(n#{label_string})").pluck(:n).first }
+
+    {
+
+      %w(NodeWrappingSpec::Post) => NodeWrappingSpec::Post,
+      %w(User GitHub) => NodeWrappingSpec::GitHubUser,
+      %w(User StackOverflow) => NodeWrappingSpec::StackOverflowUser,
+      %w(Admin User GitHub) => NodeWrappingSpec::GitHubAdmin,
+      %w(Admin GitHub) => NodeWrappingSpec::GitHub,
+
+      %w(Random GitHub) => NodeWrappingSpec::GitHub,
+      %w(Admin User StackOverflow) => NodeWrappingSpec::StackOverflowUser,
+      %w(Admin StackOverflow) => NodeWrappingSpec::StackOverflow
+
+    }.each do |l, model|
+      label_list = l.map { |lab| ":#{lab}" }.to_sentence
+      context "labels #{label_list}" do
+        let(:labels) { l }
+
+        it "wraps the node with a #{model} object" do
+          expect(result).to be_kind_of(model)
         end
       end
     end
   end
 end
+
+
+# classes User, Post
+#  :User => User
+#  :Post => Post
+#  :Post:Submitted => :Post
+#
+# classes Person, User < Person, Post
+#  :User:Person => User
+#  :Person => Person
+#  :Post => Post
+#  :Post:Submitted => Post
+#
+# classes GitHub, StackOverflow, GitHubUser < GitHub, StackOverflowUser < StackOverflow, Post
+#
+#  :User:StackOverflow => StackOverflowUser
+#  :User:GitHub => GitHubUser
+#  :Admin:User:GitHub => GitHubUser
+#  :User => fail
+#  :GitHub => fail
+#  :StackOverflow => fail
+#  :Post => Post
+#

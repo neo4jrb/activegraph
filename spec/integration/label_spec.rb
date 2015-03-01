@@ -5,7 +5,6 @@ require 'spec_helper'
 describe 'Labels' do
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes.dup
-    Neo4j::ActiveNode::Labels._wrapped_labels = nil
     Neo4j::ActiveNode::Labels._wrapped_classes.clear
 
     class TestClass
@@ -48,7 +47,6 @@ describe 'Labels' do
 
   after(:all) do
     Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
-    Neo4j::ActiveNode::Labels._wrapped_labels = nil
     Object.send(:remove_const, :IndexedTestClass)
     Object.send(:remove_const, :TestClass)
   end
