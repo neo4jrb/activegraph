@@ -147,8 +147,8 @@ module Neo4j::ActiveNode
           return nil unless self._persisted_obj
 
           result = association_query_proxy(name, node: node, rel: rel)
-          association_reflection = self.class.reflect_on_association(__method__)
-          association_instance_fetch(result.to_cypher_with_params, association_reflection) { result.first }
+          association_instance_fetch(result.to_cypher_with_params,
+                                     self.class.reflect_on_association(__method__)) { result.first }
         end
 
         # Class methods
