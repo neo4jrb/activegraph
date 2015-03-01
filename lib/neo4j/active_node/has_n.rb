@@ -122,21 +122,32 @@ module Neo4j::ActiveNode
           define_method(name) do |node = nil, rel = nil, proxy_obj = nil|
             send("#{name}_query_proxy", node: node, rel: rel, proxy_obj: proxy_obj)
           end
+        end
 
-          define_method("#{name}_query_proxy") do |options = {}|
-            query_proxy = options[:proxy_obj] || Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize, nil,
-                                                                                          session: self.neo4j_session, query_proxy: nil, context: self.class.name + "##{name}")
-            context = (query_proxy && query_proxy.context ? query_proxy.context : self.class.name) + '##{name}'
-            Neo4j::ActiveNode::Query::QueryProxy.new(association.target_class_or_nil,
-                                                     associations[name],
-                                                     session: self.neo4j_session,
-                                                     query_proxy: query_proxy,
-                                                     node: options[:node],
-                                                     rel: options[:rel],
-                                                     context: context,
-                                                     optional: query_proxy.optional?,
-                                                     caller: query_proxy.caller)
-          end
+        define_association_query_proxy_method(name, association)
+      end
+
+      def define_association_query_proxy_method(name, association)
+        define_class_method("#{name}_query_proxy") do |options = {}|
+          query_proxy = options[:proxy_obj] || Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize, nil,
+                                                                                        session: self.neo4j_session, query_proxy: nil, context: self.class.name + "##{name}")
+          context = (query_proxy && query_proxy.context ? query_proxy.context : self.class.name) + '##{name}'
+          Neo4j::ActiveNode::Query::QueryProxy.new(association.target_class_or_nil,
+                                                   associations[name],
+                                                   {session: self.neo4j_session,
+                                                   query_proxy: query_proxy,
+                                                   node: options[:node],
+                                                   rel: options[:rel],
+                                                   context: context,
+                                                   optional: query_proxy.optional?,
+                                                   caller: query_proxy.caller}.merge(options))
+        end
+      end
+
+      def define_class_method(*args, &block)
+        klass = class << self; self; end
+        klass.instance_eval do
+          define_method(*args, &block)
         end
       end
 
@@ -165,6 +176,7 @@ module Neo4j::ActiveNode
         end
 
         # Class methods
+        define_association_query_proxy_method(name, association)
         klass = class << self; self; end
         klass.instance_eval do
           define_method("#{name}_query_proxy") do |options = {}|
