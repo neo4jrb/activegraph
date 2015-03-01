@@ -5,7 +5,6 @@ require 'spec_helper'
 describe 'Labels' do
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes.dup
-    Neo4j::ActiveNode::Labels._wrapped_labels = nil
     Neo4j::ActiveNode::Labels._wrapped_classes.clear
 
     class TestClass
