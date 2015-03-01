@@ -62,6 +62,10 @@ module Neo4j::ActiveNode
       cypher_string.hash.abs
     end
 
+    def association_query_proxy(name, options = {})
+      self.class.association_query_proxy(name, {start_object: self}.merge(options))
+    end
+
     module ClassMethods
       # :nocov:
       # rubocop:disable Style/PredicateName
@@ -90,24 +94,14 @@ module Neo4j::ActiveNode
       # rubocop:disable Style/PredicateName
       def has_many(direction, name, options = {})
         name = name.to_sym
-        association = build_association(:has_many, direction, name, options)
+        build_association(:has_many, direction, name, options)
         # TODO: Make assignment more efficient? (don't delete nodes when they are being assigned)
 
         # Instance methods
         define_method(name) do |node = nil, rel = nil|
           return [].freeze unless self._persisted_obj
-          send("#{name}_query_proxy", node: node, rel: rel)
-        end
 
-        define_method("#{name}_query_proxy") do |options = {}|
-          Neo4j::ActiveNode::Query::QueryProxy.new(association.target_class_or_nil,
-                                                   self.class.associations[name],
-                                                   session: self.class.neo4j_session,
-                                                   start_object: self,
-                                                   node: options[:node],
-                                                   rel: options[:rel],
-                                                   context: "#{self.class.name}##{name}",
-                                                   caller: self)
+          association_query_proxy(name, node: node, rel: rel, caller: self)
         end
 
         define_method("#{name}=") do |other_nodes|
@@ -120,11 +114,9 @@ module Neo4j::ActiveNode
         klass = class << self; self; end
         klass.instance_eval do
           define_method(name) do |node = nil, rel = nil, proxy_obj = nil|
-            send("#{name}_query_proxy", node: node, rel: rel, proxy_obj: proxy_obj)
+            association_query_proxy(name, node: node, rel: rel, proxy_obj: proxy_obj)
           end
         end
-
-        define_association_query_proxy_method(name, association)
       end
 
       def define_class_method(*args, &block)
@@ -136,64 +128,50 @@ module Neo4j::ActiveNode
 
       def has_one(direction, name, options = {})
         name = name.to_sym
-        association = build_association(:has_one, direction, name, options)
+        build_association(:has_one, direction, name, options)
 
         # Instance methods
         define_method("#{name}=") do |other_node|
           fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
           clear_association_cache
-          send("#{name}_query_proxy", rel: :r).query_as(:n).delete(:r).exec
-          send("#{name}_query_proxy") << other_node
-        end
-
-        define_method("#{name}_query_proxy") do |options = {}|
-          self.class.send("#{name}_query_proxy", {start_object: self}.merge(options))
+          query_proxy = association_query_proxy(name, rel: :r)
+          query_proxy.query_as(:n).delete(:r).exec
+          query_proxy << other_node
         end
 
         define_method(name) do |node = nil, rel = nil|
           return nil unless self._persisted_obj
-          result = send("#{name}_query_proxy", node: node, rel: rel, context: "#{self.class.name}##{name}")
+
+          result = association_query_proxy(name, node: node, rel: rel)
           association_reflection = self.class.reflect_on_association(__method__)
           query_return = association_instance_get(result.to_cypher_with_params, association_reflection)
           query_return || association_instance_set(result.to_cypher_with_params, result.first, association_reflection)
         end
 
         # Class methods
-        define_association_query_proxy_method(name, association)
         klass = class << self; self; end
         klass.instance_eval do
-          define_method("#{name}_query_proxy") do |options = {}|
-            Neo4j::ActiveNode::Query::QueryProxy.new(association.target_class_or_nil,
-                                                     associations[name],
-                                                     {session: self.neo4j_session}.merge(options))
-          end
-
           define_method(name) do |node = nil, rel = nil, query_proxy = nil|
             context = (query_proxy && query_proxy.context ? query_proxy.context : self.class.name) + "##{name}"
-            send("#{name}_query_proxy", query_proxy: query_proxy, node: node, rel: rel, context: context)
+            association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel, context: context)
           end
         end
       end
       # rubocop:enable Style/PredicateName
 
-      private
-
-      def define_association_query_proxy_method(name, association)
-        define_class_method("#{name}_query_proxy") do |options = {}|
-          query_proxy = options[:proxy_obj] || Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize, nil,
-                                                                                        session: self.neo4j_session, query_proxy: nil, context: self.class.name + "##{name}")
-          context = (query_proxy && query_proxy.context ? query_proxy.context : self.class.name) + '##{name}'
-          Neo4j::ActiveNode::Query::QueryProxy.new(association.target_class_or_nil,
-                                                   associations[name],
-                                                   {session: self.neo4j_session,
-                                                    query_proxy: query_proxy,
-                                                    node: options[:node],
-                                                    rel: options[:rel],
-                                                    context: context,
-                                                    optional: query_proxy.optional?,
-                                                    caller: query_proxy.caller}.merge(options))
-        end
+      def association_query_proxy(name, options = {})
+        query_proxy = options[:proxy_obj] || Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize, nil,
+                                                                                      session: neo4j_session, query_proxy: nil, context: "#{self.class.name}##{name}")
+        Neo4j::ActiveNode::Query::QueryProxy.new(associations[name].target_class_or_nil,
+                                                 associations[name],
+                                                 {session: neo4j_session,
+                                                  query_proxy: query_proxy,
+                                                  context: "#{query_proxy.context || self.class.name}##{name}",
+                                                  optional: query_proxy.optional?,
+                                                  caller: query_proxy.caller}.merge(options))
       end
+
+      private
 
       def build_association(macro, direction, name, options)
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
@@ -203,5 +181,6 @@ module Neo4j::ActiveNode
         end
       end
     end
+
   end
 end

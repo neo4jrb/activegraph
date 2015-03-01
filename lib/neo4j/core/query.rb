@@ -8,7 +8,7 @@ module Neo4j::Core
     # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object.
     def proxy_as(model, var, optional = false)
       # TODO: Discuss whether it's necessary to call `break` on the query or if this should be left to the user.
-      Neo4j::ActiveNode::Query::QueryProxy.new(model, nil,  starting_query: self.break, node: var, optional: optional)
+      Neo4j::ActiveNode::Query::QueryProxy.new(model, nil, node: var, optional: optional)
     end
 
     # Calls proxy_as with `optional` set true. This doesn't offer anything different from calling `proxy_as` directly but it may be more readable.

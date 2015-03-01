@@ -402,25 +402,10 @@ describe 'query_proxy_methods' do
     end
 
     it 'starts a new optional match' do
-      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).lessons(:l).pluck('distinct l, t')
-      expect(result.count).to eq 2
+      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).lessons(:l).query.order(l: :name).pluck('distinct l, t')
 
-      expect(result[0][0]).not_to be_nil
-      # The order of results changes between Neo4j 2.1.6 and 2.2.0.
-      # Until we stop supporting 2.1.6, this workaround is necessary.
-      if result[0][0] == @science
-        expect(result[0][0]).to eq @science
-        expect(result[0][1]).to be_nil
-
-        expect(result[1][0]).to eq @math
-        expect(result[1][1]).to eq @johnson
-      else
-        expect(result[0][0]).to eq @math
-        expect(result[0][1]).to eq @johnson
-
-        expect(result[1][0]).to eq @science
-        expect(result[1][1]).to be_nil
-      end
+      expect(result).to eq [[@math, @johnson],
+                            [@science, nil]]
     end
   end
 end
