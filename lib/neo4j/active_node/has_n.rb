@@ -123,13 +123,6 @@ module Neo4j::ActiveNode
         end
       end
 
-      def define_class_method(*args, &block)
-        klass = class << self; self; end
-        klass.instance_eval do
-          define_method(*args, &block)
-        end
-      end
-
       def has_one(direction, name, options = {})
         name = name.to_sym
         build_association(:has_one, direction, name, options)
