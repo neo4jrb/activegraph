@@ -47,7 +47,6 @@ describe 'Labels' do
 
   after(:all) do
     Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
-    Neo4j::ActiveNode::Labels._wrapped_labels = nil
     Object.send(:remove_const, :IndexedTestClass)
     Object.send(:remove_const, :TestClass)
   end
