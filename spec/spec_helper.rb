@@ -73,9 +73,13 @@ end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
-module ActiveNodeStubHelpers
+module ActiveNodeRelStubHelpers
   def stub_active_node_class(class_name, &block)
     stub_const class_name, active_node_class(class_name, &block)
+  end
+
+  def stub_active_rel_class(class_name, &block)
+    stub_const class_name, active_rel_class(class_name, &block)
   end
 
   def stub_named_class(class_name, superclass = nil, &block)
@@ -85,6 +89,14 @@ module ActiveNodeStubHelpers
   def active_node_class(class_name, &block)
     named_class(class_name) do
       include Neo4j::ActiveNode
+
+      instance_eval(&block) if block
+    end
+  end
+
+  def active_rel_class(class_name, &block)
+    named_class(class_name) do
+      include Neo4j::ActiveRel
 
       instance_eval(&block) if block
     end
@@ -128,5 +140,5 @@ RSpec.configure do |c|
     end
   }
 
-  c.include ActiveNodeStubHelpers
+  c.include ActiveNodeRelStubHelpers
 end

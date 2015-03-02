@@ -1,33 +1,38 @@
 require 'spec_helper'
 
 describe 'custom type conversion' do
-  class RangeConverter
-    class << self
-      def primitive_type
-        String
+
+  before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
+
+    stub_named_class('RangeConverter') do
+      class << self
+        def primitive_type
+          String
+        end
+
+        def convert_type
+          Range
+        end
+
+        def to_db(value)
+          value.to_s
+        end
+
+        def to_ruby(value)
+          ends = value.to_s.split('..').map { |d| Integer(d) }
+          ends[0]..ends[1]
+        end
+        alias_method :call, :to_ruby
       end
 
-      def convert_type
-        Range
-      end
-
-      def to_db(value)
-        value.to_s
-      end
-
-      def to_ruby(value)
-        ends = value.to_s.split('..').map { |d| Integer(d) }
-        ends[0]..ends[1]
-      end
-      alias_method :call, :to_ruby
+      include Neo4j::Shared::Typecaster
     end
 
-    include Neo4j::Shared::Typecaster
-  end
-
-  class RangeConvertPerson
-    include Neo4j::ActiveNode
-    property :my_range, type: Range
+    stub_active_node_class('RangeConvertPerson') do
+      property :my_range, type: Range
+    end
   end
 
   it 'registers the typecaster' do

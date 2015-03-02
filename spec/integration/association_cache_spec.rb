@@ -2,9 +2,12 @@ require 'spec_helper'
 
 describe 'Association Cache' do
   before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
+
     stub_active_node_class('Student') do
       property :name
-      has_many :out, :lessons, model_class: 'Lesson'
+      has_many :out, :lessons, type: :has_student, model_class: 'Lesson'
       has_many :in, :exams, model_class: 'Exam', origin: :students
       has_one :out, :favorite_lesson, model_class: 'Lesson'
     end
