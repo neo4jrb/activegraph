@@ -94,9 +94,8 @@ module ActiveNodeStubHelpers
     Class.new(superclass || Object) do
       @class_name = class_name
       class << self
-        def name
-          @class_name
-        end
+        attr_reader :class_name
+        alias_method :name, :class_name
       end
 
       instance_eval(&block) if block
@@ -105,7 +104,6 @@ module ActiveNodeStubHelpers
 end
 
 RSpec.configure do |c|
-
   c.before(:suite) do
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session

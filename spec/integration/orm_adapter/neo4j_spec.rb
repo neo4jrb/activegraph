@@ -31,8 +31,6 @@ module Neo4j
 
             has_many :out, :notes, model_class: 'Note'
           end
-          #require 'pry'
-          #binding.pry
 
           stub_active_node_class('Note') do
             property :body, index: :exact
@@ -41,7 +39,6 @@ module Neo4j
           end
         end
 
-        #let(:user_class) { require 'pry'; binding.pry; User }
         let(:user_class) { User }
         let(:note_class) { Note }
       end
