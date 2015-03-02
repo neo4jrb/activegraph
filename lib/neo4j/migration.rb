@@ -19,7 +19,7 @@ module Neo4j
     end
 
     def joined_path(path)
-      File.join(path, 'db', 'neo4j-migrate')
+      File.join(path.to_s, 'db', 'neo4j-migrate')
     end
 
     class AddIdProperty < Neo4j::Migration

@@ -25,23 +25,6 @@ describe Neo4j::ActiveNode::Labels do
     Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
   end
 
-  describe 'include' do
-    describe '_wrapped_classes' do
-      it 'store included classes' do
-        Neo4j::ActiveNode::Labels._wrapped_classes
-        Neo4j::ActiveNode::Labels._wrapped_classes.should =~ [@class_a, @class_b]
-      end
-    end
-
-    describe '_wrapped_labels' do
-      it 'returns a hash of labels and classes' do
-        Neo4j::ActiveNode::Labels._wrapped_labels[:A].should eq(@class_a)
-        Neo4j::ActiveNode::Labels._wrapped_labels[:B].should eq(@class_b)
-      end
-    end
-  end
-
-
   describe Neo4j::ActiveNode::Labels::ClassMethods do
     describe 'index and inheritance' do
       class MyBaseClass

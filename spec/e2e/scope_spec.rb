@@ -3,15 +3,19 @@ require 'spec_helper'
 # module Neo4j::ActiveNode::Scope
 
 describe 'Neo4j::NodeMixin::Scope' do
-  class Person
-    include Neo4j::ActiveNode
-    property :name
-    property :score
-    property :level_num
-    has_many :out, :friends, model_class: self
+  before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
+
+    stub_active_node_class('Person') do
+      property :name
+      property :score
+      property :level_num
+      has_many :out, :friends, model_class: 'Person'
+    end
   end
 
-  before(:all) do
+  before(:each) do
     @a = Person.create name: 'a', score: 42, level_num: 1
     @b = Person.create name: 'b', score: 42, level_num: 2
     @b1 = Person.create name: 'b1', score: 42, level_num: 3
@@ -21,9 +25,13 @@ describe 'Neo4j::NodeMixin::Scope' do
     @b.friends << @b1 << @b2
   end
 
+  after(:each) do
+    delete_db
+  end
+
 
   describe 'Person.scope :level, -> (num) { where(level: num)}' do
-    before(:all) do
+    before(:each) do
       Person.scope :level, ->(num) { where(level_num: num) }
     end
 
@@ -35,7 +43,7 @@ describe 'Neo4j::NodeMixin::Scope' do
   end
 
   describe 'Person.scope :in_order, -> { order(level: num)}' do
-    before(:all) do
+    before(:each) do
       Person.scope :in_order, ->(identifier) { order("#{identifier}.level_num DESC") }
     end
 
@@ -47,7 +55,7 @@ describe 'Neo4j::NodeMixin::Scope' do
   end
 
   describe 'Person.scope :great_students, -> (identifier) { where("#{identifier}.score > 41")' do
-    before(:all) do
+    before(:each) do
       Person.scope :great_students, ->(identifier) { where("#{identifier}.score > 41") }
     end
 
@@ -61,7 +69,7 @@ describe 'Neo4j::NodeMixin::Scope' do
   end
 
   describe 'Person.scope :top_students, -> { where(score: 42)}' do
-    before(:all) do
+    before(:each) do
       Person.scope :top_students, -> { where(score: 42) }
     end
 
