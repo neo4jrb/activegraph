@@ -121,8 +121,8 @@ module Neo4j::ActiveNode
           association_query_proxy(name).replace_with(other_nodes)
         end
 
-        define_class_method(name) do |node = nil, rel = nil, proxy_obj = nil|
-          association_query_proxy(name, node: node, rel: rel, proxy_obj: proxy_obj)
+        define_class_method(name) do |node = nil, rel = nil, proxy_obj = nil, options = {}|
+          association_query_proxy(name, {node: node, rel: rel, proxy_obj: proxy_obj}.merge(options))
         end
       end
 
@@ -135,10 +135,10 @@ module Neo4j::ActiveNode
       end
 
       def define_has_one_methods(name)
-        define_method(name) do |node = nil, rel = nil, options = {}|
+        define_method(name) do |node = nil, rel = nil|
           return nil unless self._persisted_obj
 
-          result = association_query_proxy(name, {node: node, rel: rel}.merge(options))
+          result = association_query_proxy(name, node: node, rel: rel)
           association_instance_fetch(result.to_cypher_with_params,
                                      self.class.reflect_on_association(__method__)) { result.first }
         end
@@ -149,8 +149,8 @@ module Neo4j::ActiveNode
           association_query_proxy(name).replace_with(other_node)
         end
 
-        define_class_method(name) do |node = nil, rel = nil, query_proxy = nil|
-          association_query_proxy(name, query_proxy: query_proxy, node: node, rel: rel)
+        define_class_method(name) do |node = nil, rel = nil, query_proxy = nil, options = {}|
+          association_query_proxy(name, {query_proxy: query_proxy, node: node, rel: rel}.merge(options))
         end
       end
 
