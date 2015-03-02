@@ -127,7 +127,6 @@ module Neo4j
         end
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
-        # TODO: It's silly that we have to call constantize here. There should be a better way of finding the target class of the destination.
         def optional(association, node_var = nil, rel_var = nil)
           self.send(association, node_var, rel_var, nil, optional: true)
         end
