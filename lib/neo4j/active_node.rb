@@ -51,6 +51,7 @@ module Neo4j
         attributes.each_pair { |k, v| other.attributes[k] = v }
         inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
         Neo4j::ActiveNode::Labels.add_wrapped_class(other)
+
         super
       end
 

@@ -222,7 +222,7 @@ shared_examples_for 'example app with orm_adapter fix' do
       it 'when attributes contain an has_many assoc, should create a model with the attributes' do
         notes = [create_model(note_class), create_model(note_class)]
         user = user_adapter.create!(notes: notes)
-        reload_model(user).notes.should eq(notes)
+        expect(reload_model(user).notes.sort_by(&:neo_id)).to eq(notes.sort_by(&:neo_id))
       end
     end
 
