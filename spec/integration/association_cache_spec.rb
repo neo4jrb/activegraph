@@ -1,39 +1,36 @@
 require 'spec_helper'
 
 describe 'Association Cache' do
-  module CachingSpec
-    class Lesson; end
-    class Exam; end
+  before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
 
-    class Student
-      include Neo4j::ActiveNode
+    stub_active_node_class('Student') do
       property :name
-      has_many :out, :lessons, model_class: Lesson
-      has_many :in, :exams, model_class: Exam, origin: :students
-      has_one :out, :favorite_lesson, model_class: Lesson
+      has_many :out, :lessons, type: :has_student, model_class: 'Lesson'
+      has_many :in, :exams, model_class: 'Exam', origin: :students
+      has_one :out, :favorite_lesson, model_class: 'Lesson'
     end
 
-    class Lesson
-      include Neo4j::ActiveNode
+    stub_active_node_class('Lesson') do
       property :subject
       property :level, type: Integer
       has_many :in, :students, model_class: Student, origin: :lessons
-      has_many :out, :exams_given, model_class: Exam
+      has_many :out, :exams_given, model_class: 'Exam'
     end
 
-    class Exam
-      include Neo4j::ActiveNode
+    stub_active_node_class('Exam') do
       property :name
-      has_many :in, :lessons, model_class: Lesson, origin: :exams_given
-      has_many :out, :students, model_class: Student
+      has_many :in, :lessons, model_class: 'Lesson', origin: :exams_given
+      has_many :out, :students, type: :has_student, model_class: Student
     end
   end
 
-  let(:billy)     { CachingSpec::Student.create(name: 'Billy') }
-  let(:math)      { CachingSpec::Lesson.create(subject: 'math', level: 101) }
-  let(:science)   { CachingSpec::Lesson.create(subject: 'science', level: 102) }
-  let(:math_exam) { CachingSpec::Exam.create(name: 'Math Exam') }
-  let(:science_exam) { CachingSpec::Exam.create(name: 'Science Exam') }
+  let(:billy)     { Student.create(name: 'Billy') }
+  let(:math)      { Lesson.create(subject: 'math', level: 101) }
+  let(:science)   { Lesson.create(subject: 'science', level: 102) }
+  let(:math_exam) { Exam.create(name: 'Math Exam') }
+  let(:science_exam) { Exam.create(name: 'Science Exam') }
   let(:cache)     { billy.association_cache }
 
   before do
@@ -55,12 +52,12 @@ describe 'Association Cache' do
   context 'on a class' do
     describe 'association_cache method' do
       it 'raises an error because it is only for instances' do
-        expect { CachingSpec::Student.association_cache }.to raise_error
+        expect { Student.association_cache }.to raise_error
       end
     end
 
     it 'does not have @association_cache variable' do
-      expect(CachingSpec::Student.instance_variable_get(:@association_cache)).to be_nil
+      expect(Student.instance_variable_get(:@association_cache)).to be_nil
     end
   end
 
@@ -184,7 +181,7 @@ describe 'Association Cache' do
         it 'does not set results' do
           billy.reload
           tx = Neo4j::Transaction.new
-          history = CachingSpec::Lesson.create(subject: 'history', level: 101)
+          history = Lesson.create(subject: 'history', level: 101)
           billy.lessons << history
           billy.lessons.to_a # would typically cache results
           tx.close

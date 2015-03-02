@@ -1,39 +1,38 @@
 require 'spec_helper'
 
 describe 'Node Wrapping' do
-  module NodeWrappingSpec
-    class Post
-      include Neo4j::ActiveNode
-    end
+  before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
 
-    class GitHub
-      include Neo4j::ActiveNode
+    stub_active_node_class('Post')
+
+    stub_active_node_class('GitHub') do
       self.mapped_label_name = 'GitHub'
     end
 
-    class StackOverflow
-      include Neo4j::ActiveNode
+    stub_active_node_class('StackOverflow') do
       self.mapped_label_name = 'StackOverflow'
     end
 
-    class GitHubUser < GitHub
+
+    stub_named_class('GitHubUser', GitHub) do
       self.mapped_label_name = 'User'
     end
 
-    class GitHubAdmin < GitHubUser
+    stub_named_class('GitHubAdmin', GitHubUser) do
       self.mapped_label_name = 'Admin'
     end
 
-    class StackOverflowUser < StackOverflow
+    stub_named_class('StackOverflowUser', StackOverflow) do
       self.mapped_label_name = 'User'
     end
   end
 
-
   after do
-    NodeWrappingSpec::Post.delete_all
-    NodeWrappingSpec::GitHubUser.delete_all
-    NodeWrappingSpec::StackOverflowUser.delete_all
+    Post.delete_all
+    GitHubUser.delete_all
+    StackOverflowUser.delete_all
   end
 
   context 'A labeled exists' do
@@ -47,24 +46,23 @@ describe 'Node Wrapping' do
     let(:result) { Neo4j::Session.query.match("(n#{label_string})").pluck(:n).first }
 
     {
+      %w(Post) => 'Post',
+      %w(User GitHub) => 'GitHubUser',
+      %w(User StackOverflow) => 'StackOverflowUser',
+      %w(Admin User GitHub) => 'GitHubAdmin',
+      %w(Admin GitHub) => 'GitHub',
 
-      %w(NodeWrappingSpec::Post) => NodeWrappingSpec::Post,
-      %w(User GitHub) => NodeWrappingSpec::GitHubUser,
-      %w(User StackOverflow) => NodeWrappingSpec::StackOverflowUser,
-      %w(Admin User GitHub) => NodeWrappingSpec::GitHubAdmin,
-      %w(Admin GitHub) => NodeWrappingSpec::GitHub,
+      %w(Random GitHub) => 'GitHub',
+      %w(Admin User StackOverflow) => 'StackOverflowUser',
+      %w(Admin StackOverflow) => 'StackOverflow'
 
-      %w(Random GitHub) => NodeWrappingSpec::GitHub,
-      %w(Admin User StackOverflow) => NodeWrappingSpec::StackOverflowUser,
-      %w(Admin StackOverflow) => NodeWrappingSpec::StackOverflow
-
-    }.each do |l, model|
+    }.each do |l, model_name|
       label_list = l.map { |lab| ":#{lab}" }.to_sentence
       context "labels #{label_list}" do
         let(:labels) { l }
 
-        it "wraps the node with a #{model} object" do
-          expect(result).to be_kind_of(model)
+        it "wraps the node with a #{model_name} object" do
+          expect(result).to be_kind_of(model_name.constantize)
         end
       end
     end

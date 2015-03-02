@@ -31,17 +31,18 @@ shared_examples_for 'example app with orm_adapter fix' do
 
   describe 'an ORM class' do
     subject { note_class }
+    let(:adapter) { subject.to_adapter }
 
     it '#to_adapter should return an adapter instance' do
-      subject.to_adapter.should be_a(OrmAdapter::Base)
+      adapter.should be_a(OrmAdapter::Base)
     end
 
     it '#to_adapter should return an adapter for the receiver' do
-      subject.to_adapter.klass.should eq(subject)
+      adapter.klass.should eq(subject)
     end
 
     it '#to_adapter should be cached' do
-      subject.to_adapter.object_id.should eq(subject.to_adapter.object_id)
+      adapter.object_id.should eq(adapter.object_id)
     end
   end
 
