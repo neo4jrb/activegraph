@@ -73,7 +73,39 @@ end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
+module ActiveNodeStubHelpers
+  def stub_active_node_class(class_name, &block)
+    stub_const class_name, active_node_class(class_name, &block)
+  end
+
+  def stub_named_class(class_name, superclass = nil, &block)
+    stub_const class_name, named_class(class_name, superclass, &block)
+  end
+
+  def active_node_class(class_name, &block)
+    named_class(class_name) do
+      include Neo4j::ActiveNode
+
+      instance_eval(&block) if block
+    end
+  end
+
+  def named_class(class_name, superclass = nil, &block)
+    Class.new(superclass || Object) do
+      @class_name = class_name
+      class << self
+        def name
+          @class_name
+        end
+      end
+
+      instance_eval(&block) if block
+    end
+  end
+end
+
 RSpec.configure do |c|
+
   c.before(:suite) do
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session
@@ -97,4 +129,6 @@ RSpec.configure do |c|
       RUBY_PLATFORM == 'java' && ed == :server
     end
   }
+
+  c.include ActiveNodeStubHelpers
 end

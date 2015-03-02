@@ -1,84 +1,73 @@
 require 'spec_helper'
 require 'set'
-class Student; end
-class Teacher; end
 
-class Interest
-  include Neo4j::ActiveNode
 
-  property :name
-
-  has_many :both, :interested, model_class: false
-end
-
-class Lesson
-  include Neo4j::ActiveNode
-  property :subject
-  property :level
-
-  has_one :out, :teachers_pet, model_class: Student, type: 'favorite_student'
-  has_many :in, :unhappy_teachers, model_class: Teacher, origin: :dreaded_lesson
-  has_many :in, :teachers, type: :teaching
-  has_many :in, :students, type: :is_enrolled_for
-
-  def self.max_level
-    all.query_as(:lesson).pluck('max(lesson.level)').first
-  end
-
-  def self.ordered_by_subject
-    all.order(:subject)
-  end
-
-  scope :level_number, ->(num) { where(level: num) }
-end
-
-class Student
-  include Neo4j::ActiveNode
-  property :name
-  property :age, type: Integer
-
-  has_many :out, :lessons, type: :is_enrolled_for
-
-  has_many :out, :interests
-
-  has_many :both, :favorite_teachers, model_class: Teacher
-  has_many :both, :hated_teachers, model_class: Teacher
-  has_many :in,   :winning_lessons, model_class: Lesson, origin: :teachers_pet
-end
-
-class Teacher
-  include Neo4j::ActiveNode
-  property :name
-
-  has_many :both, :lessons
-
-  has_many :out, :lessons_teaching, model_class: Lesson
-  has_many :out, :lessons_taught, model_class: Lesson
-
-  has_many :out, :interests
-  has_one :out, :dreaded_lesson, model_class: Lesson, type: 'least_favorite_lesson'
-end
-
-class GitHub
-  include Neo4j::ActiveNode
-end
-class StackOverflow
-  include Neo4j::ActiveNode
-end
-class GitHubUser < GitHub
-  self.mapped_label_name = 'User'
-end
-class StackOverflowUser < StackOverflow
-  self.mapped_label_name = 'User'
-end
 
 describe 'Query API' do
   before(:each) { delete_db }
 
+
+  before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
+
+    stub_active_node_class('Interest') do
+      property :name
+
+      has_many :both, :interested, model_class: false
+    end
+
+    stub_active_node_class('Lesson') do
+      property :subject
+      property :level
+
+      has_one :out, :teachers_pet, model_class: 'Student', type: 'favorite_student'
+      has_many :in, :unhappy_teachers, model_class: 'Teacher', origin: :dreaded_lesson
+      has_many :in, :teachers, type: :teaching
+      has_many :in, :students, type: :is_enrolled_for
+
+      def self.max_level
+        all.query_as(:lesson).pluck('max(lesson.level)').first
+      end
+
+      def self.ordered_by_subject
+        all.order(:subject)
+      end
+
+      scope :level_number, ->(num) { where(level: num) }
+    end
+
+    stub_active_node_class('Student') do
+      property :name
+      property :age, type: Integer
+
+      has_many :out, :lessons, type: :is_enrolled_for
+
+      has_many :out, :interests
+
+      has_many :both, :favorite_teachers, model_class: 'Teacher'
+      has_many :both, :hated_teachers, model_class: 'Teacher'
+      has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
+    end
+
+    stub_active_node_class('Teacher') do
+      property :name
+
+      has_many :both, :lessons
+
+      has_many :out, :lessons_teaching, model_class: 'Lesson'
+      has_many :out, :lessons_taught, model_class: 'Lesson'
+
+      has_many :out, :interests
+      has_one :out, :dreaded_lesson, model_class: 'Lesson', type: 'least_favorite_lesson'
+    end
+  end
+
+
   describe 'association validation' do
     before(:each) do
       %w(Foo Bar).each do |const|
-        stub_const const, Class.new { include Neo4j::ActiveNode }
+        stub_active_node_class(const)
       end
     end
 
@@ -248,6 +237,20 @@ describe 'Query API' do
     end
 
     describe 'multiple labels' do
+      before(:each) do
+        stub_active_node_class('GitHub')
+
+        stub_active_node_class('StackOverflow')
+
+        stub_named_class('GitHubUser', GitHub) do
+          self.mapped_label_name = 'User'
+        end
+
+        stub_named_class('StackOverflowUser', StackOverflow) do
+          self.mapped_label_name = 'User'
+        end
+      end
+
       context 'one user each in GitHub and StackOverflow' do
         before(:each) do
           GitHubUser.create

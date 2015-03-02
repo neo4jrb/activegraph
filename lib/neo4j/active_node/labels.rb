@@ -9,6 +9,7 @@ module Neo4j
       WRAPPED_MODELS = []
 
       MODELS_FOR_LABELS_CACHE = ActiveSupport::Cache::MemoryStore.new
+      MODELS_FOR_LABELS_CACHE.clear
 
       included do |model|
         def self.inherited(model)
@@ -66,6 +67,14 @@ module Neo4j
             (model.mapped_label_names & labels).size
           end.last
         end
+      end
+
+      def self.clear_model_for_label_cache
+        MODELS_FOR_LABELS_CACHE.clear
+      end
+
+      def self.clear_wrapped_models
+        WRAPPED_MODELS.clear
       end
 
       protected
