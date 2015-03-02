@@ -62,6 +62,17 @@ module Neo4j::ActiveNode
       cypher_string.hash.abs
     end
 
+    def handle_non_persisted_node
+      return if self._persisted_obj
+      if Neo4j::Config[:autosave_on_assignment]
+        save
+      elsif Neo4j::Config[:hook_for_non_persisted_node]
+        Neo4j::Config[:hook_for_non_persisted_node].call(self)
+      else
+        fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes')
+      end
+    end
+
     module ClassMethods
       # :nocov:
       # rubocop:disable Style/PredicateName
@@ -151,7 +162,7 @@ module Neo4j::ActiveNode
 
         module_eval(%{
           def #{name}=(other_node)
-            raise(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
+            handle_non_persisted_node
             clear_association_cache
             #{name}_query_proxy(rel: :r).query_as(:n).delete(:r).exec
             #{name}_query_proxy << other_node
