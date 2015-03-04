@@ -37,21 +37,18 @@ module Neo4j::ActiveNode
       def scope(name, proc)
         _scope[name.to_sym] = proc
 
-        module_eval(%{
-          def #{name}(query_params=nil, _=nil, query_proxy=nil)
-            eval_context = ScopeEvalContext.new(self, query_proxy || self.class.query_proxy)
-            proc = self.class._scope[:"#{name}"]
-            self.class._call_scope_context(eval_context, query_params, proc)
-          end
-        }, __FILE__, __LINE__)
+        define_method(name) do |query_params = nil, some_var = nil, query_proxy = nil|
+          self.class.send(name, query_params, some_var, query_proxy)
+        end
 
-        instance_eval(%{
-          def #{name}(query_params=nil, _=nil, query_proxy=nil)
+        klass = class << self; self; end
+        klass.instance_eval do
+          define_method(name) do |query_params = nil, _ = nil, query_proxy = nil|
             eval_context = ScopeEvalContext.new(self, query_proxy || self.query_proxy)
-            proc = _scope[:"#{name}"]
+            proc = _scope[name.to_sym]
             _call_scope_context(eval_context, query_params, proc)
           end
-        }, __FILE__, __LINE__)
+        end
       end
 
       # rubocop:disable Style/PredicateName
