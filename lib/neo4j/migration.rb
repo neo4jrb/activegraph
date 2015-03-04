@@ -47,7 +47,12 @@ module Neo4j
         return if File.file?(models_filename)
 
         File.open(models_filename, 'w') do |file|
-          file.write("# Provide models to which IDs should be added.\n# It will only modify nodes that do not have IDs. There is no danger of overwriting data.\n# models: [Student,Lesson,Teacher,Exam]\nmodels: []")
+          message = <<MESSAGE
+# Provide models to which IDs should be added.
+# # It will only modify nodes that do not have IDs. There is no danger of overwriting data.
+# # models: [Student,Lesson,Teacher,Exam]\nmodels: []
+MESSAGE
+          file.write(message)
         end
       end
 

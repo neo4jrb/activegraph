@@ -66,7 +66,9 @@ module Neo4j::ActiveRel
       props.merge!(args[0]) if args[0].is_a?(Hash)
       set_classname(props, true)
 
-      fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}" if from_node.id.nil? || to_node.id.nil?
+      if from_node.id.nil? || to_node.id.nil?
+        fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}"
+      end
       _rel_creation_query(from_node, to_node, props)
     end
 

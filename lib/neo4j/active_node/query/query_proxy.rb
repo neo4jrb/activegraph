@@ -165,7 +165,9 @@ module Neo4j
 
           properties = @association.inject_classname(properties)
 
-          fail ArgumentError, "Node must be of the association's class when model is specified" if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+          if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+            fail ArgumentError, "Node must be of the association's class when model is specified"
+          end
 
           other_nodes.each do |other_node|
             # Neo4j::Transaction.run do
