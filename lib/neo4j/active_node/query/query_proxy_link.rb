@@ -15,19 +15,19 @@ module Neo4j
           end
 
           class << self
-            def for_clause(clause, arg)
+            def for_clause(clause, arg, model)
               method_to_call = "for_#{clause}_clause"
 
-              send(method_to_call, arg)
+              send(method_to_call, arg, model)
             end
 
-            def for_where_clause(arg)
+            def for_where_clause(arg, model)
               node_num = 1
               result = []
               if arg.is_a?(Hash)
                 arg.each do |key, value|
-                  if @model && @model.association?(key)
-                    result += for_association(key, value, "n#{node_num}")
+                  if model && model.association?(key)
+                    result += for_association(key, value, "n#{node_num}", model)
 
                     node_num += 1
                   else
@@ -41,11 +41,11 @@ module Neo4j
             end
             alias_method :for_node_where_clause, :for_where_clause
 
-            def for_association(name, value, n_string)
+            def for_association(name, value, n_string, model)
               neo_id = value.try(:neo_id) || value
               fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
 
-              dir = @model.associations[name].direction
+              dir = model.associations[name].direction
 
               arrow = dir == :out ? '-->' : '<--'
               [
@@ -55,13 +55,13 @@ module Neo4j
             end
 
             # We don't accept strings here. If you want to use a string, just use where.
-            def for_rel_where_clause(arg)
+            def for_rel_where_clause(arg, model)
               arg.each_with_object([]) do |(key, value), result|
                 result << new(:where, ->(_, rel_var) { {rel_var => {key => value}} })
               end
             end
 
-            def for_order_clause(arg)
+            def for_order_clause(arg, model)
               [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
             end
           end

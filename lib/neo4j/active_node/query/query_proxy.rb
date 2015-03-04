@@ -328,7 +328,7 @@ module Neo4j
         def links_for_arg(clause, arg)
           default = [Link.new(clause, arg)]
 
-          Link.for_clause(clause, arg) || default
+          Link.for_clause(clause, arg, @model) || default
         rescue NoMethodError
           default
         end
