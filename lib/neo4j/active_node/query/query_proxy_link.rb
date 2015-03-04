@@ -55,13 +55,13 @@ module Neo4j
             end
 
             # We don't accept strings here. If you want to use a string, just use where.
-            def for_rel_where_clause(arg, model)
+            def for_rel_where_clause(arg, _)
               arg.each_with_object([]) do |(key, value), result|
                 result << new(:where, ->(_, rel_var) { {rel_var => {key => value}} })
               end
             end
 
-            def for_order_clause(arg, model)
+            def for_order_clause(arg, _)
               [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
             end
           end
