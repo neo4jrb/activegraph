@@ -18,10 +18,6 @@ Metrics/AbcSize:
 Metrics/ClassLength:
   Max: 214
 
-# Offense count: 2
-Metrics/CyclomaticComplexity:
-  Max: 7
-
 # Offense count: 768
 # Configuration parameters: AllowURI, URISchemes.
 Metrics/LineLength:

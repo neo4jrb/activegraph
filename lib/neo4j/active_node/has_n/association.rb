@@ -174,9 +174,13 @@ module Neo4j
         end
 
         def validate_option_combinations(options)
-          fail ArgumentError, "Cannot specify both :type and :origin (#{base_declaration})" if options[:type] && options[:origin]
-          fail ArgumentError, "Cannot specify both :type and :rel_class (#{base_declaration})" if options[:type] && options[:rel_class]
-          fail ArgumentError, "Cannot specify both :origin and :rel_class (#{base_declaration}" if options[:origin] && options[:rel_class]
+          [[:type, :origin],
+           [:type, :rel_class],
+           [:origin, :rel_class]].each do |key1, key2|
+            if options[key1] && options[key2]
+              fail ArgumentError, "Cannot specify both :#{key1} and :#{key2} (#{base_declaration})"
+            end
+          end
         end
 
         # Determine if model class as derived from the association name would be different than the one specified via the model_class key
