@@ -2,53 +2,48 @@ require 'spec_helper'
 
 describe 'query_proxy_methods' do
   # goofy names to differentiate from same classes used elsewhere
-  before(:all) do
-    class IncludeLesson; end
-    class IncludeTeacher; end
-    class IncludeEmptyClass; end
-    class IncludeEnrolledIn; end
-    class IncludeStudent
-      include Neo4j::ActiveNode
+  before(:each) do
+    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+    Neo4j::ActiveNode::Labels.clear_wrapped_models
+
+    stub_active_node_class('Student') do
       property :name
-      has_many :out, :lessons, model_class: IncludeLesson, rel_class: IncludeEnrolledIn
+      has_many :out, :lessons, model_class: 'Lesson', rel_class: 'EnrolledIn'
       has_many :out, :things, model_class: false, type: 'lessons'
     end
 
-    class IncludeLesson
-      include Neo4j::ActiveNode
+    stub_active_node_class('Lesson') do
       property :name
-      has_many :in, :students, model_class: IncludeStudent, rel_class: IncludeEnrolledIn
-      has_many :in, :teachers, model_class: IncludeTeacher, origin: :lessons
+      has_many :in, :students, model_class: 'Student', rel_class: 'EnrolledIn'
+      has_many :in, :teachers, model_class: 'Teacher', origin: :lessons
     end
 
-    class IncludeTeacher
-      include Neo4j::ActiveNode
+    stub_active_node_class('Teacher') do
       property :name
       property :age, type: Integer
-      has_many :out, :lessons, model_class: IncludeLesson, type: 'teaching_lesson'
+      has_many :out, :lessons, model_class: 'Lesson', type: 'teaching_lesson'
     end
 
-    class IncludeEmptyClass
-      include Neo4j::ActiveNode
-      has_many :out, :lessons, model_class: IncludeLesson
+    stub_active_node_class('EmptyClass') do
+      has_many :out, :lessons, model_class: 'Lesson'
     end
 
-    class IncludeEnrolledIn
-      include Neo4j::ActiveRel
-      from_class IncludeStudent
-      to_class IncludeLesson
+    stub_active_rel_class('EnrolledIn') do
+      from_class 'Student'
+      to_class 'Lesson'
       type 'lessons'
 
       after_destroy :destroy_called
 
-      def destroy_called; end
+      def destroy_called
+      end
     end
   end
-  let!(:jimmy)    { IncludeStudent.create(name: 'Jimmy') }
-  let!(:math)     { IncludeLesson.create(name: 'math') }
-  let!(:science)  { IncludeLesson.create(name: 'science') }
-  let!(:mr_jones) { IncludeTeacher.create }
-  let!(:mr_adams) { IncludeTeacher.create }
+  let!(:jimmy)    { Student.create(name: 'Jimmy') }
+  let!(:math)     { Lesson.create(name: 'math') }
+  let!(:science)  { Lesson.create(name: 'science') }
+  let!(:mr_jones) { Teacher.create }
+  let!(:mr_adams) { Teacher.create }
 
   describe 'first and last' do
     it 'returns objects across multiple associations' do
@@ -68,8 +63,8 @@ describe 'query_proxy_methods' do
       expect(jimmy.lessons.teachers.include?(mr_jones)).to be_falsey
       expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_jones)).to be_falsey
       expect(jimmy.lessons.where(name: 'science').teachers.include?(mr_adams)).to be_truthy
-      expect(IncludeTeacher.all.include?(mr_jones)).to be_truthy
-      expect(IncludeTeacher.all.include?(math)).to be_falsey
+      expect(Teacher.all.include?(mr_jones)).to be_truthy
+      expect(Teacher.all.include?(math)).to be_falsey
     end
 
     it 'works with multiple relationships to the same object' do
@@ -79,7 +74,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'returns correctly when model_class is false' do
-      woodworking = IncludeLesson.create(name: 'woodworking')
+      woodworking = Lesson.create(name: 'woodworking')
       expect(jimmy.things.include?(woodworking)).to be_falsey
       jimmy.lessons << woodworking
       expect(jimmy.things.include?(woodworking)).to be_truthy
@@ -89,40 +84,40 @@ describe 'query_proxy_methods' do
     it 'allows you to check for an identifier in the middle of a chain' do
       jimmy.lessons << science
       science.teachers << mr_adams
-      expect(IncludeLesson.as(:l).students.where(name: 'Jimmy').include?(science, :l)).to be_truthy
+      expect(Lesson.as(:l).students.where(name: 'Jimmy').include?(science, :l)).to be_truthy
     end
 
     it 'raises an error if something other than a node is given' do
-      expect { IncludeStudent.lessons.include?(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+      expect { Student.lessons.include?(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
     end
   end
 
   describe 'exists?' do
     context 'class methods' do
       it 'can run by a class' do
-        expect(IncludeEmptyClass.empty?).to be_truthy
-        expect(IncludeLesson.empty?).to be_falsey
+        expect(EmptyClass.empty?).to be_truthy
+        expect(Lesson.empty?).to be_falsey
       end
 
       it 'can be called with a property and value' do
-        expect(IncludeLesson.exists?(name: 'math')).to be_truthy
-        expect(IncludeLesson.exists?(name: 'boat repair')).to be_falsey
+        expect(Lesson.exists?(name: 'math')).to be_truthy
+        expect(Lesson.exists?(name: 'boat repair')).to be_falsey
       end
 
       it 'can be called on the class with a neo_id' do
-        expect(IncludeLesson.exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.exists?(8_675_309)).to be_falsey
+        expect(Lesson.exists?(math.neo_id)).to be_truthy
+        expect(Lesson.exists?(8_675_309)).to be_falsey
       end
 
       it 'raises an error if something other than a neo id is given' do
-        expect { IncludeLesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        expect { Lesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
       end
     end
 
     context 'QueryProxy methods' do
       it 'can be called on a query' do
-        expect(IncludeLesson.where(name: 'history').exists?).to be_falsey
-        expect(IncludeLesson.where(name: 'math').exists?).to be_truthy
+        expect(Lesson.where(name: 'history').exists?).to be_falsey
+        expect(Lesson.where(name: 'math').exists?).to be_truthy
       end
 
       it 'can be called with property and value' do
@@ -133,8 +128,8 @@ describe 'query_proxy_methods' do
       end
 
       it 'can be called with a neo_id' do
-        expect(IncludeLesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
-        expect(IncludeLesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
+        expect(Lesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
+        expect(Lesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
       end
 
       it 'is called by :blank? and :empty?' do
@@ -148,9 +143,11 @@ describe 'query_proxy_methods' do
   end
 
   describe 'count' do
-    before(:all) do
-      @john = IncludeStudent.create(name: 'John')
-      @history = IncludeLesson.create(name: 'history')
+    before(:each) do
+      [Student, Lesson].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @history = Lesson.create(name: 'history')
       3.times { @john.lessons << @history }
     end
 
@@ -167,11 +164,11 @@ describe 'query_proxy_methods' do
     end
 
     it 'works on an object earlier in the chain' do
-      expect(IncludeStudent.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
+      expect(Student.as(:s).lessons.where(name: 'history').count(:distinct, :s)).to eq 1
     end
 
     it 'works with order clause' do
-      expect { IncludeStudent.order(name: :asc).count }.not_to raise_error
+      expect { Student.order(name: :asc).count }.not_to raise_error
     end
 
     it 'is aliased by length and size' do
@@ -182,12 +179,12 @@ describe 'query_proxy_methods' do
 
   describe 'delete_all' do
     before do
-      [IncludeStudent, IncludeLesson, IncludeTeacher].each(&:delete_all)
-      @tom = IncludeStudent.create(name: 'Tom')
-      @math = IncludeLesson.create(name: 'Math')
-      @science = IncludeLesson.create(name: 'Science')
-      @adams = IncludeTeacher.create(name: 'Mr Adams')
-      @johnson = IncludeTeacher.create(name: 'Mrs Johnson')
+      [Student, Lesson, Teacher].each(&:delete_all)
+      @tom = Student.create(name: 'Tom')
+      @math = Lesson.create(name: 'Math')
+      @science = Lesson.create(name: 'Science')
+      @adams = Teacher.create(name: 'Mr Adams')
+      @johnson = Teacher.create(name: 'Mrs Johnson')
       @tom.lessons << @math
       @tom.lessons << @science
       @math.teachers << @adams
@@ -210,7 +207,7 @@ describe 'query_proxy_methods' do
 
     it 'works when called from a class' do
       expect(@tom.lessons.teachers.include?(@adams)).to be_truthy
-      IncludeStudent.all.lessons.teachers.delete_all
+      Student.all.lessons.teachers.delete_all
       expect(@adams.persisted?).to be_falsey
     end
 
@@ -229,10 +226,10 @@ describe 'query_proxy_methods' do
   end
 
   describe 'match_to and first_rel_to' do
-    before(:all) do
-      @john = IncludeStudent.create(name: 'Paul')
-      @history = IncludeLesson.create(name: 'history')
-      @math = IncludeLesson.create(name: 'math')
+    before(:each) do
+      @john = Student.create(name: 'Paul')
+      @history = Lesson.create(name: 'history')
+      @math = Lesson.create(name: 'math')
       @john.lessons << @history
     end
 
@@ -265,7 +262,9 @@ describe 'query_proxy_methods' do
 
       context 'with an array' do
         context 'of nodes' do
-          after { @john.lessons.first_rel_to(@math).destroy }
+          after(:each) do
+            @john.lessons.first_rel_to(@math).destroy
+          end
 
           it 'generates cypher using IN with the IDs of contained nodes' do
             expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('AND (result_lessons.uuid IN')
@@ -295,11 +294,11 @@ describe 'query_proxy_methods' do
 
       context 'on Model.all' do
         it 'works with a node' do
-          expect(IncludeLesson.all.match_to(@history).first).to eq @history
+          expect(Lesson.all.match_to(@history).first).to eq @history
         end
 
         it 'works with an id' do
-          expect(IncludeLesson.all.match_to(@history.id).first).to eq @history
+          expect(Lesson.all.match_to(@history.id).first).to eq @history
         end
       end
 
@@ -317,14 +316,14 @@ describe 'query_proxy_methods' do
         end
 
         it 'works with a chain starting with `all`' do
-          expect(IncludeStudent.all.match_to(jimmy).lessons(:l).match_to(math).teachers.where(age: 40).first).to eq mr_jones
+          expect(Student.all.match_to(jimmy).lessons(:l).match_to(math).teachers.where(age: 40).first).to eq mr_jones
         end
       end
     end
 
     describe 'first_rel_to' do
       it 'returns the first relationship across a QueryProxy chain to a given node' do
-        expect(@john.lessons.first_rel_to(@history)).to be_a IncludeEnrolledIn
+        expect(@john.lessons.first_rel_to(@history)).to be_a EnrolledIn
       end
 
       it 'returns nil when nothing matches' do
@@ -350,7 +349,7 @@ describe 'query_proxy_methods' do
 
       describe 'delete' do
         it 'removes relationships between a node and the last link of the QP chain from the server' do
-          expect_any_instance_of(IncludeEnrolledIn).not_to receive(:destroy_called)
+          expect_any_instance_of(EnrolledIn).not_to receive(:destroy_called)
           expect(@john.lessons.include?(@history)).to be_truthy
           @john.lessons.delete(@history)
           expect(@john.lessons.include?(@history)).to be_falsey
@@ -370,7 +369,7 @@ describe 'query_proxy_methods' do
       describe 'destroy' do
         it 'returns relationships and destroys them in Ruby, executing callbacks in the process' do
           expect(@john.lessons.include?(@history)).to be_truthy
-          expect_any_instance_of(IncludeEnrolledIn).to receive(:destroy_called)
+          expect_any_instance_of(EnrolledIn).to receive(:destroy_called)
           @john.lessons.destroy(@history)
           expect(@john.lessons.include?(@history)).to be_falsey
 
@@ -389,12 +388,14 @@ describe 'query_proxy_methods' do
   end
 
   describe 'optional' do
-    before(:all) do
-      @lauren = IncludeStudent.create(name: 'Lauren')
-      @math = IncludeLesson.create(name: 'Math')
-      @science = IncludeLesson.create(name: 'Science')
-      @johnson = IncludeTeacher.create(name: 'Mr. Johnson', age: 40)
-      @clancy = IncludeTeacher.create(name: 'Mr. Clancy', age: 50)
+    before(:each) do
+      delete_db
+
+      @lauren = Student.create(name: 'Lauren')
+      @math = Lesson.create(name: 'Math')
+      @science = Lesson.create(name: 'Science')
+      @johnson = Teacher.create(name: 'Mr. Johnson', age: 40)
+      @clancy = Teacher.create(name: 'Mr. Clancy', age: 50)
 
       @lauren.lessons << [@math, @science]
       @math.teachers << @johnson
@@ -402,25 +403,10 @@ describe 'query_proxy_methods' do
     end
 
     it 'starts a new optional match' do
-      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).lessons(:l).pluck('distinct l, t')
-      expect(result.count).to eq 2
+      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).query.order(l: :name).pluck('distinct l, t')
 
-      expect(result[0][0]).not_to be_nil
-      # The order of results changes between Neo4j 2.1.6 and 2.2.0.
-      # Until we stop supporting 2.1.6, this workaround is necessary.
-      if result[0][0] == @science
-        expect(result[0][0]).to eq @science
-        expect(result[0][1]).to be_nil
-
-        expect(result[1][0]).to eq @math
-        expect(result[1][1]).to eq @johnson
-      else
-        expect(result[0][0]).to eq @math
-        expect(result[0][1]).to eq @johnson
-
-        expect(result[1][0]).to eq @science
-        expect(result[1][1]).to be_nil
-      end
+      expect(result).to eq [[@math, @johnson],
+                            [@science, nil]]
     end
   end
 end

@@ -24,7 +24,7 @@ module Neo4j
 
         # Callback methods
         def dependent_delete_callback(object)
-          object.send("#{self.name}_query_proxy").delete_all
+          object.association_query_proxy(name).delete_all
         end
 
         def dependent_delete_orphans_callback(object)
@@ -32,7 +32,7 @@ module Neo4j
         end
 
         def dependent_destroy_callback(object)
-          object.send("#{self.name}_query_proxy").each_for_destruction(object) { |node| node.destroy }
+          object.association_query_proxy(name).each_for_destruction(object) { |node| node.destroy }
         end
 
         def dependent_destroy_orphans_callback(object)

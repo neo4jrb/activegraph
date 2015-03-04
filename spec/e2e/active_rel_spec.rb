@@ -94,7 +94,7 @@ describe 'ActiveRel' do
       after { f1.destroy && t1.destroy }
 
       it 'returns the activerel class' do
-        expect(f1.others_rels.first).to be_a(MyRelClass)
+        expect(f1.others.rels.first).to be_a(MyRelClass)
       end
 
       it 'correctly interprets strings as class names' do

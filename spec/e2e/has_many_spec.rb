@@ -92,9 +92,9 @@ describe 'has_many' do
   end
 
   it 'access relationships via declared has_n method' do
-    node.friends_rels.to_a.should eq([])
+    node.friends.rels.to_a.should eq([])
     node.friends << friend1
-    rels = node.friends_rels
+    rels = node.friends.rels
     rels.count.should eq(1)
     rel = rels.first
     rel.start_node.should eq(node)

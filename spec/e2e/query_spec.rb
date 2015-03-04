@@ -392,10 +392,10 @@ describe 'Query API' do
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
     it 'builds a new QueryProxy object upon an existing Core::Query object' do
-      combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
       combined_strings = "#{core_query.to_cypher} #{query_proxy.to_cypher}"
+      combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
 
-      expect(combined_strings).to eq combined_query.to_cypher
+      expect(combined_query.to_cypher).to eq combined_strings
     end
 
     let(:brian) { Student.create(name: 'Brian') }

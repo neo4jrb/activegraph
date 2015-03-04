@@ -106,6 +106,20 @@ module Neo4j
           clear_caller_cache
         end
 
+        # Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
+        def delete_all_rels
+          self.query.delete(rel_var).exec
+        end
+
+        # Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
+        # Executed in the database, callbacks will not be run.
+        def replace_with(node_or_nodes)
+          nodes = Array(node_or_nodes)
+
+          self.delete_all_rels
+          nodes.each { |node| self << node }
+        end
+
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
         def destroy(node)
           self.rels_to(node).map!(&:destroy)
@@ -113,12 +127,8 @@ module Neo4j
         end
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
-        # TODO: It's silly that we have to call constantize here. There should be a better way of finding the target class of the destination.
-        def optional(association, node_id = nil)
-          target_qp = self.send(association)
-          model = target_qp.name.constantize
-          var = node_id || target_qp.identity
-          self.query.proxy_as(model, var, true)
+        def optional(association, node_var = nil, rel_var = nil)
+          self.send(association, node_var, rel_var, nil, optional: true)
         end
 
         private

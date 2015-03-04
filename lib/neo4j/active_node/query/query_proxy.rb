@@ -38,8 +38,8 @@ module Neo4j
           @context = options.delete(:context)
           @options = options
 
-          @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy =
-            options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy)
+          @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
+            options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
 
           @rel_var = options[:rel] || _rel_chain_var
 
@@ -81,9 +81,11 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          @chain.inject(base_query(var).params(@params)) do |query, (method, arg)|
+          result_query = @chain.inject(base_query(var).params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
+
+          result_query.tap { |query| query.proxy_chain_level = _chain_level }
         end
 
         def base_query(var)
@@ -180,6 +182,16 @@ module Neo4j
           end
         end
 
+        def rels
+          fail 'Cannot get rels without a relationship variable.' if !@rel_var
+
+          pluck(@rel_var)
+        end
+
+        def rel
+          rels.first
+        end
+
         def _nodeify(*args)
           [args].flatten.map do |arg|
             (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
@@ -256,7 +268,13 @@ module Neo4j
         end
 
         def _chain_level
-          @query_proxy ? (@query_proxy._chain_level + 1) : 1
+          if @query_proxy
+            @query_proxy._chain_level + 1
+          elsif @chain_level
+            @chain_level + 1
+          else
+            1
+          end
         end
 
         def _association_chain_var

@@ -45,11 +45,11 @@ describe 'has_one' do
       a.children.to_a.should eq([b])
     end
 
-    it 'can return relationship object via parent_rel' do
+    it 'can return relationship object via parent.rel' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      rel = b.parent_rel
+      rel = b.parent.rel
       rel.other_node(b).should eq(a)
     end
 

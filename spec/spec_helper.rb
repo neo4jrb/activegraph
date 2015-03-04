@@ -90,7 +90,7 @@ module ActiveNodeRelStubHelpers
     named_class(class_name) do
       include Neo4j::ActiveNode
 
-      instance_eval(&block) if block
+      module_eval(&block) if block
     end
   end
 
@@ -98,7 +98,7 @@ module ActiveNodeRelStubHelpers
     named_class(class_name) do
       include Neo4j::ActiveRel
 
-      instance_eval(&block) if block
+      module_eval(&block) if block
     end
   end
 
@@ -110,7 +110,7 @@ module ActiveNodeRelStubHelpers
         alias_method :name, :class_name
       end
 
-      instance_eval(&block) if block
+      module_eval(&block) if block
     end
   end
 end

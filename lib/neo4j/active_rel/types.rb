@@ -33,9 +33,9 @@ module Neo4j
 
         # @param type [String] sets the relationship type when creating relationships via this class
         def type(given_type = self.name, auto = false)
-          use_type = auto ? decorated_rel_type(given_type) : given_type
-          add_wrapped_class use_type
-          @rel_type = use_type
+          @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
+            add_wrapped_class type unless uses_classname?
+          end
         end
 
         # @return [String] a string representing the relationship type that will be created

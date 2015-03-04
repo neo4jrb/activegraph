@@ -15,6 +15,10 @@ describe Neo4j::ActiveRel::Property do
         'Clazz'
       end
 
+      def self.uses_classname?
+        false
+      end
+
       include Neo4j::ActiveRel::Property
       include Neo4j::ActiveRel::Types
     end
