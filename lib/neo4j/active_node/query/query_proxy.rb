@@ -81,8 +81,8 @@ module Neo4j
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
-          result_query = @chain.inject(base_query(var).params(@params)) do |query, (method, arg)|
-            query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
+          result_query = @chain.inject(base_query(var).params(@params)) do |query, link|
+            query.send(link.clause, link.args(var, rel_var))
           end
 
           result_query.tap { |query| query.proxy_chain_level = _chain_level }
@@ -325,62 +325,12 @@ module Neo4j
           end
         end
 
-        def links_for_arg(method, arg)
-          method_to_call = "links_for_#{method}_arg"
+        def links_for_arg(clause, arg)
+          default = [Link.new(clause, arg)]
 
-          default = [[method, arg]]
-
-          self.send(method_to_call, arg) || default
+          Link.for_clause(clause, arg) || default
         rescue NoMethodError
           default
-        end
-
-        def links_for_where_arg(arg)
-          node_num = 1
-          result = []
-          if arg.is_a?(Hash)
-            arg.each do |key, value|
-              if @model && @model.association?(key)
-                result += links_for_association(key, value, "n#{node_num}")
-
-                node_num += 1
-              else
-                result << [:where, ->(v) { {v => {key => value}} }]
-              end
-            end
-          elsif arg.is_a?(String)
-            result << [:where, arg]
-          end
-          result
-        end
-        alias_method :links_for_node_where_arg, :links_for_where_arg
-
-        def links_for_association(name, value, n_string)
-          neo_id = value.try(:neo_id) || value
-          fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
-
-          dir = @model.associations[name].direction
-
-          arrow = dir == :out ? '-->' : '<--'
-          [
-            [:match, ->(v) { "#{v}#{arrow}(#{n_string})" }],
-            [:where, ->(_) { {"ID(#{n_string})" => neo_id.to_i} }]
-          ]
-        end
-
-        # We don't accept strings here. If you want to use a string, just use where.
-        def links_for_rel_where_arg(arg)
-          arg.each_with_object([]) do |(key, value), result|
-            result << [:where, ->(_) { {rel_var => {key => value}} }]
-          end
-        end
-
-        def links_for_order_arg(arg)
-          [[:order, ->(v) { arg.is_a?(String) ? arg : {v => arg} }]]
-        end
-
-        def match_string(node)
-          ":`#{node.class.mapped_label_name}`" if node.class.respond_to?(:mapped_label_name)
         end
       end
     end
