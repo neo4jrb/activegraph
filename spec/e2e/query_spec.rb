@@ -172,6 +172,10 @@ describe 'Query API' do
         end
       end
 
+      it 'allows for finds on associations' do
+        expect(samuels.lessons_teaching.find(ss101.id)).to eq(ss101)
+      end
+
       context 'samuels taught math 101 lesson' do
         before(:each) { samuels.lessons_taught << math101 }
 

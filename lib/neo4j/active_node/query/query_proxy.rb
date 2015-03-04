@@ -220,6 +220,12 @@ module Neo4j
           end
         end
 
+        # Give ability to call `#find` on associations to get a scoped find
+        # Doesn't pass through via `method_missing` because Enumerable has a `#find` method
+        def find(*args)
+          scoping { @model.find(*args) }
+        end
+
         def optional?
           @optional == true
         end
