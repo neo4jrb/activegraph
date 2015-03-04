@@ -245,7 +245,7 @@ module Neo4j
 
         def _query_model_as(var)
           match_arg = if @model
-                        labels = @model.respond_to?(:mapped_label_names) ? @model.mapped_label_names : @model
+                        labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
                         {var => labels}
                       else
                         var
