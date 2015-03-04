@@ -32,13 +32,9 @@ module Neo4j
         end
 
         # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
-        def arrow_cypher(var = nil, properties = {}, create = false)
+        def arrow_cypher(var = nil, properties = {}, create = false, reverse = false)
           validate_origin!
-          relationship_type = relationship_type(create)
-          relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
-          properties_string = get_properties_string(properties)
-          relationship_cypher = get_relationship_cypher(var, relationship_name_cypher, properties_string)
-          get_direction(relationship_cypher, create)
+          direction_cypher(get_relationship_cypher(var, properties, create), create, reverse)
         end
 
         def target_class_name
@@ -112,9 +108,8 @@ module Neo4j
 
         private
 
-        def get_direction(relationship_cypher, create)
-          dir = (create && @direction == :both) ? :out : @direction
-          case dir
+        def direction_cypher(relationship_cypher, create, reverse = false)
+          case get_direction(create, reverse)
           when :out
             "-#{relationship_cypher}->"
           when :in
@@ -124,7 +119,24 @@ module Neo4j
           end
         end
 
-        def get_relationship_cypher(var, relationship_name_cypher, properties_string)
+        def get_direction(create, reverse = false)
+          dir = (create && @direction == :both) ? :out : @direction
+          if reverse
+            case dir
+            when :in then :out
+            when :out then :in
+            else :both
+            end
+          else
+            dir
+          end
+        end
+
+        def get_relationship_cypher(var, properties, create)
+          relationship_type = relationship_type(create)
+          relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
+          properties_string = get_properties_string(properties)
+
           "[#{var}#{relationship_name_cypher}#{properties_string}]"
         end
 
