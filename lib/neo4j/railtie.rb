@@ -68,6 +68,22 @@ module Neo4j
       end
     end
 
+    def register_neo4j_cypher_logging
+      return if @neo4j_cypher_logging_registered
+
+      clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
+
+      ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |_, start, finish, _id, payload|
+        ms = (finish - start) * 1000
+
+        params_string = (payload[:params].size > 0 ? ' | ' + payload[:params].inspect : '')
+
+        Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]}" + params_string
+      end
+
+      @neo4j_cypher_logging_registered = true
+    end
+
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
     initializer 'neo4j.start', after: :load_config_initializers do |app|
@@ -80,15 +96,11 @@ module Neo4j
       end
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 
-      clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
+      register_neo4j_cypher_logging
+    end
 
-      ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |_, start, finish, _id, payload|
-        ms = (finish - start) * 1000
-
-        params_string = (payload[:params].size > 0 ? ' | ' + payload[:params].inspect : '')
-
-        Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]}" + params_string
-      end
+    console do |console|
+      register_neo4j_cypher_logging
     end
   end
 end
