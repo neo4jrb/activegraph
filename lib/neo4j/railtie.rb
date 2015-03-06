@@ -99,7 +99,7 @@ module Neo4j
       register_neo4j_cypher_logging
     end
 
-    console do |console|
+    console do
       register_neo4j_cypher_logging
     end
   end
