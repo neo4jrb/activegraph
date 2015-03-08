@@ -101,7 +101,7 @@ module Neo4j
         def _model_label_string
           return if !@model
 
-          @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
+          @model.mapped_label_names.map { |label_name| ":`#{label_name}`" if label_name.size > 0 }.join
         end
 
         # Scope all queries to the current scope.
