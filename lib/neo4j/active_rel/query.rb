@@ -46,7 +46,8 @@ module Neo4j::ActiveRel
       end
 
       def all_query
-        Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+        type = self._type == '' ?  '' : ":`#{self._type}`"
+        Neo4j::Session.query.match("#{cypher_string}-[r1"+type+"]->#{cypher_string(:inbound)}")
       end
 
       def cypher_string(dir = :outbound)
@@ -61,8 +62,14 @@ module Neo4j::ActiveRel
       end
 
       def cypher_label(dir = :outbound)
-        target_class = dir == :outbound ? as_constant(_from_class) : as_constant(_to_class)
-        ":`#{target_class.mapped_label_name}`)"
+        if dir == :outbound and _from_class
+          target_class = as_constant(_from_class)
+          return ":`#{target_class.mapped_label_name}`)"
+        elsif dir == :inbound and _to_class
+          target_class = as_constant(_to_class)
+          return ":`#{target_class.mapped_label_name}`)"
+        end
+        ')'
       end
 
       def as_constant(given_class)
