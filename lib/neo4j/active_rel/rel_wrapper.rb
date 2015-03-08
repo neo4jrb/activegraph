@@ -7,7 +7,11 @@ class Neo4j::Relationship
         most_concrete_class = sorted_wrapper_classes
         wrapped_rel = most_concrete_class.constantize.new
       rescue NameError
-        return self
+        if Neo4j::Config[:default_rel_class]
+          wrapped_rel =  Neo4j::Config[:default_rel_class].constantize.new
+        else
+          return self
+        end
       end
 
       wrapped_rel.init_on_load(self, self._start_node_id, self._end_node_id, self.rel_type)
