@@ -245,7 +245,7 @@ describe 'query_proxy_methods' do
 
       context 'with a valid node' do
         it 'generates a match to the given node' do
-          expect(@john.lessons.match_to(@history).to_cypher).to include('AND ID(result_lessons) =')
+          expect(@john.lessons.match_to(@history).to_cypher).to include('AND (ID(result_lessons) =')
         end
 
         it 'matches the object' do
@@ -255,7 +255,7 @@ describe 'query_proxy_methods' do
 
       context 'with an id' do
         it 'generates cypher using the primary key' do
-          expect(@john.lessons.match_to(@history.id).to_cypher).to include('AND result_lessons.uuid =')
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include('AND (result_lessons.uuid =')
         end
 
         it 'matches' do
@@ -268,7 +268,7 @@ describe 'query_proxy_methods' do
           after { @john.lessons.first_rel_to(@math).destroy }
 
           it 'generates cypher using IN with the IDs of contained nodes' do
-            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('AND result_lessons.uuid IN')
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('AND (result_lessons.uuid IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
             expect(@john.lessons.match_to([@history, @math]).to_a.count).to eq 2
@@ -285,7 +285,7 @@ describe 'query_proxy_methods' do
 
       context 'with a null object' do
         it 'generates cypher with 1 = 2' do
-          expect(@john.lessons.match_to(nil).to_cypher).to include('AND 1 = 2')
+          expect(@john.lessons.match_to(nil).to_cypher).to include('AND (1 = 2')
         end
 
         it 'matches nil' do
@@ -390,6 +390,8 @@ describe 'query_proxy_methods' do
 
   describe 'optional' do
     before(:all) do
+      delete_db
+
       @lauren = IncludeStudent.create(name: 'Lauren')
       @math = IncludeLesson.create(name: 'Math')
       @science = IncludeLesson.create(name: 'Science')
@@ -402,25 +404,11 @@ describe 'query_proxy_methods' do
     end
 
     it 'starts a new optional match' do
-      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).lessons(:l).pluck('distinct l, t')
-      expect(result.count).to eq 2
+      puts @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).query.order(l: :name).to_cypher
+      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).query.order(l: :name).pluck('DISTINCT l, t')
 
-      expect(result[0][0]).not_to be_nil
-      # The order of results changes between Neo4j 2.1.6 and 2.2.0.
-      # Until we stop supporting 2.1.6, this workaround is necessary.
-      if result[0][0] == @science
-        expect(result[0][0]).to eq @science
-        expect(result[0][1]).to be_nil
-
-        expect(result[1][0]).to eq @math
-        expect(result[1][1]).to eq @johnson
-      else
-        expect(result[0][0]).to eq @math
-        expect(result[0][1]).to eq @johnson
-
-        expect(result[1][0]).to eq @science
-        expect(result[1][1]).to be_nil
-      end
+      expect(result).to eq [[@math, @johnson],
+                            [@science, nil]]
     end
   end
 end

@@ -41,6 +41,7 @@ module Neo4j
           @rel_var = options[:rel] || _rel_chain_var
           @session = options[:session]
           @caller = options[:caller]
+          @chain_level = options[:chain_level]
           @chain = []
           @starting_query = options[:starting_query]
           @optional = options[:optional]
@@ -87,9 +88,11 @@ module Neo4j
                          starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
                        end
           # Build a query chain via the chain, return the result
-          @chain.inject(base_query.params(@params)) do |query, (method, arg)|
+          result_query = @chain.inject(base_query.params(@params)) do |query, (method, arg)|
             query.send(method, arg.respond_to?(:call) ? arg.call(var) : arg)
           end
+
+          result_query.tap { |query| query.proxy_chain_level = _chain_level }
         end
 
         # Scope all queries to the current scope.
@@ -246,6 +249,8 @@ module Neo4j
         def _chain_level
           if query_proxy = @options[:query_proxy]
             query_proxy._chain_level + 1
+          elsif @chain_level
+            @chain_level + 1
           else
             1
           end

@@ -106,6 +106,7 @@ module Neo4j::ActiveNode
                                                        start_object: self,
                                                        node: options[:node],
                                                        rel: options[:rel],
+                                                       optional: options[:optional],
                                                        context: '#{self.name}##{name}',
                                                        caller: self
                                                      })
@@ -122,8 +123,8 @@ module Neo4j::ActiveNode
           end}, __FILE__, __LINE__)
 
         instance_eval(%{
-          def #{name}(node = nil, rel = nil, proxy_obj = nil)
-            #{name}_query_proxy(node: node, rel: rel, proxy_obj: proxy_obj)
+          def #{name}(node = nil, rel = nil, proxy_obj = nil, options = {})
+            #{name}_query_proxy({node: node, rel: rel, proxy_obj: proxy_obj}.merge(options))
           end
 
           def #{name}_query_proxy(options = {})
@@ -139,7 +140,7 @@ module Neo4j::ActiveNode
                                                        node: options[:node],
                                                        rel: options[:rel],
                                                        context: context,
-                                                       optional: query_proxy.optional?,
+                                                       optional: options[:optional] || query_proxy.optional?,
                                                        caller: query_proxy.caller
                                                      })
           end}, __FILE__, __LINE__)
@@ -180,9 +181,9 @@ module Neo4j::ActiveNode
                                                      {session: self.neo4j_session}.merge(options))
           end
 
-          def #{name}(node = nil, rel = nil, query_proxy = nil)
+          def #{name}(node = nil, rel = nil, query_proxy = nil, options = {})
             context = (query_proxy && query_proxy.context ? query_proxy.context : '#{self.name}') + '##{name}'
-            #{name}_query_proxy(query_proxy: query_proxy, node: node, rel: rel, context: context)
+            #{name}_query_proxy({query_proxy: query_proxy, node: node, rel: rel, context: context}.merge(options))
           end}, __FILE__, __LINE__)
       end
       # rubocop:enable Style/PredicateName
