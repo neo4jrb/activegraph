@@ -31,5 +31,7 @@ timestamps: true
 # By default, this property is called _classname, set as symbol to override.
 cache_class_names: true
 # class_name_property:  :_classname
-
+# default_node_class: 'Node'
+# default_rel_class: 'Link'
+    
 transform_rel_type: :upcase
