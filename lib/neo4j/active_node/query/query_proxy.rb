@@ -200,10 +200,10 @@ module Neo4j
           end.compact
         end
 
-        def _create_relationship(other_node, properties)
+        def _create_relationship(other_node_or_nodes, properties)
           _session.query(context: @options[:context])
             .match(:start, :end)
-            .where(start: {neo_id: @start_object.neo_id}, end: {neo_id: other_node.neo_id})
+            .where(start: {neo_id: @start_object}, end: {neo_id: other_node_or_nodes})
             .send(create_method, "start#{_association_arrow(properties, true)}end").exec
         end
 
@@ -246,13 +246,16 @@ module Neo4j
         end
 
         def _query_model_as(var)
-          match_arg = if @model
-                        labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
-                        {var => labels}
-                      else
-                        var
-                      end
-          _query.send(_match_type, match_arg)
+          _query.send(_match_type, _match_arg(var))
+        end
+
+        def _match_arg(var)
+          if @model
+            labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
+            {var => labels}
+          else
+            var
+          end
         end
 
         def _query
@@ -276,13 +279,7 @@ module Neo4j
         end
 
         def _chain_level
-          if @query_proxy
-            @query_proxy._chain_level + 1
-          elsif @chain_level
-            @chain_level + 1
-          else
-            1
-          end
+          (@query_proxy ? @query_proxy._chain_level : (@chain_level || 0)) + 1
         end
 
         def _association_chain_var

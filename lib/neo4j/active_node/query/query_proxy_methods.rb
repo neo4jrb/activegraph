@@ -74,15 +74,15 @@ module Neo4j
           where_arg = if node.respond_to?(:neo_id)
                         {neo_id: node.neo_id}
                       elsif !node.nil?
-                        id_key = association_id_key
                         node = ids_array(node) if node.is_a?(Array)
-                        {id_key => node}
+                        {association_id_key => node}
                       else
                         # support for null object pattern
                         '1 = 2'
                       end
           self.where(where_arg)
         end
+
 
         # Gives you the first relationship between the last link of a QueryProxy chain and a given node
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id} RETURN r`
