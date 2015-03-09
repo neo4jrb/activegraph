@@ -44,23 +44,52 @@ EMBEDDED_DB_PATH = File.join(Dir.tmpdir, 'neo4j-core-java')
 
 I18n.enforce_available_locales = false
 
-def create_session
-  if RUBY_PLATFORM != 'java'
-    create_server_session
-  else
-    require 'neo4j-embedded/embedded_impermanent_session'
-    create_embedded_session
+module Neo4jSpecHelpers
+  def create_embedded_session
+    session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
+    session.start
   end
-end
 
-def create_embedded_session
-  session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
-  session.start
-end
+  def server_username
+    ENV['NEO4J_USERNAME'] || 'neo4j'
+  end
 
-def create_server_session
-  Neo4j::Session.open(:server_db, 'http://localhost:7474')
-  delete_db
+  def server_password
+    ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
+  end
+
+  def basic_auth_hash
+    {
+      username: server_username,
+      password: server_password
+    }
+  end
+
+  def server_url
+    ENV['NEO4J_URL'] || 'http://localhost:7474'
+  end
+
+  def create_server_session(options = {})
+    Neo4j::Session.open(:server_db, server_url, {basic_auth: basic_auth_hash}.merge(options))
+    delete_db # Should separate this out
+  end
+
+  def create_session
+    if RUBY_PLATFORM != 'java'
+      create_server_session
+    else
+      require 'neo4j-embedded/embedded_impermanent_session'
+      create_embedded_session
+    end
+  end
+
+  def create_named_server_session(name, default = nil)
+    Neo4j::Session.open_named(:server_db, name, default, server_url, basic_auth: basic_auth_hash)
+  end
+
+  def session
+    Neo4j::Session.current
+  end
 end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
@@ -116,7 +145,9 @@ module ActiveNodeRelStubHelpers
 end
 
 RSpec.configure do |c|
-  c.before(:suite) do
+  c.include Neo4jSpecHelpers
+
+  c.before(:all) do
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session
   end
