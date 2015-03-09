@@ -55,7 +55,7 @@ module Neo4j
         def delete_all(identifier = nil)
           query_with_target(identifier) do |target|
             begin
-              self.query.with(target).match("(#{target})-[#{target}_rel]-()").delete("#{target}, #{target}_rel").exec
+              self.query.with(target).optional_match("(#{target})-[#{target}_rel]-()").delete("#{target}, #{target}_rel").exec
             rescue Neo4j::Session::CypherError
               self.query.delete(target).exec
             end
