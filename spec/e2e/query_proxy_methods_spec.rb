@@ -178,19 +178,6 @@ describe 'query_proxy_methods' do
   end
 
   describe 'delete_all' do
-    before do
-      [Student, Lesson, Teacher].each(&:delete_all)
-      @tom = Student.create(name: 'Tom')
-      @math = Lesson.create(name: 'Math')
-      @science = Lesson.create(name: 'Science')
-      @adams = Teacher.create(name: 'Mr Adams')
-      @johnson = Teacher.create(name: 'Mrs Johnson')
-      @tom.lessons << @math
-      @tom.lessons << @science
-      @math.teachers << @adams
-      @science.teachers << @johnson
-    end
-
     it 'deletes from Model' do
       Student.delete_all
       expect(Student.count).to eq(0)
@@ -200,39 +187,54 @@ describe 'query_proxy_methods' do
       Student.all.delete_all
       expect(Student.count).to eq(0)
     end
-    it 'removes the last link in the QueryProxy chain' do
-      expect(@tom.lessons.teachers.include?(@adams)).to be_truthy
-      @tom.lessons.teachers.delete_all
-      expect(@adams.persisted?).to be_falsey
-      expect(@johnson.persisted?).to be_falsey
-      expect(@tom.lessons.teachers).to be_empty
-    end
 
-    it 'does not touch earlier portions of the chain' do
-      expect(@tom.lessons.include?(@math)).to be_truthy
-      @tom.lessons.teachers.delete_all
-      expect(@math.persisted?).to be_truthy
-    end
+    context 'Student has lessons which have teachers' do
+      before do
+        [Student, Lesson, Teacher].each(&:delete_all)
+        @tom = Student.create(name: 'Tom')
+        @math = Lesson.create(name: 'Math')
+        @science = Lesson.create(name: 'Science')
+        @adams = Teacher.create(name: 'Mr Adams')
+        @johnson = Teacher.create(name: 'Mrs Johnson')
+        @tom.lessons << @math
+        @tom.lessons << @science
+        @math.teachers << @adams
+        @science.teachers << @johnson
+      end
 
-    it 'works when called from a class' do
-      expect(@tom.lessons.teachers.include?(@adams)).to be_truthy
-      Student.all.lessons.teachers.delete_all
-      expect(@adams.persisted?).to be_falsey
-    end
+      it 'removes the last link in the QueryProxy chain' do
+        expect(@tom.lessons.teachers.include?(@adams)).to be_truthy
+        @tom.lessons.teachers.delete_all
+        expect(@adams.persisted?).to be_falsey
+        expect(@johnson.persisted?).to be_falsey
+        expect(@tom.lessons.teachers).to be_empty
+      end
 
-    it 'can target a specific identifier' do
-      @tom.lessons(:l).teachers.where(name: 'Mr Adams').delete_all(:l)
-      expect(@tom.lessons.include?(@math)).to be_falsey
-      expect(@math).not_to be_persisted
-      expect(@tom.lessons.include?(@science)).to be_truthy
-    end
+      it 'does not touch earlier portions of the chain' do
+        expect(@tom.lessons.include?(@math)).to be_truthy
+        @tom.lessons.teachers.delete_all
+        expect(@math.persisted?).to be_truthy
+      end
 
-    it 'can target relationships' do
-      @tom.lessons(:l, :r).teachers.where(name: 'Mr Adams').delete_all(:r)
-      expect(@tom.lessons.include?(@math)).to be_falsey
-      expect(@math).to be_persisted
-    end
+      it 'works when called from a class' do
+        expect(@tom.lessons.teachers.include?(@adams)).to be_truthy
+        Student.all.lessons.teachers.delete_all
+        expect(@adams.persisted?).to be_falsey
+      end
 
+      it 'can target a specific identifier' do
+        @tom.lessons(:l).teachers.where(name: 'Mr Adams').delete_all(:l)
+        expect(@tom.lessons.include?(@math)).to be_falsey
+        expect(@math).not_to be_persisted
+        expect(@tom.lessons.include?(@science)).to be_truthy
+      end
+
+      it 'can target relationships' do
+        @tom.lessons(:l, :r).teachers.where(name: 'Mr Adams').delete_all(:r)
+        expect(@tom.lessons.include?(@math)).to be_falsey
+        expect(@math).to be_persisted
+      end
+    end
   end
 
   describe 'match_to and first_rel_to' do
