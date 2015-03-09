@@ -30,6 +30,7 @@ import os
 # ones.
 extensions = [
     'sphinx.ext.todo',
+    'sphinxcontrib.rubydomain'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
