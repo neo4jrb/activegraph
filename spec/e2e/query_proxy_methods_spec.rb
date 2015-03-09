@@ -191,6 +191,15 @@ describe 'query_proxy_methods' do
       @science.teachers << @johnson
     end
 
+    it 'deletes from Model' do
+      Student.delete_all
+      expect(Student.count).to eq(0)
+    end
+
+    it 'deletes from Model.all' do
+      Student.all.delete_all
+      expect(Student.count).to eq(0)
+    end
     it 'removes the last link in the QueryProxy chain' do
       expect(@tom.lessons.teachers.include?(@adams)).to be_truthy
       @tom.lessons.teachers.delete_all
@@ -223,6 +232,7 @@ describe 'query_proxy_methods' do
       expect(@tom.lessons.include?(@math)).to be_falsey
       expect(@math).to be_persisted
     end
+
   end
 
   describe 'match_to and first_rel_to' do
