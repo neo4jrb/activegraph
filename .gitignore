@@ -30,3 +30,4 @@ Gemfile.lock
 coverage
 
 docs_site/
+/docs/_build
