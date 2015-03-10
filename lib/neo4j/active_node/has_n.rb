@@ -66,8 +66,6 @@ module Neo4j::ActiveNode
       return if self._persisted_obj
       if Neo4j::Config[:autosave_on_assignment]
         save
-      elsif Neo4j::Config[:hook_for_non_persisted_node]
-        Neo4j::Config[:hook_for_non_persisted_node].call(self)
       else
         fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes')
       end

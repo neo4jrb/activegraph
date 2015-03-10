@@ -34,17 +34,6 @@ describe 'has_one' do
           expect { unsaved_node.parent = HasOneA.create }.to change(unsaved_node, :persisted?).from(false).to(true)
         end
       end
-
-      context 'with a hook' do
-        let(:error) { Exception.new('Custom error') }
-        let(:hook)  { ->(_) { fail error } }
-        before  { Neo4j::Config[:hook_for_non_persisted_node] = hook }
-        after   { Neo4j::Config[:hook_for_non_persisted_node] = nil }
-
-        it 'calls hook' do
-          expect { unsaved_node.parent = HasOneA.create }.to raise_error(error)
-        end
-      end
     end
 
     it 'find the nodes via the has_one accessor' do
