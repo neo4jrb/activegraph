@@ -9,7 +9,7 @@ Welcome to Neo4j.rb's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    Basic Setup
    ActiveNode
