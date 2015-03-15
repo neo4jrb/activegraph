@@ -32,11 +32,11 @@ module Neo4j
         end
 
         def dependent_destroy_callback(object)
-          object.association_query_proxy(name).each_for_destruction(object) { |node| node.destroy }
+          object.association_query_proxy(name).each_for_destruction(object, &:destroy)
         end
 
         def dependent_destroy_orphans_callback(object)
-          object.as(:self).unique_nodes(self, :self, :n, :other_rel).each_for_destruction(object) { |node| node.destroy }
+          object.as(:self).unique_nodes(self, :self, :n, :other_rel).each_for_destruction(object, &:destroy)
         end
 
         # End callback methods
