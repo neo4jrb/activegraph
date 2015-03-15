@@ -90,6 +90,13 @@ module Neo4jSpecHelpers
   def session
     Neo4j::Session.current
   end
+
+  def log_queries!
+    Neo4j::Server::CypherSession.log_with do |message|
+      puts message
+    end
+  end
+
 end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)

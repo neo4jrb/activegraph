@@ -71,14 +71,8 @@ module Neo4j
     def register_neo4j_cypher_logging
       return if @neo4j_cypher_logging_registered
 
-      clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
-
-      ActiveSupport::Notifications.subscribe('neo4j.cypher_query') do |_, start, finish, _id, payload|
-        ms = (finish - start) * 1000
-
-        params_string = (payload[:params].size > 0 ? ' | ' + payload[:params].inspect : '')
-
-        Rails.logger.info " #{cyan}#{payload[:context]}#{clear} #{yellow}#{ms.round}ms#{clear} #{payload[:cypher]}" + params_string
+      Neo4j::Server::CypherSession.log_with do |message|
+        Rails.logger.info message
       end
 
       @neo4j_cypher_logging_registered = true
