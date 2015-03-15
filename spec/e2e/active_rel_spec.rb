@@ -30,9 +30,12 @@ describe 'ActiveRel' do
   let(:to_node) { ToClass.create }
 
   describe 'creation' do
-    it 'raises an error when it cannot create a rel' do
-      expect(from_node).to receive(:id).at_least(1).times.and_return(nil)
-      expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
+    context 'from_node is not persisted' do
+      let(:from_node) { FromClass.new }
+
+      it 'raises an error when it cannot create a rel' do
+        expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
+      end
     end
 
     describe 'creates_unique_rel' do
