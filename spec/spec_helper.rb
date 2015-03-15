@@ -96,7 +96,6 @@ module Neo4jSpecHelpers
       puts message
     end
   end
-
 end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
