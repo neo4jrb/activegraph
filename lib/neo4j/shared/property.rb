@@ -78,9 +78,9 @@ module Neo4j::Shared
       multi_parameter_attributes = {}
       new_attributes = {}
       attributes.each_pair do |key, value|
-        if key =~ /\A([^\(]+)\((\d+)([if])\)$/
-          found_key = $1
-          index = $2.to_i
+        if match = key.match(/\A([^\(]+)\((\d+)([if])\)$/)
+          found_key = match[1]
+          index = match[2].to_i
           (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
         else
           new_attributes[key] = value
@@ -152,9 +152,7 @@ module Neo4j::Shared
       def undef_property(name)
         fail ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
 
-        attribute_methods(name).each do |method|
-          undef_method(method)
-        end
+        attribute_methods(name).each { |method| undef_method(method) }
 
         undef_constraint_or_index(name)
       end
