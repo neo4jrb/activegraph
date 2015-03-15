@@ -41,6 +41,8 @@ module Neo4j
           @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
             options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
 
+          @match_type = @optional ? :optional_match : :match
+
           @rel_var = options[:rel] || _rel_chain_var
 
           @chain = []
@@ -91,7 +93,7 @@ module Neo4j
         def base_query(var)
           if @association
             chain_var = _association_chain_var
-            (_association_query_start(chain_var) & _query).send(_match_type,
+            (_association_query_start(chain_var) & _query).send(@match_type,
                                                                 "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
           else
             starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
@@ -246,7 +248,7 @@ module Neo4j
         end
 
         def _query_model_as(var)
-          _query.send(_match_type, _match_arg(var))
+          _query.send(@match_type, _match_arg(var))
         end
 
         def _match_arg(var)
@@ -302,10 +304,6 @@ module Neo4j
 
         def _rel_chain_var
           :"rel#{_chain_level - 1}"
-        end
-
-        def _match_type
-          @optional ? :optional_match : :match
         end
 
         attr_writer :context
