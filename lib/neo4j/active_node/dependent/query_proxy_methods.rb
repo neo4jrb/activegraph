@@ -9,9 +9,11 @@ module Neo4j
         # but this is not always available, so we require it explicitly.
         def each_for_destruction(owning_node)
           target = owning_node.called_by || owning_node
-          enumerable_query(identity).each do |obj|
-            # Cypher can return nil objects, check for empty results
-            next if !obj || target.dependent_children.include?(obj)
+          objects = enumerable_query(identity).compact.reject do |obj|
+            target.dependent_children.include?(obj)
+          end
+
+          objects.each do |obj|
             obj.called_by = target
             target.dependent_children << obj
             yield obj
