@@ -181,7 +181,7 @@ module Neo4j::ActiveNode
                                                  nil,
                                                  session: neo4j_session,
                                                  query_proxy: nil,
-                                                 context: "#{self.class.name}##{name}")
+                                                 context: "#{self.name}##{name}")
       end
 
       private
