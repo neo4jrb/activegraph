@@ -166,7 +166,6 @@ module Neo4j::ActiveNode
       def association_query_proxy(name, options = {})
         query_proxy = options[:proxy_obj] || default_association_proxy_obj(name)
 
-        puts "1 Going to send context: " + "#{query_proxy.context || self.name}##{name}".inspect
         Neo4j::ActiveNode::Query::QueryProxy.new(associations[name].target_class_or_nil,
                                                  associations[name],
                                                  {session: neo4j_session,
