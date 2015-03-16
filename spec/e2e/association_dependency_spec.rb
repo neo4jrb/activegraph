@@ -79,7 +79,7 @@ describe 'association dependent delete/destroy' do
     # Boston is iffy, too.
     city_names = %w(Philadelphia Brooklyn Manhattan Providence Boston)
     city_names.each_with_object({}) do |city_name, _stops|
-      instance_variable_set("@#{city_name.downcase}", Stop.create(city: 'Philadelphia'))
+      instance_variable_set("@#{city_name.downcase}", Stop.create(city: city_name))
     end
 
     # We always play Philly. Great DIY scene. If we can't get Brooklyn or Providence, we can do Manhattan and Boston.
