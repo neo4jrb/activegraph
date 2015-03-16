@@ -3,18 +3,21 @@ module Neo4j
     module Query
       module QueryProxyMethods
         class InvalidParameterError < StandardError; end
+        FIRST = 'HEAD'
+        LAST = 'LAST'
 
         def first(target = nil)
-          query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
+          first_and_last(FIRST, target)
         end
 
         def last(target = nil)
-          query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
+          first_and_last(LAST, target)
         end
 
-        def first_and_last(order, target)
-          self.order(order).limit(1).pluck(target).first
+        def first_and_last(func, target)
+          query_with_target(target) { |var| self.pluck("#{func}(COLLECT(#{var})) as #{var}").first }
         end
+        private :first_and_last
 
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
