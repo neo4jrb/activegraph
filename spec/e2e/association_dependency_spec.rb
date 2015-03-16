@@ -126,13 +126,17 @@ describe 'association dependent delete/destroy' do
       context 'the secondary route is destroyed' do
         before do
           expect(@philadelphia).to be_persisted
-          [@manhattan, @boston].each { |stop| expect(stop).to be_persisted }
+
+          expect(@manhattan).to be_persisted
+          expect(@boston).to be_persisted
         end
 
         it 'destroys @manhattan and @boston but not @philadelphia' do
           expect { @route2.destroy }.not_to raise_error
           expect(@philadelphia).to be_persisted
-          [@manhattan, @boston].each { |stop| expect(stop).not_to be_persisted }
+
+          expect(@manhattan).not_to be_persisted
+          expect(@boston).not_to be_persisted
         end
 
         it 'destroys the linked comment without everything blowing up' do
