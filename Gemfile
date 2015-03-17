@@ -2,8 +2,8 @@ source 'http://rubygems.org'
 
 gemspec
 
-# gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
-gem 'neo4j-core', path: '../neo4j-core'
+gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
+# gem 'neo4j-core', path: '../neo4j-core'
 
 group 'test' do
   gem 'coveralls', require: false
