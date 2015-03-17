@@ -40,7 +40,7 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 Pull request with high test coverage and good [code climate](https://codeclimate.com/github/neo4jrb/neo4j) values will be accepted faster.
 
-We use [rubocop](https://github.com/bbatsov/rubocop) for sanity checks to make sure our code doesn't get too ugly.  Because of this, a pull request can fail on Travis CI when the specs all run fine.  We recommend installing [overcommit](https://github.com/causes/overcommit) so that rubocop is run is pre-commit hooks so that this causes minimal frustration.  We already have an overcommit configuration, so you simply need to run `overcommit --install` to set up the git hooks.
+We use [rubocop](https://github.com/bbatsov/rubocop) for sanity checks to make sure our code doesn't get too ugly.  Because of this, a pull request can fail on Travis CI when the specs all run fine.  We recommend installing [overcommit](https://github.com/causes/overcommit) so that rubocop is run is pre-commit hooks so that this causes minimal frustration.  We already have an overcommit configuration, so you simply need to run `overcommit --install` to set up the git hooks.  A `Guardfile` is also provided so that you can use rspec and rubocop continuously while working.
 
 
 ## License
