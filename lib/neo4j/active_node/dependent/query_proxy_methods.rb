@@ -29,16 +29,20 @@ module Neo4j
         def unique_nodes(association, self_identifer, other_node, other_rel)
           fail 'Only supported by in QueryProxy chains started by an instance' unless caller
 
-          primary_rel = association.arrow_cypher
+          unique_nodes_query(association, self_identifer, other_node, other_rel)
+            .proxy_as(association.target_class, other_node)
+        end
 
+        private
+
+        def unique_nodes_query(association, self_identifer, other_node, other_rel)
           query.with(identity).proxy_as_optional(caller.class, self_identifer)
             .send(association.name, other_node, other_rel)
             .query
             .with(other_node)
-            .match("()#{primary_rel}(#{other_node})")
+            .match("()#{association.arrow_cypher}(#{other_node})")
             .with(other_node, count: 'count(*)')
             .where('count = 1')
-            .proxy_as(association.target_class, other_node)
         end
       end
     end
