@@ -30,14 +30,15 @@ module Neo4j
           fail 'Only supported by in QueryProxy chains started by an instance' unless caller
 
           primary_rel = association.arrow_cypher
-          inverse_rel = association.arrow_cypher(nil, {}, false, true)
 
-          query.with(identity).proxy_as_optional(caller.class, self_identifer)
-            .send("#{association.name}", other_node, other_rel)
-            .query
-            .match(:other_parent_node)
-            .where("NOT((#{self_identifer})#{primary_rel}(#{other_node})#{inverse_rel}(other_parent_node))")
-            .proxy_as(association.target_class, other_node)
+          query.with(identity).proxy_as_optional(caller.class, self_identifer).
+            send(association.name, other_node, other_rel).
+            query.
+            with(other_node).
+            match("()#{primary_rel}(#{other_node})").
+            with(other_node, count: 'count(*)').
+            where('count = 1').
+            proxy_as(association.target_class, other_node)
         end
       end
     end
