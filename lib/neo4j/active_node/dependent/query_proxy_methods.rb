@@ -31,14 +31,14 @@ module Neo4j
 
           primary_rel = association.arrow_cypher
 
-          query.with(identity).proxy_as_optional(caller.class, self_identifer).
-            send(association.name, other_node, other_rel).
-            query.
-            with(other_node).
-            match("()#{primary_rel}(#{other_node})").
-            with(other_node, count: 'count(*)').
-            where('count = 1').
-            proxy_as(association.target_class, other_node)
+          query.with(identity).proxy_as_optional(caller.class, self_identifer)
+            .send(association.name, other_node, other_rel)
+            .query
+            .with(other_node)
+            .match("()#{primary_rel}(#{other_node})")
+            .with(other_node, count: 'count(*)')
+            .where('count = 1')
+            .proxy_as(association.target_class, other_node)
         end
       end
     end
