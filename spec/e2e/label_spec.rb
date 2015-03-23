@@ -226,6 +226,8 @@ describe 'Neo4j::ActiveNode' do
     describe 'finding individual records' do
       it 'by id' do
         clazz.find(object1.id).should eq(object1)
+        found = clazz.find(object1.id)
+        expect(found).to be_a(clazz)
       end
 
       it 'by object' do
