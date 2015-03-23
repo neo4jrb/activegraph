@@ -74,12 +74,11 @@ module Neo4j::ActiveRel
 
     private
 
+    N1_N2_STRING = 'n1, n2'
+    ACTIVEREL_NODE_MATCH_STRING = 'ID(n1) = {n1_neo_id} AND ID(n2) = {n2_neo_id}'
     def _rel_creation_query(from_node, to_node, props)
-      from_class = from_node.class
-      to_class = to_node.class
-
-      Neo4j::Session.query.match(n1: {from_class.mapped_label_name => {from_class.primary_key => from_node.id}},
-                                 n2: {to_class.mapped_label_name => {to_class.primary_key => to_node.id}})
+      Neo4j::Session.query.match(N1_N2_STRING)
+        .where(ACTIVEREL_NODE_MATCH_STRING).params(n1_neo_id: from_node.neo_id, n2_neo_id: to_node.neo_id).break
         .send(create_method, "n1-[r:`#{type}`]->n2")
         .with('r').set(r: props).pluck(:r).first
     end
