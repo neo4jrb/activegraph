@@ -5,9 +5,27 @@ load 'neo4j/tasks/neo4j_server.rake'
 load 'neo4j/tasks/migration.rake'
 
 desc 'Generate YARD documentation'
-task 'yard' do
-  abort("can't generate YARD") unless system('yardoc - README.md')
+
+namespace :docs do
+  task :yard do
+    `rm -rf docs/_build/_yard/*`
+    abort("can't generate YARD") unless system('yard -p docs/_yard/custom_templates -f rst')
+  end
+
+  task :sphinx do
+    `rm -rf docs/api/*`
+    `cp -r docs/_build/_yard/* docs/api/`
+    abort("can't generate Sphinx docs") unless system('cd docs && make html')
+  end
+
+  task :open do
+    `open docs/_build/html/index.html`
+  end
+
+  task all: [:yard, :sphinx]
 end
+
+task docs: 'docs:all'
 
 desc 'Run neo4j.rb specs'
 task 'spec' do

@@ -1,0 +1,51 @@
+<%= @module.name %>
+<%= '=' * @module.name.size %>
+
+<% @path = @path.empty? ? @module.name.to_s : File.join(@path, @module.name.to_s) %>
+
+<% if @module.respond_to?(:children) %>
+.. toctree::
+   :maxdepth: 3
+   :titlesonly:
+
+<% @module.children.each do |child| %>
+   <%= File.join(@module.name.to_s, child.name.to_s) if child.is_a?(YARD::CodeObjects::NamespaceObject) %>
+<% end %>
+<% end %>
+
+
+Constants
+---------
+
+<% if @module.respond_to?(:constants) %>
+<% @module.constants.each do |constant| %>
+  * <%= constant.name %>
+<% end %>
+<% end %>
+
+Files
+-----
+
+<% if @module.respond_to?(:files) %>
+<% @module.files.each do |path, line| %>
+  * <%= "#{path}:#{line}" %>
+<% end %>
+<% end %>
+
+
+
+Methods
+-------
+<% if @module.respond_to?(:meths) %>
+<% @module.meths.sort_by {|m| m.name.to_s }.each do |meth| %>
+**#<%= meth.name %>**
+  <%= meth.base_docstring.gsub(/([\n\r])/, '\1  ') %>
+
+  .. hidden-code-block:: ruby
+
+     <%= meth.source.gsub(/([\n\r])/, '\1     ') %>
+
+<% end %>
+<% end %>
+
+
