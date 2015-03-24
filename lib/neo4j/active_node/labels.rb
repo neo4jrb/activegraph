@@ -158,8 +158,10 @@ module Neo4j
         #
         def constraint(property, constraints)
           Neo4j::Session.on_session_available do |session|
-            label = Neo4j::Label.create(mapped_label_name)
-            label.create_constraint(property, constraints, session)
+            unless Neo4j::Label.constraint?(mapped_label_name, property)
+              label = Neo4j::Label.create(mapped_label_name)
+              label.create_constraint(property, constraints, session)
+            end
           end
         end
 
