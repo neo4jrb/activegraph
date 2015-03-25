@@ -36,11 +36,6 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 * [README](https://github.com/neo4jrb/neo4j/tree/2.x)
 * [Wiki](https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3ARails-Introduction)
 
-## Support
-
-* Open an [issue](https://github.com/neo4jrb/neo4j/issues), post to [Stack Overflow](http://stackoverflow.com/questions/tagged/neo4j+ruby), or contact one of the developers.
-* [Neo4j.rb mailing list](https://groups.google.com/forum/#!forum/neo4jrb)
-
 ## Developers
 
 ### Original Author
