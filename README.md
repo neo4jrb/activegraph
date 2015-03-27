@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/neo4jrb/neo4j.png?label=ready&title=Ready)](https://waffle.io/neo4jrb/neo4j)
 # Welcome to Neo4j.rb
 
 ## Status
