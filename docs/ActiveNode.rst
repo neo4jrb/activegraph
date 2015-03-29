@@ -116,8 +116,6 @@ Implements like Active Records the following callback hooks:
 created_at, updated_at
 ----------------------
 
-See http://neo4j.rubyforge.org/classes/Neo4j/Rails/Timestamps.html
-
 .. code-block:: ruby
 
     class Blog
