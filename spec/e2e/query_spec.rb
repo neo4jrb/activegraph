@@ -63,6 +63,17 @@ describe 'Query API' do
     end
   end
 
+  describe 'basic methods' do
+    it 'allows for plucking of variables' do
+      lesson = Lesson.create
+      student = Student.create
+      student.lessons << lesson
+
+      Student.all.pluck(:uuid).should eq([student.uuid])
+
+      lesson.students.pluck(:uuid).should eq([student.uuid])
+    end
+  end
 
   describe 'association validation' do
     before(:each) do

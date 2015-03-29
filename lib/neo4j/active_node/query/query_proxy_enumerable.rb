@@ -41,7 +41,11 @@ module Neo4j
 
         # For getting variables which have been defined as part of the association chain
         def pluck(*args)
-          self.query.pluck(*args)
+          arg_list = args.dup
+          if arg_list.is_a?(Array)
+            arg_list = [arg_list.each_with_object({}) { |arg, r| r[identity] = arg }]
+          end
+          self.query.pluck(*arg_list)
         end
 
         private
