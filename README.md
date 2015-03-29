@@ -4,6 +4,10 @@
 
 [![Build Status](https://secure.travis-ci.org/neo4jrb/neo4j.png?branch=master)](http://travis-ci.org/neo4jrb/neo4j) [![Coverage Status](https://coveralls.io/repos/neo4jrb/neo4j/badge.png?branch=master)](https://coveralls.io/r/neo4jrb/neo4j?branch=master) [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.png)](https://codeclimate.com/github/neo4jrb/neo4j) [![PullReview stats](https://www.pullreview.com/github/neo4jrb/neo4j/badges/master.svg?)](https://www.pullreview.com/github/neo4jrb/neo4j/reviews/master)
 
+## Waffle.io Issue Tracking
+
+[![Next Release](https://badge.waffle.io/neo4jrb/neo4j.png?label=Next%20Release) ![In Progress](https://badge.waffle.io/neo4jrb/neo4j.png?label=In%20Progress) ![In Master](https://badge.waffle.io/neo4jrb/neo4j.png?label=In%20Master)](https://waffle.io/neo4jrb/neo4j)
+
 ## Get Support
 
 [![New GitHub Issue](https://img.shields.io/badge/Bug%3F-Post%20an%20issue!-blue.svg)](https://github.com/neo4jrb/neo4j/issues/new)  [![StackOverflow](https://img.shields.io/badge/StackOverflow-Ask%20a%20question!-blue.svg)](http://stackoverflow.com/questions/ask?tags=neo4j.rb)  [![Gitter](https://img.shields.io/badge/Gitter-Join%20our%20chat!-blue.svg)](https://gitter.im/neo4jrb/neo4j?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Twitter](https://img.shields.io/badge/Twitter-Tweet%20with%20us!-blue.svg)](https://twitter.com/neo4jrb)  [![Mailing list](https://img.shields.io/badge/Mailing%20list-Mail%20us!-blue.svg)](https://groups.google.com/forum/#!forum/neo4jrb)
