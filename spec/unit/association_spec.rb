@@ -124,13 +124,13 @@ describe Neo4j::ActiveNode::HasN::Association do
       end
     end
 
-    describe '#target_class_names' do
-      subject { association.target_class_names }
+    describe '#target_class_name' do
+      subject { association.target_class_name }
 
       context 'assumed model class' do
         let(:name) { :burzs }
 
-        it { should == ['::Burz'] }
+        it { should == '::Burz' }
       end
 
 
@@ -138,7 +138,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         context 'specified as string' do
           let(:options) { {model_class: 'Bizzl'} }
 
-          it { should == ['::Bizzl'] }
+          it { should == '::Bizzl' }
         end
 
         context 'specified as class' do
@@ -148,7 +148,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
           let(:options) { {model_class: 'Fizzl'} }
 
-          it { should == ['::Fizzl'] }
+          it { should == '::Fizzl' }
         end
       end
     end
@@ -158,7 +158,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
       context 'with invalid target class name' do
         it 'raises an error' do
-          expect(association).to receive(:target_class_names).at_least(1).times.and_return(['BadObject'])
+          expect(association).to receive(:target_class_name).at_least(1).times.and_return('BadObject')
           expect { association.target_class }.to raise_error ArgumentError
         end
       end

@@ -131,21 +131,6 @@ module Neo4j
           self.send(association, node_var, rel_var, nil, optional: true)
         end
 
-        # Takes an Array of ActiveNode models and applies the appropriate WHERE clause
-        # So for a `Teacher` model inheriting from a `Person` model and an `Article` model
-        # if you called .as_models([Teacher, Article])
-        # The where clause would look something like:
-        #   WHERE (node_var:Teacher:Person OR node_var:Article)
-        def as_models(models)
-          where_clause = models.map do |model|
-            "`#{identity}`:" + model.mapped_label_names.map do |mapped_label_name|
-              "`#{mapped_label_name}`"
-            end.join(':')
-          end.join(' OR ')
-
-          where("(#{where_clause})")
-        end
-
         private
 
         def clear_caller_cache

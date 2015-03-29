@@ -17,20 +17,17 @@ module Neo4j
           apply_vars_from_options(options)
         end
 
-        def target_class_option(model_class)
-          case model_class
-          when nil
+        def target_class_option(options)
+          if options[:model_class].nil?
             if @target_class_name_from_name
               "::#{@target_class_name_from_name}"
             else
               @target_class_name_from_name
             end
-          when Array
-            model_class.map { |sub_model_class| target_class_option(sub_model_class) }
-          when false
+          elsif options[:model_class] == false
             false
           else
-            "::#{model_class}"
+            "::#{options[:model_class]}"
           end
         end
 
@@ -40,26 +37,18 @@ module Neo4j
           direction_cypher(get_relationship_cypher(var, properties, create), create, reverse)
         end
 
-        def target_class_names
-          @target_class_names ||= if @target_class_option.is_a?(Array)
-                                    @target_class_option.map(&:to_s)
-                                  elsif @target_class_option
-                                    [@target_class_option.to_s]
-                                  end
+        def target_class_name
+          @target_class_name ||= @target_class_option.to_s if @target_class_option
         end
 
-        def target_classes_or_nil
-          @target_classes_or_nil ||= if target_class_names
-                                       target_class_names.map(&:constantize).select do |constant|
-                                         constant.ancestors.include?(::Neo4j::ActiveNode)
-                                       end
-                                     end
+        def target_class_or_nil
+          @target_class_or_nil ||= target_class_name ? target_class_name.constantize : nil
         end
 
         def target_class
           return @target_class if @target_class
 
-          @target_class = target_class_names[0].constantize if target_class_names && target_class_names.size == 1
+          @target_class = target_class_name.constantize if target_class_name
         rescue NameError
           raise ArgumentError, "Could not find `#{@target_class}` class and no :model_class specified"
         end
@@ -169,7 +158,7 @@ module Neo4j
         private
 
         def apply_vars_from_options(options)
-          @target_class_option = target_class_option(options[:model_class])
+          @target_class_option = target_class_option(options)
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
           @relationship_class = options[:rel_class]

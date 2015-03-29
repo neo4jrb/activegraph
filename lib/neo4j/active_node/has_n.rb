@@ -166,32 +166,13 @@ module Neo4j::ActiveNode
       def association_query_proxy(name, options = {})
         query_proxy = options[:proxy_obj] || default_association_proxy_obj(name)
 
-        Neo4j::ActiveNode::Query::QueryProxy.new(association_target_class(name),
+        Neo4j::ActiveNode::Query::QueryProxy.new(associations[name].target_class_or_nil,
                                                  associations[name],
                                                  {session: neo4j_session,
                                                   query_proxy: query_proxy,
                                                   context: "#{query_proxy.context || self.name}##{name}",
                                                   optional: query_proxy.optional?,
-                                                  caller: query_proxy.caller}.merge(options)).tap do |query_proxy_result|
-                                                    target_classes = association_target_classes(name)
-                                                    return query_proxy_result.as_models(target_classes) if target_classes
-                                                  end
-      end
-
-      def association_target_class(name)
-        target_classes_or_nil = associations[name].target_classes_or_nil
-
-        return if !target_classes_or_nil.is_a?(Array) || target_classes_or_nil.size != 1
-
-        target_classes_or_nil[0]
-      end
-
-      def association_target_classes(name)
-        target_classes_or_nil = associations[name].target_classes_or_nil
-
-        return if !target_classes_or_nil.is_a?(Array) || target_classes_or_nil.size <= 1
-
-        target_classes_or_nil
+                                                  caller: query_proxy.caller}.merge(options))
       end
 
       def default_association_proxy_obj(name)
