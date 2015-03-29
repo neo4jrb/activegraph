@@ -251,6 +251,66 @@ describe 'has_many' do
     end
   end
 
+  describe 'model_class' do
+    before(:each) do
+      mc = model_class
+
+      stub_active_node_class('Post') do
+        has_many :in, :comments, type: :comments_on, model_class: mc
+      end
+
+      stub_active_node_class('Comment')
+
+      stub_active_node_class('Person')
+    end
+
+    let!(:post) { Post.create }
+
+    let!(:comments) { [Comment.create, Comment.create] }
+
+    let!(:person) { Person.create }
+
+    before(:each) do
+      Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
+        .create('post<-[:comments_on]-comment').exec
+
+      Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
+        .create('post<-[:comments_on]-person').exec
+    end
+
+    subject { post.comments.pluck(:uuid).sort }
+    context 'model_class: nil' do
+      let(:model_class) { nil }
+      # Should assume 'Comment' as the model from the association name
+      it { should eq(comments.map(&:uuid).sort) }
+    end
+
+    context "model_class: 'Comment'" do
+      let(:model_class) { 'Comment' }
+      it { should eq(comments.map(&:uuid).sort) }
+    end
+
+    context "model_class: 'Person'" do
+      let(:model_class) { 'Person' }
+      it { should eq([person.uuid]) }
+    end
+
+    context 'model_class: false' do
+      let(:model_class) { false }
+      it { should eq((comments.map(&:uuid) + [person.uuid]).sort) }
+    end
+
+    context "model_class: ['Comment']" do
+      let(:model_class) { ['Comment'] }
+      it { should eq(comments.map(&:uuid).sort) }
+    end
+
+    context "model_class: ['Comment', 'Person']" do
+      let(:model_class) { %w(Comment Person) }
+      it { should eq((comments.map(&:uuid) + [person.uuid]).sort) }
+    end
+  end
+
   describe 'using mapped_label_name' do
     let(:clazz_c) do
       UniqueClass.create do
