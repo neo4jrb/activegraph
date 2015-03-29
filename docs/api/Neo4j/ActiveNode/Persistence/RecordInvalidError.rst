@@ -1,0 +1,64 @@
+RecordInvalidError
+==================
+
+
+
+
+.. toctree::
+   :maxdepth: 3
+   :titlesonly:
+
+
+   
+
+   
+
+
+
+
+Constants
+---------
+
+
+
+
+
+Files
+-----
+
+
+
+  * lib/neo4j/active_node/persistence.rb:3
+
+
+
+
+
+Methods
+-------
+
+
+**#initialize**
+  
+
+  .. hidden-code-block:: ruby
+
+     def initialize(record)
+       @record = record
+       super(@record.errors.full_messages.join(', '))
+     end
+
+
+**#record**
+  Returns the value of attribute record
+
+  .. hidden-code-block:: ruby
+
+     def record
+       @record
+     end
+
+
+
+
+

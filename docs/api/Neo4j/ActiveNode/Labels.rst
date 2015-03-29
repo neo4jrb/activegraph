@@ -1,0 +1,163 @@
+Labels
+======
+
+
+
+
+.. toctree::
+   :maxdepth: 3
+   :titlesonly:
+
+
+   
+
+   
+
+   
+
+   Labels/InvalidQueryError
+
+   Labels/RecordNotFound
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   Labels/ClassMethods
+
+
+
+
+Constants
+---------
+
+
+
+  * WRAPPED_CLASSES
+
+  * WRAPPED_MODELS
+
+  * MODELS_FOR_LABELS_CACHE
+
+
+
+Files
+-----
+
+
+
+  * lib/neo4j/active_node/labels.rb:4
+
+
+
+
+
+Methods
+-------
+
+
+**#_wrapped_classes**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self._wrapped_classes
+       Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
+     end
+
+
+**#add_label**
+  adds one or more labels
+
+  .. hidden-code-block:: ruby
+
+     def add_label(*label)
+       @_persisted_obj.add_label(*label)
+     end
+
+
+**#add_wrapped_class**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self.add_wrapped_class(model)
+       _wrapped_classes << model
+       WRAPPED_MODELS << model
+     end
+
+
+**#clear_model_for_label_cache**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self.clear_model_for_label_cache
+       MODELS_FOR_LABELS_CACHE.clear
+     end
+
+
+**#clear_wrapped_models**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self.clear_wrapped_models
+       WRAPPED_MODELS.clear
+     end
+
+
+**#labels**
+  
+
+  .. hidden-code-block:: ruby
+
+     def labels
+       @_persisted_obj.labels
+     end
+
+
+**#model_for_labels**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self.model_for_labels(labels)
+       MODELS_FOR_LABELS_CACHE.fetch(labels.sort_by(&:to_s).hash) do
+         models = WRAPPED_MODELS.select do |model|
+           (model.mapped_label_names - labels).size == 0
+         end
+     
+         models.sort_by do |model|
+           (model.mapped_label_names & labels).size
+         end.last
+       end
+     end
+
+
+**#remove_label**
+  Removes one or more labels
+  Be careful, don't remove the label representing the Ruby class.
+
+  .. hidden-code-block:: ruby
+
+     def remove_label(*label)
+       @_persisted_obj.remove_label(*label)
+     end
+
+
+
+
+

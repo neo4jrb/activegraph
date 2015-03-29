@@ -1,0 +1,108 @@
+Paginated
+=========
+
+
+
+
+.. toctree::
+   :maxdepth: 3
+   :titlesonly:
+
+
+   
+
+   
+
+   
+
+   
+
+   
+
+
+
+
+Constants
+---------
+
+
+
+
+
+Files
+-----
+
+
+
+  * lib/neo4j/paginated.rb:2
+
+
+
+
+
+Methods
+-------
+
+
+**#create_from**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self.create_from(source, page, per_page, order = nil)
+       target = source.node_var || source.identity
+       partial = source.skip((page - 1) * per_page).limit(per_page)
+       ordered_partial, ordered_source = if order
+                                           [partial.order_by(order), source.query.with("#{target} as #{target}").pluck("COUNT(#{target})").first]
+                                         else
+                                           [partial, source.count]
+                                         end
+       Paginated.new(ordered_partial, ordered_source, page)
+     end
+
+
+**#current_page**
+  Returns the value of attribute current_page
+
+  .. hidden-code-block:: ruby
+
+     def current_page
+       @current_page
+     end
+
+
+**#initialize**
+  
+
+  .. hidden-code-block:: ruby
+
+     def initialize(items, total, current_page)
+       @items = items
+       @total = total
+       @current_page = current_page
+     end
+
+
+**#items**
+  Returns the value of attribute items
+
+  .. hidden-code-block:: ruby
+
+     def items
+       @items
+     end
+
+
+**#total**
+  Returns the value of attribute total
+
+  .. hidden-code-block:: ruby
+
+     def total
+       @total
+     end
+
+
+
+
+
