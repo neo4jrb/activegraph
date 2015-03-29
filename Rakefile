@@ -13,6 +13,7 @@ namespace :docs do
   end
 
   task :sphinx do
+    `mkdir -p docs/api`
     `rm -rf docs/api/*`
     `cp -r docs/_build/_yard/* docs/api/`
     abort("can't generate Sphinx docs") unless system('cd docs && make html')
