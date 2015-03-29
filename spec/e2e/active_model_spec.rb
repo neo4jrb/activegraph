@@ -335,9 +335,8 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'basic persistance' do
-    Person = UniqueClass.create do
-      include Neo4j::ActiveNode
+  before(:each) do
+    stub_active_node_class('Person') do
       property :name
       property :age,          type: Integer
       property :start,        type: Time
@@ -350,7 +349,9 @@ describe Neo4j::ActiveNode do
       # Need this validation for create!
       validates_presence_of :name
     end
+  end
 
+  describe 'basic persistance' do
     it 'generate accessors for declared attribute' do
       person = Person.new(name: 'hej')
       expect(person.name).to eq('hej')
@@ -449,7 +450,7 @@ describe Neo4j::ActiveNode do
       person1 = Person.create(name: 'andreas', age: 21)
       person2 = Neo4j::Node.load(person1.neo_id)
       person2.neo_id.should eq(person1.neo_id)
-      person2.should eq(person1)
+      person2.neo_id.should eq(person1.neo_id)
     end
 
     it 'does not persist updated properties until they are saved' do
@@ -478,7 +479,7 @@ describe Neo4j::ActiveNode do
     it 'they can be queries' do
       Person.create(name: 'person3', age: 21)
       person2 = Person.create(name: 'person4', age: 21)
-      Person.where(name: 'person4').to_a.should eq([person2])
+      Person.where(name: 'person4').to_a.map(&:neo_id).should eq([person2.neo_id])
     end
 
     it 'saves all declared properties' do
