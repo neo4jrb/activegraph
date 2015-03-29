@@ -8,6 +8,8 @@
 
 [![Next Release](https://badge.waffle.io/neo4jrb/neo4j.png?label=Next%20Release&title=Next%20Release) ![In Progress](https://badge.waffle.io/neo4jrb/neo4j.png?label=In%20Progress&title=In%20Progress) ![In Master](https://badge.waffle.io/neo4jrb/neo4j.png?label=In%20Master&title=In%20Master)](https://waffle.io/neo4jrb/neo4j)
 
+[![Post an issue](https://img.shields.io/badge/Bug%3F-Post%20an%20issue!-blue.svg)](https://waffle.io/neo4jrb/neo4j)
+
 ## Get Support
 
   [![StackOverflow](https://img.shields.io/badge/StackOverflow-Ask%20a%20question!-blue.svg)](http://stackoverflow.com/questions/ask?tags=neo4j.rb)  [![Gitter](https://img.shields.io/badge/Gitter-Join%20our%20chat!-blue.svg)](https://gitter.im/neo4jrb/neo4j?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Twitter](https://img.shields.io/badge/Twitter-Tweet%20with%20us!-blue.svg)](https://twitter.com/neo4jrb)  [![Mailing list](https://img.shields.io/badge/Mailing%20list-Mail%20us!-blue.svg)](https://groups.google.com/forum/#!forum/neo4jrb)
