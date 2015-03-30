@@ -29,9 +29,9 @@ def render_node(object, ancestry = [])
 end
 
 def asset(path, content)
-  if options.serializer
-    log.capture("Generating asset #{path}") do
-      options.serializer.serialize(path, content)
-    end
+  return if !options.serializer
+
+  log.capture("Generating asset #{path}") do
+    options.serializer.serialize(path, content)
   end
 end
