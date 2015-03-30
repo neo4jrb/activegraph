@@ -28,7 +28,7 @@ Files
 
 <% if @module.respond_to?(:files) %>
 <% @module.files.each do |path, line| %>
-  * <%= "#{path}:#{line}" %>
+  * `<%= path %>:<%= line %> <https://github.com/neo4jrb/neo4j/blob/master/<%= path %>#L<%= line %>>`_
 <% end %>
 <% end %>
 
