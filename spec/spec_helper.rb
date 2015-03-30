@@ -46,6 +46,7 @@ I18n.enforce_available_locales = false
 
 module Neo4jSpecHelpers
   def create_embedded_session
+    require 'neo4j-embedded/embedded_impermanent_session'
     session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
     session.start
   end
@@ -75,11 +76,10 @@ module Neo4jSpecHelpers
   end
 
   def create_session
-    if RUBY_PLATFORM != 'java'
-      create_server_session
-    else
-      require 'neo4j-embedded/embedded_impermanent_session'
+    if RUBY_PLATFORM == 'java'
       create_embedded_session
+    else
+      create_server_session
     end
   end
 
