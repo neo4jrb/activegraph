@@ -36,7 +36,7 @@ Files
 
 
 
-  * lib/neo4j/railtie.rb:5
+  * `lib/neo4j/railtie.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/railtie.rb#L5>`_
 
 
 

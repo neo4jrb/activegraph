@@ -30,7 +30,7 @@ Files
 
 
 
-  * lib/neo4j/shared.rb:10
+  * `lib/neo4j/shared.rb:10 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared.rb#L10>`_
 
 
 

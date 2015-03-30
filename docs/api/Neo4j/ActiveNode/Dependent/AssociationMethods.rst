@@ -38,7 +38,7 @@ Files
 
 
 
-  * lib/neo4j/active_node/dependent/association_methods.rb:4
+  * `lib/neo4j/active_node/dependent/association_methods.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L4>`_
 
 
 

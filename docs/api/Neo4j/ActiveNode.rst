@@ -68,51 +68,51 @@ Files
 
 
 
-  * lib/neo4j/active_node.rb:23
+  * `lib/neo4j/active_node.rb:23 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node.rb#L23>`_
 
-  * lib/neo4j/active_node/rels.rb:1
+  * `lib/neo4j/active_node/rels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/rels.rb#L1>`_
 
-  * lib/neo4j/active_node/query.rb:2
+  * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
 
-  * lib/neo4j/active_node/has_n.rb:1
+  * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
 
-  * lib/neo4j/active_node/scope.rb:3
+  * `lib/neo4j/active_node/scope.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L3>`_
 
-  * lib/neo4j/active_node/labels.rb:2
+  * `lib/neo4j/active_node/labels.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L2>`_
 
-  * lib/neo4j/active_node/property.rb:1
+  * `lib/neo4j/active_node/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/property.rb#L1>`_
 
-  * lib/neo4j/active_node/callbacks.rb:2
+  * `lib/neo4j/active_node/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/callbacks.rb#L2>`_
 
-  * lib/neo4j/active_node/dependent.rb:2
+  * `lib/neo4j/active_node/dependent.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent.rb#L2>`_
 
-  * lib/neo4j/active_node/reflection.rb:1
+  * `lib/neo4j/active_node/reflection.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L1>`_
 
-  * lib/neo4j/active_node/id_property.rb:1
+  * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
 
-  * lib/neo4j/active_node/validations.rb:2
+  * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
 
-  * lib/neo4j/active_node/orm_adapter.rb:4
+  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
-  * lib/neo4j/active_node/persistence.rb:1
+  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
-  * lib/neo4j/active_node/query_methods.rb:2
+  * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
-  * lib/neo4j/active_node/has_n/association.rb:4
+  * `lib/neo4j/active_node/has_n/association.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L4>`_
 
-  * lib/neo4j/active_node/query/query_proxy.rb:2
+  * `lib/neo4j/active_node/query/query_proxy.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L2>`_
 
-  * lib/neo4j/active_node/query/query_proxy_link.rb:2
+  * `lib/neo4j/active_node/query/query_proxy_link.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_link.rb#L2>`_
 
-  * lib/neo4j/active_node/query/query_proxy_methods.rb:2
+  * `lib/neo4j/active_node/query/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_methods.rb#L2>`_
 
-  * lib/neo4j/active_node/query/query_proxy_enumerable.rb:2
+  * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L2>`_
 
-  * lib/neo4j/active_node/dependent/association_methods.rb:2
+  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
 
-  * lib/neo4j/active_node/dependent/query_proxy_methods.rb:2
+  * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
 
-  * lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:2
+  * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L2>`_
 
 
 

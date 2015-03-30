@@ -30,7 +30,7 @@ Files
 
 
 
-  * lib/neo4j/active_node/query.rb:35
+  * `lib/neo4j/active_node/query.rb:35 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L35>`_
 
 
 

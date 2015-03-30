@@ -32,7 +32,7 @@ Files
 
 
 
-  * lib/neo4j/shared/persistence.rb:161
+  * `lib/neo4j/shared/persistence.rb:161 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L161>`_
 
 
 

@@ -54,7 +54,7 @@ Files
 
 
 
-  * lib/neo4j/config.rb:6
+  * `lib/neo4j/config.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/config.rb#L6>`_
 
 
 

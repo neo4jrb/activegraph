@@ -26,7 +26,7 @@ Files
 
 
 
-  * lib/neo4j/shared/typecaster.rb:43
+  * `lib/neo4j/shared/typecaster.rb:43 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L43>`_
 
 
 

@@ -30,7 +30,7 @@ Files
 
 
 
-  * lib/rails/generators/neo4j_generator.rb:6
+  * `lib/rails/generators/neo4j_generator.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/rails/generators/neo4j_generator.rb#L6>`_
 
 
 

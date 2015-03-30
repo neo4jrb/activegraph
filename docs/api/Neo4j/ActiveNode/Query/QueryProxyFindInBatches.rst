@@ -28,7 +28,7 @@ Files
 
 
 
-  * lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:4
+  * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L4>`_
 
 
 

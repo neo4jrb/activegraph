@@ -30,7 +30,7 @@ Files
 
 
 
-  * lib/neo4j/shared/rel_type_converters.rb:5
+  * `lib/neo4j/shared/rel_type_converters.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/rel_type_converters.rb#L5>`_
 
 
 

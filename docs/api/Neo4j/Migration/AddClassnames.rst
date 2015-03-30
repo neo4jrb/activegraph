@@ -52,7 +52,7 @@ Files
 
 
 
-  * lib/neo4j/migration.rb:127
+  * `lib/neo4j/migration.rb:127 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/migration.rb#L127>`_
 
 
 

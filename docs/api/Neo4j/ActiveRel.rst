@@ -56,23 +56,23 @@ Files
 
 
 
-  * lib/neo4j/active_rel.rb:4
+  * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * lib/neo4j/active_rel/types.rb:2
+  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
 
-  * lib/neo4j/active_rel/query.rb:1
+  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
 
-  * lib/neo4j/active_rel/property.rb:1
+  * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
 
-  * lib/neo4j/active_rel/callbacks.rb:2
+  * `lib/neo4j/active_rel/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/callbacks.rb#L2>`_
 
-  * lib/neo4j/active_rel/initialize.rb:1
+  * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * lib/neo4j/active_rel/validations.rb:2
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
-  * lib/neo4j/active_rel/persistence.rb:1
+  * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
 
-  * lib/neo4j/active_rel/related_node.rb:1
+  * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
 
 

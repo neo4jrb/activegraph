@@ -48,7 +48,7 @@ Files
 
 
 
-  * lib/rails/generators/neo4j/model/model_generator.rb:3
+  * `lib/rails/generators/neo4j/model/model_generator.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/rails/generators/neo4j/model/model_generator.rb#L3>`_
 
 
 

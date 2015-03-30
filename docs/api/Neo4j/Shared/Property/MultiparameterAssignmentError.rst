@@ -24,7 +24,7 @@ Files
 
 
 
-  * lib/neo4j/shared/property.rb:13
+  * `lib/neo4j/shared/property.rb:13 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L13>`_
 
 
 

@@ -38,7 +38,7 @@ Files
 
 
 
-  * lib/rails/generators/neo4j_generator.rb:17
+  * `lib/rails/generators/neo4j_generator.rb:17 <https://github.com/neo4jrb/neo4j/blob/master/lib/rails/generators/neo4j_generator.rb#L17>`_
 
 
 

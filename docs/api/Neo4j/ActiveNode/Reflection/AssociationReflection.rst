@@ -46,7 +46,7 @@ Files
 
 
 
-  * lib/neo4j/active_node/reflection.rb:39
+  * `lib/neo4j/active_node/reflection.rb:39 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L39>`_
 
 
 

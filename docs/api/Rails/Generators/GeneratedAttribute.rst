@@ -26,7 +26,7 @@ Files
 
 
 
-  * lib/rails/generators/neo4j_generator.rb:53
+  * `lib/rails/generators/neo4j_generator.rb:53 <https://github.com/neo4jrb/neo4j/blob/master/lib/rails/generators/neo4j_generator.rb#L53>`_
 
 
 

@@ -30,7 +30,7 @@ Files
 
 
 
-  * lib/neo4j/shared/serialized_properties.rb:7
+  * `lib/neo4j/shared/serialized_properties.rb:7 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/serialized_properties.rb#L7>`_
 
 
 

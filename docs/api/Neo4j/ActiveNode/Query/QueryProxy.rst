@@ -132,9 +132,9 @@ Files
 
 
 
-  * lib/neo4j/active_node/query/query_proxy.rb:4
+  * `lib/neo4j/active_node/query/query_proxy.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L4>`_
 
-  * lib/neo4j/active_node/query/query_proxy_link.rb:4
+  * `lib/neo4j/active_node/query/query_proxy_link.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_link.rb#L4>`_
 
 
 
