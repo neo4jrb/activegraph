@@ -20,6 +20,18 @@ module Neo4j::ActiveNode
   #     end
   #   end
   #
+  # @example using already exsting ids that you don't want a constraint added to
+  #   class Person
+  #     include Neo4j::ActiveNode
+  #     property :title
+  #     validates :title, :presence => true
+  #     id_property :id, on: :id_builder, constraint: false
+  #
+  #     def id_builder
+  #       # only need to fill this out if you're gonna write to the db
+  #     end
+  #   end
+  #
   module IdProperty
     extend ActiveSupport::Concern
 
@@ -136,7 +148,7 @@ module Neo4j::ActiveNode
 
         @id_property_info = {name: name, type: conf}
         TypeMethods.define_id_methods(self, name, conf)
-        constraint name, type: :unique
+        constraint name, type: :unique unless conf[:constraint] == false
 
         self.define_singleton_method(:find_by_id) do |key|
           self.where(name => key).first
