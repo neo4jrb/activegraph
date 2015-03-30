@@ -100,6 +100,18 @@ Neo4j.rb serializes as JSON by default but pass it the constant Hash as a second
 
 *Neo4j allows you to save Ruby arrays to undefined or String types but their contents need to all be of the same type. You can do user.stuff = [1, 2, 3] or user.stuff = ["beer, "pizza", "doritos"] but not user.stuff = [1, "beer", "pizza"]. If you wanted to do that, you could call serialize on your property in the model.*
 
+.. _activenode-wrapping:
+
+Wrapping
+--------
+
+When loading a node from the database there is a process to determine which ``ActiveNode`` model to choose for wrapping the node.  If nothing is configured on your part then when a node is created labels will be saved representing all of the classes in the hierarchy.
+
+That is, if you have a ``Teacher`` class inheriting from a ``Person`` model, then creating a ``Person`` object will create a node in the database with a ``Person`` label, but creating a ``Teacher`` object will create a node with both the ``Teacher`` and ``Person`` labels.
+
+If there is a value for the property defined by :term:`class_name_property` then the value of that property will be used directly to determine the class to wrap the node in.
+
+
 Callbacks
 ---------
 

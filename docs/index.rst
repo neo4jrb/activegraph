@@ -11,9 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
+   Introduction
    Basic Setup
    ActiveNode
    ActiveRel
+   Configuration
 
    api/index
 
