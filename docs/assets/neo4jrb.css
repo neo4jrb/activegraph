@@ -1,0 +1,11 @@
+.contents.local.topic,
+.toctree-wrapper.compound {
+  float: right;
+  padding: 0.5em;
+  background: #EEE;
+  border: 1px solid #888;
+}
+
+.toctree-wrapper.compound {
+  width: 40%
+}

@@ -1,8 +1,8 @@
 Introduction
 ============
 
-.. toctree::
-   :maxdepth: 3
+.. contents::
+  :local:
 
 
 Hi
@@ -14,7 +14,7 @@ Neo4j
 ~~~~~
 
 Node
-  An _Object or Entity: http://en.wikipedia.org/wiki/Object_%28computer_science%29 which has a distinct identity.  Can store arbitrary properties with values
+  An `Object or Entity <http://en.wikipedia.org/wiki/Object_%28computer_science%29>`_ which has a distinct identity.  Can store arbitrary properties with values
 
 Relationship
   A directed link from one node to another.  Can store arbitrary properties with values
@@ -65,7 +65,7 @@ Rake tasks and basic server connection are defined in the _neo4j-core gem: https
 
 With the Rake tasks loaded, install Neo4j and start the server:
 
-.. code-block::
+.. code-block:: unix
 
   rake neo4j:install[community-2.2.0]
   rake neo4j:start
@@ -74,7 +74,7 @@ With the Rake tasks loaded, install Neo4j and start the server:
 
 At this point, it will give you a message that the server has started or an error. Assuming everything is ok, point your browser to http://localhost:7474 and the Neo4j web console should load up.
 
-Usage
+Setup
 -----
 
 To open a session to the neo4j server database:
@@ -130,12 +130,12 @@ A ``_classname`` property is added to all nodes during creation to store the obj
 
   The above is not true when using the master branch and Neo4j v2.1.5 or greater. See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction for more info.
 
-Usage from Heroku
-~~~~~~~~~~~~~~~~~
+Setup on Heroku
+~~~~~~~~~~~~~~~
 
 Add a Neo4j db to your application:
 
-.. code-block::
+.. code-block:: unix
 
   # Substitute "chalk" with the plan of your choice
   heroku addons:add graphenedb:chalk
@@ -149,10 +149,10 @@ Example of a rails ``config/application.rb`` file:
   config.neo4j.session_type = :server_db 
   config.neo4j.session_path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
 
-Usage from Rails
-~~~~~~~~~~~~~~~~
+Setup in a new Rails app
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block::
+.. code-block:: unix
 
   rails new myapp -m http://neo4jrb.io/neo4j/neo4j.rb -O
   cd myapp
