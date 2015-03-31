@@ -140,7 +140,9 @@ module Neo4j::ActiveNode
         begin
           if id_property?
             unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
-              drop_constraint(id_property_name, type: :unique)
+              begin
+                drop_constraint(id_property_name, type: :unique)
+              rescue; end
             end
           end
         rescue Neo4j::Server::CypherResponse::ResponseError
