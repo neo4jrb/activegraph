@@ -224,6 +224,35 @@ describe Neo4j::ActiveNode::IdProperty do
     end
   end
 
+  describe 'constraint setting' do
+    let(:clazz) do
+      UniqueClass.create do
+        include Neo4j::ActiveNode
+      end
+    end
+
+    context 'constraint: false' do
+      it 'does not create a constraint' do
+        expect(clazz).not_to receive(:constraint)
+        clazz.id_property :my_uuid, auto: :uuid, constraint: false
+      end
+    end
+
+    context 'constraint: true' do
+      it 'does create a constraint' do
+        expect(clazz).to receive(:constraint)
+        clazz.id_property :my_uuid, auto: :uuid, constraint: true
+      end
+    end
+
+    context 'constraint: nil' do
+      it 'creates a constraint' do
+        expect(clazz).to receive(:constraint)
+        clazz.id_property :my_uuid, auto: :uuid
+      end
+    end
+  end
+
   describe 'id_property :my_uuid, auto: :uuid' do
     let(:clazz) do
       UniqueClass.create do
