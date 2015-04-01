@@ -36,7 +36,9 @@ Methods
 -------
 
 
-**#included**
+.. _Typecaster_included:
+
+**.included**
   
 
   .. hidden-code-block:: ruby

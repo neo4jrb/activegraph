@@ -40,6 +40,8 @@ Methods
 -------
 
 
+.. _SerializedProperties_serializable_hash:
+
 **#serializable_hash**
   
 
@@ -49,6 +51,8 @@ Methods
        super.merge(id: id)
      end
 
+
+.. _SerializedProperties_serialized_properties:
 
 **#serialized_properties**
   

@@ -189,3 +189,4 @@ You can query associations:
     post.comments << comment3             # Creates new relationship
 
     comment.post = post1                  # Removes all existing relationships
+

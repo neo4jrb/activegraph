@@ -44,7 +44,9 @@ Methods
 -------
 
 
-**#convert_type**
+.. _DateTimeConverter_convert_type:
+
+**.convert_type**
   
 
   .. hidden-code-block:: ruby
@@ -54,7 +56,9 @@ Methods
      end
 
 
-**#to_db**
+.. _DateTimeConverter_to_db:
+
+**.to_db**
   Converts the given DateTime (UTC) value to an Integer.
   DateTime values are automatically converted to UTC.
 
@@ -70,7 +74,9 @@ Methods
      end
 
 
-**#to_ruby**
+.. _DateTimeConverter_to_ruby:
+
+**.to_ruby**
   
 
   .. hidden-code-block:: ruby

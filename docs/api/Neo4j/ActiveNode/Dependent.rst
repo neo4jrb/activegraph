@@ -46,6 +46,8 @@ Methods
 -------
 
 
+.. _Dependent_called_by=:
+
 **#called_by=**
   Sets the attribute called_by
 
@@ -55,6 +57,8 @@ Methods
        @called_by = value
      end
 
+
+.. _Dependent_dependent_children:
 
 **#dependent_children**
   

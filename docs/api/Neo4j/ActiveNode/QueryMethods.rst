@@ -58,6 +58,8 @@ Methods
 -------
 
 
+.. _QueryMethods_blank?:
+
 **#blank?**
   
 
@@ -67,6 +69,8 @@ Methods
        !self.all.exists?
      end
 
+
+.. _QueryMethods_count:
 
 **#count**
   
@@ -80,6 +84,8 @@ Methods
      end
 
 
+.. _QueryMethods_empty?:
+
 **#empty?**
   
 
@@ -89,6 +95,8 @@ Methods
        !self.all.exists?
      end
 
+
+.. _QueryMethods_exists?:
 
 **#exists?**
   
@@ -105,22 +113,7 @@ Methods
      end
 
 
-**#exists_query_start**
-  
-
-  .. hidden-code-block:: ruby
-
-     def exists_query_start(node_condition)
-       case node_condition
-       when Integer
-         self.query_as(:n).where('ID(n)' => node_condition)
-       when Hash
-         self.where(node_condition.keys.first => node_condition.values.first)
-       else
-         self.query_as(:n)
-       end
-     end
-
+.. _QueryMethods_find_each:
 
 **#find_each**
   
@@ -134,6 +127,8 @@ Methods
      end
 
 
+.. _QueryMethods_find_in_batches:
+
 **#find_in_batches**
   
 
@@ -146,6 +141,8 @@ Methods
      end
 
 
+.. _QueryMethods_first:
+
 **#first**
   Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
 
@@ -156,6 +153,8 @@ Methods
      end
 
 
+.. _QueryMethods_last:
+
 **#last**
   Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
 
@@ -165,6 +164,8 @@ Methods
        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
      end
 
+
+.. _QueryMethods_length:
 
 **#length**
   
@@ -177,6 +178,8 @@ Methods
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end
 
+
+.. _QueryMethods_size:
 
 **#size**
   

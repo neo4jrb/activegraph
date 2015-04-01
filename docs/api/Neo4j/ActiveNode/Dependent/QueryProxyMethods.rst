@@ -40,6 +40,8 @@ Methods
 -------
 
 
+.. _QueryProxyMethods_each_for_destruction:
+
 **#each_for_destruction**
   Used as part of `dependent: :destroy` and may not have any utility otherwise.
   It keeps track of the node responsible for a cascading `destroy` process.
@@ -61,6 +63,8 @@ Methods
      end
 
 
+.. _QueryProxyMethods_unique_nodes:
+
 **#unique_nodes**
   This will match nodes who only have a single relationship of a given type.
   It's used  by `dependent: :delete_orphans` and `dependent: :destroy_orphans` and may not have much utility otherwise.
@@ -72,22 +76,6 @@ Methods
      
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)
-     end
-
-
-**#unique_nodes_query**
-  
-
-  .. hidden-code-block:: ruby
-
-     def unique_nodes_query(association, self_identifer, other_node, other_rel)
-       query.with(identity).proxy_as_optional(caller.class, self_identifer)
-         .send(association.name, other_node, other_rel)
-         .query
-         .with(other_node)
-         .match("()#{association.arrow_cypher}(#{other_node})")
-         .with(other_node, count: 'count(*)')
-         .where('count = 1')
      end
 
 

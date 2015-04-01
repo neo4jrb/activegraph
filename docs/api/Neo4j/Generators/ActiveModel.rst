@@ -48,7 +48,9 @@ Methods
 -------
 
 
-**#all**
+.. _ActiveModel_all:
+
+**.all**
   
 
   .. hidden-code-block:: ruby
@@ -58,7 +60,9 @@ Methods
      end
 
 
-**#build**
+.. _ActiveModel_build:
+
+**.build**
   
 
   .. hidden-code-block:: ruby
@@ -72,6 +76,8 @@ Methods
      end
 
 
+.. _ActiveModel_destroy:
+
 **#destroy**
   
 
@@ -81,6 +87,8 @@ Methods
        "#{name}.destroy"
      end
 
+
+.. _ActiveModel_errors:
 
 **#errors**
   
@@ -92,7 +100,9 @@ Methods
      end
 
 
-**#find**
+.. _ActiveModel_find:
+
+**.find**
   
 
   .. hidden-code-block:: ruby
@@ -101,6 +111,8 @@ Methods
        "#{klass}.find(#{params})"
      end
 
+
+.. _ActiveModel_save:
 
 **#save**
   
@@ -111,6 +123,8 @@ Methods
        "#{name}.save"
      end
 
+
+.. _ActiveModel_update_attributes:
 
 **#update_attributes**
   

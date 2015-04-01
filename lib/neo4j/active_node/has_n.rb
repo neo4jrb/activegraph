@@ -101,13 +101,43 @@ module Neo4j::ActiveNode
         super
       end
 
-      # rubocop:disable Style/PredicateName
-      def has_many(direction, name, options = {})
+      # For defining an "has many" association on a model.  This defines a set of methods on
+      # your model instances.  For instance, if you define the association on a Person model:
+      #
+      # has_many :out, :vehicles, type: :has_vehicle
+      #
+      # This would define the following methods:
+      # 
+      # **#vehicles**
+      #   Returns a QueryProxy object.  This is an Enumerable object and thus can be iterated
+      #   over.  It also has the ability to accept class-level methods from the Vehicle model
+      #   (including calls to association methods)
+      #
+      # **#vehicles=**
+      #   Takes an array of Vehicle objects and replaces all current ``:HAS_VEHICLE`` relationships
+      #   with new relationships refering to the specified objects
+      #
+      # **.vehicles**
+      #   Returns a QueryProxy object.  This would represent all ``Vehicle`` objects associated with
+      #   either all ``Person`` nodes (if ``Person.vehicles`` is called), or all ``Vehicle`` objects
+      #   associated with the ``Person`` nodes thus far represented in the QueryProxy chain.
+      #   For example:
+      #     ``company.people.where(age: 40).vehicles``
+      def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
         define_has_many_methods(name)
       end
+
+      def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+        name = name.to_sym
+        build_association(:has_one, direction, name, options)
+
+        define_has_one_methods(name)
+      end
+
+      private
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
@@ -124,14 +154,6 @@ module Neo4j::ActiveNode
         define_class_method(name) do |node = nil, rel = nil, proxy_obj = nil, options = {}|
           association_query_proxy(name, {node: node, rel: rel, proxy_obj: proxy_obj}.merge(options))
         end
-      end
-
-
-      def has_one(direction, name, options = {})
-        name = name.to_sym
-        build_association(:has_one, direction, name, options)
-
-        define_has_one_methods(name)
       end
 
       def define_has_one_methods(name)
@@ -153,8 +175,6 @@ module Neo4j::ActiveNode
           association_query_proxy(name, {query_proxy: query_proxy, node: node, rel: rel}.merge(options))
         end
       end
-
-      # rubocop:enable Style/PredicateName
 
       def define_class_method(*args, &block)
         klass = class << self; self; end
@@ -201,8 +221,6 @@ module Neo4j::ActiveNode
                                                  query_proxy: nil,
                                                  context: "#{self.name}##{name}")
       end
-
-      private
 
       def build_association(macro, direction, name, options)
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|

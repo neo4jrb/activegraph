@@ -40,6 +40,8 @@ Methods
 -------
 
 
+.. _Initialize_called_by:
+
 **#called_by**
   Returns the value of attribute called_by
 
@@ -49,6 +51,8 @@ Methods
        @called_by
      end
 
+
+.. _Initialize_convert_properties_to:
 
 **#convert_properties_to**
   
@@ -65,15 +69,7 @@ Methods
      end
 
 
-**#converted_property**
-  
-
-  .. hidden-code-block:: ruby
-
-     def converted_property(type, value, converter)
-       TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
-     end
-
+.. _Initialize_init_on_load:
 
 **#init_on_load**
   called when loading the node from the database
@@ -90,32 +86,7 @@ Methods
      end
 
 
-**#primitive_type**
-  If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
-
-  .. hidden-code-block:: ruby
-
-     def primitive_type(attr)
-       case
-       when serialized_properties.key?(attr)
-         serialized_properties[attr]
-       when magic_typecast_properties.key?(attr)
-         self.class.magic_typecast_properties[attr]
-       else
-         self.class._attribute_type(attr)
-       end
-     end
-
-
-**#skip_conversion?**
-  Returns true if the property isn't defined in the model or it's both nil and unchanged.
-
-  .. hidden-code-block:: ruby
-
-     def skip_conversion?(attr, value)
-       !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
-     end
-
+.. _Initialize_wrapper:
 
 **#wrapper**
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method

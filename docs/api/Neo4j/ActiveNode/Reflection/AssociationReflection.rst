@@ -56,6 +56,8 @@ Methods
 -------
 
 
+.. _AssociationReflection_association:
+
 **#association**
   The association object referenced by this reflection
 
@@ -65,6 +67,8 @@ Methods
        @association
      end
 
+
+.. _AssociationReflection_class_name:
 
 **#class_name**
   Returns the name of the target model
@@ -76,6 +80,8 @@ Methods
      end
 
 
+.. _AssociationReflection_collection?:
+
 **#collection?**
   
 
@@ -85,6 +91,8 @@ Methods
        macro == :has_many
      end
 
+
+.. _AssociationReflection_initialize:
 
 **#initialize**
   
@@ -98,6 +106,8 @@ Methods
      end
 
 
+.. _AssociationReflection_klass:
+
 **#klass**
   Returns the target model
 
@@ -107,6 +117,8 @@ Methods
        @klass ||= class_name.constantize
      end
 
+
+.. _AssociationReflection_macro:
 
 **#macro**
   The type of association
@@ -118,6 +130,8 @@ Methods
      end
 
 
+.. _AssociationReflection_name:
+
 **#name**
   The name of the association
 
@@ -127,6 +141,8 @@ Methods
        @name
      end
 
+
+.. _AssociationReflection_rel_class_name:
 
 **#rel_class_name**
   
@@ -138,6 +154,8 @@ Methods
      end
 
 
+.. _AssociationReflection_rel_klass:
+
 **#rel_klass**
   
 
@@ -148,6 +166,8 @@ Methods
      end
 
 
+.. _AssociationReflection_type:
+
 **#type**
   
 
@@ -157,6 +177,8 @@ Methods
        @type ||= association.relationship_type
      end
 
+
+.. _AssociationReflection_validate?:
 
 **#validate?**
   

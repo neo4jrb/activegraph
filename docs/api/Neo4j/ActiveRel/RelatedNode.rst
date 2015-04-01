@@ -52,6 +52,8 @@ Methods
 -------
 
 
+.. _RelatedNode_==:
+
 **#==**
   Loads the node if needed, then conducts comparison.
 
@@ -63,6 +65,8 @@ Methods
      end
 
 
+.. _RelatedNode_class:
+
 **#class**
   
 
@@ -72,6 +76,8 @@ Methods
        loaded.send(:class)
      end
 
+
+.. _RelatedNode_initialize:
 
 **#initialize**
   ActiveRel's related nodes can be initialized with nothing, an integer, or a fully wrapped node.
@@ -90,6 +96,8 @@ Methods
      end
 
 
+.. _RelatedNode_loaded:
+
 **#loaded**
   Loads a node from the database or returns the node if already laoded
 
@@ -99,6 +107,8 @@ Methods
        @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
      end
 
+
+.. _RelatedNode_loaded?:
 
 **#loaded?**
   
@@ -110,6 +120,8 @@ Methods
      end
 
 
+.. _RelatedNode_method_missing:
+
 **#method_missing**
   
 
@@ -120,6 +132,8 @@ Methods
      end
 
 
+.. _RelatedNode_neo_id:
+
 **#neo_id**
   Returns the neo_id of a given node without loading.
 
@@ -127,16 +141,6 @@ Methods
 
      def neo_id
        loaded? ? @node.neo_id : @node
-     end
-
-
-**#valid_node_param?**
-  
-
-  .. hidden-code-block:: ruby
-
-     def valid_node_param?(node)
-       node.nil? || node.is_a?(Integer) || node.respond_to?(:neo_id)
      end
 
 

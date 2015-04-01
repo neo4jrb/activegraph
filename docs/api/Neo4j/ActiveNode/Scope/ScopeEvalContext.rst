@@ -36,6 +36,8 @@ Methods
 -------
 
 
+.. _ScopeEvalContext_initialize:
+
 **#initialize**
   
 

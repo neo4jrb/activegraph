@@ -36,6 +36,8 @@ Methods
 -------
 
 
+.. _GeneratedAttribute_type_class:
+
 **#type_class**
   
 

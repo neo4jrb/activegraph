@@ -68,7 +68,9 @@ Methods
 -------
 
 
-**#_wrapped_classes**
+.. _Labels__wrapped_classes:
+
+**._wrapped_classes**
   
 
   .. hidden-code-block:: ruby
@@ -77,6 +79,8 @@ Methods
        Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
      end
 
+
+.. _Labels_add_label:
 
 **#add_label**
   adds one or more labels
@@ -88,7 +92,9 @@ Methods
      end
 
 
-**#add_wrapped_class**
+.. _Labels_add_wrapped_class:
+
+**.add_wrapped_class**
   
 
   .. hidden-code-block:: ruby
@@ -99,7 +105,9 @@ Methods
      end
 
 
-**#clear_model_for_label_cache**
+.. _Labels_clear_model_for_label_cache:
+
+**.clear_model_for_label_cache**
   
 
   .. hidden-code-block:: ruby
@@ -109,7 +117,9 @@ Methods
      end
 
 
-**#clear_wrapped_models**
+.. _Labels_clear_wrapped_models:
+
+**.clear_wrapped_models**
   
 
   .. hidden-code-block:: ruby
@@ -118,6 +128,8 @@ Methods
        WRAPPED_MODELS.clear
      end
 
+
+.. _Labels_labels:
 
 **#labels**
   
@@ -129,7 +141,9 @@ Methods
      end
 
 
-**#model_for_labels**
+.. _Labels_model_for_labels:
+
+**.model_for_labels**
   
 
   .. hidden-code-block:: ruby
@@ -146,6 +160,8 @@ Methods
        end
      end
 
+
+.. _Labels_remove_label:
 
 **#remove_label**
   Removes one or more labels

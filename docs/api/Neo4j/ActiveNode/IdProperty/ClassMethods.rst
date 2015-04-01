@@ -27,6 +27,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -42,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/id_property.rb:114 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L114>`_
+  * `lib/neo4j/active_node/id_property.rb:126 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L126>`_
 
 
 
@@ -51,6 +53,8 @@ Files
 Methods
 -------
 
+
+.. _ClassMethods_find_by_id:
 
 **#find_by_id**
   
@@ -62,6 +66,8 @@ Methods
      end
 
 
+.. _ClassMethods_find_by_ids:
+
 **#find_by_ids**
   
 
@@ -72,6 +78,8 @@ Methods
      end
 
 
+.. _ClassMethods_find_by_neo_id:
+
 **#find_by_neo_id**
   
 
@@ -81,6 +89,8 @@ Methods
        Neo4j::Node.load(id)
      end
 
+
+.. _ClassMethods_has_id_property?:
 
 **#has_id_property?**
   rubocop:disable Style/PredicateName
@@ -94,30 +104,24 @@ Methods
      end
 
 
+.. _ClassMethods_id_property:
+
 **#id_property**
   
 
   .. hidden-code-block:: ruby
 
      def id_property(name, conf = {})
-       begin
-         if id_property?
-           unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
-             drop_constraint(id_property_name, type: :unique)
-           end
-         end
-       rescue Neo4j::Server::CypherResponse::ResponseError
-       end
-     
+       id_property_constraint(name)
        @id_property_info = {name: name, type: conf}
        TypeMethods.define_id_methods(self, name, conf)
-       constraint name, type: :unique
+       constraint name, type: :unique unless conf[:constraint] == false
      
-       self.define_singleton_method(:find_by_id) do |key|
-         self.where(name => key).first
-       end
+       self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
      end
 
+
+.. _ClassMethods_id_property?:
 
 **#id_property?**
   rubocop:enable Style/PredicateName
@@ -129,6 +133,8 @@ Methods
      end
 
 
+.. _ClassMethods_id_property_info:
+
 **#id_property_info**
   
 
@@ -139,6 +145,8 @@ Methods
      end
 
 
+.. _ClassMethods_id_property_name:
+
 **#id_property_name**
   
 
@@ -148,6 +156,8 @@ Methods
        id_property_info[:name]
      end
 
+
+.. _ClassMethods_primary_key:
 
 **#primary_key**
   

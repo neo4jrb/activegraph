@@ -42,6 +42,8 @@ Methods
 -------
 
 
+.. _ClassMethods_cached_class?:
+
 **#cached_class?**
   Determines whether a model should insert a _classname property. This can be used to override the automatic matching of returned
   objects to models.
@@ -52,6 +54,8 @@ Methods
        uses_classname? || (!!Neo4j::Config[:cache_class_names] && (check_version ? neo4j_session.version < '2.1.5' : true))
      end
 
+
+.. _ClassMethods_set_classname:
 
 **#set_classname**
   Adds this model to the USES_CLASSNAME array. When new rels/nodes are created, a _classname property will be added. This will override the
@@ -71,6 +75,8 @@ Methods
      end
 
 
+.. _ClassMethods_unset_classname:
+
 **#unset_classname**
   Removes this model from the USES_CLASSNAME array. When new rels/nodes are create, no _classname property will be injected. Upon returning of
   the object from the database, it will be matched to a model using its relationship type or labels.
@@ -81,6 +87,8 @@ Methods
        Neo4j::Shared::Persistence::USES_CLASSNAME.delete self.name
      end
 
+
+.. _ClassMethods_uses_classname?:
 
 **#uses_classname?**
   

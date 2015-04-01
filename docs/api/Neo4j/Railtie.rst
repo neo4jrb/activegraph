@@ -46,7 +46,9 @@ Methods
 -------
 
 
-**#java_platform?**
+.. _Railtie_java_platform?:
+
+**.java_platform?**
   
 
   .. hidden-code-block:: ruby
@@ -56,7 +58,9 @@ Methods
      end
 
 
-**#open_neo4j_session**
+.. _Railtie_open_neo4j_session:
+
+**.open_neo4j_session**
   
 
   .. hidden-code-block:: ruby
@@ -78,6 +82,8 @@ Methods
      end
 
 
+.. _Railtie_register_neo4j_cypher_logging:
+
 **#register_neo4j_cypher_logging**
   
 
@@ -94,7 +100,9 @@ Methods
      end
 
 
-**#setup_config_defaults!**
+.. _Railtie_setup_config_defaults!:
+
+**.setup_config_defaults!**
   
 
   .. hidden-code-block:: ruby
@@ -113,7 +121,9 @@ Methods
      end
 
 
-**#setup_default_session**
+.. _Railtie_setup_default_session:
+
+**.setup_default_session**
   
 
   .. hidden-code-block:: ruby
@@ -127,7 +137,9 @@ Methods
      end
 
 
-**#start_embedded_session**
+.. _Railtie_start_embedded_session:
+
+**.start_embedded_session**
   
 
   .. hidden-code-block:: ruby

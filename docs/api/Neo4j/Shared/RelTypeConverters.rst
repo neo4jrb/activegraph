@@ -40,6 +40,8 @@ Methods
 -------
 
 
+.. _RelTypeConverters_decorated_rel_type:
+
 **#decorated_rel_type**
   
 
@@ -50,7 +52,9 @@ Methods
      end
 
 
-**#decorated_rel_type**
+.. _RelTypeConverters_decorated_rel_type:
+
+**.decorated_rel_type**
   
 
   .. hidden-code-block:: ruby
@@ -72,7 +76,9 @@ Methods
      end
 
 
-**#rel_transformer**
+.. _RelTypeConverters_rel_transformer:
+
+**.rel_transformer**
   Determines how relationship types should look when inferred based on association or ActiveRel model name.
   With the exception of `:none`, all options will call `underscore`, so `ThisClass` becomes `this_class`, with capitalization
   determined by the specific option passed.

@@ -68,35 +68,7 @@ Methods
 -------
 
 
-**#_create_rel**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _create_rel(from_node, to_node, *args)
-       props = self.class.default_property_values(self)
-       props.merge!(args[0]) if args[0].is_a?(Hash)
-       set_classname(props, true)
-     
-       if from_node.id.nil? || to_node.id.nil?
-         fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}"
-       end
-       _rel_creation_query(from_node, to_node, props)
-     end
-
-
-**#_rel_creation_query**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _rel_creation_query(from_node, to_node, props)
-       Neo4j::Session.query.match(N1_N2_STRING)
-         .where(ACTIVEREL_NODE_MATCH_STRING).params(n1_neo_id: from_node.neo_id, n2_neo_id: to_node.neo_id).break
-         .send(create_method, "n1-[r:`#{type}`]->n2")
-         .with('r').set(r: props).pluck(:r).first
-     end
-
+.. _Persistence_cache_key:
 
 **#cache_key**
   
@@ -114,6 +86,8 @@ Methods
      end
 
 
+.. _Persistence_clear_association_cache:
+
 **#clear_association_cache**
   
 
@@ -121,6 +95,8 @@ Methods
 
      def clear_association_cache; end
 
+
+.. _Persistence_convert_properties_to:
 
 **#convert_properties_to**
   
@@ -137,34 +113,7 @@ Methods
      end
 
 
-**#converted_property**
-  
-
-  .. hidden-code-block:: ruby
-
-     def converted_property(type, value, converter)
-       TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
-     end
-
-
-**#create_magic_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def create_magic_properties
-     end
-
-
-**#create_method**
-  
-
-  .. hidden-code-block:: ruby
-
-     def create_method
-       self.class.unique? ? :create_unique : :create
-     end
-
+.. _Persistence_create_model:
 
 **#create_model**
   
@@ -182,6 +131,8 @@ Methods
        true
      end
 
+
+.. _Persistence_create_or_update:
 
 **#create_or_update**
   
@@ -206,6 +157,8 @@ Methods
      end
 
 
+.. _Persistence_destroy:
+
 **#destroy**
   
 
@@ -218,6 +171,8 @@ Methods
      end
 
 
+.. _Persistence_destroyed?:
+
 **#destroyed?**
   Returns +true+ if the object was destroyed.
 
@@ -228,6 +183,8 @@ Methods
      end
 
 
+.. _Persistence_exist?:
+
 **#exist?**
   
 
@@ -237,6 +194,8 @@ Methods
        _persisted_obj && _persisted_obj.exist?
      end
 
+
+.. _Persistence_freeze:
 
 **#freeze**
   
@@ -249,6 +208,8 @@ Methods
      end
 
 
+.. _Persistence_frozen?:
+
 **#frozen?**
   
 
@@ -259,15 +220,7 @@ Methods
      end
 
 
-**#model_cache_key**
-  
-
-  .. hidden-code-block:: ruby
-
-     def model_cache_key
-       self.class.model_name.cache_key
-     end
-
+.. _Persistence_new?:
 
 **#new?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -279,6 +232,8 @@ Methods
      end
 
 
+.. _Persistence_new_record?:
+
 **#new_record?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
 
@@ -288,6 +243,8 @@ Methods
        !_persisted_obj
      end
 
+
+.. _Persistence_persisted?:
 
 **#persisted?**
   Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
@@ -299,22 +256,7 @@ Methods
      end
 
 
-**#primitive_type**
-  If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
-
-  .. hidden-code-block:: ruby
-
-     def primitive_type(attr)
-       case
-       when serialized_properties.key?(attr)
-         serialized_properties[attr]
-       when magic_typecast_properties.key?(attr)
-         self.class.magic_typecast_properties[attr]
-       else
-         self.class._attribute_type(attr)
-       end
-     end
-
+.. _Persistence_props:
 
 **#props**
   
@@ -325,6 +267,8 @@ Methods
        attributes.reject { |_, v| v.nil? }.symbolize_keys
      end
 
+
+.. _Persistence_reload:
 
 **#reload**
   
@@ -343,6 +287,8 @@ Methods
      end
 
 
+.. _Persistence_reload_from_database:
+
 **#reload_from_database**
   
 
@@ -357,6 +303,8 @@ Methods
      end
 
 
+.. _Persistence_save:
+
 **#save**
   
 
@@ -368,6 +316,8 @@ Methods
      end
 
 
+.. _Persistence_save!:
+
 **#save!**
   
 
@@ -378,37 +328,7 @@ Methods
      end
 
 
-**#set_classname**
-  Inserts the _classname property into an object's properties during object creation.
-
-  .. hidden-code-block:: ruby
-
-     def set_classname(props, check_version = true)
-       props[:_classname] = self.class.name if self.class.cached_class?(check_version)
-     end
-
-
-**#set_timestamps**
-  
-
-  .. hidden-code-block:: ruby
-
-     def set_timestamps
-       now = DateTime.now
-       self.created_at ||= now if respond_to?(:created_at=)
-       self.updated_at ||= now if respond_to?(:updated_at=)
-     end
-
-
-**#skip_conversion?**
-  Returns true if the property isn't defined in the model or it's both nil and unchanged.
-
-  .. hidden-code-block:: ruby
-
-     def skip_conversion?(attr, value)
-       !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
-     end
-
+.. _Persistence_update:
 
 **#update**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -422,6 +342,8 @@ Methods
      end
 
 
+.. _Persistence_update!:
+
 **#update!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
@@ -432,6 +354,8 @@ Methods
        save!
      end
 
+
+.. _Persistence_update_attribute:
 
 **#update_attribute**
   Convenience method to set attribute and #save at the same time
@@ -444,6 +368,8 @@ Methods
      end
 
 
+.. _Persistence_update_attribute!:
+
 **#update_attribute!**
   Convenience method to set attribute and #save! at the same time
 
@@ -454,6 +380,8 @@ Methods
        self.save!
      end
 
+
+.. _Persistence_update_attributes:
 
 **#update_attributes**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -467,6 +395,8 @@ Methods
      end
 
 
+.. _Persistence_update_attributes!:
+
 **#update_attributes!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
@@ -478,15 +408,7 @@ Methods
      end
 
 
-**#update_magic_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def update_magic_properties
-       self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed? && !updated_at_changed?
-     end
-
+.. _Persistence_update_model:
 
 **#update_model**
   
@@ -500,23 +422,6 @@ Methods
        changed_props = convert_properties_to :db, changed_props
        _persisted_obj.update_props(changed_props)
        changed_attributes.clear
-     end
-
-
-**#validate_node_classes!**
-  
-
-  .. hidden-code-block:: ruby
-
-     def validate_node_classes!
-       [from_node, to_node].each do |node|
-         type = from_node == node ? :_from_class : :_to_class
-         type_class = self.class.send(type)
-     
-         next if [:any, false].include?(type_class)
-     
-         fail ModelClassInvalidError, "Node class was #{node.class}, expected #{type_class}" unless node.is_a?(type_class.to_s.constantize)
-       end
      end
 
 

@@ -62,6 +62,8 @@ Methods
 -------
 
 
+.. _TypeConverters_convert_properties_to:
+
 **#convert_properties_to**
   
 
@@ -77,17 +79,9 @@ Methods
      end
 
 
-**#converted_property**
-  
+.. _TypeConverters_converters:
 
-  .. hidden-code-block:: ruby
-
-     def converted_property(type, value, converter)
-       TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
-     end
-
-
-**#converters**
+**.converters**
   Returns the value of attribute converters
 
   .. hidden-code-block:: ruby
@@ -97,7 +91,9 @@ Methods
      end
 
 
-**#included**
+.. _TypeConverters_included:
+
+**.included**
   
 
   .. hidden-code-block:: ruby
@@ -112,24 +108,9 @@ Methods
      end
 
 
-**#primitive_type**
-  If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
+.. _TypeConverters_register_converter:
 
-  .. hidden-code-block:: ruby
-
-     def primitive_type(attr)
-       case
-       when serialized_properties.key?(attr)
-         serialized_properties[attr]
-       when magic_typecast_properties.key?(attr)
-         self.class.magic_typecast_properties[attr]
-       else
-         self.class._attribute_type(attr)
-       end
-     end
-
-
-**#register_converter**
+**.register_converter**
   
 
   .. hidden-code-block:: ruby
@@ -139,17 +120,9 @@ Methods
      end
 
 
-**#skip_conversion?**
-  Returns true if the property isn't defined in the model or it's both nil and unchanged.
+.. _TypeConverters_to_other:
 
-  .. hidden-code-block:: ruby
-
-     def skip_conversion?(attr, value)
-       !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
-     end
-
-
-**#to_other**
+**.to_other**
   
 
   .. hidden-code-block:: ruby
@@ -161,7 +134,9 @@ Methods
      end
 
 
-**#typecaster_for**
+.. _TypeConverters_typecaster_for:
+
+**.typecaster_for**
   
 
   .. hidden-code-block:: ruby

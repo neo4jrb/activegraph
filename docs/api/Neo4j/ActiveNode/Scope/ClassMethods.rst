@@ -50,6 +50,8 @@ Methods
 -------
 
 
+.. _ClassMethods__call_scope_context:
+
 **#_call_scope_context**
   
 
@@ -64,6 +66,8 @@ Methods
      end
 
 
+.. _ClassMethods__scope:
+
 **#_scope**
   
 
@@ -73,6 +77,8 @@ Methods
        @_scope ||= {}
      end
 
+
+.. _ClassMethods_all:
 
 **#all**
   
@@ -88,6 +94,8 @@ Methods
      end
 
 
+.. _ClassMethods_current_scope:
+
 **#current_scope**
   :nodoc:
 
@@ -98,6 +106,8 @@ Methods
      end
 
 
+.. _ClassMethods_current_scope=:
+
 **#current_scope=**
   :nodoc:
 
@@ -107,6 +117,8 @@ Methods
        ScopeRegistry.set_value_for(:current_scope, base_class.to_s, scope)
      end
 
+
+.. _ClassMethods_has_scope?:
 
 **#has_scope?**
   rubocop:disable Style/PredicateName
@@ -119,6 +131,8 @@ Methods
        scope?(name)
      end
 
+
+.. _ClassMethods_scope:
 
 **#scope**
   Similar to ActiveRecord scope
@@ -142,6 +156,8 @@ Methods
        end
      end
 
+
+.. _ClassMethods_scope?:
 
 **#scope?**
   rubocop:enable Style/PredicateName

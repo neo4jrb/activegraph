@@ -48,6 +48,8 @@ Methods
 -------
 
 
+.. _Migration_default_path:
+
 **#default_path**
   
 
@@ -57,6 +59,8 @@ Methods
        Rails.root if defined? Rails
      end
 
+
+.. _Migration_joined_path:
 
 **#joined_path**
   
@@ -68,6 +72,8 @@ Methods
      end
 
 
+.. _Migration_migrate:
+
 **#migrate**
   
 
@@ -78,6 +84,8 @@ Methods
      end
 
 
+.. _Migration_output:
+
 **#output**
   
 
@@ -87,6 +95,8 @@ Methods
        puts string unless !!ENV['silenced']
      end
 
+
+.. _Migration_print_output:
 
 **#print_output**
   

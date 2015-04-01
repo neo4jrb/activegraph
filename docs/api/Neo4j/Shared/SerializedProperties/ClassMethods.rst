@@ -40,6 +40,8 @@ Methods
 -------
 
 
+.. _ClassMethods_serialize:
+
 **#serialize**
   
 
@@ -51,6 +53,8 @@ Methods
      end
 
 
+.. _ClassMethods_serialized_properties:
+
 **#serialized_properties**
   
 
@@ -60,6 +64,8 @@ Methods
        @serialize || {}
      end
 
+
+.. _ClassMethods_serialized_properties=:
 
 **#serialized_properties=**
   

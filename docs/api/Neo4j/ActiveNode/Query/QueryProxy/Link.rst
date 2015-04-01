@@ -52,6 +52,8 @@ Methods
 -------
 
 
+.. _Link_args:
+
 **#args**
   
 
@@ -61,6 +63,8 @@ Methods
        @arg.respond_to?(:call) ? @arg.call(var, rel_var) : @arg
      end
 
+
+.. _Link_clause:
 
 **#clause**
   Returns the value of attribute clause
@@ -72,7 +76,9 @@ Methods
      end
 
 
-**#for_association**
+.. _Link_for_association:
+
+**.for_association**
   
 
   .. hidden-code-block:: ruby
@@ -91,7 +97,9 @@ Methods
      end
 
 
-**#for_clause**
+.. _Link_for_clause:
+
+**.for_clause**
   
 
   .. hidden-code-block:: ruby
@@ -103,7 +111,9 @@ Methods
      end
 
 
-**#for_node_where_clause**
+.. _Link_for_node_where_clause:
+
+**.for_node_where_clause**
   
 
   .. hidden-code-block:: ruby
@@ -128,7 +138,9 @@ Methods
      end
 
 
-**#for_order_clause**
+.. _Link_for_order_clause:
+
+**.for_order_clause**
   
 
   .. hidden-code-block:: ruby
@@ -138,7 +150,9 @@ Methods
      end
 
 
-**#for_rel_where_clause**
+.. _Link_for_rel_where_clause:
+
+**.for_rel_where_clause**
   We don't accept strings here. If you want to use a string, just use where.
 
   .. hidden-code-block:: ruby
@@ -150,7 +164,9 @@ Methods
      end
 
 
-**#for_where_clause**
+.. _Link_for_where_clause:
+
+**.for_where_clause**
   
 
   .. hidden-code-block:: ruby
@@ -174,6 +190,8 @@ Methods
        result
      end
 
+
+.. _Link_initialize:
 
 **#initialize**
   

@@ -38,6 +38,8 @@ Methods
 -------
 
 
+.. _QueryProxyFindInBatches_find_each:
+
 **#find_each**
   
 
@@ -49,6 +51,8 @@ Methods
        end
      end
 
+
+.. _QueryProxyFindInBatches_find_in_batches:
 
 **#find_in_batches**
   

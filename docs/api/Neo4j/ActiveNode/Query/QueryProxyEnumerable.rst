@@ -46,6 +46,8 @@ Methods
 -------
 
 
+.. _QueryProxyEnumerable_==:
+
 **#==**
   Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
   would be comparing the QueryProxy objects, not the lessons themselves.
@@ -56,6 +58,8 @@ Methods
        self.to_a == other
      end
 
+
+.. _QueryProxyEnumerable_each:
 
 **#each**
   Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
@@ -74,6 +78,8 @@ Methods
      end
 
 
+.. _QueryProxyEnumerable_each_rel:
+
 **#each_rel**
   When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
   For example, to return the relationship between a given student and their lessons:
@@ -85,6 +91,8 @@ Methods
        block_given? ? each(false, true, &block) : to_enum(:each, false, true)
      end
 
+
+.. _QueryProxyEnumerable_each_with_rel:
 
 **#each_with_rel**
   When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
@@ -98,24 +106,7 @@ Methods
      end
 
 
-**#enumerable_query**
-  Executes the query against the database if the results are not already present in a node's association cache. This method is
-  shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
-
-  .. hidden-code-block:: ruby
-
-     def enumerable_query(node, rel = nil)
-       pluck_this = rel.nil? ? [node] : [node, rel]
-       return self.pluck(*pluck_this) if @association.nil? || caller.nil?
-       cypher_string = self.to_cypher_with_params(pluck_this)
-       association_collection = caller.association_instance_get(cypher_string, @association)
-       if association_collection.nil?
-         association_collection = self.pluck(*pluck_this)
-         caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
-       end
-       association_collection
-     end
-
+.. _QueryProxyEnumerable_pluck:
 
 **#pluck**
   For getting variables which have been defined as part of the association chain

@@ -46,6 +46,8 @@ Methods
 -------
 
 
+.. _Identity_==:
+
 **#==**
   
 
@@ -55,6 +57,8 @@ Methods
        other.class == self.class && other.id == id
      end
 
+
+.. _Identity_eql?:
 
 **#eql?**
   
@@ -66,6 +70,8 @@ Methods
      end
 
 
+.. _Identity_hash:
+
 **#hash**
   
 
@@ -75,6 +81,8 @@ Methods
        id.hash
      end
 
+
+.. _Identity_id:
 
 **#id**
   
@@ -87,6 +95,8 @@ Methods
      end
 
 
+.. _Identity_neo_id:
+
 **#neo_id**
   
 
@@ -96,6 +106,8 @@ Methods
        _persisted_obj ? _persisted_obj.neo_id : nil
      end
 
+
+.. _Identity_to_key:
 
 **#to_key**
   Returns an Enumerable of all (primary) key attributes

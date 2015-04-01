@@ -56,6 +56,8 @@ Methods
 -------
 
 
+.. _OrmAdapter_column_names:
+
 **#column_names**
   
 
@@ -65,6 +67,8 @@ Methods
        klass._decl_props.keys
      end
 
+
+.. _OrmAdapter_create!:
 
 **#create!**
   Create a model using attributes
@@ -76,6 +80,8 @@ Methods
      end
 
 
+.. _OrmAdapter_destroy:
+
 **#destroy**
   
 
@@ -86,18 +92,7 @@ Methods
      end
 
 
-**#extract_id!**
-  
-
-  .. hidden-code-block:: ruby
-
-     def extract_id!(conditions)
-       id = conditions.delete(:id)
-       return if not id
-     
-       conditions[klass.id_property_name.to_sym] = id
-     end
-
+.. _OrmAdapter_find_all:
 
 **#find_all**
   Find all models matching conditions
@@ -117,6 +112,8 @@ Methods
      end
 
 
+.. _OrmAdapter_find_first:
+
 **#find_first**
   Find the first instance matching conditions
 
@@ -133,6 +130,8 @@ Methods
      end
 
 
+.. _OrmAdapter_get:
+
 **#get**
   Get an instance by id of the model
 
@@ -142,6 +141,8 @@ Methods
        klass.find(wrap_key(id))
      end
 
+
+.. _OrmAdapter_get!:
 
 **#get!**
   Get an instance by id of the model
@@ -155,15 +156,7 @@ Methods
      end
 
 
-**#hasherize_order**
-  
-
-  .. hidden-code-block:: ruby
-
-     def hasherize_order(order)
-       (order || []).map { |clause| Hash[*clause] }
-     end
-
+.. _OrmAdapter_i18n_scope:
 
 **#i18n_scope**
   

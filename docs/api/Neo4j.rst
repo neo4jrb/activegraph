@@ -13,19 +13,19 @@ Neo4j
 
    Neo4j/Shared
 
+   Neo4j/Railtie
+
    
 
    Neo4j/ClassWrapper
-
-   Neo4j/Railtie
 
    Neo4j/Migration
 
    Neo4j/Paginated
 
-   Neo4j/Core
-
    Neo4j/ActiveRel
+
+   Neo4j/Core
 
    Neo4j/ActiveNode
 
@@ -58,11 +58,11 @@ Files
 
   * `lib/neo4j/shared.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared.rb#L1>`_
 
+  * `lib/neo4j/railtie.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/railtie.rb#L4>`_
+
   * `lib/neo4j/version.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/version.rb#L1>`_
 
   * `lib/neo4j/wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/wrapper.rb#L1>`_
-
-  * `lib/neo4j/railtie.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/railtie.rb#L4>`_
 
   * `lib/neo4j/migration.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/migration.rb#L3>`_
 
@@ -82,9 +82,9 @@ Files
 
   * `lib/neo4j/shared/typecaster.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L1>`_
 
-  * `lib/neo4j/shared/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L1>`_
-
   * `lib/neo4j/active_node/labels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L1>`_
+
+  * `lib/neo4j/shared/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L1>`_
 
   * `lib/neo4j/active_rel/callbacks.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/callbacks.rb#L1>`_
 
@@ -94,9 +94,9 @@ Files
 
   * `lib/neo4j/active_rel/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L1>`_
 
-  * `lib/neo4j/active_node/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L1>`_
-
   * `lib/neo4j/active_node/orm_adapter.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L3>`_
+
+  * `lib/neo4j/active_node/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L1>`_
 
   * `lib/neo4j/active_node/query_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L1>`_
 

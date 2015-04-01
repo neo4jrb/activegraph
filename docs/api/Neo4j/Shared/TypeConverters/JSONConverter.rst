@@ -40,7 +40,9 @@ Methods
 -------
 
 
-**#convert_type**
+.. _JSONConverter_convert_type:
+
+**.convert_type**
   
 
   .. hidden-code-block:: ruby
@@ -50,7 +52,9 @@ Methods
      end
 
 
-**#to_db**
+.. _JSONConverter_to_db:
+
+**.to_db**
   
 
   .. hidden-code-block:: ruby
@@ -60,7 +64,9 @@ Methods
      end
 
 
-**#to_ruby**
+.. _JSONConverter_to_ruby:
+
+**.to_ruby**
   
 
   .. hidden-code-block:: ruby

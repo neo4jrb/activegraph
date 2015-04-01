@@ -44,6 +44,8 @@ Methods
 -------
 
 
+.. _UniquenessValidator_found:
+
 **#found**
   
 
@@ -63,6 +65,8 @@ Methods
      end
 
 
+.. _UniquenessValidator_initialize:
+
 **#initialize**
   
 
@@ -73,6 +77,8 @@ Methods
      end
 
 
+.. _UniquenessValidator_message:
+
 **#message**
   
 
@@ -82,6 +88,8 @@ Methods
        super || 'has already been taken'
      end
 
+
+.. _UniquenessValidator_scope_conditions:
 
 **#scope_conditions**
   
@@ -94,6 +102,8 @@ Methods
        end
      end
 
+
+.. _UniquenessValidator_validate_each:
 
 **#validate_each**
   

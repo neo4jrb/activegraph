@@ -144,6 +144,8 @@ Methods
 -------
 
 
+.. _QueryProxy_<<:
+
 **#<<**
   To add a relationship for the node for the association on this QueryProxy
 
@@ -156,6 +158,8 @@ Methods
      end
 
 
+.. _QueryProxy_==:
+
 **#==**
   Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
   would be comparing the QueryProxy objects, not the lessons themselves.
@@ -166,6 +170,8 @@ Methods
        self.to_a == other
      end
 
+
+.. _QueryProxy_[]:
 
 **#[]**
   
@@ -179,75 +185,7 @@ Methods
      end
 
 
-**#_add_links**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _add_links(links)
-       @chain += links
-     end
-
-
-**#_add_params**
-  Methods are underscored to prevent conflict with user class methods
-
-  .. hidden-code-block:: ruby
-
-     def _add_params(params)
-       @params = @params.merge(params)
-     end
-
-
-**#_association_arrow**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _association_arrow(properties = {}, create = false)
-       @association && @association.arrow_cypher(@rel_var, properties, create)
-     end
-
-
-**#_association_chain_var**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _association_chain_var
-       if start_object
-         :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
-       elsif @query_proxy
-         @query_proxy.node_var || :"node#{_chain_level}"
-       else
-         fail 'Crazy error' # TODO: Better error
-       end
-     end
-
-
-**#_association_query_start**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _association_query_start(var)
-       if object = (start_object || @query_proxy)
-         object.query_as(var)
-       else
-         fail 'Crazy error' # TODO: Better error
-       end
-     end
-
-
-**#_chain_level**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _chain_level
-       (@query_proxy ? @query_proxy._chain_level : (@chain_level || 0)) + 1
-     end
-
+.. _QueryProxy__create_relationship:
 
 **#_create_relationship**
   
@@ -262,20 +200,7 @@ Methods
      end
 
 
-**#_match_arg**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _match_arg(var)
-       if @model
-         labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
-         {var => labels}
-       else
-         var
-       end
-     end
-
+.. _QueryProxy__model_label_string:
 
 **#_model_label_string**
   
@@ -289,6 +214,8 @@ Methods
      end
 
 
+.. _QueryProxy__nodeify:
+
 **#_nodeify**
   
 
@@ -301,58 +228,7 @@ Methods
      end
 
 
-**#_query**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _query
-       _session.query(context: @context)
-     end
-
-
-**#_query_model_as**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _query_model_as(var)
-       _query.send(@match_type, _match_arg(var))
-     end
-
-
-**#_rel_chain_var**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _rel_chain_var
-       :"rel#{_chain_level - 1}"
-     end
-
-
-**#_result_string**
-  TODO: Refactor this. Too much happening here.
-
-  .. hidden-code-block:: ruby
-
-     def _result_string
-       s = (self.association && self.association.name) ||
-           (self.model && self.model.name) || ''
-     
-       s ? "result_#{s}".downcase.tr(':', '').to_sym : :result
-     end
-
-
-**#_session**
-  
-
-  .. hidden-code-block:: ruby
-
-     def _session
-       @session || (@model && @model.neo4j_session)
-     end
-
+.. _QueryProxy_all_rels_to:
 
 **#all_rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
@@ -363,6 +239,30 @@ Methods
        self.match_to(node).pluck(rel_var)
      end
 
+
+.. _QueryProxy_as_models:
+
+**#as_models**
+  Takes an Array of ActiveNode models and applies the appropriate WHERE clause
+  So for a `Teacher` model inheriting from a `Person` model and an `Article` model
+  if you called .as_models([Teacher, Article])
+  The where clause would look something like:
+    WHERE (node_var:Teacher:Person OR node_var:Article)
+
+  .. hidden-code-block:: ruby
+
+     def as_models(models)
+       where_clause = models.map do |model|
+         "`#{identity}`:" + model.mapped_label_names.map do |mapped_label_name|
+           "`#{mapped_label_name}`"
+         end.join(':')
+       end.join(' OR ')
+     
+       where("(#{where_clause})")
+     end
+
+
+.. _QueryProxy_association:
 
 **#association**
   The most recent node to start a QueryProxy chain.
@@ -375,15 +275,7 @@ Methods
      end
 
 
-**#association_id_key**
-  
-
-  .. hidden-code-block:: ruby
-
-     def association_id_key
-       self.association.nil? ? model.primary_key : self.association.target_class.primary_key
-     end
-
+.. _QueryProxy_base_query:
 
 **#base_query**
   
@@ -401,6 +293,8 @@ Methods
      end
 
 
+.. _QueryProxy_blank?:
+
 **#blank?**
   
 
@@ -411,19 +305,7 @@ Methods
      end
 
 
-**#build_deeper_query_proxy**
-  
-
-  .. hidden-code-block:: ruby
-
-     def build_deeper_query_proxy(method, args)
-       self.dup.tap do |new_query|
-         args.each do |arg|
-           new_query._add_links(links_for_arg(method, arg))
-         end
-       end
-     end
-
+.. _QueryProxy_caller:
 
 **#caller**
   The most recent node to start a QueryProxy chain.
@@ -436,15 +318,7 @@ Methods
      end
 
 
-**#clear_caller_cache**
-  
-
-  .. hidden-code-block:: ruby
-
-     def clear_caller_cache
-       self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
-     end
-
+.. _QueryProxy_context:
 
 **#context**
   Returns the value of attribute context
@@ -456,15 +330,7 @@ Methods
      end
 
 
-**#context=**
-  Sets the attribute context
-
-  .. hidden-code-block:: ruby
-
-     def context=(value)
-       @context = value
-     end
-
+.. _QueryProxy_count:
 
 **#count**
   
@@ -479,6 +345,8 @@ Methods
        end
      end
 
+
+.. _QueryProxy_create:
 
 **#create**
   
@@ -511,15 +379,7 @@ Methods
      end
 
 
-**#create_method**
-  
-
-  .. hidden-code-block:: ruby
-
-     def create_method
-       association.unique? ? :create_unique : :create
-     end
-
+.. _QueryProxy_delete:
 
 **#delete**
   Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
@@ -531,6 +391,8 @@ Methods
        clear_caller_cache
      end
 
+
+.. _QueryProxy_delete_all:
 
 **#delete_all**
   Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
@@ -550,6 +412,8 @@ Methods
      end
 
 
+.. _QueryProxy_delete_all_rels:
+
 **#delete_all_rels**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
 
@@ -559,6 +423,8 @@ Methods
        self.query.delete(rel_var).exec
      end
 
+
+.. _QueryProxy_destroy:
 
 **#destroy**
   Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
@@ -570,6 +436,8 @@ Methods
        clear_caller_cache
      end
 
+
+.. _QueryProxy_each:
 
 **#each**
   Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
@@ -587,6 +455,8 @@ Methods
        end
      end
 
+
+.. _QueryProxy_each_for_destruction:
 
 **#each_for_destruction**
   Used as part of `dependent: :destroy` and may not have any utility otherwise.
@@ -609,6 +479,8 @@ Methods
      end
 
 
+.. _QueryProxy_each_rel:
+
 **#each_rel**
   When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
   For example, to return the relationship between a given student and their lessons:
@@ -620,6 +492,8 @@ Methods
        block_given? ? each(false, true, &block) : to_enum(:each, false, true)
      end
 
+
+.. _QueryProxy_each_with_rel:
 
 **#each_with_rel**
   When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
@@ -633,6 +507,8 @@ Methods
      end
 
 
+.. _QueryProxy_empty?:
+
 **#empty?**
   
 
@@ -643,24 +519,7 @@ Methods
      end
 
 
-**#enumerable_query**
-  Executes the query against the database if the results are not already present in a node's association cache. This method is
-  shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
-
-  .. hidden-code-block:: ruby
-
-     def enumerable_query(node, rel = nil)
-       pluck_this = rel.nil? ? [node] : [node, rel]
-       return self.pluck(*pluck_this) if @association.nil? || caller.nil?
-       cypher_string = self.to_cypher_with_params(pluck_this)
-       association_collection = caller.association_instance_get(cypher_string, @association)
-       if association_collection.nil?
-         association_collection = self.pluck(*pluck_this)
-         caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
-       end
-       association_collection
-     end
-
+.. _QueryProxy_exists?:
 
 **#exists?**
   
@@ -676,22 +535,7 @@ Methods
      end
 
 
-**#exists_query_start**
-  
-
-  .. hidden-code-block:: ruby
-
-     def exists_query_start(condition, target)
-       case condition
-       when Integer
-         self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
-       when Hash
-         self.where(condition.keys.first => condition.values.first)
-       else
-         self
-       end
-     end
-
+.. _QueryProxy_find:
 
 **#find**
   Give ability to call `#find` on associations to get a scoped find
@@ -703,6 +547,8 @@ Methods
        scoping { @model.find(*args) }
      end
 
+
+.. _QueryProxy_find_each:
 
 **#find_each**
   
@@ -716,6 +562,8 @@ Methods
      end
 
 
+.. _QueryProxy_find_in_batches:
+
 **#find_in_batches**
   
 
@@ -728,6 +576,8 @@ Methods
      end
 
 
+.. _QueryProxy_first:
+
 **#first**
   
 
@@ -738,6 +588,8 @@ Methods
      end
 
 
+.. _QueryProxy_first_and_last:
+
 **#first_and_last**
   
 
@@ -747,6 +599,8 @@ Methods
        self.order(order).limit(1).pluck(target).first
      end
 
+
+.. _QueryProxy_first_rel_to:
 
 **#first_rel_to**
   Gives you the first relationship between the last link of a QueryProxy chain and a given node
@@ -759,6 +613,8 @@ Methods
      end
 
 
+.. _QueryProxy_identity:
+
 **#identity**
   
 
@@ -769,15 +625,7 @@ Methods
      end
 
 
-**#ids_array**
-  
-
-  .. hidden-code-block:: ruby
-
-     def ids_array(node)
-       node.first.respond_to?(:id) ? node.map!(&:id) : node
-     end
-
+.. _QueryProxy_include?:
 
 **#include?**
   
@@ -791,6 +639,8 @@ Methods
        end
      end
 
+
+.. _QueryProxy_initialize:
 
 **#initialize**
   QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
@@ -832,6 +682,8 @@ Methods
      end
 
 
+.. _QueryProxy_last:
+
 **#last**
   
 
@@ -841,6 +693,8 @@ Methods
        query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
      end
 
+
+.. _QueryProxy_length:
 
 **#length**
   
@@ -856,19 +710,7 @@ Methods
      end
 
 
-**#links_for_arg**
-  
-
-  .. hidden-code-block:: ruby
-
-     def links_for_arg(clause, arg)
-       default = [Link.new(clause, arg)]
-     
-       Link.for_clause(clause, arg, @model) || default
-     rescue NoMethodError
-       default
-     end
-
+.. _QueryProxy_match_to:
 
 **#match_to**
   Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
@@ -893,6 +735,8 @@ Methods
      end
 
 
+.. _QueryProxy_method_missing:
+
 **#method_missing**
   QueryProxy objects act as a representation of a model at the class level so we pass through calls
   This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
@@ -909,6 +753,8 @@ Methods
      end
 
 
+.. _QueryProxy_model:
+
 **#model**
   The most recent node to start a QueryProxy chain.
   Will be nil when using QueryProxy chains on class methods.
@@ -920,6 +766,8 @@ Methods
      end
 
 
+.. _QueryProxy_node_identity:
+
 **#node_identity**
   
 
@@ -929,6 +777,8 @@ Methods
        @node_var || _result_string
      end
 
+
+.. _QueryProxy_node_var:
 
 **#node_var**
   The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
@@ -941,6 +791,8 @@ Methods
      end
 
 
+.. _QueryProxy_node_where:
+
 **#node_where**
   Since there is a rel_where method, it seems only natural for there to be node_where
 
@@ -949,6 +801,8 @@ Methods
      alias_method :node_where, :where
 
 
+.. _QueryProxy_offset:
+
 **#offset**
   
 
@@ -956,6 +810,8 @@ Methods
 
      alias_method :offset, :skip
 
+
+.. _QueryProxy_optional:
 
 **#optional**
   A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -967,6 +823,8 @@ Methods
      end
 
 
+.. _QueryProxy_optional?:
+
 **#optional?**
   
 
@@ -977,6 +835,8 @@ Methods
      end
 
 
+.. _QueryProxy_order_by:
+
 **#order_by**
   
 
@@ -984,6 +844,8 @@ Methods
 
      alias_method :order_by, :order
 
+
+.. _QueryProxy_params:
 
 **#params**
   
@@ -996,6 +858,8 @@ Methods
        end
      end
 
+
+.. _QueryProxy_pluck:
 
 **#pluck**
   For getting variables which have been defined as part of the association chain
@@ -1016,6 +880,8 @@ Methods
      end
 
 
+.. _QueryProxy_query:
+
 **#query**
   Like calling #query_as, but for when you don't care about the variable name
 
@@ -1025,6 +891,8 @@ Methods
        query_as(identity)
      end
 
+
+.. _QueryProxy_query_as:
 
 **#query_as**
   Build a Neo4j::Core::Query object for the QueryProxy. This is necessary when you want to take an existing QueryProxy chain
@@ -1041,6 +909,8 @@ Methods
      end
 
 
+.. _QueryProxy_query_proxy:
+
 **#query_proxy**
   Returns the value of attribute query_proxy
 
@@ -1051,15 +921,7 @@ Methods
      end
 
 
-**#query_with_target**
-  
-
-  .. hidden-code-block:: ruby
-
-     def query_with_target(target)
-       yield(target || identity)
-     end
-
+.. _QueryProxy_read_attribute_for_serialization:
 
 **#read_attribute_for_serialization**
   
@@ -1071,6 +933,8 @@ Methods
      end
 
 
+.. _QueryProxy_rel:
+
 **#rel**
   
 
@@ -1080,6 +944,8 @@ Methods
        rels.first
      end
 
+
+.. _QueryProxy_rel_identity:
 
 **#rel_identity**
   
@@ -1093,6 +959,8 @@ Methods
      end
 
 
+.. _QueryProxy_rel_var:
+
 **#rel_var**
   The relationship identifier most recently used by the QueryProxy chain.
 
@@ -1102,6 +970,8 @@ Methods
        @rel_var
      end
 
+
+.. _QueryProxy_rels:
 
 **#rels**
   
@@ -1115,6 +985,8 @@ Methods
      end
 
 
+.. _QueryProxy_rels_to:
+
 **#rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
 
@@ -1124,6 +996,8 @@ Methods
        self.match_to(node).pluck(rel_var)
      end
 
+
+.. _QueryProxy_replace_with:
 
 **#replace_with**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
@@ -1138,6 +1012,8 @@ Methods
        nodes.each { |node| self << node }
      end
 
+
+.. _QueryProxy_scoping:
 
 **#scoping**
   Scope all queries to the current scope.
@@ -1160,6 +1036,8 @@ Methods
      end
 
 
+.. _QueryProxy_size:
+
 **#size**
   
 
@@ -1174,6 +1052,8 @@ Methods
      end
 
 
+.. _QueryProxy_start_object:
+
 **#start_object**
   Returns the value of attribute start_object
 
@@ -1183,6 +1063,8 @@ Methods
        @start_object
      end
 
+
+.. _QueryProxy_starting_query:
 
 **#starting_query**
   The most recent node to start a QueryProxy chain.
@@ -1195,6 +1077,8 @@ Methods
      end
 
 
+.. _QueryProxy_to_cypher:
+
 **#to_cypher**
   Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
 
@@ -1204,6 +1088,8 @@ Methods
        query.to_cypher
      end
 
+
+.. _QueryProxy_to_cypher_with_params:
 
 **#to_cypher_with_params**
   Returns a string of the cypher query with return objects and params
@@ -1216,6 +1102,8 @@ Methods
      end
 
 
+.. _QueryProxy_unique_nodes:
+
 **#unique_nodes**
   This will match nodes who only have a single relationship of a given type.
   It's used  by `dependent: :delete_orphans` and `dependent: :destroy_orphans` and may not have much utility otherwise.
@@ -1227,22 +1115,6 @@ Methods
      
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)
-     end
-
-
-**#unique_nodes_query**
-  
-
-  .. hidden-code-block:: ruby
-
-     def unique_nodes_query(association, self_identifer, other_node, other_rel)
-       query.with(identity).proxy_as_optional(caller.class, self_identifer)
-         .send(association.name, other_node, other_rel)
-         .query
-         .with(other_node)
-         .match("()#{association.arrow_cypher}(#{other_node})")
-         .with(other_node, count: 'count(*)')
-         .where('count = 1')
      end
 
 

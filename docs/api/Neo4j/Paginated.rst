@@ -44,7 +44,9 @@ Methods
 -------
 
 
-**#create_from**
+.. _Paginated_create_from:
+
+**.create_from**
   
 
   .. hidden-code-block:: ruby
@@ -61,6 +63,8 @@ Methods
      end
 
 
+.. _Paginated_current_page:
+
 **#current_page**
   Returns the value of attribute current_page
 
@@ -70,6 +74,8 @@ Methods
        @current_page
      end
 
+
+.. _Paginated_initialize:
 
 **#initialize**
   
@@ -83,6 +89,8 @@ Methods
      end
 
 
+.. _Paginated_items:
+
 **#items**
   Returns the value of attribute items
 
@@ -92,6 +100,8 @@ Methods
        @items
      end
 
+
+.. _Paginated_total:
 
 **#total**
   Returns the value of attribute total

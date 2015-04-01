@@ -38,6 +38,8 @@ Methods
 -------
 
 
+.. _RecordInvalidError_initialize:
+
 **#initialize**
   
 
@@ -48,6 +50,8 @@ Methods
        super(@record.errors.full_messages.join(', '))
      end
 
+
+.. _RecordInvalidError_record:
 
 **#record**
   Returns the value of attribute record

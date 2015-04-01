@@ -42,6 +42,8 @@ Methods
 -------
 
 
+.. _Query_proxy_as:
+
 **#proxy_as**
   Creates a Neo4j::ActiveNode::Query::QueryProxy object that builds off of a Core::Query object.
 
@@ -53,6 +55,8 @@ Methods
      end
 
 
+.. _Query_proxy_as_optional:
+
 **#proxy_as_optional**
   Calls proxy_as with `optional` set true. This doesn't offer anything different from calling `proxy_as` directly but it may be more readable.
 
@@ -63,6 +67,8 @@ Methods
      end
 
 
+.. _Query_proxy_chain_level:
+
 **#proxy_chain_level**
   For instances where you turn a QueryProxy into a Query and then back to a QueryProxy with `#proxy_as`
 
@@ -72,6 +78,8 @@ Methods
        @proxy_chain_level
      end
 
+
+.. _Query_proxy_chain_level=:
 
 **#proxy_chain_level=**
   For instances where you turn a QueryProxy into a Query and then back to a QueryProxy with `#proxy_as`

@@ -36,7 +36,9 @@ Methods
 -------
 
 
-**#source_root**
+.. _Base_source_root:
+
+**.source_root**
   
 
   .. hidden-code-block:: ruby

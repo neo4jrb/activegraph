@@ -44,6 +44,8 @@ Methods
 -------
 
 
+.. _ClassMethods_create:
+
 **#create**
   Creates and saves a new node
 
@@ -61,6 +63,8 @@ Methods
        end
      end
 
+
+.. _ClassMethods_create!:
 
 **#create!**
   Same as #create, but raises an error if there is a problem during save.
@@ -81,6 +85,8 @@ Methods
      end
 
 
+.. _ClassMethods_find_or_create_by:
+
 **#find_or_create_by**
   Finds the first node with the given attributes, or calls create if none found
 
@@ -91,6 +97,8 @@ Methods
      end
 
 
+.. _ClassMethods_find_or_create_by!:
+
 **#find_or_create_by!**
   Same as #find_or_create_by, but calls #create! so it raises an error if there is a problem during save.
 
@@ -100,6 +108,8 @@ Methods
        find_by(attributes) || create!(attributes, &block)
      end
 
+
+.. _ClassMethods_load_entity:
 
 **#load_entity**
   

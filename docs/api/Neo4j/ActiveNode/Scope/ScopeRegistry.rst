@@ -46,6 +46,8 @@ Methods
 -------
 
 
+.. _ScopeRegistry_initialize:
+
 **#initialize**
   
 
@@ -56,17 +58,7 @@ Methods
      end
 
 
-**#raise_invalid_scope_type!**
-  
-
-  .. hidden-code-block:: ruby
-
-     def raise_invalid_scope_type!(scope_type)
-       return if VALID_SCOPE_TYPES.include?(scope_type)
-     
-       fail ArgumentError, "Invalid scope type '#{scope_type}' sent to the registry. Scope types must be included in VALID_SCOPE_TYPES"
-     end
-
+.. _ScopeRegistry_set_value_for:
 
 **#set_value_for**
   Sets the +value+ for a given +scope_type+ and +variable_name+.
@@ -78,6 +70,8 @@ Methods
        @registry[scope_type][variable_name] = value
      end
 
+
+.. _ScopeRegistry_value_for:
 
 **#value_for**
   Obtains the value for a given +scope_name+ and +variable_name+.

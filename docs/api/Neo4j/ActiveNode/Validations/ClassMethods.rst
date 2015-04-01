@@ -36,6 +36,8 @@ Methods
 -------
 
 
+.. _ClassMethods_validates_uniqueness_of:
+
 **#validates_uniqueness_of**
   
 

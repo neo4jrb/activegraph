@@ -64,7 +64,9 @@ Methods
 -------
 
 
-**#[]**
+.. _Config_[]:
+
+**.[]**
   
 
   .. hidden-code-block:: ruby
@@ -74,7 +76,9 @@ Methods
      end
 
 
-**#[]=**
+.. _Config_[]=:
+
+**.[]=**
   Sets the value of a config entry.
 
   .. hidden-code-block:: ruby
@@ -84,7 +88,9 @@ Methods
      end
 
 
-**#class_name_property**
+.. _Config_class_name_property:
+
+**.class_name_property**
   
 
   .. hidden-code-block:: ruby
@@ -94,7 +100,9 @@ Methods
      end
 
 
-**#configuration**
+.. _Config_configuration:
+
+**.configuration**
   Reads from the default_file if configuration is not set already
 
   .. hidden-code-block:: ruby
@@ -108,7 +116,9 @@ Methods
      end
 
 
-**#default_file**
+.. _Config_default_file:
+
+**.default_file**
   
 
   .. hidden-code-block:: ruby
@@ -118,7 +128,9 @@ Methods
      end
 
 
-**#default_file=**
+.. _Config_default_file=:
+
+**.default_file=**
   Sets the location of the configuration YAML file and old deletes configurations.
 
   .. hidden-code-block:: ruby
@@ -130,7 +142,9 @@ Methods
      end
 
 
-**#defaults**
+.. _Config_defaults:
+
+**.defaults**
   
 
   .. hidden-code-block:: ruby
@@ -141,7 +155,9 @@ Methods
      end
 
 
-**#delete**
+.. _Config_delete:
+
+**.delete**
   Remove the value of a config entry.
 
   .. hidden-code-block:: ruby
@@ -151,7 +167,9 @@ Methods
      end
 
 
-**#delete_all**
+.. _Config_delete_all:
+
+**.delete_all**
   Remove all configuration. This can be useful for testing purpose.
 
   .. hidden-code-block:: ruby
@@ -161,7 +179,9 @@ Methods
      end
 
 
-**#include_root_in_json**
+.. _Config_include_root_in_json:
+
+**.include_root_in_json**
   
 
   .. hidden-code-block:: ruby
@@ -172,7 +192,9 @@ Methods
      end
 
 
-**#to_hash**
+.. _Config_to_hash:
+
+**.to_hash**
   
 
   .. hidden-code-block:: ruby
@@ -182,7 +204,9 @@ Methods
      end
 
 
-**#to_yaml**
+.. _Config_to_yaml:
+
+**.to_yaml**
   
 
   .. hidden-code-block:: ruby
@@ -192,7 +216,9 @@ Methods
      end
 
 
-**#use**
+.. _Config_use:
+
+**.use**
   Yields the configuration
 
   .. hidden-code-block:: ruby
