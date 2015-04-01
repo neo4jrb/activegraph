@@ -544,6 +544,23 @@ describe Neo4j::ActiveNode do
       expect(chris.links).to eq links
       expect(chris.links.class).to eq Hash
     end
+
+    describe 'DateTime' do
+      before(:each) { Person.delete_all }
+
+      let(:datetime) { Time.new(2015, 1, 2, 3, 4, 5, '+06:00') }
+      let!(:person) { Person.create(name: 'DateTime', datetime: datetime) }
+
+      let(:datetime_db_value) do
+        Neo4j::Session.query.match(p: :Person)
+          .where(p: {neo_id: person.neo_id})
+          .pluck(p: :datetime).first
+      end
+
+      it 'saves as date/time string by default' do
+        expect(datetime_db_value).to eq(1420146245)
+      end
+    end
   end
 
   describe 'cache_key' do
