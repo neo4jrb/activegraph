@@ -20,6 +20,18 @@ module Neo4j::ActiveNode
   #     end
   #   end
   #
+  # @example using already exsting ids that you don't want a constraint added to
+  #   class Person
+  #     include Neo4j::ActiveNode
+  #     property :title
+  #     validates :title, :presence => true
+  #     id_property :id, on: :id_builder, constraint: false
+  #
+  #     def id_builder
+  #       # only need to fill this out if you're gonna write to the db
+  #     end
+  #   end
+  #
   module IdProperty
     extend ActiveSupport::Concern
 
@@ -125,22 +137,12 @@ module Neo4j::ActiveNode
       end
 
       def id_property(name, conf = {})
-        begin
-          if id_property?
-            unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
-              drop_constraint(id_property_name, type: :unique)
-            end
-          end
-        rescue Neo4j::Server::CypherResponse::ResponseError
-        end
-
+        id_property_constraint(name)
         @id_property_info = {name: name, type: conf}
         TypeMethods.define_id_methods(self, name, conf)
-        constraint name, type: :unique
+        constraint name, type: :unique unless conf[:constraint] == false
 
-        self.define_singleton_method(:find_by_id) do |key|
-          self.where(name => key).first
-        end
+        self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
       end
 
       # rubocop:disable Style/PredicateName
@@ -164,6 +166,18 @@ module Neo4j::ActiveNode
       end
 
       alias_method :primary_key, :id_property_name
+
+      private
+
+      def id_property_constraint(name)
+        if id_property?
+          unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
+            # Neo4j Embedded throws a crazy error when a constraint can't be dropped
+            drop_constraint(id_property_name, type: :unique)
+          end
+        end
+      rescue Neo4j::Server::CypherResponse::ResponseError, Java::OrgNeo4jCypher::CypherExecutionException
+      end
     end
   end
 end
