@@ -121,8 +121,8 @@ module Neo4j::ActiveNode
           association_query_proxy(name).replace_with(other_nodes)
         end
 
-        define_class_method(name) do |node = nil, rel = nil, proxy_obj = nil, options = {}|
-          association_query_proxy(name, {node: node, rel: rel, proxy_obj: proxy_obj}.merge(options))
+        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
+          association_query_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
         end
       end
 
@@ -149,8 +149,8 @@ module Neo4j::ActiveNode
           association_query_proxy(name).replace_with(other_node)
         end
 
-        define_class_method(name) do |node = nil, rel = nil, query_proxy = nil, options = {}|
-          association_query_proxy(name, {query_proxy: query_proxy, node: node, rel: rel}.merge(options))
+        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
+          association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
         end
       end
 
@@ -164,7 +164,7 @@ module Neo4j::ActiveNode
       end
 
       def association_query_proxy(name, options = {})
-        query_proxy = options[:proxy_obj] || default_association_proxy_obj(name)
+        query_proxy = options[:previous_query_proxy] || default_association_query_proxy(name)
 
         Neo4j::ActiveNode::Query::QueryProxy.new(associations[name].target_class_or_nil,
                                                  associations[name],
@@ -175,7 +175,7 @@ module Neo4j::ActiveNode
                                                   caller: query_proxy.caller}.merge(options))
       end
 
-      def default_association_proxy_obj(name)
+      def default_association_query_proxy(name)
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize,
                                                  nil,
                                                  session: neo4j_session,
