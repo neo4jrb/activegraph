@@ -49,6 +49,12 @@ module Neo4j
           @params = @query_proxy ? @query_proxy.instance_variable_get('@params') : {}
         end
 
+        def inspect
+          clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
+
+          "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+        end
+
         attr_reader :start_object, :query_proxy
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
