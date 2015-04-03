@@ -67,7 +67,7 @@ module Neo4j::ActiveNode
     end
 
     def association_query_proxy(name, options = {})
-      self.class.association_query_proxy(name, {start_object: self}.merge(options))
+      self.class.send(:association_query_proxy, name, {start_object: self}.merge(options))
     end
 
     private
