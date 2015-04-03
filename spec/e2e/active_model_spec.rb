@@ -558,7 +558,7 @@ describe Neo4j::ActiveNode do
       end
 
       it 'saves as date/time string by default' do
-        expect(datetime_db_value).to eq(1420146245)
+        expect(datetime_db_value).to eq(1_420_146_245)
       end
     end
   end
