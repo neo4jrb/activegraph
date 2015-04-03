@@ -123,6 +123,38 @@ module Neo4j::ActiveNode
       #   associated with the ``Person`` nodes thus far represented in the QueryProxy chain.
       #   For example:
       #     ``company.people.where(age: 40).vehicles``
+      #
+      # Arguments:
+      #   **direction:**
+      #     **Available values:** ``:in``, ``:out``, or ``:both``.
+      #
+      #     Refers to the relative to the model on which the association is being defined.
+      # 
+      #     Example:
+      #       ``Person.has_many :out, :posts, type: :wrote``
+      #
+      #         means that a `WROTE` relationship goes from a `Person` node to a `Post` node
+      #
+      #   **name:**
+      #     The name of the association.  The affects the methods which are created (see above).
+      #     The name is also used to form default assumptions about the model which is being referred to
+      #
+      #     Example:
+      #       ``Person.has_many :out, :posts``
+      #
+      #       will assume a `model_class` option of ``'Post'`` unless otherwise specified
+      #
+      #   **options:** A ``Hash`` of options.  Allowed keys are:
+      #     *type*: The Neo4j relationship type
+      #
+      #     *model_class*: The model class to which the association is referring.  Can be either a
+      #       model `Class` object or a string (or an Array of same).
+      #       **A string is recommended** to avoid load-time issues
+      #
+      #     *dependent*: Enables deletion cascading.
+      #       **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
+      #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
+      #
       def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
         name = name.to_sym
         build_association(:has_many, direction, name, options)
@@ -130,6 +162,16 @@ module Neo4j::ActiveNode
         define_has_many_methods(name)
       end
 
+      # For defining an "has one" association on a model.  This defines a set of methods on
+      # your model instances.  For instance, if you define the association on a Person model:
+      #
+      # has_one :out, :vehicle, type: :has_vehicle
+      #
+      # This would define the methods: ``#vehicle``, ``#vehicle=``, and ``.vehicle``.
+      #
+      # See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
+      # not specified here
+      # 
       def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
         name = name.to_sym
         build_association(:has_one, direction, name, options)

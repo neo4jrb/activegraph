@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _RelTypeConverters_decorated_rel_type:
+
+.. _`Neo4j/Shared/RelTypeConverters#decorated_rel_type`:
 
 **#decorated_rel_type**
   
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _RelTypeConverters_decorated_rel_type:
+
+.. _`Neo4j/Shared/RelTypeConverters.decorated_rel_type`:
 
 **.decorated_rel_type**
   
@@ -76,7 +78,8 @@ Methods
      end
 
 
-.. _RelTypeConverters_rel_transformer:
+
+.. _`Neo4j/Shared/RelTypeConverters.rel_transformer`:
 
 **.rel_transformer**
   Determines how relationship types should look when inferred based on association or ActiveRel model name.

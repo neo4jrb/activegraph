@@ -38,9 +38,10 @@ Methods
 -------
 <% if @module.respond_to?(:meths) %>
 <% @module.meths.select {|meth| meth.visibility == :public }.sort_by {|m| m.name.to_s }.each do |meth| %>
-.. _<%= @module.name %>_<%= meth.name %>:
+<% method_char = (meth.scope == :class ? '.' : '#') %>
+.. _`<%= @path %><%= method_char %><%= meth.name %>`:
 
-**<%= meth.scope == :class ? '.' : '#' %><%= meth.name %>**
+**<%= method_char %><%= meth.name %>**
   <%= meth.base_docstring.gsub(/([\n\r])/, '\1  ') %>
 
   .. hidden-code-block:: ruby

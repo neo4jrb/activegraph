@@ -58,7 +58,8 @@ Methods
 -------
 
 
-.. _Query_as:
+
+.. _`Neo4j/ActiveNode/Query#as`:
 
 **#as**
   Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
@@ -71,7 +72,8 @@ Methods
      end
 
 
-.. _Query_query_as:
+
+.. _`Neo4j/ActiveNode/Query#query_as`:
 
 **#query_as**
   Returns a Query object with the current node matched the specified variable name

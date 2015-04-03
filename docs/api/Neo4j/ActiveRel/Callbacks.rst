@@ -36,7 +36,8 @@ Methods
 -------
 
 
-.. _Callbacks_destroy:
+
+.. _`Neo4j/ActiveRel/Callbacks#destroy`:
 
 **#destroy**
   :nodoc:
@@ -56,7 +57,8 @@ Methods
      end
 
 
-.. _Callbacks_save:
+
+.. _`Neo4j/ActiveRel/Callbacks#save`:
 
 **#save**
   
@@ -71,7 +73,8 @@ Methods
      end
 
 
-.. _Callbacks_touch:
+
+.. _`Neo4j/ActiveRel/Callbacks#touch`:
 
 **#touch**
   :nodoc:

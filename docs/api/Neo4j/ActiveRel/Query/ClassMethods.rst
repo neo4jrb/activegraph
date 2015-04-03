@@ -58,7 +58,8 @@ Methods
 -------
 
 
-.. _ClassMethods_all:
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#all`:
 
 **#all**
   Performs a basic match on the relationship, returning all results.
@@ -71,7 +72,8 @@ Methods
      end
 
 
-.. _ClassMethods_find:
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#find`:
 
 **#find**
   Returns the object with the specified neo4j id.
@@ -84,7 +86,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_by_id:
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#find_by_id`:
 
 **#find_by_id**
   Loads the relationship using its neo_id.
@@ -96,7 +99,8 @@ Methods
      end
 
 
-.. _ClassMethods_first:
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#first`:
 
 **#first**
   
@@ -108,7 +112,8 @@ Methods
      end
 
 
-.. _ClassMethods_last:
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#last`:
 
 **#last**
   
@@ -120,7 +125,8 @@ Methods
      end
 
 
-.. _ClassMethods_where:
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#where`:
 
 **#where**
   Performs a very basic match on the relationship.

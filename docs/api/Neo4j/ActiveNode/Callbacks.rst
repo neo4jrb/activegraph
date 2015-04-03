@@ -34,7 +34,8 @@ Methods
 -------
 
 
-.. _Callbacks_destroy:
+
+.. _`Neo4j/ActiveNode/Callbacks#destroy`:
 
 **#destroy**
   :nodoc:
@@ -54,7 +55,8 @@ Methods
      end
 
 
-.. _Callbacks_touch:
+
+.. _`Neo4j/ActiveNode/Callbacks#touch`:
 
 **#touch**
   :nodoc:

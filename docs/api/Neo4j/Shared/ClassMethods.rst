@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _ClassMethods_neo4j_session:
+
+.. _`Neo4j/Shared/ClassMethods#neo4j_session`:
 
 **#neo4j_session**
   
@@ -57,7 +58,8 @@ Methods
      end
 
 
-.. _ClassMethods_neo4j_session_name:
+
+.. _`Neo4j/Shared/ClassMethods#neo4j_session_name`:
 
 **#neo4j_session_name**
   
@@ -71,7 +73,8 @@ Methods
      end
 
 
-.. _ClassMethods_neo4j_session_name=:
+
+.. _`Neo4j/Shared/ClassMethods#neo4j_session_name=`:
 
 **#neo4j_session_name=**
   Sets the attribute neo4j_session_name

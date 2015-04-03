@@ -144,7 +144,8 @@ Methods
 -------
 
 
-.. _QueryProxy_<<:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#<<`:
 
 **#<<**
   To add a relationship for the node for the association on this QueryProxy
@@ -158,7 +159,8 @@ Methods
      end
 
 
-.. _QueryProxy_==:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#==`:
 
 **#==**
   Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
@@ -171,7 +173,8 @@ Methods
      end
 
 
-.. _QueryProxy_[]:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#[]`:
 
 **#[]**
   
@@ -185,7 +188,8 @@ Methods
      end
 
 
-.. _QueryProxy__create_relationship:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#_create_relationship`:
 
 **#_create_relationship**
   
@@ -200,7 +204,8 @@ Methods
      end
 
 
-.. _QueryProxy__model_label_string:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#_model_label_string`:
 
 **#_model_label_string**
   
@@ -214,7 +219,8 @@ Methods
      end
 
 
-.. _QueryProxy__nodeify:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#_nodeify`:
 
 **#_nodeify**
   
@@ -228,7 +234,8 @@ Methods
      end
 
 
-.. _QueryProxy_all_rels_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#all_rels_to`:
 
 **#all_rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
@@ -240,7 +247,8 @@ Methods
      end
 
 
-.. _QueryProxy_as_models:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#as_models`:
 
 **#as_models**
   Takes an Array of ActiveNode models and applies the appropriate WHERE clause
@@ -262,7 +270,8 @@ Methods
      end
 
 
-.. _QueryProxy_association:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#association`:
 
 **#association**
   The most recent node to start a QueryProxy chain.
@@ -275,7 +284,8 @@ Methods
      end
 
 
-.. _QueryProxy_base_query:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#base_query`:
 
 **#base_query**
   
@@ -293,7 +303,8 @@ Methods
      end
 
 
-.. _QueryProxy_blank?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#blank?`:
 
 **#blank?**
   
@@ -305,7 +316,8 @@ Methods
      end
 
 
-.. _QueryProxy_caller:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#caller`:
 
 **#caller**
   The most recent node to start a QueryProxy chain.
@@ -318,7 +330,8 @@ Methods
      end
 
 
-.. _QueryProxy_context:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#context`:
 
 **#context**
   Returns the value of attribute context
@@ -330,7 +343,8 @@ Methods
      end
 
 
-.. _QueryProxy_count:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#count`:
 
 **#count**
   
@@ -346,7 +360,8 @@ Methods
      end
 
 
-.. _QueryProxy_create:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#create`:
 
 **#create**
   
@@ -379,7 +394,8 @@ Methods
      end
 
 
-.. _QueryProxy_delete:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#delete`:
 
 **#delete**
   Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
@@ -392,7 +408,8 @@ Methods
      end
 
 
-.. _QueryProxy_delete_all:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#delete_all`:
 
 **#delete_all**
   Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
@@ -412,7 +429,8 @@ Methods
      end
 
 
-.. _QueryProxy_delete_all_rels:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#delete_all_rels`:
 
 **#delete_all_rels**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
@@ -424,7 +442,8 @@ Methods
      end
 
 
-.. _QueryProxy_destroy:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#destroy`:
 
 **#destroy**
   Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
@@ -437,7 +456,8 @@ Methods
      end
 
 
-.. _QueryProxy_each:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#each`:
 
 **#each**
   Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
@@ -456,7 +476,8 @@ Methods
      end
 
 
-.. _QueryProxy_each_for_destruction:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#each_for_destruction`:
 
 **#each_for_destruction**
   Used as part of `dependent: :destroy` and may not have any utility otherwise.
@@ -479,7 +500,8 @@ Methods
      end
 
 
-.. _QueryProxy_each_rel:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#each_rel`:
 
 **#each_rel**
   When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
@@ -493,7 +515,8 @@ Methods
      end
 
 
-.. _QueryProxy_each_with_rel:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#each_with_rel`:
 
 **#each_with_rel**
   When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
@@ -507,7 +530,8 @@ Methods
      end
 
 
-.. _QueryProxy_empty?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#empty?`:
 
 **#empty?**
   
@@ -519,7 +543,8 @@ Methods
      end
 
 
-.. _QueryProxy_exists?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#exists?`:
 
 **#exists?**
   
@@ -535,7 +560,8 @@ Methods
      end
 
 
-.. _QueryProxy_find:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#find`:
 
 **#find**
   Give ability to call `#find` on associations to get a scoped find
@@ -548,7 +574,8 @@ Methods
      end
 
 
-.. _QueryProxy_find_each:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#find_each`:
 
 **#find_each**
   
@@ -562,7 +589,8 @@ Methods
      end
 
 
-.. _QueryProxy_find_in_batches:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#find_in_batches`:
 
 **#find_in_batches**
   
@@ -576,7 +604,8 @@ Methods
      end
 
 
-.. _QueryProxy_first:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#first`:
 
 **#first**
   
@@ -588,7 +617,8 @@ Methods
      end
 
 
-.. _QueryProxy_first_and_last:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#first_and_last`:
 
 **#first_and_last**
   
@@ -600,7 +630,8 @@ Methods
      end
 
 
-.. _QueryProxy_first_rel_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#first_rel_to`:
 
 **#first_rel_to**
   Gives you the first relationship between the last link of a QueryProxy chain and a given node
@@ -613,7 +644,8 @@ Methods
      end
 
 
-.. _QueryProxy_identity:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#identity`:
 
 **#identity**
   
@@ -625,7 +657,8 @@ Methods
      end
 
 
-.. _QueryProxy_include?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#include?`:
 
 **#include?**
   
@@ -640,7 +673,8 @@ Methods
      end
 
 
-.. _QueryProxy_initialize:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#initialize`:
 
 **#initialize**
   QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
@@ -682,7 +716,8 @@ Methods
      end
 
 
-.. _QueryProxy_last:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#last`:
 
 **#last**
   
@@ -694,7 +729,8 @@ Methods
      end
 
 
-.. _QueryProxy_length:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#length`:
 
 **#length**
   
@@ -710,7 +746,8 @@ Methods
      end
 
 
-.. _QueryProxy_match_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#match_to`:
 
 **#match_to**
   Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
@@ -735,7 +772,8 @@ Methods
      end
 
 
-.. _QueryProxy_method_missing:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#method_missing`:
 
 **#method_missing**
   QueryProxy objects act as a representation of a model at the class level so we pass through calls
@@ -753,7 +791,8 @@ Methods
      end
 
 
-.. _QueryProxy_model:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#model`:
 
 **#model**
   The most recent node to start a QueryProxy chain.
@@ -766,7 +805,8 @@ Methods
      end
 
 
-.. _QueryProxy_node_identity:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#node_identity`:
 
 **#node_identity**
   
@@ -778,7 +818,8 @@ Methods
      end
 
 
-.. _QueryProxy_node_var:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#node_var`:
 
 **#node_var**
   The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
@@ -791,7 +832,8 @@ Methods
      end
 
 
-.. _QueryProxy_node_where:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#node_where`:
 
 **#node_where**
   Since there is a rel_where method, it seems only natural for there to be node_where
@@ -801,7 +843,8 @@ Methods
      alias_method :node_where, :where
 
 
-.. _QueryProxy_offset:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#offset`:
 
 **#offset**
   
@@ -811,7 +854,8 @@ Methods
      alias_method :offset, :skip
 
 
-.. _QueryProxy_optional:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#optional`:
 
 **#optional**
   A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -823,7 +867,8 @@ Methods
      end
 
 
-.. _QueryProxy_optional?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#optional?`:
 
 **#optional?**
   
@@ -835,7 +880,8 @@ Methods
      end
 
 
-.. _QueryProxy_order_by:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#order_by`:
 
 **#order_by**
   
@@ -845,7 +891,8 @@ Methods
      alias_method :order_by, :order
 
 
-.. _QueryProxy_params:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#params`:
 
 **#params**
   
@@ -859,7 +906,8 @@ Methods
      end
 
 
-.. _QueryProxy_pluck:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#pluck`:
 
 **#pluck**
   For getting variables which have been defined as part of the association chain
@@ -880,7 +928,8 @@ Methods
      end
 
 
-.. _QueryProxy_query:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#query`:
 
 **#query**
   Like calling #query_as, but for when you don't care about the variable name
@@ -892,7 +941,8 @@ Methods
      end
 
 
-.. _QueryProxy_query_as:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#query_as`:
 
 **#query_as**
   Build a Neo4j::Core::Query object for the QueryProxy. This is necessary when you want to take an existing QueryProxy chain
@@ -909,7 +959,8 @@ Methods
      end
 
 
-.. _QueryProxy_query_proxy:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#query_proxy`:
 
 **#query_proxy**
   Returns the value of attribute query_proxy
@@ -921,7 +972,8 @@ Methods
      end
 
 
-.. _QueryProxy_read_attribute_for_serialization:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#read_attribute_for_serialization`:
 
 **#read_attribute_for_serialization**
   
@@ -933,7 +985,8 @@ Methods
      end
 
 
-.. _QueryProxy_rel:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#rel`:
 
 **#rel**
   
@@ -945,7 +998,8 @@ Methods
      end
 
 
-.. _QueryProxy_rel_identity:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#rel_identity`:
 
 **#rel_identity**
   
@@ -959,7 +1013,8 @@ Methods
      end
 
 
-.. _QueryProxy_rel_var:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#rel_var`:
 
 **#rel_var**
   The relationship identifier most recently used by the QueryProxy chain.
@@ -971,7 +1026,8 @@ Methods
      end
 
 
-.. _QueryProxy_rels:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#rels`:
 
 **#rels**
   
@@ -985,7 +1041,8 @@ Methods
      end
 
 
-.. _QueryProxy_rels_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#rels_to`:
 
 **#rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
@@ -997,7 +1054,8 @@ Methods
      end
 
 
-.. _QueryProxy_replace_with:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#replace_with`:
 
 **#replace_with**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
@@ -1013,7 +1071,8 @@ Methods
      end
 
 
-.. _QueryProxy_scoping:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#scoping`:
 
 **#scoping**
   Scope all queries to the current scope.
@@ -1036,7 +1095,8 @@ Methods
      end
 
 
-.. _QueryProxy_size:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#size`:
 
 **#size**
   
@@ -1052,7 +1112,8 @@ Methods
      end
 
 
-.. _QueryProxy_start_object:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#start_object`:
 
 **#start_object**
   Returns the value of attribute start_object
@@ -1064,7 +1125,8 @@ Methods
      end
 
 
-.. _QueryProxy_starting_query:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#starting_query`:
 
 **#starting_query**
   The most recent node to start a QueryProxy chain.
@@ -1077,7 +1139,8 @@ Methods
      end
 
 
-.. _QueryProxy_to_cypher:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#to_cypher`:
 
 **#to_cypher**
   Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
@@ -1089,7 +1152,8 @@ Methods
      end
 
 
-.. _QueryProxy_to_cypher_with_params:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#to_cypher_with_params`:
 
 **#to_cypher_with_params**
   Returns a string of the cypher query with return objects and params
@@ -1102,7 +1166,8 @@ Methods
      end
 
 
-.. _QueryProxy_unique_nodes:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#unique_nodes`:
 
 **#unique_nodes**
   This will match nodes who only have a single relationship of a given type.

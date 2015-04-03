@@ -88,7 +88,8 @@ Methods
 -------
 
 
-.. _QueryProxyMethods_all_rels_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#all_rels_to`:
 
 **#all_rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
@@ -100,7 +101,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_as_models:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#as_models`:
 
 **#as_models**
   Takes an Array of ActiveNode models and applies the appropriate WHERE clause
@@ -122,7 +124,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_blank?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#blank?`:
 
 **#blank?**
   
@@ -134,7 +137,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_count:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#count`:
 
 **#count**
   
@@ -150,7 +154,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_delete:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#delete`:
 
 **#delete**
   Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
@@ -163,7 +168,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_delete_all:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#delete_all`:
 
 **#delete_all**
   Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
@@ -183,7 +189,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_delete_all_rels:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#delete_all_rels`:
 
 **#delete_all_rels**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
@@ -195,7 +202,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_destroy:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#destroy`:
 
 **#destroy**
   Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
@@ -208,7 +216,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_empty?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#empty?`:
 
 **#empty?**
   
@@ -220,7 +229,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_exists?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#exists?`:
 
 **#exists?**
   
@@ -236,7 +246,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_first:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first`:
 
 **#first**
   
@@ -248,7 +259,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_first_and_last:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first_and_last`:
 
 **#first_and_last**
   
@@ -260,7 +272,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_first_rel_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first_rel_to`:
 
 **#first_rel_to**
   Gives you the first relationship between the last link of a QueryProxy chain and a given node
@@ -273,7 +286,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_include?:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#include?`:
 
 **#include?**
   
@@ -288,7 +302,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_last:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#last`:
 
 **#last**
   
@@ -300,7 +315,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_length:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#length`:
 
 **#length**
   
@@ -316,7 +332,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_match_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#match_to`:
 
 **#match_to**
   Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
@@ -341,7 +358,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_optional:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#optional`:
 
 **#optional**
   A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -353,7 +371,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_rels_to:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#rels_to`:
 
 **#rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
@@ -365,7 +384,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_replace_with:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#replace_with`:
 
 **#replace_with**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
@@ -381,7 +401,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_size:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#size`:
 
 **#size**
   

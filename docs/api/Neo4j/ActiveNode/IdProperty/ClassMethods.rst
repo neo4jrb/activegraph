@@ -54,7 +54,8 @@ Methods
 -------
 
 
-.. _ClassMethods_find_by_id:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#find_by_id`:
 
 **#find_by_id**
   
@@ -66,7 +67,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_by_ids:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#find_by_ids`:
 
 **#find_by_ids**
   
@@ -78,7 +80,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_by_neo_id:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#find_by_neo_id`:
 
 **#find_by_neo_id**
   
@@ -90,7 +93,8 @@ Methods
      end
 
 
-.. _ClassMethods_has_id_property?:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#has_id_property?`:
 
 **#has_id_property?**
   rubocop:disable Style/PredicateName
@@ -104,7 +108,8 @@ Methods
      end
 
 
-.. _ClassMethods_id_property:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#id_property`:
 
 **#id_property**
   
@@ -121,7 +126,8 @@ Methods
      end
 
 
-.. _ClassMethods_id_property?:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#id_property?`:
 
 **#id_property?**
   rubocop:enable Style/PredicateName
@@ -133,7 +139,8 @@ Methods
      end
 
 
-.. _ClassMethods_id_property_info:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#id_property_info`:
 
 **#id_property_info**
   
@@ -145,7 +152,8 @@ Methods
      end
 
 
-.. _ClassMethods_id_property_name:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#id_property_name`:
 
 **#id_property_name**
   
@@ -157,7 +165,8 @@ Methods
      end
 
 
-.. _ClassMethods_primary_key:
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#primary_key`:
 
 **#primary_key**
   

@@ -58,7 +58,8 @@ Methods
 -------
 
 
-.. _ModelGenerator_create_model_file:
+
+.. _`Neo4j/Generators/ModelGenerator#create_model_file`:
 
 **#create_model_file**
   
@@ -70,7 +71,8 @@ Methods
      end
 
 
-.. _ModelGenerator_source_root:
+
+.. _`Neo4j/Generators/ModelGenerator.source_root`:
 
 **.source_root**
   

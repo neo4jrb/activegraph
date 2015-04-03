@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _QueryProxyEnumerable_==:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#==`:
 
 **#==**
   Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
@@ -59,7 +60,8 @@ Methods
      end
 
 
-.. _QueryProxyEnumerable_each:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#each`:
 
 **#each**
   Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
@@ -78,7 +80,8 @@ Methods
      end
 
 
-.. _QueryProxyEnumerable_each_rel:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#each_rel`:
 
 **#each_rel**
   When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
@@ -92,7 +95,8 @@ Methods
      end
 
 
-.. _QueryProxyEnumerable_each_with_rel:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#each_with_rel`:
 
 **#each_with_rel**
   When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
@@ -106,7 +110,8 @@ Methods
      end
 
 
-.. _QueryProxyEnumerable_pluck:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#pluck`:
 
 **#pluck**
   For getting variables which have been defined as part of the association chain

@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _YAMLConverter_convert_type:
+
+.. _`Neo4j/Shared/TypeConverters/YAMLConverter.convert_type`:
 
 **.convert_type**
   
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _YAMLConverter_to_db:
+
+.. _`Neo4j/Shared/TypeConverters/YAMLConverter.to_db`:
 
 **.to_db**
   
@@ -64,7 +66,8 @@ Methods
      end
 
 
-.. _YAMLConverter_to_ruby:
+
+.. _`Neo4j/Shared/TypeConverters/YAMLConverter.to_ruby`:
 
 **.to_ruby**
   

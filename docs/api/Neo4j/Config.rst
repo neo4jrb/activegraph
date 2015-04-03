@@ -64,7 +64,8 @@ Methods
 -------
 
 
-.. _Config_[]:
+
+.. _`Neo4j/Config.[]`:
 
 **.[]**
   
@@ -76,7 +77,8 @@ Methods
      end
 
 
-.. _Config_[]=:
+
+.. _`Neo4j/Config.[]=`:
 
 **.[]=**
   Sets the value of a config entry.
@@ -88,7 +90,8 @@ Methods
      end
 
 
-.. _Config_class_name_property:
+
+.. _`Neo4j/Config.class_name_property`:
 
 **.class_name_property**
   
@@ -100,7 +103,8 @@ Methods
      end
 
 
-.. _Config_configuration:
+
+.. _`Neo4j/Config.configuration`:
 
 **.configuration**
   Reads from the default_file if configuration is not set already
@@ -116,7 +120,8 @@ Methods
      end
 
 
-.. _Config_default_file:
+
+.. _`Neo4j/Config.default_file`:
 
 **.default_file**
   
@@ -128,7 +133,8 @@ Methods
      end
 
 
-.. _Config_default_file=:
+
+.. _`Neo4j/Config.default_file=`:
 
 **.default_file=**
   Sets the location of the configuration YAML file and old deletes configurations.
@@ -142,7 +148,8 @@ Methods
      end
 
 
-.. _Config_defaults:
+
+.. _`Neo4j/Config.defaults`:
 
 **.defaults**
   
@@ -155,7 +162,8 @@ Methods
      end
 
 
-.. _Config_delete:
+
+.. _`Neo4j/Config.delete`:
 
 **.delete**
   Remove the value of a config entry.
@@ -167,7 +175,8 @@ Methods
      end
 
 
-.. _Config_delete_all:
+
+.. _`Neo4j/Config.delete_all`:
 
 **.delete_all**
   Remove all configuration. This can be useful for testing purpose.
@@ -179,7 +188,8 @@ Methods
      end
 
 
-.. _Config_include_root_in_json:
+
+.. _`Neo4j/Config.include_root_in_json`:
 
 **.include_root_in_json**
   
@@ -192,7 +202,8 @@ Methods
      end
 
 
-.. _Config_to_hash:
+
+.. _`Neo4j/Config.to_hash`:
 
 **.to_hash**
   
@@ -204,7 +215,8 @@ Methods
      end
 
 
-.. _Config_to_yaml:
+
+.. _`Neo4j/Config.to_yaml`:
 
 **.to_yaml**
   
@@ -216,7 +228,8 @@ Methods
      end
 
 
-.. _Config_use:
+
+.. _`Neo4j/Config.use`:
 
 **.use**
   Yields the configuration

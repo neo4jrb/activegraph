@@ -44,7 +44,8 @@ Methods
 -------
 
 
-.. _Paginated_create_from:
+
+.. _`Neo4j/Paginated.create_from`:
 
 **.create_from**
   
@@ -63,7 +64,8 @@ Methods
      end
 
 
-.. _Paginated_current_page:
+
+.. _`Neo4j/Paginated#current_page`:
 
 **#current_page**
   Returns the value of attribute current_page
@@ -75,7 +77,8 @@ Methods
      end
 
 
-.. _Paginated_initialize:
+
+.. _`Neo4j/Paginated#initialize`:
 
 **#initialize**
   
@@ -89,7 +92,8 @@ Methods
      end
 
 
-.. _Paginated_items:
+
+.. _`Neo4j/Paginated#items`:
 
 **#items**
   Returns the value of attribute items
@@ -101,7 +105,8 @@ Methods
      end
 
 
-.. _Paginated_total:
+
+.. _`Neo4j/Paginated#total`:
 
 **#total**
   Returns the value of attribute total

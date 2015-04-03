@@ -62,7 +62,8 @@ Methods
 -------
 
 
-.. _AddClassnames_default_path:
+
+.. _`Neo4j/Migration/AddClassnames#default_path`:
 
 **#default_path**
   
@@ -74,7 +75,8 @@ Methods
      end
 
 
-.. _AddClassnames_initialize:
+
+.. _`Neo4j/Migration/AddClassnames#initialize`:
 
 **#initialize**
   
@@ -87,7 +89,8 @@ Methods
      end
 
 
-.. _AddClassnames_joined_path:
+
+.. _`Neo4j/Migration/AddClassnames#joined_path`:
 
 **#joined_path**
   
@@ -99,7 +102,8 @@ Methods
      end
 
 
-.. _AddClassnames_migrate:
+
+.. _`Neo4j/Migration/AddClassnames#migrate`:
 
 **#migrate**
   
@@ -112,7 +116,8 @@ Methods
      end
 
 
-.. _AddClassnames_output:
+
+.. _`Neo4j/Migration/AddClassnames#output`:
 
 **#output**
   
@@ -124,7 +129,8 @@ Methods
      end
 
 
-.. _AddClassnames_print_output:
+
+.. _`Neo4j/Migration/AddClassnames#print_output`:
 
 **#print_output**
   
@@ -136,7 +142,8 @@ Methods
      end
 
 
-.. _AddClassnames_setup:
+
+.. _`Neo4j/Migration/AddClassnames#setup`:
 
 **#setup**
   
@@ -154,7 +161,8 @@ Methods
      end
 
 
-.. _AddClassnames_test:
+
+.. _`Neo4j/Migration/AddClassnames#test`:
 
 **#test**
   

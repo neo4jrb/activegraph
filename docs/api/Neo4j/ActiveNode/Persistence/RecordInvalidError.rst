@@ -38,7 +38,8 @@ Methods
 -------
 
 
-.. _RecordInvalidError_initialize:
+
+.. _`Neo4j/ActiveNode/Persistence/RecordInvalidError#initialize`:
 
 **#initialize**
   
@@ -51,7 +52,8 @@ Methods
      end
 
 
-.. _RecordInvalidError_record:
+
+.. _`Neo4j/ActiveNode/Persistence/RecordInvalidError#record`:
 
 **#record**
   Returns the value of attribute record

@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _TypeMethods_define_id_methods:
+
+.. _`Neo4j/ActiveNode/IdProperty/TypeMethods#define_id_methods`:
 
 **#define_id_methods**
   
@@ -66,7 +67,8 @@ Methods
      end
 
 
-.. _TypeMethods_define_id_methods:
+
+.. _`Neo4j/ActiveNode/IdProperty/TypeMethods.define_id_methods`:
 
 **.define_id_methods**
   

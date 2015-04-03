@@ -48,7 +48,8 @@ Methods
 -------
 
 
-.. _ActiveModel_all:
+
+.. _`Neo4j/Generators/ActiveModel.all`:
 
 **.all**
   
@@ -60,7 +61,8 @@ Methods
      end
 
 
-.. _ActiveModel_build:
+
+.. _`Neo4j/Generators/ActiveModel.build`:
 
 **.build**
   
@@ -76,7 +78,8 @@ Methods
      end
 
 
-.. _ActiveModel_destroy:
+
+.. _`Neo4j/Generators/ActiveModel#destroy`:
 
 **#destroy**
   
@@ -88,7 +91,8 @@ Methods
      end
 
 
-.. _ActiveModel_errors:
+
+.. _`Neo4j/Generators/ActiveModel#errors`:
 
 **#errors**
   
@@ -100,7 +104,8 @@ Methods
      end
 
 
-.. _ActiveModel_find:
+
+.. _`Neo4j/Generators/ActiveModel.find`:
 
 **.find**
   
@@ -112,7 +117,8 @@ Methods
      end
 
 
-.. _ActiveModel_save:
+
+.. _`Neo4j/Generators/ActiveModel#save`:
 
 **#save**
   
@@ -124,7 +130,8 @@ Methods
      end
 
 
-.. _ActiveModel_update_attributes:
+
+.. _`Neo4j/Generators/ActiveModel#update_attributes`:
 
 **#update_attributes**
   

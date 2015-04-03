@@ -48,7 +48,8 @@ Methods
 -------
 
 
-.. _AssociationMethods_add_destroy_callbacks:
+
+.. _`Neo4j/ActiveNode/Dependent/AssociationMethods#add_destroy_callbacks`:
 
 **#add_destroy_callbacks**
   
@@ -64,7 +65,8 @@ Methods
      end
 
 
-.. _AssociationMethods_validate_dependent:
+
+.. _`Neo4j/ActiveNode/Dependent/AssociationMethods#validate_dependent`:
 
 **#validate_dependent**
   

@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _QueryProxyMethods_each_for_destruction:
+
+.. _`Neo4j/ActiveNode/Dependent/QueryProxyMethods#each_for_destruction`:
 
 **#each_for_destruction**
   Used as part of `dependent: :destroy` and may not have any utility otherwise.
@@ -63,7 +64,8 @@ Methods
      end
 
 
-.. _QueryProxyMethods_unique_nodes:
+
+.. _`Neo4j/ActiveNode/Dependent/QueryProxyMethods#unique_nodes`:
 
 **#unique_nodes**
   This will match nodes who only have a single relationship of a given type.

@@ -72,7 +72,8 @@ Methods
 -------
 
 
-.. _ClassMethods_all:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#all`:
 
 **#all**
   Find all nodes/objects of this class
@@ -84,7 +85,8 @@ Methods
      end
 
 
-.. _ClassMethods_base_class:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#base_class`:
 
 **#base_class**
   
@@ -104,7 +106,8 @@ Methods
      end
 
 
-.. _ClassMethods_blank?:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#blank?`:
 
 **#blank?**
   
@@ -116,7 +119,8 @@ Methods
      end
 
 
-.. _ClassMethods_constraint:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#constraint`:
 
 **#constraint**
   Creates a neo4j constraint on this class for given property
@@ -133,7 +137,8 @@ Methods
      end
 
 
-.. _ClassMethods_count:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#count`:
 
 **#count**
   
@@ -147,7 +152,8 @@ Methods
      end
 
 
-.. _ClassMethods_delete_all:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#delete_all`:
 
 **#delete_all**
   Deletes all nodes and connected relationships from Cypher.
@@ -160,7 +166,8 @@ Methods
      end
 
 
-.. _ClassMethods_destroy_all:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#destroy_all`:
 
 **#destroy_all**
   Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
@@ -173,7 +180,8 @@ Methods
      end
 
 
-.. _ClassMethods_drop_constraint:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#drop_constraint`:
 
 **#drop_constraint**
   
@@ -188,7 +196,8 @@ Methods
      end
 
 
-.. _ClassMethods_empty?:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#empty?`:
 
 **#empty?**
   
@@ -200,7 +209,8 @@ Methods
      end
 
 
-.. _ClassMethods_exists?:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#exists?`:
 
 **#exists?**
   
@@ -217,7 +227,8 @@ Methods
      end
 
 
-.. _ClassMethods_find:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find`:
 
 **#find**
   Returns the object with the specified neo4j id.
@@ -235,7 +246,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_by:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_by`:
 
 **#find_by**
   Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
@@ -247,7 +259,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_by!:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_by!`:
 
 **#find_by!**
   Like find_by, except that if no record is found, raises a RecordNotFound error.
@@ -259,7 +272,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_each:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_each`:
 
 **#find_each**
   
@@ -273,7 +287,8 @@ Methods
      end
 
 
-.. _ClassMethods_find_in_batches:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_in_batches`:
 
 **#find_in_batches**
   
@@ -287,7 +302,8 @@ Methods
      end
 
 
-.. _ClassMethods_first:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#first`:
 
 **#first**
   Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -299,7 +315,8 @@ Methods
      end
 
 
-.. _ClassMethods_index:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#index`:
 
 **#index**
   Creates a Neo4j index on given property
@@ -316,7 +333,8 @@ Methods
      end
 
 
-.. _ClassMethods_index?:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#index?`:
 
 **#index?**
   
@@ -328,7 +346,8 @@ Methods
      end
 
 
-.. _ClassMethods_indexed_properties:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#indexed_properties`:
 
 **#indexed_properties**
   
@@ -340,7 +359,8 @@ Methods
      end
 
 
-.. _ClassMethods_last:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#last`:
 
 **#last**
   Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -352,7 +372,8 @@ Methods
      end
 
 
-.. _ClassMethods_length:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#length`:
 
 **#length**
   
@@ -366,7 +387,8 @@ Methods
      end
 
 
-.. _ClassMethods_mapped_label:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#mapped_label`:
 
 **#mapped_label**
   
@@ -378,7 +400,8 @@ Methods
      end
 
 
-.. _ClassMethods_mapped_label_name:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#mapped_label_name`:
 
 **#mapped_label_name**
   
@@ -390,7 +413,8 @@ Methods
      end
 
 
-.. _ClassMethods_mapped_label_names:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#mapped_label_names`:
 
 **#mapped_label_names**
   
@@ -402,7 +426,8 @@ Methods
      end
 
 
-.. _ClassMethods_size:
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#size`:
 
 **#size**
   

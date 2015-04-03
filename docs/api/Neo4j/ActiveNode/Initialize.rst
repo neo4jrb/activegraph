@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _Initialize_called_by:
+
+.. _`Neo4j/ActiveNode/Initialize#called_by`:
 
 **#called_by**
   Returns the value of attribute called_by
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _Initialize_convert_properties_to:
+
+.. _`Neo4j/ActiveNode/Initialize#convert_properties_to`:
 
 **#convert_properties_to**
   
@@ -69,7 +71,8 @@ Methods
      end
 
 
-.. _Initialize_init_on_load:
+
+.. _`Neo4j/ActiveNode/Initialize#init_on_load`:
 
 **#init_on_load**
   called when loading the node from the database
@@ -86,7 +89,8 @@ Methods
      end
 
 
-.. _Initialize_wrapper:
+
+.. _`Neo4j/ActiveNode/Initialize#wrapper`:
 
 **#wrapper**
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method

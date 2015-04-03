@@ -48,7 +48,8 @@ Methods
 -------
 
 
-.. _Property_[]:
+
+.. _`Neo4j/ActiveRel/Property#[]`:
 
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -62,7 +63,8 @@ Methods
      end
 
 
-.. _Property__persisted_obj:
+
+.. _`Neo4j/ActiveRel/Property#_persisted_obj`:
 
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
@@ -74,7 +76,8 @@ Methods
      end
 
 
-.. _Property_default_properties:
+
+.. _`Neo4j/ActiveRel/Property#default_properties`:
 
 **#default_properties**
   
@@ -88,7 +91,8 @@ Methods
      end
 
 
-.. _Property_default_properties=:
+
+.. _`Neo4j/ActiveRel/Property#default_properties=`:
 
 **#default_properties=**
   
@@ -101,7 +105,8 @@ Methods
      end
 
 
-.. _Property_default_property:
+
+.. _`Neo4j/ActiveRel/Property#default_property`:
 
 **#default_property**
   
@@ -113,7 +118,8 @@ Methods
      end
 
 
-.. _Property_end_node:
+
+.. _`Neo4j/ActiveRel/Property#end_node`:
 
 **#end_node**
   
@@ -123,7 +129,8 @@ Methods
      alias_method :end_node,   :to_node
 
 
-.. _Property_initialize:
+
+.. _`Neo4j/ActiveRel/Property#initialize`:
 
 **#initialize**
   
@@ -137,7 +144,8 @@ Methods
      end
 
 
-.. _Property_read_attribute:
+
+.. _`Neo4j/ActiveRel/Property#read_attribute`:
 
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -151,7 +159,8 @@ Methods
      end
 
 
-.. _Property_send_props:
+
+.. _`Neo4j/ActiveRel/Property#send_props`:
 
 **#send_props**
   
@@ -163,7 +172,8 @@ Methods
      end
 
 
-.. _Property_start_node:
+
+.. _`Neo4j/ActiveRel/Property#start_node`:
 
 **#start_node**
   
@@ -173,7 +183,8 @@ Methods
      alias_method :start_node, :from_node
 
 
-.. _Property_type:
+
+.. _`Neo4j/ActiveRel/Property#type`:
 
 **#type**
   

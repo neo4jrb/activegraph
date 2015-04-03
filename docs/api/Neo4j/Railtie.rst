@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _Railtie_java_platform?:
+
+.. _`Neo4j/Railtie.java_platform?`:
 
 **.java_platform?**
   
@@ -58,7 +59,8 @@ Methods
      end
 
 
-.. _Railtie_open_neo4j_session:
+
+.. _`Neo4j/Railtie.open_neo4j_session`:
 
 **.open_neo4j_session**
   
@@ -82,7 +84,8 @@ Methods
      end
 
 
-.. _Railtie_register_neo4j_cypher_logging:
+
+.. _`Neo4j/Railtie#register_neo4j_cypher_logging`:
 
 **#register_neo4j_cypher_logging**
   
@@ -100,7 +103,8 @@ Methods
      end
 
 
-.. _Railtie_setup_config_defaults!:
+
+.. _`Neo4j/Railtie.setup_config_defaults!`:
 
 **.setup_config_defaults!**
   
@@ -121,7 +125,8 @@ Methods
      end
 
 
-.. _Railtie_setup_default_session:
+
+.. _`Neo4j/Railtie.setup_default_session`:
 
 **.setup_default_session**
   
@@ -137,7 +142,8 @@ Methods
      end
 
 
-.. _Railtie_start_embedded_session:
+
+.. _`Neo4j/Railtie.start_embedded_session`:
 
 **.start_embedded_session**
   

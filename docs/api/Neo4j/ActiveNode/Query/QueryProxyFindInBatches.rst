@@ -38,7 +38,8 @@ Methods
 -------
 
 
-.. _QueryProxyFindInBatches_find_each:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyFindInBatches#find_each`:
 
 **#find_each**
   
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _QueryProxyFindInBatches_find_in_batches:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyFindInBatches#find_in_batches`:
 
 **#find_in_batches**
   

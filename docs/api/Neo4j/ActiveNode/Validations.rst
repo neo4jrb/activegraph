@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _Validations_read_attribute_for_validation:
+
+.. _`Neo4j/ActiveNode/Validations#read_attribute_for_validation`:
 
 **#read_attribute_for_validation**
   Implements the ActiveModel::Validation hook method.
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _Validations_save:
+
+.. _`Neo4j/ActiveNode/Validations#save`:
 
 **#save**
   The validation process on save can be skipped by passing false. The regular Model#save method is
@@ -69,7 +71,8 @@ Methods
      end
 
 
-.. _Validations_valid?:
+
+.. _`Neo4j/ActiveNode/Validations#valid?`:
 
 **#valid?**
   

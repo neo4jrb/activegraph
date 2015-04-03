@@ -54,7 +54,8 @@ Methods
 -------
 
 
-.. _AddIdProperty_default_path:
+
+.. _`Neo4j/Migration/AddIdProperty#default_path`:
 
 **#default_path**
   
@@ -66,7 +67,8 @@ Methods
      end
 
 
-.. _AddIdProperty_initialize:
+
+.. _`Neo4j/Migration/AddIdProperty#initialize`:
 
 **#initialize**
   
@@ -78,7 +80,8 @@ Methods
      end
 
 
-.. _AddIdProperty_joined_path:
+
+.. _`Neo4j/Migration/AddIdProperty#joined_path`:
 
 **#joined_path**
   
@@ -90,7 +93,8 @@ Methods
      end
 
 
-.. _AddIdProperty_migrate:
+
+.. _`Neo4j/Migration/AddIdProperty#migrate`:
 
 **#migrate**
   
@@ -110,7 +114,8 @@ Methods
      end
 
 
-.. _AddIdProperty_models_filename:
+
+.. _`Neo4j/Migration/AddIdProperty#models_filename`:
 
 **#models_filename**
   Returns the value of attribute models_filename
@@ -122,7 +127,8 @@ Methods
      end
 
 
-.. _AddIdProperty_output:
+
+.. _`Neo4j/Migration/AddIdProperty#output`:
 
 **#output**
   
@@ -134,7 +140,8 @@ Methods
      end
 
 
-.. _AddIdProperty_print_output:
+
+.. _`Neo4j/Migration/AddIdProperty#print_output`:
 
 **#print_output**
   
@@ -146,7 +153,8 @@ Methods
      end
 
 
-.. _AddIdProperty_setup:
+
+.. _`Neo4j/Migration/AddIdProperty#setup`:
 
 **#setup**
   

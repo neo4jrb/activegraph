@@ -82,7 +82,8 @@ Methods
 -------
 
 
-.. _ActiveRel_==:
+
+.. _`Neo4j/ActiveRel#==`:
 
 **#==**
   
@@ -94,7 +95,8 @@ Methods
      end
 
 
-.. _ActiveRel_[]:
+
+.. _`Neo4j/ActiveRel#[]`:
 
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -108,7 +110,8 @@ Methods
      end
 
 
-.. _ActiveRel__persisted_obj:
+
+.. _`Neo4j/ActiveRel#_persisted_obj`:
 
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
@@ -120,7 +123,8 @@ Methods
      end
 
 
-.. _ActiveRel_cache_key:
+
+.. _`Neo4j/ActiveRel#cache_key`:
 
 **#cache_key**
   
@@ -138,7 +142,8 @@ Methods
      end
 
 
-.. _ActiveRel_clear_association_cache:
+
+.. _`Neo4j/ActiveRel#clear_association_cache`:
 
 **#clear_association_cache**
   
@@ -148,7 +153,8 @@ Methods
      def clear_association_cache; end
 
 
-.. _ActiveRel_convert_properties_to:
+
+.. _`Neo4j/ActiveRel#convert_properties_to`:
 
 **#convert_properties_to**
   
@@ -165,7 +171,8 @@ Methods
      end
 
 
-.. _ActiveRel_default_properties:
+
+.. _`Neo4j/ActiveRel#default_properties`:
 
 **#default_properties**
   
@@ -179,7 +186,8 @@ Methods
      end
 
 
-.. _ActiveRel_default_properties=:
+
+.. _`Neo4j/ActiveRel#default_properties=`:
 
 **#default_properties=**
   
@@ -192,7 +200,8 @@ Methods
      end
 
 
-.. _ActiveRel_default_property:
+
+.. _`Neo4j/ActiveRel#default_property`:
 
 **#default_property**
   
@@ -204,7 +213,8 @@ Methods
      end
 
 
-.. _ActiveRel_destroy:
+
+.. _`Neo4j/ActiveRel#destroy`:
 
 **#destroy**
   :nodoc:
@@ -224,7 +234,8 @@ Methods
      end
 
 
-.. _ActiveRel_destroyed?:
+
+.. _`Neo4j/ActiveRel#destroyed?`:
 
 **#destroyed?**
   Returns +true+ if the object was destroyed.
@@ -236,7 +247,8 @@ Methods
      end
 
 
-.. _ActiveRel_end_node:
+
+.. _`Neo4j/ActiveRel#end_node`:
 
 **#end_node**
   
@@ -246,7 +258,8 @@ Methods
      alias_method :end_node,   :to_node
 
 
-.. _ActiveRel_eql?:
+
+.. _`Neo4j/ActiveRel#eql?`:
 
 **#eql?**
   
@@ -258,7 +271,8 @@ Methods
      end
 
 
-.. _ActiveRel_exist?:
+
+.. _`Neo4j/ActiveRel#exist?`:
 
 **#exist?**
   
@@ -270,7 +284,8 @@ Methods
      end
 
 
-.. _ActiveRel_freeze:
+
+.. _`Neo4j/ActiveRel#freeze`:
 
 **#freeze**
   
@@ -283,7 +298,8 @@ Methods
      end
 
 
-.. _ActiveRel_frozen?:
+
+.. _`Neo4j/ActiveRel#frozen?`:
 
 **#frozen?**
   
@@ -295,7 +311,8 @@ Methods
      end
 
 
-.. _ActiveRel_hash:
+
+.. _`Neo4j/ActiveRel#hash`:
 
 **#hash**
   
@@ -307,7 +324,8 @@ Methods
      end
 
 
-.. _ActiveRel_id:
+
+.. _`Neo4j/ActiveRel#id`:
 
 **#id**
   
@@ -320,7 +338,8 @@ Methods
      end
 
 
-.. _ActiveRel_init_on_load:
+
+.. _`Neo4j/ActiveRel#init_on_load`:
 
 **#init_on_load**
   called when loading the rel from the database
@@ -338,7 +357,8 @@ Methods
      end
 
 
-.. _ActiveRel_initialize:
+
+.. _`Neo4j/ActiveRel#initialize`:
 
 **#initialize**
   
@@ -351,7 +371,8 @@ Methods
      end
 
 
-.. _ActiveRel_neo4j_obj:
+
+.. _`Neo4j/ActiveRel#neo4j_obj`:
 
 **#neo4j_obj**
   
@@ -363,7 +384,8 @@ Methods
      end
 
 
-.. _ActiveRel_neo_id:
+
+.. _`Neo4j/ActiveRel#neo_id`:
 
 **#neo_id**
   
@@ -375,7 +397,8 @@ Methods
      end
 
 
-.. _ActiveRel_new?:
+
+.. _`Neo4j/ActiveRel#new?`:
 
 **#new?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -387,7 +410,8 @@ Methods
      end
 
 
-.. _ActiveRel_new_record?:
+
+.. _`Neo4j/ActiveRel#new_record?`:
 
 **#new_record?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -399,7 +423,8 @@ Methods
      end
 
 
-.. _ActiveRel_persisted?:
+
+.. _`Neo4j/ActiveRel#persisted?`:
 
 **#persisted?**
   Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
@@ -411,7 +436,8 @@ Methods
      end
 
 
-.. _ActiveRel_props:
+
+.. _`Neo4j/ActiveRel#props`:
 
 **#props**
   
@@ -423,7 +449,8 @@ Methods
      end
 
 
-.. _ActiveRel_read_attribute:
+
+.. _`Neo4j/ActiveRel#read_attribute`:
 
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -437,7 +464,8 @@ Methods
      end
 
 
-.. _ActiveRel_read_attribute_for_validation:
+
+.. _`Neo4j/ActiveRel#read_attribute_for_validation`:
 
 **#read_attribute_for_validation**
   Implements the ActiveModel::Validation hook method.
@@ -449,7 +477,8 @@ Methods
      end
 
 
-.. _ActiveRel_reload:
+
+.. _`Neo4j/ActiveRel#reload`:
 
 **#reload**
   
@@ -468,7 +497,8 @@ Methods
      end
 
 
-.. _ActiveRel_reload_from_database:
+
+.. _`Neo4j/ActiveRel#reload_from_database`:
 
 **#reload_from_database**
   
@@ -484,7 +514,8 @@ Methods
      end
 
 
-.. _ActiveRel_save:
+
+.. _`Neo4j/ActiveRel#save`:
 
 **#save**
   
@@ -499,7 +530,8 @@ Methods
      end
 
 
-.. _ActiveRel_save!:
+
+.. _`Neo4j/ActiveRel#save!`:
 
 **#save!**
   
@@ -511,7 +543,8 @@ Methods
      end
 
 
-.. _ActiveRel_send_props:
+
+.. _`Neo4j/ActiveRel#send_props`:
 
 **#send_props**
   
@@ -523,7 +556,8 @@ Methods
      end
 
 
-.. _ActiveRel_serializable_hash:
+
+.. _`Neo4j/ActiveRel#serializable_hash`:
 
 **#serializable_hash**
   
@@ -535,7 +569,8 @@ Methods
      end
 
 
-.. _ActiveRel_serialized_properties:
+
+.. _`Neo4j/ActiveRel#serialized_properties`:
 
 **#serialized_properties**
   
@@ -547,7 +582,8 @@ Methods
      end
 
 
-.. _ActiveRel_start_node:
+
+.. _`Neo4j/ActiveRel#start_node`:
 
 **#start_node**
   
@@ -557,7 +593,8 @@ Methods
      alias_method :start_node, :from_node
 
 
-.. _ActiveRel_to_key:
+
+.. _`Neo4j/ActiveRel#to_key`:
 
 **#to_key**
   Returns an Enumerable of all (primary) key attributes
@@ -570,7 +607,8 @@ Methods
      end
 
 
-.. _ActiveRel_touch:
+
+.. _`Neo4j/ActiveRel#touch`:
 
 **#touch**
   :nodoc:
@@ -582,7 +620,8 @@ Methods
      end
 
 
-.. _ActiveRel_type:
+
+.. _`Neo4j/ActiveRel#type`:
 
 **#type**
   
@@ -594,7 +633,8 @@ Methods
      end
 
 
-.. _ActiveRel_update:
+
+.. _`Neo4j/ActiveRel#update`:
 
 **#update**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -608,7 +648,8 @@ Methods
      end
 
 
-.. _ActiveRel_update!:
+
+.. _`Neo4j/ActiveRel#update!`:
 
 **#update!**
   Same as {#update_attributes}, but raises an exception if saving fails.
@@ -621,7 +662,8 @@ Methods
      end
 
 
-.. _ActiveRel_update_attribute:
+
+.. _`Neo4j/ActiveRel#update_attribute`:
 
 **#update_attribute**
   Convenience method to set attribute and #save at the same time
@@ -634,7 +676,8 @@ Methods
      end
 
 
-.. _ActiveRel_update_attribute!:
+
+.. _`Neo4j/ActiveRel#update_attribute!`:
 
 **#update_attribute!**
   Convenience method to set attribute and #save! at the same time
@@ -647,7 +690,8 @@ Methods
      end
 
 
-.. _ActiveRel_update_attributes:
+
+.. _`Neo4j/ActiveRel#update_attributes`:
 
 **#update_attributes**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -661,7 +705,8 @@ Methods
      end
 
 
-.. _ActiveRel_update_attributes!:
+
+.. _`Neo4j/ActiveRel#update_attributes!`:
 
 **#update_attributes!**
   Same as {#update_attributes}, but raises an exception if saving fails.
@@ -674,7 +719,8 @@ Methods
      end
 
 
-.. _ActiveRel_valid?:
+
+.. _`Neo4j/ActiveRel#valid?`:
 
 **#valid?**
   
@@ -688,7 +734,8 @@ Methods
      end
 
 
-.. _ActiveRel_wrapper:
+
+.. _`Neo4j/ActiveRel#wrapper`:
 
 **#wrapper**
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method

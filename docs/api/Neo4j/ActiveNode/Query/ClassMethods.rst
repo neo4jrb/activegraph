@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _ClassMethods_as:
+
+.. _`Neo4j/ActiveNode/Query/ClassMethods#as`:
 
 **#as**
   Start a new QueryProxy with the starting identifier set to the given argument.
@@ -54,7 +55,8 @@ Methods
      end
 
 
-.. _ClassMethods_query_as:
+
+.. _`Neo4j/ActiveNode/Query/ClassMethods#query_as`:
 
 **#query_as**
   Returns a Query object with all nodes for the model matched as the specified variable name
@@ -66,7 +68,8 @@ Methods
      end
 
 
-.. _ClassMethods_query_proxy:
+
+.. _`Neo4j/ActiveNode/Query/ClassMethods#query_proxy`:
 
 **#query_proxy**
   

@@ -190,3 +190,5 @@ You can query associations:
 
     comment.post = post1                  # Removes all existing relationships
 
+.. seealso::
+  :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`

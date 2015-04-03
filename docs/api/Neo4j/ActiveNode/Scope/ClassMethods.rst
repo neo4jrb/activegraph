@@ -50,7 +50,8 @@ Methods
 -------
 
 
-.. _ClassMethods__call_scope_context:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#_call_scope_context`:
 
 **#_call_scope_context**
   
@@ -66,7 +67,8 @@ Methods
      end
 
 
-.. _ClassMethods__scope:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#_scope`:
 
 **#_scope**
   
@@ -78,7 +80,8 @@ Methods
      end
 
 
-.. _ClassMethods_all:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#all`:
 
 **#all**
   
@@ -94,7 +97,8 @@ Methods
      end
 
 
-.. _ClassMethods_current_scope:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#current_scope`:
 
 **#current_scope**
   :nodoc:
@@ -106,7 +110,8 @@ Methods
      end
 
 
-.. _ClassMethods_current_scope=:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#current_scope=`:
 
 **#current_scope=**
   :nodoc:
@@ -118,7 +123,8 @@ Methods
      end
 
 
-.. _ClassMethods_has_scope?:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#has_scope?`:
 
 **#has_scope?**
   rubocop:disable Style/PredicateName
@@ -132,7 +138,8 @@ Methods
      end
 
 
-.. _ClassMethods_scope:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#scope`:
 
 **#scope**
   Similar to ActiveRecord scope
@@ -157,7 +164,8 @@ Methods
      end
 
 
-.. _ClassMethods_scope?:
+
+.. _`Neo4j/ActiveNode/Scope/ClassMethods#scope?`:
 
 **#scope?**
   rubocop:enable Style/PredicateName

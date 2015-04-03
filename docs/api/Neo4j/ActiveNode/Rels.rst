@@ -36,7 +36,8 @@ Methods
 -------
 
 
-.. _Rels__rels_delegator:
+
+.. _`Neo4j/ActiveNode/Rels#_rels_delegator`:
 
 **#_rels_delegator**
   

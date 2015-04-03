@@ -44,7 +44,8 @@ Methods
 -------
 
 
-.. _DateTimeConverter_convert_type:
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.convert_type`:
 
 **.convert_type**
   
@@ -56,7 +57,8 @@ Methods
      end
 
 
-.. _DateTimeConverter_to_db:
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.to_db`:
 
 **.to_db**
   Converts the given DateTime (UTC) value to an Integer.
@@ -74,7 +76,8 @@ Methods
      end
 
 
-.. _DateTimeConverter_to_ruby:
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.to_ruby`:
 
 **.to_ruby**
   

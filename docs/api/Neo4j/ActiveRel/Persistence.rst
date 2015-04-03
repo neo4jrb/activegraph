@@ -68,7 +68,8 @@ Methods
 -------
 
 
-.. _Persistence_cache_key:
+
+.. _`Neo4j/ActiveRel/Persistence#cache_key`:
 
 **#cache_key**
   
@@ -86,7 +87,8 @@ Methods
      end
 
 
-.. _Persistence_clear_association_cache:
+
+.. _`Neo4j/ActiveRel/Persistence#clear_association_cache`:
 
 **#clear_association_cache**
   
@@ -96,7 +98,8 @@ Methods
      def clear_association_cache; end
 
 
-.. _Persistence_convert_properties_to:
+
+.. _`Neo4j/ActiveRel/Persistence#convert_properties_to`:
 
 **#convert_properties_to**
   
@@ -113,7 +116,8 @@ Methods
      end
 
 
-.. _Persistence_create_model:
+
+.. _`Neo4j/ActiveRel/Persistence#create_model`:
 
 **#create_model**
   
@@ -132,7 +136,8 @@ Methods
      end
 
 
-.. _Persistence_create_or_update:
+
+.. _`Neo4j/ActiveRel/Persistence#create_or_update`:
 
 **#create_or_update**
   
@@ -157,7 +162,8 @@ Methods
      end
 
 
-.. _Persistence_destroy:
+
+.. _`Neo4j/ActiveRel/Persistence#destroy`:
 
 **#destroy**
   
@@ -171,7 +177,8 @@ Methods
      end
 
 
-.. _Persistence_destroyed?:
+
+.. _`Neo4j/ActiveRel/Persistence#destroyed?`:
 
 **#destroyed?**
   Returns +true+ if the object was destroyed.
@@ -183,7 +190,8 @@ Methods
      end
 
 
-.. _Persistence_exist?:
+
+.. _`Neo4j/ActiveRel/Persistence#exist?`:
 
 **#exist?**
   
@@ -195,7 +203,8 @@ Methods
      end
 
 
-.. _Persistence_freeze:
+
+.. _`Neo4j/ActiveRel/Persistence#freeze`:
 
 **#freeze**
   
@@ -208,7 +217,8 @@ Methods
      end
 
 
-.. _Persistence_frozen?:
+
+.. _`Neo4j/ActiveRel/Persistence#frozen?`:
 
 **#frozen?**
   
@@ -220,7 +230,8 @@ Methods
      end
 
 
-.. _Persistence_new?:
+
+.. _`Neo4j/ActiveRel/Persistence#new?`:
 
 **#new?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -232,7 +243,8 @@ Methods
      end
 
 
-.. _Persistence_new_record?:
+
+.. _`Neo4j/ActiveRel/Persistence#new_record?`:
 
 **#new_record?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -244,7 +256,8 @@ Methods
      end
 
 
-.. _Persistence_persisted?:
+
+.. _`Neo4j/ActiveRel/Persistence#persisted?`:
 
 **#persisted?**
   Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
@@ -256,7 +269,8 @@ Methods
      end
 
 
-.. _Persistence_props:
+
+.. _`Neo4j/ActiveRel/Persistence#props`:
 
 **#props**
   
@@ -268,7 +282,8 @@ Methods
      end
 
 
-.. _Persistence_reload:
+
+.. _`Neo4j/ActiveRel/Persistence#reload`:
 
 **#reload**
   
@@ -287,7 +302,8 @@ Methods
      end
 
 
-.. _Persistence_reload_from_database:
+
+.. _`Neo4j/ActiveRel/Persistence#reload_from_database`:
 
 **#reload_from_database**
   
@@ -303,7 +319,8 @@ Methods
      end
 
 
-.. _Persistence_save:
+
+.. _`Neo4j/ActiveRel/Persistence#save`:
 
 **#save**
   
@@ -316,7 +333,8 @@ Methods
      end
 
 
-.. _Persistence_save!:
+
+.. _`Neo4j/ActiveRel/Persistence#save!`:
 
 **#save!**
   
@@ -328,7 +346,8 @@ Methods
      end
 
 
-.. _Persistence_update:
+
+.. _`Neo4j/ActiveRel/Persistence#update`:
 
 **#update**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -342,7 +361,8 @@ Methods
      end
 
 
-.. _Persistence_update!:
+
+.. _`Neo4j/ActiveRel/Persistence#update!`:
 
 **#update!**
   Same as {#update_attributes}, but raises an exception if saving fails.
@@ -355,7 +375,8 @@ Methods
      end
 
 
-.. _Persistence_update_attribute:
+
+.. _`Neo4j/ActiveRel/Persistence#update_attribute`:
 
 **#update_attribute**
   Convenience method to set attribute and #save at the same time
@@ -368,7 +389,8 @@ Methods
      end
 
 
-.. _Persistence_update_attribute!:
+
+.. _`Neo4j/ActiveRel/Persistence#update_attribute!`:
 
 **#update_attribute!**
   Convenience method to set attribute and #save! at the same time
@@ -381,7 +403,8 @@ Methods
      end
 
 
-.. _Persistence_update_attributes:
+
+.. _`Neo4j/ActiveRel/Persistence#update_attributes`:
 
 **#update_attributes**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -395,7 +418,8 @@ Methods
      end
 
 
-.. _Persistence_update_attributes!:
+
+.. _`Neo4j/ActiveRel/Persistence#update_attributes!`:
 
 **#update_attributes!**
   Same as {#update_attributes}, but raises an exception if saving fails.
@@ -408,7 +432,8 @@ Methods
      end
 
 
-.. _Persistence_update_model:
+
+.. _`Neo4j/ActiveRel/Persistence#update_model`:
 
 **#update_model**
   

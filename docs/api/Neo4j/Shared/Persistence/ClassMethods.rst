@@ -42,7 +42,8 @@ Methods
 -------
 
 
-.. _ClassMethods_cached_class?:
+
+.. _`Neo4j/Shared/Persistence/ClassMethods#cached_class?`:
 
 **#cached_class?**
   Determines whether a model should insert a _classname property. This can be used to override the automatic matching of returned
@@ -55,7 +56,8 @@ Methods
      end
 
 
-.. _ClassMethods_set_classname:
+
+.. _`Neo4j/Shared/Persistence/ClassMethods#set_classname`:
 
 **#set_classname**
   Adds this model to the USES_CLASSNAME array. When new rels/nodes are created, a _classname property will be added. This will override the
@@ -75,7 +77,8 @@ Methods
      end
 
 
-.. _ClassMethods_unset_classname:
+
+.. _`Neo4j/Shared/Persistence/ClassMethods#unset_classname`:
 
 **#unset_classname**
   Removes this model from the USES_CLASSNAME array. When new rels/nodes are create, no _classname property will be injected. Upon returning of
@@ -88,7 +91,8 @@ Methods
      end
 
 
-.. _ClassMethods_uses_classname?:
+
+.. _`Neo4j/Shared/Persistence/ClassMethods#uses_classname?`:
 
 **#uses_classname?**
   

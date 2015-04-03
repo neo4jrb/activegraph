@@ -56,7 +56,8 @@ Methods
 -------
 
 
-.. _OrmAdapter_column_names:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#column_names`:
 
 **#column_names**
   
@@ -68,7 +69,8 @@ Methods
      end
 
 
-.. _OrmAdapter_create!:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#create!`:
 
 **#create!**
   Create a model using attributes
@@ -80,7 +82,8 @@ Methods
      end
 
 
-.. _OrmAdapter_destroy:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#destroy`:
 
 **#destroy**
   
@@ -92,7 +95,8 @@ Methods
      end
 
 
-.. _OrmAdapter_find_all:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#find_all`:
 
 **#find_all**
   Find all models matching conditions
@@ -112,7 +116,8 @@ Methods
      end
 
 
-.. _OrmAdapter_find_first:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#find_first`:
 
 **#find_first**
   Find the first instance matching conditions
@@ -130,7 +135,8 @@ Methods
      end
 
 
-.. _OrmAdapter_get:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#get`:
 
 **#get**
   Get an instance by id of the model
@@ -142,7 +148,8 @@ Methods
      end
 
 
-.. _OrmAdapter_get!:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#get!`:
 
 **#get!**
   Get an instance by id of the model
@@ -156,7 +163,8 @@ Methods
      end
 
 
-.. _OrmAdapter_i18n_scope:
+
+.. _`Neo4j/ActiveNode/OrmAdapter#i18n_scope`:
 
 **#i18n_scope**
   

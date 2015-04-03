@@ -62,7 +62,8 @@ Methods
 -------
 
 
-.. _TypeConverters_convert_properties_to:
+
+.. _`Neo4j/Shared/TypeConverters#convert_properties_to`:
 
 **#convert_properties_to**
   
@@ -79,7 +80,8 @@ Methods
      end
 
 
-.. _TypeConverters_converters:
+
+.. _`Neo4j/Shared/TypeConverters.converters`:
 
 **.converters**
   Returns the value of attribute converters
@@ -91,7 +93,8 @@ Methods
      end
 
 
-.. _TypeConverters_included:
+
+.. _`Neo4j/Shared/TypeConverters.included`:
 
 **.included**
   
@@ -108,7 +111,8 @@ Methods
      end
 
 
-.. _TypeConverters_register_converter:
+
+.. _`Neo4j/Shared/TypeConverters.register_converter`:
 
 **.register_converter**
   
@@ -120,7 +124,8 @@ Methods
      end
 
 
-.. _TypeConverters_to_other:
+
+.. _`Neo4j/Shared/TypeConverters.to_other`:
 
 **.to_other**
   
@@ -134,7 +139,8 @@ Methods
      end
 
 
-.. _TypeConverters_typecaster_for:
+
+.. _`Neo4j/Shared/TypeConverters.typecaster_for`:
 
 **.typecaster_for**
   

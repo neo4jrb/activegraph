@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _Callbacks_destroy:
+
+.. _`Neo4j/Shared/Callbacks#destroy`:
 
 **#destroy**
   :nodoc:
@@ -66,7 +67,8 @@ Methods
      end
 
 
-.. _Callbacks_touch:
+
+.. _`Neo4j/Shared/Callbacks#touch`:
 
 **#touch**
   :nodoc:

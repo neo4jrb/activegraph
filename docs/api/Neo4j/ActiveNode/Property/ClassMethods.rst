@@ -36,7 +36,8 @@ Methods
 -------
 
 
-.. _ClassMethods_extract_association_attributes!:
+
+.. _`Neo4j/ActiveNode/Property/ClassMethods#extract_association_attributes!`:
 
 **#extract_association_attributes!**
   Extracts keys from attributes hash which are relationships of the model

@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _ClassMethods_reflect_on_all_associations:
+
+.. _`Neo4j/ActiveNode/Reflection/ClassMethods#reflect_on_all_associations`:
 
 **#reflect_on_all_associations**
   Returns an array containing one reflection for each association declared in the model.
@@ -53,7 +54,8 @@ Methods
      end
 
 
-.. _ClassMethods_reflect_on_association:
+
+.. _`Neo4j/ActiveNode/Reflection/ClassMethods#reflect_on_association`:
 
 **#reflect_on_association**
   

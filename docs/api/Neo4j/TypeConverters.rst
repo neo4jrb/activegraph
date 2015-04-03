@@ -34,7 +34,8 @@ Methods
 -------
 
 
-.. _TypeConverters_convert_properties_to:
+
+.. _`Neo4j/TypeConverters#convert_properties_to`:
 
 **#convert_properties_to**
   

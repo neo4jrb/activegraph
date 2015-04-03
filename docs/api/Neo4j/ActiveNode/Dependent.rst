@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _Dependent_called_by=:
+
+.. _`Neo4j/ActiveNode/Dependent#called_by=`:
 
 **#called_by=**
   Sets the attribute called_by
@@ -58,7 +59,8 @@ Methods
      end
 
 
-.. _Dependent_dependent_children:
+
+.. _`Neo4j/ActiveNode/Dependent#dependent_children`:
 
 **#dependent_children**
   

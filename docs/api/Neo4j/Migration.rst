@@ -48,7 +48,8 @@ Methods
 -------
 
 
-.. _Migration_default_path:
+
+.. _`Neo4j/Migration#default_path`:
 
 **#default_path**
   
@@ -60,7 +61,8 @@ Methods
      end
 
 
-.. _Migration_joined_path:
+
+.. _`Neo4j/Migration#joined_path`:
 
 **#joined_path**
   
@@ -72,7 +74,8 @@ Methods
      end
 
 
-.. _Migration_migrate:
+
+.. _`Neo4j/Migration#migrate`:
 
 **#migrate**
   
@@ -84,7 +87,8 @@ Methods
      end
 
 
-.. _Migration_output:
+
+.. _`Neo4j/Migration#output`:
 
 **#output**
   
@@ -96,7 +100,8 @@ Methods
      end
 
 
-.. _Migration_print_output:
+
+.. _`Neo4j/Migration#print_output`:
 
 **#print_output**
   

@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _ScopeRegistry_initialize:
+
+.. _`Neo4j/ActiveNode/Scope/ScopeRegistry#initialize`:
 
 **#initialize**
   
@@ -58,7 +59,8 @@ Methods
      end
 
 
-.. _ScopeRegistry_set_value_for:
+
+.. _`Neo4j/ActiveNode/Scope/ScopeRegistry#set_value_for`:
 
 **#set_value_for**
   Sets the +value+ for a given +scope_type+ and +variable_name+.
@@ -71,7 +73,8 @@ Methods
      end
 
 
-.. _ScopeRegistry_value_for:
+
+.. _`Neo4j/ActiveNode/Scope/ScopeRegistry#value_for`:
 
 **#value_for**
   Obtains the value for a given +scope_name+ and +variable_name+.

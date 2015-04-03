@@ -68,7 +68,8 @@ Methods
 -------
 
 
-.. _Labels__wrapped_classes:
+
+.. _`Neo4j/ActiveNode/Labels._wrapped_classes`:
 
 **._wrapped_classes**
   
@@ -80,7 +81,8 @@ Methods
      end
 
 
-.. _Labels_add_label:
+
+.. _`Neo4j/ActiveNode/Labels#add_label`:
 
 **#add_label**
   adds one or more labels
@@ -92,7 +94,8 @@ Methods
      end
 
 
-.. _Labels_add_wrapped_class:
+
+.. _`Neo4j/ActiveNode/Labels.add_wrapped_class`:
 
 **.add_wrapped_class**
   
@@ -105,7 +108,8 @@ Methods
      end
 
 
-.. _Labels_clear_model_for_label_cache:
+
+.. _`Neo4j/ActiveNode/Labels.clear_model_for_label_cache`:
 
 **.clear_model_for_label_cache**
   
@@ -117,7 +121,8 @@ Methods
      end
 
 
-.. _Labels_clear_wrapped_models:
+
+.. _`Neo4j/ActiveNode/Labels.clear_wrapped_models`:
 
 **.clear_wrapped_models**
   
@@ -129,7 +134,8 @@ Methods
      end
 
 
-.. _Labels_labels:
+
+.. _`Neo4j/ActiveNode/Labels#labels`:
 
 **#labels**
   
@@ -141,7 +147,8 @@ Methods
      end
 
 
-.. _Labels_model_for_labels:
+
+.. _`Neo4j/ActiveNode/Labels.model_for_labels`:
 
 **.model_for_labels**
   
@@ -161,7 +168,8 @@ Methods
      end
 
 
-.. _Labels_remove_label:
+
+.. _`Neo4j/ActiveNode/Labels#remove_label`:
 
 **#remove_label**
   Removes one or more labels

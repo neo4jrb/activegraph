@@ -46,7 +46,8 @@ Methods
 -------
 
 
-.. _Identity_==:
+
+.. _`Neo4j/Shared/Identity#==`:
 
 **#==**
   
@@ -58,7 +59,8 @@ Methods
      end
 
 
-.. _Identity_eql?:
+
+.. _`Neo4j/Shared/Identity#eql?`:
 
 **#eql?**
   
@@ -70,7 +72,8 @@ Methods
      end
 
 
-.. _Identity_hash:
+
+.. _`Neo4j/Shared/Identity#hash`:
 
 **#hash**
   
@@ -82,7 +85,8 @@ Methods
      end
 
 
-.. _Identity_id:
+
+.. _`Neo4j/Shared/Identity#id`:
 
 **#id**
   
@@ -95,7 +99,8 @@ Methods
      end
 
 
-.. _Identity_neo_id:
+
+.. _`Neo4j/Shared/Identity#neo_id`:
 
 **#neo_id**
   
@@ -107,7 +112,8 @@ Methods
      end
 
 
-.. _Identity_to_key:
+
+.. _`Neo4j/Shared/Identity#to_key`:
 
 **#to_key**
   Returns an Enumerable of all (primary) key attributes

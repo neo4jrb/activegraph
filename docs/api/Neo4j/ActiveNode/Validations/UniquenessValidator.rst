@@ -44,7 +44,8 @@ Methods
 -------
 
 
-.. _UniquenessValidator_found:
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#found`:
 
 **#found**
   
@@ -65,7 +66,8 @@ Methods
      end
 
 
-.. _UniquenessValidator_initialize:
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#initialize`:
 
 **#initialize**
   
@@ -77,7 +79,8 @@ Methods
      end
 
 
-.. _UniquenessValidator_message:
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#message`:
 
 **#message**
   
@@ -89,7 +92,8 @@ Methods
      end
 
 
-.. _UniquenessValidator_scope_conditions:
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#scope_conditions`:
 
 **#scope_conditions**
   
@@ -103,7 +107,8 @@ Methods
      end
 
 
-.. _UniquenessValidator_validate_each:
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#validate_each`:
 
 **#validate_each**
   

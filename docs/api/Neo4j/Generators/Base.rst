@@ -36,7 +36,8 @@ Methods
 -------
 
 
-.. _Base_source_root:
+
+.. _`Neo4j/Generators/Base.source_root`:
 
 **.source_root**
   

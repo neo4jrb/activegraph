@@ -74,7 +74,8 @@ Methods
 -------
 
 
-.. _Property_[]:
+
+.. _`Neo4j/Shared/Property#[]`:
 
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -88,7 +89,8 @@ Methods
      end
 
 
-.. _Property__persisted_obj:
+
+.. _`Neo4j/Shared/Property#_persisted_obj`:
 
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
@@ -100,7 +102,8 @@ Methods
      end
 
 
-.. _Property_default_properties:
+
+.. _`Neo4j/Shared/Property#default_properties`:
 
 **#default_properties**
   
@@ -114,7 +117,8 @@ Methods
      end
 
 
-.. _Property_default_properties=:
+
+.. _`Neo4j/Shared/Property#default_properties=`:
 
 **#default_properties=**
   
@@ -127,7 +131,8 @@ Methods
      end
 
 
-.. _Property_default_property:
+
+.. _`Neo4j/Shared/Property#default_property`:
 
 **#default_property**
   
@@ -139,7 +144,8 @@ Methods
      end
 
 
-.. _Property_initialize:
+
+.. _`Neo4j/Shared/Property#initialize`:
 
 **#initialize**
   
@@ -159,7 +165,8 @@ Methods
      end
 
 
-.. _Property_read_attribute:
+
+.. _`Neo4j/Shared/Property#read_attribute`:
 
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -173,7 +180,8 @@ Methods
      end
 
 
-.. _Property_send_props:
+
+.. _`Neo4j/Shared/Property#send_props`:
 
 **#send_props**
   

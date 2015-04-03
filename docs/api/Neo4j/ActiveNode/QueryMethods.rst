@@ -58,7 +58,8 @@ Methods
 -------
 
 
-.. _QueryMethods_blank?:
+
+.. _`Neo4j/ActiveNode/QueryMethods#blank?`:
 
 **#blank?**
   
@@ -70,7 +71,8 @@ Methods
      end
 
 
-.. _QueryMethods_count:
+
+.. _`Neo4j/ActiveNode/QueryMethods#count`:
 
 **#count**
   
@@ -84,7 +86,8 @@ Methods
      end
 
 
-.. _QueryMethods_empty?:
+
+.. _`Neo4j/ActiveNode/QueryMethods#empty?`:
 
 **#empty?**
   
@@ -96,7 +99,8 @@ Methods
      end
 
 
-.. _QueryMethods_exists?:
+
+.. _`Neo4j/ActiveNode/QueryMethods#exists?`:
 
 **#exists?**
   
@@ -113,7 +117,8 @@ Methods
      end
 
 
-.. _QueryMethods_find_each:
+
+.. _`Neo4j/ActiveNode/QueryMethods#find_each`:
 
 **#find_each**
   
@@ -127,7 +132,8 @@ Methods
      end
 
 
-.. _QueryMethods_find_in_batches:
+
+.. _`Neo4j/ActiveNode/QueryMethods#find_in_batches`:
 
 **#find_in_batches**
   
@@ -141,7 +147,8 @@ Methods
      end
 
 
-.. _QueryMethods_first:
+
+.. _`Neo4j/ActiveNode/QueryMethods#first`:
 
 **#first**
   Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -153,7 +160,8 @@ Methods
      end
 
 
-.. _QueryMethods_last:
+
+.. _`Neo4j/ActiveNode/QueryMethods#last`:
 
 **#last**
   Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -165,7 +173,8 @@ Methods
      end
 
 
-.. _QueryMethods_length:
+
+.. _`Neo4j/ActiveNode/QueryMethods#length`:
 
 **#length**
   
@@ -179,7 +188,8 @@ Methods
      end
 
 
-.. _QueryMethods_size:
+
+.. _`Neo4j/ActiveNode/QueryMethods#size`:
 
 **#size**
   

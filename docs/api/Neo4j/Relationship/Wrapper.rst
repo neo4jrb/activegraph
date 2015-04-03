@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _Wrapper_wrapper:
+
+.. _`Neo4j/Relationship/Wrapper#wrapper`:
 
 **#wrapper**
   

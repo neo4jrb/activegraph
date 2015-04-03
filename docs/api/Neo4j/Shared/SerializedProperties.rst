@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _SerializedProperties_serializable_hash:
+
+.. _`Neo4j/Shared/SerializedProperties#serializable_hash`:
 
 **#serializable_hash**
   
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _SerializedProperties_serialized_properties:
+
+.. _`Neo4j/Shared/SerializedProperties#serialized_properties`:
 
 **#serialized_properties**
   

@@ -60,7 +60,8 @@ Methods
 -------
 
 
-.. _ClassMethods_attribute!:
+
+.. _`Neo4j/Shared/Property/ClassMethods#attribute!`:
 
 **#attribute!**
   
@@ -77,7 +78,8 @@ Methods
      end
 
 
-.. _ClassMethods_default_properties:
+
+.. _`Neo4j/Shared/Property/ClassMethods#default_properties`:
 
 **#default_properties**
   
@@ -89,7 +91,8 @@ Methods
      end
 
 
-.. _ClassMethods_default_property:
+
+.. _`Neo4j/Shared/Property/ClassMethods#default_property`:
 
 **#default_property**
   
@@ -102,7 +105,8 @@ Methods
      end
 
 
-.. _ClassMethods_default_property_values:
+
+.. _`Neo4j/Shared/Property/ClassMethods#default_property_values`:
 
 **#default_property_values**
   
@@ -116,7 +120,8 @@ Methods
      end
 
 
-.. _ClassMethods_magic_typecast_properties:
+
+.. _`Neo4j/Shared/Property/ClassMethods#magic_typecast_properties`:
 
 **#magic_typecast_properties**
   
@@ -128,7 +133,8 @@ Methods
      end
 
 
-.. _ClassMethods_property:
+
+.. _`Neo4j/Shared/Property/ClassMethods#property`:
 
 **#property**
   Defines a property on the class
@@ -146,7 +152,8 @@ Methods
      end
 
 
-.. _ClassMethods_reset_default_properties:
+
+.. _`Neo4j/Shared/Property/ClassMethods#reset_default_properties`:
 
 **#reset_default_properties**
   
@@ -161,7 +168,8 @@ Methods
      end
 
 
-.. _ClassMethods_undef_property:
+
+.. _`Neo4j/Shared/Property/ClassMethods#undef_property`:
 
 **#undef_property**
   

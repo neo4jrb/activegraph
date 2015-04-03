@@ -56,7 +56,8 @@ Methods
 -------
 
 
-.. _AssociationReflection_association:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#association`:
 
 **#association**
   The association object referenced by this reflection
@@ -68,7 +69,8 @@ Methods
      end
 
 
-.. _AssociationReflection_class_name:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#class_name`:
 
 **#class_name**
   Returns the name of the target model
@@ -80,7 +82,8 @@ Methods
      end
 
 
-.. _AssociationReflection_collection?:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#collection?`:
 
 **#collection?**
   
@@ -92,7 +95,8 @@ Methods
      end
 
 
-.. _AssociationReflection_initialize:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#initialize`:
 
 **#initialize**
   
@@ -106,7 +110,8 @@ Methods
      end
 
 
-.. _AssociationReflection_klass:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#klass`:
 
 **#klass**
   Returns the target model
@@ -118,7 +123,8 @@ Methods
      end
 
 
-.. _AssociationReflection_macro:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#macro`:
 
 **#macro**
   The type of association
@@ -130,7 +136,8 @@ Methods
      end
 
 
-.. _AssociationReflection_name:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#name`:
 
 **#name**
   The name of the association
@@ -142,7 +149,8 @@ Methods
      end
 
 
-.. _AssociationReflection_rel_class_name:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#rel_class_name`:
 
 **#rel_class_name**
   
@@ -154,7 +162,8 @@ Methods
      end
 
 
-.. _AssociationReflection_rel_klass:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#rel_klass`:
 
 **#rel_klass**
   
@@ -166,7 +175,8 @@ Methods
      end
 
 
-.. _AssociationReflection_type:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#type`:
 
 **#type**
   
@@ -178,7 +188,8 @@ Methods
      end
 
 
-.. _AssociationReflection_validate?:
+
+.. _`Neo4j/ActiveNode/Reflection/AssociationReflection#validate?`:
 
 **#validate?**
   

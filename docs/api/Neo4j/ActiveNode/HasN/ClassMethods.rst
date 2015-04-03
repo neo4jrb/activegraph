@@ -62,7 +62,8 @@ Methods
 -------
 
 
-.. _ClassMethods_association?:
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#association?`:
 
 **#association?**
   rubocop:enable Style/PredicateName
@@ -75,7 +76,8 @@ Methods
      end
 
 
-.. _ClassMethods_associations:
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#associations`:
 
 **#associations**
   
@@ -87,7 +89,8 @@ Methods
      end
 
 
-.. _ClassMethods_has_association?:
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#has_association?`:
 
 **#has_association?**
   :nocov:
@@ -102,7 +105,8 @@ Methods
      end
 
 
-.. _ClassMethods_has_many:
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#has_many`:
 
 **#has_many**
   For defining an "has many" association on a model.  This defines a set of methods on
@@ -127,6 +131,37 @@ Methods
     associated with the ``Person`` nodes thus far represented in the QueryProxy chain.
     For example:
       ``company.people.where(age: 40).vehicles``
+  
+  Arguments:
+    **direction:**
+      **Available values:** ``:in``, ``:out``, or ``:both``.
+  
+      Refers to the relative to the model on which the association is being defined.
+  
+      Example:
+        ``Person.has_many :out, :posts, type: :wrote``
+  
+          means that a `WROTE` relationship goes from a `Person` node to a `Post` node
+  
+    **name:**
+      The name of the association.  The affects the methods which are created (see above).
+      The name is also used to form default assumptions about the model which is being referred to
+  
+      Example:
+        ``Person.has_many :out, :posts``
+  
+        will assume a `model_class` option of ``'Post'`` unless otherwise specified
+  
+    **options:** A ``Hash`` of options.  Allowed keys are:
+      *type*: The Neo4j relationship type
+  
+      *model_class*: The model class to which the association is referring.  Can be either a
+        model `Class` object or a string (or an Array of same).
+        **A string is recommended** to avoid load-time issues
+  
+      *dependent*: Enables deletion cascading.
+        **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
+        (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
 
   .. hidden-code-block:: ruby
 
@@ -138,10 +173,19 @@ Methods
      end
 
 
-.. _ClassMethods_has_one:
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#has_one`:
 
 **#has_one**
-  rubocop:disable Style/PredicateName
+  For defining an "has one" association on a model.  This defines a set of methods on
+  your model instances.  For instance, if you define the association on a Person model:
+  
+  has_one :out, :vehicle, type: :has_vehicle
+  
+  This would define the methods: ``#vehicle``, ``#vehicle=``, and ``.vehicle``.
+  
+  See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
+  not specified here
 
   .. hidden-code-block:: ruby
 
@@ -153,7 +197,8 @@ Methods
      end
 
 
-.. _ClassMethods_inherited:
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#inherited`:
 
 **#inherited**
   make sure the inherited classes inherit the <tt>_decl_rels</tt> hash

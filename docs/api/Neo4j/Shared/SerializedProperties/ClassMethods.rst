@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _ClassMethods_serialize:
+
+.. _`Neo4j/Shared/SerializedProperties/ClassMethods#serialize`:
 
 **#serialize**
   
@@ -53,7 +54,8 @@ Methods
      end
 
 
-.. _ClassMethods_serialized_properties:
+
+.. _`Neo4j/Shared/SerializedProperties/ClassMethods#serialized_properties`:
 
 **#serialized_properties**
   
@@ -65,7 +67,8 @@ Methods
      end
 
 
-.. _ClassMethods_serialized_properties=:
+
+.. _`Neo4j/Shared/SerializedProperties/ClassMethods#serialized_properties=`:
 
 **#serialized_properties=**
   

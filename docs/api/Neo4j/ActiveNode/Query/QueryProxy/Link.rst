@@ -52,7 +52,8 @@ Methods
 -------
 
 
-.. _Link_args:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link#args`:
 
 **#args**
   
@@ -64,7 +65,8 @@ Methods
      end
 
 
-.. _Link_clause:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link#clause`:
 
 **#clause**
   Returns the value of attribute clause
@@ -76,7 +78,8 @@ Methods
      end
 
 
-.. _Link_for_association:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_association`:
 
 **.for_association**
   
@@ -97,7 +100,8 @@ Methods
      end
 
 
-.. _Link_for_clause:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_clause`:
 
 **.for_clause**
   
@@ -111,7 +115,8 @@ Methods
      end
 
 
-.. _Link_for_node_where_clause:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_node_where_clause`:
 
 **.for_node_where_clause**
   
@@ -138,7 +143,8 @@ Methods
      end
 
 
-.. _Link_for_order_clause:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_order_clause`:
 
 **.for_order_clause**
   
@@ -150,7 +156,8 @@ Methods
      end
 
 
-.. _Link_for_rel_where_clause:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_rel_where_clause`:
 
 **.for_rel_where_clause**
   We don't accept strings here. If you want to use a string, just use where.
@@ -164,7 +171,8 @@ Methods
      end
 
 
-.. _Link_for_where_clause:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_where_clause`:
 
 **.for_where_clause**
   
@@ -191,7 +199,8 @@ Methods
      end
 
 
-.. _Link_initialize:
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link#initialize`:
 
 **#initialize**
   

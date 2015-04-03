@@ -40,7 +40,8 @@ Methods
 -------
 
 
-.. _JSONConverter_convert_type:
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.convert_type`:
 
 **.convert_type**
   
@@ -52,7 +53,8 @@ Methods
      end
 
 
-.. _JSONConverter_to_db:
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.to_db`:
 
 **.to_db**
   
@@ -64,7 +66,8 @@ Methods
      end
 
 
-.. _JSONConverter_to_ruby:
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.to_ruby`:
 
 **.to_ruby**
   

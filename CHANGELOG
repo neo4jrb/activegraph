@@ -1,4 +1,5 @@
 == 5.0.0
+* Major refactoring using `rubocop` and speed improvements
 * `model_class` key on associations now supports an Array
 
 == 4.1.2

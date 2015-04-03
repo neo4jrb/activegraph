@@ -42,7 +42,8 @@ Methods
 -------
 
 
-.. _Wrapper_class_to_wrap:
+
+.. _`Neo4j/Node/Wrapper#class_to_wrap`:
 
 **#class_to_wrap**
   
@@ -56,7 +57,8 @@ Methods
      end
 
 
-.. _Wrapper_wrapper:
+
+.. _`Neo4j/Node/Wrapper#wrapper`:
 
 **#wrapper**
   this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects

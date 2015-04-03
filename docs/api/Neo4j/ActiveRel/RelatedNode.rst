@@ -52,7 +52,8 @@ Methods
 -------
 
 
-.. _RelatedNode_==:
+
+.. _`Neo4j/ActiveRel/RelatedNode#==`:
 
 **#==**
   Loads the node if needed, then conducts comparison.
@@ -65,7 +66,8 @@ Methods
      end
 
 
-.. _RelatedNode_class:
+
+.. _`Neo4j/ActiveRel/RelatedNode#class`:
 
 **#class**
   
@@ -77,7 +79,8 @@ Methods
      end
 
 
-.. _RelatedNode_initialize:
+
+.. _`Neo4j/ActiveRel/RelatedNode#initialize`:
 
 **#initialize**
   ActiveRel's related nodes can be initialized with nothing, an integer, or a fully wrapped node.
@@ -96,7 +99,8 @@ Methods
      end
 
 
-.. _RelatedNode_loaded:
+
+.. _`Neo4j/ActiveRel/RelatedNode#loaded`:
 
 **#loaded**
   Loads a node from the database or returns the node if already laoded
@@ -108,7 +112,8 @@ Methods
      end
 
 
-.. _RelatedNode_loaded?:
+
+.. _`Neo4j/ActiveRel/RelatedNode#loaded?`:
 
 **#loaded?**
   
@@ -120,7 +125,8 @@ Methods
      end
 
 
-.. _RelatedNode_method_missing:
+
+.. _`Neo4j/ActiveRel/RelatedNode#method_missing`:
 
 **#method_missing**
   
@@ -132,7 +138,8 @@ Methods
      end
 
 
-.. _RelatedNode_neo_id:
+
+.. _`Neo4j/ActiveRel/RelatedNode#neo_id`:
 
 **#neo_id**
   Returns the neo_id of a given node without loading.
