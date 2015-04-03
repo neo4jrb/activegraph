@@ -107,7 +107,7 @@ module Neo4j::ActiveNode
       # has_many :out, :vehicles, type: :has_vehicle
       #
       # This would define the following methods:
-      # 
+      #
       # **#vehicles**
       #   Returns a QueryProxy object.  This is an Enumerable object and thus can be iterated
       #   over.  It also has the ability to accept class-level methods from the Vehicle model
@@ -129,7 +129,7 @@ module Neo4j::ActiveNode
       #     **Available values:** ``:in``, ``:out``, or ``:both``.
       #
       #     Refers to the relative to the model on which the association is being defined.
-      # 
+      #
       #     Example:
       #       ``Person.has_many :out, :posts, type: :wrote``
       #
@@ -171,7 +171,7 @@ module Neo4j::ActiveNode
       #
       # See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
       # not specified here
-      # 
+      #
       def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
         name = name.to_sym
         build_association(:has_one, direction, name, options)
