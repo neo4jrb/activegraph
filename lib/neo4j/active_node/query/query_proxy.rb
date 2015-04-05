@@ -74,9 +74,7 @@ module Neo4j
         end
 
         def params(params)
-          self.dup.tap do |new_query|
-            new_query._add_params(params)
-          end
+          new_link.tap { |new_query| new_query._add_params(params) }
         end
 
         # Like calling #query_as, but for when you don't care about the variable name
