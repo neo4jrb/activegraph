@@ -90,7 +90,13 @@ module Neo4j
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var)
           result_query = @chain.inject(base_query(var).params(@params)) do |query, link|
-            query.send(link.clause, link.args(var, rel_var))
+            args = link.args(var, rel_var)
+
+            if args.is_a?(Array)
+              query.send(link.clause, *args)
+            else
+              query.send(link.clause, link.args(var, rel_var))
+            end
           end
 
           result_query.tap { |query| query.proxy_chain_level = _chain_level }
@@ -317,18 +323,10 @@ module Neo4j
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
-            args.each do |arg|
-              new_query._add_links(links_for_arg(method, arg))
+            Link.for_args(@model, method, args).each do |link|
+              new_query._add_links(link)
             end
           end
-        end
-
-        def links_for_arg(clause, arg)
-          default = [Link.new(clause, arg)]
-
-          Link.for_clause(clause, arg, @model) || default
-        rescue NoMethodError
-          default
         end
       end
     end

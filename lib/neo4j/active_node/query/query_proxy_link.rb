@@ -5,23 +5,24 @@ module Neo4j
         class Link
           attr_reader :clause
 
-          def initialize(clause, arg)
+          def initialize(clause, arg, args = [])
             @clause = clause
             @arg = arg
+            @args = args
           end
 
           def args(var, rel_var)
-            @arg.respond_to?(:call) ? @arg.call(var, rel_var) : @arg
+            @arg.respond_to?(:call) ? @arg.call(var, rel_var) : [@arg, @args].flatten
           end
 
           class << self
-            def for_clause(clause, arg, model)
+            def for_clause(clause, arg, model, *args)
               method_to_call = "for_#{clause}_clause"
 
-              send(method_to_call, arg, model)
+              send(method_to_call, arg, model, *args)
             end
 
-            def for_where_clause(arg, model)
+            def for_where_clause(arg, model, *args)
               node_num = 1
               result = []
               if arg.is_a?(Hash)
@@ -35,7 +36,7 @@ module Neo4j
                   end
                 end
               elsif arg.is_a?(String)
-                result << new(:where, arg)
+                result << new(:where, arg, args)
               end
               result
             end
@@ -63,6 +64,22 @@ module Neo4j
 
             def for_order_clause(arg, _)
               [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
+            end
+
+            def for_args(model, clause, args)
+              if clause == :where && args[0].is_a?(String) # Better way?
+                [for_arg(model, :where, args[0], *args[1..-1])]
+              else
+                args.map { |arg| for_arg(model, clause, arg) }
+              end
+            end
+
+            def for_arg(model, clause, arg, *args)
+              default = [Link.new(clause, arg, *args)]
+
+              Link.for_clause(clause, arg, model, *args) || default
+            rescue NoMethodError
+              default
             end
           end
         end

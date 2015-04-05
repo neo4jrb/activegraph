@@ -156,8 +156,20 @@ describe 'Query API' do
       result.should include(othmar)
     end
 
-    it 'allows filtering' do
-      Teacher.where(name: /.*Othmar.*/).to_a.should eq([othmar])
+    describe 'filtering' do
+      it 'allows filtering in where' do
+        Teacher.where(name: /.*Othmar.*/).to_a.should eq([othmar])
+      end
+
+      it 'allows filtering by String in where' do
+        Teacher.as(:teach).where('teach.name =~ ".*Othmar.*"').to_a.should eq([othmar])
+
+        Teacher.as(:teach).where('teach.name =~ ?', '.*Othmar.*').to_a.should eq([othmar])
+      end
+
+      it 'allows filtering and parametarizing by String and Hash in where' do
+        Teacher.as(:teach).where('teach.name =~ {name}', name: '.*Othmar.*').to_a.should eq([othmar])
+      end
     end
 
     context 'samuels teaching soc 101 and 102 lessons' do
