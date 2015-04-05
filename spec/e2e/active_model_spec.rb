@@ -599,6 +599,32 @@ describe Neo4j::ActiveNode do
     end
   end
 
+  describe 'method chaining' do
+    before(:each) do
+      stub_active_node_class('Cat') do
+        property :name
+
+        def self.named_bill
+          all(:random_var).where("random_var.name = 'Bill'").pluck(:random_var)
+        end
+      end
+    end
+    context 'A Bill' do
+      let!(:bill) { Cat.create(name: 'Bill') }
+      context 'A Jim' do
+        let!(:jim) { Cat.create(name: 'Jim') }
+
+        context 'Cat has a .named_bill scoping method' do
+          it 'only returns Bill' do
+            expect(Cat.named_bill.to_a).to eq([bill])
+            expect(Cat.all.named_bill.to_a).to eq([bill])
+            expect(Cat.all(:another_variable).named_bill.to_a).to eq([bill])
+          end
+        end
+      end
+    end
+  end
+
   describe 'Neo4j::Paginated.create_from' do
     before do
       Person.delete_all
