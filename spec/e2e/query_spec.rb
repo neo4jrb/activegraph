@@ -69,6 +69,7 @@ describe 'Query API' do
       student = Student.create
       student.lessons << lesson
 
+      Student.as(:s).pluck(:s).should eq([student])
       Student.all.pluck(:uuid).should eq([student.uuid])
 
       lesson.students.pluck(:uuid).should eq([student.uuid])

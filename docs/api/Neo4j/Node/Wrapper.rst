@@ -42,6 +42,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/Node/Wrapper#class_to_wrap`:
+
 **#class_to_wrap**
   
 
@@ -54,29 +57,8 @@ Methods
      end
 
 
-**#load_classes_from_labels**
-  
 
-  .. hidden-code-block:: ruby
-
-     def load_classes_from_labels
-       labels.each { |label| label.to_s.constantize }
-     rescue NameError
-       nil
-     end
-
-
-**#named_class**
-  
-
-  .. hidden-code-block:: ruby
-
-     def named_class
-       property = Neo4j::Config.class_name_property
-     
-       self.props[property].constantize if self.props.is_a?(Hash) && self.props.key?(property)
-     end
-
+.. _`Neo4j/Node/Wrapper#wrapper`:
 
 **#wrapper**
   this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects

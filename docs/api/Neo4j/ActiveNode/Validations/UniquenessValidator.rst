@@ -44,6 +44,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#found`:
+
 **#found**
   
 
@@ -63,6 +66,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#initialize`:
+
 **#initialize**
   
 
@@ -73,6 +79,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#message`:
+
 **#message**
   
 
@@ -82,6 +91,9 @@ Methods
        super || 'has already been taken'
      end
 
+
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#scope_conditions`:
 
 **#scope_conditions**
   
@@ -94,6 +106,9 @@ Methods
        end
      end
 
+
+
+.. _`Neo4j/ActiveNode/Validations/UniquenessValidator#validate_each`:
 
 **#validate_each**
   

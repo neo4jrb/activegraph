@@ -36,6 +36,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Property/ClassMethods#extract_association_attributes!`:
+
 **#extract_association_attributes!**
   Extracts keys from attributes hash which are relationships of the model
   TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?

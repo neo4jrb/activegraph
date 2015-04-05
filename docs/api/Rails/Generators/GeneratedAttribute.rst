@@ -36,6 +36,9 @@ Methods
 -------
 
 
+
+.. _`Rails/Generators/GeneratedAttribute#type_class`:
+
 **#type_class**
   
 

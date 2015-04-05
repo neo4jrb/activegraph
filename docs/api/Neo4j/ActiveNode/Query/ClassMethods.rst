@@ -40,6 +40,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Query/ClassMethods#as`:
+
 **#as**
   Start a new QueryProxy with the starting identifier set to the given argument.
   This method does not exist within QueryProxy, it can only be called at the class level to create a new QP object.
@@ -52,6 +55,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/ClassMethods#query_as`:
+
 **#query_as**
   Returns a Query object with all nodes for the model matched as the specified variable name
 
@@ -61,6 +67,9 @@ Methods
        query_proxy.query_as(var)
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/ClassMethods#query_proxy`:
 
 **#query_proxy**
   

@@ -52,6 +52,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link#args`:
+
 **#args**
   
 
@@ -61,6 +64,9 @@ Methods
        @arg.respond_to?(:call) ? @arg.call(var, rel_var) : @arg
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link#clause`:
 
 **#clause**
   Returns the value of attribute clause
@@ -72,7 +78,10 @@ Methods
      end
 
 
-**#for_association**
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_association`:
+
+**.for_association**
   
 
   .. hidden-code-block:: ruby
@@ -91,7 +100,10 @@ Methods
      end
 
 
-**#for_clause**
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_clause`:
+
+**.for_clause**
   
 
   .. hidden-code-block:: ruby
@@ -103,7 +115,10 @@ Methods
      end
 
 
-**#for_node_where_clause**
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_node_where_clause`:
+
+**.for_node_where_clause**
   
 
   .. hidden-code-block:: ruby
@@ -128,7 +143,10 @@ Methods
      end
 
 
-**#for_order_clause**
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_order_clause`:
+
+**.for_order_clause**
   
 
   .. hidden-code-block:: ruby
@@ -138,7 +156,10 @@ Methods
      end
 
 
-**#for_rel_where_clause**
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_rel_where_clause`:
+
+**.for_rel_where_clause**
   We don't accept strings here. If you want to use a string, just use where.
 
   .. hidden-code-block:: ruby
@@ -150,7 +171,10 @@ Methods
      end
 
 
-**#for_where_clause**
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_where_clause`:
+
+**.for_where_clause**
   
 
   .. hidden-code-block:: ruby
@@ -174,6 +198,9 @@ Methods
        result
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link#initialize`:
 
 **#initialize**
   

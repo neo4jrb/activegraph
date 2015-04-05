@@ -44,7 +44,10 @@ Methods
 -------
 
 
-**#convert_type**
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.convert_type`:
+
+**.convert_type**
   
 
   .. hidden-code-block:: ruby
@@ -54,7 +57,10 @@ Methods
      end
 
 
-**#to_db**
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.to_db`:
+
+**.to_db**
   Converts the given DateTime (UTC) value to an Integer.
   DateTime values are automatically converted to UTC.
 
@@ -70,7 +76,10 @@ Methods
      end
 
 
-**#to_ruby**
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.to_ruby`:
+
+**.to_ruby**
   
 
   .. hidden-code-block:: ruby

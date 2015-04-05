@@ -40,7 +40,10 @@ Methods
 -------
 
 
-**#convert_type**
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.convert_type`:
+
+**.convert_type**
   
 
   .. hidden-code-block:: ruby
@@ -50,7 +53,10 @@ Methods
      end
 
 
-**#to_db**
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.to_db`:
+
+**.to_db**
   
 
   .. hidden-code-block:: ruby
@@ -60,7 +66,10 @@ Methods
      end
 
 
-**#to_ruby**
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.to_ruby`:
+
+**.to_ruby**
   
 
   .. hidden-code-block:: ruby

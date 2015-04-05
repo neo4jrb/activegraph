@@ -40,25 +40,8 @@ Methods
 -------
 
 
-**#class_from_type**
-  
 
-  .. hidden-code-block:: ruby
-
-     def class_from_type
-       Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || rel_type.camelize
-     end
-
-
-**#sorted_wrapper_classes**
-  
-
-  .. hidden-code-block:: ruby
-
-     def sorted_wrapper_classes
-       props[Neo4j::Config.class_name_property] || class_from_type
-     end
-
+.. _`Neo4j/Relationship/Wrapper#wrapper`:
 
 **#wrapper**
   

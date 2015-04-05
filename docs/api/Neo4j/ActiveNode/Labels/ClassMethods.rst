@@ -72,25 +72,8 @@ Methods
 -------
 
 
-**#_index**
-  
 
-  .. hidden-code-block:: ruby
-
-     def _index(property, conf)
-       mapped_labels.each do |label|
-         # make sure the property is not indexed twice
-         existing = label.indexes[:property_keys]
-     
-         # In neo4j constraint automatically creates an index
-         if conf[:constraint]
-           constraint(property, conf[:constraint])
-         else
-           label.create_index(property) unless existing.flatten.include?(property)
-         end
-       end
-     end
-
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#all`:
 
 **#all**
   Find all nodes/objects of this class
@@ -101,6 +84,9 @@ Methods
        Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, {})
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#base_class`:
 
 **#base_class**
   
@@ -120,6 +106,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#blank?`:
+
 **#blank?**
   
 
@@ -129,6 +118,9 @@ Methods
        !self.all.exists?
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#constraint`:
 
 **#constraint**
   Creates a neo4j constraint on this class for given property
@@ -145,6 +137,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#count`:
+
 **#count**
   
 
@@ -157,6 +152,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#delete_all`:
+
 **#delete_all**
   Deletes all nodes and connected relationships from Cypher.
 
@@ -168,6 +166,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#destroy_all`:
+
 **#destroy_all**
   Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
   one database query per node in the database, more if callbacks require them.
@@ -178,6 +179,9 @@ Methods
        all.each(&:destroy)
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#drop_constraint`:
 
 **#drop_constraint**
   
@@ -192,6 +196,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#empty?`:
+
 **#empty?**
   
 
@@ -201,6 +208,9 @@ Methods
        !self.all.exists?
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#exists?`:
 
 **#exists?**
   
@@ -217,22 +227,8 @@ Methods
      end
 
 
-**#exists_query_start**
-  
 
-  .. hidden-code-block:: ruby
-
-     def exists_query_start(node_condition)
-       case node_condition
-       when Integer
-         self.query_as(:n).where('ID(n)' => node_condition)
-       when Hash
-         self.where(node_condition.keys.first => node_condition.values.first)
-       else
-         self.query_as(:n)
-       end
-     end
-
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find`:
 
 **#find**
   Returns the object with the specified neo4j id.
@@ -250,6 +246,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_by`:
+
 **#find_by**
   Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
 
@@ -260,6 +259,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_by!`:
+
 **#find_by!**
   Like find_by, except that if no record is found, raises a RecordNotFound error.
 
@@ -269,6 +271,9 @@ Methods
        find_by(values) || fail(RecordNotFound, "#{self.query_as(:n).where(n: values).limit(1).to_cypher} returned no results")
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_each`:
 
 **#find_each**
   
@@ -282,6 +287,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#find_in_batches`:
+
 **#find_in_batches**
   
 
@@ -294,6 +302,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#first`:
+
 **#first**
   Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
 
@@ -303,6 +314,9 @@ Methods
        self.query_as(:n).limit(1).order(n: primary_key).pluck(:n).first
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#index`:
 
 **#index**
   Creates a Neo4j index on given property
@@ -319,6 +333,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#index?`:
+
 **#index?**
   
 
@@ -328,6 +345,9 @@ Methods
        mapped_label.indexes[:property_keys].include?([index_def])
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#indexed_properties`:
 
 **#indexed_properties**
   
@@ -339,6 +359,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#last`:
+
 **#last**
   Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
 
@@ -348,6 +371,9 @@ Methods
        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#length`:
 
 **#length**
   
@@ -361,6 +387,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#mapped_label`:
+
 **#mapped_label**
   
 
@@ -370,6 +399,9 @@ Methods
        Neo4j::Label.create(mapped_label_name)
      end
 
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#mapped_label_name`:
 
 **#mapped_label_name**
   
@@ -381,15 +413,8 @@ Methods
      end
 
 
-**#mapped_label_name=**
-  
 
-  .. hidden-code-block:: ruby
-
-     def mapped_label_name=(name)
-       @mapped_label_name = name.to_sym
-     end
-
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#mapped_label_names`:
 
 **#mapped_label_names**
   
@@ -401,27 +426,8 @@ Methods
      end
 
 
-**#mapped_labels**
-  
 
-  .. hidden-code-block:: ruby
-
-     def mapped_labels
-       mapped_label_names.map { |label_name| Neo4j::Label.create(label_name) }
-     end
-
-
-**#set_mapped_label_name**
-  rubocop:disable Style/AccessorMethodName
-
-  .. hidden-code-block:: ruby
-
-     def set_mapped_label_name(name)
-       ActiveSupport::Deprecation.warn 'set_mapped_label_name is deprecated, use self.mapped_label_name= instead.', caller
-     
-       self.mapped_label_name = name
-     end
-
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#size`:
 
 **#size**
   

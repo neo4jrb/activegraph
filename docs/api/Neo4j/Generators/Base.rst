@@ -36,7 +36,10 @@ Methods
 -------
 
 
-**#source_root**
+
+.. _`Neo4j/Generators/Base.source_root`:
+
+**.source_root**
   
 
   .. hidden-code-block:: ruby

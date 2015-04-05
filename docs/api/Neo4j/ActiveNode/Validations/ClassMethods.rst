@@ -36,6 +36,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Validations/ClassMethods#validates_uniqueness_of`:
+
 **#validates_uniqueness_of**
   
 

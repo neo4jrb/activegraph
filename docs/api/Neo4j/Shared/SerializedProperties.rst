@@ -40,6 +40,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/Shared/SerializedProperties#serializable_hash`:
+
 **#serializable_hash**
   
 
@@ -49,6 +52,9 @@ Methods
        super.merge(id: id)
      end
 
+
+
+.. _`Neo4j/Shared/SerializedProperties#serialized_properties`:
 
 **#serialized_properties**
   

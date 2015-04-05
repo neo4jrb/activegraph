@@ -64,7 +64,10 @@ Methods
 -------
 
 
-**#[]**
+
+.. _`Neo4j/Config.[]`:
+
+**.[]**
   
 
   .. hidden-code-block:: ruby
@@ -74,7 +77,10 @@ Methods
      end
 
 
-**#[]=**
+
+.. _`Neo4j/Config.[]=`:
+
+**.[]=**
   Sets the value of a config entry.
 
   .. hidden-code-block:: ruby
@@ -84,7 +90,10 @@ Methods
      end
 
 
-**#class_name_property**
+
+.. _`Neo4j/Config.class_name_property`:
+
+**.class_name_property**
   
 
   .. hidden-code-block:: ruby
@@ -94,7 +103,10 @@ Methods
      end
 
 
-**#configuration**
+
+.. _`Neo4j/Config.configuration`:
+
+**.configuration**
   Reads from the default_file if configuration is not set already
 
   .. hidden-code-block:: ruby
@@ -108,7 +120,10 @@ Methods
      end
 
 
-**#default_file**
+
+.. _`Neo4j/Config.default_file`:
+
+**.default_file**
   
 
   .. hidden-code-block:: ruby
@@ -118,7 +133,10 @@ Methods
      end
 
 
-**#default_file=**
+
+.. _`Neo4j/Config.default_file=`:
+
+**.default_file=**
   Sets the location of the configuration YAML file and old deletes configurations.
 
   .. hidden-code-block:: ruby
@@ -130,7 +148,10 @@ Methods
      end
 
 
-**#defaults**
+
+.. _`Neo4j/Config.defaults`:
+
+**.defaults**
   
 
   .. hidden-code-block:: ruby
@@ -141,7 +162,10 @@ Methods
      end
 
 
-**#delete**
+
+.. _`Neo4j/Config.delete`:
+
+**.delete**
   Remove the value of a config entry.
 
   .. hidden-code-block:: ruby
@@ -151,7 +175,10 @@ Methods
      end
 
 
-**#delete_all**
+
+.. _`Neo4j/Config.delete_all`:
+
+**.delete_all**
   Remove all configuration. This can be useful for testing purpose.
 
   .. hidden-code-block:: ruby
@@ -161,7 +188,10 @@ Methods
      end
 
 
-**#include_root_in_json**
+
+.. _`Neo4j/Config.include_root_in_json`:
+
+**.include_root_in_json**
   
 
   .. hidden-code-block:: ruby
@@ -172,7 +202,10 @@ Methods
      end
 
 
-**#to_hash**
+
+.. _`Neo4j/Config.to_hash`:
+
+**.to_hash**
   
 
   .. hidden-code-block:: ruby
@@ -182,7 +215,10 @@ Methods
      end
 
 
-**#to_yaml**
+
+.. _`Neo4j/Config.to_yaml`:
+
+**.to_yaml**
   
 
   .. hidden-code-block:: ruby
@@ -192,7 +228,10 @@ Methods
      end
 
 
-**#use**
+
+.. _`Neo4j/Config.use`:
+
+**.use**
   Yields the configuration
 
   .. hidden-code-block:: ruby

@@ -48,7 +48,10 @@ Methods
 -------
 
 
-**#all**
+
+.. _`Neo4j/Generators/ActiveModel.all`:
+
+**.all**
   
 
   .. hidden-code-block:: ruby
@@ -58,7 +61,10 @@ Methods
      end
 
 
-**#build**
+
+.. _`Neo4j/Generators/ActiveModel.build`:
+
+**.build**
   
 
   .. hidden-code-block:: ruby
@@ -72,6 +78,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Generators/ActiveModel#destroy`:
+
 **#destroy**
   
 
@@ -81,6 +90,9 @@ Methods
        "#{name}.destroy"
      end
 
+
+
+.. _`Neo4j/Generators/ActiveModel#errors`:
 
 **#errors**
   
@@ -92,7 +104,10 @@ Methods
      end
 
 
-**#find**
+
+.. _`Neo4j/Generators/ActiveModel.find`:
+
+**.find**
   
 
   .. hidden-code-block:: ruby
@@ -101,6 +116,9 @@ Methods
        "#{klass}.find(#{params})"
      end
 
+
+
+.. _`Neo4j/Generators/ActiveModel#save`:
 
 **#save**
   
@@ -111,6 +129,9 @@ Methods
        "#{name}.save"
      end
 
+
+
+.. _`Neo4j/Generators/ActiveModel#update_attributes`:
 
 **#update_attributes**
   

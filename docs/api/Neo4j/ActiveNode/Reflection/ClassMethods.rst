@@ -40,16 +40,8 @@ Methods
 -------
 
 
-**#create_reflection**
-  
 
-  .. hidden-code-block:: ruby
-
-     def create_reflection(macro, name, association_object, model)
-       self.reflections = self.reflections.merge(name => AssociationReflection.new(macro, name, association_object))
-       association_object.add_destroy_callbacks(model)
-     end
-
+.. _`Neo4j/ActiveNode/Reflection/ClassMethods#reflect_on_all_associations`:
 
 **#reflect_on_all_associations**
   Returns an array containing one reflection for each association declared in the model.
@@ -61,6 +53,9 @@ Methods
        macro ? association_reflections.select { |reflection| reflection.macro == macro } : association_reflections
      end
 
+
+
+.. _`Neo4j/ActiveNode/Reflection/ClassMethods#reflect_on_association`:
 
 **#reflect_on_association**
   

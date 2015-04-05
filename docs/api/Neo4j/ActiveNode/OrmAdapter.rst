@@ -56,6 +56,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/OrmAdapter#column_names`:
+
 **#column_names**
   
 
@@ -65,6 +68,9 @@ Methods
        klass._decl_props.keys
      end
 
+
+
+.. _`Neo4j/ActiveNode/OrmAdapter#create!`:
 
 **#create!**
   Create a model using attributes
@@ -76,6 +82,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/OrmAdapter#destroy`:
+
 **#destroy**
   
 
@@ -86,18 +95,8 @@ Methods
      end
 
 
-**#extract_id!**
-  
 
-  .. hidden-code-block:: ruby
-
-     def extract_id!(conditions)
-       id = conditions.delete(:id)
-       return if not id
-     
-       conditions[klass.id_property_name.to_sym] = id
-     end
-
+.. _`Neo4j/ActiveNode/OrmAdapter#find_all`:
 
 **#find_all**
   Find all models matching conditions
@@ -117,6 +116,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/OrmAdapter#find_first`:
+
 **#find_first**
   Find the first instance matching conditions
 
@@ -133,6 +135,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/OrmAdapter#get`:
+
 **#get**
   Get an instance by id of the model
 
@@ -142,6 +147,9 @@ Methods
        klass.find(wrap_key(id))
      end
 
+
+
+.. _`Neo4j/ActiveNode/OrmAdapter#get!`:
 
 **#get!**
   Get an instance by id of the model
@@ -155,15 +163,8 @@ Methods
      end
 
 
-**#hasherize_order**
-  
 
-  .. hidden-code-block:: ruby
-
-     def hasherize_order(order)
-       (order || []).map { |clause| Hash[*clause] }
-     end
-
+.. _`Neo4j/ActiveNode/OrmAdapter#i18n_scope`:
 
 **#i18n_scope**
   

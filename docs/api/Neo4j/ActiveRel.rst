@@ -15,9 +15,9 @@ ActiveRel
 
    
 
-   ActiveRel/Types
-
    ActiveRel/Query
+
+   ActiveRel/Types
 
    ActiveRel/Property
 
@@ -25,9 +25,9 @@ ActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -58,9 +58,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
-
   * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
+
+  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
 
   * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
 
@@ -68,9 +68,9 @@ Files
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -82,6 +82,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveRel#==`:
+
 **#==**
   
 
@@ -91,6 +94,9 @@ Methods
        other.class == self.class && other.id == id
      end
 
+
+
+.. _`Neo4j/ActiveRel#[]`:
 
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -104,22 +110,8 @@ Methods
      end
 
 
-**#_create_rel**
-  
 
-  .. hidden-code-block:: ruby
-
-     def _create_rel(from_node, to_node, *args)
-       props = self.class.default_property_values(self)
-       props.merge!(args[0]) if args[0].is_a?(Hash)
-       set_classname(props, true)
-     
-       if from_node.id.nil? || to_node.id.nil?
-         fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}"
-       end
-       _rel_creation_query(from_node, to_node, props)
-     end
-
+.. _`Neo4j/ActiveRel#_persisted_obj`:
 
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
@@ -131,18 +123,8 @@ Methods
      end
 
 
-**#_rel_creation_query**
-  
 
-  .. hidden-code-block:: ruby
-
-     def _rel_creation_query(from_node, to_node, props)
-       Neo4j::Session.query.match(N1_N2_STRING)
-         .where(ACTIVEREL_NODE_MATCH_STRING).params(n1_neo_id: from_node.neo_id, n2_neo_id: to_node.neo_id).break
-         .send(create_method, "n1-[r:`#{type}`]->n2")
-         .with('r').set(r: props).pluck(:r).first
-     end
-
+.. _`Neo4j/ActiveRel#cache_key`:
 
 **#cache_key**
   
@@ -160,6 +142,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#clear_association_cache`:
+
 **#clear_association_cache**
   
 
@@ -167,6 +152,9 @@ Methods
 
      def clear_association_cache; end
 
+
+
+.. _`Neo4j/ActiveRel#convert_properties_to`:
 
 **#convert_properties_to**
   
@@ -183,56 +171,8 @@ Methods
      end
 
 
-**#converted_property**
-  
 
-  .. hidden-code-block:: ruby
-
-     def converted_property(type, value, converter)
-       TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
-     end
-
-
-**#create_magic_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def create_magic_properties
-     end
-
-
-**#create_method**
-  
-
-  .. hidden-code-block:: ruby
-
-     def create_method
-       self.class.unique? ? :create_unique : :create
-     end
-
-
-**#create_model**
-  :nodoc:
-
-  .. hidden-code-block:: ruby
-
-     def create_model #:nodoc:
-       Neo4j::Transaction.run do
-         run_callbacks(:create) { super }
-       end
-     end
-
-
-**#create_or_update**
-  :nodoc:
-
-  .. hidden-code-block:: ruby
-
-     def create_or_update #:nodoc:
-       run_callbacks(:save) { super }
-     end
-
+.. _`Neo4j/ActiveRel#default_properties`:
 
 **#default_properties**
   
@@ -246,6 +186,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#default_properties=`:
+
 **#default_properties=**
   
 
@@ -257,6 +200,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#default_property`:
+
 **#default_property**
   
 
@@ -266,6 +212,9 @@ Methods
        default_properties[key.to_sym]
      end
 
+
+
+.. _`Neo4j/ActiveRel#destroy`:
 
 **#destroy**
   :nodoc:
@@ -285,6 +234,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#destroyed?`:
+
 **#destroyed?**
   Returns +true+ if the object was destroyed.
 
@@ -295,6 +247,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#end_node`:
+
 **#end_node**
   
 
@@ -302,6 +257,9 @@ Methods
 
      alias_method :end_node,   :to_node
 
+
+
+.. _`Neo4j/ActiveRel#eql?`:
 
 **#eql?**
   
@@ -313,6 +271,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#exist?`:
+
 **#exist?**
   
 
@@ -323,19 +284,8 @@ Methods
      end
 
 
-**#extract_writer_methods!**
-  
 
-  .. hidden-code-block:: ruby
-
-     def extract_writer_methods!(attributes)
-       {}.tap do |writer_method_props|
-         attributes.each_key do |key|
-           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
-         end
-       end
-     end
-
+.. _`Neo4j/ActiveRel#freeze`:
 
 **#freeze**
   
@@ -348,6 +298,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#frozen?`:
+
 **#frozen?**
   
 
@@ -357,6 +310,9 @@ Methods
        @attributes.frozen?
      end
 
+
+
+.. _`Neo4j/ActiveRel#hash`:
 
 **#hash**
   
@@ -368,6 +324,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#id`:
+
 **#id**
   
 
@@ -378,6 +337,9 @@ Methods
        id.is_a?(Integer) ? id : nil
      end
 
+
+
+.. _`Neo4j/ActiveRel#init_on_load`:
 
 **#init_on_load**
   called when loading the rel from the database
@@ -395,6 +357,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#initialize`:
+
 **#initialize**
   
 
@@ -406,49 +371,8 @@ Methods
      end
 
 
-**#instantiate_object**
-  
 
-  .. hidden-code-block:: ruby
-
-     def instantiate_object(field, values_with_empty_parameters)
-       return nil if values_with_empty_parameters.all?(&:nil?)
-       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
-       klass = field[:type]
-       klass ? klass.new(*values) : values
-     end
-
-
-**#load_nodes**
-  
-
-  .. hidden-code-block:: ruby
-
-     def load_nodes(from_node = nil, to_node = nil)
-       @from_node = RelatedNode.new(from_node)
-       @to_node = RelatedNode.new(to_node)
-     end
-
-
-**#magic_typecast_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def magic_typecast_properties
-       self.class.magic_typecast_properties
-     end
-
-
-**#model_cache_key**
-  
-
-  .. hidden-code-block:: ruby
-
-     def model_cache_key
-       self.class.model_name.cache_key
-     end
-
+.. _`Neo4j/ActiveRel#neo4j_obj`:
 
 **#neo4j_obj**
   
@@ -460,6 +384,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#neo_id`:
+
 **#neo_id**
   
 
@@ -469,6 +396,9 @@ Methods
        _persisted_obj ? _persisted_obj.neo_id : nil
      end
 
+
+
+.. _`Neo4j/ActiveRel#new?`:
 
 **#new?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -480,6 +410,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#new_record?`:
+
 **#new_record?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
 
@@ -490,24 +423,8 @@ Methods
      end
 
 
-**#perform_validations**
-  
 
-  .. hidden-code-block:: ruby
-
-     def perform_validations(options = {})
-       perform_validation = case options
-                            when Hash
-                              options[:validate] != false
-                            end
-     
-       if perform_validation
-         valid?(options.is_a?(Hash) ? options[:context] : nil)
-       else
-         true
-       end
-     end
-
+.. _`Neo4j/ActiveRel#persisted?`:
 
 **#persisted?**
   Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
@@ -519,62 +436,8 @@ Methods
      end
 
 
-**#primitive_type**
-  If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
 
-  .. hidden-code-block:: ruby
-
-     def primitive_type(attr)
-       case
-       when serialized_properties.key?(attr)
-         serialized_properties[attr]
-       when magic_typecast_properties.key?(attr)
-         self.class.magic_typecast_properties[attr]
-       else
-         self.class._attribute_type(attr)
-       end
-     end
-
-
-**#process_attributes**
-  Gives support for Rails date_select, datetime_select, time_select helpers.
-
-  .. hidden-code-block:: ruby
-
-     def process_attributes(attributes = nil)
-       multi_parameter_attributes = {}
-       new_attributes = {}
-       attributes.each_pair do |key, value|
-         if match = key.match(/\A([^\(]+)\((\d+)([if])\)$/)
-           found_key = match[1]
-           index = match[2].to_i
-           (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
-         else
-           new_attributes[key] = value
-         end
-       end
-     
-       multi_parameter_attributes.empty? ? new_attributes : process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
-     end
-
-
-**#process_multiparameter_attributes**
-  
-
-  .. hidden-code-block:: ruby
-
-     def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
-       multi_parameter_attributes.each_with_object(new_attributes) do |(key, values), attributes|
-         values = (values.keys.min..values.keys.max).map { |i| values[i] }
-     
-         if (field = self.class.attributes[key.to_sym]).nil?
-           fail MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
-         end
-     
-         attributes[key] = instantiate_object(field, values)
-       end
-     end
-
+.. _`Neo4j/ActiveRel#props`:
 
 **#props**
   
@@ -585,6 +448,9 @@ Methods
        attributes.reject { |_, v| v.nil? }.symbolize_keys
      end
 
+
+
+.. _`Neo4j/ActiveRel#read_attribute`:
 
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -598,6 +464,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#read_attribute_for_validation`:
+
 **#read_attribute_for_validation**
   Implements the ActiveModel::Validation hook method.
 
@@ -607,6 +476,9 @@ Methods
        respond_to?(key) ? send(key) : self[key]
      end
 
+
+
+.. _`Neo4j/ActiveRel#reload`:
 
 **#reload**
   
@@ -625,6 +497,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#reload_from_database`:
+
 **#reload_from_database**
   
 
@@ -639,6 +514,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#save`:
+
 **#save**
   
 
@@ -652,6 +530,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#save!`:
+
 **#save!**
   
 
@@ -661,6 +542,9 @@ Methods
        fail RelInvalidError, self unless save(*args)
      end
 
+
+
+.. _`Neo4j/ActiveRel#send_props`:
 
 **#send_props**
   
@@ -672,6 +556,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#serializable_hash`:
+
 **#serializable_hash**
   
 
@@ -681,6 +568,9 @@ Methods
        super.merge(id: id)
      end
 
+
+
+.. _`Neo4j/ActiveRel#serialized_properties`:
 
 **#serialized_properties**
   
@@ -692,37 +582,8 @@ Methods
      end
 
 
-**#set_classname**
-  Inserts the _classname property into an object's properties during object creation.
 
-  .. hidden-code-block:: ruby
-
-     def set_classname(props, check_version = true)
-       props[:_classname] = self.class.name if self.class.cached_class?(check_version)
-     end
-
-
-**#set_timestamps**
-  
-
-  .. hidden-code-block:: ruby
-
-     def set_timestamps
-       now = DateTime.now
-       self.created_at ||= now if respond_to?(:created_at=)
-       self.updated_at ||= now if respond_to?(:updated_at=)
-     end
-
-
-**#skip_conversion?**
-  Returns true if the property isn't defined in the model or it's both nil and unchanged.
-
-  .. hidden-code-block:: ruby
-
-     def skip_conversion?(attr, value)
-       !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
-     end
-
+.. _`Neo4j/ActiveRel#start_node`:
 
 **#start_node**
   
@@ -731,6 +592,9 @@ Methods
 
      alias_method :start_node, :from_node
 
+
+
+.. _`Neo4j/ActiveRel#to_key`:
 
 **#to_key**
   Returns an Enumerable of all (primary) key attributes
@@ -743,6 +607,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#touch`:
+
 **#touch**
   :nodoc:
 
@@ -753,6 +620,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#type`:
+
 **#type**
   
 
@@ -762,6 +632,9 @@ Methods
        self.class._type
      end
 
+
+
+.. _`Neo4j/ActiveRel#update`:
 
 **#update**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -775,6 +648,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#update!`:
+
 **#update!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
@@ -785,6 +661,9 @@ Methods
        save!
      end
 
+
+
+.. _`Neo4j/ActiveRel#update_attribute`:
 
 **#update_attribute**
   Convenience method to set attribute and #save at the same time
@@ -797,6 +676,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#update_attribute!`:
+
 **#update_attribute!**
   Convenience method to set attribute and #save! at the same time
 
@@ -807,6 +689,9 @@ Methods
        self.save!
      end
 
+
+
+.. _`Neo4j/ActiveRel#update_attributes`:
 
 **#update_attributes**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -820,6 +705,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel#update_attributes!`:
+
 **#update_attributes!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
@@ -831,27 +719,8 @@ Methods
      end
 
 
-**#update_magic_properties**
-  
 
-  .. hidden-code-block:: ruby
-
-     def update_magic_properties
-       self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed? && !updated_at_changed?
-     end
-
-
-**#update_model**
-  :nodoc:
-
-  .. hidden-code-block:: ruby
-
-     def update_model(*) #:nodoc:
-       Neo4j::Transaction.run do
-         run_callbacks(:update) { super }
-       end
-     end
-
+.. _`Neo4j/ActiveRel#valid?`:
 
 **#valid?**
   
@@ -865,34 +734,8 @@ Methods
      end
 
 
-**#validate_attributes!**
-  Changes attributes hash to remove relationship keys
-  Raises an error if there are any keys left which haven't been defined as properties on the model
 
-  .. hidden-code-block:: ruby
-
-     def validate_attributes!(attributes)
-       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
-       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
-     end
-
-
-**#validate_node_classes!**
-  
-
-  .. hidden-code-block:: ruby
-
-     def validate_node_classes!
-       [from_node, to_node].each do |node|
-         type = from_node == node ? :_from_class : :_to_class
-         type_class = self.class.send(type)
-     
-         next if [:any, false].include?(type_class)
-     
-         fail ModelClassInvalidError, "Node class was #{node.class}, expected #{type_class}" unless node.is_a?(type_class.to_s.constantize)
-       end
-     end
-
+.. _`Neo4j/ActiveRel#wrapper`:
 
 **#wrapper**
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method

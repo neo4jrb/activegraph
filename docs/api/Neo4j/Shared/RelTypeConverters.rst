@@ -40,6 +40,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/Shared/RelTypeConverters#decorated_rel_type`:
+
 **#decorated_rel_type**
   
 
@@ -50,7 +53,10 @@ Methods
      end
 
 
-**#decorated_rel_type**
+
+.. _`Neo4j/Shared/RelTypeConverters.decorated_rel_type`:
+
+**.decorated_rel_type**
   
 
   .. hidden-code-block:: ruby
@@ -72,7 +78,10 @@ Methods
      end
 
 
-**#rel_transformer**
+
+.. _`Neo4j/Shared/RelTypeConverters.rel_transformer`:
+
+**.rel_transformer**
   Determines how relationship types should look when inferred based on association or ActiveRel model name.
   With the exception of `:none`, all options will call `underscore`, so `ThisClass` becomes `this_class`, with capitalization
   determined by the specific option passed.

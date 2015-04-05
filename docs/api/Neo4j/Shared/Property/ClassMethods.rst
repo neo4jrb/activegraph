@@ -60,6 +60,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/Shared/Property/ClassMethods#attribute!`:
+
 **#attribute!**
   
 
@@ -75,32 +78,8 @@ Methods
      end
 
 
-**#check_illegal_prop**
-  
 
-  .. hidden-code-block:: ruby
-
-     def check_illegal_prop(name)
-       fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
-     end
-
-
-**#constraint_or_index**
-  
-
-  .. hidden-code-block:: ruby
-
-     def constraint_or_index(name, options)
-       # either constraint or index, do not set both
-       if options[:constraint]
-         fail "unknown constraint type #{options[:constraint]}, only :unique supported" if options[:constraint] != :unique
-         constraint(name, type: :unique)
-       elsif options[:index]
-         fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
-         index(name, options) if options[:index] == :exact
-       end
-     end
-
+.. _`Neo4j/Shared/Property/ClassMethods#default_properties`:
 
 **#default_properties**
   
@@ -112,6 +91,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Shared/Property/ClassMethods#default_property`:
+
 **#default_property**
   
 
@@ -122,6 +104,9 @@ Methods
        default_properties[name] = block
      end
 
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#default_property_values`:
 
 **#default_property_values**
   
@@ -135,35 +120,8 @@ Methods
      end
 
 
-**#magic_properties**
-  Tweaks properties
 
-  .. hidden-code-block:: ruby
-
-     def magic_properties(name, options)
-       magic_typecast(name, options)
-       type_converter(options)
-       options[:type] ||= DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
-     
-       # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
-       # Convert it to DateTime in the interest of consistency
-       options[:type] = DateTime if options[:type] == Time
-     end
-
-
-**#magic_typecast**
-  
-
-  .. hidden-code-block:: ruby
-
-     def magic_typecast(name, options)
-       typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
-       return unless typecaster && typecaster.respond_to?(:primitive_type)
-       magic_typecast_properties[name] = options[:type]
-       options[:type] = typecaster.primitive_type
-       options[:typecaster] = typecaster
-     end
-
+.. _`Neo4j/Shared/Property/ClassMethods#magic_typecast_properties`:
 
 **#magic_typecast_properties**
   
@@ -174,6 +132,9 @@ Methods
        @magic_typecast_properties ||= {}
      end
 
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#property`:
 
 **#property**
   Defines a property on the class
@@ -191,6 +152,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Shared/Property/ClassMethods#reset_default_properties`:
+
 **#reset_default_properties**
   
 
@@ -204,19 +168,8 @@ Methods
      end
 
 
-**#type_converter**
-  
 
-  .. hidden-code-block:: ruby
-
-     def type_converter(options)
-       converter = options[:serializer]
-       return unless converter
-       options[:type]        = converter.convert_type
-       options[:typecaster]  = ActiveAttr::Typecasting::ObjectTypecaster.new
-       Neo4j::Shared::TypeConverters.register_converter(converter)
-     end
-
+.. _`Neo4j/Shared/Property/ClassMethods#undef_property`:
 
 **#undef_property**
   

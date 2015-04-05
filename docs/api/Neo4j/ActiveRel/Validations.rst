@@ -34,24 +34,8 @@ Methods
 -------
 
 
-**#perform_validations**
-  
 
-  .. hidden-code-block:: ruby
-
-     def perform_validations(options = {})
-       perform_validation = case options
-                            when Hash
-                              options[:validate] != false
-                            end
-     
-       if perform_validation
-         valid?(options.is_a?(Hash) ? options[:context] : nil)
-       else
-         true
-       end
-     end
-
+.. _`Neo4j/ActiveRel/Validations#read_attribute_for_validation`:
 
 **#read_attribute_for_validation**
   Implements the ActiveModel::Validation hook method.
@@ -62,6 +46,9 @@ Methods
        respond_to?(key) ? send(key) : self[key]
      end
 
+
+
+.. _`Neo4j/ActiveRel/Validations#save`:
 
 **#save**
   The validation process on save can be skipped by passing false. The regular Model#save method is
@@ -77,6 +64,9 @@ Methods
        result
      end
 
+
+
+.. _`Neo4j/ActiveRel/Validations#valid?`:
 
 **#valid?**
   

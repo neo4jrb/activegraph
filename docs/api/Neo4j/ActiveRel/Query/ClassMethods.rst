@@ -58,6 +58,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#all`:
+
 **#all**
   Performs a basic match on the relationship, returning all results.
   This is not executed lazily, it will immediately return matching objects.
@@ -69,60 +72,8 @@ Methods
      end
 
 
-**#all_query**
-  
 
-  .. hidden-code-block:: ruby
-
-     def all_query
-       Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
-     end
-
-
-**#as_constant**
-  
-
-  .. hidden-code-block:: ruby
-
-     def as_constant(given_class)
-       case given_class
-       when String
-         given_class.constantize
-       when Symbol
-         given_class.to_s.constantize
-       else
-         given_class
-       end
-     end
-
-
-**#cypher_label**
-  
-
-  .. hidden-code-block:: ruby
-
-     def cypher_label(dir = :outbound)
-       target_class = dir == :outbound ? as_constant(_from_class) : as_constant(_to_class)
-       ":`#{target_class.mapped_label_name}`)"
-     end
-
-
-**#cypher_string**
-  
-
-  .. hidden-code-block:: ruby
-
-     def cypher_string(dir = :outbound)
-       case dir
-       when :outbound
-         identifier = '(n1'
-         identifier + (_from_class == :any ? ')' : cypher_label(:outbound))
-       when :inbound
-         identifier = '(n2'
-         identifier + (_to_class == :any ? ')' : cypher_label(:inbound))
-       end
-     end
-
+.. _`Neo4j/ActiveRel/Query/ClassMethods#find`:
 
 **#find**
   Returns the object with the specified neo4j id.
@@ -135,6 +86,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#find_by_id`:
+
 **#find_by_id**
   Loads the relationship using its neo_id.
 
@@ -144,6 +98,9 @@ Methods
        session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
      end
 
+
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#first`:
 
 **#first**
   
@@ -155,6 +112,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#last`:
+
 **#last**
   
 
@@ -165,6 +125,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Query/ClassMethods#where`:
+
 **#where**
   Performs a very basic match on the relationship.
   This is not executed lazily, it will immediately return matching objects.
@@ -174,31 +137,6 @@ Methods
 
      def where(args = {})
        where_query.where(where_string(args)).pluck(:r1)
-     end
-
-
-**#where_query**
-  
-
-  .. hidden-code-block:: ruby
-
-     def where_query
-       Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
-     end
-
-
-**#where_string**
-  
-
-  .. hidden-code-block:: ruby
-
-     def where_string(args)
-       case args
-       when Hash
-         args.map { |k, v| v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'" }.join(', ')
-       else
-         args
-       end
      end
 
 

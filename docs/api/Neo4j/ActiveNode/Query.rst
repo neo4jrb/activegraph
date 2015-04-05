@@ -58,6 +58,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Query#as`:
+
 **#as**
   Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
   This method does not exist within QueryProxy and can only be used to start a new chain.
@@ -68,6 +71,9 @@ Methods
        self.class.query_proxy(node: node_var, caller: self).match_to(self)
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query#query_as`:
 
 **#query_as**
   Returns a Query object with the current node matched the specified variable name

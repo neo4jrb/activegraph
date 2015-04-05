@@ -48,6 +48,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/Migration#default_path`:
+
 **#default_path**
   
 
@@ -57,6 +60,9 @@ Methods
        Rails.root if defined? Rails
      end
 
+
+
+.. _`Neo4j/Migration#joined_path`:
 
 **#joined_path**
   
@@ -68,6 +74,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Migration#migrate`:
+
 **#migrate**
   
 
@@ -78,6 +87,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Migration#output`:
+
 **#output**
   
 
@@ -87,6 +99,9 @@ Methods
        puts string unless !!ENV['silenced']
      end
 
+
+
+.. _`Neo4j/Migration#print_output`:
 
 **#print_output**
   

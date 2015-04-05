@@ -38,6 +38,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveRel/Persistence/ClassMethods#create`:
+
 **#create**
   Creates a new relationship between objects
 
@@ -53,6 +56,9 @@ Methods
        end
      end
 
+
+
+.. _`Neo4j/ActiveRel/Persistence/ClassMethods#create!`:
 
 **#create!**
   Same as #create, but raises an error if there is a problem during save.

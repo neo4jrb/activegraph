@@ -100,6 +100,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#add_destroy_callbacks`:
+
 **#add_destroy_callbacks**
   
 
@@ -114,21 +117,8 @@ Methods
      end
 
 
-**#apply_vars_from_options**
-  
 
-  .. hidden-code-block:: ruby
-
-     def apply_vars_from_options(options)
-       @target_class_option = target_class_option(options)
-       @callbacks = {before: options[:before], after: options[:after]}
-       @origin = options[:origin] && options[:origin].to_sym
-       @relationship_class = options[:rel_class]
-       @relationship_type  = options[:type] && options[:type].to_sym
-       @dependent = options[:dependent].try(:to_sym)
-       @unique = options[:unique]
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#arrow_cypher`:
 
 **#arrow_cypher**
   Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
@@ -141,15 +131,8 @@ Methods
      end
 
 
-**#base_declaration**
-  Return basic details about association as declared in the model
 
-  .. hidden-code-block:: ruby
-
-     def base_declaration
-       "#{type} #{direction.inspect}, #{name.inspect}"
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#callback`:
 
 **#callback**
   
@@ -161,16 +144,8 @@ Methods
      end
 
 
-**#check_valid_type_and_dir**
-  
 
-  .. hidden-code-block:: ruby
-
-     def check_valid_type_and_dir(type, direction)
-       fail ArgumentError, "Invalid association type: #{type.inspect} (valid value: :has_many and :has_one)" if ![:has_many, :has_one].include?(type.to_sym)
-       fail ArgumentError, "Invalid direction: #{direction.inspect} (valid value: :out, :in, and :both)" if ![:out, :in, :both].include?(direction.to_sym)
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#decorated_rel_type`:
 
 **#decorated_rel_type**
   
@@ -182,6 +157,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#dependent`:
+
 **#dependent**
   Returns the value of attribute dependent
 
@@ -192,45 +170,8 @@ Methods
      end
 
 
-**#dependent_delete_callback**
-  Callback methods
 
-  .. hidden-code-block:: ruby
-
-     def dependent_delete_callback(object)
-       object.association_query_proxy(name).delete_all
-     end
-
-
-**#dependent_delete_orphans_callback**
-  
-
-  .. hidden-code-block:: ruby
-
-     def dependent_delete_orphans_callback(object)
-       object.as(:self).unique_nodes(self, :self, :n, :other_rel).query.delete(:n, :other_rel).exec
-     end
-
-
-**#dependent_destroy_callback**
-  
-
-  .. hidden-code-block:: ruby
-
-     def dependent_destroy_callback(object)
-       object.association_query_proxy(name).each_for_destruction(object, &:destroy)
-     end
-
-
-**#dependent_destroy_orphans_callback**
-  
-
-  .. hidden-code-block:: ruby
-
-     def dependent_destroy_orphans_callback(object)
-       object.as(:self).unique_nodes(self, :self, :n, :other_rel).each_for_destruction(object, &:destroy)
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#direction`:
 
 **#direction**
   Returns the value of attribute direction
@@ -242,80 +183,8 @@ Methods
      end
 
 
-**#direction_cypher**
-  
 
-  .. hidden-code-block:: ruby
-
-     def direction_cypher(relationship_cypher, create, reverse = false)
-       case get_direction(create, reverse)
-       when :out
-         "-#{relationship_cypher}->"
-       when :in
-         "<-#{relationship_cypher}-"
-       when :both
-         "-#{relationship_cypher}-"
-       end
-     end
-
-
-**#exceptional_target_class?**
-  Determine if model class as derived from the association name would be different than the one specified via the model_class key
-
-  .. hidden-code-block:: ruby
-
-     def exceptional_target_class?
-       # TODO: Exceptional if target_class.nil?? (when model_class false)
-     
-       target_class && target_class.name != @target_class_name_from_name
-     end
-
-
-**#get_direction**
-  
-
-  .. hidden-code-block:: ruby
-
-     def get_direction(create, reverse = false)
-       dir = (create && @direction == :both) ? :out : @direction
-       if reverse
-         case dir
-         when :in then :out
-         when :out then :in
-         else :both
-         end
-       else
-         dir
-       end
-     end
-
-
-**#get_properties_string**
-  
-
-  .. hidden-code-block:: ruby
-
-     def get_properties_string(properties)
-       p = properties.map do |key, value|
-         "#{key}: #{value.inspect}"
-       end.join(', ')
-       p.size == 0 ? '' : " {#{p}}"
-     end
-
-
-**#get_relationship_cypher**
-  
-
-  .. hidden-code-block:: ruby
-
-     def get_relationship_cypher(var, properties, create)
-       relationship_type = relationship_type(create)
-       relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
-       properties_string = get_properties_string(properties)
-     
-       "[#{var}#{relationship_name_cypher}#{properties_string}]"
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#initialize`:
 
 **#initialize**
   
@@ -332,6 +201,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#inject_classname`:
+
 **#inject_classname**
   
 
@@ -344,6 +216,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#name`:
+
 **#name**
   Returns the value of attribute name
 
@@ -354,25 +229,8 @@ Methods
      end
 
 
-**#origin_association**
-  
 
-  .. hidden-code-block:: ruby
-
-     def origin_association
-       target_class.associations[@origin]
-     end
-
-
-**#origin_type**
-  
-
-  .. hidden-code-block:: ruby
-
-     def origin_type
-       origin_association.relationship_type
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#perform_callback`:
 
 **#perform_callback**
   
@@ -385,6 +243,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship`:
+
 **#relationship**
   Returns the value of attribute relationship
 
@@ -394,6 +255,9 @@ Methods
        @relationship
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_class`:
 
 **#relationship_class**
   Returns the value of attribute relationship_class
@@ -405,6 +269,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_class_name`:
+
 **#relationship_class_name**
   
 
@@ -414,6 +281,9 @@ Methods
        @relationship_class_name ||= @relationship_class.respond_to?(:constantize) ? @relationship_class : @relationship_class.name
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_class_type`:
 
 **#relationship_class_type**
   
@@ -425,6 +295,9 @@ Methods
        @relationship_class._type
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_clazz`:
 
 **#relationship_clazz**
   
@@ -441,6 +314,9 @@ Methods
                                end
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_type`:
 
 **#relationship_type**
   
@@ -461,6 +337,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_class`:
+
 **#target_class**
   
 
@@ -469,51 +348,74 @@ Methods
      def target_class
        return @target_class if @target_class
      
-       @target_class = target_class_name.constantize if target_class_name
+       @target_class = target_class_names[0].constantize if target_class_names && target_class_names.size == 1
      rescue NameError
        raise ArgumentError, "Could not find `#{@target_class}` class and no :model_class specified"
      end
 
 
-**#target_class_name**
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_class_names`:
+
+**#target_class_names**
   
 
   .. hidden-code-block:: ruby
 
-     def target_class_name
-       @target_class_name ||= @target_class_option.to_s if @target_class_option
+     def target_class_names
+       @target_class_names ||= if @target_class_option.is_a?(Array)
+                                 @target_class_option.map(&:to_s)
+                               elsif @target_class_option
+                                 [@target_class_option.to_s]
+                               end
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_class_option`:
 
 **#target_class_option**
   
 
   .. hidden-code-block:: ruby
 
-     def target_class_option(options)
-       if options[:model_class].nil?
+     def target_class_option(model_class)
+       case model_class
+       when nil
          if @target_class_name_from_name
            "::#{@target_class_name_from_name}"
          else
            @target_class_name_from_name
          end
-       elsif options[:model_class] == false
+       when Array
+         model_class.map { |sub_model_class| target_class_option(sub_model_class) }
+       when false
          false
        else
-         "::#{options[:model_class]}"
+         "::#{model_class}"
        end
      end
 
 
-**#target_class_or_nil**
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_classes_or_nil`:
+
+**#target_classes_or_nil**
   
 
   .. hidden-code-block:: ruby
 
-     def target_class_or_nil
-       @target_class_or_nil ||= target_class_name ? target_class_name.constantize : nil
+     def target_classes_or_nil
+       @target_classes_or_nil ||= if target_class_names
+                                    target_class_names.map(&:constantize).select do |constant|
+                                      constant.ancestors.include?(::Neo4j::ActiveNode)
+                                    end
+                                  end
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#type`:
 
 **#type**
   Returns the value of attribute type
@@ -525,6 +427,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/Association#unique?`:
+
 **#unique?**
   
 
@@ -535,17 +440,8 @@ Methods
      end
 
 
-**#valid_dependent_value?**
-  
 
-  .. hidden-code-block:: ruby
-
-     def valid_dependent_value?(value)
-       return true if value.nil?
-     
-       self.respond_to?("dependent_#{value}_callback", true)
-     end
-
+.. _`Neo4j/ActiveNode/HasN/Association#validate_dependent`:
 
 **#validate_dependent**
   
@@ -554,57 +450,6 @@ Methods
 
      def validate_dependent(value)
        fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not valid_dependent_value?(value)
-     end
-
-
-**#validate_init_arguments**
-  
-
-  .. hidden-code-block:: ruby
-
-     def validate_init_arguments(type, direction, options)
-       validate_option_combinations(options)
-       validate_dependent(options[:dependent].try(:to_sym))
-       check_valid_type_and_dir(type, direction)
-     end
-
-
-**#validate_option_combinations**
-  
-
-  .. hidden-code-block:: ruby
-
-     def validate_option_combinations(options)
-       [[:type, :origin],
-        [:type, :rel_class],
-        [:origin, :rel_class]].each do |key1, key2|
-         if options[key1] && options[key2]
-           fail ArgumentError, "Cannot specify both :#{key1} and :#{key2} (#{base_declaration})"
-         end
-       end
-     end
-
-
-**#validate_origin!**
-  
-
-  .. hidden-code-block:: ruby
-
-     def validate_origin!
-       return if not @origin
-     
-       association = origin_association
-     
-       message = case
-                 when !target_class
-                   'Cannot use :origin without a model_class (implied or explicit)'
-                 when !association
-                   "Origin `#{@origin.inspect}` association not found for #{target_class} (specified in #{base_declaration})"
-                 when @direction == association.direction
-                   "Origin `#{@origin.inspect}` (specified in #{base_declaration}) has same direction `#{@direction}`)"
-                 end
-     
-       fail ArgumentError, message if message
      end
 
 

@@ -61,6 +61,8 @@ QueryProxyMethods
 
    
 
+   
+
 
 
 
@@ -86,6 +88,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#all_rels_to`:
+
 **#all_rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
 
@@ -96,15 +101,31 @@ Methods
      end
 
 
-**#association_id_key**
-  
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#as_models`:
+
+**#as_models**
+  Takes an Array of ActiveNode models and applies the appropriate WHERE clause
+  So for a `Teacher` model inheriting from a `Person` model and an `Article` model
+  if you called .as_models([Teacher, Article])
+  The where clause would look something like:
+    WHERE (node_var:Teacher:Person OR node_var:Article)
 
   .. hidden-code-block:: ruby
 
-     def association_id_key
-       self.association.nil? ? model.primary_key : self.association.target_class.primary_key
+     def as_models(models)
+       where_clause = models.map do |model|
+         "`#{identity}`:" + model.mapped_label_names.map do |mapped_label_name|
+           "`#{mapped_label_name}`"
+         end.join(':')
+       end.join(' OR ')
+     
+       where("(#{where_clause})")
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#blank?`:
 
 **#blank?**
   
@@ -116,15 +137,8 @@ Methods
      end
 
 
-**#clear_caller_cache**
-  
 
-  .. hidden-code-block:: ruby
-
-     def clear_caller_cache
-       self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
-     end
-
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#count`:
 
 **#count**
   
@@ -140,6 +154,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#delete`:
+
 **#delete**
   Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
 
@@ -150,6 +167,9 @@ Methods
        clear_caller_cache
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#delete_all`:
 
 **#delete_all**
   Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
@@ -169,6 +189,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#delete_all_rels`:
+
 **#delete_all_rels**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
 
@@ -178,6 +201,9 @@ Methods
        self.query.delete(rel_var).exec
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#destroy`:
 
 **#destroy**
   Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
@@ -190,6 +216,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#empty?`:
+
 **#empty?**
   
 
@@ -199,6 +228,9 @@ Methods
        query_with_target(target) { |var| !self.exists?(nil, var) }
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#exists?`:
 
 **#exists?**
   
@@ -214,22 +246,8 @@ Methods
      end
 
 
-**#exists_query_start**
-  
 
-  .. hidden-code-block:: ruby
-
-     def exists_query_start(condition, target)
-       case condition
-       when Integer
-         self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
-       when Hash
-         self.where(condition.keys.first => condition.values.first)
-       else
-         self
-       end
-     end
-
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first`:
 
 **#first**
   
@@ -241,6 +259,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first_and_last`:
+
 **#first_and_last**
   
 
@@ -250,6 +271,9 @@ Methods
        self.order(order).limit(1).pluck(target).first
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first_rel_to`:
 
 **#first_rel_to**
   Gives you the first relationship between the last link of a QueryProxy chain and a given node
@@ -262,15 +286,8 @@ Methods
      end
 
 
-**#ids_array**
-  
 
-  .. hidden-code-block:: ruby
-
-     def ids_array(node)
-       node.first.respond_to?(:id) ? node.map!(&:id) : node
-     end
-
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#include?`:
 
 **#include?**
   
@@ -285,6 +302,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#last`:
+
 **#last**
   
 
@@ -294,6 +314,9 @@ Methods
        query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#length`:
 
 **#length**
   
@@ -308,6 +331,9 @@ Methods
        end
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#match_to`:
 
 **#match_to**
   Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id}`
@@ -332,6 +358,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#optional`:
+
 **#optional**
   A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
 
@@ -342,15 +371,8 @@ Methods
      end
 
 
-**#query_with_target**
-  
 
-  .. hidden-code-block:: ruby
-
-     def query_with_target(target)
-       yield(target || identity)
-     end
-
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#rels_to`:
 
 **#rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
@@ -361,6 +383,9 @@ Methods
        self.match_to(node).pluck(rel_var)
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#replace_with`:
 
 **#replace_with**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
@@ -375,6 +400,9 @@ Methods
        nodes.each { |node| self << node }
      end
 
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#size`:
 
 **#size**
   

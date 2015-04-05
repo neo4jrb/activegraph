@@ -46,6 +46,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#creates_unique_rel`:
+
 **#creates_unique_rel**
   
 
@@ -56,6 +59,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#end_class`:
+
 **#end_class**
   
 
@@ -63,6 +69,9 @@ Methods
 
      alias_method :end_class,    :to_class
 
+
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#extract_association_attributes!`:
 
 **#extract_association_attributes!**
   Extracts keys from attributes hash which are relationships of the model
@@ -79,6 +88,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#load_entity`:
+
 **#load_entity**
   
 
@@ -89,6 +101,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#start_class`:
+
 **#start_class**
   
 
@@ -96,6 +111,9 @@ Methods
 
      alias_method :start_class,  :from_class
 
+
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#unique?`:
 
 **#unique?**
   

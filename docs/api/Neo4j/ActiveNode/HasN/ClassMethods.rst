@@ -33,6 +33,10 @@ ClassMethods
 
    
 
+   
+
+   
+
 
 
 
@@ -58,6 +62,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#association?`:
+
 **#association?**
   rubocop:enable Style/PredicateName
   :nocov:
@@ -69,23 +76,8 @@ Methods
      end
 
 
-**#association_query_proxy**
-  
 
-  .. hidden-code-block:: ruby
-
-     def association_query_proxy(name, options = {})
-       query_proxy = options[:proxy_obj] || default_association_proxy_obj(name)
-     
-       Neo4j::ActiveNode::Query::QueryProxy.new(associations[name].target_class_or_nil,
-                                                associations[name],
-                                                {session: neo4j_session,
-                                                 query_proxy: query_proxy,
-                                                 context: "#{query_proxy.context || self.name}##{name}",
-                                                 optional: query_proxy.optional?,
-                                                 caller: query_proxy.caller}.merge(options))
-     end
-
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#associations`:
 
 **#associations**
   
@@ -97,95 +89,8 @@ Methods
      end
 
 
-**#build_association**
-  
 
-  .. hidden-code-block:: ruby
-
-     def build_association(macro, direction, name, options)
-       Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
-         @associations ||= {}
-         @associations[name] = association
-         create_reflection(macro, name, association, self)
-       end
-     end
-
-
-**#default_association_proxy_obj**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_association_proxy_obj(name)
-       Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.class.name}".constantize,
-                                                nil,
-                                                session: neo4j_session,
-                                                query_proxy: nil,
-                                                context: "#{self.name}##{name}")
-     end
-
-
-**#define_class_method**
-  rubocop:enable Style/PredicateName
-
-  .. hidden-code-block:: ruby
-
-     def define_class_method(*args, &block)
-       klass = class << self; self; end
-       klass.instance_eval do
-         define_method(*args, &block)
-       end
-     end
-
-
-**#define_has_many_methods**
-  
-
-  .. hidden-code-block:: ruby
-
-     def define_has_many_methods(name)
-       define_method(name) do |node = nil, rel = nil, options = {}|
-         return [].freeze unless self._persisted_obj
-     
-         association_query_proxy(name, {node: node, rel: rel, caller: self}.merge(options))
-       end
-     
-       define_method("#{name}=") do |other_nodes|
-         clear_association_cache
-         association_query_proxy(name).replace_with(other_nodes)
-       end
-     
-       define_class_method(name) do |node = nil, rel = nil, proxy_obj = nil, options = {}|
-         association_query_proxy(name, {node: node, rel: rel, proxy_obj: proxy_obj}.merge(options))
-       end
-     end
-
-
-**#define_has_one_methods**
-  
-
-  .. hidden-code-block:: ruby
-
-     def define_has_one_methods(name)
-       define_method(name) do |node = nil, rel = nil|
-         return nil unless self._persisted_obj
-     
-         result = association_query_proxy(name, node: node, rel: rel)
-         association_instance_fetch(result.to_cypher_with_params,
-                                    self.class.reflect_on_association(__method__)) { result.first }
-       end
-     
-       define_method("#{name}=") do |other_node|
-         validate_persisted_for_association!
-         clear_association_cache
-         association_query_proxy(name).replace_with(other_node)
-       end
-     
-       define_class_method(name) do |node = nil, rel = nil, query_proxy = nil, options = {}|
-         association_query_proxy(name, {query_proxy: query_proxy, node: node, rel: rel}.merge(options))
-       end
-     end
-
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#has_association?`:
 
 **#has_association?**
   :nocov:
@@ -200,12 +105,67 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#has_many`:
+
 **#has_many**
-  rubocop:disable Style/PredicateName
+  For defining an "has many" association on a model.  This defines a set of methods on
+  your model instances.  For instance, if you define the association on a Person model:
+  
+  has_many :out, :vehicles, type: :has_vehicle
+  
+  This would define the following methods:
+  
+  **#vehicles**
+    Returns a QueryProxy object.  This is an Enumerable object and thus can be iterated
+    over.  It also has the ability to accept class-level methods from the Vehicle model
+    (including calls to association methods)
+  
+  **#vehicles=**
+    Takes an array of Vehicle objects and replaces all current ``:HAS_VEHICLE`` relationships
+    with new relationships refering to the specified objects
+  
+  **.vehicles**
+    Returns a QueryProxy object.  This would represent all ``Vehicle`` objects associated with
+    either all ``Person`` nodes (if ``Person.vehicles`` is called), or all ``Vehicle`` objects
+    associated with the ``Person`` nodes thus far represented in the QueryProxy chain.
+    For example:
+      ``company.people.where(age: 40).vehicles``
+  
+  Arguments:
+    **direction:**
+      **Available values:** ``:in``, ``:out``, or ``:both``.
+  
+      Refers to the relative to the model on which the association is being defined.
+  
+      Example:
+        ``Person.has_many :out, :posts, type: :wrote``
+  
+          means that a `WROTE` relationship goes from a `Person` node to a `Post` node
+  
+    **name:**
+      The name of the association.  The affects the methods which are created (see above).
+      The name is also used to form default assumptions about the model which is being referred to
+  
+      Example:
+        ``Person.has_many :out, :posts``
+  
+        will assume a `model_class` option of ``'Post'`` unless otherwise specified
+  
+    **options:** A ``Hash`` of options.  Allowed keys are:
+      *type*: The Neo4j relationship type
+  
+      *model_class*: The model class to which the association is referring.  Can be either a
+        model `Class` object or a string (or an Array of same).
+        **A string is recommended** to avoid load-time issues
+  
+      *dependent*: Enables deletion cascading.
+        **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
+        (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
 
   .. hidden-code-block:: ruby
 
-     def has_many(direction, name, options = {})
+     def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
        name = name.to_sym
        build_association(:has_many, direction, name, options)
      
@@ -213,18 +173,32 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#has_one`:
+
 **#has_one**
+  For defining an "has one" association on a model.  This defines a set of methods on
+  your model instances.  For instance, if you define the association on a Person model:
   
+  has_one :out, :vehicle, type: :has_vehicle
+  
+  This would define the methods: ``#vehicle``, ``#vehicle=``, and ``.vehicle``.
+  
+  See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
+  not specified here
 
   .. hidden-code-block:: ruby
 
-     def has_one(direction, name, options = {})
+     def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
        name = name.to_sym
        build_association(:has_one, direction, name, options)
      
        define_has_one_methods(name)
      end
 
+
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#inherited`:
 
 **#inherited**
   make sure the inherited classes inherit the <tt>_decl_rels</tt> hash

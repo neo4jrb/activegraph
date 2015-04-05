@@ -48,6 +48,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#_create_node`:
+
 **#_create_node**
   
 
@@ -62,6 +65,9 @@ Methods
        session.create_node(props, labels)
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#cache_key`:
 
 **#cache_key**
   
@@ -79,6 +85,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#convert_properties_to`:
+
 **#convert_properties_to**
   
 
@@ -94,24 +103,8 @@ Methods
      end
 
 
-**#converted_property**
-  
 
-  .. hidden-code-block:: ruby
-
-     def converted_property(type, value, converter)
-       TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
-     end
-
-
-**#create_magic_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def create_magic_properties
-     end
-
+.. _`Neo4j/ActiveNode/Persistence#create_model`:
 
 **#create_model**
   Creates a model with values matching those of the instance attributes and returns its id.
@@ -132,6 +125,9 @@ Methods
        true
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#create_or_update`:
 
 **#create_or_update**
   
@@ -156,6 +152,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#destroy`:
+
 **#destroy**
   
 
@@ -168,6 +167,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#destroyed?`:
+
 **#destroyed?**
   Returns +true+ if the object was destroyed.
 
@@ -178,6 +180,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#exist?`:
+
 **#exist?**
   
 
@@ -187,6 +192,9 @@ Methods
        _persisted_obj && _persisted_obj.exist?
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#freeze`:
 
 **#freeze**
   
@@ -199,6 +207,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#frozen?`:
+
 **#frozen?**
   
 
@@ -209,15 +220,8 @@ Methods
      end
 
 
-**#model_cache_key**
-  
 
-  .. hidden-code-block:: ruby
-
-     def model_cache_key
-       self.class.model_name.cache_key
-     end
-
+.. _`Neo4j/ActiveNode/Persistence#new?`:
 
 **#new?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
@@ -229,6 +233,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#new_record?`:
+
 **#new_record?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
 
@@ -238,6 +245,9 @@ Methods
        !_persisted_obj
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#persisted?`:
 
 **#persisted?**
   Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
@@ -249,22 +259,8 @@ Methods
      end
 
 
-**#primitive_type**
-  If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
 
-  .. hidden-code-block:: ruby
-
-     def primitive_type(attr)
-       case
-       when serialized_properties.key?(attr)
-         serialized_properties[attr]
-       when magic_typecast_properties.key?(attr)
-         self.class.magic_typecast_properties[attr]
-       else
-         self.class._attribute_type(attr)
-       end
-     end
-
+.. _`Neo4j/ActiveNode/Persistence#props`:
 
 **#props**
   
@@ -275,6 +271,9 @@ Methods
        attributes.reject { |_, v| v.nil? }.symbolize_keys
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#reload`:
 
 **#reload**
   
@@ -293,6 +292,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#reload_from_database`:
+
 **#reload_from_database**
   
 
@@ -306,6 +308,9 @@ Methods
        reloaded
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#save`:
 
 **#save**
   Saves the model.
@@ -327,6 +332,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#save!`:
+
 **#save!**
   Persist the object to the database.  Validations and Callbacks are included
   by default but validation can be disabled by passing :validate => false
@@ -339,37 +347,8 @@ Methods
      end
 
 
-**#set_classname**
-  Inserts the _classname property into an object's properties during object creation.
 
-  .. hidden-code-block:: ruby
-
-     def set_classname(props, check_version = true)
-       props[:_classname] = self.class.name if self.class.cached_class?(check_version)
-     end
-
-
-**#set_timestamps**
-  
-
-  .. hidden-code-block:: ruby
-
-     def set_timestamps
-       now = DateTime.now
-       self.created_at ||= now if respond_to?(:created_at=)
-       self.updated_at ||= now if respond_to?(:updated_at=)
-     end
-
-
-**#skip_conversion?**
-  Returns true if the property isn't defined in the model or it's both nil and unchanged.
-
-  .. hidden-code-block:: ruby
-
-     def skip_conversion?(attr, value)
-       !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
-     end
-
+.. _`Neo4j/ActiveNode/Persistence#update`:
 
 **#update**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -383,6 +362,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#update!`:
+
 **#update!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
@@ -393,6 +375,9 @@ Methods
        save!
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#update_attribute`:
 
 **#update_attribute**
   Convenience method to set attribute and #save at the same time
@@ -405,6 +390,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#update_attribute!`:
+
 **#update_attribute!**
   Convenience method to set attribute and #save! at the same time
 
@@ -415,6 +403,9 @@ Methods
        self.save!
      end
 
+
+
+.. _`Neo4j/ActiveNode/Persistence#update_attributes`:
 
 **#update_attributes**
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
@@ -428,6 +419,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Persistence#update_attributes!`:
+
 **#update_attributes!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
@@ -439,15 +433,8 @@ Methods
      end
 
 
-**#update_magic_properties**
-  
 
-  .. hidden-code-block:: ruby
-
-     def update_magic_properties
-       self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed? && !updated_at_changed?
-     end
-
+.. _`Neo4j/ActiveNode/Persistence#update_model`:
 
 **#update_model**
   

@@ -40,6 +40,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Property#[]`:
+
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
@@ -52,6 +55,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Property#_persisted_obj`:
+
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
 
@@ -61,6 +67,9 @@ Methods
        @_persisted_obj
      end
 
+
+
+.. _`Neo4j/ActiveNode/Property#default_properties`:
 
 **#default_properties**
   
@@ -74,6 +83,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Property#default_properties=`:
+
 **#default_properties=**
   
 
@@ -85,6 +97,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Property#default_property`:
+
 **#default_property**
   
 
@@ -95,19 +110,8 @@ Methods
      end
 
 
-**#extract_writer_methods!**
-  
 
-  .. hidden-code-block:: ruby
-
-     def extract_writer_methods!(attributes)
-       {}.tap do |writer_method_props|
-         attributes.each_key do |key|
-           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
-         end
-       end
-     end
-
+.. _`Neo4j/ActiveNode/Property#initialize`:
 
 **#initialize**
   
@@ -121,68 +125,8 @@ Methods
      end
 
 
-**#instantiate_object**
-  
 
-  .. hidden-code-block:: ruby
-
-     def instantiate_object(field, values_with_empty_parameters)
-       return nil if values_with_empty_parameters.all?(&:nil?)
-       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
-       klass = field[:type]
-       klass ? klass.new(*values) : values
-     end
-
-
-**#magic_typecast_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def magic_typecast_properties
-       self.class.magic_typecast_properties
-     end
-
-
-**#process_attributes**
-  Gives support for Rails date_select, datetime_select, time_select helpers.
-
-  .. hidden-code-block:: ruby
-
-     def process_attributes(attributes = nil)
-       multi_parameter_attributes = {}
-       new_attributes = {}
-       attributes.each_pair do |key, value|
-         if match = key.match(/\A([^\(]+)\((\d+)([if])\)$/)
-           found_key = match[1]
-           index = match[2].to_i
-           (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
-         else
-           new_attributes[key] = value
-         end
-       end
-     
-       multi_parameter_attributes.empty? ? new_attributes : process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
-     end
-
-
-**#process_multiparameter_attributes**
-  
-
-  .. hidden-code-block:: ruby
-
-     def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
-       multi_parameter_attributes.each_with_object(new_attributes) do |(key, values), attributes|
-         values = (values.keys.min..values.keys.max).map { |i| values[i] }
-     
-         if (field = self.class.attributes[key.to_sym]).nil?
-           fail MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
-         end
-     
-         attributes[key] = instantiate_object(field, values)
-       end
-     end
-
+.. _`Neo4j/ActiveNode/Property#read_attribute`:
 
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -196,6 +140,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveNode/Property#send_props`:
+
 **#send_props**
   
 
@@ -203,18 +150,6 @@ Methods
 
      def send_props(hash)
        hash.each { |key, value| self.send("#{key}=", value) }
-     end
-
-
-**#validate_attributes!**
-  Changes attributes hash to remove relationship keys
-  Raises an error if there are any keys left which haven't been defined as properties on the model
-
-  .. hidden-code-block:: ruby
-
-     def validate_attributes!(attributes)
-       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
-       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
      end
 
 

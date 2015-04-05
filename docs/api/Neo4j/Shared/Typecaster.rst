@@ -36,7 +36,10 @@ Methods
 -------
 
 
-**#included**
+
+.. _`Neo4j/Shared/Typecaster.included`:
+
+**.included**
   
 
   .. hidden-code-block:: ruby

@@ -48,6 +48,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveNode/Dependent/AssociationMethods#add_destroy_callbacks`:
+
 **#add_destroy_callbacks**
   
 
@@ -62,57 +65,8 @@ Methods
      end
 
 
-**#dependent_delete_callback**
-  Callback methods
 
-  .. hidden-code-block:: ruby
-
-     def dependent_delete_callback(object)
-       object.association_query_proxy(name).delete_all
-     end
-
-
-**#dependent_delete_orphans_callback**
-  
-
-  .. hidden-code-block:: ruby
-
-     def dependent_delete_orphans_callback(object)
-       object.as(:self).unique_nodes(self, :self, :n, :other_rel).query.delete(:n, :other_rel).exec
-     end
-
-
-**#dependent_destroy_callback**
-  
-
-  .. hidden-code-block:: ruby
-
-     def dependent_destroy_callback(object)
-       object.association_query_proxy(name).each_for_destruction(object, &:destroy)
-     end
-
-
-**#dependent_destroy_orphans_callback**
-  
-
-  .. hidden-code-block:: ruby
-
-     def dependent_destroy_orphans_callback(object)
-       object.as(:self).unique_nodes(self, :self, :n, :other_rel).each_for_destruction(object, &:destroy)
-     end
-
-
-**#valid_dependent_value?**
-  
-
-  .. hidden-code-block:: ruby
-
-     def valid_dependent_value?(value)
-       return true if value.nil?
-     
-       self.respond_to?("dependent_#{value}_callback", true)
-     end
-
+.. _`Neo4j/ActiveNode/Dependent/AssociationMethods#validate_dependent`:
 
 **#validate_dependent**
   

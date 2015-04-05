@@ -44,7 +44,10 @@ Methods
 -------
 
 
-**#create_from**
+
+.. _`Neo4j/Paginated.create_from`:
+
+**.create_from**
   
 
   .. hidden-code-block:: ruby
@@ -61,6 +64,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Paginated#current_page`:
+
 **#current_page**
   Returns the value of attribute current_page
 
@@ -70,6 +76,9 @@ Methods
        @current_page
      end
 
+
+
+.. _`Neo4j/Paginated#initialize`:
 
 **#initialize**
   
@@ -83,6 +92,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Paginated#items`:
+
 **#items**
   Returns the value of attribute items
 
@@ -92,6 +104,9 @@ Methods
        @items
      end
 
+
+
+.. _`Neo4j/Paginated#total`:
 
 **#total**
   Returns the value of attribute total

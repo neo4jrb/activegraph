@@ -40,7 +40,10 @@ Methods
 -------
 
 
-**#convert_type**
+
+.. _`Neo4j/Shared/TypeConverters/TimeConverter.convert_type`:
+
+**.convert_type**
   
 
   .. hidden-code-block:: ruby
@@ -50,7 +53,10 @@ Methods
      end
 
 
-**#to_db**
+
+.. _`Neo4j/Shared/TypeConverters/TimeConverter.to_db`:
+
+**.to_db**
   Converts the given DateTime (UTC) value to an Integer.
   Only utc times are supported !
 
@@ -65,7 +71,10 @@ Methods
      end
 
 
-**#to_ruby**
+
+.. _`Neo4j/Shared/TypeConverters/TimeConverter.to_ruby`:
+
+**.to_ruby**
   
 
   .. hidden-code-block:: ruby

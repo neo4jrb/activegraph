@@ -46,6 +46,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#_type`:
+
 **#_type**
   Should be deprecated
 
@@ -56,6 +59,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#_wrapped_classes`:
+
 **#_wrapped_classes**
   
 
@@ -65,6 +71,9 @@ Methods
        Neo4j::ActiveRel::Types::WRAPPED_CLASSES
      end
 
+
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#add_wrapped_class`:
 
 **#add_wrapped_class**
   
@@ -77,6 +86,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#decorated_rel_type`:
+
 **#decorated_rel_type**
   
 
@@ -86,6 +98,9 @@ Methods
        @decorated_rel_type ||= Neo4j::Shared::RelTypeConverters.decorated_rel_type(type)
      end
 
+
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#inherited`:
 
 **#inherited**
   
@@ -97,6 +112,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#rel_type`:
+
 **#rel_type**
   
 
@@ -106,6 +124,9 @@ Methods
        @rel_type
      end
 
+
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#type`:
 
 **#type**
   

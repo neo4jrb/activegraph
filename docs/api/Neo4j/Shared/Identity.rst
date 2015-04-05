@@ -46,6 +46,9 @@ Methods
 -------
 
 
+
+.. _`Neo4j/Shared/Identity#==`:
+
 **#==**
   
 
@@ -55,6 +58,9 @@ Methods
        other.class == self.class && other.id == id
      end
 
+
+
+.. _`Neo4j/Shared/Identity#eql?`:
 
 **#eql?**
   
@@ -66,6 +72,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Shared/Identity#hash`:
+
 **#hash**
   
 
@@ -75,6 +84,9 @@ Methods
        id.hash
      end
 
+
+
+.. _`Neo4j/Shared/Identity#id`:
 
 **#id**
   
@@ -87,6 +99,9 @@ Methods
      end
 
 
+
+.. _`Neo4j/Shared/Identity#neo_id`:
+
 **#neo_id**
   
 
@@ -96,6 +111,9 @@ Methods
        _persisted_obj ? _persisted_obj.neo_id : nil
      end
 
+
+
+.. _`Neo4j/Shared/Identity#to_key`:
 
 **#to_key**
   Returns an Enumerable of all (primary) key attributes
