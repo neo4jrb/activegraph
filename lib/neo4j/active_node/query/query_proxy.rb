@@ -49,6 +49,12 @@ module Neo4j
           @params = @query_proxy ? @query_proxy.instance_variable_get('@params') : {}
         end
 
+        def inspect
+          clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
+
+          "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+        end
+
         attr_reader :start_object, :query_proxy
 
         # The current node identifier on deck, so to speak. It is the object that will be returned by calling `each` and the last node link
@@ -206,7 +212,7 @@ module Neo4j
           _session.query(context: @options[:context])
             .match(:start, :end)
             .where(start: {neo_id: @start_object}, end: {neo_id: other_node_or_nodes})
-            .send(create_method, "start#{_association_arrow(properties, true)}end").exec
+            .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
         end
 
         def read_attribute_for_serialization(*args)
@@ -266,8 +272,7 @@ module Neo4j
 
         # TODO: Refactor this. Too much happening here.
         def _result_string
-          s = (self.association && self.association.name) ||
-              (self.model && self.model.name) || ''
+          s = (self.association && self.association.name) || (self.model && self.model.name) || ''
 
           s ? "result_#{s}".downcase.tr(':', '').to_sym : :result
         end
@@ -309,10 +314,6 @@ module Neo4j
         attr_writer :context
 
         private
-
-        def create_method
-          association.unique? ? :create_unique : :create
-        end
 
         def build_deeper_query_proxy(method, args)
           self.dup.tap do |new_query|
