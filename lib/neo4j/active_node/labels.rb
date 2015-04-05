@@ -63,9 +63,9 @@ module Neo4j
             (model.mapped_label_names - labels).size == 0
           end
 
-          models.sort_by do |model|
+          models.max do |model|
             (model.mapped_label_names & labels).size
-          end.last
+          end
         end
       end
 

@@ -27,6 +27,8 @@ describe 'Node Wrapping' do
     stub_named_class('StackOverflowUser', StackOverflow) do
       self.mapped_label_name = 'User'
     end
+
+    stub_const 'SomeOtherClass', Class.new
   end
 
   after do
@@ -46,7 +48,14 @@ describe 'Node Wrapping' do
     let(:result) { Neo4j::Session.query.match("(n#{label_string})").pluck(:n).first }
 
     {
+      %w(ExtraneousLabel) => '::Neo4j::Server::CypherNode',
       %w(Post) => 'Post',
+
+      %w(ExtraneousLabel Post) => 'Post',
+
+      %w(SomeOtherClass) => '::Neo4j::Server::CypherNode',
+      %w(SomeOtherClass Post) => 'Post',
+
       %w(User GitHub) => 'GitHubUser',
       %w(User StackOverflow) => 'StackOverflowUser',
       %w(Admin User GitHub) => 'GitHubAdmin',
