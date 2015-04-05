@@ -106,6 +106,10 @@ module Neo4j
           @origin ? origin_association.unique? : !!@unique
         end
 
+        def create_method
+          unique? ? :create_unique : :create
+        end
+
         private
 
         def direction_cypher(relationship_cypher, create, reverse = false)
