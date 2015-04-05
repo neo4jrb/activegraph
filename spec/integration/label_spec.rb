@@ -126,13 +126,6 @@ describe 'Labels' do
         RelationTestClass.where(test_class: n2).first.should be_nil
       end
     end
-
-    describe 'when finding using a Module' do
-      it 'finds it' do
-        thing = SomeLabelClass.create
-        SomeLabelMixin.all.should include(thing)
-      end
-    end
   end
 
   describe 'find_by, find_by!' do

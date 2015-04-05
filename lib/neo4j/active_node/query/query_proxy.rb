@@ -131,10 +131,7 @@ module Neo4j
         METHODS = %w(where rel_where order skip limit)
 
         METHODS.each do |method|
-          module_eval(%{
-            def #{method}(*args)
-              build_deeper_query_proxy(:#{method}, args)
-            end}, __FILE__, __LINE__)
+          define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
         end
         # Since there is a rel_where method, it seems only natural for there to be node_where
         alias_method :node_where, :where
@@ -242,6 +239,12 @@ module Neo4j
 
         attr_reader :context
 
+        def new_link(node_var = nil)
+          self.clone.tap do |new_query_proxy|
+            new_query_proxy.instance_variable_set('@node_var', node_var) if node_var
+          end
+        end
+
         protected
 
         # Methods are underscored to prevent conflict with user class methods
@@ -316,10 +319,8 @@ module Neo4j
         private
 
         def build_deeper_query_proxy(method, args)
-          self.dup.tap do |new_query|
-            args.each do |arg|
-              new_query._add_links(links_for_arg(method, arg))
-            end
+          new_link.tap do |new_query|
+            args.each { |arg| new_query._add_links(links_for_arg(method, arg)) }
           end
         end
 

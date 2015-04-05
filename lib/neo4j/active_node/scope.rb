@@ -84,12 +84,11 @@ module Neo4j::ActiveNode
         ScopeRegistry.set_value_for(:current_scope, base_class.to_s, scope)
       end
 
-
-      def all
+      def all(var = :n)
         if current_scope
-          current_scope.clone
+          current_scope.new_link(var)
         else
-          self.as(:n)
+          self.as(var)
         end
       end
     end
