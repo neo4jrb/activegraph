@@ -102,7 +102,13 @@ FileUtils.rm_rf(EMBEDDED_DB_PATH)
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
+def clear_model_memory_caches
+  Neo4j::ActiveNode::Labels.clear_model_for_label_cache
+  Neo4j::ActiveNode::Labels.clear_wrapped_models
+end
+
 def delete_db
+  #clear_model_memory_caches
   Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 

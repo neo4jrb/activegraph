@@ -4,8 +4,7 @@ require 'spec_helper'
 
 describe 'Neo4j::NodeMixin::Scope' do
   before(:each) do
-    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
-    Neo4j::ActiveNode::Labels.clear_wrapped_models
+    clear_model_memory_caches
 
     stub_active_node_class('Person') do
       property :name

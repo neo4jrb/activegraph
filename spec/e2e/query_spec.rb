@@ -4,13 +4,13 @@ require 'set'
 
 
 describe 'Query API' do
-  before(:each) { delete_db }
+  before(:each) do
+    delete_db
+    clear_model_memory_caches
+  end
 
 
   before(:each) do
-    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
-    Neo4j::ActiveNode::Labels.clear_wrapped_models
-
     stub_active_node_class('Interest') do
       property :name
 

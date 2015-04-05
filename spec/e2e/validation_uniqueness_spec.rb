@@ -10,16 +10,11 @@ describe Neo4j::ActiveNode::Validations do
   end
 
   before(:each) do
-    Neo4j::ActiveNode::Labels.clear_model_for_label_cache
-    Neo4j::ActiveNode::Labels.clear_wrapped_models
+    delete_db
+    clear_model_memory_caches
   end
 
-
   context 'validating uniqueness of' do
-    before :each do
-      delete_db
-    end
-
     it 'should not fail if object is new' do
       o = Foo.new
       o.should_not have_error_on(:name)

@@ -1,17 +1,22 @@
 require 'spec_helper'
 
 describe 'has_one' do
-  describe 'has_one(:parent).from(:children)' do
-    class HasOneA
-      include Neo4j::ActiveNode
-      property :name
-      has_many :out, :children, model_class: 'HasOneB'
-    end
+  before(:each) do
+    delete_db
+    clear_model_memory_caches
+  end
 
-    class HasOneB
-      include Neo4j::ActiveNode
-      property :name
-      has_one :in, :parent, origin: :children, model_class: 'HasOneA'
+  describe 'has_one(:parent).from(:children)' do
+    before(:each) do
+      stub_active_node_class('HasOneA') do
+        property :name
+        has_many :out, :children, model_class: 'HasOneB'
+      end
+
+      stub_active_node_class('HasOneB') do
+        property :name
+        has_one :in, :parent, origin: :children, model_class: 'HasOneA'
+      end
     end
 
     context 'with non-persisted node' do
@@ -80,16 +85,15 @@ describe 'has_one' do
   end
 
   describe 'has_one(:parent).from(Folder.files)' do
-    class Folder1
-      include Neo4j::ActiveNode
-    end
+    before(:each) do
+      stub_active_node_class('Folder1') do
+        has_many :out, :files, model_class: 'File1'
+      end
 
-    class File1
-      include Neo4j::ActiveNode
+      stub_active_node_class('File1') do
+        has_one :in, :parent, model_class: 'Folder1', origin: :files
+      end
     end
-
-    Folder1.has_many :out, :files, model_class: File1
-    File1.has_one :in, :parent, model_class: Folder1, origin: :files
 
     it 'can access nodes via parent has_one relationship' do
       f1 = Folder1.create
@@ -104,21 +108,21 @@ describe 'has_one' do
   end
 
   describe 'callbacks' do
-    class CallbackUser
-      include Neo4j::ActiveNode
+    before(:each) do
+      stub_active_node_class('CallbackUser') do
+        has_one :out, :best_friend, model_class: 'CallbackUser', before: :before_callback
+        has_one :in, :best_friend_of, origin: :best_friend, model_class: 'CallbackUser', after: :after_callback
+        has_one :in, :failing_assoc,  origin: :best_friend, model_class: 'CallbackUser', before: :false_before_callback
 
-      has_one :out, :best_friend, model_class: self, before: :before_callback
-      has_one :in, :best_friend_of, origin: :best_friend, model_class: self, after: :after_callback
-      has_one :in, :failing_assoc,  origin: :best_friend, model_class: self, before: :false_before_callback
+        def before_callback(_other)
+        end
 
-      def before_callback(_other)
-      end
+        def after_callback(_other)
+        end
 
-      def after_callback(_other)
-      end
-
-      def false_before_callback(_other)
-        false
+        def false_before_callback(_other)
+          false
+        end
       end
     end
 

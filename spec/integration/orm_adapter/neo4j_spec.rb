@@ -20,8 +20,7 @@ module Neo4j
 
       it_should_behave_like 'example app with orm_adapter fix' do
         before(:each) do
-          Neo4j::ActiveNode::Labels.clear_model_for_label_cache
-          Neo4j::ActiveNode::Labels.clear_wrapped_models
+          clear_model_memory_caches
 
           stub_active_node_class('User') do
             property :name, index: :exact

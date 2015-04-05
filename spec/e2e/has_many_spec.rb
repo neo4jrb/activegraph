@@ -338,4 +338,45 @@ describe 'has_many' do
       c1.furrs.to_a.should eq([d1])
     end
   end
+
+  describe 'query chaining' do
+    before(:each) do
+      delete_db
+      clear_model_memory_caches
+
+      stub_active_node_class('Dog') do
+        property :name
+
+        has_many :out, :toys, type: :has_toy
+      end
+      stub_active_node_class('Toy') do
+        property :name
+      end
+    end
+
+    context 'one dog, two toys' do
+      let!(:sparky) { Dog.create(name: 'Sparky') }
+      let!(:spot) { Dog.create(name: 'Spot') }
+      let!(:chewmate) { Toy.create(name: 'The Chew Mate') }
+      let!(:realcat) { Toy.create(name: 'Real Cat') }
+
+      context 'Sparky has both toys, Spot has just a Real Cat' do
+        before(:each) do
+          sparky.toys << chewmate
+          sparky.toys << realcat
+
+          spot.toys << realcat
+        end
+
+        it 'should return all toys for all dogs from Dog.toys' do
+          expect(Dog.toys.to_a).to match_array([chewmate, realcat, realcat])
+        end
+
+        it 'should return all toys for all dogs specified by where' do
+          expect(Dog.where(name: 'Sparky').toys.to_a).to match_array([chewmate, realcat])
+          expect(Dog.where(name: 'Spot').toys.to_a).to match_array([realcat])
+        end
+      end
+    end
+  end
 end
