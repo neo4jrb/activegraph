@@ -96,6 +96,14 @@ module Neo4j::ActiveNode
         end
       end
 
+      def merge(attributes)
+        neo4j_session.query.merge(n: {self => attributes}).exec
+      end
+
+      def find_or_create(find_attributes, set_attributes = {})
+        neo4j_session.query.merge(n: {self => find_attributes}).set(n: set_attributes).exec
+      end
+
       # Finds the first node with the given attributes, or calls create if none found
       def find_or_create_by(attributes, &block)
         find_by(attributes) || create(attributes, &block)

@@ -52,6 +52,7 @@ describe 'Query API' do
 
     stub_active_node_class('Teacher') do
       property :name
+      property :age
 
       has_many :both, :lessons
 
@@ -169,6 +170,42 @@ describe 'Query API' do
 
       it 'allows filtering and parametarizing by String and Hash in where' do
         Teacher.as(:teach).where('teach.name =~ {name}', name: '.*Othmar.*').to_a.should eq([othmar])
+      end
+    end
+
+    describe 'merge methods' do
+      before(:each) do
+        Teacher.delete_all
+      end
+
+      describe '.merge' do
+        it 'allows for merging' do
+          Teacher.merge(name: 'Dr. Harold Samuels')
+          expect(Teacher.count).to eq(1)
+          Teacher.merge(name: 'Dr. Harold Samuels')
+          expect(Teacher.count).to eq(1)
+        end
+      end
+
+      describe '.find_or_create' do
+        it 'works like .merge with just matching attributes' do
+          Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(Teacher.count).to eq(1)
+          expect(Teacher.first.name).to eq('Dr. Harold Samuels')
+          Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(Teacher.count).to eq(1)
+        end
+
+        it 'also sets properties' do
+          Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(Teacher.count).to eq(1)
+          expect(Teacher.first.name).to eq('Dr. Harold Samuels')
+          expect(Teacher.first.age).to eq(nil)
+          Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34)
+          expect(Teacher.count).to eq(1)
+          expect(Teacher.first.name).to eq('Dr. Harold Samuels')
+          expect(Teacher.first.age).to eq(34)
+        end
       end
     end
 
