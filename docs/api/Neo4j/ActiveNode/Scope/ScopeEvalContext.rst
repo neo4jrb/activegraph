@@ -26,7 +26,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/scope.rb:97 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L97>`_
+  * `lib/neo4j/active_node/scope.rb:96 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L96>`_
 
 
 

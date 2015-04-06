@@ -88,11 +88,11 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def all
+     def all(var = :n)
        if current_scope
-         current_scope.clone
+         current_scope.new_link(var)
        else
-         self.as(:n)
+         self.as(var)
        end
      end
 

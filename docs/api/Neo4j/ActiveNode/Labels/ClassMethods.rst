@@ -45,8 +45,6 @@ ClassMethods
 
    
 
-   
-
 
 
 
@@ -70,19 +68,6 @@ Files
 
 Methods
 -------
-
-
-
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#all`:
-
-**#all**
-  Find all nodes/objects of this class
-
-  .. hidden-code-block:: ruby
-
-     def all
-       Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, {})
-     end
 
 
 

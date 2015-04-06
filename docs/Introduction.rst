@@ -22,11 +22,38 @@ Relationship
 Neo4j.rb
 ~~~~~~~~
 
+Neo4j.rb consists of the `neo4j` and `neo4j-core` gems.
+
 Model
-  A Ruby class including the `Neo4j::ActiveNode` module.  This module gives it the ability to define properties, validations, and callbacks
+  A Ruby class including either the `Neo4j::ActiveNode` module or the `Neo4j::ActiveRel` module from the `neo4j` gem.  These module gives it the ability to define properties, validations, and callbacks
 
 Association
   Defined on a **Model**.  Defines either a ``has_one`` or ``has_many`` relationship to a model.  A higher level abstraction of a **Relationship**
+
+Code Examples
+-------------
+
+With Neo4j.rb, you can use either high-level abstractions for convenience or low level APIs for flexibility.
+
+ActiveNode
+~~~~~~~~~~
+
+ActiveNode provides an Object Graph Model (OGM) for abstracting Neo4j concepts with an ``ActiveRecord``-like API:
+
+.. code-block:: ruby
+
+  # Models to create nodes
+  person = Person.create(name: 'James')
+
+  # Associations to traverse relationships
+  person.houses.map(&:address)
+
+  # Method-chaining to build and execute queries
+  Person.where(name: 'James').order(age: :desc).first
+
+  # Query building methods can be chained with associations
+  # Here we get other owners for pre-2005 vehicles owned by the person in question
+  person.vehicles(:v).where('v.year < 2005').owners(:other).to_a
 
 Installation
 ------------

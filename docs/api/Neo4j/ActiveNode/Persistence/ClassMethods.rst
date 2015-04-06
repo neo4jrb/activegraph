@@ -19,6 +19,10 @@ ClassMethods
 
    
 
+   
+
+   
+
 
 
 
@@ -88,6 +92,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Persistence/ClassMethods#find_or_create`:
+
+**#find_or_create**
+  
+
+  .. hidden-code-block:: ruby
+
+     def find_or_create(find_attributes, set_attributes = {})
+       neo4j_session.query.merge(n: {self => find_attributes}).set(n: set_attributes).exec
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#find_or_create_by`:
 
 **#find_or_create_by**
@@ -123,6 +140,19 @@ Methods
 
      def load_entity(id)
        Neo4j::Node.load(id)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Persistence/ClassMethods#merge`:
+
+**#merge**
+  
+
+  .. hidden-code-block:: ruby
+
+     def merge(attributes)
+       neo4j_session.query.merge(n: {self => attributes}).exec
      end
 
 

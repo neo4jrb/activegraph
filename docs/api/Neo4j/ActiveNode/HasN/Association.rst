@@ -75,6 +75,8 @@ Association
 
    
 
+   
+
 
 
 
@@ -141,6 +143,19 @@ Methods
 
      def callback(type)
        @callbacks[type]
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#create_method`:
+
+**#create_method**
+  
+
+  .. hidden-code-block:: ruby
+
+     def create_method
+       unique? ? :create_unique : :create
      end
 
 

@@ -200,7 +200,7 @@ Methods
        _session.query(context: @options[:context])
          .match(:start, :end)
          .where(start: {neo_id: @start_object}, end: {neo_id: other_node_or_nodes})
-         .send(create_method, "start#{_association_arrow(properties, true)}end").exec
+         .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
      end
 
 
@@ -717,6 +717,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#inspect`:
+
+**#inspect**
+  
+
+  .. hidden-code-block:: ruby
+
+     def inspect
+       clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
+     
+       "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#last`:
 
 **#last**
@@ -802,6 +817,21 @@ Methods
 
      def model
        @model
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#new_link`:
+
+**#new_link**
+  
+
+  .. hidden-code-block:: ruby
+
+     def new_link(node_var = nil)
+       self.clone.tap do |new_query_proxy|
+         new_query_proxy.instance_variable_set('@node_var', node_var) if node_var
+       end
      end
 
 
@@ -900,9 +930,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def params(params)
-       self.dup.tap do |new_query|
-         new_query._add_params(params)
-       end
+       new_link.tap { |new_query| new_query._add_params(params) }
      end
 
 
@@ -952,7 +980,13 @@ Methods
 
      def query_as(var)
        result_query = @chain.inject(base_query(var).params(@params)) do |query, link|
-         query.send(link.clause, link.args(var, rel_var))
+         args = link.args(var, rel_var)
+     
+         if args.is_a?(Array)
+           query.send(link.clause, *args)
+         else
+           query.send(link.clause, link.args(var, rel_var))
+         end
        end
      
        result_query.tap { |query| query.proxy_chain_level = _chain_level }

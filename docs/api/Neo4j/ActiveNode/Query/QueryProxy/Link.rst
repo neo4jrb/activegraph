@@ -27,6 +27,10 @@ Link
 
    
 
+   
+
+   
+
 
 
 
@@ -61,7 +65,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def args(var, rel_var)
-       @arg.respond_to?(:call) ? @arg.call(var, rel_var) : @arg
+       @arg.respond_to?(:call) ? @arg.call(var, rel_var) : [@arg, @args].flatten
      end
 
 
@@ -75,6 +79,40 @@ Methods
 
      def clause
        @clause
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_arg`:
+
+**.for_arg**
+  
+
+  .. hidden-code-block:: ruby
+
+     def for_arg(model, clause, arg, *args)
+       default = [Link.new(clause, arg, *args)]
+     
+       Link.for_clause(clause, arg, model, *args) || default
+     rescue NoMethodError
+       default
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_args`:
+
+**.for_args**
+  
+
+  .. hidden-code-block:: ruby
+
+     def for_args(model, clause, args)
+       if clause == :where && args[0].is_a?(String) # Better way?
+         [for_arg(model, :where, args[0], *args[1..-1])]
+       else
+         args.map { |arg| for_arg(model, clause, arg) }
+       end
      end
 
 
@@ -108,10 +146,10 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def for_clause(clause, arg, model)
+     def for_clause(clause, arg, model, *args)
        method_to_call = "for_#{clause}_clause"
      
-       send(method_to_call, arg, model)
+       send(method_to_call, arg, model, *args)
      end
 
 
@@ -123,7 +161,7 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def for_where_clause(arg, model)
+     def for_where_clause(arg, model, *args)
        node_num = 1
        result = []
        if arg.is_a?(Hash)
@@ -137,7 +175,7 @@ Methods
            end
          end
        elsif arg.is_a?(String)
-         result << new(:where, arg)
+         result << new(:where, arg, args)
        end
        result
      end
@@ -179,7 +217,7 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def for_where_clause(arg, model)
+     def for_where_clause(arg, model, *args)
        node_num = 1
        result = []
        if arg.is_a?(Hash)
@@ -193,7 +231,7 @@ Methods
            end
          end
        elsif arg.is_a?(String)
-         result << new(:where, arg)
+         result << new(:where, arg, args)
        end
        result
      end
@@ -207,9 +245,10 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def initialize(clause, arg)
+     def initialize(clause, arg, args = [])
        @clause = clause
        @arg = arg
+       @args = args
      end
 
 
