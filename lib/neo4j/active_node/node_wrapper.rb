@@ -22,15 +22,27 @@ class Neo4j::Node
     private
 
     def load_classes_from_labels
-      labels.each { |label| label.to_s.constantize }
-    rescue NameError
-      nil
+      labels.each { |label| Neo4j::Node::Wrapper.constant_for_label(label) }
+    end
+
+    # Only load classes once for performance
+    CONSTANTS_FOR_LABELS_CACHE = ActiveSupport::Cache::MemoryStore.new
+
+    def self.constant_for_label(label)
+      @constants_for_labels ||= {}
+      CONSTANTS_FOR_LABELS_CACHE.fetch(label.to_sym) do
+        begin
+          label.to_s.constantize
+        rescue NameError
+          nil
+        end
+      end
     end
 
     def named_class
       property = Neo4j::Config.class_name_property
 
-      self.props[property].constantize if self.props.is_a?(Hash) && self.props.key?(property)
+      Neo4j::Node::Wrapper.constant_for_label(self.props[property]) if self.props.is_a?(Hash) && self.props.key?(property)
     end
   end
 end

@@ -11,16 +11,20 @@ describe Neo4j::Node::Wrapper do
       context 'when set in config.yml' do
         it 'looks for a property with the same name' do
           wrapper.stub(:props).and_return(_defined_property_name: 'Bar')
+          wrapper.stub(:labels).and_return([])
           Bar = Object
           Neo4j::Config.stub(:class_name_property).and_return(:_defined_property_name)
-          expect(wrapper.props).to receive(:key?).with(:_defined_property_name).and_return true
 
           expect(wrapper.class_to_wrap).to eq Bar
         end
       end
 
       context 'when using default and present on class' do
-        before { wrapper.stub(:props).and_return(_classname: 'CachedClassName') }
+        before do
+          wrapper.stub(:props).and_return(_classname: 'CachedClassName')
+          wrapper.stub(:labels).and_return([])
+        end
+
         CachedClassName = Object
 
         it 'does not call :_class_wrappers' do
