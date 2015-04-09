@@ -185,7 +185,7 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
 
-          association_query_proxy(name, {node: node, rel: rel, caller: self}.merge(options))
+          association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
         end
 
         define_method("#{name}=") do |other_nodes|
@@ -234,7 +234,7 @@ module Neo4j::ActiveNode
                                                   query_proxy: query_proxy,
                                                   context: "#{query_proxy.context || self.name}##{name}",
                                                   optional: query_proxy.optional?,
-                                                  caller: query_proxy.caller}.merge(options)).tap do |query_proxy_result|
+                                                  source_object: query_proxy.source_object}.merge(options)).tap do |query_proxy_result|
                                                     target_classes = association_target_classes(name)
                                                     return query_proxy_result.as_models(target_classes) if target_classes
                                                   end

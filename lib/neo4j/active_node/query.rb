@@ -19,7 +19,7 @@ module Neo4j
         self.class.query_as(node_var).where("ID(#{node_var})" => self.neo_id)
       end
 
-      # Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
+      # Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy source_object set to the node instance.
       # This method does not exist within QueryProxy and can only be used to start a new chain.
       #
       # @example Start a new QueryProxy chain with the first identifier set manually
@@ -29,7 +29,7 @@ module Neo4j
       # @param [String, Symbol] node_var The identifier to use within the QueryProxy object
       # @return [Neo4j::ActiveNode::Query::QueryProxy]
       def as(node_var)
-        self.class.query_proxy(node: node_var, caller: self).match_to(self)
+        self.class.query_proxy(node: node_var, source_object: self).match_to(self)
       end
 
       module ClassMethods

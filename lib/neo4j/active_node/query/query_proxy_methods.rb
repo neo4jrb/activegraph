@@ -59,7 +59,7 @@ module Neo4j
             rescue Neo4j::Session::CypherError
               self.query.delete(target).exec
             end
-            clear_caller_cache
+            clear_source_object_cache
           end
         end
 
@@ -103,7 +103,7 @@ module Neo4j
         # Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
         def delete(node)
           self.match_to(node).query.delete(rel_var).exec
-          clear_caller_cache
+          clear_source_object_cache
         end
 
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
@@ -123,7 +123,7 @@ module Neo4j
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
         def destroy(node)
           self.rels_to(node).map!(&:destroy)
-          clear_caller_cache
+          clear_source_object_cache
         end
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -148,8 +148,8 @@ module Neo4j
 
         private
 
-        def clear_caller_cache
-          self.caller.clear_association_cache if self.caller.respond_to?(:clear_association_cache)
+        def clear_source_object_cache
+          self.source_object.clear_association_cache if self.source_object.respond_to?(:clear_association_cache)
         end
 
         # @return [String] The primary key of a the current QueryProxy's model or target class

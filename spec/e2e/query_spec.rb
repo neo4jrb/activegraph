@@ -228,7 +228,7 @@ describe 'Query API' do
           end
 
           it 'sets the `:caller` method' do
-            expect(samuels.as(:s).caller).to eq samuels
+            expect(samuels.as(:s).source_object).to eq samuels
           end
         end
       end

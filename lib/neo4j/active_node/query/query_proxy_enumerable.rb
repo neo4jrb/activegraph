@@ -62,12 +62,14 @@ module Neo4j
         # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
         def enumerable_query(node, rel = nil)
           pluck_this = rel.nil? ? [node] : [node, rel]
-          return self.pluck(*pluck_this) if @association.nil? || caller.nil?
+          return self.pluck(*pluck_this) if @association.nil? || source_object.nil?
+
           cypher_string = self.to_cypher_with_params(pluck_this)
-          association_collection = caller.association_instance_get(cypher_string, @association)
+
+          association_collection = source_object.association_instance_get(cypher_string, @association)
           if association_collection.nil?
             association_collection = self.pluck(*pluck_this)
-            caller.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
+            source_object.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
           end
           association_collection
         end

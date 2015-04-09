@@ -9,7 +9,7 @@ module Neo4j
 
         # The most recent node to start a QueryProxy chain.
         # Will be nil when using QueryProxy chains on class methods.
-        attr_reader :caller, :association, :model, :starting_query
+        attr_reader :source_object, :association, :model, :starting_query
 
         # QueryProxy is ActiveNode's Cypher DSL. While the name might imply that it creates queries in a general sense,
         # it is actually referring to <tt>Neo4j::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
@@ -28,7 +28,7 @@ module Neo4j
         # * node_var: A string or symbol to be used by Cypher within its query string as an identifier
         # * rel_var:  Same as above but pertaining to a relationship identifier
         # * session: The session to be used for this query
-        # * caller:  The node instance at the start of the QueryProxy chain
+        # * source_object:  The node instance at the start of the QueryProxy chain
         # * query_proxy: An existing QueryProxy chain upon which this new object should be built
         #
         # QueryProxy objects are evaluated lazily.
@@ -38,8 +38,8 @@ module Neo4j
           @context = options.delete(:context)
           @options = options
 
-          @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
-            options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
+          @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
+            options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
 
           @match_type = @optional ? :optional_match : :match
 

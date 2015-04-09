@@ -5,7 +5,7 @@ module Neo4j
       module QueryProxyMethods
         # Used as part of `dependent: :destroy` and may not have any utility otherwise.
         # It keeps track of the node responsible for a cascading `destroy` process.
-        # @param [#dependent_children] caller The node that called this method. Typically, we would use QueryProxy's `caller` method
+        # @param [#dependent_children] source_object The node that called this method. Typically, we would use QueryProxy's `source_object` method
         # but this is not always available, so we require it explicitly.
         def each_for_destruction(owning_node)
           target = owning_node.called_by || owning_node
@@ -27,7 +27,7 @@ module Neo4j
         # @param [String, Symbol] other_rel The identifier to use for the relationship in the optional match.
         # @return [Neo4j::ActiveNode::Query::QueryProxy]
         def unique_nodes(association, self_identifer, other_node, other_rel)
-          fail 'Only supported by in QueryProxy chains started by an instance' unless caller
+          fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
 
           unique_nodes_query(association, self_identifer, other_node, other_rel)
             .proxy_as(association.target_class, other_node)
@@ -36,7 +36,7 @@ module Neo4j
         private
 
         def unique_nodes_query(association, self_identifer, other_node, other_rel)
-          query.with(identity).proxy_as_optional(caller.class, self_identifer)
+          query.with(identity).proxy_as_optional(source_object.class, self_identifer)
             .send(association.name, other_node, other_rel)
             .query
             .with(other_node)
