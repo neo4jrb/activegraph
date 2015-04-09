@@ -20,10 +20,12 @@ Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph da
 
 With this gem you not only do you get a convenient higher level wrapper around Neo4j, but you have access to a powerful high-level query building interface which lets you take advantage of the power of Neo4j like this:
 
-    # Break down the top countries where friends' favorite beers come from
-    person.friends.favorite_beers.country_of_origin(:country).
-      order('count(country) DESC').
-      pluck(:country, count: 'count(country)')
+```ruby
+# Break down the top countries where friends' favorite beers come from
+person.friends.favorite_beers.country_of_origin(:country).
+  order('count(country) DESC').
+  pluck(:country, count: 'count(country)')
+```
 
 For a general overview see our website: http://neo4jrb.io/
 
