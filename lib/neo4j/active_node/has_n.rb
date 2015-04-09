@@ -20,15 +20,10 @@ module Neo4j::ActiveNode
     # @param [Enumerable] association_obj the HasN::Association object used to perform this query
     def association_instance_get(cypher_string, association_obj)
       return if association_cache.nil? || association_cache.empty?
-      lookup_obj = cypher_hash(cypher_string)
+      hash = cypher_hash(cypher_string)
       reflection = association_reflection(association_obj)
       return if reflection.nil?
-      association_cache[reflection.name] ? association_cache[reflection.name][lookup_obj] : nil
-    end
-
-    # @return [Hash] A hash of all queries inassociation_cache created from the association owning this reflection
-    def association_instance_get_by_reflection(reflection_name)
-      association_cache[reflection_name]
+      association_cache[reflection.name] ? association_cache[reflection.name][hash] : nil
     end
 
     # Caches an association result. Unlike ActiveRecord, which stores results in @association_cache using { :association_name => [collection_result] },
@@ -39,19 +34,16 @@ module Neo4j::ActiveNode
     # @param [Neo4j::ActiveNode::HasN::Association] association_obj The association traversed to create the result
     def association_instance_set(cypher_string, collection_result, association_obj)
       return collection_result if Neo4j::Transaction.current
-      cache_key = cypher_hash(cypher_string)
+
       reflection = association_reflection(association_obj)
-      return if reflection.nil?
-      if @association_cache[reflection.name]
-        @association_cache[reflection.name][cache_key] = collection_result
-      else
-        @association_cache[reflection.name] = {cache_key => collection_result}
-      end
-      collection_result
+      return collection_result if reflection.nil?
+
+      @association_cache[reflection.name] ||= {}
+      @association_cache[reflection.name][cypher_hash(cypher_string)] = collection_result
     end
 
     def association_instance_fetch(cypher_string, association_obj, &block)
-      association_instance_get(cypher_string, association_obj) || association_instance_set(cypher_string, block.call, association_obj)
+      (association_instance_get(cypher_string, association_obj) || association_instance_set(cypher_string, block.call, association_obj))
     end
 
     def association_reflection(association_obj)

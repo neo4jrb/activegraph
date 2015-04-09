@@ -166,16 +166,6 @@ describe 'Association Cache' do
         end
       end
 
-      describe 'association_instance_get_by_reflection' do
-        it 'returns all results from the association_cache using an association name' do
-          result = billy.association_instance_get_by_reflection(:lessons)
-          query_hash = billy.cypher_hash(billy.lessons.to_cypher_with_params)
-          expect(result).to have_key query_hash
-          expect(result[query_hash].count).to eq 2
-          expect(result[query_hash]).to include(math, science)
-        end
-      end
-
       context 'within a transaction' do
         it 'does not set results' do
           billy.reload
