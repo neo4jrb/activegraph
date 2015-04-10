@@ -109,10 +109,9 @@ module Neo4j::Shared
 
     def convert_properties_to(medium, properties)
       converter = medium == :ruby ? :to_ruby : :to_db
-
-      properties.each_with_object({}) do |(attr, value), new_attributes|
-        next new_attributes if skip_conversion?(attr, value)
-        new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+      properties.each_pair do |attr, value|
+        next if skip_conversion?(attr, value)
+        properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
       end
     end
 
@@ -125,9 +124,9 @@ module Neo4j::Shared
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
     def primitive_type(attr)
       case
-      when serialized_properties.key?(attr)
+      when self.class.serialized_properties_keys.include?(attr)
         serialized_properties[attr]
-      when magic_typecast_properties.key?(attr)
+      when self.class.magic_typecase_properties_keys.include?(attr)
         self.class.magic_typecast_properties[attr]
       else
         self.class._attribute_type(attr)

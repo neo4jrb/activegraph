@@ -38,8 +38,8 @@ module Neo4j::Shared
     alias_method :[], :read_attribute
 
     def default_properties=(properties)
-      keys = self.class.default_properties.keys
-      @default_properties = properties.select { |key| keys.include?(key) }
+      default_property_keys = self.class.default_properties_keys
+      @default_properties = properties.select { |key| default_property_keys.include?(key) }
     end
 
     def default_property(key)
@@ -168,10 +168,16 @@ module Neo4j::Shared
         @default_property ||= {}
       end
 
+      def default_properties_keys
+        @default_properties_keys ||= default_properties.keys
+      end
+
       def reset_default_properties(name_to_keep)
         default_properties.each_key do |property|
+          @default_properties_keys = nil
           undef_method(property) unless property == name_to_keep
         end
+        @default_properties_keys = nil
         @default_property = {}
       end
 
@@ -192,6 +198,10 @@ module Neo4j::Shared
 
       def magic_typecast_properties
         @magic_typecast_properties ||= {}
+      end
+
+      def magic_typecase_properties_keys
+        @magic_typecast_properties_keys ||= magic_typecast_properties.keys
       end
 
       private
@@ -234,6 +244,7 @@ module Neo4j::Shared
         typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
         return unless typecaster && typecaster.respond_to?(:primitive_type)
         magic_typecast_properties[name] = options[:type]
+        @magic_typecast_properties_keys = nil
         options[:type] = typecaster.primitive_type
         options[:typecaster] = typecaster
       end
