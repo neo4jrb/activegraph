@@ -61,6 +61,7 @@ module Neo4j::Shared
     # Changes attributes hash to remove relationship keys
     # Raises an error if there are any keys left which haven't been defined as properties on the model
     def validate_attributes!(attributes)
+      return attributes if attributes.empty?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end

@@ -5,10 +5,8 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
-
       WRAPPED_MODELS = []
-
-      MODELS_FOR_LABELS_CACHE = ActiveSupport::Cache::MemoryStore.new
+      MODELS_FOR_LABELS_CACHE = {}
       MODELS_FOR_LABELS_CACHE.clear
 
       included do |model|
@@ -58,14 +56,16 @@ module Neo4j
       end
 
       def self.model_for_labels(labels)
-        MODELS_FOR_LABELS_CACHE.fetch(labels.sort_by(&:to_s).hash) do
-          models = WRAPPED_MODELS.select do |model|
-            (model.mapped_label_names - labels).size == 0
-          end
+        MODELS_FOR_LABELS_CACHE[labels] || model_cache(labels)
+      end
 
-          models.max do |model|
-            (model.mapped_label_names & labels).size
-          end
+      def self.model_cache(labels)
+        models = WRAPPED_MODELS.select do |model|
+          (model.mapped_label_names - labels).size == 0
+        end
+
+        MODELS_FOR_LABELS_CACHE[labels] = models.max do |model|
+          (model.mapped_label_names & labels).size
         end
       end
 

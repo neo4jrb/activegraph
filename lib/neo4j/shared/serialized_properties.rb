@@ -17,7 +17,7 @@ module Neo4j::Shared
 
     module ClassMethods
       def serialized_properties
-        @serialize || {}
+        @serialize ||= {}
       end
 
       def serialized_properties=(serialize_hash)

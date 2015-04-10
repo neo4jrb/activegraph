@@ -26,17 +26,17 @@ class Neo4j::Node
     end
 
     # Only load classes once for performance
-    CONSTANTS_FOR_LABELS_CACHE = ActiveSupport::Cache::MemoryStore.new
+    CONSTANTS_FOR_LABELS_CACHE = {}
 
     def self.constant_for_label(label)
-      @constants_for_labels ||= {}
-      CONSTANTS_FOR_LABELS_CACHE.fetch(label.to_sym) do
-        begin
-          label.to_s.constantize
-        rescue NameError
-          nil
-        end
-      end
+      # @constants_for_labels ||= {}
+      CONSTANTS_FOR_LABELS_CACHE[label] || CONSTANTS_FOR_LABELS_CACHE[label] = constantized_label(label)
+    end
+
+    def self.constantized_label(label)
+      label.to_s.constantize
+      rescue NameError
+        nil
     end
 
     def named_class

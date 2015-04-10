@@ -136,10 +136,12 @@ module Neo4j::Shared
 
     # Returns true if the property isn't defined in the model or it's both nil and unchanged.
     def skip_conversion?(attr, value)
-      !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
+      !self.class.attributes[attr] || (value.nil? && !changed_attributes[attr])
     end
 
     class << self
+      attr_reader :converters
+
       def included(_)
         return if @converters
         @converters = {}
@@ -150,6 +152,7 @@ module Neo4j::Shared
       end
 
       def typecaster_for(primitive_type)
+        return nil if primitive_type.nil?
         converters.key?(primitive_type) ? converters[primitive_type] : nil
       end
 
@@ -163,8 +166,6 @@ module Neo4j::Shared
       def register_converter(converter)
         converters[converter.convert_type] = converter
       end
-
-      attr_reader :converters
     end
   end
 end
