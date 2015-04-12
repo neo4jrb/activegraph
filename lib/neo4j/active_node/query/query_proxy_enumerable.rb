@@ -51,56 +51,6 @@ module Neo4j
 
           self.query.pluck(*arg_list)
         end
-
-
-        private
-
-        # TODO: REMOVE
-
-        # Executes the query against the database if the results are not already present in a node's association cache. This method is
-        # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
-        # @param [String,Symbol] node The string or symbol of the node to return from the database.
-        # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
-        def enumerable_query(node, rel = nil)
-          pluck_this = rel.nil? ? [node] : [node, rel]
-          return self.pluck(*pluck_this) if @association.nil? || source_object.nil?
-
-          cypher_string = self.to_cypher_with_params(pluck_this)
-
-          spawned_from_query_proxy = source_object.instance_variable_get('@spawned_from_query_proxy')
-
-
-
-
-
-
-
-
-
-          catch(:empty_result) do
-            if spawned_from_query_proxy && !source_object.association_instance_get(cypher_string, @association)
-              puts 'spawned_from_query_proxy!!'
-              results = Hash[*spawned_from_query_proxy.all(:previous_var).send(@association.name, :next_var).pluck('ID(previous_var)', "collect(next_var)").flatten(1)]
-
-              spawned_from_query_proxy.each do |original_object|
-                puts 'each each', original_object.neo_id
-
-                original_object.association_instance_set(cypher_string, results[original_object.neo_id], @association)
-              end
-            else
-              source_object.association_instance_fetch(cypher_string, @association) do
-
-                self.pluck(*pluck_this).tap do |association_collection|
-                  throw :empty_result if association_collection.empty?
-
-                  association_collection.each do |object|
-                    #object.instance_variable_set('@spawned_from_query_proxy', self)
-                  end
-                end
-              end
-            end
-          end || []
-        end
       end
     end
   end
