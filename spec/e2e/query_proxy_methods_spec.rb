@@ -350,7 +350,7 @@ describe 'query_proxy_methods' do
         expect(all_rels).to be_a(Enumerable)
         expect(all_rels.count).to eq @john.lessons.match_to(@history).count
         @john.lessons.all_rels_to(@history).map(&:destroy)
-        @john.clear_association_cache
+        @john.association_proxy_cache.clear
         expect(@john.lessons.all_rels_to(@history)).to be_empty
       end
     end

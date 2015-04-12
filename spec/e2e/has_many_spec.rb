@@ -2,12 +2,15 @@ require 'spec_helper'
 
 describe 'has_many' do
   before(:each) do
+    clear_model_memory_caches
+    delete_db
+
     stub_active_node_class('Person') do
       property :name
 
       has_many :both, :friends, model_class: false
-      has_many :out, :knows, model_class: self
-      has_many :in, :knows_me, origin: :knows, model_class: self
+      has_many :out, :knows, model_class: 'Person'
+      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
     end
   end
 
@@ -147,7 +150,7 @@ describe 'has_many' do
       end
 
       it 'has a is_a method' do
-        expect(node.friends.is_a?(Neo4j::ActiveNode::HasN::AssociationEnumerator)).to be true
+        expect(node.friends.is_a?(Neo4j::ActiveNode::HasN::AssociationProxy)).to be true
         expect(node.friends.is_a?(Array)).to be false
         expect(node.friends.is_a?(String)).to be false
       end

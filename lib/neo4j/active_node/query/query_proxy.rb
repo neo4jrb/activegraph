@@ -184,7 +184,7 @@ module Neo4j
 
             return false if @association.perform_callback(@start_object, other_node, :before) == false
 
-            @start_object.clear_association_cache
+            @start_object.association_proxy_cache.clear
 
             _create_relationship(other_node, properties)
 
@@ -229,6 +229,10 @@ module Neo4j
           else
             super
           end
+        end
+
+        def respond_to?(method_name)
+          (@model && @model.respond_to?(method_name)) || super
         end
 
         # Give ability to call `#find` on associations to get a scoped find

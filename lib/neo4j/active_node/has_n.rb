@@ -4,50 +4,108 @@ module Neo4j::ActiveNode
 
     class NonPersistedNodeError < StandardError; end
 
-    # Clears out the association cache.
-    def clear_association_cache #:nodoc:
-      association_cache.clear if _persisted_obj
+    # Return this object from associations
+    # It uses a QueryProxy to get results
+    # But also caches results and can have results cached on it
+    class AssociationProxy
+      def initialize(query_proxy)
+        @query_proxy = query_proxy
+        @cached_result = nil
+
+        # Represents the thing which can be enumerated
+        # default to @query_proxy, but will be set to
+        # @cached_result if that is set
+        @enumerable = @query_proxy
+      end
+
+      # States:
+      # Default 
+      def inspect
+        if @cached_result
+          @cached_result.inspect
+        else
+          "<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
+        end
+      end
+
+      extend Forwardable
+      %w(include? empty? count find).each do |delegated_method|
+        def_delegator :@enumerable, delegated_method
+      end
+
+      include Enumerable
+
+      def each(&block)
+        result.each(&block)
+      end
+
+      def result
+        return @cached_result if @cached_result
+
+        cache_query_proxy
+
+        @cached_result
+      end
+
+      def cache_result(result)
+        @cached_result = result
+        @enumerable = (@cached_result || @query_proxy)
+      end
+
+      def cache_query_proxy
+        cache_result(@query_proxy.to_a)
+      end
+
+      def clear_cache_result
+        cache_result(nil)
+      end
+
+      def cached?
+        !!@cached_result
+      end
+
+      QUERY_PROXY_METHODS = [:<<, :delete] 
+      CACHED_RESULT_METHODS = %w()
+
+      def method_missing(method_name, *args, &block)
+        cache_query_proxy if !cached?
+
+        # Oy....
+        target = case method_name
+                 when *QUERY_PROXY_METHODS
+                   clear_cache_result
+                   @query_proxy
+                 when *CACHED_RESULT_METHODS
+                   @cached_result
+                 else
+                   query_proxy_responds = @query_proxy.respond_to?(method_name)
+                   cached_result_responds = @cached_result && @cached_result.respond_to?(method_name)
+
+                   if query_proxy_responds && cached_result_responds
+                     @cached_result
+                   elsif query_proxy_responds
+                     clear_cache_result
+                     @query_proxy
+                   elsif cached_result_responds
+                     @cached_result
+                   else
+                     return super
+                   end
+                 end
+
+        target.public_send(method_name, *args, &block)
+      end
     end
 
-    # Returns the current association cache. It is in the format
-    # { :association_name => { :hash_of_cypher_string => [collection] }}
-    def association_cache
-      @association_cache ||= {}
-    end
-
-    # Returns the specified association instance if it responds to :loaded?, nil otherwise.
-    # @param [String] cypher_string the cypher, with params, used for lookup
-    # @param [Enumerable] association_obj the HasN::Association object used to perform this query
-    def association_instance_get(cypher_string, association_obj)
-      return if association_cache.nil? || association_cache.empty?
-      hash = cypher_hash(cypher_string)
-      reflection = association_reflection(association_obj)
-      return if reflection.nil?
-      association_cache[reflection.name] ? association_cache[reflection.name][hash] : nil
-    end
-
-    # Caches an association result. Unlike ActiveRecord, which stores results in @association_cache using { :association_name => [collection_result] },
-    # ActiveNode stores it using { :association_name => { :hash_string_of_cypher => [collection_result] }}.
-    # This is necessary because an association name by itself does not take into account :where, :limit, :order, etc,... so it's prone to error.
-    # @param [Neo4j::ActiveNode::Query::QueryProxy] query_proxy The QueryProxy object that resulted in this result
-    # @param [Enumerable] collection_result The result of the query after calling :each
-    # @param [Neo4j::ActiveNode::HasN::Association] association_obj The association traversed to create the result
-    def association_instance_set(cypher_string, collection_result, association_obj)
-      return collection_result if Neo4j::Transaction.current
-
-      reflection = association_reflection(association_obj)
-      return collection_result if reflection.nil?
-
-      @association_cache[reflection.name] ||= {}
-      @association_cache[reflection.name][cypher_hash(cypher_string)] = collection_result
-    end
-
-    def association_instance_fetch(cypher_string, association_obj, &block)
-      (association_instance_get(cypher_string, association_obj) || association_instance_set(cypher_string, block.call, association_obj))
-    end
-
-    def association_reflection(association_obj)
-      self.class.reflect_on_association(association_obj.name)
+    # Returns the current AssociationProxy cache for the association cache. It is in the format
+    # { :association_name => AssociationProxy}
+    # This is so that we
+    # * don't need to re-build the QueryProxy objects
+    # * also because the QueryProxy object caches it's results
+    # * so we don't need to query again
+    # * so that we can cache results from association calls or eager loading
+    def association_proxy_cache
+      @association_proxy_cache ||= {}
     end
 
     # Uses the cypher generated by a QueryProxy object, complete with params, to generate a basic non-cryptographic hash
@@ -60,6 +118,16 @@ module Neo4j::ActiveNode
 
     def association_query_proxy(name, options = {})
       self.class.send(:association_query_proxy, name, {start_object: self}.merge(options))
+    end
+
+    def association_proxy(name, options = {})
+      name = name.to_sym
+      hash = [name, *options].hash
+      association_proxy_cache.fetch(hash) do
+        query_proxy = association_query_proxy(name, options)
+
+        association_proxy_cache[hash] = AssociationProxy.new(query_proxy)
+      end
     end
 
     private
@@ -177,16 +245,16 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
 
-          association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
+          association_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
         end
 
         define_method("#{name}=") do |other_nodes|
-          clear_association_cache
-          association_query_proxy(name).replace_with(other_nodes)
+          association_proxy_cache.clear
+          association_proxy(name).replace_with(other_nodes)
         end
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
-          association_query_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
+          association_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
         end
       end
 
@@ -194,19 +262,17 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil|
           return nil unless self._persisted_obj
 
-          result = association_query_proxy(name, node: node, rel: rel)
-          association_instance_fetch(result.to_cypher_with_params,
-                                     self.class.reflect_on_association(__method__)) { result.first }
+          association_proxy(name, node: node, rel: rel).first
         end
 
         define_method("#{name}=") do |other_node|
           validate_persisted_for_association!
-          clear_association_cache
-          association_query_proxy(name).replace_with(other_node)
+          association_proxy_cache.clear
+          association_proxy(name).replace_with(other_node)
         end
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
-          association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+          association_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
         end
       end
 
@@ -230,6 +296,12 @@ module Neo4j::ActiveNode
                                                     target_classes = association_target_classes(name)
                                                     return query_proxy_result.as_models(target_classes) if target_classes
                                                   end
+      end
+
+      def association_proxy(name, options = {})
+        query_proxy = association_query_proxy(name, options)
+
+        AssociationProxy.new(query_proxy)
       end
 
       def association_target_class(name)
