@@ -10,7 +10,7 @@ module Neo4j::ActiveNode
     class AssociationProxy
       def initialize(query_proxy)
         @query_proxy = query_proxy
-        @cached_result = nil
+        cache_result(nil)
 
         # Represents the thing which can be enumerated
         # default to @query_proxy, but will be set to
@@ -19,7 +19,7 @@ module Neo4j::ActiveNode
       end
 
       # States:
-      # Default 
+      # Default
       def inspect
         if @cached_result
           @cached_result.inspect
@@ -64,7 +64,7 @@ module Neo4j::ActiveNode
         !!@cached_result
       end
 
-      QUERY_PROXY_METHODS = [:<<, :delete] 
+      QUERY_PROXY_METHODS = [:<<, :delete]
       CACHED_RESULT_METHODS = %w()
 
       def method_missing(method_name, *args, &block)
@@ -78,15 +78,10 @@ module Neo4j::ActiveNode
                  when *CACHED_RESULT_METHODS
                    @cached_result
                  else
-                   query_proxy_responds = @query_proxy.respond_to?(method_name)
-                   cached_result_responds = @cached_result && @cached_result.respond_to?(method_name)
-
-                   if query_proxy_responds && cached_result_responds
-                     @cached_result
-                   elsif query_proxy_responds
+                   if @query_proxy.respond_to?(method_name)
                      clear_cache_result
                      @query_proxy
-                   elsif cached_result_responds
+                   elsif @cached_result && @cached_result.respond_to?(method_name)
                      @cached_result
                    else
                      return super
