@@ -5,14 +5,20 @@ require 'shared_examples/saveable_model'
 require 'shared_examples/creatable_model'
 require 'shared_examples/destroyable_model'
 
-class BasicModel
-  include Neo4j::ActiveNode
-  property :name
-  property :a
-  property :b
-end
+describe 'BasicModel' do
+  before(:each) do
+    clear_model_memory_caches
+    delete_db
 
-describe BasicModel do
+    stub_active_node_class('BasicModel') do
+      property :name
+      property :a
+      property :b
+    end
+  end
+
+  subject { BasicModel.new }
+
   it_should_behave_like 'new model'
   it_should_behave_like 'loadable model'
   it_should_behave_like 'saveable model'

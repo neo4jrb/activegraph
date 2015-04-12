@@ -71,6 +71,7 @@ module Neo4j::ActiveNode
         cache_query_proxy if !cached?
 
         target = target_for_missing_method(method_name)
+        clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
 
         return if target.nil?
 
@@ -82,13 +83,11 @@ module Neo4j::ActiveNode
       def target_for_missing_method(method_name)
         case method_name
         when *QUERY_PROXY_METHODS
-          clear_cache_result
           @query_proxy
         when *CACHED_RESULT_METHODS
           @cached_result
         else
           if @query_proxy.respond_to?(method_name)
-            clear_cache_result
             @query_proxy
           elsif @cached_result && @cached_result.respond_to?(method_name)
             @cached_result
@@ -253,8 +252,8 @@ module Neo4j::ActiveNode
           association_proxy(name).replace_with(other_nodes)
         end
 
-        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
-          association_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
+        define_class_method(name) do |node = nil, rel = nil, options = {}|
+          association_proxy(name, {node: node, rel: rel}.merge(options))
         end
       end
 
@@ -271,8 +270,8 @@ module Neo4j::ActiveNode
           association_proxy(name).replace_with(other_node)
         end
 
-        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
-          association_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+        define_class_method(name) do |node = nil, rel = nil, options = {}|
+          association_proxy(name, {node: node, rel: rel}.merge(options))
         end
       end
 
@@ -284,7 +283,7 @@ module Neo4j::ActiveNode
       end
 
       def association_query_proxy(name, options = {})
-        query_proxy = options[:previous_query_proxy] || default_association_query_proxy(name)
+        query_proxy = current_scope || default_association_query_proxy(name)
 
         Neo4j::ActiveNode::Query::QueryProxy.new(association_target_class(name),
                                                  associations[name],

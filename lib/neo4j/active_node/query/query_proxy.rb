@@ -126,7 +126,8 @@ module Neo4j
         # Please check unscoped if you want to remove all previous scopes (including
         # the default_scope) during the execution of a block.
         def scoping
-          previous, @model.current_scope = @model.current_scope, self
+          previous = @model.current_scope
+          @model.current_scope = self
           yield
         ensure
           @model.current_scope = previous
@@ -169,7 +170,7 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          fail 'Can only create associations on associations' unless @association
+          fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify(*other_nodes)
 
           properties = @association.inject_classname(properties)
@@ -224,7 +225,6 @@ module Neo4j
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
-            args[2] = self if @model.association?(method_name) || @model.scope?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
             super

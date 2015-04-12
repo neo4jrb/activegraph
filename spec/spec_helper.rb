@@ -96,6 +96,17 @@ module Neo4jSpecHelpers
       puts message
     end
   end
+
+  def expect_queries(count)
+    start_count = $expect_queries_count
+    yield
+    expect($expect_queries_count - start_count).to eq(count)
+  end
+end
+
+$expect_queries_count = 0
+Neo4j::Server::CypherSession.log_with do |message|
+  $expect_queries_count += 1
 end
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
