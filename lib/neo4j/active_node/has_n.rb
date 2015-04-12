@@ -70,25 +70,30 @@ module Neo4j::ActiveNode
       def method_missing(method_name, *args, &block)
         cache_query_proxy if !cached?
 
-        # Oy....
-        target = case method_name
-                 when *QUERY_PROXY_METHODS
-                   clear_cache_result
-                   @query_proxy
-                 when *CACHED_RESULT_METHODS
-                   @cached_result
-                 else
-                   if @query_proxy.respond_to?(method_name)
-                     clear_cache_result
-                     @query_proxy
-                   elsif @cached_result && @cached_result.respond_to?(method_name)
-                     @cached_result
-                   else
-                     return super
-                   end
-                 end
+        target = target_for_missing_method(method_name)
+
+        return if target.nil?
 
         target.public_send(method_name, *args, &block)
+      end
+
+      private
+
+      def target_for_missing_method(method_name)
+        case method_name
+        when *QUERY_PROXY_METHODS
+          clear_cache_result
+          @query_proxy
+        when *CACHED_RESULT_METHODS
+          @cached_result
+        else
+          if @query_proxy.respond_to?(method_name)
+            clear_cache_result
+            @query_proxy
+          elsif @cached_result && @cached_result.respond_to?(method_name)
+            @cached_result
+          end
+        end
       end
     end
 
