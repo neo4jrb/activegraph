@@ -200,7 +200,7 @@ module Neo4j::Shared
         @magic_typecast_properties ||= {}
       end
 
-      def magic_typecase_properties_keys
+      def magic_typecast_properties_keys
         @magic_typecast_properties_keys ||= magic_typecast_properties.keys
       end
 

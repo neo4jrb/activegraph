@@ -126,7 +126,7 @@ module Neo4j::Shared
       case
       when self.class.serialized_properties_keys.include?(attr)
         serialized_properties[attr]
-      when self.class.magic_typecase_properties_keys.include?(attr)
+      when self.class.magic_typecast_properties_keys.include?(attr)
         self.class.magic_typecast_properties[attr]
       else
         self.class._attribute_type(attr)
