@@ -18,7 +18,7 @@ module Neo4j::Shared
     attr_reader :_persisted_obj
 
     def initialize(attributes = {}, options = {})
-      attributes = process_attributes(attributes)
+      attributes = process_attributes(attributes) unless attributes.empty?
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
