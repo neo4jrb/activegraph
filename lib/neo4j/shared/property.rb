@@ -22,7 +22,7 @@ module Neo4j::Shared
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
-      send_props(writer_method_props) unless writer_method_props.nil?
+      send_props(writer_method_props) unless writer_method_props.empty?
 
       @_persisted_obj = nil
 
@@ -67,6 +67,7 @@ module Neo4j::Shared
     end
 
     def extract_writer_methods!(attributes)
+      return attributes if attributes.empty?
       {}.tap do |writer_method_props|
         attributes.each_key do |key|
           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
