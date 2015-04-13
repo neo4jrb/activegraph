@@ -111,10 +111,6 @@ module Neo4j::Shared
       klass ? klass.new(*values) : values
     end
 
-    def magic_typecast_properties
-      self.class.magic_typecast_properties
-    end
-
     module ClassMethods
       # Defines a property on the class
       #
