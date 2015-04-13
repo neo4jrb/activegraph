@@ -44,6 +44,7 @@ describe Neo4j::ActiveNode::Validations do
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
         session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
         o.should_receive(:init_on_load).with(node, age: '43', name: 'kalle2')
+        allow(Object).to receive(:serialized_properties_keys).and_return([])
         o.save.should be true
       end
 
@@ -53,6 +54,7 @@ describe Neo4j::ActiveNode::Validations do
         o.stub(:_persisted_obj).and_return(node)
         o.stub(:serialized_properties).and_return({})
         node.should_receive(:update_props).and_return(name: 'sune')
+        allow(Object).to receive(:serialized_properties_keys).and_return([])
         o.save.should be true
       end
     end
