@@ -263,6 +263,8 @@ module Neo4j
           _query.send(@match_type, _match_arg(var, with_labels))
         end
 
+        # @param [String, Symbol] var The Cypher identifier to use within the match string
+        # @param [Boolean] with_labels Send "true" to include model labels where possible.
         def _match_arg(var, with_labels)
           if @model && with_labels != false
             labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
