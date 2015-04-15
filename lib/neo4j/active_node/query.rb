@@ -16,7 +16,7 @@ module Neo4j
       # @param var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]
       def query_as(node_var)
-        self.class.query_as(node_var).where("ID(#{node_var})" => self.neo_id)
+        self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)
       end
 
       # Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
@@ -41,8 +41,8 @@ module Neo4j
         #
         # @param var [Symbol, String] The variable name to specify in the query
         # @return [Neo4j::Core::Query]
-        def query_as(var)
-          query_proxy.query_as(var)
+        def query_as(var, with_labels = true)
+          query_proxy.query_as(var, with_labels)
         end
 
         Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|

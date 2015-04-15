@@ -29,7 +29,7 @@ describe Neo4j::ActiveNode::Query do
   end
 
   describe '.query_as' do
-    it 'generates a basic query' do
+    it 'generates a basic query with labels' do
       @class_a.query_as(:q).to_cypher.should == 'MATCH (q:`Person`)'
     end
 
@@ -39,12 +39,12 @@ describe Neo4j::ActiveNode::Query do
   end
 
   describe '#query_as' do
-    it 'generates a basic query' do
-      @class_a.new.query_as(:q).to_cypher.should == 'MATCH (q:`Person`) WHERE (ID(q) = {ID_q})'
+    it 'generates a basic query with labels' do
+      @class_a.new.query_as(:q).to_cypher.should == 'MATCH q WHERE (ID(q) = {ID_q})'
     end
 
     it 'can be built upon' do
-      @class_a.new.query_as(:q).match('q--p').return(p: :name).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE (ID(q) = {ID_q}) RETURN p.name'
+      @class_a.new.query_as(:q).match('q--p').return(p: :name).to_cypher.should == 'MATCH q, q--p WHERE (ID(q) = {ID_q}) RETURN p.name'
     end
   end
 end
