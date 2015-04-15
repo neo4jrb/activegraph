@@ -97,6 +97,7 @@ module Neo4jSpecHelpers
     end
   end
 
+  # rubocop:disable Style/GlobalVars
   def expect_queries(count)
     start_count = $expect_queries_count
     yield
@@ -105,9 +106,10 @@ module Neo4jSpecHelpers
 end
 
 $expect_queries_count = 0
-Neo4j::Server::CypherSession.log_with do |message|
+Neo4j::Server::CypherSession.log_with do |_message|
   $expect_queries_count += 1
 end
+# rubocop:enable Style/GlobalVars
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
 
@@ -155,15 +157,18 @@ module ActiveNodeRelStubHelpers
   end
 
   def named_class(class_name, superclass = nil, &block)
+    code = <<-CODE
     Class.new(superclass || Object) do
-      @class_name = class_name
       class << self
-        attr_reader :class_name
-        alias_method :name, :class_name
+        def name
+          '#{class_name}'
+        end
       end
 
       module_eval(&block) if block
     end
+CODE
+    eval code
   end
 end
 

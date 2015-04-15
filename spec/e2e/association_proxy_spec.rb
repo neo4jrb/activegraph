@@ -3,6 +3,7 @@ require 'spec_helper'
 describe 'Association Proxy' do
   before(:each) do
     clear_model_memory_caches
+    delete_db
 
     stub_active_node_class('Student') do
       property :name
@@ -40,12 +41,29 @@ describe 'Association Proxy' do
   end
 
   it 'Should only make one query per association' do
-    expect_queries(2) do
-      billy.lessons.each do |lesson|
-        lesson.exams_given.each do |exam|
-          # nil
-        end
-      end
+    expect(billy.lessons.exams_given.to_a).to match_array([math_exam, science_exam])
+
+    expect_queries(3) do
+      grouped_lessons = billy.lessons.group_by(&:subject)
+
+      expect(billy.lessons.to_a).to match_array([math, science])
+      expect(grouped_lessons['math'][0].exams_given.to_a).to eq([math_exam])
+      expect(grouped_lessons['science'][0].exams_given.to_a).to eq([science_exam])
+
+      expect(grouped_lessons['math'][0].students.to_a).to eq([billy])
+      expect(grouped_lessons['science'][0].students.to_a).to eq([billy])
+    end
+  end
+
+  it 'Should allow for loading of associations with one query' do
+    expect_queries(1) do
+      grouped_lessons = billy.lessons.with_associations(:exams_given, :students).group_by(&:subject)
+
+      expect(grouped_lessons['math'][0].students).to eq([billy])
+      expect(grouped_lessons['math'][0].exams_given).to eq([math_exam])
+
+      expect(grouped_lessons['science'][0].students).to eq([billy])
+      expect(grouped_lessons['science'][0].exams_given).to eq([science_exam])
     end
   end
 end

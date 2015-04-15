@@ -17,6 +17,24 @@ module Neo4j
           pluck(*pluck_vars).each(&block)
         end
 
+        def with_associations(*spec)
+          query = self.query_as(:previous).return(:previous)
+
+          spec.each do |association_name|
+            association = @model.associations[association_name]
+            query = query.optional_match("previous#{association.arrow_cypher}#{association_name}")
+          end
+
+          return_object_clause = '[' + spec.map { |n| "collect(#{n})" }.join(',') + ']'
+          query.pluck(:previous, return_object_clause).map do |record, eager_data|
+            record.tap do |record|
+              eager_data.each_with_index do |eager_records, index|
+                record.send(spec[index]).cache_result(eager_records)
+              end
+            end
+          end
+        end
+
         # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
         # For example, to return the relationship between a given student and their lessons:
         #   student.lessons.each_rel do |rel|

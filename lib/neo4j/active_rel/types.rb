@@ -27,8 +27,8 @@ module Neo4j
       module ClassMethods
         include Neo4j::Shared::RelTypeConverters
 
-        def inherited(other)
-          other.type other.name, true
+        def inherited(subclass)
+          subclass.type subclass.name, true
         end
 
         # @param type [String] sets the relationship type when creating relationships via this class
