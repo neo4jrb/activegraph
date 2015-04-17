@@ -8,9 +8,9 @@ module Neo4j::ActiveNode
     # It uses a QueryProxy to get results
     # But also caches results and can have results cached on it
     class AssociationProxy
-      def initialize(query_proxy)
+      def initialize(query_proxy, cached_result = nil)
         @query_proxy = query_proxy
-        cache_result(nil)
+        cache_result(cached_result)
 
         # Represents the thing which can be enumerated
         # default to @query_proxy, but will be set to
@@ -69,7 +69,7 @@ module Neo4j::ActiveNode
         !!@cached_result
       end
 
-      QUERY_PROXY_METHODS = [:<<, :delete, :with_associations]
+      QUERY_PROXY_METHODS = [:<<, :delete]
       CACHED_RESULT_METHODS = []
 
       def method_missing(method_name, *args, &block)
@@ -84,7 +84,25 @@ module Neo4j::ActiveNode
         target.public_send(method_name, *args, &block)
       end
 
+      def with_associations(*spec)
+        return_object_clause = '[' + spec.map { |n| "collect(#{n})" }.join(',') + ']'
+        query_from_association_spec(spec).pluck(:previous, return_object_clause).map do |record, eager_data|
+          eager_data.each_with_index do |eager_records, index|
+            record.send(spec[index]).cache_result(eager_records)
+          end
+
+          record
+        end
+      end
+
       private
+
+      def query_from_association_spec(spec)
+        spec.inject(@query_proxy.query_as(:previous).return(:previous)) do |query, association_name|
+          association = @query_proxy.model.associations[association_name]
+          query.optional_match("previous#{association.arrow_cypher}#{association_name}")
+        end
+      end
 
       def target_for_missing_method(method_name)
         case method_name
@@ -136,37 +154,35 @@ module Neo4j::ActiveNode
       name = name.to_sym
       hash = [name, options.values_at(:node, :rel)].hash
 
-      association_proxy = AssociationProxy.new(association_query_proxy(name, options))
-
       association_proxy_cache_fetch(hash) do
         if previous_association_proxy = self.instance_variable_get('@association_proxy')
-          result_by_previous = previous_association_proxy_results_by_previous(previous_association_proxy, name)
+          result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
 
-          value = nil
-          previous_association_proxy.result.each do |object|
-            association_proxy.clone.tap do |association_proxy|
-              association_proxy.cache_result(result_by_previous[object])
-              object.association_proxy_cache[hash] = association_proxy
-              value = association_proxy if self == object
-            end
+          previous_association_proxy.result.inject(nil) do |proxy_to_return, object|
+            proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
+
+            object.association_proxy_cache[hash] = proxy
+
+            (self == object ? proxy : proxy_to_return)
           end
-
-          value
         else
-          association_proxy
+          fresh_association_proxy(name, options)
         end
       end
     end
 
-
     private
 
+    def fresh_association_proxy(name, options = {}, cached_result = nil)
+      AssociationProxy.new(association_query_proxy(name, options), cached_result)
+    end
+
     #
-    def previous_association_proxy_results_by_previous(association_proxy, association_name)
+    def previous_association_proxy_results_by_previous_id(association_proxy, association_name)
       query_proxy = self.class.as(:previous).where(neo_id: association_proxy.result.map(&:neo_id))
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next)
 
-      Hash[*query_proxy.pluck(:previous, 'collect(next)').flatten(1)]
+      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
     end
 
     def validate_persisted_for_association!

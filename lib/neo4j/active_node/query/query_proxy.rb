@@ -328,9 +328,7 @@ module Neo4j
 
         def build_deeper_query_proxy(method, args)
           new_link.tap do |new_query|
-            Link.for_args(@model, method, args).each do |link|
-              new_query._add_links(link)
-            end
+            Link.for_args(@model, method, args).each { |link| new_query._add_links(link) }
           end
         end
       end
