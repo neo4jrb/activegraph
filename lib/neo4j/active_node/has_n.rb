@@ -92,7 +92,7 @@ module Neo4j::ActiveNode
       end
 
       def associations
-        @associations || {}
+        @associations ||= {}
       end
 
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash

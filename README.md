@@ -12,7 +12,7 @@
 
 ## Get Support
 
-  [![StackOverflow](https://img.shields.io/badge/StackOverflow-Ask%20a%20question!-blue.svg)](http://stackoverflow.com/questions/ask?tags=neo4j.rb)  [![Gitter](https://img.shields.io/badge/Gitter-Join%20our%20chat!-blue.svg)](https://gitter.im/neo4jrb/neo4j?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Twitter](https://img.shields.io/badge/Twitter-Tweet%20with%20us!-blue.svg)](https://twitter.com/neo4jrb)  [![Mailing list](https://img.shields.io/badge/Mailing%20list-Mail%20us!-blue.svg)](https://groups.google.com/forum/#!forum/neo4jrb)
+  [![StackOverflow](https://img.shields.io/badge/StackOverflow-Ask%20a%20question!-blue.svg)](http://stackoverflow.com/questions/ask?tags=neo4j.rb+neo4j+ruby)  [![Gitter](https://img.shields.io/badge/Gitter-Join%20our%20chat!-blue.svg)](https://gitter.im/neo4jrb/neo4j?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Twitter](https://img.shields.io/badge/Twitter-Tweet%20with%20us!-blue.svg)](https://twitter.com/neo4jrb)  [![Mailing list](https://img.shields.io/badge/Mailing%20list-Mail%20us!-blue.svg)](https://groups.google.com/forum/#!forum/neo4jrb)
 
 # Introduction
 
@@ -20,10 +20,12 @@ Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph da
 
 With this gem you not only do you get a convenient higher level wrapper around Neo4j, but you have access to a powerful high-level query building interface which lets you take advantage of the power of Neo4j like this:
 
-    # Break down the top countries where friends' favorite beers come from
-    person.friends.favorite_beers.country_of_origin(:country).
-      order('count(country) DESC').
-      pluck(:country, count: 'count(country)')
+```ruby
+# Break down the top countries where friends' favorite beers come from
+person.friends.favorite_beers.country_of_origin(:country).
+  order('count(country) DESC').
+  pluck(:country, count: 'count(country)')
+```
 
 For a general overview see our website: http://neo4jrb.io/
 

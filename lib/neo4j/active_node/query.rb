@@ -16,7 +16,7 @@ module Neo4j
       # @param var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]
       def query_as(node_var)
-        self.class.query_as(node_var).where("ID(#{node_var})" => self.neo_id)
+        self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)
       end
 
       # Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy source_object set to the node instance.
@@ -39,10 +39,12 @@ module Neo4j
         #   # Generates: MATCH (person:Person), person-[:owned]-car WHERE person.age > 30 RETURN car.registration_number
         #   Person.query_as(:person).where('person.age > 30').match('person-[:owned]-car').return(car: :registration_number)
         #
-        # @param var [Symbol, String] The variable name to specify in the query
+        # @param [Symbol, String] var The variable name to specify in the query
+        # @param [Boolean] with_labels Should labels be used to build the match? There are situations (neo_id used to filter,
+        # an early Cypher match has already filtered results) where including labels will degrade performance.
         # @return [Neo4j::Core::Query]
-        def query_as(var)
-          query_proxy.query_as(var)
+        def query_as(var, with_labels = true)
+          query_proxy.query_as(var, with_labels)
         end
 
         Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
