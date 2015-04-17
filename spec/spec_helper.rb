@@ -157,18 +157,15 @@ module ActiveNodeRelStubHelpers
   end
 
   def named_class(class_name, superclass = nil, &block)
-    code = <<-CODE
     Class.new(superclass || Object) do
+      @class_name = class_name
       class << self
-        def name
-          '#{class_name}'
-        end
+        attr_reader :class_name
+        alias_method :name, :class_name
       end
 
       module_eval(&block) if block
     end
-CODE
-    eval code
   end
 end
 
