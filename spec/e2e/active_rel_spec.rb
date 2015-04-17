@@ -70,26 +70,35 @@ describe 'ActiveRel' do
   end
 
   describe 'types' do
-    before(:each) do
-      stub_active_rel_class('AutomaticRelType') do
-        from_class 'FromClass'
-        to_class 'ToClass'
-      end
+    # This is the one case I've found so far which you can't use stub_*
+    # This is because we're testing the `inherited` hook, and when you stub
+    # it is with an anonymous class.  Wtih the anonymous classes, they don't
+    # respond to Class.name until after that method is defined, but the inherited
+    # hook runs before that point
+    # The class constants here are long to disambiguate from other constants in
+    # the namespace
+    class ActiveRelSpecTypesAutomaticRelType
+      include Neo4j::ActiveRel
 
-      stub_named_class('InheritedRelClass', AutomaticRelType)
+      from_class 'FromClass'
+      to_class 'ToClass'
     end
 
+    class ActiveRelSpecTypesInheritedRelClass < ActiveRelSpecTypesAutomaticRelType
+    end
+
+
     it 'allows omission of `type`' do
-      expect(AutomaticRelType._type).to eq 'AUTOMATIC_REL_TYPE'
+      expect(ActiveRelSpecTypesAutomaticRelType._type).to eq 'ACTIVE_REL_SPEC_TYPES_AUTOMATIC_REL_TYPE'
     end
 
     it 'uses `type` to override the default type' do
-      AutomaticRelType.type 'NEW_TYPE'
-      expect(AutomaticRelType._type).to eq 'NEW_TYPE'
+      ActiveRelSpecTypesAutomaticRelType.type 'NEW_TYPE'
+      expect(ActiveRelSpecTypesAutomaticRelType._type).to eq 'NEW_TYPE'
     end
 
     it 'uses the defined class name when inheriting' do
-      expect(InheritedRelClass._type).to eq 'INHERITED_REL_CLASS'
+      expect(ActiveRelSpecTypesInheritedRelClass._type).to eq 'ACTIVE_REL_SPEC_TYPES_INHERITED_REL_CLASS'
     end
   end
 
