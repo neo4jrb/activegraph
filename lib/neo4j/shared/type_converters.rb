@@ -109,10 +109,9 @@ module Neo4j::Shared
 
     def convert_properties_to(medium, properties)
       converter = medium == :ruby ? :to_ruby : :to_db
-
-      properties.each_with_object({}) do |(attr, value), new_attributes|
-        next new_attributes if skip_conversion?(attr, value)
-        new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+      properties.each_pair do |attr, value|
+        next if skip_conversion?(attr, value)
+        properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
       end
     end
 
@@ -125,9 +124,9 @@ module Neo4j::Shared
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
     def primitive_type(attr)
       case
-      when serialized_properties.key?(attr)
+      when self.class.serialized_properties_keys.include?(attr)
         serialized_properties[attr]
-      when magic_typecast_properties.key?(attr)
+      when self.class.magic_typecast_properties_keys.include?(attr)
         self.class.magic_typecast_properties[attr]
       else
         self.class._attribute_type(attr)
@@ -136,10 +135,12 @@ module Neo4j::Shared
 
     # Returns true if the property isn't defined in the model or it's both nil and unchanged.
     def skip_conversion?(attr, value)
-      !self.class.attributes[attr] || (value.nil? && !changed_attributes.key?(attr))
+      !self.class.attributes[attr] || (value.nil? && !changed_attributes[attr])
     end
 
     class << self
+      attr_reader :converters
+
       def included(_)
         return if @converters
         @converters = {}
@@ -150,6 +151,7 @@ module Neo4j::Shared
       end
 
       def typecaster_for(primitive_type)
+        return nil if primitive_type.nil?
         converters.key?(primitive_type) ? converters[primitive_type] : nil
       end
 
@@ -163,8 +165,6 @@ module Neo4j::Shared
       def register_converter(converter)
         converters[converter.convert_type] = converter
       end
-
-      attr_reader :converters
     end
   end
 end

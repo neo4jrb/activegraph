@@ -17,10 +17,15 @@ module Neo4j::Shared
 
     module ClassMethods
       def serialized_properties
-        @serialize || {}
+        @serialize ||= {}
+      end
+
+      def serialized_properties_keys
+        @serialized_property_keys ||= serialized_properties.keys
       end
 
       def serialized_properties=(serialize_hash)
+        @serialized_property_keys = nil
         @serialize = serialize_hash.clone
       end
 

@@ -86,8 +86,8 @@ module Neo4j
         # and work with it from the more powerful (but less friendly) Neo4j::Core::Query.
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
-        def query_as(var)
-          result_query = @chain.inject(base_query(var).params(@params)) do |query, link|
+        def query_as(var, with_label = true)
+          result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
             args = link.args(var, rel_var)
 
             if args.is_a?(Array)
@@ -100,19 +100,18 @@ module Neo4j
           result_query.tap { |query| query.proxy_chain_level = _chain_level }
         end
 
-        def base_query(var)
+        def base_query(var, with_labels = true)
           if @association
             chain_var = _association_chain_var
             (_association_query_start(chain_var) & _query).send(@match_type,
                                                                 "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
           else
-            starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+            starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
           end
         end
 
         def _model_label_string
           return if !@model
-
           @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
         end
 
@@ -264,12 +263,14 @@ module Neo4j
           @chain += links
         end
 
-        def _query_model_as(var)
-          _query.send(@match_type, _match_arg(var))
+        def _query_model_as(var, with_labels = true)
+          _query.send(@match_type, _match_arg(var, with_labels))
         end
 
-        def _match_arg(var)
-          if @model
+        # @param [String, Symbol] var The Cypher identifier to use within the match string
+        # @param [Boolean] with_labels Send "true" to include model labels where possible.
+        def _match_arg(var, with_labels)
+          if @model && with_labels != false
             labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
             {var => labels}
           else

@@ -18,11 +18,11 @@ module Neo4j::Shared
     attr_reader :_persisted_obj
 
     def initialize(attributes = {}, options = {})
-      attributes = process_attributes(attributes)
+      attributes = process_attributes(attributes) unless attributes.empty?
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
-      send_props(writer_method_props) unless writer_method_props.nil?
+      send_props(writer_method_props) unless writer_method_props.empty?
 
       @_persisted_obj = nil
 
@@ -38,8 +38,8 @@ module Neo4j::Shared
     alias_method :[], :read_attribute
 
     def default_properties=(properties)
-      keys = self.class.default_properties.keys
-      @default_properties = properties.select { |key| keys.include?(key) }
+      default_property_keys = self.class.default_properties_keys
+      @default_properties = properties.select { |key| default_property_keys.include?(key) }
     end
 
     def default_property(key)
@@ -61,11 +61,13 @@ module Neo4j::Shared
     # Changes attributes hash to remove relationship keys
     # Raises an error if there are any keys left which haven't been defined as properties on the model
     def validate_attributes!(attributes)
+      return attributes if attributes.empty?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end
 
     def extract_writer_methods!(attributes)
+      return attributes if attributes.empty?
       {}.tap do |writer_method_props|
         attributes.each_key do |key|
           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
@@ -107,10 +109,6 @@ module Neo4j::Shared
       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
       klass = field[:type]
       klass ? klass.new(*values) : values
-    end
-
-    def magic_typecast_properties
-      self.class.magic_typecast_properties
     end
 
     module ClassMethods
@@ -167,10 +165,16 @@ module Neo4j::Shared
         @default_property ||= {}
       end
 
+      def default_properties_keys
+        @default_properties_keys ||= default_properties.keys
+      end
+
       def reset_default_properties(name_to_keep)
         default_properties.each_key do |property|
+          @default_properties_keys = nil
           undef_method(property) unless property == name_to_keep
         end
+        @default_properties_keys = nil
         @default_property = {}
       end
 
@@ -191,6 +195,10 @@ module Neo4j::Shared
 
       def magic_typecast_properties
         @magic_typecast_properties ||= {}
+      end
+
+      def magic_typecast_properties_keys
+        @magic_typecast_properties_keys ||= magic_typecast_properties.keys
       end
 
       private
@@ -233,6 +241,7 @@ module Neo4j::Shared
         typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
         return unless typecaster && typecaster.respond_to?(:primitive_type)
         magic_typecast_properties[name] = options[:type]
+        @magic_typecast_properties_keys = nil
         options[:type] = typecaster.primitive_type
         options[:typecaster] = typecaster
       end

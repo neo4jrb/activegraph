@@ -32,9 +32,11 @@ describe Neo4j::ActiveNode::Persistence do
       Neo4j::Session.stub(:current).and_return(session)
     end
 
+    # TODO: This should be an e2e test. This stubbing...
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:serialized_properties).and_return({})
+      allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
       clazz.stub(:cached_class?).and_return(false)
       clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
@@ -57,6 +59,8 @@ describe Neo4j::ActiveNode::Persistence do
       o.name = 'sune'
       o.stub(:serialized_properties).and_return({})
       o.stub(:_persisted_obj).and_return(node)
+      allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
+
       expect(node).to receive(:update_props).and_return(name: 'sune')
       o.save
     end
@@ -76,6 +80,8 @@ describe Neo4j::ActiveNode::Persistence do
         clazz.stub(:mapped_label_names).and_return(:MyClass)
         expect(session).to receive(:create_node).with(end_props, :MyClass).and_return(node)
         expect(o).to receive(:init_on_load).with(node, end_props)
+        allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
+
         expect(node).to receive(:props).and_return(end_props)
 
         o.save
