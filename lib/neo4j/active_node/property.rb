@@ -12,7 +12,7 @@ module Neo4j::ActiveNode
       # Extracts keys from attributes hash which are associations of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_association_attributes!(attributes)
-        attributes.each_with_object({}) do |(key, value), result|
+        attributes.each_with_object({}) do |(key, _), result|
           result[key] = attributes.delete(key) if self.association?(key)
         end
       end
