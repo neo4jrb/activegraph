@@ -9,17 +9,12 @@ module Neo4j::ActiveNode
     end
 
     module ClassMethods
-      # Extracts keys from attributes hash which are relationships of the model
+      # Extracts keys from attributes hash which are associations of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_association_attributes!(attributes)
-        attributes.each_key do |key|
-          if self.association?(key)
-            @_association_attributes ||= {}
-            @_association_attributes[key] = attributes.delete(key)
-          end
+        attributes.each_with_object({}) do |(key, value), result|
+          result[key] = attributes.delete(key) if self.association?(key)
         end
-        # We want to return nil if this was not set, we do not want to return an empty array
-        @_association_attributes
       end
     end
   end
