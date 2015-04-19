@@ -95,6 +95,10 @@ module Neo4j::ActiveNode
         @associations ||= {}
       end
 
+      def associations_keys
+        @associations_keys ||= []
+      end
+
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
         klass.instance_variable_set(:@associations, associations.clone)
@@ -265,6 +269,7 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
+        associations_keys << name
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
           @associations ||= {}
           @associations[name] = association
