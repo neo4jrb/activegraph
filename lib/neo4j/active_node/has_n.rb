@@ -96,12 +96,13 @@ module Neo4j::ActiveNode
       end
 
       def associations_keys
-        @associations_keys ||= []
+        @associations_keys ||= associations.keys
       end
 
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
         klass.instance_variable_set(:@associations, associations.clone)
+        @associations_keys = klass.associations_keys.clone
         super
       end
 
