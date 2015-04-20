@@ -4,6 +4,8 @@ Initialize
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -63,10 +65,9 @@ Methods
 
      def convert_properties_to(medium, properties)
        converter = medium == :ruby ? :to_ruby : :to_db
-     
-       properties.each_with_object({}) do |(attr, value), new_attributes|
-         next new_attributes if skip_conversion?(attr, value)
-         new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+       properties.each_pair do |attr, value|
+         next if skip_conversion?(attr, value)
+         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
        end
      end
 
@@ -83,7 +84,7 @@ Methods
        self.class.extract_association_attributes!(properties)
        @_persisted_obj = persisted_node
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge(properties.stringify_keys)
+       @attributes = attributes.merge!(properties.stringify_keys)
        self.default_properties = properties
        @attributes = convert_properties_to :ruby, @attributes
      end

@@ -3,6 +3,10 @@ Query
 
 
 
+Helper methods to return Neo4j::Core::Query objects.  A query object can be used to successively build a cypher query
+
+   person.query_as(:n).match('n-[:friend]-o').return(o: :name) # Return the names of all the person's friends
+
 
 .. toctree::
    :maxdepth: 3
@@ -62,13 +66,13 @@ Methods
 .. _`Neo4j/ActiveNode/Query#as`:
 
 **#as**
-  Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
+  Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy source_object set to the node instance.
   This method does not exist within QueryProxy and can only be used to start a new chain.
 
   .. hidden-code-block:: ruby
 
      def as(node_var)
-       self.class.query_proxy(node: node_var, caller: self).match_to(self)
+       self.class.query_proxy(node: node_var, source_object: self).match_to(self)
      end
 
 
@@ -81,7 +85,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def query_as(node_var)
-       self.class.query_as(node_var).where("ID(#{node_var})" => self.neo_id)
+       self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)
      end
 
 

@@ -3,6 +3,8 @@ ActiveModel
 
 
 
+:nodoc:
+
 
 .. toctree::
    :maxdepth: 3

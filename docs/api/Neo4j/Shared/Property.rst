@@ -4,6 +4,8 @@ Property
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -14,8 +16,6 @@ Property
    Property/MultiparameterAssignmentError
 
    Property/IllegalPropertyError
-
-   
 
    
 
@@ -126,8 +126,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 
@@ -153,11 +153,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def initialize(attributes = {}, options = {})
-       attributes = process_attributes(attributes)
+       attributes = process_attributes(attributes) unless attributes.empty?
        @relationship_props = self.class.extract_association_attributes!(attributes)
        writer_method_props = extract_writer_methods!(attributes)
        validate_attributes!(attributes)
-       send_props(writer_method_props) unless writer_method_props.nil?
+       send_props(writer_method_props) unless writer_method_props.empty?
      
        @_persisted_obj = nil
      

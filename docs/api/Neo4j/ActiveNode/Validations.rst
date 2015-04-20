@@ -3,6 +3,8 @@ Validations
 
 
 
+This mixin replace the original save method and performs validation before the save.
+
 
 .. toctree::
    :maxdepth: 3

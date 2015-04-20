@@ -4,10 +4,16 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
+
+   
 
    
 
@@ -50,7 +56,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:116 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L116>`_
+  * `lib/neo4j/shared/property.rb:114 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L114>`_
 
 
 
@@ -88,6 +94,19 @@ Methods
 
      def default_properties
        @default_property ||= {}
+     end
+
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#default_properties_keys`:
+
+**#default_properties_keys**
+  
+
+  .. hidden-code-block:: ruby
+
+     def default_properties_keys
+       @default_properties_keys ||= default_properties.keys
      end
 
 
@@ -134,6 +153,19 @@ Methods
 
 
 
+.. _`Neo4j/Shared/Property/ClassMethods#magic_typecast_properties_keys`:
+
+**#magic_typecast_properties_keys**
+  
+
+  .. hidden-code-block:: ruby
+
+     def magic_typecast_properties_keys
+       @magic_typecast_properties_keys ||= magic_typecast_properties.keys
+     end
+
+
+
 .. _`Neo4j/Shared/Property/ClassMethods#property`:
 
 **#property**
@@ -162,8 +194,10 @@ Methods
 
      def reset_default_properties(name_to_keep)
        default_properties.each_key do |property|
+         @default_properties_keys = nil
          undef_method(property) unless property == name_to_keep
        end
+       @default_properties_keys = nil
        @default_property = {}
      end
 

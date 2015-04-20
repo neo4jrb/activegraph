@@ -4,6 +4,8 @@ QueryProxyMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -164,7 +166,7 @@ Methods
 
      def delete(node)
        self.match_to(node).query.delete(rel_var).exec
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -184,7 +186,7 @@ Methods
          rescue Neo4j::Session::CypherError
            self.query.delete(target).exec
          end
-         clear_caller_cache
+         clear_source_object_cache
        end
      end
 
@@ -212,7 +214,7 @@ Methods
 
      def destroy(node)
        self.rels_to(node).map!(&:destroy)
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -367,7 +369,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def optional(association, node_var = nil, rel_var = nil)
-       self.send(association, node_var, rel_var, nil, optional: true)
+       self.send(association, node_var, rel_var, optional: true)
      end
 
 

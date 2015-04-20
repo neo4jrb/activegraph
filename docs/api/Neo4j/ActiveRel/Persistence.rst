@@ -4,6 +4,8 @@ Persistence
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -69,6 +71,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Persistence#association_proxy_cache`:
+
+**#association_proxy_cache**
+  Should probably find a way to not need this
+
+  .. hidden-code-block:: ruby
+
+     def association_proxy_cache
+       {}
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Persistence#cache_key`:
 
 **#cache_key**
@@ -88,17 +103,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel/Persistence#clear_association_cache`:
-
-**#clear_association_cache**
-  
-
-  .. hidden-code-block:: ruby
-
-     def clear_association_cache; end
-
-
-
 .. _`Neo4j/ActiveRel/Persistence#convert_properties_to`:
 
 **#convert_properties_to**
@@ -108,10 +112,9 @@ Methods
 
      def convert_properties_to(medium, properties)
        converter = medium == :ruby ? :to_ruby : :to_db
-     
-       properties.each_with_object({}) do |(attr, value), new_attributes|
-         next new_attributes if skip_conversion?(attr, value)
-         new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+       properties.each_pair do |attr, value|
+         next if skip_conversion?(attr, value)
+         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
        end
      end
 
@@ -292,7 +295,7 @@ Methods
 
      def reload
        return self if new_record?
-       clear_association_cache
+       association_proxy_cache.clear
        changed_attributes && changed_attributes.clear
        unless reload_from_database
          @_deleted = true

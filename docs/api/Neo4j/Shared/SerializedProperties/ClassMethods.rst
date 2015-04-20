@@ -4,10 +4,14 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
 
    
 
@@ -63,7 +67,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def serialized_properties
-       @serialize || {}
+       @serialize ||= {}
      end
 
 
@@ -76,7 +80,21 @@ Methods
   .. hidden-code-block:: ruby
 
      def serialized_properties=(serialize_hash)
+       @serialized_property_keys = nil
        @serialize = serialize_hash.clone
+     end
+
+
+
+.. _`Neo4j/Shared/SerializedProperties/ClassMethods#serialized_properties_keys`:
+
+**#serialized_properties_keys**
+  
+
+  .. hidden-code-block:: ruby
+
+     def serialized_properties_keys
+       @serialized_property_keys ||= serialized_properties.keys
      end
 
 

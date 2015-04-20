@@ -3,6 +3,10 @@ RelTypeConverters
 
 
 
+This module controls changes to relationship type based on Neo4j::Config.transform_rel_type.
+It's used whenever a rel type is automatically determined based on ActiveRel model name or
+association type.
+
 
 .. toctree::
    :maxdepth: 3

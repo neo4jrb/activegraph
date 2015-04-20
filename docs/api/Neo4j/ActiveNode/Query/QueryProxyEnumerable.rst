@@ -3,13 +3,13 @@ QueryProxyEnumerable
 
 
 
+Methods related to returning nodes and rels from QueryProxy
+
 
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
-
-   
 
    
 
@@ -70,13 +70,12 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def each(node = true, rel = nil, &_block)
-       if node && rel
-         enumerable_query(identity, rel_var).each { |returned_node, returned_rel| yield returned_node, returned_rel }
-       else
-         pluck_this = !rel ? identity : @rel_var
-         enumerable_query(pluck_this).each { |returned_node| yield returned_node }
-       end
+     def each(node = true, rel = nil, &block)
+       pluck_vars = []
+       pluck_vars << identity if node
+       pluck_vars << @rel_var if rel
+     
+       pluck(*pluck_vars).each(&block)
      end
 
 

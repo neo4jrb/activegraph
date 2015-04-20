@@ -3,11 +3,19 @@ Wrapper
 
 
 
+The wrapping process is what transforms a raw CypherNode or EmbeddedNode from Neo4j::Core into a healthy ActiveNode (or ActiveRel) object.
+
 
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
+
+   
+
+   
 
    
 
@@ -24,6 +32,8 @@ Constants
 ---------
 
 
+
+  * CONSTANTS_FOR_LABELS_CACHE
 
 
 

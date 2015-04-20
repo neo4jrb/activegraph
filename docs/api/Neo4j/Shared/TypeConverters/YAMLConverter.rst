@@ -3,6 +3,8 @@ YAMLConverter
 
 
 
+Converts hash to/from YAML
+
 
 .. toctree::
    :maxdepth: 3

@@ -4,10 +4,14 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
 
    
 
@@ -52,7 +56,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:79 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L79>`_
+  * `lib/neo4j/active_node/has_n.rb:206 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L206>`_
 
 
 
@@ -85,7 +89,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def associations
-       @associations || {}
+       @associations ||= {}
      end
 
 

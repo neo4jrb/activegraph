@@ -3,6 +3,8 @@ JSONConverter
 
 
 
+Converts hash to/from JSON
+
 
 .. toctree::
    :maxdepth: 3

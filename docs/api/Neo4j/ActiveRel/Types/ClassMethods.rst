@@ -4,6 +4,8 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -107,8 +109,8 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def inherited(other)
-       other.type other.name, true
+     def inherited(subclass)
+       subclass.type subclass.name, true
      end
 
 

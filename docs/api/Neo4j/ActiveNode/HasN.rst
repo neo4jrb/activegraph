@@ -4,6 +4,8 @@ HasN
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -11,9 +13,7 @@ HasN
 
    HasN/NonPersistedNodeError
 
-   
-
-   
+   HasN/AssociationProxy
 
    
 
@@ -63,83 +63,67 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/HasN#association_cache`:
+.. _`Neo4j/ActiveNode/HasN#association_proxy`:
 
-**#association_cache**
-  Returns the current association cache. It is in the format
-  { :association_name => { :hash_of_cypher_string => [collection] }}
-
-  .. hidden-code-block:: ruby
-
-     def association_cache
-       @association_cache ||= {}
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN#association_instance_fetch`:
-
-**#association_instance_fetch**
+**#association_proxy**
   
 
   .. hidden-code-block:: ruby
 
-     def association_instance_fetch(cypher_string, association_obj, &block)
-       association_instance_get(cypher_string, association_obj) || association_instance_set(cypher_string, block.call, association_obj)
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN#association_instance_get`:
-
-**#association_instance_get**
-  Returns the specified association instance if it responds to :loaded?, nil otherwise.
-
-  .. hidden-code-block:: ruby
-
-     def association_instance_get(cypher_string, association_obj)
-       return if association_cache.nil? || association_cache.empty?
-       lookup_obj = cypher_hash(cypher_string)
-       reflection = association_reflection(association_obj)
-       return if reflection.nil?
-       association_cache[reflection.name] ? association_cache[reflection.name][lookup_obj] : nil
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN#association_instance_get_by_reflection`:
-
-**#association_instance_get_by_reflection**
-  
-
-  .. hidden-code-block:: ruby
-
-     def association_instance_get_by_reflection(reflection_name)
-       association_cache[reflection_name]
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN#association_instance_set`:
-
-**#association_instance_set**
-  Caches an association result. Unlike ActiveRecord, which stores results in @association_cache using { :association_name => [collection_result] },
-  ActiveNode stores it using { :association_name => { :hash_string_of_cypher => [collection_result] }}.
-  This is necessary because an association name by itself does not take into account :where, :limit, :order, etc,... so it's prone to error.
-
-  .. hidden-code-block:: ruby
-
-     def association_instance_set(cypher_string, collection_result, association_obj)
-       return collection_result if Neo4j::Transaction.current
-       cache_key = cypher_hash(cypher_string)
-       reflection = association_reflection(association_obj)
-       return if reflection.nil?
-       if @association_cache[reflection.name]
-         @association_cache[reflection.name][cache_key] = collection_result
-       else
-         @association_cache[reflection.name] = {cache_key => collection_result}
+     def association_proxy(name, options = {})
+       name = name.to_sym
+       hash = [name, options.values_at(:node, :rel)].hash
+     
+       association_proxy_cache_fetch(hash) do
+         if previous_association_proxy = self.instance_variable_get('@association_proxy')
+           result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
+     
+           previous_association_proxy.result.inject(nil) do |proxy_to_return, object|
+             proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
+     
+             object.association_proxy_cache[hash] = proxy
+     
+             (self == object ? proxy : proxy_to_return)
+           end
+         else
+           fresh_association_proxy(name, options)
+         end
        end
-       collection_result
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN#association_proxy_cache`:
+
+**#association_proxy_cache**
+  Returns the current AssociationProxy cache for the association cache. It is in the format
+  { :association_name => AssociationProxy}
+  This is so that we
+  * don't need to re-build the QueryProxy objects
+  * also because the QueryProxy object caches it's results
+  * so we don't need to query again
+  * so that we can cache results from association calls or eager loading
+
+  .. hidden-code-block:: ruby
+
+     def association_proxy_cache
+       @association_proxy_cache ||= {}
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN#association_proxy_cache_fetch`:
+
+**#association_proxy_cache_fetch**
+  
+
+  .. hidden-code-block:: ruby
+
+     def association_proxy_cache_fetch(key)
+       association_proxy_cache.fetch(key) do
+         value = yield
+         association_proxy_cache[key] = value
+       end
      end
 
 
@@ -153,32 +137,6 @@ Methods
 
      def association_query_proxy(name, options = {})
        self.class.send(:association_query_proxy, name, {start_object: self}.merge(options))
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN#association_reflection`:
-
-**#association_reflection**
-  
-
-  .. hidden-code-block:: ruby
-
-     def association_reflection(association_obj)
-       self.class.reflect_on_association(association_obj.name)
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN#clear_association_cache`:
-
-**#clear_association_cache**
-  Clears out the association cache.
-
-  .. hidden-code-block:: ruby
-
-     def clear_association_cache #:nodoc:
-       association_cache.clear if _persisted_obj
      end
 
 

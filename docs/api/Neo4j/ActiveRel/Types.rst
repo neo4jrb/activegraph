@@ -3,6 +3,8 @@ Types
 
 
 
+provides mapping of type to model name
+
 
 .. toctree::
    :maxdepth: 3

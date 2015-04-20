@@ -4,6 +4,8 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -60,11 +62,13 @@ Methods
 
 **#query_as**
   Returns a Query object with all nodes for the model matched as the specified variable name
+  
+  an early Cypher match has already filtered results) where including labels will degrade performance.
 
   .. hidden-code-block:: ruby
 
-     def query_as(var)
-       query_proxy.query_as(var)
+     def query_as(var, with_labels = true)
+       query_proxy.query_as(var, with_labels)
      end
 
 

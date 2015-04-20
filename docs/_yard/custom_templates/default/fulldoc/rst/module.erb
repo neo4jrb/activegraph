@@ -3,6 +3,8 @@
 
 <% @path = @path.empty? ? @module.name.to_s : File.join(@path, @module.name.to_s) %>
 
+<%= @module.docstring %>
+
 <% if @module.respond_to?(:children) %>
 .. toctree::
    :maxdepth: 3

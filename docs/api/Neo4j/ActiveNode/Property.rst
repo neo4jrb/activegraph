@@ -4,6 +4,8 @@ Property
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -92,8 +94,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 
@@ -120,8 +122,7 @@ Methods
 
      def initialize(attributes = {}, options = {})
        super(attributes, options)
-     
-       send_props(@relationship_props) if persisted? && !@relationship_props.nil?
+       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
      end
 
 

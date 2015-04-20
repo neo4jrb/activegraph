@@ -3,6 +3,8 @@ DateConverter
 
 
 
+Converts Date objects to Java long types. Must be timezone UTC.
+
 
 .. toctree::
    :maxdepth: 3
