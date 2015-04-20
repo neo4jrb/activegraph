@@ -28,6 +28,11 @@ describe 'has_many' do
     end
   end
 
+  describe 'associations_keys' do
+    subject { clazz_a.associations_keys }
+    it { is_expected.to include(:friends, :knows, :knows_me) }
+  end
+
   describe 'non-persisted node' do
     let(:unsaved_node) { clazz_a.new }
     it 'returns an empty array' do
