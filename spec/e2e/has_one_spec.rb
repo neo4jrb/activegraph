@@ -28,6 +28,20 @@ describe 'has_one' do
       it 'raises an error when trying to create a relationship' do
         expect { unsaved_node.parent = HasOneA.create }.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
       end
+
+      context 'with enabled auto-saving' do
+        before  { Neo4j::Config[:autosave_on_assignment] = true }
+        after   { Neo4j::Config[:autosave_on_assignment] = false }
+
+        it 'saves the node' do
+          expect { unsaved_node.parent = HasOneA.create }.to change(unsaved_node, :persisted?).from(false).to(true)
+        end
+
+        it 'saves the associated node' do
+          other_node = HasOneA.new
+          expect { unsaved_node.parent = other_node }.to change(other_node, :persisted?).from(false).to(true)
+        end
+      end
     end
 
     it 'find the nodes via the has_one accessor' do
