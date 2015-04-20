@@ -29,6 +29,8 @@ person.friends.favorite_beers.country_of_origin(:country).
   pluck(:country, count: 'count(country)')
 ```
 
+It can be installed in your `Gemfile` with a simple `gem 'neo4j'`
+
 For a general overview see our website: http://neo4jrb.io/
 
 Winner of a 2014 Graphie for "Best Community Contribution" at Neo4j's [Graph Connect](http://graphconnect.com) conference!
