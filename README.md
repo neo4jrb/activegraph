@@ -34,6 +34,25 @@ Winner of a 2014 Graphie for "Best Community Contribution" at Neo4j's [Graph Con
 
 Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction) and in the [announcement message](http://neo4jrb.io/blog/2015/01/09/neo4j-rb_v4-1_released.html). It will take a little time before all documentation is updated to reflect the new release but unless otherwise noted, all 3.X documentation is totally valid for v4.
 
+## Neo4j version support
+
+| **Version** | v2.x | v3.x | v4.x |
+|-------------|------|------|------|
+| 1.9.x       | Yes  | No   | No   |
+| 2.0.x       | No   | Yes  | No   |
+| 2.1.x       | No   | Yes  | Yes  |
+| 2.2.x       | No   | No   | Yes  |
+
+## Neo4j feature support
+
+| **Feature**          |   v2.x | v3.x | v4.x |
+|----------------------|--------|------|------|
+| Auth                 |   No   |  No  | Yes  |
+| Remote Cypher        |   Yes  |  Yes | Yes  |
+| Transactions         |   Yes  |  Yes | Yes  |
+| High Availability    |   No   |  Yes | Yes  |
+| Embedded JVM support |   Yes  |  Yes | Yes  |
+
 ## Modern (3.x/4.X) Documentation
 
 * [Website](http://neo4jrb.io/) (for an introduction)
