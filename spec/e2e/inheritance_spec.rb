@@ -16,6 +16,7 @@ describe 'Inheritance', type: :e2e do
       property :specs # Hash
       index :name
       serialize :specs
+      has_many :out, :models, model_class: false
     end
 
     stub_named_class('Car', Vehicle) do
@@ -69,6 +70,14 @@ describe 'Inheritance', type: :e2e do
       toyota.save
       expect(toyota.specs).to eq specs
       expect(toyota.specs.class).to eq Hash
+    end
+  end
+
+  describe 'associations' do
+    it 'are inherited' do
+      expect(Car.new).to respond_to(:models)
+      expect(Vehicle.associations_keys).to include(:models)
+      expect(Car.associations_keys).to include(:models)
     end
   end
 end
