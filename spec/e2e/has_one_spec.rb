@@ -30,8 +30,7 @@ describe 'has_one' do
       end
 
       context 'with enabled auto-saving' do
-        before  { Neo4j::Config[:autosave_on_assignment] = true }
-        after   { Neo4j::Config[:autosave_on_assignment] = false }
+        let_config(:autosave_on_assignment) { true }
 
         it 'saves the node' do
           expect { unsaved_node.parent = HasOneA.create }.to change(unsaved_node, :persisted?).from(false).to(true)

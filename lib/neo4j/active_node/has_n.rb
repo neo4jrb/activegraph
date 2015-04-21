@@ -73,11 +73,8 @@ module Neo4j::ActiveNode
     private
 
     def handle_non_persisted_node(other_node)
-      if Neo4j::Config[:autosave_on_assignment]
-        other_node.save && save
-      else
-        validate_persisted_for_association!
-      end
+      return unless Neo4j::Config[:autosave_on_assignment]
+      other_node.save && save
     end
 
     def validate_persisted_for_association!
@@ -194,16 +191,7 @@ module Neo4j::ActiveNode
       private
 
       def define_has_many_methods(name)
-        define_method(name) do |node = nil, rel = nil, options = {}|
-          return [].freeze unless self._persisted_obj
-
-          association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
-        end
-
-        define_method("#{name}=") do |other_nodes|
-          clear_association_cache
-          association_query_proxy(name).replace_with(other_nodes)
-        end
+        define_has_many_instance_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
           association_query_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
@@ -211,6 +199,14 @@ module Neo4j::ActiveNode
       end
 
       def define_has_one_methods(name)
+        define_has_one_instance_methods(name)
+
+        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
+          association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+        end
+      end
+
+      def define_has_one_instance_methods(name)
         define_method(name) do |node = nil, rel = nil|
           return nil unless self._persisted_obj
 
@@ -221,12 +217,22 @@ module Neo4j::ActiveNode
 
         define_method("#{name}=") do |other_node|
           handle_non_persisted_node(other_node)
+          validate_persisted_for_association!
           clear_association_cache
           association_query_proxy(name).replace_with(other_node)
         end
+      end
 
-        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
-          association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+      def define_has_many_instance_methods(name)
+        define_method(name) do |node = nil, rel = nil, options = {}|
+          return [].freeze unless self._persisted_obj
+
+          association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
+        end
+
+        define_method("#{name}=") do |other_nodes|
+          clear_association_cache
+          association_query_proxy(name).replace_with(other_nodes)
         end
       end
 
