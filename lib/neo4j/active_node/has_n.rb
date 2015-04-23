@@ -193,13 +193,17 @@ module Neo4j::ActiveNode
           association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
         end
 
-        define_method("#{name}=") do |other_nodes|
-          clear_association_cache
-          association_query_proxy(name).replace_with(other_nodes)
-        end
+        define_has_many_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
           association_query_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
+        end
+      end
+
+      def define_has_many_setter(name)
+        define_method("#{name}=") do |other_nodes|
+          clear_association_cache
+          Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_nodes) }
         end
       end
 
@@ -212,14 +216,18 @@ module Neo4j::ActiveNode
                                      self.class.reflect_on_association(__method__)) { result.first }
         end
 
-        define_method("#{name}=") do |other_node|
-          validate_persisted_for_association!
-          clear_association_cache
-          association_query_proxy(name).replace_with(other_node)
-        end
+        define_has_one_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
           association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+        end
+      end
+
+      def define_has_one_setter(name)
+        define_method("#{name}=") do |other_node|
+          validate_persisted_for_association!
+          clear_association_cache
+          Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_node) }
         end
       end
 
