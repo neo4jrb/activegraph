@@ -160,7 +160,9 @@ module Neo4j::ActiveNode
       #       **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
       #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
       #
-      def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
+      def has_many(direction, name, *args) # rubocop:disable Style/PredicateName
+        options = get_association_options_from_args(args, :has_many)
+
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
@@ -177,7 +179,9 @@ module Neo4j::ActiveNode
       # See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
       # not specified here
       #
-      def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+      def has_one(direction, name, *args) # rubocop:disable Style/PredicateName
+        options = get_association_options_from_args(args, :has_one)
+
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
@@ -185,6 +189,22 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      def get_association_options_from_args(args, association_type)
+        if [0, 2].include?(args.size) || (args.size == 1 && [String, Symbol].include?(args[0].class))
+          (args[1] || {}).merge(type: args[0])
+        elsif args[0].is_a?(Hash)
+          association_type_option_deprecation_warning!(args[0], association_type)
+        else
+          fail "Invalid arguments for association: #{args.inspect}"
+        end
+      end
+
+      def association_type_option_deprecation_warning!(options, association_type)
+        message = "Not specifying a type as the third argument to #{association_type} is deprecated and will be removed in version 5.1.0 of the ActiveNode"
+        ActiveSupport::Deprecation.warn(message, caller[2..-1])
+        options || {}
+      end
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|

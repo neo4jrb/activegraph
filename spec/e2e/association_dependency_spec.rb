@@ -15,46 +15,46 @@ describe 'association dependent delete/destroy' do
 
     stub_active_node_class('User') do
       property :name
-      has_many :out, :tours, model_class: 'Tour', type: 'BOOKED_TOUR', dependent: :destroy_orphans
-      has_many :out, :bands, model_class: 'Band', type: 'MANAGES_BAND', dependent: :destroy_orphans
-      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
+      has_many :out, :tours, :booked_tour, model_class: 'Tour', dependent: :destroy_orphans
+      has_many :out, :bands, :manages_band, model_class: 'Band', dependent: :destroy_orphans
+      has_many :out, :comments, :has_comment, model_class: 'Comment', dependent: :destroy
     end
 
     stub_active_node_class('Tour') do
       property :name
-      has_many :out, :routes, model_class: 'Route', type: 'HAS_ROUTE', dependent: :destroy
-      has_many :out, :bands, model_class: 'Band', type: 'HAS_BAND'
-      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
+      has_many :out, :routes, :has_route, model_class: 'Route', dependent: :destroy
+      has_many :out, :bands, :has_band, model_class: 'Band'
+      has_many :out, :comments, :has_comment, model_class: 'Comment', dependent: :destroy
     end
 
     stub_active_node_class('Route') do
       property :name
-      has_one :in,  :tour,  model_class: 'Tour', origin: :routes
-      has_many :out, :stops, model_class: 'Stop', type: 'STOPS_AT', dependent: :destroy_orphans
-      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
+      has_one :in,  :tour, nil, model_class: 'Tour', origin: :routes
+      has_many :out, :stops, :stops_at, model_class: 'Stop', dependent: :destroy_orphans
+      has_many :out, :comments, :has_comment, model_class: 'Comment', dependent: :destroy
     end
 
     stub_active_node_class('Stop') do
       after_destroy lambda { CALL_COUNT[:called] += 1 }
       property :city
-      has_many :in, :routes, model_class: 'Route', origin: :stops
-      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
-      has_one :out, :poorly_modeled_thing, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODEL', dependent: :delete
-      has_many :out, :poorly_modeled_things, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODELS', dependent: :delete
+      has_many :in, :routes, nil, model_class: 'Route', origin: :stops
+      has_many :out, :comments, :has_comment, model_class: 'Comment', dependent: :destroy
+      has_one :out, :poorly_modeled_thing, :has_terrible_model, model_class: 'BadModel', dependent: :delete
+      has_many :out, :poorly_modeled_things, :has_terrible_models, model_class: 'BadModel', dependent: :delete
     end
 
     stub_active_node_class('Band') do
       property :name
-      has_many :in, :tours, model_class: 'Tour', origin: :bands
-      has_many :in, :users, model_class: 'User', origin: :bands
-      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
+      has_many :in, :tours, nil, model_class: 'Tour', origin: :bands
+      has_many :in, :users, nil, model_class: 'User', origin: :bands
+      has_many :out, :comments, :has_comment, model_class: 'Comment', dependent: :destroy
     end
 
     # There's no reason that we'd have this model responsible for destroying users.
     # We will use this to prove that the callbacks are not called when we delete the Stop that owns this
     stub_active_node_class('BadModel') do
-      has_one :out, :user, model_class: 'User', type: 'HAS_A_USER', dependent: :destroy
-      has_many :out, :users, model_class: 'User', type: 'HAS_USERS', dependent: :destroy
+      has_one :out, :user, :has_a_user, model_class: 'User', dependent: :destroy
+      has_many :out, :users, :has_users, model_class: 'User', dependent: :destroy
     end
 
     stub_active_node_class('Comment') do
@@ -62,7 +62,7 @@ describe 'association dependent delete/destroy' do
       # In the real world, there would be no reason to setup a dependency here since you'd never want to delete
       # the topic of a comment just because the topic is destroyed.
       # For the purpose of these tests, we're setting this to demonstrate that we are protected against loops.
-      has_one :in, :topic, model_class: false, type: 'HAS_COMMENT', dependent: :destroy
+      has_one :in, :topic, :has_comment, model_class: false, dependent: :destroy
     end
   end
 
@@ -179,7 +179,7 @@ describe 'association dependent delete/destroy' do
 
   describe 'invalid options' do
     it 'raises an error when an invalid option is passed' do
-      expect { Stop.has_many(:out, :fooz, dependent: :foo).to raise_error }
+      expect { Stop.has_many(:out, :fooz, nil, dependent: :foo).to raise_error }
     end
   end
 end

@@ -14,17 +14,17 @@ describe 'Query API' do
     stub_active_node_class('Interest') do
       property :name
 
-      has_many :both, :interested, model_class: false
+      has_many :both, :interested, nil, model_class: false
     end
 
     stub_active_node_class('Lesson') do
       property :subject
       property :level
 
-      has_one :out, :teachers_pet, model_class: 'Student', type: 'favorite_student'
-      has_many :in, :unhappy_teachers, model_class: 'Teacher', origin: :dreaded_lesson
-      has_many :in, :teachers, type: :teaching
-      has_many :in, :students, type: :is_enrolled_for
+      has_one :out, :teachers_pet, :favorite_student, model_class: 'Student'
+      has_many :in, :unhappy_teachers, nil, model_class: 'Teacher', origin: :dreaded_lesson
+      has_many :in, :teachers, :teaching
+      has_many :in, :students, :is_enrolled_for
 
       def self.max_level
         all.query_as(:lesson).pluck('max(lesson.level)').first
@@ -41,13 +41,13 @@ describe 'Query API' do
       property :name
       property :age, type: Integer
 
-      has_many :out, :lessons, type: :is_enrolled_for
+      has_many :out, :lessons, :is_enrolled_for
 
       has_many :out, :interests
 
-      has_many :both, :favorite_teachers, model_class: 'Teacher'
-      has_many :both, :hated_teachers, model_class: 'Teacher'
-      has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
+      has_many :both, :favorite_teachers, nil, model_class: 'Teacher'
+      has_many :both, :hated_teachers, nil, model_class: 'Teacher'
+      has_many :in,   :winning_lessons, nil, model_class: 'Lesson', origin: :teachers_pet
     end
 
     stub_active_node_class('Teacher') do
@@ -56,11 +56,11 @@ describe 'Query API' do
 
       has_many :both, :lessons
 
-      has_many :out, :lessons_teaching, model_class: 'Lesson'
-      has_many :out, :lessons_taught, model_class: 'Lesson'
+      has_many :out, :lessons_teaching, nil, model_class: 'Lesson'
+      has_many :out, :lessons_taught, nil, model_class: 'Lesson'
 
       has_many :out, :interests
-      has_one :out, :dreaded_lesson, model_class: 'Lesson', type: 'least_favorite_lesson'
+      has_one :out, :dreaded_lesson, :least_favorite_lesson, model_class: 'Lesson'
     end
   end
 
@@ -86,43 +86,43 @@ describe 'Query API' do
 
     context 'Foo has an association to Bar' do
       before(:each) do
-        Foo.has_many :in, :bars, model_class: Bar
+        Foo.has_many :in, :bars, nil, model_class: Bar
       end
 
       subject { Bar.create }
 
       context 'other class is opposite direction' do
-        before(:each) { Bar.has_many :out, :foos, origin: :bars }
+        before(:each) { Bar.has_many :out, :foos, nil, origin: :bars }
 
         it { expect { subject.foos.to_a }.not_to raise_error }
       end
 
       context 'other class is both' do
-        before(:each) { Bar.has_many :both, :foos, origin: :bars }
+        before(:each) { Bar.has_many :both, :foos, nil, origin: :bars }
 
         it { expect { subject.foos.to_a }.not_to raise_error }
       end
 
       context 'Assumed model does not exist' do
-        before(:each) { Bar.has_many :out, :foosrs, origin: :bars }
+        before(:each) { Bar.has_many :out, :foosrs, nil, origin: :bars }
 
         it { expect { subject.foosrs.to_a }.to raise_error(NameError) }
       end
 
       context 'Specified model does not exist' do
-        before(:each) { Bar.has_many :out, :foosrs, model_class: 'Foosrs', origin: :bars }
+        before(:each) { Bar.has_many :out, :foosrs, nil, model_class: 'Foosrs', origin: :bars }
 
         it { expect { subject.foosrs.to_a }.to raise_error(NameError) }
       end
 
       context 'Origin does not exist' do
-        before(:each) { Bar.has_many :out, :foos, origin: :barsy }
+        before(:each) { Bar.has_many :out, :foos, nil, origin: :barsy }
 
         it { expect { subject.foos.to_a }.to raise_error(ArgumentError) }
       end
 
       context 'Direction is the same' do
-        before(:each) { Bar.has_many :in, :foos, origin: :bars }
+        before(:each) { Bar.has_many :in, :foos, nil, origin: :bars }
 
         it { expect { subject.foos.to_a }.to raise_error(ArgumentError) }
       end

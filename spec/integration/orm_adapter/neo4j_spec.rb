@@ -28,13 +28,13 @@ module Neo4j
 
             index :name
 
-            has_many :out, :notes, model_class: 'Note'
+            has_many :out, :notes, nil, model_class: 'Note'
           end
 
           stub_active_node_class('Note') do
             property :body, index: :exact
 
-            has_one :in, :owner, type: :notes, model_class: 'User'
+            has_one :in, :owner, :notes, model_class: 'User'
           end
         end
 

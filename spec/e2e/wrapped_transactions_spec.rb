@@ -7,12 +7,12 @@ describe 'wrapped nodes in transactions' do
     stub_active_node_class('Student') do
       property :name
 
-      has_many :out, :teachers, model_class: 'Teacher', rel_class: 'StudentTeacher'
+      has_many :out, :teachers, nil, model_class: 'Teacher', rel_class: 'StudentTeacher'
     end
 
     stub_active_node_class('Teacher') do
       property :name
-      has_many :in, :students, model_class: 'Student', rel_class: 'StudentTeacher'
+      has_many :in, :students, nil, model_class: 'Student', rel_class: 'StudentTeacher'
     end
 
     stub_active_rel_class('StudentTeacher') do

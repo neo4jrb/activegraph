@@ -6,13 +6,13 @@ describe 'ActiveRel' do
 
   class FromClass
     include Neo4j::ActiveNode
-    has_many :out, :others, model_class: ToClass, rel_class: MyRelClass
+    has_many :out, :others, nil, model_class: ToClass, rel_class: MyRelClass
   end
 
   class ToClass
     include Neo4j::ActiveNode
-    has_many :in, :others, model_class: FromClass, rel_class: MyRelClass
-    has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
+    has_many :in, :others, nil, model_class: FromClass, rel_class: MyRelClass
+    has_many :in, :string_others, nil, model_class: 'FromClass', rel_class: 'MyRelClass'
   end
 
   class MyRelClass
