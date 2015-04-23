@@ -90,11 +90,7 @@ module Neo4j
           result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
             args = link.args(var, rel_var)
 
-            if args.is_a?(Array)
-              query.send(link.clause, *args)
-            else
-              query.send(link.clause, link.args(var, rel_var))
-            end
+            args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
           end
 
           result_query.tap { |query| query.proxy_chain_level = _chain_level }
