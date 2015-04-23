@@ -11,6 +11,7 @@ describe 'has_many' do
       has_many :in, :knows_me, origin: :knows, model_class: self
     end
   end
+  before { clazz_a }
 
   let(:node) { clazz_a.create }
   let(:friend1) { clazz_a.create }
@@ -142,6 +143,15 @@ describe 'has_many' do
       it 'removes all relationships when given an empty list' do
         node.friends = []
         node.friends.to_a.should =~ []
+      end
+
+      it 'occurs within a transaction' do
+        friend3 = clazz_a.create(name: 'foo')
+        node.friends = [friend1, friend2]
+        expect_any_instance_of(Neo4j::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise
+        expect { node.friends = [friend3] }.to raise_error
+        expect(node.friends.to_a).to include(friend1, friend2)
+        expect(node.friends.to_a).not_to include friend3
       end
 
       it 'can be accessed via [] operator' do
@@ -381,6 +391,33 @@ describe 'has_many' do
           expect(Dog.where(name: 'Sparky').toys.to_a).to match_array([chewmate, realcat])
           expect(Dog.where(name: 'Spot').toys.to_a).to match_array([realcat])
         end
+      end
+    end
+  end
+
+  describe 'transactions' do
+    context 'failure' do
+      it 'rolls back <<' do
+        begin
+          tx = Neo4j::Transaction.new
+          node.friends << friend1
+          tx.failure
+        ensure
+          tx.close
+        end
+        expect(node.friends.count).to eq 0
+      end
+
+      it 'rolls back =' do
+        node.friends = friend1
+        begin
+          tx = Neo4j::Transaction.new
+          node.friends = friend2
+          tx.failure
+        ensure
+          tx.close
+        end
+        expect(node.friends.first).to eq friend1
       end
     end
   end

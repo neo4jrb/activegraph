@@ -177,18 +177,18 @@ module Neo4j
             fail ArgumentError, "Node must be of the association's class when model is specified"
           end
 
-          other_nodes.each do |other_node|
-            # Neo4j::Transaction.run do
-            other_node.save unless other_node.neo_id
+          Neo4j::Transaction.run do
+            other_nodes.each do |other_node|
+              other_node.save unless other_node.neo_id
 
-            return false if @association.perform_callback(@start_object, other_node, :before) == false
+              return false if @association.perform_callback(@start_object, other_node, :before) == false
 
-            @start_object.clear_association_cache
+              @start_object.clear_association_cache
 
-            _create_relationship(other_node, properties)
+              _create_relationship(other_node, properties)
 
-            @association.perform_callback(@start_object, other_node, :after)
-            # end
+              @association.perform_callback(@start_object, other_node, :after)
+            end
           end
         end
 

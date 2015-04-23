@@ -195,7 +195,7 @@ module Neo4j::ActiveNode
 
         define_method("#{name}=") do |other_nodes|
           clear_association_cache
-          association_query_proxy(name).replace_with(other_nodes)
+          Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_nodes) }
         end
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
@@ -215,7 +215,7 @@ module Neo4j::ActiveNode
         define_method("#{name}=") do |other_node|
           validate_persisted_for_association!
           clear_association_cache
-          association_query_proxy(name).replace_with(other_node)
+          Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_node) }
         end
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
