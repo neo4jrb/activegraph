@@ -472,19 +472,19 @@ insert the _classname property which is used for performance)
 * REST - Performance improvments using the Rest Mixin (#60)
 
 == 0.3.1 / 2009-07-25
-* Feature, extension -	find path between given pair of nodes (#58)
+* Feature, extension - find path between given pair of nodes (#58)
 * Fix a messy exception on GET /nodes/UnknownClassName (#57)
 * Bug  - exception on GET /nodes/classname/rel if rel is a has_one relationship (#56)
 * Bug: GET /nodes/classname missing out nodes with no properties (#55)
 * Bug: Lucene sorting caused exception if there were no documents (#54)
-* Bug:	reindexer fails to connect nodes to the IndexNode (#53)
+* Bug: reindexer fails to connect nodes to the IndexNode (#53)
 
 == 0.3.0 / 2009-06-25
 * Neo4j should track node changes
 * RESTful support for lucene queries, sorting and paging
 * RESTful support for Relationships
 * RESTful support for Node and properties
-* Experimental support for Master-Slave	Replication via REST
+* Experimental support for Master-Slave Replication via REST
 * RESTful Node representation should contain hyperlinks to relationships
 * Added some handy method like first and empty? on relationships
 * Use new neo4j: neo-1.0-b8
