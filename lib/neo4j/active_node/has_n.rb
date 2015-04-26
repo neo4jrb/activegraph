@@ -109,7 +109,8 @@ module Neo4j::ActiveNode
       # For defining an "has many" association on a model.  This defines a set of methods on
       # your model instances.  For instance, if you define the association on a Person model:
       #
-      # has_many :out, :vehicles, type: :has_vehicle
+      # # Outgoing association named `vehicles` using the `HAS_VEHICLE` relationship type
+      # has_many :out, :vehicles, :has_vehicle
       #
       # This would define the following methods:
       #
@@ -136,7 +137,7 @@ module Neo4j::ActiveNode
       #     Refers to the relative to the model on which the association is being defined.
       #
       #     Example:
-      #       ``Person.has_many :out, :posts, type: :wrote``
+      #       ``Person.has_many :out, :posts, :wrote``
       #
       #         means that a `WROTE` relationship goes from a `Person` node to a `Post` node
       #

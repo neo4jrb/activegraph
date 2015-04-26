@@ -212,13 +212,13 @@ Methods
 .. _`Neo4j/ActiveNode#as`:
 
 **#as**
-  Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy caller set to the node instance.
+  Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy source_object set to the node instance.
   This method does not exist within QueryProxy and can only be used to start a new chain.
 
   .. hidden-code-block:: ruby
 
      def as(node_var)
-       self.class.query_proxy(node: node_var, caller: self).match_to(self)
+       self.class.query_proxy(node: node_var, source_object: self).match_to(self)
      end
 
 
@@ -397,10 +397,9 @@ Methods
 
      def convert_properties_to(medium, properties)
        converter = medium == :ruby ? :to_ruby : :to_db
-     
-       properties.each_with_object({}) do |(attr, value), new_attributes|
-         next new_attributes if skip_conversion?(attr, value)
-         new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+       properties.each_pair do |attr, value|
+         next if skip_conversion?(attr, value)
+         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
        end
      end
 
@@ -443,8 +442,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 
@@ -600,7 +599,7 @@ Methods
        self.class.extract_association_attributes!(properties)
        @_persisted_obj = persisted_node
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge(properties.stringify_keys)
+       @attributes = attributes.merge!(properties.stringify_keys)
        self.default_properties = properties
        @attributes = convert_properties_to :ruby, @attributes
      end
@@ -616,8 +615,7 @@ Methods
 
      def initialize(attributes = {}, options = {})
        super(attributes, options)
-     
-       send_props(@relationship_props) if persisted? && !@relationship_props.nil?
+       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
      end
 
 
@@ -721,7 +719,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def query_as(node_var)
-       self.class.query_as(node_var).where("ID(#{node_var})" => self.neo_id)
+       self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)
      end
 
 

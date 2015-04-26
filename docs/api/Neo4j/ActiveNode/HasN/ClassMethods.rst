@@ -37,6 +37,12 @@ ClassMethods
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -85,7 +91,20 @@ Methods
   .. hidden-code-block:: ruby
 
      def associations
-       @associations || {}
+       @associations ||= {}
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#associations_keys`:
+
+**#associations_keys**
+  
+
+  .. hidden-code-block:: ruby
+
+     def associations_keys
+       @associations_keys ||= associations.keys
      end
 
 
@@ -112,7 +131,8 @@ Methods
   For defining an "has many" association on a model.  This defines a set of methods on
   your model instances.  For instance, if you define the association on a Person model:
   
-  has_many :out, :vehicles, type: :has_vehicle
+  # Outgoing association named `vehicles` using the `HAS_VEHICLE` relationship type
+  has_many :out, :vehicles, :has_vehicle
   
   This would define the following methods:
   
@@ -139,7 +159,7 @@ Methods
       Refers to the relative to the model on which the association is being defined.
   
       Example:
-        ``Person.has_many :out, :posts, type: :wrote``
+        ``Person.has_many :out, :posts, :wrote``
   
           means that a `WROTE` relationship goes from a `Person` node to a `Post` node
   
@@ -165,7 +185,9 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
+     def has_many(direction, name, *args) # rubocop:disable Style/PredicateName
+       options = get_association_options_from_args(args, :has_many)
+     
        name = name.to_sym
        build_association(:has_many, direction, name, options)
      
@@ -180,7 +202,7 @@ Methods
   For defining an "has one" association on a model.  This defines a set of methods on
   your model instances.  For instance, if you define the association on a Person model:
   
-  has_one :out, :vehicle, type: :has_vehicle
+  has_one :out, :vehicle, :has_vehicle
   
   This would define the methods: ``#vehicle``, ``#vehicle=``, and ``.vehicle``.
   
@@ -189,7 +211,9 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+     def has_one(direction, name, *args) # rubocop:disable Style/PredicateName
+       options = get_association_options_from_args(args, :has_one)
+     
        name = name.to_sym
        build_association(:has_one, direction, name, options)
      
@@ -207,6 +231,7 @@ Methods
 
      def inherited(klass)
        klass.instance_variable_set(:@associations, associations.clone)
+       @associations_keys = klass.associations_keys.clone
        super
      end
 

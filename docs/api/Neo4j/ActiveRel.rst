@@ -163,10 +163,9 @@ Methods
 
      def convert_properties_to(medium, properties)
        converter = medium == :ruby ? :to_ruby : :to_db
-     
-       properties.each_with_object({}) do |(attr, value), new_attributes|
-         next new_attributes if skip_conversion?(attr, value)
-         new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+       properties.each_pair do |attr, value|
+         next if skip_conversion?(attr, value)
+         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
        end
      end
 
@@ -195,8 +194,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 
