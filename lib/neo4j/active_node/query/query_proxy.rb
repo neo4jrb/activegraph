@@ -90,11 +90,7 @@ module Neo4j
           result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
             args = link.args(var, rel_var)
 
-            if args.is_a?(Array)
-              query.send(link.clause, *args)
-            else
-              query.send(link.clause, link.args(var, rel_var))
-            end
+            args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
           end
 
           result_query.tap { |query| query.proxy_chain_level = _chain_level }
@@ -177,18 +173,18 @@ module Neo4j
             fail ArgumentError, "Node must be of the association's class when model is specified"
           end
 
-          other_nodes.each do |other_node|
-            # Neo4j::Transaction.run do
-            other_node.save unless other_node.neo_id
+          Neo4j::Transaction.run do
+            other_nodes.each do |other_node|
+              other_node.save unless other_node.neo_id
 
-            return false if @association.perform_callback(@start_object, other_node, :before) == false
+              return false if @association.perform_callback(@start_object, other_node, :before) == false
 
-            @start_object.clear_association_cache
+              @start_object.clear_association_cache
 
-            _create_relationship(other_node, properties)
+              _create_relationship(other_node, properties)
 
-            @association.perform_callback(@start_object, other_node, :after)
-            # end
+              @association.perform_callback(@start_object, other_node, :after)
+            end
           end
         end
 

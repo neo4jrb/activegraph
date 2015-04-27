@@ -101,12 +101,13 @@ module Neo4j::ActiveNode
       end
 
       def associations_keys
-        @associations_keys ||= []
+        @associations_keys ||= associations.keys
       end
 
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
         klass.instance_variable_set(:@associations, associations.clone)
+        @associations_keys = klass.associations_keys.clone
         super
       end
 
@@ -191,22 +192,27 @@ module Neo4j::ActiveNode
       private
 
       def define_has_many_methods(name)
-        define_has_many_instance_methods(name)
+        define_method(name) do |node = nil, rel = nil, options = {}|
+          return [].freeze unless self._persisted_obj
+
+          association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
+        end
+
+        define_has_many_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
           association_query_proxy(name, {node: node, rel: rel, previous_query_proxy: previous_query_proxy}.merge(options))
         end
       end
 
-      def define_has_one_methods(name)
-        define_has_one_instance_methods(name)
-
-        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
-          association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+      def define_has_many_setter(name)
+        define_method("#{name}=") do |other_nodes|
+          clear_association_cache
+          Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_nodes) }
         end
       end
 
-      def define_has_one_instance_methods(name)
+      def define_has_one_methods(name)
         define_method(name) do |node = nil, rel = nil|
           return nil unless self._persisted_obj
 
@@ -215,24 +221,19 @@ module Neo4j::ActiveNode
                                      self.class.reflect_on_association(__method__)) { result.first }
         end
 
+        define_has_one_setter(name)
+
+        define_class_method(name) do |node = nil, rel = nil, previous_query_proxy = nil, options = {}|
+          association_query_proxy(name, {previous_query_proxy: previous_query_proxy, node: node, rel: rel}.merge(options))
+        end
+      end
+
+      def define_has_one_setter(name)
         define_method("#{name}=") do |other_node|
           handle_non_persisted_node(other_node)
           validate_persisted_for_association!
           clear_association_cache
-          association_query_proxy(name).replace_with(other_node)
-        end
-      end
-
-      def define_has_many_instance_methods(name)
-        define_method(name) do |node = nil, rel = nil, options = {}|
-          return [].freeze unless self._persisted_obj
-
-          association_query_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
-        end
-
-        define_method("#{name}=") do |other_nodes|
-          clear_association_cache
-          association_query_proxy(name).replace_with(other_nodes)
+          Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_node) }
         end
       end
 
