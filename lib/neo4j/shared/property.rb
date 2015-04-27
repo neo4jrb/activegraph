@@ -56,6 +56,16 @@ module Neo4j::Shared
       hash.each { |key, value| self.send("#{key}=", value) }
     end
 
+    protected
+
+    # This method is defined in ActiveModel.
+    # When each node is loaded, it is called once in pursuit of 'sanitize_for_mass_assignment', which this gem does not implement.
+    # In the course of doing that, it calls :attributes, which is quite expensive, so we return immediately.
+    def attribute_method?(attr_name) #:nodoc:
+      return false if attr_name == 'sanitize_for_mass_assignment'
+      super(attr_name)
+    end
+
     private
 
     # Changes attributes hash to remove relationship keys
