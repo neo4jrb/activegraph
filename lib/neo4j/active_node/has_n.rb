@@ -72,6 +72,11 @@ module Neo4j::ActiveNode
 
     private
 
+    def handle_non_persisted_node(other_node)
+      return unless Neo4j::Config[:autosave_on_assignment]
+      other_node.save && save
+    end
+
     def validate_persisted_for_association!
       fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
     end
@@ -225,6 +230,7 @@ module Neo4j::ActiveNode
 
       def define_has_one_setter(name)
         define_method("#{name}=") do |other_node|
+          handle_non_persisted_node(other_node)
           validate_persisted_for_association!
           clear_association_cache
           Neo4j::Transaction.run { association_query_proxy(name).replace_with(other_node) }
