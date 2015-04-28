@@ -17,6 +17,8 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
+    # TODO: Remove the commented :super entirely once this code is part of a release.
+    # It calls an init method in active_attr that has a very negative impact on performance.
     def initialize(attributes = {}, _options = nil)
       attributes = process_attributes(attributes) unless attributes.empty?
       @relationship_props = self.class.extract_association_attributes!(attributes)
@@ -25,7 +27,6 @@ module Neo4j::Shared
       send_props(writer_method_props) unless writer_method_props.empty?
 
       @_persisted_obj = nil
-
       # super(attributes, options)
     end
 
@@ -151,6 +152,7 @@ module Neo4j::Shared
       #      property :name, constraint: :unique
       #    end
       def property(name, options = {})
+        @_attributes_nil_hash = nil
         check_illegal_prop(name)
         magic_properties(name, options)
         attribute(name, options)
@@ -203,6 +205,8 @@ module Neo4j::Shared
         end
       end
 
+      # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents
+      # an extra call to a slow dependency method.
       def attributes_nil_hash
         @_attributes_nil_hash ||= {}.tap { |attr_hash| attribute_names.each { |k, _v| attr_hash[k.to_s] = nil } }.freeze
       end

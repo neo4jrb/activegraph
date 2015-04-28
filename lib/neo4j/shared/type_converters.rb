@@ -144,6 +144,7 @@ module Neo4j::Shared
         upstream_primitives[attr] || upstream_primitives[attr] = self._attribute_type(attr)
       end
 
+      # The known mappings of declared properties and their primitive types.
       def upstream_primitives
         @upstream_primitives ||= {}
       end
