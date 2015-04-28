@@ -11,6 +11,10 @@ describe Neo4j::ActiveNode::Persistence do
 
       property :name
       property :age, type: Integer
+
+      def self.fetch_upstream_primitive(_)
+        nil
+      end
     end
   end
 

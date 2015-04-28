@@ -129,13 +129,25 @@ module Neo4j::Shared
       when self.class.magic_typecast_properties_keys.include?(attr)
         self.class.magic_typecast_properties[attr]
       else
-        self.class._attribute_type(attr)
+        self.class.fetch_upstream_primitive(attr)
       end
     end
 
     # Returns true if the property isn't defined in the model or it's both nil and unchanged.
     def skip_conversion?(attr, value)
       !self.class.attributes[attr] || (value.nil? && !changed_attributes[attr])
+    end
+
+    module ClassMethods
+      # Prevents repeated calls to :_attribute_type, which isn't free and never changes.
+      def fetch_upstream_primitive(attr)
+        upstream_primitives[attr] || upstream_primitives[attr] = self._attribute_type(attr)
+      end
+
+      # The known mappings of declared properties and their primitive types.
+      def upstream_primitives
+        @upstream_primitives ||= {}
+      end
     end
 
     class << self
