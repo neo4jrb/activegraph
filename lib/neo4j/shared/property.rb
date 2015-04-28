@@ -17,7 +17,7 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
-    def initialize(attributes = {}, options = {})
+    def initialize(attributes = {}, _options = nil)
       attributes = process_attributes(attributes) unless attributes.empty?
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
@@ -26,7 +26,7 @@ module Neo4j::Shared
 
       @_persisted_obj = nil
 
-      super(attributes, options)
+      # super(attributes, options)
     end
 
     # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
