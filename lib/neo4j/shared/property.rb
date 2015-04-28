@@ -203,6 +203,10 @@ module Neo4j::Shared
         end
       end
 
+      def attributes_nil_hash
+        @_attributes_nil_hash ||= {}.tap { |attr_hash| attribute_names.each { |k, _v| attr_hash[k.to_s] = nil } }.freeze
+      end
+
       def magic_typecast_properties
         @magic_typecast_properties ||= {}
       end

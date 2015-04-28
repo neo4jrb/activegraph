@@ -139,7 +139,6 @@ module Neo4j::Shared
     end
 
     module ClassMethods
-
       # Prevents repeated calls to :_attribute_type, which isn't free and never changes.
       def fetch_upstream_primitive(attr)
         upstream_primitives[attr] || upstream_primitives[attr] = self._attribute_type(attr)
