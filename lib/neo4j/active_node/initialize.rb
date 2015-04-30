@@ -1,6 +1,5 @@
 module Neo4j::ActiveNode::Initialize
   extend ActiveSupport::Concern
-  include Neo4j::Shared::TypeConverters
   attr_reader :called_by
 
   # called when loading the node from the database
@@ -13,7 +12,7 @@ module Neo4j::ActiveNode::Initialize
     attr = @attributes || self.class.attributes_nil_hash.dup
     @attributes = attr.merge!(properties).stringify_keys!
     self.default_properties = properties
-    @attributes = convert_properties_to :ruby, @attributes
+    @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
   end
 
   # Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method

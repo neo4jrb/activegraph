@@ -22,7 +22,7 @@ module Neo4j::ActiveRel
       validate_node_classes!
       create_magic_properties
       set_timestamps
-      properties = convert_properties_to :db, props
+      properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
       rel = _create_rel(from_node, to_node, properties)
       return self unless rel.respond_to?(:_persisted_obj)
       init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)

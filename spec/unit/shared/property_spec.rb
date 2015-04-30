@@ -5,8 +5,8 @@ describe Neo4j::Shared::Property do
 
   describe ':property class method' do
     it 'raises an error when passing illegal properties' do
-      Neo4j::Shared::Property::ILLEGAL_PROPS.push 'foo'
-      expect { clazz.property :foo }.to raise_error(Neo4j::Shared::Property::IllegalPropertyError)
+      Neo4j::Shared::DeclaredProperty::ILLEGAL_PROPS.push 'foo'
+      expect { clazz.property :foo }.to raise_error(Neo4j::Shared::DeclaredProperty::IllegalPropertyError)
     end
   end
 
@@ -129,12 +129,12 @@ describe Neo4j::Shared::Property do
 
     it 'uses type converter to serialize node' do
       instance.range = range
-      expect(instance.convert_properties_to(:db, instance.props)[:range]).to eq(range.to_s)
+      expect(instance.class.declared_property_manager.convert_properties_to(instance, :db, instance.props)[:range]).to eq(range.to_s)
     end
 
     it 'uses type converter to deserialize node' do
       instance.range = range.to_s
-      expect(instance.convert_properties_to(:ruby, instance.props)[:range]).to eq(range)
+      expect(instance.class.declared_property_manager.convert_properties_to(instance, :ruby, instance.props)[:range]).to eq(range)
     end
   end
 end
