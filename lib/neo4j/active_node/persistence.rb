@@ -97,11 +97,16 @@ module Neo4j::ActiveNode
       end
 
       def merge(attributes)
-        neo4j_session.query.merge(n: {self => attributes}).exec
+        neo4j_session.query.merge(n: {self => attributes})
+          .on_create_set(n: on_create_props)
+          .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
-        neo4j_session.query.merge(n: {self => find_attributes}).set(n: set_attributes).exec
+        set_attributes_with_id = set_attributes.merge(on_create_props)
+        neo4j_session.query.merge(n: {self => find_attributes})
+          .on_create_set(n: set_attributes_with_id).on_match_set(n: set_attributes)
+          .pluck(:n).first
       end
 
       # Finds the first node with the given attributes, or calls create if none found
@@ -117,8 +122,12 @@ module Neo4j::ActiveNode
       def load_entity(id)
         Neo4j::Node.load(id)
       end
-    end
 
-    private
+      private
+
+      def on_create_props
+        {id_property_name => default_properties[id_property_name].call}
+      end
+    end
   end
 end

@@ -206,6 +206,18 @@ describe 'Query API' do
           expect(Teacher.first.name).to eq('Dr. Harold Samuels')
           expect(Teacher.first.age).to eq(34)
         end
+
+        it 'sets the id property method' do
+          teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher.uuid).not_to be nil
+        end
+
+        it 'does not change the id property on match' do
+          teacher1 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          teacher2 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher1.neo_id).to eq teacher2.neo_id
+          expect(teacher1.id).to eq teacher2.id
+        end
       end
     end
 
