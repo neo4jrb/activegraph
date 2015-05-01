@@ -97,11 +97,18 @@ module Neo4j::ActiveNode
       end
 
       def merge(attributes)
-        neo4j_session.query.merge(n: {self => attributes}).exec
+        neo4j_session.query.merge(n: {self => attributes})
+          .on_create_set(n: on_create_props)
+          .on_match_set(n: on_match_props)
+          .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
-        neo4j_session.query.merge(n: {self => find_attributes}).set(n: set_attributes).exec
+        on_create_attributes = set_attributes.merge(on_create_props)
+        on_match_attributes =  set_attributes.merge(on_match_props)
+        neo4j_session.query.merge(n: {self => find_attributes})
+          .on_create_set(n: on_create_attributes).on_match_set(n: on_match_attributes)
+          .pluck(:n).first
       end
 
       # Finds the first node with the given attributes, or calls create if none found
@@ -117,8 +124,25 @@ module Neo4j::ActiveNode
       def load_entity(id)
         Neo4j::Node.load(id)
       end
-    end
 
-    private
+      private
+
+      def on_create_props
+        {id_property_name => default_properties[id_property_name].call}.tap do |props|
+          now = DateTime.now.to_i
+          set_props_timestamp!('created_at', props, now)
+          set_props_timestamp!('updated_at', props, now)
+        end
+      end
+
+      def on_match_props
+        set_props_timestamp!('updated_at')
+      end
+
+      def set_props_timestamp!(key_name, props = {}, stamp = DateTime.now.to_i)
+        props[key_name.to_sym] = stamp if attributes_nil_hash.key?(key_name)
+        props
+      end
+    end
   end
 end
