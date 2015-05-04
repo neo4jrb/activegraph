@@ -6,7 +6,7 @@ module Neo4j::Shared
     ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
     attr_reader :name, :name_string, :name_sym, :options, :magic_typecaster
 
-    def initialize(name, options)
+    def initialize(name, options = {})
       fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
       @name = @name_sym = name
       @name_string = name.to_s

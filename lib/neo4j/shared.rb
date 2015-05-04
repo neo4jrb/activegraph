@@ -34,5 +34,9 @@ module Neo4j
         :neo4j
       end
     end
+
+    def declared_property_manager
+      self.class.declared_property_manager
+    end
   end
 end
