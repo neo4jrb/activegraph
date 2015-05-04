@@ -74,7 +74,8 @@ module Neo4j::ActiveNode
 
     def handle_non_persisted_node(other_node)
       return unless Neo4j::Config[:autosave_on_assignment]
-      other_node.save && save
+      other_node.try(:save)
+      save
     end
 
     def validate_persisted_for_association!
