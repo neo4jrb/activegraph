@@ -28,6 +28,7 @@ module Neo4j
         alias_method :size,   :count
         alias_method :length, :count
 
+        # TODO: update this with public API methods if/when they are exposed
         def limit_value
           if self.query.clause?(:limit)
             limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
