@@ -30,10 +30,9 @@ module Neo4j
 
         # TODO: update this with public API methods if/when they are exposed
         def limit_value
-          if self.query.clause?(:limit)
-            limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
-            limit_clause.instance_variable_get(:@arg)
-          end
+          return unless self.query.clause?(:limit)
+          limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+          limit_clause.instance_variable_get(:@arg)
         end
 
         def empty?(target = nil)
