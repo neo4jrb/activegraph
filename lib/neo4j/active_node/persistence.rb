@@ -10,6 +10,7 @@ module Neo4j::ActiveNode
     end
 
     extend ActiveSupport::Concern
+    extend Forwardable
     include Neo4j::Shared::Persistence
 
     # Saves the model.
@@ -48,13 +49,11 @@ module Neo4j::ActiveNode
       create_magic_properties
       set_timestamps
       create_magic_properties
-      properties = convert_properties_to :db, props
+      properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
       node = _create_node(properties)
       init_on_load(node, node.props)
       send_props(@relationship_props) if @relationship_props
       @relationship_props = nil
-      # Neo4j::IdentityMap.add(node, self)
-      # write_changed_relationships
       true
     end
 

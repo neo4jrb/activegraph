@@ -28,10 +28,15 @@ module Neo4j
 
     included do
       self.include_root_in_json = Neo4j::Config.include_root_in_json
+      @_declared_property_manager ||= Neo4j::Shared::DeclaredPropertyManager.new(self)
 
       def self.i18n_scope
         :neo4j
       end
+    end
+
+    def declared_property_manager
+      self.class.declared_property_manager
     end
   end
 end
