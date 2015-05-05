@@ -28,6 +28,13 @@ module Neo4j
         alias_method :size,   :count
         alias_method :length, :count
 
+        def limit_value
+          if self.query.clause?(:limit)
+            limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+            limit_clause.instance_variable_get(:@arg)
+          end
+        end
+
         def empty?(target = nil)
           query_with_target(target) { |var| !self.exists?(nil, var) }
         end
