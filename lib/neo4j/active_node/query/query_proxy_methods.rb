@@ -15,8 +15,22 @@ module Neo4j
         end
 
         def first_and_last(func, target)
-          query_with_target(target) { |var| self.pluck("#{func}(COLLECT(#{var})) as #{var}").first }
+          new_query, pluck_proc = if self.query.clause?(:order)
+                                    new_query = self.query.with(identity)
+                                    pluck_proc = proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }
+                                    [new_query, pluck_proc]
+                                  else
+                                    new_query = self.order(order).limit(1)
+                                    pluck_proc = proc { |var| var }
+                                    [new_query, pluck_proc]
+                                  end
+          result = query_with_target(target) do |var|
+            final_pluck = pluck_proc.call(var)
+            new_query.pluck(final_pluck)
+          end
+          result.first
         end
+
         private :first_and_last
 
         # @return [Integer] number of nodes of this class
