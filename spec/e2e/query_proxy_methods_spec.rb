@@ -236,6 +236,16 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'limit_value' do
+    it 'returns nil when limit is not specified' do
+      expect(Student.all.limit_value).to be_nil
+    end
+
+    it 'returns the limit number when set' do
+      expect(Student.all.limit(10).limit_value).to eq 10
+    end
+  end
+
   describe 'match_to and first_rel_to' do
     before(:each) do
       @john = Student.create(name: 'Paul')
