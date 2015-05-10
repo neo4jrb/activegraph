@@ -24,7 +24,12 @@ module Neo4j::Shared
     end
 
     def attributes_nil_hash
-      @_attributes_nil_hash ||= {}.tap { |attr_hash| registered_properties.each_pair { |k, _v| attr_hash[k.to_s] = nil } }.freeze
+      @_attributes_nil_hash ||= {}.tap do |attr_hash|
+        registered_properties.each_pair do |k, prop_obj|
+          val = prop_obj.default_value
+          attr_hash[k.to_s] = val
+        end
+      end.freeze
     end
 
     def unregister(name)

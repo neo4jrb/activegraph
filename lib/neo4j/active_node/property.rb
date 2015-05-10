@@ -5,6 +5,7 @@ module Neo4j::ActiveNode
 
     def initialize(attributes = {}, options = {})
       super(attributes, options)
+      @attributes ||= self.class.attributes_nil_hash.dup
       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
     end
 

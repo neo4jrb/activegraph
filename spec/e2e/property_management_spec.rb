@@ -75,7 +75,41 @@ describe 'declared property classes' do
     end
 
     it 'keeps a default hash of nil values for use in initial object wrapping' do
-      expect(dpm.attributes_nil_hash).to eq('foo' => nil, 'bar' => nil)
+      expect(dpm.attributes_nil_hash).to have_key('foo')
+      expect(dpm.attributes_nil_hash).to have_key('bar')
+    end
+
+    # This mimics the behavior of active_attr's default property values
+    describe 'default property values' do
+      let(:node) { MyModel.new }
+
+      it 'sets the default property val at init' do
+        expect(node.bar).to eq 'foo'
+      end
+
+      describe 'with changed values' do
+        before do
+          node.bar = value
+          node.save
+          node.reload
+        end
+
+        context 'on reload when prop was changed to nil' do
+          let(:value) { nil }
+
+          it 'resets nil default properties on reload' do
+            expect(node.bar).to eq 'foo'
+          end
+        end
+
+        context 'on reload when prop was set' do
+          let(:value) { 'bar' }
+
+          it 'does not reset to default' do
+            expect(node.bar).to eq 'bar'
+          end
+        end
+      end
     end
   end
 end
