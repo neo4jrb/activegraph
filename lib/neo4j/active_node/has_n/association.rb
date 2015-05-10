@@ -21,7 +21,7 @@ module Neo4j
           case model_class
           when nil
             if @target_class_name_from_name
-              "::#{@target_class_name_from_name}"
+              "#{association_model_namespace}::#{@target_class_name_from_name}"
             else
               @target_class_name_from_name
             end
@@ -49,11 +49,13 @@ module Neo4j
         end
 
         def target_classes_or_nil
-          @target_classes_or_nil ||= if target_class_names
-                                       target_class_names.map(&:constantize).select do |constant|
-                                         constant.ancestors.include?(::Neo4j::ActiveNode)
-                                       end
-                                     end
+          @target_classes_or_nil ||= discovered_model if target_class_names
+        end
+
+        def discovered_model
+          target_class_names.map(&:constantize).select do |constant|
+            constant.ancestors.include?(::Neo4j::ActiveNode)
+          end
         end
 
         def target_class
@@ -122,6 +124,12 @@ module Neo4j
         end
 
         private
+
+        def association_model_namespace
+          namespace = Neo4j::Config[:association_model_namespace]
+          return nil if namespace.nil?
+          "::#{namespace}"
+        end
 
         def direction_cypher(relationship_cypher, create, reverse = false)
           case get_direction(create, reverse)
