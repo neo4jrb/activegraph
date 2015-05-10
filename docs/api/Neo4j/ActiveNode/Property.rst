@@ -23,8 +23,6 @@ Constants
 
 
 
-  * ILLEGAL_PROPS
-
 
 
 Files
@@ -122,6 +120,7 @@ Methods
 
      def initialize(attributes = {}, options = {})
        super(attributes, options)
+       @attributes ||= self.class.attributes_nil_hash.dup
        send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
      end
 

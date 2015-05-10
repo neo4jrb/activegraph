@@ -69,6 +69,22 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Persistence#apply_default_values`:
+
+**#apply_default_values**
+  
+
+  .. hidden-code-block:: ruby
+
+     def apply_default_values
+       return if self.class.declared_property_defaults.empty?
+       self.class.declared_property_defaults.each_pair do |key, value|
+         self.send("#{key}=", value) if self.send(key).nil?
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Persistence#cache_key`:
 
 **#cache_key**
@@ -88,23 +104,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Persistence#convert_properties_to`:
-
-**#convert_properties_to**
-  
-
-  .. hidden-code-block:: ruby
-
-     def convert_properties_to(medium, properties)
-       converter = medium == :ruby ? :to_ruby : :to_db
-       properties.each_pair do |attr, value|
-         next if skip_conversion?(attr, value)
-         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
-       end
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Persistence#create_model`:
 
 **#create_model**
@@ -116,13 +115,11 @@ Methods
        create_magic_properties
        set_timestamps
        create_magic_properties
-       properties = convert_properties_to :db, props
+       properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
        node = _create_node(properties)
        init_on_load(node, node.props)
        send_props(@relationship_props) if @relationship_props
        @relationship_props = nil
-       # Neo4j::IdentityMap.add(node, self)
-       # write_changed_relationships
        true
      end
 
@@ -138,6 +135,7 @@ Methods
      def create_or_update
        # since the same model can be created or updated twice from a relationship we have to have this guard
        @_create_or_updating = true
+       apply_default_values
        result = _persisted_obj ? update_model : create_model
        if result == false
          Neo4j::Transaction.current.failure if Neo4j::Transaction.current
@@ -446,7 +444,7 @@ Methods
        return if !changed_attributes || changed_attributes.empty?
      
        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-       changed_props = convert_properties_to :db, changed_props
+       changed_props = self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
        _persisted_obj.update_props(changed_props)
        changed_attributes.clear
      end

@@ -33,14 +33,6 @@ ClassMethods
 
    
 
-   
-
-   
-
-   
-
-   
-
 
 
 
@@ -56,7 +48,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:114 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L114>`_
+  * `lib/neo4j/shared/property.rb:123 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L123>`_
 
 
 
@@ -81,6 +73,32 @@ Methods
          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
          super(value)
        end
+     end
+
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#attributes_nil_hash`:
+
+**#attributes_nil_hash**
+  an extra call to a slow dependency method.
+
+  .. hidden-code-block:: ruby
+
+     def attributes_nil_hash
+       declared_property_manager.attributes_nil_hash
+     end
+
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#declared_property_manager`:
+
+**#declared_property_manager**
+  
+
+  .. hidden-code-block:: ruby
+
+     def declared_property_manager
+       @_declared_property_manager ||= DeclaredPropertyManager.new(self)
      end
 
 
@@ -114,7 +132,7 @@ Methods
 .. _`Neo4j/Shared/Property/ClassMethods#default_property`:
 
 **#default_property**
-  
+  TODO: Move this to the DeclaredPropertyManager
 
   .. hidden-code-block:: ruby
 
@@ -140,32 +158,6 @@ Methods
 
 
 
-.. _`Neo4j/Shared/Property/ClassMethods#magic_typecast_properties`:
-
-**#magic_typecast_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def magic_typecast_properties
-       @magic_typecast_properties ||= {}
-     end
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#magic_typecast_properties_keys`:
-
-**#magic_typecast_properties_keys**
-  
-
-  .. hidden-code-block:: ruby
-
-     def magic_typecast_properties_keys
-       @magic_typecast_properties_keys ||= magic_typecast_properties.keys
-     end
-
-
-
 .. _`Neo4j/Shared/Property/ClassMethods#property`:
 
 **#property**
@@ -177,9 +169,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def property(name, options = {})
-       check_illegal_prop(name)
-       magic_properties(name, options)
-       attribute(name, options)
+       prop = DeclaredProperty.new(name, options)
+       prop.register
+       declared_property_manager.register(prop)
+     
+       attribute(name, prop.options)
        constraint_or_index(name, options)
      end
 
@@ -211,10 +205,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def undef_property(name)
-       fail ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
-     
+       declared_property_manager.unregister(name)
        attribute_methods(name).each { |method| undef_method(method) }
-     
        undef_constraint_or_index(name)
      end
 

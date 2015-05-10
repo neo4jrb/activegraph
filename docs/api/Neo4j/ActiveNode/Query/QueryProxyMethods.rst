@@ -65,6 +65,12 @@ QueryProxyMethods
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -72,6 +78,10 @@ Constants
 ---------
 
 
+
+  * FIRST
+
+  * LAST
 
 
 
@@ -257,20 +267,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def first(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first_and_last`:
-
-**#first_and_last**
-  
-
-  .. hidden-code-block:: ruby
-
-     def first_and_last(order, target)
-       self.order(order).limit(1).pluck(target).first
+       first_and_last(FIRST, target)
      end
 
 
@@ -313,7 +310,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def last(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
+       first_and_last(LAST, target)
      end
 
 
@@ -331,6 +328,21 @@ Methods
          q = distinct.nil? ? var : "DISTINCT #{var}"
          self.query.reorder.pluck("count(#{q}) AS #{var}").first
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#limit_value`:
+
+**#limit_value**
+  TODO: update this with public API methods if/when they are exposed
+
+  .. hidden-code-block:: ruby
+
+     def limit_value
+       return unless self.query.clause?(:limit)
+       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause.instance_variable_get(:@arg)
      end
 
 

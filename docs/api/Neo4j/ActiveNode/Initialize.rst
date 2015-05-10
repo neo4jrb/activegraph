@@ -56,23 +56,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Initialize#convert_properties_to`:
-
-**#convert_properties_to**
-  
-
-  .. hidden-code-block:: ruby
-
-     def convert_properties_to(medium, properties)
-       converter = medium == :ruby ? :to_ruby : :to_db
-       properties.each_pair do |attr, value|
-         next if skip_conversion?(attr, value)
-         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
-       end
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Initialize#init_on_load`:
 
 **#init_on_load**
@@ -84,9 +67,10 @@ Methods
        self.class.extract_association_attributes!(properties)
        @_persisted_obj = persisted_node
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge!(properties.stringify_keys)
+       attr = @attributes || self.class.attributes_nil_hash.dup
+       @attributes = attr.merge!(properties).stringify_keys!
        self.default_properties = properties
-       @attributes = convert_properties_to :ruby, @attributes
+       @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
      end
 
 

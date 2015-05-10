@@ -39,19 +39,19 @@ in a new object of that class.
 
    ActiveNode/Dependent
 
-   ActiveNode/Initialize
-
    ActiveNode/Reflection
 
+   ActiveNode/Initialize
+
    ActiveNode/IdProperty
+
+   ActiveNode/Persistence
 
    ActiveNode/Validations
 
    ActiveNode/ClassMethods
 
    ActiveNode/OrmAdapter
-
-   ActiveNode/Persistence
 
    ActiveNode/QueryMethods
 
@@ -70,8 +70,6 @@ Constants
   * MODELS_FOR_LABELS_CACHE
 
   * USES_CLASSNAME
-
-  * ILLEGAL_PROPS
 
 
 
@@ -102,11 +100,11 @@ Files
 
   * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
 
+  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
+
   * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
 
   * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
-
-  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
@@ -120,9 +118,9 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L2>`_
 
-  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
-
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
+
+  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
 
   * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L2>`_
 
@@ -217,6 +215,22 @@ Methods
 
      def add_label(*label)
        @_persisted_obj.add_label(*label)
+     end
+
+
+
+.. _`Neo4j/ActiveNode#apply_default_values`:
+
+**#apply_default_values**
+  
+
+  .. hidden-code-block:: ruby
+
+     def apply_default_values
+       return if self.class.declared_property_defaults.empty?
+       self.class.declared_property_defaults.each_pair do |key, value|
+         self.send("#{key}=", value) if self.send(key).nil?
+       end
      end
 
 
@@ -358,23 +372,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode#convert_properties_to`:
-
-**#convert_properties_to**
-  
-
-  .. hidden-code-block:: ruby
-
-     def convert_properties_to(medium, properties)
-       converter = medium == :ruby ? :to_ruby : :to_db
-       properties.each_pair do |attr, value|
-         next if skip_conversion?(attr, value)
-         properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
-       end
-     end
-
-
-
 .. _`Neo4j/ActiveNode#cypher_hash`:
 
 **#cypher_hash**
@@ -385,6 +382,19 @@ Methods
 
      def cypher_hash(cypher_string)
        cypher_string.hash.abs
+     end
+
+
+
+.. _`Neo4j/ActiveNode#declared_property_manager`:
+
+**#declared_property_manager**
+  
+
+  .. hidden-code-block:: ruby
+
+     def declared_property_manager
+       self.class.declared_property_manager
      end
 
 
@@ -569,9 +579,10 @@ Methods
        self.class.extract_association_attributes!(properties)
        @_persisted_obj = persisted_node
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge!(properties.stringify_keys)
+       attr = @attributes || self.class.attributes_nil_hash.dup
+       @attributes = attr.merge!(properties).stringify_keys!
        self.default_properties = properties
-       @attributes = convert_properties_to :ruby, @attributes
+       @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
      end
 
 
@@ -585,6 +596,7 @@ Methods
 
      def initialize(attributes = {}, options = {})
        super(attributes, options)
+       @attributes ||= self.class.attributes_nil_hash.dup
        send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
      end
 

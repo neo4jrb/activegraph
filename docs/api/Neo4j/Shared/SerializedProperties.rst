@@ -19,8 +19,6 @@ See type_converters.rb for the serialization process.
 
    
 
-   SerializedProperties/ClassMethods
-
 
 
 

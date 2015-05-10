@@ -129,6 +129,10 @@ Constants
 
   * METHODS
 
+  * FIRST
+
+  * LAST
+
 
 
 Files
@@ -367,18 +371,18 @@ Methods
          fail ArgumentError, "Node must be of the association's class when model is specified"
        end
      
-       other_nodes.each do |other_node|
-         # Neo4j::Transaction.run do
-         other_node.save unless other_node.neo_id
+       Neo4j::Transaction.run do
+         other_nodes.each do |other_node|
+           other_node.save unless other_node.neo_id
      
-         return false if @association.perform_callback(@start_object, other_node, :before) == false
+           return false if @association.perform_callback(@start_object, other_node, :before) == false
      
-         @start_object.association_proxy_cache.clear
+           @start_object.association_proxy_cache.clear
      
-         _create_relationship(other_node, properties)
+           _create_relationship(other_node, properties)
      
-         @association.perform_callback(@start_object, other_node, :after)
-         # end
+           @association.perform_callback(@start_object, other_node, :after)
+         end
        end
      end
 
@@ -601,20 +605,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def first(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#first_and_last`:
-
-**#first_and_last**
-  
-
-  .. hidden-code-block:: ruby
-
-     def first_and_last(order, target)
-       self.order(order).limit(1).pluck(target).first
+       first_and_last(FIRST, target)
      end
 
 
@@ -728,7 +719,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def last(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
+       first_and_last(LAST, target)
      end
 
 
@@ -746,6 +737,21 @@ Methods
          q = distinct.nil? ? var : "DISTINCT #{var}"
          self.query.reorder.pluck("count(#{q}) AS #{var}").first
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#limit_value`:
+
+**#limit_value**
+  TODO: update this with public API methods if/when they are exposed
+
+  .. hidden-code-block:: ruby
+
+     def limit_value
+       return unless self.query.clause?(:limit)
+       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause.instance_variable_get(:@arg)
      end
 
 
@@ -969,11 +975,7 @@ Methods
        result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
          args = link.args(var, rel_var)
      
-         if args.is_a?(Array)
-           query.send(link.clause, *args)
-         else
-           query.send(link.clause, link.args(var, rel_var))
-         end
+         args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
        end
      
        result_query.tap { |query| query.proxy_chain_level = _chain_level }

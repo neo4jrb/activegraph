@@ -13,6 +13,8 @@ Shared
 
    Shared/ClassMethods
 
+   
+
    Shared/Property
 
    Shared/Identity
@@ -27,9 +29,13 @@ Shared
 
    Shared/TypeConverters
 
+   Shared/DeclaredProperty
+
    Shared/RelTypeConverters
 
    Shared/SerializedProperties
+
+   Shared/DeclaredPropertyManager
 
 
 
@@ -62,9 +68,13 @@ Files
 
   * `lib/neo4j/shared/type_converters.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L1>`_
 
+  * `lib/neo4j/shared/declared_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/declared_property.rb#L1>`_
+
   * `lib/neo4j/shared/rel_type_converters.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/rel_type_converters.rb#L1>`_
 
   * `lib/neo4j/shared/serialized_properties.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/serialized_properties.rb#L1>`_
+
+  * `lib/neo4j/shared/declared_property_manager.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/declared_property_manager.rb#L1>`_
 
 
 
@@ -72,6 +82,19 @@ Files
 
 Methods
 -------
+
+
+
+.. _`Neo4j/Shared#declared_property_manager`:
+
+**#declared_property_manager**
+  
+
+  .. hidden-code-block:: ruby
+
+     def declared_property_manager
+       self.class.declared_property_manager
+     end
 
 
 

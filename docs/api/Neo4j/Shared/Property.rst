@@ -15,8 +15,6 @@ Property
 
    Property/MultiparameterAssignmentError
 
-   Property/IllegalPropertyError
-
    
 
    
@@ -54,8 +52,6 @@ Constants
 ---------
 
 
-
-  * ILLEGAL_PROPS
 
 
 
@@ -148,11 +144,12 @@ Methods
 .. _`Neo4j/Shared/Property#initialize`:
 
 **#initialize**
-  
+  TODO: Remove the commented :super entirely once this code is part of a release.
+  It calls an init method in active_attr that has a very negative impact on performance.
 
   .. hidden-code-block:: ruby
 
-     def initialize(attributes = {}, options = {})
+     def initialize(attributes = {}, _options = nil)
        attributes = process_attributes(attributes) unless attributes.empty?
        @relationship_props = self.class.extract_association_attributes!(attributes)
        writer_method_props = extract_writer_methods!(attributes)
@@ -160,8 +157,7 @@ Methods
        send_props(writer_method_props) unless writer_method_props.empty?
      
        @_persisted_obj = nil
-     
-       super(attributes, options)
+       # super(attributes, options)
      end
 
 

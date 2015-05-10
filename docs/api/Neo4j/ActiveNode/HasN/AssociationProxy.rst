@@ -7,20 +7,6 @@ Return this object from associations
 It uses a QueryProxy to get results
 But also caches results and can have results cached on it
 
-AssociationProxy objects are designed to be returned from associations
-
-They represent the QueryProxy which is generated for an association (be that
-from an association directly on an object or anywhere down an association chain)
-and also store a cached result.
-
-If as association is called, an AssociationProxy is returned without any queries
-having been called.  If the AssociationProxy is enumerated over, the QueryProxy's
-enumeration will be used (which will, of course, make a query).  At this point the
-cached result is stored so that no further queries need to be made.
-
-In addition, the cached result can be manually set on an AssociationProxy without
-the QueryProxy needing to be enumerated.  This is when objects are eagerly loaded
-
 
 .. toctree::
    :maxdepth: 3
@@ -74,7 +60,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:24 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L24>`_
+  * `lib/neo4j/active_node/has_n.rb:10 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L10>`_
 
 
 

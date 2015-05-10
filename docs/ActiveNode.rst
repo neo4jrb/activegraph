@@ -192,3 +192,41 @@ You can query associations:
 
 .. seealso::
   :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`
+
+Eager Loading
+~~~~~~~~~~~~~
+
+ActiveNode supports eager loading of associations in two ways.  The first way is transparent.  When you do the following:
+
+.. code-block:: ruby
+
+  person.blog_posts.each do |post|
+    puts post.title
+    puts "Tags: #{post.tags.map(&:name).join(', ')}"
+    post.comments.each do |comment|
+      puts '  ' + comment.title
+    end
+  end
+
+Only three Cypher queries will be made:
+
+ * One to get the blog posts for the user
+ * One to get the tags for all of the blog posts
+ * One to get the comments for all of the blog posts
+
+While three queries isn't ideal, it is better than the naive approach of one query for every call to an object's association (Thanks to `DataMapper <http://datamapper.org/why.html>`_ for the inspiration).
+
+For those times when you need to load all of your data with one Cypher query, however, you can do the following to give `ActiveNode` a hint:
+
+.. code-block:: ruby
+
+  person.blog_posts.with_associations(:tags, :comments).each do |post|
+    puts post.title
+    puts "Tags: #{post.tags.map(&:name).join(', ')}"
+    post.comments.each do |comment|
+      puts '  ' + comment.title
+    end
+  end
+
+All that we did here was add ``.with_associations(:tags, :comments)``.  In addition to getting all of the blog posts, this will generate a Cypher query which uses the Cypher `COLLECT()` function to efficiently roll-up all of the associated objects.  `ActiveNode` then automatically structures them into a nested set of `ActiveNode` objects for you.
+

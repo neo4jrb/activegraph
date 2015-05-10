@@ -41,6 +41,12 @@ ClassMethods
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -56,7 +62,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:206 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L206>`_
+  * `lib/neo4j/active_node/has_n.rb:197 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L197>`_
 
 
 
@@ -90,6 +96,19 @@ Methods
 
      def associations
        @associations ||= {}
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#associations_keys`:
+
+**#associations_keys**
+  
+
+  .. hidden-code-block:: ruby
+
+     def associations_keys
+       @associations_keys ||= associations.keys
      end
 
 
@@ -211,6 +230,7 @@ Methods
 
      def inherited(klass)
        klass.instance_variable_set(:@associations, associations.clone)
+       @associations_keys = klass.associations_keys.clone
        super
      end
 

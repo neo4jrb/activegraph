@@ -31,6 +31,8 @@ HasN
 
    
 
+   
+
    HasN/ClassMethods
 
    HasN/Association
