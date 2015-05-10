@@ -53,6 +53,8 @@ describe 'Query API' do
     stub_active_node_class('Teacher') do
       property :name
       property :age
+      property :created_at
+      property :updated_at
 
       has_many :both, :lessons
 
@@ -185,6 +187,25 @@ describe 'Query API' do
           Teacher.merge(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
         end
+
+        it 'sets created_at and updated_at' do
+          teacher = Teacher.merge(name: 'Dr. Harold Samuels')
+          expect(teacher.created_at).not_to be_nil
+          expect(teacher.updated_at).not_to be_nil
+          expect(teacher.created_at).to eq teacher.updated_at
+        end
+
+        context 'on match' do
+          it 'updates updated_at but not created_at' do
+            teacher1 = Teacher.merge(name: 'Dr. Harold Samuels')
+            expect(teacher1.created_at).to eq teacher1.updated_at
+            expect(DateTime).to receive(:now).at_least(2).times.and_return 1234
+            teacher2 = Teacher.merge(name: 'Dr. Harold Samuels')
+            expect(teacher1.uuid).to eq teacher2.uuid
+            expect(teacher1.created_at).to eq teacher2.created_at
+            expect(teacher1.created_at).not_to eq teacher2.updated_at
+          end
+        end
       end
 
       describe '.find_or_create' do
@@ -205,6 +226,35 @@ describe 'Query API' do
           expect(Teacher.count).to eq(1)
           expect(Teacher.first.name).to eq('Dr. Harold Samuels')
           expect(Teacher.first.age).to eq(34)
+        end
+
+        it 'sets the id property method' do
+          teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher.uuid).not_to be nil
+        end
+
+        it 'does not change the id property on match' do
+          teacher1 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          teacher2 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher1.neo_id).to eq teacher2.neo_id
+          expect(teacher1.id).to eq teacher2.id
+        end
+
+        it 'sets timestamps on create' do
+          teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher.created_at).not_to be_nil
+          expect(teacher.updated_at).not_to be_nil
+        end
+
+        it 'changes updated_at on update but not created_at' do
+          teacher1 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher1.created_at).to eq teacher1.updated_at
+          expect(DateTime).to receive(:now).at_least(2).times.and_return 1234
+          teacher2 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+          expect(teacher1.uuid).to eq teacher2.uuid
+          expect(teacher1.created_at).to eq teacher2.created_at
+          expect(teacher1.updated_at).not_to eq teacher2.updated_at
+          expect(teacher2.updated_at.to_i).to eq 1234
         end
       end
     end

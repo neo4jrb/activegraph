@@ -18,6 +18,8 @@
 
 Neo4j.rb is an Active Model compliant Ruby/JRuby wrapper for [the Neo4j graph database](http://www.neo4j.org/). It uses the [neo4j-core](https://github.com/neo4jrb/neo4j-core) and [active_attr](https://github.com/cgriego/active_attr) gems.
 
+Neo4j is a transactional, open-source graph database.  A graph database manages data in a connected data structure, capable of  representing any kind of data in a very accessible way.  Information is stored in nodes and relationships connecting them, both of which can have arbitrary properties.  To learn more visit [What is a Graph Database?](http://neo4j.com/developer/graph-database/)
+
 With this gem you not only do you get a convenient higher level wrapper around Neo4j, but you have access to a powerful high-level query building interface which lets you take advantage of the power of Neo4j like this:
 
 ```ruby
@@ -27,12 +29,33 @@ person.friends.favorite_beers.country_of_origin(:country).
   pluck(:country, count: 'count(country)')
 ```
 
+It can be installed in your `Gemfile` with a simple `gem 'neo4j'`
+
 For a general overview see our website: http://neo4jrb.io/
 
 Winner of a 2014 Graphie for "Best Community Contribution" at Neo4j's [Graph Connect](http://graphconnect.com) conference!
 ![2014 Graphie](http://i.imgur.com/CkOoTTYm.jpg)
 
 Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction) and in the [announcement message](http://neo4jrb.io/blog/2015/01/09/neo4j-rb_v4-1_released.html). It will take a little time before all documentation is updated to reflect the new release but unless otherwise noted, all 3.X documentation is totally valid for v4.
+
+## Neo4j version support
+
+| **Neo4j Version** | v2.x | v3.x | v4.x |
+|-------------------|------|------|------|
+| 1.9.x             | Yes  | No   | No   |
+| 2.0.x             | No   | Yes  | No   |
+| 2.1.x             | No   | Yes  | Yes  |
+| 2.2.x             | No   | No   | Yes  |
+
+## Neo4j feature support
+
+| **Neo4j Feature**          |   v2.x | v3.x | v4.x |
+|----------------------------|--------|------|------|
+| Auth                       |   No   |  No  | Yes  |
+| Remote Cypher              |   Yes  |  Yes | Yes  |
+| Transactions               |   Yes  |  Yes | Yes  |
+| High Availability          |   No   |  Yes | Yes  |
+| Embedded JVM support       |   Yes  |  Yes | Yes  |
 
 ## Modern (3.x/4.X) Documentation
 

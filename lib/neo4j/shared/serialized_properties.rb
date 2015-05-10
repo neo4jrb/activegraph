@@ -14,25 +14,5 @@ module Neo4j::Shared
     def serializable_hash(*args)
       super.merge(id: id)
     end
-
-    module ClassMethods
-      def serialized_properties
-        @serialize ||= {}
-      end
-
-      def serialized_properties_keys
-        @serialized_property_keys ||= serialized_properties.keys
-      end
-
-      def serialized_properties=(serialize_hash)
-        @serialized_property_keys = nil
-        @serialize = serialize_hash.clone
-      end
-
-      def serialize(name, coder = JSON)
-        @serialize ||= {}
-        @serialize[name] = coder
-      end
-    end
   end
 end

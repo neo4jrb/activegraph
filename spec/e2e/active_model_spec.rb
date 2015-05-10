@@ -462,6 +462,36 @@ describe 'Neo4j::ActiveNode' do
       end.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
     end
 
+    it 'does not have the weird bug described in issue #761' do
+      stub_active_node_class('Community') do
+        property :name
+      end
+
+      stub_active_node_class('School') do
+        property :name
+        has_many :out, :child_of, type: :child_of, model_class: 'Community'
+      end
+
+      ivy_league = Community.create(name: 'Ivy League')
+
+      %w( Yale Harvard Cornell ).each do |name|
+        School.create(name: name, child_of: [ivy_league])
+      end
+
+      School.create(name: 'The College of New Jersey')
+
+      expect(School.where(name: 'The College of New Jersey').child_of.to_a).to be_empty
+    end
+
+    describe 'default property values' do
+      before { Person.property(:default_prop, default: 'Chopper') }
+      let(:guy) { Person.create(name: 'Guy Foo') }
+
+      it 'sets the default value if nil on persistence' do
+        expect(guy.default_prop).to eq 'Chopper'
+      end
+    end
+
     describe 'multiparameter attributes' do
       it 'converts to Date' do
         person = Person.create('date(1i)' => '2014', 'date(2i)' => '7', 'date(3i)' => '13')
@@ -606,7 +636,6 @@ describe 'Neo4j::ActiveNode' do
       i.each { |count| Person.create(name: "Billy-#{i}", age: count) }
     end
 
-    after(:all) { Person.delete_all }
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
 

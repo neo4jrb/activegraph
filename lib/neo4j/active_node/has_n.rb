@@ -177,12 +177,17 @@ module Neo4j::ActiveNode
       AssociationProxy.new(association_query_proxy(name, options), cached_result)
     end
 
-    #
     def previous_association_proxy_results_by_previous_id(association_proxy, association_name)
       query_proxy = self.class.as(:previous).where(neo_id: association_proxy.result.map(&:neo_id))
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next)
 
       Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
+    end
+
+    def handle_non_persisted_node(other_node)
+      return unless Neo4j::Config[:autosave_on_assignment]
+      other_node.try(:save)
+      save
     end
 
     def validate_persisted_for_association!
@@ -208,9 +213,14 @@ module Neo4j::ActiveNode
         @associations ||= {}
       end
 
+      def associations_keys
+        @associations_keys ||= associations.keys
+      end
+
       # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
       def inherited(klass)
         klass.instance_variable_set(:@associations, associations.clone)
+        @associations_keys = klass.associations_keys.clone
         super
       end
 
@@ -301,13 +311,18 @@ module Neo4j::ActiveNode
           association_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
         end
 
-        define_method("#{name}=") do |other_nodes|
-          association_proxy_cache.clear
-          association_proxy(name).replace_with(other_nodes)
-        end
+        define_has_many_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel}.merge(options))
+        end
+      end
+
+      def define_has_many_setter(name)
+        define_method("#{name}=") do |other_nodes|
+          association_proxy_cache.clear
+
+          Neo4j::Transaction.run { association_proxy(name).replace_with(other_nodes) }
         end
       end
 
@@ -318,14 +333,20 @@ module Neo4j::ActiveNode
           association_proxy(name, node: node, rel: rel).first
         end
 
-        define_method("#{name}=") do |other_node|
-          validate_persisted_for_association!
-          association_proxy_cache.clear # TODO: Should probably just clear for this association...
-          association_proxy(name).replace_with(other_node)
-        end
+        define_has_one_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel}.merge(options))
+        end
+      end
+
+      def define_has_one_setter(name)
+        define_method("#{name}=") do |other_node|
+          handle_non_persisted_node(other_node)
+          validate_persisted_for_association!
+          association_proxy_cache.clear # TODO: Should probably just clear for this association...
+
+          Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
         end
       end
 
@@ -383,6 +404,7 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
+        associations_keys << name
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
           @associations ||= {}
           @associations[name] = association

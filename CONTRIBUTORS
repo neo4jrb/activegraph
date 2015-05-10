@@ -1,29 +1,8 @@
-Maintainer:
-  Andreas Ronge <andreas dot ronge at gmail dot com>
+Maintainers:
+  Chris Grigg <subvertallchris @ GitHub>
+  Brian Underwood <cheerfulstoic @ GitHub>
 
-Contributors:
-* Dmytrii Nagirniak
-* Marcio Toshio
-* Kalyan Akella
-* Vivek Prahlad
-* Deepak N
-* Frédéric Vanclef
-* Pere Urbon
-* Joe Leaver
-* Junegunn Choi
-* Jay Adkisson 
-* Stephan Hagemann
-* Bobby Calderwood
-* Ben Jackson
-* Dwight van Tuyl
-* Martin Kleppmann
-* Peter Neubauer
-* Jan-Felix Wittmann
-* Marius Mårnes Mathiesen
-* Bert Fitié
-* Jan Berkel
-* David Beckwith
-* Johny Ho
-* Carlo Cabanilla
-* Anders Janmyr
-* Nick Sieger
+Creator:
+  Andreas Ronge <andreasronge @ GitHub>
+
+See: https://github.com/neo4jrb/neo4j/graphs/contributors
