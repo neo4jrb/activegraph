@@ -7,8 +7,8 @@ describe 'Module handling from config: :module_handling option' do
     end
   end
 
-  before { stub_const 'ModuleTest::Student', clazz }
-  after do
+  before do
+    stub_const 'ModuleTest::Student', clazz
     Neo4j::Config[:association_model_namespace] = nil
     Neo4j::Config[:module_handling] = nil
   end
@@ -84,6 +84,20 @@ describe 'Module handling from config: :module_handling option' do
       ModuleTest::Student.first
       expect(cache).not_to be_empty
       expect(cache[[:Student]]).to eq ModuleTest::Student
+    end
+  end
+
+  describe 'ActiveRel' do
+    Neo4j::Config[:module_handling] = :demodulize
+    # ActiveRel types are misbehaving when using stub_const, will have to fix later
+    module ModuleTest
+      class RelClass
+        include Neo4j::ActiveRel
+      end
+    end
+
+    it 'respects the option when setting rel type' do
+      expect(ModuleTest::RelClass._type).to eq 'REL_CLASS'
     end
   end
 end
