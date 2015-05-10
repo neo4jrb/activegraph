@@ -108,6 +108,12 @@ module Neo4j
       def association_model_namespace
         Neo4j::Config[:association_model_namespace] || nil
       end
+
+      def association_model_namespace_string
+        namespace = Neo4j::Config[:association_model_namespace]
+        return nil if namespace.nil?
+        "::#{namespace}"
+      end
     end
   end
 end

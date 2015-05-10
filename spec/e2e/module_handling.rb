@@ -25,6 +25,8 @@ describe 'Module handling from config: :module_handling option' do
 
       it 'strips module names from labels' do
         expect(ModuleTest::Student.mapped_label_name).to eq :Student
+        node = ModuleTest::Student.create
+        expect(ModuleTest::Student.first.neo_id).to eq node.neo_id
       end
     end
 
@@ -66,6 +68,22 @@ describe 'Module handling from config: :module_handling option' do
         node1.students << node2
         expect(node1.students.to_a).to include node2
       end
+    end
+  end
+
+  describe 'node wrapping' do
+    before do
+      Neo4j::Config[:module_handling] = :demodulize
+      Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE.clear
+    end
+    let(:cache) { Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE }
+
+    it 'saves the map of label to class correctly when labels do not match class' do
+      expect(cache).to be_empty
+      ModuleTest::Student.create
+      ModuleTest::Student.first
+      expect(cache).not_to be_empty
+      expect(cache[[:Student]]).to eq ModuleTest::Student
     end
   end
 end

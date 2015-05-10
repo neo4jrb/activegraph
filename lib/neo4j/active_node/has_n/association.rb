@@ -126,9 +126,7 @@ module Neo4j
         private
 
         def association_model_namespace
-          namespace = Neo4j::Config[:association_model_namespace]
-          return nil if namespace.nil?
-          "::#{namespace}"
+          Neo4j::Config.association_model_namespace_string
         end
 
         def direction_cypher(relationship_cypher, create, reverse = false)
