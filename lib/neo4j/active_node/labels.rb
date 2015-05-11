@@ -5,7 +5,6 @@ module Neo4j
       extend ActiveSupport::Concern
 
       WRAPPED_CLASSES = []
-      WRAPPED_MODELS = []
       MODELS_FOR_LABELS_CACHE = {}
       MODELS_FOR_LABELS_CACHE.clear
 
@@ -16,7 +15,7 @@ module Neo4j
           super
         end
 
-        Neo4j::ActiveNode::Labels.add_wrapped_class(model)
+        Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels._wrapped_classes.include?(model)
       end
 
       class InvalidQueryError < StandardError; end
@@ -48,7 +47,6 @@ module Neo4j
 
       def self.add_wrapped_class(model)
         _wrapped_classes << model
-        WRAPPED_MODELS << model
       end
 
       def self._wrapped_classes
@@ -60,7 +58,7 @@ module Neo4j
       end
 
       def self.model_cache(labels)
-        models = WRAPPED_MODELS.select do |model|
+        models = WRAPPED_CLASSES.select do |model|
           (model.mapped_label_names - labels).size == 0
         end
 
@@ -74,7 +72,7 @@ module Neo4j
       end
 
       def self.clear_wrapped_models
-        WRAPPED_MODELS.clear
+        WRAPPED_CLASSES.clear
       end
 
       protected
@@ -178,7 +176,7 @@ module Neo4j
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
         def mapped_label_name
-          @mapped_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
+          @mapped_label_name || label_for_model
         end
 
         # @return [Neo4j::Label] the label for this class
@@ -234,6 +232,25 @@ module Neo4j
           self.mapped_label_name = name
         end
         # rubocop:enable Style/AccessorMethodName
+
+        private
+
+        def label_for_model
+          (self.name.nil? ? object_id.to_s.to_sym : decorated_label_name)
+        end
+
+        def decorated_label_name
+          name =  case Neo4j::Config[:module_handling]
+                  when :demodulize
+                    self.name.demodulize
+                  when Proc
+                    Neo4j::Config[:module_handling].call self.name
+                  else
+                    self.name
+                  end
+
+          name.to_sym
+        end
       end
     end
   end

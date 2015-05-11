@@ -21,25 +21,37 @@ module Neo4j
       WRAPPED_CLASSES = {}
 
       included do
-        type self.name, true
+        type self.namespaced_model_name, true
       end
 
       module ClassMethods
         include Neo4j::Shared::RelTypeConverters
 
         def inherited(other)
-          other.type other.name, true
+          other.type other.namespaced_model_name, true
         end
 
         # @param type [String] sets the relationship type when creating relationships via this class
-        def type(given_type = self.name, auto = false)
+        def type(given_type = namespaced_model_name, auto = false)
           @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
             add_wrapped_class type unless uses_classname?
           end
         end
 
-        # @return [String] a string representing the relationship type that will be created
+        def namespaced_model_name
+          case Neo4j::Config[:module_handling]
+          when :demodulize
+            self.name.demodulize
+          when Proc
+            Neo4j::Config[:module_handling].call(self.name)
+          else
+            self.name
+          end
+        end
+
         attr_reader :rel_type
+        # @return [String] a string representing the relationship type that will be created
+        # attr_reader :rel_type
         alias_method :_type, :rel_type # Should be deprecated
 
         def add_wrapped_class(type)
