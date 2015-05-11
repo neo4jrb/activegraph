@@ -53,7 +53,6 @@ module Neo4j
         nil
       end
 
-
       # Sets the value of a config entry.
       #
       # @param [Symbol] key the key to set the parameter for
@@ -62,13 +61,11 @@ module Neo4j
         configuration[key.to_s] = val
       end
 
-
       # @param [Symbol] key The key of the config entry value we want
       # @return the the value of a config entry
       def [](key)
         configuration[key.to_s]
       end
-
 
       # Remove the value of a config entry.
       #
@@ -78,14 +75,12 @@ module Neo4j
         configuration.delete(key)
       end
 
-
       # Remove all configuration. This can be useful for testing purpose.
       #
       # @return nil
       def delete_all
         @configuration = nil
       end
-
 
       # @return [Hash] The config as a hash.
       def to_hash
@@ -104,6 +99,20 @@ module Neo4j
       def include_root_in_json
         # we use ternary because a simple || will always evaluate true
         Neo4j::Config[:include_root_in_json].nil? ? true : Neo4j::Config[:include_root_in_json]
+      end
+
+      def module_handling
+        Neo4j::Config[:module_handling] || :none
+      end
+
+      def association_model_namespace
+        Neo4j::Config[:association_model_namespace] || nil
+      end
+
+      def association_model_namespace_string
+        namespace = Neo4j::Config[:association_model_namespace]
+        return nil if namespace.nil?
+        "::#{namespace}"
       end
     end
   end

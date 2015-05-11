@@ -10,6 +10,8 @@ When to Use?
 
 It is not always necessary to use ActiveRel models but if you have the need for validation, callback, or working with properties on unpersisted relationships, it is the solution.
 
+Note that in Neo4j it isn't possible to access relationships except by first accessing a node.  Thus `ActiveRel` doesn't implement a `uuid` property like ``ActiveNode``.
+
 Separation of relationship logic instead of shoehorning it into Node models
 Validations, callbacks, custom methods, etc.
 Centralize relationship type, no longer need to use :type or :origin options in models

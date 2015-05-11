@@ -15,8 +15,9 @@ class Neo4j::Node
 
     def class_to_wrap
       load_classes_from_labels
-
-      named_class || ::Neo4j::ActiveNode::Labels.model_for_labels(labels)
+      (named_class || ::Neo4j::ActiveNode::Labels.model_for_labels(labels)).tap do |model_class|
+        Neo4j::Node::Wrapper.populate_constants_for_labels_cache(model_class, labels)
+      end
     end
 
     private
@@ -29,14 +30,23 @@ class Neo4j::Node
     CONSTANTS_FOR_LABELS_CACHE = {}
 
     def self.constant_for_label(label)
-      # @constants_for_labels ||= {}
       CONSTANTS_FOR_LABELS_CACHE[label] || CONSTANTS_FOR_LABELS_CACHE[label] = constantized_label(label)
     end
 
     def self.constantized_label(label)
-      label.to_s.constantize
-      rescue NameError
-        nil
+      "#{association_model_namespace}::#{label}".constantize
+    rescue NameError
+      nil
+    end
+
+    def self.populate_constants_for_labels_cache(model_class, labels)
+      labels.each do |label|
+        CONSTANTS_FOR_LABELS_CACHE[label] = model_class if CONSTANTS_FOR_LABELS_CACHE[label].nil?
+      end
+    end
+
+    def self.association_model_namespace
+      Neo4j::Config.association_model_namespace_string
     end
 
     def named_class

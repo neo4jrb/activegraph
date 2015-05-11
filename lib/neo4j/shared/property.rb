@@ -11,13 +11,13 @@ module Neo4j::Shared
 
     class UndefinedPropertyError < RuntimeError; end
     class MultiparameterAssignmentError < StandardError; end
-    class IllegalPropertyError < StandardError; end
-
-    ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
+    # @_declared_property_manager = DeclaredPropertyManager.new
 
     attr_reader :_persisted_obj
 
-    def initialize(attributes = {}, options = {})
+    # TODO: Remove the commented :super entirely once this code is part of a release.
+    # It calls an init method in active_attr that has a very negative impact on performance.
+    def initialize(attributes = {}, _options = nil)
       attributes = process_attributes(attributes) unless attributes.empty?
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
@@ -25,8 +25,7 @@ module Neo4j::Shared
       send_props(writer_method_props) unless writer_method_props.empty?
 
       @_persisted_obj = nil
-
-      super(attributes, options)
+      # super(attributes, options)
     end
 
     # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -54,6 +53,16 @@ module Neo4j::Shared
 
     def send_props(hash)
       hash.each { |key, value| self.send("#{key}=", value) }
+    end
+
+    protected
+
+    # This method is defined in ActiveModel.
+    # When each node is loaded, it is called once in pursuit of 'sanitize_for_mass_assignment', which this gem does not implement.
+    # In the course of doing that, it calls :attributes, which is quite expensive, so we return immediately.
+    def attribute_method?(attr_name) #:nodoc:
+      return false if attr_name == 'sanitize_for_mass_assignment'
+      super(attr_name)
     end
 
     private
@@ -112,6 +121,10 @@ module Neo4j::Shared
     end
 
     module ClassMethods
+      extend Forwardable
+
+      def_delegators :declared_property_manager, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
+
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
@@ -141,20 +154,25 @@ module Neo4j::Shared
       #      property :name, constraint: :unique
       #    end
       def property(name, options = {})
-        check_illegal_prop(name)
-        magic_properties(name, options)
-        attribute(name, options)
+        prop = DeclaredProperty.new(name, options)
+        prop.register
+        declared_property_manager.register(prop)
+
+        attribute(name, prop.options)
         constraint_or_index(name, options)
       end
 
       def undef_property(name)
-        fail ArgumentError, "Argument `#{name}` not an attribute" if not attribute_names.include?(name.to_s)
-
+        declared_property_manager.unregister(name)
         attribute_methods(name).each { |method| undef_method(method) }
-
         undef_constraint_or_index(name)
       end
 
+      def declared_property_manager
+        @_declared_property_manager ||= DeclaredPropertyManager.new(self)
+      end
+
+      # TODO: Move this to the DeclaredPropertyManager
       def default_property(name, &block)
         reset_default_properties(name) if default_properties.respond_to?(:size)
         default_properties[name] = block
@@ -193,12 +211,10 @@ module Neo4j::Shared
         end
       end
 
-      def magic_typecast_properties
-        @magic_typecast_properties ||= {}
-      end
-
-      def magic_typecast_properties_keys
-        @magic_typecast_properties_keys ||= magic_typecast_properties.keys
+      # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents
+      # an extra call to a slow dependency method.
+      def attributes_nil_hash
+        declared_property_manager.attributes_nil_hash
       end
 
       private
@@ -212,38 +228,6 @@ module Neo4j::Shared
           fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
           index(name, options) if options[:index] == :exact
         end
-      end
-
-      def check_illegal_prop(name)
-        fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
-      end
-
-      # Tweaks properties
-      def magic_properties(name, options)
-        magic_typecast(name, options)
-        type_converter(options)
-        options[:type] ||= DateTime if name.to_sym == :created_at || name.to_sym == :updated_at
-
-        # ActiveAttr does not handle "Time", Rails and Neo4j.rb 2.3 did
-        # Convert it to DateTime in the interest of consistency
-        options[:type] = DateTime if options[:type] == Time
-      end
-
-      def type_converter(options)
-        converter = options[:serializer]
-        return unless converter
-        options[:type]        = converter.convert_type
-        options[:typecaster]  = ActiveAttr::Typecasting::ObjectTypecaster.new
-        Neo4j::Shared::TypeConverters.register_converter(converter)
-      end
-
-      def magic_typecast(name, options)
-        typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
-        return unless typecaster && typecaster.respond_to?(:primitive_type)
-        magic_typecast_properties[name] = options[:type]
-        @magic_typecast_properties_keys = nil
-        options[:type] = typecaster.primitive_type
-        options[:typecaster] = typecaster
       end
     end
   end

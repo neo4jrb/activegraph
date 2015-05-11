@@ -45,6 +45,8 @@ EMBEDDED_DB_PATH = File.join(Dir.tmpdir, 'neo4j-core-java')
 I18n.enforce_available_locales = false
 
 module Neo4jSpecHelpers
+  extend ActiveSupport::Concern
+
   def create_embedded_session
     require 'neo4j-embedded/embedded_impermanent_session'
     session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
@@ -94,6 +96,21 @@ module Neo4jSpecHelpers
   def log_queries!
     Neo4j::Server::CypherSession.log_with do |message|
       puts message
+    end
+  end
+
+  class_methods do
+    def let_config(var_name)
+      before do
+        @neo4j_config_vars         ||= ActiveSupport::HashWithIndifferentAccess.new
+        @neo4j_config_vars[var_name] = Neo4j::Config[var_name]
+        Neo4j::Config[var_name]      = yield
+      end
+
+      after do
+        Neo4j::Config[var_name] = @neo4j_config_vars[var_name]
+        @neo4j_config_vars.delete(var_name)
+      end
     end
   end
 end

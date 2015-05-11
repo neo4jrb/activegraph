@@ -23,6 +23,10 @@ describe Neo4j::ActiveNode::Validations do
       def self.model_name
         ActiveModel::Name.new(self, nil, 'MyClass')
       end
+
+      def self.fetch_upstream_primitive(_attr)
+        nil
+      end
     end
   end
 
