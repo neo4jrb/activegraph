@@ -198,7 +198,8 @@ describe 'Query API' do
 
         it 'sets all expected labels' do
           node = Substitute.merge({})
-          expect(node.labels).to eq [:TeacherFoo, :Substitute]
+          expect(node.labels.count).to eq 2
+          expect(node.labels).to include(:TeacherFoo, :Substitute)
         end
 
         it 'allows for merging' do
