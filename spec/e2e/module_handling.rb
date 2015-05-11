@@ -17,6 +17,7 @@ describe 'Module handling from config: :module_handling option' do
     context 'with config unspecified or neither :demodulize nor a proc' do
       it 'are set using the full module and class name' do
         expect(ModuleTest::Student.mapped_label_name).to eq :'ModuleTest::Student'
+        expect(ModuleTest::Student.send(:decorated_label_name)).to eq :'ModuleTest::Student'
       end
     end
 
@@ -25,6 +26,7 @@ describe 'Module handling from config: :module_handling option' do
 
       it 'strips module names from labels' do
         expect(ModuleTest::Student.mapped_label_name).to eq :Student
+        expect(ModuleTest::Student.send(:decorated_label_name)).to eq :Student
         node = ModuleTest::Student.create
         expect(ModuleTest::Student.first.neo_id).to eq node.neo_id
       end
@@ -40,6 +42,7 @@ describe 'Module handling from config: :module_handling option' do
 
       it 'lets you modify the name as you see fit' do
         expect(ModuleTest::Student.mapped_label_name).to eq :'Foo::Student'
+        expect(ModuleTest::Student.send(:decorated_label_name)).to eq :'Foo::Student'
       end
     end
   end
@@ -105,6 +108,7 @@ describe 'Module handling from config: :module_handling option' do
 
       it 'respects the option when setting rel type' do
         expect(ModuleTest::RelClass._type).to eq 'REL_CLASS'
+        expect(ModuleTest::RelClass.namespaced_model_name).to eq 'RelClass'
       end
     end
 
@@ -113,6 +117,7 @@ describe 'Module handling from config: :module_handling option' do
 
       it 'uses the full Module::Class name' do
         expect(ModuleTest::RelClass._type).to eq 'MODULE_TEST::REL_CLASS'
+        expect(ModuleTest::RelClass.namespaced_model_name).to eq 'ModuleTest::RelClass'
       end
     end
 
@@ -124,6 +129,7 @@ describe 'Module handling from config: :module_handling option' do
 
       it 'modifies the type as expected' do
         expect(ModuleTest::RelClass._type).to eq 'MODULE_TEST_FOO_REL_CLASS'
+        expect(ModuleTest::RelClass.namespaced_model_name).to eq 'ModuleTest_FOO_RelClass'
       end
     end
   end
