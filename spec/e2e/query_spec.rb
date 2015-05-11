@@ -233,6 +233,24 @@ describe 'Query API' do
           expect(teacher.uuid).not_to be nil
         end
 
+        context 'custom id property method' do
+          before do
+            stub_active_node_class('CustomTeacher') do
+              id_property :custom_uuid, on: :custom_prop_method
+              property :name
+
+              def custom_prop_method
+                "#{self.name.gsub('.', '').gsub(' ', '')}_#{SecureRandom.uuid}"
+              end
+            end
+          end
+
+          it 'creates as expected' do
+            teacher = CustomTeacher.find_or_create(name: 'Dr. Harold Samuels')
+            expect(teacher.custom_uuid).to include('DrHaroldSamuels_')
+          end
+        end
+
         it 'does not change the id property on match' do
           teacher1 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
           teacher2 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
