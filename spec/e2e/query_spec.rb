@@ -181,6 +181,26 @@ describe 'Query API' do
       end
 
       describe '.merge' do
+        # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
+        # so please excuse this kludge.
+        after(:all) do
+          Object.send(:remove_const, :TeacherFoo)
+          Object.send(:remove_const, :Substitute)
+        end
+
+        class TeacherFoo
+          include Neo4j::ActiveNode
+        end
+
+        class Substitute < TeacherFoo
+          include Neo4j::ActiveNode
+        end
+
+        it 'sets all expected labels' do
+          node = Substitute.merge({})
+          expect(node.labels).to eq [:TeacherFoo, :Substitute]
+        end
+
         it 'allows for merging' do
           Teacher.merge(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
