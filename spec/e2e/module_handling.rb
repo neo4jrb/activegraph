@@ -88,16 +88,43 @@ describe 'Module handling from config: :module_handling option' do
   end
 
   describe 'ActiveRel' do
-    Neo4j::Config[:module_handling] = :demodulize
-    # ActiveRel types are misbehaving when using stub_const, will have to fix later
-    module ModuleTest
-      class RelClass
-        include Neo4j::ActiveRel
+    let(:test_config) do
+      proc do |config_option|
+        Neo4j::Config[:module_handling] = config_option
+        # ActiveRel types are misbehaving when using stub_const, will have to fix later
+        module ModuleTest
+          class RelClass
+            include Neo4j::ActiveRel
+          end
+        end
       end
     end
 
-    it 'respects the option when setting rel type' do
-      expect(ModuleTest::RelClass._type).to eq 'REL_CLASS'
+    context 'with module_handling set to demodulize' do
+      before { test_config.call(:demodulize) }
+
+      it 'respects the option when setting rel type' do
+        expect(ModuleTest::RelClass._type).to eq 'REL_CLASS'
+      end
+    end
+
+    context 'with module_handling set to none or not set' do
+      before { test_config.call(:none) }
+
+      it 'uses the full Module::Class name' do
+        expect(ModuleTest::RelClass._type).to eq 'MODULE_TEST::REL_CLASS'
+      end
+    end
+
+    context 'with module_handling set to a proc' do
+      before do
+        custom_config = proc { |name| name.gsub('::', '_FOO_') }
+        test_config.call(custom_config)
+      end
+
+      it 'modifies the type as expected' do
+        expect(ModuleTest::RelClass._type).to eq 'MODULE_TEST_FOO_REL_CLASS'
+      end
     end
   end
 end

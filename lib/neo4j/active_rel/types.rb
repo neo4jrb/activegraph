@@ -43,7 +43,7 @@ module Neo4j
           when :demodulize
             self.name.demodulize
           when Proc
-            proc.call(self.name)
+            Neo4j::Config[:module_handling].call(self.name)
           else
             self.name
           end
