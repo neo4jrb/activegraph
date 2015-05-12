@@ -181,6 +181,27 @@ describe 'Query API' do
       end
 
       describe '.merge' do
+        # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
+        # so please excuse this kludge.
+        after(:all) do
+          Object.send(:remove_const, :TeacherFoo)
+          Object.send(:remove_const, :Substitute)
+        end
+
+        class TeacherFoo
+          include Neo4j::ActiveNode
+        end
+
+        class Substitute < TeacherFoo
+          include Neo4j::ActiveNode
+        end
+
+        it 'sets all expected labels' do
+          node = Substitute.merge({})
+          expect(node.labels.count).to eq 2
+          expect(node.labels).to include(:TeacherFoo, :Substitute)
+        end
+
         it 'allows for merging' do
           Teacher.merge(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
@@ -231,6 +252,24 @@ describe 'Query API' do
         it 'sets the id property method' do
           teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
           expect(teacher.uuid).not_to be nil
+        end
+
+        context 'custom id property method' do
+          before do
+            stub_active_node_class('CustomTeacher') do
+              id_property :custom_uuid, on: :custom_prop_method
+              property :name
+
+              def custom_prop_method
+                "#{self.name.gsub('.', '').gsub(' ', '')}_#{SecureRandom.uuid}"
+              end
+            end
+          end
+
+          it 'creates as expected' do
+            teacher = CustomTeacher.find_or_create(name: 'Dr. Harold Samuels')
+            expect(teacher.custom_uuid).to include('DrHaroldSamuels_')
+          end
         end
 
         it 'does not change the id property on match' do
