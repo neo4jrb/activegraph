@@ -27,7 +27,7 @@ Configuration
 
     **Available values:** ``:upcase``, ``:downcase``, ``:legacy``, ``:none``
 
-    Determines how relationship types as specified in associations are transformed when stored in the database.  By default this is upper-case to match with Neo4j convention so if you specify an association of ``has_many :in, :posts, type: :has_post`` then the relationship type in the database will be ``HAS_POST``
+    Determines how relationship types as specified in associations are transformed when stored in the database.  By default this is upper-case to match with Neo4j convention so if you specify an association of ``has_many :in, :posts, :has_post`` then the relationship type in the database will be ``HAS_POST``
 
     ``:legacy``
       Causes the type to be downcased and preceded by a `#`

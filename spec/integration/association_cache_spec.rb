@@ -6,22 +6,22 @@ describe 'Association Cache' do
 
     stub_active_node_class('Student') do
       property :name
-      has_many :out, :lessons, type: :has_student, model_class: 'Lesson'
-      has_many :in, :exams, model_class: 'Exam', origin: :students
-      has_one :out, :favorite_lesson, model_class: 'Lesson'
+      has_many :out, :lessons, :has_student, model_class: 'Lesson'
+      has_many :in, :exams, nil, model_class: 'Exam', origin: :students
+      has_one :out, :favorite_lesson, nil, model_class: 'Lesson'
     end
 
     stub_active_node_class('Lesson') do
       property :subject
       property :level, type: Integer
-      has_many :in, :students, model_class: Student, origin: :lessons
-      has_many :out, :exams_given, model_class: 'Exam'
+      has_many :in, :students, nil, model_class: Student, origin: :lessons
+      has_many :out, :exams_given, nil, model_class: 'Exam'
     end
 
     stub_active_node_class('Exam') do
       property :name
-      has_many :in, :lessons, model_class: 'Lesson', origin: :exams_given
-      has_many :out, :students, type: :has_student, model_class: Student
+      has_many :in, :lessons, nil, model_class: 'Lesson', origin: :exams_given
+      has_many :out, :students, :has_student, model_class: Student
     end
   end
 

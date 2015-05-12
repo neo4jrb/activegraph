@@ -7,24 +7,24 @@ describe 'query_proxy_methods' do
 
     stub_active_node_class('Student') do
       property :name
-      has_many :out, :lessons, model_class: 'Lesson', rel_class: 'EnrolledIn'
-      has_many :out, :things, model_class: false, type: 'lessons'
+      has_many :out, :lessons, nil, model_class: 'Lesson', rel_class: 'EnrolledIn'
+      has_many :out, :things, :lessons, model_class: false
     end
 
     stub_active_node_class('Lesson') do
       property :name
-      has_many :in, :students, model_class: 'Student', rel_class: 'EnrolledIn'
-      has_many :in, :teachers, model_class: 'Teacher', origin: :lessons
+      has_many :in, :students, nil, model_class: 'Student', rel_class: 'EnrolledIn'
+      has_many :in, :teachers, nil, model_class: 'Teacher', origin: :lessons
     end
 
     stub_active_node_class('Teacher') do
       property :name
       property :age, type: Integer
-      has_many :out, :lessons, model_class: 'Lesson', type: 'teaching_lesson'
+      has_many :out, :lessons, :teaching_lesson, model_class: 'Lesson'
     end
 
     stub_active_node_class('EmptyClass') do
-      has_many :out, :lessons, model_class: 'Lesson'
+      has_many :out, :lessons, nil, model_class: 'Lesson'
     end
 
     stub_active_rel_class('EnrolledIn') do

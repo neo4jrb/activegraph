@@ -164,7 +164,7 @@ Methods
 
      def delete(node)
        self.match_to(node).query.delete(rel_var).exec
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -184,7 +184,7 @@ Methods
          rescue Neo4j::Session::CypherError
            self.query.delete(target).exec
          end
-         clear_caller_cache
+         clear_source_object_cache
        end
      end
 
@@ -212,7 +212,7 @@ Methods
 
      def destroy(node)
        self.rels_to(node).map!(&:destroy)
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 

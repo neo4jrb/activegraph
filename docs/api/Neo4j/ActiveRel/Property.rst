@@ -100,8 +100,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 

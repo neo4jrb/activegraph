@@ -214,7 +214,6 @@ Methods
 
      def _model_label_string
        return if !@model
-     
        @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
      end
 
@@ -292,13 +291,13 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def base_query(var)
+     def base_query(var, with_labels = true)
        if @association
          chain_var = _association_chain_var
          (_association_query_start(chain_var) & _query).send(@match_type,
                                                              "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
        else
-         starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+         starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
        end
      end
 
@@ -313,20 +312,6 @@ Methods
 
      def empty?(target = nil)
        query_with_target(target) { |var| !self.exists?(nil, var) }
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#caller`:
-
-**#caller**
-  The most recent node to start a QueryProxy chain.
-  Will be nil when using QueryProxy chains on class methods.
-
-  .. hidden-code-block:: ruby
-
-     def caller
-       @caller
      end
 
 
@@ -404,7 +389,7 @@ Methods
 
      def delete(node)
        self.match_to(node).query.delete(rel_var).exec
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -424,7 +409,7 @@ Methods
          rescue Neo4j::Session::CypherError
            self.query.delete(target).exec
          end
-         clear_caller_cache
+         clear_source_object_cache
        end
      end
 
@@ -452,7 +437,7 @@ Methods
 
      def destroy(node)
        self.rels_to(node).map!(&:destroy)
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -691,7 +676,7 @@ Methods
   * node_var: A string or symbol to be used by Cypher within its query string as an identifier
   * rel_var:  Same as above but pertaining to a relationship identifier
   * session: The session to be used for this query
-  * caller:  The node instance at the start of the QueryProxy chain
+  * source_object:  The node instance at the start of the QueryProxy chain
   * query_proxy: An existing QueryProxy chain upon which this new object should be built
   
   QueryProxy objects are evaluated lazily.
@@ -704,8 +689,8 @@ Methods
        @context = options.delete(:context)
        @options = options
      
-       @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
-         options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
+       @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
+         options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
      
        @match_type = @optional ? :optional_match : :match
      
@@ -978,8 +963,8 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def query_as(var)
-       result_query = @chain.inject(base_query(var).params(@params)) do |query, link|
+     def query_as(var, with_label = true)
+       result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
          args = link.args(var, rel_var)
      
          if args.is_a?(Array)
@@ -1147,6 +1132,20 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#source_object`:
+
+**#source_object**
+  The most recent node to start a QueryProxy chain.
+  Will be nil when using QueryProxy chains on class methods.
+
+  .. hidden-code-block:: ruby
+
+     def source_object
+       @source_object
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#start_object`:
 
 **#start_object**
@@ -1210,7 +1209,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def unique_nodes(association, self_identifer, other_node, other_rel)
-       fail 'Only supported by in QueryProxy chains started by an instance' unless caller
+       fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
      
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)

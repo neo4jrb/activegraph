@@ -4,7 +4,7 @@ describe 'works well together with Neo4j::Core' do
   let(:clazz) do
     UniqueClass.create do
       include Neo4j::ActiveNode
-      has_many :out, :stuff, type: :stuff, model_class: false
+      has_many :out, :stuff, :stuff, model_class: false
     end
   end
 

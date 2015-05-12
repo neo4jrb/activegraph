@@ -7,9 +7,9 @@ describe '_classname property' do
     stub_active_node_class('Student') do
       property :name
 
-      has_many :out, :lessons, model_class: 'Lesson', rel_class: 'EnrolledIn'
-      has_many :out, :lessons_with_type, model_class: 'Lesson', rel_class: 'StudentLesson'
-      has_many :out, :lessons_with_classname, model_class: 'Lesson', rel_class: 'EnrolledInClassname'
+      has_many :out, :lessons, nil, model_class: 'Lesson', rel_class: 'EnrolledIn'
+      has_many :out, :lessons_with_type, nil, model_class: 'Lesson', rel_class: 'StudentLesson'
+      has_many :out, :lessons_with_classname, nil, model_class: 'Lesson', rel_class: 'EnrolledInClassname'
     end
 
     stub_active_node_class('Lesson') do

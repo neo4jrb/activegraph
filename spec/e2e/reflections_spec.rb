@@ -6,13 +6,13 @@ describe 'reflections' do
 
     class MyClass
       include Neo4j::ActiveNode
-      has_many :in,  :in_things, model_class: self, type: 'things'
-      has_many :out, :out_things, model_class: self, type: 'things'
+      has_many :in,  :in_things, :things, model_class: self
+      has_many :out, :out_things, :things, model_class: self
 
-      has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
-      has_many :out, :things_with_rel_class, model_class: self, rel_class: RelClass
-      has_many :out, :string_rel_class, model_class: self, rel_class: 'RelClass'
-      has_one :out, :one_thing, model_class: self, type: 'one_thing'
+      has_many :in, :in_things_string, :things, model_class: self.to_s
+      has_many :out, :things_with_rel_class, nil, model_class: self, rel_class: RelClass
+      has_many :out, :string_rel_class, nil, model_class: self, rel_class: 'RelClass'
+      has_one :out, :one_thing, :one_thing, model_class: self
     end
 
     class RelClass

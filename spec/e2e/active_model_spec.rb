@@ -495,7 +495,7 @@ describe Neo4j::ActiveNode do
 
       stub_active_node_class('School') do
         property :name
-        has_many :out, :child_of, type: :child_of, model_class: 'Community'
+        has_many :out, :child_of, :child_of, model_class: 'Community'
       end
 
       ivy_league = Community.create(name: 'Ivy League')
@@ -661,6 +661,8 @@ describe Neo4j::ActiveNode do
       i = 1.upto(16).to_a
       i.each { |count| Person.create(name: "Billy-#{i}", age: count) }
     end
+
+    after(:each) { Person.delete_all }
 
     let(:t) { Person.where }
     let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
