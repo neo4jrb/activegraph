@@ -263,7 +263,7 @@ module Neo4j::ActiveNode
       #     The name is also used to form default assumptions about the model which is being referred to
       #
       #     Example:
-      #       ``Person.has_many :out, :posts``
+      #       ``Person.has_many :out, :posts, type: :wrote``
       #
       #       will assume a `model_class` option of ``'Post'`` unless otherwise specified
       #

@@ -190,7 +190,7 @@ module Neo4j
 
         # Return basic details about association as declared in the model
         # @example
-        #   has_many :in, :bands
+        #   has_many :in, :bands, type: :has_band
         def base_declaration
           "#{type} #{direction.inspect}, #{name.inspect}"
         end
