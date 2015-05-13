@@ -4,6 +4,8 @@ Neo4j
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -112,9 +114,9 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L1>`_
 
-  * `lib/neo4j/active_node/dependent/association_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L1>`_
-
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L1>`_
+
+  * `lib/neo4j/active_node/dependent/association_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L1>`_
 
   * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L1>`_
 

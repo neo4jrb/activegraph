@@ -121,7 +121,8 @@ module Neo4j
         # Please check unscoped if you want to remove all previous scopes (including
         # the default_scope) during the execution of a block.
         def scoping
-          previous, @model.current_scope = @model.current_scope, self
+          previous = @model.current_scope
+          @model.current_scope = self
           yield
         ensure
           @model.current_scope = previous
@@ -164,14 +165,10 @@ module Neo4j
         end
 
         def create(other_nodes, properties)
-          fail 'Can only create associations on associations' unless @association
-          other_nodes = _nodeify(*other_nodes)
+          fail 'Can only create relationships on associations' if !@association
+          other_nodes = _nodeify!(*other_nodes)
 
           properties = @association.inject_classname(properties)
-
-          if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
-            fail ArgumentError, "Node must be of the association's class when model is specified"
-          end
 
           Neo4j::Transaction.run do
             other_nodes.each do |other_node|
@@ -179,7 +176,7 @@ module Neo4j
 
               return false if @association.perform_callback(@start_object, other_node, :before) == false
 
-              @start_object.clear_association_cache
+              @start_object.association_proxy_cache.clear
 
               _create_relationship(other_node, properties)
 
@@ -198,10 +195,16 @@ module Neo4j
           rels.first
         end
 
-        def _nodeify(*args)
-          [args].flatten.map do |arg|
+        def _nodeify!(*args)
+          other_nodes = [args].flatten.map do |arg|
             (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
           end.compact
+
+          if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+            fail ArgumentError, "Node must be of the association's class when model is specified"
+          end
+
+          other_nodes
         end
 
         def _create_relationship(other_node_or_nodes, properties)
@@ -219,11 +222,14 @@ module Neo4j
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
-            args[2] = self if @model.association?(method_name) || @model.scope?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
             super
           end
+        end
+
+        def respond_to?(method_name)
+          (@model && @model.respond_to?(method_name)) || super
         end
 
         # Give ability to call `#find` on associations to get a scoped find
@@ -321,9 +327,7 @@ module Neo4j
 
         def build_deeper_query_proxy(method, args)
           new_link.tap do |new_query|
-            Link.for_args(@model, method, args).each do |link|
-              new_query._add_links(link)
-            end
+            Link.for_args(@model, method, args).each { |link| new_query._add_links(link) }
           end
         end
       end

@@ -3,6 +3,9 @@ AssociationReflection
 
 
 
+The actual reflection object that contains information about the given association.
+These should never need to be created manually, they will always be created by declaring a :has_many or :has_one association on a model.
+
 
 .. toctree::
    :maxdepth: 3

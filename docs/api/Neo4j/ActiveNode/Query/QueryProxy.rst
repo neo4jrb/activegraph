@@ -4,10 +4,14 @@ QueryProxy
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
 
    
 
@@ -125,6 +129,10 @@ Constants
 
   * METHODS
 
+  * FIRST
+
+  * LAST
+
 
 
 Files
@@ -214,7 +222,6 @@ Methods
 
      def _model_label_string
        return if !@model
-     
        @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
      end
 
@@ -292,13 +299,13 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def base_query(var)
+     def base_query(var, with_labels = true)
        if @association
          chain_var = _association_chain_var
          (_association_query_start(chain_var) & _query).send(@match_type,
                                                              "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
        else
-         starting_query ? (starting_query & _query_model_as(var)) : _query_model_as(var)
+         starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
        end
      end
 
@@ -313,20 +320,6 @@ Methods
 
      def empty?(target = nil)
        query_with_target(target) { |var| !self.exists?(nil, var) }
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#caller`:
-
-**#caller**
-  The most recent node to start a QueryProxy chain.
-  Will be nil when using QueryProxy chains on class methods.
-
-  .. hidden-code-block:: ruby
-
-     def caller
-       @caller
      end
 
 
@@ -369,7 +362,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def create(other_nodes, properties)
-       fail 'Can only create associations on associations' unless @association
+       fail 'Can only create relationships on associations' if !@association
        other_nodes = _nodeify(*other_nodes)
      
        properties = @association.inject_classname(properties)
@@ -378,18 +371,18 @@ Methods
          fail ArgumentError, "Node must be of the association's class when model is specified"
        end
      
-       other_nodes.each do |other_node|
-         # Neo4j::Transaction.run do
-         other_node.save unless other_node.neo_id
+       Neo4j::Transaction.run do
+         other_nodes.each do |other_node|
+           other_node.save unless other_node.neo_id
      
-         return false if @association.perform_callback(@start_object, other_node, :before) == false
+           return false if @association.perform_callback(@start_object, other_node, :before) == false
      
-         @start_object.clear_association_cache
+           @start_object.association_proxy_cache.clear
      
-         _create_relationship(other_node, properties)
+           _create_relationship(other_node, properties)
      
-         @association.perform_callback(@start_object, other_node, :after)
-         # end
+           @association.perform_callback(@start_object, other_node, :after)
+         end
        end
      end
 
@@ -404,7 +397,7 @@ Methods
 
      def delete(node)
        self.match_to(node).query.delete(rel_var).exec
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -424,7 +417,7 @@ Methods
          rescue Neo4j::Session::CypherError
            self.query.delete(target).exec
          end
-         clear_caller_cache
+         clear_source_object_cache
        end
      end
 
@@ -452,7 +445,7 @@ Methods
 
      def destroy(node)
        self.rels_to(node).map!(&:destroy)
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -466,13 +459,12 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def each(node = true, rel = nil, &_block)
-       if node && rel
-         enumerable_query(identity, rel_var).each { |returned_node, returned_rel| yield returned_node, returned_rel }
-       else
-         pluck_this = !rel ? identity : @rel_var
-         enumerable_query(pluck_this).each { |returned_node| yield returned_node }
-       end
+     def each(node = true, rel = nil, &block)
+       pluck_vars = []
+       pluck_vars << identity if node
+       pluck_vars << @rel_var if rel
+     
+       pluck(*pluck_vars).each(&block)
      end
 
 
@@ -488,7 +480,7 @@ Methods
 
      def each_for_destruction(owning_node)
        target = owning_node.called_by || owning_node
-       objects = enumerable_query(identity).compact.reject do |obj|
+       objects = pluck(identity).compact.reject do |obj|
          target.dependent_children.include?(obj)
        end
      
@@ -613,20 +605,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def first(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#first_and_last`:
-
-**#first_and_last**
-  
-
-  .. hidden-code-block:: ruby
-
-     def first_and_last(order, target)
-       self.order(order).limit(1).pluck(target).first
+       first_and_last(FIRST, target)
      end
 
 
@@ -691,7 +670,7 @@ Methods
   * node_var: A string or symbol to be used by Cypher within its query string as an identifier
   * rel_var:  Same as above but pertaining to a relationship identifier
   * session: The session to be used for this query
-  * caller:  The node instance at the start of the QueryProxy chain
+  * source_object:  The node instance at the start of the QueryProxy chain
   * query_proxy: An existing QueryProxy chain upon which this new object should be built
   
   QueryProxy objects are evaluated lazily.
@@ -704,8 +683,8 @@ Methods
        @context = options.delete(:context)
        @options = options
      
-       @node_var, @session, @caller, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
-         options.values_at(:node, :session, :caller, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
+       @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
+         options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
      
        @match_type = @optional ? :optional_match : :match
      
@@ -740,7 +719,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def last(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
+       first_and_last(LAST, target)
      end
 
 
@@ -758,6 +737,21 @@ Methods
          q = distinct.nil? ? var : "DISTINCT #{var}"
          self.query.reorder.pluck("count(#{q}) AS #{var}").first
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#limit_value`:
+
+**#limit_value**
+  TODO: update this with public API methods if/when they are exposed
+
+  .. hidden-code-block:: ruby
+
+     def limit_value
+       return unless self.query.clause?(:limit)
+       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause.instance_variable_get(:@arg)
      end
 
 
@@ -798,7 +792,6 @@ Methods
 
      def method_missing(method_name, *args, &block)
        if @model && @model.respond_to?(method_name)
-         args[2] = self if @model.association?(method_name) || @model.scope?(method_name)
          scoping { @model.public_send(method_name, *args, &block) }
        else
          super
@@ -893,7 +886,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def optional(association, node_var = nil, rel_var = nil)
-       self.send(association, node_var, rel_var, nil, optional: true)
+       self.send(association, node_var, rel_var, optional: true)
      end
 
 
@@ -978,15 +971,11 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def query_as(var)
-       result_query = @chain.inject(base_query(var).params(@params)) do |query, link|
+     def query_as(var, with_label = true)
+       result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
          args = link.args(var, rel_var)
      
-         if args.is_a?(Array)
-           query.send(link.clause, *args)
-         else
-           query.send(link.clause, link.args(var, rel_var))
-         end
+         args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
        end
      
        result_query.tap { |query| query.proxy_chain_level = _chain_level }
@@ -1106,6 +1095,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#respond_to?`:
+
+**#respond_to?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def respond_to?(method_name)
+       (@model && @model.respond_to?(method_name)) || super
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#scoping`:
 
 **#scoping**
@@ -1122,7 +1124,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def scoping
-       previous, @model.current_scope = @model.current_scope, self
+       previous = @model.current_scope
+       @model.current_scope = self
        yield
      ensure
        @model.current_scope = previous
@@ -1143,6 +1146,20 @@ Methods
          q = distinct.nil? ? var : "DISTINCT #{var}"
          self.query.reorder.pluck("count(#{q}) AS #{var}").first
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#source_object`:
+
+**#source_object**
+  The most recent node to start a QueryProxy chain.
+  Will be nil when using QueryProxy chains on class methods.
+
+  .. hidden-code-block:: ruby
+
+     def source_object
+       @source_object
      end
 
 
@@ -1210,7 +1227,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def unique_nodes(association, self_identifer, other_node, other_rel)
-       fail 'Only supported by in QueryProxy chains started by an instance' unless caller
+       fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
      
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)

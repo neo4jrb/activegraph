@@ -4,6 +4,8 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -149,14 +151,14 @@ Methods
      def scope(name, proc)
        _scope[name.to_sym] = proc
      
-       define_method(name) do |query_params = nil, some_var = nil, query_proxy = nil|
-         self.class.send(name, query_params, some_var, query_proxy)
+       define_method(name) do |query_params = nil, some_var = nil|
+         self.class.send(name, query_params, some_var, current_scope)
        end
      
        klass = class << self; self; end
        klass.instance_eval do
-         define_method(name) do |query_params = nil, _ = nil, query_proxy = nil|
-           eval_context = ScopeEvalContext.new(self, query_proxy || self.query_proxy)
+         define_method(name) do |query_params = nil, _ = nil|
+           eval_context = ScopeEvalContext.new(self, current_scope || self.query_proxy)
            proc = _scope[name.to_sym]
            _call_scope_context(eval_context, query_params, proc)
          end

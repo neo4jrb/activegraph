@@ -7,7 +7,10 @@ module Neo4j::ActiveRel
     class ModelClassInvalidError < RuntimeError; end
     class RelCreateFailedError < RuntimeError; end
 
-    def clear_association_cache; end
+    # Should probably find a way to not need this
+    def association_proxy_cache
+      {}
+    end
 
     def save(*)
       update_magic_properties

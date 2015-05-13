@@ -3,6 +3,9 @@ ActiveRel
 
 
 
+Makes Neo4j Relationships more or less act like ActiveRecord objects.
+See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
+
 
 .. toctree::
    :maxdepth: 3
@@ -25,9 +28,9 @@ ActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -46,8 +49,6 @@ Constants
   * ACTIVEREL_NODE_MATCH_STRING
 
   * USES_CLASSNAME
-
-  * ILLEGAL_PROPS
 
 
 
@@ -68,9 +69,9 @@ Files
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -124,6 +125,35 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#apply_default_values`:
+
+**#apply_default_values**
+  
+
+  .. hidden-code-block:: ruby
+
+     def apply_default_values
+       return if self.class.declared_property_defaults.empty?
+       self.class.declared_property_defaults.each_pair do |key, value|
+         self.send("#{key}=", value) if self.send(key).nil?
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#association_proxy_cache`:
+
+**#association_proxy_cache**
+  Should probably find a way to not need this
+
+  .. hidden-code-block:: ruby
+
+     def association_proxy_cache
+       {}
+     end
+
+
+
 .. _`Neo4j/ActiveRel#cache_key`:
 
 **#cache_key**
@@ -143,31 +173,15 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel#clear_association_cache`:
+.. _`Neo4j/ActiveRel#declared_property_manager`:
 
-**#clear_association_cache**
+**#declared_property_manager**
   
 
   .. hidden-code-block:: ruby
 
-     def clear_association_cache; end
-
-
-
-.. _`Neo4j/ActiveRel#convert_properties_to`:
-
-**#convert_properties_to**
-  
-
-  .. hidden-code-block:: ruby
-
-     def convert_properties_to(medium, properties)
-       converter = medium == :ruby ? :to_ruby : :to_db
-     
-       properties.each_with_object({}) do |(attr, value), new_attributes|
-         next new_attributes if skip_conversion?(attr, value)
-         new_attributes[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
-       end
+     def declared_property_manager
+       self.class.declared_property_manager
      end
 
 
@@ -195,8 +209,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 
@@ -353,7 +367,7 @@ Methods
        @attributes = attributes.merge(persisted_rel.props.stringify_keys)
        load_nodes(from_node_id, to_node_id)
        self.default_properties = persisted_rel.props
-       @attributes = convert_properties_to :ruby, @attributes
+       @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
      end
 
 
@@ -487,7 +501,7 @@ Methods
 
      def reload
        return self if new_record?
-       clear_association_cache
+       association_proxy_cache.clear
        changed_attributes && changed_attributes.clear
        unless reload_from_database
          @_deleted = true

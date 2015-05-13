@@ -5,14 +5,31 @@ require 'shared_examples/saveable_model'
 require 'shared_examples/creatable_model'
 require 'shared_examples/destroyable_model'
 
-class BasicModel
-  include Neo4j::ActiveNode
-  property :name
-  property :a
-  property :b
-end
+describe 'BasicModel' do
+  before(:each) do
+    clear_model_memory_caches
+    delete_db
 
-describe BasicModel do
+    stub_active_node_class('BasicModel') do
+      property :name
+      property :a
+      property :b
+
+      before_destroy :before_destroy_callback
+      def before_destroy_callback
+        self.class.before_destroy_callback_calls += 1
+      end
+
+      class << self
+        attr_accessor :before_destroy_callback_calls
+      end
+
+      self.before_destroy_callback_calls = 0
+    end
+  end
+
+  subject { BasicModel.new }
+
   it_should_behave_like 'new model'
   it_should_behave_like 'loadable model'
   it_should_behave_like 'saveable model'
@@ -35,17 +52,21 @@ describe BasicModel do
     end
 
     it 'should be possible to #delete_all' do
-      expect(subject.class).not_to receive(:all)
+      expect_any_instance_of(subject.class).not_to receive(:before_destroy_callback)
+
       expect(subject.class.count).to eq 3
+      expect(subject.class.before_destroy_callback_calls).to eq 0
       subject.class.delete_all
       expect(subject.class.count).to eq 0
+      expect(subject.class.before_destroy_callback_calls).to eq 0
     end
 
     it 'should be possible to #destroy_all' do
-      expect(subject.class).to receive(:all).and_return(subject.class.all)
       expect(subject.class.count).to eq 3
+      expect(subject.class.before_destroy_callback_calls).to eq 0
       subject.class.destroy_all
       expect(subject.class.count).to eq 0
+      expect(subject.class.before_destroy_callback_calls).to eq 3
     end
   end
 end

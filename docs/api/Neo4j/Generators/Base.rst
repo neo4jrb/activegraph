@@ -3,6 +3,8 @@ Base
 
 
 
+:nodoc:
+
 
 .. toctree::
    :maxdepth: 3

@@ -4,6 +4,8 @@ Property
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
@@ -12,10 +14,6 @@ Property
    Property/UndefinedPropertyError
 
    Property/MultiparameterAssignmentError
-
-   Property/IllegalPropertyError
-
-   
 
    
 
@@ -54,8 +52,6 @@ Constants
 ---------
 
 
-
-  * ILLEGAL_PROPS
 
 
 
@@ -126,8 +122,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       keys = self.class.default_properties.keys
-       @default_properties = properties.select { |key| keys.include?(key) }
+       default_property_keys = self.class.default_properties_keys
+       @default_properties = properties.select { |key| default_property_keys.include?(key) }
      end
 
 
@@ -148,20 +144,20 @@ Methods
 .. _`Neo4j/Shared/Property#initialize`:
 
 **#initialize**
-  
+  TODO: Remove the commented :super entirely once this code is part of a release.
+  It calls an init method in active_attr that has a very negative impact on performance.
 
   .. hidden-code-block:: ruby
 
-     def initialize(attributes = {}, options = {})
-       attributes = process_attributes(attributes)
+     def initialize(attributes = {}, _options = nil)
+       attributes = process_attributes(attributes) unless attributes.empty?
        @relationship_props = self.class.extract_association_attributes!(attributes)
        writer_method_props = extract_writer_methods!(attributes)
        validate_attributes!(attributes)
-       send_props(writer_method_props) unless writer_method_props.nil?
+       send_props(writer_method_props) unless writer_method_props.empty?
      
        @_persisted_obj = nil
-     
-       super(attributes, options)
+       # super(attributes, options)
      end
 
 

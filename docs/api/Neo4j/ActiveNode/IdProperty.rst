@@ -3,6 +3,8 @@ IdProperty
 
 
 
+This module makes it possible to use other IDs than the build it neo4j id (neo_id)
+
 
 .. toctree::
    :maxdepth: 3

@@ -4,10 +4,18 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
+
+   
+
+   
 
    
 
@@ -38,7 +46,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/persistence.rb:70 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L70>`_
+  * `lib/neo4j/active_node/persistence.rb:69 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L69>`_
 
 
 
@@ -100,7 +108,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def find_or_create(find_attributes, set_attributes = {})
-       neo4j_session.query.merge(n: {self => find_attributes}).set(n: set_attributes).exec
+       on_create_attributes = set_attributes.merge(on_create_props)
+       on_match_attributes =  set_attributes.merge(on_match_props)
+       neo4j_session.query.merge(n: {self => find_attributes})
+         .on_create_set(n: on_create_attributes).on_match_set(n: on_match_attributes)
+         .pluck(:n).first
      end
 
 
@@ -152,7 +164,10 @@ Methods
   .. hidden-code-block:: ruby
 
      def merge(attributes)
-       neo4j_session.query.merge(n: {self => attributes}).exec
+       neo4j_session.query.merge(n: {self => attributes})
+         .on_create_set(n: on_create_props)
+         .on_match_set(n: on_match_props)
+         .pluck(:n).first
      end
 
 

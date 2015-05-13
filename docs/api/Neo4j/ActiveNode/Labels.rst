@@ -3,6 +3,8 @@ Labels
 
 
 
+Provides a mapping between neo4j labels and Ruby classes
+
 
 .. toctree::
    :maxdepth: 3
@@ -18,6 +20,8 @@ Labels
    Labels/InvalidQueryError
 
    Labels/RecordNotFound
+
+   
 
    
 
@@ -148,6 +152,25 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Labels.model_cache`:
+
+**.model_cache**
+  
+
+  .. hidden-code-block:: ruby
+
+     def self.model_cache(labels)
+       models = WRAPPED_MODELS.select do |model|
+         (model.mapped_label_names - labels).size == 0
+       end
+     
+       MODELS_FOR_LABELS_CACHE[labels] = models.max do |model|
+         (model.mapped_label_names & labels).size
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Labels.model_for_labels`:
 
 **.model_for_labels**
@@ -156,15 +179,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def self.model_for_labels(labels)
-       MODELS_FOR_LABELS_CACHE.fetch(labels.sort_by(&:to_s).hash) do
-         models = WRAPPED_MODELS.select do |model|
-           (model.mapped_label_names - labels).size == 0
-         end
-     
-         models.max do |model|
-           (model.mapped_label_names & labels).size
-         end
-       end
+       MODELS_FOR_LABELS_CACHE[labels] || model_cache(labels)
      end
 
 

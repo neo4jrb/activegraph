@@ -1,29 +1,32 @@
 require 'spec_helper'
 
 describe 'ActiveRel' do
-  class ToClass; end
-  class MyRelClass; end
+  before(:each) do
+    clear_model_memory_caches
+    delete_db
 
-  class FromClass
-    include Neo4j::ActiveNode
-    has_many :out, :others, model_class: ToClass, rel_class: MyRelClass
-  end
+    stub_named_class('ToClass')
 
-  class ToClass
-    include Neo4j::ActiveNode
-    has_many :in, :others, model_class: FromClass, rel_class: MyRelClass
-    has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
-  end
+    stub_named_class('MyRelClass')
 
-  class MyRelClass
-    include Neo4j::ActiveRel
-    from_class FromClass
-    to_class ToClass
-    type 'rel_class_type'
+    stub_active_node_class('FromClass') do
+      has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
+    end
 
-    property :score
-    property :links
-    serialize :links
+    stub_active_node_class('ToClass') do
+      has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
+      has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
+    end
+
+    stub_active_rel_class('MyRelClass') do
+      from_class 'FromClass'
+      to_class 'ToClass'
+      type 'rel_class_type'
+
+      property :score
+      property :links
+      serialize :links
+    end
   end
 
   let(:from_node) { FromClass.create }
@@ -67,25 +70,35 @@ describe 'ActiveRel' do
   end
 
   describe 'types' do
-    class AutomaticRelType
+    # This is the one case I've found so far which you can't use stub_*
+    # This is because we're testing the `inherited` hook, and when you stub
+    # it is with an anonymous class.  Wtih the anonymous classes, they don't
+    # respond to Class.name until after that method is defined, but the inherited
+    # hook runs before that point
+    # The class constants here are long to disambiguate from other constants in
+    # the namespace
+    class ActiveRelSpecTypesAutomaticRelType
       include Neo4j::ActiveRel
-      from_class FromClass
-      to_class ToClass
+
+      from_class 'FromClass'
+      to_class 'ToClass'
     end
 
-    class InheritedRelClass < AutomaticRelType; end
+    class ActiveRelSpecTypesInheritedRelClass < ActiveRelSpecTypesAutomaticRelType
+    end
+
 
     it 'allows omission of `type`' do
-      expect(AutomaticRelType._type).to eq 'AUTOMATIC_REL_TYPE'
+      expect(ActiveRelSpecTypesAutomaticRelType._type).to eq 'ACTIVE_REL_SPEC_TYPES_AUTOMATIC_REL_TYPE'
     end
 
     it 'uses `type` to override the default type' do
-      AutomaticRelType.type 'NEW_TYPE'
-      expect(AutomaticRelType._type).to eq 'NEW_TYPE'
+      ActiveRelSpecTypesAutomaticRelType.type 'NEW_TYPE'
+      expect(ActiveRelSpecTypesAutomaticRelType._type).to eq 'NEW_TYPE'
     end
 
     it 'uses the defined class name when inheriting' do
-      expect(InheritedRelClass._type).to eq 'INHERITED_REL_CLASS'
+      expect(ActiveRelSpecTypesInheritedRelClass._type).to eq 'ACTIVE_REL_SPEC_TYPES_INHERITED_REL_CLASS'
     end
   end
 

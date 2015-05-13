@@ -3,6 +3,8 @@ QueryProxyMethods
 
 
 
+methods used to resolve association dependencies
+
 
 .. toctree::
    :maxdepth: 3
@@ -52,7 +54,7 @@ Methods
 
      def each_for_destruction(owning_node)
        target = owning_node.called_by || owning_node
-       objects = enumerable_query(identity).compact.reject do |obj|
+       objects = pluck(identity).compact.reject do |obj|
          target.dependent_children.include?(obj)
        end
      
@@ -74,7 +76,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def unique_nodes(association, self_identifer, other_node, other_rel)
-       fail 'Only supported by in QueryProxy chains started by an instance' unless caller
+       fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
      
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)

@@ -3,6 +3,8 @@ DateTimeConverter
 
 
 
+Converts DateTime objects to and from Java long types. Must be timezone UTC.
+
 
 .. toctree::
    :maxdepth: 3

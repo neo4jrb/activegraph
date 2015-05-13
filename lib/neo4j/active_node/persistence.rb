@@ -24,7 +24,7 @@ module Neo4j::ActiveNode
     # If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
       update_magic_properties
-      clear_association_cache
+      association_proxy_cache.clear
       create_or_update
     end
 

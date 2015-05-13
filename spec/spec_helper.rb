@@ -113,7 +113,20 @@ module Neo4jSpecHelpers
       end
     end
   end
+
+  # rubocop:disable Style/GlobalVars
+  def expect_queries(count)
+    start_count = $expect_queries_count
+    yield
+    expect($expect_queries_count - start_count).to eq(count)
+  end
 end
+
+$expect_queries_count = 0
+Neo4j::Server::CypherSession.log_with do |_message|
+  $expect_queries_count += 1
+end
+# rubocop:enable Style/GlobalVars
 
 FileUtils.rm_rf(EMBEDDED_DB_PATH)
 

@@ -3,6 +3,9 @@ ScopeRegistry
 
 
 
+Stolen from ActiveRecord
+https://github.com/rails/rails/blob/08754f12e65a9ec79633a605e986d0f1ffa4b251/activerecord/lib/active_record/scoping.rb#L57
+
 
 .. toctree::
    :maxdepth: 3

@@ -4,10 +4,20 @@ ClassMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+
+   
+
+   
+
+   
+
+   
 
    
 
@@ -52,7 +62,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:79 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L79>`_
+  * `lib/neo4j/active_node/has_n.rb:197 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L197>`_
 
 
 
@@ -85,7 +95,20 @@ Methods
   .. hidden-code-block:: ruby
 
      def associations
-       @associations || {}
+       @associations ||= {}
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/ClassMethods#associations_keys`:
+
+**#associations_keys**
+  
+
+  .. hidden-code-block:: ruby
+
+     def associations_keys
+       @associations_keys ||= associations.keys
      end
 
 
@@ -207,6 +230,7 @@ Methods
 
      def inherited(klass)
        klass.instance_variable_set(:@associations, associations.clone)
+       @associations_keys = klass.associations_keys.clone
        super
      end
 

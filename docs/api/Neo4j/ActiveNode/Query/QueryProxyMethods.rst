@@ -4,12 +4,20 @@ QueryProxyMethods
 
 
 
+
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
 
    QueryProxyMethods/InvalidParameterError
+
+   
+
+   
+
+   
 
    
 
@@ -70,6 +78,10 @@ Constants
 ---------
 
 
+
+  * FIRST
+
+  * LAST
 
 
 
@@ -164,7 +176,7 @@ Methods
 
      def delete(node)
        self.match_to(node).query.delete(rel_var).exec
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -184,7 +196,7 @@ Methods
          rescue Neo4j::Session::CypherError
            self.query.delete(target).exec
          end
-         clear_caller_cache
+         clear_source_object_cache
        end
      end
 
@@ -212,7 +224,7 @@ Methods
 
      def destroy(node)
        self.rels_to(node).map!(&:destroy)
-       clear_caller_cache
+       clear_source_object_cache
      end
 
 
@@ -255,20 +267,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def first(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var})", var) }
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first_and_last`:
-
-**#first_and_last**
-  
-
-  .. hidden-code-block:: ruby
-
-     def first_and_last(order, target)
-       self.order(order).limit(1).pluck(target).first
+       first_and_last(FIRST, target)
      end
 
 
@@ -311,7 +310,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def last(target = nil)
-       query_with_target(target) { |var| first_and_last("ID(#{var}) DESC", var) }
+       first_and_last(LAST, target)
      end
 
 
@@ -329,6 +328,21 @@ Methods
          q = distinct.nil? ? var : "DISTINCT #{var}"
          self.query.reorder.pluck("count(#{q}) AS #{var}").first
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#limit_value`:
+
+**#limit_value**
+  TODO: update this with public API methods if/when they are exposed
+
+  .. hidden-code-block:: ruby
+
+     def limit_value
+       return unless self.query.clause?(:limit)
+       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause.instance_variable_get(:@arg)
      end
 
 
@@ -367,7 +381,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def optional(association, node_var = nil, rel_var = nil)
-       self.send(association, node_var, rel_var, nil, optional: true)
+       self.send(association, node_var, rel_var, optional: true)
      end
 
 

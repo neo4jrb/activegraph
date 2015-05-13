@@ -1,46 +1,59 @@
 require 'spec_helper'
 
-IceLolly = UniqueClass.create do
-  include Neo4j::ActiveNode
-  property :flavour
-  property :name
-  property :a
-  property :b
-  property :required_on_create
-  property :required_on_update
-  property :created
-  property :start, type: Time
-
-  property :created_at
-  property :updated_at
-
-  attr_reader :saved
-
-  index :flavour
-
-  validates :flavour, presence: true
-  validates :required_on_create, presence: true, on: :create
-  validates :required_on_update, presence: true, on: :update
-
-  before_create :timestamp
-  after_create :mark_saved
-
-  protected
-
-  def timestamp
-    self.created = 'yep'
-  end
-
-  def mark_saved
-    @saved = true
-  end
-end
 
 # class ExtendedIceLolly < IceLolly
 #  property :extended_property
 # end
 
-describe IceLolly, type: :integration do
+describe 'Neo4j::ActiveNode' do
+  before(:each) do
+    clear_model_memory_caches
+    delete_db
+
+    stub_active_node_class('IceLolly') do
+      property :flavour
+      property :name
+      property :a
+      property :b
+      property :required_on_create
+      property :required_on_update
+      property :created
+      property :start, type: Time
+
+      property :created_at
+      property :updated_at
+
+      attr_reader :saved
+
+      index :flavour
+
+      validates :flavour, presence: true
+      validates :required_on_create, presence: true, on: :create
+      validates :required_on_update, presence: true, on: :update
+
+      before_create :timestamp
+      after_create :mark_saved
+
+      protected
+
+      def timestamp
+        self.created = 'yep'
+      end
+
+      def mark_saved
+        @saved = true
+      end
+    end
+
+    stub_active_node_class('IceCream') do
+      property :flavour, index: :exact
+      # has_n(:ingredients).to(Ingredient)
+      validates_presence_of :flavour
+    end
+  end
+
+  subject { IceLolly.new }
+
   context 'when valid' do
     before :each do
       subject.flavour = 'vanilla'
@@ -119,46 +132,6 @@ describe IceLolly, type: :integration do
     it_should_behave_like 'uncreatable model'
     it_should_behave_like 'non-updatable model'
   end
-end
-
-
-# describe ExtendedIceLolly, :type => :integration do
-#
-#  it "should have inherited all the properties" do
-#    subject.attribute_names.should include("flavour")
-#  end
-#
-#  it { should respond_to(:flavour) }
-#
-#  context "when valid" do
-#    subject { ExtendedIceLolly.new(:flavour => "vanilla", :required_on_create => "true", :required_on_update => "true") }
-#
-#    it_should_behave_like "new model"
-#    it_should_behave_like "loadable model"
-#    it_should_behave_like "saveable model"
-#    it_should_behave_like "creatable model"
-#    it_should_behave_like "destroyable model"
-#    it_should_behave_like "updatable model"
-#
-#    context "after being saved" do
-#      before { subject.save }
-#
-#      it { should eq(subject.class.find(flavour: 'vanilla')) }
-#    end
-#  end
-# end
-#
-
-IceCream = UniqueClass.create do
-  include Neo4j::ActiveNode
-  property :flavour, index: :exact
-  # has_n(:ingredients).to(Ingredient)
-  validates_presence_of :flavour
-end
-
-describe Neo4j::ActiveNode do
-  # before(:each) { @tx = Neo4j::Transaction.new }
-  # after(:each) { @tx.close }
 
   describe 'validations' do
     it 'does not have any errors if its valid' do
@@ -176,25 +149,26 @@ describe Neo4j::ActiveNode do
 
 
   describe 'callbacks' do
-    class Company
-      attr_accessor :update_called, :save_called, :destroy_called, :validation_called
-      include Neo4j::ActiveNode
-      property :name
+    before(:each) do
+      stub_active_node_class('Company') do
+        attr_accessor :update_called, :save_called, :destroy_called, :validation_called
+        property :name
 
-      before_save do
-        @save_called = true
-      end
+        before_save do
+          @save_called = true
+        end
 
-      before_update do
-        @update_called = true
-      end
+        before_update do
+          @update_called = true
+        end
 
-      before_destroy do
-        @destroy_called = true
-      end
+        before_destroy do
+          @destroy_called = true
+        end
 
-      before_validation do
-        @validation_called = true
+        before_validation do
+          @validation_called = true
+        end
       end
     end
 

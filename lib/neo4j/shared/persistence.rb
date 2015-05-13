@@ -99,7 +99,7 @@ module Neo4j::Shared
 
     def reload
       return self if new_record?
-      clear_association_cache
+      association_proxy_cache.clear
       changed_attributes && changed_attributes.clear
       unless reload_from_database
         @_deleted = true

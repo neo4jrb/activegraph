@@ -9,13 +9,12 @@ module Neo4j
         # The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
-        def each(node = true, rel = nil, &_block)
-          if node && rel
-            enumerable_query(identity, rel_var).each { |returned_node, returned_rel| yield returned_node, returned_rel }
-          else
-            pluck_this = !rel ? identity : @rel_var
-            enumerable_query(pluck_this).each { |returned_node| yield returned_node }
-          end
+        def each(node = true, rel = nil, &block)
+          pluck_vars = []
+          pluck_vars << identity if node
+          pluck_vars << @rel_var if rel
+
+          pluck(*pluck_vars).each(&block)
         end
 
         # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
@@ -51,27 +50,6 @@ module Neo4j
           end
 
           self.query.pluck(*arg_list)
-        end
-
-
-        private
-
-        # Executes the query against the database if the results are not already present in a node's association cache. This method is
-        # shared by <tt>each</tt>, <tt>each_rel</tt>, and <tt>each_with_rel</tt>.
-        # @param [String,Symbol] node The string or symbol of the node to return from the database.
-        # @param [String,Symbol] rel The string or symbol of a relationship to return from the database.
-        def enumerable_query(node, rel = nil)
-          pluck_this = rel.nil? ? [node] : [node, rel]
-          return self.pluck(*pluck_this) if @association.nil? || source_object.nil?
-
-          cypher_string = self.to_cypher_with_params(pluck_this)
-
-          association_collection = source_object.association_instance_get(cypher_string, @association)
-          if association_collection.nil?
-            association_collection = self.pluck(*pluck_this)
-            source_object.association_instance_set(cypher_string, association_collection, @association) unless association_collection.empty?
-          end
-          association_collection
         end
       end
     end

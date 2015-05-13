@@ -3,6 +3,8 @@ ClassMethods
 
 
 
+Adds methods to the class related to creating and retrieving reflections.
+
 
 .. toctree::
    :maxdepth: 3

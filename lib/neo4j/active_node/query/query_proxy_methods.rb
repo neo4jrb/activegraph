@@ -152,7 +152,7 @@ module Neo4j
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
         def optional(association, node_var = nil, rel_var = nil)
-          self.send(association, node_var, rel_var, nil, optional: true)
+          self.send(association, node_var, rel_var, optional: true)
         end
 
         # Takes an Array of ActiveNode models and applies the appropriate WHERE clause

@@ -3,6 +3,10 @@ RelatedNode
 
 
 
+A container for ActiveRel's :inbound and :outbound methods. It provides lazy loading of nodes.
+It's important (or maybe not really IMPORTANT, but at least worth mentioning) that calling method_missing
+will result in a query to load the node if the node is not already loaded.
+
 
 .. toctree::
    :maxdepth: 3

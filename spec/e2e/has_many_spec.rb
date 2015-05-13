@@ -1,41 +1,42 @@
 require 'spec_helper'
 
 describe 'has_many' do
-  let(:clazz_a) do
-    UniqueClass.create do
-      include Neo4j::ActiveNode
+  before(:each) do
+    clear_model_memory_caches
+    delete_db
+
+    stub_active_node_class('Person') do
       property :name
 
       has_many :both, :friends, model_class: false
-      has_many :out, :knows, model_class: self
-      has_many :in, :knows_me, origin: :knows, model_class: self
+      has_many :out, :knows, model_class: 'Person'
+      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
     end
   end
-  before { clazz_a }
 
-  let(:node) { clazz_a.create }
-  let(:friend1) { clazz_a.create }
-  let(:friend2) { clazz_a.create }
+  let(:node) { Person.create }
+  let(:friend1) { Person.create }
+  let(:friend2) { Person.create }
 
   describe 'association?' do
     context 'with a present association' do
-      subject { clazz_a.association?(:friends) }
+      subject { Person.association?(:friends) }
       it { is_expected.to be_truthy }
     end
 
     context 'with a missing association' do
-      subject { clazz_a.association?(:fooz) }
+      subject { Person.association?(:fooz) }
       it { is_expected.to be_falsey }
     end
   end
 
   describe 'associations_keys' do
-    subject { clazz_a.associations_keys }
+    subject { Person.associations_keys }
     it { is_expected.to include(:friends, :knows, :knows_me) }
   end
 
   describe 'non-persisted node' do
-    let(:unsaved_node) { clazz_a.new }
+    let(:unsaved_node) { Person.new }
     it 'returns an empty array' do
       expect(unsaved_node.friends).to eq []
     end
@@ -46,9 +47,9 @@ describe 'has_many' do
   end
 
   describe 'unique: true' do
-    before { clazz_a.reflect_on_association(:knows).association.instance_variable_set(:@unique, true) }
+    before { Person.reflect_on_association(:knows).association.instance_variable_set(:@unique, true) }
     after do
-      clazz_a.reflect_on_association(:knows).association.instance_variable_set(:@unique, false)
+      Person.reflect_on_association(:knows).association.instance_variable_set(:@unique, false)
       [friend1, friend2].each(&:destroy)
     end
 
@@ -130,7 +131,7 @@ describe 'has_many' do
       end
 
       it 'removes relationships when given a different list' do
-        friend3 = clazz_a.create
+        friend3 = Person.create
         node.friends = [friend3]
         node.friends.to_a.should =~ [friend3]
       end
@@ -146,7 +147,7 @@ describe 'has_many' do
       end
 
       it 'occurs within a transaction' do
-        friend3 = clazz_a.create(name: 'foo')
+        friend3 = Person.create(name: 'foo')
         node.friends = [friend1, friend2]
         expect_any_instance_of(Neo4j::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise
         expect { node.friends = [friend3] }.to raise_error
@@ -163,7 +164,7 @@ describe 'has_many' do
       end
 
       it 'has a is_a method' do
-        expect(node.friends.is_a?(Neo4j::ActiveNode::Query::QueryProxy)).to be true
+        expect(node.friends.is_a?(Neo4j::ActiveNode::HasN::AssociationProxy)).to be true
         expect(node.friends.is_a?(Array)).to be false
         expect(node.friends.is_a?(String)).to be false
       end
@@ -196,7 +197,7 @@ describe 'has_many' do
       let(:node2) { double('unpersisted node', props: {name: 'Brad'}) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
-        node.friends.create(clazz_a.new(name: 'Brad'), since: 1996)
+        node.friends.create(Person.new(name: 'Brad'), since: 1996)
         # node2.stub(:persisted?).and_return(false)
         # node2.stub(:save).and_return(true)
         # node2.stub(:neo_id).and_return(2)
@@ -209,7 +210,7 @@ describe 'has_many' do
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
-        node.friends.create([clazz_a.new(name: 'James'), clazz_a.new(name: 'Cat')], since: 1997)
+        node.friends.create([Person.new(name: 'James'), Person.new(name: 'Cat')], since: 1997)
 
         rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
@@ -243,9 +244,9 @@ describe 'has_many' do
       end
     end
 
-    let(:node) { clazz_a.create }
-    let(:friend1) { clazz_a.create }
-    let(:friend2) { clazz_a.create }
+    let(:node) { Person.create }
+    let(:friend1) { Person.create }
+    let(:friend2) { Person.create }
 
     let(:callback_friend1) { clazz_c.create }
     let(:callback_friend2) { clazz_c.create }
