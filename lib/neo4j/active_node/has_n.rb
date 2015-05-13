@@ -311,11 +311,9 @@ module Neo4j::ActiveNode
       # * Get info about model_class from ActiveRel if rel_class specified
       def validate_association_options!(association_name, options)
         if options.values_at(:type, :origin, :rel_class).compact.size > 1
-          fail "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
-        end
-
-        if !options.key?(:type) && (options.values_at(:origin, :rel_class).compact.empty?)
-          fail "The 'type' option must be specified, even if it is `nil` (#{self.class}##{association_name})"
+          fail ArgumentError, "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
+        elsif !options.key?(:type) && (options.values_at(:origin, :rel_class).compact.empty?)
+          fail ArgumentError, "The 'type' option must be specified, even if it is `nil` (#{self.class}##{association_name})"
         end
       end
 

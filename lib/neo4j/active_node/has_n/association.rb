@@ -92,7 +92,7 @@ module Neo4j
 
         def relationship_class_type
           @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-          @relationship_class._type
+          @relationship_class._type.to_sym
         end
 
         def relationship_class_name

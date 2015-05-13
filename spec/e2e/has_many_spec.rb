@@ -422,4 +422,66 @@ describe 'has_many' do
       end
     end
   end
+
+  context 'Empty class' do
+    let!(:empty_class) { stub_active_node_class('Foo') }
+
+    describe 'option validation' do
+      it 'should require the `:type` key' do
+        expect { empty_class.has_many :out, :bars }.to raise_error(ArgumentError, /The 'type' option must be specified/)
+        expect { empty_class.has_many :out, :bars, type: :bar }.to_not raise_error
+      end
+
+      it 'should not require the `:type` key when `:rel_class` is specified' do
+        expect { empty_class.has_many :out, :bars, rel_class: 'ARelClass' }.to_not raise_error
+      end
+
+      it 'should not require the `:type` key when `:origin` is specified' do
+        expect { empty_class.has_many :out, :bars, origin: :foos }.to_not raise_error
+      end
+
+      it 'should only allow one of the the options :type, :origin, or :rel_class' do
+        error_regex = /Only one of 'type', 'origin', or 'rel_class' options are allowed/
+        expect { empty_class.has_many :out, :bars, type: :bar, origin: :foos }.to raise_error(ArgumentError, error_regex)
+        expect { empty_class.has_many :out, :bars, type: :bar, rel_class: 'ARelClass' }.to raise_error(ArgumentError, error_regex)
+        expect { empty_class.has_many :out, :bars, origin: :foos, rel_class: 'ARelClass' }.to raise_error(ArgumentError, error_regex)
+      end
+    end
+
+    describe 'rel_class magic' do
+      it 'should set the association relationship_type when the `type` option is set' do
+        expect { empty_class.has_many :out, :bars, type: :bar }.to_not raise_error
+        expect(empty_class.associations[:bars].relationship_type).to eq(:bar)
+      end
+
+      context 'an ActiveRel class exists' do
+        before(:each) do
+          stub_active_rel_class('Link') do
+            from_class 'Foo'
+            to_class 'Bar'
+            type 'link'
+          end
+        end
+
+        it 'should set the association relationship_type when the `rel_class` option is set' do
+          expect { empty_class.has_many :out, :bars, rel_class: 'Link' }.to_not raise_error
+          expect(empty_class.associations[:bars].relationship_type).to eq(:link)
+        end
+      end
+
+      context 'another ActiveNode class exists' do
+        before(:each) do
+          stub_active_node_class('Bar') do
+            has_many :in, :foos, type: :barz
+          end
+        end
+
+        it 'should set the association relationship_type when the `origin` option is set' do
+          expect { empty_class.has_many :out, :bars, origin: :foos }.to_not raise_error
+          expect(empty_class.associations[:bars].relationship_type).to eq(:barz)
+        end
+      end
+    end
+  end
+
 end
