@@ -279,6 +279,7 @@ module Neo4j::ActiveNode
       #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
       #
       def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
+        validate_association_options!(name, options)
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
@@ -296,6 +297,7 @@ module Neo4j::ActiveNode
       # not specified here
       #
       def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+        validate_association_options!(name, options)
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
@@ -303,6 +305,19 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      # * TEST THESE!!!!
+      # * Make sure `rel_class` key sets the type for the association
+      # * Get info about model_class from ActiveRel if rel_class specified
+      def validate_association_options!(association_name, options)
+        if options.values_at(:type, :origin, :rel_class).compact.size > 1
+          fail "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
+        end
+
+        if !options.key?(:type) && (options.values_at(:origin, :rel_class).compact.empty?)
+          fail "The 'type' option must be specified, even if it is `nil` (#{self.class}##{association_name})"
+        end
+      end
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|

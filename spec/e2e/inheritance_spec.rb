@@ -16,7 +16,7 @@ describe 'Inheritance', type: :e2e do
       property :specs # Hash
       index :name
       serialize :specs
-      has_many :out, :models, model_class: false
+      has_many :out, :models, type: nil, model_class: false
     end
 
     stub_named_class('Car', Vehicle) do

@@ -10,7 +10,7 @@ describe 'Neo4j::NodeMixin::Scope' do
       property :name
       property :score
       property :level_num
-      has_many :out, :friends, model_class: 'Person'
+      has_many :out, :friends, type: nil, model_class: 'Person'
     end
   end
 

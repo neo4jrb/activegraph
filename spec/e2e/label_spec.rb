@@ -194,7 +194,7 @@ describe 'Neo4j::ActiveNode' do
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
-        has_one :out, :foo
+        has_one :out, :foo, type: nil
       end
     end
 

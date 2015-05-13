@@ -8,9 +8,9 @@ describe 'has_many' do
     stub_active_node_class('Person') do
       property :name
 
-      has_many :both, :friends, model_class: false
-      has_many :out, :knows, model_class: 'Person'
-      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
+      has_many :both, :friends, model_class: false, type: nil
+      has_many :out, :knows, model_class: 'Person', type: nil
+      has_many :in, :knows_me, origin: :knows, model_class: 'Person', type: nil
     end
   end
 
@@ -228,7 +228,7 @@ describe 'has_many' do
         include Neo4j::ActiveNode
         property :name
 
-        has_many :out, :knows, model_class: self, before: :before_callback
+        has_many :out, :knows, type: nil, model_class: self, before: :before_callback
         has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
         has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
 
@@ -332,7 +332,7 @@ describe 'has_many' do
       UniqueClass.create do
         include Neo4j::ActiveNode
 
-        has_many :in, :furrs, model_class: 'ClazzD'
+        has_many :in, :furrs, type: nil, model_class: 'ClazzD'
       end
     end
 

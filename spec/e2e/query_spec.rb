@@ -14,7 +14,7 @@ describe 'Query API' do
     stub_active_node_class('Interest') do
       property :name
 
-      has_many :both, :interested, model_class: false
+      has_many :both, :interested, type: nil, model_class: false
     end
 
     stub_active_node_class('Lesson') do
@@ -43,11 +43,11 @@ describe 'Query API' do
 
       has_many :out, :lessons, type: :is_enrolled_for
 
-      has_many :out, :interests
+      has_many :out, :interests, type: nil
 
-      has_many :both, :favorite_teachers, model_class: 'Teacher'
-      has_many :both, :hated_teachers, model_class: 'Teacher'
-      has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
+      has_many :both, :favorite_teachers, type: nil, model_class: 'Teacher'
+      has_many :both, :hated_teachers, type: nil, model_class: 'Teacher'
+      has_many :in,   :winning_lessons, type: nil, model_class: 'Lesson', origin: :teachers_pet
     end
 
     stub_active_node_class('Teacher') do
@@ -56,12 +56,12 @@ describe 'Query API' do
       property :created_at
       property :updated_at
 
-      has_many :both, :lessons
+      has_many :both, :lessons, type: nil
 
-      has_many :out, :lessons_teaching, model_class: 'Lesson'
-      has_many :out, :lessons_taught, model_class: 'Lesson'
+      has_many :out, :lessons_teaching, type: nil, model_class: 'Lesson'
+      has_many :out, :lessons_taught, type: nil, model_class: 'Lesson'
 
-      has_many :out, :interests
+      has_many :out, :interests, type: nil
       has_one :out, :dreaded_lesson, model_class: 'Lesson', type: 'least_favorite_lesson'
     end
   end
@@ -88,7 +88,7 @@ describe 'Query API' do
 
     context 'Foo has an association to Bar' do
       before(:each) do
-        Foo.has_many :in, :bars, model_class: Bar
+        Foo.has_many :in, :bars, type: nil, model_class: Bar
       end
 
       subject { Bar.create }

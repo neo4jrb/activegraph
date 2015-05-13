@@ -28,7 +28,7 @@ module Neo4j
 
             index :name
 
-            has_many :out, :notes, model_class: 'Note'
+            has_many :out, :notes, type: nil, model_class: 'Note'
           end
 
           stub_active_node_class('Note') do
