@@ -23,6 +23,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -52,7 +54,8 @@ Methods
 .. _`Neo4j/ActiveRel/Types/ClassMethods#_type`:
 
 **#_type**
-  Should be deprecated
+  Returns the value of attribute rel_type
+  attr_reader :rel_type
 
   .. hidden-code-block:: ruby
 
@@ -110,7 +113,27 @@ Methods
   .. hidden-code-block:: ruby
 
      def inherited(subclass)
-       subclass.type subclass.name, true
+       subclass.type subclass.namespaced_model_name, true
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Types/ClassMethods#namespaced_model_name`:
+
+**#namespaced_model_name**
+  
+
+  .. hidden-code-block:: ruby
+
+     def namespaced_model_name
+       case Neo4j::Config[:module_handling]
+       when :demodulize
+         self.name.demodulize
+       when Proc
+         Neo4j::Config[:module_handling].call(self.name)
+       else
+         self.name
+       end
      end
 
 
@@ -118,7 +141,7 @@ Methods
 .. _`Neo4j/ActiveRel/Types/ClassMethods#rel_type`:
 
 **#rel_type**
-  
+  Returns the value of attribute rel_type
 
   .. hidden-code-block:: ruby
 
@@ -135,7 +158,7 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def type(given_type = self.name, auto = false)
+     def type(given_type = namespaced_model_name, auto = false)
        @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
          add_wrapped_class type unless uses_classname?
        end

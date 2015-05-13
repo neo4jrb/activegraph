@@ -263,15 +263,28 @@ module Neo4j::ActiveNode
       #     The name is also used to form default assumptions about the model which is being referred to
       #
       #     Example:
-      #       ``Person.has_many :out, :posts``
+      #       ``Person.has_many :out, :posts, type: :wrote``
       #
       #       will assume a `model_class` option of ``'Post'`` unless otherwise specified
       #
       #   **options:** A ``Hash`` of options.  Allowed keys are:
-      #     *type*: The Neo4j relationship type
+      #     *type*: The Neo4j relationship type.  This option is required unless either the
+      #       `origin` or `rel_class` options are specified
+      #
+      #     *origin*: The name of the association from another model which the `type` and `model_class`
+      #       can be gathered.
+      #
+      #       Example:
+      #         ``Person.has_many :out, :posts, origin: :author`` (`model_class` of `Post` is assumed here)
+      #
+      #         ``Post.has_one :in, :author, type: :has_author, model_class: 'Person'``
       #
       #     *model_class*: The model class to which the association is referring.  Can be either a
-      #       model `Class` object or a string (or an Array of same).
+      #       model object ``include`` ing ``ActiveNode`` or a string (or an ``Array`` of same).
+      #       **A string is recommended** to avoid load-time issues
+      #
+      #     *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a
+      #       model object ``include`` ing ``ActiveRel`` or a string (or an ``Array`` of same).
       #       **A string is recommended** to avoid load-time issues
       #
       #     *dependent*: Enables deletion cascading.
@@ -279,6 +292,7 @@ module Neo4j::ActiveNode
       #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
       #
       def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
+        validate_association_options!(name, options)
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
@@ -296,6 +310,7 @@ module Neo4j::ActiveNode
       # not specified here
       #
       def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+        validate_association_options!(name, options)
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
@@ -303,6 +318,17 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      # * TEST THESE!!!!
+      # * Make sure `rel_class` key sets the type for the association
+      # * Get info about model_class from ActiveRel if rel_class specified
+      def validate_association_options!(association_name, options)
+        if options.values_at(:type, :origin, :rel_class).compact.size > 1
+          fail ArgumentError, "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
+        elsif !options.key?(:type) && (options.values_at(:origin, :rel_class).compact.empty?)
+          fail ArgumentError, "The 'type' option must be specified, even if it is `nil` (#{self.class}##{association_name})"
+        end
+      end
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|

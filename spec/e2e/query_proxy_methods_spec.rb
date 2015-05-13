@@ -24,7 +24,7 @@ describe 'query_proxy_methods' do
     end
 
     stub_active_node_class('EmptyClass') do
-      has_many :out, :lessons, model_class: 'Lesson'
+      has_many :out, :lessons, type: nil, model_class: 'Lesson'
     end
 
     stub_active_rel_class('EnrolledIn') do

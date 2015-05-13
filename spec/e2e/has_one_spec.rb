@@ -10,12 +10,12 @@ describe 'has_one' do
     before(:each) do
       stub_active_node_class('HasOneA') do
         property :name
-        has_many :out, :children, model_class: 'HasOneB'
+        has_many :out, :children, type: nil, model_class: 'HasOneB'
       end
 
       stub_active_node_class('HasOneB') do
         property :name
-        has_one :in, :parent, origin: :children, model_class: 'HasOneA'
+        has_one :in, :parent, type: nil, origin: :children, model_class: 'HasOneA'
       end
     end
 
@@ -100,7 +100,7 @@ describe 'has_one' do
   describe 'has_one(:parent).from(Folder.files)' do
     before(:each) do
       stub_active_node_class('Folder1') do
-        has_many :out, :files, model_class: 'File1'
+        has_many :out, :files, type: nil, model_class: 'File1'
       end
 
       stub_active_node_class('File1') do
@@ -123,7 +123,7 @@ describe 'has_one' do
   describe 'callbacks' do
     before(:each) do
       stub_active_node_class('CallbackUser') do
-        has_one :out, :best_friend, model_class: 'CallbackUser', before: :before_callback
+        has_one :out, :best_friend, type: nil, model_class: 'CallbackUser', before: :before_callback
         has_one :in, :best_friend_of, origin: :best_friend, model_class: 'CallbackUser', after: :after_callback
         has_one :in, :failing_assoc,  origin: :best_friend, model_class: 'CallbackUser', before: :false_before_callback
 

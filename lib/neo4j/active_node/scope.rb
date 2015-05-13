@@ -12,7 +12,7 @@ module Neo4j::ActiveNode
       #     include Neo4j::ActiveNode
       #     property :name
       #     property :score
-      #     has_many :out, :friends, model_class: self
+      #     has_many :out, :friends, type: :has_friend, model_class: self
       #     scope :top_students, -> { where(score: 42)}") }
       #   end
       #   Person.top_students.to_a
@@ -28,7 +28,7 @@ module Neo4j::ActiveNode
       #     include Neo4j::ActiveNode
       #     property :name
       #     property :score
-      #     has_many :out, :friends, model_class: self
+      #     has_many :out, :friends, type: :has_friend, model_class: self
       #     scope :great_students, ->(identifier) { where("#{identifier}.score > 41") }
       #   end
       #   Person.as(:all_people).great_students(:all_people).to_a

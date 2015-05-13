@@ -15,8 +15,6 @@ Provides a mapping between neo4j labels and Ruby classes
 
    
 
-   
-
    Labels/InvalidQueryError
 
    Labels/RecordNotFound
@@ -50,8 +48,6 @@ Constants
 
 
   * WRAPPED_CLASSES
-
-  * WRAPPED_MODELS
 
   * MODELS_FOR_LABELS_CACHE
 
@@ -108,7 +104,6 @@ Methods
 
      def self.add_wrapped_class(model)
        _wrapped_classes << model
-       WRAPPED_MODELS << model
      end
 
 
@@ -134,7 +129,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def self.clear_wrapped_models
-       WRAPPED_MODELS.clear
+       WRAPPED_CLASSES.clear
      end
 
 
@@ -160,7 +155,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def self.model_cache(labels)
-       models = WRAPPED_MODELS.select do |model|
+       models = WRAPPED_CLASSES.select do |model|
          (model.mapped_label_names - labels).size == 0
        end
      

@@ -92,7 +92,7 @@ module Neo4j
 
         def relationship_class_type
           @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-          @relationship_class._type
+          @relationship_class._type.to_sym
         end
 
         def relationship_class_name
@@ -190,7 +190,7 @@ module Neo4j
 
         # Return basic details about association as declared in the model
         # @example
-        #   has_many :in, :bands
+        #   has_many :in, :bands, type: :has_band
         def base_declaration
           "#{type} #{direction.inspect}, #{name.inspect}"
         end

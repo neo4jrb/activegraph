@@ -6,7 +6,7 @@ describe 'Neo4j::Transaction' do
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
-        has_one :out, :thing, model_class: self
+        has_one :out, :thing, type: nil, model_class: self
       end
     end
 

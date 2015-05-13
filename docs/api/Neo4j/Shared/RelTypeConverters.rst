@@ -67,18 +67,19 @@ Methods
 
      def decorated_rel_type(type)
        type = type.to_s
-       case rel_transformer
-       when :upcase
-         type.underscore.upcase
-       when :downcase
-         type.underscore.downcase
-       when :legacy
-         "##{type.underscore.downcase}"
-       when :none
-         type
-       else
-         type.underscore.upcase
-       end
+       decorated_type =  case rel_transformer
+                         when :upcase
+                           type.underscore.upcase
+                         when :downcase
+                           type.underscore.downcase
+                         when :legacy
+                           "##{type.underscore.downcase}"
+                         when :none
+                           type
+                         else
+                           type.underscore.upcase
+                         end
+       decorated_type.tap { |s| s.gsub!('/', '::') if type.include?('::') }
      end
 
 
