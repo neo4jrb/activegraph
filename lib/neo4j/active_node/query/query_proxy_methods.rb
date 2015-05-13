@@ -184,7 +184,7 @@ module Neo4j
         # @param [Enumerable] node An enumerable of nodes or ids.
         # @return [Array] An array after having `id` called on each object
         def ids_array(node)
-          node.first.respond_to?(:id) ? node.map!(&:id) : node
+          node.first.respond_to?(:id) ? node.map(&:id) : node
         end
 
         def query_with_target(target)
