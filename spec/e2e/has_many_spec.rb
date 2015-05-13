@@ -484,5 +484,4 @@ describe 'has_many' do
       end
     end
   end
-
 end
