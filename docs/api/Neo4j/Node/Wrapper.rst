@@ -25,6 +25,10 @@ The wrapping process is what transforms a raw CypherNode or EmbeddedNode from Ne
 
    
 
+   
+
+   
+
 
 
 
@@ -62,8 +66,9 @@ Methods
 
      def class_to_wrap
        load_classes_from_labels
-     
-       named_class || ::Neo4j::ActiveNode::Labels.model_for_labels(labels)
+       (named_class || ::Neo4j::ActiveNode::Labels.model_for_labels(labels)).tap do |model_class|
+         Neo4j::Node::Wrapper.populate_constants_for_labels_cache(model_class, labels)
+       end
      end
 
 

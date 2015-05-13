@@ -192,6 +192,8 @@ You can query associations:
 
 .. seealso::
   :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`
+  and
+  :ref:`#has_one <Neo4j/ActiveNode/HasN/ClassMethods#has_one>`
 
 Eager Loading
 ~~~~~~~~~~~~~

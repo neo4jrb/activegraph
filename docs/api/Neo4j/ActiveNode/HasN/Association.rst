@@ -79,6 +79,10 @@ Association
 
    
 
+   
+
+   
+
 
 
 
@@ -201,6 +205,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/Association#discovered_model`:
+
+**#discovered_model**
+  
+
+  .. hidden-code-block:: ruby
+
+     def discovered_model
+       target_class_names.map(&:constantize).select do |constant|
+         constant.ancestors.include?(::Neo4j::ActiveNode)
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/Association#initialize`:
 
 **#initialize**
@@ -309,7 +328,7 @@ Methods
 
      def relationship_class_type
        @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-       @relationship_class._type
+       @relationship_class._type.to_sym
      end
 
 
@@ -400,7 +419,7 @@ Methods
        case model_class
        when nil
          if @target_class_name_from_name
-           "::#{@target_class_name_from_name}"
+           "#{association_model_namespace}::#{@target_class_name_from_name}"
          else
            @target_class_name_from_name
          end
@@ -423,11 +442,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def target_classes_or_nil
-       @target_classes_or_nil ||= if target_class_names
-                                    target_class_names.map(&:constantize).select do |constant|
-                                      constant.ancestors.include?(::Neo4j::ActiveNode)
-                                    end
-                                  end
+       @target_classes_or_nil ||= discovered_model if target_class_names
      end
 
 

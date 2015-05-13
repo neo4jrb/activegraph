@@ -47,6 +47,10 @@ ClassMethods
 
    
 
+   
+
+   
+
 
 
 
@@ -62,7 +66,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/labels.rb:82 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L82>`_
+  * `lib/neo4j/active_node/labels.rb:80 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L80>`_
 
 
 
@@ -396,7 +400,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def mapped_label_name
-       @mapped_label_name || (self.name.nil? ? object_id.to_s.to_sym : self.name.to_sym)
+       @mapped_label_name || label_for_model
      end
 
 

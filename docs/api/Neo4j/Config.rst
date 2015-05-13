@@ -41,6 +41,12 @@ Config
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -91,6 +97,34 @@ Methods
 
      def []=(key, val)
        configuration[key.to_s] = val
+     end
+
+
+
+.. _`Neo4j/Config.association_model_namespace`:
+
+**.association_model_namespace**
+  
+
+  .. hidden-code-block:: ruby
+
+     def association_model_namespace
+       Neo4j::Config[:association_model_namespace] || nil
+     end
+
+
+
+.. _`Neo4j/Config.association_model_namespace_string`:
+
+**.association_model_namespace_string**
+  
+
+  .. hidden-code-block:: ruby
+
+     def association_model_namespace_string
+       namespace = Neo4j::Config[:association_model_namespace]
+       return nil if namespace.nil?
+       "::#{namespace}"
      end
 
 
@@ -203,6 +237,19 @@ Methods
      def include_root_in_json
        # we use ternary because a simple || will always evaluate true
        Neo4j::Config[:include_root_in_json].nil? ? true : Neo4j::Config[:include_root_in_json]
+     end
+
+
+
+.. _`Neo4j/Config.module_handling`:
+
+**.module_handling**
+  
+
+  .. hidden-code-block:: ruby
+
+     def module_handling
+       Neo4j::Config[:module_handling] || :none
      end
 
 

@@ -227,17 +227,23 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Query/QueryProxy#_nodeify`:
+.. _`Neo4j/ActiveNode/Query/QueryProxy#_nodeify!`:
 
-**#_nodeify**
+**#_nodeify!**
   
 
   .. hidden-code-block:: ruby
 
-     def _nodeify(*args)
-       [args].flatten.map do |arg|
+     def _nodeify!(*args)
+       other_nodes = [args].flatten.map do |arg|
          (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
        end.compact
+     
+       if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+         fail ArgumentError, "Node must be of the association's class when model is specified"
+       end
+     
+       other_nodes
      end
 
 
@@ -363,13 +369,9 @@ Methods
 
      def create(other_nodes, properties)
        fail 'Can only create relationships on associations' if !@association
-       other_nodes = _nodeify(*other_nodes)
+       other_nodes = _nodeify!(*other_nodes)
      
        properties = @association.inject_classname(properties)
-     
-       if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
-         fail ArgumentError, "Node must be of the association's class when model is specified"
-       end
      
        Neo4j::Transaction.run do
          other_nodes.each do |other_node|

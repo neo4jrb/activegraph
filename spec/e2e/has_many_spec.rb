@@ -423,6 +423,7 @@ describe 'has_many' do
     end
   end
 
+  # This block should perhaps be repeated in has_one_spec or extracted into a shared_example
   context 'Empty class' do
     let!(:empty_class) { stub_active_node_class('Foo') }
 
