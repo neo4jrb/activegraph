@@ -47,7 +47,7 @@ describe 'Query API' do
 
       has_many :both, :favorite_teachers, type: nil, model_class: 'Teacher'
       has_many :both, :hated_teachers, type: nil, model_class: 'Teacher'
-      has_many :in,   :winning_lessons, type: nil, model_class: 'Lesson', origin: :teachers_pet
+      has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
     end
 
     stub_active_node_class('Teacher') do

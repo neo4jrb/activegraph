@@ -15,7 +15,7 @@ describe 'has_one' do
 
       stub_active_node_class('HasOneB') do
         property :name
-        has_one :in, :parent, type: nil, origin: :children, model_class: 'HasOneA'
+        has_one :in, :parent, origin: :children, model_class: 'HasOneA'
       end
     end
 
