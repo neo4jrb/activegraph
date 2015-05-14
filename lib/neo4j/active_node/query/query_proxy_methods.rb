@@ -95,11 +95,11 @@ module Neo4j
         # @param [#neo_id, String, Enumerable] node A node, a string representing a node's ID, or an enumerable of nodes or IDs.
         # @return [Neo4j::ActiveNode::Query::QueryProxy] A QueryProxy object upon which you can build.
         def match_to(node)
-          where_arg = if node.respond_to?(:neo_id)
-                        {neo_id: node.neo_id}
+          first_node = node.is_a?(Array) ? node.first : node
+          where_arg = if first_node.respond_to?(:neo_id)
+                        {neo_id: node.is_a?(Array) ? node.map(&:neo_id) : node}
                       elsif !node.nil?
-                        node = ids_array(node) if node.is_a?(Array)
-                        {association_id_key => node}
+                        {association_id_key => node.is_a?(Array) ? ids_array(node) : node}
                       else
                         # support for null object pattern
                         '1 = 2'
