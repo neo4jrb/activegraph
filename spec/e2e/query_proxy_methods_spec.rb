@@ -288,7 +288,7 @@ describe 'query_proxy_methods' do
           end
 
           it 'generates cypher using IN with the IDs of contained nodes' do
-            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('AND (result_lessons.uuid IN')
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('ID(result_lessons) IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
             expect(@john.lessons.match_to([@history, @math]).to_a.count).to eq 2
