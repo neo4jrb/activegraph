@@ -319,15 +319,20 @@ module Neo4j::ActiveNode
 
       private
 
-      # * TEST THESE!!!!
-      # * Make sure `rel_class` key sets the type for the association
-      # * Get info about model_class from ActiveRel if rel_class specified
+      VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after]
+
       def validate_association_options!(association_name, options)
-        if options.values_at(:type, :origin, :rel_class).compact.size > 1
-          fail ArgumentError, "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
-        elsif !options.key?(:type) && (options.values_at(:origin, :rel_class).compact.empty?)
-          fail ArgumentError, "The 'type' option must be specified, even if it is `nil` (#{self.class}##{association_name})"
-        end
+        type_keys = (options.keys & [:type, :origin, :rel_class])
+        message = case
+                  when type_keys.size > 1
+                    "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
+                  when type_keys.empty?
+                    "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified (#{self.class}##{association_name})"
+                  when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
+                    "Unknown option(s) specified: #{unknown_keys.join(', ')} (#{self.class}##{association_name})"
+                  end
+
+        fail ArgumentError, message if message
       end
 
       def define_has_many_methods(name)

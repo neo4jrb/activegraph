@@ -10,7 +10,7 @@ describe 'has_many' do
 
       has_many :both, :friends, model_class: false, type: nil
       has_many :out, :knows, model_class: 'Person', type: nil
-      has_many :in, :knows_me, origin: :knows, model_class: 'Person', type: nil
+      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
     end
   end
 
@@ -443,9 +443,19 @@ describe 'has_many' do
 
       it 'should only allow one of the the options :type, :origin, or :rel_class' do
         error_regex = /Only one of 'type', 'origin', or 'rel_class' options are allowed/
+        expect { empty_class.has_many :out, :bars, type: nil, origin: :foos }.to raise_error(ArgumentError, error_regex)
         expect { empty_class.has_many :out, :bars, type: :bar, origin: :foos }.to raise_error(ArgumentError, error_regex)
         expect { empty_class.has_many :out, :bars, type: :bar, rel_class: 'ARelClass' }.to raise_error(ArgumentError, error_regex)
         expect { empty_class.has_many :out, :bars, origin: :foos, rel_class: 'ARelClass' }.to raise_error(ArgumentError, error_regex)
+      end
+
+      it 'should raise an exception if an unknown option is specified' do
+        expect do
+          empty_class.has_many :out, :bars, type: :bar, unknown_key: true
+        end.to raise_error(ArgumentError, /Unknown option\(s\) specified: unknown_key/)
+        expect do
+          empty_class.has_many :out, :bars, type: :bar, unknown_key: true, unknown_key2: 'test'
+        end.to raise_error(ArgumentError, /Unknown option\(s\) specified: unknown_key, unknown_key2/)
       end
     end
 
