@@ -233,6 +233,12 @@ describe 'Neo4j::ActiveNode' do
       it 'by object' do
         clazz.find(object1).should eq(object1)
       end
+
+      context 'with no results' do
+        it 'raises an error' do
+          expect { clazz.find(8_675_309) }.to raise_error { Neo4j::RecordNotFound }
+        end
+      end
     end
 
     describe 'finding multiple records' do
@@ -242,6 +248,12 @@ describe 'Neo4j::ActiveNode' do
 
       it 'by object' do
         clazz.find([object1, object2]).to_set.should eq([object1, object2].to_set)
+      end
+
+      context 'with no results' do
+        it 'raises an error' do
+          expect { clazz.find[8_675_309] }.to raise_error { Neo4j::RecordNotFound }
+        end
       end
     end
   end
