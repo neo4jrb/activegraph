@@ -196,8 +196,8 @@ module Neo4j
         end
 
         def _nodeify!(*args)
-          other_nodes = [args].flatten.map do |arg|
-            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
+          other_nodes = [args].flatten!.map! do |arg|
+            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
           end.compact
 
           if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }

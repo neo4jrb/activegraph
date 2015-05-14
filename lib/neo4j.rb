@@ -16,6 +16,7 @@ require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
 
 require 'active_attr'
+require 'neo4j/errors'
 require 'neo4j/config'
 require 'neo4j/wrapper'
 require 'neo4j/active_rel/rel_wrapper'

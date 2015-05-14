@@ -28,7 +28,7 @@ module Neo4j
 
       # Get an instance by id of the model
       def get(id)
-        klass.find(wrap_key(id))
+        klass.find_by(klass.id_property_name => wrap_key(id))
       end
 
       # Find the first instance matching conditions
