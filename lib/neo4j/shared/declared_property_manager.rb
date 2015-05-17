@@ -10,6 +10,7 @@ module Neo4j::Shared
 
     def register(property)
       @_attributes_nil_hash = nil
+      @_attributes_string_map = nil
       registered_properties[property.name] = property
       register_magic_typecaster(property) if property.magic_typecaster
       declared_property_defaults[property.name] = property.default_value if property.default_value
@@ -29,6 +30,12 @@ module Neo4j::Shared
           val = prop_obj.default_value
           attr_hash[k.to_s] = val
         end
+      end.freeze
+    end
+
+    def attributes_string_map
+      @_attributes_string_map ||= {}.tap do |attr_hash|
+        attributes_nil_hash.each_key { |k| attr_hash[k.to_sym] = k }
       end.freeze
     end
 

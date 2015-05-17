@@ -10,7 +10,11 @@ module Neo4j::ActiveNode::Initialize
     @_persisted_obj = persisted_node
     changed_attributes && changed_attributes.clear
     attr = @attributes || self.class.attributes_nil_hash.dup
-    @attributes = attr.merge!(properties).stringify_keys!
+    properties.each_pair do |k, v|
+      key = self.class.declared_property_manager.attributes_string_map[k] || k.to_s
+      attr[key] = v
+    end
+    @attributes = attr
     self.default_properties = properties
     @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
   end
