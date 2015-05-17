@@ -9,12 +9,8 @@ module Neo4j::ActiveNode::Initialize
     self.class.extract_association_attributes!(properties)
     @_persisted_obj = persisted_node
     changed_attributes && changed_attributes.clear
-    attr = @attributes || self.class.attributes_nil_hash.dup
-    properties.each_pair do |k, v|
-      key = self.class.declared_property_manager.attributes_string_map[k] || k.to_s
-      attr[key] = v
-    end
-    @attributes = attr
+    @attributes ||= self.class.attributes_nil_hash.dup
+    stringify_attributes!(@attributes, properties)
     self.default_properties = properties
     @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
   end
@@ -24,5 +20,14 @@ module Neo4j::ActiveNode::Initialize
   # @return self
   def wrapper
     self
+  end
+
+  private
+
+  def stringify_attributes!(attr, properties)
+    properties.each_pair do |k, v|
+      key = self.class.declared_property_manager.attributes_string_map[k] || k.to_s
+      attr[key] = v
+    end
   end
 end
