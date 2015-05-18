@@ -225,23 +225,23 @@ describe 'has_many' do
   describe 'callbacks' do
     before do
       stub_const('ClazzC', UniqueClass.create do
-                           include Neo4j::ActiveNode
-                           property :name
+        include Neo4j::ActiveNode
+        property :name
 
-                           has_many :out, :knows, type: nil, model_class: self, before: :before_callback
-                           has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
-                           has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
+        has_many :out, :knows, type: nil, model_class: self, before: :before_callback
+        has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
+        has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
 
-                           def before_callback(_other)
-                           end
+        def before_callback(_other)
+        end
 
-                           def after_callback(_other)
-                           end
+        def after_callback(_other)
+        end
 
-                           def false_callback(_other)
-                             false
-                           end
-                         end)
+        def false_callback(_other)
+          false
+        end
+      end)
     end
 
     let(:node) { Person.create }
@@ -330,16 +330,16 @@ describe 'has_many' do
   describe 'using mapped_label_name' do
     before do
       stub_const('ClazzC', UniqueClass.create do
-                           include Neo4j::ActiveNode
+        include Neo4j::ActiveNode
 
-                           has_many :in, :furrs, type: nil, model_class: 'ClazzD'
-                         end)
+        has_many :in, :furrs, type: nil, model_class: 'ClazzD'
+      end)
 
       stub_const('ClazzD', UniqueClass.create do
-                           include Neo4j::ActiveNode
+        include Neo4j::ActiveNode
 
-                           self.mapped_label_name = 'Fuur'
-                         end)
+        self.mapped_label_name = 'Fuur'
+      end)
     end
 
     let(:c1) { ClazzC.create }

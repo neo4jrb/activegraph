@@ -13,9 +13,9 @@ describe Neo4j::ActiveNode::IdProperty do
       it 'raise for id_property :something, :bla' do
         expect do
           stub_const('Unique', UniqueClass.create do
-                               include Neo4j::ActiveNode
-                               id_property :something, :bla
-                             end)
+            include Neo4j::ActiveNode
+            id_property :something, :bla
+          end)
         end.to raise_error(/Expected a Hash/)
       end
 
@@ -34,9 +34,9 @@ describe Neo4j::ActiveNode::IdProperty do
   describe 'when no id_property' do
     before do
       stub_const('Clazz', UniqueClass.create do
-                          include Neo4j::ActiveNode
-                          property :name
-                        end)
+        include Neo4j::ActiveNode
+        property :name
+      end)
     end
 
     it 'uses the neo_id as id after save' do
@@ -67,8 +67,8 @@ describe Neo4j::ActiveNode::IdProperty do
         Neo4j::Config[:id_property_type] = :auto
         Neo4j::Config[:id_property_type_value] = :uuid
         stub_const('Clazz', UniqueClass.create do
-                            include Neo4j::ActiveNode
-                          end)
+          include Neo4j::ActiveNode
+        end)
       end
 
       it 'will set the id_property after a session has been created' do
@@ -82,9 +82,9 @@ describe Neo4j::ActiveNode::IdProperty do
   describe 'id_property :myid' do
     before do
       stub_const('Clazz', UniqueClass.create do
-                          include Neo4j::ActiveNode
-                          id_property :myid
-                        end)
+        include Neo4j::ActiveNode
+        id_property :myid
+      end)
     end
 
     it 'has an index' do
@@ -169,13 +169,13 @@ describe Neo4j::ActiveNode::IdProperty do
   describe 'id_property :my_id, on: :foobar' do
     before do
       stub_const('Clazz', UniqueClass.create do
-                          include Neo4j::ActiveNode
-                          id_property :my_id, on: :foobar
+        include Neo4j::ActiveNode
+        id_property :my_id, on: :foobar
 
-                          def foobar
-                            'some id'
-                          end
-                        end)
+        def foobar
+          'some id'
+        end
+      end)
     end
 
     it 'has an index' do
@@ -253,9 +253,9 @@ describe Neo4j::ActiveNode::IdProperty do
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
       stub_const('Clazz', UniqueClass.create do
-                          include Neo4j::ActiveNode
-                          id_property :my_uuid, auto: :uuid
-                        end)
+        include Neo4j::ActiveNode
+        id_property :my_uuid, auto: :uuid
+      end)
     end
 
     it 'has an index' do
