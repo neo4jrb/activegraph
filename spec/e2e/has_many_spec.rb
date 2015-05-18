@@ -223,33 +223,33 @@ describe 'has_many' do
   end
 
   describe 'callbacks' do
-    let(:clazz_c) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-        property :name
+    before do
+      stub_const('ClazzC', UniqueClass.create do
+                           include Neo4j::ActiveNode
+                           property :name
 
-        has_many :out, :knows, type: nil, model_class: self, before: :before_callback
-        has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
-        has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
+                           has_many :out, :knows, type: nil, model_class: self, before: :before_callback
+                           has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
+                           has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
 
-        def before_callback(_other)
-        end
+                           def before_callback(_other)
+                           end
 
-        def after_callback(_other)
-        end
+                           def after_callback(_other)
+                           end
 
-        def false_callback(_other)
-          false
-        end
-      end
+                           def false_callback(_other)
+                             false
+                           end
+                         end)
     end
 
     let(:node) { Person.create }
     let(:friend1) { Person.create }
     let(:friend2) { Person.create }
 
-    let(:callback_friend1) { clazz_c.create }
-    let(:callback_friend2) { clazz_c.create }
+    let(:callback_friend1) { ClazzC.create }
+    let(:callback_friend2) { ClazzC.create }
 
     it 'calls before_callback when node added to #knows association' do
       expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should eq(0) }
@@ -328,29 +328,25 @@ describe 'has_many' do
   end
 
   describe 'using mapped_label_name' do
-    let(:clazz_c) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    before do
+      stub_const('ClazzC', UniqueClass.create do
+                           include Neo4j::ActiveNode
 
-        has_many :in, :furrs, type: nil, model_class: 'ClazzD'
-      end
+                           has_many :in, :furrs, type: nil, model_class: 'ClazzD'
+                         end)
+
+      stub_const('ClazzD', UniqueClass.create do
+                           include Neo4j::ActiveNode
+
+                           self.mapped_label_name = 'Fuur'
+                         end)
     end
 
-    let(:c1) { clazz_c.create }
+    let(:c1) { ClazzC.create }
+    let(:d1) { ClazzD.create }
 
     it 'should use the mapped_label_name' do
-      clazz_d = UniqueClass.create do
-        include Neo4j::ActiveNode
-
-        self.mapped_label_name = 'Fuur'
-      end
-
-      stub_const 'ClazzD', clazz_d
-
-      d1 = ClazzD.create
-
       c1.furrs << d1
-
       c1.furrs.to_a.should eq([d1])
     end
   end
