@@ -5,6 +5,7 @@ module Neo4j
   #
   class Config
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
+    CLASS_NAME_PROPERTY_KEY = 'class_name_property'
 
     class << self
       # @return [Fixnum] The location of the default configuration file.
@@ -93,7 +94,7 @@ module Neo4j
       end
 
       def class_name_property
-        Neo4j::Config[:class_name_property] || :_classname
+        @_class_name_property = Neo4j::Config[CLASS_NAME_PROPERTY_KEY] || :_classname
       end
 
       def include_root_in_json
