@@ -108,7 +108,7 @@ describe Neo4j::Shared::TypeConverters do
   end
 
   describe Neo4j::Shared::TypeConverters::DateTimeConverter do
-    subject { Neo4j::Shared::TypeConverters::TimeConverter }
+    subject { Neo4j::Shared::TypeConverters::DateTimeConverter }
 
     before(:each) do
       @dt = 1_352_538_487
