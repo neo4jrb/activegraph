@@ -12,19 +12,19 @@ describe Neo4j::ActiveNode::IdProperty do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
         expect do
-          UniqueClass.create do
+          stub_const('Unique', UniqueClass.create do
             include Neo4j::ActiveNode
             id_property :something, :bla
-          end
+          end)
         end.to raise_error(/Expected a Hash/)
       end
 
       it 'raise for id_property :something, bla: 42' do
         expect do
-          UniqueClass.create do
+          stub_const('Unique', UniqueClass.create do
             include Neo4j::ActiveNode
             id_property :something, bla: 42
-          end
+          end)
         end.to raise_error(/Illegal value/)
       end
     end
@@ -32,111 +32,108 @@ describe Neo4j::ActiveNode::IdProperty do
 
 
   describe 'when no id_property' do
-    let(:clazz) do
-      UniqueClass.create do
+    before do
+      stub_const('Clazz', UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
-      end
+      end)
     end
 
     it 'uses the neo_id as id after save' do
       SecureRandom.stub(:uuid) { 'secure123' }
-      node = clazz.new
+      node = Clazz.new
       expect(node.id).to eq(nil)
       node.save!
       expect(node.id).to eq('secure123')
     end
 
     it 'can find by id uses the neo_id' do
-      node = clazz.create!
+      node = Clazz.create!
       node.name = 'kalle'
-      expect(clazz.find_by_id(node.id)).to eq(node)
+      expect(Clazz.find_by_id(node.id)).to eq(node)
     end
 
     it 'returns :id as primary_key' do
-      expect(clazz.primary_key).to eq :uuid
+      expect(Clazz.primary_key).to eq :uuid
     end
 
     it 'responds false to id_property' do
-      expect(clazz.id_property?).to be_truthy
+      expect(Clazz.id_property?).to be_truthy
     end
 
     describe 'when having a configuration' do
-      let(:clazz) do
-        UniqueClass.create do
-          include Neo4j::ActiveNode
-        end
-      end
-
       before do
         Neo4j::Config[:id_property] = :the_id
         Neo4j::Config[:id_property_type] = :auto
         Neo4j::Config[:id_property_type_value] = :uuid
+        stub_const('Clazz', UniqueClass.create do
+          include Neo4j::ActiveNode
+        end)
       end
 
       it 'will set the id_property after a session has been created' do
-        node = clazz.new
+        node = Clazz.new
         expect(node).to respond_to(:the_id)
-        expect(clazz.mapped_label.indexes).to eq(property_keys: [[:the_id]])
+        expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:the_id]])
       end
     end
   end
 
   describe 'id_property :myid' do
-    let(:clazz) do
-      UniqueClass.create do
+    before do
+      stub_const('Clazz', UniqueClass.create do
         include Neo4j::ActiveNode
         id_property :myid
-      end
+      end)
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:myid]])
+      expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:myid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
-      clazz.create(myid: 'z')
-      clazz.new(myid: 'z')
-      expect { clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
+      Clazz.create(myid: 'z')
+      Clazz.new(myid: 'z')
+      expect { Clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
 
     describe 'property myid' do
       it 'is not defined when before save ' do
-        node = clazz.new
+        node = Clazz.new
         expect(node.myid).to be_nil
       end
 
       it 'can be set' do
-        node = clazz.new
+        node = Clazz.new
         node.myid = '42'
         expect(node.myid).to eq('42')
       end
 
       it 'can be saved after set' do
-        node = clazz.new
+        node = Clazz.new
         node.myid = '42'
         node.save!
         expect(node.myid).to eq('42')
       end
 
       it 'is same as id' do
-        node = clazz.new
+        node = Clazz.new
         node.myid = '42'
         expect(node.id).to be_nil
       end
 
       it 'is returned by primary_key' do
-        expect(clazz.primary_key).to eq :myid
+        expect(Clazz.primary_key).to eq :myid
       end
 
       it 'makes the class respond true to id_property?' do
-        expect(clazz.id_property?).to be_truthy
+        expect(Clazz.id_property?).to be_truthy
       end
 
       it 'removes any previously declared properties' do
-        clazz.id_property :my_property, auto: :uuid
-        clazz.id_property :another_property, auto: :uuid
-        node = clazz.create
+        Clazz.id_property :my_property, auto: :uuid
+        Clazz.id_property :another_property, auto: :uuid
+        node = Clazz.create
         expect(node.respond_to?(:uuid)).to be_falsey
         expect(node.respond_to?(:my_property)).to be_falsey
       end
@@ -144,25 +141,25 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        clazz.create(myid: 'a')
-        node_b = clazz.create(myid: 'b')
-        clazz.create(myid: 'c')
-        found = clazz.find_by_id('b')
+        Clazz.create(myid: 'a')
+        node_b = Clazz.create(myid: 'b')
+        Clazz.create(myid: 'c')
+        found = Clazz.find_by_id('b')
         expect(found).to eq(node_b)
       end
 
       it 'does not find it if it does not exist' do
-        clazz.create(myid: 'd')
+        Clazz.create(myid: 'd')
 
-        found = clazz.find_by_id('something else')
+        found = Clazz.find_by_id('something else')
         expect(found).to be_nil
       end
     end
 
     describe 'find_by_neo_id' do
       it 'loads by the neo id' do
-        node1 = clazz.create
-        found = clazz.find_by_neo_id(node1.neo_id)
+        node1 = Clazz.create
+        found = Clazz.find_by_neo_id(node1.neo_id)
         expect(found).to eq node1
       end
     end
@@ -170,43 +167,43 @@ describe Neo4j::ActiveNode::IdProperty do
 
 
   describe 'id_property :my_id, on: :foobar' do
-    let(:clazz) do
-      UniqueClass.create do
+    before do
+      stub_const('Clazz', UniqueClass.create do
         include Neo4j::ActiveNode
         id_property :my_id, on: :foobar
 
         def foobar
           'some id'
         end
-      end
+      end)
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:my_id]])
+      expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:my_id]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
-      clazz.default_property :my_id do
+      Clazz.default_property :my_id do
         'same uuid'
       end
-      clazz.create
-      expect { clazz.create }.to raise_error(/Node \d+ already exists with label/)
+      Clazz.create
+      expect { Clazz.create }.to raise_error(/Node \d+ already exists with label/)
     end
 
     describe 'property my_id' do
       it 'is not defined when before save ' do
-        node = clazz.new
+        node = Clazz.new
         expect(node.my_id).to be_nil
       end
 
       it "is set to foobar's return value after save" do
-        node = clazz.new
+        node = Clazz.new
         node.save
         expect(node.my_id).to eq('some id')
       end
 
       it 'is same as id' do
-        node = clazz.new
+        node = Clazz.new
         expect(node.id).to be_nil
         node.save
         expect(node.id).to eq(node.my_id)
@@ -216,77 +213,77 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        clazz.any_instance.stub(:foobar) { 100 }
-        node = clazz.create!
-        clazz.should_receive(:where).with(my_id: 100).and_return([:some_node])
-        expect(clazz.find_by_id(node.my_id)).to eq(:some_node)
+        Clazz.any_instance.stub(:foobar) { 100 }
+        node = Clazz.create!
+        Clazz.should_receive(:where).with(my_id: 100).and_return([:some_node])
+        expect(Clazz.find_by_id(node.my_id)).to eq(:some_node)
       end
     end
   end
 
   describe 'constraint setting' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-      end
+    before do
+      stub_const('Clazz', UniqueClass.create do
+                          include Neo4j::ActiveNode
+                        end)
     end
 
     context 'constraint: false' do
       it 'does not create a constraint' do
-        expect(clazz).not_to receive(:constraint)
-        clazz.id_property :my_uuid, auto: :uuid, constraint: false
+        expect(Clazz).not_to receive(:constraint)
+        Clazz.id_property :my_uuid, auto: :uuid, constraint: false
       end
     end
 
     context 'constraint: true' do
       it 'does create a constraint' do
-        expect(clazz).to receive(:constraint)
-        clazz.id_property :my_uuid, auto: :uuid, constraint: true
+        expect(Clazz).to receive(:constraint)
+        Clazz.id_property :my_uuid, auto: :uuid, constraint: true
       end
     end
 
     context 'constraint: nil' do
       it 'creates a constraint' do
-        expect(clazz).to receive(:constraint)
-        clazz.id_property :my_uuid, auto: :uuid
+        expect(Clazz).to receive(:constraint)
+        Clazz.id_property :my_uuid, auto: :uuid
       end
     end
   end
 
   describe 'id_property :my_uuid, auto: :uuid' do
-    let(:clazz) do
-      UniqueClass.create do
+    before do
+      stub_const('Clazz', UniqueClass.create do
         include Neo4j::ActiveNode
         id_property :my_uuid, auto: :uuid
-      end
+      end)
     end
 
     it 'has an index' do
-      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:my_uuid]])
+      expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:my_uuid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
-      clazz.default_property :my_uuid do
+      Clazz.default_property :my_uuid do
         'same uuid'
       end
-      clazz.create
-      expect { clazz.create }.to raise_error(/Node \d+ already exists with label/)
+      Clazz.create
+      expect { Clazz.create }.to raise_error(/Node \d+ already exists with label/)
     end
 
     describe 'property my_uuid' do
       it 'is not defined when before save ' do
-        node = clazz.new
+        node = Clazz.new
         expect(node.my_uuid).to be_nil
       end
 
       it 'is is set when saving ' do
-        node = clazz.new
+        node = Clazz.new
         node.save
         expect(node.my_uuid).to_not be_empty
       end
 
       it 'is same as id' do
-        node = clazz.new
+        node = Clazz.new
         expect(node.id).to be_nil
         node.save
         expect(node.id).to eq(node.my_uuid)
@@ -295,18 +292,18 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        clazz.create
-        node = clazz.create
-        clazz.create
+        Clazz.create
+        node = Clazz.create
+        Clazz.create
 
-        found = clazz.find_by_id(node.my_uuid)
+        found = Clazz.find_by_id(node.my_uuid)
         expect(found).to eq(node)
       end
 
       it 'does not find it if it does not exist' do
-        clazz.create
+        Clazz.create
 
-        found = clazz.find_by_id('something else')
+        found = Clazz.find_by_id('something else')
         expect(found).to be_nil
       end
     end

@@ -1,13 +1,24 @@
 module Neo4j::Shared
+  # The DeclaredPropertyuManager holds details about objects created as a result of calling the #property
+  # class method on a class that includes Neo4j::ActiveNode or Neo4j::ActiveRel. There are many options
+  # that are referenced frequently, particularly during load and save, so this provides easy access and
+  # a way of separating behavior from the general Active{obj} modules.
+  #
+  # See Neo4j::Shared::DeclaredProperty for definitions of the property objects themselves.
   class DeclaredPropertyManager
     include Neo4j::Shared::TypeConverters
 
     attr_reader :klass
 
+    # Each class that includes Neo4j::ActiveNode or Neo4j::ActiveRel gets one instance of this class.
+    # @param [#declared_property_manager] klass An object that has the #declared_property_manager method.
     def initialize(klass)
       @klass = klass
     end
 
+    # @param [Neo4j::Shared::DeclaredProperty] property An instance of DeclaredProperty, created as the result of calling
+    # #property on an ActiveNode or ActiveRel class. The DeclaredProperty has specifics about the property, but registration
+    # makes the management object aware of it. This is necessary for type conversion, defaults, and inclusion in the nil and string hashes.
     def register(property)
       @_attributes_nil_hash = nil
       @_attributes_string_map = nil
@@ -16,6 +27,8 @@ module Neo4j::Shared
       declared_property_defaults[property.name] = property.default_value if property.default_value
     end
 
+    # The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of
+    # nil on declared properties. This holds those values.
     def declared_property_defaults
       @_default_property_values ||= {}
     end
@@ -24,6 +37,10 @@ module Neo4j::Shared
       @_registered_properties ||= {}
     end
 
+    # During object wrap, a hash is needed that contains each declared property with a nil value.
+    # The active_attr dependency is capable of providing this but it is expensive and calculated on the fly
+    # each time it is called. Rather than rely on that, we build this progressively as properties are registered.
+    # When the node or rel is loaded, this is used as a template.
     def attributes_nil_hash
       @_attributes_nil_hash ||= {}.tap do |attr_hash|
         registered_properties.each_pair do |k, prop_obj|
@@ -33,10 +50,27 @@ module Neo4j::Shared
       end.freeze
     end
 
+    # During object wrapping, a props hash is built with string keys but Neo4j-core provides symbols.
+    # Rather than a `to_s` or `symbolize_keys` during every load, we build a map of symbol-to-string
+    # to speed up the process. This increases memory used by the gem but reduces object allocation and GC, so it is faster
+    # in practice.
     def attributes_string_map
       @_attributes_string_map ||= {}.tap do |attr_hash|
         attributes_nil_hash.each_key { |k| attr_hash[k.to_sym] = k }
       end.freeze
+    end
+
+    # @param [Symbol] k A symbol for which the String representation is sought. This might seem silly -- we could just call #to_s --
+    # but when this happens many times while loading many objects, it results in a surprisingly significant slowdown.
+    # The branching logic handles what happens if a property can't be found.
+    # The first option attempts to find it in the existing hash.
+    # The second option checks whether the key is the class's id property and, if it is, the string hash is rebuilt with it to prevent
+    # future lookups.
+    # The third calls `to_s`. This would happen if undeclared properties are found on the object. We could add them to the string map
+    # but that would result in unchecked, un-GCed memory consumption. In the event that someone is adding properties dynamically,
+    # maybe through user input, this would be bad.
+    def string_key(k)
+      attributes_string_map[k] || string_map_id_property(k) || k.to_s
     end
 
     def unregister(name)
@@ -87,6 +121,16 @@ module Neo4j::Shared
     end
 
     private
+
+    # @param [Symbol] key An undeclared property value found in the _persisted_obj.props hash.
+    # Typically, this is a node's id property, which will not be registered as other properties are.
+    # In the future, this should probably be reworked a bit. This class should either not know or care
+    # about the id property or it should be in charge of it. In the meantime, this improves
+    # node load performance.
+    def string_map_id_property(key)
+      return unless klass.id_property_name == key
+      @_attributes_string_map = attributes_string_map.dup.tap { |h| h[key] = key.to_s }.freeze
+    end
 
     def unregister_magic_typecaster(property)
       magic_typecast_properties.delete(property)

@@ -30,7 +30,7 @@ module Neo4j::ActiveNode::Initialize
 
   def stringify_attributes!(attr, properties)
     properties.each_pair do |k, v|
-      key = self.class.declared_property_manager.attributes_string_map[k] || k.to_s
+      key = self.class.declared_property_manager.string_key(k)
       attr[key] = v
     end
   end

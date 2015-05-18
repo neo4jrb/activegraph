@@ -244,8 +244,10 @@ describe 'Neo4j::ActiveNode' do
 
   describe 'cached classnames' do
     after(:all) { Neo4j::Config[:cache_class_names] = true }
-    CacheTest = UniqueClass.create do
-      include Neo4j::ActiveNode
+    before do
+      stub_const('CacheTest', UniqueClass.create do
+        include Neo4j::ActiveNode
+      end)
     end
 
     context 'with cache_class set in config' do
@@ -591,10 +593,13 @@ describe 'Neo4j::ActiveNode' do
       end
 
       describe 'without updated_at property' do
-        NoStamp = UniqueClass.create do
-          include Neo4j::ActiveNode
-          property :name
+        before do
+          stub_const('NoStamp', UniqueClass.create do
+            include Neo4j::ActiveNode
+            property :name
+          end)
         end
+
         let(:nostamp) { NoStamp.create }
         it 'returns cache key without timestamp' do
           expect(nostamp.cache_key).to eq "#{nostamp.class.model_name.cache_key}/#{nostamp.neo_id}"

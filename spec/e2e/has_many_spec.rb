@@ -223,8 +223,8 @@ describe 'has_many' do
   end
 
   describe 'callbacks' do
-    let(:clazz_c) do
-      UniqueClass.create do
+    before do
+      stub_const('ClazzC', UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
 
@@ -241,15 +241,15 @@ describe 'has_many' do
         def false_callback(_other)
           false
         end
-      end
+      end)
     end
 
     let(:node) { Person.create }
     let(:friend1) { Person.create }
     let(:friend2) { Person.create }
 
-    let(:callback_friend1) { clazz_c.create }
-    let(:callback_friend2) { clazz_c.create }
+    let(:callback_friend1) { ClazzC.create }
+    let(:callback_friend2) { ClazzC.create }
 
     it 'calls before_callback when node added to #knows association' do
       expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should eq(0) }
@@ -328,29 +328,25 @@ describe 'has_many' do
   end
 
   describe 'using mapped_label_name' do
-    let(:clazz_c) do
-      UniqueClass.create do
+    before do
+      stub_const('ClazzC', UniqueClass.create do
         include Neo4j::ActiveNode
 
         has_many :in, :furrs, type: nil, model_class: 'ClazzD'
-      end
-    end
+      end)
 
-    let(:c1) { clazz_c.create }
-
-    it 'should use the mapped_label_name' do
-      clazz_d = UniqueClass.create do
+      stub_const('ClazzD', UniqueClass.create do
         include Neo4j::ActiveNode
 
         self.mapped_label_name = 'Fuur'
-      end
+      end)
+    end
 
-      stub_const 'ClazzD', clazz_d
+    let(:c1) { ClazzC.create }
+    let(:d1) { ClazzD.create }
 
-      d1 = ClazzD.create
-
+    it 'should use the mapped_label_name' do
       c1.furrs << d1
-
       c1.furrs.to_a.should eq([d1])
     end
   end
