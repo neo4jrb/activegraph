@@ -10,6 +10,7 @@ gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
 
 group 'test' do
   gem 'coveralls', require: false
+  gem 'codecov', require: false
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
   gem 'rspec', '~> 2.0'
