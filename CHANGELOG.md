@@ -4,10 +4,31 @@ This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+- Nothing yet, placeholder
+
+## [5.0.0] - 2015-05-20
+### Changed
+- Ruby 2.0.0 now required (>= 2.2.1 is recommended)
+- All `ActiveNode` associations now require either a `type`, `origin`, or `rel_class` option.  Only one is allowed
+- Defining associations will fail if unknown options are used (#796)
+- `Model#find` fails if no node found (`Model#find_by` available when `nil` result desired) (#799)
+- `#find_or_create` and `#merge` model class methods have been added
+- Ensuring that all model callbacks are happening within transactions
+- Major refactoring using `rubocop` with a lot of focus on speed improvements
+- Specifically when loading many nodes at once we've measured 3x speed improvements
+### Fixed
+- `#find` on `QueryProxy` objects now does a model `find` rather than an `Enumerable` find
+- Subclassed model classes now both create and query against it's ancestor's labels in addition to it's own (#690)
+- `#first` and `#last` now work property when precedend by an `#order` in a `QueryProxy` chain (#720)
 ### Added
-- `model_class` key on associations now supports an Array
-#### Refactoring
-- Major refactoring using `rubocop` and speed improvements
+- Eager Loading is now supported!  See: [http://neo4jrb.readthedocs.org/en/latest/ActiveNode.html#eager-loading]
+- Associations now return `AssociationProxy` objects (which are `Enumerable`) which have convenient `#inspect` methods for cleaner viewing in the Ruby console
+- `model_class` key on associations now supports an Array (#589)
+- When using `all` inside of a class method an argument for the node name can now be passed in (#737)
+- Query(Proxy) syntax of `where("foo = ?", val)` and `where("foo = {bar}", bar: val)` now supported (#675)
+- `module_handling` config option now available to control how class module namespaces translate to Neo4j labels (#753) (See: [http://neo4jrb.readthedocs.org/en/latest/Configuration.html])
+
+(There are probably other changes too!)
 
 **Changes above this point should conform to [http://keepachangelog.com/]**
 
