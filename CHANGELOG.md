@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Nothing yet, placeholder
 
 ## [5.0.0] - 2015-05-20
+
 ### Changed
 - Ruby 2.0.0 now required (>= 2.2.1 is recommended)
 - All `ActiveNode` associations now require either a `type`, `origin`, or `rel_class` option.  Only one is allowed
@@ -16,10 +17,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Ensuring that all model callbacks are happening within transactions
 - Major refactoring using `rubocop` with a lot of focus on speed improvements
 - Specifically when loading many nodes at once we've measured 3x speed improvements
+
 ### Fixed
 - `#find` on `QueryProxy` objects now does a model `find` rather than an `Enumerable` find
 - Subclassed model classes now both create and query against it's ancestor's labels in addition to it's own (#690)
 - `#first` and `#last` now work property when precedend by an `#order` in a `QueryProxy` chain (#720)
+
 ### Added
 - Eager Loading is now supported!  See: [http://neo4jrb.readthedocs.org/en/latest/ActiveNode.html#eager-loading]
 - Associations now return `AssociationProxy` objects (which are `Enumerable`) which have convenient `#inspect` methods for cleaner viewing in the Ruby console
