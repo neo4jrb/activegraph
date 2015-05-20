@@ -174,6 +174,18 @@ describe 'query_proxy_methods' do
       expect(@john.lessons.size).to eq(3)
       expect(@john.lessons.length).to eq(3)
     end
+
+    context 'with limit' do
+      before do
+        Student.delete_all
+        10.times { Student.create }
+      end
+
+      it 'adds a :with and returns the limited count' do
+        expect(Student.as(:s).limit(5).count).to eq 5
+        expect(Student.as(:s).limit(11).count).to eq 10
+      end
+    end
   end
 
   describe 'delete_all' do
