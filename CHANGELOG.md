@@ -22,6 +22,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `#find` on `QueryProxy` objects now does a model `find` rather than an `Enumerable` find
 - Subclassed model classes now both create and query against it's ancestor's labels in addition to it's own (#690)
 - `#first` and `#last` now work property when precedend by an `#order` in a `QueryProxy` chain (#720)
+- `#count` when called after `#limit` will be performed within the bounds of limit specified
 
 ### Added
 - Eager Loading is now supported!  See: [http://neo4jrb.readthedocs.org/en/latest/ActiveNode.html#eager-loading]
@@ -30,6 +31,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - When using `all` inside of a class method an argument for the node name can now be passed in (#737)
 - Query(Proxy) syntax of `where("foo = ?", val)` and `where("foo = {bar}", bar: val)` now supported (#675)
 - `module_handling` config option now available to control how class module namespaces translate to Neo4j labels (#753) (See: [http://neo4jrb.readthedocs.org/en/latest/Configuration.html])
+- `#id_property` method has new `constraints` option to disable automatic uuid constraint (#738/#736)
 
 (There are probably other changes too!)
 
