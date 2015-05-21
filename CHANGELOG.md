@@ -6,7 +6,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 - Nothing yet, placeholder
 
-## [5.0.0] - 2015-05-20
+## [5.0.0.rc.2] - 2015-05-20
+
+### Changed
+- Set Ruby version requirement back to 1.9.3 because of problems with JRuby
+
+## [5.0.0.rc.1] - 2015-05-20
 
 ### Changed
 - Ruby 2.0.0 now required (>= 2.2.1 is recommended)
