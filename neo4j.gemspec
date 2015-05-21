@@ -20,7 +20,7 @@ A Neo4j OGM (Object-Graph-Mapper) for use in Ruby on Rails and Rack frameworks h
   EOF
 
   s.require_path = 'lib'
-  s.files = Dir.glob('{bin,lib,config}/**/*') + %w(README.md CHANGELOG CONTRIBUTORS Gemfile neo4j.gemspec)
+  s.files = Dir.glob('{bin,lib,config}/**/*') + %w(README.md CHANGELOG.md CONTRIBUTORS Gemfile neo4j.gemspec)
   s.executables = ['neo4j-jars']
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.md )
