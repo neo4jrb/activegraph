@@ -42,6 +42,11 @@ module Neo4j::ActiveRel
       loaded.send(*args, &block)
     end
 
+    def respond_to_missing?(method_name, include_private = false)
+      loaded if @node.is_a?(Integer)
+      @node.respond_to?(method_name) ? true : super
+    end
+
     def class
       loaded.send(:class)
     end

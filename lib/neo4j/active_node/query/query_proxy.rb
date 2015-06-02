@@ -228,8 +228,8 @@ module Neo4j
           end
         end
 
-        def respond_to?(method_name)
-          (@model && @model.respond_to?(method_name)) || super
+        def respond_to_missing?(method_name, include_all = false)
+          (@model && @model.respond_to?(method_name, include_all)) || super
         end
 
         # Give ability to call `#find` on associations to get a scoped find
