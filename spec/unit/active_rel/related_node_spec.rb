@@ -50,7 +50,10 @@ describe Neo4j::ActiveRel::RelatedNode do
   end
 
   context 'wrapped nodes' do
-    before { node1.stub(:neo_id).and_return(1) }
+    before do
+      node1.stub(:neo_id).and_return(1)
+      node1.stub(:foo_prop).and_return(true)
+    end
     let(:r) { RelatedNode.new(node1) }
 
     it 'accepts a wrapped node during initialize' do
@@ -90,6 +93,12 @@ describe Neo4j::ActiveRel::RelatedNode do
     describe '==' do
       it 'correctly compares nodes' do
         expect(r == node1).to be_truthy
+      end
+    end
+
+    describe 'respond_to?' do
+      it 'works correctly' do
+        expect(r.respond_to?(:foo_prop)).to be_truthy
       end
     end
   end
