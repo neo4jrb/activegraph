@@ -40,7 +40,7 @@ module Neo4j
           conditions[attribute] = options[:case_sensitive] ? value : /^#{Regexp.escape(value.to_s)}$/i
 
           found = record.class.as(:result).where(conditions)
-          found = found.where('ID(result) <> {record_neo_id}').params(record_neo_id: record.neo_id) if record.persisted?
+          found = found.where('ID(result) <> {record_neo_id}').params(record_neo_id: record.neo_id) if record._persisted_obj
           found
         end
 

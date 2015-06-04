@@ -24,33 +24,29 @@ describe Neo4j::ActiveRel::Callbacks do
   end
 
   describe 'save' do
+    let(:rel) { clazz.new }
+
     before do
-      clazz.any_instance.stub(:persisted?).and_return(false)
+      clazz.any_instance.stub(:_persisted_obj).and_return(nil)
       clazz.any_instance.stub_chain('errors.full_messages').and_return([])
     end
 
     it 'raises an error if unpersisted and outbound is not valid' do
       clazz.any_instance.stub_chain('to_node.neo_id')
       clazz.any_instance.stub_chain('from_node').and_return(nil)
-      expect do
-        clazz.new.save
-      end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
+      expect { rel.save }.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
     end
 
     it 'raises an error if unpersisted and inbound is not valid' do
       clazz.any_instance.stub_chain('from_node.neo_id')
       clazz.any_instance.stub_chain('to_node').and_return(nil)
-      expect do
-        clazz.new.save
-      end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
+      expect { rel.save }.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
     end
 
     it 'does not raise an error if inbound and outbound are valid' do
       clazz.any_instance.stub_chain('from_node.neo_id')
       clazz.any_instance.stub_chain('to_node.neo_id')
-      expect do
-        clazz.new.save
-      end.not_to raise_error
+      expect { rel.save }.not_to raise_error
     end
   end
 end

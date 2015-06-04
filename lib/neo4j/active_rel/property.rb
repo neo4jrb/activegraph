@@ -6,7 +6,7 @@ module Neo4j::ActiveRel
     %w(to_node from_node).each do |direction|
       define_method("#{direction}") { instance_variable_get("@#{direction}") }
       define_method("#{direction}=") do |argument|
-        fail FrozenRelError, 'Relationship start/end nodes cannot be changed once persisted' if self.persisted?
+        fail FrozenRelError, 'Relationship start/end nodes cannot be changed once persisted' if _persisted_obj
         instance_variable_set("@#{direction}", argument)
       end
     end
