@@ -160,13 +160,13 @@ has_many and has_one associations can also be defined on ActiveNode models to ma
     class Post
       include Neo4j::ActiveNode
       has_many :in, :comments, origin: :post
-      has_one :out, :author, type: :author, model_class: Person
+      has_one :out, :author, type: :author, model_class: :Person
     end
 
     class Comment
       include Neo4j::ActiveNode
       has_one :out, :post, type: :post
-      has_one :out, :author, type: :author, model_class: Person
+      has_one :out, :author, type: :author, model_class: :Person
     end
 
     class Person
