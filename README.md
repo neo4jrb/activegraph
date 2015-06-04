@@ -40,22 +40,22 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 ## Neo4j version support
 
-| **Neo4j Version** | v2.x | v3.x | v4.x |
-|-------------------|------|------|------|
-| 1.9.x             | Yes  | No   | No   |
-| 2.0.x             | No   | Yes  | No   |
-| 2.1.x             | No   | Yes  | Yes  |
-| 2.2.x             | No   | No   | Yes  |
+| **Neo4j Version** | v2.x | v3.x | >= v4.x |
+|-------------------|------|------|---------|
+| 1.9.x             | Yes  | No   | No      |
+| 2.0.x             | No   | Yes  | No      |
+| 2.1.x             | No   | Yes  | Yes     |
+| 2.2.x             | No   | No   | Yes     |
 
 ## Neo4j feature support
 
-| **Neo4j Feature**          |   v2.x | v3.x | v4.x |
-|----------------------------|--------|------|------|
-| Auth                       |   No   |  No  | Yes  |
-| Remote Cypher              |   Yes  |  Yes | Yes  |
-| Transactions               |   Yes  |  Yes | Yes  |
-| High Availability          |   No   |  Yes | Yes  |
-| Embedded JVM support       |   Yes  |  Yes | Yes  |
+| **Neo4j Feature**          |   v2.x | v3.x | >= v4.x |
+|----------------------------|--------|------|---------|
+| Auth                       |   No   |  No  | Yes     |
+| Remote Cypher              |   Yes  |  Yes | Yes     |
+| Transactions               |   Yes  |  Yes | Yes     |
+| High Availability          |   No   |  Yes | Yes     |
+| Embedded JVM support       |   Yes  |  Yes | Yes     |
 
 ## Modern (3.x/4.X) Documentation
 
