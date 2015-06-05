@@ -202,7 +202,9 @@ module Neo4j
           check_valid_type_and_dir(type, direction)
         end
 
-        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after]
+        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, 
+                                         :rel_class, :dependent, :before, 
+                                         :after, :unique]
 
         def validate_association_options!(association_name, options)
           type_keys = (options.keys & [:type, :origin, :rel_class])
