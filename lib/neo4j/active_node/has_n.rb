@@ -292,7 +292,6 @@ module Neo4j::ActiveNode
       #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
       #
       def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
-        validate_association_options!(name, options)
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
@@ -310,7 +309,6 @@ module Neo4j::ActiveNode
       # not specified here
       #
       def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
-        validate_association_options!(name, options)
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
@@ -318,23 +316,7 @@ module Neo4j::ActiveNode
       end
 
       private
-
-      VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after]
-
-      def validate_association_options!(association_name, options)
-        type_keys = (options.keys & [:type, :origin, :rel_class])
-        message = case
-                  when type_keys.size > 1
-                    "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations (#{self.class}##{association_name})"
-                  when type_keys.empty?
-                    "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified (#{self.class}##{association_name})"
-                  when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
-                    "Unknown option(s) specified: #{unknown_keys.join(', ')} (#{self.class}##{association_name})"
-                  end
-
-        fail ArgumentError, message if message
-      end
-
+      
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
@@ -435,12 +417,19 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
-        associations_keys << name
-        Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
-          @associations ||= {}
-          @associations[name] = association
-          create_reflection(macro, name, association, self)
+        # Create association and re-raise any ArgumentError exception with added
+        # class name and association name to make sure error message is useful
+        begin
+          association = Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options)
+        rescue ArgumentError => e
+          fail ArgumentError, "#{e.message} (#{self.class}##{name})"
         end
+        
+        associations_keys << name
+
+        @associations ||= {}
+        @associations[name] = association
+        create_reflection(macro, name, association, self)
       end
     end
   end
