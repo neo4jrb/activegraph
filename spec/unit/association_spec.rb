@@ -4,12 +4,16 @@ class Default
 end
 
 describe Neo4j::ActiveNode::HasN::Association do
-  let(:options) { {} }
+  let(:options) { { type: nil } }
   let(:name) { :default }
   let(:direction) { :out }
 
-  let(:association) { Neo4j::ActiveNode::HasN::Association.new(type, direction, name, options) }
-  subject { association }
+  let(:association) do
+    Neo4j::ActiveNode::HasN::Association.new(type, direction, name, options)
+  end
+  subject do
+    association
+  end
 
   context 'type = :invalid' do
     let(:type) { :invalid }
@@ -136,7 +140,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
       context 'specified model class' do
         context 'specified as string' do
-          let(:options) { {model_class: 'Bizzl'} }
+          let(:options) { { type: :foo, model_class: 'Bizzl'} }
 
           it { should == ['::Bizzl'] }
         end
@@ -146,7 +150,7 @@ describe Neo4j::ActiveNode::HasN::Association do
             stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
           end
 
-          let(:options) { {model_class: 'Fizzl'} }
+          let(:options) { { type: :foo, model_class: 'Fizzl'} }
 
           it { should == ['::Fizzl'] }
         end
@@ -186,13 +190,16 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     describe 'unique' do
       context 'true' do
-        let(:options) { {unique: true} }
+        let(:options) { { type: :foo, unique: true} }
 
-        it { expect(subject).to be_unique }
+        it do
+          expect(subject).to be_unique
+        end
       end
 
       context 'false' do
-        let(:options) { {unique: false} }
+        let(:type) { :has_many }
+        let(:options) { { type: :foo, unique: false} }
 
         it { expect(subject).not_to be_unique }
       end
