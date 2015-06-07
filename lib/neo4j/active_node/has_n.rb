@@ -147,7 +147,7 @@ module Neo4j::ActiveNode
     end
 
     def association_query_proxy(name, options = {})
-      self.class.send(:association_query_proxy, name, {start_object: self}.merge(options))
+      self.class.send(:association_query_proxy, name, {start_object: self}.merge!(options))
     end
 
     def association_proxy(name, options = {})
@@ -339,13 +339,13 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
 
-          association_proxy(name, {node: node, rel: rel, source_object: self}.merge(options))
+          association_proxy(name, {node: node, rel: rel, source_object: self}.merge!(options))
         end
 
         define_has_many_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
-          association_proxy(name, {node: node, rel: rel}.merge(options))
+          association_proxy(name, {node: node, rel: rel}.merge!(options))
         end
       end
 
@@ -367,7 +367,7 @@ module Neo4j::ActiveNode
         define_has_one_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
-          association_proxy(name, {node: node, rel: rel}.merge(options))
+          association_proxy(name, {node: node, rel: rel}.merge!(options))
         end
       end
 
@@ -398,7 +398,7 @@ module Neo4j::ActiveNode
                                                   query_proxy: query_proxy,
                                                   context: "#{query_proxy.context || self.name}##{name}",
                                                   optional: query_proxy.optional?,
-                                                  source_object: query_proxy.source_object}.merge(options)).tap do |query_proxy_result|
+                                                  source_object: query_proxy.source_object}.merge!(options)).tap do |query_proxy_result|
                                                     target_classes = association_target_classes(name)
                                                     return query_proxy_result.as_models(target_classes) if target_classes
                                                   end
