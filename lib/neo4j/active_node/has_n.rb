@@ -417,19 +417,18 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
-        # Create association and re-raise any ArgumentError exception with added
-        # class name and association name to make sure error message is useful
-        begin
-          association = Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options)
-        rescue ArgumentError => e
-          raise ArgumentError, "#{e.message} (#{self.class}##{name})"
+        Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
+          @associations ||= {}
+          @associations[name] = association
+          create_reflection(macro, name, association, self)
         end
 
         associations_keys << name
 
-        @associations ||= {}
-        @associations[name] = association
-        create_reflection(macro, name, association, self)
+      # Re-raise any exception with added class name and association name to
+      # make sure error message is helpful
+      rescue StandardError => e
+        raise e.class, "#{e.message} (#{self.class}##{name})"
       end
     end
   end
