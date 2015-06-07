@@ -5,7 +5,7 @@ Introduction
   :local:
 
 
-Hi
+Neo4j.rb is an ActiveRecord-inpired OGM (Object Graph Mapping, like `ORM <http://en.wikipedia.org/wiki/Object-relational_mapping>`_) for Ruby supporting Neo4j 2.1+.
 
 Terminology
 -----------
@@ -25,7 +25,7 @@ Neo4j.rb
 Neo4j.rb consists of the `neo4j` and `neo4j-core` gems.
 
 Model
-  A Ruby class including either the `Neo4j::ActiveNode` module or the `Neo4j::ActiveRel` module from the `neo4j` gem.  These module gives it the ability to define properties, validations, and callbacks
+  A Ruby class including either the `Neo4j::ActiveNode` module or the `Neo4j::ActiveRel` module from the `neo4j` gem.  These modules give classes the ability to define properties, associations, validations, and callbacks
 
 Association
   Defined on a **Model**.  Defines either a ``has_one`` or ``has_many`` relationship to a model.  A higher level abstraction of a **Relationship**
@@ -43,7 +43,10 @@ ActiveNode provides an Object Graph Model (OGM) for abstracting Neo4j concepts w
 .. code-block:: ruby
 
   # Models to create nodes
-  person = Person.create(name: 'James')
+  person = Person.create(name: 'James', age: 15)
+
+  # Get object by attributes
+  person = Person.find_by(name: 'James', age: 15)
 
   # Associations to traverse relationships
   person.houses.map(&:address)
@@ -58,20 +61,57 @@ ActiveNode provides an Object Graph Model (OGM) for abstracting Neo4j concepts w
 Installation
 ------------
 
+The following contains instructions on how to setup Neo4j with Rails.  If you prefer a video to follow along with you can view `this YouTube video <https://www.youtube.com/watch?v=bDjbqRL9HcM>`_
+
+Rails
+~~~~~
+
+There are two ways to add neo4j to your Rails project.  You can generate a new project with Neo4j as the default model mapper or you can add it manually.
+
+Generating a new app
+^^^^^^^^^^^^^^^^^^^^
+
+You can create a new Rails app with the `-m` and `-O` options like so to default to using Neo4j:
+
+.. code-block:: unix
+
+  rails new myapp -m http://neo4jrb.io/neo4j/neo4j.rb -O
+
+.. note::
+
+  You may need to run this command two or three times for the file to download correctly
+
+An example series of setup commands:
+
+.. code-block:: unix
+
+  rails new myapp -m http://neo4jrb.io/neo4j/neo4j.rb -O
+  cd myapp
+  rake neo4j:install[community-2.1.6]
+  rake neo4j:start
+
+  rails generate scaffold User name:string email:string
+  rails s
+  open http://localhost:3000/users
+
+
+Adding the gem to your project
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Include in your ``Gemfile``:
 
 .. code-block:: ruby
 
   # for rubygems
-  gem 'neo4j', '~> 4.1.1'
+  gem 'neo4j', '~> 5.0.0'
 
-If using Rails, include the railtie in ``application.rb``:
+In ``application.rb``:
 
 .. code-block:: ruby
 
   require 'neo4j/railtie'
 
-To use the model generator, modify application.rb once more:
+To use the model generator, modify application.rb:
 
 .. code-block:: ruby
 
@@ -79,7 +119,10 @@ To use the model generator, modify application.rb once more:
     config.generators { |g| g.orm :neo4j }     
   end
 
-If **not using Rails**, include the rake tasks in your Rakefile:
+Outside Rails
+~~~~~~~~~~~~~
+
+Include the gem's :doc:`rake tasks </RakeTasks>` in your Rakefile:
 
 .. code-block:: ruby
 
@@ -88,7 +131,7 @@ If **not using Rails**, include the rake tasks in your Rakefile:
 
 If you don't already have a server you can install one with included rake tasks
 
-Rake tasks and basic server connection are defined in the _neo4j-core gem: https://github.com/neo4jrb/neo4j-core. See its documentation (LINK TODO) for more details.
+Rake tasks and basic server connection are defined in the _neo4j-core gem: https://github.com/neo4jrb/neo4j-core. See `its documentation </RakeTasks>` for more details.
 
 With the Rake tasks loaded, install Neo4j and start the server:
 
@@ -101,8 +144,8 @@ With the Rake tasks loaded, install Neo4j and start the server:
 
 At this point, it will give you a message that the server has started or an error. Assuming everything is ok, point your browser to http://localhost:7474 and the Neo4j web console should load up.
 
-Setup
------
+Connection
+----------
 
 To open a session to the neo4j server database:
 
@@ -115,7 +158,7 @@ In Ruby
   Neo4j::Session.open(:server_db)
 
 In JRuby
-~~~~~~~~~~
+~~~~~~~~
 
 On JRuby you can access the database in two different ways: using the embedded db or the server db.
 
@@ -157,8 +200,8 @@ A ``_classname`` property is added to all nodes during creation to store the obj
 
   The above is not true when using the master branch and Neo4j v2.1.5 or greater. See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction for more info.
 
-Setup on Heroku
-~~~~~~~~~~~~~~~
+On Heroku
+~~~~~~~~~
 
 Add a Neo4j db to your application:
 
@@ -176,34 +219,3 @@ Example of a rails ``config/application.rb`` file:
   config.neo4j.session_type = :server_db 
   config.neo4j.session_path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
 
-Setup in a new Rails app
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: unix
-
-  rails new myapp -m http://neo4jrb.io/neo4j/neo4j.rb -O
-  cd myapp
-  rake neo4j:install[community-2.1.6]
-  rake neo4j:start
-
-  rails generate scaffold User name:string email:string
-  rails s
-  open http://localhost:3000/users
-
-Or manually modify the rails config file config/application.rb:
-
-.. code-block:: ruby
-
-  require 'neo4j/railtie'
-
-  module Blog
-    class Application < Rails::Application
-       # To use generators:
-       config.generators { |g| g.orm :neo4j }
-       # This is for embedded db, only available from JRuby
-       #config.neo4j.session_type = :embedded_db # or server_db
-       #config.neo4j.session_path = File.expand_path('neo4j-db', Rails.root) # or http://localhost:port
-    end
-  end
-
-You can skip Active Record by using the -O flag when generating the rails project.

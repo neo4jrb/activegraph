@@ -13,8 +13,13 @@ Contents:
 
    Introduction
 
+   RakeTasks
+
    ActiveNode
    ActiveRel
+
+   Querying
+
    Configuration
 
    api/index

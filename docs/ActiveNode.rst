@@ -195,6 +195,8 @@ You can query associations:
   and
   :ref:`#has_one <Neo4j/ActiveNode/HasN/ClassMethods#has_one>`
 
+.. _active_node-eager_loading:
+
 Eager Loading
 ~~~~~~~~~~~~~
 

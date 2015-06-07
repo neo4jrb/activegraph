@@ -235,8 +235,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def _nodeify!(*args)
-       other_nodes = [args].flatten.map do |arg|
-         (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find(arg) : arg
+       other_nodes = [args].flatten!.map! do |arg|
+         (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
        end.compact
      
        if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
@@ -354,7 +354,8 @@ Methods
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        query_with_target(target) do |var|
          q = distinct.nil? ? var : "DISTINCT #{var}"
-         self.query.reorder.pluck("count(#{q}) AS #{var}").first
+         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
+         limited_query.pluck("count(#{q}) AS #{var}").first
        end
      end
 
@@ -737,7 +738,8 @@ Methods
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        query_with_target(target) do |var|
          q = distinct.nil? ? var : "DISTINCT #{var}"
-         self.query.reorder.pluck("count(#{q}) AS #{var}").first
+         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
+         limited_query.pluck("count(#{q}) AS #{var}").first
        end
      end
 
@@ -770,11 +772,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def match_to(node)
-       where_arg = if node.respond_to?(:neo_id)
-                     {neo_id: node.neo_id}
+       first_node = node.is_a?(Array) ? node.first : node
+       where_arg = if first_node.respond_to?(:neo_id)
+                     {neo_id: node.is_a?(Array) ? node.map(&:neo_id) : node}
                    elsif !node.nil?
-                     node = ids_array(node) if node.is_a?(Array)
-                     {association_id_key => node}
+                     {association_id_key => node.is_a?(Array) ? ids_array(node) : node}
                    else
                      # support for null object pattern
                      '1 = 2'
@@ -1097,15 +1099,15 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Query/QueryProxy#respond_to?`:
+.. _`Neo4j/ActiveNode/Query/QueryProxy#respond_to_missing?`:
 
-**#respond_to?**
+**#respond_to_missing?**
   
 
   .. hidden-code-block:: ruby
 
-     def respond_to?(method_name)
-       (@model && @model.respond_to?(method_name)) || super
+     def respond_to_missing?(method_name, include_all = false)
+       (@model && @model.respond_to?(method_name, include_all)) || super
      end
 
 
@@ -1146,7 +1148,8 @@ Methods
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        query_with_target(target) do |var|
          q = distinct.nil? ? var : "DISTINCT #{var}"
-         self.query.reorder.pluck("count(#{q}) AS #{var}").first
+         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
+         limited_query.pluck("count(#{q}) AS #{var}").first
        end
      end
 

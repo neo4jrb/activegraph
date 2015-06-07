@@ -31,6 +31,8 @@ will result in a query to load the node if the node is not already loaded.
 
    
 
+   
+
 
 
 
@@ -152,6 +154,20 @@ Methods
 
      def neo_id
        loaded? ? @node.neo_id : @node
+     end
+
+
+
+.. _`Neo4j/ActiveRel/RelatedNode#respond_to_missing?`:
+
+**#respond_to_missing?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def respond_to_missing?(method_name, include_private = false)
+       loaded if @node.is_a?(Integer)
+       @node.respond_to?(method_name) ? true : super
      end
 
 

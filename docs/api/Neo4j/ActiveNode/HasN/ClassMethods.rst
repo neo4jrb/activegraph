@@ -49,6 +49,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -56,6 +58,8 @@ Constants
 ---------
 
 
+
+  * VALID_ASSOCIATION_OPTION_KEYS
 
 
 
@@ -173,7 +177,7 @@ Methods
       The name is also used to form default assumptions about the model which is being referred to
   
       Example:
-        ``Person.has_many :out, :posts``
+        ``Person.has_many :out, :posts, type: :wrote``
   
         will assume a `model_class` option of ``'Post'`` unless otherwise specified
   
@@ -193,7 +197,7 @@ Methods
         model object ``include`` ing ``ActiveNode`` or a string (or an ``Array`` of same).
         **A string is recommended** to avoid load-time issues
   
-      *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a 
+      *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a
         model object ``include`` ing ``ActiveRel`` or a string (or an ``Array`` of same).
         **A string is recommended** to avoid load-time issues
   

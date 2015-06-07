@@ -47,6 +47,8 @@ Config
 
    
 
+   
+
 
 
 
@@ -56,6 +58,8 @@ Constants
 
 
   * DEFAULT_FILE
+
+  * CLASS_NAME_PROPERTY_KEY
 
 
 
@@ -137,7 +141,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def class_name_property
-       Neo4j::Config[:class_name_property] || :_classname
+       @_class_name_property = Neo4j::Config[CLASS_NAME_PROPERTY_KEY] || :_classname
      end
 
 

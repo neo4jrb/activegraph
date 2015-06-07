@@ -146,7 +146,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def get(id)
-       klass.find(wrap_key(id))
+       klass.find_by(klass.id_property_name => wrap_key(id))
      end
 
 
