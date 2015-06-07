@@ -388,6 +388,35 @@ describe 'Query API' do
           samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should eq([math101, ss101])
         end
       end
+
+      describe '`labels` option when set false' do
+        let(:with_labels) { proc { |target| target.lessons_teaching(:l, :r).students(:s, :sr).to_cypher } }
+        let(:without_labels) { proc { |target| target.lessons_teaching(:l, :r, labels: false).students(:s, :sr, labels: false).to_cypher } }
+        let(:expected_label_cypher) do
+          proc do
+            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`), l<-[sr:`is_enrolled_for`]-(s:`Student`)')
+            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l), l<-[sr:`is_enrolled_for`]-(s)')
+          end
+        end
+
+        context 'on instances' do
+          let(:query_with_labels) { with_labels.call(samuels) }
+          let(:query_without_labels) { without_labels.call(samuels) }
+
+          it 'removes labels from Cypher' do
+            expected_label_cypher.call
+          end
+        end
+
+        context 'on class associations' do
+          let(:query_with_labels) { with_labels.call(Teacher) }
+          let(:query_without_labels) { without_labels.call(Teacher) }
+
+          it 'removes labels from Cypher' do
+            expected_label_cypher.call
+          end
+        end
+      end
     end
 
     describe 'multiple labels' do
