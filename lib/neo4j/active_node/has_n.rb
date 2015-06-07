@@ -316,7 +316,7 @@ module Neo4j::ActiveNode
       end
 
       private
-      
+
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
@@ -422,9 +422,9 @@ module Neo4j::ActiveNode
         begin
           association = Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options)
         rescue ArgumentError => e
-          fail ArgumentError, "#{e.message} (#{self.class}##{name})"
+          raise ArgumentError, "#{e.message} (#{self.class}##{name})"
         end
-        
+
         associations_keys << name
 
         @associations ||= {}

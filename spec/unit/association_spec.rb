@@ -4,7 +4,7 @@ class Default
 end
 
 describe Neo4j::ActiveNode::HasN::Association do
-  let(:options) { { type: nil } }
+  let(:options) { {type: nil} }
   let(:name) { :default }
   let(:direction) { :out }
 
@@ -140,7 +140,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
       context 'specified model class' do
         context 'specified as string' do
-          let(:options) { { type: :foo, model_class: 'Bizzl'} }
+          let(:options) { {type: :foo, model_class: 'Bizzl'} }
 
           it { should == ['::Bizzl'] }
         end
@@ -150,7 +150,7 @@ describe Neo4j::ActiveNode::HasN::Association do
             stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
           end
 
-          let(:options) { { type: :foo, model_class: 'Fizzl'} }
+          let(:options) { {type: :foo, model_class: 'Fizzl'} }
 
           it { should == ['::Fizzl'] }
         end
@@ -190,7 +190,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
     describe 'unique' do
       context 'true' do
-        let(:options) { { type: :foo, unique: true} }
+        let(:options) { {type: :foo, unique: true} }
 
         it do
           expect(subject).to be_unique
@@ -199,7 +199,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
       context 'false' do
         let(:type) { :has_many }
-        let(:options) { { type: :foo, unique: false} }
+        let(:options) { {type: :foo, unique: false} }
 
         it { expect(subject).not_to be_unique }
       end
