@@ -5,7 +5,7 @@ Introduction
   :local:
 
 
-Neo4j.rb is an ActiveRecord-inpired OGM (Object Graph Mapping, like `ORM <http://en.wikipedia.org/wiki/Object-relational_mapping>`_) for Ruby supporting Neo4j 2.1+.
+Neo4j.rb is an ActiveRecord-inspired OGM (Object Graph Mapping, like `ORM <http://en.wikipedia.org/wiki/Object-relational_mapping>`_) for Ruby supporting Neo4j 2.1+.
 
 Terminology
 -----------
@@ -116,7 +116,7 @@ To use the model generator, modify application.rb:
 .. code-block:: ruby
 
   class Application < Rails::Application
-    config.generators { |g| g.orm :neo4j }     
+    config.generators { |g| g.orm :neo4j }
   end
 
 Outside Rails
@@ -176,8 +176,8 @@ Example of a rails ``config/application.rb`` file:
 
 .. code-block:: ruby
 
-  config.neo4j.session_options = { basic_auth: { username: 'foo', password: 'bar'} } 
-  config.neo4j.session_type = :server_db 
+  config.neo4j.session_options = { basic_auth: { username: 'foo', password: 'bar'} }
+  config.neo4j.session_type = :server_db
   config.neo4j.session_path = 'http://localhost:7474'
 
 For more configuration options, use the initialize session option parameter which is used to initialize a _Faraday: https://github.com/lostisland/faraday session.
@@ -216,6 +216,6 @@ Example of a rails ``config/application.rb`` file:
 
 .. code-block:: ruby
 
-  config.neo4j.session_type = :server_db 
+  config.neo4j.session_type = :server_db
   config.neo4j.session_path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
 
