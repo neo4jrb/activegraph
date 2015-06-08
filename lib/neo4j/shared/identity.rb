@@ -8,7 +8,7 @@ module Neo4j::Shared
     # Returns an Enumerable of all (primary) key attributes
     # or nil if model.persisted? is false
     def to_key
-      persisted? ? [id] : nil
+      _persisted_obj ? [id] : nil
     end
 
     # @return [Integer, nil] the neo4j id of the node if persisted or nil
