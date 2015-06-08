@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 - Nothing yet, placeholder
 
+## [5.0.0.rc.3] - 2015-05-20
+
+### Fixed
+- Associations now allow `unique` option.  Error handling is generalized to make this testable (Thanks to @olance, see #824)
+
 ## [5.0.0.rc.2] - 2015-05-20
 
 ### Changed
