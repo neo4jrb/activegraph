@@ -38,8 +38,7 @@ module Neo4j
           @context = options.delete(:context)
           @options = options
 
-          @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
-            options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
+          instance_vars_from_options!(options)
 
           @match_type = @optional ? :optional_match : :match
 
@@ -86,8 +85,8 @@ module Neo4j
         # and work with it from the more powerful (but less friendly) Neo4j::Core::Query.
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
         #   student.lessons.query_as(:l).with('your cypher here...')
-        def query_as(var, with_label = true)
-          result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
+        def query_as(var, with_labels = true)
+          result_query = @chain.inject(base_query(var, with_labels).params(@params)) do |query, link|
             args = link.args(var, rel_var)
 
             args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
@@ -106,8 +105,11 @@ module Neo4j
           end
         end
 
-        def _model_label_string
-          return if !@model
+        # param [TrueClass, FalseClass] with_labels This param is used by certain QueryProxy methods that already have the neo_id and
+        # therefore do not need labels.
+        # The @association_labels instance var is set during init and used during association chaining to keep labels out of Cypher queries.
+        def _model_label_string(with_labels = true)
+          return if !@model || (!with_labels || @association_labels == false)
           @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
         end
 
@@ -185,16 +187,6 @@ module Neo4j
           end
         end
 
-        def rels
-          fail 'Cannot get rels without a relationship variable.' if !@rel_var
-
-          pluck(@rel_var)
-        end
-
-        def rel
-          rels.first
-        end
-
         def _nodeify!(*args)
           other_nodes = [args].flatten!.map! do |arg|
             (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
@@ -230,12 +222,6 @@ module Neo4j
 
         def respond_to_missing?(method_name, include_all = false)
           (@model && @model.respond_to?(method_name, include_all)) || super
-        end
-
-        # Give ability to call `#find` on associations to get a scoped find
-        # Doesn't pass through via `method_missing` because Enumerable has a `#find` method
-        def find(*args)
-          scoping { @model.find(*args) }
         end
 
         def optional?
@@ -324,6 +310,11 @@ module Neo4j
         attr_writer :context
 
         private
+
+        def instance_vars_from_options!(options)
+          @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level, @association_labels =
+              options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level, :association_labels)
+        end
 
         def build_deeper_query_proxy(method, args)
           new_link.tap do |new_query|
