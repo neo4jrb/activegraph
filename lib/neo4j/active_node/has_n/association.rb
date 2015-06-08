@@ -8,8 +8,8 @@ module Neo4j
         include Neo4j::ActiveNode::Dependent::AssociationMethods
         attr_reader :type, :name, :relationship, :direction, :dependent
 
-        def initialize(type, direction, name, options = {})
-          validate_init_arguments(type, direction, options)
+        def initialize(type, direction, name, options = {type: nil})
+          validate_init_arguments(type, direction, name, options)
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
@@ -195,10 +195,29 @@ module Neo4j
           "#{type} #{direction.inspect}, #{name.inspect}"
         end
 
-        def validate_init_arguments(type, direction, options)
+        def validate_init_arguments(type, direction, name, options)
+          validate_association_options!(name, options)
           validate_option_combinations(options)
           validate_dependent(options[:dependent].try(:to_sym))
           check_valid_type_and_dir(type, direction)
+        end
+
+        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class,
+                                         :rel_class, :dependent, :before,
+                                         :after, :unique]
+
+        def validate_association_options!(_association_name, options)
+          type_keys = (options.keys & [:type, :origin, :rel_class])
+          message = case
+                    when type_keys.size > 1
+                      "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations"
+                    when type_keys.empty?
+                      "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified"
+                    when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
+                      "Unknown option(s) specified: #{unknown_keys.join(', ')}"
+                    end
+
+          fail ArgumentError, message if message
         end
 
         def check_valid_type_and_dir(type, direction)
