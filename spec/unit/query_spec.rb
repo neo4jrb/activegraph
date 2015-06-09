@@ -33,6 +33,10 @@ describe Neo4j::ActiveNode::Query do
       @class_a.query_as(:q).to_cypher.should == 'MATCH (q:`Person`)'
     end
 
+    it 'includes labels when :neo_id is not present' do
+      expect(@class_a.query_as(:q).to_cypher).to include('Person')
+    end
+
     it 'can be built upon' do
       @class_a.query_as(:q).match('q--p').where(p: {name: 'Brian'}).to_cypher.should == 'MATCH (q:`Person`), q--p WHERE (p.name = {p_name})'
     end
@@ -45,6 +49,10 @@ describe Neo4j::ActiveNode::Query do
 
     it 'can be built upon' do
       @class_a.new.query_as(:q).match('q--p').return(p: :name).to_cypher.should == 'MATCH q, q--p WHERE (ID(q) = {ID_q}) RETURN p.name'
+    end
+
+    it 'does not include labels' do
+      expect(@class_a.new.query_as(:q).to_cypher).not_to include('Person')
     end
   end
 end

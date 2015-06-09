@@ -6,6 +6,22 @@ module Neo4j
         FIRST = 'HEAD'
         LAST = 'LAST'
 
+        def rels
+          fail 'Cannot get rels without a relationship variable.' if !@rel_var
+
+          pluck(@rel_var)
+        end
+
+        def rel
+          rels.first
+        end
+
+        # Give ability to call `#find` on associations to get a scoped find
+        # Doesn't pass through via `method_missing` because Enumerable has a `#find` method
+        def find(*args)
+          scoping { @model.find(*args) }
+        end
+
         def first(target = nil)
           first_and_last(FIRST, target)
         end

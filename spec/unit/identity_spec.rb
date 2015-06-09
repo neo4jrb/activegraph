@@ -47,4 +47,27 @@ describe Neo4j::Shared::Identity do
       end
     end
   end
+
+  describe '#to_key' do
+    let(:node) { clazz.new }
+    let(:created_node) { clazz.new }
+
+    before(:each) do
+      node.stub(:_persisted_obj).and_return(nil)
+    end
+
+    it 'should be nil before being persisted' do
+      node.to_key.should be_nil
+    end
+
+    context 'a persisted record' do
+      before(:each) do
+        created_node.stub(:_persisted_obj).and_return(double(neo_id: 4387, del: true))
+      end
+
+      it 'should be an array of ids after record is saved' do
+        created_node.to_key.should == [created_node.id]
+      end
+    end
+  end
 end
