@@ -6,7 +6,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 - Nothing yet, placeholder
 
-## [5.0.0.rc.3] - 2015-05-20
+### Fixed
+- Prevented `to_key` from requiring an extra DB query. (See https://github.com/neo4jrb/neo4j/pull/827)
+
+### Added
+- QueryProxy associations accept `labels: false` option to prevent generated Cypher from using labels.
+
+## [5.0.0.rc.3] - 2015-06-07
 
 ### Fixed
 - Associations now allow `unique` option.  Error handling is generalized to make this testable (Thanks to @olance, see #824)
