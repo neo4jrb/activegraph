@@ -47,7 +47,7 @@ module Neo4j
     def inspect
       id_property_name = self.class.id_property_name.to_s
       attribute_pairs = attributes.except(id_property_name).sort.map { |key, value| "#{key}: #{value.inspect}" }
-      attribute_pairs.unshift("#{id_property_name}: #{attributes[id_property_name].inspect}")
+      attribute_pairs.unshift("#{id_property_name}: #{self.send(id_property_name).inspect}")
       attribute_descriptions = attribute_pairs.join(', ')
       separator = ' ' unless attribute_descriptions.empty?
       "#<#{self.class.name}#{separator}#{attribute_descriptions}>"
