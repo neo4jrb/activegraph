@@ -175,6 +175,7 @@ module Neo4j::Shared
       # TODO: Move this to the DeclaredPropertyManager
       def default_property(name, &block)
         reset_default_properties(name) if default_properties.respond_to?(:size)
+        property name
         default_properties[name] = block
       end
 
