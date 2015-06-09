@@ -4,7 +4,8 @@ This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
-- Nothing yet, placeholder
+### Fixed
+- ActiveNode#inspect wasn't displaying the id_property
 
 ## [5.0.0.rc.3] - 2015-05-20
 
