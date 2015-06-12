@@ -12,6 +12,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - QueryProxy associations accept `labels: false` option to prevent generated Cypher from using labels.
 
+### Changed
+- Properties explicitly set to type `Time` will no longer be converted to `DateTime`.
+
 ## [5.0.0.rc.3] - 2015-06-07
 
 ### Fixed

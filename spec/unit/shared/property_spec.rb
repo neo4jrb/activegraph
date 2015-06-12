@@ -55,9 +55,10 @@ describe Neo4j::Shared::Property do
         clazz.property :updated_at, type: Time
       end
 
-      it 'changes type to DateTime' do
-        expect(clazz.attributes[:created_at][:type]).to eq(DateTime)
-        expect(clazz.attributes[:updated_at][:type]).to eq(DateTime)
+      # ActiveAttr does not know what to do with Time, so it is stored as Int.
+      it 'tells ActiveAttr it is an Integer' do
+        expect(clazz.attributes[:created_at][:type]).to eq(Integer)
+        expect(clazz.attributes[:updated_at][:type]).to eq(Integer)
       end
     end
   end
