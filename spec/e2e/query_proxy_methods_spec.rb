@@ -44,6 +44,30 @@ describe 'query_proxy_methods' do
   let!(:mr_jones) { Teacher.create }
   let!(:mr_adams) { Teacher.create }
 
+  describe 'find_or_create_by' do
+    let(:emily)       { Student.create(name: 'Emily') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    before do
+      philosophy.students << jimmy
+    end
+
+    it 'returns the correct node if it can be found' do
+      expect(philosophy.students.find_or_create_by(name: jimmy.name)).to eq(jimmy)
+    end
+
+    it 'creates and associates a new node if one is not found' do
+      expect(philosophy.students.where(name: 'Rebecca').blank?).to be_truthy
+      expect { philosophy.students.find_or_create_by(name: 'Rebecca') }.to change { Student.all.count }
+      expect(philosophy.students.where(name: 'Rebecca').blank?).to be_falsey
+    end
+
+    it 'creates the relationship if the node exists but is not association' do
+      expect(philosophy.students.include?(emily)).to be_falsey
+      expect { philosophy.students.find_or_create_by(name: 'Emily') }.not_to change { Student.all.count }
+      expect(philosophy.students.include?(emily)).to be_truthy
+    end
+  end
+
   describe 'first and last' do
     it 'returns objects across multiple associations' do
       jimmy.lessons << science
@@ -303,7 +327,7 @@ describe 'query_proxy_methods' do
             expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('ID(result_lessons) IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
-            expect(@john.lessons.match_to([@history, @math]).to_a.count).to eq 2
+            expect(@john.lessons.match_to([@history, @math]).to_a.size).to eq 2
             expect(@john.lessons.match_to([@history, @math]).to_a).to include(@history, @math)
           end
         end
