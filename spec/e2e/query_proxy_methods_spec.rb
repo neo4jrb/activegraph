@@ -61,6 +61,10 @@ describe 'query_proxy_methods' do
       expect(philosophy.students.where(name: 'Rebecca').blank?).to be_falsey
     end
 
+    it 'returns the node after creating' do
+      expect(philosophy.students.find_or_create_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
+    end
+
     it 'creates the relationship if the node exists but is not association' do
       expect(philosophy.students.include?(emily)).to be_falsey
       expect { philosophy.students.find_or_create_by(name: 'Emily') }.not_to change { Student.all.count }

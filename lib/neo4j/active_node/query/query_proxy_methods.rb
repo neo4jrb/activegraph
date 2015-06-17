@@ -167,7 +167,11 @@ module Neo4j
           fail 'Method invalid when called on Class objects' unless source_object
           result = self.where(params).first
           return result unless result.nil?
-          self << model.find_or_create_by(params)
+          Neo4j::Transaction.run do
+            node = model.find_or_create_by(params)
+            self << node
+            return node
+          end
         end
 
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
