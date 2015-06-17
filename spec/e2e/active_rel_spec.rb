@@ -19,8 +19,8 @@ describe 'ActiveRel' do
     end
 
     stub_active_rel_class('MyRelClass') do
-      from_class 'FromClass'
-      to_class 'ToClass'
+      from_class FromClass
+      to_class ToClass
       type 'rel_class_type'
 
       property :score
@@ -31,6 +31,23 @@ describe 'ActiveRel' do
 
   let(:from_node) { FromClass.create }
   let(:to_node) { ToClass.create }
+
+  describe 'from_class, to_class' do
+    it 'spits back the current variable if no argument is given' do
+      expect(MyRelClass.from_class).to eq FromClass
+      expect(MyRelClass.to_class).to eq ToClass
+    end
+
+    it 'sets the value with the argument given' do
+      expect(MyRelClass.from_class).not_to eq Object
+      expect(MyRelClass.from_class(Object)).to eq Object
+      expect(MyRelClass.from_class).to eq Object
+
+      expect(MyRelClass.to_class).not_to eq Object
+      expect(MyRelClass.to_class(Object)).to eq Object
+      expect(MyRelClass.to_class).to eq Object
+    end
+  end
 
   describe 'creation' do
     context 'from_node is not persisted' do
