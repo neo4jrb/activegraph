@@ -31,10 +31,13 @@ module Neo4j
           subclass.type subclass.namespaced_model_name, true
         end
 
-        # @param type [String] sets the relationship type when creating relationships via this class
-        def type(given_type = namespaced_model_name, auto = false)
+        # @param [String] given_type sets the relationship type when creating relationships via this class
+        # @param [Boolean] auto Should the given_type be changed in compliance with the gem's rel decorator setting?
+        # This option is used internally, users will usually ignore it.
+        def type(given_type = nil, auto = false)
+          return rel_type if given_type.nil?
           @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
-            add_wrapped_class type unless uses_classname?
+            add_wrapped_class(type) unless uses_classname?
           end
         end
 
@@ -49,9 +52,11 @@ module Neo4j
           end
         end
 
-        attr_reader :rel_type
+        def rel_type
+          @rel_type || type(namespaced_model_name, true)
+        end
+
         # @return [String] a string representing the relationship type that will be created
-        # attr_reader :rel_type
         alias_method :_type, :rel_type # Should be deprecated
 
         def add_wrapped_class(type)

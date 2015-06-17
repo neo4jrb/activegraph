@@ -104,9 +104,14 @@ describe 'ActiveRel' do
     class ActiveRelSpecTypesInheritedRelClass < ActiveRelSpecTypesAutomaticRelType
     end
 
+    it 'returns the existing type if arguments are omitted' do
+      MyRelClass.type('MY_NEW_TYPE')
+      expect(MyRelClass.type).to eq 'MY_NEW_TYPE'
+    end
 
-    it 'allows omission of `type`' do
-      expect(ActiveRelSpecTypesAutomaticRelType._type).to eq 'ACTIVE_REL_SPEC_TYPES_AUTOMATIC_REL_TYPE'
+    it 'returns the automatic type if `type` is never called or nil' do
+      MyRelClass.instance_variable_set(:'@rel_type', nil)
+      expect(MyRelClass.type).to eq 'MY_REL_CLASS'
     end
 
     it 'uses `type` to override the default type' do
