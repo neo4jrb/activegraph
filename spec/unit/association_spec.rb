@@ -155,6 +155,27 @@ describe Neo4j::ActiveNode::HasN::Association do
           it { should == ['::Fizzl'] }
         end
       end
+
+      context 'with specified rel_class' do
+        before(:each) do
+          stub_const('TheRel',
+                     Class.new do
+                       include Neo4j::ActiveRel
+                       from_class :any
+                     end)
+        end
+
+        let(:options) { { rel_class: 'TheRel' } }
+
+        context 'targeting any class' do
+          before(:each) do
+            TheRel.to_class(:any)
+          end
+
+          it { should be_nil }
+        end
+
+      end
     end
 
     describe 'target_class' do
