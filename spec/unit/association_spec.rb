@@ -160,7 +160,9 @@ describe Neo4j::ActiveNode::HasN::Association do
         before(:each) do
           stub_const('TheRel',
                      Class.new do
-                       def self.name; 'TheRel' end
+                       def self.name
+                         'TheRel'
+                       end
                        include Neo4j::ActiveRel
                        from_class :any
                      end)
