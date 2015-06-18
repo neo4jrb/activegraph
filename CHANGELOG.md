@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 - Nothing yet, placeholder
 
+## [5.0.0] - 2015-06-18
+
 ### Fixed
 - Prevented `to_key` from requiring an extra DB query. (See https://github.com/neo4jrb/neo4j/pull/827)
 
