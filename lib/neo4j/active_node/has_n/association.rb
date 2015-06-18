@@ -21,9 +21,8 @@ module Neo4j
           return @model_class unless @model_class.nil?
 
           return nil if relationship_class.nil?
-          # TODO: change `#_to_class` to `#to_class` when #837 is merged
-          return false if relationship_class._to_class.to_s.to_sym == :any
-          relationship_class._to_class
+          return false if relationship_class.to_class.to_s.to_sym == :any
+          relationship_class.to_class
         end
 
         def target_class_option(model_class)
