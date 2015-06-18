@@ -77,7 +77,7 @@ module Neo4j
 
         def relationship_type(create = false)
           case
-          when @relationship_class
+          when relationship_class
             relationship_class_type
           when @relationship_type
             @relationship_type
@@ -88,30 +88,19 @@ module Neo4j
           end
         end
 
-        attr_reader :relationship_class
+        attr_reader :relationship_class_name
 
         def relationship_class_type
-          @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-          @relationship_class._type.to_sym
+          relationship_class._type.to_sym
         end
 
-        def relationship_class_name
-          @relationship_class_name ||= @relationship_class.respond_to?(:constantize) ? @relationship_class : @relationship_class.name
-        end
-
-        def relationship_clazz
-          @relationship_clazz ||= if @relationship_class.is_a?(String)
-                                    @relationship_class.constantize
-                                  elsif @relationship_class.is_a?(Symbol)
-                                    @relationship_class.to_s.constantize
-                                  else
-                                    @relationship_class
-                                  end
+        def relationship_class
+          @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
         end
 
         def inject_classname(properties)
-          return properties unless @relationship_class
-          properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_clazz.cached_class?(true)
+          return properties unless relationship_class
+          properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_class.cached_class?(true)
           properties
         end
 
@@ -180,10 +169,13 @@ module Neo4j
 
         def apply_vars_from_options(options)
           @target_class_option = target_class_option(options[:model_class])
+
+          @relationship_class_name = options[:rel_class] && options[:rel_class].to_s
+
+          @relationship_type  = options[:type] && options[:type].to_sym
+
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
-          @relationship_class = options[:rel_class]
-          @relationship_type  = options[:type] && options[:type].to_sym
           @dependent = options[:dependent].try(:to_sym)
           @unique = options[:unique]
         end
