@@ -65,7 +65,7 @@ module Neo4j
         # TODO: update this with public API methods if/when they are exposed
         def limit_value
           return unless self.query.clause?(:limit)
-          limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+          limit_clause = self.query.send(:clauses).find { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }
           limit_clause.instance_variable_get(:@arg)
         end
 
@@ -159,6 +159,19 @@ module Neo4j
 
           self.delete_all_rels
           nodes.each { |node| self << node }
+        end
+
+        # When called, this method returns a single node that satisfies the match specified in the params hash.
+        # If no existing node is found to satisfy the match, one is created or associated as expected.
+        def find_or_create_by(params)
+          fail 'Method invalid when called on Class objects' unless source_object
+          result = self.where(params).first
+          return result unless result.nil?
+          Neo4j::Transaction.run do
+            node = model.find_or_create_by(params)
+            self << node
+            return node
+          end
         end
 
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
