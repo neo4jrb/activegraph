@@ -22,7 +22,8 @@ module Neo4j
 
           unless relationship_class.nil?
             # TODO: change `#_to_class` to `#to_class` when #837 is merged
-            return false if relationship_class._to_class.to_sym == :any
+            return false if relationship_class._to_class.to_s.to_sym == :any
+            relationship_class._to_class
           end
         end
 
