@@ -143,3 +143,29 @@ Orm_Adapter
 -----------
 
 You can also use the orm_adapter API, by calling #to_adapter on your class. See the API, https://github.com/ianwhite/orm_adapter
+
+Find or Create By...
+--------------
+
+QueryProxy has a ``find_or_create_by`` method to make the node rel creation process easier. Its usage is simple:
+
+.. code-block:: ruby
+  
+  a_node.an_association(params_hash)
+
+The method has branching logic that attempts to match an existing node and relationship. If the pattern is not found, it tries to find a node of the expected class and create the relationship. If *that* doesn't work, it creates the node, then creates the relationship. The process is wrapped in a transaction to prevent a failure from leaving the database in an inconsistent state.
+
+There are some mild caveats. First, it will not work on associations of class methods. Second, you should not use it across more than one associations or you will receive an error. For instance, if you did this:
+
+.. code-block:: ruby
+
+  student.friends.lessons.find_or_create_by(subject: 'Math')
+  
+Assuming the ``lessons`` association points to a ``Lesson`` model, you would effectively end up with this:
+
+.. code-block:: ruby
+
+  math = Lesson.find_or_create_by(subject: 'Math')
+  student.friends.lessons << math
+  
+...which is invalid and will result in an error.
