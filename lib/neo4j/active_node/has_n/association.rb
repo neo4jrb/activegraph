@@ -19,10 +19,10 @@ module Neo4j
 
         def derive_model_class
           return @model_class unless @model_class.nil?
-
           return nil if relationship_class.nil?
-          return false if relationship_class.to_class.to_s.to_sym == :any
-          relationship_class.to_class
+          dir_class = direction == :in ? :from_class : :to_class
+          return false if relationship_class.send(dir_class).to_s.to_sym == :any
+          relationship_class.send(dir_class)
         end
 
         def target_class_option(model_class)
@@ -49,6 +49,7 @@ module Neo4j
         end
 
         def target_class_names
+          puts "fuuuck"
           option = target_class_option(derive_model_class)
 
           @target_class_names ||= if option.is_a?(Array)
