@@ -17,6 +17,15 @@ module Neo4j
           apply_vars_from_options(options)
         end
 
+        def derive_model_class
+          return @model_class unless @model_class.nil?
+
+          unless relationship_class.nil?
+            # TODO: change `#_to_class` to `#to_class` when #837 is merged
+            return false if relationship_class._to_class.to_sym == :any
+          end
+        end
+
         def target_class_option(model_class)
           case model_class
           when nil
@@ -41,10 +50,12 @@ module Neo4j
         end
 
         def target_class_names
-          @target_class_names ||= if @target_class_option.is_a?(Array)
-                                    @target_class_option.map(&:to_s)
-                                  elsif @target_class_option
-                                    [@target_class_option.to_s]
+          option = target_class_option(derive_model_class)
+
+          @target_class_names ||= if option.is_a?(Array)
+                                    option.map(&:to_s)
+                                  elsif option
+                                    [option.to_s]
                                   end
         end
 
@@ -168,12 +179,10 @@ module Neo4j
         private
 
         def apply_vars_from_options(options)
-          @target_class_option = target_class_option(options[:model_class])
-
           @relationship_class_name = options[:rel_class] && options[:rel_class].to_s
-
           @relationship_type  = options[:type] && options[:type].to_sym
 
+          @model_class = options[:model_class]
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
           @dependent = options[:dependent].try(:to_sym)
