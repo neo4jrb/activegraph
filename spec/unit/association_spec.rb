@@ -165,7 +165,7 @@ describe Neo4j::ActiveNode::HasN::Association do
                      end)
         end
 
-        let(:options) { { rel_class: 'TheRel' } }
+        let(:options) { {rel_class: 'TheRel'} }
 
         context 'targeting any class' do
           before(:each) do
@@ -183,7 +183,6 @@ describe Neo4j::ActiveNode::HasN::Association do
 
           it { should == ['::Fizzl'] }
         end
-
       end
     end
 
