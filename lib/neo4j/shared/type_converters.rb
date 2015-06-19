@@ -57,6 +57,9 @@ module Neo4j::Shared
           Time
         end
 
+        def primitive_type
+          Integer
+        end
         # Converts the given DateTime (UTC) value to an Integer.
         # Only utc times are supported !
         def to_db(value)
@@ -70,6 +73,7 @@ module Neo4j::Shared
         def to_ruby(value)
           Time.at(value).utc
         end
+        alias_method :call, :to_ruby
       end
     end
 

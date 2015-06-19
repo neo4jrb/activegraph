@@ -335,9 +335,9 @@ describe 'Neo4j::ActiveNode' do
       expect(person.name).to eq('new name')
     end
 
-    it 'accepts Time type, converts to DateTime' do
+    it 'accepts Time type, does not convert to DateTime' do
       person = Person.create(start: Time.now)
-      person.start.class.should eq(DateTime)
+      expect(person.start).to be_a(Time)
     end
 
     it 'declared attribute can have type conversion' do

@@ -192,7 +192,7 @@ module Neo4j
             (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
           end.compact
 
-          if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+          if @model && other_nodes.any? { |other_node| !other_node.class.mapped_label_names.include?(@model.mapped_label_name) }
             fail ArgumentError, "Node must be of the association's class when model is specified"
           end
 

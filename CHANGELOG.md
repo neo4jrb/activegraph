@@ -7,7 +7,28 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - ActiveNode#inspect wasn't displaying the id_property
 
-## [5.0.0.rc.3] - 2015-05-20
+### Fixed
+- Longstanding bug that would prevent association changes (`<<` and ActiveRel.create) in Rails after `reload!` had been called, see https://github.com/neo4jrb/neo4j/pull/839
+
+### Changed
+- In the absense of a `model_class` key, associations defined in ActiveNode models will use `from_/to_class` defined in `rel_class` to find destination. (Huge thanks to @olance, #838) 
+- ActiveRel's DSL was made a bit friendlier by making the `type`, `from_class` and `to_class` methods return their set values when called without arguments.
+
+### Added
+- ActiveRel was given `find_or_create_by`, usable across single associations.
+
+## [5.0.0] - 2015-06-18
+
+### Fixed
+- Prevented `to_key` from requiring an extra DB query. (See https://github.com/neo4jrb/neo4j/pull/827)
+
+### Added
+- QueryProxy associations accept `labels: false` option to prevent generated Cypher from using labels.
+
+### Changed
+- Properties explicitly set to type `Time` will no longer be converted to `DateTime`.
+
+## [5.0.0.rc.3] - 2015-06-07
 
 ### Fixed
 - Associations now allow `unique` option.  Error handling is generalized to make this testable (Thanks to @olance, see #824)
