@@ -17,4 +17,5 @@ group 'test' do
   gem 'its'
   gem 'test-unit'
   gem 'overcommit'
+  gem 'colored'
 end
