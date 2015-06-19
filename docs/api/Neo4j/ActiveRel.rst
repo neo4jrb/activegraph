@@ -617,7 +617,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def to_key
-       persisted? ? [id] : nil
+       _persisted_obj ? [id] : nil
      end
 
 

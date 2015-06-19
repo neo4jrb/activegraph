@@ -47,10 +47,6 @@ ClassMethods
 
    
 
-   
-
-   
-
 
 
 
@@ -59,8 +55,6 @@ Constants
 
 
 
-  * VALID_ASSOCIATION_OPTION_KEYS
-
 
 
 Files
@@ -68,7 +62,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:197 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L197>`_
+  * `lib/neo4j/active_node/has_n.rb:188 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L188>`_
 
 
 
@@ -208,7 +202,6 @@ Methods
   .. hidden-code-block:: ruby
 
      def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
-       validate_association_options!(name, options)
        name = name.to_sym
        build_association(:has_many, direction, name, options)
      
@@ -233,7 +226,6 @@ Methods
   .. hidden-code-block:: ruby
 
      def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
-       validate_association_options!(name, options)
        name = name.to_sym
        build_association(:has_one, direction, name, options)
      

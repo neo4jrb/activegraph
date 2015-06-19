@@ -113,10 +113,6 @@ QueryProxy
 
    
 
-   
-
-   
-
    QueryProxy/Link
 
 
@@ -216,12 +212,14 @@ Methods
 .. _`Neo4j/ActiveNode/Query/QueryProxy#_model_label_string`:
 
 **#_model_label_string**
-  
+  param [TrueClass, FalseClass] with_labels This param is used by certain QueryProxy methods that already have the neo_id and
+  therefore do not need labels.
+  The @association_labels instance var is set during init and used during association chaining to keep labels out of Cypher queries.
 
   .. hidden-code-block:: ruby
 
-     def _model_label_string
-       return if !@model
+     def _model_label_string(with_labels = true)
+       return if !@model || (!with_labels || @association_labels == false)
        @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
      end
 
@@ -686,8 +684,7 @@ Methods
        @context = options.delete(:context)
        @options = options
      
-       @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level =
-         options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level)
+       instance_vars_from_options!(options)
      
        @match_type = @optional ? :optional_match : :match
      
@@ -709,7 +706,8 @@ Methods
      def inspect
        clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
      
-       "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+       #"<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+       "<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
      end
 
 
@@ -975,8 +973,8 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def query_as(var, with_label = true)
-       result_query = @chain.inject(base_query(var, with_label).params(@params)) do |query, link|
+     def query_as(var, with_labels = true)
+       result_query = @chain.inject(base_query(var, with_labels).params(@params)) do |query, link|
          args = link.args(var, rel_var)
      
          args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)

@@ -71,6 +71,12 @@ QueryProxyMethods
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -260,6 +266,20 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#find`:
+
+**#find**
+  Give ability to call `#find` on associations to get a scoped find
+  Doesn't pass through via `method_missing` because Enumerable has a `#find` method
+
+  .. hidden-code-block:: ruby
+
+     def find(*args)
+       scoping { @model.find(*args) }
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first`:
 
 **#first**
@@ -384,6 +404,34 @@ Methods
 
      def optional(association, node_var = nil, rel_var = nil)
        self.send(association, node_var, rel_var, optional: true)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#rel`:
+
+**#rel**
+  
+
+  .. hidden-code-block:: ruby
+
+     def rel
+       rels.first
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#rels`:
+
+**#rels**
+  
+
+  .. hidden-code-block:: ruby
+
+     def rels
+       fail 'Cannot get rels without a relationship variable.' if !@rel_var
+     
+       pluck(@rel_var)
      end
 
 

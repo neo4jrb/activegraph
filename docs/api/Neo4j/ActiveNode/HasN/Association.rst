@@ -83,6 +83,10 @@ Association
 
    
 
+   
+
+   
+
 
 
 
@@ -90,6 +94,8 @@ Constants
 ---------
 
 
+
+  * VALID_ASSOCIATION_OPTION_KEYS
 
 
 
@@ -227,8 +233,8 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def initialize(type, direction, name, options = {})
-       validate_init_arguments(type, direction, options)
+     def initialize(type, direction, name, options = {type: nil})
+       validate_init_arguments(type, direction, name, options)
        @type = type.to_sym
        @name = name
        @direction = direction.to_sym
