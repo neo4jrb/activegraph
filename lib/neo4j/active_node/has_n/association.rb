@@ -49,7 +49,6 @@ module Neo4j
         end
 
         def target_class_names
-          puts "fuuuck"
           option = target_class_option(derive_model_class)
 
           @target_class_names ||= if option.is_a?(Array)
