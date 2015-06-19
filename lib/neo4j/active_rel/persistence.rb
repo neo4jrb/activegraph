@@ -60,8 +60,14 @@ module Neo4j::ActiveRel
 
         next if [:any, false].include?(type_class)
 
-        fail ModelClassInvalidError, "Node class was #{node.class}, expected #{type_class}" unless node.is_a?(type_class.to_s.constantize)
+        unless node.class.mapped_label_names.include?(type_class.to_s.constantize.mapped_label_name)
+          fail ModelClassInvalidError, type_validation_error_message(node, type_class)
+        end
       end
+    end
+
+    def type_validation_error_message(node, type_class)
+      "Node class was #{node.class} (#{node.class.object_id}), expected #{type_class} (#{type_class.object_id})"
     end
 
     def _create_rel(from_node, to_node, *args)
@@ -74,8 +80,6 @@ module Neo4j::ActiveRel
       end
       _rel_creation_query(from_node, to_node, props)
     end
-
-    private
 
     N1_N2_STRING = 'n1, n2'
     ACTIVEREL_NODE_MATCH_STRING = 'ID(n1) = {n1_neo_id} AND ID(n2) = {n2_neo_id}'
