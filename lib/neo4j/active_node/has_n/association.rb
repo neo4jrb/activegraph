@@ -17,6 +17,14 @@ module Neo4j
           apply_vars_from_options(options)
         end
 
+        def derive_model_class
+          return @model_class unless @model_class.nil?
+          return nil if relationship_class.nil?
+          dir_class = direction == :in ? :from_class : :to_class
+          return false if relationship_class.send(dir_class).to_s.to_sym == :any
+          relationship_class.send(dir_class)
+        end
+
         def target_class_option(model_class)
           case model_class
           when nil
@@ -41,10 +49,12 @@ module Neo4j
         end
 
         def target_class_names
-          @target_class_names ||= if @target_class_option.is_a?(Array)
-                                    @target_class_option.map(&:to_s)
-                                  elsif @target_class_option
-                                    [@target_class_option.to_s]
+          option = target_class_option(derive_model_class)
+
+          @target_class_names ||= if option.is_a?(Array)
+                                    option.map(&:to_s)
+                                  elsif option
+                                    [option.to_s]
                                   end
         end
 
@@ -77,7 +87,7 @@ module Neo4j
 
         def relationship_type(create = false)
           case
-          when @relationship_class
+          when relationship_class
             relationship_class_type
           when @relationship_type
             @relationship_type
@@ -88,30 +98,19 @@ module Neo4j
           end
         end
 
-        attr_reader :relationship_class
+        attr_reader :relationship_class_name
 
         def relationship_class_type
-          @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-          @relationship_class._type.to_sym
+          relationship_class._type.to_sym
         end
 
-        def relationship_class_name
-          @relationship_class_name ||= @relationship_class.respond_to?(:constantize) ? @relationship_class : @relationship_class.name
-        end
-
-        def relationship_clazz
-          @relationship_clazz ||= if @relationship_class.is_a?(String)
-                                    @relationship_class.constantize
-                                  elsif @relationship_class.is_a?(Symbol)
-                                    @relationship_class.to_s.constantize
-                                  else
-                                    @relationship_class
-                                  end
+        def relationship_class
+          @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
         end
 
         def inject_classname(properties)
-          return properties unless @relationship_class
-          properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_clazz.cached_class?(true)
+          return properties unless relationship_class
+          properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_class.cached_class?(true)
           properties
         end
 
@@ -179,11 +178,12 @@ module Neo4j
         private
 
         def apply_vars_from_options(options)
-          @target_class_option = target_class_option(options[:model_class])
+          @relationship_class_name = options[:rel_class] && options[:rel_class].to_s
+          @relationship_type  = options[:type] && options[:type].to_sym
+
+          @model_class = options[:model_class]
           @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
-          @relationship_class = options[:rel_class]
-          @relationship_type  = options[:type] && options[:type].to_sym
           @dependent = options[:dependent].try(:to_sym)
           @unique = options[:unique]
         end
