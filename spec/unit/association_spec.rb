@@ -179,12 +179,25 @@ describe Neo4j::ActiveNode::HasN::Association do
         end
 
         context 'targeting a specific class' do
-          before(:each) do
-            stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
-            TheRel.to_class(Fizzl)
+          context 'outbound' do
+            before(:each) do
+              stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
+              TheRel.to_class(Fizzl)
+            end
+
+            it { should == ['::Fizzl'] }
           end
 
-          it { should == ['::Fizzl'] }
+          context 'inbound' do
+            let(:direction) { :in }
+
+            before(:each) do
+              stub_const 'Buzz', Class.new { include Neo4j::ActiveNode }
+              TheRel.from_class(Buzz)
+            end
+
+            it { should == ['::Buzz'] }
+          end
         end
       end
     end
