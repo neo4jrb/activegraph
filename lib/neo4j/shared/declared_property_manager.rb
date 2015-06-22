@@ -14,6 +14,7 @@ module Neo4j::Shared
     # @param [#declared_property_manager] klass An object that has the #declared_property_manager method.
     def initialize(klass)
       @klass = klass
+      inherit_parent_props!(klass)
     end
 
     # @param [Neo4j::Shared::DeclaredProperty] property An instance of DeclaredProperty, created as the result of calling
@@ -121,6 +122,19 @@ module Neo4j::Shared
     end
 
     private
+
+    # A crude handling of inheritance.
+    # TODO: See if there is a more elegant solution.
+    def inherit_parent_props!(klass)
+      klass.ancestors.each do |a|
+        next if a == klass
+        if a.respond_to?(:declared_property_manager)
+          @_registered_properties = a.declared_property_manager.registered_properties.dup
+          @_default_property_values = a.declared_property_manager.declared_property_defaults.dup
+          @magic_typecast_properties_keys = a.declared_property_manager.magic_typecast_properties_keys.dup
+        end
+      end
+    end
 
     # @param [Symbol] key An undeclared property value found in the _persisted_obj.props hash.
     # Typically, this is a node's id property, which will not be registered as other properties are.
