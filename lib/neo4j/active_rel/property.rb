@@ -21,7 +21,7 @@ module Neo4j::ActiveRel
 
     def initialize(attributes = {}, options = {})
       super(attributes, options)
-      send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
+      send_props(@relationship_props) unless @relationship_props.nil?
     end
 
     module ClassMethods

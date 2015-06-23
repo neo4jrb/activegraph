@@ -163,6 +163,15 @@ describe 'ActiveRel' do
     end
   end
 
+  describe 'initialize' do
+    let(:new_rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
+
+    it 'pulls :from_node and :to_node out of the hash' do
+      expect(new_rel.from_node).to eq from_node
+      expect(new_rel.to_node).to eq to_node
+    end
+  end
+
   describe 'objects and queries' do
     before do
       Neo4j::Config[:cache_class_names] = true
