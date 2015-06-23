@@ -1,29 +1,19 @@
 module Neo4j::ActiveRel
   module Initialize
     extend ActiveSupport::Concern
-
-    attr_reader :_persisted_obj
+    include Neo4j::Shared::Initialize
 
     # called when loading the rel from the database
-    # @param [Hash] properties properties of this relationship
-    # @param [Neo4j::Relationship] start_node the starting node in the relationship.
-    # @param [Neo4j::Relationship] end_node the ending node in the relationship
+    # @param [Neo4j::Embedded::EmbeddedRelationship, Neo4j::Server::CypherRelationship] persisted_rel properties of this relationship
+    # @param [Neo4j::Relationship] from_node_id The neo_id of the starting node of this rel
+    # @param [Neo4j::Relationship] to_node_id The neo_id of the ending node of this rel
     # @param [String] type the relationship type
     def init_on_load(persisted_rel, from_node_id, to_node_id, type)
-      @_persisted_obj = persisted_rel
       @rel_type = type
+      @_persisted_obj = persisted_rel
       changed_attributes && changed_attributes.clear
-      @attributes = attributes.merge(persisted_rel.props.stringify_keys)
+      @attributes = convert_and_assign_attributes(persisted_rel.props)
       load_nodes(from_node_id, to_node_id)
-      self.default_properties = persisted_rel.props
-      @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
-    end
-
-    # Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method
-    # so that we don't have to care if the node is wrapped or not.
-    # @return self
-    def wrapper
-      self
     end
   end
 end
