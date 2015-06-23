@@ -79,6 +79,33 @@ describe 'declared property classes' do
       expect(dpm.attributes_nil_hash).to have_key('bar')
     end
 
+    describe 'inheritance' do
+      before do
+        clazz = Class.new do
+          include Neo4j::ActiveNode
+          property :foo
+          property :bar, type: String, default: 'foo'
+        end
+
+        stub_const('MyModel', clazz)
+
+        clazz = Class.new(MyModel) do
+          include Neo4j::ActiveNode
+        end
+
+        stub_const('MyInheritedClass', clazz)
+      end
+
+      let(:dpm) { MyModel.declared_property_manager }
+      let(:inherited_dpm) { MyInheritedClass.declared_property_manager }
+
+      it 'applies the ancestor\'s props' do
+        dpm.registered_properties.each_key do |k|
+          expect(inherited_dpm.registered_properties).to have_key(k)
+        end
+      end
+    end
+
     # This mimics the behavior of active_attr's default property values
     describe 'default property values' do
       let(:node) { MyModel.new }
