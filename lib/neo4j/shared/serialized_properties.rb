@@ -14,5 +14,17 @@ module Neo4j::Shared
     def serializable_hash(*args)
       super.merge(id: id)
     end
+
+
+    module ClassMethods
+      def inherited(other)
+        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
+        super
+      end
+
+      def inherit_serialized_properties(other)
+        other.serialized_properties = self.serialized_properties
+      end
+    end
   end
 end
