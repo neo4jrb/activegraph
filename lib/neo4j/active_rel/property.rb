@@ -21,8 +21,7 @@ module Neo4j::ActiveRel
 
     def initialize(attributes = {}, options = {})
       super(attributes, options)
-
-      send_props(@relationship_props) unless @relationship_props.nil?
+      send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
     end
 
     module ClassMethods
@@ -34,6 +33,10 @@ module Neo4j::ActiveRel
             relationship_props[key] = attributes.delete(key) if [:from_node, :to_node].include?(key)
           end
         end
+      end
+
+      def id_property_name
+        false
       end
 
       %w(to_class from_class).each do |direction|

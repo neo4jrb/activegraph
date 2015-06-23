@@ -2,7 +2,6 @@ class Neo4j::Relationship
   module Wrapper
     def wrapper
       props.symbolize_keys!
-      # return self unless props.is_a?(Hash)
       begin
         most_concrete_class = sorted_wrapper_classes
         wrapped_rel = most_concrete_class.constantize.new
@@ -21,7 +20,7 @@ class Neo4j::Relationship
     end
 
     def class_from_type
-      Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || rel_type.camelize
+      Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] = rel_type.camelize
     end
   end
 end
