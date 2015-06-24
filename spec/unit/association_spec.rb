@@ -54,8 +54,10 @@ describe Neo4j::ActiveNode::HasN::Association do
       let(:var) { nil }
       let(:properties) { {} }
       let(:create) { false }
+      let(:reverse) { false } # TODO: reverse is not tested!?
+      let(:length) { nil }
 
-      subject { association.arrow_cypher(var, properties, create) }
+      subject { association.arrow_cypher(var, properties, create, reverse, length) }
       before do
         class MyRel
           def self._type
@@ -91,7 +93,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         end
       end
 
-      context 'varable given' do
+      context 'variable given' do
         let(:var) { :fooy }
 
         it { should == '-[fooy]->' }
@@ -123,6 +125,134 @@ describe Neo4j::ActiveNode::HasN::Association do
             let(:properties) { {foo: 1, bar: 'test'} }
 
             it { should == '-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->' }
+          end
+        end
+      end
+
+      context 'relationship length given' do
+        context 'as Symbol' do
+          context ':any' do
+            let(:length) { :any }
+
+            it { should == '-[*]->' }
+          end
+
+          context 'invalid' do
+            let(:length) { :none_or_more }
+
+            it 'raises an error' do
+              expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length (:none_or_more): expecting one of [:any]'
+            end
+          end
+        end
+
+        context 'as Fixnum' do
+          context 'positive' do
+            let(:length) { 42 }
+
+            it { should == '-[*42]->' }
+          end
+
+          context 'negative' do
+            let(:length) { -1337 }
+
+            it 'raises an error' do
+              expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length (-1337): cannot be negative'
+            end
+          end
+        end
+
+        context 'as Range' do
+          context 'positive & increasing' do
+            let(:length) { (2..6) }
+
+            it { should == '-[*2..6]->' }
+
+            context 'with end = Float::INFINITY' do
+              let(:length) { (2..Float::INFINITY) }
+
+              it { should == '-[*2..]->' }
+            end
+          end
+
+          context 'decreasing' do
+            let(:length) { (6..1) }
+
+            it 'raises an error' do
+              expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length (6..1): cannot be a decreasing Range'
+            end
+          end
+
+          context 'including negative values' do
+            let(:length) { (-10..5) }
+
+            it 'raises an error' do
+              expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length (-10..5): cannot include negative values'
+            end
+          end
+        end
+
+        context 'as a Hash' do
+          context 'with :min and :max specified' do
+            let(:length) { {min: 2, max: 6} }
+
+            it { should == '-[*2..6]->' }
+          end
+
+          context 'with only :min specified' do
+            let(:length) { {min: 2} }
+
+            it { should == '-[*2..]->' }
+          end
+
+          context 'with only :max specified' do
+            let(:length) { {max: 2} }
+
+            it { should == '-[*..2]->' }
+          end
+
+          context 'with both :min and :max missing' do
+            let(:length) { {foo: 2, bar: 3} }
+
+            it 'raises an error' do
+              expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length ({:foo=>2, :bar=>3}): Hash keys should be a subset of [:min, :max]'
+            end
+          end
+        end
+
+        context 'as an unsupported type' do
+          let(:length) { 'any' }
+
+          it 'raises an error' do
+            expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length ("any"): should be a Symbol, Fixnum, Range or Hash'
+          end
+        end
+
+        context 'with create = true' do
+          let(:length) { 42 }
+          let(:create) { true }
+
+          it 'raises an error' do
+            expect { subject }.to raise_error ArgumentError, 'rel_length option cannot be specified when creating a relationship'
+          end
+        end
+
+        context 'with relationship variable given' do
+          let(:length) { {min: 0} }
+          let(:var) { :r }
+
+          it { should == '-[r*0..]->' }
+
+          context 'with relationship type given' do
+            let(:options) { {type: :TYPE} }
+
+            it { should == '-[r:`TYPE`*0..]->' }
+
+            context 'with properties given' do
+              let(:properties) {  {foo: 1, bar: 'test'} }
+
+              it { should == '-[r:`TYPE`*0.. {foo: 1, bar: "test"}]->' }
+            end
           end
         end
       end

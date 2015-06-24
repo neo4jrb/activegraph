@@ -120,6 +120,64 @@ describe 'has_one' do
     end
   end
 
+  describe 'has_one(:manager).from(:subordinates)' do
+    before(:each) do
+      stub_active_node_class('Person') do
+        has_many :out, :subordinates, type: nil, model_class: self
+        has_one :in, :manager, model_class: self, origin: :subordinates
+      end
+    end
+
+    let(:big_boss) { Person.create }
+    let(:manager) { Person.create }
+    let(:employee) { Person.create }
+
+    context 'with variable-length relationships' do
+      before do
+        big_boss.subordinates << manager
+        manager.subordinates << employee
+      end
+
+      it 'finds the chain of command' do
+        employee.manager(:p, :r, rel_length: {min: 0}).to_a.should match_array([employee, manager, big_boss])
+      end
+
+      it "finds the employee's superiors" do
+        employee.manager(:p, :r, rel_length: :any).to_a.should match_array([manager, big_boss])
+      end
+
+      it 'finds a specific superior in the chain of command' do
+        employee.manager(:p, :r, rel_length: 1).should eq(manager)
+        employee.manager(:p, :r, rel_length: 2).should eq(big_boss)
+      end
+
+      it 'finds parts of the chain of command using a range' do
+        employee.manager(:p, :r, rel_length: (0..1)).to_a.should match_array([employee, manager])
+      end
+
+      it 'finds parts of the chain of command using a hash' do
+        employee.manager(:p, :r, rel_length: {min: 1, max: 3}).to_a.should match_array([manager, big_boss])
+      end
+    end
+  end
+
+  describe 'association "getter" options' do
+    before(:each) do
+      stub_active_node_class('Person') do
+        has_many :out, :subordinates, type: nil, model_class: self
+        has_one :in, :manager, model_class: self, origin: :subordinates
+      end
+    end
+
+    let(:manager) { Person.create }
+    let(:employee) { Person.create }
+
+    it 'allows passing only a hash of options when naming node/rel is not needed' do
+      manager.subordinates << employee
+      employee.manager(rel_length: 1).should eq(manager)
+    end
+  end
+
   describe 'callbacks' do
     before(:each) do
       stub_active_node_class('CallbackUser') do

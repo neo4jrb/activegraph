@@ -237,7 +237,7 @@ Methods
          (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
        end.compact
      
-       if @model && other_nodes.any? { |other_node| !other_node.is_a?(@model) }
+       if @model && other_nodes.any? { |other_node| !other_node.class.mapped_label_names.include?(@model.mapped_label_name) }
          fail ArgumentError, "Node must be of the association's class when model is specified"
        end
      
@@ -598,6 +598,27 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#find_or_create_by`:
+
+**#find_or_create_by**
+  When called, this method returns a single node that satisfies the match specified in the params hash.
+  If no existing node is found to satisfy the match, one is created or associated as expected.
+
+  .. hidden-code-block:: ruby
+
+     def find_or_create_by(params)
+       fail 'Method invalid when called on Class objects' unless source_object
+       result = self.where(params).first
+       return result unless result.nil?
+       Neo4j::Transaction.run do
+         node = model.find_or_create_by(params)
+         self << node
+         return node
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#first`:
 
 **#first**
@@ -668,12 +689,6 @@ Methods
   
   originated.
   <tt>has_many</tt>) that created this object.
-  * node_var: A string or symbol to be used by Cypher within its query string as an identifier
-  * rel_var:  Same as above but pertaining to a relationship identifier
-  * session: The session to be used for this query
-  * source_object:  The node instance at the start of the QueryProxy chain
-  * query_proxy: An existing QueryProxy chain upon which this new object should be built
-  
   QueryProxy objects are evaluated lazily.
 
   .. hidden-code-block:: ruby
@@ -706,8 +721,7 @@ Methods
      def inspect
        clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
      
-       #"<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
-       "<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
+       "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
      end
 
 
@@ -752,7 +766,7 @@ Methods
 
      def limit_value
        return unless self.query.clause?(:limit)
-       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause = self.query.send(:clauses).find { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }
        limit_clause.instance_variable_get(:@arg)
      end
 

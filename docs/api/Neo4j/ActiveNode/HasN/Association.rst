@@ -79,14 +79,6 @@ Association
 
    
 
-   
-
-   
-
-   
-
-   
-
 
 
 
@@ -96,6 +88,8 @@ Constants
 
 
   * VALID_ASSOCIATION_OPTION_KEYS
+
+  * VALID_REL_LENGTH_SYMBOLS
 
 
 
@@ -139,9 +133,14 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def arrow_cypher(var = nil, properties = {}, create = false, reverse = false)
+     def arrow_cypher(var = nil, properties = {}, create = false, reverse = false, length = nil)
        validate_origin!
-       direction_cypher(get_relationship_cypher(var, properties, create), create, reverse)
+     
+       if create && length.present?
+         fail(ArgumentError, 'rel_length option cannot be specified when creating a relationship')
+       end
+     
+       direction_cypher(get_relationship_cypher(var, properties, create, length), create, reverse)
      end
 
 
@@ -194,6 +193,23 @@ Methods
 
      def dependent
        @dependent
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#derive_model_class`:
+
+**#derive_model_class**
+  
+
+  .. hidden-code-block:: ruby
+
+     def derive_model_class
+       return @model_class unless @model_class.nil?
+       return nil if relationship_class.nil?
+       dir_class = direction == :in ? :from_class : :to_class
+       return false if relationship_class.send(dir_class).to_s.to_sym == :any
+       relationship_class.send(dir_class)
      end
 
 
@@ -252,8 +268,8 @@ Methods
   .. hidden-code-block:: ruby
 
      def inject_classname(properties)
-       return properties unless @relationship_class
-       properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_clazz.cached_class?(true)
+       return properties unless relationship_class
+       properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_class.cached_class?(true)
        properties
      end
 
@@ -302,12 +318,12 @@ Methods
 .. _`Neo4j/ActiveNode/HasN/Association#relationship_class`:
 
 **#relationship_class**
-  Returns the value of attribute relationship_class
+  
 
   .. hidden-code-block:: ruby
 
      def relationship_class
-       @relationship_class
+       @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
      end
 
 
@@ -315,12 +331,12 @@ Methods
 .. _`Neo4j/ActiveNode/HasN/Association#relationship_class_name`:
 
 **#relationship_class_name**
-  
+  Returns the value of attribute relationship_class_name
 
   .. hidden-code-block:: ruby
 
      def relationship_class_name
-       @relationship_class_name ||= @relationship_class.respond_to?(:constantize) ? @relationship_class : @relationship_class.name
+       @relationship_class_name
      end
 
 
@@ -333,27 +349,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def relationship_class_type
-       @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-       @relationship_class._type.to_sym
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN/Association#relationship_clazz`:
-
-**#relationship_clazz**
-  
-
-  .. hidden-code-block:: ruby
-
-     def relationship_clazz
-       @relationship_clazz ||= if @relationship_class.is_a?(String)
-                                 @relationship_class.constantize
-                               elsif @relationship_class.is_a?(Symbol)
-                                 @relationship_class.to_s.constantize
-                               else
-                                 @relationship_class
-                               end
+       relationship_class._type.to_sym
      end
 
 
@@ -367,7 +363,7 @@ Methods
 
      def relationship_type(create = false)
        case
-       when @relationship_class
+       when relationship_class
          relationship_class_type
        when @relationship_type
          @relationship_type
@@ -405,10 +401,12 @@ Methods
   .. hidden-code-block:: ruby
 
      def target_class_names
-       @target_class_names ||= if @target_class_option.is_a?(Array)
-                                 @target_class_option.map(&:to_s)
-                               elsif @target_class_option
-                                 [@target_class_option.to_s]
+       option = target_class_option(derive_model_class)
+     
+       @target_class_names ||= if option.is_a?(Array)
+                                 option.map(&:to_s)
+                               elsif option
+                                 [option.to_s]
                                end
      end
 

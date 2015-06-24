@@ -41,17 +41,17 @@ in a new object of that class.
 
    ActiveNode/Dependent
 
-   ActiveNode/Reflection
-
    ActiveNode/Initialize
 
-   ActiveNode/ClassMethods
-
-   ActiveNode/OrmAdapter
+   ActiveNode/Reflection
 
    ActiveNode/IdProperty
 
    ActiveNode/Validations
+
+   ActiveNode/ClassMethods
+
+   ActiveNode/OrmAdapter
 
    ActiveNode/Persistence
 
@@ -98,11 +98,11 @@ Files
 
   * `lib/neo4j/active_node/reflection.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L1>`_
 
-  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
-
   * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
 
   * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
+
+  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
   * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
@@ -118,9 +118,11 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L2>`_
 
+  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
+
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
 
-  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
+  * `lib/neo4j/active_node/has_n/association_cypher_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association_cypher_methods.rb#L2>`_
 
   * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L2>`_
 
@@ -258,7 +260,7 @@ Methods
 
      def association_proxy(name, options = {})
        name = name.to_sym
-       hash = [name, options.values_at(:node, :rel, :labels)].hash
+       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
        association_proxy_cache_fetch(hash) do
          if previous_association_proxy = self.instance_variable_get('@association_proxy')
            result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
@@ -978,7 +980,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def valid?(context = nil)
-       context     ||= (new_record? ? :create : :update)
+       context ||= (new_record? ? :create : :update)
        super(context)
        errors.empty?
      end

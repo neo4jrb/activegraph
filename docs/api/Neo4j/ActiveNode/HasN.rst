@@ -35,6 +35,8 @@ HasN
 
    HasN/Association
 
+   HasN/AssociationCypherMethods
+
 
 
 
@@ -54,6 +56,8 @@ Files
 
   * `lib/neo4j/active_node/has_n/association.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L5>`_
 
+  * `lib/neo4j/active_node/has_n/association_cypher_methods.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association_cypher_methods.rb#L3>`_
+
 
 
 
@@ -72,7 +76,7 @@ Methods
 
      def association_proxy(name, options = {})
        name = name.to_sym
-       hash = [name, options.values_at(:node, :rel, :labels)].hash
+       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
        association_proxy_cache_fetch(hash) do
          if previous_association_proxy = self.instance_variable_get('@association_proxy')
            result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)

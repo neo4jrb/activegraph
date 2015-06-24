@@ -77,6 +77,8 @@ QueryProxyMethods
 
    
 
+   
+
 
 
 
@@ -280,6 +282,27 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#find_or_create_by`:
+
+**#find_or_create_by**
+  When called, this method returns a single node that satisfies the match specified in the params hash.
+  If no existing node is found to satisfy the match, one is created or associated as expected.
+
+  .. hidden-code-block:: ruby
+
+     def find_or_create_by(params)
+       fail 'Method invalid when called on Class objects' unless source_object
+       result = self.where(params).first
+       return result unless result.nil?
+       Neo4j::Transaction.run do
+         node = model.find_or_create_by(params)
+         self << node
+         return node
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxyMethods#first`:
 
 **#first**
@@ -363,7 +386,7 @@ Methods
 
      def limit_value
        return unless self.query.clause?(:limit)
-       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause = self.query.send(:clauses).find { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }
        limit_clause.instance_variable_get(:@arg)
      end
 

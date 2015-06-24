@@ -392,6 +392,58 @@ describe 'has_many' do
     end
   end
 
+  describe 'variable-length relationship query' do
+    before do
+      node.knows << friend1
+      friend1.knows << friend2
+    end
+
+    context 'as Symbol' do
+      context ':any' do
+        it 'returns any direct or indirect related node' do
+          expect(node.knows(:n, :r, rel_length: :any).to_a).to match_array([friend1, friend2])
+        end
+      end
+    end
+
+    context 'as Fixnum' do
+      it 'returns related nodes at exactly `length` hops from start node' do
+        expect(node.knows(:n, :r, rel_length: 1).to_a).to match_array([friend1])
+        expect(node.knows(:n, :r, rel_length: 2).to_a).to match_array([friend2])
+      end
+    end
+
+    context 'as Range' do
+      it 'returns related nodes within given range of hops from start node' do
+        expect(node.knows(nil, nil, rel_length: (0..3)).to_a).to match_array([node, friend1, friend2])
+        expect(node.knows(nil, nil, rel_length: (1..2)).to_a).to match_array([friend1, friend2])
+        expect(node.knows(nil, nil, rel_length: (2..5)).to_a).to match_array([friend2])
+      end
+    end
+
+    context 'as Hash' do
+      it 'returns related nodes within given range specified by :min/:max options' do
+        expect(node.knows(:n, :r, rel_length: {min: 0, max: 3}).to_a).to match_array([node, friend1, friend2])
+      end
+
+      it 'accepts missing :min OR :max as denoting open-ended ranges' do
+        expect(node.knows(:n, :r, rel_length: {min: 1}).to_a).to match_array([friend1, friend2])
+        expect(node.knows(:n, :r, rel_length: {max: 1}).to_a).to match_array([friend1])
+      end
+    end
+  end
+
+  describe 'association "getter" options' do
+    before do
+      node.knows << friend1
+      friend1.knows << friend2
+    end
+
+    it 'allows passing only a hash of options when naming node/rel is not needed' do
+      expect(node.knows(rel_length: :any).to_a).to match_array([friend1, friend2])
+    end
+  end
+
   describe 'transactions' do
     context 'failure' do
       it 'rolls back <<' do
