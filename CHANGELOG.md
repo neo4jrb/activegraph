@@ -4,15 +4,19 @@ This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
-### Fixed
-- ActiveNode#inspect wasn't displaying the id_property
+
+## [5.0.1] - 2015-06-23
 
 ### Fixed
 - Longstanding bug that would prevent association changes (`<<` and ActiveRel.create) in Rails after `reload!` had been called, see https://github.com/neo4jrb/neo4j/pull/839
+- ActiveNode#inspect wasn't displaying the id_property
+- Default property values and magic typecasting not being inherited correctly
 
 ### Changed
-- In the absense of a `model_class` key, associations defined in ActiveNode models will use `from_/to_class` defined in `rel_class` to find destination. (Huge thanks to @olance, #838) 
+- In the absense of a `model_class` key, associations defined in ActiveNode models will use `from_/to_class` defined in `rel_class` to find destination. (Huge thanks to @olance, #838)
 - ActiveRel's DSL was made a bit friendlier by making the `type`, `from_class` and `to_class` methods return their set values when called without arguments.
+- Reworked ActiveRel's wrapper to behave more like ActiveNode's, removing some duplicate methods and moving others to Neo4j::Shared, resulting in a big performance boost when returning large numbers of rels.
+- Updated gemspec to require neo4j-core 5.0.1+
 
 ### Added
 - ActiveRel was given `find_or_create_by`, usable across single associations.
