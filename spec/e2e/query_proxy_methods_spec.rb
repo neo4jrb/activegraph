@@ -114,8 +114,10 @@ describe 'query_proxy_methods' do
       expect(Lesson.as(:l).students.where(name: 'Jimmy').include?(science, :l)).to be_truthy
     end
 
-    it 'raises an error if something other than a node is given' do
-      expect { Student.lessons.include?(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+    it 'can find by primary key/uuid' do
+      expect(jimmy.lessons.include?(science.uuid)).to be_falsey
+      jimmy.lessons << science
+      expect(jimmy.lessons.include?(science.uuid)).to be_truthy
     end
   end
 
