@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+- Fix error when calling `#empty?` or `#blank?` on a query chain with on `order` specified
+- Make `#find_each` and `#find_in_batches` return the actual objects rather than the result objects
+
 ## [5.0.1] - 2015-06-23
 
 ### Fixed
