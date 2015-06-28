@@ -126,6 +126,10 @@ describe 'query_proxy_methods' do
         expect(Lesson.empty?).to be_falsey
       end
 
+      it 'does not fail from an ordered context' do
+        expect(Lesson.order(:name).empty?).to be_falsey
+      end
+
       it 'can be called with a property and value' do
         expect(Lesson.exists?(name: 'math')).to be_truthy
         expect(Lesson.exists?(name: 'boat repair')).to be_falsey
@@ -165,6 +169,11 @@ describe 'query_proxy_methods' do
         jimmy.lessons << science
         expect(jimmy.lessons.blank?).to be_falsey
         expect(jimmy.lessons.empty?).to be_falsey
+      end
+
+      it 'does not fail from an ordered context' do
+        expect(jimmy.lessons.order(:name).blank?).to be_falsey
+        expect(jimmy.lessons.order(:name).empty?).to be_falsey
       end
     end
   end

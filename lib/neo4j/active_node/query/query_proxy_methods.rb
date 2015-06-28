@@ -86,7 +86,7 @@ module Neo4j
           fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
-            start_q.query.return("COUNT(#{var}) AS count").first.count > 0
+            start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
           end
         end
 
