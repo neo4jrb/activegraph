@@ -75,10 +75,18 @@ module Neo4j
 
         alias_method :blank?, :empty?
 
+        # @param [Neo4j::ActiveNode, Neo4j::Node, String] other An instance of a Neo4j.rb model, a Neo4j-core node, or a string uuid
+        # @param [String, Symbol] target An identifier of a link in the Cypher chain
+        # @return [Boolean]
         def include?(other, target = nil)
-          fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
           query_with_target(target) do |var|
-            self.where("ID(#{var}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{var}) as count").first.count > 0
+            where_filter = if other.respond_to?(:neo_id)
+                             "ID(#{var}) = {other_node_id}"
+                           else
+                             "#{var}.#{association_id_key} = {other_node_id}"
+                           end
+            node_id = other.respond_to?(:neo_id) ? other.neo_id : other
+            self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
           end
         end
 
