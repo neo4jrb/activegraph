@@ -174,8 +174,8 @@ describe 'query_proxy_methods' do
       end
 
       it 'does not fail from an ordered context' do
-        expect(jimmy.lessons.order(:name).blank?).to be_falsey
-        expect(jimmy.lessons.order(:name).empty?).to be_falsey
+        expect(jimmy.lessons.order(:name).blank?).to be_truthy
+        expect(jimmy.lessons.order(:name).empty?).to be_truthy
       end
     end
   end
