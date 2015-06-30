@@ -87,7 +87,7 @@ An example series of setup commands:
 
   rails new myapp -m http://neo4jrb.io/neo4j/neo4j.rb -O
   cd myapp
-  rake neo4j:install[community-2.1.6]
+  rake neo4j:install[community-2.2.2]
   rake neo4j:start
 
   rails generate scaffold User name:string email:string
