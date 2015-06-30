@@ -5,9 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.0.2] - 2015-06-30
+
 ### Fixed
 - Fix error when calling `#empty?` or `#blank?` on a query chain with on `order` specified
 - Make `#find_each` and `#find_in_batches` return the actual objects rather than the result objects
+- Query logging on console should be to STDOUT with `puts`.  Using `Rails.logger` outputs to the file in the `log` directory
 
 ## [5.0.1] - 2015-06-23
 
