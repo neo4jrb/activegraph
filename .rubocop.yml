@@ -68,5 +68,3 @@ Style/Lambda:
 # Reason: I'm proud to be part of the double negative Ruby tradition
 Style/DoubleNegation:
   Enabled: false
-
-

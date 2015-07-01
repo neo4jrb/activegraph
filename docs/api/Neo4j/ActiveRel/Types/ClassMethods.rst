@@ -54,13 +54,12 @@ Methods
 .. _`Neo4j/ActiveRel/Types/ClassMethods#_type`:
 
 **#_type**
-  Returns the value of attribute rel_type
-  attr_reader :rel_type
+  
 
   .. hidden-code-block:: ruby
 
      def rel_type
-       @rel_type
+       @rel_type || type(namespaced_model_name, true)
      end
 
 
@@ -141,12 +140,12 @@ Methods
 .. _`Neo4j/ActiveRel/Types/ClassMethods#rel_type`:
 
 **#rel_type**
-  Returns the value of attribute rel_type
+  
 
   .. hidden-code-block:: ruby
 
      def rel_type
-       @rel_type
+       @rel_type || type(namespaced_model_name, true)
      end
 
 
@@ -154,13 +153,14 @@ Methods
 .. _`Neo4j/ActiveRel/Types/ClassMethods#type`:
 
 **#type**
-  
+  This option is used internally, users will usually ignore it.
 
   .. hidden-code-block:: ruby
 
-     def type(given_type = namespaced_model_name, auto = false)
+     def type(given_type = nil, auto = false)
+       return rel_type if given_type.nil?
        @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
-         add_wrapped_class type unless uses_classname?
+         add_wrapped_class(type) unless uses_classname?
        end
      end
 

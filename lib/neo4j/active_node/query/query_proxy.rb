@@ -25,11 +25,13 @@ module Neo4j
         # @param [Neo4j::ActiveNode::HasN::Association] association The ActiveNode association (an object created by a <tt>has_one</tt> or
         # <tt>has_many</tt>) that created this object.
         # @param [Hash] options Additional options pertaining to the QueryProxy object. These may include:
-        # * node_var: A string or symbol to be used by Cypher within its query string as an identifier
-        # * rel_var:  Same as above but pertaining to a relationship identifier
-        # * session: The session to be used for this query
-        # * source_object:  The node instance at the start of the QueryProxy chain
-        # * query_proxy: An existing QueryProxy chain upon which this new object should be built
+        # @option options [String, Symbol] :node_var A string or symbol to be used by Cypher within its query string as an identifier
+        # @option options [String, Symbol] :rel_var Same as above but pertaining to a relationship identifier
+        # @option options [Range, Fixnum, Symbol, Hash] :rel_length A Range, a Fixnum, a Hash or a Symbol to indicate the variable-length/fixed-length
+        #   qualifier of the relationship. See http://neo4jrb.readthedocs.org/en/latest/Querying.html#variable-length-relationships.
+        # @option options [Neo4j::Session] :session The session to be used for this query
+        # @option options [Neo4j::ActiveNode] :source_object The node instance at the start of the QueryProxy chain
+        # @option options [QueryProxy] :query_proxy An existing QueryProxy chain upon which this new object should be built
         #
         # QueryProxy objects are evaluated lazily.
         def initialize(model, association = nil, options = {})
@@ -278,7 +280,7 @@ module Neo4j
         end
 
         def _association_arrow(properties = {}, create = false)
-          @association && @association.arrow_cypher(@rel_var, properties, create)
+          @association && @association.arrow_cypher(@rel_var, properties, create, false, @rel_length)
         end
 
         def _chain_level
@@ -312,8 +314,13 @@ module Neo4j
         private
 
         def instance_vars_from_options!(options)
-          @node_var, @session, @source_object, @starting_query, @optional, @start_object, @query_proxy, @chain_level, @association_labels =
-              options.values_at(:node, :session, :source_object, :starting_query, :optional, :start_object, :query_proxy, :chain_level, :association_labels)
+          @node_var, @session, @source_object, @starting_query, @optional,
+              @start_object, @query_proxy, @chain_level, @association_labels,
+              @rel_length = options.values_at(:node, :session, :source_object,
+                                              :starting_query, :optional,
+                                              :start_object, :query_proxy,
+                                              :chain_level, :association_labels,
+                                              :rel_length)
         end
 
         def build_deeper_query_proxy(method, args)

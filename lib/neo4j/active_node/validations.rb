@@ -8,7 +8,7 @@ module Neo4j
 
       # @return [Boolean] true if valid
       def valid?(context = nil)
-        context     ||= (new_record? ? :create : :update)
+        context ||= (new_record? ? :create : :update)
         super(context)
         errors.empty?
       end
