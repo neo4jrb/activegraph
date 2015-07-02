@@ -49,6 +49,11 @@ describe Neo4j::Shared::TypeConverters do
     it 'returns the same value if there is no converter' do
       Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer).should eq(42)
     end
+
+    it 'returns the same value if it is already of the expected type' do
+      timestamp = DateTime.now.to_i
+      expect(Neo4j::Shared::TypeConverters.to_other(:to_db, timestamp, DateTime)).to eq timestamp
+    end
   end
 
   describe Neo4j::Shared::TypeConverters::JSONConverter do

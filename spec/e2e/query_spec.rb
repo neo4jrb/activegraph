@@ -603,6 +603,39 @@ describe 'Query API' do
     end
   end
 
+  describe 'type conversion with #where' do
+    before { [Date, DateTime, Time].each { |c| Teacher.property c.name.downcase.to_sym, type: c } }
+
+    let(:date) { Date.today }
+    let(:converted_date) { Time.utc(date.year, date.month, date.day).to_i }
+    let(:datetime) { DateTime.now }
+    let(:converted_datetime) { datetime.utc.to_i }
+    let(:time) { Time.now }
+    let(:converted_time) { time.utc.to_i }
+
+    context 'with properties declared on the model' do
+      it 'converts properties using the model\'s type converter' do
+        expect(Teacher.where(date: date).to_cypher_with_params).to include(converted_date.to_s)
+        expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
+        expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
+      end
+
+      context '...and values already in the destination format' do
+        it 'uses the values as they are' do
+          expect(Teacher.where(date: converted_date).to_cypher_with_params).to include(converted_date.to_s)
+          expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
+          expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
+        end
+      end
+    end
+
+    context 'with properties not declared on the model' do
+      it 'uses values as they are' do
+        expect(Teacher.where(undeclared_date: date).to_cypher_with_params).not_to include(converted_date.to_s)
+      end
+    end
+  end
+
   describe 'batch finding' do
     let!(:ss101) { Lesson.create(subject: 'Social Studies', level: 101) }
     let!(:ss102) { Lesson.create(subject: 'Social Studies', level: 102) }
