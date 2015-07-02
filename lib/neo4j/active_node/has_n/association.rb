@@ -6,6 +6,8 @@ module Neo4j
       class Association
         include Neo4j::Shared::RelTypeConverters
         include Neo4j::ActiveNode::Dependent::AssociationMethods
+        include Neo4j::ActiveNode::HasN::AssociationCypherMethods
+
         attr_reader :type, :name, :relationship, :direction, :dependent
 
         def initialize(type, direction, name, options = {type: nil})
@@ -40,12 +42,6 @@ module Neo4j
           else
             "::#{model_class}"
           end
-        end
-
-        # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
-        def arrow_cypher(var = nil, properties = {}, create = false, reverse = false)
-          validate_origin!
-          direction_cypher(get_relationship_cypher(var, properties, create), create, reverse)
         end
 
         def target_class_names
@@ -128,17 +124,6 @@ module Neo4j
           Neo4j::Config.association_model_namespace_string
         end
 
-        def direction_cypher(relationship_cypher, create, reverse = false)
-          case get_direction(create, reverse)
-          when :out
-            "-#{relationship_cypher}->"
-          when :in
-            "<-#{relationship_cypher}-"
-          when :both
-            "-#{relationship_cypher}-"
-          end
-        end
-
         def get_direction(create, reverse = false)
           dir = (create && @direction == :both) ? :out : @direction
           if reverse
@@ -150,21 +135,6 @@ module Neo4j
           else
             dir
           end
-        end
-
-        def get_relationship_cypher(var, properties, create)
-          relationship_type = relationship_type(create)
-          relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
-          properties_string = get_properties_string(properties)
-
-          "[#{var}#{relationship_name_cypher}#{properties_string}]"
-        end
-
-        def get_properties_string(properties)
-          p = properties.map do |key, value|
-            "#{key}: #{value.inspect}"
-          end.join(', ')
-          p.size == 0 ? '' : " {#{p}}"
         end
 
         def origin_association

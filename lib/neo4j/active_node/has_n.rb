@@ -144,7 +144,7 @@ module Neo4j::ActiveNode
 
     def association_proxy(name, options = {})
       name = name.to_sym
-      hash = [name, options.values_at(:node, :rel, :labels)].hash
+      hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
       association_proxy_cache_fetch(hash) do
         if previous_association_proxy = self.instance_variable_get('@association_proxy')
           result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
@@ -312,6 +312,11 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           return [].freeze unless self._persisted_obj
 
+          if node.is_a?(Hash)
+            options = node
+            node = nil
+          end
+
           association_proxy(name, {node: node, rel: rel, source_object: self, labels: options[:labels]}.merge!(options))
         end
 
@@ -331,16 +336,31 @@ module Neo4j::ActiveNode
       end
 
       def define_has_one_methods(name)
-        define_method(name) do |node = nil, rel = nil|
-          return nil unless self._persisted_obj
-
-          association_proxy(name, node: node, rel: rel).first
-        end
+        define_has_one_getter(name)
 
         define_has_one_setter(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
+        end
+      end
+
+      def define_has_one_getter(name)
+        define_method(name) do |node = nil, rel = nil, options = {}|
+          return nil unless self._persisted_obj
+
+          if node.is_a?(Hash)
+            options = node
+            node = nil
+          end
+
+          # Return all results if a variable-length relationship length was given
+          results = association_proxy(name, {node: node, rel: rel}.merge!(options))
+          if options[:rel_length] && !options[:rel_length].is_a?(Fixnum)
+            results
+          else
+            results.first
+          end
         end
       end
 

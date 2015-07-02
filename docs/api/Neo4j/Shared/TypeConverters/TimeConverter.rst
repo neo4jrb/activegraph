@@ -17,6 +17,10 @@ TimeConverter
 
    
 
+   
+
+   
+
 
 
 
@@ -43,6 +47,19 @@ Methods
 
 
 
+.. _`Neo4j/Shared/TypeConverters/TimeConverter.call`:
+
+**.call**
+  
+
+  .. hidden-code-block:: ruby
+
+     def to_ruby(value)
+       Time.at(value).utc
+     end
+
+
+
 .. _`Neo4j/Shared/TypeConverters/TimeConverter.convert_type`:
 
 **.convert_type**
@@ -52,6 +69,19 @@ Methods
 
      def convert_type
        Time
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters/TimeConverter.primitive_type`:
+
+**.primitive_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def primitive_type
+       Integer
      end
 
 
