@@ -380,4 +380,47 @@ describe Neo4j::ActiveNode::HasN::Association do
       end
     end
   end
+
+  describe 'model refresh methods' do
+    let(:type) { :has_many }
+    describe '#queue_model_refresh!' do
+      it 'changes the response of #pending_model_refresh' do
+        expect { association.queue_model_refresh! }.to change { association.pending_model_refresh? }
+      end
+    end
+
+    describe 'refresh_model_class!' do
+      context 'with model class set' do
+        before do
+          stub_const('MyModel', Class.new)
+          association.instance_variable_set(:@model_class, MyModel)
+          name = 'MyModel'
+          expect(MyModel).to receive(:name).and_return(name)
+          expect(name).to receive(:constantize).and_return(Class.new)
+        end
+
+        it 'changes the value of #derive_model_class' do
+          expect { association.refresh_model_class! }.to change { association.derive_model_class }
+        end
+
+        it 'resets #pending_model_refresh?' do
+          association.queue_model_refresh!
+          expect { association.refresh_model_class! }.to change { association.pending_model_refresh? }
+        end
+      end
+
+      context 'without model class set' do
+        before { association.instance_variable_set(:@model_class, nil) }
+
+        it 'does not raise an error' do
+          expect { association.refresh_model_class! }.not_to raise_error
+        end
+
+        it 'still resets #pending_model_refresh?' do
+          association.queue_model_refresh!
+          expect { association.refresh_model_class! }.to change { association.pending_model_refresh? }
+        end
+      end
+    end
+  end
 end
