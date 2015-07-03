@@ -19,6 +19,7 @@ module Neo4j
         end
 
         def derive_model_class
+          refresh_model_class! if pending_model_refresh?
           return @model_class unless @model_class.nil?
           return nil if relationship_class.nil?
           dir_class = direction == :in ? :from_class : :to_class
@@ -26,14 +27,19 @@ module Neo4j
           relationship_class.send(dir_class)
         end
 
+        def refresh_model_class!
+          @pending_model_refresh = @target_classes_or_nil = nil
+          @model_class = @model_class.name.constantize if @model_class
+        end
+
+        def queue_model_refresh!
+          @pending_model_refresh = true
+        end
+
         def target_class_option(model_class)
           case model_class
           when nil
-            if @target_class_name_from_name
-              "#{association_model_namespace}::#{@target_class_name_from_name}"
-            else
-              @target_class_name_from_name
-            end
+            @target_class_name_from_name ? "#{association_model_namespace}::#{@target_class_name_from_name}" : @target_class_name_from_name
           when Array
             model_class.map { |sub_model_class| target_class_option(sub_model_class) }
           when false
@@ -47,6 +53,10 @@ module Neo4j
         def arrow_cypher(var = nil, properties = {}, create = false, reverse = false)
           validate_origin!
           direction_cypher(get_relationship_cypher(var, properties, create), create, reverse)
+        end
+
+        def pending_model_refresh?
+          !!@pending_model_refresh
         end
 
         def target_class_names
@@ -209,9 +219,7 @@ module Neo4j
           check_valid_type_and_dir(type, direction)
         end
 
-        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class,
-                                         :rel_class, :dependent, :before,
-                                         :after, :unique]
+        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique]
 
         def validate_association_options!(_association_name, options)
           type_keys = (options.keys & [:type, :origin, :rel_class])
