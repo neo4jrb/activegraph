@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Changed
+- `ActiveNode#destroyed?` and `ActiveRel#destroyed?` now only consider the in-memory state of if an object is destroyed without checking the database
+
 ## [5.0.2] - 2015-06-30
 
 ### Fixed
