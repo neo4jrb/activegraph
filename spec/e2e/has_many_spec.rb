@@ -74,19 +74,19 @@ describe 'has_many' do
     it 'creates the correct type' do
       node.friends << friend1
       r = node.rel
-      expect(r.rel_type).to eq(:'FRIENDS')
+      expect(r.rel_type).to eq(:FRIENDS)
     end
 
     it 'creates the correct type' do
       node.knows << friend1
       r = node.rel
-      expect(r.rel_type).to eq(:'KNOWS')
+      expect(r.rel_type).to eq(:KNOWS)
     end
 
     it 'creates correct incoming relationship' do
       node.knows_me << friend1
-      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:'KNOWS')
-      expect(node.rel(dir: :incoming).rel_type).to eq(:'KNOWS')
+      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:KNOWS)
+      expect(node.rel(dir: :incoming).rel_type).to eq(:KNOWS)
     end
   end
 

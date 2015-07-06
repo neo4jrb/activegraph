@@ -154,7 +154,8 @@ shared_examples_for 'example app with orm_adapter fix' do
         end
 
         it 'when conditions contain associated object, should return first model if it exists' do
-          user1, user2 = create_model(user_class), create_model(user_class)
+          user1 = create_model(user_class)
+          user2 = create_model(user_class)
           create_model(note_class, owner: user1)
 
           note = create_model(note_class, owner: user2)

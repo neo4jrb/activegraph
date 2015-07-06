@@ -34,13 +34,13 @@ describe 'Inheritance', type: :e2e do
 
   describe 'find' do
     it 'can find using subclass index' do
-      @volvo.labels.should =~ [:'Car', :'Node', :'Vehicle']
+      @volvo.labels.should =~ [:Car, :Node, :Vehicle]
       Car.where(name: 'volvo').first.should eq(@volvo)
       Vehicle.where(name: 'volvo').first.should eq(@volvo)
     end
 
     it 'can find using baseclass index' do
-      @saab.labels.should =~ [:'Car', :'Node', :'Vehicle']
+      @saab.labels.should =~ [:Car, :Node, :Vehicle]
       Car.where(model: '900').first.should eq(@saab)
       Vehicle.where(model: '900').first.should eq(@saab)
     end

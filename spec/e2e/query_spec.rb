@@ -334,7 +334,7 @@ describe 'Query API' do
           expect(samuels.lessons_teaching.count).to eq 2
 
           expect(samuels.lessons.to_a).to include(ss101, ss102, math101)
-          expect(samuels.lessons.to_a.count).to eq 3
+          expect(samuels.lessons.to_a.size).to eq 3
         end
       end
     end

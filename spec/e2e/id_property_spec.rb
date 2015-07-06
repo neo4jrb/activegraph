@@ -224,8 +224,8 @@ describe Neo4j::ActiveNode::IdProperty do
   describe 'constraint setting' do
     before do
       stub_const('Clazz', UniqueClass.create do
-                          include Neo4j::ActiveNode
-                        end)
+        include Neo4j::ActiveNode
+      end)
     end
 
     context 'constraint: false' do

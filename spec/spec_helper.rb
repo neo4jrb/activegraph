@@ -104,7 +104,7 @@ module Neo4jSpecHelpers
   class_methods do
     def let_config(var_name)
       before do
-        @neo4j_config_vars         ||= ActiveSupport::HashWithIndifferentAccess.new
+        @neo4j_config_vars ||= ActiveSupport::HashWithIndifferentAccess.new
         @neo4j_config_vars[var_name] = Neo4j::Config[var_name]
         Neo4j::Config[var_name]      = yield
       end
