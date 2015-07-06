@@ -78,7 +78,7 @@ module Neo4j::Shared
 
     # Returns +true+ if the object was destroyed.
     def destroyed?
-      @_deleted
+      !!@_deleted
     end
 
 
