@@ -135,8 +135,8 @@ describe 'association dependent delete/destroy' do
           expect { @route2.destroy }.not_to raise_error
           expect(@philadelphia).to be_persisted
 
-          expect(@manhattan).not_to be_persisted
-          expect(@boston).not_to be_persisted
+          expect(@manhattan.exist?).to be false
+          expect(@boston.exist?).to be false
         end
 
         it 'destroys the linked comment without everything blowing up' do

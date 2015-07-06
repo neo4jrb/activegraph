@@ -93,27 +93,6 @@ describe Neo4j::ActiveNode::Persistence do
     end
   end
 
-  describe 'persisted?' do
-    it 'is true if there is a wrapped node and it has not been deleted' do
-      clazz.any_instance.stub(:_persisted_obj).and_return(node)
-      o = clazz.new
-      node.should_receive(:exist?).and_return(true)
-      o.persisted?.should eq(true)
-    end
-
-    it 'is false if there is a wrapped node and it but it has been deleted' do
-      clazz.any_instance.stub(:_persisted_obj).and_return(node)
-      o = clazz.new
-      node.should_receive(:exist?).and_return(false)
-      o.persisted?.should eq(false)
-    end
-
-    it 'is false if there is not a persisted node' do
-      o = clazz.new
-      o.persisted?.should eq(false)
-    end
-  end
-
   describe 'new_record?' do
     it 'is true if it does not wrap a persisted node' do
       o = clazz.new
