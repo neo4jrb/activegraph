@@ -6,7 +6,8 @@ module Neo4j
       class Association
         include Neo4j::Shared::RelTypeConverters
         include Neo4j::ActiveNode::Dependent::AssociationMethods
-        attr_reader :type, :name, :relationship, :direction, :dependent
+
+        attr_reader :type, :name, :relationship, :direction, :dependent, :model_class
 
         def initialize(type, direction, name, options = {type: nil})
           validate_init_arguments(type, direction, name, options)
