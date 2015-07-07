@@ -7,6 +7,10 @@ module Neo4j::Shared
           Date
         end
 
+        def db_type
+          Integer
+        end
+
         def to_db(value)
           Time.utc(value.year, value.month, value.day).to_i
         end
@@ -22,6 +26,10 @@ module Neo4j::Shared
       class << self
         def convert_type
           DateTime
+        end
+
+        def db_type
+          Integer
         end
 
         # Converts the given DateTime (UTC) value to an Integer.
@@ -57,9 +65,16 @@ module Neo4j::Shared
           Time
         end
 
+        # ActiveAttr, which assists with property management, does not recognize Time as a valid type. We tell it to interpret it as
+        # Integer, as it will be when saved to the database.
         def primitive_type
           Integer
         end
+
+        def db_type
+          Integer
+        end
+
         # Converts the given DateTime (UTC) value to an Integer.
         # Only utc times are supported !
         def to_db(value)
@@ -84,6 +99,10 @@ module Neo4j::Shared
           Hash
         end
 
+        def db_type
+          String
+        end
+
         def to_db(value)
           Psych.dump(value)
         end
@@ -101,6 +120,10 @@ module Neo4j::Shared
           JSON
         end
 
+        def db_type
+          String
+        end
+
         def to_db(value)
           value.to_json
         end
@@ -111,12 +134,24 @@ module Neo4j::Shared
       end
     end
 
+    # Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
+    # @param [Neo4j::Shared::Property] obj A node or rel that mixes in the Property module
+    # @param [Symbol] medium Indicates the type of conversion to perform.
+    # @param [Hash] properties A hash of symbol-keyed properties for conversion.
     def convert_properties_to(obj, medium, properties)
-      converter = medium == :ruby ? :to_ruby : :to_db
-      properties.each_pair do |attr, value|
-        next if skip_conversion?(obj, attr, value)
-        properties[attr] = converted_property(primitive_type(attr.to_sym), value, converter)
+      direction = medium == :ruby ? :to_ruby : :to_db
+      properties.each_pair do |key, value|
+        next if skip_conversion?(obj, key, value)
+        properties[key] = convert_property(key, value, direction)
       end
+    end
+
+    # Converts a single property from its current format to its db- or Ruby-expected output type.
+    # @param [Symbol] key A property declared on the model
+    # @param value The value intended for conversion
+    # @param [Symbol] direction Either :to_ruby or :to_db, indicates the type of conversion to perform
+    def convert_property(key, value, direction)
+      converted_property(primitive_type(key.to_sym), value, direction)
     end
 
     private
@@ -154,7 +189,6 @@ module Neo4j::Shared
         end
       end
 
-
       def typecaster_for(primitive_type)
         return nil if primitive_type.nil?
         converters.key?(primitive_type) ? converters[primitive_type] : nil
@@ -164,7 +198,16 @@ module Neo4j::Shared
       def to_other(direction, value, type)
         fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
         found_converter = converters[type]
-        found_converter ? found_converter.send(direction, value) : value
+        return value unless found_converter
+        return value if direction == :to_db && formatted_for_db?(found_converter, value)
+        found_converter.send(direction, value)
+      end
+
+      # Attempts to determine whether conversion should be skipped because the object is already of the anticipated output type.
+      # @param [#convert_type] found_converter An object that responds to #convert_type, hinting that it is a type converter.
+      # @param value The value for conversion.
+      def formatted_for_db?(found_converter, value)
+        found_converter.respond_to?(:db_type) && value.is_a?(found_converter.db_type)
       end
 
       def register_converter(converter)

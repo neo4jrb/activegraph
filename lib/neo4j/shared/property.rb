@@ -55,6 +55,7 @@ module Neo4j::Shared
       hash.each { |key, value| self.send("#{key}=", value) }
     end
 
+
     protected
 
     # This method is defined in ActiveModel.

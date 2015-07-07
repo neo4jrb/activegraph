@@ -113,6 +113,16 @@ module Neo4j::Shared
       @upstream_primitives ||= {}
     end
 
+    def value_for_db(key, value)
+      return value unless registered_properties[key]
+      convert_property(key, value, :to_db)
+    end
+
+    def value_for_ruby(key, value)
+      return unless registered_properties[key]
+      convert_property(key, value, :to_ruby)
+    end
+
     protected
 
     # Prevents repeated calls to :_attribute_type, which isn't free and never changes.
