@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Fix error when calling `#empty?` or `#blank?` on a query chain with on `order` specified
 - Make `#find_each` and `#find_in_batches` return the actual objects rather than the result objects
 - Query logging on console should be to STDOUT with `puts`.  Using `Rails.logger` outputs to the file in the `log` directory
+- Modified queryproxy include? to accept a uuid instead of full node
 
 ## [5.0.1] - 2015-06-23
 
