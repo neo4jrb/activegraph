@@ -28,7 +28,7 @@ module Neo4j
         # @return [Neo4j::ActiveNode::Query::QueryProxy]
         def unique_nodes(association, self_identifer, other_node, other_rel)
           fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
-
+          return false if send(association.name).empty?
           unique_nodes_query(association, self_identifer, other_node, other_rel)
             .proxy_as(association.target_class, other_node)
         end
