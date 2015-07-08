@@ -40,9 +40,9 @@ module Neo4j
             .send(association.name, other_node, other_rel)
             .query
             .with(other_node)
-            .match("()#{association.arrow_cypher}(#{other_node})")
+            .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
             .with(other_node, count: 'count(*)')
-            .where('count = 1')
+            .where('count = {one}', one: 1)
         end
       end
     end
