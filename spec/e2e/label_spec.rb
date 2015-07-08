@@ -103,6 +103,15 @@ describe 'Neo4j::ActiveNode' do
         expect { clazz_with_constraint.create(colour: 'red') }.to raise_error
       end
     end
+
+    context 'with existing exact index' do
+      before { clazz_with_constraint.index(:foo) }
+
+      it 'drops the index before making the constraint' do
+        expect(clazz_with_constraint).to receive(:drop_index).and_call_original
+        expect { clazz_with_constraint.constraint(:foo, type: :unique) }.not_to raise_error
+      end
+    end
   end
 
   describe 'index' do
@@ -139,6 +148,15 @@ describe 'Neo4j::ActiveNode' do
         end
         expect(Foo1.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
         expect(Foo2.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
+      end
+    end
+
+    context 'with existing unique constraint' do
+      before { clazz.constraint(:foo, type: :unique) }
+
+      it 'drops the constraint before creating the index' do
+        expect(clazz).to receive(:drop_constraint).and_call_original
+        clazz.index(:foo)
       end
     end
   end
