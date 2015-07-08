@@ -32,11 +32,13 @@ module Neo4j
         end
 
         def dependent_destroy_callback(object)
-          object.association_query_proxy(name).each_for_destruction(object, &:destroy)
+          unique_query = object.association_query_proxy(name)
+          unique_query.each_for_destruction(object, &:destroy) if unique_query
         end
 
         def dependent_destroy_orphans_callback(object)
-          object.as(:self).unique_nodes(self, :self, :n, :other_rel).each_for_destruction(object, &:destroy)
+          unique_query = object.as(:self).unique_nodes(self, :self, :n, :other_rel)
+          unique_query.each_for_destruction(object, &:destroy) if unique_query
         end
 
         # End callback methods
