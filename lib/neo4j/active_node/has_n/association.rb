@@ -73,7 +73,7 @@ module Neo4j
         end
 
         def target_where_clause
-          return if association.model_class == false
+          return if model_class == false
 
           Array.new(target_classes).map do |target_class|
             "#{name}:#{target_class.mapped_label_name}"
