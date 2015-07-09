@@ -91,7 +91,7 @@ module Neo4j::Shared
     end
 
     def _active_record_destroyed_behavior?
-      fail "Remove this workaround in 6.0.0" if Neo4j::VERSION >= '6.0.0'
+      fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
 
       !!Neo4j::Config[:_active_record_destroyed_behavior]
     end
