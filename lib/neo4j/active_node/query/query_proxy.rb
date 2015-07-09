@@ -40,6 +40,7 @@ module Neo4j
           @association = association
           @context = options.delete(:context)
           @options = options
+          @associations_spec = []
 
           instance_vars_from_options!(options)
 
@@ -325,8 +326,8 @@ module Neo4j
         end
 
         def build_deeper_query_proxy(method, args)
-          new_link.tap do |new_query|
-            Link.for_args(@model, method, args).each { |link| new_query._add_links(link) }
+          new_link.tap do |new_query_proxy|
+            Link.for_args(@model, method, args).each { |link| new_query_proxy._add_links(link) }
           end
         end
       end
