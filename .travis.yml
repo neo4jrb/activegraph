@@ -2,6 +2,8 @@ script:
   - "bundle exec rubocop"
   - "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81c20c27df6e6ab5c60bff2c8 && export JRUBY_OPTS='-X+O -J-Djruby.launch.inproc=false -J-Xmx700m -J-XX:MaxPermSize=2048m' && bundle exec rake neo4j:install[$NEO4J_VERSION] neo4j:start default --trace"
 language: ruby
+cache: bundler
+sudo: false
 rvm:
   - 2.2.2
   - 2.0.0
