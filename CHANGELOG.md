@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - `ActiveNode#destroyed?` and `ActiveRel#destroyed?` now only consider the in-memory state of if an object is destroyed without checking the database
+- Moved `#with_associations` method from `AssociationProxy` to `QueryProxy` so that all `QueryProxy` chains can benefit from it.
 
 ## [5.0.2] - 2015-06-30
 
