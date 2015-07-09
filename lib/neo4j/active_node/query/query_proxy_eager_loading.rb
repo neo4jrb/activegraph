@@ -35,12 +35,9 @@ module Neo4j
         def query_from_association_spec
           @associations_spec.inject(query_as(identity).return(identity)) do |query, association_name|
             association = model.associations[association_name]
-            where_clause = unless association.model_class == false
-              Array.new(association.target_classes).map do |target_class|
-                "#{association_name}:#{target_class.mapped_label_name}"
-              end.join(' OR ')
-            end
-            query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}").where(where_clause)
+
+            query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}")
+              .where(association.target_where_clause)
           end
         end
       end
