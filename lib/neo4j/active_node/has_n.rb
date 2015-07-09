@@ -84,25 +84,7 @@ module Neo4j::ActiveNode
         target.public_send(method_name, *args, &block)
       end
 
-      def with_associations(*spec)
-        return_object_clause = '[' + spec.map { |n| "collect(#{n})" }.join(',') + ']'
-        query_from_association_spec(spec).pluck(:previous, return_object_clause).map do |record, eager_data|
-          eager_data.each_with_index do |eager_records, index|
-            record.send(spec[index]).cache_result(eager_records)
-          end
-
-          record
-        end
-      end
-
       private
-
-      def query_from_association_spec(spec)
-        spec.inject(@query_proxy.query_as(:previous).return(:previous)) do |query, association_name|
-          association = @query_proxy.model.associations[association_name]
-          query.optional_match("previous#{association.arrow_cypher}#{association_name}")
-        end
-      end
 
       def target_for_missing_method(method_name)
         case method_name
