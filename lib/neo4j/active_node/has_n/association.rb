@@ -64,6 +64,10 @@ module Neo4j
                                   end
         end
 
+        def target_classes
+          target_class_names.map(&:constantize)
+        end
+
         def target_classes_or_nil
           @target_classes_or_nil ||= discovered_model if target_class_names
         end
