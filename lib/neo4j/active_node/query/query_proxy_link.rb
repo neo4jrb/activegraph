@@ -31,7 +31,7 @@ module Neo4j
                     result += for_association(key, value, "n#{node_num}", model)
                     node_num += 1
                   else
-                    result << new(:where, ->(v, _) { {v => {key => model.declared_property_manager.value_for_db(key, value)}} })
+                    result << new(:where, ->(v, _) { {v => {key => where_val(model, key, value)}} })
                   end
                 end
               elsif arg.is_a?(String)
@@ -40,6 +40,11 @@ module Neo4j
               result
             end
             alias_method :for_node_where_clause, :for_where_clause
+
+            def where_val(model, key, value)
+              return value unless model
+              model.declared_property_manager.value_for_db(key, value)
+            end
 
             def for_association(name, value, n_string, model)
               neo_id = value.try(:neo_id) || value

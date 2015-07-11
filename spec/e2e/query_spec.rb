@@ -634,6 +634,13 @@ describe 'Query API' do
         expect(Teacher.where(undeclared_date: date).to_cypher_with_params).not_to include(converted_date.to_s)
       end
     end
+
+    context 'with an association using model_class: false' do
+      before { Teacher.has_many :out, :unknowns, type: 'FOO', model_class: false }
+      it 'does not raise an error' do
+        expect { Teacher.unknowns.where(foo: 'bar').to_a }.not_to raise_error
+      end
+    end
   end
 
   describe 'batch finding' do
