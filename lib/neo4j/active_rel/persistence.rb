@@ -47,7 +47,14 @@ module Neo4j::ActiveRel
 
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
-        fail RelInvalidError, self unless create(*args)
+        props = args[0] || {}
+        relationship_props = extract_association_attributes!(props) || {}
+        new(props).tap do |obj|
+          relationship_props.each do |prop, value|
+            obj.send("#{prop}=", value)
+          end
+          obj.save!
+        end
       end
     end
 
