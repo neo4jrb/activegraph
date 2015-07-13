@@ -50,6 +50,30 @@ describe 'ActiveRel' do
   end
 
   describe 'creation' do
+    before(:each) do
+      stub_active_rel_class('RelClassWithValidations') do
+        from_class FromClass
+        to_class ToClass
+        type 'rel_class_type'
+
+        property :score
+        validates :score, presence: true
+      end
+    end
+
+    describe '.create!' do
+      it 'raises an error on invalid params' do
+        expect { RelClassWithValidations.create!(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+      end
+    end
+
+    describe '.save!' do
+      it 'raises an error on invalid params' do
+        invalid_rel = RelClassWithValidations.new(from_node: from_node, to_node: to_node)
+        expect { invalid_rel.save! }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+      end
+    end
+
     context 'from_node is not persisted' do
       let(:from_node) { FromClass.new }
 
