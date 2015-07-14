@@ -5,6 +5,7 @@ module Neo4j
         include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
+        include Neo4j::ActiveNode::Query::QueryProxyEagerLoading
         include Neo4j::ActiveNode::Dependent::QueryProxyMethods
 
         # The most recent node to start a QueryProxy chain.
@@ -39,6 +40,7 @@ module Neo4j
           @association = association
           @context = options.delete(:context)
           @options = options
+          @associations_spec = []
 
           instance_vars_from_options!(options)
 
@@ -324,8 +326,8 @@ module Neo4j
         end
 
         def build_deeper_query_proxy(method, args)
-          new_link.tap do |new_query|
-            Link.for_args(@model, method, args).each { |link| new_query._add_links(link) }
+          new_link.tap do |new_query_proxy|
+            Link.for_args(@model, method, args).each { |link| new_query_proxy._add_links(link) }
           end
         end
       end
