@@ -17,6 +17,8 @@ Converts Date objects to Java long types. Must be timezone UTC.
 
    
 
+   
+
 
 
 
@@ -52,6 +54,19 @@ Methods
 
      def convert_type
        Date
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters/DateConverter.db_type`:
+
+**.db_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def db_type
+       Integer
      end
 
 

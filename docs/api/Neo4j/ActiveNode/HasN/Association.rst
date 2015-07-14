@@ -79,6 +79,18 @@ Association
 
    
 
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
 
 
 
@@ -205,6 +217,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def derive_model_class
+       refresh_model_class! if pending_model_refresh?
        return @model_class unless @model_class.nil?
        return nil if relationship_class.nil?
        dir_class = direction == :in ? :from_class : :to_class
@@ -275,6 +288,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/Association#model_class`:
+
+**#model_class**
+  Returns the value of attribute model_class
+
+  .. hidden-code-block:: ruby
+
+     def model_class
+       @model_class
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/Association#name`:
 
 **#name**
@@ -284,6 +310,19 @@ Methods
 
      def name
        @name
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#pending_model_refresh?`:
+
+**#pending_model_refresh?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def pending_model_refresh?
+       !!@pending_model_refresh
      end
 
 
@@ -298,6 +337,33 @@ Methods
      def perform_callback(caller, other_node, type)
        return if callback(type).nil?
        caller.send(callback(type), other_node)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#queue_model_refresh!`:
+
+**#queue_model_refresh!**
+  
+
+  .. hidden-code-block:: ruby
+
+     def queue_model_refresh!
+       @pending_model_refresh = true
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#refresh_model_class!`:
+
+**#refresh_model_class!**
+  
+
+  .. hidden-code-block:: ruby
+
+     def refresh_model_class!
+       @pending_model_refresh = @target_classes_or_nil = nil
+       @model_class = @model_class.name.constantize if @model_class
      end
 
 
@@ -422,11 +488,7 @@ Methods
      def target_class_option(model_class)
        case model_class
        when nil
-         if @target_class_name_from_name
-           "#{association_model_namespace}::#{@target_class_name_from_name}"
-         else
-           @target_class_name_from_name
-         end
+         @target_class_name_from_name ? "#{association_model_namespace}::#{@target_class_name_from_name}" : @target_class_name_from_name
        when Array
          model_class.map { |sub_model_class| target_class_option(sub_model_class) }
        when false
@@ -434,6 +496,19 @@ Methods
        else
          "::#{model_class}"
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_classes`:
+
+**#target_classes**
+  
+
+  .. hidden-code-block:: ruby
+
+     def target_classes
+       target_class_names.map(&:constantize)
      end
 
 
@@ -447,6 +522,23 @@ Methods
 
      def target_classes_or_nil
        @target_classes_or_nil ||= discovered_model if target_class_names
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_where_clause`:
+
+**#target_where_clause**
+  
+
+  .. hidden-code-block:: ruby
+
+     def target_where_clause
+       return if model_class == false
+     
+       Array.new(target_classes).map do |target_class|
+         "#{name}:#{target_class.mapped_label_name}"
+       end.join(' OR ')
      end
 
 

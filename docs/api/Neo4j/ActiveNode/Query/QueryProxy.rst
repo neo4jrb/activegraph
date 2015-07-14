@@ -454,18 +454,23 @@ Methods
 .. _`Neo4j/ActiveNode/Query/QueryProxy#each`:
 
 **#each**
-  Just like every other <tt>each</tt> but it allows for optional params to support the versions that also return relationships.
-  The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
-  using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
+  
 
   .. hidden-code-block:: ruby
 
      def each(node = true, rel = nil, &block)
-       pluck_vars = []
-       pluck_vars << identity if node
-       pluck_vars << @rel_var if rel
+       if @associations_spec.size > 0
+         return_object_clause = '[' + @associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
+         query_from_association_spec.pluck(identity, return_object_clause).map do |record, eager_data|
+           eager_data.each_with_index do |eager_records, index|
+             record.association_proxy(@associations_spec[index]).cache_result(eager_records)
+           end
      
-       pluck(*pluck_vars).each(&block)
+           block.call(record)
+         end
+       else
+         super
+       end
      end
 
 
@@ -548,7 +553,7 @@ Methods
        fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
        query_with_target(target) do |var|
          start_q = exists_query_start(node_condition, var)
-         start_q.query.return("COUNT(#{var}) AS count").first.count > 0
+         start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
        end
      end
 
@@ -577,7 +582,7 @@ Methods
 
      def find_each(options = {})
        query.return(identity).find_each(identity, @model.primary_key, options) do |result|
-         yield result
+         yield result.send(identity)
        end
      end
 
@@ -592,7 +597,7 @@ Methods
 
      def find_in_batches(options = {})
        query.return(identity).find_in_batches(identity, @model.primary_key, options) do |batch|
-         yield batch
+         yield batch.map(&:identity)
        end
      end
 
@@ -667,9 +672,14 @@ Methods
   .. hidden-code-block:: ruby
 
      def include?(other, target = nil)
-       fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
        query_with_target(target) do |var|
-         self.where("ID(#{var}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{var}) as count").first.count > 0
+         where_filter = if other.respond_to?(:neo_id)
+                          "ID(#{var}) = {other_node_id}"
+                        else
+                          "#{var}.#{association_id_key} = {other_node_id}"
+                        end
+         node_id = other.respond_to?(:neo_id) ? other.neo_id : other
+         self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
        end
      end
 
@@ -698,6 +708,7 @@ Methods
        @association = association
        @context = options.delete(:context)
        @options = options
+       @associations_spec = []
      
        instance_vars_from_options!(options)
      
@@ -1245,9 +1256,25 @@ Methods
 
      def unique_nodes(association, self_identifer, other_node, other_rel)
        fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
-     
+       return false if send(association.name).empty?
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#with_associations`:
+
+**#with_associations**
+  
+
+  .. hidden-code-block:: ruby
+
+     def with_associations(*spec)
+       new_link.tap do |new_query_proxy|
+         new_spec = new_query_proxy.instance_variable_get('@associations_spec') + spec
+         new_query_proxy.instance_variable_set('@associations_spec', new_spec)
+       end
      end
 
 

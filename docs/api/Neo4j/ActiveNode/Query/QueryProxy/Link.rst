@@ -170,10 +170,9 @@ Methods
          arg.each do |key, value|
            if model && model.association?(key)
              result += for_association(key, value, "n#{node_num}", model)
-     
              node_num += 1
            else
-             result << new(:where, ->(v, _) { {v => {key => value}} })
+             result << new(:where, ->(v, _) { {v => {key => model.declared_property_manager.value_for_db(key, value)}} })
            end
          end
        elsif arg.is_a?(String)
@@ -226,10 +225,9 @@ Methods
          arg.each do |key, value|
            if model && model.association?(key)
              result += for_association(key, value, "n#{node_num}", model)
-     
              node_num += 1
            else
-             result << new(:where, ->(v, _) { {v => {key => value}} })
+             result << new(:where, ->(v, _) { {v => {key => model.declared_property_manager.value_for_db(key, value)}} })
            end
          end
        elsif arg.is_a?(String)

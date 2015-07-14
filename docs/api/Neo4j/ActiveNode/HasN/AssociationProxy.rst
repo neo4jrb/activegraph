@@ -37,10 +37,6 @@ But also caches results and can have results cached on it
 
    
 
-   
-
-   
-
 
 
 
@@ -213,26 +209,6 @@ Methods
        cache_query_proxy_result
      
        @cached_result
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN/AssociationProxy#with_associations`:
-
-**#with_associations**
-  
-
-  .. hidden-code-block:: ruby
-
-     def with_associations(*spec)
-       return_object_clause = '[' + spec.map { |n| "collect(#{n})" }.join(',') + ']'
-       query_from_association_spec(spec).pluck(:previous, return_object_clause).map do |record, eager_data|
-         eager_data.each_with_index do |eager_records, index|
-           record.send(spec[index]).cache_result(eager_records)
-         end
-     
-         record
-       end
      end
 
 

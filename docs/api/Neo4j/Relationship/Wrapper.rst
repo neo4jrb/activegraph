@@ -52,7 +52,6 @@ Methods
 
      def wrapper
        props.symbolize_keys!
-       # return self unless props.is_a?(Hash)
        begin
          most_concrete_class = sorted_wrapper_classes
          wrapped_rel = most_concrete_class.constantize.new
