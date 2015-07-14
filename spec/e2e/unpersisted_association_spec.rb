@@ -146,7 +146,4 @@ describe 'association creation' do
       end
     end
   end
-
-  describe 'has_one' do
-  end
 end
