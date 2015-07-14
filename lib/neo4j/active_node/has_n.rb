@@ -144,6 +144,24 @@ module Neo4j::ActiveNode
       end
     end
 
+    def pending_associations
+      @pending_associations ||= {}
+    end
+
+    def pending_associations?
+      !@pending_associations.blank?
+    end
+
+    def pending_associations_hash
+      return unless pending_associations?
+      {}.tap do |deferred_nodes|
+        pending_associations.each_pair do |cache_key, (association_name, operator)|
+          nodes_for_creation = self.persisted? ? association_proxy_cache[cache_key].select { |n| !n.persisted? } : association_proxy_cache[cache_key]
+          deferred_nodes[association_name] = [nodes_for_creation, operator]
+        end
+      end
+    end
+
     private
 
     def fresh_association_proxy(name, options = {}, cached_result = nil)
@@ -292,7 +310,7 @@ module Neo4j::ActiveNode
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          return [].freeze unless self._persisted_obj
+          # return [].freeze unless self._persisted_obj
 
           if node.is_a?(Hash)
             options = node
@@ -348,11 +366,14 @@ module Neo4j::ActiveNode
 
       def define_has_one_setter(name)
         define_method("#{name}=") do |other_node|
-          handle_non_persisted_node(other_node)
-          validate_persisted_for_association!
-          association_proxy_cache.clear # TODO: Should probably just clear for this association...
-
-          Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
+          if persisted?
+            other_node.save unless other_node.persisted?
+            association_proxy_cache.clear # TODO: Should probably just clear for this association...
+            Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
+            # handle_non_persisted_node(other_node)
+          else
+            association_proxy(name).defer_create(other_node, {}, :'=')
+          end
         end
       end
 

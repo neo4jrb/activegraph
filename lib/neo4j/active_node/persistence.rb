@@ -24,8 +24,25 @@ module Neo4j::ActiveNode
     # If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
       update_magic_properties
-      association_proxy_cache.clear
-      create_or_update
+      cascade_save do
+        association_proxy_cache.clear
+        create_or_update
+      end
+    end
+
+    def cascade_save
+      deferred_nodes = pending_associations_hash
+      result = yield
+      deferred_nodes.each_pair { |k, (v, o)| save_and_associate!(k, v, o) } if deferred_nodes
+      result
+    end
+
+    def save_and_associate!(association_name, cache_key, operator)
+      cache_key.each do |node|
+        node.save if node.changed? || !node.persisted?
+        fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
+        operator == :<< ? send(association_name).send(operator, node) : send(:"#{association_name}=", node)
+      end
     end
 
     # Persist the object to the database.  Validations and Callbacks are included
@@ -53,7 +70,7 @@ module Neo4j::ActiveNode
       node = _create_node(properties)
       init_on_load(node, node.props)
       send_props(@relationship_props) if @relationship_props
-      @relationship_props = nil
+      @relationship_props = @deferred_nodes = nil
       true
     end
 

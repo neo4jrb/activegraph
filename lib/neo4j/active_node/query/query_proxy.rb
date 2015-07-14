@@ -159,8 +159,7 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          create(other_node, {})
-
+          @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node, {}, :<<)
           self
         end
 
@@ -189,6 +188,12 @@ module Neo4j
               @association.perform_callback(@start_object, other_node, :after)
             end
           end
+        end
+
+        def defer_create(other_nodes, _properties, operator)
+          key = [@association.name, [nil, nil, nil]].hash
+          @start_object.pending_associations[key] = [@association.name, operator]
+          @start_object.association_proxy_cache[key] = [other_nodes]
         end
 
         def _nodeify!(*args)
