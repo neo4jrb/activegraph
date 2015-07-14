@@ -49,3 +49,22 @@ Configuration
     Associations defined in node models will try to match association names to classes. For example, `has_many :out, :student` will look for a `Student` class. To avoid having to use `model_class: 'MyModule::Student'`, this config option lets you specify the module that should be used globally for class name discovery.
 
     Of course, even with this option set, you can always override it by calling `model_class: 'ClassName'`.
+
+  **autosave_on_assignment**
+    **Default:** ``false``
+
+    When assigning another node via an association should the node be saved first?
+
+    Examples:
+
+    .. code-block:: ruby
+
+      Comment.new(title: 'Another perspective', author: comment_author)
+
+    or...
+
+    .. code-block:: ruby
+    
+      comment = Comment.new(title: 'Another perspective')
+
+      comment.author = comment_author
