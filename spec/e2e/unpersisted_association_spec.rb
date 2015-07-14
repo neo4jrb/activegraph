@@ -108,7 +108,7 @@ describe 'association creation' do
 
           it 'rolls back the entire transaction' do
             expect { chris.save }.to raise_error
-            expect(chris).not_to be_persisted
+            expect(chris).not_to exist
           end
         end
       end
