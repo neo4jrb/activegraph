@@ -100,12 +100,9 @@ module Neo4j
 
         def relationship_type(create = false)
           case
-          when relationship_class
-            relationship_class_type
-          when @relationship_type
-            @relationship_type
-          when @origin
-            origin_type
+          when relationship_class then relationship_class_type
+          when @relationship_type then @relationship_type
+          when @origin then origin_type
           else
             (create || exceptional_target_class?) && decorated_rel_type(@name)
           end
@@ -143,12 +140,9 @@ module Neo4j
 
         def direction_cypher(relationship_cypher, create, reverse = false)
           case get_direction(create, reverse)
-          when :out
-            "-#{relationship_cypher}->"
-          when :in
-            "<-#{relationship_cypher}-"
-          when :both
-            "-#{relationship_cypher}-"
+          when :out then "-#{relationship_cypher}->"
+          when :in then "<-#{relationship_cypher}-"
+          when :both then "-#{relationship_cypher}-"
           end
         end
 
