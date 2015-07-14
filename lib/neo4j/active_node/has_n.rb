@@ -367,7 +367,7 @@ module Neo4j::ActiveNode
       def define_has_one_setter(name)
         define_method("#{name}=") do |other_node|
           if persisted?
-            other_node.save unless other_node.persisted?
+            other_node.save if other_node.respond_to?(:persisted?) && !other_node.persisted?
             association_proxy_cache.clear # TODO: Should probably just clear for this association...
             Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)

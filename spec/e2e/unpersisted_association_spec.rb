@@ -20,6 +20,7 @@ describe 'association creation' do
     stub_const('Lesson', Class.new do
       include Neo4j::ActiveNode
       property :subject
+      validates_presence_of :subject
       has_many :in, :students, origin: :lesson
     end)
   end
@@ -96,6 +97,19 @@ describe 'association creation' do
 
         it 'creates the relationship' do
           save_and_expect_rel!.call
+        end
+
+        context 'with a save failure' do
+          let(:unnamed_lesson) { Lesson.new }
+          before do
+            expect(unnamed_lesson).not_to be_valid
+            chris.lessons << unnamed_lesson
+          end
+
+          it 'rolls back the entire transaction' do
+            expect { chris.save }.to raise_error
+            expect(chris).not_to be_persisted
+          end
         end
       end
     end

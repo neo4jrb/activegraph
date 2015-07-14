@@ -19,27 +19,12 @@ describe 'has_one' do
       end
     end
 
+    # See unpersisted_association_spec.rb for additional tests related to this
     context 'with non-persisted node' do
       let(:unsaved_node) { HasOneB.new }
+
       it 'returns a nil object' do
         expect(unsaved_node.parent).to eq nil
-      end
-
-      it 'raises an error when trying to create a relationship' do
-        expect { unsaved_node.parent = HasOneA.create }.to raise_error(Neo4j::ActiveNode::HasN::NonPersistedNodeError)
-      end
-
-      context 'with enabled auto-saving' do
-        let_config(:autosave_on_assignment) { true }
-
-        it 'saves the node' do
-          expect { unsaved_node.parent = HasOneA.create }.to change(unsaved_node, :persisted?).from(false).to(true)
-        end
-
-        it 'saves the associated node' do
-          other_node = HasOneA.new
-          expect { unsaved_node.parent = other_node }.to change(other_node, :persisted?).from(false).to(true)
-        end
       end
     end
 

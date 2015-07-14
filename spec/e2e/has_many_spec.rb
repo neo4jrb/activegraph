@@ -35,14 +35,11 @@ describe 'has_many' do
     it { is_expected.to include(:friends, :knows, :knows_me) }
   end
 
+  # See unpersisted_association_spec.rb for more related tests
   describe 'non-persisted node' do
     let(:unsaved_node) { Person.new }
     it 'returns an empty array' do
       expect(unsaved_node.friends).to eq []
-    end
-
-    it 'has a frozen array' do
-      expect { unsaved_node.friends << friend1 }.to raise_error(RuntimeError)
     end
   end
 

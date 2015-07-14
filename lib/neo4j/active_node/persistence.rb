@@ -32,9 +32,11 @@ module Neo4j::ActiveNode
 
     def cascade_save
       deferred_nodes = pending_associations_hash
-      result = yield
-      deferred_nodes.each_pair { |k, (v, o)| save_and_associate!(k, v, o) } if deferred_nodes
-      result
+      Neo4j::Transaction.run(!deferred_nodes.blank?) do
+        result = yield
+        deferred_nodes.each_pair { |k, (v, o)| save_and_associate!(k, v, o) } if deferred_nodes
+        result
+      end
     end
 
     def save_and_associate!(association_name, cache_key, operator)
