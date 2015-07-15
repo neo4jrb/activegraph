@@ -142,7 +142,7 @@ describe 'association creation' do
       let!(:math) { Lesson.new(subject: 'math') }
 
       it 'saves the unpersisted node and immediately creates the rel' do
-        expect { chris.lessons << math }.to change { chris.lessons.include?(math) }
+        expect { chris.lessons << math }.to change { chris.lessons.where(subject: 'math').empty? }
       end
     end
   end
