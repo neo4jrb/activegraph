@@ -98,7 +98,7 @@ Methods
        return if @neo4j_cypher_logging_registered
      
        Neo4j::Server::CypherSession.log_with do |message|
-         Rails.logger.info message
+         puts message
        end
      
        @neo4j_cypher_logging_registered = true

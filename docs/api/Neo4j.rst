@@ -11,13 +11,13 @@ Neo4j
    :titlesonly:
 
 
-   Neo4j/Neo4jrbError
-
-   Neo4j/RecordNotFound
+   Neo4j/Config
 
    Neo4j/Shared
 
-   Neo4j/Config
+   Neo4j/Neo4jrbError
+
+   Neo4j/RecordNotFound
 
    
 
@@ -60,11 +60,11 @@ Files
 
 
 
-  * `lib/neo4j/errors.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/errors.rb#L1>`_
+  * `lib/neo4j/config.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/config.rb#L1>`_
 
   * `lib/neo4j/shared.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared.rb#L1>`_
 
-  * `lib/neo4j/config.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/config.rb#L1>`_
+  * `lib/neo4j/errors.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/errors.rb#L1>`_
 
   * `lib/neo4j/version.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/version.rb#L1>`_
 
@@ -102,9 +102,9 @@ Files
 
   * `lib/neo4j/active_rel/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L1>`_
 
-  * `lib/neo4j/active_node/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L1>`_
-
   * `lib/neo4j/active_node/orm_adapter.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L3>`_
+
+  * `lib/neo4j/active_node/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L1>`_
 
   * `lib/neo4j/active_node/query_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L1>`_
 
@@ -120,9 +120,11 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L1>`_
 
+  * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L1>`_
+
   * `lib/neo4j/active_node/dependent/association_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L1>`_
 
-  * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L1>`_
+  * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L1>`_
 
   * `lib/neo4j/active_node/has_n/association_cypher_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association_cypher_methods.rb#L1>`_
 

@@ -68,7 +68,14 @@ Methods
   .. hidden-code-block:: ruby
 
      def create!(*args)
-       fail RelInvalidError, self unless create(*args)
+       props = args[0] || {}
+       relationship_props = extract_association_attributes!(props) || {}
+       new(props).tap do |obj|
+         relationship_props.each do |prop, value|
+           obj.send("#{prop}=", value)
+         end
+         obj.save!
+       end
      end
 
 

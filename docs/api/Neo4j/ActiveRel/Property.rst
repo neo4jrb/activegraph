@@ -139,7 +139,6 @@ Methods
 
      def initialize(attributes = {}, options = {})
        super(attributes, options)
-     
        send_props(@relationship_props) unless @relationship_props.nil?
      end
 

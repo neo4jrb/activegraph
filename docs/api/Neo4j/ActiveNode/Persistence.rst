@@ -175,7 +175,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def destroyed?
-       @_deleted || (!new_record? && !exist?)
+       !!@_deleted
      end
 
 

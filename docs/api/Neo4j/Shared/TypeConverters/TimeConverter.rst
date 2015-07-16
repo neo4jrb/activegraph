@@ -21,6 +21,8 @@ TimeConverter
 
    
 
+   
+
 
 
 
@@ -36,7 +38,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:54 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L54>`_
+  * `lib/neo4j/shared/type_converters.rb:62 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L62>`_
 
 
 
@@ -73,10 +75,24 @@ Methods
 
 
 
+.. _`Neo4j/Shared/TypeConverters/TimeConverter.db_type`:
+
+**.db_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def db_type
+       Integer
+     end
+
+
+
 .. _`Neo4j/Shared/TypeConverters/TimeConverter.primitive_type`:
 
 **.primitive_type**
-  
+  ActiveAttr, which assists with property management, does not recognize Time as a valid type. We tell it to interpret it as
+  Integer, as it will be when saved to the database.
 
   .. hidden-code-block:: ruby
 

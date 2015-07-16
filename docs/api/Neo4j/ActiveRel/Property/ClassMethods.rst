@@ -23,6 +23,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -38,7 +40,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/property.rb:28 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L28>`_
+  * `lib/neo4j/active_rel/property.rb:27 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L27>`_
 
 
 
@@ -87,6 +89,19 @@ Methods
            relationship_props[key] = attributes.delete(key) if [:from_node, :to_node].include?(key)
          end
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#id_property_name`:
+
+**#id_property_name**
+  
+
+  .. hidden-code-block:: ruby
+
+     def id_property_name
+       false
      end
 
 
