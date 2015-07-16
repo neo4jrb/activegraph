@@ -66,4 +66,12 @@ describe 'Association Proxy' do
       expect(grouped_lessons['science'][0].exams_given).to eq([science_exam])
     end
   end
+
+  describe 'target' do
+    context 'when none found' do
+      it 'raises an error' do
+        expect { billy.lessons.foo }.to raise_error NoMethodError
+      end
+    end
+  end
 end

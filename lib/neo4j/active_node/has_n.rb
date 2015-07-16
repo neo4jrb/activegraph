@@ -74,12 +74,10 @@ module Neo4j::ActiveNode
 
       def method_missing(method_name, *args, &block)
         target = target_for_missing_method(method_name)
+        super if target.nil?
 
         cache_query_proxy_result if !cached? && !target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-
         clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-
-        return if target.nil?
 
         target.public_send(method_name, *args, &block)
       end
