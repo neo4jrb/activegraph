@@ -10,10 +10,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Added a `before_remove_const` method to clear cached models when Rails `reload!` is called. 5.0.1 included a workaround but this appears to cut to the core of the issue. See https://github.com/neo4jrb/neo4j/pull/855.
+- To prevent errors, changing an index to constraint or constraint to index will drop the existing index/constraint before adding the new.
+- Fixed `AssociationProxy#method_missing` so it properly raises errors.
 
 ### Added
 - Added ability to view `model_class` from `Association` class for `rails_admin` Neo4j adapter
 - QueryProxy `where` will now look for declared properties matching hash keys. When found, it will send the value through that property's type converter if the type matches the property's unconverted state.
+- Improved handling of unpersisted nodes with associations. You can now use `<<` to create associations between unpersisted nodes. A `save` will cascade through unpersisted objects, creating nodes and rels along the way. See https://github.com/neo4jrb/neo4j/pull/871
 
 
 ## [5.0.3] - 2015-07-14
