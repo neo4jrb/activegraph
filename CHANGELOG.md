@@ -18,6 +18,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - QueryProxy `where` will now look for declared properties matching hash keys. When found, it will send the value through that property's type converter if the type matches the property's unconverted state.
 - Improved handling of unpersisted nodes with associations. You can now use `<<` to create associations between unpersisted nodes. A `save` will cascade through unpersisted objects, creating nodes and rels along the way. See https://github.com/neo4jrb/neo4j/pull/871
 
+## [5.0.4] - 2015-07-17
+
+### Fixed
+- Fixed bug which caused `QueryProxy` context to repeat (showed up in query logging)
 
 ## [5.0.3] - 2015-07-14
 
