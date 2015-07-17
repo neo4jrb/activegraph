@@ -21,6 +21,8 @@ Persistence
 
    
 
+   
+
    Persistence/ClassMethods
 
 
@@ -119,7 +121,7 @@ Methods
        node = _create_node(properties)
        init_on_load(node, node.props)
        send_props(@relationship_props) if @relationship_props
-       @relationship_props = nil
+       @relationship_props = @deferred_nodes = nil
        true
      end
 
@@ -326,8 +328,10 @@ Methods
 
      def save(*)
        update_magic_properties
-       association_proxy_cache.clear
-       create_or_update
+       cascade_save do
+         association_proxy_cache.clear
+         create_or_update
+       end
      end
 
 

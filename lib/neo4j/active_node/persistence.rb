@@ -24,8 +24,10 @@ module Neo4j::ActiveNode
     # If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
       update_magic_properties
-      association_proxy_cache.clear
-      create_or_update
+      cascade_save do
+        association_proxy_cache.clear
+        create_or_update
+      end
     end
 
     # Persist the object to the database.  Validations and Callbacks are included
@@ -53,7 +55,7 @@ module Neo4j::ActiveNode
       node = _create_node(properties)
       init_on_load(node, node.props)
       send_props(@relationship_props) if @relationship_props
-      @relationship_props = nil
+      @relationship_props = @deferred_nodes = nil
       true
     end
 
@@ -66,12 +68,25 @@ module Neo4j::ActiveNode
       session.create_node(props, labels)
     end
 
+    private
+
+    # The pending associations are cleared during the save process, so it's necessary to
+    # build the processable hash before it begins. If there are nodes and associations that
+    # need to be created after the node is saved, a new transaction is started.
+    def cascade_save
+      deferred_nodes = pending_associations_with_nodes
+      Neo4j::Transaction.run(!deferred_nodes.blank?) do
+        result = yield
+        process_unpersisted_nodes!(deferred_nodes) if deferred_nodes
+        result
+      end
+    end
+
     module ClassMethods
       # Creates and saves a new node
       # @param [Hash] props the properties the new node should have
       def create(props = {})
         association_props = extract_association_attributes!(props) || {}
-
         new(props).tap do |obj|
           yield obj if block_given?
           obj.save

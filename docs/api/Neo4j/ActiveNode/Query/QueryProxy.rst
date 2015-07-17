@@ -157,8 +157,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def <<(other_node)
-       create(other_node, {})
-     
+       @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node, {}, :<<)
        self
      end
 
@@ -384,6 +383,25 @@ Methods
      
            @association.perform_callback(@start_object, other_node, :after)
          end
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#defer_create`:
+
+**#defer_create**
+  
+
+  .. hidden-code-block:: ruby
+
+     def defer_create(other_nodes, _properties, operator)
+       key = [@association.name, [nil, nil, nil]].hash
+       @start_object.pending_associations[key] = [@association.name, operator]
+       if @start_object.association_proxy_cache[key]
+         @start_object.association_proxy_cache[key] << other_nodes
+       else
+         @start_object.association_proxy_cache[key] = [other_nodes]
        end
      end
 

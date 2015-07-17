@@ -155,16 +155,6 @@ module Neo4j::ActiveNode
       Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
     end
 
-    def handle_non_persisted_node(other_node)
-      return unless Neo4j::Config[:autosave_on_assignment]
-      other_node.try(:save)
-      save
-    end
-
-    def validate_persisted_for_association!
-      fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
-    end
-
     module ClassMethods
       # :nocov:
       # rubocop:disable Style/PredicateName
@@ -290,7 +280,7 @@ module Neo4j::ActiveNode
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          return [].freeze unless self._persisted_obj
+          # return [].freeze unless self._persisted_obj
 
           if node.is_a?(Hash)
             options = node
@@ -346,11 +336,14 @@ module Neo4j::ActiveNode
 
       def define_has_one_setter(name)
         define_method("#{name}=") do |other_node|
-          handle_non_persisted_node(other_node)
-          validate_persisted_for_association!
-          association_proxy_cache.clear # TODO: Should probably just clear for this association...
-
-          Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
+          if persisted?
+            other_node.save if other_node.respond_to?(:persisted?) && !other_node.persisted?
+            association_proxy_cache.clear # TODO: Should probably just clear for this association...
+            Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
+            # handle_non_persisted_node(other_node)
+          else
+            association_proxy(name).defer_create(other_node, {}, :'=')
+          end
         end
       end
 

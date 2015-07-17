@@ -25,6 +25,8 @@ Helper methods to return Neo4j::Core::Query objects.  A query object can be used
 
    Query/QueryProxyEnumerable
 
+   Query/QueryProxyUnpersisted
+
    Query/QueryProxyEagerLoading
 
    Query/QueryProxyFindInBatches
@@ -53,6 +55,8 @@ Files
   * `lib/neo4j/active_node/query/query_proxy_methods.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_methods.rb#L3>`_
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L3>`_
+
+  * `lib/neo4j/active_node/query/query_proxy_unpersisted.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_unpersisted.rb#L3>`_
 
   * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L3>`_
 
