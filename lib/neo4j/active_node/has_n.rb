@@ -391,7 +391,7 @@ module Neo4j::ActiveNode
         target_classes_or_nil
       end
 
-      def default_association_query_proxy(name)
+      def default_association_query_proxy(_name)
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize,
                                                  nil,
                                                  session: neo4j_session,
