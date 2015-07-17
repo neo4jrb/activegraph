@@ -356,7 +356,7 @@ module Neo4j::ActiveNode
 
       def association_query_proxy(name, options = {})
         previous_query_proxy = options[:previous_query_proxy] || current_scope
-        query_proxy = previous_query_proxy || default_association_query_proxy(name)
+        query_proxy = previous_query_proxy || default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new(association_target_class(name),
                                                  associations[name],
                                                  {session: neo4j_session,
@@ -391,7 +391,7 @@ module Neo4j::ActiveNode
         target_classes_or_nil
       end
 
-      def default_association_query_proxy(_name)
+      def default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize,
                                                  nil,
                                                  session: neo4j_session,
