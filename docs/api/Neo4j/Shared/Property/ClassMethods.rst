@@ -33,6 +33,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -48,7 +50,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:123 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L123>`_
+  * `lib/neo4j/shared/property.rb:124 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L124>`_
 
 
 
@@ -154,6 +156,22 @@ Methods
        default_properties.each_with_object({}) do |(key, block), result|
          result[key] = block.call(instance)
        end
+     end
+
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#inherited`:
+
+**#inherited**
+  
+
+  .. hidden-code-block:: ruby
+
+     def inherited(other)
+       self.declared_property_manager.registered_properties.each_pair do |prop_key, prop_def|
+         other.property(prop_key, prop_def.options)
+       end
+       super
      end
 
 

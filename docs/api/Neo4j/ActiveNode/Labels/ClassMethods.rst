@@ -51,6 +51,10 @@ ClassMethods
 
    
 
+   
+
+   
+
 
 
 
@@ -98,6 +102,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#before_remove_const`:
+
+**#before_remove_const**
+  
+
+  .. hidden-code-block:: ruby
+
+     def before_remove_const
+       associations.each_value(&:queue_model_refresh!)
+       MODELS_FOR_LABELS_CACHE.clear
+       WRAPPED_CLASSES.clear
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Labels/ClassMethods#blank?`:
 
 **#blank?**
@@ -122,6 +141,7 @@ Methods
        Neo4j::Session.on_session_available do |session|
          unless Neo4j::Label.constraint?(mapped_label_name, property)
            label = Neo4j::Label.create(mapped_label_name)
+           drop_index(property, label) if index?(property)
            label.create_constraint(property, constraints, session)
          end
        end
@@ -179,11 +199,25 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def drop_constraint(property, constraint)
+     def drop_constraint(property, constraint = {type: :unique})
        Neo4j::Session.on_session_available do |session|
          label = Neo4j::Label.create(mapped_label_name)
          label.drop_constraint(property, constraint, session)
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Labels/ClassMethods#drop_index`:
+
+**#drop_index**
+  
+
+  .. hidden-code-block:: ruby
+
+     def drop_index(property, label = nil)
+       label_obj = label || Neo4j::Label.create(mapped_label_name)
+       label_obj.drop_index(property)
      end
 
 
@@ -320,6 +354,7 @@ Methods
 
      def index(property, conf = {})
        Neo4j::Session.on_session_available do |_|
+         drop_constraint(property, type: :unique) if Neo4j::Label.constraint?(mapped_label_name, property)
          _index(property, conf)
        end
        indexed_properties.push property unless indexed_properties.include? property

@@ -15,9 +15,9 @@ Dependent
 
    
 
-   Dependent/AssociationMethods
-
    Dependent/QueryProxyMethods
+
+   Dependent/AssociationMethods
 
 
 
@@ -36,9 +36,9 @@ Files
 
   * `lib/neo4j/active_node/dependent.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent.rb#L3>`_
 
-  * `lib/neo4j/active_node/dependent/association_methods.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L3>`_
-
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L3>`_
+
+  * `lib/neo4j/active_node/dependent/association_methods.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L3>`_
 
 
 

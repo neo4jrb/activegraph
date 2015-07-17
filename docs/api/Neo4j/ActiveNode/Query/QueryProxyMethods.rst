@@ -262,7 +262,7 @@ Methods
        fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
        query_with_target(target) do |var|
          start_q = exists_query_start(node_condition, var)
-         start_q.query.return("COUNT(#{var}) AS count").first.count > 0
+         start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
        end
      end
 
@@ -338,9 +338,14 @@ Methods
   .. hidden-code-block:: ruby
 
      def include?(other, target = nil)
-       fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
        query_with_target(target) do |var|
-         self.where("ID(#{var}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{var}) as count").first.count > 0
+         where_filter = if other.respond_to?(:neo_id)
+                          "ID(#{var}) = {other_node_id}"
+                        else
+                          "#{var}.#{association_id_key} = {other_node_id}"
+                        end
+         node_id = other.respond_to?(:neo_id) ? other.neo_id : other
+         self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
        end
      end
 

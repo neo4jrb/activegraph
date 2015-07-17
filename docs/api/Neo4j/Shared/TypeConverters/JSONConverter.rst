@@ -17,6 +17,8 @@ Converts hash to/from JSON
 
    
 
+   
+
 
 
 
@@ -32,7 +34,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:98 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L98>`_
+  * `lib/neo4j/shared/type_converters.rb:117 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L117>`_
 
 
 
@@ -52,6 +54,19 @@ Methods
 
      def convert_type
        JSON
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.db_type`:
+
+**.db_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def db_type
+       String
      end
 
 

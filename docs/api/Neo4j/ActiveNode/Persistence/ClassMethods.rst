@@ -48,7 +48,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/persistence.rb:69 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L69>`_
+  * `lib/neo4j/active_node/persistence.rb:85 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L85>`_
 
 
 
@@ -68,7 +68,6 @@ Methods
 
      def create(props = {})
        association_props = extract_association_attributes!(props) || {}
-     
        new(props).tap do |obj|
          yield obj if block_given?
          obj.save

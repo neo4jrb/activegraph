@@ -19,6 +19,8 @@ Converts DateTime objects to and from Java long types. Must be timezone UTC.
 
    
 
+   
+
 
 
 
@@ -36,7 +38,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:21 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L21>`_
+  * `lib/neo4j/shared/type_converters.rb:25 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L25>`_
 
 
 
@@ -56,6 +58,19 @@ Methods
 
      def convert_type
        DateTime
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters/DateTimeConverter.db_type`:
+
+**.db_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def db_type
+       Integer
      end
 
 

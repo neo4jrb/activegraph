@@ -18,9 +18,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    
 
-   ActiveRel/Types
-
    ActiveRel/Query
+
+   ActiveRel/Types
 
    ActiveRel/Property
 
@@ -28,9 +28,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -59,9 +59,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
-
   * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
+
+  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
 
   * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
 
@@ -69,9 +69,9 @@ Files
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -257,7 +257,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def destroyed?
-       @_deleted || (!new_record? && !exist?)
+       !!@_deleted
      end
 
 
@@ -361,13 +361,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def init_on_load(persisted_rel, from_node_id, to_node_id, type)
-       @_persisted_obj = persisted_rel
        @rel_type = type
+       @_persisted_obj = persisted_rel
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge(persisted_rel.props.stringify_keys)
+       @attributes = convert_and_assign_attributes(persisted_rel.props)
        load_nodes(from_node_id, to_node_id)
-       self.default_properties = persisted_rel.props
-       @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
      end
 
 
@@ -742,7 +740,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def valid?(context = nil)
-       context     ||= (new_record? ? :create : :update)
+       context ||= (new_record? ? :create : :update)
        super(context)
        errors.empty?
      end

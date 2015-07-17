@@ -29,9 +29,9 @@ in a new object of that class.
 
    ActiveNode/Query
 
-   ActiveNode/HasN
-
    ActiveNode/Scope
+
+   ActiveNode/HasN
 
    ActiveNode/Labels
 
@@ -49,11 +49,13 @@ in a new object of that class.
 
    ActiveNode/Validations
 
+   ActiveNode/Persistence
+
+   ActiveNode/Unpersisted
+
    ActiveNode/ClassMethods
 
    ActiveNode/OrmAdapter
-
-   ActiveNode/Persistence
 
    ActiveNode/QueryMethods
 
@@ -84,9 +86,9 @@ Files
 
   * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
 
-  * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
-
   * `lib/neo4j/active_node/scope.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L3>`_
+
+  * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
 
   * `lib/neo4j/active_node/labels.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L2>`_
 
@@ -102,9 +104,11 @@ Files
 
   * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
 
-  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
-
   * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
+
+  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
@@ -118,9 +122,13 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L2>`_
 
+  * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
+
+  * `lib/neo4j/active_node/query/query_proxy_unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_unpersisted.rb#L2>`_
+
   * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
 
-  * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
+  * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L2>`_
 
   * `lib/neo4j/active_node/has_n/association_cypher_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association_cypher_methods.rb#L2>`_
 
@@ -470,7 +478,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def destroyed?
-       @_deleted || (!new_record? && !exist?)
+       !!@_deleted
      end
 
 
@@ -665,6 +673,32 @@ Methods
 
      def new_record?
        !_persisted_obj
+     end
+
+
+
+.. _`Neo4j/ActiveNode#pending_associations`:
+
+**#pending_associations**
+  
+
+  .. hidden-code-block:: ruby
+
+     def pending_associations
+       @pending_associations ||= {}
+     end
+
+
+
+.. _`Neo4j/ActiveNode#pending_associations?`:
+
+**#pending_associations?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def pending_associations?
+       !@pending_associations.blank?
      end
 
 

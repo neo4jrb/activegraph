@@ -76,6 +76,50 @@ Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relat
 
   student.lessons.where(subject: 'Math').rel_where(grade: 85)
 
+
+Associations and Unpersisted Nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is some special behavior around association creation when nodes are new and unsaved. Below are a few scenarios and their outcomes.
+
+When both nodes are persisted, associations changes using ``<<`` or ``=`` take place immediately -- no need to call save.
+
+.. code-block:: ruby
+
+  student = Student.first
+  Lesson = Lesson.first
+  student.lessons << lesson
+
+In that case, the relationship would be created immediately.
+
+When the node on which the association is called is unpersisted, no changes are made to the database until ``save`` is called. Once that happens, a cascading save event will occur.
+
+.. code-block:: ruby
+
+  student = Student.new
+  lesson = Lesson.first || Lesson.new
+  # This method will not save `student` or change relationships in the database:
+  student.lessons << lesson
+
+Once we call ``save`` on ``student``, two or three things will happen:
+
+* Since ``student`` is unpersisted, it will be saved
+* If ``lesson`` is unpersisted, it will be saved
+* Once both nodes are saved, the relationship will be created
+
+This process occurs within a transaction. If any part fails, an error will be raised, the transaction will fail, and no changes will be made to the database.
+
+Finally, if you try to associate an unpersisted node with a persisted node, the unpersisted node will be saved and the relationship will be created immediately:
+
+.. code-block:: ruby
+
+  student = Student.first
+  lesson = Lesson.new
+  student.lessons << lesson
+
+In the above example, ``lesson`` would be saved and the relationship would be created immediately. There is no need to call ``save`` on ``student``.
+
+
 Parameters
 ~~~~~~~~~~
 

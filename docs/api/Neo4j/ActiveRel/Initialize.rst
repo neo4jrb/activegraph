@@ -13,10 +13,6 @@ Initialize
 
    
 
-   
-
-   
-
 
 
 
@@ -43,19 +39,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel/Initialize#_persisted_obj`:
-
-**#_persisted_obj**
-  Returns the value of attribute _persisted_obj
-
-  .. hidden-code-block:: ruby
-
-     def _persisted_obj
-       @_persisted_obj
-     end
-
-
-
 .. _`Neo4j/ActiveRel/Initialize#init_on_load`:
 
 **#init_on_load**
@@ -64,13 +47,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def init_on_load(persisted_rel, from_node_id, to_node_id, type)
-       @_persisted_obj = persisted_rel
        @rel_type = type
+       @_persisted_obj = persisted_rel
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge(persisted_rel.props.stringify_keys)
+       @attributes = convert_and_assign_attributes(persisted_rel.props)
        load_nodes(from_node_id, to_node_id)
-       self.default_properties = persisted_rel.props
-       @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
      end
 
 
