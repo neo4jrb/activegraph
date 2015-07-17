@@ -403,7 +403,7 @@ module Neo4j::ActiveNode
                                                  nil,
                                                  session: neo4j_session,
                                                  query_proxy: nil,
-                                                 context: "#{self.name}##{name}")
+                                                 context: "#{self.name}")
       end
 
       def build_association(macro, direction, name, options)

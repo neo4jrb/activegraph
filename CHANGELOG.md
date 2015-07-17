@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Added a `before_remove_const` method to clear cached models when Rails `reload!` is called. 5.0.1 included a workaround but this appears to cut to the core of the issue. See https://github.com/neo4jrb/neo4j/pull/855.
+- Fixed bug which caused `QueryProxy` context to repeat (showed up in query logging)
 
 ### Added
 - Added ability to view `model_class` from `Association` class for `rails_admin` Neo4j adapter
