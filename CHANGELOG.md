@@ -7,6 +7,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - `ActiveNode#destroyed?` and `ActiveRel#destroyed?` now only consider the in-memory state of if an object is destroyed without checking the database
+
+### Fixed
+- Added a `before_remove_const` method to clear cached models when Rails `reload!` is called. 5.0.1 included a workaround but this appears to cut to the core of the issue. See https://github.com/neo4jrb/neo4j/pull/855.
+- Fixed bug which caused `QueryProxy` context to repeat (showed up in query logging)
+
+### Added
+- Added ability to view `model_class` from `Association` class for `rails_admin` Neo4j adapter
+- QueryProxy `where` will now look for declared properties matching hash keys. When found, it will send the value through that property's type converter if the type matches the property's unconverted state.
+
+
+## [5.0.3] - 2015-07-14
+
+### Changed
 - Moved `#with_associations` method from `AssociationProxy` to `QueryProxy` so that all `QueryProxy` chains can benefit from it.
 
 ## [5.0.2] - 2015-06-30
