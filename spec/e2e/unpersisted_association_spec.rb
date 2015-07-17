@@ -114,6 +114,37 @@ describe 'association creation' do
       end
     end
 
+    context 'between many unpersisted nodes' do
+      let(:chris) { Student.new(name: 'Chris') }
+      let(:math)  { Lesson.new(subject: 'Math') }
+      let(:science) { Lesson.new(subject: 'Science') }
+      let(:lessons) { [math, science] }
+
+      context 'associated as an array' do
+        it 'delays the call to :save' do
+          expect(science).not_to receive(:save)
+          expect { chris.lessons << lessons }.not_to raise_error
+        end
+
+        it 'calls save on each element' do
+          expect(math).to receive(:save).and_call_original
+          expect(science).to receive(:save).and_call_original
+          chris.lessons << lessons
+          chris.save
+        end
+      end
+
+      context 'associated individually' do
+        it 'calls save on each node' do
+          expect(math).to receive(:save).and_call_original
+          expect(science).to receive(:save).and_call_original
+          chris.lessons << math
+          chris.lessons << science
+          chris.save
+        end
+      end
+    end
+
     context 'between unpersisted and persisted, unchanged nodes' do
       let(:chris) { Student.new(name: 'Chris') }
       let(:math) { Lesson.create(subject: 'math') }

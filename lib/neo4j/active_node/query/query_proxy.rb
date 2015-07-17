@@ -6,6 +6,7 @@ module Neo4j
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
         include Neo4j::ActiveNode::Query::QueryProxyEagerLoading
+        include Neo4j::ActiveNode::Query::QueryProxyUnpersisted
         include Neo4j::ActiveNode::Dependent::QueryProxyMethods
 
         # The most recent node to start a QueryProxy chain.
@@ -188,12 +189,6 @@ module Neo4j
               @association.perform_callback(@start_object, other_node, :after)
             end
           end
-        end
-
-        def defer_create(other_nodes, _properties, operator)
-          key = [@association.name, [nil, nil, nil]].hash
-          @start_object.pending_associations[key] = [@association.name, operator]
-          @start_object.association_proxy_cache[key] = [other_nodes]
         end
 
         def _nodeify!(*args)

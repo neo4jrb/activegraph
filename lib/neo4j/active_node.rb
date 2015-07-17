@@ -36,6 +36,7 @@ module Neo4j
     include Neo4j::ActiveNode::Query
     include Neo4j::ActiveNode::Labels
     include Neo4j::ActiveNode::Rels
+    include Neo4j::ActiveNode::Unpersisted
     include Neo4j::ActiveNode::HasN
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent

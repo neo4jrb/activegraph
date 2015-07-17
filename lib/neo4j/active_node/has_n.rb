@@ -144,24 +144,6 @@ module Neo4j::ActiveNode
       end
     end
 
-    def pending_associations
-      @pending_associations ||= {}
-    end
-
-    def pending_associations?
-      !@pending_associations.blank?
-    end
-
-    def pending_associations_hash
-      return unless pending_associations?
-      {}.tap do |deferred_nodes|
-        pending_associations.each_pair do |cache_key, (association_name, operator)|
-          nodes_for_creation = self.persisted? ? association_proxy_cache[cache_key].select { |n| !n.persisted? } : association_proxy_cache[cache_key]
-          deferred_nodes[association_name] = [nodes_for_creation, operator]
-        end
-      end
-    end
-
     private
 
     def fresh_association_proxy(name, options = {}, cached_result = nil)
@@ -173,16 +155,6 @@ module Neo4j::ActiveNode
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next)
 
       Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
-    end
-
-    def handle_non_persisted_node(other_node)
-      return unless Neo4j::Config[:autosave_on_assignment]
-      other_node.try(:save)
-      save
-    end
-
-    def validate_persisted_for_association!
-      fail(Neo4j::ActiveNode::HasN::NonPersistedNodeError, 'Unable to create relationship with non-persisted nodes') unless self._persisted_obj
     end
 
     module ClassMethods

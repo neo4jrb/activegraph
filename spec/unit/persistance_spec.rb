@@ -6,6 +6,7 @@ describe Neo4j::ActiveNode::Persistence do
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode::Persistence
+      include Neo4j::ActiveNode::Unpersisted
       include Neo4j::ActiveNode::HasN
       include Neo4j::ActiveNode::Property
 

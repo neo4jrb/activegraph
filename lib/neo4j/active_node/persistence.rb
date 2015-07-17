@@ -30,23 +30,6 @@ module Neo4j::ActiveNode
       end
     end
 
-    def cascade_save
-      deferred_nodes = pending_associations_hash
-      Neo4j::Transaction.run(!deferred_nodes.blank?) do
-        result = yield
-        deferred_nodes.each_pair { |k, (v, o)| save_and_associate!(k, v, o) } if deferred_nodes
-        result
-      end
-    end
-
-    def save_and_associate!(association_name, cache_key, operator)
-      cache_key.each do |node|
-        node.save if node.changed? || !node.persisted?
-        fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
-        operator == :<< ? send(association_name).send(operator, node) : send(:"#{association_name}=", node)
-      end
-    end
-
     # Persist the object to the database.  Validations and Callbacks are included
     # by default but validation can be disabled by passing :validate => false
     # to #save!  Creates a new transaction.
@@ -85,12 +68,25 @@ module Neo4j::ActiveNode
       session.create_node(props, labels)
     end
 
+    private
+
+    # The pending associations are cleared during the save process, so it's necessary to
+    # build the processable hash before it begins. If there are nodes and associations that
+    # need to be created after the node is saved, a new transaction is started.
+    def cascade_save
+      deferred_nodes = pending_associations_with_nodes
+      Neo4j::Transaction.run(!deferred_nodes.blank?) do
+        result = yield
+        process_unpersisted_nodes!(deferred_nodes) if deferred_nodes
+        result
+      end
+    end
+
     module ClassMethods
       # Creates and saves a new node
       # @param [Hash] props the properties the new node should have
       def create(props = {})
         association_props = extract_association_attributes!(props) || {}
-
         new(props).tap do |obj|
           yield obj if block_given?
           obj.save
