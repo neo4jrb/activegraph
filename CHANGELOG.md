@@ -16,7 +16,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added ability to view `model_class` from `Association` class for `rails_admin` Neo4j adapter
 - QueryProxy `where` will now look for declared properties matching hash keys. When found, it will send the value through that property's type converter if the type matches the property's unconverted state.
 
-
 ## [5.0.3] - 2015-07-14
 
 ### Changed

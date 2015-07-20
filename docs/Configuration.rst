@@ -49,3 +49,8 @@ Configuration
     Associations defined in node models will try to match association names to classes. For example, `has_many :out, :student` will look for a `Student` class. To avoid having to use `model_class: 'MyModule::Student'`, this config option lets you specify the module that should be used globally for class name discovery.
 
     Of course, even with this option set, you can always override it by calling `model_class: 'ClassName'`.
+
+  **log_cypher_queries**
+    **Default:** ``nil``
+
+    Set to `true` to log queries to STDOUT (done automatically in the Rails console)
