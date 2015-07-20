@@ -90,7 +90,7 @@ module Neo4j
       end
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 
-      register_neo4j_cypher_logging
+      register_neo4j_cypher_logging if Neo4j::Config[:log_cypher_queries]
     end
 
     console do
