@@ -191,7 +191,10 @@ You can query associations:
     comment.post                # Post object
     comment.post.comments       # Original comment and all of it's siblings.  Makes just one query
     post.comments.authors.posts # All posts of people who have commented on the post.  Still makes just one query
-    You can create associations
+    
+You can create associations
+
+.. code-block:: ruby
 
     post.comments = [comment1, comment2]  # Removes all existing relationships
     post.comments << comment3             # Creates new relationship
