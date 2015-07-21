@@ -38,6 +38,14 @@ Example:
 
 Properties can be indexed using the index argument on the property method, see example above.
 
+
+.. seealso::
+  .. raw:: html
+
+    There is also a screencast available reviewing properties:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/2pCSQkHkPC8" frameborder="0" allowfullscreen></iframe>
+
 Indexes
 ~~~~~~~
 
@@ -191,11 +199,20 @@ You can query associations:
     comment.post = post1                  # Removes all existing relationships
 
 .. seealso::
+
+  .. raw:: html
+
+    There is also a screencast available reviewing associations:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/veqIfIqtoNc" frameborder="0" allowfullscreen></iframe>
+
+.. seealso::
   :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`
   and
   :ref:`#has_one <Neo4j/ActiveNode/HasN/ClassMethods#has_one>`
 
 .. _active_node-eager_loading:
+
 
 Eager Loading
 ~~~~~~~~~~~~~

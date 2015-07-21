@@ -97,6 +97,8 @@ Methods
      def register_neo4j_cypher_logging
        return if @neo4j_cypher_logging_registered
      
+       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
+     
        Neo4j::Server::CypherSession.log_with do |message|
          puts message
        end
