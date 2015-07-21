@@ -38,6 +38,13 @@ An example series of setup commands:
   rails s
   open http://localhost:3000/users
 
+.. seealso::
+
+  .. raw:: html
+
+    There is also a screencast available demonstrating how to set up a new Rails app:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/n0P0pOP34Mw" frameborder="0" allowfullscreen></iframe>
 
 Adding the gem to an existing project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
