@@ -54,3 +54,8 @@ Configuration
     **Default:** ``nil``
 
     Set to `true` to log queries to STDOUT (done automatically in the Rails console)
+
+  **pretty_logged_cypher_queries**
+    **Default:** ``nil``
+
+    When logging cypher queries, should they be formatted with newlines and colors to be more easily readable by humans?
