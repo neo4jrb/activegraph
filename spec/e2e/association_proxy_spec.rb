@@ -67,6 +67,17 @@ describe 'Association Proxy' do
     end
   end
 
+  it 'Should allow for loading of `has_one` association' do
+    expect_queries(1) do
+      grouped_students = science.students.with_associations(:favorite_lesson).group_by(&:name)
+
+      expect(grouped_students['Billy'][0].favorite_lesson).to eq(math)
+
+      expect(grouped_students.size).to eq(1)
+      expect(grouped_students['Billy'].size).to eq(1)
+    end
+  end
+
   describe 'target' do
     context 'when none found' do
       it 'raises an error' do
