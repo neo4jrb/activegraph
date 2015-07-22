@@ -50,7 +50,7 @@ Configuration
 
     Of course, even with this option set, you can always override it by calling `model_class: 'ClassName'`.
 
-  **log_cypher_queries**
-    **Default:** ``nil``
+  **logger**
+    **Default:** ``nil`` (or ``Rails.logger`` in Rails)
 
-    Set to `true` to log queries to STDOUT (done automatically in the Rails console)
+    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used)
