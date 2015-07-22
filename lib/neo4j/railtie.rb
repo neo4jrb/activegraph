@@ -72,7 +72,7 @@ module Neo4j
       return if @neo4j_cypher_logging_registered
 
       Neo4j::Server::CypherSession.log_with do |message|
-        Neo4j::Config[:logger].info message
+        (Neo4j::Config[:logger] || Rails.logger).info message
       end
 
       @neo4j_cypher_logging_registered = true
@@ -100,6 +100,5 @@ module Neo4j
 
       register_neo4j_cypher_logging
     end
-
   end
 end
