@@ -72,10 +72,16 @@ module Neo4j
       return if @neo4j_cypher_logging_registered
 
       Neo4j::Server::CypherSession.log_with do |message|
-        puts message
+        Neo4j::Config[:logger].info message
       end
 
       @neo4j_cypher_logging_registered = true
+    end
+
+    console do
+      Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
+
+      register_neo4j_cypher_logging
     end
 
     # Starting Neo after :load_config_initializers allows apps to
@@ -90,11 +96,10 @@ module Neo4j
       end
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 
-      register_neo4j_cypher_logging if Neo4j::Config[:log_cypher_queries]
-    end
+      Neo4j::Config[:logger] ||= Rails.logger
 
-    console do
       register_neo4j_cypher_logging
     end
+
   end
 end
