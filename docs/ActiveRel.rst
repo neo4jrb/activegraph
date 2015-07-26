@@ -159,7 +159,7 @@ Advanced Usage
 Separation of Relationship Logic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ActiveRel really shines when you have multiple associations that share a relationship type. You can use a rel model to separate the relationship logic and just let the node models be concerned with the labels of related objects.
+ActiveRel really shines when you have multiple associations that share a relationship type. You can use an ActiveRel model to separate the relationship logic and just let the node models be concerned with the labels of related objects.
 
 .. code-block:: ruby
 
