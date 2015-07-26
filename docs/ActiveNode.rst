@@ -83,6 +83,40 @@ You can declare that a property should have a unique value.
 
 Notice an unique validation is not enough to be 100% sure that a property is unique (because of concurrency issues, just like ActiveRecord). Constraints can also be declared just like indexes separately, see above.
 
+Labels
+~~~~~~
+
+The class name maps directly to the label.  In the following case both the class name and label are ``Post``
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+    end
+
+If you want to specify a different label for your class you can use ``mapped_label_name``:
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+
+      self.mapped_label_name = 'BlogPost'
+    end
+
+If you would like to use multiple labels you can use class inheritance.  In the following case object created with the `Article` model would have both `Post` and `Article` labels.  When querying `Article` both labels are required on the nodes as well.
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+    end
+
+    class Article < Post
+    end
+
+
+
 Serialization
 ~~~~~~~~~~~~~
 
