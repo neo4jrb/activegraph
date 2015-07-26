@@ -1,9 +1,7 @@
 ActiveRel
 =========
 
-.. note:: See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction if you are using the master branch from this repo. It contains information about changes to the API.
-
-ActiveRel is Neo4j.rb 3.0's the relationship wrapper. ActiveRel objects share most of their behavior with ActiveNode objects. It is purely optional and offers advanced functionality for complex relationships.
+ActiveRel is a module in the ``neo4j`` gem which wraps relationships. ActiveRel objects share most of their behavior with ActiveNode objects. ActiveRel is purely optional and offers advanced functionality for complex relationships.
 
 When to Use?
 ------------
@@ -12,11 +10,13 @@ It is not always necessary to use ActiveRel models but if you have the need for 
 
 Note that in Neo4j it isn't possible to access relationships except by first accessing a node.  Thus `ActiveRel` doesn't implement a `uuid` property like ``ActiveNode``.
 
-Separation of relationship logic instead of shoehorning it into Node models
+... Documentation notes
 
-Validations, callbacks, custom methods, etc.
+  Separation of relationship logic instead of shoehorning it into Node models
 
-Centralize relationship type, no longer need to use ``:type`` or ``:origin`` options in models
+  Validations, callbacks, custom methods, etc.
+
+  Centralize relationship type, no longer need to use ``:type`` or ``:origin`` options in models
 
 Setup
 -----

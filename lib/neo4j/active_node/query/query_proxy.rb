@@ -89,6 +89,9 @@ module Neo4j
         # Build a Neo4j::Core::Query object for the QueryProxy. This is necessary when you want to take an existing QueryProxy chain
         # and work with it from the more powerful (but less friendly) Neo4j::Core::Query.
         # @param [String,Symbol] var The identifier to use for node at this link of the QueryProxy chain.
+        #
+        # .. code-block:: ruby
+        #
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var, with_labels = true)
           result_query = @chain.inject(base_query(var, with_labels).params(@params)) do |query, link|
@@ -119,6 +122,8 @@ module Neo4j
         end
 
         # Scope all queries to the current scope.
+        #
+        # .. code-block:: ruby
         #
         #   Comment.where(post_id: 1).scoping do
         #     Comment.first
