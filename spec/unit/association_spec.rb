@@ -392,11 +392,8 @@ describe Neo4j::ActiveNode::HasN::Association do
     describe 'refresh_model_class!' do
       context 'with model class set' do
         before do
-          stub_const('MyModel', Class.new)
-          association.instance_variable_set(:@model_class, MyModel)
-          name = 'MyModel'
-          expect(MyModel).to receive(:name).and_return(name)
-          expect(name).to receive(:constantize).and_return(Class.new)
+          association.instance_variable_set(:@model_class, named_class('MyModel'))
+          stub_named_class('MyModel')
         end
 
         it 'changes the value of #derive_model_class' do
@@ -410,7 +407,9 @@ describe Neo4j::ActiveNode::HasN::Association do
       end
 
       context 'without model class set' do
-        before { association.instance_variable_set(:@model_class, nil) }
+        before do
+          association.instance_variable_set(:@model_class, nil)
+        end
 
         it 'does not raise an error' do
           expect { association.refresh_model_class! }.not_to raise_error
