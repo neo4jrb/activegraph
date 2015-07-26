@@ -77,6 +77,8 @@ QueryProxyMethods
 
    
 
+   
+
 
 
 
@@ -260,7 +262,7 @@ Methods
        fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
        query_with_target(target) do |var|
          start_q = exists_query_start(node_condition, var)
-         start_q.query.return("COUNT(#{var}) AS count").first.count > 0
+         start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
        end
      end
 
@@ -276,6 +278,27 @@ Methods
 
      def find(*args)
        scoping { @model.find(*args) }
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#find_or_create_by`:
+
+**#find_or_create_by**
+  When called, this method returns a single node that satisfies the match specified in the params hash.
+  If no existing node is found to satisfy the match, one is created or associated as expected.
+
+  .. hidden-code-block:: ruby
+
+     def find_or_create_by(params)
+       fail 'Method invalid when called on Class objects' unless source_object
+       result = self.where(params).first
+       return result unless result.nil?
+       Neo4j::Transaction.run do
+         node = model.find_or_create_by(params)
+         self << node
+         return node
+       end
      end
 
 
@@ -315,9 +338,14 @@ Methods
   .. hidden-code-block:: ruby
 
      def include?(other, target = nil)
-       fail(InvalidParameterError, ':include? only accepts nodes') unless other.respond_to?(:neo_id)
        query_with_target(target) do |var|
-         self.where("ID(#{var}) = {other_node_id}").params(other_node_id: other.neo_id).query.return("count(#{var}) as count").first.count > 0
+         where_filter = if other.respond_to?(:neo_id)
+                          "ID(#{var}) = {other_node_id}"
+                        else
+                          "#{var}.#{association_id_key} = {other_node_id}"
+                        end
+         node_id = other.respond_to?(:neo_id) ? other.neo_id : other
+         self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
        end
      end
 
@@ -363,7 +391,7 @@ Methods
 
      def limit_value
        return unless self.query.clause?(:limit)
-       limit_clause = self.query.send(:clauses).select { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }.first
+       limit_clause = self.query.send(:clauses).find { |clause| clause.is_a?(Neo4j::Core::QueryClauses::LimitClause) }
        limit_clause.instance_variable_get(:@arg)
      end
 

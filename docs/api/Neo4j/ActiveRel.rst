@@ -112,6 +112,38 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#_active_record_destroyed_behavior?`:
+
+**#_active_record_destroyed_behavior?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def _active_record_destroyed_behavior?
+       fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
+     
+       !!Neo4j::Config[:_active_record_destroyed_behavior]
+     end
+
+
+
+.. _`Neo4j/ActiveRel#_destroyed_double_check?`:
+
+**#_destroyed_double_check?**
+  These two methods should be removed in 6.0.0
+
+  .. hidden-code-block:: ruby
+
+     def _destroyed_double_check?
+       if _active_record_destroyed_behavior?
+         true
+       else
+         (!new_record? && !exist?)
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveRel#_persisted_obj`:
 
 **#_persisted_obj**
@@ -257,7 +289,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def destroyed?
-       @_deleted || (!new_record? && !exist?)
+       @_deleted || _destroyed_double_check?
      end
 
 
@@ -361,13 +393,11 @@ Methods
   .. hidden-code-block:: ruby
 
      def init_on_load(persisted_rel, from_node_id, to_node_id, type)
-       @_persisted_obj = persisted_rel
        @rel_type = type
+       @_persisted_obj = persisted_rel
        changed_attributes && changed_attributes.clear
-       @attributes = attributes.merge(persisted_rel.props.stringify_keys)
+       @attributes = convert_and_assign_attributes(persisted_rel.props)
        load_nodes(from_node_id, to_node_id)
-       self.default_properties = persisted_rel.props
-       @attributes = self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
      end
 
 

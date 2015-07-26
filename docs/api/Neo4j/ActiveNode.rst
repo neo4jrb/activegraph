@@ -45,15 +45,15 @@ in a new object of that class.
 
    ActiveNode/Initialize
 
-   ActiveNode/ClassMethods
-
-   ActiveNode/OrmAdapter
+   ActiveNode/Persistence
 
    ActiveNode/IdProperty
 
    ActiveNode/Validations
 
-   ActiveNode/Persistence
+   ActiveNode/ClassMethods
+
+   ActiveNode/OrmAdapter
 
    ActiveNode/QueryMethods
 
@@ -98,19 +98,19 @@ Files
 
   * `lib/neo4j/active_node/reflection.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L1>`_
 
-  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
+  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
   * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
 
   * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
 
-  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
+  * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
-  * `lib/neo4j/active_node/has_n/association.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L4>`_
-
   * `lib/neo4j/active_node/query/query_proxy.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L2>`_
+
+  * `lib/neo4j/active_node/has_n/association.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L4>`_
 
   * `lib/neo4j/active_node/query/query_proxy_link.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_link.rb#L2>`_
 
@@ -121,6 +121,8 @@ Files
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
 
   * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
+
+  * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L2>`_
 
   * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L2>`_
 
@@ -161,6 +163,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode#_active_record_destroyed_behavior?`:
+
+**#_active_record_destroyed_behavior?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def _active_record_destroyed_behavior?
+       fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
+     
+       !!Neo4j::Config[:_active_record_destroyed_behavior]
+     end
+
+
+
 .. _`Neo4j/ActiveNode#_create_node`:
 
 **#_create_node**
@@ -175,6 +192,23 @@ Methods
        set_classname(props)
        labels = self.class.mapped_label_names
        session.create_node(props, labels)
+     end
+
+
+
+.. _`Neo4j/ActiveNode#_destroyed_double_check?`:
+
+**#_destroyed_double_check?**
+  These two methods should be removed in 6.0.0
+
+  .. hidden-code-block:: ruby
+
+     def _destroyed_double_check?
+       if _active_record_destroyed_behavior?
+         true
+       else
+         (!new_record? && !exist?)
+       end
      end
 
 
@@ -468,7 +502,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def destroyed?
-       @_deleted || (!new_record? && !exist?)
+       @_deleted || _destroyed_double_check?
      end
 
 

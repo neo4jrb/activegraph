@@ -21,6 +21,8 @@ Shared
 
    Shared/Callbacks
 
+   Shared/Initialize
+
    Shared/Typecaster
 
    Shared/Persistence
@@ -59,6 +61,8 @@ Files
   * `lib/neo4j/shared/identity.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/identity.rb#L1>`_
 
   * `lib/neo4j/shared/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/callbacks.rb#L2>`_
+
+  * `lib/neo4j/shared/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/initialize.rb#L1>`_
 
   * `lib/neo4j/shared/typecaster.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L2>`_
 

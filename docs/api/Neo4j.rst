@@ -25,9 +25,9 @@ Neo4j
 
    Neo4j/ClassWrapper
 
-   Neo4j/Paginated
-
    Neo4j/Migration
+
+   Neo4j/Paginated
 
    Neo4j/ActiveRel
 
@@ -72,9 +72,9 @@ Files
 
   * `lib/neo4j/wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/wrapper.rb#L1>`_
 
-  * `lib/neo4j/paginated.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/paginated.rb#L1>`_
-
   * `lib/neo4j/migration.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/migration.rb#L3>`_
+
+  * `lib/neo4j/paginated.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/paginated.rb#L1>`_
 
   * `lib/neo4j/active_rel.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L1>`_
 
@@ -90,9 +90,9 @@ Files
 
   * `lib/neo4j/shared/typecaster.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L1>`_
 
-  * `lib/neo4j/shared/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L1>`_
-
   * `lib/neo4j/active_node/labels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L1>`_
+
+  * `lib/neo4j/shared/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L1>`_
 
   * `lib/neo4j/active_rel/callbacks.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/callbacks.rb#L1>`_
 
@@ -102,17 +102,17 @@ Files
 
   * `lib/neo4j/active_rel/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L1>`_
 
-  * `lib/neo4j/active_node/orm_adapter.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L3>`_
-
   * `lib/neo4j/active_node/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L1>`_
+
+  * `lib/neo4j/active_node/orm_adapter.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L3>`_
 
   * `lib/neo4j/active_node/query_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L1>`_
 
   * `lib/rails/generators/neo4j_generator.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/rails/generators/neo4j_generator.rb#L5>`_
 
-  * `lib/neo4j/active_node/has_n/association.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L3>`_
-
   * `lib/neo4j/active_node/query/query_proxy.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L1>`_
+
+  * `lib/neo4j/active_node/has_n/association.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L3>`_
 
   * `lib/neo4j/active_node/query/query_proxy_link.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_link.rb#L1>`_
 
@@ -123,6 +123,8 @@ Files
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L1>`_
 
   * `lib/neo4j/active_node/dependent/association_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L1>`_
+
+  * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L1>`_
 
   * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L1>`_
 

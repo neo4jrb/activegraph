@@ -87,6 +87,12 @@ Association
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -198,6 +204,23 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/Association#derive_model_class`:
+
+**#derive_model_class**
+  
+
+  .. hidden-code-block:: ruby
+
+     def derive_model_class
+       return @model_class unless @model_class.nil?
+       return nil if relationship_class.nil?
+       dir_class = direction == :in ? :from_class : :to_class
+       return false if relationship_class.send(dir_class).to_s.to_sym == :any
+       relationship_class.send(dir_class)
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/Association#direction`:
 
 **#direction**
@@ -252,9 +275,22 @@ Methods
   .. hidden-code-block:: ruby
 
      def inject_classname(properties)
-       return properties unless @relationship_class
-       properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_clazz.cached_class?(true)
+       return properties unless relationship_class
+       properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_class.cached_class?(true)
        properties
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#model_class`:
+
+**#model_class**
+  Returns the value of attribute model_class
+
+  .. hidden-code-block:: ruby
+
+     def model_class
+       @model_class
      end
 
 
@@ -302,12 +338,12 @@ Methods
 .. _`Neo4j/ActiveNode/HasN/Association#relationship_class`:
 
 **#relationship_class**
-  Returns the value of attribute relationship_class
+  
 
   .. hidden-code-block:: ruby
 
      def relationship_class
-       @relationship_class
+       @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
      end
 
 
@@ -315,12 +351,12 @@ Methods
 .. _`Neo4j/ActiveNode/HasN/Association#relationship_class_name`:
 
 **#relationship_class_name**
-  
+  Returns the value of attribute relationship_class_name
 
   .. hidden-code-block:: ruby
 
      def relationship_class_name
-       @relationship_class_name ||= @relationship_class.respond_to?(:constantize) ? @relationship_class : @relationship_class.name
+       @relationship_class_name
      end
 
 
@@ -333,27 +369,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def relationship_class_type
-       @relationship_class = @relationship_class.constantize if @relationship_class.class == String || @relationship_class == Symbol
-       @relationship_class._type.to_sym
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN/Association#relationship_clazz`:
-
-**#relationship_clazz**
-  
-
-  .. hidden-code-block:: ruby
-
-     def relationship_clazz
-       @relationship_clazz ||= if @relationship_class.is_a?(String)
-                                 @relationship_class.constantize
-                               elsif @relationship_class.is_a?(Symbol)
-                                 @relationship_class.to_s.constantize
-                               else
-                                 @relationship_class
-                               end
+       relationship_class._type.to_sym
      end
 
 
@@ -367,12 +383,9 @@ Methods
 
      def relationship_type(create = false)
        case
-       when @relationship_class
-         relationship_class_type
-       when @relationship_type
-         @relationship_type
-       when @origin
-         origin_type
+       when relationship_class then relationship_class_type
+       when @relationship_type then @relationship_type
+       when @origin then origin_type
        else
          (create || exceptional_target_class?) && decorated_rel_type(@name)
        end
@@ -405,10 +418,12 @@ Methods
   .. hidden-code-block:: ruby
 
      def target_class_names
-       @target_class_names ||= if @target_class_option.is_a?(Array)
-                                 @target_class_option.map(&:to_s)
-                               elsif @target_class_option
-                                 [@target_class_option.to_s]
+       option = target_class_option(derive_model_class)
+     
+       @target_class_names ||= if option.is_a?(Array)
+                                 option.map(&:to_s)
+                               elsif option
+                                 [option.to_s]
                                end
      end
 
@@ -440,6 +455,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/Association#target_classes`:
+
+**#target_classes**
+  
+
+  .. hidden-code-block:: ruby
+
+     def target_classes
+       target_class_names.map(&:constantize)
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/Association#target_classes_or_nil`:
 
 **#target_classes_or_nil**
@@ -449,6 +477,23 @@ Methods
 
      def target_classes_or_nil
        @target_classes_or_nil ||= discovered_model if target_class_names
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#target_where_clause`:
+
+**#target_where_clause**
+  
+
+  .. hidden-code-block:: ruby
+
+     def target_where_clause
+       return if model_class == false
+     
+       Array.new(target_classes).map do |target_class|
+         "#{name}:#{target_class.mapped_label_name}"
+       end.join(' OR ')
      end
 
 

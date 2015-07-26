@@ -76,7 +76,51 @@ Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relat
 
   student.lessons.where(subject: 'Math').rel_where(grade: 85)
 
-Paramaters
+
+Associations and Unpersisted Nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is some special behavior around association creation when nodes are new and unsaved. Below are a few scenarios and their outcomes.
+
+When both nodes are persisted, associations changes using ``<<`` or ``=`` take place immediately -- no need to call save.
+
+.. code-block:: ruby
+
+  student = Student.first
+  Lesson = Lesson.first
+  student.lessons << lesson
+
+In that case, the relationship would be created immediately.
+
+When the node on which the association is called is unpersisted, no changes are made to the database until ``save`` is called. Once that happens, a cascading save event will occur.
+
+.. code-block:: ruby
+
+  student = Student.new
+  lesson = Lesson.first || Lesson.new
+  # This method will not save `student` or change relationships in the database:
+  student.lessons << lesson
+
+Once we call ``save`` on ``student``, two or three things will happen:
+
+* Since ``student`` is unpersisted, it will be saved
+* If ``lesson`` is unpersisted, it will be saved
+* Once both nodes are saved, the relationship will be created
+
+This process occurs within a transaction. If any part fails, an error will be raised, the transaction will fail, and no changes will be made to the database.
+
+Finally, if you try to associate an unpersisted node with a persisted node, the unpersisted node will be saved and the relationship will be created immediately:
+
+.. code-block:: ruby
+
+  student = Student.first
+  lesson = Lesson.new
+  student.lessons << lesson
+
+In the above example, ``lesson`` would be saved and the relationship would be created immediately. There is no need to call ``save`` on ``student``.
+
+
+Parameters
 ~~~~~~~~~~
 
 If you need to use a string in where, you should set the parameter manually.
@@ -86,6 +130,65 @@ If you need to use a string in where, you should set the parameter manually.
   Student.all.where("s.age < {age} AND s.name = {name} AND s.home_town = {home_town}")
     .params(age: params[:age], name: params[:name], home_town: params[:home_town])
     .pluck(:s)
+
+Variable-length relationships
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to specify a variable-length qualifier to apply to relationships when calling association methods.
+
+.. code-block:: ruby
+
+  student.friends(rel_length: 2)
+
+This would find the friends of friends of a student. Note that you can still name matched nodes and relationships and use those names to build your query as seen above:
+
+.. code-block:: ruby
+
+  student.friends(:f, :r, rel_length: 2).where('f.gender = {gender} AND r.since >= {date}').params(gender: 'M', date: 1.month.ago)
+
+
+.. note::
+
+  You can either pass a single options Hash or provide **both** the node and relationship names along with the optional Hash.
+
+
+There are many ways to provide the length information to generate all the various possibilities Cypher offers:
+
+.. code-block:: ruby
+
+  # As a Fixnum:
+  ## Cypher: -[:`FRIENDS`*2]->
+  student.friends(rel_length: 2)
+
+  # As a Range:
+  ## Cypher: -[:`FRIENDS`*1..3]->
+  student.friends(rel_length: 1..3) # Get up to 3rd degree friends
+
+  # As a Hash:
+  ## Cypher: -[:`FRIENDS`*1..3]->
+  student.friends(rel_length: {min: 1, max: 3})
+
+  ## Cypher: -[:`FRIENDS`*0..]->
+  student.friends(rel_length: {min: 0})
+
+  ## Cypher: -[:`FRIENDS`*..3]->
+  student.friends(rel_length: {max: 3})
+
+  # As the :any Symbol:
+  ## Cypher: -[:`FRIENDS`*]->
+  student.friends(rel_length: :any)
+
+
+.. caution::
+  By default, "\*..3" is equivalent to "\*1..3"  and "\*" is equivalent to "\*1..", but this may change
+  depending on your Node4j server configuration. Keep that in mind when using variable-length
+  relationships queries without specifying a minimum value.
+
+
+.. note::
+  When using variable-length relationships queries on `has_one` associations, be aware that multiple nodes
+  could be returned!
+
 
 The Query API
 -------------
@@ -150,7 +253,7 @@ Find or Create By...
 QueryProxy has a ``find_or_create_by`` method to make the node rel creation process easier. Its usage is simple:
 
 .. code-block:: ruby
-  
+
   a_node.an_association(params_hash)
 
 The method has branching logic that attempts to match an existing node and relationship. If the pattern is not found, it tries to find a node of the expected class and create the relationship. If *that* doesn't work, it creates the node, then creates the relationship. The process is wrapped in a transaction to prevent a failure from leaving the database in an inconsistent state.
@@ -160,12 +263,12 @@ There are some mild caveats. First, it will not work on associations of class me
 .. code-block:: ruby
 
   student.friends.lessons.find_or_create_by(subject: 'Math')
-  
+
 Assuming the ``lessons`` association points to a ``Lesson`` model, you would effectively end up with this:
 
 .. code-block:: ruby
 
   math = Lesson.find_or_create_by(subject: 'Math')
   student.friends.lessons << math
-  
+
 ...which is invalid and will result in an error.
