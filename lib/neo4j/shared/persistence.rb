@@ -78,8 +78,24 @@ module Neo4j::Shared
 
     # Returns +true+ if the object was destroyed.
     def destroyed?
-      !!@_deleted
+      @_deleted || _destroyed_double_check?
     end
+
+    # These two methods should be removed in 6.0.0
+    def _destroyed_double_check?
+      if _active_record_destroyed_behavior?
+        true
+      else
+        (!new_record? && !exist?)
+      end
+    end
+
+    def _active_record_destroyed_behavior?
+      fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
+
+      !!Neo4j::Config[:_active_record_destroyed_behavior]
+    end
+    # End of two methods which should be removed in 6.0.0
 
 
     # @return [Hash] all defined and none nil properties
