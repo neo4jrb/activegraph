@@ -75,7 +75,7 @@ You can pass these as parameters when calling new or create if you so choose.
 From a `has_many` or `has_one` association
 ------------------------------------------
 
-Pass the :rel_type option in a declared association with the constant of an ActiveRel model. When that relationship is created, it will add a hidden _classname property with that model's name. The association will use the type declared in the ActiveRel model and it will raise an error if it is included in more than one place.
+Pass the :rel_class option in a declared association with the constant of an ActiveRel model. When that relationship is created, it will add a hidden _classname property with that model's name. The association will use the type declared in the ActiveRel model and it will raise an error if it is included in more than one place.
 
 To take advantage of callbacks and validations, declare your relationship using your ActiveRel model as described above.
 
