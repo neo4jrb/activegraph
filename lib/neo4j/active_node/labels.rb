@@ -103,7 +103,7 @@ module Neo4j
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
         # @param Hash args of arguments to find
         def find_by(values)
-          all.query_as(:n).where(n: values).limit(1).pluck(:n).first
+          all.where(values).limit(1).query_as(:n).pluck(:n).first
         end
 
         # Like find_by, except that if no record is found, raises a RecordNotFound error.

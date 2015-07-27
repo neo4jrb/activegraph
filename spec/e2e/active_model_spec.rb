@@ -671,4 +671,53 @@ describe 'Neo4j::ActiveNode' do
       end
     end
   end
+
+  describe 'finding by id_property' do
+    let(:activenode_class) { active_node_class('TestClass') }
+    let(:object) { activenode_class.create }
+
+    describe 'where' do
+      it 'should use uuid' do
+        expect(activenode_class.where(id: object).first).to eq(object)
+        expect(activenode_class.where(id: object.id).first).to eq(object)
+        expect(activenode_class.where(id: object.uuid).first).to eq(object)
+      end
+
+      context 'different id_property is specified' do
+        let(:activenode_class) do
+          active_node_class('TestClass') do
+            id_property :foo
+          end
+
+          it 'should use uuid' do
+            expect(activenode_class.where(id: object).first).to eq(object)
+            expect(activenode_class.where(id: object.id).first).to eq(object)
+            expect(activenode_class.where(id: object.foo).first).to eq(object)
+          end
+        end
+      end
+    end
+
+    describe 'find_by' do
+      it 'should use uuid' do
+        expect(activenode_class.find_by(id: object)).to eq(object)
+        expect(activenode_class.find_by(id: object.id)).to eq(object)
+        expect(activenode_class.find_by(id: object.uuid)).to eq(object)
+      end
+
+      context 'different id_property is specified' do
+        let(:activenode_class) do
+          active_node_class('TestClass') do
+            id_property :foo
+          end
+
+          it 'should use uuid' do
+            expect(activenode_class.find_by(id: object)).to eq(object)
+            expect(activenode_class.find_by(id: object.id)).to eq(object)
+            expect(activenode_class.find_by(id: object.foo)).to eq(object)
+          end
+        end
+      end
+    end
+  end
 end

@@ -129,6 +129,7 @@ module Neo4j
                         # support for null object pattern
                         '1 = 2'
                       end
+
           self.where(where_arg)
         end
 

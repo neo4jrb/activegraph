@@ -31,7 +31,7 @@ module Neo4j
                     result += for_association(key, value, "n#{node_num}", model)
                     node_num += 1
                   else
-                    result << new(:where, ->(v, _) { {v => {key => where_val(model, key, value)}} })
+                    result << new_for_key_and_value(model, key, value)
                   end
                 end
               elsif arg.is_a?(String)
@@ -41,9 +41,18 @@ module Neo4j
             end
             alias_method :for_node_where_clause, :for_where_clause
 
-            def where_val(model, key, value)
-              return value unless model
-              model.declared_property_manager.value_for_db(key, value)
+            def new_for_key_and_value(model, key, value)
+              key = (key.to_sym == :id ? model.id_property_name : key)
+
+              val = if !model
+                      value
+                    elsif key == model.id_property_name && value.is_a?(Neo4j::ActiveNode)
+                      value.id
+                    else
+                      model.declared_property_manager.value_for_db(key, value)
+                    end
+
+              new(:where, ->(v, _) { {v => {key => val}} })
             end
 
             def for_association(name, value, n_string, model)
