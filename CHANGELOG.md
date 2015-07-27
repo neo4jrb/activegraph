@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added ability to view `model_class` from `Association` class for `rails_admin` Neo4j adapter
 - QueryProxy `where` will now look for declared properties matching hash keys. When found, it will send the value through that property's type converter if the type matches the property's unconverted state.
 - Improved handling of unpersisted nodes with associations. You can now use `<<` to create associations between unpersisted nodes. A `save` will cascade through unpersisted objects, creating nodes and rels along the way. See https://github.com/neo4jrb/neo4j/pull/871
+- On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 
 ## [5.0.7] - 2015-07-26
 - Copied `docs` folder from master because a lot of work had gone into the docs since 5.0.0 was released
