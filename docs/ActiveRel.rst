@@ -1,9 +1,7 @@
 ActiveRel
 =========
 
-.. note:: See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction if you are using the master branch from this repo. It contains information about changes to the API.
-
-ActiveRel is Neo4j.rb 3.0's the relationship wrapper. ActiveRel objects share most of their behavior with ActiveNode objects. It is purely optional and offers advanced functionality for complex relationships.
+ActiveRel is a module in the ``neo4j`` gem which wraps relationships. ActiveRel objects share most of their behavior with ActiveNode objects. ActiveRel is purely optional and offers advanced functionality for complex relationships.
 
 When to Use?
 ------------
@@ -12,19 +10,24 @@ It is not always necessary to use ActiveRel models but if you have the need for 
 
 Note that in Neo4j it isn't possible to access relationships except by first accessing a node.  Thus `ActiveRel` doesn't implement a `uuid` property like ``ActiveNode``.
 
-Separation of relationship logic instead of shoehorning it into Node models
-Validations, callbacks, custom methods, etc.
-Centralize relationship type, no longer need to use :type or :origin options in models
+... Documentation notes
+
+  Separation of relationship logic instead of shoehorning it into Node models
+
+  Validations, callbacks, custom methods, etc.
+
+  Centralize relationship type, no longer need to use ``:type`` or ``:origin`` options in models
 
 Setup
 -----
 
 ActiveRel model definitions have four requirements:
 
-include Neo4j::ActiveRel
-call from_class with a valid model constant or :any
-call to_class with a valid model constant or :any
-call type with a string to define the relationship type Name the file as you would any other model.
+ * include Neo4j::ActiveRel
+ * call from_class with a valid model constant or :any
+ * call to_class with a valid model constant or :any
+ * call type with a Symbol or String to define the Neo4j relationship type
+
 See the note on from/to at the end of this page for additional information.
 
 .. code-block:: ruby
@@ -53,8 +56,9 @@ Relationship Creation
 ---------------------
 
 From an ActiveRel Model
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Once setup, ActiveRel models follow the same rules as ActiveNode in regard to properties. Declare them to create setter/getter methods, set them to created_at or updated_at for automatic timestamps.
+Once setup, ActiveRel models follow the same rules as ActiveNode in regard to properties. Declare them to create setter/getter methods. You can also set ``created_at`` or ``updated_at`` for automatic timestamps.
 
 ActiveRel instances require related nodes before they can be saved. Set these using the from_node and to_node methods.
 
@@ -73,17 +77,15 @@ You can pass these as parameters when calling new or create if you so choose.
     rel = EnrolledIn.create(from_node: student, to_node: lesson)
 
 From a `has_many` or `has_one` association
-------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pass the :rel_type option in a declared association with the constant of an ActiveRel model. When that relationship is created, it will add a hidden _classname property with that model's name. The association will use the type declared in the ActiveRel model and it will raise an error if it is included in more than one place.
-
-To take advantage of callbacks and validations, declare your relationship using your ActiveRel model as described above.
+Pass the :rel_class option in a declared association with the constant of an ActiveRel model. When that relationship is created, it will add a hidden _classname property with that model's name. The association will use the type declared in the ActiveRel model and it will raise an error if it is included in more than one place.
 
 .. code-block:: ruby
 
     class Student
       include Neo4j::ActiveNode
-      has_many :out, :lessons, rel_class: EnrolledIn
+      has_many :out, :lessons, rel_class: :EnrolledIn
     end
 
 Query and Loading existing relationships
@@ -98,16 +100,17 @@ Any of these methods can return relationship objects.
 
 .. code-block:: ruby
 
-    Student.first.lessons.each_rel{|r| }
-    Student.first.lessons.each_with_rel{|node, rel| }
+    Student.first.lessons.each_rel { |r| }
+    Student.first.lessons.each_with_rel { |node, rel| }
     Student.first.query_as(:s).match('s-[rel1:`enrolled_in`]->n2').pluck(:rel1)
-    These are available as both class or instance methods. Because both each_rel and each_with_rel return enumerables when a block is skipped, you can take advantage of the full suite of enumerable methods:
+
+These are available as both class or instance methods. Because both each_rel and each_with_rel return enumerables when a block is skipped, you can take advantage of the full suite of enumerable methods:
 
 .. code-block:: ruby
 
-    Lesson.first.students.each_with_rel.select{|n, r| r.grade > 85}
+    Lesson.first.students.each_with_rel.select{ |n, r| r.grade > 85 }
 
-Be aware that select would be performed in Ruby after a Cypher query is performed. The example above perform a Cypher query that matches all students with relationships of type enrolled_in to Lesson.first, then it would call select on that.
+Be aware that select would be performed in Ruby after a Cypher query is performed. The example above performs a Cypher query that matches all students with relationships of type enrolled_in to Lesson.first, then it would call select on that.
 
 The :where method
 ~~~~~~~~~~~~~~~~~
@@ -117,6 +120,7 @@ Because you cannot search for a relationship the way you search for a node, Acti
 .. code-block:: ruby
 
     EnrolledIn.where(since: 2002)
+    # Generates the Cypher:
     # "MATCH (node1:`Student`)-[rel1:`enrolled_in`]->(node2:`Lesson`) WHERE rel1.since = 2002 RETURN rel1"
 
 If your from_class is :any, the same query looks like this:
@@ -155,7 +159,7 @@ Advanced Usage
 Separation of Relationship Logic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ActiveRel really shines when you have multiple associations that share a relationship type. You can use a rel model to separate the relationship logic and just let the node models be concerned with the labels of related objects.
+ActiveRel really shines when you have multiple associations that share a relationship type. You can use an ActiveRel model to separate the relationship logic and just let the node models be concerned with the labels of related objects.
 
 .. code-block:: ruby
 
@@ -163,10 +167,10 @@ ActiveRel really shines when you have multiple associations that share a relatio
       include Neo4j::ActiveNode
       property :managed_stats, type: Integer #store the number of managed objects to improve performance
 
-      has_many :out, :managed_lessons,  model_class: Lesson,  rel_class: ManagedRel
-      has_many :out, :managed_teachers, model_class: Teacher, rel_class: ManagedRel
-      has_many :out, :managed_events,   model_class: Event,   rel_class: ManagedRel
-      has_many :out, :managed_objects,  model_class: false,   rel_class: ManagedRel
+      has_many :out, :managed_lessons,  model_class: Lesson,  rel_class: :ManagedRel
+      has_many :out, :managed_teachers, model_class: Teacher, rel_class: :ManagedRel
+      has_many :out, :managed_events,   model_class: Event,   rel_class: :ManagedRel
+      has_many :out, :managed_objects,  model_class: false,   rel_class: :ManagedRel
 
       def update_stats
         managed_stats += 1

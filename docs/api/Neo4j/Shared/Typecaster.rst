@@ -4,30 +4,34 @@ Typecaster
 
 
 This module provides a convenient way of registering a custom Typecasting class. Custom Typecasters all follow a simple pattern.
+
 EXAMPLE:
-class RangeConverter
-  class << self
-    def primitive_type
-      String
+
+.. code-block:: ruby
+
+  class RangeConverter
+    class << self
+      def primitive_type
+        String
+      end
+
+      def convert_type
+        Range
+      end
+
+      def to_db(value)
+        value.to_s
+      end
+
+      def to_ruby(value)
+        ends = value.to_s.split('..').map { |d| Integer(d) }
+        ends[0]..ends[1]
+      end
+      alias_method :call, :to_ruby
     end
 
-    def convert_type
-      Range
-    end
-
-    def to_db(value)
-      value.to_s
-    end
-
-    def to_ruby(value)
-      ends = value.to_s.split('..').map { |d| Integer(d) }
-      ends[0]..ends[1]
-    end
-    alias_method :call, :to_ruby
+    include Neo4j::Shared::Typecaster
   end
-
-  include Neo4j::Shared::Typecaster
-end
 
 This would allow you to use `property :my_prop, type: Range` in a model.
 Each method and the `alias_method` call is required. Make sure the module inclusion happens at the end of the file.
@@ -66,7 +70,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/typecaster.rb:43 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L43>`_
+  * `lib/neo4j/shared/typecaster.rb:47 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L47>`_
 
 
 

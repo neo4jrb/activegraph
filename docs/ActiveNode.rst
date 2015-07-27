@@ -38,6 +38,14 @@ Example:
 
 Properties can be indexed using the index argument on the property method, see example above.
 
+
+.. seealso::
+  .. raw:: html
+
+    There is also a screencast available reviewing properties:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/2pCSQkHkPC8" frameborder="0" allowfullscreen></iframe>
+
 Indexes
 ~~~~~~~
 
@@ -74,6 +82,40 @@ You can declare that a property should have a unique value.
     end
 
 Notice an unique validation is not enough to be 100% sure that a property is unique (because of concurrency issues, just like ActiveRecord). Constraints can also be declared just like indexes separately, see above.
+
+Labels
+~~~~~~
+
+The class name maps directly to the label.  In the following case both the class name and label are ``Post``
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+    end
+
+If you want to specify a different label for your class you can use ``mapped_label_name``:
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+
+      self.mapped_label_name = 'BlogPost'
+    end
+
+If you would like to use multiple labels you can use class inheritance.  In the following case object created with the `Article` model would have both `Post` and `Article` labels.  When querying `Article` both labels are required on the nodes as well.
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+    end
+
+    class Article < Post
+    end
+
+
 
 Serialization
 ~~~~~~~~~~~~~
@@ -183,7 +225,10 @@ You can query associations:
     comment.post                # Post object
     comment.post.comments       # Original comment and all of it's siblings.  Makes just one query
     post.comments.authors.posts # All posts of people who have commented on the post.  Still makes just one query
-    You can create associations
+    
+You can create associations
+
+.. code-block:: ruby
 
     post.comments = [comment1, comment2]  # Removes all existing relationships
     post.comments << comment3             # Creates new relationship
@@ -191,11 +236,20 @@ You can query associations:
     comment.post = post1                  # Removes all existing relationships
 
 .. seealso::
+
+  .. raw:: html
+
+    There is also a screencast available reviewing associations:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/veqIfIqtoNc" frameborder="0" allowfullscreen></iframe>
+
+.. seealso::
   :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`
   and
   :ref:`#has_one <Neo4j/ActiveNode/HasN/ClassMethods#has_one>`
 
 .. _active_node-eager_loading:
+
 
 Eager Loading
 ~~~~~~~~~~~~~

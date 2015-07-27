@@ -129,6 +129,9 @@ Methods
   So for a `Teacher` model inheriting from a `Person` model and an `Article` model
   if you called .as_models([Teacher, Article])
   The where clause would look something like:
+  
+  .. code-block:: cypher
+  
     WHERE (node_var:Teacher:Person OR node_var:Article)
 
   .. hidden-code-block:: ruby
