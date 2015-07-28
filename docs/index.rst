@@ -21,6 +21,8 @@ Contents:
 
    Querying
 
+   QueryClauseMethods
+
    Configuration
 
    api/index
