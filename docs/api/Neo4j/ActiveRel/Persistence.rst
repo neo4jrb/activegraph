@@ -73,6 +73,38 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Persistence#_active_record_destroyed_behavior?`:
+
+**#_active_record_destroyed_behavior?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def _active_record_destroyed_behavior?
+       fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
+     
+       !!Neo4j::Config[:_active_record_destroyed_behavior]
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#_destroyed_double_check?`:
+
+**#_destroyed_double_check?**
+  These two methods should be removed in 6.0.0
+
+  .. hidden-code-block:: ruby
+
+     def _destroyed_double_check?
+       if _active_record_destroyed_behavior?
+         true
+       else
+         (!new_record? && !exist?)
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Persistence#apply_default_values`:
 
 **#apply_default_values**
@@ -191,7 +223,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def destroyed?
-       !!@_deleted
+       @_deleted || _destroyed_double_check?
      end
 
 

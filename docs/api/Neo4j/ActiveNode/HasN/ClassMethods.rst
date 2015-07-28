@@ -204,12 +204,12 @@ Methods
           Post.has_one :in, :author, type: :has_author, model_class: 'Person'
   
       *model_class*: The model class to which the association is referring.  Can be either a
-        model object ``include`` ing ``ActiveNode`` or a string (or an ``Array`` of same).
-        **A string is recommended** to avoid load-time issues
+        model object ``include`` ing ``ActiveNode`` or a Symbol/String (or an ``Array`` of same).
+        **A Symbol or String is recommended** to avoid load-time issues
   
       *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a
-        model object ``include`` ing ``ActiveRel`` or a string (or an ``Array`` of same).
-        **A string is recommended** to avoid load-time issues
+        model object ``include`` ing ``ActiveRel`` or a Symbol/String (or an ``Array`` of same).
+        **A Symbol or String is recommended** to avoid load-time issues
   
       *dependent*: Enables deletion cascading.
         **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``

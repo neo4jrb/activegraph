@@ -282,7 +282,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def find_by(values)
-       all.query_as(:n).where(n: values).limit(1).pluck(:n).first
+       all.where(values).limit(1).query_as(:n).pluck(:n).first
      end
 
 
