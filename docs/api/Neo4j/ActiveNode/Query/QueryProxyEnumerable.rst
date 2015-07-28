@@ -85,6 +85,9 @@ Methods
 **#each_rel**
   When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
   For example, to return the relationship between a given student and their lessons:
+  
+  .. code-block:: ruby
+  
     student.lessons.each_rel do |rel|
 
   .. hidden-code-block:: ruby
@@ -100,6 +103,9 @@ Methods
 **#each_with_rel**
   When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
   For example, to return a lesson and each relationship to a given student:
+  
+  .. code-block:: ruby
+  
     student.lessons.each_with_rel do |lesson, rel|
 
   .. hidden-code-block:: ruby

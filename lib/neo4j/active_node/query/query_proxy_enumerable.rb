@@ -19,7 +19,11 @@ module Neo4j
 
         # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
         # For example, to return the relationship between a given student and their lessons:
+        #
+        # .. code-block:: ruby
+        #
         #   student.lessons.each_rel do |rel|
+        #
         # @return [Enumerable] An enumerable containing any number of applicable relationship objects.
         def each_rel(&block)
           block_given? ? each(false, true, &block) : to_enum(:each, false, true)
@@ -27,6 +31,9 @@ module Neo4j
 
         # When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
         # For example, to return a lesson and each relationship to a given student:
+        #
+        # .. code-block:: ruby
+        #
         #   student.lessons.each_with_rel do |lesson, rel|
         def each_with_rel(&block)
           block_given? ? each(true, true, &block) : to_enum(:each, true, true)

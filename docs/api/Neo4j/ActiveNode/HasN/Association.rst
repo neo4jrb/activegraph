@@ -363,7 +363,9 @@ Methods
 
      def refresh_model_class!
        @pending_model_refresh = @target_classes_or_nil = nil
-       @model_class = @model_class.name.constantize if @model_class
+     
+       # Using #to_s on purpose here to take care of classes/strings/symbols
+       @model_class = @model_class.to_s.constantize if @model_class
      end
 
 

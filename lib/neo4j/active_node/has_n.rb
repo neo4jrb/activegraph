@@ -156,15 +156,17 @@ module Neo4j::ActiveNode
     end
 
     module ClassMethods
-      # :nocov:
       # rubocop:disable Style/PredicateName
+
+      # :nocov:
       def has_association?(name)
         ActiveSupport::Deprecation.warn 'has_association? is deprecated and may be removed from future releases, use association? instead.', caller
 
         association?(name)
       end
-      # rubocop:enable Style/PredicateName
       # :nocov:
+
+      # rubocop:enable Style/PredicateName
 
       def association?(name)
         !!associations[name.to_sym]
@@ -188,7 +190,10 @@ module Neo4j::ActiveNode
       # For defining an "has many" association on a model.  This defines a set of methods on
       # your model instances.  For instance, if you define the association on a Person model:
       #
-      # has_many :out, :vehicles, type: :has_vehicle
+      #
+      # .. code-block:: ruby
+      #
+      #   has_many :out, :vehicles, type: :has_vehicle
       #
       # This would define the following methods:
       #
@@ -206,7 +211,10 @@ module Neo4j::ActiveNode
       #   either all ``Person`` nodes (if ``Person.vehicles`` is called), or all ``Vehicle`` objects
       #   associated with the ``Person`` nodes thus far represented in the QueryProxy chain.
       #   For example:
-      #     ``company.people.where(age: 40).vehicles``
+      #
+      #   .. code-block:: ruby
+      #
+      #     company.people.where(age: 40).vehicles
       #
       # Arguments:
       #   **direction:**
@@ -215,18 +223,24 @@ module Neo4j::ActiveNode
       #     Refers to the relative to the model on which the association is being defined.
       #
       #     Example:
-      #       ``Person.has_many :out, :posts, type: :wrote``
       #
-      #         means that a `WROTE` relationship goes from a `Person` node to a `Post` node
+      #     .. code-block:: ruby
+      #
+      #       Person.has_many :out, :posts, type: :wrote
+      #
+      #     means that a `WROTE` relationship goes from a `Person` node to a `Post` node
       #
       #   **name:**
       #     The name of the association.  The affects the methods which are created (see above).
       #     The name is also used to form default assumptions about the model which is being referred to
       #
       #     Example:
-      #       ``Person.has_many :out, :posts, type: :wrote``
       #
-      #       will assume a `model_class` option of ``'Post'`` unless otherwise specified
+      #     .. code-block:: ruby
+      #
+      #       Person.has_many :out, :posts, type: :wrote
+      #
+      #     will assume a `model_class` option of ``'Post'`` unless otherwise specified
       #
       #   **options:** A ``Hash`` of options.  Allowed keys are:
       #     *type*: The Neo4j relationship type.  This option is required unless either the
@@ -236,17 +250,21 @@ module Neo4j::ActiveNode
       #       can be gathered.
       #
       #       Example:
-      #         ``Person.has_many :out, :posts, origin: :author`` (`model_class` of `Post` is assumed here)
       #
-      #         ``Post.has_one :in, :author, type: :has_author, model_class: 'Person'``
+      #       .. code-block:: ruby
+      #
+      #         # `model_class` of `Post` is assumed here
+      #         Person.has_many :out, :posts, origin: :author
+      #
+      #         Post.has_one :in, :author, type: :has_author, model_class: 'Person'
       #
       #     *model_class*: The model class to which the association is referring.  Can be either a
-      #       model object ``include`` ing ``ActiveNode`` or a string (or an ``Array`` of same).
-      #       **A string is recommended** to avoid load-time issues
+      #       model object ``include`` ing ``ActiveNode`` or a Symbol/String (or an ``Array`` of same).
+      #       **A Symbol or String is recommended** to avoid load-time issues
       #
       #     *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a
-      #       model object ``include`` ing ``ActiveRel`` or a string (or an ``Array`` of same).
-      #       **A string is recommended** to avoid load-time issues
+      #       model object ``include`` ing ``ActiveRel`` or a Symbol/String (or an ``Array`` of same).
+      #       **A Symbol or String is recommended** to avoid load-time issues
       #
       #     *dependent*: Enables deletion cascading.
       #       **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``

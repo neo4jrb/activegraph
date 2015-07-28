@@ -181,6 +181,9 @@ module ActiveNodeRelStubHelpers
       class << self
         attr_reader :class_name
         alias_method :name, :class_name
+        def to_s
+          name
+        end
       end
 
       module_eval(&block) if block
