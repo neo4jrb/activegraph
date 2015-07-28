@@ -151,8 +151,12 @@ module Neo4j
         alias_method :order_by, :order
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
-        def to_cypher
-          query.to_cypher
+        def to_cypher(*args)
+          query.to_cypher(*args)
+        end
+
+        def print_cypher
+          query.print_cypher
         end
 
         # Returns a string of the cypher query with return objects and params

@@ -54,3 +54,8 @@ Configuration
     **Default:** ``nil`` (or ``Rails.logger`` in Rails)
 
     A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used)
+
+  **pretty_logged_cypher_queries**
+    **Default:** ``nil``
+
+    If true, format outputted queries with newlines and colors to be more easily readable by humans
