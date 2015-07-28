@@ -20,6 +20,7 @@ Contents:
    ActiveRel
 
    Querying
+   QueryClauseMethods
 
    Configuration
 
