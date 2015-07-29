@@ -124,6 +124,8 @@ module Neo4j::ActiveNode
 
 
     module ClassMethods
+      attr_accessor :manual_id_property
+
       def find_by_neo_id(id)
         Neo4j::Node.load(id)
       end
@@ -137,12 +139,15 @@ module Neo4j::ActiveNode
       end
 
       def id_property(name, conf = {})
-        id_property_constraint(name)
-        @id_property_info = {name: name, type: conf}
-        TypeMethods.define_id_methods(self, name, conf)
-        constraint name, type: :unique unless conf[:constraint] == false
+        self.manual_id_property = true
+        Neo4j::Session.on_session_available do |_|
+          id_property_constraint(name)
+          @id_property_info = {name: name, type: conf}
+          TypeMethods.define_id_methods(self, name, conf)
+          constraint name, type: :unique unless conf[:constraint] == false
 
-        self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
+          self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
+        end
       end
 
       # rubocop:disable Style/PredicateName
@@ -163,6 +168,10 @@ module Neo4j::ActiveNode
 
       def id_property_name
         id_property_info[:name]
+      end
+
+      def manual_id_property?
+        !!manual_id_property
       end
 
       alias_method :primary_key, :id_property_name

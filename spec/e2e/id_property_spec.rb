@@ -250,6 +250,40 @@ describe Neo4j::ActiveNode::IdProperty do
     end
   end
 
+  describe 'redefining the default property' do
+    before { Neo4j::Session.current.close if Neo4j::Session.current }
+
+    context 'without a constraint' do
+      before do
+        stub_const('NoConstraintClass', Class.new do
+                                          include Neo4j::ActiveNode
+                                          id_property :uuid, auto: :uuid, constraint: false
+                                          index :uuid
+                                        end)
+      end
+
+      it 'prevents the setting of default uuid constraint' do
+        expect(NoConstraintClass).not_to receive(:constraint)
+        create_session
+        expect(Neo4j::Label.index?(NoConstraintClass.mapped_label_name, :uuid)).to be_truthy
+      end
+
+      describe 'inheritence' do
+        before do
+          stub_const('ConstraintSubclass', Class.new(NoConstraintClass) do
+                                             include Neo4j::ActiveNode
+                                             id_property :uuid, auto: :uuid, constraint: true
+                                           end)
+        end
+
+        it 'overrides the parent' do
+          expect(ConstraintSubclass).to receive(:constraint)
+          create_session
+        end
+      end
+    end
+  end
+
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
       stub_const('Clazz', UniqueClass.create do
