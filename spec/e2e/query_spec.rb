@@ -394,8 +394,8 @@ describe 'Query API' do
         let(:without_labels) { proc { |target| target.lessons_teaching(:l, :r, labels: false).students(:s, :sr, labels: false).to_cypher } }
         let(:expected_label_cypher) do
           proc do
-            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`), l<-[sr:`is_enrolled_for`]-(s:`Student`)')
-            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l), l<-[sr:`is_enrolled_for`]-(s)')
+            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`) MATCH l<-[sr:`is_enrolled_for`]-(s:`Student`)')
+            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l) MATCH l<-[sr:`is_enrolled_for`]-(s)')
           end
         end
 
