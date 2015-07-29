@@ -1,3 +1,5 @@
+require 'date'
+
 module Neo4j::Shared
   module TypeConverters
     # Converts Date objects to Java long types. Must be timezone UTC.
