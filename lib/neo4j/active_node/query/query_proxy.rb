@@ -54,9 +54,7 @@ module Neo4j
         end
 
         def inspect
-          clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
-
-          "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+          "<QueryProxy #{ANSI::CYAN}#{@context}#{ANSI::CLEAR} CYPHER: #{ANSI::YELLOW}#{self.to_cypher.inspect}#{ANSI::CLEAR}>"
         end
 
         attr_reader :start_object, :query_proxy
@@ -107,7 +105,7 @@ module Neo4j
           if @association
             chain_var = _association_chain_var
             (_association_query_start(chain_var) & _query).break.send(@match_type,
-                                                                "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
+                                                                      "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
           else
             starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
           end
