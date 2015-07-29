@@ -84,6 +84,7 @@ module Neo4j
       end
 
       Neo4j::Session.on_session_available do |_|
+        next if manual_id_property?
         id_property :uuid, auto: :uuid unless self.id_property?
 
         name = Neo4j::Config[:id_property]
