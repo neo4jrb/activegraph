@@ -17,6 +17,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Support formatted cypher queries for easy reading by humans via the `pretty_logged_cypher_queries` configuration variable
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 
+## [5.0.9] - 2015-07-29
+- Fix "NameError: uninitialized constant Class::Date" (https://github.com/neo4jrb/neo4j/issues/852)
+
 ## [5.0.8] - 2015-07-26
 - Copied QueryClauseMethods doc from master
 
