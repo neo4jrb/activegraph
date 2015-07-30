@@ -191,6 +191,12 @@ module ActiveNodeRelStubHelpers
   end
 end
 
+def before_session
+  Neo4j::Session.current.close if Neo4j::Session.current
+  yield
+  create_session
+end
+
 RSpec.configure do |c|
   c.include Neo4jSpecHelpers
 

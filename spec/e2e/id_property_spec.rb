@@ -7,7 +7,6 @@ describe Neo4j::ActiveNode::IdProperty do
     Neo4j::Config.delete(:id_property_type_value)
   end
 
-
   describe 'abnormal cases' do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
@@ -63,32 +62,36 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'when having a configuration' do
       before do
-        Neo4j::Config[:id_property] = :the_id
-        Neo4j::Config[:id_property_type] = :auto
-        Neo4j::Config[:id_property_type_value] = :uuid
-        stub_const('Clazz', UniqueClass.create do
-          include Neo4j::ActiveNode
-        end)
+        before_session do
+          Neo4j::Config[:id_property] = :the_id
+          Neo4j::Config[:id_property_type] = :auto
+          Neo4j::Config[:id_property_type_value] = :uuid
+          stub_const('Clazz', Class.new do
+            include Neo4j::ActiveNode
+          end)
+        end
       end
 
       it 'will set the id_property after a session has been created' do
         node = Clazz.new
         expect(node).to respond_to(:the_id)
-        expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:the_id]])
+        expect(Clazz.mapped_label.indexes[:property_keys].sort).to eq([[:the_id], [:uuid]])
       end
     end
   end
 
   describe 'id_property :myid' do
     before do
-      stub_const('Clazz', UniqueClass.create do
-        include Neo4j::ActiveNode
-        id_property :myid
-      end)
+      before_session do
+        stub_const('Clazz', UniqueClass.create do
+          include Neo4j::ActiveNode
+          id_property :myid
+        end)
+      end
     end
 
     it 'has an index' do
-      expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:myid]])
+      expect(Clazz.mapped_label.indexes[:property_keys]).to eq([[:myid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -168,18 +171,20 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_id, on: :foobar' do
     before do
-      stub_const('Clazz', UniqueClass.create do
-        include Neo4j::ActiveNode
-        id_property :my_id, on: :foobar
+      before_session do
+        stub_const('Clazz', UniqueClass.create do
+          include Neo4j::ActiveNode
+          id_property :my_id, on: :foobar
 
-        def foobar
-          'some id'
-        end
-      end)
+          def foobar
+            'some id'
+          end
+        end)
+      end
     end
 
     it 'has an index' do
-      expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:my_id]])
+      expect(Clazz.mapped_label.indexes[:property_keys]).to eq([[:my_id]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -286,14 +291,16 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
+      Neo4j::Session.current.close if Neo4j::Session.current
       stub_const('Clazz', UniqueClass.create do
         include Neo4j::ActiveNode
         id_property :my_uuid, auto: :uuid
       end)
+      create_session
     end
 
     it 'has an index' do
-      expect(Clazz.mapped_label.indexes).to eq(property_keys: [[:my_uuid]])
+      expect(Clazz.mapped_label.indexes[:property_keys]).to eq([[:my_uuid]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do

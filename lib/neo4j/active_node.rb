@@ -76,7 +76,7 @@ module Neo4j
 
       def self.inherit_id_property(other)
         Neo4j::Session.on_session_available do |_|
-          return unless self.id_property?
+          next if other.manual_id_property? || !self.id_property?
           id_prop = self.id_property_info
           conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
           other.id_property id_prop[:name], conf

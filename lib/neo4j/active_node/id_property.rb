@@ -141,10 +141,9 @@ module Neo4j::ActiveNode
       def id_property(name, conf = {})
         self.manual_id_property = true
         Neo4j::Session.on_session_available do |_|
-          id_property_constraint(name)
           @id_property_info = {name: name, type: conf}
           TypeMethods.define_id_methods(self, name, conf)
-          constraint name, type: :unique unless conf[:constraint] == false
+          constraint(name, type: :unique) unless conf[:constraint] == false
 
           self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
         end
@@ -182,7 +181,7 @@ module Neo4j::ActiveNode
         if id_property?
           unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
             # Neo4j Embedded throws a crazy error when a constraint can't be dropped
-            drop_constraint(id_property_name, type: :unique)
+            drop_constraint(id_property_name, type: :unique) if constraint?(mapped_label_name, id_property_name)
           end
         end
       rescue Neo4j::Server::CypherResponse::ResponseError, Java::OrgNeo4jCypher::CypherExecutionException
