@@ -15,6 +15,31 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Added ability to view `model_class` from `Association` class for `rails_admin` Neo4j adapter
 - QueryProxy `where` will now look for declared properties matching hash keys. When found, it will send the value through that property's type converter if the type matches the property's unconverted state.
+- Improved handling of unpersisted nodes with associations. You can now use `<<` to create associations between unpersisted nodes. A `save` will cascade through unpersisted objects, creating nodes and rels along the way. See https://github.com/neo4jrb/neo4j/pull/871
+- Support formatted cypher queries for easy reading by humans via the `pretty_logged_cypher_queries` configuration variable
+- On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
+
+## [5.0.9] - 2015-07-29
+- Fix "NameError: uninitialized constant Class::Date" (https://github.com/neo4jrb/neo4j/issues/852)
+
+## [5.0.8] - 2015-07-26
+- Copied QueryClauseMethods doc from master
+
+## [5.0.7] - 2015-07-26
+- Copied `docs` folder from master because a lot of work had gone into the docs since 5.0.0 was released
+
+## [5.0.6] - 2015-07-22
+- Fix query logging so that by default it only outputs to the user in the console and development server.  Logger can be changed with `neo4j.config.logger` configuration option
+
+## [5.0.5] - 2015-07-19
+
+### Added
+- Added `log_cypher_queries` configuration option so that queries aren't on by default but that they can be controlled
+
+## [5.0.4] - 2015-07-17
+
+### Fixed
+- Fixed bug which caused `QueryProxy` context to repeat (showed up in query logging)
 
 ## [5.0.3] - 2015-07-14
 
