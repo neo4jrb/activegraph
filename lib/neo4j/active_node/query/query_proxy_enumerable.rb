@@ -10,13 +10,25 @@ module Neo4j
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
         def each(node = true, rel = nil, &block)
+          result(node, rel).each(&block)
+        end
+
+        def result(node = true, rel = true)
+          @result_cache ||= {}
+          return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+
           pluck_vars = []
           pluck_vars << identity if node
           pluck_vars << @rel_var if rel
 
-          fetch_result_cache do
-            pluck(*pluck_vars)
-          end.each(&block)
+          result = pluck(*pluck_vars)
+
+          result.each do |object|
+            object.instance_variable_set('@source_query_proxy', self)
+            object.instance_variable_set('@source_query_proxy_result_cache', result)
+          end
+
+          @result_cache[[node, rel]] ||= result
         end
 
         def fetch_result_cache
