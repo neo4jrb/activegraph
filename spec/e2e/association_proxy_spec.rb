@@ -38,6 +38,7 @@ describe 'Association Proxy' do
     math.exams_given << math_exam
     science.exams_given << science_exam
     billy.favorite_lesson = math
+
   end
 
   it 'Should only make one query per association' do
@@ -52,6 +53,18 @@ describe 'Association Proxy' do
 
       expect(grouped_lessons['math'][0].students.to_a).to eq([billy])
       expect(grouped_lessons['science'][0].students.to_a).to eq([billy])
+    end
+  end
+
+  it 'Should only make one query association from a model query' do
+    expect_queries(3) do
+      grouped_exams = Exam.all.group_by(&:name)
+
+      expect(grouped_exams['Science Exam'][0].students.to_a).to eq([billy])
+      expect(grouped_exams['Science Exam'][0].lessons.to_a).to eq([science])
+
+      expect(grouped_exams['Math Exam'][0].students.to_a).to eq([billy])
+      expect(grouped_exams['Math Exam'][0].lessons.to_a).to eq([math])
     end
   end
 
