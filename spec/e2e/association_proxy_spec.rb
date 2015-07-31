@@ -38,7 +38,6 @@ describe 'Association Proxy' do
     math.exams_given << math_exam
     science.exams_given << science_exam
     billy.favorite_lesson = math
-
   end
 
   it 'Should only make one query per association' do
