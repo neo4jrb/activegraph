@@ -54,9 +54,6 @@ module Neo4j::ActiveNode
 
       def cache_query_proxy_result
         @query_proxy.to_a.tap do |result|
-          result.each do |object|
-            object.instance_variable_set('@association_proxy', self)
-          end
           cache_result(result)
         end
       end
