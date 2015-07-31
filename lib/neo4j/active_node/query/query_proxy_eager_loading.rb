@@ -2,24 +2,24 @@ module Neo4j
   module ActiveNode
     module Query
       module QueryProxyEagerLoading
-
         def each(node = true, rel = nil, &block)
-          if with_associations_spec.size > 0
-            return_object_clause = '[' + with_associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
-            query_from_association_spec.pluck(identity, return_object_clause).map do |record, eager_data|
-              eager_data.each_with_index do |eager_records, index|
-                record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
-              end
+          return super if with_associations_spec.size.zero?
 
-              block.call(record)
+          query_from_association_spec.pluck(identity, with_associations_return_clause).map do |record, eager_data|
+            eager_data.each_with_index do |eager_records, index|
+              record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
             end
-          else
-            super
+
+            block.call(record)
           end
         end
 
         def with_associations_spec
           @with_associations_spec ||= []
+        end
+
+        def with_associations_return_clause
+          '[' + with_associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
         end
 
         def with_associations(*spec)
