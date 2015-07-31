@@ -55,6 +55,18 @@ describe 'Association Proxy' do
     end
   end
 
+  it 'Should only make one query association from a model query' do
+    expect_queries(3) do
+      grouped_exams = Exam.all.group_by(&:name)
+
+      expect(grouped_exams['Science Exam'][0].students.to_a).to eq([billy])
+      expect(grouped_exams['Science Exam'][0].lessons.to_a).to eq([science])
+
+      expect(grouped_exams['Math Exam'][0].students.to_a).to eq([billy])
+      expect(grouped_exams['Math Exam'][0].lessons.to_a).to eq([math])
+    end
+  end
+
   it 'Should allow for loading of associations with one query' do
     expect_queries(1) do
       grouped_lessons = billy.lessons.with_associations(:exams_given, :students).group_by(&:subject)
