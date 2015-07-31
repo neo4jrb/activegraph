@@ -14,7 +14,13 @@ module Neo4j
           pluck_vars << identity if node
           pluck_vars << @rel_var if rel
 
-          pluck(*pluck_vars).each(&block)
+          fetch_result_cache do
+            pluck(*pluck_vars)
+          end.each(&block)
+        end
+
+        def fetch_result_cache
+          @result_cache ||= yield
         end
 
         # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
