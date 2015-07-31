@@ -308,13 +308,17 @@ module Neo4j::ActiveNode
       end
 
       def define_has_many_id_methods(name)
-        define_method("#{name.to_s.singularize}_ids") do
+        define_method_unless_defined("#{name.to_s.singularize}_ids") do
           association_proxy(name).pluck(:uuid)
         end
 
-        define_method("#{name.to_s.singularize}_neo_ids") do
+        define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
           association_proxy(name).pluck(:neo_id)
         end
+      end
+
+      def define_method_unless_defined(method_name, &block)
+        define_method(method_name, block) unless respond_to?(method_name)
       end
 
       def define_has_one_methods(name)
