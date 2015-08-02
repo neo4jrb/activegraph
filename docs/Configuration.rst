@@ -58,4 +58,4 @@ Configuration
   **pretty_logged_cypher_queries**
     **Default:** ``nil``
 
-    When logging cypher queries format with newlines and colors to be more easily readable by humans
+    If true, format outputted queries with newlines and colors to be more easily readable by humans

@@ -1,0 +1,19 @@
+QueryClauseMethods
+==================
+
+The ``Neo4j::Core::Query`` class from the `neo4j-core` gem defines a DSL which allows for easy creation of Neo4j `Cypher queries <http://neo4j.com/developer/cypher-query-language>`_.  They can be started from a session like so:
+
+.. code-block:: ruby
+
+  # The current session can be retrieved with `Neo4j::Session.current`
+  a_session.query
+
+Advantages of using the `Query` class include:
+
+ * Method chaining allows you to build a part of a query and then pass it somewhere else to be built further
+ * Automatic use of parameters when possible
+ * Ability to pass in data directly from other sources (like Hash to match keys/values)
+ * Ability to use native Ruby objects (such as translating `nil` values to `IS NULL`, regular expressions to Cypher-style regular expression matches, etc...)
+
+Below is a series of Ruby code samples and the resulting Cypher that would be generated.  These examples are all generated directly from the `spec file <https://github.com/neo4jrb/neo4j-core/blob/master/spec/neo4j-core/unit/query_spec.rb>`_ and are thus all tested to work.
+
