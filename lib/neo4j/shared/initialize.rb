@@ -21,7 +21,7 @@ module Neo4j::Shared
     def stringify_attributes!(attr, properties)
       properties.each_pair do |k, v|
         key = self.class.declared_property_manager.string_key(k)
-        attr[key] = v
+        attr[key.freeze] = v
       end
     end
   end
