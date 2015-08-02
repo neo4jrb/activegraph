@@ -34,7 +34,7 @@ module Neo4j::ActiveNode
   #
   module IdProperty
     extend ActiveSupport::Concern
-
+    include Accessor
 
     module TypeMethods
       def define_id_methods(clazz, name, conf)
@@ -90,7 +90,7 @@ module Neo4j::ActiveNode
           end
 
           def #{name}
-             default_property :#{name}
+             default_property_value
           end
 
           alias_method :id, :#{name}
@@ -107,7 +107,7 @@ module Neo4j::ActiveNode
           end
 
           def #{name}
-             default_property :#{name}
+             default_property_value
           end
 
           alias_method :id, :#{name}

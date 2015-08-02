@@ -35,26 +35,10 @@ module Neo4j::Shared
     end
     alias_method :[], :read_attribute
 
-    def default_properties=(properties)
-      default_property_keys = self.class.default_properties_keys
-      @default_properties = properties.select { |key| default_property_keys.include?(key) }
-    end
-
-    def default_property(key)
-      default_properties[key.to_sym]
-    end
-
-    def default_properties
-      @default_properties ||= Hash.new(nil)
-      # keys = self.class.default_properties.keys
-      # _persisted_obj.props.reject{|key| !keys.include?(key)}
-    end
-
     def send_props(hash)
       return hash if hash.blank?
       hash.each { |key, value| self.send("#{key}=", value) }
     end
-
 
     protected
 
@@ -179,36 +163,6 @@ module Neo4j::Shared
 
       def declared_property_manager
         @_declared_property_manager ||= DeclaredPropertyManager.new(self)
-      end
-
-      # TODO: Move this to the DeclaredPropertyManager
-      def default_property(name, &block)
-        reset_default_properties(name) if default_properties.respond_to?(:size)
-        default_properties[name] = block
-      end
-
-      # @return [Hash<Symbol,Proc>]
-      def default_properties
-        @default_property ||= {}
-      end
-
-      def default_properties_keys
-        @default_properties_keys ||= default_properties.keys
-      end
-
-      def reset_default_properties(name_to_keep)
-        default_properties.each_key do |property|
-          @default_properties_keys = nil
-          undef_method(property) unless property == name_to_keep
-        end
-        @default_properties_keys = nil
-        @default_property = {}
-      end
-
-      def default_property_values(instance)
-        default_properties.each_with_object({}) do |(key, block), result|
-          result[key] = block.call(instance)
-        end
       end
 
       def attribute!(name, options = {})
