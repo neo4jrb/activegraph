@@ -17,15 +17,14 @@ module Neo4j::Shared
 
     # TODO: Remove the commented :super entirely once this code is part of a release.
     # It calls an init method in active_attr that has a very negative impact on performance.
-    def initialize(attributes = {}, _options = nil)
-      attributes = process_attributes(attributes) unless attributes.empty?
+    def initialize(attributes = nil, _options = nil)
+      attributes = process_attributes(attributes)
       @relationship_props = self.class.extract_association_attributes!(attributes)
       writer_method_props = extract_writer_methods!(attributes)
       validate_attributes!(attributes)
-      send_props(writer_method_props) unless writer_method_props.empty?
+      send_props(writer_method_props)
 
       @_persisted_obj = nil
-      # super(attributes, options)
     end
 
     # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -52,6 +51,7 @@ module Neo4j::Shared
     end
 
     def send_props(hash)
+      return hash if hash.blank?
       hash.each { |key, value| self.send("#{key}=", value) }
     end
 
@@ -71,13 +71,13 @@ module Neo4j::Shared
     # Changes attributes hash to remove relationship keys
     # Raises an error if there are any keys left which haven't been defined as properties on the model
     def validate_attributes!(attributes)
-      return attributes if attributes.empty?
+      return attributes if attributes.blank?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end
 
     def extract_writer_methods!(attributes)
-      return attributes if attributes.empty?
+      return attributes if attributes.blank?
       {}.tap do |writer_method_props|
         attributes.each_key do |key|
           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
@@ -87,6 +87,7 @@ module Neo4j::Shared
 
     # Gives support for Rails date_select, datetime_select, time_select helpers.
     def process_attributes(attributes = nil)
+      return attributes if attributes.blank?
       multi_parameter_attributes = {}
       new_attributes = {}
       attributes.each_pair do |key, value|
