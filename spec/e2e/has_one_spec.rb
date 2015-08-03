@@ -200,4 +200,25 @@ describe 'has_one' do
       expect(node1.failing_assoc).to be_nil
     end
   end
+
+  describe 'id methods' do
+    before(:each) do
+      stub_active_node_class('Post') do
+        has_many :in, :comments, type: :COMMENTS_ON
+      end
+
+      stub_active_node_class('Comment') do
+        has_one :out, :post, type: :COMMENTS_ON
+      end
+    end
+
+    let(:post) { Post.create }
+    let(:comment) { Comment.create }
+    before(:each) { comment.post = post }
+
+    it 'returns various IDs for associations' do
+      expect(comment.post_id).to eq(post.id)
+      expect(comment.post_neo_id).to eq(post.neo_id)
+    end
+  end
 end

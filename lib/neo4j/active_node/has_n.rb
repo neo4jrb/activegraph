@@ -307,6 +307,8 @@ module Neo4j::ActiveNode
 
         define_has_many_setter(name)
 
+        define_has_many_id_methods(name)
+
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
@@ -320,13 +322,39 @@ module Neo4j::ActiveNode
         end
       end
 
+      def define_has_many_id_methods(name)
+        define_method_unless_defined("#{name.to_s.singularize}_ids") do
+          association_proxy(name).pluck(:uuid)
+        end
+
+        define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
+          association_proxy(name).pluck(:neo_id)
+        end
+      end
+
+      def define_method_unless_defined(method_name, &block)
+        define_method(method_name, block) unless respond_to?(method_name)
+      end
+
       def define_has_one_methods(name)
         define_has_one_getter(name)
 
         define_has_one_setter(name)
 
+        define_has_one_id_methods(name)
+
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
+        end
+      end
+
+      def define_has_one_id_methods(name)
+        define_method("#{name}_id") do
+          association_proxy(name).pluck(:uuid).first
+        end
+
+        define_method("#{name}_neo_id") do
+          association_proxy(name).pluck(:neo_id).first
         end
       end
 

@@ -539,4 +539,24 @@ describe 'has_many' do
       end
     end
   end
+  describe 'id methods' do
+    before(:each) do
+      stub_active_node_class('Post') do
+        has_many :in, :comments, type: :COMMENTS_ON
+      end
+
+      stub_active_node_class('Comment') do
+        has_one :out, :post, type: :COMMENTS_ON
+      end
+    end
+
+    let(:post) { Post.create }
+    let(:comment) { Comment.create }
+    before(:each) { comment.post = post }
+
+    it 'returns various IDs for associations' do
+      expect(post.comment_ids).to eq([comment.id])
+      expect(post.comment_neo_ids).to eq([comment.neo_id])
+    end
+  end
 end
