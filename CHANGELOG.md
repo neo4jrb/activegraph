@@ -5,9 +5,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
-### Changed
-- `ActiveNode#destroyed?` and `ActiveRel#destroyed?` now only consider the in-memory state of if an object is destroyed without checking the database
-
 ### Fixed
 - Added a `before_remove_const` method to clear cached models when Rails `reload!` is called. 5.0.1 included a workaround but this appears to cut to the core of the issue. See https://github.com/neo4jrb/neo4j/pull/855.
 - To prevent errors, changing an index to constraint or constraint to index will drop the existing index/constraint before adding the new.
@@ -19,6 +16,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Improved handling of unpersisted nodes with associations. You can now use `<<` to create associations between unpersisted nodes. A `save` will cascade through unpersisted objects, creating nodes and rels along the way. See https://github.com/neo4jrb/neo4j/pull/871
 - Support formatted cypher queries for easy reading by humans via the `pretty_logged_cypher_queries` configuration variable
 - Ability to query for just IDs on associations
+- On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
+
+## [5.0.10] - 2015-07-31
+- Fix what should have been a very obvious bug in `_active_record_destroyed_behavior` behavior
+- Add eager loading to QueryProxy so that it works in all expected places
+
+## [5.0.9] - 2015-07-29
+- Fix "NameError: uninitialized constant Class::Date" (https://github.com/neo4jrb/neo4j/issues/852)
+
+## [5.0.8] - 2015-07-26
+- Copied QueryClauseMethods doc from master
+
+## [5.0.7] - 2015-07-26
+- Copied `docs` folder from master because a lot of work had gone into the docs since 5.0.0 was released
+
+## [5.0.6] - 2015-07-22
+- Fix query logging so that by default it only outputs to the user in the console and development server.  Logger can be changed with `neo4j.config.logger` configuration option
 
 ## [5.0.5] - 2015-07-19
 

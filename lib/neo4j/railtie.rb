@@ -11,7 +11,6 @@ module Neo4j
     end
 
     rake_tasks do
-      load 'neo4j/tasks/neo4j_server.rake'
       load 'neo4j/tasks/migration.rake'
     end
 
@@ -74,10 +73,16 @@ module Neo4j
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
 
       Neo4j::Server::CypherSession.log_with do |message|
-        puts message
+        (Neo4j::Config[:logger] || Rails.logger).info message
       end
 
       @neo4j_cypher_logging_registered = true
+    end
+
+    console do
+      Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
+
+      register_neo4j_cypher_logging
     end
 
     # Starting Neo after :load_config_initializers allows apps to
@@ -92,10 +97,8 @@ module Neo4j
       end
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 
-      register_neo4j_cypher_logging if Neo4j::Config[:log_cypher_queries]
-    end
+      Neo4j::Config[:logger] ||= Rails.logger
 
-    console do
       register_neo4j_cypher_logging
     end
   end

@@ -181,11 +181,20 @@ module ActiveNodeRelStubHelpers
       class << self
         attr_reader :class_name
         alias_method :name, :class_name
+        def to_s
+          name
+        end
       end
 
       module_eval(&block) if block
     end
   end
+end
+
+def before_session
+  Neo4j::Session.current.close if Neo4j::Session.current
+  yield
+  create_session
 end
 
 RSpec.configure do |c|

@@ -129,6 +129,7 @@ module Neo4j
                         # support for null object pattern
                         '1 = 2'
                       end
+
           self.where(where_arg)
         end
 
@@ -197,6 +198,9 @@ module Neo4j
         # So for a `Teacher` model inheriting from a `Person` model and an `Article` model
         # if you called .as_models([Teacher, Article])
         # The where clause would look something like:
+        #
+        # .. code-block:: cypher
+        #
         #   WHERE (node_var:Teacher:Person OR node_var:Article)
         def as_models(models)
           where_clause = models.map do |model|

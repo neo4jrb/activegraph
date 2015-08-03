@@ -265,6 +265,9 @@ Methods
   So for a `Teacher` model inheriting from a `Person` model and an `Article` model
   if you called .as_models([Teacher, Article])
   The where clause would look something like:
+  
+  .. code-block:: cypher
+  
     WHERE (node_var:Teacher:Person OR node_var:Article)
 
   .. hidden-code-block:: ruby
@@ -522,6 +525,9 @@ Methods
 **#each_rel**
   When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
   For example, to return the relationship between a given student and their lessons:
+  
+  .. code-block:: ruby
+  
     student.lessons.each_rel do |rel|
 
   .. hidden-code-block:: ruby
@@ -537,6 +543,9 @@ Methods
 **#each_with_rel**
   When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
   For example, to return a lesson and each relationship to a given student:
+  
+  .. code-block:: ruby
+  
     student.lessons.each_with_rel do |lesson, rel|
 
   .. hidden-code-block:: ruby
@@ -822,6 +831,7 @@ Methods
                      # support for null object pattern
                      '1 = 2'
                    end
+     
        self.where(where_arg)
      end
 
@@ -1013,6 +1023,9 @@ Methods
 **#query_as**
   Build a Neo4j::Core::Query object for the QueryProxy. This is necessary when you want to take an existing QueryProxy chain
   and work with it from the more powerful (but less friendly) Neo4j::Core::Query.
+  .. code-block:: ruby
+  
+    student.lessons.query_as(:l).with('your cypher here...')
 
   .. hidden-code-block:: ruby
 
@@ -1157,6 +1170,8 @@ Methods
 
 **#scoping**
   Scope all queries to the current scope.
+  
+  .. code-block:: ruby
   
     Comment.where(post_id: 1).scoping do
       Comment.first

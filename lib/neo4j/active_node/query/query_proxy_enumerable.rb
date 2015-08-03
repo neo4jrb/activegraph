@@ -10,16 +10,38 @@ module Neo4j
         # using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
         # @return [Enumerable] An enumerable containing some combination of nodes and rels.
         def each(node = true, rel = nil, &block)
+          result(node, rel).each(&block)
+        end
+
+        def result(node = true, rel = true)
+          @result_cache ||= {}
+          return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+
           pluck_vars = []
           pluck_vars << identity if node
           pluck_vars << @rel_var if rel
 
-          pluck(*pluck_vars).each(&block)
+          result = pluck(*pluck_vars)
+
+          result.each do |object|
+            object.instance_variable_set('@source_query_proxy', self)
+            object.instance_variable_set('@source_query_proxy_result_cache', result)
+          end
+
+          @result_cache[[node, rel]] ||= result
+        end
+
+        def fetch_result_cache
+          @result_cache ||= yield
         end
 
         # When called at the end of a QueryProxy chain, it will return the resultant relationship objects intead of nodes.
         # For example, to return the relationship between a given student and their lessons:
+        #
+        # .. code-block:: ruby
+        #
         #   student.lessons.each_rel do |rel|
+        #
         # @return [Enumerable] An enumerable containing any number of applicable relationship objects.
         def each_rel(&block)
           block_given? ? each(false, true, &block) : to_enum(:each, false, true)
@@ -27,6 +49,9 @@ module Neo4j
 
         # When called at the end of a QueryProxy chain, it will return the nodes and relationships of the last link.
         # For example, to return a lesson and each relationship to a given student:
+        #
+        # .. code-block:: ruby
+        #
         #   student.lessons.each_with_rel do |lesson, rel|
         def each_with_rel(&block)
           block_given? ? each(true, true, &block) : to_enum(:each, true, true)
