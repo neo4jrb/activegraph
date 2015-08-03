@@ -54,9 +54,6 @@ module Neo4j::ActiveNode
 
       def cache_query_proxy_result
         @query_proxy.to_a.tap do |result|
-          result.each do |object|
-            object.instance_variable_set('@association_proxy', self)
-          end
           cache_result(result)
         end
       end
@@ -126,10 +123,10 @@ module Neo4j::ActiveNode
       name = name.to_sym
       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
       association_proxy_cache_fetch(hash) do
-        if previous_association_proxy = self.instance_variable_get('@association_proxy')
-          result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
+        if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+          result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
 
-          previous_association_proxy.result.inject(nil) do |proxy_to_return, object|
+          result_cache.inject(nil) do |proxy_to_return, object|
             proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
 
             object.association_proxy_cache[hash] = proxy
@@ -148,9 +145,9 @@ module Neo4j::ActiveNode
       AssociationProxy.new(association_query_proxy(name, options), cached_result)
     end
 
-    def previous_association_proxy_results_by_previous_id(association_proxy, association_name)
-      query_proxy = self.class.as(:previous).where(neo_id: association_proxy.result.map(&:neo_id))
-      query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next)
+    def previous_proxy_results_by_previous_id(result_cache, association_name)
+      query_proxy = self.class.as(:previous).where(neo_id: result_cache.map(&:neo_id))
+      query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next, optional: true)
 
       Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
     end
@@ -310,6 +307,8 @@ module Neo4j::ActiveNode
 
         define_has_many_setter(name)
 
+        define_has_many_id_methods(name)
+
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
@@ -323,13 +322,39 @@ module Neo4j::ActiveNode
         end
       end
 
+      def define_has_many_id_methods(name)
+        define_method_unless_defined("#{name.to_s.singularize}_ids") do
+          association_proxy(name).pluck(:uuid)
+        end
+
+        define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
+          association_proxy(name).pluck(:neo_id)
+        end
+      end
+
+      def define_method_unless_defined(method_name, &block)
+        define_method(method_name, block) unless respond_to?(method_name)
+      end
+
       def define_has_one_methods(name)
         define_has_one_getter(name)
 
         define_has_one_setter(name)
 
+        define_has_one_id_methods(name)
+
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
+        end
+      end
+
+      def define_has_one_id_methods(name)
+        define_method("#{name}_id") do
+          association_proxy(name).pluck(:uuid).first
+        end
+
+        define_method("#{name}_neo_id") do
+          association_proxy(name).pluck(:neo_id).first
         end
       end
 

@@ -84,7 +84,7 @@ module Neo4j::Shared
     # These two methods should be removed in 6.0.0
     def _destroyed_double_check?
       if _active_record_destroyed_behavior?
-        true
+        false
       else
         (!new_record? && !exist?)
       end
