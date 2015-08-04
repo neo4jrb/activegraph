@@ -29,7 +29,7 @@ module Neo4j::ActiveNode
       end
 
       extend Forwardable
-      %w(include? empty? count find ==).each do |delegated_method|
+      %w(include? empty? count find first last ==).each do |delegated_method|
         def_delegator :@enumerable, delegated_method
       end
 
