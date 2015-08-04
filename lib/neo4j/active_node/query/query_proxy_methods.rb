@@ -36,7 +36,7 @@ module Neo4j
                                     pluck_proc = proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }
                                     [new_query, pluck_proc]
                                   else
-                                    new_query = self.order(id_property_name).limit(1)
+                                    new_query = self.order(order_property).limit(1)
                                     pluck_proc = proc { |var| var }
                                     [new_query, pluck_proc]
                                   end
@@ -45,6 +45,12 @@ module Neo4j
             new_query.pluck(final_pluck)
           end
           result.first
+        end
+
+        def order_property
+          # This should maybe be based on a setting in the association
+          # rather than a hardcoded `nil`
+          model ? model.id_property_name : :uuid
         end
 
         private :first_and_last
