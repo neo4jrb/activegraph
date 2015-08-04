@@ -36,7 +36,7 @@ module Neo4j
                                     pluck_proc = proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }
                                     [new_query, pluck_proc]
                                   else
-                                    new_query = self.order(order).limit(1)
+                                    new_query = self.order(id_property_name).limit(1)
                                     pluck_proc = proc { |var| var }
                                     [new_query, pluck_proc]
                                   end
