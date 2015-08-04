@@ -50,7 +50,7 @@ module Neo4j
         def order_property
           # This should maybe be based on a setting in the association
           # rather than a hardcoded `nil`
-          model ? model.id_property_name : :uuid
+          model ? model.id_property_name : nil
         end
 
         private :first_and_last
