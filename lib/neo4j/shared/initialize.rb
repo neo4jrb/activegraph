@@ -12,7 +12,7 @@ module Neo4j::Shared
     private
 
     def convert_and_assign_attributes(properties)
-      @attributes ||= self.class.attributes_nil_hash.dup
+      @attributes ||= Hash[self.class.attributes_nil_hash]
       stringify_attributes!(@attributes, properties)
       self.default_properties = properties
       self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
