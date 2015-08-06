@@ -78,4 +78,35 @@ describe 'Association Proxy' do
       expect(grouped_lessons['science'][0].exams_given).to eq([science_exam])
     end
   end
+
+  it 'Should allow for loading of `has_one` association' do
+    expect_queries(1) do
+      grouped_students = science.students.with_associations(:favorite_lesson).group_by(&:name)
+
+      expect(grouped_students['Billy'][0].favorite_lesson).to eq(math)
+
+      expect(grouped_students.size).to eq(1)
+      expect(grouped_students['Billy'].size).to eq(1)
+    end
+  end
+
+  describe 'issue reported by @andrewhavens in #881' do
+    it 'does not break' do
+
+      l1 = Lesson.create.tap {|l| l.exams_given = [Exam.create] }
+      l2 = Lesson.create.tap {|l| l.exams_given = [Exam.create, Exam.create] }
+      student = Student.create.tap {|s| s.lessons = [l1, l2] }
+
+      log_queries!
+      expect(student.lessons.map {|l| l.exams_given.count }).to eq([1, 2])
+    end
+  end
+
+  describe 'target' do
+    context 'when none found' do
+      it 'raises an error' do
+        expect { billy.lessons.foo }.to raise_error NoMethodError
+      end
+    end
+  end
 end
