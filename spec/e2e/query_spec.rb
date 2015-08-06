@@ -596,7 +596,7 @@ describe 'Query API' do
 
     describe 'optional matches' do
       let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
-      let(:combined_strings) { "#{core_query.to_cypher} OPTIONAL #{query_proxy.to_cypher}" }
+      let(:combined_strings) { "#{core_query.to_cypher} " + query_proxy.to_cypher.gsub(/\bMATCH\b/, 'OPTIONAL MATCH') }
       it 'can create an optional match' do
         expect(combined_strings).to eq combined_query.to_cypher
       end
