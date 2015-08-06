@@ -394,8 +394,8 @@ describe 'Query API' do
         let(:without_labels) { proc { |target| target.lessons_teaching(:l, :r, labels: false).students(:s, :sr, labels: false).to_cypher } }
         let(:expected_label_cypher) do
           proc do
-            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`), l<-[sr:`is_enrolled_for`]-(s:`Student`)')
-            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l), l<-[sr:`is_enrolled_for`]-(s)')
+            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`) MATCH l<-[sr:`is_enrolled_for`]-(s:`Student`)')
+            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l) MATCH l<-[sr:`is_enrolled_for`]-(s)')
           end
         end
 
@@ -596,7 +596,7 @@ describe 'Query API' do
 
     describe 'optional matches' do
       let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
-      let(:combined_strings) { "#{core_query.to_cypher} OPTIONAL #{query_proxy.to_cypher}" }
+      let(:combined_strings) { "#{core_query.to_cypher} " + query_proxy.to_cypher.gsub(/\bMATCH\b/, 'OPTIONAL MATCH') }
       it 'can create an optional match' do
         expect(combined_strings).to eq combined_query.to_cypher
       end
