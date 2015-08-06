@@ -90,6 +90,18 @@ describe 'Association Proxy' do
     end
   end
 
+  describe 'issue reported by @andrewhavens in #881' do
+    it 'does not break' do
+
+      l1 = Lesson.create.tap {|l| l.exams_given = [Exam.create] }
+      l2 = Lesson.create.tap {|l| l.exams_given = [Exam.create, Exam.create] }
+      student = Student.create.tap {|s| s.lessons = [l1, l2] }
+
+      log_queries!
+      expect(student.lessons.map {|l| l.exams_given.count }).to eq([1, 2])
+    end
+  end
+
   describe 'target' do
     context 'when none found' do
       it 'raises an error' do

@@ -57,6 +57,9 @@ module Neo4j
 
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
+          require 'pry'
+          binding.pry
+          puts 'count!'
           fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
             q = distinct.nil? ? var : "DISTINCT #{var}"

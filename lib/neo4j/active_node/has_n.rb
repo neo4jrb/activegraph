@@ -124,6 +124,10 @@ module Neo4j::ActiveNode
       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
       association_proxy_cache_fetch(hash) do
         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+          source_query_proxy = self.instance_variable_get('@source_query_proxy')
+
+
+
           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
 
           result_cache.inject(nil) do |proxy_to_return, object|
