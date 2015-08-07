@@ -616,6 +616,10 @@ describe 'Neo4j::ActiveNode' do
         def self.named_bill
           all(:random_var).where("random_var.name = 'Bill'").pluck(:random_var)
         end
+
+        def self.named_jim
+          all.where(name: 'Jim')
+        end
       end
     end
     context 'A Bill' do
@@ -628,6 +632,15 @@ describe 'Neo4j::ActiveNode' do
             expect(Cat.named_bill.to_a).to eq([bill])
             expect(Cat.all.named_bill.to_a).to eq([bill])
             expect(Cat.all(:another_variable).named_bill.to_a).to eq([bill])
+          end
+
+          context 'with an exiting node identity' do
+            it 'reuses or resets' do
+              expect(Cat.as(:c).named_jim.pluck(:c)).to eq([jim])
+              expect(Cat.as(:c).all.named_jim.pluck(:c)).to eq([jim])
+              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error
+              expect(Cat.as(:c).all(:another_variable).named_jim.pluck(:another_variable)).to eq [jim]
+            end
           end
         end
       end
