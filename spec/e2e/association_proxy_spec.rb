@@ -90,6 +90,30 @@ describe 'Association Proxy' do
     end
   end
 
+  it 'Queries limited times in depth two loops with with_associations' do
+    Student.create.lessons << science
+    Student.create.lessons << science
+    expect_queries(4) do
+      science.students.with_associations(:lessons).each do |student|
+        student.lessons.with_associations(:exams_given).each do |lesson|
+          lesson.exams_given.to_a
+        end
+      end
+    end
+  end
+
+  it 'Queries limited times in depth two loops' do
+    Student.create.lessons << science
+    Student.create.lessons << science
+    expect_queries(5) do
+      science.students.each do |student|
+        student.lessons.each do |lesson|
+          lesson.exams_given.to_a
+        end
+      end
+    end
+  end
+
   describe 'issue reported by @andrewhavens in #881' do
     it 'does not break' do
       l1 = Lesson.create.tap { |l| l.exams_given = [Exam.create] }

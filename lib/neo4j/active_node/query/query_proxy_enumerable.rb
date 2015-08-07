@@ -25,7 +25,7 @@ module Neo4j
 
           result.each do |object|
             object.instance_variable_set('@source_query_proxy', self)
-            object.instance_variable_set('@source_query_proxy_result_cache', result)
+            object.instance_variable_set('@source_proxy_result_cache', result)
           end
 
           @result_cache[[node, rel]] ||= result

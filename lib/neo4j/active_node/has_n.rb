@@ -123,7 +123,7 @@ module Neo4j::ActiveNode
       name = name.to_sym
       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
       association_proxy_cache_fetch(hash) do
-        if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+        if result_cache = self.instance_variable_get('@source_proxy_result_cache')
           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
 
           result_cache.inject(nil) do |proxy_to_return, object|
@@ -149,7 +149,11 @@ module Neo4j::ActiveNode
       query_proxy = self.class.as(:previous).where(neo_id: result_cache.map(&:neo_id))
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next, optional: true)
 
-      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
+      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)].each do |_, records|
+        records.each do |record|
+          record.instance_variable_set('@source_proxy_result_cache', records)
+        end
+      end
     end
 
     module ClassMethods
