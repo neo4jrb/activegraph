@@ -55,12 +55,23 @@ module Neo4j::ActiveRel
         Neo4j::Node.load(id)
       end
 
-      def creates_unique_rel
-        @unique = true
+      def creates_unique
+        @creates_unique = true
       end
 
-      def unique?
-        !!@unique
+      def creates_unique_rel
+        warning = <<-WARNING
+creates_unique_rel() is deprecated and will be removed from future releases,
+use creates_unique() instead.
+WARNING
+
+        ActiveSupport::Deprecation.warn(warning, caller)
+
+        creates_unique
+      end
+
+      def creates_unique?
+        !!@creates_unique
       end
     end
 
