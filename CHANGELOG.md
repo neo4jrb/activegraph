@@ -19,20 +19,51 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 - Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
 
+## [5.0.13] - 08-07-2015
+
+### Fixed
+- Backport AssociationProxy#method_missing fix to raise errors on invalid methods
+- Fix the count issue on depth two associations (#881)
+
+## [5.0.12] - ?
+
+### Fixed
+- Break between associations so that potential `where` clauses get applied to the correct `(OPTIONAL )MATCH` clause
+
+### Fixed
+- Delegate `first` and `last` from `AssociationProxy` to `QueryProxy`
+- Fix `order` behavior for `first` and `last` in `QueryProxy`
+
+## [5.0.11] - ?
+
+### Fixed
+- Delegate `first` and `last` from `AssociationProxy` to `QueryProxy`
+- Fix `order` behavior for `first` and `last` in `QueryProxy`
+
 ## [5.0.10] - 2015-07-31
+
+### Fixed
 - Fix what should have been a very obvious bug in `_active_record_destroyed_behavior` behavior
 - Add eager loading to QueryProxy so that it works in all expected places
 
 ## [5.0.9] - 2015-07-29
-- Fix "NameError: uninitialized constant Class::Date" (https://github.com/neo4jrb/neo4j/issues/852)
+
+### Fixed
+- "NameError: uninitialized constant Class::Date" (https://github.com/neo4jrb/neo4j/issues/852)
 
 ## [5.0.8] - 2015-07-26
+
+### Changed
 - Copied QueryClauseMethods doc from master
 
 ## [5.0.7] - 2015-07-26
+
+### Changed
 - Copied `docs` folder from master because a lot of work had gone into the docs since 5.0.0 was released
 
 ## [5.0.6] - 2015-07-22
+
+### Fixed
 - Fix query logging so that by default it only outputs to the user in the console and development server.  Logger can be changed with `neo4j.config.logger` configuration option
 
 ## [5.0.5] - 2015-07-19

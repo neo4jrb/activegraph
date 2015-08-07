@@ -3,8 +3,8 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
     include Neo4j::Shared::Property
 
-    def initialize(attributes = {}, options = {})
-      super(attributes, options)
+    def initialize(attributes = nil)
+      super(attributes)
       @attributes ||= Hash[self.class.attributes_nil_hash]
       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
     end
@@ -22,6 +22,7 @@ module Neo4j::ActiveNode
       private
 
       def contains_association?(attributes)
+        return false unless attributes
         attributes.each_key { |key| return true if associations_keys.include?(key) }
         false
       end
