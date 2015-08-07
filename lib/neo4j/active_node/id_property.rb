@@ -102,12 +102,12 @@ module Neo4j::ActiveNode
 
         clazz.module_eval(%{
           default_property :#{name} do |instance|
-             raise "Specifying custom id_property #{name} on none existing method #{on}" unless instance.respond_to?(:#{on})
-             instance.#{on}
+            raise "Specifying custom id_property #{name} on non-existent method #{on}" unless instance.respond_to?(:#{on})
+            instance.#{on}
           end
 
           def #{name}
-             default_property :#{name}
+            default_property :#{name}
           end
 
           alias_method :id, :#{name}
