@@ -96,7 +96,7 @@ module Neo4j::ActiveRel
     end
 
     def create_method
-      self.class.unique? ? :create_unique : :create
+      self.class.creates_unique? ? :create_unique : :create
     end
   end
 end

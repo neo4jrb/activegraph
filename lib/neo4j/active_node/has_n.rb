@@ -127,7 +127,7 @@ module Neo4j::ActiveNode
           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
 
           result_cache.inject(nil) do |proxy_to_return, object|
-            proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
+            proxy = fresh_association_proxy(name, options.merge(start_object: object), result_by_previous_id[object.neo_id])
 
             object.association_proxy_cache[hash] = proxy
 

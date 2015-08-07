@@ -82,7 +82,7 @@ describe 'ActiveRel' do
       end
     end
 
-    describe 'creates_unique_rel' do
+    describe 'creates_unique' do
       after do
         MyRelClass.instance_variable_set(:@unique, false)
         [from_node, to_node].each(&:destroy)
@@ -92,7 +92,7 @@ describe 'ActiveRel' do
         expect(from_node.others.count).to eq 0
         MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(from_node.others.count).to eq 1
-        MyRelClass.creates_unique_rel
+        MyRelClass.creates_unique
         MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(from_node.others.count).to eq 1
       end
