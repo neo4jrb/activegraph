@@ -77,9 +77,7 @@ module Neo4j::ActiveRel
       "Node class was #{node.class} (#{node.class.object_id}), expected #{type_class} (#{type_class.object_id})"
     end
 
-    def _create_rel(from_node, to_node, *args)
-      props = self.class.default_property_values(self)
-      props.merge!(args[0]) if args[0].is_a?(Hash)
+    def _create_rel(from_node, to_node, props = {})
       set_classname(props, true)
 
       if from_node.id.nil? || to_node.id.nil?

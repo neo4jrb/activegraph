@@ -48,6 +48,7 @@ describe Neo4j::ActiveNode::Persistence do
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
       session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
       clazz.any_instance.should_receive(:init_on_load).with(node, age: '43', name: 'kalle2')
+      allow(Object).to receive(:default_property_values).and_return({})
       o.save
     end
 
@@ -72,6 +73,7 @@ describe Neo4j::ActiveNode::Persistence do
 
     describe 'with cached_class? true' do
       it 'adds a _classname property' do
+        clazz.stub(:default_property_values).and_return({})
         clazz.stub(:cached_class?).and_return(true)
         start_props = {name: 'jasmine', age: 5}
         end_props   = {name: 'jasmine', age: 5, _classname: 'MyClass'}

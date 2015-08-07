@@ -19,8 +19,8 @@ module Neo4j::ActiveRel
       self.class._type
     end
 
-    def initialize(attributes = {}, options = {})
-      super(attributes, options)
+    def initialize(attributes = nil)
+      super(attributes)
       send_props(@relationship_props) unless @relationship_props.nil?
     end
 
@@ -28,6 +28,7 @@ module Neo4j::ActiveRel
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_association_attributes!(attributes)
+        return if attributes.blank?
         {}.tap do |relationship_props|
           attributes.each_key do |key|
             relationship_props[key] = attributes.delete(key) if [:from_node, :to_node].include?(key)
