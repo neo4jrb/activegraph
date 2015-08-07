@@ -3,8 +3,8 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
     include Neo4j::Shared::Property
 
-    def initialize(attributes = nil, options = nil)
-      super(attributes, options)
+    def initialize(attributes = nil)
+      super(attributes)
       @attributes ||= Hash[self.class.attributes_nil_hash]
       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
     end

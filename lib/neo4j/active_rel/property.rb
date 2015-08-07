@@ -19,14 +19,9 @@ module Neo4j::ActiveRel
       self.class._type
     end
 
-    def initialize(attributes = {}, options = {})
-      super(attributes, options)
+    def initialize(attributes = nil)
+      super(attributes)
       send_props(@relationship_props) unless @relationship_props.nil?
-    end
-
-    # Satisfies a requirement of Neo4j::Shared::Initialize
-    def default_properties=(properties)
-      properties
     end
 
     module ClassMethods
@@ -43,7 +38,6 @@ module Neo4j::ActiveRel
       def id_property_name
         false
       end
-
 
       %w(to_class from_class).each do |direction|
         define_method("#{direction}") do |argument = nil|
