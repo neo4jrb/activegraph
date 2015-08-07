@@ -23,6 +23,14 @@ module Neo4j
         end
 
         def with_associations(*spec)
+          invalid_association_names = spec.reject do |association_name|
+            model.associations[association_name]
+          end
+
+          if invalid_association_names.size > 0
+            fail "Invalid associations: #{invalid_association_names.join(', ')}"
+          end
+
           new_link.tap do |new_query_proxy|
             new_spec = new_query_proxy.with_associations_spec + spec
             new_query_proxy.with_associations_spec.replace(new_spec)
