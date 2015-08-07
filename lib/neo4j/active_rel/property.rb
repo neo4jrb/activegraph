@@ -24,6 +24,11 @@ module Neo4j::ActiveRel
       send_props(@relationship_props) unless @relationship_props.nil?
     end
 
+    # Satisfies a requirement of Neo4j::Shared::Initialize
+    def default_properties=(properties)
+      properties
+    end
+
     module ClassMethods
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
@@ -38,6 +43,7 @@ module Neo4j::ActiveRel
       def id_property_name
         false
       end
+
 
       %w(to_class from_class).each do |direction|
         define_method("#{direction}") do |argument = nil|
