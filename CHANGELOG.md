@@ -19,6 +19,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 - Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
 
+## [5.0.14] - 08-09-2015
+
+### Fixed
+
+- Calling `all` on a QueryProxy chain would cause the currently set node identity within Cypher to be lost.
+
 ## [5.0.13] - 08-07-2015
 
 ### Fixed
