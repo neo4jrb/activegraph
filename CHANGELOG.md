@@ -18,10 +18,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Ability to query for just IDs on associations
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 - Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
+- Added #inspect method to ActiveRel to show Cypher-style representation of from node, to node, and relationship type
 
 ### Changed
 
-- Methods related to ActiveNode's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple. 
+- Methods related to ActiveNode's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple.
 - Implementation adjustments that improve node and rel initialization speed, particularly when loading large numbers of objects from the database.
 
 ## [5.0.14] - 08-09-2015
