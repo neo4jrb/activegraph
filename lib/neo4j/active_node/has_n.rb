@@ -327,6 +327,10 @@ module Neo4j::ActiveNode
           association_proxy(name).pluck(:uuid)
         end
 
+        define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
+          association_proxy(name).replace_with(ids)
+        end
+
         define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
           association_proxy(name).pluck(:neo_id)
         end
@@ -351,6 +355,10 @@ module Neo4j::ActiveNode
       def define_has_one_id_methods(name)
         define_method("#{name}_id") do
           association_proxy(name).pluck(:uuid).first
+        end
+
+        define_method_unless_defined("#{name}_id=") do |id|
+          association_proxy(name).replace_with(id)
         end
 
         define_method("#{name}_neo_id") do
