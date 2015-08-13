@@ -24,7 +24,7 @@ module Neo4j::ActiveNode
         if @cached_result
           @cached_result.inspect
         else
-          "<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
+          "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
         end
       end
 

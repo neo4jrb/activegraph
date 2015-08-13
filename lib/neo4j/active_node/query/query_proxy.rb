@@ -54,7 +54,7 @@ module Neo4j
         end
 
         def inspect
-          "<QueryProxy #{ANSI::CYAN}#{@context}#{ANSI::CLEAR} CYPHER: #{ANSI::YELLOW}#{self.to_cypher.inspect}#{ANSI::CLEAR}>"
+          "#<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
         end
 
         attr_reader :start_object, :query_proxy
