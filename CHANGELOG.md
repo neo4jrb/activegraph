@@ -18,6 +18,52 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Improved handling of unpersisted nodes with associations. You can now use `<<` to create associations between unpersisted nodes. A `save` will cascade through unpersisted objects, creating nodes and rels along the way. See https://github.com/neo4jrb/neo4j/pull/871
 - Support formatted cypher queries for easy reading by humans via the `pretty_logged_cypher_queries` configuration variable
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
+- Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
+- Added #inspect method to ActiveRel to show Cypher-style representation of from node, to node, and relationship type
+
+### Changed
+
+- Methods related to ActiveNode's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple.
+- Implementation adjustments that improve node and rel initialization speed, particularly when loading large numbers of objects from the database.
+
+## [5.0.15] - 08-12-2015
+
+### Fixed
+
+- `reload!` within Rails apps will work correctly. An earlier release included a workaround but this uses ActiveModel's system for clearing caches to provide a more thorough resolution.
+
+## [5.0.14] - 08-09-2015
+
+### Fixed
+
+- Calling `all` on a QueryProxy chain would cause the currently set node identity within Cypher to be lost.
+
+## [5.0.13] - 08-07-2015
+
+### Fixed
+- Backport AssociationProxy#method_missing fix to raise errors on invalid methods
+- Fix the count issue on depth two associations (#881)
+
+## [5.0.12] - 08-06-2015 
+
+### Fixed
+- Break between associations so that potential `where` clauses get applied to the correct `(OPTIONAL )MATCH` clause
+
+### Fixed
+- Delegate `first` and `last` from `AssociationProxy` to `QueryProxy`
+- Fix `order` behavior for `first` and `last` in `QueryProxy`
+
+## [5.0.11] - 08-04-2015
+
+### Fixed
+- Delegate `first` and `last` from `AssociationProxy` to `QueryProxy`
+- Fix `order` behavior for `first` and `last` in `QueryProxy`
+
+## [5.0.10] - 2015-07-31
+
+### Fixed
+- Fix what should have been a very obvious bug in `_active_record_destroyed_behavior` behavior
+- Add eager loading to QueryProxy so that it works in all expected places
 
 ## [5.0.9] - 2015-07-29
 - Fix "NameError: uninitialized constant Class::Date" (https://github.com/neo4jrb/neo4j/issues/852)
