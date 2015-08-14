@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.1.0.rc.1] - 08-14-2015
+
 ### Fixed
 - Added a `before_remove_const` method to clear cached models when Rails `reload!` is called. 5.0.1 included a workaround but this appears to cut to the core of the issue. See https://github.com/neo4jrb/neo4j/pull/855.
 - To prevent errors, changing an index to constraint or constraint to index will drop the existing index/constraint before adding the new.
