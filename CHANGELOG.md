@@ -25,6 +25,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Methods related to ActiveNode's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple.
 - Implementation adjustments that improve node and rel initialization speed, particularly when loading large numbers of objects from the database.
 
+## [5.0.15] - 08-12-2015
+
+### Fixed
+
+- `reload!` within Rails apps will work correctly. An earlier release included a workaround but this uses ActiveModel's system for clearing caches to provide a more thorough resolution.
+
 ## [5.0.14] - 08-09-2015
 
 ### Fixed
