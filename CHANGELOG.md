@@ -21,6 +21,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 - Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
 - Added #inspect method to ActiveRel to show Cypher-style representation of from node, to node, and relationship type
+- Added `Neo4j::Timestamps`, `Neo4j::Timestamps::Created`, and `Neo4j::Timestamps::Updated` mixins to add timestamp properties to `ActiveNode` or `ActiveRel` classes
 
 ### Changed
 
