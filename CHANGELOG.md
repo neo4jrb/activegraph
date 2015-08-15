@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+- Associations defined in ActiveNode models will delegate `unique?` to the model set in `rel_class`. This makes it easier for the rel class to act as the single source of truth for relationship behavior.
+
+### Added
+- ActiveRel instance methods: `#{related_node}_neo_id` methods to match CypherRelationship. Works with start/from and end/to.
+
 ## [5.1.0.rc.1] - 08-14-2015
 
 ### Fixed
