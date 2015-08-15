@@ -56,6 +56,10 @@ module Neo4j::ActiveRel
           obj.save!
         end
       end
+
+      def create_method
+        creates_unique? ? :create_unique : :create
+      end
     end
 
     private
@@ -96,7 +100,7 @@ module Neo4j::ActiveRel
     end
 
     def create_method
-      self.class.creates_unique? ? :create_unique : :create
+      self.class.create_method
     end
   end
 end
