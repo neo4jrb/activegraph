@@ -359,7 +359,16 @@ describe Neo4j::ActiveNode::HasN::Association do
     describe 'relationship_class' do
       it 'returns the value of @relationship_class' do
         association.instance_variable_set(:@relationship_class, :foo)
-        expect(association.send(:relationship_class)).to eq :foo
+        expect(association.relationship_class).to eq :foo
+      end
+    end
+
+    describe 'rel_class?' do
+      it 'returns truthiness from rel_class?' do
+        association.instance_variable_set(:@relationship_class, :foo)
+        expect(association.rel_class?).to be_truthy
+        association.instance_variable_set(:@relationship_class, nil)
+        expect(association.rel_class?).to be_falsey
       end
     end
 
@@ -377,6 +386,20 @@ describe Neo4j::ActiveNode::HasN::Association do
         let(:options) { {type: :foo, unique: false} }
 
         it { expect(subject).not_to be_unique }
+      end
+
+      context 'with a rel class' do
+        let(:rel_stub) { double('A Rel Class') }
+        before { association.instance_variable_set(:@relationship_class, rel_stub) }
+        it 'defers to the rel class' do
+          expect(rel_stub).to receive(:unique?)
+          association.unique?
+        end
+
+        it 'follows instructions from the rel class' do
+          expect(rel_stub).to receive(:unique?).and_return true
+          expect(association.create_method).to eq :create_unique
+        end
       end
     end
   end
