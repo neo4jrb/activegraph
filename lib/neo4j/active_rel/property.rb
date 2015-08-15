@@ -14,6 +14,12 @@ module Neo4j::ActiveRel
     alias_method :start_node, :from_node
     alias_method :end_node,   :to_node
 
+    %w(start_node end_node).each do |direction|
+      define_method("#{direction}_neo_id") { direction.neo_id if direction }
+    end
+    alias_method :from_node_neo_id, :start_node_neo_id
+    alias_method :to_node_neo_id,   :end_node_neo_id
+
     # @return [String] a string representing the relationship type that will be created
     def type
       self.class.type
@@ -75,6 +81,7 @@ WARNING
       def creates_unique?
         !!@creates_unique
       end
+      alias_method :unique?, :creates_unique?
     end
 
     private

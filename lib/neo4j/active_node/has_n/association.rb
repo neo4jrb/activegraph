@@ -135,12 +135,18 @@ module Neo4j
         end
 
         def unique?
+          return relationship_class.unique? if rel_class?
           @origin ? origin_association.unique? : !!@unique
         end
 
         def create_method
           unique? ? :create_unique : :create
         end
+
+        def relationship_class?
+          !!relationship_class
+        end
+        alias_method :rel_class?, :relationship_class?
 
         private
 
