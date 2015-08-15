@@ -15,7 +15,7 @@ module Neo4j::ActiveRel
     alias_method :end_node,   :to_node
 
     %w(start_node end_node).each do |direction|
-      define_method("#{direction}_neo_id") { direction.neo_id if direction }
+      define_method("#{direction}_neo_id") { send(direction).neo_id if direction }
     end
     alias_method :from_node_neo_id, :start_node_neo_id
     alias_method :to_node_neo_id,   :end_node_neo_id
