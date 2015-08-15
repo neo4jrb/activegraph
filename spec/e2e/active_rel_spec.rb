@@ -197,16 +197,13 @@ describe 'ActiveRel' do
   end
 
   describe 'objects and queries' do
-    before do
-      Neo4j::Config[:cache_class_names] = true
-      @rel1 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 99)
-      @rel2 = MyRelClass.create(from_node: from_node, to_node: to_node, score: 49)
-    end
+    let!(:rel1) { MyRelClass.create(from_node: from_node, to_node: to_node, score: 99) }
+    let!(:rel2) { MyRelClass.create(from_node: from_node, to_node: to_node, score: 49) }
 
-    after { [@rel1, @rel2].each(&:destroy) }
+    after { [rel1, rel2].each(&:destroy) }
 
     describe 'related nodes' do
-      let(:reloaded) { MyRelClass.find(@rel1.neo_id) }
+      let(:reloaded) { MyRelClass.find(rel1.neo_id) }
 
       # We only run this test in the Server environment. Embedded's loading of
       # relationships works differently, so we aren't as concerned with whether
@@ -222,11 +219,18 @@ describe 'ActiveRel' do
       it 'delegates respond_to?' do
         expect(reloaded.from_node.respond_to?(:id)).to be_truthy
       end
+
+      describe 'neo id queries' do
+        it 'aliases #{related_node}_neo_id to #{related_node}.neo_id' do
+          expect(rel1.from_node_neo_id).to eq rel1.from_node.neo_id
+          expect(rel1.to_node_neo_id).to eq rel1.to_node.neo_id
+        end
+      end
     end
 
     describe 'where' do
       it 'returns the matching objects' do
-        expect(MyRelClass.where(score: 99)).to eq [@rel1]
+        expect(MyRelClass.where(score: 99)).to eq [rel1]
       end
 
       it 'has the appropriate from and to nodes' do
@@ -238,7 +242,7 @@ describe 'ActiveRel' do
       context 'with a string' do
         it 'returns the matching rels' do
           query = MyRelClass.where('r1.score > 48')
-          expect(query).to include(@rel1, @rel2)
+          expect(query).to include(rel1, rel2)
         end
       end
     end
@@ -246,34 +250,34 @@ describe 'ActiveRel' do
     describe 'all' do
       it 'returns all rels' do
         query = MyRelClass.all
-        expect(query).to include(@rel1, @rel2)
+        expect(query).to include(rel1, rel2)
       end
     end
 
     describe 'find' do
       it 'returns the rel' do
-        expect(MyRelClass.find(@rel1.neo_id)).to eq @rel1
+        expect(MyRelClass.find(rel1.neo_id)).to eq rel1
       end
     end
 
     describe 'first, last' do
       it 'returns the first-ish result' do
-        expect(MyRelClass.first).to eq @rel1
+        expect(MyRelClass.first).to eq rel1
       end
 
       it 'returns the last-ish result' do
-        expect(MyRelClass.last).to eq @rel2
+        expect(MyRelClass.last).to eq rel2
       end
 
       context 'with from_class and to_class as strings and constants' do
         it 'converts the strings to constants and runs the query' do
           MyRelClass.from_class 'FromClass'
           MyRelClass.to_class 'ToClass'
-          expect(MyRelClass.where(score: 99)).to eq [@rel1]
+          expect(MyRelClass.where(score: 99)).to eq [rel1]
 
           MyRelClass.from_class :FromClass
           MyRelClass.to_class :ToClass
-          expect(MyRelClass.where(score: 99)).to eq [@rel1]
+          expect(MyRelClass.where(score: 99)).to eq [rel1]
         end
       end
     end
