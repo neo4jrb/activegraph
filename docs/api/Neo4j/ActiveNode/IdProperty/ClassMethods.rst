@@ -31,6 +31,12 @@ ClassMethods
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -119,12 +125,14 @@ Methods
   .. hidden-code-block:: ruby
 
      def id_property(name, conf = {})
-       id_property_constraint(name)
-       @id_property_info = {name: name, type: conf}
-       TypeMethods.define_id_methods(self, name, conf)
-       constraint name, type: :unique unless conf[:constraint] == false
+       self.manual_id_property = true
+       Neo4j::Session.on_session_available do |_|
+         @id_property_info = {name: name, type: conf}
+         TypeMethods.define_id_methods(self, name, conf)
+         constraint(name, type: :unique) unless conf[:constraint] == false
      
-       self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
+         self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
+       end
      end
 
 
@@ -164,6 +172,45 @@ Methods
 
      def id_property_name
        id_property_info[:name]
+     end
+
+
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#manual_id_property`:
+
+**#manual_id_property**
+  Returns the value of attribute manual_id_property
+
+  .. hidden-code-block:: ruby
+
+     def manual_id_property
+       @manual_id_property
+     end
+
+
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#manual_id_property=`:
+
+**#manual_id_property=**
+  Sets the attribute manual_id_property
+
+  .. hidden-code-block:: ruby
+
+     def manual_id_property=(value)
+       @manual_id_property = value
+     end
+
+
+
+.. _`Neo4j/ActiveNode/IdProperty/ClassMethods#manual_id_property?`:
+
+**#manual_id_property?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def manual_id_property?
+       !!manual_id_property
      end
 
 

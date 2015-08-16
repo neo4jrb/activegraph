@@ -76,9 +76,6 @@ Methods
 
      def cache_query_proxy_result
        @query_proxy.to_a.tap do |result|
-         result.each do |object|
-           object.instance_variable_set('@association_proxy', self)
-         end
          cache_result(result)
        end
      end
@@ -169,7 +166,7 @@ Methods
        if @cached_result
          @cached_result.inspect
        else
-         "<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
+         "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
        end
      end
 

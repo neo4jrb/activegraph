@@ -113,6 +113,8 @@ QueryProxy
 
    
 
+   
+
    QueryProxy/Link
 
 
@@ -308,8 +310,8 @@ Methods
      def base_query(var, with_labels = true)
        if @association
          chain_var = _association_chain_var
-         (_association_query_start(chain_var) & _query).send(@match_type,
-                                                             "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
+         (_association_query_start(chain_var) & _query).break.send(@match_type,
+                                                                   "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
        else
          starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
        end
@@ -480,17 +482,14 @@ Methods
   .. hidden-code-block:: ruby
 
      def each(node = true, rel = nil, &block)
-       if @associations_spec.size > 0
-         return_object_clause = '[' + @associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
-         query_from_association_spec.pluck(identity, return_object_clause).map do |record, eager_data|
-           eager_data.each_with_index do |eager_records, index|
-             record.association_proxy(@associations_spec[index]).cache_result(eager_records)
-           end
+       return super if with_associations_spec.size.zero?
      
-           block.call(record)
+       query_from_association_spec.pluck(identity, with_associations_return_clause).map do |record, eager_data|
+         eager_data.each_with_index do |eager_records, index|
+           record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
          end
-       else
-         super
+     
+         block.call(record)
        end
      end
 
@@ -582,6 +581,19 @@ Methods
          start_q = exists_query_start(node_condition, var)
          start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#fetch_result_cache`:
+
+**#fetch_result_cache**
+  
+
+  .. hidden-code-block:: ruby
+
+     def fetch_result_cache
+       @result_cache ||= yield
      end
 
 
@@ -757,9 +769,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def inspect
-       clear, yellow, cyan = %W(\e[0m \e[33m \e[36m)
-     
-       "<QueryProxy #{cyan}#{@context}#{clear} CYPHER: #{yellow}#{self.to_cypher.inspect}#{clear}>"
+       "#<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
      end
 
 
@@ -970,6 +980,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#order_property`:
+
+**#order_property**
+  
+
+  .. hidden-code-block:: ruby
+
+     def order_property
+       # This should maybe be based on a setting in the association
+       # rather than a hardcoded `nil`
+       model ? model.id_property_name : nil
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#params`:
 
 **#params**
@@ -1001,6 +1026,19 @@ Methods
        end
      
        self.query.pluck(*arg_list)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#print_cypher`:
+
+**#print_cypher**
+  
+
+  .. hidden-code-block:: ruby
+
+     def print_cypher
+       query.print_cypher
      end
 
 
@@ -1166,6 +1204,33 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#result`:
+
+**#result**
+  
+
+  .. hidden-code-block:: ruby
+
+     def result(node = true, rel = true)
+       @result_cache ||= {}
+       return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+     
+       pluck_vars = []
+       pluck_vars << identity if node
+       pluck_vars << @rel_var if rel
+     
+       result = pluck(*pluck_vars)
+     
+       result.each do |object|
+         object.instance_variable_set('@source_query_proxy', self)
+         object.instance_variable_set('@source_query_proxy_result_cache', result)
+       end
+     
+       @result_cache[[node, rel]] ||= result
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#scoping`:
 
 **#scoping**
@@ -1259,8 +1324,8 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def to_cypher
-       query.to_cypher
+     def to_cypher(*args)
+       query.to_cypher(*args)
      end
 
 
@@ -1304,10 +1369,44 @@ Methods
   .. hidden-code-block:: ruby
 
      def with_associations(*spec)
-       new_link.tap do |new_query_proxy|
-         new_spec = new_query_proxy.instance_variable_get('@associations_spec') + spec
-         new_query_proxy.instance_variable_set('@associations_spec', new_spec)
+       invalid_association_names = spec.reject do |association_name|
+         model.associations[association_name]
        end
+     
+       if invalid_association_names.size > 0
+         fail "Invalid associations: #{invalid_association_names.join(', ')}"
+       end
+     
+       new_link.tap do |new_query_proxy|
+         new_spec = new_query_proxy.with_associations_spec + spec
+         new_query_proxy.with_associations_spec.replace(new_spec)
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#with_associations_return_clause`:
+
+**#with_associations_return_clause**
+  
+
+  .. hidden-code-block:: ruby
+
+     def with_associations_return_clause
+       '[' + with_associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#with_associations_spec`:
+
+**#with_associations_spec**
+  
+
+  .. hidden-code-block:: ruby
+
+     def with_associations_spec
+       @with_associations_spec ||= []
      end
 
 

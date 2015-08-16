@@ -174,7 +174,10 @@ created_at, updated_at
 
     class Blog
       include Neo4j::ActiveNode
-      property :updated_at  # will automatically be set when model changes
+
+      include Neo4j::Timestamps # will give model created_at and updated_at timestamps
+      include Neo4j::Timestamps::Created # will give model created_at timestamp
+      include Neo4j::Timestamps::Updated # will give model updated_at timestamp
     end
 
 Validation

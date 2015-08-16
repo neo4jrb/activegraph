@@ -27,9 +27,9 @@ in a new object of that class.
 
    ActiveNode/Rels
 
-   ActiveNode/Query
-
    ActiveNode/Scope
+
+   ActiveNode/Query
 
    ActiveNode/HasN
 
@@ -45,11 +45,11 @@ in a new object of that class.
 
    ActiveNode/Reflection
 
+   ActiveNode/Persistence
+
    ActiveNode/IdProperty
 
    ActiveNode/Validations
-
-   ActiveNode/Persistence
 
    ActiveNode/Unpersisted
 
@@ -84,9 +84,9 @@ Files
 
   * `lib/neo4j/active_node/rels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/rels.rb#L1>`_
 
-  * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
-
   * `lib/neo4j/active_node/scope.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L3>`_
+
+  * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
 
   * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
 
@@ -100,11 +100,11 @@ Files
 
   * `lib/neo4j/active_node/reflection.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L1>`_
 
+  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
+
   * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
 
   * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
-
-  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
   * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
 
@@ -122,11 +122,11 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L2>`_
 
+  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
+
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
 
   * `lib/neo4j/active_node/query/query_proxy_unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_unpersisted.rb#L2>`_
-
-  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
 
   * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L2>`_
 
@@ -213,7 +213,7 @@ Methods
 
      def _destroyed_double_check?
        if _active_record_destroyed_behavior?
-         true
+         false
        else
          (!new_record? && !exist?)
        end
@@ -302,11 +302,11 @@ Methods
        name = name.to_sym
        hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
        association_proxy_cache_fetch(hash) do
-         if previous_association_proxy = self.instance_variable_get('@association_proxy')
-           result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
+         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
      
-           previous_association_proxy.result.inject(nil) do |proxy_to_return, object|
-             proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
+           result_cache.inject(nil) do |proxy_to_return, object|
+             proxy = fresh_association_proxy(name, options.merge(start_object: object), result_by_previous_id[object.neo_id])
      
              object.association_proxy_cache[hash] = proxy
      
@@ -435,8 +435,6 @@ Methods
 
      def default_properties
        @default_properties ||= Hash.new(nil)
-       # keys = self.class.default_properties.keys
-       # _persisted_obj.props.reject{|key| !keys.include?(key)}
      end
 
 
@@ -449,8 +447,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_properties=(properties)
-       default_property_keys = self.class.default_properties_keys
-       @default_properties = properties.select { |key| default_property_keys.include?(key) }
+       @default_property_value = properties[default_property_key]
      end
 
 
@@ -463,7 +460,34 @@ Methods
   .. hidden-code-block:: ruby
 
      def default_property(key)
-       default_properties[key.to_sym]
+       return nil unless key == default_property_key
+       default_property_value
+     end
+
+
+
+.. _`Neo4j/ActiveNode#default_property_key`:
+
+**#default_property_key**
+  
+
+  .. hidden-code-block:: ruby
+
+     def default_property_key
+       self.class.default_property_key
+     end
+
+
+
+.. _`Neo4j/ActiveNode#default_property_value`:
+
+**#default_property_value**
+  Returns the value of attribute default_property_value
+
+  .. hidden-code-block:: ruby
+
+     def default_property_value
+       @default_property_value
      end
 
 
@@ -618,9 +642,9 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def initialize(attributes = {}, options = {})
-       super(attributes, options)
-       @attributes ||= self.class.attributes_nil_hash.dup
+     def initialize(attributes = nil)
+       super(attributes)
+       @attributes ||= Hash[self.class.attributes_nil_hash]
        send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
      end
 
@@ -894,6 +918,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def send_props(hash)
+       return hash if hash.blank?
        hash.each { |key, value| self.send("#{key}=", value) }
      end
 

@@ -37,12 +37,6 @@ Property
 
    
 
-   
-
-   
-
-   
-
    Property/ClassMethods
 
 
@@ -99,48 +93,6 @@ Methods
 
 
 
-.. _`Neo4j/Shared/Property#default_properties`:
-
-**#default_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties
-       @default_properties ||= Hash.new(nil)
-       # keys = self.class.default_properties.keys
-       # _persisted_obj.props.reject{|key| !keys.include?(key)}
-     end
-
-
-
-.. _`Neo4j/Shared/Property#default_properties=`:
-
-**#default_properties=**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties=(properties)
-       default_property_keys = self.class.default_properties_keys
-       @default_properties = properties.select { |key| default_property_keys.include?(key) }
-     end
-
-
-
-.. _`Neo4j/Shared/Property#default_property`:
-
-**#default_property**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_property(key)
-       default_properties[key.to_sym]
-     end
-
-
-
 .. _`Neo4j/Shared/Property#initialize`:
 
 **#initialize**
@@ -149,15 +101,14 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def initialize(attributes = {}, _options = nil)
-       attributes = process_attributes(attributes) unless attributes.empty?
+     def initialize(attributes = nil)
+       attributes = process_attributes(attributes)
        @relationship_props = self.class.extract_association_attributes!(attributes)
        writer_method_props = extract_writer_methods!(attributes)
        validate_attributes!(attributes)
-       send_props(writer_method_props) unless writer_method_props.empty?
+       send_props(writer_method_props)
      
        @_persisted_obj = nil
-       # super(attributes, options)
      end
 
 
@@ -185,6 +136,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def send_props(hash)
+       return hash if hash.blank?
        hash.each { |key, value| self.send("#{key}=", value) }
      end
 

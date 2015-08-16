@@ -21,6 +21,10 @@ Methods related to returning nodes and rels from QueryProxy
 
    
 
+   
+
+   
+
 
 
 
@@ -71,11 +75,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def each(node = true, rel = nil, &block)
-       pluck_vars = []
-       pluck_vars << identity if node
-       pluck_vars << @rel_var if rel
-     
-       pluck(*pluck_vars).each(&block)
+       result(node, rel).each(&block)
      end
 
 
@@ -116,6 +116,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#fetch_result_cache`:
+
+**#fetch_result_cache**
+  
+
+  .. hidden-code-block:: ruby
+
+     def fetch_result_cache
+       @result_cache ||= yield
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#pluck`:
 
 **#pluck**
@@ -134,6 +147,33 @@ Methods
        end
      
        self.query.pluck(*arg_list)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#result`:
+
+**#result**
+  
+
+  .. hidden-code-block:: ruby
+
+     def result(node = true, rel = true)
+       @result_cache ||= {}
+       return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+     
+       pluck_vars = []
+       pluck_vars << identity if node
+       pluck_vars << @rel_var if rel
+     
+       result = pluck(*pluck_vars)
+     
+       result.each do |object|
+         object.instance_variable_set('@source_query_proxy', self)
+         object.instance_variable_set('@source_query_proxy_result_cache', result)
+       end
+     
+       @result_cache[[node, rel]] ||= result
      end
 
 

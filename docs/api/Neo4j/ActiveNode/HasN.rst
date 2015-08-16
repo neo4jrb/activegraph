@@ -74,11 +74,11 @@ Methods
        name = name.to_sym
        hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
        association_proxy_cache_fetch(hash) do
-         if previous_association_proxy = self.instance_variable_get('@association_proxy')
-           result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
+         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
      
-           previous_association_proxy.result.inject(nil) do |proxy_to_return, object|
-             proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
+           result_cache.inject(nil) do |proxy_to_return, object|
+             proxy = fresh_association_proxy(name, options.merge(start_object: object), result_by_previous_id[object.neo_id])
      
              object.association_proxy_cache[hash] = proxy
      

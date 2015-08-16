@@ -79,6 +79,8 @@ QueryProxyMethods
 
    
 
+   
+
 
 
 
@@ -436,6 +438,21 @@ Methods
 
      def optional(association, node_var = nil, rel_var = nil)
        self.send(association, node_var, rel_var, optional: true)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#order_property`:
+
+**#order_property**
+  
+
+  .. hidden-code-block:: ruby
+
+     def order_property
+       # This should maybe be based on a setting in the association
+       # rather than a hardcoded `nil`
+       model ? model.id_property_name : nil
      end
 
 

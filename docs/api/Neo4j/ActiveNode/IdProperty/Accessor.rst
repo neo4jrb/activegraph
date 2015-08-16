@@ -1,9 +1,10 @@
-IdProperty
-==========
+Accessor
+========
 
 
 
-This module makes it possible to use other IDs than the build it neo4j id (neo_id)
+Provides get/set of the Id Property values.
+Some methods
 
 
 .. toctree::
@@ -11,11 +12,17 @@ This module makes it possible to use other IDs than the build it neo4j id (neo_i
    :titlesonly:
 
 
-   IdProperty/TypeMethods
+   
 
-   IdProperty/ClassMethods
+   
 
-   IdProperty/Accessor
+   
+
+   
+
+   
+
+   Accessor/ClassMethods
 
 
 
@@ -32,9 +39,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/id_property.rb:35 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L35>`_
-
-  * `lib/neo4j/active_node/id_property/accessor.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property/accessor.rb#L1>`_
+  * `lib/neo4j/active_node/id_property/accessor.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property/accessor.rb#L4>`_
 
 
 
@@ -45,7 +50,7 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/IdProperty#default_properties`:
+.. _`Neo4j/ActiveNode/IdProperty/Accessor#default_properties`:
 
 **#default_properties**
   
@@ -58,7 +63,7 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/IdProperty#default_properties=`:
+.. _`Neo4j/ActiveNode/IdProperty/Accessor#default_properties=`:
 
 **#default_properties=**
   
@@ -71,7 +76,7 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/IdProperty#default_property`:
+.. _`Neo4j/ActiveNode/IdProperty/Accessor#default_property`:
 
 **#default_property**
   
@@ -85,7 +90,7 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/IdProperty#default_property_key`:
+.. _`Neo4j/ActiveNode/IdProperty/Accessor#default_property_key`:
 
 **#default_property_key**
   
@@ -98,7 +103,7 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/IdProperty#default_property_value`:
+.. _`Neo4j/ActiveNode/IdProperty/Accessor#default_property_value`:
 
 **#default_property_value**
   Returns the value of attribute default_property_value

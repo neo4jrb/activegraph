@@ -18,6 +18,10 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    
 
+   
+
+   
+
    ActiveRel/Query
 
    ActiveRel/Types
@@ -28,9 +32,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Persistence
-
    ActiveRel/Validations
+
+   ActiveRel/Persistence
 
    ActiveRel/RelatedNode
 
@@ -69,9 +73,9 @@ Files
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
-
   * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
+
+  * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -136,7 +140,7 @@ Methods
 
      def _destroyed_double_check?
        if _active_record_destroyed_behavior?
-         true
+         false
        else
          (!new_record? && !exist?)
        end
@@ -214,48 +218,6 @@ Methods
 
      def declared_property_manager
        self.class.declared_property_manager
-     end
-
-
-
-.. _`Neo4j/ActiveRel#default_properties`:
-
-**#default_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties
-       @default_properties ||= Hash.new(nil)
-       # keys = self.class.default_properties.keys
-       # _persisted_obj.props.reject{|key| !keys.include?(key)}
-     end
-
-
-
-.. _`Neo4j/ActiveRel#default_properties=`:
-
-**#default_properties=**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties=(properties)
-       default_property_keys = self.class.default_properties_keys
-       @default_properties = properties.select { |key| default_property_keys.include?(key) }
-     end
-
-
-
-.. _`Neo4j/ActiveRel#default_property`:
-
-**#default_property**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_property(key)
-       default_properties[key.to_sym]
      end
 
 
@@ -416,6 +378,24 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#inspect`:
+
+**#inspect**
+  
+
+  .. hidden-code-block:: ruby
+
+     def inspect
+       attribute_pairs = attributes.sort.map { |key, value| "#{key}: #{value.inspect}" }
+       attribute_descriptions = attribute_pairs.join(', ')
+       separator = ' ' unless attribute_descriptions.empty?
+     
+       cypher_representation = "#{node_cypher_representation(from_node)}-[:#{type}]->#{node_cypher_representation(to_node)}"
+       "#<#{self.class.name} #{cypher_representation}#{separator}#{attribute_descriptions}>"
+     end
+
+
+
 .. _`Neo4j/ActiveRel#neo4j_obj`:
 
 **#neo4j_obj**
@@ -464,6 +444,23 @@ Methods
 
      def new_record?
        !_persisted_obj
+     end
+
+
+
+.. _`Neo4j/ActiveRel#node_cypher_representation`:
+
+**#node_cypher_representation**
+  
+
+  .. hidden-code-block:: ruby
+
+     def node_cypher_representation(node)
+       node_class = node.class
+       id_name = node_class.id_property_name
+       labels = ':' + node_class.mapped_label_names.join(':')
+     
+       "(#{labels} {#{id_name}: #{node.id.inspect}})"
      end
 
 
@@ -596,6 +593,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def send_props(hash)
+       return hash if hash.blank?
        hash.each { |key, value| self.send("#{key}=", value) }
      end
 

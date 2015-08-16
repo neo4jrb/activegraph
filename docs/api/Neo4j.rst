@@ -13,25 +13,27 @@ Neo4j
 
    Neo4j/Config
 
+   Neo4j/Shared
+
    Neo4j/Neo4jrbError
 
    Neo4j/RecordNotFound
 
-   Neo4j/Shared
+   Neo4j/ClassWrapper
 
    Neo4j/Railtie
 
    
 
-   Neo4j/ClassWrapper
+   Neo4j/Migration
 
    Neo4j/Paginated
 
-   Neo4j/Migration
-
-   Neo4j/ActiveRel
+   Neo4j/Timestamps
 
    Neo4j/Core
+
+   Neo4j/ActiveRel
 
    Neo4j/ActiveNode
 
@@ -62,19 +64,21 @@ Files
 
   * `lib/neo4j/config.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/config.rb#L1>`_
 
+  * `lib/neo4j/shared.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared.rb#L1>`_
+
   * `lib/neo4j/errors.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/errors.rb#L1>`_
 
-  * `lib/neo4j/shared.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared.rb#L1>`_
+  * `lib/neo4j/wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/wrapper.rb#L1>`_
 
   * `lib/neo4j/railtie.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/railtie.rb#L4>`_
 
   * `lib/neo4j/version.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/version.rb#L1>`_
 
-  * `lib/neo4j/wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/wrapper.rb#L1>`_
+  * `lib/neo4j/migration.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/migration.rb#L3>`_
 
   * `lib/neo4j/paginated.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/paginated.rb#L1>`_
 
-  * `lib/neo4j/migration.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/migration.rb#L3>`_
+  * `lib/neo4j/timestamps.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps.rb#L1>`_
 
   * `lib/neo4j/active_rel.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L1>`_
 
@@ -90,9 +94,13 @@ Files
 
   * `lib/neo4j/shared/typecaster.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L1>`_
 
+  * `lib/neo4j/timestamps/created.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/created.rb#L1>`_
+
   * `lib/neo4j/shared/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L1>`_
 
   * `lib/neo4j/active_node/labels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L1>`_
+
+  * `lib/neo4j/timestamps/updated.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/updated.rb#L1>`_
 
   * `lib/neo4j/active_rel/callbacks.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/callbacks.rb#L1>`_
 
@@ -122,11 +130,11 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L1>`_
 
+  * `lib/neo4j/active_node/dependent/association_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L1>`_
+
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L1>`_
 
   * `lib/neo4j/active_node/query/query_proxy_unpersisted.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_unpersisted.rb#L1>`_
-
-  * `lib/neo4j/active_node/dependent/association_methods.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L1>`_
 
   * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L1>`_
 

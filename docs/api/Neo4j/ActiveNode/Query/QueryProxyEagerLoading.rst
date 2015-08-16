@@ -19,6 +19,8 @@ QueryProxyEagerLoading
 
    
 
+   
+
 
 
 
@@ -53,33 +55,15 @@ Methods
   .. hidden-code-block:: ruby
 
      def each(node = true, rel = nil, &block)
-       if @associations_spec.size > 0
-         return_object_clause = '[' + @associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
-         query_from_association_spec.pluck(identity, return_object_clause).map do |record, eager_data|
-           eager_data.each_with_index do |eager_records, index|
-             record.association_proxy(@associations_spec[index]).cache_result(eager_records)
-           end
+       return super if with_associations_spec.size.zero?
      
-           block.call(record)
+       query_from_association_spec.pluck(identity, with_associations_return_clause).map do |record, eager_data|
+         eager_data.each_with_index do |eager_records, index|
+           record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
          end
-       else
-         super
-       end
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxyEagerLoading#initialize`:
-
-**#initialize**
-  
-
-  .. hidden-code-block:: ruby
-
-     def initialize(model, association = nil, options = {})
-       @associations_spec = []
      
-       super
+         block.call(record)
+       end
      end
 
 
@@ -92,10 +76,44 @@ Methods
   .. hidden-code-block:: ruby
 
      def with_associations(*spec)
-       new_link.tap do |new_query_proxy|
-         new_spec = new_query_proxy.instance_variable_get('@associations_spec') + spec
-         new_query_proxy.instance_variable_set('@associations_spec', new_spec)
+       invalid_association_names = spec.reject do |association_name|
+         model.associations[association_name]
        end
+     
+       if invalid_association_names.size > 0
+         fail "Invalid associations: #{invalid_association_names.join(', ')}"
+       end
+     
+       new_link.tap do |new_query_proxy|
+         new_spec = new_query_proxy.with_associations_spec + spec
+         new_query_proxy.with_associations_spec.replace(new_spec)
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEagerLoading#with_associations_return_clause`:
+
+**#with_associations_return_clause**
+  
+
+  .. hidden-code-block:: ruby
+
+     def with_associations_return_clause
+       '[' + with_associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEagerLoading#with_associations_spec`:
+
+**#with_associations_spec**
+  
+
+  .. hidden-code-block:: ruby
+
+     def with_associations_spec
+       @with_associations_spec ||= []
      end
 
 
