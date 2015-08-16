@@ -1,5 +1,9 @@
 # To run coverage via travis
 require 'simplecov'
+require 'dotenv'
+
+Dotenv.load
+
 SimpleCov.start
 if ENV['CI'] == 'true'
   require 'codecov'

@@ -31,3 +31,6 @@ coverage
 
 docs_site/
 /docs/_build
+
+# dotenv
+.env

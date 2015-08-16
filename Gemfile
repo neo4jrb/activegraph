@@ -18,4 +18,5 @@ group 'test' do
   gem 'test-unit'
   gem 'overcommit'
   gem 'colored'
+  gem 'dotenv'
 end
