@@ -22,8 +22,9 @@ module Neo4j::ActiveRel
 
     # @return [String] a string representing the relationship type that will be created
     def type
-      self.class._type
+      self.class.type
     end
+    alias_method :rel_type, :type
 
     def initialize(attributes = nil)
       super(attributes)
