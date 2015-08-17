@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.1.0.rc.1] - 08-16-2015
+
+### Added
+- Ability to use `#where_not` method on `ActiveNode` / `QueryProxy`
+
 ## [5.1.0.rc.1] - 08-14-2015
 
 ### Fixed
