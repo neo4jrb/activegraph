@@ -31,15 +31,22 @@ module Neo4j
           subclass.type subclass.namespaced_model_name, true
         end
 
+        # When called without arguments, it will return the current setting or supply a default.
+        # When called with arguments, it will change the current setting.
         # @param [String] given_type sets the relationship type when creating relationships via this class
         # @param [Boolean] auto Should the given_type be changed in compliance with the gem's rel decorator setting?
-        # This option is used internally, users will usually ignore it.
         def type(given_type = nil, auto = false)
-          return rel_type if given_type.nil?
-          @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
-            add_wrapped_class(type) unless uses_classname?
+          case
+          when !given_type && rel_type?
+            @rel_type
+          when given_type
+            assign_type!(given_type, auto)
+          else
+            assign_type!(namespaced_model_name, true)
           end
         end
+        alias_method :rel_type, :type
+        alias_method :_type, :type # should be deprecated
 
         def namespaced_model_name
           case Neo4j::Config[:module_handling]
@@ -52,13 +59,6 @@ module Neo4j
           end
         end
 
-        def rel_type
-          @rel_type || type(namespaced_model_name, true)
-        end
-
-        # @return [String] a string representing the relationship type that will be created
-        alias_method :_type, :rel_type # Should be deprecated
-
         def add_wrapped_class(type)
           # _wrapped_classes[type.to_sym.downcase] = self.name
           _wrapped_classes[type.to_sym] = self.name
@@ -66,6 +66,18 @@ module Neo4j
 
         def _wrapped_classes
           Neo4j::ActiveRel::Types::WRAPPED_CLASSES
+        end
+
+        def rel_type?
+          !!@rel_type
+        end
+
+        private
+
+        def assign_type!(given_type, auto)
+          @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
+            add_wrapped_class(type) unless uses_classname?
+          end
         end
       end
     end
