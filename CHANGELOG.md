@@ -9,7 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Associations defined in ActiveNode models will delegate `unique?` to the model set in `rel_class`. This makes it easier for the rel class to act as the single source of truth for relationship behavior.
 
 ### Added
-- ActiveRel instance methods: `#{related_node}_neo_id` methods to match CypherRelationship. Works with start/from and end/to.
+- ActiveRel: `#{related_node}_neo_id` instance methods to match CypherRelationship. Works with start/from and end/to.
+- ActiveRel: `type` now has a new alias, `rel_type`. You might recognize this from the `(Cypher|Embedded)Relationship` class and ActiveNode association option.
+- QueryProxy: `where_not` method that does exactly what you'd expect.
+- Contributing to the gem? Rejoice, for it now supports [Dotenv](https://github.com/bkeepers/dotenv).
 
 ## [5.1.0.rc.1] - 08-14-2015
 
