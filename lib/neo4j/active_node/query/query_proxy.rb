@@ -138,7 +138,7 @@ module Neo4j
           @model.current_scope = previous
         end
 
-        METHODS = %w(where rel_where order skip limit)
+        METHODS = %w(where where_not rel_where order skip limit)
 
         METHODS.each do |method|
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
