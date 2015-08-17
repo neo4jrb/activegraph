@@ -25,16 +25,6 @@ ClassMethods
 
    
 
-   
-
-   
-
-   
-
-   
-
-   
-
 
 
 
@@ -50,7 +40,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:124 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L124>`_
+  * `lib/neo4j/shared/property.rb:109 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L109>`_
 
 
 
@@ -105,61 +95,6 @@ Methods
 
 
 
-.. _`Neo4j/Shared/Property/ClassMethods#default_properties`:
-
-**#default_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties
-       @default_property ||= {}
-     end
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#default_properties_keys`:
-
-**#default_properties_keys**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties_keys
-       @default_properties_keys ||= default_properties.keys
-     end
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#default_property`:
-
-**#default_property**
-  TODO: Move this to the DeclaredPropertyManager
-
-  .. hidden-code-block:: ruby
-
-     def default_property(name, &block)
-       reset_default_properties(name) if default_properties.respond_to?(:size)
-       default_properties[name] = block
-     end
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#default_property_values`:
-
-**#default_property_values**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_property_values(instance)
-       default_properties.each_with_object({}) do |(key, block), result|
-         result[key] = block.call(instance)
-       end
-     end
-
-
-
 .. _`Neo4j/Shared/Property/ClassMethods#inherited`:
 
 **#inherited**
@@ -193,24 +128,6 @@ Methods
      
        attribute(name, prop.options)
        constraint_or_index(name, options)
-     end
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#reset_default_properties`:
-
-**#reset_default_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def reset_default_properties(name_to_keep)
-       default_properties.each_key do |property|
-         @default_properties_keys = nil
-         undef_method(property) unless property == name_to_keep
-       end
-       @default_properties_keys = nil
-       @default_property = {}
      end
 
 

@@ -1,0 +1,47 @@
+Contributing
+============
+
+We very much welcome contributions!  Before contributing there are a few things that you should know about the neo4j.rb projects:
+
+The Neo4j.rb Project
+--------------------
+
+We have three main gems: `neo4j <https://github.com/neo4jrb/neo4j>`_, `neo4j-core <https://github.com/neo4jrb/neo4j-core>`_, `neo4j-rake_tasks <https://github.com/neo4jrb/neo4j-rake_tasks>`_.
+
+We try to follow semantic versioning based on `semver.org <http://semver.org/>`
+
+Running Specs
+-------------
+
+For running the specs, see our `spec/README.md <https://github.com/neo4jrb/neo4j/blob/master/spec/README.md>`_
+
+Before you submit your pull request
+-----------------------------------
+
+Automated Tools
+~~~~~~~~~~~~~~~
+
+We use:
+
+ * `RSpec <http://rspec.info/>`_
+ * `Rubocop <https://github.com/bbatsov/rubocop>`_
+ * `Coveralls <https://coveralls.io>`_
+
+Please try to check at least the RSpec tests and Rubocop before making your pull request.  `Guardfile` and `.overcommit.yml` files are available if you would like to use `guard` (for RSpec and rubocop) and/or overcommit.
+
+We also use Travis CI to make sure all of these pass for each pull request.  Travis runs the specs across multiple versions of Ruby and multiple Neo4j databases, so be aware of that for potential build failures.
+
+Documentation
+~~~~~~~~~~~~~
+
+To aid our users, we try to keep a complete `CHANGELOG.md` file.  We use `keepachangelog.com <http://keepachangelog.com/>`_ as a guide.  We appreciate a line in the `CHANGELOG.md` as part of any changes.
+
+We also use Sphinx / reStructuredText for our documentation which is published on `readthedocs.org <http://neo4jrb.readthedocs.org/>`_.  We also appreciate your help in documenting any user-facing changes.
+
+Notes about our documentation setup:
+
+ * YARD documentation in code is also parsed and placed into the Sphinx site so that is also welcome.  Note that reStructuredText inside of your YARD docs will render more appropriately.
+ * You can use `rake docs` to build the documentation locally and `rake docs:open` to open it in your web browser.
+ * Please make sure that you run `rake docs` before committing any documentation changes and checkin all changes to `docs`.
+
+

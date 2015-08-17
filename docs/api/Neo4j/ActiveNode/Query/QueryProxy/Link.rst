@@ -132,11 +132,8 @@ Methods
        neo_id = value.try(:neo_id) || value
        fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
      
-       dir = model.associations[name].direction
-     
-       arrow = dir == :out ? '-->' : '<--'
        [
-         new(:match, ->(v, _) { "#{v}#{arrow}(#{n_string})" }),
+         new(:match, ->(v, _) { "#{v}#{model.associations[name].arrow_cypher}(#{n_string})" }),
          new(:where, ->(_, _) { {"ID(#{n_string})" => neo_id.to_i} })
        ]
      end
