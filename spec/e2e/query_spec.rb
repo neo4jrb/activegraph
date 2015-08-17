@@ -164,6 +164,10 @@ describe 'Query API' do
         Teacher.where(name: /.*Othmar.*/).to_a.should eq([othmar])
       end
 
+      it 'allows NOT() filtering in where' do
+        Teacher.where_not(name: /.*Othmar.*/).to_a.should eq([samuels])
+      end
+
       it 'allows filtering by String in where' do
         Teacher.as(:teach).where('teach.name =~ ".*Othmar.*"').to_a.should eq([othmar])
 
