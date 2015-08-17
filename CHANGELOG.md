@@ -14,6 +14,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - QueryProxy: `where_not` method that does exactly what you'd expect.
 - Contributing to the gem? Rejoice, for it now supports [Dotenv](https://github.com/bkeepers/dotenv).
 
+## [5.1.0.rc.2] - 08-16-2015
+
+### Added
+- Ability to use `#where_not` method on `ActiveNode` / `QueryProxy`
+
 ## [5.1.0.rc.1] - 08-14-2015
 
 ### Fixed
