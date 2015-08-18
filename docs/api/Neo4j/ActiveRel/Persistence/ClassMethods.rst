@@ -15,6 +15,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -76,6 +78,19 @@ Methods
          end
          obj.save!
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence/ClassMethods#create_method`:
+
+**#create_method**
+  
+
+  .. hidden-code-block:: ruby
+
+     def create_method
+       creates_unique? ? :create_unique : :create
      end
 
 

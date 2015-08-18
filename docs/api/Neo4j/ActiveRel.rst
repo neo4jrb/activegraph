@@ -307,6 +307,17 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#from_node_neo_id`:
+
+**#from_node_neo_id**
+  
+
+  .. hidden-code-block:: ruby
+
+     alias_method :from_node_neo_id, :start_node_neo_id
+
+
+
 .. _`Neo4j/ActiveRel#frozen?`:
 
 **#frozen?**
@@ -519,6 +530,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#rel_type`:
+
+**#rel_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def type
+       self.class.type
+     end
+
+
+
 .. _`Neo4j/ActiveRel#reload`:
 
 **#reload**
@@ -650,6 +674,17 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#to_node_neo_id`:
+
+**#to_node_neo_id**
+  
+
+  .. hidden-code-block:: ruby
+
+     alias_method :to_node_neo_id,   :end_node_neo_id
+
+
+
 .. _`Neo4j/ActiveRel#touch`:
 
 **#touch**
@@ -671,7 +706,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def type
-       self.class._type
+       self.class.type
      end
 
 
