@@ -27,6 +27,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -42,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/property.rb:27 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L27>`_
+  * `lib/neo4j/active_rel/property.rb:34 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L34>`_
 
 
 
@@ -163,6 +165,19 @@ Methods
   .. hidden-code-block:: ruby
 
      alias_method :start_class,  :from_class
+
+
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#unique?`:
+
+**#unique?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def creates_unique?
+       !!@creates_unique
+     end
 
 
 

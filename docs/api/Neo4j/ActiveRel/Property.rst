@@ -19,6 +19,12 @@ Property
 
    
 
+   
+
+   
+
+   
+
    Property/ClassMethods
 
    
@@ -88,6 +94,17 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Property#from_node_neo_id`:
+
+**#from_node_neo_id**
+  
+
+  .. hidden-code-block:: ruby
+
+     alias_method :from_node_neo_id, :start_node_neo_id
+
+
+
 .. _`Neo4j/ActiveRel/Property#initialize`:
 
 **#initialize**
@@ -117,6 +134,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Property#rel_type`:
+
+**#rel_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def type
+       self.class.type
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Property#send_props`:
 
 **#send_props**
@@ -142,6 +172,17 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Property#to_node_neo_id`:
+
+**#to_node_neo_id**
+  
+
+  .. hidden-code-block:: ruby
+
+     alias_method :to_node_neo_id,   :end_node_neo_id
+
+
+
 .. _`Neo4j/ActiveRel/Property#type`:
 
 **#type**
@@ -150,7 +191,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def type
-       self.class._type
+       self.class.type
      end
 
 

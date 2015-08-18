@@ -91,6 +91,10 @@ Association
 
    
 
+   
+
+   
+
 
 
 
@@ -370,6 +374,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/Association#rel_class?`:
+
+**#rel_class?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def relationship_class?
+       !!relationship_class
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/Association#relationship`:
 
 **#relationship**
@@ -392,6 +409,19 @@ Methods
 
      def relationship_class
        @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_class?`:
+
+**#relationship_class?**
+  
+
+  .. hidden-code-block:: ruby
+
+     def relationship_class?
+       !!relationship_class
      end
 
 
@@ -566,6 +596,7 @@ Methods
   .. hidden-code-block:: ruby
 
      def unique?
+       return relationship_class.unique? if rel_class?
        @origin ? origin_association.unique? : !!@unique
      end
 
