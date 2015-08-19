@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+- Fixed a bug where the `Neo4j::Timestamps` mixin was not able to be included
+
 ## [5.1.0.rc.3] - 08-17-2015
 
 ### Fixed
