@@ -44,6 +44,16 @@ describe Neo4j::ActiveNode::HasN::Association do
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
+    context 'type and model_class specified' do
+      context 'with type: false' do
+        before do
+          stub_const('FooClass', Class.new)
+        end
+        let(:options) { {type: false, model_class: FooClass} }
+        it { expect(subject.relationship_type).to be_falsey }
+      end
+    end
+
     context 'origin and rel_class specified' do
       let(:options) { {origin: :foo, rel_class: :bar} }
 
