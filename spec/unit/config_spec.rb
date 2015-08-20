@@ -96,5 +96,17 @@ describe Neo4j::Config do
         expect(Neo4j::Config.include_root_in_json).to be_falsey
       end
     end
+
+    describe 'timestamp_type' do
+      after(:all) { Neo4j::Config[:timestamp_type] = nil }
+      it 'defaults to DateTime' do
+        expect(Neo4j::Config.timestamp_type).to eq(DateTime)
+      end
+
+      it 'respects config' do
+        Neo4j::Config[:timestamp_type] = Integer
+        expect(Neo4j::Config.timestamp_type).to eq(Integer)
+      end
+    end
   end
 end

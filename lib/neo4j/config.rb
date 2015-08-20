@@ -106,6 +106,12 @@ module Neo4j
         Neo4j::Config[:module_handling] || :none
       end
 
+      # Allows Integer or DateTime type to configured
+      # for timestamps.
+      def timestamp_type
+        Neo4j::Config[:timestamp_type] || DateTime
+      end
+
       def association_model_namespace
         Neo4j::Config[:association_model_namespace] || nil
       end
