@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.1.2] - 08-20-2015
+
+### Fixed
+- When association has `model_class` and `type: false` the association doesn't work (see: https://github.com/neo4jrb/neo4j/pull/930)
 
 ## [5.1.1] - 08-19-2015
 
