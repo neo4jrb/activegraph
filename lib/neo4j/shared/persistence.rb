@@ -4,13 +4,19 @@ module Neo4j::Shared
 
     USES_CLASSNAME = []
 
+    def props_for_persistence
+      _persisted_obj ? props_for_update : props_for_create
+    end
+
     def update_model
       return if !changed_attributes || changed_attributes.empty?
-
-      changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-      changed_props = self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
-      _persisted_obj.update_props(changed_props)
+      _persisted_obj.update_props(props_for_update)
       changed_attributes.clear
+    end
+
+    def props_for_update
+      changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
+      self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
     end
 
     # Convenience method to set attribute and #save at the same time
@@ -161,9 +167,6 @@ module Neo4j::Shared
 
     def model_cache_key
       self.class.model_name.cache_key
-    end
-
-    def create_magic_properties
     end
 
     def update_magic_properties

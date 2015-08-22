@@ -47,25 +47,29 @@ module Neo4j::ActiveNode
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
-    def create_model(*)
-      create_magic_properties
-      set_timestamps
-      create_magic_properties
-      properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
-      node = _create_node(properties)
+    def create_model
+      node = _create_node(props_for_create)
       init_on_load(node, node.props)
       send_props(@relationship_props) if @relationship_props
       @relationship_props = @deferred_nodes = nil
       true
     end
 
-    def _create_node(*args)
-      session = self.class.neo4j_session
-      props = self.class.default_property_values(self)
-      props.merge!(args[0]) if args[0].is_a?(Hash)
-      set_classname(props)
-      labels = self.class.mapped_label_names
-      session.create_node(props, labels)
+    def _create_node(node_props)
+      self.class.neo4j_session.create_node(node_props, labels_for_create)
+    end
+
+    def props_for_create
+      set_timestamps
+      converted_props = self.class.declared_property_manager.convert_properties_to(self, :db, props)
+      self.class.default_property_values(self).tap do |destination_props|
+        destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
+        set_classname(destination_props)
+      end
+    end
+
+    def labels_for_create
+      self.class.mapped_label_names
     end
 
     private

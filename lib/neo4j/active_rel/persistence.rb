@@ -21,15 +21,17 @@ module Neo4j::ActiveRel
       fail RelInvalidError, self unless save(*args)
     end
 
-    def create_model(*)
+    def create_model
       validate_node_classes!
-      create_magic_properties
-      set_timestamps
-      properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
-      rel = _create_rel(from_node, to_node, properties)
+      rel = _create_rel(from_node, to_node, props_for_create)
       return self unless rel.respond_to?(:_persisted_obj)
       init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
       true
+    end
+
+    def props_for_create
+      set_timestamps
+      self.class.declared_property_manager.convert_properties_to(self, :db, props)
     end
 
     module ClassMethods
