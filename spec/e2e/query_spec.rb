@@ -77,6 +77,15 @@ describe 'Query API' do
 
       lesson.students.pluck(:uuid).should eq([student.uuid])
     end
+
+    it 'responds to to_ary' do
+      lesson = Lesson.create
+      student = Student.create
+      student.lessons << lesson
+
+      expect(student.lessons.to_ary).to be_instance_of(Array)
+      expect(student.lessons.to_ary).to eq(student.lessons.to_a)
+    end
   end
 
   describe 'association validation' do
