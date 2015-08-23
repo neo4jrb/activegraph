@@ -23,7 +23,7 @@ module Neo4j::Shared
     end
 
     def props_for_update
-
+      update_magic_properties
       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
       props_for_db(changed_props)
     end
@@ -130,7 +130,7 @@ module Neo4j::Shared
 
     def reload
       return self if new_record?
-      association_proxy_cache.clear
+      association_proxy_cache.clear if respond_to?(:association_proxy_cache)
       changed_attributes && changed_attributes.clear
       unless reload_from_database
         @_deleted = true

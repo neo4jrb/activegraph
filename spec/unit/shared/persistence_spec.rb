@@ -19,7 +19,6 @@ describe Neo4j::Shared::Persistence do
   let(:node) { MyModel.new }
 
   describe 'props_for_create' do
-
     it 'sets timestamps' do
       expect(node).to receive(:inject_timestamps!)
       node.props_for_create
