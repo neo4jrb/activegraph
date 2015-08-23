@@ -380,7 +380,7 @@ module Neo4j::ActiveNode
           if options[:rel_length] && !options[:rel_length].is_a?(Fixnum)
             results
           else
-            results.first
+            results.result.first
           end
         end
       end
