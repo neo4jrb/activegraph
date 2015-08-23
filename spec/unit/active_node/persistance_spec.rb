@@ -126,7 +126,7 @@ describe Neo4j::ActiveNode::Persistence do
   describe 'props_for_create' do
     let(:node) { clazz.new }
     before do
-      clazz.include Neo4j::ActiveNode::IdProperty
+      clazz.send(:include, Neo4j::ActiveNode::IdProperty)
       clazz.id_property :uuid, auto: :uuid, constraint: false
       allow(clazz).to receive(:cached_class?).and_return false
     end
