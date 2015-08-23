@@ -7,13 +7,7 @@ module Neo4j::ActiveRel
     class ModelClassInvalidError < RuntimeError; end
     class RelCreateFailedError < RuntimeError; end
 
-    # Should probably find a way to not need this
-    def association_proxy_cache
-      {}
-    end
-
     def save(*)
-      update_magic_properties
       create_or_update
     end
 
@@ -27,11 +21,6 @@ module Neo4j::ActiveRel
       return self unless rel.respond_to?(:_persisted_obj)
       init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
       true
-    end
-
-    def props_for_create
-      set_timestamps
-      self.class.declared_property_manager.convert_properties_to(self, :db, props)
     end
 
     module ClassMethods
@@ -84,8 +73,6 @@ module Neo4j::ActiveRel
     end
 
     def _create_rel(from_node, to_node, props = {})
-      set_classname(props, true)
-
       if from_node.id.nil? || to_node.id.nil?
         fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}"
       end

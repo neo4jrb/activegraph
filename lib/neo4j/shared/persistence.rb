@@ -14,9 +14,18 @@ module Neo4j::Shared
       changed_attributes.clear
     end
 
+    def props_for_create
+      inject_timestamps!
+      converted_props = props_for_db(props)
+      inject_classname!(converted_props)
+      return converted_props unless self.class.respond_to?(:default_property_values)
+      inject_primary_key!(converted_props)
+    end
+
     def props_for_update
+
       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-      self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
+      props_for_db(changed_props)
     end
 
     # Convenience method to set attribute and #save at the same time
@@ -165,6 +174,10 @@ module Neo4j::Shared
 
     private
 
+    def props_for_db(props_hash)
+      self.class.declared_property_manager.convert_properties_to(self, :db, props_hash)
+    end
+
     def model_cache_key
       self.class.model_name.cache_key
     end
@@ -174,14 +187,26 @@ module Neo4j::Shared
     end
 
     # Inserts the _classname property into an object's properties during object creation.
-    def set_classname(props, check_version = true)
+    def inject_classname!(props, check_version = true)
       props[:_classname] = self.class.name if self.class.cached_class?(check_version)
     end
 
-    def set_timestamps
+    def set_classname(props, check_version = true)
+      warning = 'This method has been replaced with `inject_classname!` and will be removed in a future version'.freeze
+      ActiveSupport::Deprecation.warn warning, caller
+      inject_classname!(props, check_version)
+    end
+
+    def inject_timestamps!
       now = DateTime.now
       self.created_at ||= now if respond_to?(:created_at=)
       self.updated_at ||= now if respond_to?(:updated_at=)
+    end
+
+    def set_timestamps
+      warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze
+      ActiveSupport::Deprecation.warn warning, caller
+      inject_timestamps!
     end
 
     module ClassMethods

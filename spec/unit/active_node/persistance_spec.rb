@@ -122,4 +122,24 @@ describe Neo4j::ActiveNode::Persistence do
       o.props.should eq(age: 18)
     end
   end
+
+  describe 'props_for_create' do
+    let(:node) { clazz.new }
+    before do
+      clazz.include Neo4j::ActiveNode::IdProperty
+      clazz.id_property :uuid, auto: :uuid, constraint: false
+      allow(clazz).to receive(:cached_class?).and_return false
+    end
+
+    it 'adds the primary key' do
+      expect(node.props_for_create).to have_key(:uuid)
+    end
+
+    # This is important to be aware of. The UUID will be rebuilt each time it is called.
+    it 'rebuilds each time called, setting a new UUID value' do
+      props1 = node.props_for_create
+      props2 = node.props_for_create
+      expect(props1[:uuid]).not_to eq(props2[:uuid])
+    end
+  end
 end

@@ -23,7 +23,6 @@ module Neo4j::ActiveNode
     # There's a series of callbacks associated with save.
     # If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
-      update_magic_properties
       cascade_save do
         association_proxy_cache.clear
         create_or_update
@@ -59,12 +58,9 @@ module Neo4j::ActiveNode
       self.class.neo4j_session.create_node(node_props, labels_for_create)
     end
 
-    def props_for_create
-      set_timestamps
-      converted_props = self.class.declared_property_manager.convert_properties_to(self, :db, props)
+    def inject_primary_key!(converted_props)
       self.class.default_property_values(self).tap do |destination_props|
         destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
-        set_classname(destination_props)
       end
     end
 
