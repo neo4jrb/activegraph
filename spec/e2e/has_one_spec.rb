@@ -40,6 +40,39 @@ describe 'has_one' do
       a.children.to_a.should =~ [b, c]
     end
 
+    it 'caches the result of has_one accessor' do
+      a = HasOneA.create(name: 'a')
+      b = HasOneB.create(name: 'b')
+      a.children << b
+
+      b = HasOneB.find(b.id)
+
+      expect_queries(1) do
+        b.parent.should eq(a)
+        b.parent.should eq(a)
+      end
+    end
+
+    it 'clears the cached result of a has_one accessor on reload' do
+      a = HasOneA.create(name: 'a')
+      b = HasOneB.create(name: 'b')
+      a.children << b
+
+      b = HasOneB.find(b.id)
+
+      expect_queries(1) do
+        b.parent.should eq(a)
+        b.parent.should eq(a)
+      end
+
+      b.reload
+
+      expect_queries(1) do
+        b.parent.should eq(a)
+        b.parent.should eq(a)
+      end
+    end
+
     it 'can create a relationship via the has_one accessor' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
