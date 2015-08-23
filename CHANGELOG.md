@@ -5,6 +5,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.1.2] - 08-20-2015
+
+### Fixed
+- When association has `model_class` and `type: false` the association doesn't work (see: https://github.com/neo4jrb/neo4j/pull/930)
+
+## [5.1.1] - 08-19-2015
+
+### Fixed
+- Fixed a bug where the `Neo4j::Timestamps` mixin was not able to be included
+
 ## [5.1.0.rc.3] - 08-17-2015
 
 ### Fixed

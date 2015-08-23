@@ -26,6 +26,8 @@ require 'neo4j/shared/rel_type_converters'
 require 'neo4j/type_converters'
 require 'neo4j/paginated'
 
+require 'neo4j/timestamps'
+
 require 'neo4j/shared/callbacks'
 require 'neo4j/shared/declared_property'
 require 'neo4j/shared/declared_property_manager'

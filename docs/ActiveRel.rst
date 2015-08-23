@@ -52,6 +52,13 @@ See the note on from/to at the end of this page for additional information.
       end
     end
 
+.. seealso::
+  .. raw:: html
+
+    There is also a screencast available reviewing ActiveRel:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/f7NNGIWZ1pE" frameborder="0" allowfullscreen></iframe>
+
 Relationship Creation
 ---------------------
 
