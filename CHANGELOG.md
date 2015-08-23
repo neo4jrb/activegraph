@@ -8,6 +8,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - `has_one` associations are now properly cached (like `has_many` associations)
 
+### Added
+- `props_for_persistence`, `props_for_create`, `props_for_update` instance methods for all nodes and rels. Each returns a hash with properties appropriate for sending to the database in a Cypher query to create or update an object.
+
+### Changed
+- Methods related to basic node and rel persistence (`save`, `create_model`, `_create_node`, others) were refactored to make the processes simpler, clearer, and slightly faster.
+- Unit test directory structure was rearranged to mirror the `lib` directory.
+
 ## [5.1.2] - 08-20-2015
 
 ### Fixed
