@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+- `has_one` associations are now properly cached (like `has_many` associations)
+
 ## [5.1.2] - 08-20-2015
 
 ### Fixed
