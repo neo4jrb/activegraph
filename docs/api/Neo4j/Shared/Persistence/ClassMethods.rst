@@ -34,7 +34,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/persistence.rb:184 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L184>`_
+  * `lib/neo4j/shared/persistence.rb:222 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L222>`_
 
 
 

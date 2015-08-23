@@ -23,8 +23,6 @@ Persistence
 
    
 
-   
-
    Persistence/ClassMethods
 
    
@@ -121,19 +119,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel/Persistence#association_proxy_cache`:
-
-**#association_proxy_cache**
-  Should probably find a way to not need this
-
-  .. hidden-code-block:: ruby
-
-     def association_proxy_cache
-       {}
-     end
-
-
-
 .. _`Neo4j/ActiveRel/Persistence#cache_key`:
 
 **#cache_key**
@@ -160,12 +145,9 @@ Methods
 
   .. hidden-code-block:: ruby
 
-     def create_model(*)
+     def create_model
        validate_node_classes!
-       create_magic_properties
-       set_timestamps
-       properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
-       rel = _create_rel(from_node, to_node, properties)
+       rel = _create_rel(from_node, to_node, props_for_create)
        return self unless rel.respond_to?(:_persisted_obj)
        init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
        true
@@ -320,6 +302,57 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Persistence#props_for_create`:
+
+**#props_for_create**
+  Returns a hash containing:
+  * All properties and values for insertion in the database
+  * A `uuid` (or equivalent) key and value
+  * A `_classname` property, if one is to be set
+  * Timestamps, if the class is set to include them.
+  Note that the UUID is added to the hash but is not set on the node.
+  The timestamps, by comparison, are set on the node prior to addition in this hash.
+
+  .. hidden-code-block:: ruby
+
+     def props_for_create
+       inject_timestamps!
+       converted_props = props_for_db(props)
+       inject_classname!(converted_props)
+       return converted_props unless self.class.respond_to?(:default_property_values)
+       inject_primary_key!(converted_props)
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#props_for_persistence`:
+
+**#props_for_persistence**
+  
+
+  .. hidden-code-block:: ruby
+
+     def props_for_persistence
+       _persisted_obj ? props_for_update : props_for_create
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#props_for_update`:
+
+**#props_for_update**
+  
+
+  .. hidden-code-block:: ruby
+
+     def props_for_update
+       update_magic_properties
+       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
+       props_for_db(changed_props)
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Persistence#reload`:
 
 **#reload**
@@ -329,7 +362,7 @@ Methods
 
      def reload
        return self if new_record?
-       association_proxy_cache.clear
+       association_proxy_cache.clear if respond_to?(:association_proxy_cache)
        changed_attributes && changed_attributes.clear
        unless reload_from_database
          @_deleted = true
@@ -365,7 +398,6 @@ Methods
   .. hidden-code-block:: ruby
 
      def save(*)
-       update_magic_properties
        create_or_update
      end
 
@@ -479,10 +511,7 @@ Methods
 
      def update_model
        return if !changed_attributes || changed_attributes.empty?
-     
-       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-       changed_props = self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
-       _persisted_obj.update_props(changed_props)
+       _persisted_obj.update_props(props_for_update)
        changed_attributes.clear
      end
 
