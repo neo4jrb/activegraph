@@ -54,8 +54,13 @@ module Neo4j::ActiveNode
       true
     end
 
-    def _create_node(node_props)
-      self.class.neo4j_session.create_node(node_props, labels_for_create)
+    # TODO: This does not seem like it should be the responsibility of the node.
+    # Creates an unwrapped node in the database.
+    # @param [Hash] node_props The type-converted properties to be added to the new node.
+    # @param [Array] labels The labels to use for creating the new node.
+    # @return [Neo4j::Node] A CypherNode or EmbeddedNode
+    def _create_node(node_props, labels = labels_for_create)
+      self.class.neo4j_session.create_node(node_props, labels)
     end
 
     def inject_primary_key!(converted_props)
@@ -64,6 +69,7 @@ module Neo4j::ActiveNode
       end
     end
 
+    # @return [Array] Labels to be set on the node during a create event
     def labels_for_create
       self.class.mapped_label_names
     end

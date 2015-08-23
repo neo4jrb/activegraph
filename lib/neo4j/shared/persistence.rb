@@ -4,6 +4,7 @@ module Neo4j::Shared
 
     USES_CLASSNAME = []
 
+    # @return [Hash] Given a node's state, will call the appropriate `props_for_{action}` method.
     def props_for_persistence
       _persisted_obj ? props_for_update : props_for_create
     end
@@ -14,6 +15,14 @@ module Neo4j::Shared
       changed_attributes.clear
     end
 
+    # Returns a hash containing:
+    # * All properties and values for insertion in the database
+    # * A `uuid` (or equivalent) key and value
+    # * A `_classname` property, if one is to be set
+    # * Timestamps, if the class is set to include them.
+    # Note that the UUID is added to the hash but is not set on the node.
+    # The timestamps, by comparison, are set on the node prior to addition in this hash.
+    # @return [Hash]
     def props_for_create
       inject_timestamps!
       converted_props = props_for_db(props)
@@ -22,6 +31,7 @@ module Neo4j::Shared
       inject_primary_key!(converted_props)
     end
 
+    # @return [Hash] Properties and values, type-converted and timestamped for the database.
     def props_for_update
       update_magic_properties
       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
