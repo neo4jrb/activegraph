@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.3] - 09-07-2015
+
+Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
+- `AssociationProxy` now responds to `serializable_hash` so that `include` can be used in `render json` in Rails controllers
+- 
+
 ## [5.2.2] - 09-06-2015
 
 ### Fixed
@@ -21,10 +27,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `props_for_persistence`, `props_for_create`, `props_for_update` instance methods for all nodes and rels. Each returns a hash with properties appropriate for sending to the database in a Cypher query to create or update an object.
 - Added `record_timestamps` configuration do default all `ActiveNode` and `ActiveRel` models to have `created_at` and `updated_at` timestamps (from #939, thanks @rebecca-eakins)
 - Added `timestamp_type` configuration to specify how timestamps should be stored (from #939, thanks @rebecca-eakins)
-
-### Changed
-- Methods related to basic node and rel persistence (`save`, `create_model`, `_create_node`, others) were refactored to make the processes simpler, clearer, and slightly faster.
-- Unit test directory structure was rearranged to mirror the `lib` directory.
 
 ## [5.1.3] - 08-23-2015
 
