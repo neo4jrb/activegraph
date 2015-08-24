@@ -79,6 +79,10 @@ module Neo4j::ActiveNode
         target.public_send(method_name, *args, &block)
       end
 
+      def serializable_hash(options = {})
+        to_a.map {|record| record.serializable_hash(options) }
+      end
+
       private
 
       def target_for_missing_method(method_name)

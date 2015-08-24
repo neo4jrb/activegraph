@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.1.4] - 08-24-2015
+
+### Fixed
+- `AssociationProxy` now responds to `serializable_hash` so that `include` can be used in `render json` in Rails controllers
+
 ## [5.1.3] - 08-23-2015
 
 ### Fixed
