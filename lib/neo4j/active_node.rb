@@ -41,8 +41,6 @@ module Neo4j
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent
 
-    include Neo4j::Timestamps if Neo4j::Config.record_timestamps
-
     def neo4j_obj
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
@@ -57,6 +55,8 @@ module Neo4j
     end
 
     included do
+      include Neo4j::Timestamps if Neo4j::Config.record_timestamps
+
       def self.inherited(other)
         inherit_id_property(other)
         inherited_indexes(other) if self.respond_to?(:indexed_properties)

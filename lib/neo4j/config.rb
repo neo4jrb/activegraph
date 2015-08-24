@@ -3,11 +3,11 @@ module Neo4j
   #
   # == Configurations keys
   class Config
-    attr_writer :record_timestamps
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
     CLASS_NAME_PROPERTY_KEY = 'class_name_property'
 
     class << self
+      attr_writer :record_timestamps
       # @return [Fixnum] The location of the default configuration file.
       def default_file
         @default_file ||= DEFAULT_FILE
