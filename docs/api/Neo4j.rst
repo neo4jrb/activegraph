@@ -78,7 +78,7 @@ Files
 
   * `lib/neo4j/paginated.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/paginated.rb#L1>`_
 
-  * `lib/neo4j/timestamps.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps.rb#L1>`_
+  * `lib/neo4j/timestamps.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps.rb#L4>`_
 
   * `lib/neo4j/active_rel.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L1>`_
 

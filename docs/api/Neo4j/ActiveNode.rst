@@ -189,17 +189,13 @@ Methods
 .. _`Neo4j/ActiveNode#_create_node`:
 
 **#_create_node**
-  
+  TODO: This does not seem like it should be the responsibility of the node.
+  Creates an unwrapped node in the database.
 
   .. hidden-code-block:: ruby
 
-     def _create_node(*args)
-       session = self.class.neo4j_session
-       props = self.class.default_property_values(self)
-       props.merge!(args[0]) if args[0].is_a?(Hash)
-       set_classname(props)
-       labels = self.class.mapped_label_names
-       session.create_node(props, labels)
+     def _create_node(node_props, labels = labels_for_create)
+       self.class.neo4j_session.create_node(node_props, labels)
      end
 
 
@@ -650,6 +646,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode#inject_primary_key!`:
+
+**#inject_primary_key!**
+  
+
+  .. hidden-code-block:: ruby
+
+     def inject_primary_key!(converted_props)
+       self.class.default_property_values(self).tap do |destination_props|
+         destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode#inspect`:
 
 **#inspect**
@@ -677,6 +688,19 @@ Methods
 
      def labels
        @_persisted_obj.labels
+     end
+
+
+
+.. _`Neo4j/ActiveNode#labels_for_create`:
+
+**#labels_for_create**
+  
+
+  .. hidden-code-block:: ruby
+
+     def labels_for_create
+       self.class.mapped_label_names
      end
 
 
@@ -785,6 +809,57 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode#props_for_create`:
+
+**#props_for_create**
+  Returns a hash containing:
+  * All properties and values for insertion in the database
+  * A `uuid` (or equivalent) key and value
+  * A `_classname` property, if one is to be set
+  * Timestamps, if the class is set to include them.
+  Note that the UUID is added to the hash but is not set on the node.
+  The timestamps, by comparison, are set on the node prior to addition in this hash.
+
+  .. hidden-code-block:: ruby
+
+     def props_for_create
+       inject_timestamps!
+       converted_props = props_for_db(props)
+       inject_classname!(converted_props)
+       return converted_props unless self.class.respond_to?(:default_property_values)
+       inject_primary_key!(converted_props)
+     end
+
+
+
+.. _`Neo4j/ActiveNode#props_for_persistence`:
+
+**#props_for_persistence**
+  
+
+  .. hidden-code-block:: ruby
+
+     def props_for_persistence
+       _persisted_obj ? props_for_update : props_for_create
+     end
+
+
+
+.. _`Neo4j/ActiveNode#props_for_update`:
+
+**#props_for_update**
+  
+
+  .. hidden-code-block:: ruby
+
+     def props_for_update
+       update_magic_properties
+       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
+       props_for_db(changed_props)
+     end
+
+
+
 .. _`Neo4j/ActiveNode#query_as`:
 
 **#query_as**
@@ -835,7 +910,7 @@ Methods
 
      def reload
        return self if new_record?
-       association_proxy_cache.clear
+       association_proxy_cache.clear if respond_to?(:association_proxy_cache)
        changed_attributes && changed_attributes.clear
        unless reload_from_database
          @_deleted = true
