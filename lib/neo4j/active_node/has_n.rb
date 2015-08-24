@@ -80,7 +80,7 @@ module Neo4j::ActiveNode
       end
 
       def serializable_hash(options = {})
-        to_a.map {|record| record.serializable_hash(options) }
+        to_a.map { |record| record.serializable_hash(options) }
       end
 
       private
