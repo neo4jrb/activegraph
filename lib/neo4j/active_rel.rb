@@ -15,6 +15,8 @@ module Neo4j
     include Neo4j::ActiveRel::Query
     include Neo4j::ActiveRel::Types
 
+    include Neo4j::Timestamps if Neo4j::Config.record_timestamps
+
     class FrozenRelError < StandardError; end
 
     def initialize(*args)
