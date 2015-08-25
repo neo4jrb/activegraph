@@ -40,8 +40,10 @@ module Neo4j
       end
 
       def save_and_associate_node(association_name, node, operator)
-        node.save if node.changed? || !node.persisted?
-        fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
+        if node.respond_to?(:changed?)
+          node.save if node.changed? || !node.persisted?
+          fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
+        end
         operator == :<< ? send(association_name).send(operator, node) : send(:"#{association_name}=", node)
       end
     end
