@@ -3,9 +3,7 @@ module Neo4j
     # This mixin includes a created_at timestamp property
     module Created
       extend ActiveSupport::Concern
-      included do
-        property :created_at, type: DateTime
-      end
+      included { property :created_at }
     end
   end
 end
