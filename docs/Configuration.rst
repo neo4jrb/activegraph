@@ -1,6 +1,20 @@
 Configuration
 =============
 
+To configure any of these variables you can do the following:
+
+In Rails
+~~~~~~~~
+
+In either ``config/application.rb`` or one of the environment configurations (e.g. ``config/environments/development.rb``) you can set ``config.neo4j.variable_name = value`` where **variable_name** and **value** are as described below.
+
+Other Ruby apps
+~~~~~~~~~~~~~~~
+
+You can set configuration variables directly in the Neo4j configuration class like so: ``Neo4j::Config.variable_name = value`` where **variable_name** and **value** are as described below.
+
+Variables
+---------
 
 .. glossary::
 
@@ -63,9 +77,9 @@ Configuration
   **record_timestamps**
     **Default:** ``false``
     
-    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all ActiveNode and ActiveRel models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties. For example, include the following in your config: ``Neo4j::Config.record_timestamps = true``.
+    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all ActiveNode and ActiveRel models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties.
 
   **timestamp_type**
     **Default:** ``DateTime``
 
-    This method returns the specified default type for the ``:created_at`` and ``:updated_at`` timestamps. Specify another type (e.g. ``Integer``) by declaring it in your config (``Neo4j::Config[:timestamp_type] = Date``).
+    This method returns the specified default type for the ``:created_at`` and ``:updated_at`` timestamps. You can also specify another type (e.g. ``Integer``).

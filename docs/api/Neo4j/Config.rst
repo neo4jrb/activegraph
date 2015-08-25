@@ -186,7 +186,6 @@ Methods
 
 **.default_file=**
   Sets the location of the configuration YAML file and old deletes configurations.
-  |
 
   .. hidden-code-block:: ruby
 
