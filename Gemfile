@@ -19,4 +19,5 @@ group 'test' do
   gem 'overcommit'
   gem 'colored'
   gem 'dotenv'
+  gem 'timecop'
 end

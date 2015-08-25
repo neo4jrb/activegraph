@@ -23,7 +23,6 @@ module Neo4j::ActiveNode
     # There's a series of callbacks associated with save.
     # If any of the before_* callbacks return false the action is cancelled and save returns false.
     def save(*)
-      update_magic_properties
       cascade_save do
         association_proxy_cache.clear
         create_or_update
@@ -47,25 +46,32 @@ module Neo4j::ActiveNode
     # Creates a model with values matching those of the instance attributes and returns its id.
     # @private
     # @return true
-    def create_model(*)
-      create_magic_properties
-      set_timestamps
-      create_magic_properties
-      properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
-      node = _create_node(properties)
+    def create_model
+      node = _create_node(props_for_create)
       init_on_load(node, node.props)
       send_props(@relationship_props) if @relationship_props
       @relationship_props = @deferred_nodes = nil
       true
     end
 
-    def _create_node(*args)
-      session = self.class.neo4j_session
-      props = self.class.default_property_values(self)
-      props.merge!(args[0]) if args[0].is_a?(Hash)
-      set_classname(props)
-      labels = self.class.mapped_label_names
-      session.create_node(props, labels)
+    # TODO: This does not seem like it should be the responsibility of the node.
+    # Creates an unwrapped node in the database.
+    # @param [Hash] node_props The type-converted properties to be added to the new node.
+    # @param [Array] labels The labels to use for creating the new node.
+    # @return [Neo4j::Node] A CypherNode or EmbeddedNode
+    def _create_node(node_props, labels = labels_for_create)
+      self.class.neo4j_session.create_node(node_props, labels)
+    end
+
+    def inject_primary_key!(converted_props)
+      self.class.default_property_values(self).tap do |destination_props|
+        destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
+      end
+    end
+
+    # @return [Array] Labels to be set on the node during a create event
+    def labels_for_create
+      self.class.mapped_label_names
     end
 
     private

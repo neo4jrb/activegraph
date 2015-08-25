@@ -1,6 +1,7 @@
 # To run coverage via travis
 require 'simplecov'
 require 'dotenv'
+require 'timecop'
 
 Dotenv.load
 

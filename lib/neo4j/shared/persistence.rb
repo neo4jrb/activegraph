@@ -4,13 +4,38 @@ module Neo4j::Shared
 
     USES_CLASSNAME = []
 
+    # @return [Hash] Given a node's state, will call the appropriate `props_for_{action}` method.
+    def props_for_persistence
+      _persisted_obj ? props_for_update : props_for_create
+    end
+
     def update_model
       return if !changed_attributes || changed_attributes.empty?
-
-      changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-      changed_props = self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
-      _persisted_obj.update_props(changed_props)
+      _persisted_obj.update_props(props_for_update)
       changed_attributes.clear
+    end
+
+    # Returns a hash containing:
+    # * All properties and values for insertion in the database
+    # * A `uuid` (or equivalent) key and value
+    # * A `_classname` property, if one is to be set
+    # * Timestamps, if the class is set to include them.
+    # Note that the UUID is added to the hash but is not set on the node.
+    # The timestamps, by comparison, are set on the node prior to addition in this hash.
+    # @return [Hash]
+    def props_for_create
+      inject_timestamps!
+      converted_props = props_for_db(props)
+      inject_classname!(converted_props)
+      return converted_props unless self.class.respond_to?(:default_property_values)
+      inject_primary_key!(converted_props)
+    end
+
+    # @return [Hash] Properties and values, type-converted and timestamped for the database.
+    def props_for_update
+      update_magic_properties
+      changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
+      props_for_db(changed_props)
     end
 
     # Convenience method to set attribute and #save at the same time
@@ -115,7 +140,7 @@ module Neo4j::Shared
 
     def reload
       return self if new_record?
-      association_proxy_cache.clear
+      association_proxy_cache.clear if respond_to?(:association_proxy_cache)
       changed_attributes && changed_attributes.clear
       unless reload_from_database
         @_deleted = true
@@ -159,11 +184,12 @@ module Neo4j::Shared
 
     private
 
-    def model_cache_key
-      self.class.model_name.cache_key
+    def props_for_db(props_hash)
+      self.class.declared_property_manager.convert_properties_to(self, :db, props_hash)
     end
 
-    def create_magic_properties
+    def model_cache_key
+      self.class.model_name.cache_key
     end
 
     def update_magic_properties
@@ -171,14 +197,26 @@ module Neo4j::Shared
     end
 
     # Inserts the _classname property into an object's properties during object creation.
-    def set_classname(props, check_version = true)
+    def inject_classname!(props, check_version = true)
       props[:_classname] = self.class.name if self.class.cached_class?(check_version)
     end
 
-    def set_timestamps
+    def set_classname(props, check_version = true)
+      warning = 'This method has been replaced with `inject_classname!` and will be removed in a future version'.freeze
+      ActiveSupport::Deprecation.warn warning, caller
+      inject_classname!(props, check_version)
+    end
+
+    def inject_timestamps!
       now = DateTime.now
       self.created_at ||= now if respond_to?(:created_at=)
       self.updated_at ||= now if respond_to?(:updated_at=)
+    end
+
+    def set_timestamps
+      warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze
+      ActiveSupport::Deprecation.warn warning, caller
+      inject_timestamps!
     end
 
     module ClassMethods
