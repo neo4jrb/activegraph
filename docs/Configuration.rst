@@ -59,3 +59,13 @@ Configuration
     **Default:** ``nil``
 
     If true, format outputted queries with newlines and colors to be more easily readable by humans
+
+  **record_timestamps**
+    **Default:** ``false``
+    
+    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all ActiveNode and ActiveRel models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties. For example, include the following in your config: ``Neo4j::Config.record_timestamps = true``.
+
+  **timestamp_type**
+    **Default:** ``DateTime``
+
+    This method returns the specified default type for the ``:created_at`` and ``:updated_at`` timestamps. Specify another type (e.g. ``Integer``) by declaring it in your config (``Neo4j::Config[:timestamp_type] = Date``).

@@ -49,6 +49,12 @@ Config
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -68,7 +74,7 @@ Files
 
 
 
-  * `lib/neo4j/config.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/config.rb#L6>`_
+  * `lib/neo4j/config.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/config.rb#L5>`_
 
 
 
@@ -180,6 +186,7 @@ Methods
 
 **.default_file=**
   Sets the location of the configuration YAML file and old deletes configurations.
+  |
 
   .. hidden-code-block:: ruby
 
@@ -254,6 +261,47 @@ Methods
 
      def module_handling
        Neo4j::Config[:module_handling] || :none
+     end
+
+
+
+.. _`Neo4j/Config.record_timestamps`:
+
+**.record_timestamps**
+  timestamps on all models.
+
+  .. hidden-code-block:: ruby
+
+     def record_timestamps
+       @record_timestamps ||= false
+     end
+
+
+
+.. _`Neo4j/Config.record_timestamps=`:
+
+**.record_timestamps=**
+  In keeping with the Rails convention, this class writer lets you globally configure
+  the incluse of timestamps on your nodes and rels. It defaults to false, requiring manual
+  timestamp inclusion.
+
+  .. hidden-code-block:: ruby
+
+     def record_timestamps=(value)
+       @record_timestamps = value
+     end
+
+
+
+.. _`Neo4j/Config.timestamp_type`:
+
+**.timestamp_type**
+  
+
+  .. hidden-code-block:: ruby
+
+     def timestamp_type
+       Neo4j::Config[:timestamp_type] || DateTime
      end
 
 
