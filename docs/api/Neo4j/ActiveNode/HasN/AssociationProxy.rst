@@ -37,6 +37,8 @@ But also caches results and can have results cached on it
 
    
 
+   
+
 
 
 
@@ -204,6 +206,19 @@ Methods
        cache_query_proxy_result
      
        @cached_result
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#serializable_hash`:
+
+**#serializable_hash**
+  
+
+  .. hidden-code-block:: ruby
+
+     def serializable_hash(options = {})
+       to_a.map { |record| record.serializable_hash(options) }
      end
 
 

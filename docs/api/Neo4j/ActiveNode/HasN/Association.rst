@@ -463,7 +463,7 @@ Methods
        case
        when relationship_class
          relationship_class_type
-       when @relationship_type
+       when !@relationship_type.nil?
          @relationship_type
        when @origin
          origin_type

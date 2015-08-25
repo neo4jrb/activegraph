@@ -30,7 +30,7 @@ Files
 
 
 
-  * `lib/neo4j/timestamps.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps.rb#L3>`_
+  * `lib/neo4j/timestamps.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps.rb#L6>`_
 
   * `lib/neo4j/timestamps/created.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/created.rb#L2>`_
 

@@ -25,6 +25,7 @@ Contents:
 
    Configuration
 
+   ProjectAdministration
    Contributing
 
    api/index

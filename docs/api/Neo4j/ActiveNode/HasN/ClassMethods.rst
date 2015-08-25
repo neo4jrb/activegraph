@@ -70,7 +70,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:155 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L155>`_
+  * `lib/neo4j/active_node/has_n.rb:159 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L159>`_
 
 
 
