@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.1.5] = 08-26-2015
+
 ### Fixed
 - Fixed errors when trying to call `#{association}_ids=` on an unpersisted node with UUIDs or an array thereof.
 - Removed extra Cypher query to replace relationships when working with unpersisted nodes and `association=`.
