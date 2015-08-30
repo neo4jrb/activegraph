@@ -198,7 +198,7 @@ Associations
 
 What follows is an overview of adding associations to models. For more detailed information, see Declared Relationships.
 
-has_many and has_one associations can also be defined on ActiveNode models to make querying and creating relationships easier.
+``has_many`` and ``has_one`` associations can also be defined on ``ActiveNode`` models to make querying and creating relationships easier.
 
 .. code-block:: ruby
 
@@ -218,6 +218,15 @@ has_many and has_one associations can also be defined on ActiveNode models to ma
       include Neo4j::ActiveNode
       has_many :in, :posts, origin: :author
       has_many :in, :comments, origin: :author
+
+      # Match all incoming relationship types
+      has_many :in, :written_things, type: false, model_class: [:Post, :Comment]
+
+      # or if you want to match all model classes:
+      # has_many :in, :written_things, type: false, model_class: false
+
+      # or if you watch to match Posts and Comments on all relationships (in and out)
+      # has_many :both, :written_things, type: false, model_class: [:Post, :Comment]
     end
 
 You can query associations:
@@ -228,7 +237,7 @@ You can query associations:
     comment.post                # Post object
     comment.post.comments       # Original comment and all of it's siblings.  Makes just one query
     post.comments.authors.posts # All posts of people who have commented on the post.  Still makes just one query
-    
+
 You can create associations
 
 .. code-block:: ruby
