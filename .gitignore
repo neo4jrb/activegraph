@@ -34,6 +34,3 @@ docs_site/
 
 # dotenv
 .env
-
-# docs
-docs/_exts/hidden_code_block.pyc
