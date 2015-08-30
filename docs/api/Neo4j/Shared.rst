@@ -15,9 +15,9 @@ Shared
 
    
 
-   Shared/Identity
-
    Shared/Property
+
+   Shared/Identity
 
    Shared/Callbacks
 
@@ -56,9 +56,9 @@ Files
 
   * `lib/neo4j/shared.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared.rb#L2>`_
 
-  * `lib/neo4j/shared/identity.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/identity.rb#L1>`_
-
   * `lib/neo4j/shared/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L1>`_
+
+  * `lib/neo4j/shared/identity.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/identity.rb#L1>`_
 
   * `lib/neo4j/shared/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/callbacks.rb#L2>`_
 
