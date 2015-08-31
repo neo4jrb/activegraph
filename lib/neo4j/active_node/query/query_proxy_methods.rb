@@ -106,7 +106,7 @@ module Neo4j
 
         # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
         # The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
-        # @param [String,Symbol] the optional identifier of the link in the chain to delete.
+        # @param identifier [String,Symbol] the optional identifier of the link in the chain to delete.
         def delete_all(identifier = nil)
           query_with_target(identifier) do |target|
             begin

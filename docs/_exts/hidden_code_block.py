@@ -1,10 +1,10 @@
 """Simple, inelegant Sphinx extension which adds a directive for a
-highlighted code-block that may be toggled hidden and shown in HTML.  
+highlighted code-block that may be toggled hidden and shown in HTML.
 This is possibly useful for teaching courses.
 
 The directive, like the standard code-block directive, takes
 a language argument and an optional linenos parameter.  The
-hidden-code-block adds starthidden and label as optional 
+hidden-code-block adds starthidden and label as optional
 parameters.
 
 Examples:
@@ -21,10 +21,10 @@ Examples:
     x = 10
     y = x + 5
 
-Thanks to http://www.javascriptkit.com/javatutors/dom3.shtml for 
-inspiration on the javascript.  
+Thanks to http://www.javascriptkit.com/javatutors/dom3.shtml for
+inspiration on the javascript.
 
-Thanks to Milad 'animal' Fatenejad for suggesting this extension 
+Thanks to Milad 'animal' Fatenejad for suggesting this extension
 in the first place.
 
 Written by Anthony 'el Scopz' Scopatz, January 2012.
@@ -67,7 +67,7 @@ class hidden_code_block(nodes.General, nodes.FixedTextElement):
 class HiddenCodeBlock(CodeBlock):
     """Hidden code block is Hidden"""
 
-    option_spec = dict(starthidden=nice_bool, 
+    option_spec = dict(starthidden=nice_bool,
                        label=str,
                        **CodeBlock.option_spec)
 
@@ -89,21 +89,21 @@ def visit_hcb_html(self, node):
     HCB_COUNTER += 1
 
     # We want to use the original highlighter so that we don't
-    # have to reimplement it.  However it raises a SkipNode 
+    # have to reimplement it.  However it raises a SkipNode
     # error at the end of the function call.  Thus we intercept
     # it and raise it again later.
-    try: 
+    try:
         self.visit_literal_block(node)
     except nodes.SkipNode:
         pass
 
-    # The last element of the body should be the literal code 
+    # The last element of the body should be the literal code
     # block that was just made.
     code_block = self.body[-1]
 
-    fill_header = {'divname': 'hiddencodeblock{0}'.format(HCB_COUNTER), 
-                   'startdisplay': 'none' if node['starthidden'] else 'block', 
-                   'label': node.get('label'), 
+    fill_header = {'divname': 'hiddencodeblock{0}'.format(HCB_COUNTER),
+                   'startdisplay': 'none' if node['starthidden'] else 'block',
+                   'label': node.get('label'),
                    }
 
     divheader = ("""<a href="javascript:showhide(document.getElementById('{divname}'))">"""

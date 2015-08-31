@@ -101,7 +101,7 @@ module Neo4j
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
-        # @param Hash args of arguments to find
+        # @param values Hash args of arguments to find
         def find_by(values)
           all.where(values).limit(1).query_as(:n).pluck(:n).first
         end

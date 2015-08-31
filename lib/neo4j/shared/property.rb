@@ -11,7 +11,6 @@ module Neo4j::Shared
 
     class UndefinedPropertyError < RuntimeError; end
     class MultiparameterAssignmentError < StandardError; end
-    # @_declared_property_manager = DeclaredPropertyManager.new
 
     attr_reader :_persisted_obj
 

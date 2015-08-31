@@ -11,23 +11,6 @@ ClassMethods
    :titlesonly:
 
 
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-
-
-
 Constants
 ---------
 
@@ -40,7 +23,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:109 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L109>`_
+  * `lib/neo4j/shared/property.rb:108 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L108>`_
 
 
 
@@ -54,7 +37,7 @@ Methods
 .. _`Neo4j/Shared/Property/ClassMethods#attribute!`:
 
 **#attribute!**
-  
+
 
   .. hidden-code-block:: ruby
 
@@ -85,7 +68,7 @@ Methods
 .. _`Neo4j/Shared/Property/ClassMethods#declared_property_manager`:
 
 **#declared_property_manager**
-  
+
 
   .. hidden-code-block:: ruby
 
@@ -98,7 +81,7 @@ Methods
 .. _`Neo4j/Shared/Property/ClassMethods#inherited`:
 
 **#inherited**
-  
+
 
   .. hidden-code-block:: ruby
 
@@ -115,7 +98,7 @@ Methods
 
 **#property**
   Defines a property on the class
-  
+
   See active_attr gem for allowed options, e.g which type
   Notice, in Neo4j you don't have to declare properties before using them, see the neo4j-core api.
 
@@ -125,7 +108,7 @@ Methods
        prop = DeclaredProperty.new(name, options)
        prop.register
        declared_property_manager.register(prop)
-     
+
        attribute(name, prop.options)
        constraint_or_index(name, options)
      end
@@ -135,7 +118,7 @@ Methods
 .. _`Neo4j/Shared/Property/ClassMethods#undef_property`:
 
 **#undef_property**
-  
+
 
   .. hidden-code-block:: ruby
 
