@@ -44,7 +44,7 @@ module Neo4j
     end
 
     included do
-      include Neo4j::Timestamps if Neo4j::Config.record_timestamps
+      include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 
       def self.inherited(other)
         super

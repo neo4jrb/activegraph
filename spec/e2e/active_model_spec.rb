@@ -168,12 +168,11 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'when record_timestamps is enabled' do
+      let_config(:record_timestamps) { true }
+
       before do
-        Neo4j::Config.record_timestamps = true
         stub_active_node_class('TimestampedClass')
       end
-
-      after(:all) { Neo4j::Config.record_timestamps = false }
 
       it 'includes timestamp properties on all models' do
         node = TimestampedClass.new

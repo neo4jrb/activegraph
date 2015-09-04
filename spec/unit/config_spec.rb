@@ -83,28 +83,6 @@ describe Neo4j::Config do
         expect(Neo4j::Config.configuration).to eq('my_conf' => 'My value')
       end
     end
-
-    describe 'record_timestamps' do
-      let(:bool) { [true, false] }
-
-      it 'returns a boolean indicating if timestamps are included on all models' do
-        expect(bool.include?(Neo4j::Config.record_timestamps)).to be_truthy
-      end
-
-      it 'defaults to false' do
-        expect(Neo4j::Config.record_timestamps).to be_falsey
-      end
-    end
-
-    describe 'record_timestamps=' do
-      after(:all) { Neo4j::Config.record_timestamps = false }
-
-      it 'allows configuration of record_timestamps variable' do
-        expect(Neo4j::Config.record_timestamps).to be_falsey
-        Neo4j::Config.record_timestamps = true
-        expect(Neo4j::Config.record_timestamps).to be_truthy
-      end
-    end
   end
 
   describe 'options' do

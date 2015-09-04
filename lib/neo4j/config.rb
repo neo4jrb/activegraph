@@ -11,7 +11,7 @@ module Neo4j
       # the incluse of timestamps on your nodes and rels. It defaults to false, requiring manual
       # timestamp inclusion.
       # @return [Boolean] the true/false value specified.
-      attr_writer :record_timestamps
+
       # @return [Fixnum] The location of the default configuration file.
       def default_file
         @default_file ||= DEFAULT_FILE
@@ -94,12 +94,6 @@ module Neo4j
       # @return [String] The config as a YAML
       def to_yaml
         configuration.to_yaml
-      end
-
-      # @return [Boolean] The value of the config variable for including
-      # timestamps on all models.
-      def record_timestamps
-        @record_timestamps ||= false
       end
 
       def class_name_property
