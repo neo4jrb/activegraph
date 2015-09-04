@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.1] - 09-04-2015
+
+### Fixed
+- Now possible to configure `record_timestamps` with rails `config`
+
 ## [5.2.0] - 08-30-2015
 
 ### Added
