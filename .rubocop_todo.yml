@@ -49,19 +49,6 @@ Style/ClassAndModuleChildren:
 Style/Documentation:
   Enabled: false
 
-# Offense count: 9
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment.
-Style/ExtraSpacing:
-  Exclude:
-    - 'Guardfile'
-    - 'lib/neo4j/active_node/has_n/association.rb'
-    - 'lib/neo4j/active_node/labels.rb'
-    - 'spec/e2e/association_dependency_spec.rb'
-    - 'spec/shared_examples/example_app_shared.rb'
-    - 'spec/unit/active_node/has_n/association_spec.rb'
-    - 'spec/unit/active_rel/persistence_spec_bad.rb'
-
 # Offense count: 105
 # Cop supports --auto-correct.
 Style/RedundantSelf:

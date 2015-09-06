@@ -259,7 +259,7 @@ describe Neo4j::ActiveNode::HasN::Association do
             it { should == '-[r:`TYPE`*0..]->' }
 
             context 'with properties given' do
-              let(:properties) {  {foo: 1, bar: 'test'} }
+              let(:properties) { {foo: 1, bar: 'test'} }
 
               it { should == '-[r:`TYPE`*0.. {foo: 1, bar: "test"}]->' }
             end
@@ -354,7 +354,7 @@ describe Neo4j::ActiveNode::HasN::Association do
     end
 
     describe 'origin_type' do
-      let(:start) {  Neo4j::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
+      let(:start) { Neo4j::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
       let(:myclass) { double('another activenode class') }
       let(:myassoc) { double('an association object') }
       let(:assoc_details) { double('the result of calling :associations', relationship_type: 'MyRel') }

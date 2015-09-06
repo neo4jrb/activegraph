@@ -91,11 +91,11 @@ module Neo4j
         def find(id)
           map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
-          result =  if id.is_a?(Array)
-                      find_by_ids(id.map { |o| map_id.call(o) })
-                    else
-                      find_by_id(map_id.call(id))
-                    end
+          result = if id.is_a?(Array)
+                     find_by_ids(id.map { |o| map_id.call(o) })
+                   else
+                     find_by_id(map_id.call(id))
+                   end
           fail Neo4j::RecordNotFound if result.blank?
           result
         end
