@@ -54,13 +54,6 @@ Style/Documentation:
 Style/RedundantSelf:
   Enabled: false
 
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, AllowInnerSlashes.
-Style/RegexpLiteral:
-  Exclude:
-    - 'Guardfile'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Style/RescueEnsureAlignment:
