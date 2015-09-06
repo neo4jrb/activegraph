@@ -53,9 +53,3 @@ Style/Documentation:
 # Cop supports --auto-correct.
 Style/RedundantSelf:
   Enabled: false
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/RescueEnsureAlignment:
-  Exclude:
-    - 'lib/neo4j/tasks/migration.rake'
