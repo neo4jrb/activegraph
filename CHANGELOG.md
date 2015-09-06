@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.2] - 09-06-2015
+
+### Fixed
+- Fixed setting of association(_id|_ids) on .create
+
 ## [5.2.1] - 09-04-2015
 
 ### Fixed
