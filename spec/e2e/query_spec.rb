@@ -274,7 +274,7 @@ describe 'Query API' do
               property :name
 
               def custom_prop_method
-                "#{self.name.gsub('.', '').gsub(' ', '')}_#{SecureRandom.uuid}"
+                "#{self.name.delete('.').delete(' ')}_#{SecureRandom.uuid}"
               end
             end
           end

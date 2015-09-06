@@ -40,12 +40,6 @@ Metrics/MethodLength:
 Metrics/ModuleLength:
   Max: 163
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Performance/StringReplacement:
-  Exclude:
-    - 'spec/e2e/query_spec.rb'
-
 # Offense count: 30
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/ClassAndModuleChildren:
