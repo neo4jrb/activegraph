@@ -9,7 +9,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 - `AssociationProxy` now responds to `serializable_hash` so that `include` can be used in `render json` in Rails controllers
-- 
+- Fixed errors when trying to call `#{association}_ids=` on an unpersisted node with UUIDs or an array thereof.
+- Removed extra Cypher query to replace relationships when working with unpersisted nodes and association=.
+- Bug related to Rails reloading an app and returning nodes without first reinitializing models, resulting in CypherNodes.
 
 ## [5.2.2] - 09-06-2015
 
