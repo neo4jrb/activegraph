@@ -10,19 +10,17 @@ end
 
 describe 'association creation' do
   before do
-    stub_const('Student', Class.new do
-      include Neo4j::ActiveNode
+    stub_active_node_class 'Student' do
       property :name
       has_many :out, :lessons, type: 'ENROLLED_IN'
       has_one :out, :favorite_class, type: 'FAVORITE_CLASS', model_class: 'Lesson'
-    end)
+    end
 
-    stub_const('Lesson', Class.new do
-      include Neo4j::ActiveNode
+    stub_active_node_class 'Lesson' do
       property :subject
       validates_presence_of :subject
       has_many :in, :students, origin: :lesson
-    end)
+    end
   end
 
   before { [Student, Lesson].each(&:delete_all) }
@@ -34,6 +32,10 @@ describe 'association creation' do
 
       it 'creates the relationship' do
         expect { chris.favorite_class = math }.to change { chris.favorite_class }
+      end
+
+      it 'creates the relationship by id' do
+        expect { chris.favorite_class_id = math.id }.to change { chris.favorite_class }
       end
     end
 
@@ -174,6 +176,60 @@ describe 'association creation' do
 
       it 'saves the unpersisted node and immediately creates the rel' do
         expect { chris.lessons << math }.to change { chris.lessons.where(subject: 'math').empty? }
+      end
+    end
+
+    context 'between unpersisted and ids' do
+      let(:chris) { Student.new(name: 'Chris') }
+      let!(:math) { Lesson.create(subject: 'math') }
+
+      it 'does not raise error, creates rel on save' do
+        expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
+        expect { chris.lesson_ids = [math.id] }.not_to raise_error
+        expect { chris.save }.to change { chris.lessons.count }
+      end
+    end
+  end
+
+
+  describe '... on creation' do
+    context 'with math lesson' do
+      let(:math) { Lesson.create(subject: 'math') }
+
+      describe 'has_one' do
+        it 'creates the relationship by the association name' do
+          chris = Student.create(name: 'Chris', favorite_class: math)
+          expect(chris.errors).to be_empty
+
+          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'creates the relationship by the association_id' do
+          chris = Student.create(name: 'Chris', favorite_class_id: math.id)
+          expect(chris.errors).to be_empty
+
+          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+      end
+
+      describe 'has_many' do
+        it 'creates the relationship by the association name' do
+          chris = Student.create(name: 'Chris', lessons: [math])
+          expect(chris.errors).to be_empty
+
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'creates the relationship by the association_id' do
+          chris = Student.create(name: 'Chris', lesson_ids: [math.id])
+          expect(chris.errors).to be_empty
+
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
       end
     end
   end

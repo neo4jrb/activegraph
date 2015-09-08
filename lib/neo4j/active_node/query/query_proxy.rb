@@ -200,7 +200,7 @@ module Neo4j
 
         def _nodeify!(*args)
           other_nodes = [args].flatten!.map! do |arg|
-            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
+            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(id: arg) : arg
           end.compact
 
           if @model && other_nodes.any? { |other_node| !other_node.class.mapped_label_names.include?(@model.mapped_label_name) }

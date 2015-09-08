@@ -3,6 +3,7 @@ module Neo4j
     # Provides a mapping between neo4j labels and Ruby classes
     module Labels
       extend ActiveSupport::Concern
+      include Neo4j::ActiveNode::Labels::Reloading
 
       WRAPPED_CLASSES = []
       MODELS_FOR_LABELS_CACHE = {}
@@ -75,16 +76,8 @@ module Neo4j
         WRAPPED_CLASSES.clear
       end
 
-      protected
-
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
-
-        def before_remove_const
-          associations.each_value(&:queue_model_refresh!)
-          MODELS_FOR_LABELS_CACHE.clear
-          WRAPPED_CLASSES.clear
-        end
 
         # Returns the object with the specified neo4j id.
         # @param [String,Integer] id of node to find

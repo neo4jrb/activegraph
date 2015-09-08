@@ -53,6 +53,7 @@ describe 'Query API' do
     stub_active_node_class('Teacher') do
       property :name
       property :age
+      property :status, default: 'active'
       property :created_at
       property :updated_at
 
@@ -254,12 +255,17 @@ describe 'Query API' do
         it 'also sets properties' do
           Teacher.find_or_create(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
-          expect(Teacher.first.name).to eq('Dr. Harold Samuels')
-          expect(Teacher.first.age).to eq(nil)
+          samuels = Teacher.first
+          expect(samuels.name).to eq('Dr. Harold Samuels')
+          expect(samuels.age).to eq(nil)
+          expect(samuels.status).to eq('active')
+          expect(samuels._persisted_obj.props[:status]).to eq 'active'
+
           Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34)
           expect(Teacher.count).to eq(1)
-          expect(Teacher.first.name).to eq('Dr. Harold Samuels')
-          expect(Teacher.first.age).to eq(34)
+          samuels = Teacher.first
+          expect(samuels.name).to eq('Dr. Harold Samuels')
+          expect(samuels.age).to eq(34)
         end
 
         it 'sets the id property method' do

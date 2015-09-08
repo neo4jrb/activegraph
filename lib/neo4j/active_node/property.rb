@@ -15,16 +15,33 @@ module Neo4j::ActiveNode
       def extract_association_attributes!(attributes)
         return unless contains_association?(attributes)
         attributes.each_with_object({}) do |(key, _), result|
-          result[key] = attributes.delete(key) if self.association?(key)
+          result[key] = attributes.delete(key) if self.association_key?(key)
         end
+      end
+
+      def association_key?(key)
+        association_method_keys.include?(key.to_sym)
       end
 
       private
 
       def contains_association?(attributes)
         return false unless attributes
-        attributes.each_key { |key| return true if associations_keys.include?(key) }
-        false
+
+        attributes.each_key.any?(&method(:association_key?))
+      end
+
+      # All keys which could be association setter methods (including _id/_ids)
+      def association_method_keys
+        @association_method_keys ||=
+          associations_keys.map(&:to_sym) +
+          associations.values.map do |association|
+            if association.type == :has_one
+              "#{association.name}_id"
+            elsif association.type == :has_many
+              "#{association.name.to_s.singularize}_ids"
+            end.to_sym
+          end
       end
     end
   end

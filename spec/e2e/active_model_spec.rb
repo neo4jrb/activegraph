@@ -168,12 +168,11 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'when record_timestamps is enabled' do
+      let_config(:record_timestamps) { true }
+
       before do
-        Neo4j::Config.record_timestamps = true
         stub_active_node_class('TimestampedClass')
       end
-
-      after(:all) { Neo4j::Config.record_timestamps = false }
 
       it 'includes timestamp properties on all models' do
         node = TimestampedClass.new
@@ -765,6 +764,27 @@ describe 'Neo4j::ActiveNode' do
             expect(activenode_class.find_by(id: object.foo)).to eq(object)
           end
         end
+      end
+    end
+  end
+
+  # TODO: Rewrite/move into unit tests once master is merged into 5.1.x.
+  describe 'model reloading' do
+    before { stub_active_node_class('MyModel') }
+
+    describe 'before_remove_const' do
+      it 'populates the MODELS_TO_RELOAD set' do
+        expect { MyModel.before_remove_const }.to change { Neo4j::ActiveNode::Labels::Reloading::MODELS_TO_RELOAD.count }
+      end
+    end
+
+    describe 'reload_models!' do
+      let!(:reload_cache) { Neo4j::ActiveNode::Labels::Reloading::MODELS_TO_RELOAD }
+      before { MyModel.before_remove_const }
+      it 'constantizes the models and clears list of models to reload' do
+        expect(reload_cache).to receive(:each)
+        expect(reload_cache).to receive(:clear)
+        Neo4j::ActiveNode::Labels::Reloading.reload_models!
       end
     end
   end
