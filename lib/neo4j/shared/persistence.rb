@@ -193,7 +193,7 @@ module Neo4j::Shared
     end
 
     def update_magic_properties
-      self.updated_at = DateTime.now if respond_to?(:updated_at=) && changed? && !updated_at_changed?
+      self.updated_at = DateTime.now if respond_to?(:updated_at=) && (updated_at.nil? || (changed? && !updated_at_changed?))
     end
 
     # Inserts the _classname property into an object's properties during object creation.

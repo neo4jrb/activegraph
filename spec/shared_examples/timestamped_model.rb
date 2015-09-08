@@ -38,6 +38,14 @@ shared_examples_for 'timestamped model' do
         lambda { subject.update_attributes!(a: 1, b: 2) }.should change(subject, :updated_at)
       end
 
+      context 'with missing updated_at' do
+        it 'creates the property' do
+          subject._persisted_obj.remove_property('updated_at'.freeze)
+          subject.reload
+          expect { subject.save! }.to change { subject.updated_at }
+        end
+      end
+
       context 'with explicitly changed updated_at property' do
         it 'does not overwrite updated_at property' do
           subject.updated_at = Time.now
