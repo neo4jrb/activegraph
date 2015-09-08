@@ -106,7 +106,7 @@ describe 'Neo4j::ActiveNode' do
       thing = MyThing.create(a: 'foo', x: 44)
 
       # only change X
-      node.should_receive(:update_props).with('x' => 32)
+      node.should_receive(:update_props).with(x: 32)
       thing.x = 32
       thing.send(:update_model)
     end
@@ -115,7 +115,7 @@ describe 'Neo4j::ActiveNode' do
       session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
-      node.should_receive(:update_props).with('x' => nil)
+      node.should_receive(:update_props).with(x: nil)
       thing.x = nil
       thing.send(:update_model)
     end

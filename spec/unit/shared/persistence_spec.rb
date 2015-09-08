@@ -8,6 +8,7 @@ describe Neo4j::Shared::Persistence do
 
                             property :name
                             property :age, type: Integer
+                            property :active, type: ActiveAttr::Typecasting::Boolean, default: false
 
                             def self.extract_association_attributes!(props)
                               props
@@ -32,6 +33,17 @@ describe Neo4j::Shared::Persistence do
       expect(props).to have_key(:age)
     end
 
+    describe 'default property values' do
+      it 'adds if missing' do
+        expect(node.props_for_create[:active]).to eq false
+      end
+
+      it 'does nothing is present' do
+        node.active = true
+        expect(node.props_for_create[:active]).to eq true
+      end
+    end
+
     it 'rebuilds each time called' do
       props1 = node.props_for_create
       props2 = node.props_for_create
@@ -45,13 +57,31 @@ describe Neo4j::Shared::Persistence do
       expect(props).not_to have_key('name')
       expect(props).not_to have_key('age')
       node.name = 'Jasmine'
-      expect(node.props_for_update).to have_key('name')
+      expect(node.props_for_update).to have_key(:name)
     end
 
     it 'updates the updated_at timestamp' do
       MyModel.property :updated_at, type: DateTime
       allow(node).to receive(:changed?).and_return true
-      expect(node.props_for_update).to have_key('updated_at')
+      expect(node.props_for_update).to have_key(:updated_at)
+    end
+
+    describe 'default property values' do
+      context 'values set to nil' do
+        before { node.active = nil }
+
+        it 'resets to default' do
+          expect(node.props_for_update[:active]).to eq false
+        end
+      end
+
+      context 'values present' do
+        before { node.active = true }
+
+        it 'does nothing' do
+          expect(node.props_for_update[:active]).to eq true
+        end
+      end
     end
   end
 
