@@ -51,6 +51,7 @@ describe 'declared property classes' do
         include Neo4j::ActiveNode
         property :foo
         property :bar, type: String, default: 'foo'
+        property :baz, type: ActiveAttr::Typecasting::Boolean, default: false
       end
 
       stub_const('MyModel', clazz)
@@ -114,26 +115,37 @@ describe 'declared property classes' do
         expect(node.bar).to eq 'foo'
       end
 
+      context 'with type: Boolean and default: false' do
+        it 'sets as expected' do
+          expect(node.baz).to eq false
+        end
+      end
+
       describe 'with changed values' do
         before do
           node.bar = value
+          node.baz = bool_value
           node.save
           node.reload
         end
 
         context 'on reload when prop was changed to nil' do
           let(:value) { nil }
+          let(:bool_value) { nil }
 
           it 'resets nil default properties on reload' do
             expect(node.bar).to eq 'foo'
+            expect(node.baz).to eq false
           end
         end
 
         context 'on reload when prop was set' do
           let(:value) { 'bar' }
+          let(:bool_value) { true }
 
           it 'does not reset to default' do
             expect(node.bar).to eq 'bar'
+            expect(node.baz).to eq true
           end
         end
       end

@@ -178,6 +178,17 @@ describe 'association creation' do
         expect { chris.lessons << math }.to change { chris.lessons.where(subject: 'math').empty? }
       end
     end
+
+    context 'between unpersisted and ids' do
+      let(:chris) { Student.new(name: 'Chris') }
+      let!(:math) { Lesson.create(subject: 'math') }
+
+      it 'does not raise error, creates rel on save' do
+        expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
+        expect { chris.lesson_ids = [math.id] }.not_to raise_error
+        expect { chris.save }.to change { chris.lessons.count }
+      end
+    end
   end
 
 

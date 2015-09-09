@@ -63,6 +63,11 @@ module Neo4j::ActiveNode
       self.class.neo4j_session.create_node(node_props, labels)
     end
 
+    # As the name suggests, this inserts the primary key (id property) into the properties hash.
+    # The method called here, `default_property_values`, is a holdover from an earlier version of the gem. It does NOT
+    # contain the default values of properties, it contains the Default Property, which we now refer to as the ID Property.
+    # It will be deprecated and renamed in a coming refactor.
+    # @param [Hash] converted_props A hash of properties post-typeconversion, ready for insertion into the DB.
     def inject_primary_key!(converted_props)
       self.class.default_property_values(self).tap do |destination_props|
         destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
@@ -148,29 +153,11 @@ module Neo4j::ActiveNode
       private
 
       def on_create_props(find_attributes)
-        {id_property_name => id_prop_val(find_attributes)}.tap do |props|
-          now = DateTime.now.to_i
-          set_props_timestamp!('created_at', props, now)
-          set_props_timestamp!('updated_at', props, now)
-        end
-      end
-
-      # The process of creating custom id_property values is different from auto uuids. This adapts to that, calls the appropriate method,
-      # and raises an error if it fails.
-      def id_prop_val(find_attributes)
-        custom_uuid_method = id_property_info[:type][:on]
-        id_prop_val = custom_uuid_method ? self.new(find_attributes).send(custom_uuid_method) : default_properties[id_property_name].call
-        fail 'Unable to create custom id property' if id_prop_val.nil?
-        id_prop_val
+        find_attributes.merge(self.new(find_attributes).props_for_create)
       end
 
       def on_match_props
-        set_props_timestamp!('updated_at')
-      end
-
-      def set_props_timestamp!(key_name, props = {}, stamp = DateTime.now.to_i)
-        props[key_name.to_sym] = stamp if attributes_nil_hash.key?(key_name)
-        props
+        {}.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at'.freeze) }
       end
     end
   end

@@ -4,7 +4,7 @@ describe Neo4j::ActiveRel::Persistence do
   let(:session) { double('Session') }
   let(:node1) { double('first persisted node') }
   let(:node2) { double('second persisted node') }
-  let(:rel)   { double('a persisted rel')  }
+  let(:rel)   { double('a persisted rel') }
 
   before do
     node1.stub(:neo_id).and_return(1)

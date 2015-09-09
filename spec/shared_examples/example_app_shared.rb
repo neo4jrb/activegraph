@@ -232,7 +232,7 @@ shared_examples_for 'example app with orm_adapter fix' do
       it 'should destroy the instance if it exists' do
         skip 'This does not work on Neo4j Embedded DB, since IDs can be reused see GraphDatabaseService#getNodeById, http://docs.neo4j.org/chunked/2.1.1/javadocs/'
         user = create_model(user_class)
-        (!!user_adapter.destroy(user)).should eq(true)  # make it work with both RSpec 2.x and 3.x
+        (!!user_adapter.destroy(user)).should eq(true) # make it work with both RSpec 2.x and 3.x
         user_adapter.get(user.id).should be_nil
       end
 
