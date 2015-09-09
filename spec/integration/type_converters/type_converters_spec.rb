@@ -112,6 +112,7 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
+  # These tests originally from ActiveAttr gem
   describe 'Boolean' do
     subject { Neo4j::Shared::TypeConverters::BooleanConverter }
 
