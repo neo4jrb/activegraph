@@ -1,9 +1,133 @@
 require 'date'
+require 'bigdecimal'
+require 'bigdecimal/util'
+require 'active_support/core_ext/big_decimal/conversions'
 
 module Neo4j::Shared
   module TypeConverters
+    class BaseConverter
+      class << self
+        def converted?(value)
+          value.is_a?(db_type)
+        end
+      end
+    end
+
+    class IntegerConverter < BaseConverter
+      class << self
+        def convert_type
+          Integer
+        end
+
+        def db_type
+          Integer
+        end
+
+        def call(value)
+          value.to_i
+        end
+
+        alias_method :to_ruby, :call
+        alias_method :to_db, :call
+      end
+    end
+
+    class FloatConverter < BaseConverter
+      class << self
+        def convert_type
+          Float
+        end
+
+        def db_type
+          Float
+        end
+
+        def call(value)
+          value.to_f
+        end
+        alias_method :to_ruby, :call
+        alias_method :to_db, :call
+      end
+    end
+
+    class BigDecimalConverter < BaseConverter
+      class << self
+        def convert_type
+          BigDecimal
+        end
+
+        def db_type
+          BigDecimal
+        end
+
+        def call(value)
+          case value
+          when Rational
+            value.to_f.to_d
+          when respond_to?(:to_d)
+            value.to_d
+          else
+            BigDecimal.new(value.to_s)
+          end
+        end
+        alias_method :to_ruby, :call
+        alias_method :to_db, :call
+      end
+    end
+
+    class StringConverter < BaseConverter
+      class << self
+        def convert_type
+          String
+        end
+
+        def db_type
+          String
+        end
+
+        def call(value)
+          value.to_s
+        end
+        alias_method :to_ruby, :call
+        alias_method :to_db, :call
+      end
+    end
+
+    class BooleanConverter < BaseConverter
+      FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F)
+
+      class << self
+        def converted?(value)
+          convert_type.include?(value)
+        end
+
+        def convert_type
+          [true, false]
+        end
+
+        def db_type
+          ActiveAttr::Typecasting::Boolean
+        end
+
+        def call(value)
+          return false if FALSE_VALUES.include?(value)
+          case value
+          when TrueClass, FalseClass
+            value
+          when Numeric, /^\-?[0-9]/
+            !value.to_f.zero?
+          else
+            value.present?
+          end
+        end
+
+        alias_method :to_ruby, :call
+        alias_method :to_db, :call
+      end
+    end
+
     # Converts Date objects to Java long types. Must be timezone UTC.
-    class DateConverter
+    class DateConverter < BaseConverter
       class << self
         def convert_type
           Date
@@ -24,7 +148,7 @@ module Neo4j::Shared
     end
 
     # Converts DateTime objects to and from Java long types. Must be timezone UTC.
-    class DateTimeConverter
+    class DateTimeConverter < BaseConverter
       class << self
         def convert_type
           DateTime
@@ -61,7 +185,7 @@ module Neo4j::Shared
       end
     end
 
-    class TimeConverter
+    class TimeConverter < BaseConverter
       class << self
         def convert_type
           Time
@@ -95,7 +219,7 @@ module Neo4j::Shared
     end
 
     # Converts hash to/from YAML
-    class YAMLConverter
+    class YAMLConverter < BaseConverter
       class << self
         def convert_type
           Hash
@@ -116,7 +240,7 @@ module Neo4j::Shared
     end
 
     # Converts hash to/from JSON
-    class JSONConverter
+    class JSONConverter < BaseConverter
       class << self
         def convert_type
           JSON
@@ -159,6 +283,7 @@ module Neo4j::Shared
     private
 
     def converted_property(type, value, converter)
+      return nil if value.nil?
       TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
     end
 
@@ -209,7 +334,13 @@ module Neo4j::Shared
       # @param [#convert_type] found_converter An object that responds to #convert_type, hinting that it is a type converter.
       # @param value The value for conversion.
       def formatted_for_db?(found_converter, value)
-        found_converter.respond_to?(:db_type) && value.is_a?(found_converter.db_type)
+        return false unless found_converter.respond_to?(:db_type)
+        case found_converter
+        when BaseConverter
+          found_converter.converted?(value)
+        else
+          value.is_a?(found_converter.db_type)
+        end
       end
 
       def register_converter(converter)
