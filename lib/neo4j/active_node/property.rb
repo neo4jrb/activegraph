@@ -27,8 +27,8 @@ module Neo4j::ActiveNode
 
       def contains_association?(attributes)
         return false unless attributes
-
-        attributes.each_key.any?(&method(:association_key?))
+        attributes.each_key { |k| return true if association_key?(k) }
+        false
       end
 
       # All keys which could be association setter methods (including _id/_ids)
