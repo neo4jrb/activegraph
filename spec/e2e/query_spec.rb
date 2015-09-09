@@ -24,7 +24,7 @@ describe 'Query API' do
       has_one :out, :teachers_pet, model_class: 'Student', type: 'favorite_student'
       has_many :in, :unhappy_teachers, model_class: 'Teacher', origin: :dreaded_lesson
       has_many :in, :teachers, type: :teaching
-      has_many :in, :students, type: :is_enrolled_for
+      has_many :in, :students, rel_class: 'IsEnrolledFor'
 
       def self.max_level
         all.query_as(:lesson).pluck('max(lesson.level)').first
@@ -41,7 +41,7 @@ describe 'Query API' do
       property :name
       property :age, type: Integer
 
-      has_many :out, :lessons, type: :is_enrolled_for
+      has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
       has_many :out, :interests, type: nil
 
@@ -50,9 +50,17 @@ describe 'Query API' do
       has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
     end
 
+    stub_active_rel_class('IsEnrolledFor') do
+      from_class Student
+      to_class Lesson
+      type 'is_enrolled_for'
+
+      property :grade, type: Integer
+    end
+
     stub_active_node_class('Teacher') do
       property :name
-      property :age
+      property :age, type: Integer
       property :status, default: 'active'
       property :created_at
       property :updated_at
@@ -503,6 +511,7 @@ describe 'Query API' do
             danny.lessons << math101
             rel = danny.lessons(:l, :r).pluck(:r).first
             rel[:grade] = 65
+            rel.save
 
             bobby.lessons << math101
             rel = bobby.lessons(:l, :r).pluck(:r).first
@@ -622,42 +631,68 @@ describe 'Query API' do
     end
   end
 
-  describe 'type conversion with #where' do
-    before { [Date, DateTime, Time].each { |c| Teacher.property c.name.downcase.to_sym, type: c } }
+  describe 'type conversion' do
+    describe '#where' do
+      before { [Date, DateTime, Time].each { |c| Teacher.property c.name.downcase.to_sym, type: c } }
 
-    let(:date) { Date.today }
-    let(:converted_date) { Time.utc(date.year, date.month, date.day).to_i }
-    let(:datetime) { DateTime.now }
-    let(:converted_datetime) { datetime.utc.to_i }
-    let(:time) { Time.now }
-    let(:converted_time) { time.utc.to_i }
+      let(:date) { Date.today }
+      let(:converted_date) { Time.utc(date.year, date.month, date.day).to_i }
+      let(:datetime) { DateTime.now }
+      let(:converted_datetime) { datetime.utc.to_i }
+      let(:time) { Time.now }
+      let(:converted_time) { time.utc.to_i }
 
-    context 'with properties declared on the model' do
-      it 'converts properties using the model\'s type converter' do
-        expect(Teacher.where(date: date).to_cypher_with_params).to include(converted_date.to_s)
-        expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
-        expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
+      context 'with properties declared on the model' do
+        it 'converts properties using the model\'s type converter' do
+          expect(Teacher.where(date: date).to_cypher_with_params).to include(converted_date.to_s)
+          expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
+          expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
+          expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher_age=>1')
+        end
+
+        context '...and values already in the destination format' do
+          it 'uses the values as they are' do
+            expect(Teacher.where(date: converted_date).to_cypher_with_params).to include(converted_date.to_s)
+            expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
+            expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
+            expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher_age=>1')
+          end
+        end
       end
 
-      context '...and values already in the destination format' do
-        it 'uses the values as they are' do
-          expect(Teacher.where(date: converted_date).to_cypher_with_params).to include(converted_date.to_s)
-          expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
-          expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
+      context 'with properties not declared on the model' do
+        it 'uses values as they are' do
+          expect(Teacher.where(undeclared_date: date).to_cypher_with_params).not_to include(converted_date.to_s)
+        end
+      end
+
+      context 'with an association using model_class: false' do
+        before { Teacher.has_many :out, :unknowns, type: 'FOO', model_class: false }
+        it 'does not raise an error' do
+          expect { Teacher.unknowns.where(foo: 'bar').to_a }.not_to raise_error
         end
       end
     end
 
-    context 'with properties not declared on the model' do
-      it 'uses values as they are' do
-        expect(Teacher.where(undeclared_date: date).to_cypher_with_params).not_to include(converted_date.to_s)
+    describe '#rel_where' do
+      before do
+        student = Student.create
+        math = Lesson.create(subject: 'Math')
+        science = Lesson.create(subject: 'Science')
+        IsEnrolledFor.create!(from_node: student, to_node: math, grade: 65)
+        IsEnrolledFor.create!(from_node: student, to_node: science, grade: 99)
       end
-    end
 
-    context 'with an association using model_class: false' do
-      before { Teacher.has_many :out, :unknowns, type: 'FOO', model_class: false }
-      it 'does not raise an error' do
-        expect { Teacher.unknowns.where(foo: 'bar').to_a }.not_to raise_error
+      context 'with a rel_class present' do
+        let(:lesson65) { Student.lessons.rel_where(grade: '65').to_a }
+        let(:lesson99) { Student.lessons.rel_where(grade: '99'.to_f).to_a }
+
+        it 'type converts when possible' do
+          expect(lesson65.count).to eq 1
+          expect(lesson65.first.subject).to eq 'Math'
+          expect(lesson99.count).to eq 1
+          expect(lesson99.first.subject).to eq 'Science'
+        end
       end
     end
   end
