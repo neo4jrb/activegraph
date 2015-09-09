@@ -52,6 +52,11 @@ module Neo4j::ActiveNode
         @enumerable = (@cached_result || @query_proxy)
       end
 
+      def add_to_cache(object)
+        @cached_result ||= []
+        @cached_result << object
+      end
+
       def cache_query_proxy_result
         @query_proxy.to_a.tap do |result|
           cache_result(result)
@@ -123,9 +128,13 @@ module Neo4j::ActiveNode
       self.class.send(:association_query_proxy, name, {start_object: self}.merge!(options))
     end
 
+    def association_proxy_hash(name, options = {})
+      [name.to_sym, options.values_at(:node, :rel, :labels, :rel_length)].hash
+    end
+
     def association_proxy(name, options = {})
       name = name.to_sym
-      hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
+      hash = association_proxy_hash(name, options)
       association_proxy_cache_fetch(hash) do
         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
@@ -397,7 +406,7 @@ module Neo4j::ActiveNode
             Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)
           else
-            association_proxy(name).defer_create(other_node, {}, :'=')
+            association_proxy(name).defer_create(other_node, :'=')
           end
         end
       end

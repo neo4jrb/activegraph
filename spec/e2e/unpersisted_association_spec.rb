@@ -10,6 +10,8 @@ end
 
 describe 'association creation' do
   before do
+    clear_model_memory_caches
+
     stub_active_node_class 'Student' do
       property :name
       has_many :out, :lessons, type: 'ENROLLED_IN'
@@ -58,7 +60,7 @@ describe 'association creation' do
 
         it 'saves both nodes and creates the relationship' do
           expect(math).to receive(:save).and_call_original
-          expect { chris.save }.to change { chris.favorite_class }
+          expect { chris.save }.to change { chris.favorite_class.object_id }
         end
       end
     end
