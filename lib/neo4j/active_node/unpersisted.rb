@@ -18,11 +18,9 @@ module Neo4j
         return unless pending_associations?
         {}.tap do |deferred_nodes|
           pending_associations.uniq.each do |association_name|
-            nodes_for_creation = if self.persisted?
-              association_proxy(association_name).reject(&:persisted?)
-            else
-              association_proxy(association_name)
-            end
+            nodes_for_creation = association_proxy(association_name)
+            nodes_for_creation = nodes_for_creation.reject(&:persisted?) if self.persisted?
+
             deferred_nodes[association_name] = nodes_for_creation
           end
         end
