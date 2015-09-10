@@ -127,13 +127,13 @@ describe 'association creation' do
       context 'associated as an array' do
         it 'delays the call to :save' do
           expect(science).not_to receive(:save)
-          expect { chris.lessons << lessons }.not_to raise_error
+          expect { chris.lessons += lessons }.not_to raise_error
         end
 
         it 'calls save on each element' do
           expect(math).to receive(:save).and_call_original
           expect(science).to receive(:save).and_call_original
-          chris.lessons << lessons
+          chris.lessons += lessons
           chris.save
         end
       end
@@ -297,7 +297,6 @@ describe 'association creation' do
 
           expect(chris.errors).to be_empty
 
-          log_queries!
           chris.save
 
           lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')

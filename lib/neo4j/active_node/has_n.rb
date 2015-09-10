@@ -43,6 +43,10 @@ module Neo4j::ActiveNode
         self.to_a == other.to_a
       end
 
+      def +(other_nodes)
+        self.to_a + other_nodes
+      end
+
       def result
         return @cached_result if @cached_result
 
@@ -52,6 +56,8 @@ module Neo4j::ActiveNode
       end
 
       def result_nodes
+        return result if !@query_proxy.model
+
         @cached_result = result.map do |object|
           object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
         end
@@ -95,7 +101,7 @@ module Neo4j::ActiveNode
         super if target.nil?
 
         cache_query_proxy_result if !cached? && !target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-        clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
+        clear_cache_result if !QUERY_PROXY_METHODS.include?(method_name) && target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
 
         target.public_send(method_name, *args, &block)
       end
@@ -420,7 +426,7 @@ module Neo4j::ActiveNode
             Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)
           else
-            association_proxy(name).defer_create(other_node, :'=')
+            association_proxy(name).defer_create(other_node)
           end
         end
       end
