@@ -10,6 +10,19 @@ We have three main gems: `neo4j <https://github.com/neo4jrb/neo4j>`_, `neo4j-cor
 
 We try to follow semantic versioning based on `semver.org <http://semver.org/>`
 
+Low Hanging Fruit
+-----------------
+
+Just reporting issues is helpful, but if you want to help with some code we label our GitHub issues with ``low-hanging-fruit`` to make it easy for somebody to start helping out:
+
+https://github.com/neo4jrb/neo4j/labels/low-hanging-fruit
+
+https://github.com/neo4jrb/neo4j-core/labels/low-hanging-fruit
+
+https://github.com/neo4jrb/neo4j-rake_tasks/labels/low-hanging-fruit
+
+Help or discussion on other issues is welcome, just let us know!
+
 Communicating With the Neo4j.rb Team
 ------------------------------------
 
