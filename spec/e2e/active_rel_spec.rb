@@ -23,7 +23,7 @@ describe 'ActiveRel' do
       to_class ToClass
       type 'rel_class_type'
 
-      property :score
+      property :score, type: Integer
       property :links
       serialize :links
     end

@@ -68,7 +68,7 @@ Methods
 **#find_by_id**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_by_id(id)
        self.where(id_property_name => id).first
@@ -81,7 +81,7 @@ Methods
 **#find_by_ids**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_by_ids(ids)
        self.where(id_property_name => ids).to_a
@@ -94,7 +94,7 @@ Methods
 **#find_by_neo_id**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_by_neo_id(id)
        Neo4j::Node.load(id)
@@ -107,7 +107,7 @@ Methods
 **#has_id_property?**
   rubocop:disable Style/PredicateName
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def has_id_property?
        ActiveSupport::Deprecation.warn 'has_id_property? is deprecated and may be removed from future releases, use id_property? instead.', caller
@@ -122,7 +122,7 @@ Methods
 **#id_property**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id_property(name, conf = {})
        self.manual_id_property = true
@@ -142,7 +142,7 @@ Methods
 **#id_property?**
   rubocop:enable Style/PredicateName
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id_property?
        id_property_info && !id_property_info.empty?
@@ -155,7 +155,7 @@ Methods
 **#id_property_info**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id_property_info
        @id_property_info ||= {}
@@ -168,7 +168,7 @@ Methods
 **#id_property_name**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id_property_name
        id_property_info[:name]
@@ -181,7 +181,7 @@ Methods
 **#manual_id_property**
   Returns the value of attribute manual_id_property
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def manual_id_property
        @manual_id_property
@@ -194,7 +194,7 @@ Methods
 **#manual_id_property=**
   Sets the attribute manual_id_property
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def manual_id_property=(value)
        @manual_id_property = value
@@ -207,7 +207,7 @@ Methods
 **#manual_id_property?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def manual_id_property?
        !!manual_id_property
@@ -220,7 +220,7 @@ Methods
 **#primary_key**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id_property_name
        id_property_info[:name]

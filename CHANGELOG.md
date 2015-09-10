@@ -12,6 +12,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `props_for_create` and `props_for_update` were not adding default property values to the hash.
 - ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
 
+### Added
+- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
+- `rel_where` will now use ActiveRel classes for type conversion, when possible.
+- Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
+
 ## [5.2.3] - 09-07-2015
 
 Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:

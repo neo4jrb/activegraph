@@ -77,7 +77,7 @@ Methods
   Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy source_object set to the node instance.
   This method does not exist within QueryProxy and can only be used to start a new chain.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def as(node_var)
        self.class.query_proxy(node: node_var, source_object: self).match_to(self)
@@ -90,7 +90,7 @@ Methods
 **#query_as**
   Returns a Query object with the current node matched the specified variable name
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def query_as(node_var)
        self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)

@@ -54,7 +54,7 @@ Methods
 **#destroy**
   :nodoc:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroy #:nodoc:
        tx = Neo4j::Transaction.new
@@ -75,7 +75,7 @@ Methods
 **#touch**
   :nodoc:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def touch(*) #:nodoc:
        run_callbacks(:touch) { super }

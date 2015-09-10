@@ -57,7 +57,7 @@ Methods
   Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
   would be comparing the QueryProxy objects, not the lessons themselves.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def ==(other)
        self.to_a == other
@@ -72,7 +72,7 @@ Methods
   The <tt>node</tt> and <tt>rel</tt> params are typically used by those other methods but there's nothing stopping you from
   using `your_node.each(true, true)` instead of `your_node.each_with_rel`.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def each(node = true, rel = nil, &block)
        result(node, rel).each(&block)
@@ -90,7 +90,7 @@ Methods
   
     student.lessons.each_rel do |rel|
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def each_rel(&block)
        block_given? ? each(false, true, &block) : to_enum(:each, false, true)
@@ -108,7 +108,7 @@ Methods
   
     student.lessons.each_with_rel do |lesson, rel|
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def each_with_rel(&block)
        block_given? ? each(true, true, &block) : to_enum(:each, true, true)
@@ -121,7 +121,7 @@ Methods
 **#fetch_result_cache**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def fetch_result_cache
        @result_cache ||= yield
@@ -134,7 +134,7 @@ Methods
 **#pluck**
   For getting variables which have been defined as part of the association chain
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def pluck(*args)
        transformable_attributes = (model ? model.attribute_names : []) + %w(uuid neo_id)
@@ -156,7 +156,7 @@ Methods
 **#result**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def result(node = true, rel = true)
        @result_cache ||= {}

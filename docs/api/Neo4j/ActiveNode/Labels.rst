@@ -39,6 +39,8 @@ Provides a mapping between neo4j labels and Ruby classes
 
    Labels/ClassMethods
 
+   Labels/Reloading
+
 
 
 
@@ -51,6 +53,8 @@ Constants
 
   * MODELS_FOR_LABELS_CACHE
 
+  * MODELS_TO_RELOAD
+
 
 
 Files
@@ -59,6 +63,8 @@ Files
 
 
   * `lib/neo4j/active_node/labels.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L4>`_
+
+  * `lib/neo4j/active_node/labels/reloading.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels/reloading.rb#L1>`_
 
 
 
@@ -74,7 +80,7 @@ Methods
 **._wrapped_classes**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self._wrapped_classes
        Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
@@ -87,7 +93,7 @@ Methods
 **#add_label**
   adds one or more labels
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def add_label(*label)
        @_persisted_obj.add_label(*label)
@@ -100,7 +106,7 @@ Methods
 **.add_wrapped_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.add_wrapped_class(model)
        _wrapped_classes << model
@@ -113,7 +119,7 @@ Methods
 **.clear_model_for_label_cache**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.clear_model_for_label_cache
        MODELS_FOR_LABELS_CACHE.clear
@@ -126,7 +132,7 @@ Methods
 **.clear_wrapped_models**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.clear_wrapped_models
        WRAPPED_CLASSES.clear
@@ -139,7 +145,7 @@ Methods
 **#labels**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def labels
        @_persisted_obj.labels
@@ -152,7 +158,7 @@ Methods
 **.model_cache**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.model_cache(labels)
        models = WRAPPED_CLASSES.select do |model|
@@ -171,7 +177,7 @@ Methods
 **.model_for_labels**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.model_for_labels(labels)
        MODELS_FOR_LABELS_CACHE[labels] || model_cache(labels)
@@ -185,7 +191,7 @@ Methods
   Removes one or more labels
   Be careful, don't remove the label representing the Ruby class.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def remove_label(*label)
        @_persisted_obj.remove_label(*label)

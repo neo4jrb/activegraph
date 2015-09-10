@@ -56,6 +56,216 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
+  describe 'Integer' do
+    subject { Neo4j::Shared::TypeConverters::IntegerConverter }
+
+    it 'translates from and to database' do
+      db_value = subject.to_db('1')
+      ruby_value = subject.to_ruby('1')
+      [db_value, ruby_value].each do |i|
+        expect(i).to be_a(Integer)
+        expect(i).to eq 1
+      end
+    end
+  end
+
+  describe 'Float' do
+    subject { Neo4j::Shared::TypeConverters::FloatConverter }
+
+    it 'translates from and to database' do
+      db_value = subject.to_db('1')
+      ruby_value = subject.to_ruby('1')
+      [db_value, ruby_value].each do |i|
+        expect(i).to be_a(Float)
+        expect(i).to eq 1.0
+      end
+    end
+  end
+
+  describe 'BigDecimal' do
+    subject { Neo4j::Shared::TypeConverters::BigDecimalConverter }
+
+    context 'from Rational' do
+      let(:r) { Rational(1) }
+
+      it 'translates' do
+        expect(subject.to_db(r)).to be_a(BigDecimal)
+        expect(subject.to_db(r)).to eq(BigDecimal.new('1.0'))
+        expect(subject.to_db(r)).not_to eq(BigDecimal.new('1.1'))
+      end
+    end
+
+    context 'from float' do
+      let(:r) { 1.0 }
+
+      it 'translates' do
+        expect(subject.to_db(r)).to be_a(BigDecimal)
+      end
+    end
+
+    context 'from String' do
+      let(:r) { '1.0' }
+
+      it 'translates' do
+        expect(subject.to_db(r)).to be_a(BigDecimal)
+      end
+    end
+  end
+
+  describe 'String' do
+    subject { Neo4j::Shared::TypeConverters::StringConverter }
+
+    describe '#to_db and #to_ruby' do
+      it 'calls to_s on the object' do
+        expect(subject.to_db(1)).to eq '1'
+        expect(subject.to_ruby(1)).to eq '1'
+      end
+    end
+  end
+
+  # These tests originally from ActiveAttr gem
+  describe 'Boolean' do
+    subject { Neo4j::Shared::TypeConverters::BooleanConverter }
+
+    describe '#to_db' do
+      it 'returns true for true' do
+        subject.to_db(true).should equal true
+      end
+
+      it 'returns false for false' do
+        subject.to_db(false).should equal false
+      end
+
+      it 'casts nil to false' do
+        subject.to_db(nil).should equal false
+      end
+
+      it 'casts an Object to true' do
+        subject.to_db(Object.new).should equal true
+      end
+
+      context 'when the value is a String' do
+        it 'casts an empty String to false' do
+          subject.to_db('').should equal false
+        end
+
+        it 'casts a non-empty String to true' do
+          subject.to_db('abc').should equal true
+        end
+
+        {
+          't' => true,
+          'f' => false,
+          'T' => true,
+          'F' => false,
+          # http://yaml.org/type/bool.html
+          'y' => true,
+          'Y' => true,
+          'yes' => true,
+          'Yes' => true,
+          'YES' => true,
+          'n' => false,
+          'N' => false,
+          'no' => false,
+          'No' => false,
+          'NO' => false,
+          'true' => true,
+          'True' => true,
+          'TRUE' => true,
+          'false' => false,
+          'False' => false,
+          'FALSE' => false,
+          'on' => true,
+          'On' => true,
+          'ON' => true,
+          'off' => false,
+          'Off' => false,
+          'OFF' => false
+        }.each_pair do |value, result|
+          it "casts #{value.inspect} to #{result.inspect}" do
+            subject.to_db(value).should equal result
+          end
+        end
+      end
+
+      context 'when the value is Numeric' do
+        it 'casts 0 to false' do
+          subject.to_db(0).should equal false
+        end
+
+        it 'casts 1 to true' do
+          subject.to_db(1).should equal true
+        end
+
+        it 'casts 0.0 to false' do
+          subject.to_db(0.0).should equal false
+        end
+
+        it 'casts 0.1 to true' do
+          subject.to_db(0.1).should equal true
+        end
+
+        it 'casts a zero BigDecimal to false' do
+          subject.to_db(BigDecimal.new('0.0')).should equal false
+        end
+
+        it 'casts a non-zero BigDecimal to true' do
+          subject.to_db(BigDecimal.new('0.1')).should equal true
+        end
+
+        it 'casts -1 to true' do
+          subject.to_db(-1).should equal true
+        end
+
+        it 'casts -0.0 to false' do
+          subject.to_db(-0.0).should equal false
+        end
+
+        it 'casts -0.1 to true' do
+          subject.to_db(-0.1).should equal true
+        end
+
+        it 'casts a negative zero BigDecimal to false' do
+          subject.to_db(BigDecimal.new('-0.0')).should equal false
+        end
+
+        it 'casts a negative BigDecimal to true' do
+          subject.to_db(BigDecimal.new('-0.1')).should equal true
+        end
+      end
+
+      context 'when the value is the String version of a Numeric' do
+        it "casts '0' to false" do
+          subject.to_db('0').should equal false
+        end
+
+        it "casts '1' to true" do
+          subject.to_db('1').should equal true
+        end
+
+        it "casts '0.0' to false" do
+          subject.to_db('0.0').should equal false
+        end
+
+        it "casts '0.1' to true" do
+          subject.to_db('0.1').should equal true
+        end
+
+        it "casts '-1' to true" do
+          subject.to_db('-1').should equal true
+        end
+
+        it "casts '-0.0' to false" do
+          subject.to_db('-0.0').should equal false
+        end
+
+        it "casts '-0.1' to true" do
+          subject.to_db('-0.1').should equal true
+        end
+      end
+    end
+  end
+
   describe Neo4j::Shared::TypeConverters::JSONConverter do
     subject { Neo4j::Shared::TypeConverters::JSONConverter }
 

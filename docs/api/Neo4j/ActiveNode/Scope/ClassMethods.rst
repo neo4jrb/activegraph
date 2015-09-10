@@ -58,7 +58,7 @@ Methods
 **#_call_scope_context**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _call_scope_context(eval_context, query_params, proc)
        if proc.arity == 1
@@ -75,7 +75,7 @@ Methods
 **#_scope**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _scope
        @_scope ||= {}
@@ -88,7 +88,7 @@ Methods
 **#all**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def all(new_var = nil)
        var = new_var || (current_scope ? current_scope.node_identity : :n)
@@ -106,7 +106,7 @@ Methods
 **#current_scope**
   :nodoc:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def current_scope #:nodoc:
        ScopeRegistry.value_for(:current_scope, base_class.to_s)
@@ -119,7 +119,7 @@ Methods
 **#current_scope=**
   :nodoc:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def current_scope=(scope) #:nodoc:
        ScopeRegistry.set_value_for(:current_scope, base_class.to_s, scope)
@@ -132,7 +132,7 @@ Methods
 **#has_scope?**
   rubocop:disable Style/PredicateName
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def has_scope?(name)
        ActiveSupport::Deprecation.warn 'has_scope? is deprecated and may be removed from future releases, use scope? instead.', caller
@@ -147,7 +147,7 @@ Methods
 **#scope**
   Similar to ActiveRecord scope
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def scope(name, proc)
        _scope[name.to_sym] = proc
@@ -173,7 +173,7 @@ Methods
 **#scope?**
   rubocop:enable Style/PredicateName
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def scope?(name)
        _scope.key?(name.to_sym)

@@ -86,7 +86,7 @@ Methods
 **.included**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.included(other)
        Neo4j::Shared::TypeConverters.register_converter(other)

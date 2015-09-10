@@ -116,7 +116,7 @@ Methods
 **#all_rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rels_to(node)
        self.match_to(node).pluck(rel_var)
@@ -136,7 +136,7 @@ Methods
   
     WHERE (node_var:Teacher:Person OR node_var:Article)
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def as_models(models)
        where_clause = models.map do |model|
@@ -155,7 +155,7 @@ Methods
 **#blank?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def empty?(target = nil)
        query_with_target(target) { |var| !self.exists?(nil, var) }
@@ -168,7 +168,7 @@ Methods
 **#count**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def count(distinct = nil, target = nil)
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
@@ -186,7 +186,7 @@ Methods
 **#delete**
   Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def delete(node)
        self.match_to(node).query.delete(rel_var).exec
@@ -201,7 +201,7 @@ Methods
   Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
   The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def delete_all(identifier = nil)
        query_with_target(identifier) do |target|
@@ -221,9 +221,10 @@ Methods
 **#delete_all_rels**
   Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def delete_all_rels
+       return unless start_object && start_object._persisted_obj
        self.query.delete(rel_var).exec
      end
 
@@ -234,7 +235,7 @@ Methods
 **#destroy**
   Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroy(node)
        self.rels_to(node).map!(&:destroy)
@@ -248,7 +249,7 @@ Methods
 **#empty?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def empty?(target = nil)
        query_with_target(target) { |var| !self.exists?(nil, var) }
@@ -261,7 +262,7 @@ Methods
 **#exists?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def exists?(node_condition = nil, target = nil)
        fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
@@ -279,7 +280,7 @@ Methods
   Give ability to call `#find` on associations to get a scoped find
   Doesn't pass through via `method_missing` because Enumerable has a `#find` method
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find(*args)
        scoping { @model.find(*args) }
@@ -293,7 +294,7 @@ Methods
   When called, this method returns a single node that satisfies the match specified in the params hash.
   If no existing node is found to satisfy the match, one is created or associated as expected.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_or_create_by(params)
        fail 'Method invalid when called on Class objects' unless source_object
@@ -313,7 +314,7 @@ Methods
 **#first**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def first(target = nil)
        first_and_last(FIRST, target)
@@ -327,7 +328,7 @@ Methods
   Gives you the first relationship between the last link of a QueryProxy chain and a given node
   Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id} RETURN r`
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def first_rel_to(node)
        self.match_to(node).limit(1).pluck(rel_var).first
@@ -340,7 +341,7 @@ Methods
 **#include?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def include?(other, target = nil)
        query_with_target(target) do |var|
@@ -361,7 +362,7 @@ Methods
 **#last**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def last(target = nil)
        first_and_last(LAST, target)
@@ -374,7 +375,7 @@ Methods
 **#length**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def count(distinct = nil, target = nil)
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
@@ -392,7 +393,7 @@ Methods
 **#limit_value**
   TODO: update this with public API methods if/when they are exposed
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def limit_value
        return unless self.query.clause?(:limit)
@@ -411,7 +412,7 @@ Methods
   primary key of that model. When nil, it uses `1 = 2` to prevent matching all records, which is the default
   behavior when nil is passed to `where` in QueryProxy.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def match_to(node)
        first_node = node.is_a?(Array) ? node.first : node
@@ -434,7 +435,7 @@ Methods
 **#optional**
   A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def optional(association, node_var = nil, rel_var = nil)
        self.send(association, node_var, rel_var, optional: true)
@@ -447,7 +448,7 @@ Methods
 **#order_property**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def order_property
        # This should maybe be based on a setting in the association
@@ -462,7 +463,7 @@ Methods
 **#rel**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rel
        rels.first
@@ -475,7 +476,7 @@ Methods
 **#rels**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rels
        fail 'Cannot get rels without a relationship variable.' if !@rel_var
@@ -490,7 +491,7 @@ Methods
 **#rels_to**
   Returns all relationships across a QueryProxy chain between a given node or array of nodes and the preceeding link.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rels_to(node)
        self.match_to(node).pluck(rel_var)
@@ -504,7 +505,7 @@ Methods
   Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
   Executed in the database, callbacks will not be run.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def replace_with(node_or_nodes)
        nodes = Array(node_or_nodes)
@@ -520,7 +521,7 @@ Methods
 **#size**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def count(distinct = nil, target = nil)
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct

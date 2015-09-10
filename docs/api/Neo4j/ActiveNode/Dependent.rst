@@ -54,7 +54,7 @@ Methods
 **#called_by=**
   Sets the attribute called_by
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def called_by=(value)
        @called_by = value
@@ -67,7 +67,7 @@ Methods
 **#dependent_children**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def dependent_children
        @dependent_children ||= []

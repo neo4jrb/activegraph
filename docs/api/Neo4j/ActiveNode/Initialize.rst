@@ -46,7 +46,7 @@ Methods
 **#called_by**
   Returns the value of attribute called_by
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def called_by
        @called_by
@@ -59,7 +59,7 @@ Methods
 **#init_on_load**
   called when loading the node from the database
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def init_on_load(persisted_node, properties)
        self.class.extract_association_attributes!(properties)
@@ -76,7 +76,7 @@ Methods
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method
   so that we don't have to care if the node is wrapped or not.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def wrapper
        self
