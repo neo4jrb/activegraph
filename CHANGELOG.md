@@ -12,6 +12,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `props_for_create` and `props_for_update` were not adding default property values to the hash.
 - ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
 
+## [5.2.4] - 09-11-2015
+
+### Fixed
+- Use `debug` log level for query logging
+
 ## [5.2.3] - 09-07-2015
 
 Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
