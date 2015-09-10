@@ -38,6 +38,8 @@ Example:
 
 Properties can be indexed using the index argument on the property method, see example above.
 
+See the Properties section for additional information.
+
 
 .. seealso::
   .. raw:: html

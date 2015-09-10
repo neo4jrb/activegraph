@@ -42,7 +42,7 @@ Methods
 **#convert_properties_to**
   Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_properties_to(obj, medium, properties)
        direction = medium == :ruby ? :to_ruby : :to_db
@@ -59,7 +59,7 @@ Methods
 **#convert_property**
   Converts a single property from its current format to its db- or Ruby-expected output type.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_property(key, value, direction)
        converted_property(primitive_type(key.to_sym), value, direction)

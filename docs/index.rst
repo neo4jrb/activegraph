@@ -19,6 +19,8 @@ Contents:
    ActiveNode
    ActiveRel
 
+   Properties
+
    Querying
 
    QueryClauseMethods

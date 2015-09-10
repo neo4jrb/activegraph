@@ -64,7 +64,7 @@ Methods
 **#column_names**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def column_names
        klass._decl_props.keys
@@ -77,7 +77,7 @@ Methods
 **#create!**
   Create a model using attributes
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create!(attributes = {})
        klass.create!(attributes)
@@ -90,7 +90,7 @@ Methods
 **#destroy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroy(object)
        object.destroy && true if valid_object?(object)
@@ -103,7 +103,7 @@ Methods
 **#find_all**
   Find all models matching conditions
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_all(options = {})
        conditions, order, limit, offset = extract_conditions!(options)
@@ -124,7 +124,7 @@ Methods
 **#find_first**
   Find the first instance matching conditions
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_first(options = {})
        conditions, order = extract_conditions!(options)
@@ -143,7 +143,7 @@ Methods
 **#get**
   Get an instance by id of the model
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def get(id)
        klass.find_by(klass.id_property_name => wrap_key(id))
@@ -156,7 +156,7 @@ Methods
 **#get!**
   Get an instance by id of the model
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def get!(id)
        klass.find(wrap_key(id)).tap do |node|
@@ -171,7 +171,7 @@ Methods
 **#i18n_scope**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def i18n_scope
        :neo4j

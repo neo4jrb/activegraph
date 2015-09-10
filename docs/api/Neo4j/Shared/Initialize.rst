@@ -49,7 +49,7 @@ Methods
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method
   so that we don't have to care if the node is wrapped or not.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def wrapper
        self

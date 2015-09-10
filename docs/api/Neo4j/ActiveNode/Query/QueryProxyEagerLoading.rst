@@ -52,7 +52,7 @@ Methods
 **#each**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def each(node = true, rel = nil, &block)
        return super if with_associations_spec.size.zero?
@@ -73,7 +73,7 @@ Methods
 **#with_associations**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def with_associations(*spec)
        invalid_association_names = spec.reject do |association_name|
@@ -97,7 +97,7 @@ Methods
 **#with_associations_return_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def with_associations_return_clause
        '[' + with_associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
@@ -110,7 +110,7 @@ Methods
 **#with_associations_spec**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def with_associations_spec
        @with_associations_spec ||= []

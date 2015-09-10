@@ -46,7 +46,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(record)
        @record = record
@@ -60,7 +60,7 @@ Methods
 **#record**
   Returns the value of attribute record
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def record
        @record

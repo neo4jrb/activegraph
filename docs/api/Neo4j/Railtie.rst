@@ -54,7 +54,7 @@ Methods
 **.java_platform?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def java_platform?
        RUBY_PLATFORM =~ /java/
@@ -67,7 +67,7 @@ Methods
 **.open_neo4j_session**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def open_neo4j_session(options)
        type, name, default, path = options.values_at(:type, :name, :default, :path)
@@ -92,7 +92,7 @@ Methods
 **#register_neo4j_cypher_logging**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def register_neo4j_cypher_logging
        return if @neo4j_cypher_logging_registered
@@ -113,7 +113,7 @@ Methods
 **.setup_config_defaults!**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def setup_config_defaults!(cfg)
        cfg.session_type ||= :server_db
@@ -135,7 +135,7 @@ Methods
 **.setup_default_session**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def setup_default_session(cfg)
        setup_config_defaults!(cfg)
@@ -152,7 +152,7 @@ Methods
 **.start_embedded_session**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def start_embedded_session(session)
        # See https://github.com/jruby/jruby/wiki/UnlimitedStrengthCrypto

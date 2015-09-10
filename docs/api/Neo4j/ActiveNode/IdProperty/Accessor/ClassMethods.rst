@@ -54,7 +54,7 @@ Methods
 **#default_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_properties
        @default_property ||= {}
@@ -67,7 +67,7 @@ Methods
 **#default_properties_keys**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_properties_keys
        @default_properties_keys ||= default_properties.keys
@@ -80,7 +80,7 @@ Methods
 **#default_property**
   TODO: Move this to the DeclaredPropertyManager
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_property(name, &block)
        reset_default_properties(name) if default_properties.respond_to?(:size)
@@ -94,7 +94,7 @@ Methods
 **#default_property_key**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_property_key
        @default_property_key ||= default_properties_keys.first
@@ -107,7 +107,7 @@ Methods
 **#default_property_values**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_property_values(instance)
        default_properties.each_with_object({}) do |(key, block), result|
@@ -122,7 +122,7 @@ Methods
 **#reset_default_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def reset_default_properties(name_to_keep)
        default_properties.each_key do |property|

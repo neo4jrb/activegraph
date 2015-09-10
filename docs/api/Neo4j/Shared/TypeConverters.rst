@@ -11,6 +11,18 @@ TypeConverters
    :titlesonly:
 
 
+   TypeConverters/BaseConverter
+
+   TypeConverters/IntegerConverter
+
+   TypeConverters/FloatConverter
+
+   TypeConverters/BigDecimalConverter
+
+   TypeConverters/StringConverter
+
+   TypeConverters/BooleanConverter
+
    TypeConverters/DateConverter
 
    TypeConverters/DateTimeConverter
@@ -58,7 +70,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L4>`_
+  * `lib/neo4j/shared/type_converters.rb:7 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L7>`_
 
 
 
@@ -74,7 +86,7 @@ Methods
 **#convert_properties_to**
   Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_properties_to(obj, medium, properties)
        direction = medium == :ruby ? :to_ruby : :to_db
@@ -91,7 +103,7 @@ Methods
 **#convert_property**
   Converts a single property from its current format to its db- or Ruby-expected output type.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_property(key, value, direction)
        converted_property(primitive_type(key.to_sym), value, direction)
@@ -104,7 +116,7 @@ Methods
 **.converters**
   Returns the value of attribute converters
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def converters
        @converters
@@ -117,10 +129,15 @@ Methods
 **.formatted_for_db?**
   Attempts to determine whether conversion should be skipped because the object is already of the anticipated output type.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def formatted_for_db?(found_converter, value)
-       found_converter.respond_to?(:db_type) && value.is_a?(found_converter.db_type)
+       return false unless found_converter.respond_to?(:db_type)
+       if found_converter.respond_to?(:converted)
+         found_converter.converted?(value)
+       else
+         value.is_a?(found_converter.db_type)
+       end
      end
 
 
@@ -130,7 +147,7 @@ Methods
 **.included**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def included(_)
        return if @converters
@@ -148,7 +165,7 @@ Methods
 **.register_converter**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def register_converter(converter)
        converters[converter.convert_type] = converter
@@ -161,7 +178,7 @@ Methods
 **.to_other**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_other(direction, value, type)
        fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
@@ -178,7 +195,7 @@ Methods
 **.typecaster_for**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def typecaster_for(primitive_type)
        return nil if primitive_type.nil?

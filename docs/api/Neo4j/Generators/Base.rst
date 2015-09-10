@@ -44,7 +44,7 @@ Methods
 **.source_root**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.source_root
        @_neo4j_source_root ||= File.expand_path(File.join(File.dirname(__FILE__),

@@ -96,7 +96,7 @@ Methods
   each time it is called. Rather than rely on that, we build this progressively as properties are registered.
   When the node or rel is loaded, this is used as a template.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def attributes_nil_hash
        @_attributes_nil_hash ||= {}.tap do |attr_hash|
@@ -117,7 +117,7 @@ Methods
   to speed up the process. This increases memory used by the gem but reduces object allocation and GC, so it is faster
   in practice.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def attributes_string_map
        @_attributes_string_map ||= {}.tap do |attr_hash|
@@ -132,7 +132,7 @@ Methods
 **#convert_properties_to**
   Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_properties_to(obj, medium, properties)
        direction = medium == :ruby ? :to_ruby : :to_db
@@ -149,7 +149,7 @@ Methods
 **#convert_property**
   Converts a single property from its current format to its db- or Ruby-expected output type.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_property(key, value, direction)
        converted_property(primitive_type(key.to_sym), value, direction)
@@ -163,7 +163,7 @@ Methods
   The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of
   nil on declared properties. This holds those values.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def declared_property_defaults
        @_default_property_values ||= {}
@@ -176,7 +176,7 @@ Methods
 **#initialize**
   Each class that includes Neo4j::ActiveNode or Neo4j::ActiveRel gets one instance of this class.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(klass)
        @klass = klass
@@ -189,7 +189,7 @@ Methods
 **#klass**
   Returns the value of attribute klass
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def klass
        @klass
@@ -202,7 +202,7 @@ Methods
 **#magic_typecast_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def magic_typecast_properties
        @magic_typecast_properties ||= {}
@@ -215,7 +215,7 @@ Methods
 **#magic_typecast_properties_keys**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def magic_typecast_properties_keys
        @magic_typecast_properties_keys ||= magic_typecast_properties.keys
@@ -229,14 +229,14 @@ Methods
   #property on an ActiveNode or ActiveRel class. The DeclaredProperty has specifics about the property, but registration
   makes the management object aware of it. This is necessary for type conversion, defaults, and inclusion in the nil and string hashes.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def register(property)
        @_attributes_nil_hash = nil
        @_attributes_string_map = nil
        registered_properties[property.name] = property
        register_magic_typecaster(property) if property.magic_typecaster
-       declared_property_defaults[property.name] = property.default_value if property.default_value
+       declared_property_defaults[property.name] = property.default_value if !property.default_value.nil?
      end
 
 
@@ -246,7 +246,7 @@ Methods
 **#registered_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def registered_properties
        @_registered_properties ||= {}
@@ -259,7 +259,7 @@ Methods
 **#serialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def serialize(name, coder = JSON)
        @serialize ||= {}
@@ -273,7 +273,7 @@ Methods
 **#serialized_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def serialized_properties
        @serialize ||= {}
@@ -286,7 +286,7 @@ Methods
 **#serialized_properties=**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def serialized_properties=(serialize_hash)
        @serialized_property_keys = nil
@@ -300,7 +300,7 @@ Methods
 **#serialized_properties_keys**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def serialized_properties_keys
        @serialized_property_keys ||= serialized_properties.keys
@@ -320,7 +320,7 @@ Methods
   but that would result in unchecked, un-GCed memory consumption. In the event that someone is adding properties dynamically,
   maybe through user input, this would be bad.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def string_key(k)
        attributes_string_map[k] || string_map_id_property(k) || k.to_s
@@ -333,7 +333,7 @@ Methods
 **#unregister**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def unregister(name)
        # might need to be include?(name.to_s)
@@ -351,7 +351,7 @@ Methods
 **#upstream_primitives**
   The known mappings of declared properties and their primitive types.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def upstream_primitives
        @upstream_primitives ||= {}
@@ -364,7 +364,7 @@ Methods
 **#value_for_db**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def value_for_db(key, value)
        return value unless registered_properties[key]
@@ -378,7 +378,7 @@ Methods
 **#value_for_ruby**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def value_for_ruby(key, value)
        return unless registered_properties[key]

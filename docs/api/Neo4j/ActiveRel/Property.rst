@@ -60,7 +60,7 @@ Methods
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute(name)
        super(name)
@@ -75,7 +75,7 @@ Methods
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _persisted_obj
        @_persisted_obj
@@ -88,7 +88,7 @@ Methods
 **#end_node**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :end_node,   :to_node
 
@@ -99,7 +99,7 @@ Methods
 **#from_node_neo_id**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :from_node_neo_id, :start_node_neo_id
 
@@ -110,7 +110,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(attributes = nil)
        super(attributes)
@@ -124,7 +124,7 @@ Methods
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute(name)
        super(name)
@@ -139,7 +139,7 @@ Methods
 **#rel_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type
        self.class.type
@@ -152,7 +152,7 @@ Methods
 **#send_props**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def send_props(hash)
        return hash if hash.blank?
@@ -166,7 +166,7 @@ Methods
 **#start_node**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :start_node, :from_node
 
@@ -177,7 +177,7 @@ Methods
 **#to_node_neo_id**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :to_node_neo_id,   :end_node_neo_id
 
@@ -188,7 +188,7 @@ Methods
 **#type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type
        self.class.type

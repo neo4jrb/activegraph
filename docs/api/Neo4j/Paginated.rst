@@ -52,7 +52,7 @@ Methods
 **.create_from**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.create_from(source, page, per_page, order = nil)
        target = source.node_var || source.identity
@@ -72,7 +72,7 @@ Methods
 **#current_page**
   Returns the value of attribute current_page
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def current_page
        @current_page
@@ -85,7 +85,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(items, total, current_page)
        @items = items
@@ -100,7 +100,7 @@ Methods
 **#items**
   Returns the value of attribute items
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def items
        @items
@@ -113,7 +113,7 @@ Methods
 **#total**
   Returns the value of attribute total
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def total
        @total

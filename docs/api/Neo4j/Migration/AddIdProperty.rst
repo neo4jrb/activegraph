@@ -62,7 +62,7 @@ Methods
 **#default_path**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_path
        Rails.root if defined? Rails
@@ -75,7 +75,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(path = default_path)
        @models_filename = File.join(joined_path(path), 'add_id_property.yml')
@@ -88,7 +88,7 @@ Methods
 **#joined_path**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def joined_path(path)
        File.join(path.to_s, 'db', 'neo4j-migrate')
@@ -101,7 +101,7 @@ Methods
 **#migrate**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def migrate
        models = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(models_filename))[:models]
@@ -122,7 +122,7 @@ Methods
 **#models_filename**
   Returns the value of attribute models_filename
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def models_filename
        @models_filename
@@ -135,7 +135,7 @@ Methods
 **#output**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def output(string = '')
        puts string unless !!ENV['silenced']
@@ -148,7 +148,7 @@ Methods
 **#print_output**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def print_output(string)
        print string unless !!ENV['silenced']
@@ -161,7 +161,7 @@ Methods
 **#setup**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def setup
        FileUtils.mkdir_p('db/neo4j-migrate')
