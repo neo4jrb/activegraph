@@ -197,6 +197,7 @@ describe 'association creation' do
   describe '... on creation' do
     context 'with math lesson' do
       let(:math) { Lesson.create(subject: 'math') }
+      let(:science) { Lesson.create(subject: 'Science') }
 
       describe 'has_one' do
         it 'creates the relationship by the association name' do
@@ -209,6 +210,22 @@ describe 'association creation' do
 
         it 'creates the relationship by assigning to an unpersisted node' do
           chris = Student.new(name: 'Chris')
+          chris.favorite_class = math
+
+          expect(chris.favorite_class).to eq(math)
+          expect(chris.favorite_class_id).to eq(math.id)
+
+          expect(chris.errors).to be_empty
+
+          chris.save
+
+          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'does not double add when assigning has_many associations twice' do
+          chris = Student.new(name: 'Chris')
+          chris.favorite_class = math
           chris.favorite_class = math
 
           expect(chris.favorite_class).to eq(math)
@@ -266,8 +283,25 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
+        end
+
+        it 'does not double add when assigning has_many associations twice' do
+          chris = Student.new(name: 'Chris')
+          chris.lessons = [math]
+          chris.lessons = [science]
+
+          expect(chris.lessons).to eq([science])
+          expect(chris.lesson_ids).to eq([science.id])
+
+          expect(chris.errors).to be_empty
+
+          log_queries!
+          chris.save
+
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([science.id])
         end
 
         it 'creates the relationship by the association_id' do
@@ -289,7 +323,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
       end

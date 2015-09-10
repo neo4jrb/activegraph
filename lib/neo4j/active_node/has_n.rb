@@ -22,7 +22,7 @@ module Neo4j::ActiveNode
       # Default
       def inspect
         if @cached_result
-          @cached_result.inspect
+          result_nodes.inspect
         else
           "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
         end
@@ -36,7 +36,11 @@ module Neo4j::ActiveNode
       include Enumerable
 
       def each(&block)
-        result.each(&block)
+        result_nodes.each(&block)
+      end
+
+      def ==(other)
+        self.to_a == other.to_a
       end
 
       def result
@@ -45,6 +49,18 @@ module Neo4j::ActiveNode
         cache_query_proxy_result
 
         @cached_result
+      end
+
+      def result_nodes
+        @cached_result = result.map do |object|
+          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
+        end
+      end
+
+      def result_ids
+        result.map do |object|
+          object.is_a?(Neo4j::ActiveNode) ? object.id : object
+        end
       end
 
       def cache_result(result)
@@ -337,7 +353,7 @@ module Neo4j::ActiveNode
 
       def define_has_many_id_methods(name)
         define_method_unless_defined("#{name.to_s.singularize}_ids") do
-          association_proxy(name).pluck(:uuid)
+          association_proxy(name).result_ids
         end
 
         define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
@@ -367,7 +383,7 @@ module Neo4j::ActiveNode
 
       def define_has_one_id_methods(name)
         define_method("#{name}_id") do
-          association_proxy(name).pluck(:uuid).first
+          association_proxy(name).result_ids.first
         end
 
         define_method_unless_defined("#{name}_id=") do |id|
@@ -381,19 +397,17 @@ module Neo4j::ActiveNode
 
       def define_has_one_getter(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          return nil unless self._persisted_obj
-
           if node.is_a?(Hash)
             options = node
             node = nil
           end
 
           # Return all results if a variable-length relationship length was given
-          results = association_proxy(name, {node: node, rel: rel}.merge!(options))
+          association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
           if options[:rel_length] && !options[:rel_length].is_a?(Fixnum)
-            results
+            association_proxy
           else
-            results.result.first
+            association_proxy.result_nodes.first
           end
         end
       end
