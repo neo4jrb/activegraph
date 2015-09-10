@@ -43,8 +43,8 @@ module Neo4j::ActiveNode
         self.to_a == other.to_a
       end
 
-      def +(other_nodes)
-        self.to_a + other_nodes
+      def +(other)
+        self.to_a + other
       end
 
       def result
