@@ -112,11 +112,22 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
+  describe 'String' do
+    subject { Neo4j::Shared::TypeConverters::StringConverter }
+
+    describe '#to_db and #to_ruby' do
+      it 'calls to_s on the object' do
+        expect(subject.to_db(1)).to eq '1'
+        expect(subject.to_ruby(1)).to eq '1'
+      end
+    end
+  end
+
   # These tests originally from ActiveAttr gem
   describe 'Boolean' do
     subject { Neo4j::Shared::TypeConverters::BooleanConverter }
 
-    describe '#call' do
+    describe '#to_db' do
       it 'returns true for true' do
         subject.to_db(true).should equal true
       end

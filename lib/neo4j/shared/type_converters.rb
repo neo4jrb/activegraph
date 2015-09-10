@@ -23,12 +23,11 @@ module Neo4j::Shared
           Integer
         end
 
-        def call(value)
+        def to_db(value)
           value.to_i
         end
 
-        alias_method :to_ruby, :call
-        alias_method :to_db, :call
+        alias_method :to_ruby, :to_db
       end
     end
 
@@ -42,11 +41,10 @@ module Neo4j::Shared
           Float
         end
 
-        def call(value)
+        def to_db(value)
           value.to_f
         end
-        alias_method :to_ruby, :call
-        alias_method :to_db, :call
+        alias_method :to_ruby, :to_db
       end
     end
 
@@ -60,7 +58,7 @@ module Neo4j::Shared
           BigDecimal
         end
 
-        def call(value)
+        def to_db(value)
           case value
           when Rational
             value.to_f.to_d
@@ -70,8 +68,7 @@ module Neo4j::Shared
             BigDecimal.new(value.to_s)
           end
         end
-        alias_method :to_ruby, :call
-        alias_method :to_db, :call
+        alias_method :to_ruby, :to_db
       end
     end
 
@@ -85,11 +82,10 @@ module Neo4j::Shared
           String
         end
 
-        def call(value)
+        def to_db(value)
           value.to_s
         end
-        alias_method :to_ruby, :call
-        alias_method :to_db, :call
+        alias_method :to_ruby, :to_db
       end
     end
 
@@ -109,7 +105,7 @@ module Neo4j::Shared
           ActiveAttr::Typecasting::Boolean
         end
 
-        def call(value)
+        def to_db(value)
           return false if FALSE_VALUES.include?(value)
           case value
           when TrueClass, FalseClass
@@ -121,8 +117,7 @@ module Neo4j::Shared
           end
         end
 
-        alias_method :to_ruby, :call
-        alias_method :to_db, :call
+        alias_method :to_ruby, :to_db
       end
     end
 
