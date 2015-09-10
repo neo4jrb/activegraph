@@ -34,7 +34,7 @@ require 'pry' if ENV['APP_ENV'] == 'debug'
 
 
 class MockLogger
-  def info(*_args)
+  def debug(*_args)
   end
 end
 
