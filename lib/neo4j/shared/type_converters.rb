@@ -330,8 +330,7 @@ module Neo4j::Shared
       # @param value The value for conversion.
       def formatted_for_db?(found_converter, value)
         return false unless found_converter.respond_to?(:db_type)
-        case found_converter
-        when BaseConverter
+        if found_converter.respond_to?(:converted)
           found_converter.converted?(value)
         else
           value.is_a?(found_converter.db_type)
