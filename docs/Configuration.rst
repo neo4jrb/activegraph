@@ -11,7 +11,7 @@ In either ``config/application.rb`` or one of the environment configurations (e.
 Other Ruby apps
 ~~~~~~~~~~~~~~~
 
-You can set configuration variables directly in the Neo4j configuration class like so: ``Neo4j::Config.variable_name = value`` where **variable_name** and **value** are as described below.
+You can set configuration variables directly in the Neo4j configuration class like so: ``Neo4j::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
 
 Variables
 ---------
@@ -76,7 +76,7 @@ Variables
 
   **record_timestamps**
     **Default:** ``false``
-    
+
     A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all ActiveNode and ActiveRel models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties.
 
   **timestamp_type**
