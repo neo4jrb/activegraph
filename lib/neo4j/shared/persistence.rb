@@ -218,7 +218,7 @@ module Neo4j::Shared
 
     def inject_defaults!(properties)
       self.class.declared_property_manager.declared_property_defaults.each_pair do |k, v|
-        properties[k.to_sym] = v unless properties.key?(k.to_sym)
+        properties[k.to_sym] = v if send(k).nil?
       end
       properties
     end
