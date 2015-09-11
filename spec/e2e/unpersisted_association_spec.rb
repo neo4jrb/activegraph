@@ -10,6 +10,8 @@ end
 
 describe 'association creation' do
   before do
+    clear_model_memory_caches
+
     stub_active_node_class 'Student' do
       property :name
       has_many :out, :lessons, type: 'ENROLLED_IN'
@@ -58,7 +60,7 @@ describe 'association creation' do
 
         it 'saves both nodes and creates the relationship' do
           expect(math).to receive(:save).and_call_original
-          expect { chris.save }.to change { chris.favorite_class }
+          expect { chris.save }.to change { chris.favorite_class.object_id }
         end
       end
     end
@@ -125,13 +127,13 @@ describe 'association creation' do
       context 'associated as an array' do
         it 'delays the call to :save' do
           expect(science).not_to receive(:save)
-          expect { chris.lessons << lessons }.not_to raise_error
+          expect { chris.lessons += lessons }.not_to raise_error
         end
 
         it 'calls save on each element' do
           expect(math).to receive(:save).and_call_original
           expect(science).to receive(:save).and_call_original
-          chris.lessons << lessons
+          chris.lessons += lessons
           chris.save
         end
       end
@@ -195,6 +197,7 @@ describe 'association creation' do
   describe '... on creation' do
     context 'with math lesson' do
       let(:math) { Lesson.create(subject: 'math') }
+      let(:science) { Lesson.create(subject: 'Science') }
 
       describe 'has_one' do
         it 'creates the relationship by the association name' do
@@ -205,9 +208,55 @@ describe 'association creation' do
           expect(lessons).to match_array([math.id])
         end
 
+        it 'creates the relationship by assigning to an unpersisted node' do
+          chris = Student.new(name: 'Chris')
+          chris.favorite_class = math
+
+          expect(chris.favorite_class).to eq(math)
+          expect(chris.favorite_class_id).to eq(math.id)
+
+          expect(chris.errors).to be_empty
+
+          chris.save
+
+          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'does not double add when assigning has_many associations twice' do
+          chris = Student.new(name: 'Chris')
+          chris.favorite_class = math
+          chris.favorite_class = math
+
+          expect(chris.favorite_class).to eq(math)
+          expect(chris.favorite_class_id).to eq(math.id)
+
+          expect(chris.errors).to be_empty
+
+          chris.save
+
+          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
         it 'creates the relationship by the association_id' do
           chris = Student.create(name: 'Chris', favorite_class_id: math.id)
           expect(chris.errors).to be_empty
+
+          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'creates the relationship by assigning association_id to an unpersisted node' do
+          chris = Student.new(name: 'Chris')
+          chris.favorite_class_id = math.id
+
+          expect(chris.favorite_class).to eq(math)
+          expect(chris.favorite_class_id).to eq(math.id)
+
+          expect(chris.errors).to be_empty
+
+          chris.save
 
           lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
@@ -223,9 +272,55 @@ describe 'association creation' do
           expect(lessons).to match_array([math.id])
         end
 
+        it 'creates the relationship by assigning to an unpersisted node' do
+          chris = Student.new(name: 'Chris')
+          chris.lessons = [math]
+
+          expect(chris.lessons).to eq([math])
+          expect(chris.lesson_ids).to eq([math.id])
+
+          expect(chris.errors).to be_empty
+
+          chris.save
+
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'does not double add when assigning has_many associations twice' do
+          chris = Student.new(name: 'Chris')
+          chris.lessons = [math]
+          chris.lessons = [science]
+
+          expect(chris.lessons).to eq([science])
+          expect(chris.lesson_ids).to eq([science.id])
+
+          expect(chris.errors).to be_empty
+
+          chris.save
+
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([science.id])
+        end
+
         it 'creates the relationship by the association_id' do
           chris = Student.create(name: 'Chris', lesson_ids: [math.id])
           expect(chris.errors).to be_empty
+
+          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          expect(lessons).to match_array([math.id])
+        end
+
+        it 'creates the relationship by assigning association_id to an unpersisted node' do
+          chris = Student.new(name: 'Chris')
+          chris.lesson_ids = [math.id]
+
+          expect(chris.lessons).to eq([math])
+          expect(chris.lesson_ids).to eq([math.id])
+
+          expect(chris.errors).to be_empty
+
+          chris.save
 
           lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])

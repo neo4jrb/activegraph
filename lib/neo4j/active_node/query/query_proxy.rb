@@ -167,7 +167,7 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node, {}, :<<)
+          @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node)
           self
         end
 
