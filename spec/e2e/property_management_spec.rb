@@ -121,7 +121,22 @@ describe 'declared property classes' do
         end
       end
 
-      describe 'with changed values' do
+      context 'with value not default, not updated' do
+        before do
+          node.bar = 'bar'
+          node.save
+          node.reload
+          node.foo = 'foo'
+          node.save
+          node.reload
+        end
+
+        it 'does not reset' do
+          expect(node.bar).to eq 'bar'
+        end
+      end
+
+      context 'with changed values' do
         before do
           node.bar = value
           node.baz = bool_value
