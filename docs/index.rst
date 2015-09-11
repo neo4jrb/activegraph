@@ -19,11 +19,15 @@ Contents:
    ActiveNode
    ActiveRel
 
+   Properties
+
    Querying
 
    QueryClauseMethods
 
    Configuration
+
+   Contributing
 
    api/index
 

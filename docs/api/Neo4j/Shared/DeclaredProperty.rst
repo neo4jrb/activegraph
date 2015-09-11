@@ -41,6 +41,8 @@ Contains methods related to the management
 
    
 
+   
+
 
 
 
@@ -74,7 +76,7 @@ Methods
 **#default_value**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_value
        options[:default]
@@ -87,7 +89,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(name, options = {})
        fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
@@ -103,7 +105,7 @@ Methods
 **#magic_typecaster**
   Returns the value of attribute magic_typecaster
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def magic_typecaster
        @magic_typecaster
@@ -116,7 +118,7 @@ Methods
 **#name**
   Returns the value of attribute name
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def name
        @name
@@ -129,7 +131,7 @@ Methods
 **#name_string**
   Returns the value of attribute name_string
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def name_string
        @name_string
@@ -142,7 +144,7 @@ Methods
 **#name_sym**
   Returns the value of attribute name_sym
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def name_sym
        @name_sym
@@ -155,7 +157,7 @@ Methods
 **#options**
   Returns the value of attribute options
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def options
        @options
@@ -168,7 +170,7 @@ Methods
 **#register**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def register
        register_magic_properties
@@ -181,7 +183,7 @@ Methods
 **#type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type
        options[:type]
@@ -194,7 +196,7 @@ Methods
 **#typecaster**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def typecaster
        options[:typecaster]

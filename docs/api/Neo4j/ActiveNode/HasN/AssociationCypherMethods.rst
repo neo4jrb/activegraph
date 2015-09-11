@@ -70,7 +70,7 @@ Methods
 **#arrow_cypher**
   Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def arrow_cypher(var = nil, properties = {}, create = false, reverse = false, length = nil)
        validate_origin!

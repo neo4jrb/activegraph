@@ -32,13 +32,11 @@ module Neo4j
 
         def first_and_last(func, target)
           new_query, pluck_proc = if self.query.clause?(:order)
-                                    new_query = self.query.with(identity)
-                                    pluck_proc = proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }
-                                    [new_query, pluck_proc]
+                                    [self.query.with(identity),
+                                     proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
                                   else
-                                    new_query = self.order(order_property).limit(1)
-                                    pluck_proc = proc { |var| var }
-                                    [new_query, pluck_proc]
+                                    [self.order(order_property).limit(1),
+                                     proc { |var| var }]
                                   end
           result = query_with_target(target) do |var|
             final_pluck = pluck_proc.call(var)
@@ -106,7 +104,7 @@ module Neo4j
 
         # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
         # The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
-        # @param [String,Symbol] the optional identifier of the link in the chain to delete.
+        # @param identifier [String,Symbol] the optional identifier of the link in the chain to delete.
         def delete_all(identifier = nil)
           query_with_target(identifier) do |target|
             begin
@@ -164,6 +162,7 @@ module Neo4j
 
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
         def delete_all_rels
+          return unless start_object && start_object._persisted_obj
           self.query.delete(rel_var).exec
         end
 

@@ -22,9 +22,9 @@ module Neo4j::ActiveNode
       # Default
       def inspect
         if @cached_result
-          @cached_result.inspect
+          result_nodes.inspect
         else
-          "<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
+          "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
         end
       end
 
@@ -36,7 +36,15 @@ module Neo4j::ActiveNode
       include Enumerable
 
       def each(&block)
-        result.each(&block)
+        result_nodes.each(&block)
+      end
+
+      def ==(other)
+        self.to_a == other.to_a
+      end
+
+      def +(other)
+        self.to_a + other
       end
 
       def result
@@ -47,9 +55,28 @@ module Neo4j::ActiveNode
         @cached_result
       end
 
+      def result_nodes
+        return result if !@query_proxy.model
+
+        @cached_result = result.map do |object|
+          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
+        end
+      end
+
+      def result_ids
+        result.map do |object|
+          object.is_a?(Neo4j::ActiveNode) ? object.id : object
+        end
+      end
+
       def cache_result(result)
         @cached_result = result
         @enumerable = (@cached_result || @query_proxy)
+      end
+
+      def add_to_cache(object)
+        @cached_result ||= []
+        @cached_result << object
       end
 
       def cache_query_proxy_result
@@ -74,9 +101,13 @@ module Neo4j::ActiveNode
         super if target.nil?
 
         cache_query_proxy_result if !cached? && !target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-        clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
+        clear_cache_result if !QUERY_PROXY_METHODS.include?(method_name) && target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
 
         target.public_send(method_name, *args, &block)
+      end
+
+      def serializable_hash(options = {})
+        to_a.map { |record| record.serializable_hash(options) }
       end
 
       private
@@ -119,9 +150,13 @@ module Neo4j::ActiveNode
       self.class.send(:association_query_proxy, name, {start_object: self}.merge!(options))
     end
 
+    def association_proxy_hash(name, options = {})
+      [name.to_sym, options.values_at(:node, :rel, :labels, :rel_length)].hash
+    end
+
     def association_proxy(name, options = {})
       name = name.to_sym
-      hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
+      hash = association_proxy_hash(name, options)
       association_proxy_cache_fetch(hash) do
         if result_cache = self.instance_variable_get('@source_proxy_result_cache')
           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
@@ -328,7 +363,11 @@ module Neo4j::ActiveNode
 
       def define_has_many_id_methods(name)
         define_method_unless_defined("#{name.to_s.singularize}_ids") do
-          association_proxy(name).pluck(:uuid)
+          association_proxy(name).result_ids
+        end
+
+        define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
+          association_proxy(name).replace_with(ids)
         end
 
         define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
@@ -354,7 +393,11 @@ module Neo4j::ActiveNode
 
       def define_has_one_id_methods(name)
         define_method("#{name}_id") do
-          association_proxy(name).pluck(:uuid).first
+          association_proxy(name).result_ids.first
+        end
+
+        define_method_unless_defined("#{name}_id=") do |id|
+          association_proxy(name).replace_with(id)
         end
 
         define_method("#{name}_neo_id") do
@@ -364,19 +407,17 @@ module Neo4j::ActiveNode
 
       def define_has_one_getter(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          return nil unless self._persisted_obj
-
           if node.is_a?(Hash)
             options = node
             node = nil
           end
 
           # Return all results if a variable-length relationship length was given
-          results = association_proxy(name, {node: node, rel: rel}.merge!(options))
+          association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
           if options[:rel_length] && !options[:rel_length].is_a?(Fixnum)
-            results
+            association_proxy
           else
-            results.first
+            association_proxy.result_nodes.first
           end
         end
       end
@@ -389,7 +430,7 @@ module Neo4j::ActiveNode
             Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)
           else
-            association_proxy(name).defer_create(other_node, {}, :'=')
+            association_proxy(name).defer_create(other_node)
           end
         end
       end

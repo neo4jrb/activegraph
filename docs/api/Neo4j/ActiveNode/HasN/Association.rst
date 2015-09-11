@@ -91,6 +91,10 @@ Association
 
    
 
+   
+
+   
+
 
 
 
@@ -126,7 +130,7 @@ Methods
 **#add_destroy_callbacks**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def add_destroy_callbacks(model)
        return if dependent.nil?
@@ -143,7 +147,7 @@ Methods
 **#arrow_cypher**
   Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def arrow_cypher(var = nil, properties = {}, create = false, reverse = false, length = nil)
        validate_origin!
@@ -162,7 +166,7 @@ Methods
 **#callback**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def callback(type)
        @callbacks[type]
@@ -175,7 +179,7 @@ Methods
 **#create_method**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create_method
        unique? ? :create_unique : :create
@@ -188,7 +192,7 @@ Methods
 **#decorated_rel_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def decorated_rel_type(type)
        @decorated_rel_type ||= Neo4j::Shared::RelTypeConverters.decorated_rel_type(type)
@@ -201,7 +205,7 @@ Methods
 **#dependent**
   Returns the value of attribute dependent
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def dependent
        @dependent
@@ -214,7 +218,7 @@ Methods
 **#derive_model_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def derive_model_class
        refresh_model_class! if pending_model_refresh?
@@ -232,7 +236,7 @@ Methods
 **#direction**
   Returns the value of attribute direction
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def direction
        @direction
@@ -245,7 +249,7 @@ Methods
 **#discovered_model**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def discovered_model
        target_class_names.map(&:constantize).select do |constant|
@@ -260,7 +264,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(type, direction, name, options = {type: nil})
        validate_init_arguments(type, direction, name, options)
@@ -278,7 +282,7 @@ Methods
 **#inject_classname**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inject_classname(properties)
        return properties unless relationship_class
@@ -293,7 +297,7 @@ Methods
 **#model_class**
   Returns the value of attribute model_class
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def model_class
        @model_class
@@ -306,7 +310,7 @@ Methods
 **#name**
   Returns the value of attribute name
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def name
        @name
@@ -319,7 +323,7 @@ Methods
 **#pending_model_refresh?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def pending_model_refresh?
        !!@pending_model_refresh
@@ -332,7 +336,7 @@ Methods
 **#perform_callback**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def perform_callback(caller, other_node, type)
        return if callback(type).nil?
@@ -346,7 +350,7 @@ Methods
 **#queue_model_refresh!**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def queue_model_refresh!
        @pending_model_refresh = true
@@ -359,7 +363,7 @@ Methods
 **#refresh_model_class!**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def refresh_model_class!
        @pending_model_refresh = @target_classes_or_nil = nil
@@ -370,12 +374,25 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/Association#rel_class?`:
+
+**#rel_class?**
+  
+
+  .. code-block:: ruby
+
+     def relationship_class?
+       !!relationship_class
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/Association#relationship`:
 
 **#relationship**
   Returns the value of attribute relationship
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def relationship
        @relationship
@@ -388,10 +405,23 @@ Methods
 **#relationship_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def relationship_class
        @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#relationship_class?`:
+
+**#relationship_class?**
+  
+
+  .. code-block:: ruby
+
+     def relationship_class?
+       !!relationship_class
      end
 
 
@@ -401,7 +431,7 @@ Methods
 **#relationship_class_name**
   Returns the value of attribute relationship_class_name
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def relationship_class_name
        @relationship_class_name
@@ -414,7 +444,7 @@ Methods
 **#relationship_class_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def relationship_class_type
        relationship_class._type.to_sym
@@ -427,13 +457,13 @@ Methods
 **#relationship_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def relationship_type(create = false)
        case
        when relationship_class
          relationship_class_type
-       when @relationship_type
+       when !@relationship_type.nil?
          @relationship_type
        when @origin
          origin_type
@@ -449,7 +479,7 @@ Methods
 **#target_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def target_class
        return @target_class if @target_class
@@ -466,7 +496,7 @@ Methods
 **#target_class_names**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def target_class_names
        option = target_class_option(derive_model_class)
@@ -485,7 +515,7 @@ Methods
 **#target_class_option**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def target_class_option(model_class)
        case model_class
@@ -507,7 +537,7 @@ Methods
 **#target_classes**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def target_classes
        target_class_names.map(&:constantize)
@@ -520,7 +550,7 @@ Methods
 **#target_classes_or_nil**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def target_classes_or_nil
        @target_classes_or_nil ||= discovered_model if target_class_names
@@ -533,7 +563,7 @@ Methods
 **#target_where_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def target_where_clause
        return if model_class == false
@@ -550,7 +580,7 @@ Methods
 **#type**
   Returns the value of attribute type
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type
        @type
@@ -563,9 +593,10 @@ Methods
 **#unique?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def unique?
+       return relationship_class.unique? if rel_class?
        @origin ? origin_association.unique? : !!@unique
      end
 
@@ -576,7 +607,7 @@ Methods
 **#validate_dependent**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def validate_dependent(value)
        fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not valid_dependent_value?(value)

@@ -68,17 +68,17 @@ Methods
 **#association_proxy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_proxy(name, options = {})
        name = name.to_sym
        hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
        association_proxy_cache_fetch(hash) do
-         if previous_association_proxy = self.instance_variable_get('@association_proxy')
-           result_by_previous_id = previous_association_proxy_results_by_previous_id(previous_association_proxy, name)
+         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
      
-           previous_association_proxy.result.inject(nil) do |proxy_to_return, object|
-             proxy = fresh_association_proxy(name, options, result_by_previous_id[object.neo_id])
+           result_cache.inject(nil) do |proxy_to_return, object|
+             proxy = fresh_association_proxy(name, options.merge(start_object: object), result_by_previous_id[object.neo_id])
      
              object.association_proxy_cache[hash] = proxy
      
@@ -103,7 +103,7 @@ Methods
   * so we don't need to query again
   * so that we can cache results from association calls or eager loading
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_proxy_cache
        @association_proxy_cache ||= {}
@@ -116,7 +116,7 @@ Methods
 **#association_proxy_cache_fetch**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_proxy_cache_fetch(key)
        association_proxy_cache.fetch(key) do
@@ -132,7 +132,7 @@ Methods
 **#association_query_proxy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_query_proxy(name, options = {})
        self.class.send(:association_query_proxy, name, {start_object: self}.merge!(options))

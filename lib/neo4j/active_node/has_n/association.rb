@@ -109,7 +109,7 @@ module Neo4j
           case
           when relationship_class
             relationship_class_type
-          when @relationship_type
+          when !@relationship_type.nil?
             @relationship_type
           when @origin
             origin_type
@@ -135,12 +135,18 @@ module Neo4j
         end
 
         def unique?
+          return relationship_class.unique? if rel_class?
           @origin ? origin_association.unique? : !!@unique
         end
 
         def create_method
           unique? ? :create_unique : :create
         end
+
+        def relationship_class?
+          !!relationship_class
+        end
+        alias_method :rel_class?, :relationship_class?
 
         private
 
@@ -173,7 +179,7 @@ module Neo4j
 
         def apply_vars_from_options(options)
           @relationship_class_name = options[:rel_class] && options[:rel_class].to_s
-          @relationship_type  = options[:type] && options[:type].to_sym
+          @relationship_type = options[:type] && options[:type].to_sym
 
           @model_class = options[:model_class]
           @callbacks = {before: options[:before], after: options[:after]}

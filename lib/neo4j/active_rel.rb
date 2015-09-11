@@ -22,11 +22,30 @@ module Neo4j
       super
     end
 
+    def inspect
+      attribute_pairs = attributes.sort.map { |key, value| "#{key}: #{value.inspect}" }
+      attribute_descriptions = attribute_pairs.join(', ')
+      separator = ' ' unless attribute_descriptions.empty?
+
+      cypher_representation = "#{node_cypher_representation(from_node)}-[:#{type}]->#{node_cypher_representation(to_node)}"
+      "#<#{self.class.name} #{cypher_representation}#{separator}#{attribute_descriptions}>"
+    end
+
+    def node_cypher_representation(node)
+      node_class = node.class
+      id_name = node_class.id_property_name
+      labels = ':' + node_class.mapped_label_names.join(':')
+
+      "(#{labels} {#{id_name}: #{node.id.inspect}})"
+    end
+
     def neo4j_obj
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
     included do
+      include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
+
       def self.inherited(other)
         super
       end

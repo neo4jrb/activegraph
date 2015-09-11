@@ -2,19 +2,22 @@ module Neo4j
   # == Keeps configuration for neo4j
   #
   # == Configurations keys
-  #
   class Config
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
     CLASS_NAME_PROPERTY_KEY = 'class_name_property'
 
     class << self
+      # In keeping with the Rails convention, this class writer lets you globally configure
+      # the incluse of timestamps on your nodes and rels. It defaults to false, requiring manual
+      # timestamp inclusion.
+      # @return [Boolean] the true/false value specified.
+
       # @return [Fixnum] The location of the default configuration file.
       def default_file
         @default_file ||= DEFAULT_FILE
       end
 
       # Sets the location of the configuration YAML file and old deletes configurations.
-      #
       # @param [String] file_path represent the path to the file.
       def default_file=(file_path)
         delete_all
@@ -104,6 +107,11 @@ module Neo4j
 
       def module_handling
         Neo4j::Config[:module_handling] || :none
+      end
+
+      # @return [Class] The configured timestamps type (e.g. Integer) or the default DateTime.
+      def timestamp_type
+        Neo4j::Config[:timestamp_type] || DateTime
       end
 
       def association_model_namespace

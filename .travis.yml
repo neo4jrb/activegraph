@@ -10,7 +10,7 @@ rvm:
   - jruby-1.7.19
   # - jruby-19mode
 env:
-  - NEO4J_VERSION=community-latest
+  - NEO4J_VERSION=community-2.2.4
   - NEO4J_VERSION=community-2.1.8
 notifications:
   webhooks:

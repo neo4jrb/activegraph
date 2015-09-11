@@ -34,7 +34,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:117 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L117>`_
+  * `lib/neo4j/shared/type_converters.rb:238 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L238>`_
 
 
 
@@ -50,10 +50,23 @@ Methods
 **.convert_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_type
        JSON
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters/JSONConverter.converted?`:
+
+**.converted?**
+  
+
+  .. code-block:: ruby
+
+     def converted?(value)
+       value.is_a?(db_type)
      end
 
 
@@ -63,7 +76,7 @@ Methods
 **.db_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def db_type
        String
@@ -76,7 +89,7 @@ Methods
 **.to_db**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_db(value)
        value.to_json
@@ -89,7 +102,7 @@ Methods
 **.to_ruby**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_ruby(value)
        JSON.parse(value, quirks_mode: true)

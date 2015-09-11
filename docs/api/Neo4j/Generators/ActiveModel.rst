@@ -56,7 +56,7 @@ Methods
 **.all**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.all(klass)
        "#{klass}.all"
@@ -69,7 +69,7 @@ Methods
 **.build**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.build(klass, params = nil)
        if params
@@ -86,7 +86,7 @@ Methods
 **#destroy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroy
        "#{name}.destroy"
@@ -99,7 +99,7 @@ Methods
 **#errors**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def errors
        "#{name}.errors"
@@ -112,7 +112,7 @@ Methods
 **.find**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.find(klass, params = nil)
        "#{klass}.find(#{params})"
@@ -125,7 +125,7 @@ Methods
 **#save**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def save
        "#{name}.save"
@@ -138,7 +138,7 @@ Methods
 **#update_attributes**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update_attributes(params = nil)
        "#{name}.update_attributes(#{params})"

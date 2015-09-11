@@ -21,13 +21,13 @@ Shared
 
    Shared/Callbacks
 
-   Shared/Typecaster
-
    Shared/Initialize
 
-   Shared/Validations
+   Shared/Typecaster
 
    Shared/Persistence
+
+   Shared/Validations
 
    Shared/TypeConverters
 
@@ -62,15 +62,15 @@ Files
 
   * `lib/neo4j/shared/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/callbacks.rb#L2>`_
 
-  * `lib/neo4j/shared/typecaster.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L2>`_
-
   * `lib/neo4j/shared/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/initialize.rb#L1>`_
 
-  * `lib/neo4j/shared/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L2>`_
+  * `lib/neo4j/shared/typecaster.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L2>`_
 
   * `lib/neo4j/shared/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L1>`_
 
-  * `lib/neo4j/shared/type_converters.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L1>`_
+  * `lib/neo4j/shared/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L2>`_
+
+  * `lib/neo4j/shared/type_converters.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L6>`_
 
   * `lib/neo4j/shared/declared_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/declared_property.rb#L1>`_
 
@@ -94,7 +94,7 @@ Methods
 **#declared_property_manager**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def declared_property_manager
        self.class.declared_property_manager

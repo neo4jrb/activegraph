@@ -489,6 +489,34 @@ Neo4j::Core::Query
 :Ruby:
   .. code-block:: ruby
 
+    .where(q: {name: /Brian.*/i})
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.name =~ {q_name})
+
+**Parameters:** ``{:q_name=>"(?i)Brian.*"}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where(name: /Brian.*/i)
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (name =~ {name})
+
+**Parameters:** ``{:name=>"(?i)Brian.*"}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
     .where(q: {age: (30..40)})
 
 :Cypher:
@@ -497,6 +525,130 @@ Neo4j::Core::Query
     WHERE (q.age IN RANGE({q_age_range_min}, {q_age_range_max}))
 
 **Parameters:** ``{:q_age_range_min=>30, :q_age_range_max=>40}``
+
+------------
+
+#where_not
+----------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not()
+
+:Cypher:
+  .. code-block:: cypher
+
+    
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not({})
+
+:Cypher:
+  .. code-block:: cypher
+
+    
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not('q.age > 30')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE NOT(q.age > 30)
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not('q.age' => 30)
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE NOT(q.age = {q_age})
+
+**Parameters:** ``{:q_age=>30}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not('q.age IN ?', [30, 32, 34])
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE NOT(q.age IN {question_mark_param1})
+
+**Parameters:** ``{:question_mark_param1=>[30, 32, 34]}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not(q: {age: 30, name: 'Brian'})
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE NOT(q.age = {q_age} AND q.name = {q_name})
+
+**Parameters:** ``{:q_age=>30, :q_name=>"Brian"}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not(q: {name: /Brian.*/i})
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE NOT(q.name =~ {q_name})
+
+**Parameters:** ``{:q_name=>"(?i)Brian.*"}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where('q.age > 10').where_not('q.age > 30')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.age > 10) AND NOT(q.age > 30)
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_not('q.age > 30').where('q.age > 10')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE NOT(q.age > 30) AND (q.age > 10)
+
 
 ------------
 
@@ -869,6 +1021,19 @@ node object and integer
     LIMIT {limit_5}
 
 **Parameters:** ``{:limit_5=>5}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .limit(nil)
+
+:Cypher:
+  .. code-block:: cypher
+
+    
+
 
 ------------
 

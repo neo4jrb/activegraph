@@ -46,7 +46,7 @@ Methods
 **#inherit_serialized_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inherit_serialized_properties(other)
        other.serialized_properties = self.serialized_properties
@@ -59,7 +59,7 @@ Methods
 **#inherited**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inherited(other)
        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)

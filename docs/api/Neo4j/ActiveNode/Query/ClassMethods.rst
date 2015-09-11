@@ -50,7 +50,7 @@ Methods
   This method does not exist within QueryProxy, it can only be called at the class level to create a new QP object.
   To set an identifier within a QueryProxy chain, give it as the first argument to a chained association.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def as(node_var)
        query_proxy(node: node_var)
@@ -65,7 +65,7 @@ Methods
   
   an early Cypher match has already filtered results) where including labels will degrade performance.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def query_as(var, with_labels = true)
        query_proxy.query_as(var, with_labels)
@@ -78,7 +78,7 @@ Methods
 **#query_proxy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def query_proxy(options = {})
        Neo4j::ActiveNode::Query::QueryProxy.new(self, nil, options)

@@ -67,7 +67,7 @@ Methods
   Performs a basic match on the relationship, returning all results.
   This is not executed lazily, it will immediately return matching objects.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def all
        all_query.pluck(:r1)
@@ -80,7 +80,7 @@ Methods
 **#find**
   Returns the object with the specified neo4j id.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find(id, session = self.neo4j_session)
        fail "Unknown argument #{id.class} in find method (expected String or Integer)" if !(id.is_a?(String) || id.is_a?(Integer))
@@ -94,7 +94,7 @@ Methods
 **#find_by_id**
   Loads the relationship using its neo_id.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_by_id(key, session = Neo4j::Session.current!)
        session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
@@ -107,7 +107,7 @@ Methods
 **#first**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def first
        all_query.limit(1).order('ID(r1)').pluck(:r1).first
@@ -120,7 +120,7 @@ Methods
 **#last**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def last
        all_query.limit(1).order('ID(r1) DESC').pluck(:r1).first
@@ -135,7 +135,7 @@ Methods
   This is not executed lazily, it will immediately return matching objects.
   To use a string, prefix the property with "r1"
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def where(args = {})
        where_query.where(where_string(args)).pluck(:r1)

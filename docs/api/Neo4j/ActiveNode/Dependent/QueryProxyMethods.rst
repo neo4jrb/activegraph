@@ -50,7 +50,7 @@ Methods
   It keeps track of the node responsible for a cascading `destroy` process.
   but this is not always available, so we require it explicitly.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def each_for_destruction(owning_node)
        target = owning_node.called_by || owning_node
@@ -73,7 +73,7 @@ Methods
   This will match nodes who only have a single relationship of a given type.
   It's used  by `dependent: :delete_orphans` and `dependent: :destroy_orphans` and may not have much utility otherwise.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def unique_nodes(association, self_identifer, other_node, other_rel)
        fail 'Only supported by in QueryProxy chains started by an instance' unless source_object

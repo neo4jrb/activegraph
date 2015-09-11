@@ -48,7 +48,7 @@ Methods
 **#reflect_on_all_associations**
   Returns an array containing one reflection for each association declared in the model.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def reflect_on_all_associations(macro = nil)
        association_reflections = reflections.values
@@ -62,7 +62,7 @@ Methods
 **#reflect_on_association**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def reflect_on_association(association)
        reflections[association.to_sym]

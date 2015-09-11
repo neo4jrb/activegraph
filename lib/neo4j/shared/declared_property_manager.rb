@@ -24,7 +24,7 @@ module Neo4j::Shared
       @_attributes_string_map = nil
       registered_properties[property.name] = property
       register_magic_typecaster(property) if property.magic_typecaster
-      declared_property_defaults[property.name] = property.default_value if property.default_value
+      declared_property_defaults[property.name] = property.default_value if !property.default_value.nil?
     end
 
     # The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of

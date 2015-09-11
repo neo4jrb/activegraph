@@ -53,6 +53,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -68,7 +70,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n.rb:158 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L158>`_
+  * `lib/neo4j/active_node/has_n.rb:159 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L159>`_
 
 
 
@@ -84,7 +86,7 @@ Methods
 **#association?**
   rubocop:enable Style/PredicateName
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association?(name)
        !!associations[name.to_sym]
@@ -97,7 +99,7 @@ Methods
 **#associations**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def associations
        @associations ||= {}
@@ -110,7 +112,7 @@ Methods
 **#associations_keys**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def associations_keys
        @associations_keys ||= associations.keys
@@ -123,7 +125,7 @@ Methods
 **#has_association?**
   :nocov:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def has_association?(name)
        ActiveSupport::Deprecation.warn 'has_association? is deprecated and may be removed from future releases, use association? instead.', caller
@@ -219,7 +221,7 @@ Methods
         **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
         (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
        name = name.to_sym
@@ -243,7 +245,7 @@ Methods
   See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
   not specified here
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
        name = name.to_sym
@@ -259,7 +261,7 @@ Methods
 **#inherited**
   make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inherited(klass)
        klass.instance_variable_set(:@associations, associations.clone)

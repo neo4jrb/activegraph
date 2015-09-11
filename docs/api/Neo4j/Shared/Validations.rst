@@ -50,7 +50,7 @@ Methods
 **#read_attribute_for_validation**
   Implements the ActiveModel::Validation hook method.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute_for_validation(key)
        respond_to?(key) ? send(key) : self[key]
@@ -64,7 +64,7 @@ Methods
   The validation process on save can be skipped by passing false. The regular Model#save method is
   replaced with this when the validations module is mixed in, which it is by default.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def save(options = {})
        result = perform_validations(options) ? super : false
@@ -81,7 +81,7 @@ Methods
 **#valid?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def valid?(context = nil)
        context ||= (new_record? ? :create : :update)

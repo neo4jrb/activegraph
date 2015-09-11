@@ -1,5 +1,10 @@
 # To run coverage via travis
 require 'simplecov'
+require 'dotenv'
+require 'timecop'
+
+Dotenv.load
+
 SimpleCov.start
 if ENV['CI'] == 'true'
   require 'codecov'
@@ -29,7 +34,7 @@ require 'pry' if ENV['APP_ENV'] == 'debug'
 
 
 class MockLogger
-  def info(*_args)
+  def debug(*_args)
   end
 end
 

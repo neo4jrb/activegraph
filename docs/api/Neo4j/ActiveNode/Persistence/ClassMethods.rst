@@ -29,10 +29,6 @@ ClassMethods
 
    
 
-   
-
-   
-
 
 
 
@@ -48,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/persistence.rb:85 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L85>`_
+  * `lib/neo4j/active_node/persistence.rb:96 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L96>`_
 
 
 
@@ -64,7 +60,7 @@ Methods
 **#create**
   Creates and saves a new node
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create(props = {})
        association_props = extract_association_attributes!(props) || {}
@@ -84,7 +80,7 @@ Methods
 **#create!**
   Same as #create, but raises an error if there is a problem during save.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create!(*args)
        props = args[0] || {}
@@ -106,7 +102,7 @@ Methods
 **#find_or_create**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_or_create(find_attributes, set_attributes = {})
        on_create_attributes = set_attributes.merge(on_create_props(find_attributes))
@@ -123,7 +119,7 @@ Methods
 **#find_or_create_by**
   Finds the first node with the given attributes, or calls create if none found
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_or_create_by(attributes, &block)
        find_by(attributes) || create(attributes, &block)
@@ -136,7 +132,7 @@ Methods
 **#find_or_create_by!**
   Same as #find_or_create_by, but calls #create! so it raises an error if there is a problem during save.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_or_create_by!(attributes, &block)
        find_by(attributes) || create!(attributes, &block)
@@ -149,7 +145,7 @@ Methods
 **#load_entity**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def load_entity(id)
        Neo4j::Node.load(id)
@@ -162,7 +158,7 @@ Methods
 **#merge**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def merge(attributes)
        neo4j_session.query.merge(n: {self.mapped_label_names => attributes})

@@ -5,7 +5,7 @@ module Neo4j
       module QueryProxyMethods
         # Used as part of `dependent: :destroy` and may not have any utility otherwise.
         # It keeps track of the node responsible for a cascading `destroy` process.
-        # @param [#dependent_children] source_object The node that called this method. Typically, we would use QueryProxy's `source_object` method
+        # @param owning_node [#dependent_children] source_object The node that called this method. Typically, we would use QueryProxy's `source_object` method
         # but this is not always available, so we require it explicitly.
         def each_for_destruction(owning_node)
           target = owning_node.called_by || owning_node

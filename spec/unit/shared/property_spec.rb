@@ -25,15 +25,28 @@ describe Neo4j::Shared::Property do
   end
 
   describe 'types for timestamps' do
-    context 'when type is undefined' do
+    context 'when type is undefined inline' do
       before do
         clazz.property :created_at
         clazz.property :updated_at
       end
 
-      it 'sets type to DateTime' do
+      it 'defaults to DateTime' do
         expect(clazz.attributes[:created_at][:type]).to eq(DateTime)
         expect(clazz.attributes[:updated_at][:type]).to eq(DateTime)
+      end
+
+      context '...and specified in config' do
+        before do
+          Neo4j::Config[:timestamp_type] = Integer
+          clazz.property :created_at
+          clazz.property :updated_at
+        end
+
+        it 'uses type set in config' do
+          expect(clazz.attributes[:created_at][:type]).to eq(Integer)
+          expect(clazz.attributes[:updated_at][:type]).to eq(Integer)
+        end
       end
     end
 

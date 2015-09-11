@@ -552,11 +552,34 @@ describe 'has_many' do
 
     let(:post) { Post.create }
     let(:comment) { Comment.create }
-    before(:each) { comment.post = post }
 
-    it 'returns various IDs for associations' do
-      expect(post.comment_ids).to eq([comment.id])
-      expect(post.comment_neo_ids).to eq([comment.neo_id])
+    it 'sets IDs for has_many' do
+      post = Post.create
+      comment = Comment.create
+
+      post.comment_ids = [comment.id]
+
+      post = Post.find(post.id)
+      expect(post.comments.to_a).to match_array([comment])
+    end
+
+    it 'sets IDs for has_one' do
+      post = Post.create
+      comment = Comment.create
+
+      comment.post_id = post.id
+
+      comment = Comment.find(comment.id)
+      expect(comment.post).to eq(post)
+    end
+
+    context 'post is set for comment' do
+      before(:each) { comment.post = post }
+
+      it 'returns various IDs for associations' do
+        expect(post.comment_ids).to eq([comment.id])
+        expect(post.comment_neo_ids).to eq([comment.neo_id])
+      end
     end
   end
 end

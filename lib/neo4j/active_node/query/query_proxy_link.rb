@@ -41,6 +41,12 @@ module Neo4j
             end
             alias_method :for_node_where_clause, :for_where_clause
 
+            def for_where_not_clause(*args)
+              for_where_clause(*args).each do |link|
+                link.instance_variable_set('@clause', :where_not)
+              end
+            end
+
             def new_for_key_and_value(model, key, value)
               key = (key.to_sym == :id ? model.id_property_name : key)
 
@@ -66,9 +72,11 @@ module Neo4j
             end
 
             # We don't accept strings here. If you want to use a string, just use where.
-            def for_rel_where_clause(arg, _)
+            def for_rel_where_clause(arg, _, association)
               arg.each_with_object([]) do |(key, value), result|
-                result << new(:where, ->(_, rel_var) { {rel_var => {key => value}} })
+                rel_class = association.relationship_class if association.relationship_class
+                val =  rel_class ? rel_class.declared_property_manager.value_for_db(key, value) : value
+                result << new(:where, ->(_, rel_var) { {rel_var => {key => val}} })
               end
             end
 
@@ -76,9 +84,11 @@ module Neo4j
               [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
             end
 
-            def for_args(model, clause, args)
-              if clause == :where && args[0].is_a?(String) # Better way?
-                [for_arg(model, :where, args[0], *args[1..-1])]
+            def for_args(model, clause, args, association = nil)
+              if [:where, :where_not].include?(clause) && args[0].is_a?(String) # Better way?
+                [for_arg(model, clause, args[0], *args[1..-1])]
+              elsif clause == :rel_where
+                args.map { |arg| for_arg(model, clause, arg, association) }
               else
                 args.map { |arg| for_arg(model, clause, arg) }
               end

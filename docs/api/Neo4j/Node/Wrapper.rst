@@ -62,7 +62,7 @@ Methods
 **#class_to_wrap**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def class_to_wrap
        load_classes_from_labels
@@ -78,7 +78,7 @@ Methods
 **#wrapper**
   this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def wrapper
        found_class = class_to_wrap

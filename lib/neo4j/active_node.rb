@@ -55,6 +55,8 @@ module Neo4j
     end
 
     included do
+      include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
+
       def self.inherited(other)
         inherit_id_property(other)
         inherited_indexes(other) if self.respond_to?(:indexed_properties)

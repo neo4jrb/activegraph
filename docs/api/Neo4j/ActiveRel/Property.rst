@@ -19,6 +19,12 @@ Property
 
    
 
+   
+
+   
+
+   
+
    Property/ClassMethods
 
    
@@ -54,7 +60,7 @@ Methods
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute(name)
        super(name)
@@ -69,52 +75,10 @@ Methods
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _persisted_obj
        @_persisted_obj
-     end
-
-
-
-.. _`Neo4j/ActiveRel/Property#default_properties`:
-
-**#default_properties**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties
-       @default_properties ||= Hash.new(nil)
-       # keys = self.class.default_properties.keys
-       # _persisted_obj.props.reject{|key| !keys.include?(key)}
-     end
-
-
-
-.. _`Neo4j/ActiveRel/Property#default_properties=`:
-
-**#default_properties=**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_properties=(properties)
-       default_property_keys = self.class.default_properties_keys
-       @default_properties = properties.select { |key| default_property_keys.include?(key) }
-     end
-
-
-
-.. _`Neo4j/ActiveRel/Property#default_property`:
-
-**#default_property**
-  
-
-  .. hidden-code-block:: ruby
-
-     def default_property(key)
-       default_properties[key.to_sym]
      end
 
 
@@ -124,9 +88,20 @@ Methods
 **#end_node**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :end_node,   :to_node
+
+
+
+.. _`Neo4j/ActiveRel/Property#from_node_neo_id`:
+
+**#from_node_neo_id**
+  
+
+  .. code-block:: ruby
+
+     alias_method :from_node_neo_id, :start_node_neo_id
 
 
 
@@ -135,10 +110,10 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
-     def initialize(attributes = {}, options = {})
-       super(attributes, options)
+     def initialize(attributes = nil)
+       super(attributes)
        send_props(@relationship_props) unless @relationship_props.nil?
      end
 
@@ -149,7 +124,7 @@ Methods
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute(name)
        super(name)
@@ -159,14 +134,28 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Property#rel_type`:
+
+**#rel_type**
+  
+
+  .. code-block:: ruby
+
+     def type
+       self.class.type
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Property#send_props`:
 
 **#send_props**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def send_props(hash)
+       return hash if hash.blank?
        hash.each { |key, value| self.send("#{key}=", value) }
      end
 
@@ -177,9 +166,20 @@ Methods
 **#start_node**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :start_node, :from_node
+
+
+
+.. _`Neo4j/ActiveRel/Property#to_node_neo_id`:
+
+**#to_node_neo_id**
+  
+
+  .. code-block:: ruby
+
+     alias_method :to_node_neo_id,   :end_node_neo_id
 
 
 
@@ -188,10 +188,10 @@ Methods
 **#type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type
-       self.class._type
+       self.class.type
      end
 
 

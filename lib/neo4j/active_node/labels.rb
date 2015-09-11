@@ -3,6 +3,7 @@ module Neo4j
     # Provides a mapping between neo4j labels and Ruby classes
     module Labels
       extend ActiveSupport::Concern
+      include Neo4j::ActiveNode::Labels::Reloading
 
       WRAPPED_CLASSES = []
       MODELS_FOR_LABELS_CACHE = {}
@@ -75,33 +76,25 @@ module Neo4j
         WRAPPED_CLASSES.clear
       end
 
-      protected
-
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
-
-        def before_remove_const
-          associations.each_value(&:queue_model_refresh!)
-          MODELS_FOR_LABELS_CACHE.clear
-          WRAPPED_CLASSES.clear
-        end
 
         # Returns the object with the specified neo4j id.
         # @param [String,Integer] id of node to find
         def find(id)
           map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
-          result =  if id.is_a?(Array)
-                      find_by_ids(id.map { |o| map_id.call(o) })
-                    else
-                      find_by_id(map_id.call(id))
-                    end
+          result = if id.is_a?(Array)
+                     find_by_ids(id.map { |o| map_id.call(o) })
+                   else
+                     find_by_id(map_id.call(id))
+                   end
           fail Neo4j::RecordNotFound if result.blank?
           result
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
-        # @param Hash args of arguments to find
+        # @param values Hash args of arguments to find
         def find_by(values)
           all.where(values).limit(1).query_as(:n).pluck(:n).first
         end

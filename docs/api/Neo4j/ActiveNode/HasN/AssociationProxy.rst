@@ -37,6 +37,8 @@ But also caches results and can have results cached on it
 
    
 
+   
+
 
 
 
@@ -72,13 +74,10 @@ Methods
 **#cache_query_proxy_result**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def cache_query_proxy_result
        @query_proxy.to_a.tap do |result|
-         result.each do |object|
-           object.instance_variable_set('@association_proxy', self)
-         end
          cache_result(result)
        end
      end
@@ -90,7 +89,7 @@ Methods
 **#cache_result**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def cache_result(result)
        @cached_result = result
@@ -104,7 +103,7 @@ Methods
 **#cached?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def cached?
        !!@cached_result
@@ -117,7 +116,7 @@ Methods
 **#clear_cache_result**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def clear_cache_result
        cache_result(nil)
@@ -130,7 +129,7 @@ Methods
 **#each**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def each(&block)
        result.each(&block)
@@ -143,7 +142,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(query_proxy, cached_result = nil)
        @query_proxy = query_proxy
@@ -163,13 +162,13 @@ Methods
   States:
   Default
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inspect
        if @cached_result
          @cached_result.inspect
        else
-         "<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
+         "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
        end
      end
 
@@ -180,7 +179,7 @@ Methods
 **#method_missing**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def method_missing(method_name, *args, &block)
        target = target_for_missing_method(method_name)
@@ -199,7 +198,7 @@ Methods
 **#result**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def result
        return @cached_result if @cached_result
@@ -207,6 +206,19 @@ Methods
        cache_query_proxy_result
      
        @cached_result
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#serializable_hash`:
+
+**#serializable_hash**
+  
+
+  .. code-block:: ruby
+
+     def serializable_hash(options = {})
+       to_a.map { |record| record.serializable_hash(options) }
      end
 
 

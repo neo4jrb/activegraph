@@ -66,7 +66,7 @@ Methods
 **#blank?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def empty?
        !self.all.exists?
@@ -79,7 +79,7 @@ Methods
 **#count**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def count(distinct = nil)
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
@@ -94,7 +94,7 @@ Methods
 **#empty?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def empty?
        !self.all.exists?
@@ -107,7 +107,7 @@ Methods
 **#exists?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def exists?(node_condition = nil)
        unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
@@ -125,7 +125,7 @@ Methods
 **#find_each**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_each(options = {})
        self.query_as(:n).return(:n).find_each(:n, primary_key, options) do |batch|
@@ -140,7 +140,7 @@ Methods
 **#find_in_batches**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def find_in_batches(options = {})
        self.query_as(:n).return(:n).find_in_batches(:n, primary_key, options) do |batch|
@@ -155,7 +155,7 @@ Methods
 **#first**
   Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def first
        self.query_as(:n).limit(1).order(n: primary_key).pluck(:n).first
@@ -168,7 +168,7 @@ Methods
 **#last**
   Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def last
        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
@@ -181,7 +181,7 @@ Methods
 **#length**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def count(distinct = nil)
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
@@ -196,7 +196,7 @@ Methods
 **#size**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def count(distinct = nil)
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct

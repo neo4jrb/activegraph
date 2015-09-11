@@ -77,6 +77,14 @@ Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relat
   student.lessons.where(subject: 'Math').rel_where(grade: 85)
 
 
+.. seealso::
+
+  .. raw:: html
+
+    There is also a screencast available reviewing association chaining:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/pUAl9ov22j4" frameborder="0" allowfullscreen></iframe>
+
 Associations and Unpersisted Nodes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -213,6 +221,13 @@ Here we can make our own ``MATCH`` clauses unlike in model scoping.  We have ``w
 
 **TODO Duplicate this page and link to it from here (or just duplicate it here):**
 https://github.com/neo4jrb/neo4j-core/wiki/Queries
+
+.. seealso::
+  .. raw:: html
+
+    There is also a screencast available reviewing deeper querying concepts:
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/UFiWqPdH7io" frameborder="0" allowfullscreen></iframe>
 
 
 ``match_to`` and ``first_rel_to``

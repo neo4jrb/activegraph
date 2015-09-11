@@ -13,7 +13,7 @@ module Neo4j
       #   # Generates: MATCH (mike:Person), mike-[:friend]-friend WHERE ID(mike) = 123 RETURN friend.name
       #   mike.query_as(:mike).match('mike-[:friend]-friend').return(friend: :name)
       #
-      # @param var [Symbol, String] The variable name to specify in the query
+      # @param node_var [Symbol, String] The variable name to specify in the query
       # @return [Neo4j::Core::Query]
       def query_as(node_var)
         self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)

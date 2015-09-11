@@ -2,7 +2,7 @@ module Neo4j
   module ActiveNode
     module Unpersisted
       def pending_associations
-        @pending_associations ||= {}
+        @pending_associations ||= []
       end
 
       def pending_associations?
@@ -17,32 +17,36 @@ module Neo4j
       def pending_associations_with_nodes
         return unless pending_associations?
         {}.tap do |deferred_nodes|
-          pending_associations.each_pair do |cache_key, (association_name, operator)|
-            nodes_for_creation = self.persisted? ? association_proxy_cache[cache_key].select { |n| !n.persisted? } : association_proxy_cache[cache_key]
-            deferred_nodes[association_name] = [nodes_for_creation, operator]
+          pending_associations.uniq.each do |association_name|
+            nodes_for_creation = association_proxy(association_name)
+            nodes_for_creation = nodes_for_creation.reject(&:persisted?) if self.persisted?
+
+            deferred_nodes[association_name] = nodes_for_creation
           end
         end
       end
 
       # @param [Hash] deferred_nodes A hash created by :pending_associations_with_nodes
       def process_unpersisted_nodes!(deferred_nodes)
-        deferred_nodes.each_pair do |k, (v, o)|
-          save_and_associate_queue(k, v, o)
+        deferred_nodes.each_pair do |k, v|
+          save_and_associate_queue(k, v)
         end
       end
 
 
-      def save_and_associate_queue(association_name, node_queue, operator)
-        association_proc = proc { |node| save_and_associate_node(association_name, node, operator) }
+      def save_and_associate_queue(association_name, node_queue)
+        association_proc = proc { |node| save_and_associate_node(association_name, node) }
         node_queue.each do |element|
           element.is_a?(Array) ? element.each { |node| association_proc.call(node) } : association_proc.call(element)
         end
       end
 
-      def save_and_associate_node(association_name, node, operator)
-        node.save if node.changed? || !node.persisted?
-        fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
-        operator == :<< ? send(association_name).send(operator, node) : send(:"#{association_name}=", node)
+      def save_and_associate_node(association_name, node)
+        if node.respond_to?(:changed?)
+          node.save if node.changed? || !node.persisted?
+          fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
+        end
+        association_proxy(association_name) << node
       end
     end
   end

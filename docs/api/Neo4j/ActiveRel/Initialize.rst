@@ -44,7 +44,7 @@ Methods
 **#init_on_load**
   called when loading the rel from the database
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def init_on_load(persisted_rel, from_node_id, to_node_id, type)
        @rel_type = type
@@ -62,7 +62,7 @@ Methods
   Implements the Neo4j::Node#wrapper and Neo4j::Relationship#wrapper method
   so that we don't have to care if the node is wrapped or not.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def wrapper
        self

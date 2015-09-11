@@ -54,7 +54,7 @@ module Neo4j
         end
 
         def inspect
-          "<QueryProxy #{ANSI::CYAN}#{@context}#{ANSI::CLEAR} CYPHER: #{ANSI::YELLOW}#{self.to_cypher.inspect}#{ANSI::CLEAR}>"
+          "#<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
         end
 
         attr_reader :start_object, :query_proxy
@@ -138,7 +138,7 @@ module Neo4j
           @model.current_scope = previous
         end
 
-        METHODS = %w(where rel_where order skip limit)
+        METHODS = %w(where where_not rel_where order skip limit)
 
         METHODS.each do |method|
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
@@ -167,7 +167,7 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node, {}, :<<)
+          @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node)
           self
         end
 
@@ -200,7 +200,7 @@ module Neo4j
 
         def _nodeify!(*args)
           other_nodes = [args].flatten!.map! do |arg|
-            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(@model.id_property_name => arg) : arg
+            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(id: arg) : arg
           end.compact
 
           if @model && other_nodes.any? { |other_node| !other_node.class.mapped_label_names.include?(@model.mapped_label_name) }
@@ -220,6 +220,8 @@ module Neo4j
         def read_attribute_for_serialization(*args)
           to_a.map { |o| o.read_attribute_for_serialization(*args) }
         end
+
+        delegate :to_ary, to: :to_a
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
@@ -334,7 +336,7 @@ module Neo4j
 
         def build_deeper_query_proxy(method, args)
           new_link.tap do |new_query_proxy|
-            Link.for_args(@model, method, args).each { |link| new_query_proxy._add_links(link) }
+            Link.for_args(@model, method, args, association).each { |link| new_query_proxy._add_links(link) }
           end
         end
       end

@@ -2,7 +2,7 @@ source 'http://rubygems.org'
 
 gemspec
 
-gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
+gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: '5.1.x'
 # gem 'neo4j-core', path: '../neo4j-core'
 
 # gem 'active_attr', github: 'neo4jrb/active_attr', branch: 'performance'
@@ -18,4 +18,6 @@ group 'test' do
   gem 'test-unit'
   gem 'overcommit'
   gem 'colored'
+  gem 'dotenv'
+  gem 'timecop'
 end

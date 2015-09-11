@@ -29,7 +29,7 @@ describe 'association dependent delete/destroy' do
 
     stub_active_node_class('Route') do
       property :name
-      has_one :in,  :tour,  model_class: 'Tour', origin: :routes
+      has_one :in, :tour, model_class: 'Tour', origin: :routes
       has_many :out, :stops, model_class: 'Stop', type: 'STOPS_AT', dependent: :destroy_orphans
       has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
     end

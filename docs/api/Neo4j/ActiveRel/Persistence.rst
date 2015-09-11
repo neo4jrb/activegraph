@@ -23,8 +23,6 @@ Persistence
 
    
 
-   
-
    Persistence/ClassMethods
 
    
@@ -78,7 +76,7 @@ Methods
 **#_active_record_destroyed_behavior?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _active_record_destroyed_behavior?
        fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
@@ -93,11 +91,11 @@ Methods
 **#_destroyed_double_check?**
   These two methods should be removed in 6.0.0
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _destroyed_double_check?
        if _active_record_destroyed_behavior?
-         true
+         false
        else
          (!new_record? && !exist?)
        end
@@ -110,7 +108,7 @@ Methods
 **#apply_default_values**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def apply_default_values
        return if self.class.declared_property_defaults.empty?
@@ -121,25 +119,12 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel/Persistence#association_proxy_cache`:
-
-**#association_proxy_cache**
-  Should probably find a way to not need this
-
-  .. hidden-code-block:: ruby
-
-     def association_proxy_cache
-       {}
-     end
-
-
-
 .. _`Neo4j/ActiveRel/Persistence#cache_key`:
 
 **#cache_key**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def cache_key
        if self.new_record?
@@ -158,14 +143,11 @@ Methods
 **#create_model**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
-     def create_model(*)
+     def create_model
        validate_node_classes!
-       create_magic_properties
-       set_timestamps
-       properties = self.class.declared_property_manager.convert_properties_to(self, :db, props)
-       rel = _create_rel(from_node, to_node, properties)
+       rel = _create_rel(from_node, to_node, props_for_create)
        return self unless rel.respond_to?(:_persisted_obj)
        init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
        true
@@ -178,7 +160,7 @@ Methods
 **#create_or_update**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create_or_update
        # since the same model can be created or updated twice from a relationship we have to have this guard
@@ -205,7 +187,7 @@ Methods
 **#destroy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroy
        freeze
@@ -220,7 +202,7 @@ Methods
 **#destroyed?**
   Returns +true+ if the object was destroyed.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroyed?
        @_deleted || _destroyed_double_check?
@@ -233,7 +215,7 @@ Methods
 **#exist?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def exist?
        _persisted_obj && _persisted_obj.exist?
@@ -246,7 +228,7 @@ Methods
 **#freeze**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def freeze
        @attributes.freeze
@@ -260,7 +242,7 @@ Methods
 **#frozen?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def frozen?
        @attributes.frozen?
@@ -273,7 +255,7 @@ Methods
 **#new?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def new_record?
        !_persisted_obj
@@ -286,7 +268,7 @@ Methods
 **#new_record?**
   Returns +true+ if the record hasn't been saved to Neo4j yet.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def new_record?
        !_persisted_obj
@@ -299,7 +281,7 @@ Methods
 **#persisted?**
   Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def persisted?
        !new_record? && !destroyed?
@@ -312,10 +294,64 @@ Methods
 **#props**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def props
        attributes.reject { |_, v| v.nil? }.symbolize_keys
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#props_for_create`:
+
+**#props_for_create**
+  Returns a hash containing:
+  * All properties and values for insertion in the database
+  * A `uuid` (or equivalent) key and value
+  * A `_classname` property, if one is to be set
+  * Timestamps, if the class is set to include them.
+  Note that the UUID is added to the hash but is not set on the node.
+  The timestamps, by comparison, are set on the node prior to addition in this hash.
+
+  .. code-block:: ruby
+
+     def props_for_create
+       inject_timestamps!
+       converted_props = props_for_db(props)
+       inject_classname!(converted_props)
+       inject_defaults!(converted_props)
+       return converted_props unless self.class.respond_to?(:default_property_values)
+       inject_primary_key!(converted_props)
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#props_for_persistence`:
+
+**#props_for_persistence**
+  
+
+  .. code-block:: ruby
+
+     def props_for_persistence
+       _persisted_obj ? props_for_update : props_for_create
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#props_for_update`:
+
+**#props_for_update**
+  
+
+  .. code-block:: ruby
+
+     def props_for_update
+       update_magic_properties
+       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
+       changed_props.symbolize_keys!
+       props_for_db(changed_props)
+       inject_defaults!(changed_props)
      end
 
 
@@ -325,11 +361,11 @@ Methods
 **#reload**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def reload
        return self if new_record?
-       association_proxy_cache.clear
+       association_proxy_cache.clear if respond_to?(:association_proxy_cache)
        changed_attributes && changed_attributes.clear
        unless reload_from_database
          @_deleted = true
@@ -345,7 +381,7 @@ Methods
 **#reload_from_database**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def reload_from_database
        # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
@@ -362,10 +398,9 @@ Methods
 **#save**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def save(*)
-       update_magic_properties
        create_or_update
      end
 
@@ -376,7 +411,7 @@ Methods
 **#save!**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def save!(*args)
        fail RelInvalidError, self unless save(*args)
@@ -390,7 +425,7 @@ Methods
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
   If saving fails because the resource is invalid then false will be returned.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update(attributes)
        self.attributes = process_attributes(attributes)
@@ -404,7 +439,7 @@ Methods
 **#update!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update!(attributes)
        self.attributes = process_attributes(attributes)
@@ -418,7 +453,7 @@ Methods
 **#update_attribute**
   Convenience method to set attribute and #save at the same time
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update_attribute(attribute, value)
        send("#{attribute}=", value)
@@ -432,7 +467,7 @@ Methods
 **#update_attribute!**
   Convenience method to set attribute and #save! at the same time
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update_attribute!(attribute, value)
        send("#{attribute}=", value)
@@ -447,7 +482,7 @@ Methods
   Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
   If saving fails because the resource is invalid then false will be returned.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update(attributes)
        self.attributes = process_attributes(attributes)
@@ -461,7 +496,7 @@ Methods
 **#update_attributes!**
   Same as {#update_attributes}, but raises an exception if saving fails.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update!(attributes)
        self.attributes = process_attributes(attributes)
@@ -475,14 +510,11 @@ Methods
 **#update_model**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def update_model
        return if !changed_attributes || changed_attributes.empty?
-     
-       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
-       changed_props = self.class.declared_property_manager.convert_properties_to(self, :db, changed_props)
-       _persisted_obj.update_props(changed_props)
+       _persisted_obj.update_props(props_for_update)
        changed_attributes.clear
      end
 

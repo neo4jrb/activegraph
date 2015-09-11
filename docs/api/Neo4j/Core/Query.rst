@@ -50,7 +50,7 @@ Methods
 **#proxy_as**
   Creates a Neo4j::ActiveNode::Query::QueryProxy object that builds off of a Core::Query object.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def proxy_as(model, var, optional = false)
        # TODO: Discuss whether it's necessary to call `break` on the query or if this should be left to the user.
@@ -64,7 +64,7 @@ Methods
 **#proxy_as_optional**
   Calls proxy_as with `optional` set true. This doesn't offer anything different from calling `proxy_as` directly but it may be more readable.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def proxy_as_optional(model, var)
        proxy_as(model, var, true)
@@ -77,7 +77,7 @@ Methods
 **#proxy_chain_level**
   For instances where you turn a QueryProxy into a Query and then back to a QueryProxy with `#proxy_as`
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def proxy_chain_level
        @proxy_chain_level
@@ -90,7 +90,7 @@ Methods
 **#proxy_chain_level=**
   For instances where you turn a QueryProxy into a Query and then back to a QueryProxy with `#proxy_as`
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def proxy_chain_level=(value)
        @proxy_chain_level = value

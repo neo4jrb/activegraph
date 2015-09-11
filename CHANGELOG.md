@@ -6,6 +6,86 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 
 ### Fixed
+- `updated_at` properties were not being added up `update` events, only updated.
+- Default values of Boolean properties were not being set when `default: false`
+- `props_for_update` was using String keys instead of Symbols, like `props_for_update`
+- `props_for_create` and `props_for_update` were not adding default property values to the hash.
+- ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
+
+### Added
+- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
+- `rel_where` will now use ActiveRel classes for type conversion, when possible.
+- Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
+
+## [5.2.4] - 09-11-2015
+
+### Fixed
+- Use `debug` log level for query logging
+
+## [5.2.3] - 09-07-2015
+
+Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
+- `AssociationProxy` now responds to `serializable_hash` so that `include` can be used in `render json` in Rails controllers
+- Fixed errors when trying to call `#{association}_ids=` on an unpersisted node with UUIDs or an array thereof.
+- Removed extra Cypher query to replace relationships when working with unpersisted nodes and association=.
+- Bug related to Rails reloading an app and returning nodes without first reinitializing models, resulting in CypherNodes.
+
+## [5.2.2] - 09-06-2015
+
+### Fixed
+- Fixed setting of association(_id|_ids) on .create
+
+## [5.2.1] - 09-04-2015
+
+### Fixed
+- Now possible to configure `record_timestamps` with rails `config`
+
+## [5.2.0] - 08-30-2015
+
+### Added
+- `props_for_persistence`, `props_for_create`, `props_for_update` instance methods for all nodes and rels. Each returns a hash with properties appropriate for sending to the database in a Cypher query to create or update an object.
+- Added `record_timestamps` configuration do default all `ActiveNode` and `ActiveRel` models to have `created_at` and `updated_at` timestamps (from #939, thanks @rebecca-eakins)
+- Added `timestamp_type` configuration to specify how timestamps should be stored (from #939, thanks @rebecca-eakins)
+
+### Changed
+- Methods related to basic node and rel persistence (`save`, `create_model`, `_create_node`, others) were refactored to make the processes simpler, clearer, and slightly faster.
+- Unit test directory structure was rearranged to mirror the `lib` directory.
+
+## [5.1.3] - 08-23-2015
+
+### Fixed
+- `has_one` associations are now properly cached (like `has_many` associations)
+- `QueryProxy` now responds to `#to_ary`.  Fixes integration with ActiveModelSerializer gem
+
+
+## [5.1.2] - 08-20-2015
+
+### Fixed
+- When association has `model_class` and `type: false` the association doesn't work (see: https://github.com/neo4jrb/neo4j/pull/930)
+
+## [5.1.1] - 08-19-2015
+
+### Fixed
+- Fixed a bug where the `Neo4j::Timestamps` mixin was not able to be included
+
+## [5.1.0.rc.3] - 08-17-2015
+
+### Fixed
+- Associations defined in ActiveNode models will delegate `unique?` to the model set in `rel_class`. This makes it easier for the rel class to act as the single source of truth for relationship behavior.
+
+### Added
+- ActiveRel: `#{related_node}_neo_id` instance methods to match CypherRelationship. Works with start/from and end/to.
+- ActiveRel: `type` now has a new alias, `rel_type`. You might recognize this from the `(Cypher|Embedded)Relationship` class and ActiveNode association option.
+- Contributing to the gem? Rejoice, for it now supports [Dotenv](https://github.com/bkeepers/dotenv).
+
+## [5.1.0.rc.2] - 08-16-2015
+
+### Added
+- Ability to use `#where_not` method on `ActiveNode` / `QueryProxy`
+
+## [5.1.0.rc.1] - 08-14-2015
+
+### Fixed
 - Added a `before_remove_const` method to clear cached models when Rails `reload!` is called. 5.0.1 included a workaround but this appears to cut to the core of the issue. See https://github.com/neo4jrb/neo4j/pull/855.
 - To prevent errors, changing an index to constraint or constraint to index will drop the existing index/constraint before adding the new.
 - Fixed `AssociationProxy#method_missing` so it properly raises errors.
@@ -18,6 +98,25 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Ability to query for just IDs on associations
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
 - Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
+- Added #inspect method to ActiveRel to show Cypher-style representation of from node, to node, and relationship type
+- Added `Neo4j::Timestamps`, `Neo4j::Timestamps::Created`, and `Neo4j::Timestamps::Updated` mixins to add timestamp properties to `ActiveNode` or `ActiveRel` classes
+
+### Changed
+
+- Methods related to ActiveNode's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple.
+- Implementation adjustments that improve node and rel initialization speed, particularly when loading large numbers of objects from the database.
+
+## [5.0.15] - 08-12-2015
+
+### Fixed
+
+- `reload!` within Rails apps will work correctly. An earlier release included a workaround but this uses ActiveModel's system for clearing caches to provide a more thorough resolution.
+
+## [5.0.14] - 08-09-2015
+
+### Fixed
+
+- Calling `all` on a QueryProxy chain would cause the currently set node identity within Cypher to be lost.
 
 ## [5.0.13] - 08-07-2015
 

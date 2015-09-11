@@ -65,7 +65,7 @@ Methods
 **#association**
   The association object referenced by this reflection
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association
        @association
@@ -78,7 +78,7 @@ Methods
 **#class_name**
   Returns the name of the target model
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def class_name
        @class_name ||= association.target_class.name
@@ -91,7 +91,7 @@ Methods
 **#collection?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def collection?
        macro == :has_many
@@ -104,7 +104,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(macro, name, association)
        @macro        = macro
@@ -119,7 +119,7 @@ Methods
 **#klass**
   Returns the target model
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def klass
        @klass ||= class_name.constantize
@@ -132,7 +132,7 @@ Methods
 **#macro**
   The type of association
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def macro
        @macro
@@ -145,7 +145,7 @@ Methods
 **#name**
   The name of the association
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def name
        @name
@@ -158,7 +158,7 @@ Methods
 **#rel_class_name**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rel_class_name
        @rel_class_name ||= association.relationship_class.name.to_s
@@ -171,7 +171,7 @@ Methods
 **#rel_klass**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rel_klass
        @rel_klass ||= rel_class_name.constantize
@@ -184,7 +184,7 @@ Methods
 **#type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type
        @type ||= association.relationship_type
@@ -197,7 +197,7 @@ Methods
 **#validate?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def validate?
        true

@@ -15,6 +15,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -30,7 +32,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/persistence.rb:35 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L35>`_
+  * `lib/neo4j/active_rel/persistence.rb:26 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L26>`_
 
 
 
@@ -46,7 +48,7 @@ Methods
 **#create**
   Creates a new relationship between objects
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create(props = {})
        relationship_props = extract_association_attributes!(props) || {}
@@ -65,7 +67,7 @@ Methods
 **#create!**
   Same as #create, but raises an error if there is a problem during save.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create!(*args)
        props = args[0] || {}
@@ -76,6 +78,19 @@ Methods
          end
          obj.save!
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence/ClassMethods#create_method`:
+
+**#create_method**
+  
+
+  .. code-block:: ruby
+
+     def create_method
+       creates_unique? ? :create_unique : :create
      end
 
 

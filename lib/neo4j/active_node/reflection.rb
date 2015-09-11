@@ -21,7 +21,7 @@ module Neo4j::ActiveNode
       end
 
       private :create_reflection
-      # @param [Symbol] an association declared on the model
+      # @param association [Symbol] an association declared on the model
       # @return [Neo4j::ActiveNode::Reflection::AssociationReflection] of the given association
       def reflect_on_association(association)
         reflections[association.to_sym]

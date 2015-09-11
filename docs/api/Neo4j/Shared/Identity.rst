@@ -54,7 +54,7 @@ Methods
 **#==**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def ==(other)
        other.class == self.class && other.id == id
@@ -67,7 +67,7 @@ Methods
 **#eql?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def ==(other)
        other.class == self.class && other.id == id
@@ -80,7 +80,7 @@ Methods
 **#hash**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def hash
        id.hash
@@ -93,7 +93,7 @@ Methods
 **#id**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id
        id = neo_id
@@ -107,7 +107,7 @@ Methods
 **#neo_id**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def neo_id
        _persisted_obj ? _persisted_obj.neo_id : nil
@@ -121,7 +121,7 @@ Methods
   Returns an Enumerable of all (primary) key attributes
   or nil if model.persisted? is false
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_key
        _persisted_obj ? [id] : nil
