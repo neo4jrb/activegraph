@@ -150,7 +150,7 @@ describe 'Neo4j::ActiveNode' do
       before do
         stub_active_node_class('Uniqueness') do
           property :unique_property, type: String, constraint: :unique
-          validates :unique_property, uniqueness: { case_sensitive: false }
+          validates :unique_property, uniqueness: {case_sensitive: false}
         end
       end
 
