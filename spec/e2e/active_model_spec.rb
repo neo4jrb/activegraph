@@ -145,6 +145,25 @@ describe 'Neo4j::ActiveNode' do
       ice_cream.should_not be_valid
       ice_cream.errors.should_not be_empty
     end
+
+    context 'a model with a case sensitive uniqueness validation' do
+      before do
+        stub_active_node_class('Uniqueness') do
+          property :unique_property, type: String, constraint: :unique
+          validates :unique_property, uniqueness: { case_sensitive: false }
+        end
+      end
+
+      it 'gives an error if not unique' do
+        Uniqueness.create(unique_property: 'test')
+
+        object = Uniqueness.create(unique_property: 'test')
+        expect(object).to have_error_on(:unique_property)
+
+        object = Uniqueness.create(unique_property: 'Test')
+        expect(object).to have_error_on(:unique_property)
+      end
+    end
   end
 
   describe 'global timestamps config' do

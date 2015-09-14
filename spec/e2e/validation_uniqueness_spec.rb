@@ -1,17 +1,15 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveNode::Validations do
-  before do
+  before(:each) do
+    delete_db
+    clear_model_memory_caches
+
     stub_active_node_class('Foo') do
       property :name
 
       validates_uniqueness_of :name
     end
-  end
-
-  before(:each) do
-    delete_db
-    clear_model_memory_caches
   end
 
   context 'validating uniqueness of' do

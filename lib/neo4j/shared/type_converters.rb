@@ -83,7 +83,7 @@ module Neo4j::Shared
         end
 
         def to_db(value)
-          value.to_s
+          value.is_a?(Regexp) ? value : value.to_s
         end
         alias_method :to_ruby, :to_db
       end
