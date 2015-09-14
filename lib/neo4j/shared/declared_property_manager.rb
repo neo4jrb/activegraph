@@ -113,6 +113,13 @@ module Neo4j::Shared
       @upstream_primitives ||= {}
     end
 
+    EXCLUDED_TYPES = [Array, Range, Regexp]
+    def value_for_where(key, value)
+      return value unless prop = registered_properties[key]
+      return value_for_db(key, value) if prop.typecaster && prop.typecaster.convert_type == value.class
+      EXCLUDED_TYPES.include?(value.class) ? value : value_for_db(key, value)
+    end
+
     def value_for_db(key, value)
       return value unless registered_properties[key]
       convert_property(key, value, :to_db)

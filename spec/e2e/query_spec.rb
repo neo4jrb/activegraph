@@ -658,6 +658,27 @@ describe 'Query API' do
             expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher_age=>1')
           end
         end
+
+        context 'with Range values' do
+          before do
+            (1..10).each { |i| Student.create!(age: i) }
+          end
+
+          it 'does not convert' do
+            expect(Student.where(age: (2..5)).count).to eq 4
+          end
+        end
+
+        context 'with Array values' do
+          let(:today) { Date.today }
+
+          before { Teacher.create(date: today) }
+
+          it 'does not perform any conversion' do
+            expect(Teacher.where(date: [today]).count).to eq 0
+            expect(Teacher.where(date: [Time.utc(today.year, today.month, today.day).to_i]).count).to eq 1
+          end
+        end
       end
 
       context 'with properties not declared on the model' do

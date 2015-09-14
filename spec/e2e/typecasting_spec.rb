@@ -33,15 +33,18 @@ describe 'custom type conversion' do
     end
   end
 
-  it 'registers the typecaster' do
+  it 'registers' do
     expect(Neo4j::Shared::TypeConverters.converters).to have_key(Range)
   end
 
-  it 'uses the custom typecaster' do
-    r = RangeConvertPerson.new
-    r.my_range = 1..30
-    r.save
-    r.reload
+  before { RangeConvertPerson.create!(my_range: 1..30) }
+  let(:r) { RangeConvertPerson.first }
+
+  it 'uses for persistence' do
     expect(r.my_range).to be_a(Range)
+  end
+
+  it 'uses for QueryProxy #where' do
+    expect(RangeConvertPerson.where(my_range: 1..30).first).to eq r
   end
 end
