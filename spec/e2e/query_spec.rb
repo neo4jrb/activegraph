@@ -662,6 +662,23 @@ describe 'Query API' do
     end
   end
 
+  describe 'association query behavior' do
+    let!(:ss101) { Lesson.create(subject: 'Social Studies', level: 101) }
+    let!(:mrjames) { Teacher.create(name: 'Mr. James') }
+
+    context 'Mr. James teaches Social Studies' do
+      before { ss101.teachers << mrjames }
+
+      it 'does not get confused when associations have been cached' do
+        lesson = Lesson.find(ss101.id)
+        expect(lesson.teachers.to_a).to eq([mrjames])
+
+        expect(lesson.teachers.where(name: 'aoeuo')).to be_empty
+        expect(lesson.teachers.where(name: 'aoeuo').to_a).to be_empty
+      end
+    end
+  end
+
   describe 'batch finding' do
     let!(:ss101) { Lesson.create(subject: 'Social Studies', level: 101) }
     let!(:ss102) { Lesson.create(subject: 'Social Studies', level: 102) }
