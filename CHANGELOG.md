@@ -5,12 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.6] - 09-16-2015
+
 ### Fixed
-- `updated_at` properties were not being added up `update` events, only updated.
-- Default values of Boolean properties were not being set when `default: false`
-- `props_for_update` was using String keys instead of Symbols, like `props_for_update`
-- `props_for_create` and `props_for_update` were not adding default property values to the hash.
-- ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
+
+- Fixed issue where caching an association causes further queries on the association to return the cached result
+
+## [5.2.5] - 09-11-2015
+
+### Fixed
+
+- Regression in last release caused properties to revert to default on update if not present in the properties for update
 
 ### Added
 - Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
@@ -21,6 +26,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Use `debug` log level for query logging
+- `updated_at` properties were not being added up `update` events, only updated.
+- Default values of Boolean properties were not being set when `default: false`
+- `props_for_update` was using String keys instead of Symbols, like `props_for_update`
+- `props_for_create` and `props_for_update` were not adding default property values to the hash.
+- ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
 
 ## [5.2.3] - 09-07-2015
 

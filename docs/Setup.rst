@@ -160,7 +160,7 @@ Add a Neo4j db to your application:
 
 .. code-block:: bash
 
-  # To use GraphineDB:
+  # To use GrapheneDB:
   heroku addons:create graphenedb
 
   # To use Graph Story:
@@ -168,7 +168,7 @@ Add a Neo4j db to your application:
 
 .. seealso::
 
-  GraphineDB
+  GrapheneDB
     https://devcenter.heroku.com/articles/graphenedb
     For plans: https://addons.heroku.com/graphenedb
 
@@ -184,7 +184,7 @@ Rails configuration
 .. code-block:: ruby
 
   config.neo4j.session_type = :server_db
-  # GraphineDB
+  # GrapheneDB
   config.neo4j.session_path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
   # Graph Story
   config.neo4j.session_path = ENV["GRAPHSTORY_URL"] || 'http://localhost:7474'
