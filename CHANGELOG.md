@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.6] - 09-16-2015
+
+### Fixed
+
+- Fixed issue where caching an association causes further queries on the association to return the cached result
+
 ## [5.2.5] - 09-11-2015
 
 ### Fixed
