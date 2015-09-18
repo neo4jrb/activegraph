@@ -11,8 +11,6 @@ describe 'ActiveRel' do
 
     stub_active_node_class('FromClass') do
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
-
-      def foo; end
     end
 
     stub_active_node_class('ToClass') do
