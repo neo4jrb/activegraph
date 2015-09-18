@@ -11,6 +11,8 @@ describe 'ActiveRel' do
 
     stub_active_node_class('FromClass') do
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
+
+      def foo; end
     end
 
     stub_active_node_class('ToClass') do
@@ -96,6 +98,43 @@ describe 'ActiveRel' do
         MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(from_node.others.count).to eq 1
       end
+    end
+
+    describe 'type checking' do
+      # rubocop:disable Metrics/AbcSize
+      def self.it_is_expected_to_satisfy(class_method_value)
+        context class_method_value.class.to_s do
+          before { MyRelClass.from_class(class_method_value) }
+
+          it 'fails when given a mismatched value' do
+            expect { MyRelClass.create(from_node: OtherClass.create!, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::ModelClassInvalidError
+          end
+
+          it 'does not fail when given a matching value' do
+            expect { MyRelClass.create(from_node: FromClass.create, to_node: to_node) }.not_to raise_error
+          end
+        end
+      end
+      # rubocop:enable Metrics/AbcSize
+
+      before { stub_active_node_class('OtherClass') }
+
+      context 'false/:any' do
+        it 'does not check for object/class mismatch' do
+          [false, :any].each do |c|
+            MyRelClass.from_class(c)
+            expect { MyRelClass.create(from_node: OtherClass.create!, to_node: to_node) }.not_to raise_error
+            expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.not_to raise_error
+          end
+        end
+      end
+
+      it_is_expected_to_satisfy('FromClass')
+      it_is_expected_to_satisfy(:FromClass)
+
+      class FromClass; end
+      it_is_expected_to_satisfy(FromClass)
+      it_is_expected_to_satisfy([FromClass])
     end
   end
 

@@ -71,6 +71,8 @@ module Neo4j::ActiveRel
           given_class.constantize
         when Symbol
           given_class.to_s.constantize
+        when Array
+          fail "ActiveRel query methods are being deprecated and do not support Array (from|to)_class options. Current value: #{given_class}"
         else
           given_class
         end
