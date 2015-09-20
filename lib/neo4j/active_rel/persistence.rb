@@ -60,11 +60,21 @@ module Neo4j::ActiveRel
         type = from_node == node ? :_from_class : :_to_class
         type_class = self.class.send(type)
 
-        next if [:any, false].include?(type_class)
-
-        unless node.class.mapped_label_names.include?(type_class.to_s.constantize.mapped_label_name)
+        unless valid_type?(type_class, node)
           fail ModelClassInvalidError, type_validation_error_message(node, type_class)
         end
+      end
+    end
+
+    def valid_type?(type_object, node)
+      case type_object
+      when false, :any
+        true
+      when Array
+        type_object.each { |c| return false unless valid_type?(c, node) }
+        true
+      else
+        node.class.mapped_label_names.include?(type_object.to_s.constantize.mapped_label_name)
       end
     end
 
