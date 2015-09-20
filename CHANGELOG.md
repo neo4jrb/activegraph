@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Support for Array arguments to ActiveRel's `from_class` and `to_class`.
+
+### Changed
+
+- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+
 ## [5.2.6] - 09-16-2015
 
 ### Fixed

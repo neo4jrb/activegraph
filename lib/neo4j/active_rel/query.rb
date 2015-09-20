@@ -7,14 +7,12 @@ module Neo4j::ActiveRel
       # @param [String,Integer] id of node to find
       # @param [Neo4j::Session] session optional
       def find(id, session = self.neo4j_session)
-        deprecation_warning!
         fail "Unknown argument #{id.class} in find method (expected String or Integer)" if !(id.is_a?(String) || id.is_a?(Integer))
         find_by_id(id, session)
       end
 
       # Loads the relationship using its neo_id.
       def find_by_id(key, session = Neo4j::Session.current!)
-        deprecation_warning!
         session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
       end
 
