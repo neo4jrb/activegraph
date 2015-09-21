@@ -132,7 +132,15 @@ describe 'ActiveRel' do
 
       class FromClass; end
       it_is_expected_to_satisfy(FromClass)
-      it_is_expected_to_satisfy([FromClass])
+
+      context 'Array' do
+        # stub_const does not behave with `it_is_expected_to_satisfy` so making it explicit for now...
+        class OtherAcceptableClass
+          include Neo4j::ActiveNode
+        end
+
+        it_is_expected_to_satisfy([OtherAcceptableClass, FromClass])
+      end
     end
   end
 

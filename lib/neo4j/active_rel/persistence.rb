@@ -71,8 +71,7 @@ module Neo4j::ActiveRel
       when false, :any
         true
       when Array
-        type_object.each { |c| return false unless valid_type?(c, node) }
-        true
+        type_object.any? { |c| valid_type?(c, node) }
       else
         node.class.mapped_label_names.include?(type_object.to_s.constantize.mapped_label_name)
       end
