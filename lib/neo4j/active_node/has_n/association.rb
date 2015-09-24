@@ -83,8 +83,6 @@ module Neo4j
         end
 
         def discovered_model
-          require 'pry'
-          binding.pry
           target_class_names.map(&:constantize).select do |constant|
             constant.ancestors.include?(::Neo4j::ActiveNode)
           end
