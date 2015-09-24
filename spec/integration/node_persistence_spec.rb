@@ -8,7 +8,6 @@ describe 'Neo4j::ActiveNode' do
     has_one :out, :parent, model_class: false, type: nil
   end
 
-
   let(:transaction) { double('Mock transaction', close: true) }
   let(:session) { double('Mock Session', create_node: nil, begin_tx: transaction) }
 
@@ -81,7 +80,7 @@ describe 'Neo4j::ActiveNode' do
     # end
   end
 
-  describe 'save' do
+  describe '#save' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'saves declared the properties that has been changed with []= operator' do
@@ -91,10 +90,31 @@ describe 'Neo4j::ActiveNode' do
       thing.save
     end
 
-
     it 'raise ActiveAttr::UnknownAttributeError if trying to set undeclared property' do
       thing = MyThing.new
       expect { thing[:newp] = 42 }.to raise_error(ActiveAttr::UnknownAttributeError)
+    end
+  end
+
+  describe '#save!' do
+    let(:node) { double('unwrapped_node', props: {a: 3}) }
+
+    it 'returns true on success' do
+      session.should_receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      thing = MyThing.new
+      thing[:x] = 42
+      expect(thing.save!).to be true
+    end
+
+    context 'with validations' do
+      class MyNodeWithValidations < MyThing
+        validates :x, presence: true
+      end
+
+      it 'raises an error with invalid params' do
+        thing = MyNodeWithValidations.new
+        expect { thing.save! }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
+      end
     end
   end
 

@@ -40,7 +40,7 @@ module Neo4j::ActiveNode
     # @see Neo4j::Rails::Validations Neo4j::Rails::Validations - for the :validate parameter
     # @see Neo4j::Rails::Callbacks Neo4j::Rails::Callbacks - for callbacks
     def save!(*args)
-      fail RecordInvalidError, self unless save(*args)
+      save(*args) || fail(RecordInvalidError, self)
     end
 
     # Creates a model with values matching those of the instance attributes and returns its id.

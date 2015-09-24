@@ -12,7 +12,7 @@ module Neo4j::ActiveRel
     end
 
     def save!(*args)
-      fail RelInvalidError, self unless save(*args)
+      save(*args) || fail(RelInvalidError, self)
     end
 
     def create_model
