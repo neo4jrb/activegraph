@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.7] - 09-25-2015
+
+### Fixed
+
+- Allow for association `model_class` to be prepended with double colons
+
 ## [5.2.6] - 09-16-2015
 
 ### Fixed

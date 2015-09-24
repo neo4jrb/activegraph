@@ -48,7 +48,7 @@ module Neo4j
           when false
             false
           else
-            "::#{model_class}"
+            model_class.to_s[0,2] == '::' ? model_class.to_s : "::#{model_class}"
           end
         end
 
@@ -83,6 +83,8 @@ module Neo4j
         end
 
         def discovered_model
+          require 'pry'
+          binding.pry
           target_class_names.map(&:constantize).select do |constant|
             constant.ancestors.include?(::Neo4j::ActiveNode)
           end
