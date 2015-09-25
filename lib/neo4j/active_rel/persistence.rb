@@ -12,7 +12,7 @@ module Neo4j::ActiveRel
     end
 
     def save!(*args)
-      save(*args) || fail(RelInvalidError, self)
+      save(*args) or fail(RelInvalidError, self) # rubocop:disable Style/AndOr
     end
 
     def create_model
