@@ -37,6 +37,10 @@ module Neo4j::Shared
       @_registered_properties ||= {}
     end
 
+    def indexed_properties
+      @_indexed_properties ||= []
+    end
+
     # During object wrap, a hash is needed that contains each declared property with a nil value.
     # The active_attr dependency is capable of providing this but it is expensive and calculated on the fly
     # each time it is called. Rather than rely on that, we build this progressively as properties are registered.

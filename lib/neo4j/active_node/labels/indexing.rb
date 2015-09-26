@@ -3,6 +3,10 @@ module Neo4j::ActiveNode::Labels
     extend ActiveSupport::Concern
 
     module ClassMethods
+      extend Forwardable
+
+      def_delegators :declared_properties, :indexed_properties
+
       # Creates a Neo4j index on given property
       #
       # This can also be done on the property directly, see Neo4j::ActiveNode::Property::ClassMethods#property.
@@ -66,10 +70,6 @@ module Neo4j::ActiveNode::Labels
 
       def index?(index_def)
         mapped_label.indexes[:property_keys].include?([index_def])
-      end
-
-      def indexed_properties
-        @_indexed_properties ||= []
       end
 
       protected
