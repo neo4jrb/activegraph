@@ -200,7 +200,6 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
-
   describe 'callbacks' do
     before(:each) do
       stub_active_node_class('Company') do
@@ -380,7 +379,7 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
-  describe 'basic persistance' do
+  describe 'basic persistence' do
     it 'generate accessors for declared attribute' do
       person = Person.new(name: 'hej')
       expect(person.name).to eq('hej')

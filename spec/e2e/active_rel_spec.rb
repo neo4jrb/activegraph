@@ -61,16 +61,21 @@ describe 'ActiveRel' do
       end
     end
 
-    describe '.create!' do
+    describe '#create!' do
       it 'raises an error on invalid params' do
         expect { RelClassWithValidations.create!(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
       end
     end
 
-    describe '.save!' do
+    describe '#save!' do
       it 'raises an error on invalid params' do
         invalid_rel = RelClassWithValidations.new(from_node: from_node, to_node: to_node)
         expect { invalid_rel.save! }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+      end
+
+      it 'returns true on success' do
+        rel = RelClassWithValidations.new(from_node: from_node, to_node: to_node, score: 2)
+        expect(rel.save!).to be true
       end
     end
 
