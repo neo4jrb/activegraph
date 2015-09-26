@@ -15,12 +15,12 @@ module Neo4j::Shared
       @attributes ||= Hash[self.class.attributes_nil_hash]
       stringify_attributes!(@attributes, properties)
       self.default_properties = properties if respond_to?(:default_properties=)
-      self.class.declared_property_manager.convert_properties_to(self, :ruby, @attributes)
+      self.class.declared_properties.convert_properties_to(self, :ruby, @attributes)
     end
 
     def stringify_attributes!(attr, properties)
       properties.each_pair do |k, v|
-        key = self.class.declared_property_manager.string_key(k)
+        key = self.class.declared_properties.string_key(k)
         attr[key.freeze] = v
       end
     end

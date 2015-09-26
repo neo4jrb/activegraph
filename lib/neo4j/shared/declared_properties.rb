@@ -5,13 +5,13 @@ module Neo4j::Shared
   # a way of separating behavior from the general Active{obj} modules.
   #
   # See Neo4j::Shared::DeclaredProperty for definitions of the property objects themselves.
-  class DeclaredPropertyManager
+  class DeclaredProperties
     include Neo4j::Shared::TypeConverters
 
     attr_reader :klass
 
     # Each class that includes Neo4j::ActiveNode or Neo4j::ActiveRel gets one instance of this class.
-    # @param [#declared_property_manager] klass An object that has the #declared_property_manager method.
+    # @param [#declared_properties] klass An object that has the #declared_properties method.
     def initialize(klass)
       @klass = klass
     end

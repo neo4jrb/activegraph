@@ -45,7 +45,7 @@ describe 'declared property classes' do
     end
   end
 
-  describe Neo4j::Shared::DeclaredPropertyManager do
+  describe Neo4j::Shared::DeclaredProperties do
     before do
       clazz = Class.new do
         include Neo4j::ActiveNode
@@ -58,15 +58,15 @@ describe 'declared property classes' do
     end
 
     let(:model) { MyModel }
-    let(:dpm)   { MyModel.declared_property_manager }
+    let(:dpm)   { MyModel.declared_properties }
 
     it 'is included on each class' do
-      expect(model.declared_property_manager).to be_a(Neo4j::Shared::DeclaredPropertyManager)
+      expect(model.declared_properties).to be_a(Neo4j::Shared::DeclaredProperties)
     end
 
     it 'has a convenience method on each instance' do
       inst = model.new
-      expect(inst.declared_property_manager.object_id).to eq model.declared_property_manager.object_id
+      expect(inst.declared_properties.object_id).to eq model.declared_properties.object_id
     end
 
     it 'contains information about each declared property' do
@@ -97,8 +97,8 @@ describe 'declared property classes' do
         stub_const('MyInheritedClass', clazz)
       end
 
-      let(:dpm) { MyModel.declared_property_manager }
-      let(:inherited_dpm) { MyInheritedClass.declared_property_manager }
+      let(:dpm) { MyModel.declared_properties }
+      let(:inherited_dpm) { MyInheritedClass.declared_properties }
 
       it 'applies the ancestor\'s props' do
         dpm.registered_properties.each_key do |k|

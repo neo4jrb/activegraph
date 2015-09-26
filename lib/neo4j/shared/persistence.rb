@@ -188,7 +188,7 @@ module Neo4j::Shared
     private
 
     def props_for_db(props_hash)
-      self.class.declared_property_manager.convert_properties_to(self, :db, props_hash)
+      self.class.declared_properties.convert_properties_to(self, :db, props_hash)
     end
 
     def model_cache_key
@@ -217,7 +217,7 @@ module Neo4j::Shared
     end
 
     def inject_defaults!(properties)
-      self.class.declared_property_manager.declared_property_defaults.each_pair do |k, v|
+      self.class.declared_properties.declared_property_defaults.each_pair do |k, v|
         properties[k.to_sym] = v if send(k).nil?
       end
       properties

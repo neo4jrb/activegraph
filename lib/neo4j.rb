@@ -30,7 +30,7 @@ require 'neo4j/timestamps'
 
 require 'neo4j/shared/callbacks'
 require 'neo4j/shared/declared_property'
-require 'neo4j/shared/declared_property_manager'
+require 'neo4j/shared/declared_properties'
 require 'neo4j/shared/property'
 require 'neo4j/shared/persistence'
 require 'neo4j/shared/validations'

@@ -68,6 +68,10 @@ module Neo4j::ActiveNode::Labels
         mapped_label.indexes[:property_keys].include?([index_def])
       end
 
+      def indexed_properties
+        @_indexed_properties ||= []
+      end
+
       protected
 
       def _index(property, conf)

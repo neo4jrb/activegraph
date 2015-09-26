@@ -108,10 +108,10 @@ module Neo4j::Shared
     module ClassMethods
       extend Forwardable
 
-      def_delegators :declared_property_manager, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
+      def_delegators :declared_properties, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
 
       def inherited(other)
-        self.declared_property_manager.registered_properties.each_pair do |prop_key, prop_def|
+        self.declared_properties.registered_properties.each_pair do |prop_key, prop_def|
           other.property(prop_key, prop_def.options)
         end
         super
@@ -148,20 +148,20 @@ module Neo4j::Shared
       def property(name, options = {})
         prop = DeclaredProperty.new(name, options)
         prop.register
-        declared_property_manager.register(prop)
+        declared_properties.register(prop)
 
         attribute(name, prop.options)
         constraint_or_index(name, options)
       end
 
       def undef_property(name)
-        declared_property_manager.unregister(name)
+        declared_properties.unregister(name)
         attribute_methods(name).each { |method| undef_method(method) }
         undef_constraint_or_index(name)
       end
 
-      def declared_property_manager
-        @_declared_property_manager ||= DeclaredPropertyManager.new(self)
+      def declared_properties
+        @_declared_properties ||= DeclaredProperties.new(self)
       end
 
       def attribute!(name, options = {})
@@ -176,7 +176,7 @@ module Neo4j::Shared
       # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents
       # an extra call to a slow dependency method.
       def attributes_nil_hash
-        declared_property_manager.attributes_nil_hash
+        declared_properties.attributes_nil_hash
       end
 
       private

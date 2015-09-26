@@ -117,7 +117,6 @@ module Neo4j
           all.each(&:destroy)
         end
 
-
         # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
           self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
@@ -131,10 +130,6 @@ module Neo4j
         # @return [Neo4j::Label] the label for this class
         def mapped_label
           Neo4j::Label.create(mapped_label_name)
-        end
-
-        def indexed_properties
-          @_indexed_properties ||= []
         end
 
         def base_class
