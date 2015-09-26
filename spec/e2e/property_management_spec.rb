@@ -72,7 +72,11 @@ describe 'declared property classes' do
     it 'contains information about each declared property' do
       [:foo, :bar].each do |key|
         expect(dpm.registered_properties[key]).to be_a(Neo4j::Shared::DeclaredProperty)
+        expect(dpm[key]).to be_a(Neo4j::Shared::DeclaredProperty)
+        expect(dpm.property?(key)).to be_truthy
       end
+
+      expect(dpm.property?(:buzz)).to eq false
     end
 
     it 'keeps a default hash of nil values for use in initial object wrapping' do

@@ -16,6 +16,14 @@ module Neo4j::Shared
       @klass = klass
     end
 
+    def [](key)
+      registered_properties[key.to_sym]
+    end
+
+    def property?(key)
+      registered_properties.key?(key.to_sym)
+    end
+
     # @param [Neo4j::Shared::DeclaredProperty] property An instance of DeclaredProperty, created as the result of calling
     # #property on an ActiveNode or ActiveRel class. The DeclaredProperty has specifics about the property, but registration
     # makes the management object aware of it. This is necessary for type conversion, defaults, and inclusion in the nil and string hashes.
