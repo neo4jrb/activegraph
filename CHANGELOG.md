@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+- Return `true` on successful `#save!` calls (Thanks to jmdeldin)
 
 ## [5.2.6] - 09-16-2015
 
