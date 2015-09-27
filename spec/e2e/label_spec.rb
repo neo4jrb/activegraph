@@ -29,7 +29,7 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'creates an index' do
-        clazz.should_receive(:index).with(:age, index: :exact)
+        clazz.should_receive(:index).with(:age)
         clazz.property :age, index: :exact
       end
     end
@@ -79,9 +79,6 @@ describe 'Neo4j::ActiveNode' do
         include Neo4j::ActiveNode
         property :name
         constraint :name, type: :unique
-
-        property :colour
-        index :colour, constraint: {type: :unique}
       end
     end
 
@@ -94,13 +91,6 @@ describe 'Neo4j::ActiveNode' do
       it 'can create two nodes with different properties' do
         clazz_with_constraint.create(name: 'foobar1')
         expect { clazz_with_constraint.create(name: 'foobar2') }.to_not raise_error
-      end
-    end
-
-    describe 'index :colour, constraint: {type: :unique}' do
-      it 'can not create two nodes with unique properties' do
-        clazz_with_constraint.create(colour: 'red')
-        expect { clazz_with_constraint.create(colour: 'red') }.to raise_error
       end
     end
 

@@ -29,10 +29,10 @@ module Neo4j::ActiveNode::Labels
       #      # below is same as: index :name, index: :exact, constraint: {type: :unique}
       #      index :name, constraint: {type: :unique}
       #    end
-      def index(property, conf = {})
+      def index(property)
         Neo4j::Session.on_next_session_available do |_|
           drop_constraint(property, type: :unique) if Neo4j::Label.constraint?(mapped_label_name, property)
-          _index(property, conf)
+          _index(property)
         end
         indexed_properties.push property unless indexed_properties.include? property
       end
@@ -74,17 +74,11 @@ module Neo4j::ActiveNode::Labels
 
       protected
 
-      def _index(property, conf)
+      def _index(property)
         mapped_labels.each do |label|
           # make sure the property is not indexed twice
           existing = label.indexes[:property_keys]
-
-          # In neo4j constraint automatically creates an index
-          if conf[:constraint]
-            constraint(property, conf[:constraint])
-          else
-            label.create_index(property) unless existing.flatten.include?(property)
-          end
+          label.create_index(property) unless existing.flatten.include?(property)
         end
       end
     end

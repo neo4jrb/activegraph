@@ -188,7 +188,7 @@ module Neo4j::Shared
           constraint(name, type: :unique)
         elsif options[:index]
           fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
-          index(name, options) if options[:index] == :exact
+          index(name) if options[:index] == :exact
         end
       end
     end
