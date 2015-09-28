@@ -50,10 +50,9 @@ describe 'Neo4j::ActiveNode' do
         end
       end
 
-      it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
-        expect(clazz).to_not receive(:index)
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:age, {type: :unique}, Neo4j::Session.current)
-        clazz.property :age, index: :exact, constraint: :unique
+      it 'raises an error, cannot set both index and constraint' do
+        expect { clazz.property :age, index: :exact, constraint: :unique }
+            .to raise_error(Neo4j::InvalidPropertyOptionsError)
       end
     end
 

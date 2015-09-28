@@ -11,6 +11,7 @@ module Neo4j::Shared
       @name = @name_sym = name
       @name_string = name.to_s
       @options = options
+      fail_invalid_options!
     end
 
     def register
@@ -29,7 +30,23 @@ module Neo4j::Shared
       options[:default]
     end
 
+    def fail_invalid_options!
+      fail Neo4j::InvalidPropertyOptionsError if index?(:exact) && constraint?(:unique)
+    end
+
+    def index?(type = :exact)
+      option_with_value?(:index, type)
+    end
+
+    def constraint?(type = :unique)
+      option_with_value?(:constraint, type)
+    end
+
     private
+
+    def option_with_value?(key, value)
+      options[key] == value
+    end
 
     # Tweaks properties
     def register_magic_properties
