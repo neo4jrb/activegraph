@@ -52,7 +52,7 @@ describe 'Neo4j::ActiveNode' do
 
       it 'raises an error, cannot set both index and constraint' do
         expect { clazz.property :age, index: :exact, constraint: :unique }
-            .to raise_error(Neo4j::InvalidPropertyOptionsError)
+          .to raise_error(Neo4j::InvalidPropertyOptionsError)
       end
     end
 
