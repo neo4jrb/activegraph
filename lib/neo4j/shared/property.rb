@@ -146,11 +146,25 @@ module Neo4j::Shared
       #      property :name, constraint: :unique
       #    end
       def property(name, options = {})
+        build_property(name, options) do |prop|
+          attribute(name, prop.options)
+        end
+      end
+
+      # @param [Symbol] name The property name
+      # @param [ActiveAttr::AttributeDefinition] active_attr A cloned AttributeDefinition to reuse
+      # @param [Hash] options An options hash to use in the new property definition
+      def inherit_property(name, active_attr, options = {})
+        build_property(name, options) do |prop|
+          attributes[prop.name.to_s] = active_attr
+        end
+      end
+
+      def build_property(name, options)
         prop = DeclaredProperty.new(name, options)
         prop.register
         declared_properties.register(prop)
-
-        attribute(name, prop.options)
+        yield prop
         constraint_or_index(name, options)
       end
 

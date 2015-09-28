@@ -32,6 +32,7 @@ module Neo4j::ActiveNode::Labels
       def index(property)
         Neo4j::Session.on_next_session_available do |_|
           drop_constraint(property, type: :unique) if Neo4j::Label.constraint?(mapped_label_name, property)
+          declared_properties[property].index! unless id_property_name == property
           _index(property)
         end
         indexed_properties.push property unless indexed_properties.include? property
@@ -47,6 +48,7 @@ module Neo4j::ActiveNode::Labels
           unless Neo4j::Label.constraint?(mapped_label_name, property)
             label = Neo4j::Label.create(mapped_label_name)
             drop_index(property, label) if index?(property)
+            declared_properties[property].constraint! unless id_property_name == property
             label.create_constraint(property, constraints, session)
           end
         end
@@ -55,6 +57,7 @@ module Neo4j::ActiveNode::Labels
       # @param [Symbol] property The name of the property index to be dropped
       # @param [Neo4j::Label] label An instance of label from Neo4j::Core
       def drop_index(property, label = nil)
+        declared_properties[property].unindex! if declared_properties[property]
         label_obj = label || Neo4j::Label.create(mapped_label_name)
         label_obj.drop_index(property)
       end
@@ -63,6 +66,7 @@ module Neo4j::ActiveNode::Labels
       # @param [Hash] constraint The constraint type to be dropped.
       def drop_constraint(property, constraint = {type: :unique})
         Neo4j::Session.on_next_session_available do |session|
+          declared_properties[property].unconstraint! if declared_properties[property]
           label = Neo4j::Label.create(mapped_label_name)
           label.drop_constraint(property, constraint, session)
         end

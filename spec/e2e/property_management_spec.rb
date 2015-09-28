@@ -13,6 +13,8 @@ describe 'declared property classes' do
     let(:clazz) { Neo4j::Shared::DeclaredProperty }
 
     describe Neo4j::Shared::DeclaredProperty do
+      let(:prop) { clazz.new(:my_prop) }
+
       context 'illegal property names' do
         it 'raises an error' do
           expect { clazz.new(:from_node) }.to raise_error { Neo4j::Shared::DeclaredProperty::IllegalPropertyError }
@@ -40,6 +42,22 @@ describe 'declared property classes' do
 
           expect(created.type).to eq DateTime
           expect(updated.type).to eq DateTime
+        end
+      end
+
+      describe '#index?, #index!, #unindex!' do
+        it 'returns whether a property has been indexed' do
+          expect(prop.index?).to eq false
+          expect { prop.index! }.to change { prop.index? }.from(false).to(true)
+          expect { prop.unindex! }.to change { prop.index? }.to(false)
+        end
+      end
+
+      describe '#constraint?, #constraint!, #unconstraint!' do
+        it 'returns constraint status, changes' do
+          expect(prop.constraint?).to eq false
+          expect { prop.constraint! }.to change { prop.constraint? }.to(true)
+          expect { prop.unconstraint! }.to change { prop.constraint? }.to(false)
         end
       end
     end

@@ -2,6 +2,7 @@ module Neo4j::Shared
   # Contains methods related to the management
   class DeclaredProperty
     class IllegalPropertyError < StandardError; end
+    include Neo4j::Shared::DeclaredProperty::Index
 
     ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
     attr_reader :name, :name_string, :name_sym, :options, :magic_typecaster
@@ -37,15 +38,12 @@ module Neo4j::Shared
       end
     end
 
-    def index?(type = :exact)
-      option_with_value?(:index, type)
-    end
-
-    def constraint?(type = :unique)
-      option_with_value?(:constraint, type)
-    end
-
     private
+
+    def option_with_value!(key, value)
+      options[key] = value
+      fail_invalid_options!
+    end
 
     def option_with_value?(key, value)
       options[key] == value

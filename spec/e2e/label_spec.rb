@@ -77,6 +77,7 @@ describe 'Neo4j::ActiveNode' do
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
+        property :age
         constraint :name, type: :unique
       end
     end
@@ -94,11 +95,15 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'with existing exact index' do
-      before { clazz_with_constraint.index(:foo) }
+      # before { clazz_with_constraint.index(:foo) }
+      before do
+        clazz_with_constraint.drop_constraint(:name)
+        clazz_with_constraint.send(:_index, :name)
+      end
 
       it 'drops the index before making the constraint' do
         expect(clazz_with_constraint).to receive(:drop_index).and_call_original
-        expect { clazz_with_constraint.constraint(:foo, type: :unique) }.not_to raise_error
+        expect { clazz_with_constraint.constraint(:name, type: :unique) }.not_to raise_error
       end
     end
   end
@@ -141,11 +146,15 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'with existing unique constraint' do
-      before { clazz.constraint(:foo, type: :unique) }
+      before do
+        clazz.drop_index(:name)
+        label = Neo4j::Label.create(clazz.mapped_label_name)
+        label.create_constraint(:name, {type: :unique}, Neo4j::Session.current)
+      end
 
       it 'drops the constraint before creating the index' do
         expect(clazz).to receive(:drop_constraint).and_call_original
-        clazz.index(:foo)
+        clazz.index(:name)
       end
     end
   end
