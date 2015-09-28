@@ -9,6 +9,7 @@ module Neo4j::Shared
     include Neo4j::Shared::TypeConverters
 
     attr_reader :klass
+    delegate :each, :each_pair, :each_key, :each_value, to: :registered_properties
 
     # Each class that includes Neo4j::ActiveNode or Neo4j::ActiveRel gets one instance of this class.
     # @param [#declared_properties] klass An object that has the #declared_properties method.

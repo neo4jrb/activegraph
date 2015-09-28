@@ -69,6 +69,15 @@ describe 'declared property classes' do
       expect(inst.declared_properties.object_id).to eq model.declared_properties.object_id
     end
 
+    it 'delegates #each, #each_key, #each_value to #registered_properties' do
+      dpm.each do |name, property|
+        expect(dpm.registered_properties).to have_key(name)
+        expect(dpm.registered_properties[name]).to eq property
+      end
+      expect(dpm.each_key.to_a).to eq(dpm.registered_properties.keys)
+      expect(dpm.each_value.to_a).to eq(dpm.registered_properties.values)
+    end
+
     it 'contains information about each declared property' do
       [:foo, :bar].each do |key|
         expect(dpm.registered_properties[key]).to be_a(Neo4j::Shared::DeclaredProperty)
