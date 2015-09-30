@@ -14,6 +14,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
 - Return `true` on successful `#save!` calls (Thanks to jmdeldin)
 
+## [5.2.8] - 09-30-2015
+
+### Fixed
+- Support `references` in model/scaffold generators
+
+## [5.2.7] - 09-25-2015
+
+### Fixed
+- Allow for association `model_class` to be prepended with double colons
+
 ## [5.2.6] - 09-16-2015
 
 ### Fixed
