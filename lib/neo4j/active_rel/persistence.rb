@@ -74,7 +74,11 @@ module Neo4j::ActiveRel
 
     def _create_rel(from_node, to_node, props = {})
       if from_node.id.nil? || to_node.id.nil?
-        fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}"
+        messages = []
+        messages << 'from_node ID is nil' if from_node.id.nil?
+        messages << 'to_node ID is nil' if to_node.id.nil?
+
+        fail RelCreateFailedError, "Unable to create relationship (#{messages.join(' / ')})"
       end
       _rel_creation_query(from_node, to_node, props)
     end

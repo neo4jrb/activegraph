@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.9] - 09-30-2015
+
+### Fixed
+- Better error message for `ActiveRel` creation when from_node|to_node is not persisted
+
 ## [5.2.8] - 09-30-2015
 
 ### Fixed
