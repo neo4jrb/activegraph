@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+
 ### Added
 
 - Support for Array arguments to ActiveRel's `from_class` and `to_class`.
