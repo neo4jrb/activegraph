@@ -5,6 +5,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+- Refactoring around indexing and constraints in `Neo4j::ActiveNode`. The public interfaces are unchanged.
+- `Neo4j::Shared::DeclaredPropertyManager` was renamed `Neo4j::Shared::DeclaredProperties`. All methods referencing the old name were updated to reflect this.
+- Methods that were using `Neo4j::Session#on_session_available` were updated to reflect the upstream change to `on_next_session_available`.
+
+### Added
+
+- New classes for schema operations, predictably called `Neo4j::Schema::Operation` and subclasses `UniqueConstraintOperation` and `ExactIndexOperation`. These provide methods to aid in the additional, removal, and presence checking of indexes and constraints.
+- A few methods were added to `Neo4j::Shared::DeclaredProperties` to make it easier to work with. In particular, `[key]` acts as a shortcut for `DeclaredProperties#registered_properties`.
+
+### Fixed
+
+- Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
+
 ## [5.2.6] - 09-16-2015
 
 ### Fixed
