@@ -37,7 +37,7 @@ describe 'Neo4j::ActiveNode' do
     describe 'property :name, constraint: :unique' do
       it 'delegates to the Neo4j::Label class' do
         clazz = UniqueClass.create { include Neo4j::ActiveNode }
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:name, {type: :unique}, Neo4j::Session.current)
+        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:name, type: :unique)
         clazz.property :name, constraint: :unique
       end
     end
@@ -97,13 +97,13 @@ describe 'Neo4j::ActiveNode' do
     context 'with existing exact index' do
       # before { clazz_with_constraint.index(:foo) }
       before do
-        clazz_with_constraint.drop_constraint(:name)
-        clazz_with_constraint.send(:_index, :name)
+        Neo4j::Schema::UniqueConstraintOperation.new(clazz_with_constraint.mapped_label_name, :name).drop!
+        Neo4j::Schema::ExactIndexOperation.new(clazz_with_constraint.mapped_label_name, :name).create!
       end
 
       it 'drops the index before making the constraint' do
-        expect(clazz_with_constraint).to receive(:drop_index).and_call_original
-        expect { clazz_with_constraint.constraint(:name, type: :unique) }.not_to raise_error
+        expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).to receive(:drop!).and_call_original
+        clazz_with_constraint.constraint(:name, type: :unique)
       end
     end
   end
@@ -147,14 +147,14 @@ describe 'Neo4j::ActiveNode' do
 
     context 'with existing unique constraint' do
       before do
-        clazz.drop_index(:name)
-        label = Neo4j::Label.create(clazz.mapped_label_name)
-        label.create_constraint(:name, {type: :unique}, Neo4j::Session.current)
+        Neo4j::Schema::ExactIndexOperation.new(clazz.mapped_label_name, :name).drop!
+        Neo4j::Schema::UniqueConstraintOperation.new(clazz.mapped_label_name, :name, type: :unique).create!
       end
 
       it 'drops the constraint before creating the index' do
-        expect(clazz).to receive(:drop_constraint).and_call_original
-        clazz.index(:name)
+        expect do
+          clazz.index(:name)
+        end.to change { Neo4j::Label.constraint?(clazz.mapped_label_name, :name) }.from(true).to(false)
       end
     end
   end

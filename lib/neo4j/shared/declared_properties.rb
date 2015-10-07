@@ -36,6 +36,18 @@ module Neo4j::Shared
       declared_property_defaults[property.name] = property.default_value if !property.default_value.nil?
     end
 
+    def index_or_fail!(key, id_property_name, type = :exact)
+      return if key == id_property_name
+      fail "Cannot index undeclared property #{key}" unless property?(key)
+      registered_properties[key].index!(type)
+    end
+
+    def constraint_or_fail!(key, id_property_name, type = :unique)
+      return if key == id_property_name
+      fail "Cannot constraint undeclared property #{property}" unless property?(key)
+      registered_properties[key].constraint!(type)
+    end
+
     # The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of
     # nil on declared properties. This holds those values.
     def declared_property_defaults
@@ -47,7 +59,7 @@ module Neo4j::Shared
     end
 
     def indexed_properties
-      @_indexed_properties ||= []
+      registered_properties.select { |_, p| p.index_or_constraint? }
     end
 
     # During object wrap, a hash is needed that contains each declared property with a nil value.

@@ -4,6 +4,10 @@ module Neo4j::Shared
     # It could (should?) handle the actual indexing/constraining, but that's TBD.
     # TODO: Fix this duplication. It's late and I'm tired.
     module Index
+      def index_or_constraint?
+        index?(:exact) || constraint?(:unique)
+      end
+
       def index?(type = :exact)
         options.key?(:index) && options[:index] == type
       end

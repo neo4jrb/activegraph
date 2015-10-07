@@ -3,7 +3,7 @@ module Neo4j
     # Provides a mapping between neo4j labels and Ruby classes
     module Labels
       extend ActiveSupport::Concern
-      include Neo4j::ActiveNode::Labels::Indexing
+      include Neo4j::ActiveNode::Labels::Index
       include Neo4j::ActiveNode::Labels::Reloading
 
       WRAPPED_CLASSES = []
