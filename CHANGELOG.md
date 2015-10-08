@@ -20,6 +20,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
 
+## [5.2.9] - 09-30-2015
+
+### Fixed
+- Better error message for `ActiveRel` creation when from_node|to_node is not persisted
+
+## [5.2.8] - 09-30-2015
+
+### Fixed
+- Support `references` in model/scaffold generators
+
+## [5.2.7] - 09-25-2015
+
+### Fixed
+- Allow for association `model_class` to be prepended with double colons
+
 ## [5.2.6] - 09-16-2015
 
 ### Fixed
