@@ -4,13 +4,16 @@ module Neo4j
       attr_reader :label_name, :property, :options
 
       def initialize(label_name, property, options = default_options)
-        @label_name = label_name
-        @property = property
+        @label_name = label_name.to_sym
+        @property = property.to_sym
         @options = options
       end
 
+      def self.incompatible_operation_classes
+        []
+      end
+
       def create!
-        # require 'pry'; binding.pry
         drop_incompatible!
         return if exist?
         label_object.send(:"create_#{type}", property, options)
@@ -20,12 +23,19 @@ module Neo4j
         @label_object ||= Neo4j::Label.create(label_name)
       end
 
+      def incompatible_operation_classes
+        self.class.incompatible_operation_classes
+      end
+
       def drop!
         label_object.send(:"drop_#{type}", property, options)
       end
 
       def drop_incompatible!
-        fail 'Abstract class, not implemented'
+        incompatible_operation_classes.each do |clazz|
+          operation = clazz.new(label_name, property)
+          operation.drop! if operation.exist?
+        end
       end
 
       def exist?
@@ -35,16 +45,19 @@ module Neo4j
       def default_options
         {}
       end
+
+      def type
+        fail 'Abstract class, not implemented'
+      end
     end
 
     class ExactIndexOperation < Neo4j::Schema::Operation
-      def type
-        'index'
+      def self.incompatible_operation_classes
+        [UniqueConstraintOperation]
       end
 
-      def drop_incompatible!
-        operation = UniqueConstraintOperation.new(label_name, property, type: :unique)
-        operation.drop! if operation.exist?
+      def type
+        'index'
       end
 
       def exist?
@@ -53,6 +66,10 @@ module Neo4j
     end
 
     class UniqueConstraintOperation < Neo4j::Schema::Operation
+      def self.incompatible_operation_classes
+        [ExactIndexOperation]
+      end
+
       def type
         'constraint'
       end
@@ -64,11 +81,6 @@ module Neo4j
 
       def exist?
         Neo4j::Label.constraint?(label_name, property)
-      end
-
-      def drop_incompatible!
-        operation = ExactIndexOperation.new(label_name, property)
-        operation.drop! if operation.exist?
       end
 
       def default_options

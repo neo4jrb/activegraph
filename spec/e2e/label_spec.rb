@@ -35,13 +35,12 @@ describe 'Neo4j::ActiveNode' do
     end
 
     describe 'property :name, constraint: :unique' do
-      it 'delegates to the Neo4j::Label class' do
+      it 'delegates to the Schema Operation class' do
         clazz = UniqueClass.create { include Neo4j::ActiveNode }
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:name, type: :unique)
+        expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).to receive(:create!).and_call_original
         clazz.property :name, constraint: :unique
       end
     end
-
 
     describe 'property :age, index: :exact, constraint: :unique' do
       let(:clazz) do
@@ -85,12 +84,23 @@ describe 'Neo4j::ActiveNode' do
     describe 'constraint :name, type: :unique' do
       it 'can not create two nodes with unique properties' do
         clazz_with_constraint.create(name: 'foobar')
-        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error
+        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error Neo4j::Server::CypherResponse::ConstraintViolationError
       end
 
       it 'can create two nodes with different properties' do
         clazz_with_constraint.create(name: 'foobar1')
         expect { clazz_with_constraint.create(name: 'foobar2') }.to_not raise_error
+      end
+    end
+
+    context 'with existing constraint' do
+      context 'when trying to set an index' do
+        before { clazz_with_constraint }
+
+        it 'raises an error, does not create the index' do
+          expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).not_to receive(:create!)
+          expect { clazz_with_constraint.index :name }.to raise_error Neo4j::InvalidPropertyOptionsError
+        end
       end
     end
 
@@ -130,6 +140,17 @@ describe 'Neo4j::ActiveNode' do
     it 'does not create index on other classes' do
       expect(clazz.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
       expect(other_class.mapped_label.indexes).to eq(property_keys: [[:uuid]])
+    end
+
+    context 'when set' do
+      context 'and trying to also set a constraint' do
+        before { clazz }
+
+        it 'raises an error, does not modify the schema' do
+          expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).not_to receive(:create!)
+          expect { clazz.constraint :name, type: :unique }.to raise_error Neo4j::InvalidPropertyOptionsError
+        end
+      end
     end
 
     describe 'when inherited' do

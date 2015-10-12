@@ -2,7 +2,6 @@ module Neo4j::Shared
   class DeclaredProperty
     # None of these methods interact with the database. They only keep track of property settings in models.
     # It could (should?) handle the actual indexing/constraining, but that's TBD.
-    # TODO: Fix this duplication. It's late and I'm tired.
     module Index
       def index_or_constraint?
         index?(:exact) || constraint?(:unique)
@@ -17,10 +16,12 @@ module Neo4j::Shared
       end
 
       def index!(type = :exact)
+        fail Neo4j::InvalidPropertyOptionsError, "Unable to set index on constrainted property #{name}" if constraint?(:unique)
         options[:index] = type
       end
 
       def constraint!(type = :unique)
+        fail Neo4j::InvalidPropertyOptionsError, "Unable to set constraint on indexed property #{name}" if index?(:exact)
         options[:constraint] = type
       end
 

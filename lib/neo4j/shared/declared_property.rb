@@ -34,7 +34,8 @@ module Neo4j::Shared
     def fail_invalid_options!
       case
       when index?(:exact) && constraint?(:unique)
-        fail Neo4j::InvalidPropertyOptionsError, 'Uniqueness constraints also provide exact indexes, cannot set both options'
+        fail Neo4j::InvalidPropertyOptionsError,
+             "#Uniqueness constraints also provide exact indexes, cannot set both options on property #{name}"
       end
     end
 
