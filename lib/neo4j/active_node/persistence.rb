@@ -60,7 +60,12 @@ module Neo4j::ActiveNode
     # @param [Array] labels The labels to use for creating the new node.
     # @return [Neo4j::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
-      self.class.neo4j_session.create_node(node_props, labels)
+      query = Neo4j::Core::Query.new(session: nil)
+        .create("(n:#{labels.join(':')} {properties})")
+        .params(properties: node_props)
+        .return(:n)
+
+      self.class.neo4j_session.query(query).first.n
     end
 
     # As the name suggests, this inserts the primary key (id property) into the properties hash.
@@ -84,10 +89,11 @@ module Neo4j::ActiveNode
     # The pending associations are cleared during the save process, so it's necessary to
     # build the processable hash before it begins. If there are nodes and associations that
     # need to be created after the node is saved, a new transaction is started.
-    def cascade_save
+    def cascade_save(&block)
       deferred_nodes = pending_associations_with_nodes
-      Neo4j::Transaction.run(!deferred_nodes.blank?) do
-        result = yield
+      #Neo4j::Transaction.run(!deferred_nodes.blank?) do
+      self.class.neo4j_session.transaction do
+        result = block.call
         process_unpersisted_nodes!(deferred_nodes) if deferred_nodes
         result
       end

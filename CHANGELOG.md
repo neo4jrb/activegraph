@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
 - Return `true` on successful `#save!` calls (Thanks to jmdeldin)
+- Using new Neo4j::Core::CypherSession API.  Multiple sessions no longer supported (don't know if that was ever used)
 
 ## [5.2.9] - 09-30-2015
 

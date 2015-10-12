@@ -30,6 +30,8 @@ require 'neo4j-core'
 require 'neo4j'
 require 'unique_class'
 
+require 'neo4j/core/cypher_session'
+
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
 
@@ -55,9 +57,13 @@ module Neo4jSpecHelpers
   extend ActiveSupport::Concern
 
   def create_embedded_session
-    require 'neo4j-embedded/embedded_impermanent_session'
-    session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
-    session.start
+    #require 'neo4j-embedded/embedded_impermanent_session'
+    #session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
+    #session.start
+
+    adaptor = Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH)
+    Neo4j::Config[:session] = Neo4j::Core::CypherSession.new(adaptor)
+
   end
 
   def server_username
@@ -68,19 +74,14 @@ module Neo4jSpecHelpers
     ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
   end
 
-  def basic_auth_hash
-    {
-      username: server_username,
-      password: server_password
-    }
-  end
-
   def server_url
-    ENV['NEO4J_URL'] || 'http://localhost:7474'
+    ENV['NEO4J_URL'] || "http://#{server_username}:#{server_password}@localhost:7474"
   end
 
   def create_server_session(options = {})
-    Neo4j::Session.open(:server_db, server_url, {basic_auth: basic_auth_hash}.merge(options))
+    adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url)
+    Neo4j::Config[:session] = Neo4j::Core::CypherSession.new(adaptor)
+
     delete_db # Should separate this out
   end
 
@@ -90,10 +91,6 @@ module Neo4jSpecHelpers
     else
       create_server_session
     end
-  end
-
-  def create_named_server_session(name, default = nil)
-    Neo4j::Session.open_named(:server_db, name, default, server_url, basic_auth: basic_auth_hash)
   end
 
   def session
@@ -146,7 +143,7 @@ end
 
 def delete_db
   # clear_model_memory_caches
-  Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
+  Neo4j::Config[:session].query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }

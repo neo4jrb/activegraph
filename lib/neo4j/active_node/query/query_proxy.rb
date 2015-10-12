@@ -179,7 +179,7 @@ module Neo4j
 
           properties = @association.inject_classname(properties)
 
-          Neo4j::Transaction.run do
+          neo4j_session.transaction do
             other_nodes.each do |other_node|
               other_node.save unless other_node.neo_id
 
@@ -207,10 +207,12 @@ module Neo4j
         end
 
         def _create_relationship(other_node_or_nodes, properties)
-          _session.query(context: @options[:context])
+          query = ::Neo4j::Core::Query.new(context: @options[:context])
             .match(:start, :end)
             .where(start: {neo_id: @start_object}, end: {neo_id: other_node_or_nodes})
-            .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
+            .send(association.create_method, "start#{_association_arrow(properties, true)}end")
+
+          neo4j_session.query(query)
         end
 
         def read_attribute_for_serialization(*args)
@@ -273,7 +275,7 @@ module Neo4j
         end
 
         def _query
-          _session.query(context: @context)
+          ::Neo4j::Core::Query.new(context: @context, session: @model.neo4j_session)
         end
 
         # TODO: Refactor this. Too much happening here.

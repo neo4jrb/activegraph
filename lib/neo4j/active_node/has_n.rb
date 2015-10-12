@@ -353,7 +353,7 @@ module Neo4j::ActiveNode
         define_method("#{name}=") do |other_nodes|
           association_proxy_cache.clear
 
-          Neo4j::Transaction.run { association_proxy(name).replace_with(other_nodes) }
+          self.class.neo4j_session.transaction { association_proxy(name).replace_with(other_nodes) }
         end
       end
 
@@ -423,7 +423,7 @@ module Neo4j::ActiveNode
           if persisted?
             other_node.save if other_node.respond_to?(:persisted?) && !other_node.persisted?
             association_proxy_cache.clear # TODO: Should probably just clear for this association...
-            Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
+            self.class.neo4j_session.transaction { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)
           else
             association_proxy(name).defer_create(other_node)

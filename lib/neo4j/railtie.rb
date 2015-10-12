@@ -95,12 +95,22 @@ module Neo4j
     # register migrations in config/initializers
     initializer 'neo4j.start', after: :load_config_initializers do |app|
       cfg = app.config.neo4j
-      # Set Rails specific defaults
-      Neo4j::Railtie.setup_default_session(cfg)
+      if cfg.session_type || cfg.session_path
+        options = cfg.session_options || {}
+        adaptor = case cfg.session_type || :server_db
+                  when :server_db
+                    url = cfg.session_path || 'http://localhost:7474'
+                    Neo4j::Core::CypherSession::Adaptors::HTTP.new(url, options)
+                  when :embedded_db
+                    path = cfg.session_path || './neo4j_db'
+                    Neo4j::Core::CypherSession::Adaptors::Embedded.new(path, options)
+                  else
+                    fail "Invalid session_type: #{cfg.session_type}"
+                  end
 
-      cfg.sessions.each do |session_opts|
-        Neo4j::Railtie.open_neo4j_session(session_opts)
+        Neo4j::Config[:session] = Neo4j::Core::CypherSession.new(adaptor)
       end
+
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 
       Neo4j::Config[:logger] ||= Rails.logger

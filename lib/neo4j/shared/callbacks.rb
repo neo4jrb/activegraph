@@ -36,13 +36,13 @@ module Neo4j
       end
 
       def create_model #:nodoc:
-        Neo4j::Transaction.run do
+        self.class.neo4j_session.transaction do
           run_callbacks(:create) { super }
         end
       end
 
       def update_model(*) #:nodoc:
-        Neo4j::Transaction.run do
+        self.class.neo4j_session.transaction do
           run_callbacks(:update) { super }
         end
       end
