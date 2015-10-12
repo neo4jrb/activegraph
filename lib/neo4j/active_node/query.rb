@@ -68,7 +68,7 @@ module Neo4j
         # @param [String, Symbol] node_var A string or symbol to use as the starting identifier.
         # @return [Neo4j::ActiveNode::Query::QueryProxy]
         def as(node_var)
-          query_proxy(node: node_var)
+          query_proxy(node: node_var, context: self.name)
         end
       end
     end

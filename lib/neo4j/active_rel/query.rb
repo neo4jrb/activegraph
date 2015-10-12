@@ -41,11 +41,17 @@ module Neo4j::ActiveRel
 
       private
 
+      def deprecation_warning!
+        ActiveSupport::Deprecation.warn 'The Neo4j::ActiveRel::Query module has been deprecated and will be removed in a future version of the gem.', caller
+      end
+
       def where_query
+        deprecation_warning!
         Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
       end
 
       def all_query
+        deprecation_warning!
         Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
       end
 
@@ -71,6 +77,8 @@ module Neo4j::ActiveRel
           given_class.constantize
         when Symbol
           given_class.to_s.constantize
+        when Array
+          fail "ActiveRel query methods are being deprecated and do not support Array (from|to)_class options. Current value: #{given_class}"
         else
           given_class
         end
