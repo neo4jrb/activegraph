@@ -84,7 +84,7 @@ describe 'Neo4j::ActiveNode' do
     describe 'constraint :name, type: :unique' do
       it 'can not create two nodes with unique properties' do
         clazz_with_constraint.create(name: 'foobar')
-        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error Neo4j::Server::CypherResponse::ConstraintViolationError
+        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error StandardError, /already exists/
       end
 
       it 'can create two nodes with different properties' do
