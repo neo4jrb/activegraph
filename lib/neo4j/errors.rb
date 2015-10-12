@@ -7,4 +7,6 @@ module Neo4j
   # Raised when Neo4j.rb cannot find record by given id.
   class RecordNotFound < Neo4jrbError
   end
+
+  class InvalidPropertyOptionsError < Neo4jrbError; end
 end

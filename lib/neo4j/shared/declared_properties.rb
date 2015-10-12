@@ -5,15 +5,24 @@ module Neo4j::Shared
   # a way of separating behavior from the general Active{obj} modules.
   #
   # See Neo4j::Shared::DeclaredProperty for definitions of the property objects themselves.
-  class DeclaredPropertyManager
+  class DeclaredProperties
     include Neo4j::Shared::TypeConverters
 
     attr_reader :klass
+    delegate :each, :each_pair, :each_key, :each_value, to: :registered_properties
 
     # Each class that includes Neo4j::ActiveNode or Neo4j::ActiveRel gets one instance of this class.
-    # @param [#declared_property_manager] klass An object that has the #declared_property_manager method.
+    # @param [#declared_properties] klass An object that has the #declared_properties method.
     def initialize(klass)
       @klass = klass
+    end
+
+    def [](key)
+      registered_properties[key.to_sym]
+    end
+
+    def property?(key)
+      registered_properties.key?(key.to_sym)
     end
 
     # @param [Neo4j::Shared::DeclaredProperty] property An instance of DeclaredProperty, created as the result of calling
@@ -27,6 +36,18 @@ module Neo4j::Shared
       declared_property_defaults[property.name] = property.default_value if !property.default_value.nil?
     end
 
+    def index_or_fail!(key, id_property_name, type = :exact)
+      return if key == id_property_name
+      fail "Cannot index undeclared property #{key}" unless property?(key)
+      registered_properties[key].index!(type)
+    end
+
+    def constraint_or_fail!(key, id_property_name, type = :unique)
+      return if key == id_property_name
+      fail "Cannot constraint undeclared property #{property}" unless property?(key)
+      registered_properties[key].constraint!(type)
+    end
+
     # The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of
     # nil on declared properties. This holds those values.
     def declared_property_defaults
@@ -35,6 +56,10 @@ module Neo4j::Shared
 
     def registered_properties
       @_registered_properties ||= {}
+    end
+
+    def indexed_properties
+      registered_properties.select { |_, p| p.index_or_constraint? }
     end
 
     # During object wrap, a hash is needed that contains each declared property with a nil value.

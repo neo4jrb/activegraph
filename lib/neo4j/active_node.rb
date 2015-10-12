@@ -59,25 +59,16 @@ module Neo4j
 
       def self.inherited(other)
         inherit_id_property(other)
-        inherited_indexes(other) if self.respond_to?(:indexed_properties)
-        attributes.each_pair { |k, v| other.attributes[k] = v }
-        inherit_serialized_properties(other) if self.respond_to?(:serialized_properties)
-        Neo4j::ActiveNode::Labels.add_wrapped_class(other)
+        attributes.each_pair do |k, v|
+          other.inherit_property k.to_sym, v.clone, declared_properties[k].options
+        end
 
+        Neo4j::ActiveNode::Labels.add_wrapped_class(other)
         super
       end
 
-      def self.inherited_indexes(other)
-        return if indexed_properties.nil?
-        self.indexed_properties.each { |property| other.index property }
-      end
-
-      def self.inherit_serialized_properties(other)
-        other.serialized_properties = self.serialized_properties
-      end
-
       def self.inherit_id_property(other)
-        Neo4j::Session.on_session_available do |_|
+        Neo4j::Session.on_next_session_available do |_|
           next if other.manual_id_property? || !self.id_property?
           id_prop = self.id_property_info
           conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
@@ -85,7 +76,7 @@ module Neo4j
         end
       end
 
-      Neo4j::Session.on_session_available do |_|
+      Neo4j::Session.on_next_session_available do |_|
         next if manual_id_property?
         id_property :uuid, auto: :uuid unless self.id_property?
 

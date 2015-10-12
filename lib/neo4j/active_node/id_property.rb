@@ -140,7 +140,7 @@ module Neo4j::ActiveNode
 
       def id_property(name, conf = {})
         self.manual_id_property = true
-        Neo4j::Session.on_session_available do |_|
+        Neo4j::Session.on_next_session_available do |_|
           @id_property_info = {name: name, type: conf}
           TypeMethods.define_id_methods(self, name, conf)
           constraint(name, type: :unique) unless conf[:constraint] == false

@@ -103,7 +103,7 @@ module Neo4j
             end
 
             def converted_value(model, key, value)
-              model.declared_property_manager.value_for_where(key, value)
+              model.declared_properties.value_for_where(key, value)
             end
           end
         end

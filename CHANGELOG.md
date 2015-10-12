@@ -5,18 +5,28 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
-### Fixed
+### Changed
 
-- Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+- Refactoring around indexing and constraints in `Neo4j::ActiveNode`. The public interfaces are unchanged.
+- `Neo4j::Shared::DeclaredPropertyManager` was renamed `Neo4j::Shared::DeclaredProperties`. All methods referencing the old name were updated to reflect this.
+- Methods that were using `Neo4j::Session#on_session_available` were updated to reflect the upstream change to `on_next_session_available`.
+- `rel_where` will now use ActiveRel classes for type conversion, when possible.
+- Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
+- Removed the ability to set both an exact index and unique constraint on the same property in a model. Unique constraints also provide exact indexes.
+- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+- Return `true` on successful `#save!` calls (Thanks to jmdeldin)
 
 ### Added
 
+- New classes for schema operations, predictably called `Neo4j::Schema::Operation` and subclasses `UniqueConstraintOperation` and `ExactIndexOperation`. These provide methods to aid in the additional, removal, and presence checking of indexes and constraints.
+- A few methods were added to `Neo4j::Shared::DeclaredProperties` to make it easier to work with. In particular, `[key]` acts as a shortcut for `DeclaredProperties#registered_properties`.
+- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
 - Support for Array arguments to ActiveRel's `from_class` and `to_class`.
 
-### Changed
+### Fixed
 
-- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
-- Return `true` on successful `#save!` calls (Thanks to jmdeldin)
+- Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
+- Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
 
 ## [5.2.9] - 09-30-2015
 
@@ -44,11 +54,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Regression in last release caused properties to revert to default on update if not present in the properties for update
-
-### Added
-- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
-- `rel_where` will now use ActiveRel classes for type conversion, when possible.
-- Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
 
 ## [5.2.4] - 09-11-2015
 

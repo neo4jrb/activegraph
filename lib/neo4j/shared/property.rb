@@ -108,10 +108,10 @@ module Neo4j::Shared
     module ClassMethods
       extend Forwardable
 
-      def_delegators :declared_property_manager, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
+      def_delegators :declared_properties, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
 
       def inherited(other)
-        self.declared_property_manager.registered_properties.each_pair do |prop_key, prop_def|
+        self.declared_properties.registered_properties.each_pair do |prop_key, prop_def|
           other.property(prop_key, prop_def.options)
         end
         super
@@ -146,22 +146,36 @@ module Neo4j::Shared
       #      property :name, constraint: :unique
       #    end
       def property(name, options = {})
+        build_property(name, options) do |prop|
+          attribute(name, prop.options)
+        end
+      end
+
+      # @param [Symbol] name The property name
+      # @param [ActiveAttr::AttributeDefinition] active_attr A cloned AttributeDefinition to reuse
+      # @param [Hash] options An options hash to use in the new property definition
+      def inherit_property(name, active_attr, options = {})
+        build_property(name, options) do |prop|
+          attributes[prop.name.to_s] = active_attr
+        end
+      end
+
+      def build_property(name, options)
         prop = DeclaredProperty.new(name, options)
         prop.register
-        declared_property_manager.register(prop)
-
-        attribute(name, prop.options)
+        declared_properties.register(prop)
+        yield prop
         constraint_or_index(name, options)
       end
 
       def undef_property(name)
-        declared_property_manager.unregister(name)
+        declared_properties.unregister(name)
         attribute_methods(name).each { |method| undef_method(method) }
         undef_constraint_or_index(name)
       end
 
-      def declared_property_manager
-        @_declared_property_manager ||= DeclaredPropertyManager.new(self)
+      def declared_properties
+        @_declared_properties ||= DeclaredProperties.new(self)
       end
 
       def attribute!(name, options = {})
@@ -176,7 +190,7 @@ module Neo4j::Shared
       # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents
       # an extra call to a slow dependency method.
       def attributes_nil_hash
-        declared_property_manager.attributes_nil_hash
+        declared_properties.attributes_nil_hash
       end
 
       private
@@ -188,7 +202,7 @@ module Neo4j::Shared
           constraint(name, type: :unique)
         elsif options[:index]
           fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
-          index(name, options) if options[:index] == :exact
+          index(name) if options[:index] == :exact
         end
       end
     end

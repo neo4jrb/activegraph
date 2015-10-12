@@ -29,19 +29,18 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'creates an index' do
-        clazz.should_receive(:index).with(:age, index: :exact)
+        clazz.should_receive(:index).with(:age)
         clazz.property :age, index: :exact
       end
     end
 
     describe 'property :name, constraint: :unique' do
-      it 'delegates to the Neo4j::Label class' do
+      it 'delegates to the Schema Operation class' do
         clazz = UniqueClass.create { include Neo4j::ActiveNode }
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:name, {type: :unique}, Neo4j::Session.current)
+        expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).to receive(:create!).and_call_original
         clazz.property :name, constraint: :unique
       end
     end
-
 
     describe 'property :age, index: :exact, constraint: :unique' do
       let(:clazz) do
@@ -50,10 +49,9 @@ describe 'Neo4j::ActiveNode' do
         end
       end
 
-      it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
-        expect(clazz).to_not receive(:index)
-        expect_any_instance_of(Neo4j::Label).to receive(:create_constraint).with(:age, {type: :unique}, Neo4j::Session.current)
-        clazz.property :age, index: :exact, constraint: :unique
+      it 'raises an error, cannot set both index and constraint' do
+        expect { clazz.property :age, index: :exact, constraint: :unique }
+          .to raise_error(Neo4j::InvalidPropertyOptionsError)
       end
     end
 
@@ -78,17 +76,15 @@ describe 'Neo4j::ActiveNode' do
       UniqueClass.create do
         include Neo4j::ActiveNode
         property :name
+        property :age
         constraint :name, type: :unique
-
-        property :colour
-        index :colour, constraint: {type: :unique}
       end
     end
 
     describe 'constraint :name, type: :unique' do
       it 'can not create two nodes with unique properties' do
         clazz_with_constraint.create(name: 'foobar')
-        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error
+        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error StandardError, /already exists/
       end
 
       it 'can create two nodes with different properties' do
@@ -97,19 +93,27 @@ describe 'Neo4j::ActiveNode' do
       end
     end
 
-    describe 'index :colour, constraint: {type: :unique}' do
-      it 'can not create two nodes with unique properties' do
-        clazz_with_constraint.create(colour: 'red')
-        expect { clazz_with_constraint.create(colour: 'red') }.to raise_error
+    context 'with existing constraint' do
+      context 'when trying to set an index' do
+        before { clazz_with_constraint }
+
+        it 'raises an error, does not create the index' do
+          expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).not_to receive(:create!)
+          expect { clazz_with_constraint.index :name }.to raise_error Neo4j::InvalidPropertyOptionsError
+        end
       end
     end
 
     context 'with existing exact index' do
-      before { clazz_with_constraint.index(:foo) }
+      # before { clazz_with_constraint.index(:foo) }
+      before do
+        Neo4j::Schema::UniqueConstraintOperation.new(clazz_with_constraint.mapped_label_name, :name).drop!
+        Neo4j::Schema::ExactIndexOperation.new(clazz_with_constraint.mapped_label_name, :name).create!
+      end
 
       it 'drops the index before making the constraint' do
-        expect(clazz_with_constraint).to receive(:drop_index).and_call_original
-        expect { clazz_with_constraint.constraint(:foo, type: :unique) }.not_to raise_error
+        expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).to receive(:drop!).and_call_original
+        clazz_with_constraint.constraint(:name, type: :unique)
       end
     end
   end
@@ -138,6 +142,17 @@ describe 'Neo4j::ActiveNode' do
       expect(other_class.mapped_label.indexes).to eq(property_keys: [[:uuid]])
     end
 
+    context 'when set' do
+      context 'and trying to also set a constraint' do
+        before { clazz }
+
+        it 'raises an error, does not modify the schema' do
+          expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).not_to receive(:create!)
+          expect { clazz.constraint :name, type: :unique }.to raise_error Neo4j::InvalidPropertyOptionsError
+        end
+      end
+    end
+
     describe 'when inherited' do
       it 'has an index on both base and subclass' do
         class Foo1
@@ -152,11 +167,15 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'with existing unique constraint' do
-      before { clazz.constraint(:foo, type: :unique) }
+      before do
+        Neo4j::Schema::ExactIndexOperation.new(clazz.mapped_label_name, :name).drop!
+        Neo4j::Schema::UniqueConstraintOperation.new(clazz.mapped_label_name, :name, type: :unique).create!
+      end
 
       it 'drops the constraint before creating the index' do
-        expect(clazz).to receive(:drop_constraint).and_call_original
-        clazz.index(:foo)
+        expect do
+          clazz.index(:name)
+        end.to change { Neo4j::Label.constraint?(clazz.mapped_label_name, :name) }.from(true).to(false)
       end
     end
   end
