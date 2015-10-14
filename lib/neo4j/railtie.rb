@@ -34,8 +34,8 @@ module Neo4j
       end
 
       def setup_config_defaults!(cfg)
-        cfg.session_type ||= :server_db
-        cfg.session_path ||= 'http://localhost:7474'
+        cfg.session_type ||= ENV['NEO4J_PATH'] ? :embedded_db : :server_db
+        cfg.session_path ||= ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
         cfg.session_options ||= {}
         cfg.sessions ||= []
 
