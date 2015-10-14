@@ -40,6 +40,7 @@ describe 'Query API' do
     stub_active_node_class('Student') do
       property :name
       property :age, type: Integer
+      property :likely_to_succeed, default: false
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
@@ -648,6 +649,7 @@ describe 'Query API' do
           expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
           expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
           expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher_age=>1')
+          expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params).to include(':result_student_likely_to_succeed=>false')
         end
 
         context '...and values already in the destination format' do
@@ -656,6 +658,7 @@ describe 'Query API' do
             expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
             expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
             expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher_age=>1')
+            expect(Student.where(likely_to_succeed: false).to_cypher_with_params).to include(':result_student_likely_to_succeed=>false')
           end
         end
 
