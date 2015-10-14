@@ -97,13 +97,11 @@ module Neo4j::Shared
           convert_type.include?(value)
         end
 
-        def convert_type
-          [true, false]
-        end
-
         def db_type
           ActiveAttr::Typecasting::Boolean
         end
+
+        alias_method :convert_type, :db_type
 
         def to_db(value)
           return false if FALSE_VALUES.include?(value)
