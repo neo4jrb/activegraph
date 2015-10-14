@@ -40,6 +40,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
 - Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
 
+## [5.2.10] - 10-14-2015
+
+### Fixed
+- `has_one` does not define `_id` methods if they are already defined.  Also use `method_defined?` instead of `respond_to?` since it is at the class level
+
 ## [5.2.9] - 09-30-2015
 
 ### Fixed
