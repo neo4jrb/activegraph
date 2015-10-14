@@ -40,7 +40,8 @@ describe 'Query API' do
     stub_active_node_class('Student') do
       property :name
       property :age, type: Integer
-      property :likely_to_succeed, default: false
+
+      property :likely_to_succeed, type: ActiveAttr::Typecasting::Boolean, default: false
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
