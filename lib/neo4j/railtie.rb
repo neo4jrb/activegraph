@@ -34,18 +34,19 @@ module Neo4j
       end
 
       def setup_config_defaults!(cfg)
-        cfg.session_type ||= ENV['NEO4J_PATH'] ? :embedded_db : :server_db
-        cfg.session_path ||= ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
+        cfg.session_type ||= default_session_type
+        cfg.session_path ||= default_session_path
         cfg.session_options ||= {}
         cfg.sessions ||= []
-
-        uri = URI(cfg.session_path)
-        return if uri.user.blank?
-
-        cfg.session_options.reverse_merge!(basic_auth: {username: uri.user, password: uri.password})
-        cfg.session_path = cfg.session_path.gsub("#{uri.user}:#{uri.password}@", '')
       end
 
+      def default_session_type
+        ENV['NEO4J_PATH'] ? :embedded_db : :server_db
+      end
+
+      def default_session_path
+        ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
+      end
 
       def start_embedded_session(session)
         # See https://github.com/jruby/jruby/wiki/UnlimitedStrengthCrypto
