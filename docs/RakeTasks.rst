@@ -41,6 +41,15 @@ The ``neo4j-core`` gem (automatically included with the ``neo4j`` gem) includes 
 
   .. _rake_tasks-neo4j_start_no_wait:
 
+  **neo4j:start**
+    **Arguments:** ``environment``
+
+    **Example:** ``rake neo4j:shell[development]``
+
+    Open a Neo4j shell console (REPL shell).
+
+    If Neo4j isn't already started this task will first start the server and shut it down after the shell is exited.
+
   **neo4j:start_no_wait**
     **Arguments:** ``environment``
 
