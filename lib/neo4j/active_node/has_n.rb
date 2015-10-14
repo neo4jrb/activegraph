@@ -341,7 +341,7 @@ module Neo4j::ActiveNode
       end
 
       def define_method_unless_defined(method_name, &block)
-        define_method(method_name, block) unless respond_to?(method_name)
+        define_method(method_name, block) unless method_defined?(method_name)
       end
 
       def define_has_one_methods(name)
@@ -357,7 +357,7 @@ module Neo4j::ActiveNode
       end
 
       def define_has_one_id_methods(name)
-        define_method("#{name}_id") do
+        define_method_unless_defined("#{name}_id") do
           association_proxy(name).pluck(:uuid).first
         end
 
@@ -365,7 +365,7 @@ module Neo4j::ActiveNode
           association_proxy(name).replace_with(id)
         end
 
-        define_method("#{name}_neo_id") do
+        define_method_unless_defined("#{name}_neo_id") do
           association_proxy(name).pluck(:neo_id).first
         end
       end

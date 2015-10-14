@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.10] - 10-14-2015
+
+### Fixed
+- `has_one` does not define `_id` methods if they are already defined.  Also use `method_defined?` instead of `respond_to?` since it is at the class level
+
 ## [5.2.9] - 09-30-2015
 
 ### Fixed
