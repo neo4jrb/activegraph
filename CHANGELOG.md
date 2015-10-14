@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.alpha.3] - 10-14-2015
+
+### Removed
+
+- Railtie was removing username/password and putting them into the session options.  This has been unneccessary in `neo4j-core` for a while now
+
 ## [6.0.0.alpha.2] - 10-14-2015
 
 ### Added
