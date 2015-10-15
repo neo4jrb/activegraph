@@ -127,6 +127,17 @@ describe Neo4j::Shared::TypeConverters do
   describe 'Boolean' do
     subject { Neo4j::Shared::TypeConverters::BooleanConverter }
 
+    describe '#converted?' do
+      def converted?(value)
+        Neo4j::Shared::TypeConverters::BooleanConverter.converted?(value)
+      end
+
+      it do
+        [true, false].each { |bool| expect(converted?(bool)).to eq true }
+        %w(true false).each { |string| expect(converted?(string)).to eq false }
+      end
+    end
+
     describe '#to_db' do
       it 'returns true for true' do
         subject.to_db(true).should equal true
