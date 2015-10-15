@@ -94,7 +94,11 @@ module Neo4j::Shared
 
       class << self
         def converted?(value)
-          convert_type.include?(value)
+          converted_values.include?(value)
+        end
+
+        def converted_values
+          [true, false]
         end
 
         def db_type
