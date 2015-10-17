@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.alpha.4] - 10-17-2015
+
+### Fixed
+
+- `QueryProxy` was not converting Boolean properties correctly
+
 ## [6.0.0.alpha.3] - 10-14-2015
 
 ### Removed
