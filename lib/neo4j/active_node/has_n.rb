@@ -332,10 +332,7 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           # return [].freeze unless self._persisted_obj
 
-          if node.is_a?(Hash)
-            options = node
-            node = nil
-          end
+          options, node = node, nil if node.is_a?(Hash)
 
           association_proxy(name, {node: node, rel: rel, source_object: self, labels: options[:labels]}.merge!(options))
         end
@@ -345,6 +342,8 @@ module Neo4j::ActiveNode
         define_has_many_id_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
+          options, node = node, nil if node.is_a?(Hash)
+
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
       end
@@ -383,6 +382,8 @@ module Neo4j::ActiveNode
         define_has_one_id_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
+          options, node = node, nil if node.is_a?(Hash)
+
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
       end
@@ -403,10 +404,7 @@ module Neo4j::ActiveNode
 
       def define_has_one_getter(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          if node.is_a?(Hash)
-            options = node
-            node = nil
-          end
+          options, node = node, nil if node.is_a?(Hash)
 
           # Return all results if a variable-length relationship length was given
           association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
