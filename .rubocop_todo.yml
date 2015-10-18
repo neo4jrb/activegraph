@@ -28,6 +28,11 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Max: 15
 
+# Offense count: 19
+# Configuration parameters: CountComments.
+Metrics/MethodLength:
+  Max: 157
+
 # Offense count: 29
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/ClassAndModuleChildren:
