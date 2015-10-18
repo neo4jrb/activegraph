@@ -14,9 +14,8 @@ module Neo4j
         end
 
         def result(node = true, rel = nil)
-          puts '@result_cache', @result_cache.inspect
           @result_cache ||= {}
-          return result_cache_for(node, rel) if has_result_cache?(node, rel)
+          return result_cache_for(node, rel) if result_cache?(node, rel)
 
           pluck_vars = []
           pluck_vars << identity if node
@@ -32,7 +31,7 @@ module Neo4j
           @result_cache[[node, rel]] ||= result
         end
 
-        def has_result_cache?(node = true, rel = nil)
+        def result_cache?(node = true, rel = nil)
           !!result_cache_for(node, rel)
         end
 

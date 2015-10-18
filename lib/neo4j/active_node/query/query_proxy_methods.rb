@@ -64,17 +64,10 @@ module Neo4j
         end
 
         def size
-          puts 'size'
-          if has_result_cache?
-            result_cache_for.length
-          else
-            count
-          end
+          result_cache? ? result_cache_for.length : count
         end
 
-        def length
-          to_a.length
-        end
+        delegate :length, to: :to_a
 
         # TODO: update this with public API methods if/when they are exposed
         def limit_value
@@ -250,10 +243,8 @@ module Neo4j
 
         def exists_query_start(condition, target)
           case condition
-          when Integer
-            self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
-          when Hash
-            self.where(condition.keys.first => condition.values.first)
+          when Integer then self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
+          when Hash then self.where(condition.keys.first => condition.values.first)
           else
             self
           end
