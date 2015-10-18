@@ -12,7 +12,7 @@ module Neo4j::ActiveRel
     end
 
     def save!(*args)
-      fail RelInvalidError, self unless save(*args)
+      save(*args) or fail(RelInvalidError, self) # rubocop:disable Style/AndOr
     end
 
     def create_model
@@ -60,11 +60,20 @@ module Neo4j::ActiveRel
         type = from_node == node ? :_from_class : :_to_class
         type_class = self.class.send(type)
 
-        next if [:any, false].include?(type_class)
-
-        unless node.class.mapped_label_names.include?(type_class.to_s.constantize.mapped_label_name)
+        unless valid_type?(type_class, node)
           fail ModelClassInvalidError, type_validation_error_message(node, type_class)
         end
+      end
+    end
+
+    def valid_type?(type_object, node)
+      case type_object
+      when false, :any
+        true
+      when Array
+        type_object.any? { |c| valid_type?(c, node) }
+      else
+        node.class.mapped_label_names.include?(type_object.to_s.constantize.mapped_label_name)
       end
     end
 
@@ -74,7 +83,11 @@ module Neo4j::ActiveRel
 
     def _create_rel(from_node, to_node, props = {})
       if from_node.id.nil? || to_node.id.nil?
-        fail RelCreateFailedError, "Unable to create relationship (id is nil). from_node: #{from_node}, to_node: #{to_node}"
+        messages = []
+        messages << 'from_node ID is nil' if from_node.id.nil?
+        messages << 'to_node ID is nil' if to_node.id.nil?
+
+        fail RelCreateFailedError, "Unable to create relationship (#{messages.join(' / ')})"
       end
       _rel_creation_query(from_node, to_node, props)
     end

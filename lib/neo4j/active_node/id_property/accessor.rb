@@ -28,7 +28,7 @@ module Neo4j::ActiveNode::IdProperty
         @default_property_key ||= default_properties_keys.first
       end
 
-      # TODO: Move this to the DeclaredPropertyManager
+      # TODO: Move this to the DeclaredProperties
       def default_property(name, &block)
         reset_default_properties(name) if default_properties.respond_to?(:size)
         default_properties[name] = block

@@ -13,9 +13,9 @@ module Neo4j
           result(node, rel).each(&block)
         end
 
-        def result(node = true, rel = true)
+        def result(node = true, rel = nil)
           @result_cache ||= {}
-          return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+          return result_cache_for(node, rel) if result_cache?(node, rel)
 
           pluck_vars = []
           pluck_vars << identity if node
@@ -29,6 +29,14 @@ module Neo4j
           end
 
           @result_cache[[node, rel]] ||= result
+        end
+
+        def result_cache?(node = true, rel = nil)
+          !!result_cache_for(node, rel)
+        end
+
+        def result_cache_for(node = true, rel = nil)
+          (@result_cache || {})[[node, rel]]
         end
 
         def fetch_result_cache

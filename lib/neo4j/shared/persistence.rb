@@ -106,25 +106,8 @@ module Neo4j::Shared
 
     # Returns +true+ if the object was destroyed.
     def destroyed?
-      @_deleted || _destroyed_double_check?
+      @_deleted
     end
-
-    # These two methods should be removed in 6.0.0
-    def _destroyed_double_check?
-      if _active_record_destroyed_behavior?
-        false
-      else
-        (!new_record? && !exist?)
-      end
-    end
-
-    def _active_record_destroyed_behavior?
-      fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
-
-      !!Neo4j::Config[:_active_record_destroyed_behavior]
-    end
-    # End of two methods which should be removed in 6.0.0
-
 
     # @return [Hash] all defined and none nil properties
     def props
@@ -188,7 +171,7 @@ module Neo4j::Shared
     private
 
     def props_for_db(props_hash)
-      self.class.declared_property_manager.convert_properties_to(self, :db, props_hash)
+      self.class.declared_properties.convert_properties_to(self, :db, props_hash)
     end
 
     def model_cache_key
@@ -217,8 +200,8 @@ module Neo4j::Shared
     end
 
     def inject_defaults!(properties)
-      self.class.declared_property_manager.declared_property_defaults.each_pair do |k, v|
-        properties[k.to_sym] = v unless properties.key?(k.to_sym)
+      self.class.declared_properties.declared_property_defaults.each_pair do |k, v|
+        properties[k.to_sym] = v if send(k).nil?
       end
       properties
     end

@@ -2,6 +2,7 @@ module Neo4j::Shared
   # Contains methods related to the management
   class DeclaredProperty
     class IllegalPropertyError < StandardError; end
+    include Neo4j::Shared::DeclaredProperty::Index
 
     ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
     attr_reader :name, :name_string, :name_sym, :options, :magic_typecaster
@@ -11,6 +12,7 @@ module Neo4j::Shared
       @name = @name_sym = name
       @name_string = name.to_s
       @options = options
+      fail_invalid_options!
     end
 
     def register
@@ -29,7 +31,24 @@ module Neo4j::Shared
       options[:default]
     end
 
+    def fail_invalid_options!
+      case
+      when index?(:exact) && constraint?(:unique)
+        fail Neo4j::InvalidPropertyOptionsError,
+             "#Uniqueness constraints also provide exact indexes, cannot set both options on property #{name}"
+      end
+    end
+
     private
+
+    def option_with_value!(key, value)
+      options[key] = value
+      fail_invalid_options!
+    end
+
+    def option_with_value?(key, value)
+      options[key] == value
+    end
 
     # Tweaks properties
     def register_magic_properties

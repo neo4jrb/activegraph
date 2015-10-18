@@ -55,7 +55,7 @@ module Neo4j
                     elsif key == model.id_property_name && value.is_a?(Neo4j::ActiveNode)
                       value.id
                     else
-                      model.declared_property_manager.value_for_db(key, value)
+                      converted_value(model, key, value)
                     end
 
               new(:where, ->(v, _) { {v => {key => val}} })
@@ -75,7 +75,7 @@ module Neo4j
             def for_rel_where_clause(arg, _, association)
               arg.each_with_object([]) do |(key, value), result|
                 rel_class = association.relationship_class if association.relationship_class
-                val =  rel_class ? rel_class.declared_property_manager.value_for_db(key, value) : value
+                val =  rel_class ? converted_value(rel_class, key, value) : value
                 result << new(:where, ->(_, rel_var) { {rel_var => {key => val}} })
               end
             end
@@ -100,6 +100,10 @@ module Neo4j
               Link.for_clause(clause, arg, model, *args) || default
             rescue NoMethodError
               default
+            end
+
+            def converted_value(model, key, value)
+              model.declared_properties.value_for_where(key, value)
             end
           end
         end

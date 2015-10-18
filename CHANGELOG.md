@@ -3,24 +3,90 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased][unreleased]
+## [6.0.0.alpha.5] - 10-18-2015
 
-### Fixed
-- `updated_at` properties were not being added up `update` events, only updated.
-- Default values of Boolean properties were not being set when `default: false`
-- `props_for_update` was using String keys instead of Symbols, like `props_for_update`
-- `props_for_create` and `props_for_update` were not adding default property values to the hash.
-- ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
+### Changed
+
+- Change size and length so that they match expected Ruby / ActiveRecord behavior (see http://stackoverflow.com/questions/6083219/activerecord-size-vs-count and #875)
+
+## [6.0.0.alpha.3] - 10-14-2015
+
+### Removed
+
+- Railtie was removing username/password and putting them into the session options.  This has been unneccessary in `neo4j-core` for a while now
+
+## [6.0.0.alpha.2] - 10-14-2015
 
 ### Added
-- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
+
+- Look for ENV variables for Neo4j URL / path for Rails apps
+
+## [6.0.0.alpha.1] - 10-12-2015
+
+### Changed
+
+- Refactoring around indexing and constraints in `Neo4j::ActiveNode`. The public interfaces are unchanged.
+- `Neo4j::Shared::DeclaredPropertyManager` was renamed `Neo4j::Shared::DeclaredProperties`. All methods referencing the old name were updated to reflect this.
+- Methods that were using `Neo4j::Session#on_session_available` were updated to reflect the upstream change to `on_next_session_available`.
 - `rel_where` will now use ActiveRel classes for type conversion, when possible.
 - Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
+- Removed the ability to set both an exact index and unique constraint on the same property in a model. Unique constraints also provide exact indexes.
+- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+- Return `true` on successful `#save!` calls (Thanks to jmdeldin)
+
+### Added
+
+- New classes for schema operations, predictably called `Neo4j::Schema::Operation` and subclasses `UniqueConstraintOperation` and `ExactIndexOperation`. These provide methods to aid in the additional, removal, and presence checking of indexes and constraints.
+- A few methods were added to `Neo4j::Shared::DeclaredProperties` to make it easier to work with. In particular, `[key]` acts as a shortcut for `DeclaredProperties#registered_properties`.
+- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
+- Support for Array arguments to ActiveRel's `from_class` and `to_class`.
+
+### Fixed
+
+- Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
+- Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+
+## [5.2.10] - 10-14-2015
+
+### Fixed
+- `has_one` does not define `_id` methods if they are already defined.  Also use `method_defined?` instead of `respond_to?` since it is at the class level
+
+## [5.2.9] - 09-30-2015
+
+### Fixed
+- Better error message for `ActiveRel` creation when from_node|to_node is not persisted
+
+## [5.2.8] - 09-30-2015
+
+### Fixed
+- Support `references` in model/scaffold generators
+
+## [5.2.7] - 09-25-2015
+
+### Fixed
+- Allow for association `model_class` to be prepended with double colons
+
+## [5.2.6] - 09-16-2015
+
+### Fixed
+
+- Fixed issue where caching an association causes further queries on the association to return the cached result
+
+## [5.2.5] - 09-11-2015
+
+### Fixed
+
+- Regression in last release caused properties to revert to default on update if not present in the properties for update
 
 ## [5.2.4] - 09-11-2015
 
 ### Fixed
 - Use `debug` log level for query logging
+- `updated_at` properties were not being added up `update` events, only updated.
+- Default values of Boolean properties were not being set when `default: false`
+- `props_for_update` was using String keys instead of Symbols, like `props_for_update`
+- `props_for_create` and `props_for_update` were not adding default property values to the hash.
+- ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
 
 ## [5.2.3] - 09-07-2015
 

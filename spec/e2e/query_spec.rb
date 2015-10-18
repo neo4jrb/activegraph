@@ -41,6 +41,8 @@ describe 'Query API' do
       property :name
       property :age, type: Integer
 
+      property :likely_to_succeed, type: ActiveAttr::Typecasting::Boolean, default: false
+
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
       has_many :out, :interests, type: nil
@@ -648,6 +650,7 @@ describe 'Query API' do
           expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
           expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
           expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher_age=>1')
+          expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params).to include(':result_student_likely_to_succeed=>false')
         end
 
         context '...and values already in the destination format' do
@@ -656,6 +659,28 @@ describe 'Query API' do
             expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
             expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
             expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher_age=>1')
+            expect(Student.where(likely_to_succeed: false).to_cypher_with_params).to include(':result_student_likely_to_succeed=>false')
+          end
+        end
+
+        context 'with Range values' do
+          before do
+            (1..10).each { |i| Student.create!(age: i) }
+          end
+
+          it 'does not convert' do
+            expect(Student.where(age: (2..5)).count).to eq 4
+          end
+        end
+
+        context 'with Array values' do
+          let(:today) { Date.today }
+
+          before { Teacher.create(date: today) }
+
+          it 'does not perform any conversion' do
+            expect(Teacher.where(date: [today]).count).to eq 0
+            expect(Teacher.where(date: [Time.utc(today.year, today.month, today.day).to_i]).count).to eq 1
           end
         end
       end
@@ -693,6 +718,23 @@ describe 'Query API' do
           expect(lesson99.count).to eq 1
           expect(lesson99.first.subject).to eq 'Science'
         end
+      end
+    end
+  end
+
+  describe 'association query behavior' do
+    let!(:ss101) { Lesson.create(subject: 'Social Studies', level: 101) }
+    let!(:mrjames) { Teacher.create(name: 'Mr. James') }
+
+    context 'Mr. James teaches Social Studies' do
+      before { ss101.teachers << mrjames }
+
+      it 'does not get confused when associations have been cached' do
+        lesson = Lesson.find(ss101.id)
+        expect(lesson.teachers.to_a).to eq([mrjames])
+
+        expect(lesson.teachers.where(name: 'aoeuo')).to be_empty
+        expect(lesson.teachers.where(name: 'aoeuo').to_a).to be_empty
       end
     end
   end
