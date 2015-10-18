@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.alpha.6] - 10-18-2015
+
+### Changed
+
+- Improved eager loading when no with_associations is specified (see #905)
+
+## [6.0.0.alpha.5] - 10-18-2015
+
+### Changed
+
+- Change size and length so that they match expected Ruby / ActiveRecord behavior (see http://stackoverflow.com/questions/6083219/activerecord-size-vs-count and #875)
+
 ## [6.0.0.alpha.4] - 10-17-2015
 
 ### Fixed
@@ -45,6 +57,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
 - Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+
+## [5.2.11] - 10-18-2015
+
+### Fixed
+- Unable to give additional options as first argument to chained QueryProxy method
 
 ## [5.2.10] - 10-14-2015
 

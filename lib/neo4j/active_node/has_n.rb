@@ -158,7 +158,7 @@ module Neo4j::ActiveNode
       name = name.to_sym
       hash = association_proxy_hash(name, options)
       association_proxy_cache_fetch(hash) do
-        if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+        if result_cache = self.instance_variable_get('@source_proxy_result_cache')
           result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
 
           result_cache.inject(nil) do |proxy_to_return, object|
@@ -184,7 +184,11 @@ module Neo4j::ActiveNode
       query_proxy = self.class.as(:previous).where(neo_id: result_cache.map(&:neo_id))
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next, optional: true)
 
-      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)]
+      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)].each do |_, records|
+        records.each do |record|
+          record.instance_variable_set('@source_proxy_result_cache', records)
+        end
+      end
     end
 
     module ClassMethods
@@ -332,10 +336,7 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           # return [].freeze unless self._persisted_obj
 
-          if node.is_a?(Hash)
-            options = node
-            node = nil
-          end
+          options, node = node, nil if node.is_a?(Hash)
 
           association_proxy(name, {node: node, rel: rel, source_object: self, labels: options[:labels]}.merge!(options))
         end
@@ -345,6 +346,8 @@ module Neo4j::ActiveNode
         define_has_many_id_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
+          options, node = node, nil if node.is_a?(Hash)
+
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
       end
@@ -383,6 +386,8 @@ module Neo4j::ActiveNode
         define_has_one_id_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
+          options, node = node, nil if node.is_a?(Hash)
+
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
       end
@@ -403,10 +408,7 @@ module Neo4j::ActiveNode
 
       def define_has_one_getter(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          if node.is_a?(Hash)
-            options = node
-            node = nil
-          end
+          options, node = node, nil if node.is_a?(Hash)
 
           # Return all results if a variable-length relationship length was given
           association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
