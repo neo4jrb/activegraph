@@ -63,8 +63,18 @@ module Neo4j
           end
         end
 
-        alias_method :size,   :count
-        alias_method :length, :count
+        def size
+          puts 'size'
+          if has_result_cache?
+            result_cache_for.length
+          else
+            count
+          end
+        end
+
+        def length
+          to_a.length
+        end
 
         # TODO: update this with public API methods if/when they are exposed
         def limit_value

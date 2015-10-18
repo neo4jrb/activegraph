@@ -227,6 +227,36 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'query counts for count, size, and length' do
+    describe 'size' do
+      it 'always queries' do
+        proxy = Student.all
+        expect_queries(1) { proxy.count }
+        expect_queries(1) { proxy.to_a }
+        expect_queries(1) { proxy.count }
+      end
+    end
+
+    describe 'size' do
+      it 'always queries' do
+        proxy = Student.all
+        expect_queries(1) { proxy.size }
+        expect_queries(1) { proxy.to_a }
+        expect_queries(0) { proxy.size }
+      end
+    end
+
+    # Always loads the data
+    describe 'length' do
+      it 'always queries' do
+        proxy = Student.all
+        expect_queries(1) { proxy.length }
+        expect_queries(0) { proxy.to_a }
+        expect_queries(0) { proxy.length }
+      end
+    end
+  end
+
   describe 'delete_all' do
     it 'deletes from Model' do
       Student.delete_all
