@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.11] - 10-18-2015
+
+### Fixed
+- Unable to give additional options as first argument to chained QueryProxy method
+
 ## [5.2.10] - 10-14-2015
 
 ### Fixed
