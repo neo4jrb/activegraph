@@ -57,21 +57,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Persistence#_active_record_destroyed_behavior?`:
-
-**#_active_record_destroyed_behavior?**
-  
-
-  .. code-block:: ruby
-
-     def _active_record_destroyed_behavior?
-       fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
-     
-       !!Neo4j::Config[:_active_record_destroyed_behavior]
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Persistence#_create_node`:
 
 **#_create_node**
@@ -82,23 +67,6 @@ Methods
 
      def _create_node(node_props, labels = labels_for_create)
        self.class.neo4j_session.create_node(node_props, labels)
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Persistence#_destroyed_double_check?`:
-
-**#_destroyed_double_check?**
-  These two methods should be removed in 6.0.0
-
-  .. code-block:: ruby
-
-     def _destroyed_double_check?
-       if _active_record_destroyed_behavior?
-         false
-       else
-         (!new_record? && !exist?)
-       end
      end
 
 
@@ -205,7 +173,7 @@ Methods
   .. code-block:: ruby
 
      def destroyed?
-       @_deleted || _destroyed_double_check?
+       @_deleted
      end
 
 
@@ -458,7 +426,7 @@ Methods
   .. code-block:: ruby
 
      def save!(*args)
-       fail RecordInvalidError, self unless save(*args)
+       save(*args) or fail(RecordInvalidError, self) # rubocop:disable Style/AndOr
      end
 
 

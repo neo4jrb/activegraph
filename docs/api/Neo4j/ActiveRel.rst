@@ -22,9 +22,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    
 
-   ActiveRel/Query
-
    ActiveRel/Types
+
+   ActiveRel/Query
 
    ActiveRel/Property
 
@@ -63,9 +63,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
-
   * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
+
+  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
 
   * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
 
@@ -112,38 +112,6 @@ Methods
        super(name)
      rescue ActiveAttr::UnknownAttributeError
        nil
-     end
-
-
-
-.. _`Neo4j/ActiveRel#_active_record_destroyed_behavior?`:
-
-**#_active_record_destroyed_behavior?**
-  
-
-  .. code-block:: ruby
-
-     def _active_record_destroyed_behavior?
-       fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
-     
-       !!Neo4j::Config[:_active_record_destroyed_behavior]
-     end
-
-
-
-.. _`Neo4j/ActiveRel#_destroyed_double_check?`:
-
-**#_destroyed_double_check?**
-  These two methods should be removed in 6.0.0
-
-  .. code-block:: ruby
-
-     def _destroyed_double_check?
-       if _active_record_destroyed_behavior?
-         false
-       else
-         (!new_record? && !exist?)
-       end
      end
 
 
@@ -196,15 +164,15 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel#declared_property_manager`:
+.. _`Neo4j/ActiveRel#declared_properties`:
 
-**#declared_property_manager**
+**#declared_properties**
   
 
   .. code-block:: ruby
 
-     def declared_property_manager
-       self.class.declared_property_manager
+     def declared_properties
+       self.class.declared_properties
      end
 
 
@@ -238,7 +206,7 @@ Methods
   .. code-block:: ruby
 
      def destroyed?
-       @_deleted || _destroyed_double_check?
+       @_deleted
      end
 
 
@@ -645,7 +613,7 @@ Methods
   .. code-block:: ruby
 
      def save!(*args)
-       fail RelInvalidError, self unless save(*args)
+       save(*args) or fail(RelInvalidError, self) # rubocop:disable Style/AndOr
      end
 
 

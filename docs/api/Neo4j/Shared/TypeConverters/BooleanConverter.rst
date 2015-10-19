@@ -23,6 +23,8 @@ BooleanConverter
 
    
 
+   
+
 
 
 
@@ -58,8 +60,8 @@ Methods
 
   .. code-block:: ruby
 
-     def convert_type
-       [true, false]
+     def db_type
+       ActiveAttr::Typecasting::Boolean
      end
 
 
@@ -72,7 +74,20 @@ Methods
   .. code-block:: ruby
 
      def converted?(value)
-       convert_type.include?(value)
+       converted_values.include?(value)
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters/BooleanConverter.converted_values`:
+
+**.converted_values**
+  
+
+  .. code-block:: ruby
+
+     def converted_values
+       [true, false]
      end
 
 

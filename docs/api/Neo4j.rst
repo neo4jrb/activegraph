@@ -19,6 +19,8 @@ Neo4j
 
    Neo4j/RecordNotFound
 
+   Neo4j/InvalidPropertyOptionsError
+
    Neo4j/ClassWrapper
 
    
@@ -38,6 +40,8 @@ Neo4j
    Neo4j/ActiveNode
 
    Neo4j/TypeConverters
+
+   Neo4j/Schema
 
    Neo4j/Relationship
 
@@ -86,19 +90,21 @@ Files
 
   * `lib/neo4j/type_converters.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/type_converters.rb#L1>`_
 
-  * `lib/neo4j/shared/callbacks.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/callbacks.rb#L1>`_
-
   * `lib/neo4j/active_rel/types.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L1>`_
+
+  * `lib/neo4j/schema/operation.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/schema/operation.rb#L1>`_
+
+  * `lib/neo4j/shared/callbacks.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/callbacks.rb#L1>`_
 
   * `lib/neo4j/active_node/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L1>`_
 
   * `lib/neo4j/shared/typecaster.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L1>`_
 
-  * `lib/neo4j/timestamps/created.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/created.rb#L1>`_
-
   * `lib/neo4j/active_node/labels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L1>`_
 
   * `lib/neo4j/shared/validations.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L1>`_
+
+  * `lib/neo4j/timestamps/created.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/created.rb#L1>`_
 
   * `lib/neo4j/timestamps/updated.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/updated.rb#L1>`_
 
@@ -120,9 +126,9 @@ Files
 
   * `lib/rails/generators/neo4j_generator.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/rails/generators/neo4j_generator.rb#L5>`_
 
-  * `lib/neo4j/active_node/has_n/association.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L3>`_
-
   * `lib/neo4j/active_node/query/query_proxy.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L1>`_
+
+  * `lib/neo4j/active_node/has_n/association.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L3>`_
 
   * `lib/neo4j/active_node/query/query_proxy_link.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_link.rb#L1>`_
 

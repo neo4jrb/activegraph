@@ -53,7 +53,7 @@ Methods
   .. code-block:: ruby
 
      def as(node_var)
-       query_proxy(node: node_var)
+       query_proxy(node: node_var, context: self.name)
      end
 
 

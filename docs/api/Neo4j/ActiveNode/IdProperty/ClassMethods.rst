@@ -52,7 +52,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/id_property.rb:126 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L126>`_
+  * `lib/neo4j/active_node/id_property.rb:124 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L124>`_
 
 
 
@@ -126,7 +126,7 @@ Methods
 
      def id_property(name, conf = {})
        self.manual_id_property = true
-       Neo4j::Session.on_session_available do |_|
+       Neo4j::Session.on_next_session_available do |_|
          @id_property_info = {name: name, type: conf}
          TypeMethods.define_id_methods(self, name, conf)
          constraint(name, type: :unique) unless conf[:constraint] == false

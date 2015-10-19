@@ -25,6 +25,10 @@ ClassMethods
 
    
 
+   
+
+   
+
 
 
 
@@ -77,20 +81,52 @@ Methods
   .. code-block:: ruby
 
      def attributes_nil_hash
-       declared_property_manager.attributes_nil_hash
+       declared_properties.attributes_nil_hash
      end
 
 
 
-.. _`Neo4j/Shared/Property/ClassMethods#declared_property_manager`:
+.. _`Neo4j/Shared/Property/ClassMethods#build_property`:
 
-**#declared_property_manager**
+**#build_property**
   
 
   .. code-block:: ruby
 
-     def declared_property_manager
-       @_declared_property_manager ||= DeclaredPropertyManager.new(self)
+     def build_property(name, options)
+       prop = DeclaredProperty.new(name, options)
+       prop.register
+       declared_properties.register(prop)
+       yield prop
+       constraint_or_index(name, options)
+     end
+
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#declared_properties`:
+
+**#declared_properties**
+  
+
+  .. code-block:: ruby
+
+     def declared_properties
+       @_declared_properties ||= DeclaredProperties.new(self)
+     end
+
+
+
+.. _`Neo4j/Shared/Property/ClassMethods#inherit_property`:
+
+**#inherit_property**
+  
+
+  .. code-block:: ruby
+
+     def inherit_property(name, active_attr, options = {})
+       build_property(name, options) do |prop|
+         attributes[prop.name.to_s] = active_attr
+       end
      end
 
 
@@ -103,7 +139,7 @@ Methods
   .. code-block:: ruby
 
      def inherited(other)
-       self.declared_property_manager.registered_properties.each_pair do |prop_key, prop_def|
+       self.declared_properties.registered_properties.each_pair do |prop_key, prop_def|
          other.property(prop_key, prop_def.options)
        end
        super
@@ -122,12 +158,9 @@ Methods
   .. code-block:: ruby
 
      def property(name, options = {})
-       prop = DeclaredProperty.new(name, options)
-       prop.register
-       declared_property_manager.register(prop)
-     
-       attribute(name, prop.options)
-       constraint_or_index(name, options)
+       build_property(name, options) do |prop|
+         attribute(name, prop.options)
+       end
      end
 
 
@@ -140,7 +173,7 @@ Methods
   .. code-block:: ruby
 
      def undef_property(name)
-       declared_property_manager.unregister(name)
+       declared_properties.unregister(name)
        attribute_methods(name).each { |method| undef_method(method) }
        undef_constraint_or_index(name)
      end

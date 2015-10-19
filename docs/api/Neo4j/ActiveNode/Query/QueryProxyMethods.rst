@@ -79,8 +79,6 @@ QueryProxyMethods
 
    
 
-   
-
 
 
 
@@ -370,24 +368,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Query/QueryProxyMethods#length`:
-
-**#length**
-  
-
-  .. code-block:: ruby
-
-     def count(distinct = nil, target = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-       query_with_target(target) do |var|
-         q = distinct.nil? ? var : "DISTINCT #{var}"
-         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
-         limited_query.pluck("count(#{q}) AS #{var}").first
-       end
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Query/QueryProxyMethods#limit_value`:
 
 **#limit_value**
@@ -523,13 +503,8 @@ Methods
 
   .. code-block:: ruby
 
-     def count(distinct = nil, target = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-       query_with_target(target) do |var|
-         q = distinct.nil? ? var : "DISTINCT #{var}"
-         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
-         limited_query.pluck("count(#{q}) AS #{var}").first
-       end
+     def size
+       result_cache? ? result_cache_for.length : count
      end
 
 

@@ -78,7 +78,7 @@ Methods
 .. _`Neo4j/ActiveNode/IdProperty/Accessor/ClassMethods#default_property`:
 
 **#default_property**
-  TODO: Move this to the DeclaredPropertyManager
+  TODO: Move this to the DeclaredProperties
 
   .. code-block:: ruby
 

@@ -111,10 +111,6 @@ QueryProxy
 
    
 
-   
-
-   
-
    QueryProxy/Link
 
 
@@ -159,7 +155,7 @@ Methods
   .. code-block:: ruby
 
      def <<(other_node)
-       @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node, {}, :<<)
+       @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node)
        self
      end
 
@@ -400,14 +396,10 @@ Methods
 
   .. code-block:: ruby
 
-     def defer_create(other_nodes, _properties, operator)
-       key = [@association.name, [nil, nil, nil]].hash
-       @start_object.pending_associations[key] = [@association.name, operator]
-       if @start_object.association_proxy_cache[key]
-         @start_object.association_proxy_cache[key] << other_nodes
-       else
-         @start_object.association_proxy_cache[key] = [other_nodes]
-       end
+     def defer_create(other_node)
+       @start_object.pending_associations << @association.name
+     
+       @start_object.association_proxy(@association.name).add_to_cache(other_node)
      end
 
 
@@ -788,24 +780,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Query/QueryProxy#length`:
-
-**#length**
-  
-
-  .. code-block:: ruby
-
-     def count(distinct = nil, target = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-       query_with_target(target) do |var|
-         q = distinct.nil? ? var : "DISTINCT #{var}"
-         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
-         limited_query.pluck("count(#{q}) AS #{var}").first
-       end
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Query/QueryProxy#limit_value`:
 
 **#limit_value**
@@ -889,6 +863,7 @@ Methods
 
      def new_link(node_var = nil)
        self.clone.tap do |new_query_proxy|
+         new_query_proxy.instance_variable_set('@result_cache', nil)
          new_query_proxy.instance_variable_set('@node_var', node_var) if node_var
        end
      end
@@ -1027,19 +1002,6 @@ Methods
        end
      
        self.query.pluck(*arg_list)
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#print_cypher`:
-
-**#print_cypher**
-  
-
-  .. code-block:: ruby
-
-     def print_cypher
-       query.print_cypher
      end
 
 
@@ -1212,9 +1174,9 @@ Methods
 
   .. code-block:: ruby
 
-     def result(node = true, rel = true)
+     def result(node = true, rel = nil)
        @result_cache ||= {}
-       return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+       return result_cache_for(node, rel) if result_cache?(node, rel)
      
        pluck_vars = []
        pluck_vars << identity if node
@@ -1224,10 +1186,36 @@ Methods
      
        result.each do |object|
          object.instance_variable_set('@source_query_proxy', self)
-         object.instance_variable_set('@source_query_proxy_result_cache', result)
+         object.instance_variable_set('@source_proxy_result_cache', result)
        end
      
        @result_cache[[node, rel]] ||= result
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#result_cache?`:
+
+**#result_cache?**
+  
+
+  .. code-block:: ruby
+
+     def result_cache?(node = true, rel = nil)
+       !!result_cache_for(node, rel)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#result_cache_for`:
+
+**#result_cache_for**
+  
+
+  .. code-block:: ruby
+
+     def result_cache_for(node = true, rel = nil)
+       (@result_cache || {})[[node, rel]]
      end
 
 
@@ -1266,13 +1254,8 @@ Methods
 
   .. code-block:: ruby
 
-     def count(distinct = nil, target = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
-       query_with_target(target) do |var|
-         q = distinct.nil? ? var : "DISTINCT #{var}"
-         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
-         limited_query.pluck("count(#{q}) AS #{var}").first
-       end
+     def size
+       result_cache? ? result_cache_for.length : count
      end
 
 
@@ -1314,19 +1297,6 @@ Methods
 
      def starting_query
        @starting_query
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#to_cypher`:
-
-**#to_cypher**
-  Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
-
-  .. code-block:: ruby
-
-     def to_cypher(*args)
-       query.to_cypher(*args)
      end
 
 

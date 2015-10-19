@@ -39,6 +39,8 @@ Provides a mapping between neo4j labels and Ruby classes
 
    Labels/ClassMethods
 
+   Labels/Index
+
    Labels/Reloading
 
 
@@ -63,6 +65,8 @@ Files
 
 
   * `lib/neo4j/active_node/labels.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L4>`_
+
+  * `lib/neo4j/active_node/labels/index.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels/index.rb#L1>`_
 
   * `lib/neo4j/active_node/labels/reloading.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels/reloading.rb#L1>`_
 

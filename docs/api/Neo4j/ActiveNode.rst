@@ -114,9 +114,9 @@ Files
 
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
-  * `lib/neo4j/active_node/has_n/association.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L4>`_
-
   * `lib/neo4j/active_node/query/query_proxy.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L2>`_
+
+  * `lib/neo4j/active_node/has_n/association.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L4>`_
 
   * `lib/neo4j/active_node/query/query_proxy_link.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_link.rb#L2>`_
 
@@ -173,21 +173,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode#_active_record_destroyed_behavior?`:
-
-**#_active_record_destroyed_behavior?**
-  
-
-  .. code-block:: ruby
-
-     def _active_record_destroyed_behavior?
-       fail 'Remove this workaround in 6.0.0' if Neo4j::VERSION >= '6.0.0'
-     
-       !!Neo4j::Config[:_active_record_destroyed_behavior]
-     end
-
-
-
 .. _`Neo4j/ActiveNode#_create_node`:
 
 **#_create_node**
@@ -198,23 +183,6 @@ Methods
 
      def _create_node(node_props, labels = labels_for_create)
        self.class.neo4j_session.create_node(node_props, labels)
-     end
-
-
-
-.. _`Neo4j/ActiveNode#_destroyed_double_check?`:
-
-**#_destroyed_double_check?**
-  These two methods should be removed in 6.0.0
-
-  .. code-block:: ruby
-
-     def _destroyed_double_check?
-       if _active_record_destroyed_behavior?
-         false
-       else
-         (!new_record? && !exist?)
-       end
      end
 
 
@@ -298,9 +266,9 @@ Methods
 
      def association_proxy(name, options = {})
        name = name.to_sym
-       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
+       hash = association_proxy_hash(name, options)
        association_proxy_cache_fetch(hash) do
-         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+         if result_cache = self.instance_variable_get('@source_proxy_result_cache')
            result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
      
            result_cache.inject(nil) do |proxy_to_return, object|
@@ -349,6 +317,19 @@ Methods
          value = yield
          association_proxy_cache[key] = value
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode#association_proxy_hash`:
+
+**#association_proxy_hash**
+  
+
+  .. code-block:: ruby
+
+     def association_proxy_hash(name, options = {})
+       [name.to_sym, options.values_at(:node, :rel, :labels, :rel_length)].hash
      end
 
 
@@ -411,15 +392,15 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode#declared_property_manager`:
+.. _`Neo4j/ActiveNode#declared_properties`:
 
-**#declared_property_manager**
+**#declared_properties**
   
 
   .. code-block:: ruby
 
-     def declared_property_manager
-       self.class.declared_property_manager
+     def declared_properties
+       self.class.declared_properties
      end
 
 
@@ -532,7 +513,7 @@ Methods
   .. code-block:: ruby
 
      def destroyed?
-       @_deleted || _destroyed_double_check?
+       @_deleted
      end
 
 
@@ -770,7 +751,7 @@ Methods
   .. code-block:: ruby
 
      def pending_associations
-       @pending_associations ||= {}
+       @pending_associations ||= []
      end
 
 
@@ -988,7 +969,7 @@ Methods
   .. code-block:: ruby
 
      def save!(*args)
-       fail RecordInvalidError, self unless save(*args)
+       save(*args) or fail(RecordInvalidError, self) # rubocop:disable Style/AndOr
      end
 
 

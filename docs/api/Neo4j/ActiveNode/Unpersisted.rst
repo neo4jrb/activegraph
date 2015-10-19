@@ -57,7 +57,7 @@ Methods
   .. code-block:: ruby
 
      def pending_associations
-       @pending_associations ||= {}
+       @pending_associations ||= []
      end
 
 

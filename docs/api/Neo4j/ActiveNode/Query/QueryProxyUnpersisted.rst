@@ -46,14 +46,10 @@ Methods
 
   .. code-block:: ruby
 
-     def defer_create(other_nodes, _properties, operator)
-       key = [@association.name, [nil, nil, nil]].hash
-       @start_object.pending_associations[key] = [@association.name, operator]
-       if @start_object.association_proxy_cache[key]
-         @start_object.association_proxy_cache[key] << other_nodes
-       else
-         @start_object.association_proxy_cache[key] = [other_nodes]
-       end
+     def defer_create(other_node)
+       @start_object.pending_associations << @association.name
+     
+       @start_object.association_proxy(@association.name).add_to_cache(other_node)
      end
 
 

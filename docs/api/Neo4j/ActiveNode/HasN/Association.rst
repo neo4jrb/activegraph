@@ -526,7 +526,7 @@ Methods
        when false
          false
        else
-         "::#{model_class}"
+         model_class.to_s[0, 2] == '::' ? model_class.to_s : "::#{model_class}"
        end
      end
 

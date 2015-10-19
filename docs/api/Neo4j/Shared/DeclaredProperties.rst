@@ -1,5 +1,5 @@
-DeclaredPropertyManager
-=======================
+DeclaredProperties
+==================
 
 
 
@@ -62,6 +62,20 @@ See Neo4j::Shared::DeclaredProperty for definitions of the property objects them
 
    
 
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
 
 
 
@@ -70,6 +84,8 @@ Constants
 
 
 
+  * EXCLUDED_TYPES
+
 
 
 Files
@@ -77,7 +93,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/declared_property_manager.rb:8 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/declared_property_manager.rb#L8>`_
+  * `lib/neo4j/shared/declared_properties.rb:8 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/declared_properties.rb#L8>`_
 
 
 
@@ -88,7 +104,20 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#attributes_nil_hash`:
+.. _`Neo4j/Shared/DeclaredProperties#[]`:
+
+**#[]**
+  
+
+  .. code-block:: ruby
+
+     def [](key)
+       registered_properties[key.to_sym]
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#attributes_nil_hash`:
 
 **#attributes_nil_hash**
   During object wrap, a hash is needed that contains each declared property with a nil value.
@@ -109,7 +138,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#attributes_string_map`:
+.. _`Neo4j/Shared/DeclaredProperties#attributes_string_map`:
 
 **#attributes_string_map**
   During object wrapping, a props hash is built with string keys but Neo4j-core provides symbols.
@@ -127,7 +156,22 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#convert_properties_to`:
+.. _`Neo4j/Shared/DeclaredProperties#constraint_or_fail!`:
+
+**#constraint_or_fail!**
+  
+
+  .. code-block:: ruby
+
+     def constraint_or_fail!(key, id_property_name, type = :unique)
+       return if key == id_property_name
+       fail "Cannot constraint undeclared property #{property}" unless property?(key)
+       registered_properties[key].constraint!(type)
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#convert_properties_to`:
 
 **#convert_properties_to**
   Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
@@ -144,7 +188,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#convert_property`:
+.. _`Neo4j/Shared/DeclaredProperties#convert_property`:
 
 **#convert_property**
   Converts a single property from its current format to its db- or Ruby-expected output type.
@@ -157,7 +201,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#declared_property_defaults`:
+.. _`Neo4j/Shared/DeclaredProperties#declared_property_defaults`:
 
 **#declared_property_defaults**
   The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of
@@ -171,7 +215,35 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#initialize`:
+.. _`Neo4j/Shared/DeclaredProperties#index_or_fail!`:
+
+**#index_or_fail!**
+  
+
+  .. code-block:: ruby
+
+     def index_or_fail!(key, id_property_name, type = :exact)
+       return if key == id_property_name
+       fail "Cannot index undeclared property #{key}" unless property?(key)
+       registered_properties[key].index!(type)
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#indexed_properties`:
+
+**#indexed_properties**
+  
+
+  .. code-block:: ruby
+
+     def indexed_properties
+       registered_properties.select { |_, p| p.index_or_constraint? }
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#initialize`:
 
 **#initialize**
   Each class that includes Neo4j::ActiveNode or Neo4j::ActiveRel gets one instance of this class.
@@ -184,7 +256,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#klass`:
+.. _`Neo4j/Shared/DeclaredProperties#klass`:
 
 **#klass**
   Returns the value of attribute klass
@@ -197,7 +269,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#magic_typecast_properties`:
+.. _`Neo4j/Shared/DeclaredProperties#magic_typecast_properties`:
 
 **#magic_typecast_properties**
   
@@ -210,7 +282,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#magic_typecast_properties_keys`:
+.. _`Neo4j/Shared/DeclaredProperties#magic_typecast_properties_keys`:
 
 **#magic_typecast_properties_keys**
   
@@ -223,7 +295,20 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#register`:
+.. _`Neo4j/Shared/DeclaredProperties#property?`:
+
+**#property?**
+  
+
+  .. code-block:: ruby
+
+     def property?(key)
+       registered_properties.key?(key.to_sym)
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#register`:
 
 **#register**
   #property on an ActiveNode or ActiveRel class. The DeclaredProperty has specifics about the property, but registration
@@ -241,7 +326,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#registered_properties`:
+.. _`Neo4j/Shared/DeclaredProperties#registered_properties`:
 
 **#registered_properties**
   
@@ -254,7 +339,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#serialize`:
+.. _`Neo4j/Shared/DeclaredProperties#serialize`:
 
 **#serialize**
   
@@ -268,7 +353,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#serialized_properties`:
+.. _`Neo4j/Shared/DeclaredProperties#serialized_properties`:
 
 **#serialized_properties**
   
@@ -281,7 +366,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#serialized_properties=`:
+.. _`Neo4j/Shared/DeclaredProperties#serialized_properties=`:
 
 **#serialized_properties=**
   
@@ -295,7 +380,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#serialized_properties_keys`:
+.. _`Neo4j/Shared/DeclaredProperties#serialized_properties_keys`:
 
 **#serialized_properties_keys**
   
@@ -308,7 +393,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#string_key`:
+.. _`Neo4j/Shared/DeclaredProperties#string_key`:
 
 **#string_key**
   but when this happens many times while loading many objects, it results in a surprisingly significant slowdown.
@@ -328,7 +413,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#unregister`:
+.. _`Neo4j/Shared/DeclaredProperties#unregister`:
 
 **#unregister**
   
@@ -346,7 +431,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#upstream_primitives`:
+.. _`Neo4j/Shared/DeclaredProperties#upstream_primitives`:
 
 **#upstream_primitives**
   The known mappings of declared properties and their primitive types.
@@ -359,7 +444,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#value_for_db`:
+.. _`Neo4j/Shared/DeclaredProperties#value_for_db`:
 
 **#value_for_db**
   
@@ -373,7 +458,7 @@ Methods
 
 
 
-.. _`Neo4j/Shared/DeclaredPropertyManager#value_for_ruby`:
+.. _`Neo4j/Shared/DeclaredProperties#value_for_ruby`:
 
 **#value_for_ruby**
   
@@ -383,6 +468,21 @@ Methods
      def value_for_ruby(key, value)
        return unless registered_properties[key]
        convert_property(key, value, :to_ruby)
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#value_for_where`:
+
+**#value_for_where**
+  
+
+  .. code-block:: ruby
+
+     def value_for_where(key, value)
+       return value unless prop = registered_properties[key]
+       return value_for_db(key, value) if prop.typecaster && prop.typecaster.convert_type == value.class
+       EXCLUDED_TYPES.include?(value.class) ? value : value_for_db(key, value)
      end
 
 

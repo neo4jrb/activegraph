@@ -39,6 +39,16 @@ But also caches results and can have results cached on it
 
    
 
+   
+
+   
+
+   
+
+   
+
+   
+
 
 
 
@@ -66,6 +76,46 @@ Files
 
 Methods
 -------
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#+`:
+
+**#+**
+  
+
+  .. code-block:: ruby
+
+     def +(other)
+       self.to_a + other
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#==`:
+
+**#==**
+  
+
+  .. code-block:: ruby
+
+     def ==(other)
+       self.to_a == other.to_a
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#add_to_cache`:
+
+**#add_to_cache**
+  
+
+  .. code-block:: ruby
+
+     def add_to_cache(object)
+       @cached_result ||= []
+       @cached_result << object
+     end
 
 
 
@@ -132,7 +182,7 @@ Methods
   .. code-block:: ruby
 
      def each(&block)
-       result.each(&block)
+       result_nodes.each(&block)
      end
 
 
@@ -166,7 +216,7 @@ Methods
 
      def inspect
        if @cached_result
-         @cached_result.inspect
+         result_nodes.inspect
        else
          "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
        end
@@ -186,7 +236,7 @@ Methods
        super if target.nil?
      
        cache_query_proxy_result if !cached? && !target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-       clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
+       clear_cache_result if !QUERY_PROXY_METHODS.include?(method_name) && target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
      
        target.public_send(method_name, *args, &block)
      end
@@ -206,6 +256,38 @@ Methods
        cache_query_proxy_result
      
        @cached_result
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#result_ids`:
+
+**#result_ids**
+  
+
+  .. code-block:: ruby
+
+     def result_ids
+       result.map do |object|
+         object.is_a?(Neo4j::ActiveNode) ? object.id : object
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#result_nodes`:
+
+**#result_nodes**
+  
+
+  .. code-block:: ruby
+
+     def result_nodes
+       return result if !@query_proxy.model
+     
+       @cached_result = result.map do |object|
+         object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
+       end
      end
 
 

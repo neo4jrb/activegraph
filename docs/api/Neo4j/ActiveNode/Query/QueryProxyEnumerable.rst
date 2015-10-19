@@ -25,6 +25,10 @@ Methods related to returning nodes and rels from QueryProxy
 
    
 
+   
+
+   
+
 
 
 
@@ -158,9 +162,9 @@ Methods
 
   .. code-block:: ruby
 
-     def result(node = true, rel = true)
+     def result(node = true, rel = nil)
        @result_cache ||= {}
-       return @result_cache[[node, rel]] if @result_cache[[node, rel]]
+       return result_cache_for(node, rel) if result_cache?(node, rel)
      
        pluck_vars = []
        pluck_vars << identity if node
@@ -170,10 +174,36 @@ Methods
      
        result.each do |object|
          object.instance_variable_set('@source_query_proxy', self)
-         object.instance_variable_set('@source_query_proxy_result_cache', result)
+         object.instance_variable_set('@source_proxy_result_cache', result)
        end
      
        @result_cache[[node, rel]] ||= result
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#result_cache?`:
+
+**#result_cache?**
+  
+
+  .. code-block:: ruby
+
+     def result_cache?(node = true, rel = nil)
+       !!result_cache_for(node, rel)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxyEnumerable#result_cache_for`:
+
+**#result_cache_for**
+  
+
+  .. code-block:: ruby
+
+     def result_cache_for(node = true, rel = nil)
+       (@result_cache || {})[[node, rel]]
      end
 
 

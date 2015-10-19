@@ -27,6 +27,8 @@ HasN
 
    
 
+   
+
    HasN/ClassMethods
 
    HasN/Association
@@ -72,9 +74,9 @@ Methods
 
      def association_proxy(name, options = {})
        name = name.to_sym
-       hash = [name, options.values_at(:node, :rel, :labels, :rel_length)].hash
+       hash = association_proxy_hash(name, options)
        association_proxy_cache_fetch(hash) do
-         if result_cache = self.instance_variable_get('@source_query_proxy_result_cache')
+         if result_cache = self.instance_variable_get('@source_proxy_result_cache')
            result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
      
            result_cache.inject(nil) do |proxy_to_return, object|
@@ -123,6 +125,19 @@ Methods
          value = yield
          association_proxy_cache[key] = value
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN#association_proxy_hash`:
+
+**#association_proxy_hash**
+  
+
+  .. code-block:: ruby
+
+     def association_proxy_hash(name, options = {})
+       [name.to_sym, options.values_at(:node, :rel, :labels, :rel_length)].hash
      end
 
 

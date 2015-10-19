@@ -23,6 +23,14 @@ Railtie
 
    
 
+   
+
+   
+
+   
+
+   
+
 
 
 
@@ -46,6 +54,55 @@ Files
 
 Methods
 -------
+
+
+
+.. _`Neo4j/Railtie.config_data`:
+
+**.config_data**
+  
+
+  .. code-block:: ruby
+
+     def config_data
+       @config_data ||= if yaml_path
+                          HashWithIndifferentAccess.new(YAML.load(yaml_path.read)[Rails.env])
+                        else
+                          {}
+                        end
+     end
+
+
+
+.. _`Neo4j/Railtie.default_session_path`:
+
+**.default_session_path**
+  
+
+  .. code-block:: ruby
+
+     def default_session_path
+       ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] ||
+         config_data[:url] || config_data[:path] ||
+         'http://localhost:7474'
+     end
+
+
+
+.. _`Neo4j/Railtie.default_session_type`:
+
+**.default_session_type**
+  
+
+  .. code-block:: ruby
+
+     def default_session_type
+       if ENV['NEO4J_PATH']
+         :embedded_db
+       else
+         config_data[:type] || :server_db
+       end.to_sym
+     end
 
 
 
@@ -100,7 +157,7 @@ Methods
        Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
      
        Neo4j::Server::CypherSession.log_with do |message|
-         (Neo4j::Config[:logger] || Rails.logger).info message
+         (Neo4j::Config[:logger] || Rails.logger).debug message
        end
      
        @neo4j_cypher_logging_registered = true
@@ -116,16 +173,10 @@ Methods
   .. code-block:: ruby
 
      def setup_config_defaults!(cfg)
-       cfg.session_type ||= :server_db
-       cfg.session_path ||= 'http://localhost:7474'
+       cfg.session_type ||= default_session_type
+       cfg.session_path ||= default_session_path
        cfg.session_options ||= {}
        cfg.sessions ||= []
-     
-       uri = URI(cfg.session_path)
-       return if uri.user.blank?
-     
-       cfg.session_options.reverse_merge!(basic_auth: {username: uri.user, password: uri.password})
-       cfg.session_path = cfg.session_path.gsub("#{uri.user}:#{uri.password}@", '')
      end
 
 
@@ -161,6 +212,21 @@ Methods
        restricted_field.accessible = true
        restricted_field.set nil, false
        session.start
+     end
+
+
+
+.. _`Neo4j/Railtie.yaml_path`:
+
+**.yaml_path**
+  
+
+  .. code-block:: ruby
+
+     def yaml_path
+       @yaml_path ||= %w(config/neo4j.yml config/neo4j.yaml).map do |path|
+         Rails.root.join(path)
+       end.detect(&:exist?)
      end
 
 

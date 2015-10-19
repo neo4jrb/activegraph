@@ -39,20 +39,6 @@ ClassMethods
 
    
 
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
 
 
 
@@ -68,7 +54,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/labels.rb:79 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L79>`_
+  * `lib/neo4j/active_node/labels.rb:80 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L80>`_
 
 
 
@@ -109,25 +95,6 @@ Methods
 
      def empty?
        !self.all.exists?
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#constraint`:
-
-**#constraint**
-  Creates a neo4j constraint on this class for given property
-
-  .. code-block:: ruby
-
-     def constraint(property, constraints)
-       Neo4j::Session.on_session_available do |session|
-         unless Neo4j::Label.constraint?(mapped_label_name, property)
-           label = Neo4j::Label.create(mapped_label_name)
-           drop_index(property, label) if index?(property)
-           label.create_constraint(property, constraints, session)
-         end
-       end
      end
 
 
@@ -175,36 +142,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#drop_constraint`:
-
-**#drop_constraint**
-  
-
-  .. code-block:: ruby
-
-     def drop_constraint(property, constraint = {type: :unique})
-       Neo4j::Session.on_session_available do |session|
-         label = Neo4j::Label.create(mapped_label_name)
-         label.drop_constraint(property, constraint, session)
-       end
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#drop_index`:
-
-**#drop_index**
-  
-
-  .. code-block:: ruby
-
-     def drop_index(property, label = nil)
-       label_obj = label || Neo4j::Label.create(mapped_label_name)
-       label_obj.drop_index(property)
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Labels/ClassMethods#empty?`:
 
 **#empty?**
@@ -246,11 +183,11 @@ Methods
      def find(id)
        map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
      
-       result =  if id.is_a?(Array)
-                   find_by_ids(id.map { |o| map_id.call(o) })
-                 else
-                   find_by_id(map_id.call(id))
-                 end
+       result = if id.is_a?(Array)
+                  find_by_ids(id.map { |o| map_id.call(o) })
+                else
+                  find_by_id(map_id.call(id))
+                end
        fail Neo4j::RecordNotFound if result.blank?
        result
      end
@@ -322,51 +259,6 @@ Methods
 
      def first
        self.query_as(:n).limit(1).order(n: primary_key).pluck(:n).first
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#index`:
-
-**#index**
-  Creates a Neo4j index on given property
-  
-  This can also be done on the property directly, see Neo4j::ActiveNode::Property::ClassMethods#property.
-
-  .. code-block:: ruby
-
-     def index(property, conf = {})
-       Neo4j::Session.on_session_available do |_|
-         drop_constraint(property, type: :unique) if Neo4j::Label.constraint?(mapped_label_name, property)
-         _index(property, conf)
-       end
-       indexed_properties.push property unless indexed_properties.include? property
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#index?`:
-
-**#index?**
-  
-
-  .. code-block:: ruby
-
-     def index?(index_def)
-       mapped_label.indexes[:property_keys].include?([index_def])
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Labels/ClassMethods#indexed_properties`:
-
-**#indexed_properties**
-  
-
-  .. code-block:: ruby
-
-     def indexed_properties
-       @_indexed_properties ||= []
      end
 
 
