@@ -20,6 +20,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Change size and length so that they match expected Ruby / ActiveRecord behavior (see http://stackoverflow.com/questions/6083219/activerecord-size-vs-count and #875)
 
+## [6.0.0.alpha.4] - 10-17-2015
+
+### Fixed
+
+- `QueryProxy` was not converting Boolean properties correctly
+
 ## [6.0.0.alpha.3] - 10-14-2015
 
 ### Removed
