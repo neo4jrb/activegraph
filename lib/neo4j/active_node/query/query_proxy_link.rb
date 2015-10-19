@@ -80,6 +80,10 @@ module Neo4j
               end
             end
 
+            def for_rel_order_clause(arg, _)
+              [new(:order, ->(_, v) { arg.is_a?(String) ? arg : {v => arg} })]
+            end
+
             def for_order_clause(arg, _)
               [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
             end

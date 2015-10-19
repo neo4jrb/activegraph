@@ -3,9 +3,20 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `rel_order` method for association chaining
+
 ## [6.0.0.alpha.7] - 10-19-2015
 
+### Changed
+
 - Remove uniqueness validation for `id_property` because we already have Neo4j constraints
+
+### Added
+
 - Support `config/neo4j.ya?ml`
 
 ## [6.0.0.alpha.6] - 10-18-2015
