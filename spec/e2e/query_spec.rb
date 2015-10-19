@@ -699,7 +699,7 @@ describe 'Query API' do
       end
     end
 
-    describe '#rel_where' do
+    describe 'rel_methods' do
       before do
         student = Student.create
         math = Lesson.create(subject: 'Math')
@@ -708,15 +708,23 @@ describe 'Query API' do
         IsEnrolledFor.create!(from_node: student, to_node: science, grade: 99)
       end
 
-      context 'with a rel_class present' do
-        let(:lesson65) { Student.lessons.rel_where(grade: '65').to_a }
-        let(:lesson99) { Student.lessons.rel_where(grade: '99'.to_f).to_a }
+      describe '#rel_where' do
+        context 'with a rel_class present' do
+          let(:lesson65) { Student.lessons.rel_where(grade: '65').to_a }
+          let(:lesson99) { Student.lessons.rel_where(grade: '99'.to_f).to_a }
 
-        it 'type converts when possible' do
-          expect(lesson65.count).to eq 1
-          expect(lesson65.first.subject).to eq 'Math'
-          expect(lesson99.count).to eq 1
-          expect(lesson99.first.subject).to eq 'Science'
+          it 'type converts when possible' do
+            expect(lesson65.count).to eq 1
+            expect(lesson65.first.subject).to eq 'Math'
+            expect(lesson99.count).to eq 1
+            expect(lesson99.first.subject).to eq 'Science'
+          end
+        end
+      end
+
+      describe '#rel_order' do
+        it 'allows ordering by relationships with rel_order' do
+          expect(Student.lessons(:l, :rel).rel_order(:grade).pluck('rel.grade')).to eq([65, 99])
         end
       end
     end
