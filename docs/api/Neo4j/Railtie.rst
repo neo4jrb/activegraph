@@ -97,7 +97,7 @@ Methods
   .. code-block:: ruby
 
      def default_session_type
-       if ENV['NEO4J_PATH']
+       if ENV['NEO4J_TYPE']
          :embedded_db
        else
          config_data[:type] || :server_db
