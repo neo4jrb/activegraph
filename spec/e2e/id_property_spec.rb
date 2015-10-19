@@ -94,12 +94,6 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(Clazz.mapped_label.indexes[:property_keys]).to eq([[:myid]])
     end
 
-    it 'throws exception if the same uuid is generated when saving node' do
-      Clazz.create(myid: 'z')
-      Clazz.new(myid: 'z')
-      expect { Clazz.create!(myid: 'z') }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
-    end
-
     describe 'property myid' do
       it 'is not defined when before save ' do
         node = Clazz.new

@@ -74,8 +74,6 @@ module Neo4j::ActiveNode
             _persisted_obj ? #{name.to_sym == :id ? 'attribute(\'id\')' : name} : nil
           end
 
-          validates_uniqueness_of :#{name}
-
           property :#{name}
                 ), __FILE__, __LINE__)
       end
