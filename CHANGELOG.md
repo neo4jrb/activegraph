@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [6.0.0.alpha.7] - 10-19-2015
 
 - Remove uniqueness validation for `id_property` because we already have Neo4j constraints
+- Support `config/neo4j.ya?ml`
 
 ## [6.0.0.alpha.6] - 10-18-2015
 

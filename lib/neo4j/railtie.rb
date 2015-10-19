@@ -40,12 +40,32 @@ module Neo4j
         cfg.sessions ||= []
       end
 
+      def config_data
+        @config_data ||= if yaml_path
+                           HashWithIndifferentAccess.new(YAML.load(yaml_path.read)[Rails.env])
+                         else
+                           {}
+                         end
+      end
+
+      def yaml_path
+        @yaml_path ||= %w(config/neo4j.yml config/neo4j.yaml).map do |path|
+          Rails.root.join(path)
+        end.detect(&:exist?)
+      end
+
       def default_session_type
-        ENV['NEO4J_PATH'] ? :embedded_db : :server_db
+        if ENV['NEO4J_PATH']
+          :embedded_db
+        else
+          config_data[:type] || :server_db
+        end.to_sym
       end
 
       def default_session_path
-        ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
+        ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] ||
+          config_data[:url] || config_data[:path] ||
+          'http://localhost:7474'
       end
 
       def start_embedded_session(session)
