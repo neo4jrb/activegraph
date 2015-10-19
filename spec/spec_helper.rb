@@ -42,6 +42,11 @@ module Rails
   def self.logger
     MockLogger.new
   end
+
+  def self.root
+    # Placeholder
+    Pathname.new(Dir.pwd)
+  end
 end
 
 
