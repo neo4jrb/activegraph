@@ -81,7 +81,7 @@ Rails configuration
 
 For both new apps and existing apps the following configuration applies:
 
-An examples ``config/neo4j.yml`` file:
+An example ``config/neo4j.yml`` file:
 
 .. code-block:: yaml
 
@@ -97,7 +97,7 @@ An examples ``config/neo4j.yml`` file:
     type: server_db
     url: http://neo4j:password@localhost:7000
 
-You can also configure in your Ralis configuration.  The following example can be put into ``config/application.rb`` or any of your environment configurations (``config/environments/(development|test|production).rb``) file:
+You can also use your Rails configuration.  The following example can be put into ``config/application.rb`` or any of your environment configurations (``config/environments/(development|test|production).rb``) file:
 
 .. code-block:: ruby
 
@@ -110,7 +110,7 @@ Neo4j requires authentication by default but if you install using the built-in :
 
   config.neo4j.session_path = 'http://neo4j:password@localhost:7474'
 
-Of course it's often the case that you don't want to expose your username / password / URL in your repository.  In these cases you can use the ``NEO4J_TYPE`` (either ``server_db`` or ``embedded_db``), ``NEO4J_URL``, and ``NEO4J_PATH`` (for embedded) environment variables.
+Of course it's often the case that you don't want to expose your username / password / URL in your repository.  In these cases you can use the ``NEO4J_TYPE`` (either ``server_db`` or ``embedded_db``) and ``NEO4J_URL``/``NEO4J_PATH`` environment variables.
 
 Configuring Faraday
 ^^^^^^^^^^^^^^^^^^^
