@@ -32,6 +32,16 @@ describe 'ActiveRel' do
   let(:from_node) { FromClass.create }
   let(:to_node) { ToClass.create }
 
+  describe 'unpersisted nodes' do
+    let(:from_node) { FromClass.new }
+    let(:to_node) { ToClass.new }
+    let(:rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
+
+    it 'persists both nodes' do
+      expect { rel.save }.to change { [from_node, to_node].all?(&:persisted?) }.from(false).to true
+    end
+  end
+
   describe 'from_class, to_class' do
     it 'spits back the current variable if no argument is given' do
       expect(MyRelClass.from_class).to eq FromClass
