@@ -10,12 +10,42 @@ describe 'ActiveRel' do
     stub_named_class('MyRelClass')
 
     stub_active_node_class('FromClass') do
+      before_create :log_before
+      after_create :log_after
+      property :created_at, type: Integer
+      property :updated_at, type: Integer
+      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :after_run
+
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
+
+      def log_before
+        self.before_run = true
+      end
+
+      def log_after
+        self.after_run = true
+      end
     end
 
     stub_active_node_class('ToClass') do
+      before_create :log_before
+      after_create :log_after
+      property :created_at, type: Integer
+      property :updated_at, type: Integer
+      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :after_run
+
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
       has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
+
+      def log_before
+        self.before_run = true
+      end
+
+      def log_after
+        self.after_run = true
+      end
     end
 
     stub_active_rel_class('MyRelClass') do
@@ -37,8 +67,40 @@ describe 'ActiveRel' do
     let(:to_node) { ToClass.new }
     let(:rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
 
-    it 'persists both nodes' do
-      expect { rel.save }.to change { [from_node, to_node].all?(&:persisted?) }.from(false).to true
+    context 'both nodes unpersisted' do
+      it 'triggers both :before_create callbacks' do
+        [from_node, to_node].each do |node|
+          expect(node).to receive(:run_callbacks).at_least(1).times.and_call_original
+        end
+        rel.save
+      end
+
+      it 'triggers both :after_create callbacks' do
+        expect { rel.save }.to change { [from_node, to_node].all?(&:after_run) }.from(false).to(true)
+      end
+
+      it 'persists both nodes' do
+        expect { rel.save }.to change { [from_node, to_node].all?(&:persisted?) }.from(false).to true
+      end
+    end
+
+    context 'one node unpersisted' do
+      let(:from_node) { FromClass.new }
+      let(:to_node)   { ToClass.create }
+
+      it 'triggers only the unpersisted before_create callback' do
+        expect(to_node).not_to receive(:run_callbacks)
+        expect(from_node).to receive(:run_callbacks).and_call_original
+        rel.save
+      end
+
+      it 'does not change the uuid of the persisted node' do
+        expect { rel.save }.not_to change { to_node.uuid }
+      end
+
+      it 'does not change the timestamps of the persisted node' do
+        expect { rel.save }.not_to change { to_node.updated_at }
+      end
     end
   end
 
