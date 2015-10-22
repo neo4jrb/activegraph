@@ -91,7 +91,7 @@ module Neo4j
                      find_by_id(map_id.call(id))
                    end
           fail Neo4j::RecordNotFound if result.blank?
-          result
+          result.tap { |r| find_callbacks!(r) }
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
@@ -163,6 +163,17 @@ module Neo4j
         # rubocop:enable Style/AccessorMethodName
 
         private
+
+        def find_callbacks!(result)
+          case result
+          when Neo4j::ActiveNode
+            result.run_callbacks(:find)
+          when Array
+            result.each { |r| find_callbacks!(r) }
+          else
+            result
+          end
+        end
 
         def label_for_model
           (self.name.nil? ? object_id.to_s.to_sym : decorated_label_name)

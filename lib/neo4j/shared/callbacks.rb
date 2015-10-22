@@ -9,8 +9,13 @@ module Neo4j
 
       included do
         include ActiveModel::Validations::Callbacks
+        # after_find is triggered by the `find` method defined in lib/neo4j/active_node/id_property.rb
         define_model_callbacks :initialize, :find, only: :after
         define_model_callbacks :save, :create, :update, :destroy
+      end
+
+      def initialize(args = nil)
+        run_callbacks(:initialize) { super }
       end
 
       def destroy #:nodoc:

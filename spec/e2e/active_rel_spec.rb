@@ -91,7 +91,7 @@ describe 'ActiveRel' do
       it 'triggers only the unpersisted before_create callback' do
         expect(to_node).not_to receive(:run_callbacks)
         expect(from_node).to receive(:run_callbacks).and_call_original
-        rel.save
+        expect { rel.save }.to change { from_node.persisted? }
       end
 
       it 'does not change the uuid of the persisted node' do
