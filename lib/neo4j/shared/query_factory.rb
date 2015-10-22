@@ -29,6 +29,7 @@ module Neo4j::Shared
     end
 
     def base_query=(query)
+      return if query.blank?
       @base_query = query.query
     end
 

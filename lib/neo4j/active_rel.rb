@@ -17,7 +17,7 @@ module Neo4j
 
     class FrozenRelError < StandardError; end
 
-    def initialize(*args)
+    def initialize(args = nil)
       load_nodes
       super
     end
