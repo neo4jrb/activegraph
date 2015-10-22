@@ -1,4 +1,3 @@
-
 module Neo4j::ActiveRel
   module Persistence
     extend ActiveSupport::Concern
@@ -32,7 +31,7 @@ module Neo4j::ActiveRel
 
     def create_model
       validate_node_classes!
-      rel = _create_rel(props_for_create)
+      rel = _create_rel
       return self unless rel.respond_to?(:props)
       init_on_load(rel, from_node, to_node, @rel_type)
       true
@@ -100,10 +99,10 @@ module Neo4j::ActiveRel
       "Node class was #{node.class} (#{node.class.object_id}), expected #{type_class} (#{type_class.object_id})"
     end
 
-    def _create_rel(props = {})
-      factory = QueryFactory.new({from_node: from_node, to_node: to_node, rel: self}, props)
+    def _create_rel
+      factory = QueryFactory.new(from_node, to_node, self)
       factory.build!
-      factory.rel
+      factory.unwrapped_rel
     end
   end
 end

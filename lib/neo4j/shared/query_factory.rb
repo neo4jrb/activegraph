@@ -1,4 +1,6 @@
 module Neo4j::Shared
+  # Acts as a bridge between the node and rel models and Neo4j::Core::Query.
+  # If the object is persisted, it returns a query matching; otherwise, it returns a query creating it.
   class QueryFactory
     attr_reader :graph_object, :props, :identifier
 
@@ -24,10 +26,6 @@ module Neo4j::Shared
       graph_object.persisted? ? match_query : create_query
     end
 
-    def create_query
-      fail 'Abstract class, not implemented'
-    end
-
     def base_query=(query)
       return if query.blank?
       @base_query = query.query
@@ -35,6 +33,12 @@ module Neo4j::Shared
 
     def base_query
       @base_query || Neo4j::Session.current.query
+    end
+
+    protected
+
+    def create_query
+      fail 'Abstract class, not implemented'
     end
 
     def match_query
@@ -53,6 +57,9 @@ module Neo4j::Shared
   end
 
   class NodeQueryFactory < QueryFactory
+
+    protected
+
     def create_query
       return match_query if graph_object.persisted?
       base_query.create(identifier => {graph_object.labels_for_create.join(':').to_sym => graph_object.props_for_create})
@@ -60,6 +67,9 @@ module Neo4j::Shared
   end
 
   class RelQueryFactory < QueryFactory
+
+    protected
+
     def create_query
       return match_query if graph_object.persisted?
       base_query.send(graph_object.create_method, query_string).params(identifier_params.to_sym => props)
