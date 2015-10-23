@@ -38,7 +38,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
     {
       from_node: from_node,
       to_node: to_node,
-      rel: rel,
+      rel: rel
     }
   end
 
@@ -50,7 +50,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
     it 'marks all objects as persisted' do
       expect do
         rel.save
-      end.to change { [from_node, to_node, rel].all? { |o| o.persisted? } }.from(false).to(true)
+      end.to change { [from_node, to_node, rel].all?(&:persisted?) }.from(false).to(true)
     end
 
     it 'adds uuids to nodes' do

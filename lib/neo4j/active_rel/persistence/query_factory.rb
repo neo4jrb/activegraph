@@ -20,7 +20,7 @@ module Neo4j::ActiveRel::Persistence
     #   * Mix the query response into the unpersisted objects given during init
     def build!
       node_before_callbacks! do
-        res = query_factory(rel, rel.props_for_create, rel_id, iterative_query).query.unwrapped.return(*unpersisted_return_ids).first
+        res = query_factory(rel, rel_id, iterative_query).query.unwrapped.return(*unpersisted_return_ids).first
         node_symbols.each { |n| wrap!(send(n), res, n) }
         @unwrapped_rel = res.send(rel_id)
       end
@@ -57,14 +57,14 @@ module Neo4j::ActiveRel::Persistence
     def iterative_query
       node_symbols.inject(false) do |iterative_query, sym|
         obj = send(sym)
-        query_factory(obj, obj.props_for_create, sym, iterative_query)
+        query_factory(obj, sym, iterative_query)
       end
     end
 
     # Isolates the dependency to the shared class. This has an awareness of Neo4j::Core::Query and will match or create
     #   based on the current state of the object passed in.
-    def query_factory(obj, props, sym, query = false)
-      Neo4j::Shared::QueryFactory.create(obj, props, sym).tap do |factory_instance|
+    def query_factory(obj, sym, query = false)
+      Neo4j::Shared::QueryFactory.create(obj, sym).tap do |factory_instance|
         factory_instance.base_query = query
       end
     end

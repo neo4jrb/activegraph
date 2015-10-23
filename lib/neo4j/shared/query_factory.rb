@@ -2,15 +2,14 @@ module Neo4j::Shared
   # Acts as a bridge between the node and rel models and Neo4j::Core::Query.
   # If the object is persisted, it returns a query matching; otherwise, it returns a query creating it.
   class QueryFactory
-    attr_reader :graph_object, :props, :identifier
+    attr_reader :graph_object, :identifier
 
-    def initialize(graph_object, props, identifier)
+    def initialize(graph_object, identifier)
       @graph_object = graph_object
-      @props = props
       @identifier = identifier.to_sym
     end
 
-    def self.create(graph_object, props, identifier)
+    def self.create(graph_object, identifier)
       factory = case graph_object
                 when Neo4j::ActiveNode
                   NodeQueryFactory
@@ -19,7 +18,7 @@ module Neo4j::Shared
                 else
                   fail "Unable to find factory for #{graph_object}"
                 end
-      factory.new(graph_object, props, identifier)
+      factory.new(graph_object, identifier)
     end
 
     def query
@@ -57,7 +56,6 @@ module Neo4j::Shared
   end
 
   class NodeQueryFactory < QueryFactory
-
     protected
 
     def create_query
@@ -67,12 +65,11 @@ module Neo4j::Shared
   end
 
   class RelQueryFactory < QueryFactory
-
     protected
 
     def create_query
       return match_query if graph_object.persisted?
-      base_query.send(graph_object.create_method, query_string).params(identifier_params.to_sym => props)
+      base_query.send(graph_object.create_method, query_string).params(identifier_params.to_sym => graph_object.props_for_create)
     end
 
     private
