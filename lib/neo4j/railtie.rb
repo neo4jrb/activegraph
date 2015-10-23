@@ -1,6 +1,5 @@
 require 'active_support/notifications'
 require 'rails/railtie'
-require 'neo4j/core/cypher_session'
 
 module Neo4j
   class Railtie < ::Rails::Railtie
