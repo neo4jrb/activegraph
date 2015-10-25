@@ -17,7 +17,7 @@ module Neo4j
           super
         end
 
-        Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels._wrapped_classes.include?(model)
+        Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.include?(model)
       end
 
       class InvalidQueryError < StandardError; end
@@ -48,18 +48,14 @@ module Neo4j
       end
 
       def self.add_wrapped_class(model)
-        _wrapped_classes << model
+        WRAPPED_CLASSES << model
       end
 
-      def self._wrapped_classes
-        Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
-      end
-
+      # Finds an appropriate matching model given a set of labels
+      # which are assigned to a node
       def self.model_for_labels(labels)
-        MODELS_FOR_LABELS_CACHE[labels] || model_cache(labels)
-      end
+        return MODELS_FOR_LABELS_CACHE[labels] if MODELS_FOR_LABELS_CACHE[labels]
 
-      def self.model_cache(labels)
         models = WRAPPED_CLASSES.select do |model|
           (model.mapped_label_names - labels).size == 0
         end
@@ -69,12 +65,10 @@ module Neo4j
         end
       end
 
-      def self.clear_model_for_label_cache
-        MODELS_FOR_LABELS_CACHE.clear
-      end
-
       def self.clear_wrapped_models
         WRAPPED_CLASSES.clear
+        MODELS_FOR_LABELS_CACHE.clear
+        Neo4j::Node::Wrapper::CONSTANTS_FOR_LABELS_CACHE.clear
       end
 
       module ClassMethods

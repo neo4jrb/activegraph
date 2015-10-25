@@ -4,8 +4,8 @@ describe Neo4j::ActiveNode::Query do
   let(:session) { double('Session') }
 
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
-    Neo4j::ActiveNode::Labels._wrapped_classes.clear
+    @prev_wrapped_classes = Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
+    Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
 
     @class_a = Class.new do
       include Neo4j::ActiveNode::Query
@@ -25,7 +25,7 @@ describe Neo4j::ActiveNode::Query do
 
   after(:all) do
     # restore
-    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
+    Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.concat(@prev_wrapped_classes)
   end
 
   describe '.query_as' do

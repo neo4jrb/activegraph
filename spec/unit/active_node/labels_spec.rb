@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe Neo4j::ActiveNode::Labels do
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
-    Neo4j::ActiveNode::Labels._wrapped_classes.clear
+    @prev_wrapped_classes = Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
+    Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
 
     @class_a = Class.new do
       include Neo4j::ActiveNode::Labels
@@ -22,7 +22,7 @@ describe Neo4j::ActiveNode::Labels do
 
   after(:all) do
     # restore
-    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
+    Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.concat(@prev_wrapped_classes)
   end
 
   describe Neo4j::ActiveNode::Labels::ClassMethods do
