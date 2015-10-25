@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+- Fixed `#after_initialize` and `#after_find` callbacks.
+- The `#touch` method should to raise errors when unsuccessful and avoid `#attributes` for performance.
+
 ## [5.2.12] - 10-25-2015
 
 ### Fixed
