@@ -10,7 +10,7 @@ module Neo4j
       included do
         include ActiveModel::Validations::Callbacks
         define_model_callbacks :initialize, :find, only: :after
-        define_model_callbacks :save, :create, :update, :destroy
+        define_model_callbacks :save, :create, :update, :destroy, :touch
       end
 
       def destroy #:nodoc:

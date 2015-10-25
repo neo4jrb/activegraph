@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [5.2.12] - 10-25-2015
+
+### Fixed
+- Fix the `#touch` method for `ActiveNode` and `ActiveRel`
+
 ## [5.2.11] - 10-18-2015
 
 ### Fixed

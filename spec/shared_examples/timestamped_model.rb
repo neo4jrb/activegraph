@@ -38,6 +38,16 @@ shared_examples_for 'timestamped model' do
         lambda { subject.update_attributes!(a: 1, b: 2) }.should change(subject, :updated_at)
       end
 
+      describe '#touch' do
+        it 'should change updated_at' do
+          lambda { subject.touch }.should change(subject, :updated_at)
+        end
+
+        it 'will not change created_at' do
+          lambda { subject.touch }.should_not change(subject, :created_at)
+        end
+      end
+
       context 'with missing updated_at' do
         it 'creates the property' do
           Neo4j::Transaction.run { subject._persisted_obj.remove_property('updated_at'.freeze) }
@@ -47,8 +57,9 @@ shared_examples_for 'timestamped model' do
       end
 
       context 'with explicitly changed updated_at property' do
+        before { subject.updated_at = Time.now }
+
         it 'does not overwrite updated_at property' do
-          subject.updated_at = Time.now
           expect { subject.update_attributes!(a: 1, b: 2) }.not_to change(subject, :updated_at)
         end
       end
