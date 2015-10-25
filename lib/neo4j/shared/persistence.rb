@@ -83,7 +83,7 @@ module Neo4j::Shared
     end
 
     def touch
-      fail "Cannot touch on a new record object" unless persisted?
+      fail 'Cannot touch on a new record object' unless persisted?
       update_attribute(:updated_at, Time.now) if attributes.key?('updated_at')
     end
 
