@@ -74,6 +74,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
 - Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
 
+## [5.2.12] - 10-25-2015
+
+### Fixed
+- Fix the `#touch` method for `ActiveNode` and `ActiveRel`
+
 ## [5.2.11] - 10-18-2015
 
 ### Fixed
