@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased][unreleased]
+## [5.2.13] - 10-26-2015
 
 ### Fixed
 - Fixed `#after_initialize` and `#after_find` callbacks.
