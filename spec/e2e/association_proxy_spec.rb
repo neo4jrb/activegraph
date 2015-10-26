@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe 'Association Proxy' do
-  before(:each) do
+  before do
     clear_model_memory_caches
     delete_db
 

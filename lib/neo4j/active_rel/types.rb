@@ -59,13 +59,13 @@ module Neo4j
           end
         end
 
-        def add_wrapped_class(type)
-          # _wrapped_classes[type.to_sym.downcase] = self.name
-          _wrapped_classes[type.to_sym] = self.name
+        def _wrapped_classes
+          WRAPPED_CLASSES
         end
 
-        def _wrapped_classes
-          Neo4j::ActiveRel::Types::WRAPPED_CLASSES
+        def add_wrapped_class(type)
+          # WRAPPED_CLASSES[type.to_sym.downcase] = self.name
+          _wrapped_classes[type.to_sym] = self.name
         end
 
         def rel_type?

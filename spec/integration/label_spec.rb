@@ -4,7 +4,7 @@ require 'spec_helper'
 # tests = Proc.new do
 describe 'Labels' do
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes.dup
+    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
     Neo4j::ActiveNode::Labels._wrapped_classes.clear
 
     class TestClass

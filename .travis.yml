@@ -5,12 +5,13 @@ language: ruby
 cache: bundler
 sudo: false
 rvm:
-  - 2.2.2
+  - 2.2.3
   - 2.0.0
   - jruby-1.7.20
   - jruby-9.0.1.0
 env:
-  - NEO4J_VERSION=community-2.2.5
+  - NEO4J_VERSION=community-2.3.0
+  - NEO4J_VERSION=community-2.2.6
   - NEO4J_VERSION=community-2.1.8
 notifications:
   webhooks:
