@@ -203,51 +203,69 @@ describe 'Neo4j::ActiveNode' do
   describe 'callbacks' do
     before(:each) do
       stub_active_node_class('Company') do
-        attr_accessor :update_called, :save_called, :destroy_called, :validation_called
+        %w(find create save update destroy validation).each do |verb|
+          attr_reader :"before_#{verb}_called", :"after_#{verb}_called"
+        end
+
+        attr_reader :after_find_called, :after_initialize_called
+
         property :name
 
-        before_save do
-          @save_called = true
-        end
+        after_initialize { @after_initialize_called = true }
+        after_find { @after_find_called = true }
 
-        before_update do
-          @update_called = true
-        end
-
-        before_destroy do
-          @destroy_called = true
-        end
-
-        before_validation do
-          @validation_called = true
-        end
+        before_create { @before_create_called = true }
+        after_create { @after_create_called = true }
+        before_save { @before_save_called = true }
+        after_save { @after_save_called = true }
+        before_update { @before_update_called = true }
+        after_update { @after_update_called = true }
+        before_destroy { @before_destroy_called = true }
+        after_destroy { @after_destroy_called = true }
+        before_validation { @before_validation_called = true }
+        after_validation { @after_validation_called = true }
       end
     end
 
-    it 'handles before_save callbacks' do
-      c = Company.new
-      c.save_called.should be_nil
-      c.save
-      c.save_called.should be true
+    def true_results?(node, verb)
+      [node.send("before_#{verb}_called"), node.send("after_#{verb}_called")].all? { |r| r == true }
     end
 
-    it 'handles before_update callbacks' do
-      c = Company.create
-      c.update(name: 'foo')
-      expect(c.update_called).to be true
+    context 'unpersited objects' do
+      let(:c) { Company.new }
+
+      it 'handles after_initialize callbacks' do
+        expect_any_instance_of(Company).to receive(:run_callbacks).with(:initialize)
+        c
+      end
+
+      it 'handles before_save callbacks' do
+        expect { c.save }.to change { true_results?(c, :save) }.from(false).to(true)
+      end
+
+      it 'handles before_validation callbacks' do
+        expect { c.valid? }.to change { true_results?(c, :validation) }.from(false).to(true)
+      end
     end
 
-    it 'handles before_destroy callbacks' do
-      c = Company.create
-      c.destroy
-      expect(c.destroy_called).to be true
+    context 'on persisted objects' do
+      let(:c) { Company.create }
+
+      # Because this stems from a class method, we demonstrate that it is called on objects resulting from Model.find
+      it 'handles found callbacks' do
+        expect(c.after_find_called).not_to eq true
+        expect(Company.find(c.id).after_find_called).to eq true
+      end
+
+      it 'handles update callbacks' do
+        expect { c.update(name: 'foo') }.to change { true_results?(c, :update) }
+      end
+
+      it 'handles destroy callbacks' do
+        expect { c.destroy }.to change { true_results?(c, :destroy) }
+      end
     end
 
-    it 'handles before_validation callbacks' do
-      #      skip
-      c = Company.create
-      expect(c.validation_called).to be true
-    end
 
     context 'that raise errors' do
       before do
@@ -255,39 +273,41 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'rolls back node creation' do
-        starting_count = Company.count
-        expect { Company.create }.not_to raise_error
-        expect(Company.count).not_to eq starting_count
-        starting_count += 1
+        expect do
+          expect { Company.create }.not_to raise_error
+        end.to change { Company.count }
 
         Company.after_create { fail }
-        expect { Company.create }.to raise_error
-        expect(Company.count).to eq starting_count
+        expect do
+          expect { Company.create }.to raise_error
+        end.not_to change { Company.count }
       end
 
       it 'rolls back node update' do
         c = Company.create(name: 'Daylight Dies')
         expect(c.name).to eq 'Daylight Dies'
         c.name = 'Katatonia'
-        expect { c.save }.not_to raise_error
-        expect(c.name).to eq 'Katatonia'
+        expect do
+          expect { c.save }.not_to raise_error
+        end.not_to change { c.name }.from('Katatonia')
+
         Company.after_update { fail }
 
         c.name = 'October Tide'
-        expect { c.save }.to raise_error
-        c.reload
-        expect(c.name).to eq 'Katatonia'
+        expect do
+          expect { c.save }.to raise_error
+          c.reload
+        end.to change { c.name }.from('October Tide').to('Katatonia')
       end
 
       it 'rolls back node destroy' do
         c = Company.create(name: 'Foo')
-        expect(c).to be_persisted
-        expect { c.destroy }.not_to raise_error
-        expect(c).not_to be_persisted
+        expect { expect { c.destroy }.not_to raise_error }.to change { c.persisted? }.from(true).to(false)
+
         Company.after_destroy { fail }
         c = Company.create(name: 'Foo')
-        expect { c.destroy }.to raise_error
-        expect(c).to be_persisted
+
+        expect { expect { c.destroy }.to raise_error }.not_to change { c.persisted? }.from(true)
         expect(c).not_to be_frozen
         expect(c).not_to be_changed
       end

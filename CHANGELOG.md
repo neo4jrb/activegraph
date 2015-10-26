@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.0.0.alpha.8] - 10-19-2015
 
 ### Added
 
@@ -73,6 +73,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
 - Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+
+## [5.2.13] - 10-26-2015
+
+### Fixed
+- Fixed `#after_initialize` and `#after_find` callbacks.
+- The `#touch` method should to raise errors when unsuccessful and avoid `#attributes` for performance.
 
 ## [5.2.12] - 10-25-2015
 
