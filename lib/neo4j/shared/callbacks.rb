@@ -18,10 +18,6 @@ module Neo4j
         run_callbacks(:initialize) { super }
       end
 
-      def initialize(args = nil)
-        run_callbacks(:initialize) { super }
-      end
-
       def destroy #:nodoc:
         tx = Neo4j::Transaction.new
         run_callbacks(:destroy) { super }
