@@ -4,8 +4,8 @@ require 'spec_helper'
 # tests = Proc.new do
 describe 'Labels' do
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
-    Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
+    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
+    Neo4j::ActiveNode::Labels._wrapped_classes.clear
 
     class TestClass
       include Neo4j::ActiveNode
@@ -46,7 +46,7 @@ describe 'Labels' do
 
 
   after(:all) do
-    Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.concat(@prev_wrapped_classes)
+    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
     Object.send(:remove_const, :IndexedTestClass)
     Object.send(:remove_const, :TestClass)
   end

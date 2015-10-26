@@ -17,7 +17,7 @@ module Neo4j
           super
         end
 
-        Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.include?(model)
+        Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels._wrapped_classes.include?(model)
       end
 
       class InvalidQueryError < StandardError; end
@@ -47,8 +47,12 @@ module Neo4j
         @_persisted_obj.remove_label(*label)
       end
 
+      def self._wrapped_classes
+        WRAPPED_CLASSES
+      end
+
       def self.add_wrapped_class(model)
-        WRAPPED_CLASSES << model
+        _wrapped_classes << model
       end
 
       # Finds an appropriate matching model given a set of labels
