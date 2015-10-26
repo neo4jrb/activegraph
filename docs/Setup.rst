@@ -15,7 +15,7 @@ There are two ways to add neo4j to your Rails project.  You can LINK||generate a
 Generating a new app
 ^^^^^^^^^^^^^^^^^^^^
 
-To create a new Rails app with Neo4j as the default model mapper use ``-m`` to run a script from the Neo4j projcet and ``-O`` to exclude ActiveRecord like so:
+To create a new Rails app with Neo4j as the default model mapper use ``-m`` to run a script from the Neo4j project and ``-O`` to exclude ActiveRecord like so:
 
 .. code-block:: bash
 
