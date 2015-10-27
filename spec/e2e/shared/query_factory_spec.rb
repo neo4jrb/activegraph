@@ -24,13 +24,15 @@ describe Neo4j::Shared::QueryFactory do
   let(:from_node) { FactoryFromClass.new(name: 'foo') }
   let(:to_node) { FactoryToClass.new(name: 'bar') }
   let(:rel) { FactoryRelClass.new(score: 9000) }
+  let(:from_node_factory) { described_class.create(from_node, :from_node) }
+  let(:to_node_factory) { described_class.create(to_node, :to_node) }
+  let(:rel_factory) { described_class.create(rel, :rel) }
 
   describe 'nodes' do
-    let(:factory) { described_class.create(from_node, :from_node) }
     context 'unpersisted' do
       it 'builds a query to create' do
         expect do
-          expect(factory.query.pluck(:from_node).first).to be_a(FactoryFromClass)
+          expect(from_node_factory.query.pluck(:from_node).first).to be_a(FactoryFromClass)
         end.to change { FactoryFromClass.count }
       end
     end
@@ -40,19 +42,18 @@ describe Neo4j::Shared::QueryFactory do
 
       it 'builds a query to match' do
         expect do
-          expect(factory.query.pluck(:from_node).first.class.name).to eq 'FactoryFromClass'
+          expect(from_node_factory.query.pluck(:from_node).first.class.name).to eq 'FactoryFromClass'
         end.not_to change { FactoryFromClass.count }
       end
     end
   end
 
   describe 'rels' do
-    let(:factory) { described_class.create(rel, :rel) }
     context 'unpersisted' do
       # In this case, it creates labelless nodes on either side, too
       it 'builds a query to create' do
         expect do
-          expect(factory.query.pluck(:rel).first).to be_a(FactoryRelClass)
+          expect(rel_factory.query.pluck(:rel).first).to be_a(FactoryRelClass)
         end.to change { FactoryRelClass.count }
       end
     end
@@ -66,8 +67,31 @@ describe Neo4j::Shared::QueryFactory do
 
       it 'builds a query to match' do
         expect do
-          expect(factory.query.pluck(:rel).first.class.name).to eq 'FactoryRelClass'
+          expect(rel_factory.query.pluck(:rel).first.class.name).to eq 'FactoryRelClass'
         end.not_to change { FactoryRelClass.count }
+      end
+    end
+  end
+
+  describe 'base_query' do
+    context 'when not already set' do
+      it 'creates a new Query object' do
+        expect(Neo4j::Core::Query).to receive(:new).and_call_original
+        expect(from_node_factory.base_query).to be_a(Neo4j::Core::Query)
+      end
+    end
+
+    context 'when set' do
+      before { from_node_factory.instance_variable_set(:@base_query, Neo4j::Session.current.query) }
+      it 'returns the existing query' do
+        expect(Neo4j::Core::Query).not_to receive(:new)
+        expect(from_node_factory.base_query).to be_a(Neo4j::Core::Query)
+      end
+    end
+
+    describe '#base_query=' do
+      it 'changes the value of #base_query' do
+        expect { from_node_factory.base_query = Neo4j::Session.current.query }.to change { from_node_factory.base_query }
       end
     end
   end
