@@ -42,7 +42,7 @@ module Neo4j::Shared
 
     def match_query
       base_query
-        .match(identifier).where("ID(#{identifier}) = {#{identifier_id}}")
+        .match(match_string).where("ID(#{identifier}) = {#{identifier_id}}")
         .params(identifier_id.to_sym => graph_object.neo_id)
     end
 
@@ -58,6 +58,10 @@ module Neo4j::Shared
   class NodeQueryFactory < QueryFactory
     protected
 
+    def match_string
+      "(#{identifier})"
+    end
+
     def create_query
       return match_query if graph_object.persisted?
       base_query.create(identifier => {graph_object.labels_for_create.join(':').to_sym => graph_object.props_for_create})
@@ -66,6 +70,10 @@ module Neo4j::Shared
 
   class RelQueryFactory < QueryFactory
     protected
+
+    def match_string
+      "(#{graph_object.from_node_identifier})-[#{identifier}]->()"
+    end
 
     def create_query
       return match_query if graph_object.persisted?
