@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.alpha.9] - 10-27-2015
+
+### Fixed
+- `uninitialized constant Neo4j::Core::CypherSession` error
+
 ## [6.0.0.alpha.8] - 10-19-2015
 
 ### Added
