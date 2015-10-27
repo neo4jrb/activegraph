@@ -1,6 +1,7 @@
 module Neo4j::Shared
   # Acts as a bridge between the node and rel models and Neo4j::Core::Query.
   # If the object is persisted, it returns a query matching; otherwise, it returns a query creating it.
+  # This class does not execute queries, so it keeps no record of what identifiers have been set or what has happened in previous factories.
   class QueryFactory
     attr_reader :graph_object, :identifier
 

@@ -83,9 +83,16 @@ describe Neo4j::Shared::QueryFactory do
 
     context 'when set' do
       before { from_node_factory.instance_variable_set(:@base_query, Neo4j::Session.current.query) }
+
       it 'returns the existing query' do
         expect(Neo4j::Core::Query).not_to receive(:new)
         expect(from_node_factory.base_query).to be_a(Neo4j::Core::Query)
+      end
+
+      it 'is built upon' do
+        expect do
+          to_node_factory.base_query = from_node_factory.query
+        end.to change { to_node_factory.query.to_cypher.include?('CREATE (from_node:`FactoryFromClass`') }.from(false).to(true)
       end
     end
 
