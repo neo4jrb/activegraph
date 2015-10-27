@@ -63,9 +63,9 @@ module Neo4j::ActiveRel::Persistence
 
     # Isolates the dependency to the shared class. This has an awareness of Neo4j::Core::Query and will match or create
     #   based on the current state of the object passed in.
-    def query_factory(obj, sym, query = false)
+    def query_factory(obj, sym, factory = false)
       Neo4j::Shared::QueryFactory.create(obj, sym).tap do |factory_instance|
-        factory_instance.base_query = query
+        factory_instance.base_query = factory.blank? ? false : factory.query
       end
     end
 

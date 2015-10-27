@@ -25,9 +25,10 @@ module Neo4j::Shared
       graph_object.persisted? ? match_query : create_query
     end
 
+    # @param [Neo4j::Core::Query] query An instance of Neo4j::Core::Query upon which methods will be chained.
     def base_query=(query)
       return if query.blank?
-      @base_query = query.query
+      @base_query = query
     end
 
     def base_query
