@@ -70,6 +70,7 @@ describe 'declared property classes' do
         property :foo
         property :bar, type: String, default: 'foo'
         property :baz, type: ActiveAttr::Typecasting::Boolean, default: false
+        validates :baz, inclusion: {in: [true, false]}
       end
 
       stub_const('MyModel', clazz)
@@ -147,8 +148,27 @@ describe 'declared property classes' do
       end
 
       context 'with type: Boolean and default: false' do
-        it 'sets as expected' do
-          expect(node.baz).to eq false
+        subject { node.baz }
+        it { should eq false }
+
+        context 'model from new with attributes' do
+          let(:node) { n = nil; trace_execution(8) { n = MyModel.new }; n }
+          it { should eq false }
+        end
+
+        context 'model from new with attributes' do
+          let(:node) { n = nil; trace_execution(8) { n = MyModel.new(foo: 'foo') }; n }
+          it { should eq false }
+        end
+
+        context 'model from create' do
+          let(:node) { MyModel.create }
+          it { should eq false }
+        end
+
+        context 'model from create with attributes' do
+          let(:node) { MyModel.create(foo: 'foo') }
+          it { should eq false }
         end
       end
 
