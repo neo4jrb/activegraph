@@ -94,7 +94,7 @@ Methods
 **#declared_property_manager**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def declared_property_manager
        self.class.declared_property_manager

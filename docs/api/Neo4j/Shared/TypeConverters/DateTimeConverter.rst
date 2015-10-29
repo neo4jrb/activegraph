@@ -54,7 +54,7 @@ Methods
 **.convert_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_type
        DateTime
@@ -67,7 +67,7 @@ Methods
 **.db_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def db_type
        Integer
@@ -81,7 +81,7 @@ Methods
   Converts the given DateTime (UTC) value to an Integer.
   DateTime values are automatically converted to UTC.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_db(value)
        value = value.new_offset(0) if value.respond_to?(:new_offset)
@@ -99,7 +99,7 @@ Methods
 **.to_ruby**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_ruby(value)
        t = case value

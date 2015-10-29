@@ -56,7 +56,7 @@ Methods
 **#add_destroy_callbacks**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def add_destroy_callbacks(model)
        return if dependent.nil?
@@ -73,7 +73,7 @@ Methods
 **#validate_dependent**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def validate_dependent(value)
        fail ArgumentError, "Invalid dependent value: #{value.inspect}" if not valid_dependent_value?(value)

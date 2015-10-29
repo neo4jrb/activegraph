@@ -70,7 +70,7 @@ Methods
 **#default_path**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_path
        Rails.root if defined? Rails
@@ -83,7 +83,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(path = default_path)
        @classnames_filename = 'add_classnames.yml'
@@ -97,7 +97,7 @@ Methods
 **#joined_path**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def joined_path(path)
        File.join(path.to_s, 'db', 'neo4j-migrate')
@@ -110,7 +110,7 @@ Methods
 **#migrate**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def migrate
        output 'Adding classnames. This make take some time.'
@@ -124,7 +124,7 @@ Methods
 **#output**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def output(string = '')
        puts string unless !!ENV['silenced']
@@ -137,7 +137,7 @@ Methods
 **#print_output**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def print_output(string)
        print string unless !!ENV['silenced']
@@ -150,7 +150,7 @@ Methods
 **#setup**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def setup
        output "Creating file #{classnames_filepath}. Please use this as the migration guide."
@@ -169,7 +169,7 @@ Methods
 **#test**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def test
        output 'TESTING! No queries will be executed.'

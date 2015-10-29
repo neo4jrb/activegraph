@@ -56,7 +56,7 @@ Methods
 **#attribute!**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def attribute!(name, options = {})
        super(name, options)
@@ -74,7 +74,7 @@ Methods
 **#attributes_nil_hash**
   an extra call to a slow dependency method.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def attributes_nil_hash
        declared_property_manager.attributes_nil_hash
@@ -87,7 +87,7 @@ Methods
 **#declared_property_manager**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def declared_property_manager
        @_declared_property_manager ||= DeclaredPropertyManager.new(self)
@@ -100,7 +100,7 @@ Methods
 **#inherited**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inherited(other)
        self.declared_property_manager.registered_properties.each_pair do |prop_key, prop_def|
@@ -119,7 +119,7 @@ Methods
   See active_attr gem for allowed options, e.g which type
   Notice, in Neo4j you don't have to declare properties before using them, see the neo4j-core api.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def property(name, options = {})
        prop = DeclaredProperty.new(name, options)
@@ -137,7 +137,7 @@ Methods
 **#undef_property**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def undef_property(name)
        declared_property_manager.unregister(name)

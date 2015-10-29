@@ -50,7 +50,7 @@ Methods
 **.convert_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_type
        Date
@@ -63,7 +63,7 @@ Methods
 **.db_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def db_type
        Integer
@@ -76,7 +76,7 @@ Methods
 **.to_db**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_db(value)
        Time.utc(value.year, value.month, value.day).to_i
@@ -89,7 +89,7 @@ Methods
 **.to_ruby**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_ruby(value)
        Time.at(value).utc.to_date

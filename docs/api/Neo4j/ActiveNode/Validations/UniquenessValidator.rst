@@ -52,7 +52,7 @@ Methods
 **#found**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def found(record, attribute, value)
        conditions = scope_conditions(record)
@@ -74,7 +74,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(options)
        super(options.reverse_merge(case_sensitive: true))
@@ -87,7 +87,7 @@ Methods
 **#message**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def message(instance)
        super || 'has already been taken'
@@ -100,7 +100,7 @@ Methods
 **#scope_conditions**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def scope_conditions(instance)
        Array(options[:scope] || []).inject({}) do |conditions, key|
@@ -115,7 +115,7 @@ Methods
 **#validate_each**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def validate_each(record, attribute, value)
        return unless found(record, attribute, value).exists?

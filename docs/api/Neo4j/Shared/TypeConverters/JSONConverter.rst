@@ -50,7 +50,7 @@ Methods
 **.convert_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_type
        JSON
@@ -63,7 +63,7 @@ Methods
 **.db_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def db_type
        String
@@ -76,7 +76,7 @@ Methods
 **.to_db**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_db(value)
        value.to_json
@@ -89,7 +89,7 @@ Methods
 **.to_ruby**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_ruby(value)
        JSON.parse(value, quirks_mode: true)

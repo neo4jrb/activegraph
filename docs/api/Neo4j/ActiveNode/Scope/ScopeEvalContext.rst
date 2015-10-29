@@ -44,7 +44,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(target, query_proxy)
        @query_proxy = query_proxy

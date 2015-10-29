@@ -62,7 +62,7 @@ Methods
   When called with arguments, it will change the current setting.
   should be deprecated
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type(given_type = nil, auto = false)
        case
@@ -82,7 +82,7 @@ Methods
 **#_wrapped_classes**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _wrapped_classes
        Neo4j::ActiveRel::Types::WRAPPED_CLASSES
@@ -95,7 +95,7 @@ Methods
 **#add_wrapped_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def add_wrapped_class(type)
        # _wrapped_classes[type.to_sym.downcase] = self.name
@@ -109,7 +109,7 @@ Methods
 **#decorated_rel_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def decorated_rel_type(type)
        @decorated_rel_type ||= Neo4j::Shared::RelTypeConverters.decorated_rel_type(type)
@@ -122,7 +122,7 @@ Methods
 **#inherited**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def inherited(subclass)
        subclass.type subclass.namespaced_model_name, true
@@ -135,7 +135,7 @@ Methods
 **#namespaced_model_name**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def namespaced_model_name
        case Neo4j::Config[:module_handling]
@@ -156,7 +156,7 @@ Methods
   When called without arguments, it will return the current setting or supply a default.
   When called with arguments, it will change the current setting.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type(given_type = nil, auto = false)
        case
@@ -176,7 +176,7 @@ Methods
 **#rel_type?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def rel_type?
        !!@rel_type
@@ -190,7 +190,7 @@ Methods
   When called without arguments, it will return the current setting or supply a default.
   When called with arguments, it will change the current setting.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type(given_type = nil, auto = false)
        case

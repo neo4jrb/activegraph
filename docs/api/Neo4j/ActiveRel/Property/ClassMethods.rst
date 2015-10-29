@@ -60,7 +60,7 @@ Methods
 **#creates_unique**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def creates_unique
        @creates_unique = true
@@ -73,7 +73,7 @@ Methods
 **#creates_unique?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def creates_unique?
        !!@creates_unique
@@ -86,7 +86,7 @@ Methods
 **#creates_unique_rel**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def creates_unique_rel
        warning = <<-WARNING
@@ -106,7 +106,7 @@ Methods
 **#end_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :end_class,    :to_class
 
@@ -118,7 +118,7 @@ Methods
   Extracts keys from attributes hash which are relationships of the model
   TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def extract_association_attributes!(attributes)
        return if attributes.blank?
@@ -136,7 +136,7 @@ Methods
 **#id_property_name**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def id_property_name
        false
@@ -149,7 +149,7 @@ Methods
 **#load_entity**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def load_entity(id)
        Neo4j::Node.load(id)
@@ -162,7 +162,7 @@ Methods
 **#start_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      alias_method :start_class,  :from_class
 
@@ -173,7 +173,7 @@ Methods
 **#unique?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def creates_unique?
        !!@creates_unique

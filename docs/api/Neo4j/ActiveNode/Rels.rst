@@ -44,7 +44,7 @@ Methods
 **#_rels_delegator**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _rels_delegator
        fail "Can't access relationship on a non persisted node" unless _persisted_obj

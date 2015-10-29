@@ -55,7 +55,7 @@ Methods
 **#default_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_properties
        @default_properties ||= Hash.new(nil)
@@ -68,7 +68,7 @@ Methods
 **#default_properties=**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_properties=(properties)
        @default_property_value = properties[default_property_key]
@@ -81,7 +81,7 @@ Methods
 **#default_property**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_property(key)
        return nil unless key == default_property_key
@@ -95,7 +95,7 @@ Methods
 **#default_property_key**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_property_key
        self.class.default_property_key
@@ -108,7 +108,7 @@ Methods
 **#default_property_value**
   Returns the value of attribute default_property_value
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def default_property_value
        @default_property_value

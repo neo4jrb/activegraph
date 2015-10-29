@@ -64,7 +64,7 @@ Methods
 **#==**
   Loads the node if needed, then conducts comparison.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def ==(other)
        loaded if @node.is_a?(Integer)
@@ -78,7 +78,7 @@ Methods
 **#class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def class
        loaded.send(:class)
@@ -98,7 +98,7 @@ Methods
   
   Initialization with a node doesn't appear to happen in the code. TODO: maybe find out why this is an option.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(node = nil)
        @node = valid_node_param?(node) ? node : (fail InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node')
@@ -111,7 +111,7 @@ Methods
 **#loaded**
   Loads a node from the database or returns the node if already laoded
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def loaded
        @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
@@ -124,7 +124,7 @@ Methods
 **#loaded?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def loaded?
        @node.respond_to?(:neo_id)
@@ -137,7 +137,7 @@ Methods
 **#method_missing**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def method_missing(*args, &block)
        loaded.send(*args, &block)
@@ -150,7 +150,7 @@ Methods
 **#neo_id**
   Returns the neo_id of a given node without loading.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def neo_id
        loaded? ? @node.neo_id : @node
@@ -163,7 +163,7 @@ Methods
 **#respond_to_missing?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def respond_to_missing?(method_name, include_private = false)
        loaded if @node.is_a?(Integer)

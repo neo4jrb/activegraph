@@ -68,7 +68,7 @@ Methods
 **#association_proxy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_proxy(name, options = {})
        name = name.to_sym
@@ -103,7 +103,7 @@ Methods
   * so we don't need to query again
   * so that we can cache results from association calls or eager loading
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_proxy_cache
        @association_proxy_cache ||= {}
@@ -116,7 +116,7 @@ Methods
 **#association_proxy_cache_fetch**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_proxy_cache_fetch(key)
        association_proxy_cache.fetch(key) do
@@ -132,7 +132,7 @@ Methods
 **#association_query_proxy**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def association_query_proxy(name, options = {})
        self.class.send(:association_query_proxy, name, {start_object: self}.merge!(options))

@@ -44,7 +44,7 @@ Methods
 **#defer_create**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def defer_create(other_nodes, _properties, operator)
        key = [@association.name, [nil, nil, nil]].hash

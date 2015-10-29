@@ -42,7 +42,7 @@ Methods
 **#destroy**
   :nodoc:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def destroy #:nodoc:
        tx = Neo4j::Transaction.new
@@ -58,14 +58,27 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Callbacks#initialize`:
+
+**#initialize**
+  
+
+  .. code-block:: ruby
+
+     def initialize(args = nil)
+       run_callbacks(:initialize) { super }
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Callbacks#touch`:
 
 **#touch**
   :nodoc:
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
-     def touch(*) #:nodoc:
+     def touch #:nodoc:
        run_callbacks(:touch) { super }
      end
 

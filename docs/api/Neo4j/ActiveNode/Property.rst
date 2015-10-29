@@ -46,7 +46,7 @@ Methods
 **#[]**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute(name)
        super(name)
@@ -61,7 +61,7 @@ Methods
 **#_persisted_obj**
   Returns the value of attribute _persisted_obj
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def _persisted_obj
        @_persisted_obj
@@ -74,11 +74,12 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(attributes = nil)
        super(attributes)
        @attributes ||= Hash[self.class.attributes_nil_hash]
+     
        send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
      end
 
@@ -89,7 +90,7 @@ Methods
 **#read_attribute**
   Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def read_attribute(name)
        super(name)
@@ -104,7 +105,7 @@ Methods
 **#send_props**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def send_props(hash)
        return hash if hash.blank?

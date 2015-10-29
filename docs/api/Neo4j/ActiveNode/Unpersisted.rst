@@ -54,7 +54,7 @@ Methods
 **#pending_associations**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def pending_associations
        @pending_associations ||= {}
@@ -67,7 +67,7 @@ Methods
 **#pending_associations?**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def pending_associations?
        !@pending_associations.blank?

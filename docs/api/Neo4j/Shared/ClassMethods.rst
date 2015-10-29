@@ -48,7 +48,7 @@ Methods
 **#neo4j_session**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def neo4j_session
        if @neo4j_session_name
@@ -66,7 +66,7 @@ Methods
 **#neo4j_session_name**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def neo4j_session_name(name)
        ActiveSupport::Deprecation.warn 'neo4j_session_name is deprecated and may be removed from future releases, use neo4j_session_name= instead.', caller
@@ -81,7 +81,7 @@ Methods
 **#neo4j_session_name=**
   Sets the attribute neo4j_session_name
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def neo4j_session_name=(value)
        @neo4j_session_name = value

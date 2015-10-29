@@ -68,7 +68,7 @@ Methods
 **#args**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def args(var, rel_var)
        @arg.respond_to?(:call) ? @arg.call(var, rel_var) : [@arg, @args].flatten
@@ -81,7 +81,7 @@ Methods
 **#clause**
   Returns the value of attribute clause
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def clause
        @clause
@@ -94,7 +94,7 @@ Methods
 **.for_arg**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_arg(model, clause, arg, *args)
        default = [Link.new(clause, arg, *args)]
@@ -111,7 +111,7 @@ Methods
 **.for_args**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_args(model, clause, args)
        if [:where, :where_not].include?(clause) && args[0].is_a?(String) # Better way?
@@ -128,7 +128,7 @@ Methods
 **.for_association**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_association(name, value, n_string, model)
        neo_id = value.try(:neo_id) || value
@@ -147,7 +147,7 @@ Methods
 **.for_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_clause(clause, arg, model, *args)
        method_to_call = "for_#{clause}_clause"
@@ -162,7 +162,7 @@ Methods
 **.for_node_where_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_where_clause(arg, model, *args)
        node_num = 1
@@ -189,7 +189,7 @@ Methods
 **.for_order_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_order_clause(arg, _)
        [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
@@ -202,7 +202,7 @@ Methods
 **.for_rel_where_clause**
   We don't accept strings here. If you want to use a string, just use where.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_rel_where_clause(arg, _)
        arg.each_with_object([]) do |(key, value), result|
@@ -217,7 +217,7 @@ Methods
 **.for_where_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_where_clause(arg, model, *args)
        node_num = 1
@@ -244,7 +244,7 @@ Methods
 **.for_where_not_clause**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def for_where_not_clause(*args)
        for_where_clause(*args).each do |link|
@@ -259,7 +259,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize(clause, arg, args = [])
        @clause = clause
@@ -274,7 +274,7 @@ Methods
 **.new_for_key_and_value**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def new_for_key_and_value(model, key, value)
        key = (key.to_sym == :id ? model.id_property_name : key)

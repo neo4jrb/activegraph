@@ -54,7 +54,7 @@ Methods
 **.call**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_ruby(value)
        Time.at(value).utc
@@ -67,7 +67,7 @@ Methods
 **.convert_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def convert_type
        Time
@@ -80,7 +80,7 @@ Methods
 **.db_type**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def db_type
        Integer
@@ -94,7 +94,7 @@ Methods
   ActiveAttr, which assists with property management, does not recognize Time as a valid type. We tell it to interpret it as
   Integer, as it will be when saved to the database.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def primitive_type
        Integer
@@ -108,7 +108,7 @@ Methods
   Converts the given DateTime (UTC) value to an Integer.
   Only utc times are supported !
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_db(value)
        if value.class == Date
@@ -125,7 +125,7 @@ Methods
 **.to_ruby**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def to_ruby(value)
        Time.at(value).utc

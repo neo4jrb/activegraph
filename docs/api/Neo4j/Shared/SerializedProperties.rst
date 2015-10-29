@@ -52,7 +52,7 @@ Methods
 **#serializable_hash**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def serializable_hash(*args)
        super.merge(id: id)
@@ -65,7 +65,7 @@ Methods
 **#serialized_properties**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def serialized_properties
        self.class.serialized_properties

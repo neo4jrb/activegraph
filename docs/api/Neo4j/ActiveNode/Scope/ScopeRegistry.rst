@@ -55,7 +55,7 @@ Methods
 **#initialize**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def initialize
        @registry = Hash.new { |hash, key| hash[key] = {} }
@@ -68,7 +68,7 @@ Methods
 **#set_value_for**
   Sets the +value+ for a given +scope_type+ and +variable_name+.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def set_value_for(scope_type, variable_name, value)
        raise_invalid_scope_type!(scope_type)
@@ -82,7 +82,7 @@ Methods
 **#value_for**
   Obtains the value for a given +scope_name+ and +variable_name+.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def value_for(scope_type, variable_name)
        raise_invalid_scope_type!(scope_type)

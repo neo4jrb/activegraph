@@ -48,7 +48,7 @@ Methods
 **#wrapper**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def wrapper
        props.symbolize_keys!

@@ -54,7 +54,7 @@ Methods
 **#define_id_methods**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def define_id_methods(clazz, name, conf)
        validate_conf!(conf)
@@ -75,7 +75,7 @@ Methods
 **.define_id_methods**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def define_id_methods(clazz, name, conf)
        validate_conf!(conf)

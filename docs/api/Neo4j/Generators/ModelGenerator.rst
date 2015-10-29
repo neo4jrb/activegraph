@@ -66,7 +66,7 @@ Methods
 **#create_model_file**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create_model_file
        template 'model.erb', File.join('app/models', "#{singular_name}.rb")
@@ -79,7 +79,7 @@ Methods
 **.source_root**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def self.source_root
        @_neo4j_source_root ||= File.expand_path(File.join(File.dirname(__FILE__),

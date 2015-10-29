@@ -44,7 +44,7 @@ Methods
 **#type_class**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def type_class
        case type.to_s.downcase

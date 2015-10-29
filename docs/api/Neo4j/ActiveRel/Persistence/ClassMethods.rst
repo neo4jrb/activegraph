@@ -48,7 +48,7 @@ Methods
 **#create**
   Creates a new relationship between objects
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create(props = {})
        relationship_props = extract_association_attributes!(props) || {}
@@ -67,7 +67,7 @@ Methods
 **#create!**
   Same as #create, but raises an error if there is a problem during save.
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create!(*args)
        props = args[0] || {}
@@ -87,7 +87,7 @@ Methods
 **#create_method**
   
 
-  .. hidden-code-block:: ruby
+  .. code-block:: ruby
 
      def create_method
        creates_unique? ? :create_unique : :create
