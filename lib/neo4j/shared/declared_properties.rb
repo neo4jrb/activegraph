@@ -155,6 +155,13 @@ module Neo4j::Shared
       convert_property(key, value, :to_ruby)
     end
 
+    def inject_defaults!(object, props)
+      declared_property_defaults.each_pair do |k, v|
+        props[k.to_sym] = v if object.send(k).nil?
+      end
+      props
+    end
+
     protected
 
     # Prevents repeated calls to :_attribute_type, which isn't free and never changes.
