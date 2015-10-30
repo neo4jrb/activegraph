@@ -25,9 +25,9 @@ module Neo4j::Shared
     # @return [Hash]
     def props_for_create
       inject_timestamps!
-      converted_props = props_for_db(props)
+      props_with_defaults = inject_defaults!(props)
+      converted_props = props_for_db(props_with_defaults)
       inject_classname!(converted_props)
-      inject_defaults!(converted_props)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
     end
