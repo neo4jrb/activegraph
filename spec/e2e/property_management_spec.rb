@@ -152,12 +152,12 @@ describe 'declared property classes' do
         it { should eq false }
 
         context 'model from new with attributes' do
-          let(:node) { n = nil; trace_execution(8) { n = MyModel.new }; n }
+          let(:node) { MyModel.new }
           it { should eq false }
         end
 
         context 'model from new with attributes' do
-          let(:node) { n = nil; trace_execution(8) { n = MyModel.new(foo: 'foo') }; n }
+          let(:node) { MyModel.new(foo: 'foo') }
           it { should eq false }
         end
 
@@ -190,24 +190,21 @@ describe 'declared property classes' do
       context 'with changed values' do
         before do
           node.bar = value
-          node.baz = bool_value
-          node.save
+          node.baz = true
+          node.save!
           node.reload
         end
 
         context 'on reload when prop was changed to nil' do
           let(:value) { nil }
-          let(:bool_value) { nil }
 
           it 'resets nil default properties on reload' do
             expect(node.bar).to eq 'foo'
-            expect(node.baz).to eq false
           end
         end
 
         context 'on reload when prop was set' do
           let(:value) { 'bar' }
-          let(:bool_value) { true }
 
           it 'does not reset to default' do
             expect(node.bar).to eq 'bar'

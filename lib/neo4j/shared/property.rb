@@ -19,11 +19,16 @@ module Neo4j::Shared
     def initialize(attributes = nil)
       attributes = process_attributes(attributes)
       @relationship_props = self.class.extract_association_attributes!(attributes)
-      writer_method_props = extract_writer_methods!(attributes)
-      validate_attributes!(attributes)
+      modded_attributes = inject_defaults!(attributes)
+      validate_attributes!(modded_attributes)
+      writer_method_props = extract_writer_methods!(modded_attributes)
       send_props(writer_method_props)
-
       @_persisted_obj = nil
+    end
+
+    def inject_defaults!(starting_props)
+      return starting_props if self.class.declared_properties.declared_property_defaults.empty?
+      self.class.declared_properties.inject_defaults!(self, starting_props || {})
     end
 
     # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
@@ -36,7 +41,7 @@ module Neo4j::Shared
 
     def send_props(hash)
       return hash if hash.blank?
-      hash.each { |key, value| self.send("#{key}=", value) }
+      hash.each { |key, value| send("#{key}=", value) }
     end
 
     protected
@@ -53,6 +58,7 @@ module Neo4j::Shared
 
     # Changes attributes hash to remove relationship keys
     # Raises an error if there are any keys left which haven't been defined as properties on the model
+    # TODO: use declared_properties instead of self.attributes
     def validate_attributes!(attributes)
       return attributes if attributes.blank?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
