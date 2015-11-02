@@ -45,15 +45,6 @@ module Neo4j
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
-    def inspect
-      id_property_name = self.class.id_property_name.to_s
-      attribute_pairs = attributes.except(id_property_name).sort.map { |key, value| "#{key}: #{value.inspect}" }
-      attribute_pairs.unshift("#{id_property_name}: #{self.send(id_property_name).inspect}")
-      attribute_descriptions = attribute_pairs.join(', ')
-      separator = ' ' unless attribute_descriptions.empty?
-      "#<#{self.class.name}#{separator}#{attribute_descriptions}>"
-    end
-
     included do
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 

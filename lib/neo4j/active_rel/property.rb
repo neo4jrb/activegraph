@@ -90,5 +90,9 @@ WARNING
       @from_node = RelatedNode.new(from_node)
       @to_node = RelatedNode.new(to_node)
     end
+
+    def inspect_attributes
+      attributes.to_a
+    end
   end
 end

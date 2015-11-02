@@ -14,6 +14,15 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
+    def inspect
+      attribute_descriptions = inspect_attributes.map do |key, value|
+        "#{Neo4j::ANSI::CYAN}#{key}: #{Neo4j::ANSI::CLEAR}#{value.inspect}"
+      end.join(', ')
+
+      separator = ' ' unless attribute_descriptions.empty?
+      "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
+    end
+
     # TODO: Remove the commented :super entirely once this code is part of a release.
     # It calls an init method in active_attr that has a very negative impact on performance.
     def initialize(attributes = nil)
