@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Long properties in `ActiveNode`/`ActiveRel` `#inspect` are truncated
 
+### Added
+- `ActiveRel` `create` actions can now handle unpersisted nodes.
+
 ## [6.0.0.alpha.9] - 10-27-2015
 
 ### Fixed

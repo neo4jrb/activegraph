@@ -34,6 +34,14 @@ module Neo4j
         run_callbacks(:touch) { super }
       end
 
+      # Allows you to perform a callback if a condition is not satisfied.
+      # @param [Symbol] kind The callback type to execute unless the guard is true
+      # @param [TrueClass,FalseClass] guard When this value is true, the block is yielded without executing callbacks.
+      def conditional_callback(kind, guard)
+        return yield if guard
+        run_callbacks(kind) { yield }
+      end
+
       private
 
       def create_or_update #:nodoc:

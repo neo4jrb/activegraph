@@ -1,11 +1,16 @@
 require 'spec_helper'
 
 describe Neo4j::ActiveRel::Callbacks do
+  after(:all) do
+    [:CallbackBar, :CallbackFoo].each do |s|
+      Object.send(:remove_const, s)
+    end
+  end
   let(:session) { double('Session') }
   let(:node1) { double('Node1') }
   let(:node2) { double('Node2') }
 
-  class Foo
+  class CallbackFoo
     def initialize(_args = nil); end
 
     def save(*)
@@ -13,7 +18,7 @@ describe Neo4j::ActiveRel::Callbacks do
     end
   end
 
-  class CallbackBar < Foo
+  class CallbackBar < CallbackFoo
     include Neo4j::ActiveRel::Callbacks
   end
 
