@@ -27,16 +27,13 @@ module Neo4j
       attribute_descriptions = attribute_pairs.join(', ')
       separator = ' ' unless attribute_descriptions.empty?
 
-      cypher_representation = "#{node_cypher_representation(from_node)}-[:#{type}]->#{node_cypher_representation(to_node)}"
+      cypher_representation = "#{node_cypher_representation(:from)}-[:#{type}]->#{node_cypher_representation(:to)}"
       "#<#{self.class.name} #{cypher_representation}#{separator}#{attribute_descriptions}>"
     end
 
-    def node_cypher_representation(node)
-      node_class = node.class
-      id_name = node_class.id_property_name
-      labels = ':' + node_class.mapped_label_names.join(':')
-
-      "(#{labels} {#{id_name}: #{node.id.inspect}})"
+    def node_cypher_representation(direction)
+      node = send(:"#{direction}_node")
+      node.cypher_representation(self.class.send(:"#{direction}_class"))
     end
 
     def neo4j_obj

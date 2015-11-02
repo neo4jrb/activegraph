@@ -196,6 +196,32 @@ describe 'ActiveRel' do
     end
   end
 
+  describe '#inspect' do
+    context 'with unset from_node/to_node' do
+      let(:new_rel) { MyRelClass.new }
+
+      it 'does not raise an error' do
+        expect(new_rel.from_node).not_to receive(:loaded)
+        expect(new_rel.to_node).not_to receive(:loaded)
+        expect { new_rel.inspect }.not_to raise_error
+      end
+
+      context 'single from/to class' do
+        it 'inserts the class names in String' do
+          expect(new_rel.inspect).to include('(FromClass)-[:rel_class_type]->(ToClass)')
+        end
+      end
+
+      context 'array of from/to class' do
+        before { MyRelClass.from_class([FromClass, ToClass]) }
+
+        it 'joins with ||' do
+          expect(new_rel.inspect).to include('(FromClass || ToClass)-[:rel_class_type]->(ToClass)')
+        end
+      end
+    end
+  end
+
   describe 'objects and queries' do
     let!(:rel1) { MyRelClass.create(from_node: from_node, to_node: to_node, score: 99) }
     let!(:rel2) { MyRelClass.create(from_node: from_node, to_node: to_node, score: 49) }

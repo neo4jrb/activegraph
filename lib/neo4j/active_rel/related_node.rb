@@ -4,6 +4,7 @@ module Neo4j::ActiveRel
   # will result in a query to load the node if the node is not already loaded.
   class RelatedNode
     class InvalidParameterError < StandardError; end
+    class UnsetRelatedNodeError < StandardError; end
 
     # ActiveRel's related nodes can be initialized with nothing, an integer, or a fully wrapped node.
     #
@@ -30,7 +31,18 @@ module Neo4j::ActiveRel
 
     # Loads a node from the database or returns the node if already laoded
     def loaded
+      fail NilRelatedNodeError, 'Node not set, cannot load' if @node.nil?
       @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
+    end
+
+    # @param [String, Symbol, Array] clazz An alternate label to use in the event the node is not present or loaded
+    def cypher_representation(clazz)
+      return "(#{formatted_label_list(clazz)})" unless loaded?
+      node_class = @node.class
+      id_name = node_class.id_property_name
+      labels = ':' + node_class.mapped_label_names.join(':')
+
+      "(#{labels} {#{id_name}: #{@node.id.inspect}})"
     end
 
     # @return [Boolean] indicates whether a node has or has not been fully loaded from the database
@@ -52,6 +64,10 @@ module Neo4j::ActiveRel
     end
 
     private
+
+    def formatted_label_list(list)
+      list.is_a?(Array) ? list.join(' || ') : list
+    end
 
     def valid_node_param?(node)
       node.nil? || node.is_a?(Integer) || node.respond_to?(:neo_id)
