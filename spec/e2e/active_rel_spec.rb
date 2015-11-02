@@ -226,7 +226,9 @@ describe 'ActiveRel' do
       let(:reloaded) { Neo4j::Relationship.load(new_rel.id) }
       let(:inspected) { reloaded.inspect }
 
+      # Neo4j Embedded always returns nodes with rels. This is only possible in Server mode.
       it 'notes the ids of the nodes' do
+        next if Neo4j::Session.current.db_type == :embedded_db
         [from_node.neo_id, to_node.neo_id].each do |id|
           expect(inspected).to include("(Node with neo_id #{id})")
         end
