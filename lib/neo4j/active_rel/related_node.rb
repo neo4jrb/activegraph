@@ -37,12 +37,18 @@ module Neo4j::ActiveRel
 
     # @param [String, Symbol, Array] clazz An alternate label to use in the event the node is not present or loaded
     def cypher_representation(clazz)
-      return "(#{formatted_label_list(clazz)})" unless loaded?
-      node_class = @node.class
-      id_name = node_class.id_property_name
-      labels = ':' + node_class.mapped_label_names.join(':')
+      case
+      when !set?
+        "(#{formatted_label_list(clazz)})"
+      when set? && !loaded?
+        "(Node with neo_id #{@node})"
+      else
+        node_class = self.class
+        id_name = node_class.id_property_name
+        labels = ':' + node_class.mapped_label_names.join(':')
 
-      "(#{labels} {#{id_name}: #{@node.id.inspect}})"
+        "(#{labels} {#{id_name}: #{@node.id.inspect}})"
+      end
     end
 
     # @return [Boolean] indicates whether a node has or has not been fully loaded from the database
@@ -50,12 +56,16 @@ module Neo4j::ActiveRel
       @node.respond_to?(:neo_id)
     end
 
+    def set?
+      !@node.nil?
+    end
+
     def method_missing(*args, &block)
       loaded.send(*args, &block)
     end
 
     def respond_to_missing?(method_name, include_private = false)
-      loaded if @node.is_a?(Integer)
+      loaded if @node.is_a?(Numeric)
       @node.respond_to?(method_name) ? true : super
     end
 

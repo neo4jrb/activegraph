@@ -220,6 +220,18 @@ describe 'ActiveRel' do
         end
       end
     end
+
+    context 'with set, unloaded from_node/to_node' do
+      let(:new_rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
+      let(:reloaded) { Neo4j::Relationship.load(new_rel.id) }
+      let(:inspected) { reloaded.inspect }
+
+      it 'notes the ids of the nodes' do
+        [from_node.neo_id, to_node.neo_id].each do |id|
+          expect(inspected).to include("(Node with neo_id #{id})")
+        end
+      end
+    end
   end
 
   describe 'objects and queries' do
