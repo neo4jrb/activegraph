@@ -48,12 +48,15 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 ## Neo4j version support
 
-| **Neo4j Version** | v2.x | v3.x | >= v4.x |
-|-------------------|------|------|---------|
-| 1.9.x             | Yes  | No   | No      |
-| 2.0.x             | No   | Yes  | No      |
-| 2.1.x             | No   | Yes  | Yes     |
-| 2.2.x             | No   | No   | Yes     |
+| **Neo4j Version** | v2.x | v3.x  | >= v4.x |
+|-------------------|------|-------|---------|
+| 1.9.x             | Yes  | No    | No      |
+| 2.0.x             | No   | Yes   | No      |
+| 2.1.x             | No   | Yes   | Yes *   |
+| 2.2.x             | No   | No    | Yes     |
+| 2.3.x             | No   | No    | Yes     |
+
+`*` Neo4j.rb >= 4.x doesn't support Neo4j versions before 2.1.5.  To use 2.1.x you should upgrade to a version >= 2.1.5
 
 ## Neo4j feature support
 

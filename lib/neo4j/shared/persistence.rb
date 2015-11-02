@@ -25,9 +25,9 @@ module Neo4j::Shared
     # @return [Hash]
     def props_for_create
       inject_timestamps!
-      converted_props = props_for_db(props)
+      props_with_defaults = inject_defaults!(props)
+      converted_props = props_for_db(props_with_defaults)
       inject_classname!(converted_props)
-      inject_defaults!(converted_props)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
     end
@@ -37,8 +37,8 @@ module Neo4j::Shared
       update_magic_properties
       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
       changed_props.symbolize_keys!
-      props_for_db(changed_props)
       inject_defaults!(changed_props)
+      props_for_db(changed_props)
     end
 
     # Convenience method to set attribute and #save at the same time
@@ -204,12 +204,7 @@ module Neo4j::Shared
       self.updated_at ||= now if respond_to?(:updated_at=)
     end
 
-    def inject_defaults!(properties)
-      self.class.declared_properties.declared_property_defaults.each_pair do |k, v|
-        properties[k.to_sym] = v if send(k).nil?
-      end
-      properties
-    end
+
 
     def set_timestamps
       warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze

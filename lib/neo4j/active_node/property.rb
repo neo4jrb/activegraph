@@ -44,5 +44,18 @@ module Neo4j::ActiveNode
           end
       end
     end
+
+    private
+
+    def inspect_attributes
+      id_property_name = self.class.id_property_name.to_s
+
+      attribute_pairs = attributes.except(id_property_name).sort.map do |key, value|
+        [key, (value.is_a?(String) && value.size > 100) ? value.dup.first(100) : value]
+      end
+
+      attribute_pairs.unshift([id_property_name, self.send(id_property_name)])
+      attribute_pairs
+    end
   end
 end

@@ -70,6 +70,7 @@ describe 'declared property classes' do
         property :foo
         property :bar, type: String, default: 'foo'
         property :baz, type: ActiveAttr::Typecasting::Boolean, default: false
+        validates :baz, inclusion: {in: [true, false]}
       end
 
       stub_const('MyModel', clazz)
@@ -147,8 +148,27 @@ describe 'declared property classes' do
       end
 
       context 'with type: Boolean and default: false' do
-        it 'sets as expected' do
-          expect(node.baz).to eq false
+        subject { node.baz }
+        it { should eq false }
+
+        context 'model from new with attributes' do
+          let(:node) { MyModel.new }
+          it { should eq false }
+        end
+
+        context 'model from new with attributes' do
+          let(:node) { MyModel.new(foo: 'foo') }
+          it { should eq false }
+        end
+
+        context 'model from create' do
+          let(:node) { MyModel.create }
+          it { should eq false }
+        end
+
+        context 'model from create with attributes' do
+          let(:node) { MyModel.create(foo: 'foo') }
+          it { should eq false }
         end
       end
 
@@ -170,24 +190,21 @@ describe 'declared property classes' do
       context 'with changed values' do
         before do
           node.bar = value
-          node.baz = bool_value
-          node.save
+          node.baz = true
+          node.save!
           node.reload
         end
 
         context 'on reload when prop was changed to nil' do
           let(:value) { nil }
-          let(:bool_value) { nil }
 
           it 'resets nil default properties on reload' do
             expect(node.bar).to eq 'foo'
-            expect(node.baz).to eq false
           end
         end
 
         context 'on reload when prop was set' do
           let(:value) { 'bar' }
-          let(:bool_value) { true }
 
           it 'does not reset to default' do
             expect(node.bar).to eq 'bar'

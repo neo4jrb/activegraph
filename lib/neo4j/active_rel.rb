@@ -22,15 +22,6 @@ module Neo4j
       super
     end
 
-    def inspect
-      attribute_pairs = attributes.sort.map { |key, value| "#{key}: #{value.inspect}" }
-      attribute_descriptions = attribute_pairs.join(', ')
-      separator = ' ' unless attribute_descriptions.empty?
-
-      cypher_representation = "#{node_cypher_representation(from_node)}-[:#{type}]->#{node_cypher_representation(to_node)}"
-      "#<#{self.class.name} #{cypher_representation}#{separator}#{attribute_descriptions}>"
-    end
-
     def node_cypher_representation(node)
       node_class = node.class
       id_name = node_class.id_property_name
