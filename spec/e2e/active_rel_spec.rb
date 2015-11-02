@@ -279,7 +279,7 @@ describe 'ActiveRel' do
       end
 
       context 'and present props' do
-        let(:props) { { score: 9000 } }
+        let(:props) { {score: 9000} }
 
         it 'sets the nodes and props' do
           expect(new_rel.from_node).to eq from_node
