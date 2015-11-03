@@ -71,7 +71,7 @@ module Neo4j::Shared
     def validate_attributes!(attributes)
       return attributes if attributes.blank?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
-      invalid_properties.reject! {|name| self.respond_to?("#{name}=") }
+      invalid_properties.reject! { |name| self.respond_to?("#{name}=") }
       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
     end
 
