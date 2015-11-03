@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
+
 ## [6.0.0.alpha.11] - 11-3-2015
 
 ### Fixed
