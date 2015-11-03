@@ -262,20 +262,16 @@ describe 'Query API' do
           expect(Teacher.count).to eq(1)
         end
 
-        it 'also sets properties' do
-          Teacher.find_or_create(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-          samuels = Teacher.first
-          expect(samuels.name).to eq('Dr. Harold Samuels')
-          expect(samuels.age).to eq(nil)
-          expect(samuels.status).to eq('active')
-          expect(samuels._persisted_obj.props[:status]).to eq 'active'
-
+        it 'also sets properties on create' do
           Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34)
+
           expect(Teacher.count).to eq(1)
-          samuels = Teacher.first
+
+          samuels = Teacher.all.first
           expect(samuels.name).to eq('Dr. Harold Samuels')
           expect(samuels.age).to eq(34)
+          expect(samuels.status).to eq('active')
+          expect(samuels._persisted_obj.props[:status]).to eq 'active'
         end
 
         it 'sets the id property method' do
@@ -314,15 +310,25 @@ describe 'Query API' do
           expect(teacher.updated_at).not_to be_nil
         end
 
-        it 'changes updated_at on update but not created_at' do
-          teacher1 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
-          expect(teacher1.created_at).to eq teacher1.updated_at
-          expect(DateTime).to receive(:now).at_least(2).times.and_return 1234
-          teacher2 = Teacher.find_or_create(name: 'Dr. Harold Samuels')
-          expect(teacher1.uuid).to eq teacher2.uuid
-          expect(teacher1.created_at).to eq teacher2.created_at
-          expect(teacher1.updated_at).not_to eq teacher2.updated_at
-          expect(teacher2.updated_at.to_i).to eq 1234
+        context 'on match' do
+          let(:original) { Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34) }
+
+          before(:each) { original }
+
+          it 'leaves timestamps intact' do
+            teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
+
+            expect(teacher.created_at).to eq(original.created_at)
+            expect(teacher.updated_at).to eq(original.updated_at)
+          end
+
+          it 'updates nothing' do
+            teacher = Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 0)
+
+            expect(teacher.id).to eq(original.id)
+            expect(teacher.name).to eq('Dr. Harold Samuels')
+            expect(teacher.age).to eq(34)
+          end
         end
       end
     end
