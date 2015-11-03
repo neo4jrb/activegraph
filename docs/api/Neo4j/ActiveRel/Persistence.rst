@@ -11,11 +11,21 @@ Persistence
    :titlesonly:
 
 
+   
+
+   
+
    Persistence/RelInvalidError
 
    Persistence/ModelClassInvalidError
 
    Persistence/RelCreateFailedError
+
+   
+
+   
+
+   
 
    
 
@@ -35,11 +45,7 @@ Persistence
 
    
 
-   
-
-   
-
-   
+   Persistence/QueryFactory
 
 
 
@@ -48,10 +54,6 @@ Constants
 ---------
 
 
-
-  * N1_N2_STRING
-
-  * ACTIVEREL_NODE_MATCH_STRING
 
   * USES_CLASSNAME
 
@@ -63,6 +65,8 @@ Files
 
 
   * `lib/neo4j/active_rel/persistence.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L2>`_
+
+  * `lib/neo4j/active_rel/persistence/query_factory.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence/query_factory.rb#L1>`_
 
 
 
@@ -108,6 +112,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Persistence#create_method`:
+
+**#create_method**
+  
+
+  .. code-block:: ruby
+
+     def create_method
+       self.class.create_method
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Persistence#create_model`:
 
 **#create_model**
@@ -117,9 +134,9 @@ Methods
 
      def create_model
        validate_node_classes!
-       rel = _create_rel(from_node, to_node, props_for_create)
-       return self unless rel.respond_to?(:_persisted_obj)
-       init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
+       rel = _create_rel
+       return self unless rel.respond_to?(:props)
+       init_on_load(rel, from_node, to_node, @rel_type)
        true
      end
 
@@ -148,6 +165,19 @@ Methods
        raise e
      ensure
        @_create_or_updating = nil
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#cypher_identifier`:
+
+**#cypher_identifier**
+  
+
+  .. code-block:: ruby
+
+     def cypher_identifier
+       @cypher_identifier || :rel
      end
 
 
@@ -203,6 +233,32 @@ Methods
      def freeze
        @attributes.freeze
        self
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#from_node_identifier`:
+
+**#from_node_identifier**
+  
+
+  .. code-block:: ruby
+
+     def from_node_identifier
+       @from_node_identifier || :from_node
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#from_node_identifier=`:
+
+**#from_node_identifier=**
+  Sets the attribute from_node_identifier
+
+  .. code-block:: ruby
+
+     def from_node_identifier=(value)
+       @from_node_identifier = value
      end
 
 
@@ -287,9 +343,9 @@ Methods
 
      def props_for_create
        inject_timestamps!
-       converted_props = props_for_db(props)
+       props_with_defaults = inject_defaults!(props)
+       converted_props = props_for_db(props_with_defaults)
        inject_classname!(converted_props)
-       inject_defaults!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
@@ -320,8 +376,8 @@ Methods
        update_magic_properties
        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
        changed_props.symbolize_keys!
-       props_for_db(changed_props)
        inject_defaults!(changed_props)
+       props_for_db(changed_props)
      end
 
 
@@ -385,6 +441,46 @@ Methods
 
      def save!(*args)
        save(*args) or fail(RelInvalidError, self) # rubocop:disable Style/AndOr
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#to_node_identifier`:
+
+**#to_node_identifier**
+  
+
+  .. code-block:: ruby
+
+     def to_node_identifier
+       @to_node_identifier || :to_node
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#to_node_identifier=`:
+
+**#to_node_identifier=**
+  Sets the attribute to_node_identifier
+
+  .. code-block:: ruby
+
+     def to_node_identifier=(value)
+       @to_node_identifier = value
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence#touch`:
+
+**#touch**
+  
+
+  .. code-block:: ruby
+
+     def touch
+       fail 'Cannot touch on a new record object' unless persisted?
+       update_attribute!(:updated_at, Time.now) if respond_to?(:updated_at=)
      end
 
 

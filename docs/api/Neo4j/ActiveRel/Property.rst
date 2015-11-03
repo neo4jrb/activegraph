@@ -29,6 +29,8 @@ Property
 
    
 
+   
+
 
 
 
@@ -119,6 +121,38 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Property#inject_defaults!`:
+
+**#inject_defaults!**
+  
+
+  .. code-block:: ruby
+
+     def inject_defaults!(starting_props)
+       return starting_props if self.class.declared_properties.declared_property_defaults.empty?
+       self.class.declared_properties.inject_defaults!(self, starting_props || {})
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Property#inspect`:
+
+**#inspect**
+  
+
+  .. code-block:: ruby
+
+     def inspect
+       attribute_descriptions = inspect_attributes.map do |key, value|
+         "#{Neo4j::ANSI::CYAN}#{key}: #{Neo4j::ANSI::CLEAR}#{value.inspect}"
+       end.join(', ')
+     
+       separator = ' ' unless attribute_descriptions.empty?
+       "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Property#read_attribute`:
 
 **#read_attribute**
@@ -156,7 +190,7 @@ Methods
 
      def send_props(hash)
        return hash if hash.blank?
-       hash.each { |key, value| self.send("#{key}=", value) }
+       hash.each { |key, value| send("#{key}=", value) }
      end
 
 

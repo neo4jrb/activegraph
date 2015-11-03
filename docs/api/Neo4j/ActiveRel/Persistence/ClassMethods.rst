@@ -32,7 +32,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/persistence.rb:26 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L26>`_
+  * `lib/neo4j/active_rel/persistence.rb:40 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L40>`_
 
 
 

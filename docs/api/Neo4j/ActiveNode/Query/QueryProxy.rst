@@ -111,6 +111,8 @@ QueryProxy
 
    
 
+   
+
    QueryProxy/Link
 
 
@@ -199,8 +201,7 @@ Methods
 
      def _create_relationship(other_node_or_nodes, properties)
        _session.query(context: @options[:context])
-         .match(:start, :end)
-         .where(start: {neo_id: @start_object}, end: {neo_id: other_node_or_nodes})
+         .match(:start, :end).match_nodes(start: @start_object, end: other_node_or_nodes)
          .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
      end
 
@@ -883,6 +884,17 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#node_order`:
+
+**#node_order**
+  
+
+  .. code-block:: ruby
+
+     alias_method :node_order, :order
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#node_var`:
 
 **#node_var**
@@ -900,7 +912,7 @@ Methods
 .. _`Neo4j/ActiveNode/Query/QueryProxy#node_where`:
 
 **#node_where**
-  Since there is a rel_where method, it seems only natural for there to be node_where
+  Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
 
   .. code-block:: ruby
 

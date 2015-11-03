@@ -1,0 +1,24 @@
+{% extends "!layout.html" %}
+
+{%- block extrahead %} 
+  <script>
+    ((window.gitter = {}).chat = {}).options = {
+      room: 'neo4jrb/neo4j'
+    };
+  </script>
+  <script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script>
+  <style>
+    .gitter-open-chat-button {
+      bottom: auto;
+      top: 0;
+      border-radius: 0 0 0.5em 0.5em;
+      right: 235px;
+
+    }
+    .gitter-open-chat-button.is-collapsed {
+      transform: translateY(-120%);
+    }
+
+  </style>
+{% endblock %}
+

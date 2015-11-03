@@ -316,9 +316,9 @@ Methods
 
      def props_for_create
        inject_timestamps!
-       converted_props = props_for_db(props)
+       props_with_defaults = inject_defaults!(props)
+       converted_props = props_for_db(props_with_defaults)
        inject_classname!(converted_props)
-       inject_defaults!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
@@ -349,8 +349,8 @@ Methods
        update_magic_properties
        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
        changed_props.symbolize_keys!
-       props_for_db(changed_props)
        inject_defaults!(changed_props)
+       props_for_db(changed_props)
      end
 
 
@@ -427,6 +427,20 @@ Methods
 
      def save!(*args)
        save(*args) or fail(RecordInvalidError, self) # rubocop:disable Style/AndOr
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Persistence#touch`:
+
+**#touch**
+  
+
+  .. code-block:: ruby
+
+     def touch
+       fail 'Cannot touch on a new record object' unless persisted?
+       update_attribute!(:updated_at, Time.now) if respond_to?(:updated_at=)
      end
 
 
