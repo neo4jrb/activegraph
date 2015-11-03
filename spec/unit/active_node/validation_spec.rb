@@ -45,7 +45,6 @@ describe Neo4j::ActiveNode::Validations do
         o.stub(:serialized_properties).and_return({})
         o.serialized_properties
         clazz.stub(:default_property_values).and_return({})
-        clazz.stub(:cached_class?).and_return(false)
         clazz.should_receive(:neo4j_session).and_return(session)
         node.should_receive(:props).and_return(name: 'kalle2', age: '43')
         session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)

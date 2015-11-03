@@ -219,7 +219,7 @@ module Neo4j
           Array(other_node_or_nodes).each do |other_node|
             node_props = (association.direction == :in) ? {from_node: other_node, to_node: @start_object} : {from_node: @start_object, to_node: other_node}
 
-            association.relationship_class.create(properties.except(:_classname).merge(node_props))
+            association.relationship_class.create(properties.merge(node_props))
           end
         end
 

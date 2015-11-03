@@ -15,9 +15,6 @@ module Neo4j
       #
       # A model is added to WRAPPED_CLASSES when it is initalized AND when the `type` class method is called within a model. This means that
       # it's possible a model will be added twice: once with the rel_type version of the model name, again with the custom type. deal_with_it.gif.
-      #
-      # As an alternative to this, you can call the `set_classname` class method to insert a `_classname` property into your relationship,
-      # which will completely bypass this whole process.
       WRAPPED_CLASSES = {}
 
       included do
@@ -76,7 +73,7 @@ module Neo4j
 
         def assign_type!(given_type, auto)
           @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
-            add_wrapped_class(type) unless uses_classname?
+            add_wrapped_class(type)
           end
         end
       end

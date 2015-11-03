@@ -13,7 +13,6 @@ describe 'Neo4j::ActiveNode' do
 
   before do
     SecureRandom.stub(:uuid) { 'secure123' }
-    MyThing.stub(:cached_class?).and_return(false)
     Neo4j::Session.stub(:current).and_return(session)
   end
 

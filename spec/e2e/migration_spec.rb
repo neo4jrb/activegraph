@@ -42,7 +42,6 @@ describe 'migration tasks' do
         from_class false
         to_class false
         type 'singers'
-        set_classname
       end
 
       class ThirdRelClass
