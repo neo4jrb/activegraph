@@ -236,14 +236,14 @@ describe 'ActiveRel' do
       end
 
       it 'should use the ActiveRel class' do
-        result = Neo4j::Session.current.query("MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value", start_uuid: f1.uuid).to_a
+        result = Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value', start_uuid: f1.uuid).to_a
         expect(result[0].value).to eq('default_value')
       end
 
       it 'should validate when creating' do
         f = FromClass.create
         f.others.create(t1, should_be_nil: 'not_nil')
-        result = Neo4j::Session.current.query("MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value", start_uuid: f.uuid).to_a
+        result = Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value', start_uuid: f.uuid).to_a
         expect(result).to be_empty
       end
     end
