@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+## Changed
+- `#<<` and `#create` methods on associations now create with the `rel_class` when available so that validations/callbacks/defaults are all used as expected
+
 ## [6.0.0.alpha.10] - 11-2-2015
 
 ### Fixed
