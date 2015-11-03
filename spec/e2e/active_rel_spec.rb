@@ -51,6 +51,9 @@ describe 'ActiveRel' do
 
       property :score, type: Integer
       property :links
+      property :default, default: 'default_value'
+      property :should_be_nil
+      validates :should_be_nil, inclusion: {in: [nil]}
       serialize :links
     end
   end
@@ -230,6 +233,18 @@ describe 'ActiveRel' do
       it 'correctly interprets strings as class names' do
         t1.string_others << f1
         expect(t1.string_others.count).to eq 2
+      end
+
+      it 'should use the ActiveRel class' do
+        result = Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value', start_uuid: f1.uuid).to_a
+        expect(result[0].value).to eq('default_value')
+      end
+
+      it 'should validate when creating' do
+        f = FromClass.create
+        f.others.create(t1, should_be_nil: 'not_nil')
+        result = Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value', start_uuid: f.uuid).to_a
+        expect(result).to be_empty
       end
     end
 
