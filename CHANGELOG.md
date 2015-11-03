@@ -3,10 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [unreleased]
+## [Unreleased]
 
 ### Added
 - Alternate `ActiveRel` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
+
+### Changed
+- Allow calling of `#method=` methods via model `new` method `Hash` argument
 
 ## [6.0.0.alpha.10] - 11-2-2015
 

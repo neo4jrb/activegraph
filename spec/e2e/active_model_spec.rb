@@ -24,6 +24,9 @@ describe 'Neo4j::ActiveNode' do
       property :updated_at
 
       attr_reader :saved
+      attr_writer :writable_attr
+
+      property :prop_with_default, default: 'something'
 
       index :flavour
 
@@ -68,6 +71,17 @@ describe 'Neo4j::ActiveNode' do
     it_should_behave_like 'destroyable model'
     it_should_behave_like 'updatable model'
     it_should_behave_like 'timestamped model'
+
+    describe '#new' do
+      it 'allows setting of properties via initialize' do
+        l = IceLolly.new(prop_with_default: 'something else')
+        expect(l.prop_with_default).to eq('something else')
+      end
+
+      it 'allows setting of #method= methods via initialize' do
+        expect { IceLolly.new(writable_attr: 'test') }.to_not raise_error
+      end
+    end
 
     context 'after being saved' do
       before do
