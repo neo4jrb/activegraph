@@ -17,9 +17,9 @@ module Neo4j
 
     class FrozenRelError < StandardError; end
 
-    def initialize(args = nil)
-      load_nodes
-      super
+    def initialize(from_node = nil, to_node = nil, args = nil)
+      load_nodes(node_or_nil(from_node), node_or_nil(to_node))
+      super(hash_or_nil(from_node, args))
     end
 
     def node_cypher_representation(node)
@@ -43,5 +43,15 @@ module Neo4j
     end
 
     ActiveSupport.run_load_hooks(:active_rel, self)
+
+    private
+
+    def node_or_nil(node)
+      node.is_a?(Neo4j::ActiveNode) || node.is_a?(Integer) ? node : nil
+    end
+
+    def hash_or_nil(node_or_hash, hash_or_nil)
+      node_or_hash.is_a?(Hash) ? node_or_hash : hash_or_nil
+    end
   end
 end

@@ -256,11 +256,37 @@ describe 'ActiveRel' do
   end
 
   describe 'initialize' do
-    let(:new_rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
+    context 'with a single hash' do
+      let(:new_rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
 
-    it 'pulls :from_node and :to_node out of the hash' do
-      expect(new_rel.from_node).to eq from_node
-      expect(new_rel.to_node).to eq to_node
+      it 'pulls :from_node and :to_node out of the hash' do
+        expect(new_rel.from_node).to eq from_node
+        expect(new_rel.to_node).to eq to_node
+      end
+    end
+
+    context 'with three arguments' do
+      let(:new_rel) { MyRelClass.new(from_node, to_node, props) }
+
+      context 'and nil props' do
+        let(:props) { nil }
+
+        it 'sets the nodes' do
+          expect(new_rel.from_node).to eq from_node
+          expect(new_rel.to_node).to eq to_node
+          expect(new_rel.score).to be_nil
+        end
+      end
+
+      context 'and present props' do
+        let(:props) { {score: 9000} }
+
+        it 'sets the nodes and props' do
+          expect(new_rel.from_node).to eq from_node
+          expect(new_rel.to_node).to eq to_node
+          expect(new_rel.score).to eq 9000
+        end
+      end
     end
   end
 
