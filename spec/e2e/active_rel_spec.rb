@@ -10,12 +10,38 @@ describe 'ActiveRel' do
     stub_named_class('MyRelClass')
 
     stub_active_node_class('FromClass') do
+      before_create :log_before
+      after_create :log_after
+      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :after_run
+
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
+
+      def log_before
+        self.before_run = true
+      end
+
+      def log_after
+        self.after_run = true
+      end
     end
 
     stub_active_node_class('ToClass') do
+      before_create :log_before
+      after_create :log_after
+      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :after_run
+
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
       has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
+
+      def log_before
+        self.before_run = true
+      end
+
+      def log_after
+        self.after_run = true
+      end
     end
 
     stub_active_rel_class('MyRelClass') do
@@ -79,14 +105,6 @@ describe 'ActiveRel' do
       it 'returns true on success' do
         rel = RelClassWithValidations.new(from_node: from_node, to_node: to_node, score: 2)
         expect(rel.save!).to be true
-      end
-    end
-
-    context 'from_node is not persisted' do
-      let(:from_node) { FromClass.new }
-
-      it 'raises an error when it cannot create a rel' do
-        expect { MyRelClass.create(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
       end
     end
 

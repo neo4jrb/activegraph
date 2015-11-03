@@ -3,10 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.0.0.alpha.10] - 11-2-2015
 
 ### Fixed
 - Long properties in `ActiveNode`/`ActiveRel` `#inspect` are truncated
+
+### Added
+- `ActiveRel` `create` actions can now handle unpersisted nodes.
 
 ## [6.0.0.alpha.9] - 10-27-2015
 

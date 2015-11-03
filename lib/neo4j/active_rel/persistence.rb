@@ -3,9 +3,23 @@ module Neo4j::ActiveRel
     extend ActiveSupport::Concern
     include Neo4j::Shared::Persistence
 
+    attr_writer :from_node_identifier, :to_node_identifier
+
     class RelInvalidError < RuntimeError; end
     class ModelClassInvalidError < RuntimeError; end
     class RelCreateFailedError < RuntimeError; end
+
+    def from_node_identifier
+      @from_node_identifier || :from_node
+    end
+
+    def to_node_identifier
+      @to_node_identifier || :to_node
+    end
+
+    def cypher_identifier
+      @cypher_identifier || :rel
+    end
 
     def save(*)
       create_or_update
@@ -17,9 +31,9 @@ module Neo4j::ActiveRel
 
     def create_model
       validate_node_classes!
-      rel = _create_rel(from_node, to_node, props_for_create)
-      return self unless rel.respond_to?(:_persisted_obj)
-      init_on_load(rel._persisted_obj, from_node, to_node, @rel_type)
+      rel = _create_rel
+      return self unless rel.respond_to?(:props)
+      init_on_load(rel, from_node, to_node, @rel_type)
       true
     end
 
@@ -53,6 +67,10 @@ module Neo4j::ActiveRel
       end
     end
 
+    def create_method
+      self.class.create_method
+    end
+
     private
 
     def validate_node_classes!
@@ -81,28 +99,10 @@ module Neo4j::ActiveRel
       "Node class was #{node.class} (#{node.class.object_id}), expected #{type_class} (#{type_class.object_id})"
     end
 
-    def _create_rel(from_node, to_node, props = {})
-      if from_node.id.nil? || to_node.id.nil?
-        messages = []
-        messages << 'from_node ID is nil' if from_node.id.nil?
-        messages << 'to_node ID is nil' if to_node.id.nil?
-
-        fail RelCreateFailedError, "Unable to create relationship (#{messages.join(' / ')})"
-      end
-      _rel_creation_query(from_node, to_node, props)
-    end
-
-    N1_N2_STRING = 'n1, n2'
-    ACTIVEREL_NODE_MATCH_STRING = 'ID(n1) = {n1_neo_id} AND ID(n2) = {n2_neo_id}'
-    def _rel_creation_query(from_node, to_node, props)
-      Neo4j::Session.query.match(N1_N2_STRING)
-        .where(ACTIVEREL_NODE_MATCH_STRING).params(n1_neo_id: from_node.neo_id, n2_neo_id: to_node.neo_id).break
-        .send(create_method, "n1-[r:`#{type}`]->n2")
-        .with('r').set(r: props).pluck(:r).first
-    end
-
-    def create_method
-      self.class.create_method
+    def _create_rel
+      factory = QueryFactory.new(from_node, to_node, self)
+      factory.build!
+      factory.unwrapped_rel
     end
   end
 end
