@@ -208,9 +208,21 @@ module Neo4j
         end
 
         def _create_relationship(other_node_or_nodes, properties)
-          _session.query(context: @options[:context])
-            .match(:start, :end).match_nodes(start: @start_object, end: other_node_or_nodes)
-            .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
+          if association.relationship_class
+            _create_relationship_with_rel_class(other_node_or_nodes, properties)
+          else
+            _session.query(context: @options[:context])
+              .match(:start, :end).match_nodes(start: @start_object, end: other_node_or_nodes)
+              .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
+          end
+        end
+
+        def _create_relationship_with_rel_class(other_node_or_nodes, properties)
+          Array(other_node_or_nodes).each do |other_node|
+            node_props = (association.direction == :in) ? {from_node: other_node, to_node: @start_object} : {from_node: @start_object, to_node: other_node}
+
+            association.relationship_class.create(properties.except(:_classname).merge(node_props))
+          end
         end
 
         def read_attribute_for_serialization(*args)
@@ -298,21 +310,20 @@ module Neo4j
         end
 
         def _association_chain_var
+          fail 'Crazy error' if !(start_object || @query_proxy)
+
           if start_object
             :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
-          elsif @query_proxy
-            @query_proxy.node_var || :"node#{_chain_level}"
           else
-            fail 'Crazy error' # TODO: Better error
+            @query_proxy.node_var || :"node#{_chain_level}"
           end
         end
 
         def _association_query_start(var)
-          if object = (start_object || @query_proxy)
-            object.query_as(var)
-          else
-            fail 'Crazy error' # TODO: Better error
-          end
+          # TODO: Better error
+          fail 'Crazy error' if !(object = (start_object || @query_proxy))
+
+          object.query_as(var)
         end
 
         def _rel_chain_var
@@ -326,11 +337,8 @@ module Neo4j
         def instance_vars_from_options!(options)
           @node_var, @session, @source_object, @starting_query, @optional,
               @start_object, @query_proxy, @chain_level, @association_labels,
-              @rel_length = options.values_at(:node, :session, :source_object,
-                                              :starting_query, :optional,
-                                              :start_object, :query_proxy,
-                                              :chain_level, :association_labels,
-                                              :rel_length)
+              @rel_length = options.values_at(:node, :session, :source_object, :starting_query, :optional,
+                                              :start_object, :query_proxy, :chain_level, :association_labels, :rel_length)
         end
 
         def build_deeper_query_proxy(method, args)
