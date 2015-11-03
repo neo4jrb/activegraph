@@ -14,7 +14,6 @@ describe Neo4j::Shared::Persistence do
                               props
                             end
                           end)
-    allow(MyModel).to receive(:cached_class?).and_return false
   end
 
   let(:node) { MyModel.new }

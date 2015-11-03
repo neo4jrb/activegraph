@@ -96,10 +96,6 @@ module Neo4j
         configuration.to_yaml
       end
 
-      def class_name_property
-        @_class_name_property = Neo4j::Config[CLASS_NAME_PROPERTY_KEY] || :_classname
-      end
-
       def include_root_in_json
         # we use ternary because a simple || will always evaluate true
         Neo4j::Config[:include_root_in_json].nil? ? true : Neo4j::Config[:include_root_in_json]

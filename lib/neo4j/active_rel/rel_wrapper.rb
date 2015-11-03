@@ -3,7 +3,7 @@ class Neo4j::Relationship
     def wrapper
       props.symbolize_keys!
       begin
-        most_concrete_class = sorted_wrapper_classes
+        most_concrete_class = class_from_type
         wrapped_rel = most_concrete_class.constantize.new
       rescue NameError
         return self
@@ -14,10 +14,6 @@ class Neo4j::Relationship
     end
 
     private
-
-    def sorted_wrapper_classes
-      props[Neo4j::Config.class_name_property] || class_from_type
-    end
 
     def class_from_type
       Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] = rel_type.camelize

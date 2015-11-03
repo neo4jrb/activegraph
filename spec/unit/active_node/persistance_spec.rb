@@ -42,7 +42,6 @@ describe Neo4j::ActiveNode::Persistence do
       o = clazz.new(name: 'kalle', age: '42')
       o.stub(:serialized_properties).and_return({})
       allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
-      clazz.stub(:cached_class?).and_return(false)
       clazz.should_receive(:neo4j_session).and_return(session)
       clazz.should_receive(:mapped_label_names).and_return(:MyClass)
       node.should_receive(:props).and_return(name: 'kalle2', age: '43')
@@ -69,30 +68,6 @@ describe Neo4j::ActiveNode::Persistence do
 
       expect(node).to receive(:update_props).and_return(name: 'sune')
       o.save
-    end
-
-    describe 'with cached_class? true' do
-      it 'adds a _classname property' do
-        clazz.stub(:default_property_values).and_return({})
-        clazz.stub(:cached_class?).and_return(true)
-        start_props = {name: 'jasmine', age: 5}
-        end_props   = {name: 'jasmine', age: 5, _classname: 'MyClass'}
-        o = clazz.new
-
-        o.stub(:props).and_return(start_props)
-        o.stub(:serialized_properties).and_return({})
-        o.class.stub(:name).and_return('MyClass') # set_classname looks for this
-        clazz.stub(:neo4j_session).and_return(session)
-
-        clazz.stub(:mapped_label_names).and_return(:MyClass)
-        expect(session).to receive(:create_node).with(end_props, :MyClass).and_return(node)
-        expect(o).to receive(:init_on_load).with(node, end_props)
-        allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
-
-        expect(node).to receive(:props).and_return(end_props)
-
-        o.save
-      end
     end
   end
 
@@ -128,7 +103,6 @@ describe Neo4j::ActiveNode::Persistence do
     before do
       clazz.send(:include, Neo4j::ActiveNode::IdProperty)
       clazz.id_property :uuid, auto: :uuid, constraint: false
-      allow(clazz).to receive(:cached_class?).and_return false
     end
 
     it 'adds the primary key' do

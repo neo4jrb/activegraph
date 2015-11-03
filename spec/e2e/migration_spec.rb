@@ -51,10 +51,6 @@ describe 'migration tasks' do
         to_class false
         type 'singers'
       end
-
-      def self.classname_count(label)
-        proc { Neo4j::Session.query("MATCH (n:`#{label}`) WHERE n._classname = '#{label}' RETURN COUNT(n) as countable").first.countable }
-      end
     end
   end
 
@@ -117,75 +113,6 @@ describe 'migration tasks' do
       user = MigrationSpecs::Song.first
       expect(user.my_id).to eq 'my new id'
       expect(user.neo_id).to eq neo_id
-    end
-  end
-
-  describe 'AddClassnames class' do
-    let(:full_path) { '/hd/gems/rails/add_classnames.yml' }
-    let(:clazz) { Neo4j::Migration::AddClassnames }
-    let(:map_template) do
-      {
-        nodes: {'add' => ['MigrationSpecs::User'], 'overwrite' => ['MigrationSpecs::Song']},
-        relationships: {
-          'add' =>       {'MigrationSpecs::FirstRelClass' => {type: 'songs'}},
-          'overwrite' => {'MigrationSpecs::ThirdRelClass' => {type: 'singers'}}
-        }
-      }
-    end
-    let(:tony)     { MigrationSpecs::User.create(name: 'Tony') }
-    let(:ronnie)   { MigrationSpecs::User.create(name: 'Ronnie') }
-    let(:children) { MigrationSpecs::Song.create(name: 'Children of the Sea') }
-    let(:neon)     { MigrationSpecs::Song.create(name: 'Neon Knights') }
-
-    before do
-      Rails.stub_chain(:root, :join).and_return('/hd/gems/rails/add_classnames.yml')
-      YAML.stub(:load_file).and_return(map_template)
-      clazz.any_instance.stub(:file_init).and_return(map_template)
-      clazz.any_instance.stub(:model_map).and_return(map_template)
-      clazz.any_instance.instance_variable_set(:@model_map, map_template)
-    end
-
-    after(:each) { [MigrationSpecs::User, MigrationSpecs::Song].each(&:delete_all) }
-
-    it 'loads an initialization file' do
-      expect { clazz.new }.not_to raise_error
-    end
-
-    describe 'nodes' do
-      it 'adds given classname to nodes' do
-        Neo4j::Session.query('CREATE (n:`MigrationSpecs::User`) set n.name = "Geezer" return n')
-        geezer_query = MigrationSpecs.classname_count('MigrationSpecs::User')
-        expect(geezer_query.call).to eq 0
-        clazz.new.migrate
-        expect(geezer_query.call).to eq 1
-      end
-
-      it 'replaces given classnames' do
-        Neo4j::Session.query('CREATE (n:`MigrationSpecs::Song`) set n.name = "Country Girl", n._classname = "Wrong" return n')
-        country_query = MigrationSpecs.classname_count('MigrationSpecs::Song')
-        expect(country_query.call).to eq 0
-        clazz.new.migrate
-        expect(country_query.call).to eq 1
-      end
-    end
-
-    describe 'relationships' do
-      it 'adds given classnames to rels' do
-        tony.songs << children
-        expect(tony.songs(:s, :r).pluck(:r).first._persisted_obj.props).not_to have_key(:_classname)
-        expect(tony.songs.first).to eq children
-        clazz.new.migrate
-        expect(tony.songs(:s, :r).pluck(:r).first._persisted_obj.props).to have_key(:_classname)
-      end
-
-      it 'overwrites given classnames on rels' do
-        neon.singers << ronnie
-        expect(neon.singers(:o).pluck(:o).first).to eq ronnie
-        expect(neon.singers(:o, :r).pluck(:r).first).to be_a(MigrationSpecs::SecondRelClass)
-        clazz.new.migrate
-        expect(neon.new_singers(:o).pluck(:o).first).to eq ronnie
-        expect(neon.new_singers(:o, :r).pluck(:r).first).to be_a(MigrationSpecs::ThirdRelClass)
-      end
     end
   end
 end

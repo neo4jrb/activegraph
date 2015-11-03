@@ -27,7 +27,6 @@ module Neo4j::Shared
       inject_timestamps!
       props_with_defaults = inject_defaults!(props)
       converted_props = props_for_db(props_with_defaults)
-      inject_classname!(converted_props)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
     end
@@ -187,24 +186,11 @@ module Neo4j::Shared
       self.updated_at = DateTime.now if respond_to?(:updated_at=) && (updated_at.nil? || (changed? && !updated_at_changed?))
     end
 
-    # Inserts the _classname property into an object's properties during object creation.
-    def inject_classname!(props, check_version = true)
-      props[:_classname] = self.class.name if self.class.cached_class?(check_version)
-    end
-
-    def set_classname(props, check_version = true)
-      warning = 'This method has been replaced with `inject_classname!` and will be removed in a future version'.freeze
-      ActiveSupport::Deprecation.warn warning, caller
-      inject_classname!(props, check_version)
-    end
-
     def inject_timestamps!
       now = DateTime.now
       self.created_at ||= now if respond_to?(:created_at=)
       self.updated_at ||= now if respond_to?(:updated_at=)
     end
-
-
 
     def set_timestamps
       warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze
