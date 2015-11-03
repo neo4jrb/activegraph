@@ -23,15 +23,13 @@ in a new object of that class.
 
    
 
-   
-
    ActiveNode/Rels
 
    ActiveNode/Scope
 
-   ActiveNode/HasN
-
    ActiveNode/Query
+
+   ActiveNode/HasN
 
    ActiveNode/Labels
 
@@ -45,17 +43,17 @@ in a new object of that class.
 
    ActiveNode/Reflection
 
+   ActiveNode/IdProperty
+
+   ActiveNode/Unpersisted
+
    ActiveNode/ClassMethods
 
    ActiveNode/OrmAdapter
 
    ActiveNode/Validations
 
-   ActiveNode/IdProperty
-
    ActiveNode/Persistence
-
-   ActiveNode/Unpersisted
 
    ActiveNode/QueryMethods
 
@@ -88,9 +86,9 @@ Files
 
   * `lib/neo4j/active_node/scope.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L3>`_
 
-  * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
-
   * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
+
+  * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
 
   * `lib/neo4j/active_node/labels.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L2>`_
 
@@ -102,15 +100,15 @@ Files
 
   * `lib/neo4j/active_node/reflection.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L1>`_
 
+  * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
+
+  * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
+
   * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
   * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
 
-  * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
-
   * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
-
-  * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
 
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
@@ -392,6 +390,20 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode#conditional_callback`:
+
+**#conditional_callback**
+  Allows you to perform a callback if a condition is not satisfied.
+
+  .. code-block:: ruby
+
+     def conditional_callback(kind, guard)
+       return yield if guard
+       run_callbacks(kind) { yield }
+     end
+
+
+
 .. _`Neo4j/ActiveNode#declared_properties`:
 
 **#declared_properties**
@@ -621,10 +633,22 @@ Methods
 
   .. code-block:: ruby
 
-     def initialize(attributes = nil)
-       super(attributes)
-       @attributes ||= Hash[self.class.attributes_nil_hash]
-       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
+     def initialize(args = nil)
+       run_callbacks(:initialize) { super }
+     end
+
+
+
+.. _`Neo4j/ActiveNode#inject_defaults!`:
+
+**#inject_defaults!**
+  
+
+  .. code-block:: ruby
+
+     def inject_defaults!(starting_props)
+       return starting_props if self.class.declared_properties.declared_property_defaults.empty?
+       self.class.declared_properties.inject_defaults!(self, starting_props || {})
      end
 
 
@@ -655,12 +679,12 @@ Methods
   .. code-block:: ruby
 
      def inspect
-       id_property_name = self.class.id_property_name.to_s
-       attribute_pairs = attributes.except(id_property_name).sort.map { |key, value| "#{key}: #{value.inspect}" }
-       attribute_pairs.unshift("#{id_property_name}: #{self.send(id_property_name).inspect}")
-       attribute_descriptions = attribute_pairs.join(', ')
+       attribute_descriptions = inspect_attributes.map do |key, value|
+         "#{Neo4j::ANSI::CYAN}#{key}: #{Neo4j::ANSI::CLEAR}#{value.inspect}"
+       end.join(', ')
+     
        separator = ' ' unless attribute_descriptions.empty?
-       "#<#{self.class.name}#{separator}#{attribute_descriptions}>"
+       "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
      end
 
 
@@ -810,9 +834,9 @@ Methods
 
      def props_for_create
        inject_timestamps!
-       converted_props = props_for_db(props)
+       props_with_defaults = inject_defaults!(props)
+       converted_props = props_for_db(props_with_defaults)
        inject_classname!(converted_props)
-       inject_defaults!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
@@ -843,8 +867,8 @@ Methods
        update_magic_properties
        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
        changed_props.symbolize_keys!
-       props_for_db(changed_props)
        inject_defaults!(changed_props)
+       props_for_db(changed_props)
      end
 
 
@@ -983,7 +1007,7 @@ Methods
 
      def send_props(hash)
        return hash if hash.blank?
-       hash.each { |key, value| self.send("#{key}=", value) }
+       hash.each { |key, value| send("#{key}=", value) }
      end
 
 
@@ -1035,7 +1059,7 @@ Methods
 
   .. code-block:: ruby
 
-     def touch(*) #:nodoc:
+     def touch #:nodoc:
        run_callbacks(:touch) { super }
      end
 

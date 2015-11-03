@@ -76,6 +76,8 @@ See Neo4j::Shared::DeclaredProperty for definitions of the property objects them
 
    
 
+   
+
 
 
 
@@ -252,6 +254,22 @@ Methods
 
      def initialize(klass)
        @klass = klass
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#inject_defaults!`:
+
+**#inject_defaults!**
+  
+
+  .. code-block:: ruby
+
+     def inject_defaults!(object, props)
+       declared_property_defaults.each_pair do |k, v|
+         props[k.to_sym] = v if object.send(k).nil?
+       end
+       props
      end
 
 

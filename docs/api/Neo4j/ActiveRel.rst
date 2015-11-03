@@ -20,11 +20,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    
 
-   
+   ActiveRel/Query
 
    ActiveRel/Types
-
-   ActiveRel/Query
 
    ActiveRel/Property
 
@@ -48,10 +46,6 @@ Constants
 
   * WRAPPED_CLASSES
 
-  * N1_N2_STRING
-
-  * ACTIVEREL_NODE_MATCH_STRING
-
   * USES_CLASSNAME
 
 
@@ -63,9 +57,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
-
   * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
+
+  * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
 
   * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
 
@@ -160,6 +154,46 @@ Methods
        else
          "#{model_cache_key}/#{neo_id}"
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#conditional_callback`:
+
+**#conditional_callback**
+  Allows you to perform a callback if a condition is not satisfied.
+
+  .. code-block:: ruby
+
+     def conditional_callback(kind, guard)
+       return yield if guard
+       run_callbacks(kind) { yield }
+     end
+
+
+
+.. _`Neo4j/ActiveRel#create_method`:
+
+**#create_method**
+  
+
+  .. code-block:: ruby
+
+     def create_method
+       self.class.create_method
+     end
+
+
+
+.. _`Neo4j/ActiveRel#cypher_identifier`:
+
+**#cypher_identifier**
+  
+
+  .. code-block:: ruby
+
+     def cypher_identifier
+       @cypher_identifier || :rel
      end
 
 
@@ -262,6 +296,32 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#from_node_identifier`:
+
+**#from_node_identifier**
+  
+
+  .. code-block:: ruby
+
+     def from_node_identifier
+       @from_node_identifier || :from_node
+     end
+
+
+
+.. _`Neo4j/ActiveRel#from_node_identifier=`:
+
+**#from_node_identifier=**
+  Sets the attribute from_node_identifier
+
+  .. code-block:: ruby
+
+     def from_node_identifier=(value)
+       @from_node_identifier = value
+     end
+
+
+
 .. _`Neo4j/ActiveRel#from_node_neo_id`:
 
 **#from_node_neo_id**
@@ -337,9 +397,23 @@ Methods
 
   .. code-block:: ruby
 
-     def initialize(*args)
+     def initialize(args = nil)
        load_nodes
        super
+     end
+
+
+
+.. _`Neo4j/ActiveRel#inject_defaults!`:
+
+**#inject_defaults!**
+  
+
+  .. code-block:: ruby
+
+     def inject_defaults!(starting_props)
+       return starting_props if self.class.declared_properties.declared_property_defaults.empty?
+       self.class.declared_properties.inject_defaults!(self, starting_props || {})
      end
 
 
@@ -352,12 +426,12 @@ Methods
   .. code-block:: ruby
 
      def inspect
-       attribute_pairs = attributes.sort.map { |key, value| "#{key}: #{value.inspect}" }
-       attribute_descriptions = attribute_pairs.join(', ')
-       separator = ' ' unless attribute_descriptions.empty?
+       attribute_descriptions = inspect_attributes.map do |key, value|
+         "#{Neo4j::ANSI::CYAN}#{key}: #{Neo4j::ANSI::CLEAR}#{value.inspect}"
+       end.join(', ')
      
-       cypher_representation = "#{node_cypher_representation(from_node)}-[:#{type}]->#{node_cypher_representation(to_node)}"
-       "#<#{self.class.name} #{cypher_representation}#{separator}#{attribute_descriptions}>"
+       separator = ' ' unless attribute_descriptions.empty?
+       "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
      end
 
 
@@ -472,9 +546,9 @@ Methods
 
      def props_for_create
        inject_timestamps!
-       converted_props = props_for_db(props)
+       props_with_defaults = inject_defaults!(props)
+       converted_props = props_for_db(props_with_defaults)
        inject_classname!(converted_props)
-       inject_defaults!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
@@ -505,8 +579,8 @@ Methods
        update_magic_properties
        changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
        changed_props.symbolize_keys!
-       props_for_db(changed_props)
        inject_defaults!(changed_props)
+       props_for_db(changed_props)
      end
 
 
@@ -627,7 +701,7 @@ Methods
 
      def send_props(hash)
        return hash if hash.blank?
-       hash.each { |key, value| self.send("#{key}=", value) }
+       hash.each { |key, value| send("#{key}=", value) }
      end
 
 
@@ -683,6 +757,32 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#to_node_identifier`:
+
+**#to_node_identifier**
+  
+
+  .. code-block:: ruby
+
+     def to_node_identifier
+       @to_node_identifier || :to_node
+     end
+
+
+
+.. _`Neo4j/ActiveRel#to_node_identifier=`:
+
+**#to_node_identifier=**
+  Sets the attribute to_node_identifier
+
+  .. code-block:: ruby
+
+     def to_node_identifier=(value)
+       @to_node_identifier = value
+     end
+
+
+
 .. _`Neo4j/ActiveRel#to_node_neo_id`:
 
 **#to_node_neo_id**
@@ -701,7 +801,7 @@ Methods
 
   .. code-block:: ruby
 
-     def touch(*) #:nodoc:
+     def touch #:nodoc:
        run_callbacks(:touch) { super }
      end
 

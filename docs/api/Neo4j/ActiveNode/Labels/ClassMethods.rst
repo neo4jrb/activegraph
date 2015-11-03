@@ -39,6 +39,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -54,7 +56,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/labels.rb:80 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L80>`_
+  * `lib/neo4j/active_node/labels.rb:78 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L78>`_
 
 
 
@@ -189,7 +191,7 @@ Methods
                   find_by_id(map_id.call(id))
                 end
        fail Neo4j::RecordNotFound if result.blank?
-       result
+       result.tap { |r| find_callbacks!(r) }
      end
 
 

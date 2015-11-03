@@ -25,9 +25,15 @@ Shared
 
    Shared/Typecaster
 
+   Shared/Persistence
+
    Shared/Validations
 
-   Shared/Persistence
+   Shared/QueryFactory
+
+   Shared/NodeQueryFactory
+
+   Shared/RelQueryFactory
 
    Shared/TypeConverters
 
@@ -66,9 +72,11 @@ Files
 
   * `lib/neo4j/shared/typecaster.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L2>`_
 
+  * `lib/neo4j/shared/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L1>`_
+
   * `lib/neo4j/shared/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L2>`_
 
-  * `lib/neo4j/shared/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L1>`_
+  * `lib/neo4j/shared/query_factory.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/query_factory.rb#L1>`_
 
   * `lib/neo4j/shared/type_converters.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L6>`_
 

@@ -39,6 +39,8 @@ Link
 
    
 
+   
+
 
 
 
@@ -210,6 +212,19 @@ Methods
 
      def for_order_clause(arg, _)
        [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy/Link.for_rel_order_clause`:
+
+**.for_rel_order_clause**
+  
+
+  .. code-block:: ruby
+
+     def for_rel_order_clause(arg, _)
+       [new(:order, ->(_, v) { arg.is_a?(String) ? arg : {v => arg} })]
      end
 
 

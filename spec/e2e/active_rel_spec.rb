@@ -271,11 +271,80 @@ describe 'ActiveRel' do
   end
 
   describe 'initialize' do
-    let(:new_rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
+    context 'with a single hash' do
+      let(:new_rel) { MyRelClass.new(from_node: from_node, to_node: to_node) }
 
-    it 'pulls :from_node and :to_node out of the hash' do
-      expect(new_rel.from_node).to eq from_node
-      expect(new_rel.to_node).to eq to_node
+      it 'pulls :from_node and :to_node out of the hash' do
+        expect(new_rel.from_node).to eq from_node
+        expect(new_rel.to_node).to eq to_node
+      end
+    end
+
+    context 'with three arguments' do
+      let(:new_rel) { MyRelClass.new(from_node, to_node, props) }
+
+      context 'and nil props' do
+        let(:props) { nil }
+
+        it 'sets the nodes' do
+          expect(new_rel.from_node).to eq from_node
+          expect(new_rel.to_node).to eq to_node
+          expect(new_rel.score).to be_nil
+        end
+      end
+
+      context 'and present props' do
+        let(:props) { {score: 9000} }
+
+        it 'sets the nodes and props' do
+          expect(new_rel.from_node).to eq from_node
+          expect(new_rel.to_node).to eq to_node
+          expect(new_rel.score).to eq 9000
+        end
+      end
+    end
+  end
+
+  describe '#inspect' do
+    context 'with unset from_node/to_node' do
+      let(:new_rel) { MyRelClass.new }
+
+      it 'does not raise an error' do
+        expect(new_rel.from_node).not_to receive(:loaded)
+        expect(new_rel.to_node).not_to receive(:loaded)
+        expect { new_rel.inspect }.not_to raise_error
+      end
+
+      context 'single from/to class' do
+        it 'inserts the class names in String' do
+          next if Neo4j::VERSION >= '6.0.0'
+          expect(new_rel.inspect).to include('(FromClass)-[:rel_class_type]->(ToClass)')
+        end
+      end
+
+      context 'array of from/to class' do
+        before { MyRelClass.from_class([FromClass, ToClass]) }
+
+        it 'joins with ||' do
+          next if Neo4j::VERSION >= '6.0.0'
+          expect(new_rel.inspect).to include('(FromClass || ToClass)-[:rel_class_type]->(ToClass)')
+        end
+      end
+    end
+
+    context 'with set, unloaded from_node/to_node' do
+      let(:new_rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
+      let(:reloaded) { Neo4j::Relationship.load(new_rel.id) }
+      let(:inspected) { reloaded.inspect }
+
+      # Neo4j Embedded always returns nodes with rels. This is only possible in Server mode.
+      it 'notes the ids of the nodes' do
+        next if Neo4j::VERSION >= '6.0.0.alpha'
+        next if Neo4j::Session.current.db_type == :embedded_db
+        [from_node.neo_id, to_node.neo_id].each do |id|
+          expect(inspected).to include("(Node with neo_id #{id})")
+        end
+      end
     end
   end
 

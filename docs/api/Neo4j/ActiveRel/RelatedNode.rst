@@ -15,6 +15,14 @@ will result in a query to load the node if the node is not already loaded.
 
    RelatedNode/InvalidParameterError
 
+   RelatedNode/UnsetRelatedNodeError
+
+   
+
+   
+
+   
+
    
 
    
@@ -86,6 +94,30 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/RelatedNode#cypher_representation`:
+
+**#cypher_representation**
+  
+
+  .. code-block:: ruby
+
+     def cypher_representation(clazz)
+       case
+       when !set?
+         "(#{formatted_label_list(clazz)})"
+       when set? && !loaded?
+         "(Node with neo_id #{@node})"
+       else
+         node_class = self.class
+         id_name = node_class.id_property_name
+         labels = ':' + node_class.mapped_label_names.join(':')
+     
+         "(#{labels} {#{id_name}: #{@node.id.inspect}})"
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveRel/RelatedNode#initialize`:
 
 **#initialize**
@@ -114,6 +146,7 @@ Methods
   .. code-block:: ruby
 
      def loaded
+       fail NilRelatedNodeError, 'Node not set, cannot load' if @node.nil?
        @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
      end
 
@@ -166,8 +199,21 @@ Methods
   .. code-block:: ruby
 
      def respond_to_missing?(method_name, include_private = false)
-       loaded if @node.is_a?(Integer)
+       loaded if @node.is_a?(Numeric)
        @node.respond_to?(method_name) ? true : super
+     end
+
+
+
+.. _`Neo4j/ActiveRel/RelatedNode#set?`:
+
+**#set?**
+  
+
+  .. code-block:: ruby
+
+     def set?
+       !@node.nil?
      end
 
 

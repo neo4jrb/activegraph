@@ -37,6 +37,20 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Callbacks#conditional_callback`:
+
+**#conditional_callback**
+  Allows you to perform a callback if a condition is not satisfied.
+
+  .. code-block:: ruby
+
+     def conditional_callback(kind, guard)
+       return yield if guard
+       run_callbacks(kind) { yield }
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Callbacks#destroy`:
 
 **#destroy**
@@ -58,6 +72,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Callbacks#initialize`:
+
+**#initialize**
+  
+
+  .. code-block:: ruby
+
+     def initialize(args = nil)
+       run_callbacks(:initialize) { super }
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Callbacks#touch`:
 
 **#touch**
@@ -65,7 +92,7 @@ Methods
 
   .. code-block:: ruby
 
-     def touch(*) #:nodoc:
+     def touch #:nodoc:
        run_callbacks(:touch) { super }
      end
 

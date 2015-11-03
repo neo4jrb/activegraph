@@ -33,10 +33,6 @@ Provides a mapping between neo4j labels and Ruby classes
 
    
 
-   
-
-   
-
    Labels/ClassMethods
 
    Labels/Index
@@ -87,7 +83,7 @@ Methods
   .. code-block:: ruby
 
      def self._wrapped_classes
-       Neo4j::ActiveNode::Labels::WRAPPED_CLASSES
+       WRAPPED_CLASSES
      end
 
 
@@ -118,19 +114,6 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Labels.clear_model_for_label_cache`:
-
-**.clear_model_for_label_cache**
-  
-
-  .. code-block:: ruby
-
-     def self.clear_model_for_label_cache
-       MODELS_FOR_LABELS_CACHE.clear
-     end
-
-
-
 .. _`Neo4j/ActiveNode/Labels.clear_wrapped_models`:
 
 **.clear_wrapped_models**
@@ -140,6 +123,8 @@ Methods
 
      def self.clear_wrapped_models
        WRAPPED_CLASSES.clear
+       MODELS_FOR_LABELS_CACHE.clear
+       Neo4j::Node::Wrapper::CONSTANTS_FOR_LABELS_CACHE.clear
      end
 
 
@@ -157,14 +142,17 @@ Methods
 
 
 
-.. _`Neo4j/ActiveNode/Labels.model_cache`:
+.. _`Neo4j/ActiveNode/Labels.model_for_labels`:
 
-**.model_cache**
-  
+**.model_for_labels**
+  Finds an appropriate matching model given a set of labels
+  which are assigned to a node
 
   .. code-block:: ruby
 
-     def self.model_cache(labels)
+     def self.model_for_labels(labels)
+       return MODELS_FOR_LABELS_CACHE[labels] if MODELS_FOR_LABELS_CACHE[labels]
+     
        models = WRAPPED_CLASSES.select do |model|
          (model.mapped_label_names - labels).size == 0
        end
@@ -172,19 +160,6 @@ Methods
        MODELS_FOR_LABELS_CACHE[labels] = models.max do |model|
          (model.mapped_label_names & labels).size
        end
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Labels.model_for_labels`:
-
-**.model_for_labels**
-  
-
-  .. code-block:: ruby
-
-     def self.model_for_labels(labels)
-       MODELS_FOR_LABELS_CACHE[labels] || model_cache(labels)
      end
 
 

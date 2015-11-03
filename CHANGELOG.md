@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Changed
 - `#<<` and `#create` methods on associations now create with the `rel_class` when available so that validations/callbacks/defaults are all used as expected
 
+### Added
+- Alternate `ActiveRel` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
+
 ## [6.0.0.alpha.10] - 11-2-2015
 
 ### Fixed
