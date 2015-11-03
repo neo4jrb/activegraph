@@ -3,7 +3,10 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.0.0.alpha.11] - 11-3-2015
+
+### Fixed
+- Regression RE: properties being overwritten with their defaults on save in alpha.10.
 
 ### Changed
 - `#<<` and `#create` methods on associations now create with the `rel_class` when available so that validations/callbacks/defaults are all used as expected
@@ -16,6 +19,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Long properties in `ActiveNode`/`ActiveRel` `#inspect` are truncated
+- Property defaults are set initially when an instance of a model is loaded, then checked again before save to ensure `valid?` works.
 
 ### Added
 - `ActiveRel` `create` actions can now handle unpersisted nodes.
