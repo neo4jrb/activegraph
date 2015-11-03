@@ -157,7 +157,7 @@ module Neo4j::Shared
 
     def inject_defaults!(object, props)
       declared_property_defaults.each_pair do |k, v|
-        props[k.to_sym] = v if object.send(k).nil?
+        props[k.to_sym] = v if object.send(k).nil? && props[k.to_sym].nil?
       end
       props
     end
