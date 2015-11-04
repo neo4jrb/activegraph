@@ -91,11 +91,26 @@ describe 'ActiveRel' do
     end
 
     shared_context 'three-argument ActiveRel create/create!' do |meth|
-      it 'is valid syntax' do
-        rel = RelClassWithValidations.send(meth, from_node, to_node, score: 9000)
+      def is_persisted_with_nodes(rel)
         expect(rel).to be_persisted
         expect(rel.from_node).to eq from_node
         expect(rel.to_node).to eq to_node
+      end
+
+      context 'node, node, hash' do
+        it { is_persisted_with_nodes(MyRelClass.send(meth, from_node, to_node, {})) }
+      end
+
+      context 'node, node, nil' do
+        it { is_persisted_with_nodes MyRelClass.send(meth, from_node, to_node, nil) }
+      end
+
+      context 'nil, nil, hash' do
+        it { is_persisted_with_nodes MyRelClass.send(meth, nil, nil, {from_node: from_node, to_node: to_node}) }
+      end
+
+      context 'hash, nil, nil' do
+        it { is_persisted_with_nodes MyRelClass.send(meth, {from_node: from_node, to_node: to_node}, nil ,nil) }
       end
     end
 

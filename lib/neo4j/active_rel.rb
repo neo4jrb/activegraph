@@ -56,15 +56,12 @@ module Neo4j
 
     module ClassMethods
       [:create, :create!].each do |meth|
-        define_method(meth) do |from_node_or_args = nil, to_node = nil, args = {}|
-          super_args = case from_node_or_args
-                       when Hash
-                         from_node_or_args
-                       else
-                         args_with_node!(:from_node, from_node_or_args, args)
-                         args_with_node!(:to_node, to_node, args)
-                       end
-          super(super_args)
+        define_method(meth) do |from_node_or_args = nil, to_node = nil, args = nil|
+          return super(from_node_or_args) if from_node_or_args.is_a?(Hash)
+          args_hash = args || {}
+          args_with_node!(:from_node, from_node_or_args, args_hash)
+          args_with_node!(:to_node, to_node, args_hash)
+          super(args_hash)
         end
       end
 
