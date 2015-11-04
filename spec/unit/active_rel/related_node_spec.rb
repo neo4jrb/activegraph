@@ -32,6 +32,14 @@ describe Neo4j::ActiveRel::RelatedNode do
         r.loaded
         expect(r.instance_variable_get(:@node)).to eq node1
       end
+
+      context 'with @node unset' do
+        let(:r) { RelatedNode.new(nil) }
+
+        it 'raises' do
+          expect { r.loaded }.to raise_error Neo4j::ActiveRel::RelatedNode::UnsetRelatedNodeError
+        end
+      end
     end
 
     describe 'loaded?' do
