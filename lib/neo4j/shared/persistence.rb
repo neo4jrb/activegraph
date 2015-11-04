@@ -2,8 +2,6 @@ module Neo4j::Shared
   module Persistence
     extend ActiveSupport::Concern
 
-    USES_CLASSNAME = []
-
     # @return [Hash] Given a node's state, will call the appropriate `props_for_{action}` method.
     def props_for_persistence
       _persisted_obj ? props_for_update : props_for_create
@@ -18,7 +16,6 @@ module Neo4j::Shared
     # Returns a hash containing:
     # * All properties and values for insertion in the database
     # * A `uuid` (or equivalent) key and value
-    # * A `_classname` property, if one is to be set
     # * Timestamps, if the class is set to include them.
     # Note that the UUID is added to the hash but is not set on the node.
     # The timestamps, by comparison, are set on the node prior to addition in this hash.
@@ -27,7 +24,6 @@ module Neo4j::Shared
       inject_timestamps!
       props_with_defaults = inject_defaults!(props)
       converted_props = props_for_db(props_with_defaults)
-      inject_classname!(converted_props)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
     end
@@ -187,61 +183,16 @@ module Neo4j::Shared
       self.updated_at = DateTime.now if respond_to?(:updated_at=) && (updated_at.nil? || (changed? && !updated_at_changed?))
     end
 
-    # Inserts the _classname property into an object's properties during object creation.
-    def inject_classname!(props, check_version = true)
-      props[:_classname] = self.class.name if self.class.cached_class?(check_version)
-    end
-
-    def set_classname(props, check_version = true)
-      warning = 'This method has been replaced with `inject_classname!` and will be removed in a future version'.freeze
-      ActiveSupport::Deprecation.warn warning, caller
-      inject_classname!(props, check_version)
-    end
-
     def inject_timestamps!
       now = DateTime.now
       self.created_at ||= now if respond_to?(:created_at=)
       self.updated_at ||= now if respond_to?(:updated_at=)
     end
 
-
-
     def set_timestamps
       warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze
       ActiveSupport::Deprecation.warn warning, caller
       inject_timestamps!
-    end
-
-    module ClassMethods
-      # Determines whether a model should insert a _classname property. This can be used to override the automatic matching of returned
-      # objects to models.
-      def cached_class?(check_version = true)
-        uses_classname? || (!!Neo4j::Config[:cache_class_names] && (check_version ? neo4j_session.version < '2.1.5' : true))
-      end
-
-      # @return [Boolean] status of whether this model will add a _classname property
-      def uses_classname?
-        Neo4j::Shared::Persistence::USES_CLASSNAME.include?(self.name)
-      end
-
-      # Adds this model to the USES_CLASSNAME array. When new rels/nodes are created, a _classname property will be added. This will override the
-      # automatic matching of label/rel type to model.
-      #
-      # You'd want to do this if you have multiple models for the same label or relationship type. When it comes to labels, there isn't really any
-      # reason to do this because you can have multiple labels; on the other hand, an argument can be made for doing this with relationships since
-      # rel type is a bit more restrictive.
-      #
-      # It could also be speculated that there's a slight performance boost to using _classname since the gem immediately knows what model is responsible
-      # for a returned object. At the same time, it is a bit restrictive and changing it can be a bit of a PITA. Use carefully!
-      def set_classname
-        Neo4j::Shared::Persistence::USES_CLASSNAME << self.name
-      end
-
-      # Removes this model from the USES_CLASSNAME array. When new rels/nodes are create, no _classname property will be injected. Upon returning of
-      # the object from the database, it will be matched to a model using its relationship type or labels.
-      def unset_classname
-        Neo4j::Shared::Persistence::USES_CLASSNAME.delete self.name
-      end
     end
   end
 end

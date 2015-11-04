@@ -15,7 +15,7 @@ class Neo4j::Node
 
     def class_to_wrap
       load_classes_from_labels
-      (named_class || ::Neo4j::ActiveNode::Labels.model_for_labels(labels)).tap do |model_class|
+      Neo4j::ActiveNode::Labels.model_for_labels(labels).tap do |model_class|
         Neo4j::Node::Wrapper.populate_constants_for_labels_cache(model_class, labels)
       end
     end
@@ -47,12 +47,6 @@ class Neo4j::Node
 
     def self.association_model_namespace
       Neo4j::Config.association_model_namespace_string
-    end
-
-    def named_class
-      property = Neo4j::Config.class_name_property
-
-      Neo4j::Node::Wrapper.constant_for_label(self.props[property]) if self.props.is_a?(Hash) && self.props.key?(property)
     end
   end
 end

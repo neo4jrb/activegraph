@@ -128,12 +128,6 @@ module Neo4j
           @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
         end
 
-        def inject_classname(properties)
-          return properties unless relationship_class
-          properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_class.cached_class?(true)
-          properties
-        end
-
         def unique?
           return relationship_class.unique? if rel_class?
           @origin ? origin_association.unique? : !!@unique

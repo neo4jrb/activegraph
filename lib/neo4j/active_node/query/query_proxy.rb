@@ -178,8 +178,6 @@ module Neo4j
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
-          properties = @association.inject_classname(properties)
-
           Neo4j::Transaction.run do
             other_nodes.each do |other_node|
               other_node.save unless other_node.neo_id
@@ -221,7 +219,7 @@ module Neo4j
           Array(other_node_or_nodes).each do |other_node|
             node_props = (association.direction == :in) ? {from_node: other_node, to_node: @start_object} : {from_node: @start_object, to_node: other_node}
 
-            association.relationship_class.create(properties.except(:_classname).merge(node_props))
+            association.relationship_class.create(properties.merge(node_props))
           end
         end
 
