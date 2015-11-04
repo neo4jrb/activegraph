@@ -84,13 +84,15 @@ module Neo4j::Shared
       end
     end
 
+    DATE_KEY_REGEX = /\A([^\(]+)\((\d+)([if])\)$/
     # Gives support for Rails date_select, datetime_select, time_select helpers.
     def process_attributes(attributes = nil)
       return attributes if attributes.blank?
       multi_parameter_attributes = {}
       new_attributes = {}
       attributes.each_pair do |key, value|
-        if match = key.match(/\A([^\(]+)\((\d+)([if])\)$/)
+        if key.match(DATE_KEY_REGEX)
+          match = key.to_s.match(DATE_KEY_REGEX)
           found_key = match[1]
           index = match[2].to_i
           (multi_parameter_attributes[found_key] ||= {})[index] = value.empty? ? nil : value.send("to_#{$3}")
@@ -105,7 +107,6 @@ module Neo4j::Shared
     def process_multiparameter_attributes(multi_parameter_attributes, new_attributes)
       multi_parameter_attributes.each_with_object(new_attributes) do |(key, values), attributes|
         values = (values.keys.min..values.keys.max).map { |i| values[i] }
-
         if (field = self.class.attributes[key.to_sym]).nil?
           fail MultiparameterAssignmentError, "error on assignment #{values.inspect} to #{key}"
         end

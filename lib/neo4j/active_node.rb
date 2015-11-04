@@ -41,6 +41,11 @@ module Neo4j
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent
 
+    def initialize(args = nil)
+      symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args
+      super(symbol_args)
+    end
+
     def neo4j_obj
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
