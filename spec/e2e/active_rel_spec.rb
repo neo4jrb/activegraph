@@ -90,10 +90,42 @@ describe 'ActiveRel' do
       end
     end
 
+    shared_context 'three-argument ActiveRel create/create!' do |meth|
+      # rubocop:disable Style/PredicateName
+      def is_persisted_with_nodes(rel)
+        expect(rel).to be_persisted
+        expect(rel.from_node).to eq from_node
+        expect(rel.to_node).to eq to_node
+      end
+      # rubocop:enable Style/PredicateName
+
+      context 'node, node, hash' do
+        it { is_persisted_with_nodes(MyRelClass.send(meth, from_node, to_node, {})) }
+      end
+
+      context 'node, node, nil' do
+        it { is_persisted_with_nodes MyRelClass.send(meth, from_node, to_node, nil) }
+      end
+
+      context 'nil, nil, hash' do
+        it { is_persisted_with_nodes MyRelClass.send(meth, nil, nil, from_node: from_node, to_node: to_node) }
+      end
+
+      context 'hash, nil, nil' do
+        it { is_persisted_with_nodes MyRelClass.send(meth, {from_node: from_node, to_node: to_node}, nil, nil) }
+      end
+    end
+
+    describe '#create' do
+      it_behaves_like 'three-argument ActiveRel create/create!', :create
+    end
+
     describe '#create!' do
       it 'raises an error on invalid params' do
         expect { RelClassWithValidations.create!(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
       end
+
+      it_behaves_like 'three-argument ActiveRel create/create!', :create!
     end
 
     describe '#save!' do
