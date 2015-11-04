@@ -90,10 +90,25 @@ describe 'ActiveRel' do
       end
     end
 
+    shared_context 'three-argument ActiveRel create/create!' do |meth|
+      it 'is valid syntax' do
+        rel = RelClassWithValidations.send(meth, from_node, to_node, score: 9000)
+        expect(rel).to be_persisted
+        expect(rel.from_node).to eq from_node
+        expect(rel.to_node).to eq to_node
+      end
+    end
+
+    describe '#create' do
+      it_behaves_like 'three-argument ActiveRel create/create!', :create
+    end
+
     describe '#create!' do
       it 'raises an error on invalid params' do
         expect { RelClassWithValidations.create!(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
       end
+
+      it_behaves_like 'three-argument ActiveRel create/create!', :create!
     end
 
     describe '#save!' do
