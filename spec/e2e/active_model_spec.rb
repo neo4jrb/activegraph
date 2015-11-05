@@ -73,13 +73,19 @@ describe 'Neo4j::ActiveNode' do
     it_should_behave_like 'timestamped model'
 
     describe '#new' do
-      it 'allows setting of properties via initialize' do
+      it 'allows setting of properties via initialize with symbol keys' do
         l = IceLolly.new(prop_with_default: 'something else')
         expect(l.prop_with_default).to eq('something else')
       end
 
       it 'allows setting of #method= methods via initialize' do
         expect { IceLolly.new(writable_attr: 'test') }.to_not raise_error
+      end
+
+      context 'with string keys' do
+        it do
+          expect(IceLolly.new('prop_with_default' => 'something else').prop_with_default).to eq 'something else'
+        end
       end
     end
 

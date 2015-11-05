@@ -19,7 +19,9 @@ module Neo4j
 
     def initialize(from_node = nil, to_node = nil, args = nil)
       load_nodes(node_or_nil(from_node), node_or_nil(to_node))
-      super(hash_or_nil(from_node, args))
+      resolved_args = hash_or_nil(from_node, args)
+      symbol_args = resolved_args.is_a?(Hash) ? resolved_args.symbolize_keys : resolved_args
+      super(symbol_args)
     end
 
     def node_cypher_representation(node)

@@ -78,6 +78,20 @@ describe 'ActiveRel' do
     end
   end
 
+  describe '#initialize' do
+    context 'with string keys' do
+      it do
+        expect(MyRelClass.new('default' => 'new val').default).to eq 'new val'
+      end
+    end
+
+    context 'with symbol keys' do
+      it do
+        expect(MyRelClass.new(default: 'new val').default).to eq 'new val'
+      end
+    end
+  end
+
   describe 'creation' do
     before(:each) do
       stub_active_rel_class('RelClassWithValidations') do
