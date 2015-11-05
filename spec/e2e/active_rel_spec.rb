@@ -164,9 +164,70 @@ describe 'ActiveRel' do
         expect(from_node.others.count).to eq 0
         MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(from_node.others.count).to eq 1
-        MyRelClass.creates_unique
+        MyRelClass.creates_unique :none
         MyRelClass.create(from_node: from_node, to_node: to_node)
         expect(from_node.others.count).to eq 1
+      end
+
+      describe 'property filtering' do
+        let(:nodes) { {from_node: from_node, to_node: to_node} }
+        let(:first_props) { {score: 900} }
+        let(:second_props) { {score: 1000} }
+        let(:changed_props_create) { proc { MyRelClass.create(nodes.merge(second_props)) } }
+        before do
+          MyRelClass.creates_unique(:none)
+          MyRelClass.create(nodes.merge(first_props))
+        end
+
+        context 'with :none open' do
+          it 'does not create additional rels, even when properties change' do
+            expect do
+              changed_props_create.call
+            end.not_to change { from_node.others.count }
+          end
+        end
+
+        context 'with `:all` option' do
+          before { MyRelClass.creates_unique :all }
+
+          it 'creates additional rels when properties change' do
+            expect { changed_props_create.call }.to change { from_node.others.count }
+          end
+        end
+
+        context 'with {on: *keys} option' do
+          before { MyRelClass.creates_unique(on: :score) }
+
+          context 'and a listed property changes' do
+            it 'creates a new rel' do
+              expect { changed_props_create.call }.to change { from_node.others.count }
+            end
+          end
+
+          context 'and an unlisted property changes' do
+            it 'does not create a new rel' do
+              expect do
+                MyRelClass.create(nodes.merge(default: 'some other value'))
+              end.not_to change { from_node.others.count }
+            end
+          end
+        end
+
+        context 'with {except: *keys} option' do
+          before { MyRelClass.creates_unique(except: :score) }
+
+          context 'and a listed property changes' do
+            it 'does not create a new rel' do
+              expect { changed_props_create.call }.not_to change { from_node.others.count }
+            end
+          end
+
+          context 'and an unlisted property changes' do
+            it 'creates a new rel' do
+              expect { MyRelClass.create(nodes.merge(default: 'some other value')) }.to change { from_node.others.count }
+            end
+          end
+        end
       end
     end
 

@@ -63,8 +63,12 @@ module Neo4j::ActiveRel
         Neo4j::Node.load(id)
       end
 
-      def creates_unique
-        @creates_unique = true
+      def creates_unique(option)
+        @creates_unique = option
+      end
+
+      def creates_unique_option
+        @creates_unique || :none
       end
 
       def creates_unique_rel
@@ -75,7 +79,7 @@ WARNING
 
         ActiveSupport::Deprecation.warn(warning, caller)
 
-        creates_unique
+        creates_unique(:none)
       end
 
       def creates_unique?
