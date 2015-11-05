@@ -3,13 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.0.0.alpha.12] - 11-5-2015
 
 ### Changed
 - `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
 
 ### Added
-
 - Optional three-argument signature for `ActiveRel#create` and `#create!`, just like `initialize`.
 
 ## [6.0.0.alpha.11] - 11-3-2015
