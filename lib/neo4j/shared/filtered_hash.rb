@@ -1,39 +1,39 @@
-module Neo4j::Shared::Property
-  class FilteredProperties
-    class InvalidPropertyFilterType < Neo4j::Neo4jrbError; end
+module Neo4j::Shared
+  class FilteredHash
+    class InvalidHashFilterType < Neo4j::Neo4jrbError; end
     VALID_SYMBOL_INSTRUCTIONS = [:all, :none]
     VALID_HASH_INSTRUCTIONS = [:on, :except]
 
-    attr_reader :properties, :instructions, :instructions_type
+    attr_reader :base, :instructions, :instructions_type
 
-    def initialize(properties, instructions)
-      @properties = properties
+    def initialize(base, instructions)
+      @base = base
       @instructions = instructions
       @instructions_type = instructions.class
       validate_instructions!(instructions)
     end
 
-    def filtered_properties
+    def filtered_base
       case instructions
       when Symbol
-        filtered_properties_by_symbol
+        filtered_base_by_symbol
       when Hash
-        filtered_properties_by_hash
+        filtered_base_by_hash
       end
     end
 
     private
 
-    def filtered_properties_by_symbol
+    def filtered_base_by_symbol
       case instructions
       when :all
-        [properties, {}]
+        [base, {}]
       when :none
-        [{}, properties]
+        [{}, base]
       end
     end
 
-    def filtered_properties_by_hash
+    def filtered_base_by_hash
       behavior_key = instructions.keys.first
       filter_keys = keys_array(behavior_key)
       base = [filter(filter_keys, :with), filter(filter_keys, :without)]
@@ -46,7 +46,7 @@ module Neo4j::Shared::Property
 
     def filter(filter_keys, key)
       filtering = key == :with
-      properties.select { |k, _v| key?(filter_keys, k) == filtering }
+      base.select { |k, _v| key?(filter_keys, k) == filtering }
     end
 
     def keys_array(key)
@@ -56,7 +56,7 @@ module Neo4j::Shared::Property
     def validate_instructions!(instructions)
       clazz = instructions_type.name.downcase
       return if send(:"valid_#{clazz}_instructions?", instructions)
-      fail InvalidPropertyFilterType, "Invalid instructions #{instructions}, valid options for #{clazz}: #{send(:"valid_#{clazz}_instructions")}"
+      fail InvalidHashFilterType, "Invalid instructions #{instructions}, valid options for #{clazz}: #{send(:"valid_#{clazz}_instructions")}"
     end
 
     def valid_symbol_instructions?(instructions)

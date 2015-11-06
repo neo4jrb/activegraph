@@ -89,7 +89,7 @@ module Neo4j::Shared
     private
 
     def filtered_props
-      Neo4j::Shared::Property::FilteredProperties.new(graph_object.props_for_create, graph_object.class.creates_unique_option).filtered_properties
+      Neo4j::Shared::FilteredHash.new(graph_object.props_for_create, graph_object.class.creates_unique_option).filtered_base
     end
 
     def query_string
