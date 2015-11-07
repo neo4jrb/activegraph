@@ -195,7 +195,7 @@ describe 'ActiveRel' do
           end
         end
 
-        context 'with {on: *keys} option' do
+        context 'with {on: [keys]} option' do
           before { MyRelClass.creates_unique(on: :score) }
 
           context 'and a listed property changes' do
@@ -213,7 +213,7 @@ describe 'ActiveRel' do
           end
         end
 
-        context 'with {except: *keys} option' do
+        context 'with {except: [keys]} option' do
           before { MyRelClass.creates_unique(except: :score) }
 
           context 'and a listed property changes' do

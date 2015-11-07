@@ -29,7 +29,7 @@ module Neo4j::ActiveRel::Persistence
     private
 
     def rel_id
-      @rel_id ||= rel.cypher_identifier
+      @rel_id ||= rel.rel_identifier
     end
 
     # Node callbacks only need to be executed if the node is not persisted. We let the `conditional_callback` method do the work,

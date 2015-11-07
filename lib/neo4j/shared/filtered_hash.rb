@@ -3,6 +3,7 @@ module Neo4j::Shared
     class InvalidHashFilterType < Neo4j::Neo4jrbError; end
     VALID_SYMBOL_INSTRUCTIONS = [:all, :none]
     VALID_HASH_INSTRUCTIONS = [:on, :except]
+    VALID_INSTRUCTIONS_TYPES = [Hash, Symbol]
 
     attr_reader :base, :instructions, :instructions_type
 
@@ -54,6 +55,7 @@ module Neo4j::Shared
     end
 
     def validate_instructions!(instructions)
+      fail InvalidHashFilterType, "Filtering instructions #{instructions} are invalid" unless VALID_INSTRUCTIONS_TYPES.include?(instructions.class)
       clazz = instructions_type.name.downcase
       return if send(:"valid_#{clazz}_instructions?", instructions)
       fail InvalidHashFilterType, "Invalid instructions #{instructions}, valid options for #{clazz}: #{send(:"valid_#{clazz}_instructions")}"

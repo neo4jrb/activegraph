@@ -43,8 +43,8 @@ describe 'has_many' do
     end
   end
 
-  describe 'unique: true' do
-    before { Person.reflect_on_association(:knows).association.instance_variable_set(:@unique, true) }
+  describe 'unique: :none' do
+    before { Person.reflect_on_association(:knows).association.instance_variable_set(:@unique, :none) }
     after do
       Person.reflect_on_association(:knows).association.instance_variable_set(:@unique, false)
       [friend1, friend2].each(&:destroy)

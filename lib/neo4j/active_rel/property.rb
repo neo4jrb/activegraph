@@ -31,7 +31,13 @@ module Neo4j::ActiveRel
       send_props(@relationship_props) unless @relationship_props.nil?
     end
 
+    def creates_unique_option
+      self.class.creates_unique_option
+    end
+
     module ClassMethods
+      include Neo4j::Shared::Cypher::CreateMethod
+
       # Extracts keys from attributes hash which are relationships of the model
       # TODO: Validate separately that relationships are getting the right values?  Perhaps also store the values and persist relationships on save?
       def extract_association_attributes!(attributes)
@@ -62,30 +68,6 @@ module Neo4j::ActiveRel
       def load_entity(id)
         Neo4j::Node.load(id)
       end
-
-      def creates_unique(option)
-        @creates_unique = option
-      end
-
-      def creates_unique_option
-        @creates_unique || :none
-      end
-
-      def creates_unique_rel
-        warning = <<-WARNING
-creates_unique_rel() is deprecated and will be removed from future releases,
-use creates_unique() instead.
-WARNING
-
-        ActiveSupport::Deprecation.warn(warning, caller)
-
-        creates_unique(:none)
-      end
-
-      def creates_unique?
-        !!@creates_unique
-      end
-      alias_method :unique?, :creates_unique?
     end
 
     private

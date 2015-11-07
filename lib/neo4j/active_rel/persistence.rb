@@ -1,9 +1,8 @@
 module Neo4j::ActiveRel
   module Persistence
     extend ActiveSupport::Concern
+    include Neo4j::Shared::Cypher::RelIdentifiers
     include Neo4j::Shared::Persistence
-
-    attr_writer :from_node_identifier, :to_node_identifier
 
     class RelInvalidError < RuntimeError; end
     class ModelClassInvalidError < RuntimeError; end
@@ -15,6 +14,14 @@ module Neo4j::ActiveRel
 
     def to_node_identifier
       @to_node_identifier || :to_node
+    end
+
+    def from_node_identifier=(id)
+      @from_node_identifier = id.to_sym
+    end
+
+    def to_node_identifier=(id)
+      @to_node_identifier = id.to_sym
     end
 
     def cypher_identifier

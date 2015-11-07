@@ -133,6 +133,10 @@ module Neo4j
           @origin ? origin_association.unique? : !!@unique
         end
 
+        def creates_unique_option
+          @unique || :none
+        end
+
         def create_method
           unique? ? :create_unique : :create
         end

@@ -80,7 +80,6 @@ module Neo4j::Shared
     def create_query
       return match_query if graph_object.persisted?
       create_props, set_props = filtered_props
-
       base_query.send(graph_object.create_method, query_string).break
         .set(identifier => set_props)
         .params(:"#{identifier}_create_props" => create_props)
@@ -89,7 +88,7 @@ module Neo4j::Shared
     private
 
     def filtered_props
-      Neo4j::Shared::FilteredHash.new(graph_object.props_for_create, graph_object.class.creates_unique_option).filtered_base
+      Neo4j::Shared::FilteredHash.new(graph_object.props_for_create, graph_object.creates_unique_option).filtered_base
     end
 
     def query_string
