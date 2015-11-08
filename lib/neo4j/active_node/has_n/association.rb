@@ -141,6 +141,10 @@ module Neo4j
           unique? ? :create_unique : :create
         end
 
+        def _create_relationship(start_object, node_or_nodes, properties)
+          RelFactory.create(start_object, node_or_nodes, properties, self)
+        end
+
         def relationship_class?
           !!relationship_class
         end
