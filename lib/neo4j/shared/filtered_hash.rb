@@ -2,7 +2,7 @@ module Neo4j::Shared
   class FilteredHash
     class InvalidHashFilterType < Neo4j::Neo4jrbError; end
     VALID_SYMBOL_INSTRUCTIONS = [:all, :none]
-    VALID_HASH_INSTRUCTIONS = [:on, :except]
+    VALID_HASH_INSTRUCTIONS = [:on]
     VALID_INSTRUCTIONS_TYPES = [Hash, Symbol]
 
     attr_reader :base, :instructions, :instructions_type
@@ -37,8 +37,7 @@ module Neo4j::Shared
     def filtered_base_by_hash
       behavior_key = instructions.keys.first
       filter_keys = keys_array(behavior_key)
-      base = [filter(filter_keys, :with), filter(filter_keys, :without)]
-      behavior_key == :on ? base : base.reverse
+      [filter(filter_keys, :with), filter(filter_keys, :without)]
     end
 
     def key?(filter_keys, key)

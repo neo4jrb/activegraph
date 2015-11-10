@@ -45,9 +45,8 @@ module Neo4j::Shared
       end
 
       describe 'hash' do
-        it 'raises unless first key is :on or :except' do
+        it 'raises unless first key is :on' do
           expect { FilteredHash.new(base, on: :foo) }.not_to raise_error
-          expect { FilteredHash.new(base, except: :foo) }.not_to raise_error
           expect { FilteredHash.new(base, foo: :foo) }.to raise_error FilteredHash::InvalidHashFilterType
         end
 
@@ -56,13 +55,6 @@ module Neo4j::Shared
             let(:instructions) { {on: [:second, :fourth]} }
             it 'returns [hash with keys specified, hash with remaining key' do
               expect(filtered_props.filtered_base).to eq([{second: :bar, fourth: :buzz}, {first: :foo, third: :baz}])
-            end
-          end
-
-          context 'except:' do
-            let(:instructions) { {except: [:second, :fourth]} }
-            it 'returns [hash without keys specified, hash with keys specified' do
-              expect(filtered_props.filtered_base).to eq([{first: :foo, third: :baz}, {second: :bar, fourth: :buzz}])
             end
           end
         end

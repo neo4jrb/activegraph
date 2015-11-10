@@ -212,22 +212,6 @@ describe 'ActiveRel' do
             end
           end
         end
-
-        context 'with {except: [keys]} option' do
-          before { MyRelClass.creates_unique(except: :score) }
-
-          context 'and a listed property changes' do
-            it 'does not create a new rel' do
-              expect { changed_props_create.call }.not_to change { from_node.others.count }
-            end
-          end
-
-          context 'and an unlisted property changes' do
-            it 'creates a new rel' do
-              expect { MyRelClass.create(nodes.merge(default: 'some other value')) }.to change { from_node.others.count }
-            end
-          end
-        end
       end
     end
 

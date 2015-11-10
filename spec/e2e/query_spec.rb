@@ -753,22 +753,6 @@ describe 'Query API' do
           end
         end
       end
-
-      context 'with {except: [keys]} option' do
-        let(:options) { {type: nil, unique: {except: :score}} }
-
-        context 'and a listed property changes' do
-          it 'does not create a new rel' do
-            expect { changed_props_create.call }.not_to change { from_node.interests.count }
-          end
-        end
-
-        context 'and an unlisted property changes' do
-          it 'creates a new rel' do
-            expect { from_node.interests.create(to_node, first_props.merge(default: 'some other value')) }.to change { from_node.interests.count }
-          end
-        end
-      end
     end
 
     describe 'rel_methods' do
