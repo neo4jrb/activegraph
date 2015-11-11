@@ -5,7 +5,8 @@ module Neo4j::Shared
         creates_unique? ? :create_unique : :create
       end
 
-      def creates_unique(option)
+      def creates_unique(option = :none)
+        option = :none if option == true
         @creates_unique = option
       end
 

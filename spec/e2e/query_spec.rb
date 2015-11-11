@@ -718,6 +718,14 @@ describe 'Query API' do
         expect(from_node.interests.count).to eq 1
       end
 
+      context 'with `true` option' do
+        let(:options) { {type: nil, unique: true} }
+        it 'becomes :none' do
+          expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
+          changed_props_create.call
+        end
+      end
+
       context 'with :none open' do
         let(:options) { {type: nil, unique: :none} }
 
