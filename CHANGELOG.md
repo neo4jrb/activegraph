@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
+- `ActiveRel#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038. 
 
 ### Added
 - Optional three-argument signature for `ActiveRel#create` and `#create!`, just like `initialize`.
