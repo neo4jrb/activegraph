@@ -133,8 +133,16 @@ module Neo4j
           @origin ? origin_association.unique? : !!@unique
         end
 
+        def creates_unique_option
+          @unique || :none
+        end
+
         def create_method
           unique? ? :create_unique : :create
+        end
+
+        def _create_relationship(start_object, node_or_nodes, properties)
+          RelFactory.create(start_object, node_or_nodes, properties, self)
         end
 
         def relationship_class?

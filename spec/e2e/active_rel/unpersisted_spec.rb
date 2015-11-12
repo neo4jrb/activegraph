@@ -12,6 +12,7 @@ describe 'ActiveRel unpersisted handling' do
     stub_active_node_class('FromClass') do
       before_create :log_before
       after_create :log_after
+      property :name
       property :created_at, type: Integer
       property :updated_at, type: Integer
       property :before_run, type: ActiveAttr::Typecasting::Boolean
@@ -95,6 +96,21 @@ describe 'ActiveRel unpersisted handling' do
         it 'persists both nodes' do
           expect { rel.save }.to change { [from_node, to_node].all?(&:persisted?) }.from(false).to true
           expect(from_node.uuid).not_to be_nil
+        end
+
+        context 'with creates_unique set' do
+          before { MyRelClass.creates_unique(:none) }
+
+          it 'will create duplicate nodes' do
+            from_node.name = 'Chris'
+            from_node.save
+            expect { MyRelClass.create(FromClass.new(name: 'Chris'), ToClass.new) }.to change { FromClass.count }.by(1)
+          end
+
+          it 'will not create duplicate rels' do
+            expect { MyRelClass.create(from_node, to_node) }.to change { from_node.others.count }.by(1)
+            expect { MyRelClass.create(from_node, to_node) }.not_to change { from_node.others.count }
+          end
         end
       end
     end

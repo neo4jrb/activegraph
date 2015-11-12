@@ -206,21 +206,7 @@ module Neo4j
         end
 
         def _create_relationship(other_node_or_nodes, properties)
-          if association.relationship_class
-            _create_relationship_with_rel_class(other_node_or_nodes, properties)
-          else
-            _session.query(context: @options[:context])
-              .match(:start, :end).match_nodes(start: @start_object, end: other_node_or_nodes)
-              .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
-          end
-        end
-
-        def _create_relationship_with_rel_class(other_node_or_nodes, properties)
-          Array(other_node_or_nodes).each do |other_node|
-            node_props = (association.direction == :in) ? {from_node: other_node, to_node: @start_object} : {from_node: @start_object, to_node: other_node}
-
-            association.relationship_class.create(properties.merge(node_props))
-          end
+          association._create_relationship(@start_object, other_node_or_nodes, properties)
         end
 
         def read_attribute_for_serialization(*args)

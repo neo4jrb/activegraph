@@ -705,6 +705,64 @@ describe 'Query API' do
       end
     end
 
+    describe 'Associations with `unique` set' do
+      let(:from_node) { Student.create }
+      let(:to_node)   { Interest.create }
+      let(:first_props) { {score: 900} }
+      let(:second_props) { {score: 1000} }
+      let(:changed_props_create) { proc { from_node.interests.create(to_node, second_props) } }
+
+      before do
+        Student.has_many :out, :interests, options
+        from_node.interests.create(to_node, first_props)
+        expect(from_node.interests.count).to eq 1
+      end
+
+      context 'with `true` option' do
+        let(:options) { {type: nil, unique: true} }
+        it 'becomes :none' do
+          expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
+          changed_props_create.call
+        end
+      end
+
+      context 'with :none open' do
+        let(:options) { {type: nil, unique: :none} }
+
+        it 'does not create additional rels, even when properties change' do
+          expect do
+            changed_props_create.call
+          end.not_to change { from_node.interests.count }
+        end
+      end
+
+      context 'with `:all` option' do
+        let(:options) { {type: nil, unique: :all} }
+
+        it 'creates additional rels when properties change' do
+          expect { changed_props_create.call }.to change { from_node.interests.count }
+        end
+      end
+
+      context 'with {on: [keys]} option' do
+        let(:options) { {type: nil, unique: {on: :score}} }
+
+        context 'and a listed property changes' do
+          it 'creates a new rel' do
+            expect { changed_props_create.call }.to change { from_node.interests.count }
+          end
+        end
+
+        context 'and an unlisted property changes' do
+          it 'does not create a new rel' do
+            expect do
+              from_node.interests.create(to_node, first_props.merge(default: 'some other value'))
+            end.not_to change { from_node.interests.count }
+          end
+        end
+      end
+    end
+
     describe 'rel_methods' do
       before do
         student = Student.create
