@@ -3,6 +3,54 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.rc.1] - 11-13-2015
+
+This release contains no changes since the last alpha. Below are all modifications introduced in alpha releases.
+
+### Changed
+
+- `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
+- `ActiveRel#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038.
+- `#<<` and `#create` methods on associations now create with the `rel_class` when available so that validations/callbacks/defaults are all used as expected
+- Allow calling of `#method=` methods via model `new` method `Hash` argument
+- Remove uniqueness validation for `id_property` because we already have Neo4j constraints
+- Improved eager loading when no with_associations is specified (see #905)
+- Change size and length so that they match expected Ruby / ActiveRecord behavior (see http://stackoverflow.com/questions/6083219/activerecord-size-vs-count and #875)
+- Refactoring around indexing and constraints in `Neo4j::ActiveNode`. The public interfaces are unchanged.
+- `Neo4j::Shared::DeclaredPropertyManager` was renamed `Neo4j::Shared::DeclaredProperties`. All methods referencing the old name were updated to reflect this.
+- Methods that were using `Neo4j::Session#on_session_available` were updated to reflect the upstream change to `on_next_session_available`.
+- `rel_where` will now use ActiveRel classes for type conversion, when possible.
+- Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
+- Removed the ability to set both an exact index and unique constraint on the same property in a model. Unique constraints also provide exact indexes.
+- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+- Return `true` on successful `#save!` calls (Thanks to jmdeldin)
+
+### Added
+
+- Optional three-argument signature for `ActiveRel#create` and `#create!`, just like `initialize`.
+- Alternate `ActiveRel` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
+- `ActiveRel` `create` actions can now handle unpersisted nodes.
+- `rel_order` method for association chaining
+- Support `config/neo4j.yaml`
+- Look for ENV variables for Neo4j URL / path for Rails apps
+- New classes for schema operations, predictably called `Neo4j::Schema::Operation` and subclasses `UniqueConstraintOperation` and `ExactIndexOperation`. These provide methods to aid in the additional, removal, and presence checking of indexes and constraints.
+- A few methods were added to `Neo4j::Shared::DeclaredProperties` to make it easier to work with. In particular, `[key]` acts as a shortcut for `DeclaredProperties#registered_properties`.
+- Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
+- Support for Array arguments to ActiveRel's `from_class` and `to_class`.
+
+### Fixed
+
+- Regression RE: properties being overwritten with their defaults on save in alpha.10.
+- Long properties in `ActiveNode`/`ActiveRel` `#inspect` are truncated
+- Property defaults are set initially when an instance of a model is loaded, then checked again before save to ensure `valid?` works.
+- `QueryProxy` was not converting Boolean properties correctly
+- Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
+- Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+
+### Removed
+
+- Railtie was removing username/password and putting them into the session options.  This has been unneccessary in `neo4j-core` for a while now
+
 ## [6.0.0.alpha.12] - 11-5-2015
 
 ### Changed
@@ -52,7 +100,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Support `config/neo4j.ya?ml`
+- Support `config/neo4j.yaml`
 
 ## [6.0.0.alpha.6] - 10-18-2015
 
