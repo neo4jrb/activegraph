@@ -11,15 +11,15 @@ Persistence
    :titlesonly:
 
 
-   
-
-   
-
    Persistence/RelInvalidError
 
    Persistence/ModelClassInvalidError
 
    Persistence/RelCreateFailedError
+
+   
+
+   
 
    
 
@@ -54,8 +54,6 @@ Constants
 ---------
 
 
-
-  * USES_CLASSNAME
 
 
 
@@ -253,12 +251,12 @@ Methods
 .. _`Neo4j/ActiveRel/Persistence#from_node_identifier=`:
 
 **#from_node_identifier=**
-  Sets the attribute from_node_identifier
+  
 
   .. code-block:: ruby
 
-     def from_node_identifier=(value)
-       @from_node_identifier = value
+     def from_node_identifier=(id)
+       @from_node_identifier = id.to_sym
      end
 
 
@@ -334,7 +332,6 @@ Methods
   Returns a hash containing:
   * All properties and values for insertion in the database
   * A `uuid` (or equivalent) key and value
-  * A `_classname` property, if one is to be set
   * Timestamps, if the class is set to include them.
   Note that the UUID is added to the hash but is not set on the node.
   The timestamps, by comparison, are set on the node prior to addition in this hash.
@@ -345,7 +342,6 @@ Methods
        inject_timestamps!
        props_with_defaults = inject_defaults!(props)
        converted_props = props_for_db(props_with_defaults)
-       inject_classname!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
@@ -461,12 +457,12 @@ Methods
 .. _`Neo4j/ActiveRel/Persistence#to_node_identifier=`:
 
 **#to_node_identifier=**
-  Sets the attribute to_node_identifier
+  
 
   .. code-block:: ruby
 
-     def to_node_identifier=(value)
-       @to_node_identifier = value
+     def to_node_identifier=(id)
+       @to_node_identifier = id.to_sym
      end
 
 

@@ -95,6 +95,12 @@ Association
 
    
 
+   
+
+   Association/RelFactory
+
+   Association/RelWrapper
+
 
 
 
@@ -116,12 +122,29 @@ Files
 
   * `lib/neo4j/active_node/has_n/association.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L6>`_
 
+  * `lib/neo4j/active_node/has_n/association/rel_factory.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_factory.rb#L2>`_
+
+  * `lib/neo4j/active_node/has_n/association/rel_wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_wrapper.rb#L1>`_
+
 
 
 
 
 Methods
 -------
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#_create_relationship`:
+
+**#_create_relationship**
+  
+
+  .. code-block:: ruby
+
+     def _create_relationship(start_object, node_or_nodes, properties)
+       RelFactory.create(start_object, node_or_nodes, properties, self)
+     end
 
 
 
@@ -183,6 +206,19 @@ Methods
 
      def create_method
        unique? ? :create_unique : :create
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/Association#creates_unique_option`:
+
+**#creates_unique_option**
+  
+
+  .. code-block:: ruby
+
+     def creates_unique_option
+       @unique || :none
      end
 
 
@@ -273,21 +309,6 @@ Methods
        @direction = direction.to_sym
        @target_class_name_from_name = name.to_s.classify
        apply_vars_from_options(options)
-     end
-
-
-
-.. _`Neo4j/ActiveNode/HasN/Association#inject_classname`:
-
-**#inject_classname**
-  
-
-  .. code-block:: ruby
-
-     def inject_classname(properties)
-       return properties unless relationship_class
-       properties[Neo4j::Config.class_name_property] = relationship_class_name if relationship_class.cached_class?(true)
-       properties
      end
 
 

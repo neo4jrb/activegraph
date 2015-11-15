@@ -23,8 +23,6 @@ Migration
 
    Migration/AddIdProperty
 
-   Migration/AddClassnames
-
 
 
 

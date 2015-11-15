@@ -25,6 +25,8 @@ Property
 
    
 
+   
+
    Property/ClassMethods
 
    
@@ -38,6 +40,8 @@ Constants
 ---------
 
 
+
+  * DATE_KEY_REGEX
 
 
 
@@ -81,6 +85,19 @@ Methods
 
      def _persisted_obj
        @_persisted_obj
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Property#creates_unique_option`:
+
+**#creates_unique_option**
+  
+
+  .. code-block:: ruby
+
+     def creates_unique_option
+       self.class.creates_unique_option
      end
 
 

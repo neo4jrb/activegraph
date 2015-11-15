@@ -44,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/types.rb:27 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L27>`_
+  * `lib/neo4j/active_rel/types.rb:24 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L24>`_
 
 
 

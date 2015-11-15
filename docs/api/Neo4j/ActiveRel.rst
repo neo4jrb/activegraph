@@ -20,9 +20,15 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    
 
-   ActiveRel/Query
+   
+
+   
+
+   ActiveRel/ClassMethods
 
    ActiveRel/Types
+
+   ActiveRel/Query
 
    ActiveRel/Property
 
@@ -30,9 +36,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -46,7 +52,7 @@ Constants
 
   * WRAPPED_CLASSES
 
-  * USES_CLASSNAME
+  * DATE_KEY_REGEX
 
 
 
@@ -57,9 +63,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
-
   * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
+
+  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
 
   * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
 
@@ -67,9 +73,9 @@ Files
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -181,6 +187,19 @@ Methods
 
      def create_method
        self.class.create_method
+     end
+
+
+
+.. _`Neo4j/ActiveRel#creates_unique_option`:
+
+**#creates_unique_option**
+  
+
+  .. code-block:: ruby
+
+     def creates_unique_option
+       self.class.creates_unique_option
      end
 
 
@@ -312,12 +331,12 @@ Methods
 .. _`Neo4j/ActiveRel#from_node_identifier=`:
 
 **#from_node_identifier=**
-  Sets the attribute from_node_identifier
+  
 
   .. code-block:: ruby
 
-     def from_node_identifier=(value)
-       @from_node_identifier = value
+     def from_node_identifier=(id)
+       @from_node_identifier = id.to_sym
      end
 
 
@@ -397,9 +416,11 @@ Methods
 
   .. code-block:: ruby
 
-     def initialize(args = nil)
-       load_nodes
-       super
+     def initialize(from_node = nil, to_node = nil, args = nil)
+       load_nodes(node_or_nil(from_node), node_or_nil(to_node))
+       resolved_args = hash_or_nil(from_node, args)
+       symbol_args = resolved_args.is_a?(Hash) ? resolved_args.symbolize_keys : resolved_args
+       super(symbol_args)
      end
 
 
@@ -537,7 +558,6 @@ Methods
   Returns a hash containing:
   * All properties and values for insertion in the database
   * A `uuid` (or equivalent) key and value
-  * A `_classname` property, if one is to be set
   * Timestamps, if the class is set to include them.
   Note that the UUID is added to the hash but is not set on the node.
   The timestamps, by comparison, are set on the node prior to addition in this hash.
@@ -548,7 +568,6 @@ Methods
        inject_timestamps!
        props_with_defaults = inject_defaults!(props)
        converted_props = props_for_db(props_with_defaults)
-       inject_classname!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
@@ -773,12 +792,12 @@ Methods
 .. _`Neo4j/ActiveRel#to_node_identifier=`:
 
 **#to_node_identifier=**
-  Sets the attribute to_node_identifier
+  
 
   .. code-block:: ruby
 
-     def to_node_identifier=(value)
-       @to_node_identifier = value
+     def to_node_identifier=(id)
+       @to_node_identifier = id.to_sym
      end
 
 

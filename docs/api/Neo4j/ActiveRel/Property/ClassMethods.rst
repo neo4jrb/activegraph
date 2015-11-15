@@ -21,14 +21,6 @@ ClassMethods
 
    
 
-   
-
-   
-
-   
-
-   
-
 
 
 
@@ -44,7 +36,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/property.rb:34 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L34>`_
+  * `lib/neo4j/active_rel/property.rb:38 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L38>`_
 
 
 
@@ -55,6 +47,19 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel/Property/ClassMethods#create_method`:
+
+**#create_method**
+  
+
+  .. code-block:: ruby
+
+     def create_method
+       creates_unique? ? :create_unique : :create
+     end
+
+
+
 .. _`Neo4j/ActiveRel/Property/ClassMethods#creates_unique`:
 
 **#creates_unique**
@@ -62,8 +67,9 @@ Methods
 
   .. code-block:: ruby
 
-     def creates_unique
-       @creates_unique = true
+     def creates_unique(option = :none)
+       option = :none if option == true
+       @creates_unique = option
      end
 
 
@@ -81,22 +87,15 @@ Methods
 
 
 
-.. _`Neo4j/ActiveRel/Property/ClassMethods#creates_unique_rel`:
+.. _`Neo4j/ActiveRel/Property/ClassMethods#creates_unique_option`:
 
-**#creates_unique_rel**
+**#creates_unique_option**
   
 
   .. code-block:: ruby
 
-     def creates_unique_rel
-       warning = <<-WARNING
-     creates_unique_rel() is deprecated and will be removed from future releases,
-     use creates_unique() instead.
-     WARNING
-     
-       ActiveSupport::Deprecation.warn(warning, caller)
-     
-       creates_unique
+     def creates_unique_option
+       @creates_unique || :none
      end
 
 

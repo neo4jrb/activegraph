@@ -49,8 +49,6 @@ Config
 
    
 
-   
-
 
 
 
@@ -131,19 +129,6 @@ Methods
        namespace = Neo4j::Config[:association_model_namespace]
        return nil if namespace.nil?
        "::#{namespace}"
-     end
-
-
-
-.. _`Neo4j/Config.class_name_property`:
-
-**.class_name_property**
-  
-
-  .. code-block:: ruby
-
-     def class_name_property
-       @_class_name_property = Neo4j::Config[CLASS_NAME_PROPERTY_KEY] || :_classname
      end
 
 

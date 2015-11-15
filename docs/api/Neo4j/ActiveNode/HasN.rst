@@ -54,6 +54,8 @@ Files
 
   * `lib/neo4j/active_node/has_n/association.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L5>`_
 
+  * `lib/neo4j/active_node/has_n/association/rel_factory.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_factory.rb#L1>`_
+
   * `lib/neo4j/active_node/has_n/association_cypher_methods.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association_cypher_methods.rb#L3>`_
 
 

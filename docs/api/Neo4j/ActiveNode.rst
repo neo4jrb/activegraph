@@ -23,6 +23,8 @@ in a new object of that class.
 
    
 
+   
+
    ActiveNode/Rels
 
    ActiveNode/Scope
@@ -43,17 +45,17 @@ in a new object of that class.
 
    ActiveNode/Reflection
 
-   ActiveNode/IdProperty
-
-   ActiveNode/Unpersisted
+   ActiveNode/Persistence
 
    ActiveNode/ClassMethods
 
    ActiveNode/OrmAdapter
 
-   ActiveNode/Validations
+   ActiveNode/Unpersisted
 
-   ActiveNode/Persistence
+   ActiveNode/IdProperty
+
+   ActiveNode/Validations
 
    ActiveNode/QueryMethods
 
@@ -71,7 +73,7 @@ Constants
 
   * MODELS_TO_RELOAD
 
-  * USES_CLASSNAME
+  * DATE_KEY_REGEX
 
 
 
@@ -100,15 +102,15 @@ Files
 
   * `lib/neo4j/active_node/reflection.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/reflection.rb#L1>`_
 
-  * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
-
-  * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
+  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
   * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
-  * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
+  * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
 
-  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
+  * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
+
+  * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
 
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
@@ -122,9 +124,9 @@ Files
 
   * `lib/neo4j/active_node/query/query_proxy_enumerable.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_enumerable.rb#L2>`_
 
-  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
-
   * `lib/neo4j/active_node/dependent/query_proxy_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/query_proxy_methods.rb#L2>`_
+
+  * `lib/neo4j/active_node/dependent/association_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/dependent/association_methods.rb#L2>`_
 
   * `lib/neo4j/active_node/query/query_proxy_unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_unpersisted.rb#L2>`_
 
@@ -634,7 +636,8 @@ Methods
   .. code-block:: ruby
 
      def initialize(args = nil)
-       run_callbacks(:initialize) { super }
+       symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args
+       super(symbol_args)
      end
 
 
@@ -825,7 +828,6 @@ Methods
   Returns a hash containing:
   * All properties and values for insertion in the database
   * A `uuid` (or equivalent) key and value
-  * A `_classname` property, if one is to be set
   * Timestamps, if the class is set to include them.
   Note that the UUID is added to the hash but is not set on the node.
   The timestamps, by comparison, are set on the node prior to addition in this hash.
@@ -836,7 +838,6 @@ Methods
        inject_timestamps!
        props_with_defaults = inject_defaults!(props)
        converted_props = props_for_db(props_with_defaults)
-       inject_classname!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end

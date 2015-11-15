@@ -44,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:123 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L123>`_
+  * `lib/neo4j/shared/property.rb:125 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L125>`_
 
 
 

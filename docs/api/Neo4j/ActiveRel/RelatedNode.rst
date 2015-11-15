@@ -127,8 +127,6 @@ Methods
   
   Initialization with an integer happens when a relationship is loaded from the database. It loads using the ID
   because that is provided by the Cypher response and does not require an extra query.
-  
-  Initialization with a node doesn't appear to happen in the code. TODO: maybe find out why this is an option.
 
   .. code-block:: ruby
 
@@ -146,7 +144,7 @@ Methods
   .. code-block:: ruby
 
      def loaded
-       fail NilRelatedNodeError, 'Node not set, cannot load' if @node.nil?
+       fail UnsetRelatedNodeError, 'Node not set, cannot load' if @node.nil?
        @node = @node.respond_to?(:neo_id) ? @node : Neo4j::Node.load(@node)
      end
 

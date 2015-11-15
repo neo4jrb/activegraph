@@ -200,9 +200,7 @@ Methods
   .. code-block:: ruby
 
      def _create_relationship(other_node_or_nodes, properties)
-       _session.query(context: @options[:context])
-         .match(:start, :end).match_nodes(start: @start_object, end: other_node_or_nodes)
-         .send(association.create_method, "start#{_association_arrow(properties, true)}end").exec
+       association._create_relationship(@start_object, other_node_or_nodes, properties)
      end
 
 
@@ -370,8 +368,6 @@ Methods
      def create(other_nodes, properties)
        fail 'Can only create relationships on associations' if !@association
        other_nodes = _nodeify!(*other_nodes)
-     
-       properties = @association.inject_classname(properties)
      
        Neo4j::Transaction.run do
          other_nodes.each do |other_node|

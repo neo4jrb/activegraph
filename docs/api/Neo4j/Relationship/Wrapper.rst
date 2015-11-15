@@ -15,8 +15,6 @@ Wrapper
 
    
 
-   
-
 
 
 
@@ -53,7 +51,7 @@ Methods
      def wrapper
        props.symbolize_keys!
        begin
-         most_concrete_class = sorted_wrapper_classes
+         most_concrete_class = class_from_type
          wrapped_rel = most_concrete_class.constantize.new
        rescue NameError
          return self

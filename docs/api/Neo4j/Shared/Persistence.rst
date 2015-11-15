@@ -71,14 +71,6 @@ Persistence
 
    
 
-   
-
-   
-
-   
-
-   Persistence/ClassMethods
-
 
 
 
@@ -86,8 +78,6 @@ Constants
 ---------
 
 
-
-  * USES_CLASSNAME
 
 
 
@@ -295,7 +285,6 @@ Methods
   Returns a hash containing:
   * All properties and values for insertion in the database
   * A `uuid` (or equivalent) key and value
-  * A `_classname` property, if one is to be set
   * Timestamps, if the class is set to include them.
   Note that the UUID is added to the hash but is not set on the node.
   The timestamps, by comparison, are set on the node prior to addition in this hash.
@@ -306,7 +295,6 @@ Methods
        inject_timestamps!
        props_with_defaults = inject_defaults!(props)
        converted_props = props_for_db(props_with_defaults)
-       inject_classname!(converted_props)
        return converted_props unless self.class.respond_to?(:default_property_values)
        inject_primary_key!(converted_props)
      end
