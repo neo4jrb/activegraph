@@ -198,8 +198,6 @@ Unique IDs are automatically created for all nodes using SecureRandom::uuid. See
 Associations
 ------------
 
-What follows is an overview of adding associations to models. For more detailed information, see Declared Relationships.
-
 ``has_many`` and ``has_one`` associations can also be defined on ``ActiveNode`` models to make querying and creating relationships easier.
 
 .. code-block:: ruby
@@ -263,6 +261,22 @@ You can create associations
   :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`
   and
   :ref:`#has_one <Neo4j/ActiveNode/HasN/ClassMethods#has_one>`
+
+
+Creating Unique Relationships
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By including the ``unique`` option in a ``has_many`` or ``has_one`` association's method call, you can change the Cypher used to create from "CREATE" to "CREATE UNIQUE."
+
+.. code-block:: ruby
+
+  has_many :out, :friends, type: 'FRIENDS_WITH', model_class: User, unique: true
+
+Instead of ``true``, you can give one of three different options:
+
+* ``:none``, also used ``true`` is given, will not include properties to determine whether ot not to create a unique relationship. This means that no more than one relationship of the same pairing of nodes, rel type, and direction will ever be created.
+* ``:all``, which will include all set properties in rel creation. This means that if a new relationship will be created unless all nodes, type, direction, and rel properties are matched.
+* ``{on: [keys]}`` will use the keys given to determine whether to create a new rel and the remaining properties will be set afterwards.
 
 .. _active_node-eager_loading:
 

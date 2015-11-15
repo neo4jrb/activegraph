@@ -8,7 +8,7 @@ When to Use?
 
 It is not always necessary to use ActiveRel models but if you have the need for validation, callback, or working with properties on unpersisted relationships, it is the solution.
 
-Note that in Neo4j it isn't possible to access relationships except by first accessing a node.  Thus `ActiveRel` doesn't implement a `uuid` property like ``ActiveNode``.
+Note that in Neo4j it isn't possible to access relationships except by first accessing a node.  Thus ``ActiveRel`` doesn't implement a ``uuid`` property like ``ActiveNode``.
 
 ... Documentation notes
 
@@ -86,7 +86,7 @@ You can pass these as parameters when calling new or create if you so choose.
 From a `has_many` or `has_one` association
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pass the :rel_class option in a declared association with the constant of an ActiveRel model. When that relationship is created, it will add a hidden _classname property with that model's name. The association will use the type declared in the ActiveRel model and it will raise an error if it is included in more than one place.
+Add the :rel_class option to an association with the name of an ActiveRel model. Association creation and querying will use this rel class, verifying classes, adding defaults, and performing callbacks.
 
 .. code-block:: ruby
 
@@ -94,6 +94,15 @@ Pass the :rel_class option in a declared association with the constant of an Act
       include Neo4j::ActiveNode
       has_many :out, :lessons, rel_class: :EnrolledIn
     end
+
+Creating Unique Relationships
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``creates_unique`` class method will change the Cypher generated during rel creation from ``CREATE`` to ``CREATE UNIQUE``. It may be called with one optional argument of the following:
+
+* ``:none``, also used when no argument is given, will not include properties to determine whether ot not to create a unique relationship. This means that no more than one relationship of the same pairing of nodes, rel type, and direction will ever be created.
+* ``:all``, which will include all set properties in rel creation. This means that if a new relationship will be created unless all nodes, type, direction, and rel properties are matched.
+* ``{on: [keys]}`` will use the keys given to determine whether to create a new rel and the remaining properties will be set afterwards.
 
 Query and Loading existing relationships
 ----------------------------------------
@@ -109,7 +118,7 @@ Any of these methods can return relationship objects.
 
     Student.first.lessons.each_rel { |r| }
     Student.first.lessons.each_with_rel { |node, rel| }
-    Student.first.query_as(:s).match('s-[rel1:`enrolled_in`]->n2').pluck(:rel1)
+    Student.first.query_as(:s).match('s-[rel1:\`enrolled_in\`]->n2').pluck(:rel1)
 
 These are available as both class or instance methods. Because both each_rel and each_with_rel return enumerables when a block is skipped, you can take advantage of the full suite of enumerable methods:
 
@@ -118,31 +127,6 @@ These are available as both class or instance methods. Because both each_rel and
     Lesson.first.students.each_with_rel.select{ |n, r| r.grade > 85 }
 
 Be aware that select would be performed in Ruby after a Cypher query is performed. The example above performs a Cypher query that matches all students with relationships of type enrolled_in to Lesson.first, then it would call select on that.
-
-The :where method
-~~~~~~~~~~~~~~~~~
-
-Because you cannot search for a relationship the way you search for a node, ActiveRel's where method searches for the relationship relative to the labels found in the from_class and to_class models. Therefore:
-
-.. code-block:: ruby
-
-    EnrolledIn.where(since: 2002)
-    # Generates the Cypher:
-    # "MATCH (node1:`Student`)-[rel1:`enrolled_in`]->(node2:`Lesson`) WHERE rel1.since = 2002 RETURN rel1"
-
-If your from_class is :any, the same query looks like this:
-
-.. code-block:: ruby
-
-    "MATCH (node1)-[rel1:`enrolled_in`]->(node2:`Lesson`) WHERE rel1.since = 2002 RETURN rel1"
-
-And if to_class is also :any, you end up with:
-
-.. code-block:: ruby
-
-    "MATCH (node1)-[rel1:`enrolled_in`]->(node2) WHERE rel1.since = 2002 RETURN rel1"
-
-As a result, this combined with the inability to index relationship properties can result in extremely inefficient queries.
 
 Accessing related nodes
 -----------------------
@@ -213,11 +197,11 @@ ActiveRel really shines when you have multiple associations that share a relatio
 Additional methods
 ------------------
 
-`:type` instance method, `_:type` class method: return the relationship type of the model
+``:type`` instance method, ``_:type`` class method: return the relationship type of the model
 
-`:_from_class` and `:_to_class` class methods: return the expected classes declared in the model
+``:_from_class`` and ``:_to_class`` class methods: return the expected classes declared in the model
 
 Regarding: from and to
 ----------------------
 
-`:from_node`, `:to_node`, `:from_class`, and `:to_class` all have aliases using `start` and `end`: `:start_class`, `:end_class`, `:start_node`, `:end_node`, `:start_node=`, `:end_node=`. This maintains consistency with elements of the Neo4j::Core API while offering what may be more natural options for Rails users.
+``:from_node``, ``:to_node``, ``:from_class``, and ``:to_class`` all have aliases using ``start`` and ``end``: ``:start_class``, ``:end_class``, ``:start_node``, ``:end_node``, ``:start_node=``, ``:end_node=``. This maintains consistency with elements of the Neo4j::Core API while offering what may be more natural options for Rails users.
