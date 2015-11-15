@@ -325,31 +325,36 @@ describe 'ActiveRel' do
   end
 
   describe 'associations with rel_class set' do
+    let(:f1) { FromClass.create }
+    let(:t1) { ToClass.create }
+    let(:result) do
+      Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE ID(start) = {start_id} RETURN r.default AS value', start_id: f1.neo_id).to_a
+    end
+
     context 'with rel created from node' do
-      let(:f1) { FromClass.create }
-      let(:t1) { ToClass.create }
-      before { f1.others << t1 }
-      after { f1.destroy && t1.destroy }
+      context 'successfully' do
+        before { f1.others << t1 }
+        after { f1.destroy && t1.destroy }
 
-      it 'returns the activerel class' do
-        expect(f1.others.rels.first).to be_a(MyRelClass)
+        it 'returns the activerel class' do
+          expect(f1.others.rels.first).to be_a(MyRelClass)
+        end
+
+        it 'correctly interprets strings as class names' do
+          t1.string_others << f1
+          expect(t1.string_others.count).to eq 2
+        end
+
+        it 'should use the ActiveRel class' do
+          expect(result[0].value).to eq('default_value')
+        end
       end
 
-      it 'correctly interprets strings as class names' do
-        t1.string_others << f1
-        expect(t1.string_others.count).to eq 2
-      end
-
-      it 'should use the ActiveRel class' do
-        result = Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value', start_uuid: f1.uuid).to_a
-        expect(result[0].value).to eq('default_value')
-      end
-
-      it 'should validate when creating' do
-        f = FromClass.create
-        f.others.create(t1, should_be_nil: 'not_nil')
-        result = Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE start.uuid = {start_uuid} RETURN r.default AS value', start_uuid: f.uuid).to_a
-        expect(result).to be_empty
+      context 'unsuccessfully' do
+        it 'raises an error, does not create' do
+          expect { f1.others.create(t1, should_be_nil: 'not nil') }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+          expect(result).to be_empty
+        end
       end
     end
 

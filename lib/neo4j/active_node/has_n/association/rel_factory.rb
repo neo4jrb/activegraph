@@ -28,7 +28,7 @@ module Neo4j::ActiveNode::HasN
       def _create_relationship_with_rel_class
         Array(other_node_or_nodes).each do |other_node|
           node_props = _nodes_for_create(other_node, :from_node, :to_node)
-          association.relationship_class.create(properties.merge(node_props))
+          association.relationship_class.create!(properties.merge(node_props))
         end
       end
 
