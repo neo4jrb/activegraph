@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.rc.2] - 11-17-2015
+
+### Changed
+
+- `QueryProxy#<<` and `#create`, when `rel_class` option is set, will use `RelClass.create!` instead of `create` to alert the user of failed rel creations.
+
 ## [6.0.0.rc.1] - 11-13-2015
 
 This release contains no changes since the last alpha. Below are all modifications introduced in alpha releases.
