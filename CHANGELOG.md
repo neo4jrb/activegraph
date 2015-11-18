@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.rc.3] - 11-18-2015
+
+### Fixed
+
+- Removed extra `MATCH` which occurs from `proxy_as` calls
+
 ## [6.0.0.rc.2] - 11-17-2015
 
 ### Changed
@@ -61,7 +67,7 @@ This release contains no changes since the last alpha. Below are all modificatio
 
 ### Changed
 - `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
-- `ActiveRel#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038. 
+- `ActiveRel#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038.
 
 ### Added
 - Optional three-argument signature for `ActiveRel#create` and `#create!`, just like `initialize`.

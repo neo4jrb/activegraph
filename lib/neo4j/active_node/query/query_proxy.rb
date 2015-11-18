@@ -107,7 +107,7 @@ module Neo4j
             (_association_query_start(chain_var) & _query).break.send(@match_type,
                                                                       "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
           else
-            starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
+            starting_query ? starting_query : _query_model_as(var, with_labels)
           end
         end
 
