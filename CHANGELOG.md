@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0.rc.4] - 11-19-2015
+
+### Fixed
+
+- Following a '#with' with a '#count' no longer causes issues with variables specified twice
+
 ## [6.0.0.rc.3] - 11-18-2015
 
 ### Fixed
