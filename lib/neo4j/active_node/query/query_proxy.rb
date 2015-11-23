@@ -6,7 +6,6 @@ module Neo4j
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
         include Neo4j::ActiveNode::Query::QueryProxyEagerLoading
-        include Neo4j::ActiveNode::Query::QueryProxyUnpersisted
         include Neo4j::ActiveNode::Dependent::QueryProxyMethods
 
         # The most recent node to start a QueryProxy chain.
@@ -164,7 +163,13 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node)
+          if @start_object._persisted_obj
+            create(other_node, {})
+          elsif @association
+            @start_object.defer_create(@association.name, other_node)
+          else
+            fail 'Another crazy error!'
+          end
           self
         end
 

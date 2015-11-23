@@ -8,8 +8,10 @@ module Neo4j::ActiveNode
     # It uses a QueryProxy to get results
     # But also caches results and can have results cached on it
     class AssociationProxy
-      def initialize(query_proxy, cached_result = nil)
+      def initialize(query_proxy, deferred_objects = [], cached_result = nil)
         @query_proxy = query_proxy
+        @deferred_objects = deferred_objects
+
         cache_result(cached_result)
 
         # Represents the thing which can be enumerated
@@ -48,19 +50,25 @@ module Neo4j::ActiveNode
       end
 
       def result
-        return @cached_result if @cached_result
+        (@deferred_objects || []) + result_without_deferred
+      end
 
-        cache_query_proxy_result
+      def result_without_deferred
+        cache_query_proxy_result if !@cached_result
 
         @cached_result
       end
 
       def result_nodes
-        return result if !@query_proxy.model
+        return result_objects if !@query_proxy.model
 
-        @cached_result = result.map do |object|
+        result_objects.map do |object|
           object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
         end
+      end
+
+      def result_objects
+        @deferred_objects + result_without_deferred
       end
 
       def result_ids
@@ -80,9 +88,7 @@ module Neo4j::ActiveNode
       end
 
       def cache_query_proxy_result
-        @query_proxy.to_a.tap do |result|
-          cache_result(result)
-        end
+        @query_proxy.to_a.tap { |result| cache_result(result) }
       end
 
       def clear_cache_result
@@ -91,6 +97,12 @@ module Neo4j::ActiveNode
 
       def cached?
         !!@cached_result
+      end
+
+      def replace_with(*args)
+        @cached_result = nil
+
+        @query_proxy.public_send(:replace_with, *args)
       end
 
       QUERY_PROXY_METHODS = [:<<, :delete]
@@ -177,7 +189,7 @@ module Neo4j::ActiveNode
     private
 
     def fresh_association_proxy(name, options = {}, cached_result = nil)
-      AssociationProxy.new(association_query_proxy(name, options), cached_result)
+      AssociationProxy.new(association_query_proxy(name, options), deferred_nodes_for_association(name), cached_result)
     end
 
     def previous_proxy_results_by_previous_id(result_cache, association_name)
@@ -356,6 +368,8 @@ module Neo4j::ActiveNode
         define_method("#{name}=") do |other_nodes|
           association_proxy_cache.clear
 
+          clear_deferred_nodes_for_association(name)
+
           Neo4j::Transaction.run { association_proxy(name).replace_with(other_nodes) }
         end
       end
@@ -366,6 +380,7 @@ module Neo4j::ActiveNode
         end
 
         define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
+          clear_deferred_nodes_for_association(name)
           association_proxy(name).replace_with(ids)
         end
 
@@ -415,7 +430,13 @@ module Neo4j::ActiveNode
           if options[:rel_length] && !options[:rel_length].is_a?(Fixnum)
             association_proxy
           else
-            association_proxy.result_nodes.first
+            target_class = self.class.send(:association_target_class, name)
+            o = association_proxy.result.first
+            if target_class
+              target_class.send(:nodeify, o)
+            else
+              o
+            end
           end
         end
       end
@@ -428,7 +449,8 @@ module Neo4j::ActiveNode
             Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)
           else
-            association_proxy(name).defer_create(other_node)
+            defer_create(name, other_node, clear: true)
+            other_node
           end
         end
       end
@@ -457,8 +479,7 @@ module Neo4j::ActiveNode
       end
 
       def association_proxy(name, options = {})
-        query_proxy = association_query_proxy(name, options)
-        AssociationProxy.new(query_proxy)
+        AssociationProxy.new(association_query_proxy(name, options))
       end
 
       def association_target_class(name)
@@ -478,11 +499,8 @@ module Neo4j::ActiveNode
       end
 
       def default_association_query_proxy
-        Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize,
-                                                 nil,
-                                                 session: neo4j_session,
-                                                 query_proxy: nil,
-                                                 context: "#{self.name}")
+        Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize, nil,
+                                                 session: neo4j_session, query_proxy: nil, context: "#{self.name}")
       end
 
       def build_association(macro, direction, name, options)

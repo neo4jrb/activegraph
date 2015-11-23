@@ -50,7 +50,7 @@ describe 'association creation' do
       end
 
       it 'is aware that there are pending associations' do
-        expect { chris.favorite_class = math }.to change { chris.pending_associations? }
+        expect { chris.favorite_class = math }.to change { chris.pending_deferred_creations? }
       end
 
       context 'upon save...' do
@@ -89,7 +89,7 @@ describe 'association creation' do
       end
 
       it 'is aware that there are cascading relationships' do
-        expect { chris.lessons << math }.to change { chris.pending_associations? }
+        expect { chris.lessons << math }.to change { chris.pending_deferred_creations? }
       end
 
       context 'upon save...' do

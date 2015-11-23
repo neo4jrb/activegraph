@@ -85,10 +85,9 @@ module Neo4j::ActiveNode
     # build the processable hash before it begins. If there are nodes and associations that
     # need to be created after the node is saved, a new transaction is started.
     def cascade_save
-      deferred_nodes = pending_associations_with_nodes
-      Neo4j::Transaction.run(!deferred_nodes.blank?) do
+      Neo4j::Transaction.run(pending_deferred_creations?) do
         result = yield
-        process_unpersisted_nodes!(deferred_nodes) if deferred_nodes
+        process_unpersisted_nodes!
         result
       end
     end
