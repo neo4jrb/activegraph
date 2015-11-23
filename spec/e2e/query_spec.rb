@@ -611,7 +611,8 @@ describe 'Query API' do
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
     it 'builds a new QueryProxy object upon an existing Core::Query object' do
-      combined_strings = "#{core_query.to_cypher} MATCH s-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})"
+      part2 = 'MATCH s-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})'
+      combined_strings = "#{core_query.to_cypher} #{part2}"
       combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
 
       expect(combined_query.to_cypher).to eq combined_strings
@@ -632,7 +633,8 @@ describe 'Query API' do
 
     describe 'optional matches' do
       let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
-      let(:combined_strings) { "#{core_query.to_cypher} OPTIONAL MATCH s-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})" }
+      let(:part2) { 'OPTIONAL MATCH s-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})' }
+      let(:combined_strings) { "#{core_query.to_cypher} #{part2}" }
       it 'can create an optional match' do
         expect(combined_query.to_cypher).to eq combined_strings
       end
