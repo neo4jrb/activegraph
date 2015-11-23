@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Refactor unpersisted association logic to store objects directly on the object rather than the association proxy since different association proxies may be created at different times (see #1043)
+
 ## [6.0.0.rc.4] - 11-19-2015
 
 ### Fixed
