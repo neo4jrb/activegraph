@@ -50,6 +50,16 @@ module Neo4j
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
+    module ClassMethods
+      def nodeify(object)
+        if object.is_a?(::Neo4j::ActiveNode) || object.nil?
+          object
+        else
+          self.find(object)
+        end
+      end
+    end
+
     included do
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 
