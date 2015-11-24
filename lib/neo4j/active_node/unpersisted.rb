@@ -28,24 +28,20 @@ module Neo4j
       private
 
       def process_unpersisted_nodes!
-        deferred_create_cache.each(&method(:save_and_associate_nodes))
-      end
+        deferred_create_cache.each do |association_name, nodes|
+          association_proxy = association_proxy(association_name)
 
-      def save_and_associate_nodes(association_name, nodes)
-        association_proxy = association_proxy(association_name)
+          nodes.each do |node|
+            if node.respond_to?(:changed?)
+              node.save if node.changed? || !node.persisted?
+              fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
+            end
 
-        nodes.each do |node|
-          if node.respond_to?(:changed?)
-            node.save if node.changed? || !node.persisted?
-            fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
+            association_proxy << node
           end
 
-          association_proxy << node
+          @deferred_create_cache = {}
         end
-
-        @deferred_create_cache = {}
-
-        true
       end
     end
   end
