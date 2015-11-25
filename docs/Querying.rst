@@ -229,6 +229,17 @@ https://github.com/neo4jrb/neo4j-core/wiki/Queries
 
     <iframe width="560" height="315" src="https://www.youtube.com/embed/UFiWqPdH7io" frameborder="0" allowfullscreen></iframe>
 
+#proxy_as
+---------
+
+Sometimes it makes sense to turn a ``Query`` object into (or back into) a proxy object like you would get from an association.  In these cases you can use the `Query#proxy_as` method:
+
+.. code-block:: ruby
+  student.query_as(:s)
+    .match("(s)-[rel:FRIENDS_WITH*1..3]->(s2:Student")
+    .proxy_as(Student, :s2).lessons
+
+Here we pick up the `s2` variable with the scope of the `Student` model so that we can continue calling associations on it.
 
 ``match_to`` and ``first_rel_to``
 ---------------------------------
