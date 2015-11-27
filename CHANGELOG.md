@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [5.2.15] - 10-27-2015
+
+### Fixed
+
+- `#with_associations` should use multiple `OPTIONAL MATCH` clauses instead of one so that matches are independent (behavior changed in Neo4j 2.3.0)
+
 ## [5.2.13] - 10-26-2015
 
 ### Fixed
