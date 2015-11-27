@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.1] - 11-27-2015
+
+### Fixed
+
+- `#with_associations` should use multiple `OPTIONAL MATCH` clauses instead of one so that matches are independent (behavior changed in Neo4j 2.3.0) (forward ported from 5.2.15)
+
 ## [6.0.0] - 11-24-2015
 
 ### Fixed
@@ -180,6 +186,12 @@ This release contains no changes since the last alpha. Below are all modificatio
 
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
 - Context now set for Model.all QueryProxy so that logs can reflect that it wasn't just a raw Cypher query
+
+## [5.2.15] - 11-27-2015
+
+### Fixed
+
+- `#with_associations` should use multiple `OPTIONAL MATCH` clauses instead of one so that matches are independent (behavior changed in Neo4j 2.3.0)
 
 ## [5.2.13] - 10-26-2015
 
