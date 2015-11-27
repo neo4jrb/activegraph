@@ -45,6 +45,7 @@ module Neo4j
 
             query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}")
               .where(association.target_where_clause)
+              .break
           end
         end
       end
