@@ -44,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/persistence.rb:96 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L96>`_
+  * `lib/neo4j/active_node/persistence.rb:95 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L95>`_
 
 
 

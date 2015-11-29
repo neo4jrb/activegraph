@@ -11,9 +11,9 @@ This mixin includes timestamps in the included class
    :titlesonly:
 
 
-   Timestamps/Created
-
    Timestamps/Updated
+
+   Timestamps/Created
 
 
 
@@ -32,9 +32,9 @@ Files
 
   * `lib/neo4j/timestamps.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps.rb#L6>`_
 
-  * `lib/neo4j/timestamps/created.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/created.rb#L2>`_
-
   * `lib/neo4j/timestamps/updated.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/updated.rb#L2>`_
+
+  * `lib/neo4j/timestamps/created.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/timestamps/created.rb#L2>`_
 
 
 

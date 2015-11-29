@@ -49,6 +49,12 @@ But also caches results and can have results cached on it
 
    
 
+   
+
+   
+
+   
+
 
 
 
@@ -127,9 +133,7 @@ Methods
   .. code-block:: ruby
 
      def cache_query_proxy_result
-       @query_proxy.to_a.tap do |result|
-         cache_result(result)
-       end
+       @query_proxy.to_a.tap { |result| cache_result(result) }
      end
 
 
@@ -194,8 +198,10 @@ Methods
 
   .. code-block:: ruby
 
-     def initialize(query_proxy, cached_result = nil)
+     def initialize(query_proxy, deferred_objects = [], cached_result = nil)
        @query_proxy = query_proxy
+       @deferred_objects = deferred_objects
+     
        cache_result(cached_result)
      
        # Represents the thing which can be enumerated
@@ -243,6 +249,21 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#replace_with`:
+
+**#replace_with**
+  
+
+  .. code-block:: ruby
+
+     def replace_with(*args)
+       @cached_result = nil
+     
+       @query_proxy.public_send(:replace_with, *args)
+     end
+
+
+
 .. _`Neo4j/ActiveNode/HasN/AssociationProxy#result`:
 
 **#result**
@@ -251,11 +272,7 @@ Methods
   .. code-block:: ruby
 
      def result
-       return @cached_result if @cached_result
-     
-       cache_query_proxy_result
-     
-       @cached_result
+       (@deferred_objects || []) + result_without_deferred
      end
 
 
@@ -283,11 +300,39 @@ Methods
   .. code-block:: ruby
 
      def result_nodes
-       return result if !@query_proxy.model
+       return result_objects if !@query_proxy.model
      
-       @cached_result = result.map do |object|
+       result_objects.map do |object|
          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
        end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#result_objects`:
+
+**#result_objects**
+  
+
+  .. code-block:: ruby
+
+     def result_objects
+       @deferred_objects + result_without_deferred
+     end
+
+
+
+.. _`Neo4j/ActiveNode/HasN/AssociationProxy#result_without_deferred`:
+
+**#result_without_deferred**
+  
+
+  .. code-block:: ruby
+
+     def result_without_deferred
+       cache_query_proxy_result if !@cached_result
+     
+       @cached_result
      end
 
 

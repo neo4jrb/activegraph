@@ -48,6 +48,21 @@ See the Properties section for additional information.
 
     <iframe width="560" height="315" src="https://www.youtube.com/embed/2pCSQkHkPC8" frameborder="0" allowfullscreen></iframe>
 
+Labels
+~~~~~~
+
+By default ``ActiveNode`` takes your model class' name and uses it directly as the Neo4j label for the nodes it represents.  This even includes using the module namespace of the class.  That is, the class  ``MyClass`` in the ``MyModule`` module will have the label ``MyModule::MyClass``.  To change this behavior, see the :term:`module_handling` configuration variable.
+
+Additionally you can change the name of a particular ``ActiveNode`` by using ``mapped_label_name`` like so:
+
+.. code-block:: ruby
+
+    class Post
+      include Neo4j::ActiveNode
+
+      self.mapped_label_name = 'BlogPost'
+    end
+
 Indexes
 ~~~~~~~
 

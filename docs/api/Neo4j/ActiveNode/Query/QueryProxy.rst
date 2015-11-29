@@ -157,7 +157,13 @@ Methods
   .. code-block:: ruby
 
      def <<(other_node)
-       @start_object._persisted_obj ? create(other_node, {}) : defer_create(other_node)
+       if @start_object._persisted_obj
+         create(other_node, {})
+       elsif @association
+         @start_object.defer_create(@association.name, other_node)
+       else
+         fail 'Another crazy error!'
+       end
        self
      end
 
@@ -308,7 +314,7 @@ Methods
          (_association_query_start(chain_var) & _query).break.send(@match_type,
                                                                    "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
        else
-         starting_query ? (starting_query & _query_model_as(var, with_labels)) : _query_model_as(var, with_labels)
+         starting_query ? starting_query : _query_model_as(var, with_labels)
        end
      end
 
@@ -351,7 +357,7 @@ Methods
        fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        query_with_target(target) do |var|
          q = distinct.nil? ? var : "DISTINCT #{var}"
-         limited_query = self.query.clause?(:limit) ? self.query.with(var) : self.query.reorder
+         limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
          limited_query.pluck("count(#{q}) AS #{var}").first
        end
      end
@@ -382,21 +388,6 @@ Methods
            @association.perform_callback(@start_object, other_node, :after)
          end
        end
-     end
-
-
-
-.. _`Neo4j/ActiveNode/Query/QueryProxy#defer_create`:
-
-**#defer_create**
-  
-
-  .. code-block:: ruby
-
-     def defer_create(other_node)
-       @start_object.pending_associations << @association.name
-     
-       @start_object.association_proxy(@association.name).add_to_cache(other_node)
      end
 
 
