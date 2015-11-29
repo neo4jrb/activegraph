@@ -17,27 +17,27 @@ Shared
 
    Shared/Cypher
 
-   Shared/Property
-
    Shared/Identity
+
+   Shared/Property
 
    Shared/Callbacks
 
-   Shared/Initialize
-
    Shared/Typecaster
 
-   Shared/Validations
+   Shared/Initialize
 
    Shared/Persistence
 
-   Shared/FilteredHash
+   Shared/Validations
 
    Shared/QueryFactory
 
    Shared/NodeQueryFactory
 
    Shared/RelQueryFactory
+
+   Shared/FilteredHash
 
    Shared/TypeConverters
 
@@ -68,23 +68,23 @@ Files
 
   * `lib/neo4j/shared/cypher.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/cypher.rb#L1>`_
 
-  * `lib/neo4j/shared/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L1>`_
-
   * `lib/neo4j/shared/identity.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/identity.rb#L1>`_
+
+  * `lib/neo4j/shared/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L1>`_
 
   * `lib/neo4j/shared/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/callbacks.rb#L2>`_
 
-  * `lib/neo4j/shared/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/initialize.rb#L1>`_
-
   * `lib/neo4j/shared/typecaster.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/typecaster.rb#L2>`_
 
-  * `lib/neo4j/shared/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L2>`_
+  * `lib/neo4j/shared/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/initialize.rb#L1>`_
 
   * `lib/neo4j/shared/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/persistence.rb#L1>`_
 
-  * `lib/neo4j/shared/filtered_hash.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/filtered_hash.rb#L1>`_
+  * `lib/neo4j/shared/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/validations.rb#L2>`_
 
   * `lib/neo4j/shared/query_factory.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/query_factory.rb#L1>`_
+
+  * `lib/neo4j/shared/filtered_hash.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/filtered_hash.rb#L1>`_
 
   * `lib/neo4j/shared/type_converters.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L6>`_
 

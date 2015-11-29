@@ -436,7 +436,7 @@ Methods
   .. code-block:: ruby
 
      def save!(*args)
-       save(*args) or fail(RelInvalidError, self) # rubocop:disable Style/AndOr
+       save(*args) or fail(RelInvalidError, inspect) # rubocop:disable Style/AndOr
      end
 
 
