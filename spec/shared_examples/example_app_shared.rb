@@ -90,7 +90,7 @@ shared_examples_for 'example app with orm_adapter fix' do
         end
 
         it 'should return nil if no conditions match' do
-          user_adapter.find_first(name: 'Betty').should.nil?
+          user_adapter.find_first(name: 'Betty').should be_nil
         end
 
         # it 'should return the first model if no conditions passed' do
