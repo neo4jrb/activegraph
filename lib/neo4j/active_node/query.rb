@@ -28,8 +28,8 @@ module Neo4j
       #
       # @param [String, Symbol] node_var The identifier to use within the QueryProxy object
       # @return [Neo4j::ActiveNode::Query::QueryProxy]
-      def as(node_var)
-        self.class.query_proxy(node: node_var, source_object: self).match_to(self)
+      def as(node_var, rel_var = nil, options = {})
+        self.class.query_proxy({node: node_var, rel: rel_var, source_object: self}.merge(options)).match_to(self)
       end
 
       module ClassMethods
@@ -67,8 +67,12 @@ module Neo4j
         #
         # @param [String, Symbol] node_var A string or symbol to use as the starting identifier.
         # @return [Neo4j::ActiveNode::Query::QueryProxy]
-        def as(node_var)
-          query_proxy(node: node_var, context: self.name)
+        def as(node_var, rel_var = nil, options = {})
+          query_proxy({node: node_var, rel: rel_var, context: self.name}.merge(options))
+        end
+
+        def with(options)
+          as(nil, nil, options)
         end
       end
     end

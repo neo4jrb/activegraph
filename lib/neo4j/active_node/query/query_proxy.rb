@@ -220,12 +220,18 @@ module Neo4j
 
         delegate :to_ary, to: :to_a
 
+        def as(node_var, rel_var = nil, options = {})
+          new_link(node_var, rel_var, options)
+        end
+
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
           if @model && @model.respond_to?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
+            require 'pry'
+            binding.pry
             super
           end
         end
@@ -240,10 +246,14 @@ module Neo4j
 
         attr_reader :context
 
-        def new_link(node_var = nil)
+        def new_link(node_var = nil, rel_var = nil, options = {})
           self.clone.tap do |new_query_proxy|
             new_query_proxy.instance_variable_set('@result_cache', nil)
             new_query_proxy.instance_variable_set('@node_var', node_var) if node_var
+            new_query_proxy.instance_variable_set('@rel_var', rel_var) if rel_var
+            new_query_proxy.instance_variable_set('@optional', options[:optional]) if options.key?(:optional)
+            new_query_proxy.instance_variable_set('@rel_length', options[:rel_length]) if options.key?(:rel_length)
+            new_query_proxy.instance_variable_set('@association_labels', options[:labels]) if options.key?(:labels)
           end
         end
 

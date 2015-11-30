@@ -395,7 +395,7 @@ describe 'Query API' do
       it 'allows params' do
         Teacher.as(:t).where('t.name = {name}').params(name: 'Harold Samuels').to_a.should eq([samuels])
 
-        samuels.lessons_teaching(:lesson).where('lesson.level = {level}').params(level: 103).to_a.should eq([geo103])
+        samuels.lessons_teaching.as(:lesson).where('lesson.level = {level}').params(level: 103).to_a.should eq([geo103])
       end
 
       it 'allows filtering on associations' do
@@ -425,8 +425,8 @@ describe 'Query API' do
       end
 
       describe '`labels` option when set false' do
-        let(:with_labels) { proc { |target| target.lessons_teaching(:l, :r).students(:s, :sr).to_cypher } }
-        let(:without_labels) { proc { |target| target.lessons_teaching(:l, :r, labels: false).students(:s, :sr, labels: false).to_cypher } }
+        let(:with_labels) { proc { |target| target.lessons_teaching.as(:l, :r).students.as(:s, :sr).to_cypher } }
+        let(:without_labels) { proc { |target| target.lessons_teaching.as(:l, :r, labels: false).students.as(:s, :sr, labels: false).to_cypher } }
         let(:expected_label_cypher) do
           proc do
             expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`) MATCH l<-[sr:`is_enrolled_for`]-(s:`Student`)')
@@ -508,36 +508,36 @@ describe 'Query API' do
           it { othmar.lessons_teaching.students.where(age: 15).to_a.should eq([danny]) }
 
           # Mid-association variable assignment when filtering later
-          it { othmar.lessons_teaching(:lesson).students.where(age: 15).pluck(:lesson).should eq([math101]) }
+          it { othmar.lessons_teaching.as(:lesson).students.where(age: 15).pluck(:lesson).should eq([math101]) }
 
           # Two variable assignments
-          it { othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student).should eq([[math101, danny]]) }
+          it { othmar.lessons_teaching.as(:lesson).students.as(:student).where(age: 15).pluck(:lesson, :student).should eq([[math101, danny]]) }
         end
 
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
-            rel = danny.lessons(:l, :r).pluck(:r).first
+            rel = danny.lessons.as(:l, :r).pluck(:r).first
             rel[:grade] = 65
             rel.save
 
             bobby.lessons << math101
-            rel = bobby.lessons(:l, :r).pluck(:r).first
+            rel = bobby.lessons.as(:l, :r).pluck(:r).first
             rel[:grade] = 71
 
             math101.teachers << othmar
-            rel = math101.teachers(:t, :r).pluck(:r).first
+            rel = math101.teachers.as(:t, :r).pluck(:r).first
             rel[:since] = 2001
 
             sandra.lessons << ss101
           end
 
           context 'students, age 15, who are taking level 101 lessons' do
-            it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should eq([danny]) }
-            it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not eq([[othmar]]) }
+            it { Student.as(:student).where(age: 15).lessons.as(:lesson).where(level: 101).pluck(:student).should eq([danny]) }
+            it { Student.where(age: 15).lessons.as(:lesson).where(level: '101').pluck(:lesson).should_not eq([[othmar]]) }
             it do
-              Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should ==
-                Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
+              Student.as(:student).where(age: 15).lessons.as(:lesson).where(level: 101).pluck(:student).should ==
+                Student.as(:student).node_where(age: 15).lessons.as(:lesson).node_where(level: 101).pluck(:student)
             end
           end
 
@@ -546,10 +546,10 @@ describe 'Query API' do
             it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should eq([danny]) }
 
             # with manual identifier
-            it { Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student).should eq([danny]) }
+            it { Student.as(:student).lessons.as(:l, :r).rel_where(grade: 65).pluck(:student).should eq([danny]) }
 
             # with multiple instances of rel_where
-            it { Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t).should eq([othmar]) }
+            it { Student.as(:student).lessons.as(:l).rel_where(grade: 65).teachers.as(:t, :t_r).rel_where(since: 2001).pluck(:t).should eq([othmar]) }
           end
 
           context 'with has_one' do
@@ -562,12 +562,12 @@ describe 'Query API' do
             end
 
             context 'on instances' do
-              it { math101.teachers_pet(:l).lessons.where(level: 103).should eq([geo103]) }
+              it { math101.teachers_pet.as(:l).lessons.where(level: 103).should eq([geo103]) }
             end
 
             context 'on class' do
               # Lessons of level 101 that have a teachers pet, age 16, whose hated teachers include Ms Othmar... Who hates Mrs Othmar!?
-              it { Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should eq([bobby]) }
+              it { Lesson.where(level: 101).teachers_pet.as(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should eq([bobby]) }
             end
           end
         end
@@ -593,11 +593,11 @@ describe 'Query API' do
       it { monster_trucks.interested.to_a.should include(samuels, othmar) }
 
       # Variable assignment and filtering on a relationship
-      it { monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).should eq([samuels]) }
+      it { monster_trucks.interested.as(:person, :r).where('r.intensity < 5').pluck(:person).should eq([samuels]) }
 
       it 'considers symbols as node fields for order' do
-        monster_trucks.interested(:person).order(:name).pluck(:person).should eq([samuels, othmar])
-        monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person).should eq([othmar, samuels])
+        monster_trucks.interested.as(:person).order(:name).pluck(:person).should eq([samuels, othmar])
+        monster_trucks.interested.as(:person, :r).order('r.intensity DESC').pluck(:person).should eq([othmar, samuels])
       end
     end
   end
@@ -790,7 +790,7 @@ describe 'Query API' do
 
       describe '#rel_order' do
         it 'allows ordering by relationships with rel_order' do
-          expect(Student.lessons(:l, :rel).rel_order(:grade).pluck('rel.grade')).to eq([65, 99])
+          expect(Student.lessons.as(:l, :rel).rel_order(:grade).pluck('rel.grade')).to eq([65, 99])
         end
       end
     end

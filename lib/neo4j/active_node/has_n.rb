@@ -105,7 +105,7 @@ module Neo4j::ActiveNode
         @query_proxy.public_send(:replace_with, *args)
       end
 
-      QUERY_PROXY_METHODS = [:<<, :delete]
+      QUERY_PROXY_METHODS = [:<<, :delete, :as]
       CACHED_RESULT_METHODS = []
 
       def method_missing(method_name, *args, &block)
@@ -342,14 +342,20 @@ module Neo4j::ActiveNode
         define_has_one_methods(name)
       end
 
+      def notify_about_association_arguments_deprecation
+        ActiveSupport::Deprecation.warn 'Arguments to associations are deprecated.  Use the `#as` and `#with` methods instead (See: URL GOES HERE).', caller[1..-1]
+        puts caller # REMOVE THIS AND SOMEHOW PROVIDE APPLICATION BACKTRACE?
+      end
+
       private
 
       def define_has_many_methods(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
-          # return [].freeze unless self._persisted_obj
+          self.class.notify_about_association_arguments_deprecation if !node.nil? || !rel.nil? || !options.empty?
 
           options, node = node, nil if node.is_a?(Hash)
 
+          #TODO: I think we can remove: , labels: options[:labels]
           association_proxy(name, {node: node, rel: rel, source_object: self, labels: options[:labels]}.merge!(options))
         end
 
@@ -358,6 +364,8 @@ module Neo4j::ActiveNode
         define_has_many_id_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
+          notify_about_association_arguments_deprecation if !node.nil? || !rel.nil? || !options.empty?
+
           options, node = node, nil if node.is_a?(Hash)
 
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
@@ -401,6 +409,8 @@ module Neo4j::ActiveNode
         define_has_one_id_methods(name)
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
+          notify_about_association_arguments_deprecation if !node.nil? || !rel.nil? || !options.empty?
+
           options, node = node, nil if node.is_a?(Hash)
 
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
@@ -423,6 +433,8 @@ module Neo4j::ActiveNode
 
       def define_has_one_getter(name)
         define_method(name) do |node = nil, rel = nil, options = {}|
+          self.class.notify_about_association_arguments_deprecation if !node.nil? || !rel.nil? || !options.empty?
+
           options, node = node, nil if node.is_a?(Hash)
 
           # Return all results if a variable-length relationship length was given

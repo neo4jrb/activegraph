@@ -303,14 +303,14 @@ describe 'query_proxy_methods' do
       end
 
       it 'can target a specific identifier' do
-        @tom.lessons(:l).teachers.where(name: 'Mr Adams').delete_all(:l)
+        @tom.lessons.as(:l).teachers.where(name: 'Mr Adams').delete_all(:l)
         expect(@tom.lessons.include?(@math)).to be_falsey
         expect(@math.exist?).to be false
         expect(@tom.lessons.include?(@science)).to be_truthy
       end
 
       it 'can target relationships' do
-        @tom.lessons(:l, :r).teachers.where(name: 'Mr Adams').delete_all(:r)
+        @tom.lessons.as(:l, :r).teachers.where(name: 'Mr Adams').delete_all(:r)
         expect(@tom.lessons.include?(@math)).to be_falsey
         expect(@math).to be_persisted
       end
@@ -418,7 +418,7 @@ describe 'query_proxy_methods' do
         end
 
         it 'works with a chain starting with `all`' do
-          expect(Student.all.match_to(jimmy).lessons(:l).match_to(math).teachers.where(age: 40).first).to eq mr_jones
+          expect(Student.all.match_to(jimmy).lessons.as(:l).match_to(math).teachers.where(age: 40).first).to eq mr_jones
         end
       end
     end
@@ -505,7 +505,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'starts a new optional match' do
-      result = @lauren.lessons(:l).optional(:teachers, :t).where(age: 40).query.order(l: :name).pluck('distinct l, t')
+      result = @lauren.lessons.as(:l).optional.as(:teachers, :t).where(age: 40).query.order(l: :name).pluck('distinct l, t')
 
       expect(result).to eq [[@math, @johnson],
                             [@science, nil]]
