@@ -505,7 +505,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'starts a new optional match' do
-      result = @lauren.lessons.as(:l).optional.as(:teachers, :t).where(age: 40).query.order(l: :name).pluck('distinct l, t')
+      result = @lauren.lessons.as(:l).teachers.as(:t).with(optional: true).where(age: 40).query.order(l: :name).pluck('distinct l, t')
 
       expect(result).to eq [[@math, @johnson],
                             [@science, nil]]

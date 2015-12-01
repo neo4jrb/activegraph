@@ -404,6 +404,10 @@ module Neo4j::ActiveNode
       def define_has_one_methods(name)
         define_has_one_getter(name)
 
+        define_method("#{name}_proxy") do
+          association_proxy(name)
+        end
+
         define_has_one_setter(name)
 
         define_has_one_id_methods(name)

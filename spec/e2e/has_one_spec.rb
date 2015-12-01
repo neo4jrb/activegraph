@@ -157,24 +157,27 @@ describe 'has_one' do
       end
 
       it 'finds the chain of command' do
-        employee.manager.as(:p, :r, rel_length: {min: 0}).to_a.should match_array([employee, manager, big_boss])
+        employee.manager_proxy.with(rel_length: {min: 0}).to_a.should match_array([employee, manager, big_boss])
       end
 
       it "finds the employee's superiors" do
-        employee.manager.as(:p, :r, rel_length: :any).to_a.should match_array([manager, big_boss])
+        employee.manager_proxy.with(rel_length: :any).to_a.should match_array([manager, big_boss])
       end
 
       it 'finds a specific superior in the chain of command' do
-        employee.manager.as(:p, :r, rel_length: 1).should eq(manager)
-        employee.manager.as(:p, :r, rel_length: 2).should eq(big_boss)
+        employee.manager(rel_length: 1).should eq(manager)
+        employee.manager(rel_length: 1).should eq(manager)
+
+        employee.manager_proxy.with(rel_length: 1).first.should eq(manager)
+        employee.manager_proxy.with(rel_length: 2).first.should eq(big_boss)
       end
 
       it 'finds parts of the chain of command using a range' do
-        employee.manager.as(:p, :r, rel_length: (0..1)).to_a.should match_array([employee, manager])
+        employee.manager_proxy.with(rel_length: (0..1)).to_a.should match_array([employee, manager])
       end
 
       it 'finds parts of the chain of command using a hash' do
-        employee.manager.as(:p, :r, rel_length: {min: 1, max: 3}).to_a.should match_array([manager, big_boss])
+        employee.manager_proxy.with(rel_length: {min: 1, max: 3}).to_a.should match_array([manager, big_boss])
       end
     end
   end
@@ -192,7 +195,8 @@ describe 'has_one' do
 
     it 'allows passing only a hash of options when naming node/rel is not needed' do
       manager.subordinates << employee
-      employee.manager.with(rel_length: 1).should eq(manager)
+      employee.manager(rel_length: 1).should eq(manager)
+      employee.manager_proxy.with(rel_length: 1).first.should eq(manager)
     end
   end
 

@@ -44,8 +44,6 @@ module Neo4j
 
           instance_vars_from_options!(options)
 
-          @match_type = @optional ? :optional_match : :match
-
           @rel_var = options[:rel] || _rel_chain_var
 
           @chain = []
@@ -103,7 +101,7 @@ module Neo4j
         def base_query(var, with_labels = true)
           if @association
             chain_var = _association_chain_var
-            (_association_query_start(chain_var) & _query).break.send(@match_type,
+            (_association_query_start(chain_var) & _query).break.send(match_type,
                                                                       "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
           else
             starting_query ? starting_query : _query_model_as(var, with_labels)
@@ -224,6 +222,10 @@ module Neo4j
           new_link(node_var, rel_var, options)
         end
 
+        def with(options)
+          as(nil, nil, options)
+        end
+
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
@@ -242,6 +244,10 @@ module Neo4j
 
         def optional?
           @optional == true
+        end
+
+        def match_type
+          @optional ? :optional_match : :match
         end
 
         attr_reader :context
@@ -269,7 +275,7 @@ module Neo4j
         end
 
         def _query_model_as(var, with_labels = true)
-          _query.break.send(@match_type, _match_arg(var, with_labels))
+          _query.break.send(match_type, _match_arg(var, with_labels))
         end
 
         # @param [String, Symbol] var The Cypher identifier to use within the match string
