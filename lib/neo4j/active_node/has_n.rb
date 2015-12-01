@@ -350,26 +350,21 @@ module Neo4j::ActiveNode
       private
 
       def define_has_many_methods(name)
-        define_method(name) do |node = nil, rel = nil, options = {}|
+        has_many_method_proc = proc do |node = nil, rel = nil, options = {}|
           self.class.notify_about_association_arguments_deprecation if !node.nil? || !rel.nil? || !options.empty?
 
           options, node = node, nil if node.is_a?(Hash)
 
-          #TODO: I think we can remove: , labels: options[:labels]
-          association_proxy(name, {node: node, rel: rel, source_object: self, labels: options[:labels]}.merge!(options))
+          association_proxy(name, {node: node, rel: rel, source_object: self}.merge!(options))
         end
+
+        define_method(name, &has_many_method_proc)
+
+        define_class_method(name, &has_many_method_proc)
 
         define_has_many_setter(name)
 
         define_has_many_id_methods(name)
-
-        define_class_method(name) do |node = nil, rel = nil, options = {}|
-          notify_about_association_arguments_deprecation if !node.nil? || !rel.nil? || !options.empty?
-
-          options, node = node, nil if node.is_a?(Hash)
-
-          association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
-        end
       end
 
       def define_has_many_setter(name)
@@ -404,9 +399,7 @@ module Neo4j::ActiveNode
       def define_has_one_methods(name)
         define_has_one_getter(name)
 
-        define_method("#{name}_proxy") do
-          association_proxy(name)
-        end
+        define_method("#{name}_proxy") { association_proxy(name) }
 
         define_has_one_setter(name)
 
@@ -448,11 +441,8 @@ module Neo4j::ActiveNode
           else
             target_class = self.class.send(:association_target_class, name)
             o = association_proxy.result.first
-            if target_class
-              target_class.send(:nodeify, o)
-            else
-              o
-            end
+
+            target_class ? target_class.send(:nodeify, o) : o
           end
         end
       end

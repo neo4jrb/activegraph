@@ -232,8 +232,6 @@ module Neo4j
           if @model && @model.respond_to?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
-            require 'pry'
-            binding.pry
             super
           end
         end
