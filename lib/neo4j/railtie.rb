@@ -42,7 +42,7 @@ module Neo4j
 
       def config_data
         @config_data ||= if yaml_path
-                           HashWithIndifferentAccess.new(YAML.load(yaml_path.read)[Rails.env])
+                           HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
                          else
                            {}
                          end
