@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'shared_examples/new_model'
 require 'shared_examples/loadable_model'
 require 'shared_examples/saveable_model'

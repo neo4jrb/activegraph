@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'has_many' do
   before(:each) do
     clear_model_memory_caches

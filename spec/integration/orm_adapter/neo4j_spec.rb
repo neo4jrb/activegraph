@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 orm_adapter_path = `bundle show orm_adapter`.chomp
 require File.join(orm_adapter_path, 'spec/orm_adapter/example_app_shared')
 

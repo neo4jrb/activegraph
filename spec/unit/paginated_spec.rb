@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Paginated do
   describe 'initialize' do
     it 'sets instance variables @items, @total, @current_page' do

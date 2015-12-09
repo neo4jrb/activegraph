@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveRel::RelatedNode do
   class RelatedNode < Neo4j::ActiveRel::RelatedNode; end
 

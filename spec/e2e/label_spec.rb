@@ -1,6 +1,3 @@
-require 'spec_helper'
-
-
 describe 'Neo4j::ActiveNode' do
   let(:clazz) do
     UniqueClass.create do

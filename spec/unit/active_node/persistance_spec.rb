@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveNode::Persistence do
   let(:node) { double('a persisted node', exist?: true) }
 

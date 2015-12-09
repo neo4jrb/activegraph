@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveRel::Property do
   let(:session) { double('Session') }
 

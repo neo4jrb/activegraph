@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Shared::Persistence do
   before do
     stub_const('MyModel', Class.new do

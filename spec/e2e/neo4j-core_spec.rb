@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'works well together with Neo4j::Core' do
   let(:clazz) do
     UniqueClass.create do

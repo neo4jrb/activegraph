@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveNode::Query do
   let(:session) { double('Session') }
 

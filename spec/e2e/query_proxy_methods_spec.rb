@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'query_proxy_methods' do
   # goofy names to differentiate from same classes used elsewhere
   before(:each) do

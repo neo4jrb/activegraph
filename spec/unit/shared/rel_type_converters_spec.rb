@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'rel type conversion' do
   let(:clazz) do
     Class.new do

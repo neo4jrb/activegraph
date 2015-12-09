@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Neo4j::Schema
   describe 'operation classes' do
     it_behaves_like 'schema operation create/drop', ExactIndexOperation, UniqueConstraintOperation

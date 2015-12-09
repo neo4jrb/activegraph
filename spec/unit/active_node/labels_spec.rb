@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveNode::Labels do
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes

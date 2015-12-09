@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'declared property classes' do
   describe Neo4j::Shared::DeclaredProperty do
     before do

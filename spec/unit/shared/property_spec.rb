@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Shared::Property do
   let(:clazz) { Class.new { include Neo4j::Shared::Property } }
 

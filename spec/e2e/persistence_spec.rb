@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveNode do
   before(:each) do
     stub_active_node_class('Person')

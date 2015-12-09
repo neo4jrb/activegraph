@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'Neo4j::Transaction' do
   context 'reading has_one relationships for Neo4j::Server' do
     let(:clazz) do

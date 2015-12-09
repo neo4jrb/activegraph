@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Neo4j::Shared
   describe FilteredHash do
     let(:base) { {first: :foo, second: :bar, third: :baz, fourth: :buzz} }

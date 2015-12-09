@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'Neo4j::ActiveNode#rels' do
   before(:all) do
     clazz = UniqueClass.create do
