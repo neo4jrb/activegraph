@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveNode::Query::QueryProxy do
   let(:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
   let(:session) { double('A session') }

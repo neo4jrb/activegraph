@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveRel::Callbacks do
   after(:all) do
     [:CallbackBar, :CallbackFoo].each do |s|

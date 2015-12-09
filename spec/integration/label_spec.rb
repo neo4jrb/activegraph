@@ -1,6 +1,3 @@
-require 'spec_helper'
-
-
 # tests = Proc.new do
 describe 'Labels' do
   before(:all) do

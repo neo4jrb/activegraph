@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'Neo4j::ActiveNode' do
   class MyThing
     include Neo4j::ActiveNode

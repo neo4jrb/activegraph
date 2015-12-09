@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Neo4j::Schema
   describe 'Operation classes' do
     let(:label_double) { double('An instance of Neo4j::Label') }

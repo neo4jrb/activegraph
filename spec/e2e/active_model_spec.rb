@@ -1,6 +1,3 @@
-require 'spec_helper'
-
-
 # class ExtendedIceLolly < IceLolly
 #  property :extended_property
 # end

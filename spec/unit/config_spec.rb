@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Config do
   describe 'default_file' do
     it 'should exist' do

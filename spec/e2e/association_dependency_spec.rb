@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'association dependent delete/destroy' do
   # In these tests, we mimic an event management system. It has a few requirements:
   #

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Node::Wrapper do
   let(:wrapper) do
     obj = Object.new

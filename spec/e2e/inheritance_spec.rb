@@ -1,6 +1,3 @@
-require 'spec_helper'
-
-
 describe 'Inheritance', type: :e2e do
   before(:each) do
     delete_db

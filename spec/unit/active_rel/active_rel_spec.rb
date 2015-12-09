@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveRel do
   let(:clazz) do
     Class.new do

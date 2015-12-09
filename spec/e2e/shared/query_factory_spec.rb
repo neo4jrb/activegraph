@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Shared::QueryFactory do
   before do
     stub_active_node_class('FactoryFromClass') do

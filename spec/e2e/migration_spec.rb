@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'migration tasks' do
   require 'neo4j/migration'
 

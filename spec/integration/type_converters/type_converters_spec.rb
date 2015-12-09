@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Shared::TypeConverters do
   describe 'converters' do
     it 'has converters for DateTime' do

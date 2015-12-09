@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'has_one' do
   before(:each) do
     delete_db

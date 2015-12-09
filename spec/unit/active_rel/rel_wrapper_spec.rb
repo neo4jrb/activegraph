@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Relationship::Wrapper do
   class RelClass; end
 

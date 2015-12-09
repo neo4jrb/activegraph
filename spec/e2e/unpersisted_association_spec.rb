@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 def save_and_expect_rel!
   proc do
     chris.save

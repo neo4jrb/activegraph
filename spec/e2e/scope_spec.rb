@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 # module Neo4j::ActiveNode::Scope
 
 describe 'Neo4j::NodeMixin::Scope' do

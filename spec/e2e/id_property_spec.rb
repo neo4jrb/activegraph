@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveNode::IdProperty do
   before do
     Neo4j::Config.delete(:id_property)

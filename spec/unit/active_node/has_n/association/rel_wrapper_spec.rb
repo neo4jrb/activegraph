@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 class Neo4j::ActiveNode::HasN::Association
   describe RelWrapper do
     let(:type) { :FRIENDS_WITH }

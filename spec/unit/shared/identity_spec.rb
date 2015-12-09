@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::Shared::Identity do
   let(:clazz) do
     Class.new do

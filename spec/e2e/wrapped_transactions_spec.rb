@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'wrapped nodes in transactions' do
   before(:each) do
     clear_model_memory_caches

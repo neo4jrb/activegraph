@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'load hooks' do
   require 'active_support'
 
