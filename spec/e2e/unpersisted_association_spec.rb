@@ -41,6 +41,19 @@ describe 'association creation' do
       end
     end
 
+    context 'assigning via #new method arguments' do
+      let!(:math)  { Lesson.new(subject: 'Math') }
+      let!(:chris) do
+        Student.new(name: 'Chris', favorite_class: math)
+      end
+
+      context 'upon save...' do
+        it 'returns the node' do
+          expect(chris.favorite_class).to eq(math)
+        end
+      end
+    end
+
     context 'between two unpersisted nodes' do
       let!(:chris) { Student.new(name: 'Chris') }
       let!(:math)  { Lesson.new(subject: 'Math') }
@@ -62,6 +75,10 @@ describe 'association creation' do
           expect(math).to receive(:save).and_call_original
           expect { chris.save }.to change { chris.favorite_class.object_id }
         end
+
+        it 'returns the node' do
+          expect(chris.favorite_class).to eq(math)
+        end
       end
     end
   end
@@ -73,6 +90,17 @@ describe 'association creation' do
 
       it 'creates a relationship' do
         expect { chris.lessons << math }.to change { chris.lessons.count }
+      end
+    end
+
+    context 'assigning via #new method arguments' do
+      let!(:math)  { Lesson.new(subject: 'Math') }
+      let!(:chris) { Student.new(name: 'Chris', lessons: [math]) }
+
+      context 'upon save...' do
+        it 'returns the node' do
+          expect(chris.lessons).to eq([math])
+        end
       end
     end
 

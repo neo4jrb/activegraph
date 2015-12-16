@@ -241,12 +241,16 @@ describe 'Neo4j::ActiveNode' do
       o = clazz.new(name: 'Jim', foo: 2)
 
       o.name.should eq('Jim')
-      o.foo.should be_nil
+      expect do
+        o.foo.should be_nil
+      end.to raise_error(Neo4j::RecordNotFound)
 
       o.save!
 
       o.name.should eq('Jim')
-      o.foo.should be_nil
+      expect do
+        o.foo.should be_nil
+      end.to raise_error(Neo4j::RecordNotFound)
     end
   end
 
