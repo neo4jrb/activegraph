@@ -254,7 +254,6 @@ describe 'Query API' do
       end
 
       describe '.find_or_create' do
-
         it 'works like .merge with just matching attributes' do
           Teacher.find_or_create(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
