@@ -253,6 +253,7 @@ describe 'Query API' do
       end
 
       describe '.find_or_create' do
+
         it 'works like .merge with just matching attributes' do
           Teacher.find_or_create(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
@@ -271,6 +272,15 @@ describe 'Query API' do
           expect(samuels.age).to eq(34)
           expect(samuels.status).to eq('active')
           expect(samuels._persisted_obj.props[:status]).to eq 'active'
+        end
+
+        it 'overrides default properties on create' do
+          Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34, status: 'inactive')
+
+          expect(Teacher.count).to eq(1)
+
+          samuels = Teacher.all.first
+          expect(samuels.status).to eq('inactive')
         end
 
         it 'sets the id property method' do
