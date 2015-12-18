@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.2] - 12-16-2015
+
+### Fixed
+
+- Fixed issue where association setting can't be set on initialize via #new (#1065)
+
 ## [6.0.1] - 11-27-2015
 
 ### Fixed
