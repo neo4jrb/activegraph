@@ -34,7 +34,6 @@ module Rails
 
   require 'neo4j/railtie'
 
-
   describe 'railtie' do
     it 'configures a default Neo4j server_db' do
       expect(Neo4j::Session).to receive(:open).with(:server_db, server_url, {})
@@ -72,12 +71,12 @@ module Rails
 
     it 'raise exception if try to run embedded in no JRUBY environemt' do
       app = App.new
-      allow(Railtie).to receive(:java_platform?).and_return(true)
+      allow(Neo4j::Railtie).to receive(:java_platform?).and_return(true)
       app.neo4j.sessions = [{type: :embedded_db, path: 'asd'}]
 
       expect do
         Railtie.init['neo4j.start'].call(app)
-      end.to raise_error
+      end.to raise_error Neo4j::Session::InitializationError, /Multiple sessions are not supported by Neo4j Embedded/
     end
   end
 end

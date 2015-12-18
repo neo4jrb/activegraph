@@ -1,14 +1,14 @@
 describe Neo4j::ActiveRel::RelatedNode do
   class RelatedNode < Neo4j::ActiveRel::RelatedNode; end
 
-  before { RelatedNode.any_instance.stub(:call) }
+  before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
   let(:node1) { double('a wrapped node') }
   let(:rel)   { double('ActiveRel object') }
 
   describe 'initialize' do
     it 'can be called without params' do
-      expect(RelatedNode.new).not_to raise_error
+      expect { RelatedNode.new }.not_to raise_error
     end
   end
 
@@ -57,8 +57,8 @@ describe Neo4j::ActiveRel::RelatedNode do
 
   context 'wrapped nodes' do
     before do
-      node1.stub(:neo_id).and_return(1)
-      node1.stub(:foo_prop).and_return(true)
+      allow(node1).to receive(:neo_id).and_return(1)
+      allow(node1).to receive(:foo_prop).and_return(true)
     end
     let(:r) { RelatedNode.new(node1) }
 

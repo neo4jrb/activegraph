@@ -294,9 +294,9 @@ describe 'Neo4j::ActiveNode' do
           expect { Company.create }.not_to raise_error
         end.to change { Company.count }
 
-        Company.after_create { fail }
+        Company.after_create { fail 'Foo error' }
         expect do
-          expect { Company.create }.to raise_error
+          expect { Company.create }.to raise_error RuntimeError, 'Foo error'
         end.not_to change { Company.count }
       end
 
@@ -308,11 +308,11 @@ describe 'Neo4j::ActiveNode' do
           expect { c.save }.not_to raise_error
         end.not_to change { c.name }.from('Katatonia')
 
-        Company.after_update { fail }
+        Company.after_update { fail 'Bar error' }
 
         c.name = 'October Tide'
         expect do
-          expect { c.save }.to raise_error
+          expect { c.save }.to raise_error RuntimeError, 'Bar error'
           c.reload
         end.to change { c.name }.from('October Tide').to('Katatonia')
       end
@@ -321,10 +321,10 @@ describe 'Neo4j::ActiveNode' do
         c = Company.create(name: 'Foo')
         expect { expect { c.destroy }.not_to raise_error }.to change { c.persisted? }.from(true).to(false)
 
-        Company.after_destroy { fail }
+        Company.after_destroy { fail 'Foo error' }
         c = Company.create(name: 'Foo')
 
-        expect { expect { c.destroy }.to raise_error }.not_to change { c.persisted? }.from(true)
+        expect { expect { c.destroy }.to raise_error(RuntimeError, 'Foo error') }.not_to change { c.persisted? }.from(true)
         expect(c).not_to be_frozen
         expect(c).not_to be_changed
       end
@@ -423,7 +423,7 @@ describe 'Neo4j::ActiveNode' do
     it 'can find or create by... AGGRESSIVELY' do
       expect(Person.find_by(name: 'Darcy', age: 5)).to be_falsey
       expect { Person.find_or_create_by!(name: 'Darcy', age: 30) }.to change { Person.count }
-      expect { Person.find_or_create_by!(name: nil) }.to raise_error
+      expect { Person.find_or_create_by!(name: nil) }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
     end
 
     # This also works for create! and find_by_or_create/find_by_or_create!
@@ -669,7 +669,7 @@ describe 'Neo4j::ActiveNode' do
             it 'reuses or resets' do
               expect(Cat.as(:c).named_jim.pluck(:c)).to eq([jim])
               expect(Cat.as(:c).all.named_jim.pluck(:c)).to eq([jim])
-              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error
+              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error Neo4j::Session::CypherError
               expect(Cat.as(:c).all(:another_variable).named_jim.pluck(:another_variable)).to eq [jim]
             end
           end

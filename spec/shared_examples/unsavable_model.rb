@@ -5,7 +5,7 @@ shared_examples_for 'unsaveable model' do
     end
 
     it 'should raise an exception' do
-      expect { subject.save! }.to raise_error
+      expect { subject.save! }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
     end
   end
 
