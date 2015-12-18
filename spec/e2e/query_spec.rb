@@ -273,6 +273,15 @@ describe 'Query API' do
           expect(samuels._persisted_obj.props[:status]).to eq 'active'
         end
 
+        it 'overrides default properties on create' do
+          Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34, status: 'inactive')
+
+          expect(Teacher.count).to eq(1)
+
+          samuels = Teacher.all.first
+          expect(samuels.status).to eq('inactive')
+        end
+
         it 'sets the id property method' do
           teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
           expect(teacher.uuid).not_to be nil

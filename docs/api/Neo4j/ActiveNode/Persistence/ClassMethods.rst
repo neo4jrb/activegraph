@@ -7,30 +7,8 @@ ClassMethods
 
 
 .. toctree::
-   :maxdepth: 3
-   :titlesonly:
-
-
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-   
-
-
-
+:maxdepth: 3
+     :titlesonly:
 
 Constants
 ---------
@@ -85,7 +63,7 @@ Methods
      def create!(*args)
        props = args[0] || {}
        association_props = extract_association_attributes!(props) || {}
-     
+
        new(*args).tap do |o|
          yield o if block_given?
          o.save!
@@ -100,12 +78,12 @@ Methods
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#find_or_create`:
 
 **#find_or_create**
-  
+
 
   .. code-block:: ruby
 
      def find_or_create(find_attributes, set_attributes = {})
-       on_create_attributes = set_attributes.merge(on_create_props(find_attributes))
+       on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
          .on_create_set(n: on_create_attributes)
          .pluck(:n).first
@@ -142,7 +120,7 @@ Methods
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#load_entity`:
 
 **#load_entity**
-  
+
 
   .. code-block:: ruby
 
@@ -155,7 +133,7 @@ Methods
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#merge`:
 
 **#merge**
-  
+
 
   .. code-block:: ruby
 
