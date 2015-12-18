@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.3] - 12-18-2015
+
+### Fixed
+
+- Fixed issue where find_or_create was prioritizing property`s default value rather than what was being passed in (Thanks to brucek via #1071)
+
 ## [6.0.2] - 12-16-2015
 
 ### Fixed
