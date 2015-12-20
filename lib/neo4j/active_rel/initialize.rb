@@ -19,8 +19,8 @@ module Neo4j::ActiveRel
     def init_on_reload(unwrapped_reloaded)
       @attributes = nil
       init_on_load(unwrapped_reloaded,
-                   unwrapped_reloaded.start_node_neo_id,
-                   unwrapped_reloaded.end_node_neo_id,
+                   unwrapped_reloaded._start_node_id,
+                   unwrapped_reloaded._end_node_id,
                    unwrapped_reloaded.rel_type)
       self
     end
