@@ -15,5 +15,14 @@ module Neo4j::ActiveRel
       @attributes = convert_and_assign_attributes(persisted_rel.props)
       load_nodes(from_node_id, to_node_id)
     end
+
+    def init_on_reload(unwrapped_reloaded)
+      @attributes = nil
+      init_on_load(unwrapped_reloaded,
+                   unwrapped_reloaded.start_node_neo_id,
+                   unwrapped_reloaded.end_node_neo_id,
+                   unwrapped_reloaded.rel_type)
+      self
+    end
   end
 end
