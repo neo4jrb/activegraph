@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- `ActiveRel#reload` relied on code written explicitly for loading nodes by ID, not rels.
+
 ## [6.0.3] - 12-18-2015
 
 ### Fixed
