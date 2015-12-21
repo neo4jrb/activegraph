@@ -416,8 +416,8 @@ describe 'ActiveRel' do
       let(:new_rel) { MyRelClass.new }
 
       it 'does not raise an error' do
-        new_rel.stub(:from_node).and_return double("From double")
-        new_rel.stub(:to_node).and_return double("To double")
+        new_rel.stub(:from_node).and_return double('From double')
+        new_rel.stub(:to_node).and_return double('To double')
         expect(new_rel.from_node).not_to receive(:loaded)
         expect(new_rel.to_node).not_to receive(:loaded)
         expect { new_rel.inspect }.not_to raise_error
