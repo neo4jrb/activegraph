@@ -42,8 +42,9 @@ module Neo4j::ActiveRel
     def concurrent_increment!(attribute, by = 1)
       new_attribute = Neo4j::Session.current!.query
                       .match('()-[n]-()').where(n: {neo_id: neo_id}).with(:n)
-                      .set("n.#{attribute} = COALESCE(n.#{attribute}, 0) + #{by}")
-                      .pluck("n.#{attribute}").first
+                      .set("n.`#{attribute}` = COALESCE(n.`#{attribute}`, 0) + #{by.to_i}")
+                      .limit(1)
+                      .pluck("n.`#{attribute}`").first
       return false unless new_attribute
       self[attribute] = new_attribute
       changed_attributes.clear
