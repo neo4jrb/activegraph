@@ -13,4 +13,9 @@ module Neo4j::ActiveNode::Initialize
     changed_attributes && changed_attributes.clear
     @attributes = convert_and_assign_attributes(properties)
   end
+
+  def init_on_reload(reloaded)
+    @attributes = nil
+    init_on_load(reloaded, reloaded.props)
+  end
 end

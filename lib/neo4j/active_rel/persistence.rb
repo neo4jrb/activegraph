@@ -86,6 +86,10 @@ module Neo4j::ActiveRel
       def create_method
         creates_unique? ? :create_unique : :create
       end
+
+      def load_entity(id)
+        Neo4j::Relationship.load(id)
+      end
     end
 
     def create_method

@@ -144,8 +144,8 @@ describe 'has_many' do
       it 'occurs within a transaction' do
         friend3 = Person.create(name: 'foo')
         node.friends = [friend1, friend2]
-        expect_any_instance_of(Neo4j::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise
-        expect { node.friends = [friend3] }.to raise_error
+        expect_any_instance_of(Neo4j::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise('Bar error')
+        expect { node.friends = [friend3] }.to raise_error RuntimeError, 'Bar error'
         expect(node.friends.to_a).to include(friend1, friend2)
         expect(node.friends.to_a).not_to include friend3
       end

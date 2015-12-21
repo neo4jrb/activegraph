@@ -49,10 +49,13 @@ shared_examples_for 'timestamped model' do
       end
 
       context 'with missing updated_at' do
+        before do
+          Neo4j::Transaction.run { subject._persisted_obj.remove_property('updated_at') }
+        end
+
         it 'creates the property' do
-          Neo4j::Transaction.run { subject._persisted_obj.remove_property('updated_at'.freeze) }
-          subject.reload
-          expect { subject.save! }.to change { subject.updated_at }
+          expect { subject.reload }.to change { subject.updated_at }.from(instance_of(DateTime)).to(nil)
+          expect { subject.touch }.to change { subject.updated_at }.from(nil).to(instance_of(DateTime))
         end
       end
 
