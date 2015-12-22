@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.0.4] - 12-23-2015
 
 ### Fixed
 
-- `ActiveRel#reload` relied on code written explicitly for loading nodes by ID, not rels.
+- When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
 
 ## [6.0.3] - 12-18-2015
 

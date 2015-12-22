@@ -11,6 +11,9 @@ describe Neo4j::ActiveNode::HasN::Association do
   let(:association) do
     Neo4j::ActiveNode::HasN::Association.new(type, direction, name, options)
   end
+
+  before { stub_active_node_class('Default') }
+
   subject do
     association
   end
@@ -343,12 +346,19 @@ describe Neo4j::ActiveNode::HasN::Association do
     end
 
     describe 'target_class' do
-      # subject { association.target_class }
+      subject { association.target_class }
+
+      let(:options) { {type: nil, model_class: 'BadClass'} }
 
       context 'with invalid target class name' do
-        it 'raises an error' do
-          expect(association).to receive(:target_class_names).at_least(1).times.and_return(['BadObject'])
-          expect { association.target_class }.to raise_error ArgumentError
+        it { expect { subject }.to raise_error ArgumentError, /Could not find class.*BadClass/ }
+      end
+
+      context 'target_class_names defines class which exists, but is not ActiveNode' do
+        let(:options) { {type: nil, model_class: 'Fixnum'} }
+
+        context 'with invalid target class name' do
+          it { expect { subject }.to raise_error ArgumentError, /Fixnum.* is not an ActiveNode model/ }
         end
       end
     end
