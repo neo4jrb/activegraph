@@ -30,7 +30,7 @@ module Neo4j
 
         return if !cfg.sessions.empty?
 
-        cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
+        cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options.merge(default: true)}
       end
 
       def setup_config_defaults!(cfg)
