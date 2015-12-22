@@ -91,9 +91,17 @@ module Neo4j
         def target_class
           return @target_class if @target_class
 
-          @target_class = target_class_names[0].constantize if target_class_names && target_class_names.size == 1
+          if target_class_names && target_class_names.size == 1
+            class_const = target_class_names[0].constantize
+
+            if !class_const.included_modules.include?(Neo4j::ActiveNode)
+              fail ArgumentError, "Invalid argument to `#{name}` association: `#{class_const.inspect}` is not an ActiveNode model"
+            end
+
+            @target_class = class_const
+          end
         rescue NameError
-          raise ArgumentError, "Could not find `#{@target_class}` class and no :model_class specified"
+          raise ArgumentError, "Invalid argument to `#{name}` association: Could not find class `#{target_class_names[0]}`"
         end
 
         def callback(type)

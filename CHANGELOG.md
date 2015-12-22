@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+
 ### Added
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
