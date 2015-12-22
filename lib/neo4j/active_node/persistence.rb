@@ -33,15 +33,8 @@ module Neo4j::ActiveNode
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def concurrent_increment!(attribute, by = 1)
-      new_attribute = Neo4j::Session.current!.query
-                      .match_nodes(n: neo_id).with(:n)
-                      .set("n.`#{attribute}` = COALESCE(n.`#{attribute}`, 0) + {by}")
-                      .params(by: by).limit(1)
-                      .pluck("n.`#{attribute}`").first
-      return false unless new_attribute
-      self[attribute] = new_attribute
-      changed_attributes.delete(attribute)
-      true
+      query_node = Neo4j::Session.query.match_nodes(n: neo_id)
+      increment_by_query! query_node, attribute, by
     end
 
     # Persist the object to the database.  Validations and Callbacks are included

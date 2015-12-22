@@ -438,12 +438,13 @@ describe 'Neo4j::ActiveNode' do
 
     it 'can increment an attribute' do
       person = Person.create(name: 'andreas', age: 21)
-      person.increment(:age)
-      expect(person.age).to eq(22)
-      expect(person.age_was).to eq(21)
-      person.increment!(:age)
-      expect(person.age).to eq(23)
-      expect(person.age_was).to eq(23)
+      expect { person.increment(:age) }.to change { person.age }.from(21).to(22)
+    end
+
+    it 'can increment an attribute and save' do
+      person = Person.create(name: 'andreas', age: 21)
+      expect { person.increment!(:age) }.to change { person.age }.from(21).to(22)
+      expect(person).not_to be_changed
     end
 
     it 'can increment an attribute (concurrently)' do
