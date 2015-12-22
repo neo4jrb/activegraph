@@ -53,6 +53,11 @@ module Neo4j::Shared
       hash.each { |key, value| send("#{key}=", value) }
     end
 
+    def reload_properties!(properties)
+      @attributes = nil
+      convert_and_assign_attributes(properties)
+    end
+
     protected
 
     # This method is defined in ActiveModel.

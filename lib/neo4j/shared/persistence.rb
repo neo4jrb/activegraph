@@ -137,11 +137,8 @@ module Neo4j::Shared
     end
 
     def reload_from_database
-      # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-      if reloaded = self.class.load_entity(neo_id)
-        send(:attributes=, reloaded.attributes)
-      end
-      reloaded
+      reloaded = self.class.load_entity(neo_id)
+      reloaded ? init_on_reload(reloaded._persisted_obj) : nil
     end
 
     # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
