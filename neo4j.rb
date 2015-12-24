@@ -16,8 +16,8 @@ generator = %q[
 
 application generator
 inject_into_file 'config/application.rb', <<APPLICATION
-require 'neo4j/railtie'", :after => 'require "sprockets/railtie"'
-APPLICATION
+require 'neo4j/railtie'"
+APPLICATION, :after => 'require "sprockets/railtie"'
 
 inject_into_file 'config/neo4j.yml', <<YAML
 development:
