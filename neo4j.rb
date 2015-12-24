@@ -15,11 +15,14 @@ generator = %q[
 ]
 
 application generator
-inject_into_file 'config/application.rb', <<APPLICATION
-require 'neo4j/railtie'"
-APPLICATION, :after => 'require "sprockets/railtie"'
 
-inject_into_file 'config/neo4j.yml', <<YAML
+application_code = <<APPLICATION
+require 'neo4j/railtie'"
+APPLICATION
+
+inject_into_file 'config/application.rb', application_code, after: 'require "sprockets/railtie"'
+
+yaml_data = <<YAML
 development:
   type: server_db
   url: http://localhost:7474
@@ -27,4 +30,6 @@ test:
   type: server_db
   url: http://localhost:7575
 YAML
+
+inject_into_file 'config/neo4j.yml', yaml_data
 
