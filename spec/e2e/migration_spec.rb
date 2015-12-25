@@ -21,8 +21,8 @@ describe 'migration tasks' do
         property :name
 
         has_many :in, :owners, model_class: :User, origin: :songs
-        has_many :out, :singers, model_class: :User, rel_class: MigrationSpecs::SecondRelClass
-        has_many :out, :new_singers, model_class: :User, rel_class: MigrationSpecs::ThirdRelClass
+        has_many :out, :singers, model_class: :User, rel_class: 'MigrationSpecs::SecondRelClass'
+        has_many :out, :new_singers, model_class: :User, rel_class: 'MigrationSpecs::ThirdRelClass'
         def custom_id
           'my new id'
         end

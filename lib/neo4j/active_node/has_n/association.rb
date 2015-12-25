@@ -215,14 +215,13 @@ module Neo4j
         VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique]
 
         def validate_association_options!(_association_name, options)
-          type_keys = (options.keys & [:type, :origin, :rel_class])
           message = case
-                    when type_keys.size > 1
-                      "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations"
-                    when type_keys.empty?
-                      "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified"
+                    when (message = type_keys_error_message(options.keys))
+                      message
                     when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
                       "Unknown option(s) specified: #{unknown_keys.join(', ')}"
+                    when !rel_class_valid?(options[:rel_class])
+                      'rel_class option must by String, Symbol, or nil'
                     when !model_class_valid?(options[:model_class])
                       'model_class option must by String, Symbol, false, nil, or an Array of Symbols/Strings'
                     end
@@ -230,9 +229,22 @@ module Neo4j
           fail ArgumentError, message if message
         end
 
+        def type_keys_error_message(keys)
+          type_keys = (keys & [:type, :origin, :rel_class])
+          if type_keys.size > 1
+            "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations"
+          elsif type_keys.empty?
+            "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified"
+          end
+        end
+
         def model_class_valid?(model_class)
           [NilClass, String, Symbol, FalseClass].include?(model_class.class) ||
             (model_class.is_a?(Array) && model_class.all? { |c| [Symbol, String].include?(c.class) })
+        end
+
+        def rel_class_valid?(rel_class)
+          [NilClass, String, Symbol].include?(rel_class.class)
         end
 
         def check_valid_type_and_dir(type, direction)

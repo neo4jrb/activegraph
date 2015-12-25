@@ -122,7 +122,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         end
 
         context 'rel_class given' do
-          let(:options) { {rel_class: MyRel} }
+          let(:options) { {rel_class: :MyRel} }
 
           it { should == '-[fooy:`ar_type`]->' }
         end
