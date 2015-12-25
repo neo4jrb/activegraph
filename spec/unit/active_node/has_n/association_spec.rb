@@ -50,7 +50,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         before do
           stub_const('FooClass', Class.new)
         end
-        let(:options) { {type: false, model_class: FooClass} }
+        let(:options) { {type: false, model_class: :FooClass} }
         it { expect(subject.relationship_type).to be_falsey }
       end
     end

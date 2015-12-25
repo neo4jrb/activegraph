@@ -504,6 +504,7 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
+        options[:model_class] = options[:model_class].name if options[:model_class] == self
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
           @associations ||= {}
           @associations[name] = association

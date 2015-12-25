@@ -223,9 +223,16 @@ module Neo4j
                       "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified"
                     when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
                       "Unknown option(s) specified: #{unknown_keys.join(', ')}"
+                    when !model_class_valid?(options[:model_class])
+                      'model_class option must by String, Symbol, false, nil, or an Array of Symbols/Strings'
                     end
 
           fail ArgumentError, message if message
+        end
+
+        def model_class_valid?(model_class)
+          [NilClass, String, Symbol, FalseClass].include?(model_class.class) ||
+            (model_class.is_a?(Array) && model_class.all? { |c| [Symbol, String].include?(c.class) })
         end
 
         def check_valid_type_and_dir(type, direction)

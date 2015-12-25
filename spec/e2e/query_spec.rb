@@ -107,7 +107,7 @@ describe 'Query API' do
 
     context 'Foo has an association to Bar' do
       before(:each) do
-        Foo.has_many :in, :bars, type: nil, model_class: Bar
+        Foo.has_many :in, :bars, type: nil, model_class: :Bar
       end
 
       subject { Bar.create }

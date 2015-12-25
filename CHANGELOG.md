@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+- The `model_class` option on associations can no longer be a `Class` object (should be a String, Symbol, nil, false, or an Array of Symbols/Strings)
 
 ### Added
 
