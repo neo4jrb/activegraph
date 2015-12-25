@@ -323,7 +323,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           context 'outbound' do
             before(:each) do
               stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
-              TheRel.to_class(Fizzl)
+              TheRel.to_class(:Fizzl)
             end
 
             it { should == ['::Fizzl'] }
@@ -334,7 +334,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
             before(:each) do
               stub_const 'Buzz', Class.new { include Neo4j::ActiveNode }
-              TheRel.from_class(Buzz)
+              TheRel.from_class(:Buzz)
             end
 
             it { should == ['::Buzz'] }
@@ -344,7 +344,7 @@ describe Neo4j::ActiveNode::HasN::Association do
     end
 
     describe 'target_class' do
-      subject { association.target_class }
+      subject { association.target_classes }
 
       let(:options) { {type: nil, model_class: 'BadClass'} }
 
@@ -433,8 +433,8 @@ describe Neo4j::ActiveNode::HasN::Association do
     describe 'refresh_model_class!' do
       context 'with model class set' do
         before do
-          association.instance_variable_set(:@model_class, named_class('MyModel'))
-          stub_named_class('MyModel')
+          stub_active_node_class('MyModel')
+          association.instance_variable_set(:@model_class, 'MyModel')
         end
 
         it 'changes the value of #derive_model_class' do

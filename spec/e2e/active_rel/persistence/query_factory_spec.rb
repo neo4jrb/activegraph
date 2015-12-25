@@ -15,8 +15,8 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
     stub_active_rel_class('RelClass') do
       type 'HAS_REL'
-      from_class FromClass
-      to_class ToClass
+      from_class :FromClass
+      to_class :ToClass
 
       property :score
 
