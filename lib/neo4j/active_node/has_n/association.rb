@@ -68,7 +68,7 @@ module Neo4j
         end
 
         def target_classes
-          target_class_names.map(&ClassArguments.method(:constantize_argument))
+          ClassArguments.constantize_argument(target_class_names)
         end
 
         def target_classes_or_nil
