@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] - 12-27-2015
+
+### Fixed
+
+- Fixed bug where having the same name for a property and a scope would result in a `Stack Level too Deep` error.
+
 ## [6.0.4] - 12-23-2015
 
 ### Fixed
