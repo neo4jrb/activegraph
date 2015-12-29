@@ -13,6 +13,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 
+## [6.0.5] - 12-29-2015
+
+### Fixed
+
+- If a property and a scope have the same name, a "Stack level too deep" error occurs.  Fixed by removing the instance method which scopes define.  Could break something, but I very much doubt anybody is using this, and if they are it's likely a bug (#1088)
+
+## [6.0.4] - 12-23-2015
+
+### Fixed
+
+- When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+
 ## [6.0.3] - 12-18-2015
 
 ### Fixed

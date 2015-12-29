@@ -37,10 +37,6 @@ module Neo4j::ActiveNode
       def scope(name, proc)
         _scope[name.to_sym] = proc
 
-        define_method(name) do |query_params = nil, some_var = nil|
-          self.class.send(name, query_params, some_var, current_scope)
-        end
-
         klass = class << self; self; end
         klass.instance_eval do
           define_method(name) do |query_params = nil, _ = nil|
