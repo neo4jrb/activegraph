@@ -8,10 +8,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+- Uses Rails 5 beta dependencies
 
 ### Added
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
+
+### Removed
+
+- `#to_xml` due to `ActiveModel::Serializers` removal of their `XML` support
 
 ## [6.0.5] - 12-29-2015
 
