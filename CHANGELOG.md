@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.5] - 12-29-2015
+
+### Fixed
+
+- If a property and a scope have the same name, a "Stack level too deep" error occurs.  Fixed by removing the instance method which scopes define.  Could break something, but I very much doubt anybody is using this, and if they are it's likely a bug (#1088)
+
 ## [6.0.4] - 12-23-2015
 
 ### Fixed
