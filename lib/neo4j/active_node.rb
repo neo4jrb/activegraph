@@ -23,8 +23,11 @@ module Neo4j
   module ActiveNode
     extend ActiveSupport::Concern
 
+    MARSHAL_INSTANCE_VARIABLES = [:@attributes, :@_persisted_obj]
+
     include Neo4j::Shared
     include Neo4j::Shared::Identity
+    include Neo4j::Shared::Marshal
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::IdProperty
     include Neo4j::Shared::SerializedProperties
