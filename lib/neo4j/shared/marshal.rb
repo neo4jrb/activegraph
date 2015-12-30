@@ -8,7 +8,9 @@ module Neo4j
       end
 
       def marshal_load(array)
-        marshal_instance_variables.zip(array).each(&method(:instance_variable_set))
+        marshal_instance_variables.zip(array).each do |var, value|
+          instance_variable_set(var, value)
+        end
       end
 
       private
