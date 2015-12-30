@@ -16,7 +16,7 @@ describe Neo4j::ActiveNode::Query do
       end
 
       def self.neo4j_session
-        Neo4j::Session.current
+        current_session
       end
     end
   end

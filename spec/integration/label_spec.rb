@@ -22,7 +22,7 @@ describe 'Labels' do
       end
 
       def self.neo4j_session
-        Neo4j::Session.current
+        current_session
       end
 
       extend Neo4j::ActiveNode::Query::ClassMethods

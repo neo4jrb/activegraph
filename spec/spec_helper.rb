@@ -32,6 +32,9 @@ require 'unique_class'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
+require 'neo4j/core/cypher_session'
+require 'neo4j/core/cypher_session/adaptors/http'
+require 'neo4j/core/cypher_session/adaptors/embedded'
 
 class MockLogger
   def debug(*_args)
@@ -59,12 +62,6 @@ I18n.enforce_available_locales = false
 module Neo4jSpecHelpers
   extend ActiveSupport::Concern
 
-  def create_embedded_session
-    require 'neo4j-embedded/embedded_impermanent_session'
-    session = Neo4j::Session.open(:impermanent_db, EMBEDDED_DB_PATH, auto_commit: true)
-    session.start
-  end
-
   def server_username
     ENV['NEO4J_USERNAME'] || 'neo4j'
   end
@@ -84,31 +81,42 @@ module Neo4jSpecHelpers
     ENV['NEO4J_URL'] || 'http://localhost:7474'
   end
 
-  def create_server_session(options = {})
-    Neo4j::Session.open(:server_db, server_url, {basic_auth: basic_auth_hash}.merge(options))
-    delete_db # Should separate this out
+  def session_mode
+    RUBY_PLATFORM == 'java' ? :embedded : :http
   end
 
-  def create_session
-    if RUBY_PLATFORM == 'java'
-      create_embedded_session
+  def create_session(options = {})
+    @current_session = Neo4j::Core::CypherSession.new(session_adaptor(options))
+    Neo4j::ActiveBase.set_current_session(@current_session)
+  end
+
+  def new_query
+    Neo4j::Core::Query.new
+  end
+
+  def session_adaptor(options = {})
+    case session_mode
+    when :embedded
+      Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH, {impermanent: true, auto_commit: true}.merge(options))
+    when :http
+      Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, {basic_auth: basic_auth_hash}.merge(options))
     else
-      create_server_session
+      fail "Invalid session_mode: #{session_mode.inspect}"
     end
-  end
-
-  def create_named_server_session(name, default = nil)
-    Neo4j::Session.open_named(:server_db, name, default, server_url, basic_auth: basic_auth_hash)
   end
 
   def session
-    Neo4j::Session.current
+    @current_session
+  end
+
+  def current_session
+    @current_session
   end
 
   def log_queries!
-    Neo4j::Server::CypherSession.log_with do |message|
-      puts message
-    end
+    Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(method(:puts))
+    Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(method(:puts))
+    Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(method(:puts))
   end
 
   class_methods do
@@ -135,7 +143,7 @@ module Neo4jSpecHelpers
 end
 
 $expect_queries_count = 0
-Neo4j::Server::CypherSession.log_with do |_message|
+Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |_message|
   $expect_queries_count += 1
 end
 # rubocop:enable Style/GlobalVars
@@ -148,9 +156,9 @@ def clear_model_memory_caches
   Neo4j::ActiveNode::Labels.clear_wrapped_models
 end
 
-def delete_db
+def delete_db(session = current_session)
   # clear_model_memory_caches
-  Neo4j::Session.current._query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
+  session.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
@@ -201,29 +209,33 @@ module ActiveNodeRelStubHelpers
 end
 
 def before_session
-  Neo4j::Session.current.close if Neo4j::Session.current
+  @current_session.close if @current_session
   yield
   create_session
+end
+
+def current_transaction
+  Neo4j::Transaction.current_for(@current_session)
 end
 
 RSpec.configure do |c|
   c.include Neo4jSpecHelpers
 
   c.before(:all) do
-    Neo4j::Session.current.close if Neo4j::Session.current
+    @current_session.close if @current_session
     create_session
   end
 
   c.before(:each) do
+    # TODO: What to do about this?
     Neo4j::Session._listeners.clear
-    curr_session = Neo4j::Session.current
-    curr_session || create_session
+    @current_session || create_session
   end
 
   c.after(:each) do
-    if Neo4j::Transaction.current
+    if current_transaction
       puts 'WARNING forgot to close transaction'
-      Neo4j::Transaction.current.close
+      current_transaction.close
     end
   end
 

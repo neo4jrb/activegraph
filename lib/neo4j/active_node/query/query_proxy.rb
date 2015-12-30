@@ -274,7 +274,7 @@ module Neo4j
         end
 
         def _query
-          _session.query(context: @context)
+          Neo4j::Core::Query.new(context: @context, session: Neo4j::ActiveBase.current_session)
         end
 
         # TODO: Refactor this. Too much happening here.

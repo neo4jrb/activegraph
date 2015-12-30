@@ -12,7 +12,7 @@ module Neo4j::ActiveRel
       end
 
       # Loads the relationship using its neo_id.
-      def find_by_id(key, session = Neo4j::Session.current!)
+      def find_by_id(key, session = Neo4j::ActiveBase.current_session)
         session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
       end
 

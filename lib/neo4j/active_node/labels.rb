@@ -72,7 +72,7 @@ module Neo4j
       def self.clear_wrapped_models
         WRAPPED_CLASSES.clear
         MODELS_FOR_LABELS_CACHE.clear
-        Neo4j::Node::Wrapper::CONSTANTS_FOR_LABELS_CACHE.clear
+        Neo4j::NodeWrapping::CONSTANTS_FOR_LABELS_CACHE.clear
       end
 
       module ClassMethods

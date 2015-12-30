@@ -58,14 +58,15 @@ module Neo4j::Shared
       @_create_or_updating = true
       apply_default_values
       result = _persisted_obj ? update_model : create_model
+      current_transaction = Neo4j::ActiveBase.current_transaction
       if result == false
-        Neo4j::Transaction.current.failure if Neo4j::Transaction.current
+        current_transaction.mark_failed if current_transaction
         false
       else
         true
       end
     rescue => e
-      Neo4j::Transaction.current.failure if Neo4j::Transaction.current
+      current_transaction.mark_failed if current_transaction
       raise e
     ensure
       @_create_or_updating = nil

@@ -248,7 +248,7 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'redefining the default property' do
-    before { Neo4j::Session.current.close if Neo4j::Session.current }
+    before { current_session.close if current_session }
 
     context 'without a constraint' do
       before do
@@ -283,7 +283,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
-      Neo4j::Session.current.close if Neo4j::Session.current
+      current_session.close if current_session
       stub_const('Clazz', UniqueClass.create do
         include Neo4j::ActiveNode
         id_property :my_uuid, auto: :uuid
@@ -389,7 +389,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
     context 'when a session is not started' do
       it 'waits until the session is loaded, then sets id property' do
-        Neo4j::Session.current.close
+        current_session.close
 
         module IdProp
           class Executive

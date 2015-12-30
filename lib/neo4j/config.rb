@@ -4,7 +4,6 @@ module Neo4j
   # == Configurations keys
   class Config
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
-    CLASS_NAME_PROPERTY_KEY = 'class_name_property'
 
     class << self
       # In keeping with the Rails convention, this class writer lets you globally configure

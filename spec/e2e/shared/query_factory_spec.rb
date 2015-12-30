@@ -14,7 +14,7 @@ describe Neo4j::Shared::QueryFactory do
       property :score
 
       def self.count
-        Neo4j::Session.current.query.match('(n)-[r:FACTORY_REL_CLASS]->()').pluck('count(r)').first
+        new_query.match('(n)-[r:FACTORY_REL_CLASS]->()').pluck('count(r)').first
       end
     end
   end
@@ -80,7 +80,7 @@ describe Neo4j::Shared::QueryFactory do
     end
 
     context 'when set' do
-      before { from_node_factory.instance_variable_set(:@base_query, Neo4j::Session.current.query) }
+      before { from_node_factory.instance_variable_set(:@base_query, new_query) }
 
       it 'returns the existing query' do
         expect(Neo4j::Core::Query).not_to receive(:new)
@@ -96,7 +96,7 @@ describe Neo4j::Shared::QueryFactory do
 
     describe '#base_query=' do
       it 'changes the value of #base_query' do
-        expect { from_node_factory.base_query = Neo4j::Session.current.query }.to change { from_node_factory.base_query }
+        expect { from_node_factory.base_query = new_query }.to change { from_node_factory.base_query }
       end
     end
   end

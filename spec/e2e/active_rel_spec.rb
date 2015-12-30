@@ -324,7 +324,7 @@ describe 'ActiveRel' do
     let(:f1) { FromClass.create }
     let(:t1) { ToClass.create }
     let(:result) do
-      Neo4j::Session.current.query('MATCH (start)-[r]-() WHERE ID(start) = {start_id} RETURN r.default AS value', start_id: f1.neo_id).to_a
+      current_session.query('MATCH (start)-[r]-() WHERE ID(start) = {start_id} RETURN r.default AS value', start_id: f1.neo_id).to_a
     end
 
     context 'with rel created from node' do
@@ -448,7 +448,7 @@ describe 'ActiveRel' do
       # Neo4j Embedded always returns nodes with rels. This is only possible in Server mode.
       it 'notes the ids of the nodes' do
         next if Neo4j::VERSION >= '6.0.0'
-        next if Neo4j::Session.current.db_type == :embedded_db
+        next if session_mode == :embedded
         [from_node.neo_id, to_node.neo_id].each do |id|
           expect(inspected).to include("(Node with neo_id #{id})")
         end
@@ -475,7 +475,7 @@ describe 'ActiveRel' do
       # relationships works differently, so we aren't as concerned with whether
       # it is loading two extra nodes.
       it 'does not load when calling neo_id from Neo4j Server' do
-        unless Neo4j::Session.current.db_type == :embedded_db
+        unless session_mode == :embedded
           expect(reloaded.from_node).not_to be_loaded
           expect(reloaded.from_node.neo_id).to eq from_node.neo_id
           expect(reloaded.from_node.loaded?).to be_falsey

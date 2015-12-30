@@ -16,7 +16,7 @@ module Neo4j
       def create!
         drop_incompatible!
         return if exist?
-        label_object.send(:"create_#{type}", property, options)
+        schema_query(:"create_#{type}")
       end
 
       def label_object
@@ -28,7 +28,7 @@ module Neo4j
       end
 
       def drop!
-        label_object.send(:"drop_#{type}", property, options)
+        schema_query(:"drop_#{type}")
       end
 
       def drop_incompatible!
@@ -48,6 +48,16 @@ module Neo4j
 
       def type
         fail 'Abstract class, not implemented'
+      end
+
+      private
+
+      def schema_query(method)
+        # If there is a transaction going on, this could block
+        # So we run in a thread and it will go through at the next opportunity
+        Thread.new do
+          label_object.send(method, property, options, Neo4j::ActiveBase.schema_session)
+        end
       end
     end
 

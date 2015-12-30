@@ -12,6 +12,10 @@ require 'neo4j/version'
 require 'neo4j-core'
 require 'neo4j/core/cypher_session'
 require 'neo4j/core/query'
+
+require 'neo4j/active_base'
+require 'neo4j/active_base/session_registry'
+
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'

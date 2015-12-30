@@ -612,7 +612,7 @@ describe 'Query API' do
 
   describe 'Core::Query#proxy_as' do
     let(:core_query) do
-      Neo4j::Session.current.query
+      new_query
         .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
         .with(:other_end, :s)
     end

@@ -21,10 +21,8 @@ module Neo4j
     end
 
     class << self
-      def java_platform?
-        RUBY_PLATFORM =~ /java/
-      end
-
+      # TODO: Remove ability for multiple sessions?
+      # Ability to overwrite default session per-model like ActiveRecord?
       def setup_default_session(cfg)
         setup_config_defaults!(cfg)
 
@@ -33,6 +31,7 @@ module Neo4j
         cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options.merge(default: true)}
       end
 
+      # TODO: Support `session_url` config for server mode
       def setup_config_defaults!(cfg)
         cfg.session_type ||= default_session_type
         cfg.session_path ||= default_session_path
@@ -56,7 +55,7 @@ module Neo4j
 
       def default_session_type
         if ENV['NEO4J_TYPE']
-          :embedded_db
+          :embedded
         else
           config_data[:type] || :server_db
         end.to_sym
@@ -68,29 +67,50 @@ module Neo4j
           'http://localhost:7474'
       end
 
-      def start_embedded_session(session)
+      def enable_unlimited_strength_crypto!
         # See https://github.com/jruby/jruby/wiki/UnlimitedStrengthCrypto
         security_class = java.lang.Class.for_name('javax.crypto.JceSecurity')
         restricted_field = security_class.get_declared_field('isRestricted')
         restricted_field.accessible = true
         restricted_field.set nil, false
-        session.start
       end
 
-      def open_neo4j_session(options)
-        type, name, default, path = options.values_at(:type, :name, :default, :path)
-
-        if !java_platform? && type == :embedded_db
-          fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
+      # TODO: Deprecate embedded_db and server_db in favor of embedded and http
+      #
+      def cypher_session_adaptor(type, path_or_url, options = {})
+        case type
+        when :embedded_db, :embedded
+          require 'neo4j/core/cypher_session/adaptors/embedded'
+          Neo4j::Core::CypherSession::Adaptors::Embedded.new(path_or_url, options)
+        when :server_db, :http
+          require 'neo4j/core/cypher_session/adaptors/http'
+          Neo4j::Core::CypherSession::Adaptors::HTTP.new(path_or_url, options)
+        else
+          fail ArgumentError, "Unrecognized session_type: #{type.inspect}"
         end
+      end
 
-        session = if options.key?(:name)
-                    Neo4j::Session.open_named(type, name, default, path)
-                  else
-                    Neo4j::Session.open(type, path, options[:options])
-                  end
+      def session_type_is_embedded?(_session_type)
+        [:embedded_db, :embedded].include?(type)
+      end
 
-        start_embedded_session(session) if type == :embedded_db
+      def validate_platform!(session_type)
+        return if !RUBY_PLATFORM =~ /java/
+        return if !session_type_is_embedded?(session_type)
+
+        fail ArgumentError, "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
+      end
+
+      # TODO: Deprecate named sessions in 6.x
+      def open_neo4j_session(options)
+        session_type, default, path, url = options.values_at(:type, :default, :path, :url)
+
+        validate_platform!(session_type)
+
+        enable_unlimited_strength_crypto! if session_type_is_embedded?(session_type)
+
+        adaptor = cypher_session_adaptor(session_type, url || path, options[:options])
+        Neo4j::ActiveBase.set_current_session(adaptor)
       end
     end
 
@@ -99,9 +119,12 @@ module Neo4j
 
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
 
-      Neo4j::Server::CypherSession.log_with do |message|
+      logger_proc = ->(message) {
         (Neo4j::Config[:logger] || Rails.logger).debug message
-      end
+      }
+      Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
+      Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(&logger_proc)
+      Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(&logger_proc)
 
       @neo4j_cypher_logging_registered = true
     end
