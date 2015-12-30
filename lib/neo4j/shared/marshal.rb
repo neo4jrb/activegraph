@@ -4,8 +4,6 @@ module Neo4j
       extend ActiveSupport::Concern
 
       def marshal_dump
-        require 'pry'
-        binding.pry
         marshal_instance_variables.map(&method(:instance_variable_get))
       end
 
