@@ -2,8 +2,11 @@ source 'http://rubygems.org'
 
 gemspec
 
-gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
-# gem 'neo4j-core', path: '../neo4j-core'
+if ENV['CI']
+  gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
+else
+  # gem 'neo4j-core', path: '../neo4j-core'
+end
 
 # gem 'active_attr', github: 'neo4jrb/active_attr', branch: 'performance'
 # gem 'active_attr', path: '../active_attr'
