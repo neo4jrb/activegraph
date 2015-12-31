@@ -31,12 +31,11 @@ module Neo4j::Shared
     #
     # @since 0.1.0
     def assign_attributes(new_attributes = nil)
-      sanitized_new_attributes = sanitize_for_mass_assignment_if_sanitizer(new_attributes)
-
-      sanitized_new_attributes.each do |name, value|
+      return unless new_attributes.present?
+      new_attributes.each do |name, value|
         writer = :"#{name}="
         send(writer, value) if respond_to?(writer)
-      end if sanitized_new_attributes
+      end
     end
 
     # Mass update a model's attributes
@@ -66,27 +65,6 @@ module Neo4j::Shared
     def initialize(attributes = nil)
       assign_attributes(attributes)
       super()
-    end
-
-    private
-
-    # @since 0.8.0
-    def sanitize_for_mass_assignment_if_sanitizer(new_attributes, options = {})
-      if new_attributes && !options[:without_protection] && respond_to?(:sanitize_for_mass_assignment, true)
-        sanitize_for_mass_assignment_with_or_without_role new_attributes, options
-      else
-        new_attributes
-      end
-    end
-
-    # Rails 3.0 and 4.0 do not take a role argument for the sanitizer
-    # @since 0.7.0
-    def sanitize_for_mass_assignment_with_or_without_role(new_attributes, options)
-      if method(:sanitize_for_mass_assignment).arity.abs > 1
-        sanitize_for_mass_assignment new_attributes, options[:as] || :default
-      else
-        sanitize_for_mass_assignment new_attributes
-      end
     end
   end
 end
