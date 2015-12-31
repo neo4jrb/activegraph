@@ -2,11 +2,8 @@ module Neo4j::Shared
   module Property
     extend ActiveSupport::Concern
 
-    include ActiveAttr::Attributes
-    include ActiveAttr::MassAssignment
+    include Neo4j::Shared::MassAssignment
     include ActiveAttr::TypecastedAttributes
-    include ActiveAttr::AttributeDefaults
-    include ActiveAttr::QueryAttributes
     include ActiveModel::Dirty
 
     class UndefinedPropertyError < RuntimeError; end
