@@ -37,10 +37,9 @@ module Neo4j::Shared
       self.class.declared_properties.inject_defaults!(self, starting_props || {})
     end
 
-    # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
     def read_attribute(name)
       super(name)
-    rescue ActiveAttr::UnknownAttributeError
+    rescue Neo4j::UnknownAttributeError
       nil
     end
     alias_method :[], :read_attribute
@@ -161,11 +160,11 @@ module Neo4j::Shared
       end
 
       # @param [Symbol] name The property name
-      # @param [ActiveAttr::AttributeDefinition] active_attr A cloned AttributeDefinition to reuse
+      # @param [Neo4j::Shared::AttributeDefinition] attr_def A cloned AttributeDefinition to reuse
       # @param [Hash] options An options hash to use in the new property definition
-      def inherit_property(name, active_attr, options = {})
+      def inherit_property(name, attr_def, options = {})
         build_property(name, options) do |prop|
-          attributes[prop.name.to_s] = active_attr
+          attributes[prop.name.to_s] = attr_def
         end
       end
 

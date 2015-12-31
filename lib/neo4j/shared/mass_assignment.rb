@@ -6,7 +6,7 @@ module Neo4j::Shared
   #
   # @example Usage
   #   class Person
-  #     include ActiveAttr::MassAssignment
+  #     include Neo4j::Shared::MassAssignment
   #   end
   #
   # Originally part of ActiveAttr, https://github.com/cgriego/active_attr

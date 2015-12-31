@@ -11,7 +11,7 @@ module Neo4j::Shared
   #
   # @example Usage
   #   class Person
-  #     include ActiveAttr::TypecastedAttributes
+  #     include Neo4j::Shared::TypecastedAttributes
   #     attribute :age, :type => Integer
   #   end
   #
@@ -20,10 +20,10 @@ module Neo4j::Shared
   #   person.age #=> 29
   #   person.age_before_type_cast #=> "29"
   #
-  # @since 0.5.0
+  # Originally part of ActiveAttr, https://github.com/cgriego/active_attr
   module TypecastedAttributes
     extend ActiveSupport::Concern
-    include ActiveAttr::Attributes
+    include Neo4j::Shared::Attributes
     include Neo4j::Shared::Typecasting
 
     included do

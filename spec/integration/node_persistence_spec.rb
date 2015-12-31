@@ -87,9 +87,9 @@ describe 'Neo4j::ActiveNode' do
       thing.save
     end
 
-    it 'raise ActiveAttr::UnknownAttributeError if trying to set undeclared property' do
+    it 'raise Neo4j::Shared::UnknownAttributeError if trying to set undeclared property' do
       thing = MyThing.new
-      expect { thing[:newp] = 42 }.to raise_error(ActiveAttr::UnknownAttributeError)
+      expect { thing[:newp] = 42 }.to raise_error(Neo4j::UnknownAttributeError)
     end
   end
 
