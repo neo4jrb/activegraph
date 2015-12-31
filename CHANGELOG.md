@@ -8,10 +8,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+- All explicit dependencies on `ActiveAttr` classes can now be found in the `Neo4j::Shared` namespace. This is of particular interest where type conversion is concerned. `ActiveAttr::Typecasting::Boolean` is now `Neo4j::Shared::Typecasting::Boolean`. 
 
 ### Added
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
+- A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
+
+### Removed
+
+- All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 
 ## [6.0.5] - 12-29-2015
 
