@@ -24,7 +24,6 @@ require 'its'
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
-require 'active_attr/rspec'
 
 require 'neo4j-core'
 require 'neo4j'
