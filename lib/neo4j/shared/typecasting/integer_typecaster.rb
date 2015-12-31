@@ -7,7 +7,7 @@ module Neo4j::Shared
     #   IntegerTypecaster.new.call("1") #=> 1
     #
     # @since 0.5.0
-  class IntegerTypecaster
+    class IntegerTypecaster
       # Typecasts an object to an Integer
       #
       # Attempts to convert using #to_i. Handles FloatDomainError if the

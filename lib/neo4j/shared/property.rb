@@ -3,7 +3,7 @@ module Neo4j::Shared
     extend ActiveSupport::Concern
 
     include Neo4j::Shared::MassAssignment
-    include ActiveAttr::TypecastedAttributes
+    include Neo4j::Shared::TypecastedAttributes
     include ActiveModel::Dirty
 
     class UndefinedPropertyError < RuntimeError; end
