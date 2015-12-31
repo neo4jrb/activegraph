@@ -102,7 +102,7 @@ module Neo4j::Shared
         end
 
         def db_type
-          ActiveAttr::Typecasting::Boolean
+          Neo4j::Shared::Typecasting::Boolean
         end
 
         alias_method :convert_type, :db_type

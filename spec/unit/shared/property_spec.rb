@@ -127,7 +127,7 @@ describe Neo4j::Shared::Property do
     end
 
     it 'sets active_attr typecaster to ObjectTypecaster' do
-      expect(clazz.attributes[:range][:typecaster]).to be_a(ActiveAttr::Typecasting::ObjectTypecaster)
+      expect(clazz.attributes[:range][:typecaster]).to be_a(Neo4j::Shared::Typecasting::ObjectTypecaster)
     end
 
     it 'adds new converter' do

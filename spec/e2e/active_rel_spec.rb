@@ -8,7 +8,7 @@ describe 'ActiveRel' do
     stub_active_node_class('FromClass') do
       before_create :log_before
       after_create :log_after
-      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :before_run, type: Neo4j::Shared::Typecasting::Boolean
       property :after_run
 
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
@@ -25,7 +25,7 @@ describe 'ActiveRel' do
     stub_active_node_class('ToClass') do
       before_create :log_before
       after_create :log_after
-      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :before_run, type: Neo4j::Shared::Typecasting::Boolean
       property :after_run
 
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
