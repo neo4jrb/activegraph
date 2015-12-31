@@ -1,3 +1,4 @@
+# Originally part of ActiveAttr, https://github.com/cgriego/active_attr
 shared_examples 'mass assignment class', mass_assignment: true do
   let :model_class do
     Class.new do

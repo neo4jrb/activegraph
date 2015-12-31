@@ -1,3 +1,4 @@
+# Originally part of ActiveAttr, https://github.com/cgriego/active_attr
 module Neo4j::Shared
   describe MassAssignment, :mass_assignment do
     before do

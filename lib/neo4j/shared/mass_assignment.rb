@@ -9,11 +9,9 @@ module Neo4j::Shared
   #     include ActiveAttr::MassAssignment
   #   end
   #
-  # @since 0.1.0
+  # Originally part of ActiveAttr, https://github.com/cgriego/active_attr
   module MassAssignment
     extend ActiveSupport::Concern
-    # include ChainableInitialization
-
     # Mass update a model's attributes
     #
     # @example Assigning a hash
@@ -24,12 +22,6 @@ module Neo4j::Shared
     # @param [Hash{#to_s => Object}, #each] attributes Attributes used to
     #   populate the model
     # @param [Hash, #[]] options Options that affect mass assignment
-    #
-    # @option options [Symbol] :as (:default) Mass assignment role
-    # @option options [true, false] :without_protection (false) Bypass mass
-    #   assignment security if true
-    #
-    # @since 0.1.0
     def assign_attributes(new_attributes = nil)
       return unless new_attributes.present?
       new_attributes.each do |name, value|
@@ -46,8 +38,6 @@ module Neo4j::Shared
     #   person.last_name #=> "Griego"
     #
     # @param (see #assign_attributes)
-    #
-    # @since 0.1.0
     def attributes=(new_attributes)
       assign_attributes(new_attributes)
     end
@@ -60,8 +50,6 @@ module Neo4j::Shared
     #   person.last_name #=> "Griego"
     #
     # @param (see #assign_attributes)
-    #
-    # @since 0.1.0
     def initialize(attributes = nil)
       assign_attributes(attributes)
       super()
