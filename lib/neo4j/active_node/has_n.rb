@@ -306,9 +306,9 @@ module Neo4j::ActiveNode
       #
       #         Post.has_one :in, :author, type: :has_author, model_class: 'Person'
       #
-      #     *model_class*: The model class to which the association is referring.  Can be either a
-      #       model object ``include`` ing ``ActiveNode`` or a Symbol/String (or an ``Array`` of same).
-      #       **A Symbol or String is recommended** to avoid load-time issues
+      #     *model_class*: The model class to which the association is referring.  Can be a
+      #       Symbol/String (or an ``Array`` of same) with the name of the `ActiveNode` class,
+      #       `false` to specify any model, or nil to specify that it should be guessed.
       #
       #     *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a
       #       model object ``include`` ing ``ActiveRel`` or a Symbol/String (or an ``Array`` of same).
@@ -504,6 +504,7 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
+        options[:model_class] = options[:model_class].name if options[:model_class] == self
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
           @associations ||= {}
           @associations[name] = association

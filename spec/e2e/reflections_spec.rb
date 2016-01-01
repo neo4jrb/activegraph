@@ -1,15 +1,15 @@
 describe 'reflections' do
   module ReflectionsSpecs
-    class RelClass; end
-
     class MyClass
       include Neo4j::ActiveNode
       has_many :in,  :in_things, model_class: self, type: 'things'
       has_many :out, :out_things, model_class: self, type: 'things'
 
       has_many :in, :in_things_string, model_class: self.to_s, type: 'things'
-      has_many :out, :things_with_rel_class, model_class: self, rel_class: RelClass
-      has_many :out, :string_rel_class, model_class: self, rel_class: 'RelClass'
+      # Should evaluate symbols/strings in context of ActiveNode class
+      # Should be able to take away `ReflectionsSpecs::`
+      has_many :out, :things_with_rel_class, model_class: self, rel_class: 'ReflectionsSpecs::RelClass'
+      has_many :out, :string_rel_class, model_class: self, rel_class: 'ReflectionsSpecs::RelClass'
       has_one :out, :one_thing, model_class: self, type: 'one_thing'
     end
 

@@ -51,10 +51,10 @@ describe Neo4j::ActiveRel::Property do
         it 'sets @from_class and @to_class' do
           expect(clazz.instance_variable_get(:@from_class)).to be_nil
           expect(clazz.instance_variable_get(:@to_class)).to be_nil
-          clazz.from_class Object
-          clazz.to_class Object
-          expect(clazz.instance_variable_get(:@from_class)).to eq Object
-          expect(clazz.instance_variable_get(:@to_class)).to eq Object
+          clazz.from_class :Object
+          clazz.to_class :Object
+          expect(clazz.instance_variable_get(:@from_class)).to eq :Object
+          expect(clazz.instance_variable_get(:@to_class)).to eq :Object
         end
       end
     end

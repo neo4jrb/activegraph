@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+- The `model_class` option on associations can no longer be a `Class` constant (should be a String, Symbol, nil, false, or an Array of Symbols/Strings)
+- The `rel_class` option on associations can no longer be a `Class` constant (should be a String, Symbol, or nil)
+- The `from_class` and `to_class` arguments can no longer be a `Class` constant (should be a String, Symbol, :any, or false)
 
 ### Added
 

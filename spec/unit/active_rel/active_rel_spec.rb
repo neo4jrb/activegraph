@@ -16,7 +16,7 @@ describe Neo4j::ActiveRel do
   describe 'neo4j_obj' do
     context 'on a non-persisted node' do
       it 'raises an error' do
-        expect { clazz.new.neo4j_obj }.to raise_error
+        expect { clazz.new.neo4j_obj }.to raise_error(/Tried to access native neo4j object on a non persisted object/)
       end
     end
   end
