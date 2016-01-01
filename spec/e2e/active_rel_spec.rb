@@ -88,6 +88,32 @@ describe 'ActiveRel' do
     end
   end
 
+  describe '#increment, #increment!' do
+    it 'increments an attribute' do
+      rel = MyRelClass.create(from_node: from_node, to_node: to_node)
+      rel.increment(:score)
+      expect(rel.score).to eq(1)
+      expect(rel.score_was).to eq(nil)
+
+      rel.increment!(:score)
+      expect(rel.score).to eq(2)
+      expect(rel.score_was).to eq(2)
+    end
+  end
+
+  describe '#concurrent_increment!' do
+    it 'increments an attribute (concurrently)' do
+      rel1 = MyRelClass.create(from_node: from_node, to_node: to_node)
+      rel2 = MyRelClass.find(rel1.neo_id)
+      rel1.concurrent_increment!(:score)
+      expect(rel1.score).to eq(1)
+      expect(rel1.score_was).to eq(1)
+      rel2.concurrent_increment!(:score)
+      expect(rel2.score).to eq(2)
+      expect(rel1.reload.score).to eq(2)
+    end
+  end
+
   describe 'creation' do
     before(:each) do
       stub_active_rel_class('RelClassWithValidations') do

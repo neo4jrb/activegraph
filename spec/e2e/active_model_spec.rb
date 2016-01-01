@@ -436,6 +436,28 @@ describe 'Neo4j::ActiveNode' do
       expect(person.name).to eq 'Wilson'
     end
 
+    it 'can increment an attribute' do
+      person = Person.create(name: 'andreas', age: 21)
+      expect { person.increment(:age) }.to change { person.age }.from(21).to(22)
+    end
+
+    it 'can increment an attribute and save' do
+      person = Person.create(name: 'andreas', age: 21)
+      expect { person.increment!(:age) }.to change { person.age }.from(21).to(22)
+      expect(person).not_to be_changed
+    end
+
+    it 'can increment an attribute (concurrently)' do
+      person = Person.create(name: 'andreas', age: 21)
+      same_person = Person.last
+      person.concurrent_increment!(:age)
+      expect(person.age).to eq(22)
+      expect(person.age_was).to eq(22)
+      same_person.concurrent_increment!(:age)
+      expect(person.reload.age).to eq(23)
+      expect(same_person.age).to eq(23)
+    end
+
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
