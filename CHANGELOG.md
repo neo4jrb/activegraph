@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.1.0] - 2016-01-01
 
 ### Changed
 
@@ -11,10 +11,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - The `model_class` option on associations can no longer be a `Class` constant (should be a String, Symbol, nil, false, or an Array of Symbols/Strings)
 - The `rel_class` option on associations can no longer be a `Class` constant (should be a String, Symbol, or nil)
 - The `from_class` and `to_class` arguments can no longer be a `Class` constant (should be a String, Symbol, :any, or false)
+- ActiveNode and ActiveRel models can now be marshaled (thanks to jhoffner for the suggestion in #1093)
+
+### Fixed
+
+- Inheritance of properties in ActiveRel is fixed (see #1080)
 
 ### Added
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
+- `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
 
 ## [6.0.5] - 12-29-2015
 
