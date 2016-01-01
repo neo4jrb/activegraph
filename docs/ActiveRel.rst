@@ -37,8 +37,8 @@ See the note on from/to at the end of this page for additional information.
       include Neo4j::ActiveRel
       before_save :do_this
 
-      from_class Student
-      to_class    Lesson
+      from_class :Student
+      to_class   :Lesson
       type 'enrolled_in'
 
       property :since, type: Integer
@@ -159,10 +159,10 @@ ActiveRel really shines when you have multiple associations that share a relatio
       include Neo4j::ActiveNode
       property :managed_stats, type: Integer #store the number of managed objects to improve performance
 
-      has_many :out, :managed_lessons,  model_class: Lesson,  rel_class: :ManagedRel
-      has_many :out, :managed_teachers, model_class: Teacher, rel_class: :ManagedRel
-      has_many :out, :managed_events,   model_class: Event,   rel_class: :ManagedRel
-      has_many :out, :managed_objects,  model_class: false,   rel_class: :ManagedRel
+      has_many :out, :managed_lessons,  model_class: :Lesson,  rel_class: :ManagedRel
+      has_many :out, :managed_teachers, model_class: :Teacher, rel_class: :ManagedRel
+      has_many :out, :managed_events,   model_class: :Event,   rel_class: :ManagedRel
+      has_many :out, :managed_objects,  model_class: false,    rel_class: :ManagedRel
 
       def update_stats
         managed_stats += 1
@@ -174,7 +174,7 @@ ActiveRel really shines when you have multiple associations that share a relatio
       include Neo4j::ActiveRel
       after_create :update_user_stats
       validate :manageable_object
-      from_class User
+      from_class :User
       to_class :any
       type 'manages'
 

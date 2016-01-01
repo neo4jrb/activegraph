@@ -71,6 +71,14 @@ Persistence
 
    
 
+   
+
+   
+
+   
+
+   
+
 
 
 
@@ -128,6 +136,19 @@ Methods
        else
          "#{model_cache_key}/#{neo_id}"
        end
+     end
+
+
+
+.. _`Neo4j/Shared/Persistence#concurrent_increment!`:
+
+**#concurrent_increment!**
+  Increments concurrently a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def concurrent_increment!(_attribute, _by = 1)
+       fail 'not_implemented'
      end
 
 
@@ -223,6 +244,34 @@ Methods
 
      def frozen?
        @attributes.frozen?
+     end
+
+
+
+.. _`Neo4j/Shared/Persistence#increment`:
+
+**#increment**
+  Increments a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def increment(attribute, by = 1)
+       self[attribute] ||= 0
+       self[attribute] += by
+       self
+     end
+
+
+
+.. _`Neo4j/Shared/Persistence#increment!`:
+
+**#increment!**
+  Convenience method to increment numeric attribute and #save at the same time
+
+  .. code-block:: ruby
+
+     def increment!(attribute, by = 1)
+       increment(attribute, by).update_attribute(attribute, self[attribute])
      end
 
 
@@ -359,11 +408,8 @@ Methods
   .. code-block:: ruby
 
      def reload_from_database
-       # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-       if reloaded = self.class.load_entity(neo_id)
-         send(:attributes=, reloaded.attributes)
-       end
-       reloaded
+       reloaded = self.class.load_entity(neo_id)
+       reloaded ? init_on_reload(reloaded._persisted_obj) : nil
      end
 
 

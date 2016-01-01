@@ -304,7 +304,7 @@ module Neo4j::ActiveNode
       #         # `model_class` of `Post` is assumed here
       #         Person.has_many :out, :posts, origin: :author
       #
-      #         Post.has_one :in, :author, type: :has_author, model_class: 'Person'
+      #         Post.has_one :in, :author, type: :has_author, model_class: :Person
       #
       #     *model_class*: The model class to which the association is referring.  Can be a
       #       Symbol/String (or an ``Array`` of same) with the name of the `ActiveNode` class,

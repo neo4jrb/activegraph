@@ -15,6 +15,8 @@ Initialize
 
    
 
+   
+
 
 
 
@@ -66,6 +68,20 @@ Methods
        @_persisted_obj = persisted_node
        changed_attributes && changed_attributes.clear
        @attributes = convert_and_assign_attributes(properties)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Initialize#init_on_reload`:
+
+**#init_on_reload**
+  
+
+  .. code-block:: ruby
+
+     def init_on_reload(reloaded)
+       @attributes = nil
+       init_on_load(reloaded, reloaded.props)
      end
 
 

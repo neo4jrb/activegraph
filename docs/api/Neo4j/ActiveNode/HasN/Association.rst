@@ -97,9 +97,11 @@ Association
 
    
 
-   Association/RelFactory
+   
 
    Association/RelWrapper
+
+   Association/RelFactory
 
 
 
@@ -120,11 +122,11 @@ Files
 
 
 
-  * `lib/neo4j/active_node/has_n/association.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L6>`_
-
-  * `lib/neo4j/active_node/has_n/association/rel_factory.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_factory.rb#L2>`_
+  * `lib/neo4j/active_node/has_n/association.rb:7 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L7>`_
 
   * `lib/neo4j/active_node/has_n/association/rel_wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_wrapper.rb#L1>`_
+
+  * `lib/neo4j/active_node/has_n/association/rel_factory.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_factory.rb#L2>`_
 
 
 
@@ -288,7 +290,7 @@ Methods
   .. code-block:: ruby
 
      def discovered_model
-       target_class_names.map(&:constantize).select do |constant|
+       target_classes.select do |constant|
          constant.ancestors.include?(::Neo4j::ActiveNode)
        end
      end
@@ -390,7 +392,7 @@ Methods
        @pending_model_refresh = @target_classes_or_nil = nil
      
        # Using #to_s on purpose here to take care of classes/strings/symbols
-       @model_class = @model_class.to_s.constantize if @model_class
+       @model_class = ClassArguments.constantize_argument(@model_class.to_s) if @model_class
      end
 
 
@@ -505,9 +507,11 @@ Methods
      def target_class
        return @target_class if @target_class
      
-       @target_class = target_class_names[0].constantize if target_class_names && target_class_names.size == 1
-     rescue NameError
-       raise ArgumentError, "Could not find `#{@target_class}` class and no :model_class specified"
+       return if !(target_class_names && target_class_names.size == 1)
+     
+       class_const = ClassArguments.constantize_argument(target_class_names[0])
+     
+       @target_class = class_const
      end
 
 
@@ -561,7 +565,7 @@ Methods
   .. code-block:: ruby
 
      def target_classes
-       target_class_names.map(&:constantize)
+       ClassArguments.constantize_argument(target_class_names)
      end
 
 
