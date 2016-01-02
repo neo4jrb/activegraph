@@ -177,9 +177,9 @@ module Neo4j::Shared
       end
 
       def undef_property(name)
+        undef_constraint_or_index(name)
         declared_properties.unregister(name)
         attribute_methods(name).each { |method| undef_method(method) }
-        undef_constraint_or_index(name)
       end
 
       def declared_properties
@@ -212,6 +212,13 @@ module Neo4j::Shared
           fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
           index(name) if options[:index] == :exact
         end
+      end
+
+      def undef_constraint_or_index(name)
+        prop = declared_properties[name]
+        return unless prop.index_or_constraint?
+        type = prop.constraint? ? :constraint : :index
+        send(:"drop_#{type}", name)
       end
     end
   end

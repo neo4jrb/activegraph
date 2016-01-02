@@ -101,8 +101,7 @@ module Neo4j::Shared
     def unregister(name)
       # might need to be include?(name.to_s)
       fail ArgumentError, "Argument `#{name}` not an attribute" if not registered_properties[name]
-      declared_prop = registered_properties[name]
-      registered_properties.delete(declared_prop)
+      registered_properties.delete(name)
       unregister_magic_typecaster(name)
       unregister_property_default(name)
     end
