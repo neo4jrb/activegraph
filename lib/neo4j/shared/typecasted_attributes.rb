@@ -39,8 +39,6 @@ module Neo4j::Shared
     # @param [String, Symbol, #to_s] name Attribute name
     #
     # @return [Object, nil] The attribute value before typecasting
-    #
-    # @since 0.5.0
     def attribute_before_type_cast(name)
       @attributes ||= {}
       @attributes[name.to_s]
@@ -49,8 +47,6 @@ module Neo4j::Shared
     private
 
     # Reads the attribute and typecasts the result
-    #
-    # @since 0.5.0
     def attribute(name)
       typecast_attribute(_attribute_typecaster(name), super)
     end
@@ -58,7 +54,6 @@ module Neo4j::Shared
     # Calculates an attribute type
     #
     # @private
-    # @since 0.5.0
     def _attribute_type(attribute_name)
       self.class._attribute_type(attribute_name)
     end
@@ -66,7 +61,6 @@ module Neo4j::Shared
     # Resolve an attribute typecaster
     #
     # @private
-    # @since 0.6.0
     def _attribute_typecaster(attribute_name)
       type = _attribute_type(attribute_name)
       self.class.attributes[attribute_name][:typecaster] || typecaster_for(type) || fail(UnknownTypecasterError, "Unable to cast to type #{type}")
@@ -79,8 +73,6 @@ module Neo4j::Shared
       #   Person.inspect
       #
       # @return [String] Human-readable presentation of the attributes
-      #
-      # @since 0.5.0
       def inspect
         inspected_attributes = attribute_names.sort.map { |name| "#{name}: #{_attribute_type(name)}" }
         attributes_list = "(#{inspected_attributes.join(', ')})" unless inspected_attributes.empty?
@@ -90,7 +82,6 @@ module Neo4j::Shared
       # Calculates an attribute type
       #
       # @private
-      # @since 0.5.0
       def _attribute_type(attribute_name)
         attributes[attribute_name][:type] || Object
       end

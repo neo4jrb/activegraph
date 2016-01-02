@@ -4,8 +4,6 @@ module Neo4j::Shared
     #
     # @example Usage
     #   FloatTypecaster.new.call(1) #=> 1.0
-    #
-    # @since 0.5.0
     class FloatTypecaster
       # Typecasts an object to a Float
       #
@@ -17,8 +15,6 @@ module Neo4j::Shared
       # @param [Object, #to_f] value The object to typecast
       #
       # @return [Float, nil] The result of typecasting
-      #
-      # @since 0.5.0
       def call(value)
         value.to_f if value.respond_to? :to_f
       end

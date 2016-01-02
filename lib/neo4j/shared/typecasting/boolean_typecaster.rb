@@ -6,15 +6,11 @@ module Neo4j::Shared
     #
     # @example Usage
     #   BooleanTypecaster.new.call(1) #=> true
-    #
-    # @since 0.5.0
     class BooleanTypecaster
       # Values which force a false result for typecasting
       #
       # These values are based on the
       # {YAML language}[http://yaml.org/type/bool.html].
-      #
-      # @since 0.5.0
       FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F)
 
       # Typecasts an object to true or false
@@ -29,8 +25,6 @@ module Neo4j::Shared
       # @param [Object] value The object to typecast
       #
       # @return [true, false] The result of typecasting
-      #
-      # @since 0.5.0
       def call(value)
         case value
         when Numeric, /^\-?[0-9]/ then !value.to_f.zero?

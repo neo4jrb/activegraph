@@ -5,8 +5,6 @@ module Neo4j::Shared
     #
     # @example Usage
     #   IntegerTypecaster.new.call("1") #=> 1
-    #
-    # @since 0.5.0
     class IntegerTypecaster
       # Typecasts an object to an Integer
       #
@@ -19,8 +17,6 @@ module Neo4j::Shared
       # @param [Object, #to_i] value The object to typecast
       #
       # @return [Integer, nil] The result of typecasting
-      #
-      # @since 0.5.0
       def call(value)
         value.to_i if value.respond_to? :to_i
       rescue FloatDomainError

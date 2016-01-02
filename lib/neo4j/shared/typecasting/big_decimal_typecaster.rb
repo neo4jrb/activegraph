@@ -8,8 +8,6 @@ module Neo4j::Shared
     #
     # @example Usage
     #   BigDecimalTypecaster.new.call(1).to_s #=> "0.1E1"
-    #
-    # @since 0.5.0
     class BigDecimalTypecaster
       # Typecasts an object to a BigDecimal
       #
@@ -22,8 +20,6 @@ module Neo4j::Shared
       # @param [Object, #to_d, #to_s] value The object to typecast
       #
       # @return [BigDecimal, nil] The result of typecasting
-      #
-      # @since 0.5.0
       def call(value)
         if value.is_a? BigDecimal
           value

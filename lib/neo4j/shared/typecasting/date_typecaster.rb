@@ -8,8 +8,6 @@ module Neo4j::Shared
     #
     # @example Usage
     #   DateTypecaster.new.call("2012-01-01") #=> Sun, 01 Jan 2012
-    #
-    # @since 0.5.0
     class DateTypecaster
       # Typecasts an object to a Date
       #
@@ -21,8 +19,6 @@ module Neo4j::Shared
       # @param [Object, #to_date] value The object to typecast
       #
       # @return [Date, nil] The result of typecasting
-      #
-      # @since 0.5.0
       def call(value)
         value.to_date if value.respond_to? :to_date
       rescue NoMethodError, ArgumentError

@@ -9,7 +9,6 @@ module Neo4j::Shared
     include Comparable
 
     # The attribute name
-    # @since 0.2.0
     attr_reader :name
 
     # Compare attribute definitions
@@ -21,8 +20,6 @@ module Neo4j::Shared
     #   attribute definition to compare with.
     #
     # @return [-1, 0, 1, nil]
-    #
-    # @since 0.2.1
     def <=>(other)
       return nil unless other.instance_of? self.class
       return nil if name == other.name && options != other.options
@@ -35,8 +32,6 @@ module Neo4j::Shared
     #   attribute_definition[:type]
     #
     # @param [Symbol] key The option key
-    #
-    # @since 0.5.0
     def [](key)
       @options[key]
     end
@@ -50,8 +45,6 @@ module Neo4j::Shared
     # @param [Hash{Symbol => Object}] options attribute options
     #
     # @return [Neo4j::Shared::AttributeDefinition]
-    #
-    # @since 0.2.0
     def initialize(name, options = {})
       fail TypeError, "can't convert #{name.class} into Symbol" unless name.respond_to? :to_sym
       @name = name.to_sym
@@ -65,8 +58,6 @@ module Neo4j::Shared
     #
     # @return [String] Human-readable presentation of the attribute
     #   definition
-    #
-    # @since 0.6.0
     def inspect
       options_description = options.map { |key, value| "#{key.inspect} => #{value.inspect}" }.sort.join(', ')
       inspected_options = ", #{options_description}" unless options_description.empty?
@@ -76,8 +67,6 @@ module Neo4j::Shared
     # The attribute name
     #
     # @return [String] the attribute name
-    #
-    # @since 0.2.0
     def to_s
       name.to_s
     end
@@ -85,8 +74,6 @@ module Neo4j::Shared
     # The attribute name
     #
     # @return [Symbol] the attribute name
-    #
-    # @since 0.2.1
     def to_sym
       name
     end
@@ -94,7 +81,6 @@ module Neo4j::Shared
     protected
 
     # The attribute options
-    # @since 0.5.0
     attr_reader :options
   end
 end

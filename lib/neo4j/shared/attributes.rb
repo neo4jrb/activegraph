@@ -17,7 +17,6 @@ module Neo4j::Shared
     include ActiveModel::AttributeMethods
 
     # Methods deprecated on the Object class which can be safely overridden
-    # @since 0.3.0
     DEPRECATED_OBJECT_METHODS = %w(id type)
 
     included do
@@ -34,8 +33,6 @@ module Neo4j::Shared
     #
     # @return [true, false] True if attributes are equal and other is instance
     #   of the same Class, false if not.
-    #
-    # @since 0.2.0
     def ==(other)
       return false unless other.instance_of? self.class
       attributes == other.attributes
@@ -47,8 +44,6 @@ module Neo4j::Shared
     #   person.attributes # => {"name"=>"Ben Poweski"}
     #
     # @return [Hash{String => Object}] The Hash of all attributes
-    #
-    # @since 0.2.0
     def attributes
       attributes_map { |name| send name }
     end
@@ -60,8 +55,6 @@ module Neo4j::Shared
     #
     # @return [String] Human-readable presentation of the attribute
     #   definitions
-    #
-    # @since 0.2.0
     def inspect
       attribute_descriptions = attributes.sort.map { |key, value| "#{key}: #{value.inspect}" }.join(', ')
       separator = ' ' unless attribute_descriptions.empty?
@@ -80,8 +73,6 @@ module Neo4j::Shared
     # @return [Object] The value of the attribute.
     #
     # @raise [UnknownAttributeError] if the attribute is unknown
-    #
-    # @since 0.2.0
     def read_attribute(name)
       if respond_to? name
         send name.to_s
@@ -102,8 +93,6 @@ module Neo4j::Shared
     # @param [Object] value The value to set for the attribute.
     #
     # @raise [UnknownAttributeError] if the attribute is unknown
-    #
-    # @since 0.2.0
     def write_attribute(name, value)
       if respond_to? "#{name}="
         send "#{name}=", value
@@ -116,16 +105,12 @@ module Neo4j::Shared
     private
 
     # Read an attribute from the attributes hash
-    #
-    # @since 0.2.1
     def attribute(name)
       @attributes ||= {}
       @attributes[name]
     end
 
     # Write an attribute to the attributes hash
-    #
-    # @since 0.2.1
     def attribute=(name, value)
       @attributes ||= {}
       @attributes[name] = value
@@ -140,8 +125,6 @@ module Neo4j::Shared
     # @yieldparam [String] name The name of the attribute to map.
     #
     # @return [Hash{String => Object}] The Hash of mapped attributes
-    #
-    # @since 0.7.0
     def attributes_map
       Hash[self.class.attribute_names.map { |name| [name, yield(name)] }]
     end
@@ -163,8 +146,6 @@ module Neo4j::Shared
       #   existing methods
       #
       # @return [AttributeDefinition] Attribute's definition
-      #
-      # @since 0.2.0
       def attribute(name, options = {})
         if dangerous_attribute_method_name = dangerous_attribute?(name)
           fail Neo4j::DangerousAttributeError, %(an attribute method named "#{dangerous_attribute_method_name}" would conflict with an existing method)
@@ -187,8 +168,6 @@ module Neo4j::Shared
       # @param (see AttributeDefinition#initialize)
       #
       # @return [AttributeDefinition] Attribute's definition
-      #
-      # @since 0.6.0
       def attribute!(name, options = {})
         AttributeDefinition.new(name, options).tap do |attribute_definition|
           attribute_name = attribute_definition.name.to_s
@@ -205,8 +184,6 @@ module Neo4j::Shared
       #   Person.attribute_names
       #
       # @return [Array<String>] The attribute names
-      #
-      # @since 0.5.0
       def attribute_names
         attributes.keys
       end
@@ -218,8 +195,6 @@ module Neo4j::Shared
       #
       # @return [ActiveSupport::HashWithIndifferentAccess{String => Neo4j::Shared::AttributeDefinition}]
       #   The Hash of AttributeDefinition instances
-      #
-      # @since 0.2.0
       def attributes
         @attributes ||= ActiveSupport::HashWithIndifferentAccess.new
       end
@@ -240,8 +215,6 @@ module Neo4j::Shared
       # @param name Attribute name
       #
       # @return [false, String] False or the conflicting method name
-      #
-      # @since 0.6.0
       def dangerous_attribute?(name)
         attribute_methods(name).detect do |method_name|
           !DEPRECATED_OBJECT_METHODS.include?(method_name.to_s) && allocate.respond_to?(method_name, true)
@@ -254,8 +227,6 @@ module Neo4j::Shared
       #   Person.inspect
       #
       # @return [String] Human-readable presentation of the attributes
-      #
-      # @since 0.2.0
       def inspect
         inspected_attributes = attribute_names.sort
         attributes_list = "(#{inspected_attributes.join(', ')})" unless inspected_attributes.empty?
@@ -268,8 +239,6 @@ module Neo4j::Shared
       #
       # @param [Array<Neo4j::Shared::AttributeDefinition>] The Array of
       #   AttributeDefinition instances
-      #
-      # @since 0.2.2
       def attributes=(attributes)
         @attributes = attributes
       end
@@ -282,15 +251,11 @@ module Neo4j::Shared
       private
 
       # Expand an attribute name into its generated methods names
-      #
-      # @since 0.6.0
       def attribute_methods(name)
         attribute_method_matchers.map { |matcher| matcher.method_name name }
       end
 
       # Ruby inherited hook to assign superclass attributes to subclasses
-      #
-      # @since 0.2.2
       def inherited(subclass)
         super
         subclass.attributes = attributes.dup

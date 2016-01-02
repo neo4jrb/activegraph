@@ -21,8 +21,6 @@ module Neo4j::Shared
   # * Integer
   # * Object
   # * String
-  #
-  # @since 0.5.0
   module Typecasting
     # @private
     TYPECASTER_MAP = {
@@ -43,8 +41,6 @@ module Neo4j::Shared
     #
     # @return [Object, nil] The typecasted value or nil if it cannot be
     #   typecasted
-    #
-    # @since 0.5.0
     def typecast_attribute(typecaster, value)
       fail ArgumentError, 'a typecaster must be given' unless typecaster.respond_to?(:call)
       return value if value.nil?
@@ -56,8 +52,6 @@ module Neo4j::Shared
     # @param [Class] type The type to cast to
     #
     # @return [#call, nil] The typecaster to use
-    #
-    # @since 0.6.0
     def typecaster_for(type)
       typecaster = TYPECASTER_MAP[type]
       typecaster.new if typecaster
