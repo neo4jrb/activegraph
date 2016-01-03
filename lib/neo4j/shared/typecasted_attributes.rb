@@ -63,7 +63,7 @@ module Neo4j::Shared
     # @private
     def _attribute_typecaster(attribute_name)
       type = _attribute_type(attribute_name)
-      self.class.attributes[attribute_name][:typecaster] || typecaster_for(type) || fail(UnknownTypecasterError, "Unable to cast to type #{type}")
+      self.class.attributes[attribute_name].typecaster || typecaster_for(type) || fail(UnknownTypecasterError, "Unable to cast to type #{type}")
     end
 
     module ClassMethods
@@ -83,7 +83,7 @@ module Neo4j::Shared
       #
       # @private
       def _attribute_type(attribute_name)
-        attributes[attribute_name][:type] || Object
+        attributes[attribute_name].type || Object
       end
     end
   end

@@ -38,9 +38,7 @@ module Neo4j::Shared
     end
 
     def read_attribute(name)
-      super(name)
-    rescue Neo4j::UnknownAttributeError
-      nil
+      respond_to?(name) ? send(name) : nil
     end
     alias_method :[], :read_attribute
 
@@ -109,7 +107,7 @@ module Neo4j::Shared
     def instantiate_object(field, values_with_empty_parameters)
       return nil if values_with_empty_parameters.all?(&:nil?)
       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
-      klass = field[:type]
+      klass = field.type
       klass ? klass.new(*values) : values
     end
 
@@ -155,7 +153,7 @@ module Neo4j::Shared
       #    end
       def property(name, options = {})
         build_property(name, options) do |prop|
-          attribute(name, prop.options)
+          attribute(prop)
         end
       end
 
@@ -163,17 +161,18 @@ module Neo4j::Shared
       # @param [Neo4j::Shared::AttributeDefinition] attr_def A cloned AttributeDefinition to reuse
       # @param [Hash] options An options hash to use in the new property definition
       def inherit_property(name, attr_def, options = {})
-        build_property(name, options) do |prop|
-          attributes[prop.name.to_s] = attr_def
+        build_property(name, options) do |prop_name|
+          attributes[prop_name] = attr_def
         end
       end
 
       def build_property(name, options)
-        prop = DeclaredProperty.new(name, options)
-        prop.register
-        declared_properties.register(prop)
-        yield prop
-        constraint_or_index(name, options)
+        DeclaredProperty.new(name, options).tap do |prop|
+          prop.register
+          declared_properties.register(prop)
+          yield name
+          constraint_or_index(name, options)
+        end
       end
 
       def undef_property(name)
@@ -186,22 +185,28 @@ module Neo4j::Shared
         @_declared_properties ||= DeclaredProperties.new(self)
       end
 
-      def attribute!(name, options = {})
-        super(name, options)
-        define_method("#{name}=") do |value|
-          typecast_value = typecast_attribute(_attribute_typecaster(name), value)
-          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
-          super(value)
-        end
-      end
-
       # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents
       # an extra call to a slow dependency method.
       def attributes_nil_hash
         declared_properties.attributes_nil_hash
       end
 
+      def extract_association_attributes!(props)
+        props
+      end
+
       private
+
+      def attribute!(name)
+        remove_instance_variable('@attribute_methods_generated') if instance_variable_defined?('@attribute_methods_generated')
+        define_attribute_methods([name]) unless attribute_names.include?(name)
+        attributes[name.to_s] = declared_properties[name]
+        define_method("#{name}=") do |value|
+          typecast_value = typecast_attribute(_attribute_typecaster(name), value)
+          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
+          super(value)
+        end
+      end
 
       def constraint_or_index(name, options)
         # either constraint or index, do not set both

@@ -7,15 +7,15 @@ shared_examples 'new model' do
     end
 
     it 'should not allow read access to undeclared properties' do
-      subject[:unknown].should be_nil
+      expect(subject[:unknown]).to be_nil
     end
 
     it 'should allow access to all properties before it is saved' do
-      subject.props.should be_a(Hash)
+      expect(subject.props).to be_a(Hash)
     end
 
     it 'should allow properties to be accessed with a symbol' do
-      lambda { subject.props[:test] = true }.should_not raise_error
+      expect { subject.props[:test] = true }.not_to raise_error
     end
   end
 end

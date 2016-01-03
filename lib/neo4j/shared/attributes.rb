@@ -48,40 +48,6 @@ module Neo4j::Shared
       attributes_map { |name| send name }
     end
 
-    # Returns the class name plus its attributes
-    #
-    # @example Inspect the model.
-    #   person.inspect
-    #
-    # @return [String] Human-readable presentation of the attribute
-    #   definitions
-    def inspect
-      attribute_descriptions = attributes.sort.map { |key, value| "#{key}: #{value.inspect}" }.join(', ')
-      separator = ' ' unless attribute_descriptions.empty?
-      "#<#{self.class.name}#{separator}#{attribute_descriptions}>"
-    end
-
-    # Read a value from the model's attributes.
-    #
-    # @example Read an attribute with read_attribute
-    #   person.read_attribute(:name)
-    # @example Rean an attribute with bracket syntax
-    #   person[:name]
-    #
-    # @param [String, Symbol, #to_s] name The name of the attribute to get.
-    #
-    # @return [Object] The value of the attribute.
-    #
-    # @raise [UnknownAttributeError] if the attribute is unknown
-    def read_attribute(name)
-      if respond_to? name
-        send name.to_s
-      else
-        fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
-      end
-    end
-    alias_method :[], :read_attribute
-
     # Write a single attribute to the model's attribute hash.
     #
     # @example Write the attribute with write_attribute
@@ -146,35 +112,11 @@ module Neo4j::Shared
       #   existing methods
       #
       # @return [AttributeDefinition] Attribute's definition
-      def attribute(name, options = {})
-        if dangerous_attribute_method_name = dangerous_attribute?(name)
-          fail Neo4j::DangerousAttributeError, %(an attribute method named "#{dangerous_attribute_method_name}" would conflict with an existing method)
+      def attribute(name)
+        if dangerous_attribute?(name)
+          fail Neo4j::DangerousAttributeError, %(an attribute method named "#{name}" would conflict with an existing method)
         else
-          attribute! name, options
-        end
-      end
-
-      # Defines an attribute without checking for conflicts
-      #
-      # Allows you to define an attribute whose methods will conflict
-      # with an existing method. For example, Ruby's Timeout library
-      # adds a timeout method to Object. Attempting to define a timeout
-      # attribute using .attribute will raise a
-      # {DangerousAttributeError}, but .attribute! will not.
-      #
-      # @example Define a dangerous attribute.
-      #   attribute! :timeout
-      #
-      # @param (see AttributeDefinition#initialize)
-      #
-      # @return [AttributeDefinition] Attribute's definition
-      def attribute!(name, options = {})
-        AttributeDefinition.new(name, options).tap do |attribute_definition|
-          attribute_name = attribute_definition.name.to_s
-          # Force active model to generate attribute methods
-          remove_instance_variable('@attribute_methods_generated') if instance_variable_defined?('@attribute_methods_generated')
-          define_attribute_methods([attribute_definition.name]) unless attribute_names.include? attribute_name
-          attributes[attribute_name] = attribute_definition
+          attribute!(name)
         end
       end
 

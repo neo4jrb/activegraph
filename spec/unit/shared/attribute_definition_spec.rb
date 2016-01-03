@@ -1,6 +1,6 @@
 # Originally part of ActiveAttr, https://github.com/cgriego/active_attr
 module Neo4j::Shared
-  describe AttributeDefinition do
+  describe DeclaredProperty do
     subject(:attribute_definition) { described_class.new(:amount, default: 'default') }
 
     describe '#<=>' do

@@ -4,11 +4,13 @@ module Neo4j::Shared
 
     let :model_class do
       Class.new do
+        include Property
+        include Attributes
         include TypecastedAttributes
 
-        attribute :amount, type: String
-        attribute :first_name
-        attribute :last_name
+        property :amount, type: String
+        property :first_name
+        property :last_name
 
         def last_name_before_type_cast
           super

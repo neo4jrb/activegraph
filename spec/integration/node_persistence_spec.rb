@@ -1,15 +1,17 @@
 describe 'Neo4j::ActiveNode' do
-  class MyThing
-    include Neo4j::ActiveNode
-    property :a
-    property :x
-    has_one :out, :parent, model_class: false, type: nil
-  end
-
   let(:transaction) { double('Mock transaction', close: true) }
   let(:session) { double('Mock Session', create_node: nil, begin_tx: transaction) }
 
   before do
+    stub_active_node_class 'MyThing' do
+      property :a
+      property :x
+      has_one :out, :parent, model_class: false, type: nil
+    end
+
+    stub_named_class('MyNodeWithValidations', MyThing) do
+      validates :x, presence: true
+    end
     SecureRandom.stub(:uuid) { 'secure123' }
     Neo4j::Session.stub(:current).and_return(session)
   end
@@ -43,38 +45,6 @@ describe 'Neo4j::ActiveNode' do
       session.should_not_receive(:create_node)
       expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end
-
-    # skip "SKIP, old tests, neo4j-core has been updated. Is this still needed?"
-    # it 'can create relationships' do
-    #   parent = double("parent node", neo_id: 1, persisted?: true)
-    #   node = double('unwrapped_node', props: {a: 999}, rel: nil, neo_id: 2)
-    #   node.class.stub(:mapped_label_name).and_return('MyThing')
-    #   node.stub(:exist?).and_return(true)
-    #   session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
-    #   session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
-    #   session.should_receive(:_query).at_most(1000)
-    #   #session.should_receive(:begin_tx)
-    #   thing = MyThing.create(a: 1,  parent: parent)
-    #   thing.props.should == {a: 999}
-    # end
-
-    # it 'will delete old relationship before creating a new one' do
-    #   parent = double("parent node", neo_id: 1, persisted?: true)
-    #   old_rel = double("old relationship")
-
-    #   node = double('unwrapped_node', props: {a: 999}, rel: old_rel, neo_id: 2)
-
-    #   node.class.stub(:mapped_label_name).and_return('MyThing')
-    #   node.stub(:exist?).and_return(true)
-    #   session.should_receive(:create_node).with({a: 1}, [:MyThing]).and_return(node)
-    #   session.should_receive(:query).exactly(3).times.and_return(Neo4j::Core::Query.new)
-    #   session.should_receive(:_query).exactly(2).times
-
-    #   #session.should_receive(:begin_tx)
-
-    #   thing = MyThing.create(a: 1,  parent: parent)
-    #   thing.props.should == {a: 999}
-    # end
   end
 
   describe '#save' do
@@ -104,10 +74,6 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'with validations' do
-      class MyNodeWithValidations < MyThing
-        validates :x, presence: true
-      end
-
       it 'raises an error with invalid params' do
         thing = MyNodeWithValidations.new
         expect { thing.save! }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
