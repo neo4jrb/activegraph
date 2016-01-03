@@ -1,4 +1,6 @@
 # Originally part of ActiveAttr, https://github.com/cgriego/active_attr
+# These tests were originally for the AttributeDefinition class.
+# TODO: Additional unit tests for DeclaredProperty
 module Neo4j::Shared
   describe DeclaredProperty do
     subject(:attribute_definition) { described_class.new(:amount, default: 'default') }
