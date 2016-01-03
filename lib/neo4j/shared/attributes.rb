@@ -179,7 +179,7 @@ module Neo4j::Shared
 
       # Assign a set of attribute definitions, used when subclassing models
       #
-      # @param [Array<Neo4j::Shared::AttributeDefinition>] The Array of
+      # @param [Array<Neo4j::Shared::DeclaredProperties>] The Array of
       #   AttributeDefinition instances
       def attributes=(attributes)
         @attributes = attributes

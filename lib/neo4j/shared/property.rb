@@ -20,8 +20,6 @@ module Neo4j::Shared
       "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
     end
 
-    # TODO: Remove the commented :super entirely once this code is part of a release.
-    # It calls an init method in active_attr that has a very negative impact on performance.
     def initialize(attributes = nil)
       attributes = process_attributes(attributes)
       @relationship_props = self.class.extract_association_attributes!(attributes)
