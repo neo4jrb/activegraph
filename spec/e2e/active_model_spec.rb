@@ -612,9 +612,10 @@ describe 'Neo4j::ActiveNode' do
     let!(:person) { Person.create(name: 'DateTime', datetime: datetime) }
 
     let(:datetime_db_value) do
-      Neo4j::Session.query.match(p: :Person)
-        .where(p: {neo_id: person.neo_id})
-        .pluck(p: :datetime).first
+      query = new_query.match(p: :Person)
+              .where(p: {neo_id: person.neo_id})
+              .return('p.datetime AS datetime')
+      Neo4j::ActiveBase.current_session.query(query).first.datetime
     end
 
     it 'saves as date/time string by default' do

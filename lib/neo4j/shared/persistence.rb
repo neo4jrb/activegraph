@@ -133,8 +133,6 @@ module Neo4j::Shared
     end
 
     def exist?
-      # Replace with query
-      _persisted_obj && _persisted_obj.exist?
       if _persisted_obj
         query = object_query_base.return('ID(n)')
         self.class.neo4j_session.query(query).any?

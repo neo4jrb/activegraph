@@ -16,8 +16,8 @@ module Neo4j
       end
 
       def run_transaction(run_in_tx = true)
-        Neo4j::Transaction.run(current_session, run_in_tx) do
-          yield
+        Neo4j::Transaction.run(current_session, run_in_tx) do |tx|
+          yield tx
         end
       end
 
