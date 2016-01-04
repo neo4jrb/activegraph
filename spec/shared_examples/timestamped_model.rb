@@ -50,7 +50,11 @@ shared_examples_for 'timestamped model' do
 
       context 'with missing updated_at' do
         before do
-          Neo4j::Transaction.run { subject._persisted_obj.remove_property('updated_at') }
+          Neo4j::ActiveBase.run_transaction do
+            query = "MATCH (n) WHERE ID(n) = {neo_id} REMOVE n.updated_at"
+            neo_id = subject._persisted_obj.neo_id
+            Neo4j::ActiveBase.current_session.query(query, neo_id: neo_id)
+          end
         end
 
         it 'creates the property' do

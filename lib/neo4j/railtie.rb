@@ -109,7 +109,7 @@ module Neo4j
 
         enable_unlimited_strength_crypto! if session_type_is_embedded?(session_type)
 
-        adaptor = cypher_session_adaptor(session_type, url || path, options[:options])
+        adaptor = cypher_session_adaptor(session_type, url || path, options[:options].merge(wrap_level: :proc))
         Neo4j::ActiveBase.set_current_session(adaptor)
       end
     end

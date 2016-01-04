@@ -86,7 +86,7 @@ module Neo4jSpecHelpers
   end
 
   def create_session(options = {})
-    @current_session = Neo4j::Core::CypherSession.new(session_adaptor(options))
+    @current_session = Neo4j::Core::CypherSession.new(session_adaptor(options.merge(wrap_level: :proc)))
     Neo4j::ActiveBase.set_current_session(@current_session)
   end
 

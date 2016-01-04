@@ -17,7 +17,7 @@ module Neo4j
       def save(options = {})
         result = perform_validations(options) ? super : false
         if !result
-          Neo4j::Transaction.current.failure if Neo4j::Transaction.current
+          Neo4j::ActiveBase.current_transaction.mark_failed if Neo4j::ActiveBase.current_transaction
         end
         result
       end

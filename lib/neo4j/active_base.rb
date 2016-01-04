@@ -15,6 +15,12 @@ module Neo4j
         set_current_session(Neo4j::Core::CypherSession.new(adaptor))
       end
 
+      def run_transaction(run_in_tx = true)
+        Neo4j::Transaction.run(current_session, run_in_tx) do
+          yield
+        end
+      end
+
       # For making schema changes in a separate session
       # So that we don't have issues with data and schema changes
       # in the same transaction

@@ -61,7 +61,7 @@ module Neo4j::ActiveNode
     # @return [Neo4j::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
       query = "CREATE (n:#{labels.join(':')}) SET n = {props} RETURN n"
-      Neo4j::ActiveBase.current_session.query(query, props: node_props).to_a[0].n
+      Neo4j::ActiveBase.current_session.query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
     end
 
     # As the name suggests, this inserts the primary key (id property) into the properties hash.
@@ -108,7 +108,7 @@ module Neo4j::ActiveNode
       end
 
       def run_transaction(run_in_tx = true)
-        Neo4j::Transaction.run(run_in_tx, Neo4j::ActiveBase.current_session) do
+        Neo4j::ActiveBase.run_transaction(run_in_tx) do
           yield
         end
       end
@@ -152,7 +152,8 @@ module Neo4j::ActiveNode
       end
 
       def load_entity(id)
-        Neo4j::Node.load(id)
+        query = object_query_base(id).return(:n)
+        neo4j_session.query(query).first.n
       end
 
       private

@@ -105,8 +105,8 @@ module Neo4j
 
         # Deletes all nodes and connected relationships from Cypher.
         def delete_all
-          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH n-[r]-() DELETE n,r")
-          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
+          neo4j_session.query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH n-[r]-() DELETE n,r")
+          neo4j_session.query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least

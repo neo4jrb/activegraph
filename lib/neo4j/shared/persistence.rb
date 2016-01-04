@@ -9,7 +9,8 @@ module Neo4j::Shared
 
     def update_model
       return if !changed_attributes || changed_attributes.empty?
-      _persisted_obj.update_props(props_for_update)
+      query = object_query_base.set(n: props_for_update)
+      self.class.neo4j_session.query(query)
       changed_attributes.clear
     end
 
@@ -98,12 +99,23 @@ module Neo4j::Shared
 
     def destroy
       freeze
-      _persisted_obj && _persisted_obj.del
+      # Replace with query
+      if _persisted_obj
+        query = object_query_base
+                  .optional_match('(n)-[r]-()')
+                  .delete(:n, :r)
+        self.class.neo4j_session.query(query)
+      end
       @_deleted = true
     end
 
     def exist?
+      # Replace with query
       _persisted_obj && _persisted_obj.exist?
+      if _persisted_obj
+        query = object_query_base.return('ID(n)')
+        self.class.neo4j_session.query(query).any?
+      end
     end
 
     # Returns +true+ if the object was destroyed.
@@ -167,7 +179,17 @@ module Neo4j::Shared
       end
     end
 
+    module ClassMethods
+      def object_query_base(id, var = :n)
+        Neo4j::Core::Query.new.match(var).where(var => {neo_id: id})
+      end
+    end
+
     private
+
+    def object_query_base(var = :n)
+      self.class.object_query_base(_persisted_obj.neo_id)
+    end
 
     def props_for_db(props_hash)
       self.class.declared_properties.convert_properties_to(self, :db, props_hash)
