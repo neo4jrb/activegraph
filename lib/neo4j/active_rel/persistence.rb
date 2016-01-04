@@ -36,6 +36,14 @@ module Neo4j::ActiveRel
       save(*args) or fail(RelInvalidError, inspect) # rubocop:disable Style/AndOr
     end
 
+    # Increments concurrently a numeric attribute by a centain amount
+    # @param [Symbol, String] name of the attribute to increment
+    # @param [Integer, Float] amount to increment
+    def concurrent_increment!(attribute, by = 1)
+      query_rel = Neo4j::Session.query.match('()-[n]-()').where(n: {neo_id: neo_id})
+      increment_by_query! query_rel, attribute, by
+    end
+
     def create_model
       validate_node_classes!
       rel = _create_rel

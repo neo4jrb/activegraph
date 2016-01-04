@@ -43,6 +43,8 @@ Property
 
    
 
+   
+
    Property/ClassMethods
 
 
@@ -164,6 +166,20 @@ Methods
        super(name)
      rescue ActiveAttr::UnknownAttributeError
        nil
+     end
+
+
+
+.. _`Neo4j/Shared/Property#reload_properties!`:
+
+**#reload_properties!**
+  
+
+  .. code-block:: ruby
+
+     def reload_properties!(properties)
+       @attributes = nil
+       convert_and_assign_attributes(properties)
      end
 
 

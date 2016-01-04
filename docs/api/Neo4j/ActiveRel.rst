@@ -12,6 +12,8 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
    :titlesonly:
 
 
+   
+
    ActiveRel/FrozenRelError
 
    
@@ -36,9 +38,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -49,6 +51,8 @@ Constants
 ---------
 
 
+
+  * MARSHAL_INSTANCE_VARIABLES
 
   * WRAPPED_CLASSES
 
@@ -67,15 +71,15 @@ Files
 
   * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
 
-  * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
+  * `lib/neo4j/active_rel/property.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L3>`_
 
   * `lib/neo4j/active_rel/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/callbacks.rb#L2>`_
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -160,6 +164,20 @@ Methods
        else
          "#{model_cache_key}/#{neo_id}"
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#concurrent_increment!`:
+
+**#concurrent_increment!**
+  Increments concurrently a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def concurrent_increment!(attribute, by = 1)
+       query_rel = Neo4j::Session.query.match('()-[n]-()').where(n: {neo_id: neo_id})
+       increment_by_query! query_rel, attribute, by
      end
 
 
@@ -392,6 +410,34 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#increment`:
+
+**#increment**
+  Increments a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def increment(attribute, by = 1)
+       self[attribute] ||= 0
+       self[attribute] += by
+       self
+     end
+
+
+
+.. _`Neo4j/ActiveRel#increment!`:
+
+**#increment!**
+  Convenience method to increment numeric attribute and #save at the same time
+
+  .. code-block:: ruby
+
+     def increment!(attribute, by = 1)
+       increment(attribute, by).update_attribute(attribute, self[attribute])
+     end
+
+
+
 .. _`Neo4j/ActiveRel#init_on_load`:
 
 **#init_on_load**
@@ -405,6 +451,24 @@ Methods
        changed_attributes && changed_attributes.clear
        @attributes = convert_and_assign_attributes(persisted_rel.props)
        load_nodes(from_node_id, to_node_id)
+     end
+
+
+
+.. _`Neo4j/ActiveRel#init_on_reload`:
+
+**#init_on_reload**
+  
+
+  .. code-block:: ruby
+
+     def init_on_reload(unwrapped_reloaded)
+       @attributes = nil
+       init_on_load(unwrapped_reloaded,
+                    unwrapped_reloaded._start_node_id,
+                    unwrapped_reloaded._end_node_id,
+                    unwrapped_reloaded.rel_type)
+       self
      end
 
 
@@ -453,6 +517,34 @@ Methods
      
        separator = ' ' unless attribute_descriptions.empty?
        "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
+     end
+
+
+
+.. _`Neo4j/ActiveRel#marshal_dump`:
+
+**#marshal_dump**
+  
+
+  .. code-block:: ruby
+
+     def marshal_dump
+       marshal_instance_variables.map(&method(:instance_variable_get))
+     end
+
+
+
+.. _`Neo4j/ActiveRel#marshal_load`:
+
+**#marshal_load**
+  
+
+  .. code-block:: ruby
+
+     def marshal_load(array)
+       marshal_instance_variables.zip(array).each do |var, value|
+         instance_variable_set(var, value)
+       end
      end
 
 
@@ -673,11 +765,22 @@ Methods
   .. code-block:: ruby
 
      def reload_from_database
-       # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-       if reloaded = self.class.load_entity(neo_id)
-         send(:attributes=, reloaded.attributes)
-       end
-       reloaded
+       reloaded = self.class.load_entity(neo_id)
+       reloaded ? init_on_reload(reloaded._persisted_obj) : nil
+     end
+
+
+
+.. _`Neo4j/ActiveRel#reload_properties!`:
+
+**#reload_properties!**
+  
+
+  .. code-block:: ruby
+
+     def reload_properties!(properties)
+       @attributes = nil
+       convert_and_assign_attributes(properties)
      end
 
 

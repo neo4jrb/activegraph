@@ -137,7 +137,7 @@ describe 'association creation' do
           end
 
           it 'rolls back the entire transaction' do
-            expect { chris.save }.to raise_error
+            expect { chris.save }.to raise_error(/Unable to defer node persistence, could not save/)
             expect(chris).not_to exist
           end
         end

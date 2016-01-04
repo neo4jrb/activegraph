@@ -4,9 +4,12 @@ module Neo4j
   module ActiveRel
     extend ActiveSupport::Concern
 
+    MARSHAL_INSTANCE_VARIABLES = [:@attributes, :@rel_type, :@_persisted_obj]
+
     include Neo4j::Shared
     include Neo4j::ActiveRel::Initialize
     include Neo4j::Shared::Identity
+    include Neo4j::Shared::Marshal
     include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveRel::Property
     include Neo4j::ActiveRel::Persistence

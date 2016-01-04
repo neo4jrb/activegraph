@@ -25,15 +25,17 @@ in a new object of that class.
 
    
 
+   
+
    ActiveNode/ClassMethods
 
    ActiveNode/Rels
 
+   ActiveNode/Query
+
    ActiveNode/HasN
 
    ActiveNode/Scope
-
-   ActiveNode/Query
 
    ActiveNode/Labels
 
@@ -49,13 +51,13 @@ in a new object of that class.
 
    ActiveNode/IdProperty
 
-   ActiveNode/Validations
-
    ActiveNode/Unpersisted
+
+   ActiveNode/OrmAdapter
 
    ActiveNode/Persistence
 
-   ActiveNode/OrmAdapter
+   ActiveNode/Validations
 
    ActiveNode/QueryMethods
 
@@ -66,6 +68,8 @@ Constants
 ---------
 
 
+
+  * MARSHAL_INSTANCE_VARIABLES
 
   * WRAPPED_CLASSES
 
@@ -86,11 +90,11 @@ Files
 
   * `lib/neo4j/active_node/rels.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/rels.rb#L1>`_
 
+  * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
+
   * `lib/neo4j/active_node/has_n.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n.rb#L1>`_
 
   * `lib/neo4j/active_node/scope.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/scope.rb#L3>`_
-
-  * `lib/neo4j/active_node/query.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query.rb#L2>`_
 
   * `lib/neo4j/active_node/labels.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L2>`_
 
@@ -104,17 +108,17 @@ Files
 
   * `lib/neo4j/active_node/id_property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/id_property.rb#L1>`_
 
-  * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
-
   * `lib/neo4j/active_node/unpersisted.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/unpersisted.rb#L2>`_
-
-  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
 
   * `lib/neo4j/active_node/orm_adapter.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L4>`_
 
+  * `lib/neo4j/active_node/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_node/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/validations.rb#L2>`_
+
   * `lib/neo4j/active_node/query_methods.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query_methods.rb#L2>`_
 
-  * `lib/neo4j/active_node/has_n/association.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L4>`_
+  * `lib/neo4j/active_node/has_n/association.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L5>`_
 
   * `lib/neo4j/active_node/query/query_proxy.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy.rb#L2>`_
 
@@ -403,6 +407,20 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode#concurrent_increment!`:
+
+**#concurrent_increment!**
+  Increments concurrently a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def concurrent_increment!(attribute, by = 1)
+       query_node = Neo4j::Session.query.match_nodes(n: neo_id)
+       increment_by_query! query_node, attribute, by
+     end
+
+
+
 .. _`Neo4j/ActiveNode#conditional_callback`:
 
 **#conditional_callback**
@@ -665,6 +683,34 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode#increment`:
+
+**#increment**
+  Increments a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def increment(attribute, by = 1)
+       self[attribute] ||= 0
+       self[attribute] += by
+       self
+     end
+
+
+
+.. _`Neo4j/ActiveNode#increment!`:
+
+**#increment!**
+  Convenience method to increment numeric attribute and #save at the same time
+
+  .. code-block:: ruby
+
+     def increment!(attribute, by = 1)
+       increment(attribute, by).update_attribute(attribute, self[attribute])
+     end
+
+
+
 .. _`Neo4j/ActiveNode#init_on_load`:
 
 **#init_on_load**
@@ -677,6 +723,20 @@ Methods
        @_persisted_obj = persisted_node
        changed_attributes && changed_attributes.clear
        @attributes = convert_and_assign_attributes(properties)
+     end
+
+
+
+.. _`Neo4j/ActiveNode#init_on_reload`:
+
+**#init_on_reload**
+  
+
+  .. code-block:: ruby
+
+     def init_on_reload(reloaded)
+       @attributes = nil
+       init_on_load(reloaded, reloaded.props)
      end
 
 
@@ -767,6 +827,34 @@ Methods
 
      def labels_for_create
        self.class.mapped_label_names
+     end
+
+
+
+.. _`Neo4j/ActiveNode#marshal_dump`:
+
+**#marshal_dump**
+  
+
+  .. code-block:: ruby
+
+     def marshal_dump
+       marshal_instance_variables.map(&method(:instance_variable_get))
+     end
+
+
+
+.. _`Neo4j/ActiveNode#marshal_load`:
+
+**#marshal_load**
+  
+
+  .. code-block:: ruby
+
+     def marshal_load(array)
+       marshal_instance_variables.zip(array).each do |var, value|
+         instance_variable_set(var, value)
+       end
      end
 
 
@@ -983,11 +1071,22 @@ Methods
   .. code-block:: ruby
 
      def reload_from_database
-       # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-       if reloaded = self.class.load_entity(neo_id)
-         send(:attributes=, reloaded.attributes)
-       end
-       reloaded
+       reloaded = self.class.load_entity(neo_id)
+       reloaded ? init_on_reload(reloaded._persisted_obj) : nil
+     end
+
+
+
+.. _`Neo4j/ActiveNode#reload_properties!`:
+
+**#reload_properties!**
+  
+
+  .. code-block:: ruby
+
+     def reload_properties!(properties)
+       @attributes = nil
+       convert_and_assign_attributes(properties)
      end
 
 

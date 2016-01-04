@@ -1,6 +1,4 @@
-script:
-  - "bundle exec rubocop"
-  - "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81c20c27df6e6ab5c60bff2c8 && export JRUBY_OPTS='-X+O -J-Djruby.launch.inproc=false -J-Xmx1024m -J-XX:MaxPermSize=2048m' && travis_retry bundle exec rake neo4j:install[$NEO4J_VERSION] neo4j:start default --trace"
+script: "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81c20c27df6e6ab5c60bff2c8 && export JRUBY_OPTS='-X+O -J-Djruby.launch.inproc=false -J-Xmx1024m -J-XX:MaxPermSize=2048m' && travis_retry bundle exec rake neo4j:install[$NEO4J_VERSION] neo4j:start default --trace"
 language: ruby
 cache: bundler
 sudo: false
@@ -14,6 +12,11 @@ env:
   - NEO4J_VERSION=community-2.3.0
   - NEO4J_VERSION=community-2.2.6
   - NEO4J_VERSION=community-2.1.8
+matrix:
+  include:
+    - rvm: 2.3.0
+      script: "bundle exec rubocop"
+      env: "RUBOCOP=true"
 notifications:
   webhooks:
     urls:

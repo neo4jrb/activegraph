@@ -29,6 +29,14 @@ module Neo4j::ActiveNode
       end
     end
 
+    # Increments concurrently a numeric attribute by a centain amount
+    # @param [Symbol, String] name of the attribute to increment
+    # @param [Integer, Float] amount to increment
+    def concurrent_increment!(attribute, by = 1)
+      query_node = Neo4j::Session.query.match_nodes(n: neo_id)
+      increment_by_query! query_node, attribute, by
+    end
+
     # Persist the object to the database.  Validations and Callbacks are included
     # by default but validation can be disabled by passing :validate => false
     # to #save!  Creates a new transaction.
