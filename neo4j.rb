@@ -17,6 +17,7 @@ generator = %q[
 application generator
 
 application_code = <<APPLICATION
+
 require 'neo4j/railtie'"
 APPLICATION
 
