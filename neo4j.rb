@@ -16,10 +16,7 @@ generator = %q[
 
 application generator
 
-application_code = <<APPLICATION
-
-require 'neo4j/railtie'"
-APPLICATION
+application_code = "\nrequire 'neo4j/railtie'"
 
 inject_into_file 'config/application.rb', application_code, after: 'require "sprockets/railtie"'
 
