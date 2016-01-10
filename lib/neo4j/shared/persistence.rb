@@ -10,7 +10,7 @@ module Neo4j::Shared
     def update_model
       return if !changed_attributes || changed_attributes.empty?
       query = object_query_base.set(n: props_for_update)
-      self.class.neo4j_session.query(query)
+      self.class.current_transaction.query(query)
       changed_attributes.clear
     end
 
@@ -202,7 +202,13 @@ module Neo4j::Shared
 
     module ClassMethods
       def object_query_base(id, var = :n)
-        Neo4j::Core::Query.new.match(var).where(var => {neo_id: id})
+        Neo4j::Core::Query.new(session: current_transaction).match(var).where(var => {neo_id: id})
+      end
+
+      def run_transaction(run_in_tx = true)
+        Neo4j::ActiveBase.run_transaction(run_in_tx) do |tx|
+          yield tx
+        end
       end
     end
 
@@ -222,7 +228,7 @@ module Neo4j::Shared
     private
 
     def object_query_base(var = :n)
-      self.class.object_query_base(_persisted_obj.neo_id)
+      self.class.object_query_base(_persisted_obj.id)
     end
 
     def props_for_db(props_hash)

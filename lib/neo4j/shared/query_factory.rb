@@ -33,7 +33,7 @@ module Neo4j::Shared
     end
 
     def base_query
-      @base_query || Neo4j::Core::Query.new
+      @base_query || Neo4j::ActiveBase.new_query
     end
 
     protected

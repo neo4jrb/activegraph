@@ -12,6 +12,10 @@ module Neo4j
       def neo4j_session
         Neo4j::ActiveBase.current_session
       end
+
+      def current_transaction
+        Neo4j::ActiveBase.current_transaction
+      end
     end
 
     included do

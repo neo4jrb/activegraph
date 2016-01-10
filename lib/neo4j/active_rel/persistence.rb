@@ -40,8 +40,7 @@ module Neo4j::ActiveRel
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def concurrent_increment!(attribute, by = 1)
-      query_rel = Neo4j::Session.query.match('()-[n]-()').where(n: {neo_id: neo_id})
-      increment_by_query! query_rel, attribute, by
+      increment_by_query! query_as(:n), attribute, by
     end
 
     def create_model
@@ -50,6 +49,13 @@ module Neo4j::ActiveRel
       return self unless rel.respond_to?(:props)
       init_on_load(rel, from_node, to_node, @rel_type)
       true
+    end
+
+    def query_as(var)
+      # This should query based on the nodes, not the rel neo_id, I think
+      # Also, picky point: Should the var be `n`?
+      Neo4j::Core::Query.new(session: Neo4j::ActiveBase.current_session)
+        .match("()-[#{var}]-()").where(var => {neo_id: neo_id})
     end
 
     module ClassMethods

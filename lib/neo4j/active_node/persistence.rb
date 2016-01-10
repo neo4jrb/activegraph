@@ -33,8 +33,7 @@ module Neo4j::ActiveNode
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def concurrent_increment!(attribute, by = 1)
-      query_node = Neo4j::Session.query.match_nodes(n: neo_id)
-      increment_by_query! query_node, attribute, by
+      increment_by_query! query_as(:n), attribute, by
     end
 
     # Persist the object to the database.  Validations and Callbacks are included
@@ -68,7 +67,7 @@ module Neo4j::ActiveNode
     # @param [Array] labels The labels to use for creating the new node.
     # @return [Neo4j::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
-      query = "CREATE (n:#{labels.join(':')}) SET n = {props} RETURN n"
+      query = "CREATE (n:#{Array(labels).join(':')}) SET n = {props} RETURN n"
       Neo4j::ActiveBase.current_transaction.query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
     end
 
@@ -112,12 +111,6 @@ module Neo4j::ActiveNode
           association_props.each do |prop, value|
             obj.send("#{prop}=", value)
           end
-        end
-      end
-
-      def run_transaction(run_in_tx = true)
-        Neo4j::ActiveBase.run_transaction(run_in_tx) do |tx|
-          yield tx
         end
       end
 

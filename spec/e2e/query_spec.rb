@@ -525,17 +525,13 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
-            rel = danny.lessons(:l, :r).pluck(:r).first
-            rel[:grade] = 65
-            rel.save
+            rel = danny.lessons(:l, :r).query.set(r: {grade: 65}).exec
 
             bobby.lessons << math101
-            rel = bobby.lessons(:l, :r).pluck(:r).first
-            rel[:grade] = 71
+            rel = bobby.lessons(:l, :r).query.set(r: {grade: 71})
 
             math101.teachers << othmar
-            rel = math101.teachers(:t, :r).pluck(:r).first
-            rel[:since] = 2001
+            rel = math101.teachers(:t, :r).query.set(r: {since: 2001}).exec
 
             sandra.lessons << ss101
           end
@@ -551,6 +547,7 @@ describe 'Query API' do
 
           context 'Students enrolled in math 101 with grade 65' do
             # with automatic identifier
+
             it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should eq([danny]) }
 
             # with manual identifier

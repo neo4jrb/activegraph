@@ -466,8 +466,8 @@ describe 'Neo4j::ActiveNode' do
 
     it 'can be loaded by id' do
       person1 = Person.create(name: 'andreas', age: 21)
-      person2 = Neo4j::Node.load(person1.neo_id)
-      person2.neo_id.should eq(person1.neo_id)
+      person2 = Person.find(person1.id)
+      person2.id.should eq(person1.id)
       person2.neo_id.should eq(person1.neo_id)
     end
 
@@ -475,8 +475,7 @@ describe 'Neo4j::ActiveNode' do
       person = Person.create(name: 'andreas', age: 21)
       person[:age] = 22
 
-      person2 = Neo4j::Node.load(person.neo_id)
-      person2[:age].should eq(21)
+      expect(Person.find(person.id).age).to eq(21)
     end
 
     it 'should not clear out existing properties when property is set and saved' do
@@ -692,7 +691,7 @@ describe 'Neo4j::ActiveNode' do
             it 'reuses or resets' do
               expect(Cat.as(:c).named_jim.pluck(:c)).to eq([jim])
               expect(Cat.as(:c).all.named_jim.pluck(:c)).to eq([jim])
-              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error Neo4j::Session::CypherError
+              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error Neo4j::Core::CypherSession::Responses::Base::CypherError
               expect(Cat.as(:c).all(:another_variable).named_jim.pluck(:another_variable)).to eq [jim]
             end
           end
