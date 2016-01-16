@@ -111,7 +111,7 @@ module Neo4j::Shared
       converter = options[:serializer]
       return unless converter
       options[:type]        = converter.convert_type
-      options[:typecaster]  = Neo4j::Shared::Typecasting::ObjectTypecaster.new
+      options[:typecaster]  = Neo4j::Shared::TypeConverters::ObjectConverter
       Neo4j::Shared::TypeConverters.register_converter(converter)
     end
   end

@@ -104,7 +104,7 @@ describe Neo4j::Shared::Property do
     context 'with custom typecaster' do
       let(:typecaster) do
         Class.new do
-          def call(value)
+          def to_ruby(value)
             value.to_s.upcase
           end
         end
@@ -152,12 +152,13 @@ describe Neo4j::Shared::Property do
       clazz.property :range, serializer: converter
     end
 
-    it 'sets active_attr typecaster to ObjectTypecaster' do
-      expect(clazz.attributes[:range][:typecaster]).to be_a(Neo4j::Shared::Typecasting::ObjectTypecaster)
+    # TODO: Is this still necessary past 7.0, post ActiveAttr removal?
+    it 'sets underlying typecaster to ObjectTypecaster' do
+      expect(clazz.attributes[:range][:typecaster]).to eq(Neo4j::Shared::TypeConverters::ObjectConverter)
     end
 
     it 'adds new converter' do
-      expect(Neo4j::Shared::TypeConverters.converters[Range]).to eq(converter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Range]).to eq(converter)
     end
 
     it 'returns object of a proper type' do

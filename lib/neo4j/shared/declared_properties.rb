@@ -132,11 +132,6 @@ module Neo4j::Shared
       @magic_typecast_properties ||= {}
     end
 
-    # The known mappings of declared properties and their primitive types.
-    def upstream_primitives
-      @upstream_primitives ||= {}
-    end
-
     EXCLUDED_TYPES = [Array, Range, Regexp]
     def value_for_where(key, value)
       return value unless prop = registered_properties[key]
@@ -165,7 +160,7 @@ module Neo4j::Shared
 
     # Prevents repeated calls to :_attribute_type, which isn't free and never changes.
     def fetch_upstream_primitive(attr)
-      upstream_primitives[attr] || upstream_primitives[attr] = klass._attribute_type(attr)
+      registered_properties[attr].type
     end
 
     private

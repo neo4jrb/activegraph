@@ -24,7 +24,6 @@ module Neo4j::Shared
   module TypecastedAttributes
     extend ActiveSupport::Concern
     include Neo4j::Shared::Attributes
-    include Neo4j::Shared::Typecasting
 
     included do
       attribute_method_suffix '_before_type_cast'
@@ -51,6 +50,10 @@ module Neo4j::Shared
       typecast_attribute(_attribute_typecaster(name), super)
     end
 
+    def typecast_attribute(typecaster, value)
+      self.class.typecast_attribute(typecaster, value)
+    end
+
     # Calculates an attribute type
     #
     # @private
@@ -63,7 +66,8 @@ module Neo4j::Shared
     # @private
     def _attribute_typecaster(attribute_name)
       type = _attribute_type(attribute_name)
-      self.class.attributes[attribute_name].typecaster || typecaster_for(type) || fail(UnknownTypecasterError, "Unable to cast to type #{type}")
+      caster = self.class.attributes[attribute_name].typecaster || Neo4j::Shared::TypeConverters.typecaster_for(type)
+      caster || fail(Neo4j::UnknownTypeConverterError, "Unable to cast to type #{type}")
     end
 
     module ClassMethods
@@ -84,6 +88,10 @@ module Neo4j::Shared
       # @private
       def _attribute_type(attribute_name)
         attributes[attribute_name].type || Object
+      end
+
+      def typecast_attribute(typecaster, value)
+        Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
       end
     end
   end

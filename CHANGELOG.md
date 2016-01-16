@@ -8,7 +8,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
-- All explicit dependencies on `ActiveAttr` classes can now be found in the `Neo4j::Shared` namespace. This is of particular interest where type conversion is concerned. `ActiveAttr::Typecasting::Boolean` is now `Neo4j::Shared::Typecasting::Boolean`. 
+- All explicit dependencies on `ActiveAttr` code that was not removed outright can now be found in the `Neo4j::Shared` namespace.
+- All type conversion uses Neo4j.rb-owned converters in the `Neo4j::Shared::TypeConverters` namespace. This is of particular importance where `Boolean` is concerned. Where explicitly using `ActiveAttr::Typecasting::Boolean`, use `Neo4j::Shared::Boolean`.
+- `Neo4j::Shared::TypeConverters.converters` was replaced with `Neo4j::Shared::TypeConverters::CONVERTERS`.
 
 ### Added
 
@@ -18,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
+- All `call` class methods from Type Converters. Use `to_ruby` instead.
 
 ## [6.0.5] - 12-29-2015
 
