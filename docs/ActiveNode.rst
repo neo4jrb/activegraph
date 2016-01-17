@@ -285,7 +285,7 @@ By including the ``unique`` option in a ``has_many`` or ``has_one`` association'
 
 .. code-block:: ruby
 
-  has_many :out, :friends, type: 'FRIENDS_WITH', model_class: User, unique: true
+  has_many :out, :friends, type: 'FRIENDS_WITH', model_class: :User, unique: true
 
 Instead of ``true``, you can give one of three different options:
 

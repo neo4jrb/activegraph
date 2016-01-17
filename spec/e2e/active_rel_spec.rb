@@ -12,6 +12,7 @@ describe 'ActiveRel' do
       property :after_run
 
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
+      has_many :out, :other_others, rel_class: 'MyRelClass'
 
       def log_before
         self.before_run = true
@@ -31,6 +32,8 @@ describe 'ActiveRel' do
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
       has_many :in, :string_others, model_class: 'FromClass', rel_class: 'MyRelClass'
 
+      has_many :out, :other_others, rel_class: 'MyRelClass'
+
       def log_before
         self.before_run = true
       end
@@ -41,8 +44,8 @@ describe 'ActiveRel' do
     end
 
     stub_active_rel_class('MyRelClass') do
-      from_class FromClass
-      to_class ToClass
+      from_class :FromClass
+      to_class :ToClass
       type 'rel_class_type'
 
       property :score, type: Integer
@@ -59,18 +62,24 @@ describe 'ActiveRel' do
 
   describe 'from_class, to_class' do
     it 'spits back the current variable if no argument is given' do
-      expect(MyRelClass.from_class).to eq FromClass
-      expect(MyRelClass.to_class).to eq ToClass
+      expect(MyRelClass.from_class).to eq :FromClass
+      expect(MyRelClass.to_class).to eq :ToClass
     end
 
     it 'sets the value with the argument given' do
-      expect(MyRelClass.from_class).not_to eq Object
-      expect(MyRelClass.from_class(Object)).to eq Object
-      expect(MyRelClass.from_class).to eq Object
+      expect(MyRelClass.from_class).not_to eq :Object
+      expect(MyRelClass.from_class(:Object)).to eq :Object
+      expect(MyRelClass.from_class).to eq :Object
 
-      expect(MyRelClass.to_class).not_to eq Object
-      expect(MyRelClass.to_class(Object)).to eq Object
-      expect(MyRelClass.to_class).to eq Object
+      expect(MyRelClass.to_class).not_to eq :Object
+      expect(MyRelClass.to_class(:Object)).to eq :Object
+      expect(MyRelClass.to_class).to eq :Object
+    end
+
+    it 'validates that the class is ' do
+      MyRelClass.to_class(:Object)
+
+      expect { FromClass.create.other_others.to_a }.to raise_error ArgumentError, /Object is not an ActiveNode model/
     end
   end
 
@@ -88,11 +97,37 @@ describe 'ActiveRel' do
     end
   end
 
+  describe '#increment, #increment!' do
+    it 'increments an attribute' do
+      rel = MyRelClass.create(from_node: from_node, to_node: to_node)
+      rel.increment(:score)
+      expect(rel.score).to eq(1)
+      expect(rel.score_was).to eq(nil)
+
+      rel.increment!(:score)
+      expect(rel.score).to eq(2)
+      expect(rel.score_was).to eq(2)
+    end
+  end
+
+  describe '#concurrent_increment!' do
+    it 'increments an attribute (concurrently)' do
+      rel1 = MyRelClass.create(from_node: from_node, to_node: to_node)
+      rel2 = MyRelClass.find(rel1.neo_id)
+      rel1.concurrent_increment!(:score)
+      expect(rel1.score).to eq(1)
+      expect(rel1.score_was).to eq(1)
+      rel2.concurrent_increment!(:score)
+      expect(rel2.score).to eq(2)
+      expect(rel1.reload.score).to eq(2)
+    end
+  end
+
   describe 'creation' do
     before(:each) do
       stub_active_rel_class('RelClassWithValidations') do
-        from_class FromClass
-        to_class ToClass
+        from_class :FromClass
+        to_class :ToClass
         type 'rel_class_type'
 
         property :score
@@ -258,7 +293,7 @@ describe 'ActiveRel' do
       it_is_expected_to_satisfy(:FromClass)
 
       class FromClass; end
-      it_is_expected_to_satisfy(FromClass)
+      class ToClass; end
 
       context 'Array' do
         # stub_const does not behave with `it_is_expected_to_satisfy` so making it explicit for now...
@@ -266,7 +301,7 @@ describe 'ActiveRel' do
           include Neo4j::ActiveNode
         end
 
-        it_is_expected_to_satisfy([OtherAcceptableClass, FromClass])
+        it_is_expected_to_satisfy([:OtherAcceptableClass, :FromClass])
       end
     end
   end
@@ -431,7 +466,7 @@ describe 'ActiveRel' do
       end
 
       context 'array of from/to class' do
-        before { MyRelClass.from_class([FromClass, ToClass]) }
+        before { MyRelClass.from_class([:FromClass, :ToClass]) }
 
         it 'joins with ||' do
           next if Neo4j::VERSION >= '6.0.0'

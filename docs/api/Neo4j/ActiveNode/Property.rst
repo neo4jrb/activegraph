@@ -83,7 +83,7 @@ Methods
      def initialize(attributes = nil)
        super(attributes)
        @attributes ||= Hash[self.class.attributes_nil_hash]
-       send_props(@relationship_props) if _persisted_obj && !@relationship_props.nil?
+       send_props(@relationship_props) if !@relationship_props.nil?
      end
 
 
@@ -131,6 +131,20 @@ Methods
        super(name)
      rescue ActiveAttr::UnknownAttributeError
        nil
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#reload_properties!`:
+
+**#reload_properties!**
+  
+
+  .. code-block:: ruby
+
+     def reload_properties!(properties)
+       @attributes = nil
+       convert_and_assign_attributes(properties)
      end
 
 

@@ -48,8 +48,8 @@ describe 'ActiveRel unpersisted handling' do
     end
 
     stub_active_rel_class('MyRelClass') do
-      from_class FromClass
-      to_class ToClass
+      from_class :FromClass
+      to_class :ToClass
       type 'rel_class_type'
 
       property :score, type: Integer

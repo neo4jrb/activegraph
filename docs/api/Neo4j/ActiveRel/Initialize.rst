@@ -13,6 +13,8 @@ Initialize
 
    
 
+   
+
 
 
 
@@ -52,6 +54,24 @@ Methods
        changed_attributes && changed_attributes.clear
        @attributes = convert_and_assign_attributes(persisted_rel.props)
        load_nodes(from_node_id, to_node_id)
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Initialize#init_on_reload`:
+
+**#init_on_reload**
+  
+
+  .. code-block:: ruby
+
+     def init_on_reload(unwrapped_reloaded)
+       @attributes = nil
+       init_on_load(unwrapped_reloaded,
+                    unwrapped_reloaded._start_node_id,
+                    unwrapped_reloaded._end_node_id,
+                    unwrapped_reloaded.rel_type)
+       self
      end
 
 

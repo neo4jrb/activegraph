@@ -52,8 +52,8 @@ describe 'Query API' do
     end
 
     stub_active_rel_class('IsEnrolledFor') do
-      from_class Student
-      to_class Lesson
+      from_class :Student
+      to_class :Lesson
       type 'is_enrolled_for'
 
       property :grade, type: Integer
@@ -107,7 +107,7 @@ describe 'Query API' do
 
     context 'Foo has an association to Bar' do
       before(:each) do
-        Foo.has_many :in, :bars, type: nil, model_class: Bar
+        Foo.has_many :in, :bars, type: nil, model_class: :Bar
       end
 
       subject { Bar.create }
@@ -127,13 +127,13 @@ describe 'Query API' do
       context 'Assumed model does not exist' do
         before(:each) { Bar.has_many :out, :foosrs, origin: :bars }
 
-        it { expect { subject.foosrs.to_a }.to raise_error(NameError) }
+        it { expect { subject.foosrs.to_a }.to raise_error(ArgumentError, /Could not find class.*Foosr/) }
       end
 
       context 'Specified model does not exist' do
         before(:each) { Bar.has_many :out, :foosrs, model_class: 'Foosrs', origin: :bars }
 
-        it { expect { subject.foosrs.to_a }.to raise_error(NameError) }
+        it { expect { subject.foosrs.to_a }.to raise_error(ArgumentError, /Could not find class.*Foosrs/) }
       end
 
       context 'Origin does not exist' do

@@ -28,7 +28,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node.rb:53 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node.rb#L53>`_
+  * `lib/neo4j/active_node.rb:56 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node.rb#L56>`_
 
   * `lib/neo4j/active_node/orm_adapter.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/orm_adapter.rb#L5>`_
 

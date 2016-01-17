@@ -50,7 +50,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/property.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L2>`_
+  * `lib/neo4j/active_rel/property.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L4>`_
 
 
 
@@ -194,6 +194,20 @@ Methods
 
      def type
        self.class.type
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Property#reload_properties!`:
+
+**#reload_properties!**
+  
+
+  .. code-block:: ruby
+
+     def reload_properties!(properties)
+       @attributes = nil
+       convert_and_assign_attributes(properties)
      end
 
 

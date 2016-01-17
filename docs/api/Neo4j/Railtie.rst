@@ -66,7 +66,7 @@ Methods
 
      def config_data
        @config_data ||= if yaml_path
-                          HashWithIndifferentAccess.new(YAML.load(yaml_path.read)[Rails.env])
+                          HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
                         else
                           {}
                         end
@@ -193,7 +193,7 @@ Methods
      
        return if !cfg.sessions.empty?
      
-       cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options}
+       cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options.merge(default: true)}
      end
 
 
