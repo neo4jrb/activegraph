@@ -68,6 +68,14 @@ describe Neo4j::ActiveRel::Persistence do
       expect(r.save).to be_truthy
     end
 
+    it 'can handle a RelatedNode wrapper on to_node/from_node' do
+      start_props = {from_node: node1, to_node: node2}
+      r = clazz.new(start_props)
+      r.save
+      r2 = clazz.new(to_node: r.to_node, from_node: r.from_node}
+      expect(r2.save).to be_truthy
+    end
+
     describe 'confirming model types' do
       before(:all) do
         class ThisClass; end

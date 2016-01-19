@@ -11,14 +11,13 @@ module Neo4j::Shared
     end
 
     def self.create(graph_object, identifier)
-      factory = case graph_object
-                when Neo4j::ActiveNode
-                  NodeQueryFactory
-                when Neo4j::ActiveRel
-                  RelQueryFactory
-                else
-                  fail "Unable to find factory for #{graph_object}"
-                end
+      factory = if graph_object.respond_to?('node')
+        NodeQueryFactory
+      elsif graph_object.respond_to?('rel_type')
+        RelQueryFactory
+      else
+        fail "Unable to find factory for #{graph_object}"
+      end
       factory.new(graph_object, identifier)
     end
 
