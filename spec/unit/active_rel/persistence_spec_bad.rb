@@ -72,7 +72,7 @@ describe Neo4j::ActiveRel::Persistence do
       start_props = {from_node: node1, to_node: node2}
       r = clazz.new(start_props)
       r.save
-      r2 = clazz.new(to_node: r.to_node, from_node: r.from_node}
+      r2 = clazz.new(to_node: r.to_node, from_node: r.from_node)
       expect(r2.save).to be_truthy
     end
 
