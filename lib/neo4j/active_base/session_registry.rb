@@ -6,7 +6,7 @@ module Neo4j
     class SessionRegistry
       extend ActiveSupport::PerThreadRegistry
 
-      attr_accessor :current_session, :schema_session
+      attr_accessor :current_session
     end
   end
 end

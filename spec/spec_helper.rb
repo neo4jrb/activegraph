@@ -211,7 +211,7 @@ module ActiveNodeRelStubHelpers
 end
 
 def before_session
-  @current_session.close if @current_session
+  @current_session.close if @current_session && @current_session.respond_to?(:close)
   yield
   create_session
 end
@@ -237,6 +237,7 @@ RSpec.configure do |c|
   c.after(:each) do
     if current_transaction
       puts 'WARNING forgot to close transaction'
+      Neo4j::ActiveBase.wait_for_schema_changes
       current_transaction.close
     end
   end

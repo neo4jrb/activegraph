@@ -39,10 +39,10 @@ describe 'Node Wrapping' do
     let(:label_string) { labels.map { |label| ":`#{label}`" }.join }
 
     before do
-      Neo4j::Session.query.create("(n#{label_string})").exec
+      Neo4j::ActiveBase.new_query.create("(n#{label_string})").exec
     end
 
-    let(:result) { Neo4j::Session.query.match("(n#{label_string})").pluck(:n).first }
+    let(:result) { Neo4j::ActiveBase.current_session.query.match("(n#{label_string})").pluck(:n).first }
 
     raw_node_class = (RUBY_PLATFORM =~ /java/) ? 'Java::OrgNeo4jKernelImplCore::NodeProxy' : '::Neo4j::Server::CypherNode'
 

@@ -20,10 +20,8 @@ module Neo4j::ActiveNode::Labels
       #      index :name
       #    end
       def index(property)
-        Neo4j::Session.on_next_session_available do |_|
-          declared_properties.index_or_fail!(property, id_property_name)
-          schema_create_operation(:index, property)
-        end
+        declared_properties.index_or_fail!(property, id_property_name)
+        schema_create_operation(:index, property)
       end
 
       # Creates a neo4j constraint on this class for given property
@@ -31,27 +29,21 @@ module Neo4j::ActiveNode::Labels
       # @example
       #   Person.constraint :name, type: :unique
       def constraint(property, constraints = {type: :unique})
-        Neo4j::Session.on_next_session_available do
-          declared_properties.constraint_or_fail!(property, id_property_name)
-          schema_create_operation(:constraint, property, constraints)
-        end
+        declared_properties.constraint_or_fail!(property, id_property_name)
+        schema_create_operation(:constraint, property, constraints)
       end
 
       # @param [Symbol] property The name of the property index to be dropped
       def drop_index(property, options = {})
-        Neo4j::Session.on_next_session_available do
-          declared_properties[property].unindex! if declared_properties[property]
-          schema_drop_operation(:index, property, options)
-        end
+        declared_properties[property].unindex! if declared_properties[property]
+        schema_drop_operation(:index, property, options)
       end
 
       # @param [Symbol] property The name of the property constraint to be dropped
       # @param [Hash] constraint The constraint type to be dropped.
       def drop_constraint(property, constraint = {type: :unique})
-        Neo4j::Session.on_next_session_available do
-          declared_properties[property].unconstraint! if declared_properties[property]
-          schema_drop_operation(:constraint, property, constraint)
-        end
+        declared_properties[property].unconstraint! if declared_properties[property]
+        schema_drop_operation(:constraint, property, constraint)
       end
 
       def index?(property)
@@ -80,7 +72,7 @@ module Neo4j::ActiveNode::Labels
           Neo4j::Schema::UniqueConstraintOperation
         else
           fail "Unknown Schema Operation class #{type}"
-        end.new(mapped_label_name, property, options)
+        end.new(mapped_label, property, options)
       end
     end
   end

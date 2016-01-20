@@ -283,12 +283,12 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
-      current_session.close if current_session
-      stub_const('Clazz', UniqueClass.create do
-        include Neo4j::ActiveNode
-        id_property :my_uuid, auto: :uuid
-      end)
-      create_session
+      before_session do
+        stub_const('Clazz', UniqueClass.create do
+          include Neo4j::ActiveNode
+          id_property :my_uuid, auto: :uuid
+        end)
+      end
     end
 
     it 'has an index' do
@@ -389,23 +389,23 @@ describe Neo4j::ActiveNode::IdProperty do
 
     context 'when a session is not started' do
       it 'waits until the session is loaded, then sets id property' do
-        current_session.close
+        before_session do
 
-        module IdProp
-          class Executive
-            include Neo4j::ActiveNode
-            id_property :my_id, on: :my_method
+          module IdProp
+            class Executive
+              include Neo4j::ActiveNode
+              id_property :my_id, on: :my_method
 
-            def my_method
-              'an id'
+              def my_method
+                'an id'
+              end
             end
+
+            class CEO < Executive; end
           end
 
-          class CEO < Executive; end
+          expect(IdProp::CEO.primary_key).to be_nil
         end
-
-        expect(IdProp::CEO.primary_key).to be_nil
-        create_session
         expect(IdProp::CEO.primary_key).not_to be_nil
       end
     end

@@ -1,10 +1,10 @@
 module Neo4j
   module Schema
     class Operation
-      attr_reader :label_name, :property, :options
+      attr_reader :label, :property, :options
 
-      def initialize(label_name, property, options = default_options)
-        @label_name = label_name.to_sym
+      def initialize(label, property, options = default_options)
+        @label = label
         @property = property.to_sym
         @options = options
       end
@@ -19,10 +19,6 @@ module Neo4j
         schema_query(:"create_#{type}")
       end
 
-      def label_object
-        @label_object ||= Neo4j::Label.create(label_name)
-      end
-
       def incompatible_operation_classes
         self.class.incompatible_operation_classes
       end
@@ -33,7 +29,7 @@ module Neo4j
 
       def drop_incompatible!
         incompatible_operation_classes.each do |clazz|
-          operation = clazz.new(label_name, property)
+          operation = clazz.new(@label, property)
           operation.drop! if operation.exist?
         end
       end
@@ -53,11 +49,7 @@ module Neo4j
       private
 
       def schema_query(method)
-        # If there is a transaction going on, this could block
-        # So we run in a thread and it will go through at the next opportunity
-        Thread.new do
-          label_object.send(method, property, options, Neo4j::ActiveBase.schema_session)
-        end
+        label.send(method, property, options)
       end
     end
 
@@ -71,7 +63,7 @@ module Neo4j
       end
 
       def exist?
-        label_object.indexes[:property_keys].include?([property])
+        label.index?(property)
       end
     end
 
@@ -90,7 +82,7 @@ module Neo4j
       end
 
       def exist?
-        Neo4j::Label.constraint?(label_name, property)
+        label.uniqueness_constraint?(property)
       end
 
       def default_options

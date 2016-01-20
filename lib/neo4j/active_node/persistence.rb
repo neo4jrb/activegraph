@@ -67,8 +67,8 @@ module Neo4j::ActiveNode
     # @param [Array] labels The labels to use for creating the new node.
     # @return [Neo4j::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
-      query = "CREATE (n:#{Array(labels).join(':')}) SET n = {props} RETURN n"
-      Neo4j::ActiveBase.current_transaction.query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
+      query = "CREATE (n:`#{Array(labels).join('`:`')}`) SET n = {props} RETURN n"
+      neo4j_query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
     end
 
     # As the name suggests, this inserts the primary key (id property) into the properties hash.
@@ -88,6 +88,12 @@ module Neo4j::ActiveNode
     end
 
     private
+
+    def destroy_query
+      require 'pry'
+      binding.pry
+      query_as(:n).optional_match('(n)-[r]-()').delete(:n, :r)
+    end
 
     # The pending associations are cleared during the save process, so it's necessary to
     # build the processable hash before it begins. If there are nodes and associations that
@@ -129,7 +135,7 @@ module Neo4j::ActiveNode
       end
 
       def merge(attributes)
-        neo4j_session.query.merge(n: {self.mapped_label_names => attributes})
+        neo4j_query.merge(n: {self.mapped_label_names => attributes})
           .on_create_set(n: on_create_props(attributes))
           .on_match_set(n: on_match_props)
           .pluck(:n).first
@@ -137,7 +143,7 @@ module Neo4j::ActiveNode
 
       def find_or_create(find_attributes, set_attributes = {})
         on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
-        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
+        neo4j_query.merge(n: {self.mapped_label_names => find_attributes})
           .on_create_set(n: on_create_attributes)
           .pluck(:n).first
       end
@@ -154,7 +160,11 @@ module Neo4j::ActiveNode
 
       def load_entity(id)
         query = object_query_base(id).return(:n)
-        neo4j_session.query(query).first.n
+        neo4j_query(query).first.n
+      end
+
+      def query_as(neo_id, var = :n)
+        Neo4j::ActiveBase.new_query.match(var).where(var => {neo_id: neo_id})
       end
 
       private

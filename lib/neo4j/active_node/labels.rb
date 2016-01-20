@@ -105,8 +105,8 @@ module Neo4j
 
         # Deletes all nodes and connected relationships from Cypher.
         def delete_all
-          neo4j_session.query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH n-[r]-() DELETE n,r")
-          neo4j_session.query("MATCH (n:`#{mapped_label_name}`) DELETE n")
+          neo4j_query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH n-[r]-() DELETE n,r")
+          neo4j_query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
@@ -127,7 +127,7 @@ module Neo4j
 
         # @return [Neo4j::Label] the label for this class
         def mapped_label
-          Neo4j::Label.create(mapped_label_name)
+          Neo4j::Core::Label.new(mapped_label_name, neo4j_session)
         end
 
         def base_class

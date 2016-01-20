@@ -54,8 +54,7 @@ module Neo4j::ActiveRel
     def query_as(var)
       # This should query based on the nodes, not the rel neo_id, I think
       # Also, picky point: Should the var be `n`?
-      Neo4j::Core::Query.new(session: Neo4j::ActiveBase.current_session)
-        .match("()-[#{var}]-()").where(var => {neo_id: neo_id})
+      self.class.query_as(neo_id, var)
     end
 
     module ClassMethods
@@ -88,7 +87,11 @@ module Neo4j::ActiveRel
       end
 
       def load_entity(id)
-        Neo4j::Relationship.load(id)
+        query_as(id).pluck(:r).first
+      end
+
+      def query_as(neo_id, var = :r)
+        Neo4j::ActiveBase.new_query.match("()-[#{var}]-()").where(var => {neo_id: neo_id})
       end
     end
 
@@ -97,6 +100,10 @@ module Neo4j::ActiveRel
     end
 
     private
+
+    def destroy_query
+      query_as(:r).delete(:r)
+    end
 
     def validate_node_classes!
       [from_node, to_node].each do |node|

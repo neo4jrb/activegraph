@@ -77,7 +77,7 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      Neo4j::Session.query('CREATE (n:`MigrationSpecs::User`) return n')
+      Neo4j::ActiveBase.current_session.query('CREATE (n:`MigrationSpecs::User`) return n')
       user = MigrationSpecs::User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil
@@ -100,7 +100,7 @@ describe 'migration tasks' do
 
     it 'respects the id_property declared on the model' do
       MigrationSpecs::Song.id_property :my_id, on: :custom_id
-      Neo4j::Session.query('CREATE (n:`MigrationSpecs::Song`) return n')
+      Neo4j::ActiveBase.current_session.query('CREATE (n:`MigrationSpecs::Song`) return n')
       user = MigrationSpecs::Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)

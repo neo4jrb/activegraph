@@ -282,10 +282,10 @@ describe 'has_many' do
     let!(:person) { Person.create }
 
     before(:each) do
-      Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
+      Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
         .create('post<-[:comments_on]-comment').exec
 
-      Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
+      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
         .create('post<-[:comments_on]-person').exec
     end
 

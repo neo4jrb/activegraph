@@ -10,7 +10,7 @@ module Neo4j::Shared
     def update_model
       return if !changed_attributes || changed_attributes.empty?
       query = object_query_base.set(n: props_for_update)
-      self.class.current_transaction.query(query)
+      neo4j_query(query)
       changed_attributes.clear
     end
 
@@ -122,20 +122,16 @@ module Neo4j::Shared
 
     def destroy
       freeze
-      # Replace with query
-      if _persisted_obj
-        query = object_query_base
-                  .optional_match('(n)-[r]-()')
-                  .delete(:n, :r)
-        self.class.neo4j_session.query(query)
-      end
+
+      destroy_query.exec if _persisted_obj
+
       @_deleted = true
     end
 
     def exist?
       if _persisted_obj
         query = object_query_base.return('ID(n)')
-        self.class.neo4j_session.query(query).any?
+        neo4j_query(query).any?
       end
     end
 
@@ -201,10 +197,6 @@ module Neo4j::Shared
     end
 
     module ClassMethods
-      def object_query_base(id, var = :n)
-        Neo4j::Core::Query.new(session: current_transaction).match(var).where(var => {neo_id: id})
-      end
-
       def run_transaction(run_in_tx = true)
         Neo4j::ActiveBase.run_transaction(run_in_tx) do |tx|
           yield tx
@@ -228,7 +220,7 @@ module Neo4j::Shared
     private
 
     def object_query_base(var = :n)
-      self.class.object_query_base(_persisted_obj.id)
+      self.class.query_as(_persisted_obj.id, var)
     end
 
     def props_for_db(props_hash)

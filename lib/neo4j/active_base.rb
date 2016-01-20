@@ -21,18 +21,12 @@ module Neo4j
         end
       end
 
-      def new_query(options = {})
-        Neo4j::Core::Query.new({session: current_transaction || current_session}.merge(options))
+      def wait_for_schema_changes
+        current_session.wait_for_schema_changes
       end
 
-      # For making schema changes in a separate session
-      # So that we don't have issues with data and schema changes
-      # in the same transaction
-      def schema_session
-        if current_session
-          adaptor = current_session.instance_variable_get('@adaptor')
-          SessionRegistry.schema_session = Neo4j::Core::CypherSession.new(adaptor)
-        end
+      def new_query(options = {})
+        Neo4j::Core::Query.new({session: current_transaction || current_session}.merge(options))
       end
 
       def current_transaction
