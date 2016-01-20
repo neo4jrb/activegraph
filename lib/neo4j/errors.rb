@@ -6,7 +6,20 @@ module Neo4j
 
   # Raised when Neo4j.rb cannot find record by given id.
   class RecordNotFound < Neo4jrbError
+    attr_reader :model, :primary_key, :id
+
+    def initialize(message = nil, model = nil, primary_key = nil, id = nil)
+      @primary_key = primary_key
+      @model = model
+      @id = id
+
+      super(message)
+    end
   end
 
-  class InvalidPropertyOptionsError < Neo4jrbError; end
+  class InvalidPropertyOptionsError < Neo4jrbError
+  end
+
+  class InvalidParameterError < Neo4jrbError
+  end
 end

@@ -10,7 +10,7 @@ module Neo4j::Shared
     include ActiveModel::Dirty
 
     class UndefinedPropertyError < RuntimeError; end
-    class MultiparameterAssignmentError < StandardError; end
+    class MultiparameterAssignmentError < Neo4j::Neo4jrbError; end
 
     attr_reader :_persisted_obj
 

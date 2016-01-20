@@ -1,7 +1,7 @@
 module Neo4j::Shared
   # Contains methods related to the management
   class DeclaredProperty
-    class IllegalPropertyError < StandardError; end
+    class IllegalPropertyError < Neo4j::Neo4jrbError; end
     include Neo4j::Shared::DeclaredProperty::Index
 
     ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
