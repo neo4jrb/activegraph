@@ -1,7 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
+      # rubocop:disable Metrics/ModuleLength
       module QueryProxyMethods
+        # rubocop:enable Metrics/ModuleLength
         class InvalidParameterError < StandardError; end
         FIRST = 'HEAD'
         LAST = 'LAST'
@@ -105,20 +107,21 @@ module Neo4j
           end
         end
 
-        # Updates some attributes of a group of nodes and relationships within a QP chain.
-        # @param updates [Hash,String] updates An hash or a string of parameters to be updated.
-        # @param updates [Hash] params An hash of parameters for the update string. It's ignored if `updates` is an Hash.
+        # Updates some attributes of a group of nodes within a QP chain.
+        # The optional argument makes sense only of `updates` is a string.
+        # @param [Hash,String] updates An hash or a string of parameters to be updated.
+        # @param [Hash] params An hash of parameters for the update string. It's ignored if `updates` is an Hash.
         def update_all(updates, params = {})
-          query = all.query_as(:n)
+          update_all_with_query(all.query, identity, updates, params)
+        end
 
-          case updates
-          when Hash
-            query.set(n: updates).pluck('count(n)').first
-          when String
-            query.set(updates).params(params).pluck('count(n)').first
-          else
-            fail ArgumentError, "Invalid parameter type #{updates.class} for `updates`."
-          end
+        # Updates some attributes of a group of relationships within a QP chain.
+        # The optional argument makes sense only of `updates` is a string.
+        # @param [Hash,String] updates An hash or a string of parameters to be updated.
+        # @param [Hash] params An hash of parameters for the update string. It's ignored if `updates` is an Hash.
+        def update_all_rels(updates, params = {})
+          fail 'Cannot update rels without a relationship variable.' unless @rel_var
+          update_all_with_query(all.query, @rel_var, updates, params)
         end
 
         # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
@@ -237,6 +240,17 @@ module Neo4j
         end
 
         private
+
+        def update_all_with_query(query, var_name, updates, params)
+          case updates
+          when Hash
+            query.set(var_name => updates).pluck("count(#{var_name})").first
+          when String
+            query.set(updates).params(params).pluck("count(#{var_name})").first
+          else
+            fail ArgumentError, "Invalid parameter type #{updates.class} for `updates`."
+          end
+        end
 
         def clear_source_object_cache
           self.source_object.clear_association_cache if self.source_object.respond_to?(:clear_association_cache)
