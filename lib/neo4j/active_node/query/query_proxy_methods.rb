@@ -105,6 +105,22 @@ module Neo4j
           end
         end
 
+        # Updates some attributes of a group of nodes and relationships within a QP chain.
+        # @param updates [Hash,String] updates An hash or a string of parameters to be updated
+        # @param updates [Hash] params The parameters to be bind. Valid only if updates is a string
+        def update_all(updates, params = {})
+          query = all.query_as(:n)
+
+          case updates
+          when Hash
+            query.set(n: updates).pluck('count(n)').first
+          when String
+            query.set(updates).params(params).pluck('count(n)').first
+          else
+            fail ArgumentError, "Invalid parameter type #{updates.class} for `updates`."
+          end
+        end
+
         # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
         # The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
         # @param identifier [String,Symbol] the optional identifier of the link in the chain to delete.

@@ -632,6 +632,33 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
+  describe '#update_all' do
+    let!(:people) do
+      Person.create(name: 'person1', age: 21)
+      Person.create(name: 'person2', age: 55)
+      Person.create(name: 'person3', age: 29)
+    end
+
+    let(:changing_people) { Person.as(:n).where('n.age = 18') }
+
+    it 'updates people with age < 30' do
+      expect do
+        expect(Person.where('n.age < 30').update_all(age: 18)).to eq(2)
+      end.to change(changing_people, :count).from(0).to(2)
+    end
+
+    it 'updates nothing with age > 1000' do
+      expect do
+        expect(Person.where('n.age > 1000').update_all(age: 18)).to eq(0)
+      end.not_to change(changing_people, :count)
+    end
+
+    it 'updates all people' do
+      expect(Person.update_all(age: 18)).to eq(3)
+      expect(Person.all.map(&:age)).to be_all { |age| age == 18 }
+    end
+  end
+
   describe 'DateTime' do
     before(:each) { Person.delete_all }
 
