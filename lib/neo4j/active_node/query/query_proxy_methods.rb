@@ -106,8 +106,8 @@ module Neo4j
         end
 
         # Updates some attributes of a group of nodes and relationships within a QP chain.
-        # @param updates [Hash,String] updates An hash or a string of parameters to be updated
-        # @param updates [Hash] params The parameters to be bind. Valid only if updates is a string
+        # @param updates [Hash,String] updates An hash or a string of parameters to be updated.
+        # @param updates [Hash] params An hash of parameters for the update string. It's ignored if `updates` is an Hash.
         def update_all(updates, params = {})
           query = all.query_as(:n)
 
