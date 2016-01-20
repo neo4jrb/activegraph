@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.2] - 2016-01-01
+
+### Fixed
+
+- Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
+
 ## [6.1.1] - 2016-01-01
 
 ### Fixed
@@ -27,6 +33,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+
+## [6.0.6] - 01-20-2016
+
+### Fixed
+
+- Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
 
 ## [6.0.5] - 12-29-2015
 
