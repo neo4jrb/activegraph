@@ -3,7 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [6.1.2] - 2016-01-01
+## [Unreleased]
+
+### Fixed
+
+- Issue where `ActiveRel.create` would not work with `RelatedNode` (`rel.from_node`) instances (Thanks, djvs #1107)
+
+## [6.1.2] - 2016-01-19
 
 ### Fixed
 
