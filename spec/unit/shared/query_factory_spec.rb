@@ -24,7 +24,7 @@ module Neo4j
         end
 
         context 'with RelatedNode' do
-          let(:graph_obj) { RelClass.new(NodeClass.new, NodeClass.new).from_node }
+          let(:graph_obj) { Neo4j::ActiveRel::RelatedNode.new(NodeClass.new) }
           it { is_expected.to eq NodeQueryFactory }
         end
 
