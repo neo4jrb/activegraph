@@ -9,13 +9,16 @@ shared_examples_for 'timestamped model' do
   end
 
   context 'when saved' do
+    around do |example|
+      Timecop.freeze do
+        example.run
+      end
+    end
+
     before do
       @time = Time.now
       @tomorrow = Time.now.tomorrow
     end
-
-    before { Timecop.freeze }
-    after { Timecop.return }
 
     before { subject.save! }
 
