@@ -30,6 +30,8 @@ describe 'query_proxy_methods' do
       to_class 'Lesson'
       type 'lessons'
 
+      property :absence_count, type: Integer, default: 0
+
       after_destroy :destroy_called
 
       def destroy_called
@@ -252,6 +254,67 @@ describe 'query_proxy_methods' do
         expect_queries(0) { proxy.to_a }
         expect_queries(0) { proxy.length }
       end
+    end
+  end
+
+  describe '#update_all' do
+    let!(:jimmy_clone) { Student.create(name: 'Jimmy') }
+    let!(:john)        { Student.create(name: 'John') }
+
+    let(:changing_students) { Student.where(name: 'Bob') }
+
+    it 'updates all students' do
+      expect(Student.update_all(name: 'Bob')).to eq(Student.count)
+      expect(Student.all.map(&:name)).to be_all { |age| age == 'Bob' }
+    end
+
+    it 'updates students' do
+      expect do
+        expect(Student.as(:p).where('p.name = "Jimmy"').update_all(name: 'Bob')).to eq(2)
+      end.to change(changing_students, :count).by(2)
+    end
+
+    it 'updates people with age < 30 (using string parameter)' do
+      expect do
+        expect(Student.as(:p).where('p.name = "Jimmy"').update_all('p.name = {new_name}', new_name: 'Bob')).to eq(2)
+      end.to change(changing_students, :count).by(2)
+    end
+
+    it 'updates nothing when matching nothing' do
+      expect do
+        expect(Student.as(:n).where('n.name = "Frank"').update_all(name: 'Bob')).to eq(0)
+      end.not_to change(changing_students, :count)
+    end
+
+    it 'raises error on invalid argument' do
+      expect do
+        Student.update_all(7)
+      end.to raise_error ArgumentError
+    end
+  end
+
+  describe '#update_all_rels' do
+    before do
+      science.students << jimmy
+      math.students << jimmy
+    end
+
+    it 'updates all jimmy\'s lessions absence' do
+      count = Student.all.match_to(jimmy).lessons(:l)
+              .update_all_rels(absence_count: 3)
+      expect(count).to eq(2)
+    end
+
+    it 'updates all jimmy\'s lessions absence (with string parameter)' do
+      count = Student.all.match_to(jimmy).lessons(:l)
+              .update_all_rels('rel1.absence_count = 3')
+      expect(count).to eq(2)
+    end
+
+    it 'raises error on invalid argument' do
+      expect do
+        Student.all.match_to(jimmy).lessons(:l).update_all(7)
+      end.to raise_error ArgumentError
     end
   end
 
