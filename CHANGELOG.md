@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `ActiveNode` models now respond to `update_all` (thanks ProGM / #1113)
+- Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
+
 ## [6.1.2] - 2016-01-01
 
 ### Fixed
