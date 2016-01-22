@@ -12,7 +12,7 @@ module Neo4j::ActiveRel
     # Initialization with an integer happens when a relationship is loaded from the database. It loads using the ID
     # because that is provided by the Cypher response and does not require an extra query.
     def initialize(node = nil)
-      @node = valid_node_param?(node) ? node : (fail InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node')
+      @node = valid_node_param?(node) ? node : (fail Neo4j::InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node')
     end
 
     # Loads the node if needed, then conducts comparison.

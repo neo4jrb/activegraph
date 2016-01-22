@@ -54,7 +54,7 @@ module Neo4j
 
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
-          fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+          fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
             q = distinct.nil? ? var : "DISTINCT #{var}"
             limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
@@ -97,7 +97,9 @@ module Neo4j
         end
 
         def exists?(node_condition = nil, target = nil)
-          fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+          unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+            fail(Neo4j::InvalidParameterError, ':exists? only accepts neo_ids')
+          end
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
             start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
