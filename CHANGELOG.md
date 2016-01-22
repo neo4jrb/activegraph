@@ -3,7 +3,32 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [6.1.2] - 2016-01-01
+## Unreleased
+
+### Changed
+
+- All explicit dependencies on `ActiveAttr` code that was not removed outright can now be found in the `Neo4j::Shared` namespace.
+- All type conversion uses Neo4j.rb-owned converters in the `Neo4j::Shared::TypeConverters` namespace. This is of particular importance where `Boolean` is concerned. Where explicitly using `ActiveAttr::Typecasting::Boolean`, use `Neo4j::Shared::Boolean`.
+- `Neo4j::Shared::TypeConverters.converters` was replaced with `Neo4j::Shared::TypeConverters::CONVERTERS`.
+
+### Added
+
+- A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
+- `ActiveNode` models now respond to `update_all` (thanks ProGM / #1113)
+- Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
+
+### Removed
+
+- All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
+- All `call` class methods from Type Converters. Use `to_ruby` instead.
+
+## [6.1.3] - 2016-01-20
+
+### Fixed
+
+- Issue where `ActiveRel.create` would not work with `RelatedNode` (`rel.from_node`) instances (Thanks, djvs #1107)
+
+## [6.1.2] - 2016-01-19
 
 ### Fixed
 

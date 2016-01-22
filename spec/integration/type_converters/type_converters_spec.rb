@@ -1,23 +1,23 @@
 describe Neo4j::Shared::TypeConverters do
   describe 'converters' do
     it 'has converters for DateTime' do
-      Neo4j::Shared::TypeConverters.converters[DateTime].should eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
+      Neo4j::Shared::TypeConverters::CONVERTERS[DateTime].should eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
     end
 
     it 'has converters for Time' do
-      Neo4j::Shared::TypeConverters.converters[Time].should eq(Neo4j::Shared::TypeConverters::TimeConverter)
+      Neo4j::Shared::TypeConverters::CONVERTERS[Time].should eq(Neo4j::Shared::TypeConverters::TimeConverter)
     end
 
     it 'has converters for Date' do
-      Neo4j::Shared::TypeConverters.converters[Date].should eq(Neo4j::Shared::TypeConverters::DateConverter)
+      Neo4j::Shared::TypeConverters::CONVERTERS[Date].should eq(Neo4j::Shared::TypeConverters::DateConverter)
     end
 
     it 'has converters for JSON' do
-      Neo4j::Shared::TypeConverters.converters[JSON].should eq(Neo4j::Shared::TypeConverters::JSONConverter)
+      Neo4j::Shared::TypeConverters::CONVERTERS[JSON].should eq(Neo4j::Shared::TypeConverters::JSONConverter)
     end
 
     it 'has converters for YAML' do
-      Neo4j::Shared::TypeConverters.converters[Hash].should eq(Neo4j::Shared::TypeConverters::YAMLConverter)
+      Neo4j::Shared::TypeConverters::CONVERTERS[Hash].should eq(Neo4j::Shared::TypeConverters::YAMLConverter)
     end
   end
 

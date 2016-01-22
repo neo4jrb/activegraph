@@ -101,8 +101,7 @@ module Neo4j::Shared
     def unregister(name)
       # might need to be include?(name.to_s)
       fail ArgumentError, "Argument `#{name}` not an attribute" if not registered_properties[name]
-      declared_prop = registered_properties[name]
-      registered_properties.delete(declared_prop)
+      registered_properties.delete(name)
       unregister_magic_typecaster(name)
       unregister_property_default(name)
     end
@@ -133,11 +132,6 @@ module Neo4j::Shared
       @magic_typecast_properties ||= {}
     end
 
-    # The known mappings of declared properties and their primitive types.
-    def upstream_primitives
-      @upstream_primitives ||= {}
-    end
-
     EXCLUDED_TYPES = [Array, Range, Regexp]
     def value_for_where(key, value)
       return value unless prop = registered_properties[key]
@@ -166,7 +160,7 @@ module Neo4j::Shared
 
     # Prevents repeated calls to :_attribute_type, which isn't free and never changes.
     def fetch_upstream_primitive(attr)
-      upstream_primitives[attr] || upstream_primitives[attr] = klass._attribute_type(attr)
+      registered_properties[attr].type
     end
 
     private

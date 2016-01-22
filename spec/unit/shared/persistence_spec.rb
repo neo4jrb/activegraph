@@ -6,7 +6,7 @@ describe Neo4j::Shared::Persistence do
 
                             property :name
                             property :age, type: Integer
-                            property :active, type: ActiveAttr::Typecasting::Boolean, default: false
+                            property :active, type: Neo4j::Shared::Boolean, default: false
 
                             def self.extract_association_attributes!(props)
                               props
