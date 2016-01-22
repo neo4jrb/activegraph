@@ -9,4 +9,9 @@ module Neo4j
   end
 
   class InvalidPropertyOptionsError < Neo4jrbError; end
+
+  class UnknownTypeConverterError < Neo4jrbError; end
+
+  class DangerousAttributeError < ScriptError; end
+  class UnknownAttributeError < NoMethodError; end
 end

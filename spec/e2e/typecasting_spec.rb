@@ -32,7 +32,7 @@ describe 'custom type conversion' do
   end
 
   it 'registers' do
-    expect(Neo4j::Shared::TypeConverters.converters).to have_key(Range)
+    expect(Neo4j::Shared::TypeConverters::CONVERTERS).to have_key(Range)
   end
 
   before { RangeConvertPerson.create!(my_range: 1..30) }

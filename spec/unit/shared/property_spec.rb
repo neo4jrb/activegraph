@@ -1,5 +1,5 @@
 describe Neo4j::Shared::Property do
-  let(:clazz) { Class.new { include Neo4j::Shared::Property } }
+  let(:clazz) { Class.new { include Neo4j::ActiveNode::Property } }
 
   describe ':property class method' do
     it 'raises an error when passing illegal properties' do
@@ -9,16 +9,42 @@ describe Neo4j::Shared::Property do
   end
 
   describe '.undef_property' do
-    before(:each) do
-      clazz.property :bar
+    before(:each) { clazz.property(:bar, options) }
+    let(:options) { {} }
+    let(:remove!) { clazz.undef_property(:bar) }
 
-      expect(clazz).to receive(:undef_constraint_or_index)
-      clazz.undef_property :bar
+    describe 'methods' do
+      it 'are removed' do
+        expect { remove! }.to change { [:bar, :bar=].all? { |meth| clazz.method_defined?(meth) } }.from(true).to(false)
+      end
     end
-    it 'removes methods' do
-      clazz.method_defined?(:bar).should be false
-      clazz.method_defined?(:bar=).should be false
-      clazz.method_defined?(:bar?).should be false
+
+    describe 'property definition' do
+      it 'is removed' do
+        expect { remove! }.to change { clazz.declared_properties[:bar] }.to(nil)
+      end
+    end
+
+    describe 'schema' do
+      before do
+        allow_any_instance_of(Neo4j::Shared::DeclaredProperty).to receive(:index_or_constraint?).and_return true
+        allow(clazz.class).to receive(:index)
+      end
+
+      context 'exact index' do
+        it 'is removed' do
+          expect(clazz).to receive(:drop_index)
+          remove!
+        end
+      end
+
+      context 'unique constraint' do
+        it 'is removed' do
+          expect_any_instance_of(Neo4j::Shared::DeclaredProperty).to receive(:constraint?).and_return(true)
+          expect(clazz).to receive(:drop_constraint)
+          remove!
+        end
+      end
     end
   end
 
@@ -78,7 +104,7 @@ describe Neo4j::Shared::Property do
     context 'with custom typecaster' do
       let(:typecaster) do
         Class.new do
-          def call(value)
+          def to_ruby(value)
             value.to_s.upcase
           end
         end
@@ -126,12 +152,13 @@ describe Neo4j::Shared::Property do
       clazz.property :range, serializer: converter
     end
 
-    it 'sets active_attr typecaster to ObjectTypecaster' do
-      expect(clazz.attributes[:range][:typecaster]).to be_a(ActiveAttr::Typecasting::ObjectTypecaster)
+    # TODO: Is this still necessary past 7.0, post ActiveAttr removal?
+    it 'sets underlying typecaster to ObjectTypecaster' do
+      expect(clazz.attributes[:range][:typecaster]).to eq(Neo4j::Shared::TypeConverters::ObjectConverter)
     end
 
     it 'adds new converter' do
-      expect(Neo4j::Shared::TypeConverters.converters[Range]).to eq(converter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Range]).to eq(converter)
     end
 
     it 'returns object of a proper type' do

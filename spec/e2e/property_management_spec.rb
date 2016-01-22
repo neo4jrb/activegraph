@@ -67,7 +67,7 @@ describe 'declared property classes' do
         include Neo4j::ActiveNode
         property :foo
         property :bar, type: String, default: 'foo'
-        property :baz, type: ActiveAttr::Typecasting::Boolean, default: false
+        property :baz, type: Neo4j::Shared::Boolean, default: false
         validates :baz, inclusion: {in: [true, false]}
       end
 

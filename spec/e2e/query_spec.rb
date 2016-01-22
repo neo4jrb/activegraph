@@ -40,7 +40,7 @@ describe 'Query API' do
       property :name
       property :age, type: Integer
 
-      property :likely_to_succeed, type: ActiveAttr::Typecasting::Boolean, default: false
+      property :likely_to_succeed, type: Neo4j::Shared::Boolean, default: false
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
