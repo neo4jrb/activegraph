@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All explicit dependencies on `ActiveAttr` code that was not removed outright can now be found in the `Neo4j::Shared` namespace.
 - All type conversion uses Neo4j.rb-owned converters in the `Neo4j::Shared::TypeConverters` namespace. This is of particular importance where `Boolean` is concerned. Where explicitly using `ActiveAttr::Typecasting::Boolean`, use `Neo4j::Shared::Boolean`.
 - `Neo4j::Shared::TypeConverters.converters` was replaced with `Neo4j::Shared::TypeConverters::CONVERTERS`.
-- Error classes refactor: All errors now inherits from `Neo4j::Neo4jrbError`. All specific InvalidParameterError were replaced with a more generic Neo4j::InvalidParameterError.
+- Error classes refactor: All errors now inherits from `Neo4j::Neo4jrbError`. All specific `InvalidParameterError` were replaced with a more generic `Neo4j::InvalidParameterError`.
 - When calling `Node.find(...)` with missing ids, `Neo4j::RecordNotFound` now returns a better error message and some informations about the query.
 
 ### Added
