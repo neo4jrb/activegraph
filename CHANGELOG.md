@@ -22,7 +22,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 
-## [6.1.2] - 2016-01-01
+## [6.1.3] - 2016-01-20
+
+### Fixed
+
+- Issue where `ActiveRel.create` would not work with `RelatedNode` (`rel.from_node`) instances (Thanks, djvs #1107)
+
+## [6.1.2] - 2016-01-19
 
 ### Fixed
 
