@@ -1,8 +1,6 @@
 module Neo4j
   module ActiveNode
     module QueryMethods
-      class InvalidParameterError < Neo4j::InvalidParameterError; end
-
       def exists?(node_condition = nil)
         unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
           fail(InvalidParameterError, ':exists? only accepts ids or conditions')

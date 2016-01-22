@@ -2,7 +2,6 @@ module Neo4j
   module ActiveNode
     module Query
       module QueryProxyMethods
-        class InvalidParameterError < Neo4j::InvalidParameterError; end
         FIRST = 'HEAD'
         LAST = 'LAST'
 

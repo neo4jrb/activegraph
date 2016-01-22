@@ -9,7 +9,7 @@ module Neo4j::Shared
     include ActiveAttr::QueryAttributes
     include ActiveModel::Dirty
 
-    class UndefinedPropertyError < RuntimeError; end
+    class UndefinedPropertyError < Neo4j::Neo4jrbError; end
     class MultiparameterAssignmentError < Neo4j::Neo4jrbError; end
 
     attr_reader :_persisted_obj

@@ -20,7 +20,6 @@ module Neo4j
         Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels._wrapped_classes.include?(model)
       end
 
-      class InvalidQueryError < Neo4j::Neo4jrbError; end
       class RecordNotFound < Neo4j::RecordNotFound; end
 
       # @return the labels
