@@ -23,14 +23,14 @@ module Neo4j::Shared
     # @example
     #   attribute_definition <=> other
     #
-    # @param [Neo4j::Shared::AttributeDefinition, Object] other The other
+    # @param [Neo4j::Shared::DeclaredProperty, Object] other The other
     #   attribute definition to compare with.
     #
     # @return [-1, 0, 1, nil]
     def <=>(other)
       return nil unless other.instance_of? self.class
       return nil if name == other.name && options != other.options
-      self.name.to_s <=> other.name.to_s
+      self.to_s <=> other.to_s
     end
 
     def inspect
