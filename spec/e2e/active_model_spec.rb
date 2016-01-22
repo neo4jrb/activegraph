@@ -426,16 +426,43 @@ describe 'Neo4j::ActiveNode' do
       expect { Person.find_or_create_by!(name: nil) }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
     end
 
-    # This also works for create! and find_by_or_create/find_by_or_create!
-    it 'can create using a block' do
-      person = Person.create do |p|
-        p.name = 'Wilson'
-        p.age = 50
+    describe 'create using a block' do
+      let(:person) do
+        Person.create do |p|
+          p.name = 'Wilson'
+          p.age = 50
+        end
       end
-      expect(person.persisted?).to be_truthy
-      expect(person.name).to eq 'Wilson'
-    end
 
+      it 'persists' do
+        expect(person).to be_persisted
+      end
+
+      it 'assigns property values' do
+        expect(person.name).to eq 'Wilson'
+        expect(person.age).to eq 50
+      end
+
+      describe 'relationships' do
+        let(:person_with_rel) do
+          Person.create do |p|
+            p.name = 'Foo'
+            p.friends << other_person
+          end
+        end
+        let(:other_person) { Person.create(name: 'Bar') }
+
+        before do
+          Person.has_many(:out, :friends, model_class: 'Person', type: 'FRIENDS_WITH')
+          person_with_rel.reload
+        end
+
+        it 'are persisted' do
+          expect(person_with_rel.friends.first).to eq other_person
+        end
+      end
+    end
+    # This also works for create! and find_by_or_create/find_by_or_create!
     it 'can increment an attribute' do
       person = Person.create(name: 'andreas', age: 21)
       expect { person.increment(:age) }.to change { person.age }.from(21).to(22)

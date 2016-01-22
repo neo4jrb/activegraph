@@ -4,6 +4,7 @@ module Neo4j
       class QueryProxy
         include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
+        include Neo4j::ActiveNode::Query::QueryProxyMethodsOfMassUpdating
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
         include Neo4j::ActiveNode::Query::QueryProxyEagerLoading
         include Neo4j::ActiveNode::Dependent::QueryProxyMethods

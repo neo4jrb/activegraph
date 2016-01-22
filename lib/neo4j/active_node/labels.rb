@@ -78,6 +78,8 @@ module Neo4j
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
 
+        delegate :update_all, to: :all
+
         # Returns the object with the specified neo4j id.
         # @param [String,Integer] id of node to find
         def find(id)

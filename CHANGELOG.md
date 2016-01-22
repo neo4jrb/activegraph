@@ -14,11 +14,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
+- `ActiveNode` models now respond to `update_all` (thanks ProGM / #1113)
+- Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
 
 ### Removed
 
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
+
+## [6.1.2] - 2016-01-01
+
+### Fixed
+
+- Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
 
 ## [6.1.1] - 2016-01-01
 
@@ -44,6 +52,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+
+## [6.0.6] - 01-20-2016
+
+### Fixed
+
+- Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
 
 ## [6.0.5] - 12-29-2015
 

@@ -114,13 +114,6 @@ module Neo4j::Shared
 
       def_delegators :declared_properties, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
 
-      def inherited(other)
-        self.declared_properties.registered_properties.each_pair do |prop_key, prop_def|
-          other.property(prop_key, prop_def.options)
-        end
-        super
-      end
-
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
