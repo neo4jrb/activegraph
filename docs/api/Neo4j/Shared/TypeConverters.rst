@@ -11,6 +11,10 @@ TypeConverters
    :titlesonly:
 
 
+   
+
+   TypeConverters/Boolean
+
    TypeConverters/BaseConverter
 
    TypeConverters/IntegerConverter
@@ -32,6 +36,12 @@ TypeConverters
    TypeConverters/YAMLConverter
 
    TypeConverters/JSONConverter
+
+   TypeConverters/ObjectConverter
+
+   
+
+   
 
    
 
@@ -63,6 +73,8 @@ Constants
 
 
 
+  * CONVERTERS
+
 
 
 Files
@@ -70,7 +82,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:7 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L7>`_
+  * `lib/neo4j/shared/type_converters.rb:9 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L9>`_
 
 
 
@@ -111,19 +123,6 @@ Methods
 
 
 
-.. _`Neo4j/Shared/TypeConverters.converters`:
-
-**.converters**
-  Returns the value of attribute converters
-
-  .. code-block:: ruby
-
-     def converters
-       @converters
-     end
-
-
-
 .. _`Neo4j/Shared/TypeConverters.formatted_for_db?`:
 
 **.formatted_for_db?**
@@ -133,11 +132,7 @@ Methods
 
      def formatted_for_db?(found_converter, value)
        return false unless found_converter.respond_to?(:db_type)
-       if found_converter.respond_to?(:converted)
-         found_converter.converted?(value)
-       else
-         value.is_a?(found_converter.db_type)
-       end
+       found_converter.respond_to?(:converted) ? found_converter.converted?(value) : value.is_a?(found_converter.db_type)
      end
 
 
@@ -150,8 +145,6 @@ Methods
   .. code-block:: ruby
 
      def included(_)
-       return if @converters
-       @converters = {}
        Neo4j::Shared::TypeConverters.constants.each do |constant_name|
          constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
          register_converter(constant) if constant.respond_to?(:convert_type)
@@ -168,7 +161,7 @@ Methods
   .. code-block:: ruby
 
      def register_converter(converter)
-       converters[converter.convert_type] = converter
+       CONVERTERS[converter.convert_type] = converter
      end
 
 
@@ -182,10 +175,51 @@ Methods
 
      def to_other(direction, value, type)
        fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
-       found_converter = converters[type]
+       found_converter = CONVERTERS[type]
        return value unless found_converter
        return value if direction == :to_db && formatted_for_db?(found_converter, value)
        found_converter.send(direction, value)
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters#typecast_attribute`:
+
+**#typecast_attribute**
+  
+
+  .. code-block:: ruby
+
+     def typecast_attribute(typecaster, value)
+       Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters.typecast_attribute`:
+
+**.typecast_attribute**
+  
+
+  .. code-block:: ruby
+
+     def typecast_attribute(typecaster, value)
+       fail ArgumentError, "A typecaster must be given, #{typecaster} is invalid" unless typecaster.respond_to?(:to_ruby)
+       return value if value.nil?
+       typecaster.to_ruby(value)
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters#typecaster_for`:
+
+**#typecaster_for**
+  
+
+  .. code-block:: ruby
+
+     def typecaster_for(value)
+       Neo4j::Shared::TypeConverters.typecaster_for(value)
      end
 
 
@@ -199,7 +233,7 @@ Methods
 
      def typecaster_for(primitive_type)
        return nil if primitive_type.nil?
-       converters.key?(primitive_type) ? converters[primitive_type] : nil
+       CONVERTERS[primitive_type]
      end
 
 

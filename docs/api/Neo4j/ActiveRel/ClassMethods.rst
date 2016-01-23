@@ -28,7 +28,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel.rb:62 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L62>`_
+  * `lib/neo4j/active_rel.rb:65 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L65>`_
 
 
 

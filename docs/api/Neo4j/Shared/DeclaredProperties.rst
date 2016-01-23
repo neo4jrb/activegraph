@@ -76,8 +76,6 @@ See Neo4j::Shared::DeclaredProperty for definitions of the property objects them
 
    
 
-   
-
 
 
 
@@ -87,6 +85,8 @@ Constants
 
 
   * EXCLUDED_TYPES
+
+  * CONVERTERS
 
 
 
@@ -431,6 +431,32 @@ Methods
 
 
 
+.. _`Neo4j/Shared/DeclaredProperties#typecast_attribute`:
+
+**#typecast_attribute**
+  
+
+  .. code-block:: ruby
+
+     def typecast_attribute(typecaster, value)
+       Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperties#typecaster_for`:
+
+**#typecaster_for**
+  
+
+  .. code-block:: ruby
+
+     def typecaster_for(value)
+       Neo4j::Shared::TypeConverters.typecaster_for(value)
+     end
+
+
+
 .. _`Neo4j/Shared/DeclaredProperties#unregister`:
 
 **#unregister**
@@ -441,23 +467,9 @@ Methods
      def unregister(name)
        # might need to be include?(name.to_s)
        fail ArgumentError, "Argument `#{name}` not an attribute" if not registered_properties[name]
-       declared_prop = registered_properties[name]
-       registered_properties.delete(declared_prop)
+       registered_properties.delete(name)
        unregister_magic_typecaster(name)
        unregister_property_default(name)
-     end
-
-
-
-.. _`Neo4j/Shared/DeclaredProperties#upstream_primitives`:
-
-**#upstream_primitives**
-  The known mappings of declared properties and their primitive types.
-
-  .. code-block:: ruby
-
-     def upstream_primitives
-       @upstream_primitives ||= {}
      end
 
 

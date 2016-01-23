@@ -1331,6 +1331,36 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#update_all`:
+
+**#update_all**
+  Updates some attributes of a group of nodes within a QP chain.
+  The optional argument makes sense only of `updates` is a string.
+
+  .. code-block:: ruby
+
+     def update_all(updates, params = {})
+       # Move this to ActiveNode module?
+       update_all_with_query(identity, updates, params)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#update_all_rels`:
+
+**#update_all_rels**
+  Updates some attributes of a group of relationships within a QP chain.
+  The optional argument makes sense only of `updates` is a string.
+
+  .. code-block:: ruby
+
+     def update_all_rels(updates, params = {})
+       fail 'Cannot update rels without a relationship variable.' unless @rel_var
+       update_all_with_query(@rel_var, updates, params)
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#with_associations`:
 
 **#with_associations**

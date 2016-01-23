@@ -21,8 +21,6 @@ TimeConverter
 
    
 
-   
-
 
 
 
@@ -38,7 +36,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:185 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L185>`_
+  * `lib/neo4j/shared/type_converters.rb:194 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L194>`_
 
 
 
@@ -46,19 +44,6 @@ Files
 
 Methods
 -------
-
-
-
-.. _`Neo4j/Shared/TypeConverters/TimeConverter.call`:
-
-**.call**
-  
-
-  .. code-block:: ruby
-
-     def to_ruby(value)
-       Time.at(value).utc
-     end
 
 
 

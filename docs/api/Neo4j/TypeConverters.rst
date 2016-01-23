@@ -19,6 +19,8 @@ Constants
 
 
 
+  * CONVERTERS
+
 
 
 Files
@@ -63,6 +65,32 @@ Methods
 
      def convert_property(key, value, direction)
        converted_property(primitive_type(key.to_sym), value, direction)
+     end
+
+
+
+.. _`Neo4j/TypeConverters#typecast_attribute`:
+
+**#typecast_attribute**
+  
+
+  .. code-block:: ruby
+
+     def typecast_attribute(typecaster, value)
+       Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
+     end
+
+
+
+.. _`Neo4j/TypeConverters#typecaster_for`:
+
+**#typecaster_for**
+  
+
+  .. code-block:: ruby
+
+     def typecaster_for(value)
+       Neo4j::Shared::TypeConverters.typecaster_for(value)
      end
 
 
