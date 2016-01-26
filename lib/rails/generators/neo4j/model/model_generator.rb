@@ -12,7 +12,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   class_option :has_many,   type: :array,  desc: 'A list of has_many relationships'
 
   def create_model_file
-    template 'model.erb', File.join('app/models', "#{singular_name}.rb")
+    template 'model.erb', File.join('app/models', class_path, "#{singular_name}.rb")
   end
 
   protected
