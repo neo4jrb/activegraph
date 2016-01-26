@@ -22,6 +22,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 
+## [6.1.4] - 2016-01-26
+
+### Fixed
+
+- Model generators now respect module namespaces (thanks to michaeldelorenzo in #1119)
+
 ## [6.1.3] - 2016-01-20
 
 ### Fixed
