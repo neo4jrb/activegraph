@@ -86,7 +86,7 @@ module Neo4j
           map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
           result = if id.is_a?(Array)
-                     find_by_ids(id.map { |o| map_id.call(o) })
+                     find_by_ids(id.map(&map_id))
                    else
                      find_by_id(map_id.call(id))
                    end
