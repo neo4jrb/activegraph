@@ -129,17 +129,13 @@ module Neo4j::ActiveNode
       end
 
       def merge(match_attributes, update_attributes = {})
-        on_create_attributes = match_attributes.merge(update_attributes)
-        neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
-          .on_create_set(n: on_create_props(on_create_attributes))
+        find_or_create_query(match_attributes, update_attributes)
           .on_match_set(n: on_match_props(update_attributes))
           .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
-        on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
-        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
-          .on_create_set(n: on_create_attributes)
+        find_or_create_query(find_attributes, set_attributes)
           .pluck(:n).first
       end
 
@@ -158,6 +154,13 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      def find_or_create_query(find_attributes, set_attributes = {})
+        on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
+
+        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
+          .on_create_set(n: on_create_attributes)
+      end
 
       def on_create_props(find_attributes)
         find_attributes.merge(self.new(find_attributes).props_for_create)
