@@ -3,7 +3,7 @@ module Neo4j::Shared
   class DeclaredProperty
     include Comparable
 
-    class IllegalPropertyError < Neo4j::Neo4jrbError; end
+    class IllegalPropertyError < Neo4j::Error; end
     include Neo4j::Shared::DeclaredProperty::Index
 
     ILLEGAL_PROPS = %w(from_node to_node start_node end_node)

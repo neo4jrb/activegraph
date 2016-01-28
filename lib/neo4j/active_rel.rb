@@ -18,7 +18,7 @@ module Neo4j
     include Neo4j::ActiveRel::Query
     include Neo4j::ActiveRel::Types
 
-    class FrozenRelError < Neo4j::Neo4jrbError; end
+    class FrozenRelError < Neo4j::Error; end
 
     def initialize(from_node = nil, to_node = nil, args = nil)
       load_nodes(node_or_nil(from_node), node_or_nil(to_node))

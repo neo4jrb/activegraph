@@ -6,8 +6,8 @@ module Neo4j::Shared
     include Neo4j::Shared::TypecastedAttributes
     include ActiveModel::Dirty
 
-    class UndefinedPropertyError < Neo4j::Neo4jrbError; end
-    class MultiparameterAssignmentError < Neo4j::Neo4jrbError; end
+    class UndefinedPropertyError < Neo4j::Error; end
+    class MultiparameterAssignmentError < Neo4j::Error; end
 
     attr_reader :_persisted_obj
 

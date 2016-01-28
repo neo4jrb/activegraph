@@ -1,11 +1,11 @@
 module Neo4j
   # Neo4j.rb Errors
   # Generic Neo4j.rb exception class.
-  class Neo4jrbError < StandardError
+  class Error < StandardError
   end
 
   # Raised when Neo4j.rb cannot find record by given id.
-  class RecordNotFound < Neo4jrbError
+  class RecordNotFound < Error
     attr_reader :model, :primary_key, :id
 
     def initialize(message = nil, model = nil, primary_key = nil, id = nil)
@@ -17,11 +17,11 @@ module Neo4j
     end
   end
 
-  class InvalidPropertyOptionsError < Neo4jrbError; end
+  class InvalidPropertyOptionsError < Error; end
 
-  class InvalidParameterError < Neo4jrbError; end
+  class InvalidParameterError < Error; end
 
-  class UnknownTypeConverterError < Neo4jrbError; end
+  class UnknownTypeConverterError < Error; end
 
   class DangerousAttributeError < ScriptError; end
   class UnknownAttributeError < NoMethodError; end

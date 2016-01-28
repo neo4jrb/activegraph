@@ -3,7 +3,7 @@ module Neo4j::ActiveRel
   # It's important (or maybe not really IMPORTANT, but at least worth mentioning) that calling method_missing
   # will result in a query to load the node if the node is not already loaded.
   class RelatedNode
-    class UnsetRelatedNodeError < Neo4j::Neo4jrbError; end
+    class UnsetRelatedNodeError < Neo4j::Error; end
 
     # ActiveRel's related nodes can be initialized with nothing, an integer, or a fully wrapped node.
     #

@@ -2,7 +2,7 @@ module Neo4j::ActiveNode
   module HasN
     extend ActiveSupport::Concern
 
-    class NonPersistedNodeError < Neo4j::Neo4jrbError; end
+    class NonPersistedNodeError < Neo4j::Error; end
 
     # Return this object from associations
     # It uses a QueryProxy to get results

@@ -1,6 +1,6 @@
 module Neo4j::Shared
   class FilteredHash
-    class InvalidHashFilterType < Neo4j::Neo4jrbError; end
+    class InvalidHashFilterType < Neo4j::Error; end
     VALID_SYMBOL_INSTRUCTIONS = [:all, :none]
     VALID_HASH_INSTRUCTIONS = [:on]
     VALID_INSTRUCTIONS_TYPES = [Hash, Symbol]
