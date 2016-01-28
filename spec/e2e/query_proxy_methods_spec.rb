@@ -143,7 +143,7 @@ describe 'query_proxy_methods' do
       end
 
       it 'raises an error if something other than a neo id is given' do
-        expect { Lesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        expect { Lesson.exists?(:fooooo) }.to raise_error(Neo4j::InvalidParameterError)
       end
     end
 
@@ -198,7 +198,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'raises an exception if a bad parameter is passed' do
-      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::InvalidParameterError)
     end
 
     it 'works on an object earlier in the chain' do

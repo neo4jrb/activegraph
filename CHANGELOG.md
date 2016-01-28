@@ -10,17 +10,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All explicit dependencies on `ActiveAttr` code that was not removed outright can now be found in the `Neo4j::Shared` namespace.
 - All type conversion uses Neo4j.rb-owned converters in the `Neo4j::Shared::TypeConverters` namespace. This is of particular importance where `Boolean` is concerned. Where explicitly using `ActiveAttr::Typecasting::Boolean`, use `Neo4j::Shared::Boolean`.
 - `Neo4j::Shared::TypeConverters.converters` was replaced with `Neo4j::Shared::TypeConverters::CONVERTERS`.
+- Error classes refactor: All errors now inherits from `Neo4j::Error`. All specific `InvalidParameterError` were replaced with a more generic `Neo4j::InvalidParameterError`.
+- When calling `Node.find(...)` with missing ids, `Neo4j::RecordNotFound` now returns a better error message and some informations about the query.
 
 ### Added
 
 - A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
 - `ActiveNode` models now respond to `update_all` (thanks ProGM / #1113)
 - Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
+- Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
 
 ### Removed
 
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
+- `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
 
 ## [6.1.5] - 2016-01-28
 
