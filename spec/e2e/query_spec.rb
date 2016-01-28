@@ -249,6 +249,28 @@ describe 'Query API' do
             expect(teacher1.created_at).to eq teacher2.created_at
             expect(teacher1.created_at).not_to eq teacher2.updated_at
           end
+
+          describe 'match only attributes' do
+            let(:match_attributes) { {name: 'Dr. Dre'} }
+
+            it 'includes update attributes on creation' do
+              created = Teacher.merge(match_attributes, age: 49)
+
+              expect(created.name).to eq 'Dr. Dre'
+              expect(created.age).to eq 49
+            end
+
+            it 'can update attributes on match' do
+              original = Teacher.merge(match_attributes, age: 49)
+
+              later = DateTime.now + 100
+              expect(DateTime).to receive(:now).at_least(2).times.and_return later
+              updated = Teacher.merge(match_attributes, age: 50)
+
+              expect(Teacher.count).to eq 1
+              expect(original.updated_at).to be < updated.updated_at
+            end
+          end
         end
       end
 

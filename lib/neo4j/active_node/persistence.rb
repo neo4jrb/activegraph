@@ -128,10 +128,11 @@ module Neo4j::ActiveNode
         end
       end
 
-      def merge(attributes)
-        neo4j_session.query.merge(n: {self.mapped_label_names => attributes})
-          .on_create_set(n: on_create_props(attributes))
-          .on_match_set(n: on_match_props)
+      def merge(match_attributes, update_attributes = {})
+        on_create_attributes = match_attributes.merge(update_attributes)
+        neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
+          .on_create_set(n: on_create_props(on_create_attributes))
+          .on_match_set(n: on_match_props(update_attributes))
           .pluck(:n).first
       end
 
@@ -162,8 +163,8 @@ module Neo4j::ActiveNode
         find_attributes.merge(self.new(find_attributes).props_for_create)
       end
 
-      def on_match_props
-        {}.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at'.freeze) }
+      def on_match_props(match_attributes)
+        match_attributes.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at'.freeze) }
       end
     end
   end
