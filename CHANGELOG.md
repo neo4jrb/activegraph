@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.5] - 2016-01-28
+
+### Fixed
+
+- Calls to `.find`/`.find_by_id`/`.find_by_ids` now respect scopes and associations
+
 ## [6.1.4] - 2016-01-26
 
 ### Fixed
