@@ -167,7 +167,7 @@ module Neo4j::ActiveNode
       end
 
       def on_match_props(match_attributes)
-        match_attributes.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at'.freeze) }
+        match_attributes.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at') }
       end
     end
   end
