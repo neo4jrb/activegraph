@@ -367,6 +367,7 @@ describe 'Query API' do
 
       it 'allows for finds on associations' do
         expect(samuels.lessons_teaching.find(ss101.id)).to eq(ss101)
+        expect { samuels.lessons_teaching.find(math101.id) }.to raise_error(Neo4j::RecordNotFound)
       end
 
       context 'samuels taught math 101 lesson' do
