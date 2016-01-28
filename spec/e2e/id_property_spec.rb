@@ -210,10 +210,8 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        Clazz.any_instance.stub(:foobar) { 100 }
         node = Clazz.create!
-        Clazz.should_receive(:where).with(my_id: 100).and_return([:some_node])
-        expect(Clazz.find_by_id(node.my_id)).to eq(:some_node)
+        expect(Clazz.find_by_id(node.my_id)).to eq(node)
       end
     end
   end
