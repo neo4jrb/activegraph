@@ -164,7 +164,7 @@ module Neo4j
 
         def find_by_id_or_ids(map_id, id)
           if id.is_a?(Array)
-            find_by_ids(id.map { |o| map_id.call(o) })
+            find_by_ids(id.map(&map_id))
           else
             find_by_id(map_id.call(id))
           end

@@ -29,6 +29,8 @@ Helper methods to return Neo4j::Core::Query objects.  A query object can be used
 
    Query/QueryProxyFindInBatches
 
+   Query/QueryProxyMethodsOfMassUpdating
+
 
 
 
@@ -57,6 +59,8 @@ Files
   * `lib/neo4j/active_node/query/query_proxy_eager_loading.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_eager_loading.rb#L3>`_
 
   * `lib/neo4j/active_node/query/query_proxy_find_in_batches.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_find_in_batches.rb#L3>`_
+
+  * `lib/neo4j/active_node/query/query_proxy_methods_of_mass_updating.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/query/query_proxy_methods_of_mass_updating.rb#L3>`_
 
 
 

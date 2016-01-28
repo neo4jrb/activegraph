@@ -19,6 +19,16 @@ class Neo4j::Generators::ModelGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  test 'invoke with model name using namespace' do
+    run_generator %w(Namespaces Account)
+
+    assert_file 'app/models/namespaces/account.rb' do |account|
+      assert_class 'Namespaces::Account', account do |klass|
+        assert_equal 'include Neo4j::ActiveNode', klass
+      end
+    end
+  end
+
   test 'invoke with model name and attributes' do
     run_generator %w(Account name:string age:integer)
 

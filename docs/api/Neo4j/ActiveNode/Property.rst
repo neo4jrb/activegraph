@@ -27,6 +27,8 @@ Constants
 
   * DATE_KEY_REGEX
 
+  * DEPRECATED_OBJECT_METHODS
+
 
 
 Files
@@ -45,17 +47,46 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Property#==`:
+
+**#==**
+  Performs equality checking on the result of attributes and its type.
+
+  .. code-block:: ruby
+
+     def ==(other)
+       return false unless other.instance_of? self.class
+       attributes == other.attributes
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Property#[]`:
 
 **#[]**
-  Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+  
 
   .. code-block:: ruby
 
      def read_attribute(name)
-       super(name)
-     rescue ActiveAttr::UnknownAttributeError
-       nil
+       respond_to?(name) ? send(name) : nil
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#[]=`:
+
+**#[]=**
+  Write a single attribute to the model's attribute hash.
+
+  .. code-block:: ruby
+
+     def write_attribute(name, value)
+       if respond_to? "#{name}="
+         send "#{name}=", value
+       else
+         fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+       end
      end
 
 
@@ -69,6 +100,63 @@ Methods
 
      def _persisted_obj
        @_persisted_obj
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#assign_attributes`:
+
+**#assign_attributes**
+  Mass update a model's attributes
+
+  .. code-block:: ruby
+
+     def assign_attributes(new_attributes = nil)
+       return unless new_attributes.present?
+       new_attributes.each do |name, value|
+         writer = :"#{name}="
+         send(writer, value) if respond_to?(writer)
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#attribute_before_type_cast`:
+
+**#attribute_before_type_cast**
+  Read the raw attribute value
+
+  .. code-block:: ruby
+
+     def attribute_before_type_cast(name)
+       @attributes ||= {}
+       @attributes[name.to_s]
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#attributes`:
+
+**#attributes**
+  Returns a Hash of all attributes
+
+  .. code-block:: ruby
+
+     def attributes
+       attributes_map { |name| send name }
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#attributes=`:
+
+**#attributes=**
+  Mass update a model's attributes
+
+  .. code-block:: ruby
+
+     def attributes=(new_attributes)
+       assign_attributes(new_attributes)
      end
 
 
@@ -123,14 +211,12 @@ Methods
 .. _`Neo4j/ActiveNode/Property#read_attribute`:
 
 **#read_attribute**
-  Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+  
 
   .. code-block:: ruby
 
      def read_attribute(name)
-       super(name)
-     rescue ActiveAttr::UnknownAttributeError
-       nil
+       respond_to?(name) ? send(name) : nil
      end
 
 
@@ -159,6 +245,23 @@ Methods
      def send_props(hash)
        return hash if hash.blank?
        hash.each { |key, value| send("#{key}=", value) }
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Property#write_attribute`:
+
+**#write_attribute**
+  Write a single attribute to the model's attribute hash.
+
+  .. code-block:: ruby
+
+     def write_attribute(name, value)
+       if respond_to? "#{name}="
+         send "#{name}=", value
+       else
+         fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+       end
      end
 
 

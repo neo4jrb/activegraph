@@ -34,7 +34,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:127 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L127>`_
+  * `lib/neo4j/shared/type_converters.rb:133 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L133>`_
 
 
 
@@ -105,7 +105,7 @@ Methods
   .. code-block:: ruby
 
      def to_ruby(value)
-       Time.at(value).utc.to_date
+       value.respond_to?(:to_date) ? value.to_date : Time.at(value).utc.to_date
      end
 
 

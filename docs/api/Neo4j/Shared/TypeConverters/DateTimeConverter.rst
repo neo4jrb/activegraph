@@ -38,7 +38,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:148 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L148>`_
+  * `lib/neo4j/shared/type_converters.rb:154 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L154>`_
 
 
 
@@ -115,7 +115,10 @@ Methods
   .. code-block:: ruby
 
      def to_ruby(value)
+       return value if value.is_a?(DateTime)
        t = case value
+           when Time
+             return value.to_datetime.utc
            when Integer
              Time.at(value).utc
            when String
