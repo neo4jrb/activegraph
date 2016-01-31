@@ -219,25 +219,6 @@ describe 'Query API' do
           include Neo4j::ActiveNode
         end
 
-        xit 'sets all expected labels' do
-          node = Substitute.merge({})
-          expect(node.labels).to eq [:TeacherFoo, :Substitute]
-        end
-
-        xit 'allows for merging' do
-          Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-          Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-        end
-
-        xit 'sets created_at and updated_at' do
-          teacher = Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(teacher.created_at).not_to be_nil
-          expect(teacher.updated_at).not_to be_nil
-          expect(teacher.created_at).to eq teacher.updated_at
-        end
-
         context 'merge' do
           let(:timestamps) { [1, 1, 2, 3].lazy }
           let(:merge_attrs) { {name: 'Dr. Dre'} }
@@ -276,40 +257,6 @@ describe 'Query API' do
 
             it 'updated_at' do
               expect(subject.updated_at).to be > subject.created_at
-            end
-          end
-        end
-
-        xcontext 'on match' do
-          it 'updates updated_at but not created_at' do
-            teacher1 = Teacher.merge(name: 'Dr. Harold Samuels')
-            expect(teacher1.created_at).to eq teacher1.updated_at
-            expect(DateTime).to receive(:now).at_least(2).times.and_return 1234
-            teacher2 = Teacher.merge(name: 'Dr. Harold Samuels')
-            expect(teacher1.uuid).to eq teacher2.uuid
-            expect(teacher1.created_at).to eq teacher2.created_at
-            expect(teacher1.created_at).not_to eq teacher2.updated_at
-          end
-
-          describe 'match only attributes' do
-            let(:match_attributes) { {name: 'Dr. Dre'} }
-
-            it 'includes update attributes on creation' do
-              created = Teacher.merge(match_attributes, age: 49)
-
-              expect(created.name).to eq 'Dr. Dre'
-              expect(created.age).to eq 49
-            end
-
-            it 'can update attributes on match' do
-              original = Teacher.merge(match_attributes, age: 49)
-
-              later = DateTime.now + 100
-              expect(DateTime).to receive(:now).at_least(2).times.and_return later
-              updated = Teacher.merge(match_attributes, age: 50)
-
-              expect(Teacher.count).to eq 1
-              expect(original.updated_at).to be < updated.updated_at
             end
           end
         end
