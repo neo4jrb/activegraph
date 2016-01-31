@@ -233,13 +233,15 @@ describe 'Query API' do
         its(:name) { should eq 'Dr. Dre' }
 
         context 'expected labels' do
-          subject { super(); Substitute.merge({}); }
+          subject do
+            super()
+            Substitute.merge({})
+          end
 
           its(:labels) { should eq [:TeacherFoo, :Substitute] }
         end
 
         let_context 'on_create', on_create_attrs: {age: 49} do
-
           its(:age) { should eq 49 }
           its(:status) { should eq 'on create status' }
 
