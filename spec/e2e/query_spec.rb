@@ -204,6 +204,15 @@ describe 'Query API' do
       end
 
       describe '.merge' do
+        let(:timestamps) { [1, 1, 2, 3].lazy }
+        let(:merge_attrs) { {name: 'Dr. Dre'} }
+        let(:on_match_attrs) { {} }
+        let(:on_create_attrs) { {} }
+        let(:set_attrs) { {status: 'on create status'} }
+
+        before { allow(DateTime).to receive(:now) { timestamps.next } }
+        after { expect(Teacher.count).to eq 1 }
+
         # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
         # so please excuse this kludge.
         after(:all) do
@@ -219,45 +228,34 @@ describe 'Query API' do
           include Neo4j::ActiveNode
         end
 
-        context 'merge' do
-          let(:timestamps) { [1, 1, 2, 3].lazy }
-          let(:merge_attrs) { {name: 'Dr. Dre'} }
-          let(:on_match_attrs) { {} }
-          let(:on_create_attrs) { {} }
-          let(:set_attrs) { {status: 'on create status'} }
+        subject { Teacher.merge(merge_attrs, on_match: on_match_attrs, on_create: on_create_attrs, set: set_attrs) }
 
-          before { allow(DateTime).to receive(:now) { timestamps.next } }
-          after { expect(Teacher.count).to eq 1 }
+        its(:name) { should eq 'Dr. Dre' }
 
-          subject { Teacher.merge(merge_attrs, on_match: on_match_attrs, on_create: on_create_attrs, set: set_attrs) }
+        context 'expected labels' do
+          subject { super(); Substitute.merge({}); }
 
-          its(:name) { should eq 'Dr. Dre' }
+          its(:labels) { should eq [:TeacherFoo, :Substitute] }
+        end
 
-          context 'expected labels' do
-            subject { super(); Substitute.merge({}); }
+        let_context 'on_create', on_create_attrs: {age: 49} do
 
-            its(:labels) { should eq [:TeacherFoo, :Substitute] }
+          its(:age) { should eq 49 }
+          its(:status) { should eq 'on create status' }
+
+          it 'has the same created and updated' do
+            expect(subject.created_at).to eq subject.updated_at
           end
+        end
 
-          let_context 'on_create', on_create_attrs: {age: 49} do
+        let_context 'on_merge', on_match_attrs: {age: 50}, on_create_attrs: {age: 49}, set_attrs: {status: 'on match status'} do
+          before { Teacher.merge(on_create_attrs.merge(merge_attrs)) }
 
-            its(:age) { should eq 49 }
-            its(:status) { should eq 'on create status' }
+          its(:age) { should eq 50 }
+          its(:status) { should eq 'on match status' }
 
-            it 'has the same created and updated' do
-              expect(subject.created_at).to eq subject.updated_at
-            end
-          end
-
-          let_context 'on_merge', on_match_attrs: {age: 50}, on_create_attrs: {age: 49}, set_attrs: {status: 'on match status'} do
-            before { Teacher.merge(on_create_attrs.merge(merge_attrs)) }
-
-            its(:age) { should eq 50 }
-            its(:status) { should eq 'on match status' }
-
-            it 'updated_at' do
-              expect(subject.updated_at).to be > subject.created_at
-            end
+          it 'updated_at' do
+            expect(subject.updated_at).to be > subject.created_at
           end
         end
       end
