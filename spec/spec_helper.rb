@@ -231,6 +231,7 @@ def before_session
 end
 
 RSpec.configure do |c|
+  c.extend RSpecHelpers
   c.include Neo4jSpecHelpers
 
   c.before(:all) do

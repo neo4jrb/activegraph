@@ -219,27 +219,57 @@ describe 'Query API' do
           include Neo4j::ActiveNode
         end
 
-        it 'sets all expected labels' do
+        xit 'sets all expected labels' do
           node = Substitute.merge({})
-          expect(node.labels.count).to eq 2
-          expect(node.labels).to include(:TeacherFoo, :Substitute)
+          expect(node.labels).to eq [:TeacherFoo, :Substitute]
         end
 
-        it 'allows for merging' do
+        xit 'allows for merging' do
           Teacher.merge(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
           Teacher.merge(name: 'Dr. Harold Samuels')
           expect(Teacher.count).to eq(1)
         end
 
-        it 'sets created_at and updated_at' do
+        xit 'sets created_at and updated_at' do
           teacher = Teacher.merge(name: 'Dr. Harold Samuels')
           expect(teacher.created_at).not_to be_nil
           expect(teacher.updated_at).not_to be_nil
           expect(teacher.created_at).to eq teacher.updated_at
         end
 
-        context 'on match' do
+        context 'merge' do
+          let(:timestamps) { [1, 1, 2, 3, 4, 5, 6].lazy }
+          let(:merge_attrs) { {name: 'Dr. Dre'} }
+          let(:on_match_attrs) { {} }
+          let(:on_create_attrs) { {} }
+          let(:set_attrs) { {status: 'on create status'} }
+
+          before { allow(DateTime).to receive(:now) { timestamps.next } }
+          after { expect(Teacher.count).to eq 1 }
+
+          subject { Teacher.merge(merge_attrs, on_match: on_match_attrs, on_create: on_create_attrs, set: set_attrs) }
+
+          its(:name) { should eq 'Dr. Dre' }
+
+          context 'expected labels' do
+            subject { super(); Substitute.merge({}); }
+
+            its(:labels) { should eq [:TeacherFoo, :Substitute] }
+          end
+
+          let_context 'on_create', on_create_attrs: {age: 49} do
+
+            its(:age) { should eq 49 }
+            its(:status) { should eq 'on create status' }
+
+            it 'has the same created and updated' do
+              expect(subject.created_at).to eq subject.updated_at
+            end
+          end
+        end
+
+        xcontext 'on match' do
           it 'updates updated_at but not created_at' do
             teacher1 = Teacher.merge(name: 'Dr. Harold Samuels')
             expect(teacher1.created_at).to eq teacher1.updated_at
