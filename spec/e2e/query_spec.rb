@@ -239,7 +239,7 @@ describe 'Query API' do
         end
 
         context 'merge' do
-          let(:timestamps) { [1, 1, 2, 3, 4, 5, 6].lazy }
+          let(:timestamps) { [1, 1, 2, 3].lazy }
           let(:merge_attrs) { {name: 'Dr. Dre'} }
           let(:on_match_attrs) { {} }
           let(:on_create_attrs) { {} }
@@ -265,6 +265,17 @@ describe 'Query API' do
 
             it 'has the same created and updated' do
               expect(subject.created_at).to eq subject.updated_at
+            end
+          end
+
+          let_context 'on_merge', on_match_attrs: {age: 50}, on_create_attrs: {age: 49}, set_attrs: {status: 'on match status'} do
+            before { Teacher.merge(on_create_attrs.merge(merge_attrs)) }
+
+            its(:age) { should eq 50 }
+            its(:status) { should eq 'on match status' }
+
+            it 'updated_at' do
+              expect(subject.updated_at).to be > subject.created_at
             end
           end
         end
