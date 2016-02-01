@@ -236,7 +236,7 @@ describe 'Query API' do
             Substitute.merge({})
           end
 
-          its(:labels) { should eq [:TeacherFoo, :Substitute] }
+          its(:labels) { should match_array [:TeacherFoo, :Substitute] }
         end
 
         let_context 'on_create', on_create_attrs: {age: 49} do
