@@ -204,7 +204,7 @@ describe 'Query API' do
       end
 
       describe '.merge' do
-        let(:timestamps) { [1, 1, 2, 3].map &DateTime.method(:new) }
+        let(:timestamps) { [1, 1, 2, 3].map(&DateTime.method(:new)) }
         let(:merge_attrs) { {name: 'Dr. Dre'} }
         let(:on_match_attrs) { {} }
         let(:on_create_attrs) { {} }
