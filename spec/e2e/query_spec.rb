@@ -199,9 +199,7 @@ describe 'Query API' do
     end
 
     describe 'merge methods' do
-      before(:each) do
-        Teacher.delete_all
-      end
+      before { Teacher.delete_all }
 
       describe '.merge' do
         let(:timestamps) { [1, 1, 2, 3].map(&DateTime.method(:new)) }
