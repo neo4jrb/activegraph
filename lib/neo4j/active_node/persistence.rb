@@ -133,11 +133,11 @@ module Neo4j::ActiveNode
         optional_attrs.assert_valid_keys *options
 
         optional_attrs.default = {}
-        on_create_set, on_match_set, set_attrs = optional_attrs.values_at *options
+        on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at *options
 
         neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
-          .on_create_set(n: on_create_props(on_create_set.merge(set_attrs)))
-          .on_match_set(n: on_match_props(on_match_set.merge(set_attrs)))
+          .on_create_set(n: on_create_props(on_create_attrs.merge(set_attrs)))
+          .on_match_set(n: on_match_props(on_match_attrs.merge(set_attrs)))
           .pluck(:n).first
       end
 
