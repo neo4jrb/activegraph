@@ -258,6 +258,14 @@ describe 'Query API' do
             expect(subject.updated_at).to be > subject.created_at
           end
         end
+
+        context 'valid options' do
+          before { Teacher.merge(merge_attrs) }
+
+          subject { -> { Teacher.merge(merge_attrs, {extra: 'thing'}) } }
+
+          it { should raise_error ArgumentError, 'Unknown key: :extra. Valid keys are: :on_create, :on_match, :set' }
+        end
       end
 
       describe '.find_or_create' do
