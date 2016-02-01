@@ -199,11 +199,18 @@ describe 'Query API' do
     end
 
     describe 'merge methods' do
-      before(:each) do
-        Teacher.delete_all
-      end
+      before { Teacher.delete_all }
 
       describe '.merge' do
+        let(:timestamps) { [1, 1, 2, 3].map(&DateTime.method(:new)) }
+        let(:merge_attrs) { {name: 'Dr. Dre'} }
+        let(:on_match_attrs) { {} }
+        let(:on_create_attrs) { {} }
+        let(:set_attrs) { {status: 'on create status'} }
+
+        before { allow(DateTime).to receive(:now).and_return(*timestamps) }
+        after { expect(Teacher.count).to eq 1 }
+
         # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
         # so please excuse this kludge.
         after(:all) do
@@ -219,36 +226,45 @@ describe 'Query API' do
           include Neo4j::ActiveNode
         end
 
-        it 'sets all expected labels' do
-          node = Substitute.merge({})
-          expect(node.labels.count).to eq 2
-          expect(node.labels).to include(:TeacherFoo, :Substitute)
-        end
+        subject { Teacher.merge(merge_attrs, on_match: on_match_attrs, on_create: on_create_attrs, set: set_attrs) }
 
-        it 'allows for merging' do
-          Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-          Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-        end
+        its(:name) { should eq 'Dr. Dre' }
 
-        it 'sets created_at and updated_at' do
-          teacher = Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(teacher.created_at).not_to be_nil
-          expect(teacher.updated_at).not_to be_nil
-          expect(teacher.created_at).to eq teacher.updated_at
-        end
-
-        context 'on match' do
-          it 'updates updated_at but not created_at' do
-            teacher1 = Teacher.merge(name: 'Dr. Harold Samuels')
-            expect(teacher1.created_at).to eq teacher1.updated_at
-            expect(DateTime).to receive(:now).at_least(2).times.and_return 1234
-            teacher2 = Teacher.merge(name: 'Dr. Harold Samuels')
-            expect(teacher1.uuid).to eq teacher2.uuid
-            expect(teacher1.created_at).to eq teacher2.created_at
-            expect(teacher1.created_at).not_to eq teacher2.updated_at
+        context 'expected labels' do
+          subject do
+            super()
+            Substitute.merge({})
           end
+
+          its(:labels) { should match_array [:TeacherFoo, :Substitute] }
+        end
+
+        let_context 'on_create', on_create_attrs: {age: 49} do
+          its(:age) { should eq 49 }
+          its(:status) { should eq 'on create status' }
+
+          it 'has the same created and updated' do
+            expect(subject.created_at).to eq subject.updated_at
+          end
+        end
+
+        let_context 'on_merge', on_match_attrs: {age: 50}, on_create_attrs: {age: 49}, set_attrs: {status: 'on match status'} do
+          before { Teacher.merge(on_create_attrs.merge(merge_attrs)) }
+
+          its(:age) { should eq 50 }
+          its(:status) { should eq 'on match status' }
+
+          it 'updated_at' do
+            expect(subject.updated_at).to be > subject.created_at
+          end
+        end
+
+        context 'valid options' do
+          before { Teacher.merge(merge_attrs) }
+
+          subject { -> { Teacher.merge(merge_attrs, extra: 'thing') } }
+
+          it { should raise_error ArgumentError, 'Unknown key: :extra. Valid keys are: :on_create, :on_match, :set' }
         end
       end
 
