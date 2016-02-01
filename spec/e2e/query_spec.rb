@@ -262,7 +262,7 @@ describe 'Query API' do
         context 'valid options' do
           before { Teacher.merge(merge_attrs) }
 
-          subject { -> { Teacher.merge(merge_attrs, {extra: 'thing'}) } }
+          subject { -> { Teacher.merge(merge_attrs, extra: 'thing') } }
 
           it { should raise_error ArgumentError, 'Unknown key: :extra. Valid keys are: :on_create, :on_match, :set' }
         end

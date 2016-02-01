@@ -130,10 +130,10 @@ module Neo4j::ActiveNode
 
       def merge(match_attributes, optional_attrs = {})
         options = [:on_create, :on_match, :set]
-        optional_attrs.assert_valid_keys *options
+        optional_attrs.assert_valid_keys(*options)
 
         optional_attrs.default = {}
-        on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at *options
+        on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
 
         neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
           .on_create_set(n: on_create_props(on_create_attrs))
