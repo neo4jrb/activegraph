@@ -83,3 +83,8 @@ Variables
     **Default:** ``DateTime``
 
     This method returns the specified default type for the ``:created_at`` and ``:updated_at`` timestamps. You can also specify another type (e.g. ``Integer``).
+
+  **wait_for_connection**
+    **Default:** ``false``
+
+    This allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose
