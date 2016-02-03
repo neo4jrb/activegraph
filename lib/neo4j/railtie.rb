@@ -85,9 +85,10 @@ module Neo4j
         end
 
         Timeout::timeout(60) do
+          session = nil
           until session
-            session = begin
-              if options.key?(:name)
+            begin
+              session = if options.key?(:name)
                 Neo4j::Session.open_named(type, name, default, path)
               else
                 Neo4j::Session.open(type, path, options[:options])
