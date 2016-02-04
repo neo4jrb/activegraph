@@ -1,5 +1,7 @@
 require 'active_support/notifications'
 require 'rails/railtie'
+# Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
+require 'action_dispatch/railtie'
 
 module Neo4j
   class Railtie < ::Rails::Railtie
@@ -9,6 +11,17 @@ module Neo4j
       ActionDispatch::Reloader.to_prepare do
         Neo4j::ActiveNode::Labels::Reloading.reload_models!
       end
+    end
+
+    # Rescue responses similar to ActiveRecord.
+    # For rails 3.2 and 4.0
+    if config.action_dispatch.respond_to?(:rescue_responses)
+      config.action_dispatch.rescue_responses.merge!(
+        'Neo4j::RecordNotFound' => :not_found
+      )
+    else
+      # For rails 3.0 and 3.1
+      ActionDispatch::ShowExceptions.rescue_responses['Neo4j::RecordNotFound'] = :not_found
     end
 
     # Add ActiveModel translations to the I18n load_path
