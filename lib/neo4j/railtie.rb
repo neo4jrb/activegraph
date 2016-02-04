@@ -77,20 +77,41 @@ module Neo4j
         session.start
       end
 
-      def open_neo4j_session(options)
+      def open_neo4j_session(options, wait_for_connection = false)
         type, name, default, path = options.values_at(:type, :name, :default, :path)
 
         if !java_platform? && type == :embedded_db
           fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
         end
 
-        session = if options.key?(:name)
-                    Neo4j::Session.open_named(type, name, default, path)
-                  else
-                    Neo4j::Session.open(type, path, options[:options])
-                  end
+        session = wait_for_value(wait_for_connection) do
+          if options.key?(:name)
+            Neo4j::Session.open_named(type, name, default, path)
+          else
+            Neo4j::Session.open(type, path, options[:options])
+          end
+        end
 
         start_embedded_session(session) if type == :embedded_db
+      end
+    end
+
+    def wait_for_value(wait)
+      session = nil
+      Timeout.timeout(60) do
+        until session
+          begin
+            if session = yield
+              puts
+              return session
+            end
+          rescue Faraday::ConnectionFailed => e
+            raise e if !wait
+
+            putc '.'
+            sleep(1)
+          end
+        end
       end
     end
 
@@ -120,7 +141,7 @@ module Neo4j
       Neo4j::Railtie.setup_default_session(cfg)
 
       cfg.sessions.each do |session_opts|
-        Neo4j::Railtie.open_neo4j_session(session_opts)
+        Neo4j::Railtie.open_neo4j_session(session_opts, cfg.wait_for_connection)
       end
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 

@@ -22,6 +22,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 
+## [6.1.6] - 2016-02-03
+
+### Added
+
+- `wait_for_connection` configuration variable allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose
+
 ## [6.1.5] - 2016-01-28
 
 ### Fixed
