@@ -142,6 +142,8 @@ If you need to use a string in where, you should set the parameter manually.
 Variable-length relationships
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+**Introduced in version 5.1.0**
+
 It is possible to specify a variable-length qualifier to apply to relationships when calling association methods.
 
 .. code-block:: ruby
