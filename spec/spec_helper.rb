@@ -62,49 +62,8 @@ EMBEDDED_DB_PATH = File.join(Dir.tmpdir, 'neo4j-core-java')
 I18n.enforce_available_locales = false
 
 module Neo4jSpecHelpers
-  extend ActiveSupport::Concern
-
-  def server_username
-    ENV['NEO4J_USERNAME'] || 'neo4j'
-  end
-
-  def server_password
-    ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
-  end
-
-  def basic_auth_hash
-    {
-      username: server_username,
-      password: server_password
-    }
-  end
-
-  def server_url
-    ENV['NEO4J_URL'] || 'http://localhost:7474'
-  end
-
-  def session_mode
-    RUBY_PLATFORM == 'java' ? :embedded : :http
-  end
-
-  def create_session(options = {})
-    @current_session = Neo4j::Core::CypherSession.new(session_adaptor(options.merge(wrap_level: :proc)))
-    Neo4j::ActiveBase.set_current_session(@current_session)
-  end
-
   def new_query
     Neo4j::Core::Query.new
-  end
-
-  def session_adaptor(options = {})
-    case session_mode
-    when :embedded
-      Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH, {impermanent: true, auto_commit: true}.merge(options))
-    when :http
-      Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, {basic_auth: basic_auth_hash}.merge(options))
-    else
-      fail "Invalid session_mode: #{session_mode.inspect}"
-    end
   end
 
   def session
@@ -121,18 +80,16 @@ module Neo4jSpecHelpers
     Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(&method(:puts))
   end
 
-  class_methods do
-    def let_config(var_name)
-      before do
-        @neo4j_config_vars ||= ActiveSupport::HashWithIndifferentAccess.new
-        @neo4j_config_vars[var_name] = Neo4j::Config[var_name]
-        Neo4j::Config[var_name]      = yield
-      end
+  def self.let_config(var_name)
+    before do
+      @neo4j_config_vars ||= ActiveSupport::HashWithIndifferentAccess.new
+      @neo4j_config_vars[var_name] = Neo4j::Config[var_name]
+      Neo4j::Config[var_name]      = yield
+    end
 
-      after do
-        Neo4j::Config[var_name] = @neo4j_config_vars[var_name]
-        @neo4j_config_vars.delete(var_name)
-      end
+    after do
+      Neo4j::Config[var_name] = @neo4j_config_vars[var_name]
+      @neo4j_config_vars.delete(var_name)
     end
   end
 
@@ -158,9 +115,9 @@ def clear_model_memory_caches
   Neo4j::ActiveNode::Labels.clear_wrapped_models
 end
 
-def delete_db(session = current_session)
+def delete_db
   # clear_model_memory_caches
-  session.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
+  Neo4j::ActiveBase.current_session.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
@@ -210,43 +167,54 @@ module ActiveNodeRelStubHelpers
   end
 end
 
-def before_session
-  @current_session.close if @current_session && @current_session.respond_to?(:close)
-  yield
-  create_session
-end
+RSpec.configure do |config|
+  config.include Neo4jSpecHelpers
+  config.include ActiveNodeRelStubHelpers
 
-def current_transaction
-  Neo4j::Transaction.current_for(@current_session)
-end
+  # Setup the current session
+  config.before(:suite) do
+    puts 'before suite'
+    session_mode = RUBY_PLATFORM == 'java' ? :embedded : :http
 
-RSpec.configure do |c|
-  c.include Neo4jSpecHelpers
+    session_adaptor = case session_mode
+                      when :embedded
+                        Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH, impermanent: true, auto_commit: true, wrap_level: :proc)
+                      when :http
+                        server_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
+                        server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
+                        server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-  c.before(:all) do
-    @current_session.close if @current_session
-    create_session
+                        basic_auth_hash = {username: server_username, password: server_password}
+
+                        Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
+                      end
+
+    Neo4j::ActiveBase.set_current_session(Neo4j::Core::CypherSession.new(session_adaptor))
   end
 
-  c.before(:each) do
-    # TODO: What to do about this?
-    Neo4j::Session._listeners.clear
-    @current_session || create_session
+  config.after(:suite) do
+    # Ability to close?
   end
 
-  c.after(:each) do
-    if current_transaction
-      puts 'WARNING forgot to close transaction'
-      Neo4j::ActiveBase.wait_for_schema_changes
-      current_transaction.close
-    end
-  end
+  # config.before(:each) do
+  #   puts 'before each'
+  #   # TODO: What to do about this?
+  #   Neo4j::Session._listeners.clear
+  #   @current_session || create_session
+  # end
 
-  c.exclusion_filter = {
+  # config.after(:each) do
+  #   puts 'after each'
+  #   if current_transaction
+  #     puts 'WARNING forgot to close transaction'
+  #     Neo4j::ActiveBase.wait_for_schema_changes
+  #     current_transaction.close
+  #   end
+  # end
+
+  config.exclusion_filter = {
     api: lambda do |ed|
       RUBY_PLATFORM == 'java' && ed == :server
     end
   }
-
-  c.include ActiveNodeRelStubHelpers
 end

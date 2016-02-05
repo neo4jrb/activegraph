@@ -1,3 +1,5 @@
+require 'neo4j/core/label'
+
 module Neo4j
   module ActiveNode
     # Provides a mapping between neo4j labels and Ruby classes

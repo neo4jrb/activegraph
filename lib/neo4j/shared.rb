@@ -10,8 +10,6 @@ module Neo4j
     module ClassMethods
       # TODO: Deprecate neo4j_session_name(name)
 
-      SelfDeprecation.:neo4j_session_name
-
       def neo4j_session
         Neo4j::ActiveBase.current_session
       end
@@ -27,8 +25,11 @@ module Neo4j
       # This should be used everywhere.  Should make it easy
       # to support a session-per-model system
       def neo4j_query(*args)
-        puts 'querying...'
         neo4j_current_transaction_or_session.query(*args)
+      end
+
+      def new_query
+        Neo4j::ActiveBase.new_query
       end
     end
 

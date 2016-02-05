@@ -1,7 +1,5 @@
 require 'set'
 
-
-
 describe 'Query API' do
   before(:each) do
     delete_db
@@ -204,19 +202,9 @@ describe 'Query API' do
       end
 
       describe '.merge' do
-        # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
-        # so please excuse this kludge.
-        after(:all) do
-          Object.send(:remove_const, :TeacherFoo)
-          Object.send(:remove_const, :Substitute)
-        end
-
-        class TeacherFoo
-          include Neo4j::ActiveNode
-        end
-
-        class Substitute < TeacherFoo
-          include Neo4j::ActiveNode
+        before(:each) do
+          stub_active_node_class('TeacherFoo')
+          stub_named_class('Substitute', TeacherFoo)
         end
 
         it 'sets all expected labels' do

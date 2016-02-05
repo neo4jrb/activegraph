@@ -4,9 +4,12 @@ module Neo4j
   module ActiveBase
     class << self
       def current_session
-        SessionRegistry.current_session
+        SessionRegistry.current_session.tap do |session|
+          fail 'No session defined!' if session.nil?
+        end
       end
 
+      # Should support setting session via config options
       def set_current_session(session)
         SessionRegistry.current_session = session
       end

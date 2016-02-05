@@ -1,7 +1,3 @@
-# class ExtendedIceLolly < IceLolly
-#  property :extended_property
-# end
-
 describe 'Neo4j::ActiveNode' do
   before(:each) do
     clear_model_memory_caches

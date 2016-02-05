@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe 'Module handling from config: :module_handling option' do
   let(:clazz) do
     Class.new do

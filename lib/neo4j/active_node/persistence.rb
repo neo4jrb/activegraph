@@ -90,8 +90,6 @@ module Neo4j::ActiveNode
     private
 
     def destroy_query
-      require 'pry'
-      binding.pry
       query_as(:n).optional_match('(n)-[r]-()').delete(:n, :r)
     end
 
@@ -135,7 +133,7 @@ module Neo4j::ActiveNode
       end
 
       def merge(attributes)
-        neo4j_query.merge(n: {self.mapped_label_names => attributes})
+        new_query.merge(n: {self.mapped_label_names => attributes})
           .on_create_set(n: on_create_props(attributes))
           .on_match_set(n: on_match_props)
           .pluck(:n).first
@@ -143,7 +141,7 @@ module Neo4j::ActiveNode
 
       def find_or_create(find_attributes, set_attributes = {})
         on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
-        neo4j_query.merge(n: {self.mapped_label_names => find_attributes})
+        new_query.merge(n: {self.mapped_label_names => find_attributes})
           .on_create_set(n: on_create_attributes)
           .pluck(:n).first
       end

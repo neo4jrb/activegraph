@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Neo4j::ActiveRel::Persistence do
   let(:session) { double('Session') }
   let(:node1) { double('first persisted node') }
