@@ -265,6 +265,46 @@ module Neo4j::Shared
       end
     end
 
+    class Enum < ::Symbol; end
+
+    class EnumConverter
+      def initialize(enum_keys)
+        @enum_keys = enum_keys
+        @type = Class.new(Enum) do
+          class <<self
+            attr_accessor :types
+          end
+
+          def self.inspect
+            "Enum#{types.keys.inspect}"
+          end
+        end
+        @type.types = @enum_keys
+      end
+
+      def converted?(value)
+        value.is_a?(db_type)
+      end
+
+      def db_type
+        Integer
+      end
+
+      def convert_type
+        @type
+      end
+
+      def to_ruby(value)
+        @enum_keys.key(value) unless value.nil?
+      end
+
+      alias_method :call, :to_ruby
+
+      def to_db(value)
+        @enum_keys[value.to_s.to_sym] || 0
+      end
+    end
+
     class ObjectConverter < BaseConverter
       class << self
         def convert_type

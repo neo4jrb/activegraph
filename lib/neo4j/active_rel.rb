@@ -17,6 +17,7 @@ module Neo4j
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Query
     include Neo4j::ActiveRel::Types
+    include Neo4j::Shared::Enum
 
     class FrozenRelError < Neo4j::Error; end
 
