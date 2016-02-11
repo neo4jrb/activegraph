@@ -5,6 +5,8 @@ module Neo4j::Shared
   module Enum
     extend ActiveSupport::Concern
 
+    class ConflictingEnumMethodError < Neo4j::Error; end
+
     module ClassMethods
       attr_reader :neo4j_enum_data
 
@@ -83,6 +85,7 @@ module Neo4j::Shared
       def define_enum_methods_?(property_name, enum_keys, options)
         enum_keys.keys.each do |enum_value|
           method_name = build_method_name(enum_value, property_name, options)
+          check_enum_method_conflicts! property_name, :"#{method_name}?"
           define_method("#{method_name}?") do
             __send__(property_name).to_s.to_sym == enum_value
           end
@@ -92,6 +95,7 @@ module Neo4j::Shared
       def define_enum_methods_!(property_name, enum_keys, options)
         enum_keys.keys.each do |enum_value|
           method_name = build_method_name(enum_value, property_name, options)
+          check_enum_method_conflicts! property_name, :"#{method_name}!"
           define_method("#{method_name}!") do
             __send__("#{property_name}=", enum_value)
           end
@@ -103,6 +107,13 @@ module Neo4j::Shared
         method_name = "#{method_name}_#{property_name}" if options[:_suffix]
         method_name = "#{options[:_prefix]}_#{method_name}" if options[:_prefix]
         method_name
+      end
+
+      def check_enum_method_conflicts!(property_name, method_name)
+        fail ConflictingEnumMethodError,
+             "The enum `#{property_name}` is trying to define a `#{method_name}` method, "\
+             'that is already defined. Try to use options `:prefix` or `:suffix` '\
+             'to avoid conflicts.' if instance_methods(false).include?(method_name)
       end
     end
   end

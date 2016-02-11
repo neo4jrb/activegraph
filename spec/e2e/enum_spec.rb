@@ -117,4 +117,15 @@ describe Neo4j::ActiveNode do
       expect(file.flag).to eq(:dangerous)
     end
   end
+
+  describe 'conflicts' do
+    it 'raises an error when two enums are conflicting' do
+      expect do
+        stub_active_node_class('ConflictingModel') do
+          enum enum1: [:a, :b, :c]
+          enum enum2: [:c, :d]
+        end
+      end.to raise_error(Neo4j::Shared::Enum::ConflictingEnumMethodError)
+    end
+  end
 end
