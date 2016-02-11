@@ -40,7 +40,27 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'query methods?' do
+  describe 'scopes' do
+    it 'finds elements by enum key' do
+      file1 = StoredFile.create!(type: :unknown)
+      file2 = StoredFile.create!(type: :video)
+      ids = StoredFile.video.map(&:id)
+      expect(ids).not_to include(file1.id)
+      expect(ids).to include(file2.id)
+    end
+  end
+
+  describe 'query methods' do
+    it 'finds elements by enum key' do
+      file1 = StoredFile.create!(type: :unknown)
+      file2 = StoredFile.create!(type: :video)
+      ids = StoredFile.where(type: :video).map(&:id)
+      expect(ids).not_to include(file1.id)
+      expect(ids).to include(file2.id)
+    end
+  end
+
+  describe '? methods' do
     it 'returns true when the enum is in the current state' do
       file = StoredFile.new
       file.type = :video
@@ -78,7 +98,7 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'setter methods!' do
+  describe '! methods' do
     it 'sets to a state' do
       file = StoredFile.new
       file.video!
