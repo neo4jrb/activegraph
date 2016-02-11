@@ -37,7 +37,7 @@ module Neo4j::Shared
         when Hash
           enum_keys
         when Array
-          enum_keys.each_with_index.to_h
+          Hash[enum_keys.each_with_index.to_a]
         else
           fail ArgumentError, 'Invalid parameter for enum. Please provide an Array or an Hash.'
         end
