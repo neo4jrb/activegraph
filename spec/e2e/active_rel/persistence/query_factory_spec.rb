@@ -76,12 +76,12 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
     describe 'subclassed' do
       before do
-        stub_active_node_class('ParentClass') do
+        superclass = stub_active_node_class('ParentClass') do
           property :created_at, type: Integer
           property :updated_at, type: Integer
         end
 
-        class FromClass < ParentClass
+        stub_named_class('FromClass', superclass) do
           has_many :out, :to_classes, type: 'HAS_REL'
         end
 
