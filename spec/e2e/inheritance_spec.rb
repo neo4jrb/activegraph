@@ -43,22 +43,22 @@ describe 'Inheritance', type: :e2e do
   describe 'ActiveNode' do
     describe 'find' do
       it 'can find using subclass index' do
-        @volvo.labels.should =~ [:Car, :Node, :Vehicle]
-        Car.where(name: 'volvo').first.should eq(@volvo)
-        Vehicle.where(name: 'volvo').first.should eq(@volvo)
+        expect(@volvo.labels).to match_array([:Car, :Node, :Vehicle])
+        expect(Car.where(name: 'volvo').first).to eq(@volvo)
+        expect(Vehicle.where(name: 'volvo').first).to eq(@volvo)
       end
 
       it 'can find using baseclass index' do
-        @saab.labels.should =~ [:Car, :Node, :Vehicle]
-        Car.where(model: '900').first.should eq(@saab)
-        Vehicle.where(model: '900').first.should eq(@saab)
+        expect(@saab.labels).to match_array([:Car, :Node, :Vehicle])
+        expect(Car.where(model: '900').first).to eq(@saab)
+        expect(Vehicle.where(model: '900').first).to eq(@saab)
       end
     end
 
     describe 'all' do
       it 'can find all sub and base classes' do
-        Vehicle.all.to_a.should =~ [@saab, @bike, @volvo]
-        Car.all.to_a.should =~ [@saab, @volvo]
+        expect(Vehicle.all.to_a).to match_array([@saab, @bike, @volvo])
+        expect(Car.all.to_a).to match_array([@saab, @volvo])
       end
     end
 

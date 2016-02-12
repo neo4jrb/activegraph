@@ -15,33 +15,33 @@ describe Neo4j::Shared::Identity do
     let(:session) { double('Session') }
     before do
       @session = double('Mock Session')
-      Neo4j::Session.stub(:current).and_return(session)
+      allow(Neo4j::Session).to receive(:current).and_return(session)
     end
 
     let(:node) { clazz.new }
     let(:created_node) { clazz.new }
 
     before(:each) do
-      node.stub(:_persisted_obj).and_return(nil)
+      allow(node).to receive(:_persisted_obj).and_return(nil)
     end
 
     it 'should not have an idea before being persisted' do
-      node.id.should be_nil
+      expect(node.id).to be_nil
     end
 
     context 'a persisted record' do
       before(:each) do
-        created_node.stub(:_persisted_obj).and_return(double(neo_id: 4387, del: true))
+        allow(created_node).to receive(:_persisted_obj).and_return(double(neo_id: 4387, del: true))
       end
 
       it 'should be the neo_id after it is saved' do
-        created_node.id.should == 4387
+        expect(created_node.id).to eq(4387)
       end
 
       it 'should be the neo_id after it is deleted' do
         created_node.destroy
 
-        created_node.id.should == 4387
+        expect(created_node.id).to eq(4387)
       end
     end
   end
@@ -51,20 +51,20 @@ describe Neo4j::Shared::Identity do
     let(:created_node) { clazz.new }
 
     before(:each) do
-      node.stub(:_persisted_obj).and_return(nil)
+      allow(node).to receive(:_persisted_obj).and_return(nil)
     end
 
     it 'should be nil before being persisted' do
-      node.to_key.should be_nil
+      expect(node.to_key).to be_nil
     end
 
     context 'a persisted record' do
       before(:each) do
-        created_node.stub(:_persisted_obj).and_return(double(neo_id: 4387, del: true))
+        allow(created_node).to receive(:_persisted_obj).and_return(double(neo_id: 4387, del: true))
       end
 
       it 'should be an array of ids after record is saved' do
-        created_node.to_key.should == [created_node.id]
+        expect(created_node.to_key).to eq([created_node.id])
       end
     end
   end

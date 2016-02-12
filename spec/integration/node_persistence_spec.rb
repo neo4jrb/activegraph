@@ -12,37 +12,37 @@ describe 'Neo4j::ActiveNode' do
     stub_named_class('MyNodeWithValidations', MyThing) do
       validates :x, presence: true
     end
-    SecureRandom.stub(:uuid) { 'secure123' }
-    Neo4j::Session.stub(:current).and_return(session)
+    allow(SecureRandom).to receive(:uuid) { 'secure123' }
+    allow(Neo4j::Session).to receive(:current).and_return(session)
   end
 
   describe 'new' do
     it 'does not allow setting undeclared properties' do
-      MyThing.new(a: '4').props.should == {a: '4'}
+      expect(MyThing.new(a: '4').props).to eq({a: '4'})
     end
 
     it 'undefined properties are found with the attributes method' do
-      MyThing.new(a: '4').attributes.should == {'a' => '4', 'x' => nil}
+      expect(MyThing.new(a: '4').attributes).to eq({'a' => '4', 'x' => nil})
     end
   end
 
   describe 'create' do
     it 'does not store nil values' do
       node = double('unwrapped_node', props: {a: 999})
-      session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
-      thing.props.should == {a: 999}
+      expect(thing.props).to eq({a: 999})
     end
 
     it 'stores undefined attributes' do
       node = double('unwrapped_node', props: {a: 999})
-      session.should_receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
-      thing.attributes.should == {'a' => 999, 'x' => nil} # always reads the result from the database
+      expect(thing.attributes).to eq({'a' => 999, 'x' => nil}) # always reads the result from the database
     end
 
     it 'does not allow to set undeclared properties using create' do
-      session.should_not_receive(:create_node)
+      expect(session).not_to receive(:create_node)
       expect { MyThing.create(bar: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
     end
   end
@@ -51,7 +51,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'saves declared the properties that has been changed with []= operator' do
-      session.should_receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.new
       thing[:x] = 42
       thing.save
@@ -67,7 +67,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'returns true on success' do
-      session.should_receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.new
       thing[:x] = 42
       expect(thing.save!).to be true
@@ -85,20 +85,20 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'does not save unchanged properties' do
-      session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
       # only change X
-      node.should_receive(:update_props).with(x: 32)
+      expect(node).to receive(:update_props).with(x: 32)
       thing.x = 32
       thing.send(:update_model)
     end
 
     it 'handles nil properties' do
-      session.should_receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
-      node.should_receive(:update_props).with(x: nil)
+      expect(node).to receive(:update_props).with(x: nil)
       thing.x = nil
       thing.send(:update_model)
     end
@@ -117,7 +117,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'does not update it if it is not valid' do
-      thing.stub(:valid?).and_return(false)
+      allow(thing).to receive(:valid?).and_return(false)
       expect(thing.update_attribute(:a, 42)).to be false
     end
   end
@@ -135,7 +135,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'does not update it if it is not valid' do
-      thing.stub(:valid?).and_return(false)
+      allow(thing).to receive(:valid?).and_return(false)
       expect(thing.update_attributes(a: 42)).to be false
     end
   end
@@ -153,7 +153,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'does raise an exception if not valid' do
-      thing.stub(:valid?).and_return(false)
+      allow(thing).to receive(:valid?).and_return(false)
       expect { thing.update_attribute!(:a, 42) }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
     end
   end

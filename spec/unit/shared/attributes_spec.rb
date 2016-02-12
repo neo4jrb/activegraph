@@ -55,7 +55,7 @@ module Neo4j::Shared
 
     describe '.property' do
       context 'a dangerous attribute' do
-        before { model_class.stub(:dangerous_attribute?).and_return(true) }
+        before { allow(model_class).to receive(:dangerous_attribute?).and_return(true) }
 
         it { expect { model_class.property(:address) }.to raise_error Neo4j::DangerousAttributeError }
       end
@@ -163,7 +163,7 @@ module Neo4j::Shared
       describe "##{method}" do
         context 'when an attribute is not set' do
           it 'returns nil' do
-            model.send(method, :first_name).should be_nil
+            expect(model.send(method, :first_name)).to be_nil
           end
         end
 
@@ -173,17 +173,17 @@ module Neo4j::Shared
           before { model.write_attribute(:first_name, first_name) }
 
           it 'returns the attribute using a Symbol' do
-            model.send(method, :first_name).should == first_name
+            expect(model.send(method, :first_name)).to eq(first_name)
           end
 
           it 'returns the attribute using a String' do
-            model.send(method, 'first_name').should == first_name
+            expect(model.send(method, 'first_name')).to eq(first_name)
           end
         end
 
         context 'when the getter is overridden' do
           it 'uses the overridden implementation' do
-            model.send(method, :last_name).should == last_name
+            expect(model.send(method, :last_name)).to eq(last_name)
           end
         end
 
@@ -217,7 +217,7 @@ module Neo4j::Shared
         end
 
         it 'uses the overridden implementation when the setter is overridden' do
-          model.send(method, :last_name, 'poweski').should == 'POWESKI'
+          expect(model.send(method, :last_name, 'poweski')).to eq('POWESKI')
         end
 
         it 'raises when setting an undefined attribute' do

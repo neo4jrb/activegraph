@@ -67,8 +67,8 @@ describe 'migration tasks' do
     let(:map_template) { {models: ['MigrationSpecs::User', 'MigrationSpecs::Song']} }
 
     before do
-      Rails.stub_chain(:root, :join).and_return('/hd/gems/rails/add_id_property.yml')
-      YAML.stub(:load_file).and_return(map_template)
+      allow(Rails).to receive_message_chain(:root, :join).and_return('/hd/gems/rails/add_id_property.yml')
+      allow(YAML).to receive(:load_file).and_return(map_template)
     end
 
     it 'loads an initialization file' do

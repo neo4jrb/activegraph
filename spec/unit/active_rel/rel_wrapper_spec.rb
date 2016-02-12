@@ -8,8 +8,8 @@ describe Neo4j::Relationship::Wrapper do
   end
 
   before do
-    clazz.any_instance.stub(:props).and_return('name' => 'superman')
-    RelClass.any_instance.stub(:init_on_load)
+    allow_any_instance_of(clazz).to receive(:props).and_return('name' => 'superman')
+    allow_any_instance_of(RelClass).to receive(:init_on_load)
   end
 
   let(:r) { clazz.new }

@@ -11,30 +11,30 @@ describe Neo4j::ActiveNode do
       end
 
       it 'does not have any attributes' do
-        subject.attributes.should eq('name' => nil)
+        expect(subject.attributes).to eq('name' => nil)
       end
 
       it 'returns nil when asking for a attribute' do
-        subject['name'].should be_nil
+        expect(subject['name']).to be_nil
       end
 
       it 'can set attributes' do
         subject['name'] = 'foo'
-        subject['name'].should eq('foo')
+        expect(subject['name']).to eq('foo')
       end
 
       it 'allows symbols instead of strings in [] and []= operator' do
         subject[:name] = 'foo'
-        subject['name'].should eq('foo')
-        subject[:name].should eq('foo')
+        expect(subject['name']).to eq('foo')
+        expect(subject[:name]).to eq('foo')
       end
 
       it 'allows setting attributes to nil' do
         subject['name'] = nil
-        subject['name'].should be_nil
+        expect(subject['name']).to be_nil
         subject['name'] = 'foo'
         subject['name'] = nil
-        subject['name'].should be_nil
+        expect(subject['name']).to be_nil
       end
     end
 

@@ -147,26 +147,26 @@ describe 'declared property classes' do
 
       context 'with type: Boolean and default: false' do
         subject { node.baz }
-        it { should eq false }
+        it { is_expected.to eq false }
 
         context 'model from new with attributes' do
           let(:node) { MyModel.new }
-          it { should eq false }
+          it { is_expected.to eq false }
         end
 
         context 'model from new with attributes' do
           let(:node) { MyModel.new(foo: 'foo') }
-          it { should eq false }
+          it { is_expected.to eq false }
         end
 
         context 'model from create' do
           let(:node) { MyModel.create }
-          it { should eq false }
+          it { is_expected.to eq false }
         end
 
         context 'model from create with attributes' do
           let(:node) { MyModel.create(foo: 'foo') }
-          it { should eq false }
+          it { is_expected.to eq false }
         end
       end
 

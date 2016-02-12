@@ -37,7 +37,7 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     it 'uses the neo_id as id after save' do
-      SecureRandom.stub(:uuid) { 'secure123' }
+      allow(SecureRandom).to receive(:uuid) { 'secure123' }
       node = Clazz.new
       expect(node.id).to eq(nil)
       node.save!

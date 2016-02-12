@@ -1,7 +1,7 @@
 shared_examples_for 'unsaveable model' do
   context 'when attempting to save' do
     it 'should not save ok' do
-      subject.save.should_not be true
+      expect(subject.save).not_to be true
     end
 
     it 'should raise an exception' do
@@ -12,20 +12,20 @@ shared_examples_for 'unsaveable model' do
   context 'after attempted save' do
     before { subject.save }
 
-    it { should_not be_persisted }
+    it { is_expected.not_to be_persisted }
 
     it 'should have a nil id after save' do
-      subject.id.should be_nil
+      expect(subject.id).to be_nil
     end
   end
 
   context 'without validation' do
     it 'should save ok' do
-      subject.save(validate: false).should == true
+      expect(subject.save(validate: false)).to eq(true)
     end
 
     it "shouldn't cause an exception while saving" do
-      lambda { subject.save!(validate: false) }.should_not raise_error
+      expect { subject.save!(validate: false) }.not_to raise_error
     end
   end
 end

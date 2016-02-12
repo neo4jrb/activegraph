@@ -7,11 +7,11 @@ describe Neo4j::ActiveRel::Persistence do
   let(:rel)   { double('a persisted rel') }
 
   before do
-    node1.stub(:neo_id).and_return(1)
-    node2.stub(:neo_id).and_return(2)
+    allow(node1).to receive(:neo_id).and_return(1)
+    allow(node2).to receive(:neo_id).and_return(2)
     @session = double('Mock Session')
-    Neo4j::Session.stub(:current).and_return(@session)
-    clazz.stub(:neo4j_session).and_return(session)
+    allow(Neo4j::Session).to receive(:current).and_return(@session)
+    allow(clazz).to receive(:neo4j_session).and_return(session)
   end
 
   let(:clazz) do
@@ -46,23 +46,23 @@ describe Neo4j::ActiveRel::Persistence do
       start_props = {from_node: node1, to_node: node2, friends_since: 'sunday', level: 9001}
       end_props   = {friends_since: 'sunday', level: 9001}
       r = clazz.new(start_props)
-      r.stub(:confirm_node_classes).and_return(:true)
+      allow(r).to receive(:confirm_node_classes).and_return(:true)
       expect(node1).to receive(:create_rel).with(:friends_with, node2, friends_since: 'sunday', level: 9001).and_return(rel)
-      rel.stub(:props).and_return(end_props)
+      allow(rel).to receive(:props).and_return(end_props)
       expect(r.save).to be_truthy
     end
 
     it 'does not update the rel if nothing changes' do
       r = clazz.new(to_node: node1, from_node: node2, friends_since: 'sunday', level: 9001)
-      r.stub(:_persisted_obj).and_return(rel)
-      r.stub(:changed_attributes).and_return({})
+      allow(r).to receive(:_persisted_obj).and_return(rel)
+      allow(r).to receive(:changed_attributes).and_return({})
       expect(rel).to receive(:exist?).and_return(true)
       r.save
     end
 
     it 'commits changes to an existing relationship' do
       r = clazz.new(to_node: node1, from_node: node2, friends_since: 'forever')
-      r.stub(:_persisted_obj).and_return(rel)
+      allow(r).to receive(:_persisted_obj).and_return(rel)
       expect(rel).to receive(:exist?).and_return(true)
       expect(rel).to receive(:update_props).and_return(friends_since: 'forever')
       expect(r.save).to be_truthy
@@ -100,8 +100,8 @@ describe Neo4j::ActiveRel::Persistence do
 
         def model_stubs
           expect(this_class_node).to receive(:class).at_least(1).times.and_return(ThisClass)
-          clazz.any_instance.stub(:_create_rel)
-          clazz.any_instance.stub(:init_on_load)
+          allow_any_instance_of(clazz).to receive(:_create_rel)
+          allow_any_instance_of(clazz).to receive(:init_on_load)
         end
 
         def model_expectations
@@ -134,8 +134,8 @@ describe Neo4j::ActiveRel::Persistence do
 
           it 'raises an error if a string class is given that does not exist' do
             clazz.from_class 'ThizFoo'
-            clazz.any_instance.stub(:_create_rel)
-            clazz.any_instance.stub(:init_on_load)
+            allow_any_instance_of(clazz).to receive(:_create_rel)
+            allow_any_instance_of(clazz).to receive(:init_on_load)
             expect { r.save }.to raise_error NameError
           end
         end
@@ -149,8 +149,8 @@ describe Neo4j::ActiveRel::Persistence do
           def any_stubs
             expect(this_class_node).not_to receive(:class)
             expect(that_class_node).not_to receive(:class)
-            clazz.any_instance.stub(:_create_rel)
-            clazz.any_instance.stub(:init_on_load)
+            allow_any_instance_of(clazz).to receive(:_create_rel)
+            allow_any_instance_of(clazz).to receive(:init_on_load)
           end
 
           it 'does not check the classes of the nodes' do
@@ -171,8 +171,8 @@ describe Neo4j::ActiveRel::Persistence do
 
   describe 'save!' do
     it 'raises an exception if invalid' do
-      clazz.any_instance.stub(:save).and_return(false)
-      clazz.any_instance.stub_chain('errors.full_messages').and_return([])
+      allow_any_instance_of(clazz).to receive(:save).and_return(false)
+      allow_any_instance_of(clazz).to receive_message_chain('errors.full_messages').and_return([])
       expect do
         clazz.new.save!
       end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)
@@ -182,17 +182,17 @@ describe Neo4j::ActiveRel::Persistence do
   describe 'create' do
     it 'creates a new relationship' do
       expect(clazz).to receive(:extract_association_attributes!).twice.and_return(from_node: node1, to_node: node2)
-      clazz.any_instance.stub(:confirm_node_classes).and_return(:true)
-      node1.stub(:create_rel).and_return(rel)
-      rel.stub(:props).and_return(friends_since: 'yesterday', level: 5)
+      allow_any_instance_of(clazz).to receive(:confirm_node_classes).and_return(:true)
+      allow(node1).to receive(:create_rel).and_return(rel)
+      allow(rel).to receive(:props).and_return(friends_since: 'yesterday', level: 5)
       expect(clazz.create(from_node: node1, to_node: node2, friends_since: 'yesterday', level: 5)).to be_truthy
     end
   end
 
   describe 'create!' do
     it 'raises an exception if invalid' do
-      clazz.stub(:create).and_return(false)
-      clazz.stub_chain('errors.full_messages').and_return([])
+      allow(clazz).to receive(:create).and_return(false)
+      allow(clazz).to receive_message_chain('errors.full_messages').and_return([])
       expect do
         clazz.create!
       end.to raise_error(Neo4j::ActiveRel::Persistence::RelInvalidError)

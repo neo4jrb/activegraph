@@ -4,9 +4,9 @@ shared_examples_for 'updatable model' do
 
     context 'and updated' do
       it 'should have altered attributes' do
-        lambda { subject.update!(a: 1, b: 2) }.should_not raise_error
-        subject[:a].should eq(1)
-        subject[:b].should eq(2)
+        expect { subject.update!(a: 1, b: 2) }.not_to raise_error
+        expect(subject[:a]).to eq(1)
+        expect(subject[:b]).to eq(2)
       end
     end
   end

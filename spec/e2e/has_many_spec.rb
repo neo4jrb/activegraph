@@ -94,26 +94,26 @@ describe 'has_many' do
   end
 
   it 'access relationships via declared has_n method' do
-    node.friends.rels.to_a.should eq([])
+    expect(node.friends.rels.to_a).to eq([])
     node.friends << friend1
     rels = node.friends.rels
-    rels.count.should eq(1)
+    expect(rels.count).to eq(1)
     rel = rels.first
-    rel.start_node.should eq(node)
-    rel.end_node.should eq(friend1)
+    expect(rel.start_node).to eq(node)
+    expect(rel.end_node).to eq(friend1)
   end
 
   describe 'me.friends << friend_1 << friend' do
     it 'creates several relationships' do
       node.friends << friend1 << friend2
-      node.friends.to_a.should =~ [friend1, friend2]
+      expect(node.friends.to_a).to match_array([friend1, friend2])
     end
   end
 
   describe 'me.friends = <array>' do
     it 'creates several relationships' do
       node.friends = [friend1, friend2]
-      node.friends.to_a.should =~ [friend1, friend2]
+      expect(node.friends.to_a).to match_array([friend1, friend2])
     end
 
     context 'node with two friends' do
@@ -128,17 +128,17 @@ describe 'has_many' do
       it 'removes relationships when given a different list' do
         friend3 = Person.create
         node.friends = [friend3]
-        node.friends.to_a.should =~ [friend3]
+        expect(node.friends.to_a).to match_array([friend3])
       end
 
       it 'removes relationships when given a partial list' do
         node.friends = [friend1]
-        node.friends.to_a.should =~ [friend1]
+        expect(node.friends.to_a).to match_array([friend1])
       end
 
       it 'removes all relationships when given an empty list' do
         node.friends = []
-        node.friends.to_a.should =~ []
+        expect(node.friends.to_a).to match_array([])
       end
 
       it 'occurs within a transaction' do
@@ -173,7 +173,7 @@ describe 'has_many' do
 
         r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
-        r[:since].should eq(1994)
+        expect(r[:since]).to eq(1994)
       end
 
       it 'creates new relationships when given an array of nodes and given properties' do
@@ -181,9 +181,9 @@ describe 'has_many' do
 
         rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
-        rs.map(&:end_node).should =~ [friend1, friend2]
+        expect(rs.map(&:end_node)).to match_array([friend1, friend2])
         rs.each do |r|
-          r[:since].should eq(1995)
+          expect(r[:since]).to eq(1995)
         end
       end
     end
@@ -200,8 +200,8 @@ describe 'has_many' do
         # node.friends.create(node2, since: 1996)
         r = node.rel(dir: :outgoing, type: 'FRIENDS')
 
-        r[:since].should eq(1996)
-        r.end_node.name.should eq('Brad')
+        expect(r[:since]).to eq(1996)
+        expect(r.end_node.name).to eq('Brad')
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
@@ -209,9 +209,9 @@ describe 'has_many' do
 
         rs = node.rels(dir: :outgoing, type: 'FRIENDS')
 
-        rs.map(&:end_node).map(&:name).should =~ %w(James Cat)
+        expect(rs.map(&:end_node).map(&:name)).to match_array(%w(James Cat))
         rs.each do |r|
-          r[:since].should eq(1997)
+          expect(r[:since]).to eq(1997)
         end
       end
     end
@@ -247,12 +247,12 @@ describe 'has_many' do
     let(:callback_friend2) { ClazzC.create }
 
     it 'calls before_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { callback_friend1.knows.to_a.size.should eq(0) }
+      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { expect(callback_friend1.knows.to_a.size).to eq(0) }
       callback_friend1.knows << callback_friend2
     end
 
     it 'calls after_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { callback_friend2.knows.to_a.size.should eq(1) }
+      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { expect(callback_friend2.knows.to_a.size).to eq(1) }
       callback_friend1.knows_me << callback_friend2
     end
 
@@ -293,32 +293,32 @@ describe 'has_many' do
     context 'model_class: nil' do
       let(:model_class) { nil }
       # Should assume 'Comment' as the model from the association name
-      it { should eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:uuid).sort) }
     end
 
     context "model_class: 'Comment'" do
       let(:model_class) { 'Comment' }
-      it { should eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:uuid).sort) }
     end
 
     context "model_class: 'Person'" do
       let(:model_class) { 'Person' }
-      it { should eq([person.uuid]) }
+      it { is_expected.to eq([person.uuid]) }
     end
 
     context 'model_class: false' do
       let(:model_class) { false }
-      it { should eq((comments.map(&:uuid) + [person.uuid]).sort) }
+      it { is_expected.to eq((comments.map(&:uuid) + [person.uuid]).sort) }
     end
 
     context "model_class: ['Comment']" do
       let(:model_class) { ['Comment'] }
-      it { should eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:uuid).sort) }
     end
 
     context "model_class: ['Comment', 'Person']" do
       let(:model_class) { %w(Comment Person) }
-      it { should eq((comments.map(&:uuid) + [person.uuid]).sort) }
+      it { is_expected.to eq((comments.map(&:uuid) + [person.uuid]).sort) }
     end
   end
 
@@ -342,7 +342,7 @@ describe 'has_many' do
 
     it 'should use the mapped_label_name' do
       c1.furrs << d1
-      c1.furrs.to_a.should eq([d1])
+      expect(c1.furrs.to_a).to eq([d1])
     end
   end
 
