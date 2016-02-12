@@ -18,11 +18,11 @@ describe 'Neo4j::ActiveNode' do
 
   describe 'new' do
     it 'does not allow setting undeclared properties' do
-      expect(MyThing.new(a: '4').props).to eq({a: '4'})
+      expect(MyThing.new(a: '4').props).to eq(a: '4')
     end
 
     it 'undefined properties are found with the attributes method' do
-      expect(MyThing.new(a: '4').attributes).to eq({'a' => '4', 'x' => nil})
+      expect(MyThing.new(a: '4').attributes).to eq('a' => '4', 'x' => nil)
     end
   end
 
@@ -31,14 +31,14 @@ describe 'Neo4j::ActiveNode' do
       node = double('unwrapped_node', props: {a: 999})
       expect(session).to receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
-      expect(thing.props).to eq({a: 999})
+      expect(thing.props).to eq(a: 999)
     end
 
     it 'stores undefined attributes' do
       node = double('unwrapped_node', props: {a: 999})
       expect(session).to receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
-      expect(thing.attributes).to eq({'a' => 999, 'x' => nil}) # always reads the result from the database
+      expect(thing.attributes).to eq('a' => 999, 'x' => nil) # always reads the result from the database
     end
 
     it 'does not allow to set undeclared properties using create' do
