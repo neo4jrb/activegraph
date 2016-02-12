@@ -1,6 +1,3 @@
-require 'active_support/core_ext/hash/except'
-require 'active_support/core_ext/hash/slice'
-
 module Neo4j::Shared
   module Enum
     extend ActiveSupport::Concern
@@ -30,7 +27,7 @@ module Neo4j::Shared
         end
       end
 
-      private
+      protected
 
       def normalize_key_list(enum_keys)
         case enum_keys
@@ -62,24 +59,20 @@ module Neo4j::Shared
       end
 
       def define_property(property_name, enum_keys, options)
-        serializer = Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys)
-        property_options = {
-          serializer: serializer, default: enum_keys.keys.first
-        }
-        property_options[:index] = :exact if options[:_index]
+        property_options = build_property_options(enum_keys, options)
         property property_name, property_options
+      end
+
+      def build_property_options(enum_keys, _options = {})
+        {
+          serializer: Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys),
+          default: enum_keys.keys.first
+        }
       end
 
       def define_enum_methods(property_name, enum_keys, options)
         define_enum_methods_?(property_name, enum_keys, options)
         define_enum_methods_!(property_name, enum_keys, options)
-        define_enum_scopes(property_name, enum_keys)
-      end
-
-      def define_enum_scopes(property_name, enum_keys)
-        enum_keys.keys.each do |name|
-          scope name, -> { where(property_name => name) }
-        end
       end
 
       def define_enum_methods_?(property_name, enum_keys, options)

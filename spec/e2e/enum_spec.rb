@@ -4,6 +4,20 @@ describe Neo4j::ActiveNode do
       enum type: [:unknown, :image, :video]
       enum size: {big: 100, medium: 7, small: 2}, _prefix: :dimension
       enum flag: [:clean, :dangerous], _suffix: true
+
+      has_one :in, :uploader, rel_class: :UploaderRel
+    end
+
+    stub_active_node_class('User') do
+      has_many :out, :files, rel_class: :UploaderRel
+    end
+
+    stub_active_rel_class('UploaderRel') do
+      from_class :User
+      to_class :StoredFile
+      type 'uploaded'
+
+      enum origin: [:disk, :web]
     end
   end
 
@@ -50,13 +64,32 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  describe 'query methods' do
-    it 'finds elements by enum key' do
+  describe '#where' do
+    it '(type: :video) finds elements by enum key' do
       file1 = StoredFile.create!(type: :unknown)
       file2 = StoredFile.create!(type: :video)
-      ids = StoredFile.where(type: :video).map(&:id)
+      ids = StoredFile.where(type: :video).pluck(:uuid)
       expect(ids).not_to include(file1.id)
       expect(ids).to include(file2.id)
+    end
+
+    it '(type: [:unknown, :video]) finds elements matching the provided enum keys' do
+      skip 'TODO: This is not working!'
+      # file1 = StoredFile.create!(type: :unknown)
+      # file2 = StoredFile.create!(type: :video)
+      # ids = StoredFile.where(type: [:video, :unknown]).pluck(:uuid)
+      # expect(ids).to include(file1.id, file2.id)
+    end
+  end
+
+  describe '#rel_where' do
+    it 'finds relations matching given enum key' do
+      user = User.create!
+      file = StoredFile.create!
+      file2 = StoredFile.create!
+      UploaderRel.create!(from_node: user, to_node: file, origin: :web)
+      UploaderRel.create!(from_node: user, to_node: file2, origin: :disk)
+      expect(user.files(:f).rel_where(origin: :web).pluck(:uuid)).to contain_exactly(file.id)
     end
   end
 
