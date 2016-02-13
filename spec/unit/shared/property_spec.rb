@@ -176,4 +176,52 @@ describe Neo4j::Shared::Property do
       expect(instance.class.declared_properties.convert_properties_to(instance, :ruby, instance.props)[:range]).to eq(range)
     end
   end
+
+  describe Neo4j::ActiveNode do
+    before(:each) do
+      # This serializer adds a text when the data is saved on the db,
+      # and removes it when deserializing
+      class MySerializer
+        def initialize(text)
+          @text = text
+        end
+
+        def converted?(value)
+          value.is_a?(db_type)
+        end
+
+        def db_type
+          String
+        end
+
+        def convert_type
+          Symbol
+        end
+
+        def to_ruby(value)
+          value.gsub(@text, '').to_sym if value
+        end
+
+        def to_db(value)
+          "#{value}#{@text}" if value
+        end
+      end
+
+      stub_active_node_class('MyData') do
+        property :polite_string
+        property :happy_string
+
+        serialize :polite_string, MySerializer.new(', sir.')
+        serialize :happy_string, MySerializer.new(' :)')
+      end
+    end
+
+    it 'serializes correctly' do
+      data = MyData.new
+      data.polite_string = :hello
+      data.happy_string = :hello
+      data.save!
+      expect(MyData.as(:d).pluck('d.polite_string, d.happy_string')).to eq([['hello, sir.', 'hello :)']])
+    end
+  end
 end
