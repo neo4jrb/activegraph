@@ -30,6 +30,7 @@ describe Neo4j::ActiveNode do
       expect(StoredFile.types).to eq(unknown: 0, image: 1, video: 2)
       expect(StoredFile.sizes).to eq(big: 100, medium: 7, small: 2)
       expect(StoredFile.flags).to eq(clean: 0, dangerous: 1)
+      expect(UploaderRel.origins).to eq(disk: 0, web: 1)
     end
   end
 

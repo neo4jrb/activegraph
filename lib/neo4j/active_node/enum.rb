@@ -4,20 +4,11 @@ module Neo4j::ActiveNode
     include Neo4j::Shared::Enum
 
     module ClassMethods
-      def method_missing(name, *args, &block)
-        singular_name = name.to_s.singularize.to_sym
-        if args.empty? && !block && @neo4j_enum_data[singular_name]
-          @neo4j_enum_data[singular_name]
-        else
-          super
-        end
-      end
-
       protected
 
       def build_property_options(enum_keys, options = {})
         if options[:_index]
-          super.merge(index: :exact)
+          super.merge!(index: :exact)
         else
           super
         end

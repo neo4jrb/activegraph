@@ -18,15 +18,6 @@ module Neo4j::Shared
         end
       end
 
-      def method_missing(name, *args, &block)
-        singular_name = name.to_s.singularize.to_sym
-        if args.empty? && !block && @neo4j_enum_data[singular_name]
-          @neo4j_enum_data[singular_name]
-        else
-          super
-        end
-      end
-
       protected
 
       def normalize_key_list(enum_keys)
@@ -73,6 +64,14 @@ module Neo4j::Shared
       def define_enum_methods(property_name, enum_keys, options)
         define_enum_methods_?(property_name, enum_keys, options)
         define_enum_methods_!(property_name, enum_keys, options)
+        define_class_methods(property_name, enum_keys)
+      end
+
+      def define_class_methods(property_name, enum_keys)
+        plural_property_name = property_name.to_s.pluralize.to_sym
+        define_singleton_method(plural_property_name) do
+          enum_keys
+        end
       end
 
       def define_enum_methods_?(property_name, enum_keys, options)
