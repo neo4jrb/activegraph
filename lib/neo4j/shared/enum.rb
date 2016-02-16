@@ -7,6 +7,42 @@ module Neo4j::Shared
     module ClassMethods
       attr_reader :neo4j_enum_data
 
+      # Similar to ActiveRecord enum, maps an integer value on the database to
+      # a set of enum keys.
+      #
+      # @example Base example
+      #   class Media
+      #     include Neo4j::ActiveNode
+      #     enum type: [:image, :video, :unknown]
+      #   end
+      #   Media.types # => { :images => 0, :video => 1, :unknown => 2 }
+      #
+      #   media.video!
+      #   media.image? # => false
+      #   media.type # => :video
+      #
+      #   Media.videos # => All medias with type = 1 (:video)
+      #   Media.where(type: :video) # => All medias with type = 1 (:video)
+      #
+      # @example Prefix-ing an enum
+      #   Media.enum type: [:image, :video, :unknown], _prefix: :enum
+      #
+      #   media.enum_video!
+      #   media.enum_video? # => true
+      #
+      # @example Suffix-ing an enum
+      #   Media.enum type: [:image, :video, :unknown], _suffix: true
+      #
+      #   media.video_type!
+      #   media.video_type? # => true
+      #
+      # @example Disable index: :exact for enum elements
+      #   Media.enum type: [:image, :video, :unknown], _index: false
+      #
+      # @example Define a custom mapping for keys-numbers
+      #   Media.enum type: { image: 1, video: 2, unknown: 3 }
+      #
+      # @see http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html
       def enum(parameters = {})
         options, parameters = *split_options_and_parameters(parameters)
         parameters.each do |property_name, enum_keys|
