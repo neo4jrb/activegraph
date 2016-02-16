@@ -85,7 +85,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
           has_many :out, :to_classes, type: 'HAS_REL'
         end
 
-        stub_active_node_class('ToClass') do
+        stub_named_class('ToClass', superclass) do
           property :created_at, type: Integer
           property :updated_at, type: Integer
         end
@@ -97,7 +97,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
           def self.count
             Neo4j::Session.current.query
-              .match('(from:FromClass)-[r:HAS_REL]->()')
+              .match('(from:FromClass:ParentClass)-[r:HAS_REL]->()')
               .pluck('COUNT(r)').first
           end
         end
