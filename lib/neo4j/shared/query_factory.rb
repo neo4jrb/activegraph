@@ -69,7 +69,7 @@ module Neo4j::Shared
 
     def create_query
       return match_query if graph_object.persisted?
-      base_query.create(identifier => {graph_object.labels_for_create.join(':').to_sym => graph_object.props_for_create})
+      base_query.create(identifier => {graph_object.labels_for_create => graph_object.props_for_create})
     end
   end
 
