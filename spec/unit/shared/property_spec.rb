@@ -181,7 +181,7 @@ describe Neo4j::Shared::Property do
     before(:each) do
       # This serializer adds a text when the data is saved on the db,
       # and removes it when deserializing
-      class MySerializer
+      stub_const('MySerializer', Class.new do
         def initialize(text)
           @text = text
         end
@@ -205,7 +205,7 @@ describe Neo4j::Shared::Property do
         def to_db(value)
           "#{value}#{@text}" if value
         end
-      end
+      end)
 
       stub_active_node_class('MyData') do
         property :polite_string
