@@ -1,5 +1,4 @@
 describe Neo4j::ActiveRel::Persistence::QueryFactory do
-
   describe '#build!' do
     describe 'non-subclassed' do
       before do
@@ -111,6 +110,9 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
         expect { rel.save }.to change { FromClass.count + ToClass.count + RelClass.count }.by(3)
       end
 
+      it 'subclasses correctly' do
+        expect { rel.save }.to change { ParentClass.count }.by(2)
+      end
     end
   end
 end
