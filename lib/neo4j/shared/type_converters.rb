@@ -265,21 +265,9 @@ module Neo4j::Shared
       end
     end
 
-    class Enum < ::Symbol; end
-
     class EnumConverter
       def initialize(enum_keys)
         @enum_keys = enum_keys
-        @type = Class.new(Enum) do
-          class <<self
-            attr_accessor :types
-          end
-
-          def self.inspect
-            "Enum#{types.keys.inspect}"
-          end
-        end
-        @type.types = @enum_keys
       end
 
       def converted?(value)
@@ -291,7 +279,7 @@ module Neo4j::Shared
       end
 
       def convert_type
-        @type
+        Symbol
       end
 
       def to_ruby(value)

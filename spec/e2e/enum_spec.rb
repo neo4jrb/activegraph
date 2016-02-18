@@ -22,10 +22,6 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'ClassMethods' do
-    it 'shows enum properties well formatted' do
-      expect(StoredFile.attributes.inspect).to include('Enum[:unknown, :image, :video]')
-    end
-
     it 'lists all types and sizes' do
       expect(StoredFile.types).to eq(unknown: 0, image: 1, video: 2)
       expect(StoredFile.sizes).to eq(big: 100, medium: 7, small: 2)

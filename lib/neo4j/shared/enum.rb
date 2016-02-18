@@ -88,11 +88,11 @@ module Neo4j::Shared
       def define_property(property_name, enum_keys, options)
         property_options = build_property_options(enum_keys, options)
         property property_name, property_options
+        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys)
       end
 
       def build_property_options(enum_keys, _options = {})
         {
-          serializer: Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys),
           default: enum_keys.keys.first
         }
       end
