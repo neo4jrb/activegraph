@@ -348,9 +348,9 @@ module Neo4j::Shared
 
     private
 
-    def converted_property(type, value, converter)
+    def converted_property(type, value, direction)
       return nil if value.nil?
-      TypeConverters::CONVERTERS[type].nil? ? value : TypeConverters.to_other(converter, value, type)
+      type.respond_to?(:db_type) || TypeConverters::CONVERTERS[type] ? TypeConverters.to_other(direction, value, type) : value
     end
 
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
@@ -392,10 +392,14 @@ module Neo4j::Shared
       # @param [Symbol] direction either :to_ruby or :to_other
       def to_other(direction, value, type)
         fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
-        found_converter = CONVERTERS[type]
+        found_converter = converter_for(type)
         return value unless found_converter
         return value if direction == :to_db && formatted_for_db?(found_converter, value)
         found_converter.send(direction, value)
+      end
+
+      def converter_for(type)
+        type.respond_to?(:db_type) ? type : CONVERTERS[type]
       end
 
       # Attempts to determine whether conversion should be skipped because the object is already of the anticipated output type.

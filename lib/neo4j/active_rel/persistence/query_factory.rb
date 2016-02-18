@@ -51,7 +51,7 @@ module Neo4j::ActiveRel::Persistence
       end
     end
 
-    # Each node must be either created or matched before the relationshp can be created. This class does not know or care about
+    # Each node must be either created or matched before the relationship can be created. This class does not know or care about
     #   how that happens, it just knows that it needs a usable Neo4j::Core::Query object to do that.
     # This method is "iterative" because it creates one factory for each node but the second builds upon the first.
     def iterative_query
