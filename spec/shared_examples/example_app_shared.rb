@@ -34,15 +34,15 @@ shared_examples_for 'example app with orm_adapter fix' do
     let(:adapter) { subject.to_adapter }
 
     it '#to_adapter should return an adapter instance' do
-      adapter.should be_a(OrmAdapter::Base)
+      expect(adapter).to be_a(OrmAdapter::Base)
     end
 
     it '#to_adapter should return an adapter for the receiver' do
-      adapter.klass.should eq(subject)
+      expect(adapter.klass).to eq(subject)
     end
 
     it '#to_adapter should be cached' do
-      adapter.object_id.should eq(adapter.object_id)
+      expect(adapter.object_id).to eq(adapter.object_id)
     end
   end
 
@@ -53,32 +53,32 @@ shared_examples_for 'example app with orm_adapter fix' do
     describe '#get!(id)' do
       it 'should return the instance with id if it exists' do
         user = create_model(user_class)
-        user_adapter.get!(user.id).should eq(user)
+        expect(user_adapter.get!(user.id)).to eq(user)
       end
 
       it 'should allow to_key like arguments' do
         user = create_model(user_class)
-        user_adapter.get!(user.to_key).should eq(user)
+        expect(user_adapter.get!(user.to_key)).to eq(user)
       end
 
       it 'should raise an error if there is no instance with that id' do
-        lambda { user_adapter.get!('nonexistent id') }.should raise_error
+        expect { user_adapter.get!('nonexistent id') }.to raise_error(Neo4j::Error)
       end
     end
 
     describe '#get(id)' do
       it 'should return the instance with id if it exists' do
         user = create_model(user_class)
-        user_adapter.get(user.id).should eq(user)
+        expect(user_adapter.get(user.id)).to eq(user)
       end
 
       it 'should allow to_key like arguments' do
         user = create_model(user_class)
-        user_adapter.get(user.to_key).should eq(user)
+        expect(user_adapter.get(user.to_key)).to eq(user)
       end
 
       it 'should return nil if there is no instance with that id' do
-        user_adapter.get('nonexistent id').should be_nil
+        expect(user_adapter.get('nonexistent id')).to be_nil
       end
     end
 
@@ -86,11 +86,11 @@ shared_examples_for 'example app with orm_adapter fix' do
       describe '(conditions)' do
         it 'should return first model matching conditions, if it exists' do
           user = create_model(user_class, name: 'Fred')
-          user_adapter.find_first(name: 'Fred').should eq(user)
+          expect(user_adapter.find_first(name: 'Fred')).to eq(user)
         end
 
         it 'should return nil if no conditions match' do
-          user_adapter.find_first(name: 'Betty').should be_nil
+          expect(user_adapter.find_first(name: 'Betty')).to be_nil
         end
 
         # it 'should return the first model if no conditions passed' do
@@ -102,14 +102,14 @@ shared_examples_for 'example app with orm_adapter fix' do
         it 'when conditions contain associated object, should return first model if it exists' do
           user = create_model(user_class)
           note = create_model(note_class, owner: user)
-          note_adapter.find_first(owner: user).should eq(note)
+          expect(note_adapter.find_first(owner: user)).to eq(note)
         end
 
         it 'understands :id as a primary key condition (allowing scoped finding)' do
           create_model(user_class, name: 'Fred')
           user = create_model(user_class, name: 'Fred')
-          user_adapter.find_first(id: user.id, name: 'Fred').should eq(user)
-          user_adapter.find_first(id: user.id, name: 'Not Fred').should be_nil
+          expect(user_adapter.find_first(id: user.id, name: 'Fred')).to eq(user)
+          expect(user_adapter.find_first(id: user.id, name: 'Not Fred')).to be_nil
         end
       end
 
@@ -118,7 +118,7 @@ shared_examples_for 'example app with orm_adapter fix' do
           create_model(user_class, name: 'Fred', rating: 1)
           user = create_model(user_class, name: 'Fred', rating: 2)
 
-          user_adapter.find_first(order: [:name, [:rating, :desc]]).should eq(user)
+          expect(user_adapter.find_first(order: [:name, [:rating, :desc]])).to eq(user)
         end
       end
 
@@ -127,7 +127,7 @@ shared_examples_for 'example app with orm_adapter fix' do
           create_model(user_class, name: 'Fred', rating: 1)
           user = create_model(user_class, name: 'Fred', rating: 2)
 
-          user_adapter.find_first(conditions: {name: 'Fred'}, order: [:rating, :desc]).should eq(user)
+          expect(user_adapter.find_first(conditions: {name: 'Fred'}, order: [:rating, :desc])).to eq(user)
         end
       end
     end
@@ -139,18 +139,18 @@ shared_examples_for 'example app with orm_adapter fix' do
           user2 = create_model(user_class, name: 'Fred')
           create_model(user_class, name: 'Betty')
 
-          user_adapter.find_all(name: 'Fred').to_a.should =~ [user1, user2]
+          expect(user_adapter.find_all(name: 'Fred').to_a).to match_array([user1, user2])
         end
 
         it 'should return all models if no conditions passed' do
           user1 = create_model(user_class, name: 'Fred')
           user2 = create_model(user_class, name: 'Fred')
           user3 = create_model(user_class, name: 'Betty')
-          user_adapter.find_all.to_a.should =~ [user1, user2, user3]
+          expect(user_adapter.find_all.to_a).to match_array([user1, user2, user3])
         end
 
         it 'should return empty array if no conditions match' do
-          user_adapter.find_all(name: 'Fred').should eq([])
+          expect(user_adapter.find_all(name: 'Fred')).to eq([])
         end
 
         it 'when conditions contain associated object, should return first model if it exists' do
@@ -159,7 +159,7 @@ shared_examples_for 'example app with orm_adapter fix' do
           create_model(note_class, owner: user1)
 
           note = create_model(note_class, owner: user2)
-          note_adapter.find_all(owner: user2).should eq([note])
+          expect(note_adapter.find_all(owner: user2)).to eq([note])
         end
       end
 
@@ -168,7 +168,7 @@ shared_examples_for 'example app with orm_adapter fix' do
           user1 = create_model(user_class, name: 'Fred', rating: 1)
           user2 = create_model(user_class, name: 'Fred', rating: 2)
           user3 = create_model(user_class, name: 'Betty', rating: 1)
-          user_adapter.find_all(order: [:name, [:rating, :desc]]).should eq([user3, user2, user1])
+          expect(user_adapter.find_all(order: [:name, [:rating, :desc]])).to eq([user3, user2, user1])
         end
       end
 
@@ -178,7 +178,7 @@ shared_examples_for 'example app with orm_adapter fix' do
           user2 = create_model(user_class, name: 'Fred', rating: 2)
           create_model(user_class, name: 'Betty', rating: 1)
 
-          user_adapter.find_all(conditions: {name: 'Fred'}, order: [:rating, :desc]).should eq([user2, user1])
+          expect(user_adapter.find_all(conditions: {name: 'Fred'}, order: [:rating, :desc])).to eq([user2, user1])
         end
       end
 
@@ -188,8 +188,8 @@ shared_examples_for 'example app with orm_adapter fix' do
           user2 = create_model(user_class, name: 'Fred', rating: 2)
           create_model(user_class, name: 'Betty', rating: 3)
 
-          user_adapter.find_all(limit: 1, order: [:rating, :asc]).should eq([user1])
-          user_adapter.find_all(limit: 2, order: [:rating, :asc]).should eq([user1, user2])
+          expect(user_adapter.find_all(limit: 1, order: [:rating, :asc])).to eq([user1])
+          expect(user_adapter.find_all(limit: 2, order: [:rating, :asc])).to eq([user1, user2])
         end
       end
 
@@ -198,9 +198,9 @@ shared_examples_for 'example app with orm_adapter fix' do
           user1 = create_model(user_class, name: 'Fred', rating: 1)
           user2 = create_model(user_class, name: 'Fred', rating: 2)
           user3 = create_model(user_class, name: 'Betty', rating: 3)
-          user_adapter.find_all(limit: 3, offset: 0, order: [:rating, :asc]).should eq([user1, user2, user3])
-          user_adapter.find_all(limit: 3, offset: 1, order: [:rating, :asc]).should eq([user2, user3])
-          user_adapter.find_all(limit: 1, offset: 1, order: [:rating, :asc]).should eq([user2])
+          expect(user_adapter.find_all(limit: 3, offset: 0, order: [:rating, :asc])).to eq([user1, user2, user3])
+          expect(user_adapter.find_all(limit: 3, offset: 1, order: [:rating, :asc])).to eq([user2, user3])
+          expect(user_adapter.find_all(limit: 1, offset: 1, order: [:rating, :asc])).to eq([user2])
         end
       end
     end
@@ -208,17 +208,17 @@ shared_examples_for 'example app with orm_adapter fix' do
     describe '#create!(attributes)' do
       it 'should create a model with the passed attributes' do
         user = user_adapter.create!(name: 'Fred')
-        reload_model(user).name.should eq('Fred')
+        expect(reload_model(user).name).to eq('Fred')
       end
 
       it 'should raise error when create fails' do
-        lambda { user_adapter.create!(user: create_model(note_class)) }.should raise_error
+        expect { user_adapter.create!(user: create_model(note_class)) }.to raise_error(Neo4j::Error)
       end
 
       it 'when attributes contain an associated object, should create a model with the attributes' do
         user = create_model(user_class)
         note = note_adapter.create!(owner: user)
-        reload_model(note).owner.should eq(user)
+        expect(reload_model(note).owner).to eq(user)
       end
 
       it 'when attributes contain an has_many assoc, should create a model with the attributes' do
@@ -232,19 +232,19 @@ shared_examples_for 'example app with orm_adapter fix' do
       it 'should destroy the instance if it exists' do
         skip 'This does not work on Neo4j Embedded DB, since IDs can be reused see GraphDatabaseService#getNodeById, http://docs.neo4j.org/chunked/2.1.1/javadocs/'
         user = create_model(user_class)
-        (!!user_adapter.destroy(user)).should eq(true) # make it work with both RSpec 2.x and 3.x
-        user_adapter.get(user.id).should be_nil
+        expect(!!user_adapter.destroy(user)).to eq(true) # make it work with both RSpec 2.x and 3.x
+        expect(user_adapter.get(user.id)).to be_nil
       end
 
       it 'should return nil if passed with an invalid instance' do
-        user_adapter.destroy('nonexistent instance').should be_nil
+        expect(user_adapter.destroy('nonexistent instance')).to be_nil
       end
 
       it "should not destroy the instance if it doesn't match the model class" do
         skip 'This does not work on Neo4j Embedded DB, since IDs can be reused see GraphDatabaseService#getNodeById, http://docs.neo4j.org/chunked/2.1.1/javadocs/'
         user = create_model(user_class)
-        note_adapter.destroy(user).should be_nil
-        user_adapter.get(user.id).should eq(user)
+        expect(note_adapter.destroy(user)).to be_nil
+        expect(user_adapter.get(user.id)).to eq(user)
       end
     end
   end

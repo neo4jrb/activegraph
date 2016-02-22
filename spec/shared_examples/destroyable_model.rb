@@ -6,10 +6,10 @@ shared_examples_for 'destroyable model' do
       @old_id = subject.id
       subject.destroy
     end
-    it { should be_frozen }
+    it { is_expected.to be_frozen }
 
     it 'should remove the model from the database' do
-      subject.class.find_by_id(@old_id).should be_nil
+      expect(subject.class.find_by_id(@old_id)).to be_nil
     end
   end
 end

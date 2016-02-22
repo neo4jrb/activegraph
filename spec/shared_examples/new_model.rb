@@ -1,6 +1,6 @@
 shared_examples 'new model' do
   context 'when unsaved' do
-    it { should_not be_persisted }
+    it { is_expected.not_to be_persisted }
 
     it 'should not allow write access to undeclared properties' do
       expect { subject[:unknown] = 'none' }.to raise_error(Neo4j::UnknownAttributeError)

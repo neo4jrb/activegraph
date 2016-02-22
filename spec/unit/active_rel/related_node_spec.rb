@@ -26,7 +26,7 @@ describe Neo4j::ActiveRel::RelatedNode do
       end
 
       it 'changes the value of @node' do
-        Neo4j::Node.stub(:load).and_return(node1)
+        allow(Neo4j::Node).to receive(:load).and_return(node1)
         r.loaded
         expect(r.instance_variable_get(:@node)).to eq node1
       end

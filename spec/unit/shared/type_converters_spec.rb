@@ -18,7 +18,7 @@ module Neo4j::Shared
       end
 
       it 'returns the original value when the value is nil' do
-        properties_class.new.typecast_attribute(double(to_ruby: 1), nil).should be_nil
+        expect(properties_class.new.typecast_attribute(double(to_ruby: 1), nil)).to be_nil
       end
     end
 

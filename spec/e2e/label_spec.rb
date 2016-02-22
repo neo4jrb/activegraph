@@ -26,7 +26,7 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'creates an index' do
-        clazz.should_receive(:index).with(:age)
+        expect(clazz).to receive(:index).with(:age)
         clazz.property :age, index: :exact
       end
     end
@@ -60,8 +60,8 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
-        clazz.should_not_receive(:index).with(:age, index: :exact)
-        clazz.should_receive(:constraint).with(:age, type: :unique)
+        expect(clazz).not_to receive(:index).with(:age, index: :exact)
+        expect(clazz).to receive(:constraint).with(:age, type: :unique)
         clazz.property :age, constraint: :unique
       end
     end
@@ -237,16 +237,16 @@ describe 'Neo4j::ActiveNode' do
 
       o = clazz.new(name: 'Jim', foo: 2)
 
-      o.name.should eq('Jim')
+      expect(o.name).to eq('Jim')
       expect do
-        o.foo.should be_nil
+        expect(o.foo).to be_nil
       end.to raise_error(Neo4j::RecordNotFound)
 
       o.save!
 
-      o.name.should eq('Jim')
+      expect(o.name).to eq('Jim')
       expect do
-        o.foo.should be_nil
+        expect(o.foo).to be_nil
       end.to raise_error(Neo4j::RecordNotFound)
     end
   end
@@ -263,13 +263,13 @@ describe 'Neo4j::ActiveNode' do
 
     describe 'finding individual records' do
       it 'by id' do
-        clazz.find(object1.id).should eq(object1)
+        expect(clazz.find(object1.id)).to eq(object1)
         found = clazz.find(object1.id)
         expect(found).to be_a(clazz)
       end
 
       it 'by object' do
-        clazz.find(object1).should eq(object1)
+        expect(clazz.find(object1)).to eq(object1)
       end
 
       context 'with no results' do
@@ -281,11 +281,11 @@ describe 'Neo4j::ActiveNode' do
 
     describe 'finding multiple records' do
       it 'by id' do
-        clazz.find([object1.id, object2.id]).to_set.should eq([object1, object2].to_set)
+        expect(clazz.find([object1.id, object2.id]).to_set).to eq([object1, object2].to_set)
       end
 
       it 'by object' do
-        clazz.find([object1, object2]).to_set.should eq([object1, object2].to_set)
+        expect(clazz.find([object1, object2]).to_set).to eq([object1, object2].to_set)
       end
 
       context 'with no results' do

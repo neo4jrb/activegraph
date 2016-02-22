@@ -1,7 +1,7 @@
 shared_examples 'saveable model' do
   context 'when attempting to save' do
     it 'should save ok' do
-      subject.save.should be true
+      expect(subject.save).to be true
     end
 
     it 'should save without raising an exception' do
@@ -11,12 +11,12 @@ shared_examples 'saveable model' do
     context 'after save' do
       before(:each) { subject.save }
 
-      it { should be_valid }
+      it { is_expected.to be_valid }
 
-      it { should == subject.class.find(subject.id.to_s) }
+      it { is_expected.to eq(subject.class.find(subject.id.to_s)) }
 
       it 'should be included in all' do
-        subject.class.all.to_a.should include(subject)
+        expect(subject.class.all.to_a).to include(subject)
       end
     end
   end
@@ -29,22 +29,22 @@ shared_examples 'saveable model' do
       subject.save
     end
 
-    it { should be_persisted }
-    it { should == subject.class.find_by_id(subject.id) }
-    it { should be_valid }
+    it { is_expected.to be_persisted }
+    it { is_expected.to eq(subject.class.find_by_id(subject.id)) }
+    it { is_expected.to be_valid }
 
     it 'should be found in the database' do
-      subject.class.all.to_a.should include(subject)
+      expect(subject.class.all.to_a).to include(subject)
     end
 
-    it { should respond_to(:to_param) }
+    it { is_expected.to respond_to(:to_param) }
 
     # it "should respond to primary_key" do
     #  subject.class.should respond_to(:primary_key)
     # end
 
     it 'should render as XML' do
-      subject.to_xml.should =~ /^<\?xml version=/
+      expect(subject.to_xml).to match(/^<\?xml version=/)
     end
   end
 end

@@ -33,9 +33,9 @@ describe 'has_one' do
       a.children << b
       a.children << c
 
-      c.parent.should eq(a)
-      b.parent.should eq(a)
-      a.children.to_a.should =~ [b, c]
+      expect(c.parent).to eq(a)
+      expect(b.parent).to eq(a)
+      expect(a.children.to_a).to match_array([b, c])
     end
 
     it 'caches the result of has_one accessor' do
@@ -46,8 +46,8 @@ describe 'has_one' do
       b = HasOneB.find(b.id)
 
       expect_queries(1) do
-        b.parent.should eq(a)
-        b.parent.should eq(a)
+        expect(b.parent).to eq(a)
+        expect(b.parent).to eq(a)
       end
     end
 
@@ -59,15 +59,15 @@ describe 'has_one' do
       b = HasOneB.find(b.id)
 
       expect_queries(1) do
-        b.parent.should eq(a)
-        b.parent.should eq(a)
+        expect(b.parent).to eq(a)
+        expect(b.parent).to eq(a)
       end
 
       b.reload
 
       expect_queries(1) do
-        b.parent.should eq(a)
-        b.parent.should eq(a)
+        expect(b.parent).to eq(a)
+        expect(b.parent).to eq(a)
       end
     end
 
@@ -75,8 +75,8 @@ describe 'has_one' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.parent.should eq(a)
-      a.children.to_a.should eq([b])
+      expect(b.parent).to eq(a)
+      expect(a.children.to_a).to eq([b])
     end
 
     it 'can return relationship object via parent.rel' do
@@ -84,30 +84,30 @@ describe 'has_one' do
       b = HasOneB.create(name: 'b')
       b.parent = a
       rel = b.parent.rel
-      rel.other_node(b).should eq(a)
+      expect(rel.other_node(b)).to eq(a)
     end
 
     it 'deletes previous parent relationship' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       a.children << b
-      a.children.to_a.should eq([b])
-      b.parent.should eq(a)
+      expect(a.children.to_a).to eq([b])
+      expect(b.parent).to eq(a)
 
       a2 = HasOneA.create(name: 'a2')
       # now it should delete this relationship created above
       b.parent = a2
 
-      b.parent.should eq(a2)
-      a2.children.to_a.should eq([b])
+      expect(b.parent).to eq(a2)
+      expect(a2.children.to_a).to eq([b])
     end
 
     it 'can access relationship via #nodes method' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      b.query_as(:b).match('b<-[:`CHILDREN`]-(r)').pluck(:r).should eq([a])
-      a.query_as(:a).match('a-[:`CHILDREN`]->(r)').pluck(:r).should eq([b])
+      expect(b.query_as(:b).match('b<-[:`CHILDREN`]-(r)').pluck(:r)).to eq([a])
+      expect(a.query_as(:a).match('a-[:`CHILDREN`]->(r)').pluck(:r)).to eq([b])
       #      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should eq([a])
       #      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should eq([b])
     end
@@ -130,9 +130,9 @@ describe 'has_one' do
       file2 = File1.create
       f1.files << file1
       f1.files << file2
-      f1.files.to_a.should =~ [file1, file2]
-      file1.parent.should eq(f1)
-      file2.parent.should eq(f1)
+      expect(f1.files.to_a).to match_array([file1, file2])
+      expect(file1.parent).to eq(f1)
+      expect(file2.parent).to eq(f1)
     end
   end
 
@@ -155,24 +155,24 @@ describe 'has_one' do
       end
 
       it 'finds the chain of command' do
-        employee.manager(:p, :r, rel_length: {min: 0}).to_a.should match_array([employee, manager, big_boss])
+        expect(employee.manager(:p, :r, rel_length: {min: 0}).to_a).to match_array([employee, manager, big_boss])
       end
 
       it "finds the employee's superiors" do
-        employee.manager(:p, :r, rel_length: :any).to_a.should match_array([manager, big_boss])
+        expect(employee.manager(:p, :r, rel_length: :any).to_a).to match_array([manager, big_boss])
       end
 
       it 'finds a specific superior in the chain of command' do
-        employee.manager(:p, :r, rel_length: 1).should eq(manager)
-        employee.manager(:p, :r, rel_length: 2).should eq(big_boss)
+        expect(employee.manager(:p, :r, rel_length: 1)).to eq(manager)
+        expect(employee.manager(:p, :r, rel_length: 2)).to eq(big_boss)
       end
 
       it 'finds parts of the chain of command using a range' do
-        employee.manager(:p, :r, rel_length: (0..1)).to_a.should match_array([employee, manager])
+        expect(employee.manager(:p, :r, rel_length: (0..1)).to_a).to match_array([employee, manager])
       end
 
       it 'finds parts of the chain of command using a hash' do
-        employee.manager(:p, :r, rel_length: {min: 1, max: 3}).to_a.should match_array([manager, big_boss])
+        expect(employee.manager(:p, :r, rel_length: {min: 1, max: 3}).to_a).to match_array([manager, big_boss])
       end
     end
   end
@@ -190,7 +190,7 @@ describe 'has_one' do
 
     it 'allows passing only a hash of options when naming node/rel is not needed' do
       manager.subordinates << employee
-      employee.manager(rel_length: 1).should eq(manager)
+      expect(employee.manager(rel_length: 1)).to eq(manager)
     end
   end
 

@@ -9,7 +9,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
   describe 'label generation' do
     before do
       stub_const('User::Foo', user_model)
-      user_model.stub(:name).and_return('User::Foo')
+      allow(user_model).to receive(:name).and_return('User::Foo')
     end
 
     it 'returns a correctly-formatted label' do

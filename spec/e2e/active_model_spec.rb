@@ -94,15 +94,15 @@ describe 'Neo4j::ActiveNode' do
 
       # it { subject.id.should eq(subject.class.find(flavour: 'vanilla').id)}
 
-      it { should eq(subject.class.where(flavour: 'vanilla').first) }
+      it { is_expected.to eq(subject.class.where(flavour: 'vanilla').first) }
 
       it 'should be able to modify one of its named attributes' do
-        lambda { subject.update_attributes!(flavour: 'horse') }.should_not raise_error
-        subject.flavour.should eq('horse')
+        expect { subject.update_attributes!(flavour: 'horse') }.not_to raise_error
+        expect(subject.flavour).to eq('horse')
       end
 
       it 'should not have the extended property' do
-        subject.attributes.should_not include('extended_property')
+        expect(subject.attributes).not_to include('extended_property')
       end
 
       it 'should respond to class.all' do
@@ -110,20 +110,20 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
-        subject.class.where(flavour: 'vanilla').should include(subject)
+        expect(subject.class.where(flavour: 'vanilla')).to include(subject)
       end
 
       context 'and then made invalid' do
         before { subject.required_on_update = nil }
 
         it "shouldn't be updatable" do
-          subject.update_attributes(flavour: 'fish').should_not be true
+          expect(subject.update_attributes(flavour: 'fish')).not_to be true
         end
 
         it 'should have the same attribute values after an unsuccessful update and reload' do
           subject.update_attributes(flavour: 'fish')
-          subject.reload.flavour.should eq('vanilla')
-          subject.required_on_update.should_not be_nil
+          expect(subject.reload.flavour).to eq('vanilla')
+          expect(subject.required_on_update).not_to be_nil
         end
       end
     end
@@ -134,11 +134,11 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'should have run the #timestamp callback' do
-        @obj.created.should_not be_nil
+        expect(@obj.created).not_to be_nil
       end
 
       it 'should have run the #mark_saved callback' do
-        @obj.saved.should_not be_nil
+        expect(@obj.saved).not_to be_nil
       end
     end
   end
@@ -153,14 +153,14 @@ describe 'Neo4j::ActiveNode' do
   describe 'validations' do
     it 'does not have any errors if its valid' do
       ice_cream = IceCream.new(flavour: 'strawberry')
-      ice_cream.should be_valid
-      ice_cream.errors.should be_empty
+      expect(ice_cream).to be_valid
+      expect(ice_cream.errors).to be_empty
     end
 
     it 'does have errors if its not valid' do
       ice_cream = IceCream.new
-      ice_cream.should_not be_valid
-      ice_cream.errors.should_not be_empty
+      expect(ice_cream).not_to be_valid
+      expect(ice_cream.errors).not_to be_empty
     end
 
     context 'a model with a case sensitive uniqueness validation' do
@@ -382,27 +382,27 @@ describe 'Neo4j::ActiveNode' do
 
     it 'can persist a new object' do
       person = Person.new(name: 'John')
-      person.neo_id.should be_nil
+      expect(person.neo_id).to be_nil
       person.save
-      person.neo_id.should be_a(Integer)
-      person.exist?.should be true
+      expect(person.neo_id).to be_a(Integer)
+      expect(person.exist?).to be true
     end
 
     it 'can set properties' do
       person = Person.new(name: 'andreas', age: 21)
-      person[:name].should eq('andreas')
-      person[:age].should eq(21)
+      expect(person[:name]).to eq('andreas')
+      expect(person[:age]).to eq(21)
       person.save
-      person[:name].should eq('andreas')
-      person[:age].should eq(21)
+      expect(person[:name]).to eq('andreas')
+      expect(person[:age]).to eq(21)
     end
 
     it 'can create the node' do
       person = Person.create(name: 'andreas', age: 21)
-      person.neo_id.should be_a(Integer)
-      person[:name].should eq('andreas')
-      person[:age].should eq(21)
-      person.exist?.should be true
+      expect(person.neo_id).to be_a(Integer)
+      expect(person[:name]).to eq('andreas')
+      expect(person[:age]).to eq(21)
+      expect(person.exist?).to be true
     end
 
     # Escaping strings is handled by neo4j-core but more tests never hurt.
@@ -488,14 +488,14 @@ describe 'Neo4j::ActiveNode' do
     it 'can be deleted' do
       person = Person.create(name: 'andreas', age: 21)
       person.destroy
-      person.persisted?.should be false
+      expect(person.persisted?).to be false
     end
 
     it 'can be loaded by id' do
       person1 = Person.create(name: 'andreas', age: 21)
       person2 = Neo4j::Node.load(person1.neo_id)
-      person2.neo_id.should eq(person1.neo_id)
-      person2.neo_id.should eq(person1.neo_id)
+      expect(person2.neo_id).to eq(person1.neo_id)
+      expect(person2.neo_id).to eq(person1.neo_id)
     end
 
     it 'does not persist updated properties until they are saved' do
@@ -503,7 +503,7 @@ describe 'Neo4j::ActiveNode' do
       person[:age] = 22
 
       person2 = Neo4j::Node.load(person.neo_id)
-      person2[:age].should eq(21)
+      expect(person2[:age]).to eq(21)
     end
 
     it 'should not clear out existing properties when property is set and saved' do
@@ -511,20 +511,20 @@ describe 'Neo4j::ActiveNode' do
       person.age = 22
       person.save
       person2 = Neo4j::Node.load(person.neo_id)
-      person2.age.should eq(22)
-      person2.name.should eq('andreas')
+      expect(person2.age).to eq(22)
+      expect(person2.name).to eq('andreas')
     end
 
     it 'they can be all found' do
       person1 = Person.create(name: 'person1', age: 21)
       person2 = Person.create(name: 'person2', age: 21)
-      Person.all.should include(person1, person2)
+      expect(Person.all).to include(person1, person2)
     end
 
     it 'they can be queries' do
       Person.create(name: 'person3', age: 21)
       person2 = Person.create(name: 'person4', age: 21)
-      Person.where(name: 'person4').to_a.map(&:neo_id).should eq([person2.neo_id])
+      expect(Person.where(name: 'person4').to_a.map(&:neo_id)).to eq([person2.neo_id])
     end
 
     it 'saves all declared properties' do
@@ -653,7 +653,7 @@ describe 'Neo4j::ActiveNode' do
     describe 'unpersisted object' do
       it 'should respond with plural_model/new' do
         model = IceLolly.new
-        model.cache_key.should eq "#{model.class.model_name.cache_key}/new"
+        expect(model.cache_key).to eq "#{model.class.model_name.cache_key}/new"
       end
     end
 
