@@ -13,6 +13,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Error classes refactor: All errors now inherits from `Neo4j::Error`. All specific `InvalidParameterError` were replaced with a more generic `Neo4j::InvalidParameterError`.
 - When calling `Node.find(...)` with missing ids, `Neo4j::RecordNotFound` now returns a better error message and some informations about the query.
 
+#### Internal
+
+- Ran transpec and fixed error warning (thanks brucek / #1132)
+
 ### Added
 
 - A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
