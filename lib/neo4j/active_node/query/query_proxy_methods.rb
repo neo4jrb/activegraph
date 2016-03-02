@@ -179,6 +179,25 @@ module Neo4j
           end.first
         end
 
+        # Executes the relation chain specified in the block, while keeping the current scope
+        #
+        # @example Load all people that have friends
+        #   Person.all.branch { friends }.to_a # => Returns a list of `Person`
+        #
+        # @example Load all people that has old friends
+        #   Person.all.branch { friends.where('age > 70') }.to_a # => Returns a list of `Person`
+        #
+        # @yield the block that will be evaluated starting from the current scope
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def branch(&block)
+          if block
+            instance_eval(&block).query.proxy_as(self.model, identity)
+          else
+            fail LocalJumpError, 'no block given'
+          end
+        end
+
         # @return [String] The primary key of a the current QueryProxy's model or target class
         def association_id_key
           self.association.nil? ? model.primary_key : self.association.target_class.primary_key

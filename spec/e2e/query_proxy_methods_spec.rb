@@ -550,6 +550,38 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'branch' do
+    before(:each) do
+      [Student, Lesson, Teacher].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @history = Lesson.create(name: 'history')
+      @jim = Teacher.create(name: 'Jim', age: 40)
+      3.times { @john.lessons << @history }
+      @history.teachers << @jim
+    end
+
+    it 'returns a QueryProxy object' do
+      expect(@john.lessons.branch { teachers }).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+    end
+
+    it 'keeps identity to the external chain' do
+      expect(@john.lessons(:l).branch { teachers(:t) }.identity).to eq(:l)
+    end
+
+    it 'queries lessions' do
+      expect(@john.lessons(:l).branch { teachers(:t) }.to_a.first).to be_a(Lesson)
+    end
+
+    it 'applies the query in the block' do
+      expect(@john.lessons.branch { teachers(:t) }.to_cypher).to include('(t:`Teacher`)')
+    end
+
+    it 'raises LocalJumpError when no block is passed' do
+      expect { @john.lessons.branch }.to raise_error LocalJumpError
+    end
+  end
+
   describe 'optional' do
     before(:each) do
       delete_db
