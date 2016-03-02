@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [UNRELEASED]
+## [6.1.8] - 2016-03-02
 
 ### Fixed
 
