@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [UNRELEASED]
+
+### Fixed
+
+- The `@attributes` hash of the first node of each class returned from the database would have have the wrong id property key. This did not appear to cause any problems accessing the value and would be normal for subsequent saves of the affected node as well as all other nodes.
+
 ## [6.1.7] - 2016-02-16
 
 ### Fixed
