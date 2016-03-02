@@ -172,7 +172,9 @@ module Neo4j::Shared
     # node load performance.
     def string_map_id_property(key)
       return unless klass.id_property_name == key
-      @_attributes_string_map = attributes_string_map.dup.tap { |h| h[key] = key.to_s }.freeze
+      key.to_s.tap do |string_key|
+        @_attributes_string_map = attributes_string_map.dup.tap { |h| h[key] = string_key }.freeze
+      end
     end
 
     def unregister_magic_typecaster(property)
