@@ -174,6 +174,25 @@ module Neo4j
           self
         end
 
+        # Executes the relation chain specified in the block, while keeping the current scope
+        #
+        # @example Load all people that have friends
+        #   Person.all.branch { friends }.to_a # => Returns a list of `Person`
+        #
+        # @example Load all people that has old friends
+        #   Person.all.branch { friends.where('age > 70') }.to_a # => Returns a list of `Person`
+        #
+        # @yield the block that will be evaluated starting from the current scope
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def branch(&block)
+          if block
+            instance_eval(&block).query.proxy_as(self.model, identity)
+          else
+            fail LocalJumpError, 'no block given'
+          end
+        end
+
         def [](index)
           # TODO: Maybe for this and other methods, use array if already loaded, otherwise
           # use OFFSET and LIMIT 1?
