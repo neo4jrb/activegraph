@@ -24,6 +24,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
 - Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
 - A clone of [ActiveRecord::Enum](http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html) API. See docs for details. (thanks ProGM / #1129)
+- Added #branch method to `QueryProxy` to allow for easy branching of matches in association chains (thanks ProGM / #1147 / #1143)
 
 ### Removed
 
