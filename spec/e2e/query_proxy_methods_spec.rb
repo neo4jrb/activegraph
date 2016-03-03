@@ -555,6 +555,7 @@ describe 'query_proxy_methods' do
       [Student, Lesson, Teacher].each(&:delete_all)
 
       @john = Student.create(name: 'John')
+      @bill = Student.create(name: 'Bill')
       @history = Lesson.create(name: 'history')
       @jim = Teacher.create(name: 'Jim', age: 40)
       3.times { @john.lessons << @history }
@@ -575,6 +576,12 @@ describe 'query_proxy_methods' do
 
     it 'applies the query in the block' do
       expect(@john.lessons.branch { teachers(:t) }.to_cypher).to include('(t:`Teacher`)')
+    end
+
+    it 'returns only records matching the relation' do
+      students_with_lessons = Student.all.branch { lessons }.to_a
+      expect(students_with_lessons).to include(@john)
+      expect(students_with_lessons).not_to include(@bill)
     end
 
     it 'raises LocalJumpError when no block is passed' do
