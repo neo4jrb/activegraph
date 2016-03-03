@@ -32,6 +32,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 - `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
 
+## [6.1.8] - 2016-03-02
+
+### Fixed
+
+- The `@attributes` hash of the first node of each class returned from the database would have have the wrong id property key. This did not appear to cause any problems accessing the value and would be normal for subsequent saves of the affected node as well as all other nodes.
+
 ## [6.1.7] - 2016-02-16
 
 ### Fixed
