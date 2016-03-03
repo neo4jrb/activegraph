@@ -157,11 +157,11 @@ module Neo4j::ActiveNode
       end
 
       def load_entity(id)
-        query = object_query_base(id).return(:n)
+        query = query_base_for(id, :n).return(:n)
         neo4j_query(query).first.n
       end
 
-      def query_as(neo_id, var = :n)
+      def query_base_for(neo_id, var = :n)
         Neo4j::ActiveBase.new_query.match(var).where(var => {neo_id: neo_id})
       end
 

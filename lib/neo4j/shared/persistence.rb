@@ -9,7 +9,7 @@ module Neo4j::Shared
 
     def update_model
       return if !changed_attributes || changed_attributes.empty?
-      query = object_query_base.set(n: props_for_update)
+      query = query_as(:n).set(n: props_for_update)
       neo4j_query(query)
       changed_attributes.clear
     end
@@ -130,7 +130,7 @@ module Neo4j::Shared
 
     def exist?
       if _persisted_obj
-        query = object_query_base.return('ID(n)')
+        query = query_as(:n).return('ID(n)')
         neo4j_query(query).any?
       end
     end
@@ -218,10 +218,6 @@ module Neo4j::Shared
     end
 
     private
-
-    def object_query_base(var = :n)
-      self.class.query_as(_persisted_obj.id, var)
-    end
 
     def props_for_db(props_hash)
       self.class.declared_properties.convert_properties_to(self, :db, props_hash)
