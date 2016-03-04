@@ -117,6 +117,10 @@ describe 'query_proxy_methods' do
       jimmy.lessons << science
       expect(jimmy.lessons.include?(science.uuid)).to be_truthy
     end
+
+    it 'does not break when the query has been ordered' do
+      expect(jimmy.lessons.order(created_at: :desc).include?(science)).to eq jimmy.lessons.include?(science)
+    end
   end
 
   describe 'exists?' do
