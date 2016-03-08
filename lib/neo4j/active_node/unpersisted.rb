@@ -39,9 +39,9 @@ module Neo4j
 
             association_proxy << node
           end
-
-          @deferred_create_cache = {}
         end
+
+        @deferred_create_cache = {}
       end
     end
   end
