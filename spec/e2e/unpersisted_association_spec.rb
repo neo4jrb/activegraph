@@ -56,6 +56,7 @@ describe 'association creation' do
 
         it 'returns the node' do
           expect(chris.favorite_class).to eq(math)
+          expect(chris.query_as(:c).match('(c)-[rel:FAVORITE_CLASS]-()').count(:rel)).to eq(1)
         end
       end
     end
