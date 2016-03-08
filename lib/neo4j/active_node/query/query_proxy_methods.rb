@@ -75,7 +75,7 @@ module Neo4j
                              "#{var}.#{association_id_key} = {other_node_id}"
                            end
             node_id = other.respond_to?(:neo_id) ? other.neo_id : other
-            self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
+            self.where(where_filter).params(other_node_id: node_id).query.reorder.return("count(#{var}) as count").first.count > 0
           end
         end
 
