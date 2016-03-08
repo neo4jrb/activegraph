@@ -15,8 +15,6 @@ Provides a mapping between neo4j labels and Ruby classes
 
    
 
-   Labels/InvalidQueryError
-
    Labels/RecordNotFound
 
    

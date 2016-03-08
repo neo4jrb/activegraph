@@ -13,6 +13,10 @@ ClassMethods
 
    
 
+   
+
+   
+
 
 
 
@@ -28,7 +32,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel.rb:66 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L66>`_
+  * `lib/neo4j/active_node/enum.rb:6 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/enum.rb#L6>`_
 
 
 

@@ -171,7 +171,6 @@ Methods
      def initialize(attributes = nil)
        super(attributes)
        @attributes ||= Hash[self.class.attributes_nil_hash]
-       send_props(@relationship_props) if !@relationship_props.nil?
      end
 
 

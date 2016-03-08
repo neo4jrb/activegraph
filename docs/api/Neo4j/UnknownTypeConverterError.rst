@@ -26,7 +26,7 @@ Files
 
 
 
-  * `lib/neo4j/errors.rb:13 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/errors.rb#L13>`_
+  * `lib/neo4j/errors.rb:24 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/errors.rb#L24>`_
 
 
 

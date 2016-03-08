@@ -99,9 +99,9 @@ Association
 
    
 
-   Association/RelFactory
-
    Association/RelWrapper
+
+   Association/RelFactory
 
 
 
@@ -124,9 +124,9 @@ Files
 
   * `lib/neo4j/active_node/has_n/association.rb:7 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association.rb#L7>`_
 
-  * `lib/neo4j/active_node/has_n/association/rel_factory.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_factory.rb#L2>`_
-
   * `lib/neo4j/active_node/has_n/association/rel_wrapper.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_wrapper.rb#L1>`_
+
+  * `lib/neo4j/active_node/has_n/association/rel_factory.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/has_n/association/rel_factory.rb#L2>`_
 
 
 

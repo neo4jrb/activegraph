@@ -37,7 +37,11 @@ TypeConverters
 
    TypeConverters/JSONConverter
 
+   TypeConverters/EnumConverter
+
    TypeConverters/ObjectConverter
+
+   
 
    
 
@@ -123,6 +127,19 @@ Methods
 
 
 
+.. _`Neo4j/Shared/TypeConverters.converter_for`:
+
+**.converter_for**
+  
+
+  .. code-block:: ruby
+
+     def converter_for(type)
+       type.respond_to?(:db_type) ? type : CONVERTERS[type]
+     end
+
+
+
 .. _`Neo4j/Shared/TypeConverters.formatted_for_db?`:
 
 **.formatted_for_db?**
@@ -175,23 +192,10 @@ Methods
 
      def to_other(direction, value, type)
        fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
-       found_converter = CONVERTERS[type]
+       found_converter = converter_for(type)
        return value unless found_converter
        return value if direction == :to_db && formatted_for_db?(found_converter, value)
        found_converter.send(direction, value)
-     end
-
-
-
-.. _`Neo4j/Shared/TypeConverters#typecast_attribute`:
-
-**#typecast_attribute**
-  
-
-  .. code-block:: ruby
-
-     def typecast_attribute(typecaster, value)
-       Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
      end
 
 
@@ -207,6 +211,19 @@ Methods
        fail ArgumentError, "A typecaster must be given, #{typecaster} is invalid" unless typecaster.respond_to?(:to_ruby)
        return value if value.nil?
        typecaster.to_ruby(value)
+     end
+
+
+
+.. _`Neo4j/Shared/TypeConverters#typecast_attribute`:
+
+**#typecast_attribute**
+  
+
+  .. code-block:: ruby
+
+     def typecast_attribute(typecaster, value)
+       Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
      end
 
 

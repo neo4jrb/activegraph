@@ -1,5 +1,5 @@
-Neo4jrbError
-============
+Error
+=====
 
 
 

@@ -13,8 +13,6 @@ will result in a query to load the node if the node is not already loaded.
    :titlesonly:
 
 
-   RelatedNode/InvalidParameterError
-
    RelatedNode/UnsetRelatedNodeError
 
    
@@ -131,7 +129,7 @@ Methods
   .. code-block:: ruby
 
      def initialize(node = nil)
-       @node = valid_node_param?(node) ? node : (fail InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node')
+       @node = valid_node_param?(node) ? node : (fail Neo4j::InvalidParameterError, 'RelatedNode must be initialized with either a node ID or node')
      end
 
 

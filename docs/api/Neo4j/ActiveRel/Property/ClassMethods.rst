@@ -38,7 +38,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/property.rb:40 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L40>`_
+  * `lib/neo4j/active_rel/property.rb:39 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L39>`_
 
 
 

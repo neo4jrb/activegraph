@@ -71,7 +71,7 @@ Methods
   .. code-block:: ruby
 
      def find_by_id(id)
-       self.where(id_property_name => id).first
+       all.where(id_property_name => id).first
      end
 
 
@@ -84,7 +84,7 @@ Methods
   .. code-block:: ruby
 
      def find_by_ids(ids)
-       self.where(id_property_name => ids).to_a
+       all.where(id_property_name => ids).to_a
      end
 
 
@@ -130,8 +130,6 @@ Methods
          @id_property_info = {name: name, type: conf}
          TypeMethods.define_id_methods(self, name, conf)
          constraint(name, type: :unique) unless conf[:constraint] == false
-     
-         self.define_singleton_method(:find_by_id) { |key| self.where(name => key).first }
        end
      end
 

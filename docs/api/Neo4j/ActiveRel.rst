@@ -28,9 +28,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/ClassMethods
 
-   ActiveRel/Query
-
    ActiveRel/Types
+
+   ActiveRel/Query
 
    ActiveRel/Property
 
@@ -38,9 +38,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -69,9 +69,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
-
   * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
+
+  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
 
   * `lib/neo4j/active_rel/property.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L3>`_
 
@@ -79,9 +79,9 @@ Files
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 

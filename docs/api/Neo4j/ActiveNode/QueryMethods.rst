@@ -11,8 +11,6 @@ QueryMethods
    :titlesonly:
 
 
-   QueryMethods/InvalidParameterError
-
    
 
    
@@ -82,7 +80,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        q = distinct.nil? ? 'n' : 'DISTINCT n'
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end
@@ -111,7 +109,7 @@ Methods
 
      def exists?(node_condition = nil)
        unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
-         fail(InvalidParameterError, ':exists? only accepts ids or conditions')
+         fail(Neo4j::InvalidParameterError, ':exists? only accepts ids or conditions')
        end
        query_start = exists_query_start(node_condition)
        start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
@@ -184,7 +182,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        q = distinct.nil? ? 'n' : 'DISTINCT n'
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end
@@ -199,7 +197,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        q = distinct.nil? ? 'n' : 'DISTINCT n'
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end
