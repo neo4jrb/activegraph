@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.7] - 03-08-2016
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships
+
 ## [6.0.6] - 01-20-2016
 
 ### Fixed
