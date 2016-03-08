@@ -47,7 +47,13 @@ describe 'association creation' do
         Student.new(name: 'Chris', favorite_class: math)
       end
 
+      it 'returns the node' do
+        expect(chris.favorite_class).to eq(math)
+      end
+
       context 'upon save...' do
+        before { chris.save }
+
         it 'returns the node' do
           expect(chris.favorite_class).to eq(math)
         end
