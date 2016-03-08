@@ -30,7 +30,6 @@ module Neo4j::ActiveRel
 
     def initialize(attributes = nil)
       super(attributes)
-      send_props(@relationship_props) unless @relationship_props.nil?
     end
 
     def creates_unique_option
