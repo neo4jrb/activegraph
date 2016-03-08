@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [7.0.0.rc.1] - 03-08-2016
 
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships (forward ported from 6.0.7 / 6.1.9)
+
+## [7.0.0.rc.1] - 03-08-2016
+
 ### Changed
 
 - All explicit dependencies on `ActiveAttr` code that was not removed outright can now be found in the `Neo4j::Shared` namespace.
@@ -31,6 +37,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 - `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
+
+## [6.1.9] - 2016-03-08
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships (forward ported from 3.0.7)
 
 ## [6.1.8] - 2016-03-02
 
@@ -98,6 +110,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+
+## [6.0.7] - 03-08-2016
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships
 
 ## [6.0.6] - 01-20-2016
 
