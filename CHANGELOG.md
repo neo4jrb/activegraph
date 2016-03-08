@@ -70,6 +70,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
 
+## [6.0.7] - 03-08-2016
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships
+
 ## [6.0.6] - 01-20-2016
 
 ### Fixed
