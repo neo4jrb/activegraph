@@ -22,7 +22,7 @@ module Neo4j::Shared
 
     def initialize(attributes = nil)
       attributes = process_attributes(attributes)
-      @relationship_props = self.class.extract_association_attributes!(attributes)
+      @relationship_props = {}#self.class.extract_association_attributes!(attributes)
       modded_attributes = inject_defaults!(attributes)
       validate_attributes!(modded_attributes)
       writer_method_props = extract_writer_methods!(modded_attributes)
