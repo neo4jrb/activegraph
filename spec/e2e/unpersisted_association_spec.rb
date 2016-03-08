@@ -50,7 +50,7 @@ describe 'association creation' do
       end
 
       context 'upon save...' do
-        before { log_queries!; chris.save; puts 'just saved!' }
+        before { chris.save }
 
         it 'returns the node' do
           expect(chris.favorite_class).to eq(math)
