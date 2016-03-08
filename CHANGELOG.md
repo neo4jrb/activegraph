@@ -42,7 +42,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Issue where creating relationships via `has_one` association created two relationships (forward ported from 3.0.7)
+- Issue where creating relationships via `has_one` association created two relationships (forward ported from 6.0.7)
 
 ## [6.1.8] - 2016-03-02
 
