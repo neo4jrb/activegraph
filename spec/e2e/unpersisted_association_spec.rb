@@ -45,9 +45,16 @@ describe 'association creation' do
         Student.new(name: 'Chris', favorite_class: math)
       end
 
+      it 'returns the node' do
+        expect(chris.favorite_class).to eq(math)
+      end
+
       context 'upon save...' do
+        before { log_queries!; chris.save; puts 'just saved!' }
+
         it 'returns the node' do
           expect(chris.favorite_class).to eq(math)
+          expect(chris.query_as(:c).match('(c)-[rel:FAVORITE_CLASS]-()').count(:rel)).to eq(1)
         end
       end
     end
