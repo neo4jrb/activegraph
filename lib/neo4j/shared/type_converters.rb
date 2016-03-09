@@ -269,7 +269,7 @@ module Neo4j::Shared
       end
     end
 
-    class EnumConverter < BaseConverter
+    class EnumConverter
       def initialize(enum_keys)
         @enum_keys = enum_keys
       end
@@ -339,7 +339,8 @@ module Neo4j::Shared
     end
 
     def supports_array?(key)
-      primitive_type(key.to_sym).supports_array?
+      type = primitive_type(key.to_sym)
+      type.respond_to?(:supports_array?) && type.supports_array?
     end
 
     def typecaster_for(value)
