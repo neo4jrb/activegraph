@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Allow for array values when querying for enums (i.e. `where(enum_field: [:value1, :value2])`) (see #1150)
+
+## [7.0.0.rc.2] - 03-08-2016
+
+### Fixed
+
 - Issue where creating relationships via `has_one` association created two relationships (forward ported from 6.0.7 / 6.1.9)
 
 ## [7.0.0.rc.1] - 03-08-2016
