@@ -17,6 +17,10 @@ module Neo4j::Shared
           value.is_a?(db_type)
         end
       end
+
+      def supports_array?
+        false
+      end
     end
 
     class IntegerConverter < BaseConverter
@@ -274,6 +278,10 @@ module Neo4j::Shared
         value.is_a?(db_type)
       end
 
+      def supports_array?
+        true
+      end
+
       def db_type
         Integer
       end
@@ -289,7 +297,11 @@ module Neo4j::Shared
       alias_method :call, :to_ruby
 
       def to_db(value)
-        @enum_keys[value.to_s.to_sym] || 0
+        if value.is_a?(Array)
+          value.map(&method(:to_db))
+        else
+          @enum_keys[value.to_s.to_sym] || 0
+        end
       end
     end
 
@@ -324,6 +336,11 @@ module Neo4j::Shared
     # @param [Symbol] direction Either :to_ruby or :to_db, indicates the type of conversion to perform
     def convert_property(key, value, direction)
       converted_property(primitive_type(key.to_sym), value, direction)
+    end
+
+    def supports_array?(key)
+      type = primitive_type(key.to_sym)
+      type.respond_to?(:supports_array?) && type.supports_array?
     end
 
     def typecaster_for(value)

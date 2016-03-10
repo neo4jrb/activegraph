@@ -136,7 +136,12 @@ module Neo4j::Shared
     def value_for_where(key, value)
       return value unless prop = registered_properties[key]
       return value_for_db(key, value) if prop.typecaster && prop.typecaster.convert_type == value.class
-      EXCLUDED_TYPES.include?(value.class) ? value : value_for_db(key, value)
+
+      if should_convert_for_where?(key, value)
+        value_for_db(key, value)
+      else
+        value
+      end
     end
 
     def value_for_db(key, value)
@@ -164,6 +169,10 @@ module Neo4j::Shared
     end
 
     private
+
+    def should_convert_for_where?(key, value)
+      (value.is_a?(Array) && supports_array?(key)) || !EXCLUDED_TYPES.include?(value.class)
+    end
 
     # @param [Symbol] key An undeclared property value found in the _persisted_obj.props hash.
     # Typically, this is a node's id property, which will not be registered as other properties are.
