@@ -70,22 +70,14 @@ describe Neo4j::ActiveNode do
       expect(ids).to include(file2.id)
     end
 
-    it 'supports arrays' do
+    it '(type: [:unknown, :video]) finds elements matching the provided enum keys' do
       file1 = StoredFile.create!(type: :unknown)
       file2 = StoredFile.create!(type: :video)
       file3 = StoredFile.create!(type: :image)
-      ids = StoredFile.where(type: [:image, :video]).pluck(:uuid)
-      expect(ids).not_to include(file1.id)
+      ids = StoredFile.where(type: [:unknown, :video]).pluck(:uuid)
+      expect(ids).to include(file1.id)
       expect(ids).to include(file2.id)
-      expect(ids).to include(file3.id)
-    end
-
-    it '(type: [:unknown, :video]) finds elements matching the provided enum keys' do
-      skip 'TODO: This is not working!'
-      # file1 = StoredFile.create!(type: :unknown)
-      # file2 = StoredFile.create!(type: :video)
-      # ids = StoredFile.where(type: [:video, :unknown]).pluck(:uuid)
-      # expect(ids).to include(file1.id, file2.id)
+      expect(ids).to_not include(file3.id)
     end
   end
 
