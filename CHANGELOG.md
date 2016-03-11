@@ -3,7 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [7.0.0.rc.2] - 03-08-2016
+## [7.0.0.rc.4] - 03-11-2016
+
+### Fixed
+
+- Catching errors for 404s in Rails (thanks ProGm, see #1153)
+
+## [7.0.0.rc.3] - 03-08-2016
 
 ### Fixed
 
