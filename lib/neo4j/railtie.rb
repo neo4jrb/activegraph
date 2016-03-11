@@ -17,11 +17,13 @@ module Neo4j
     # For rails 3.2 and 4.0
     if config.action_dispatch.respond_to?(:rescue_responses)
       config.action_dispatch.rescue_responses.merge!(
-        'Neo4j::RecordNotFound' => :not_found
+        'Neo4j::RecordNotFound' => :not_found,
+        'Neo4j::ActiveNode::Labels::RecordNotFound' => :not_found
       )
     else
       # For rails 3.0 and 3.1
       ActionDispatch::ShowExceptions.rescue_responses['Neo4j::RecordNotFound'] = :not_found
+      ActionDispatch::ShowExceptions.rescue_responses['Neo4j::ActiveNode::Labels::RecordNotFound'] = :not_found
     end
 
     # Add ActiveModel translations to the I18n load_path
