@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.8] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
+
 ## [6.0.7] - 03-08-2016
 
 ### Fixed
