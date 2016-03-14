@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.0.rc.5] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
+
 ## [7.0.0.rc.4] - 03-11-2016
 
 ### Fixed
@@ -49,6 +55,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 - `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
+
+## [6.1.10] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
 
 ## [6.1.9] - 2016-03-08
 
@@ -122,6 +134,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+
+## [6.0.8] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
 
 ## [6.0.7] - 03-08-2016
 

@@ -79,7 +79,7 @@ module Neo4j
           return if model_class == false
 
           Array.new(target_classes).map do |target_class|
-            "#{name}:#{target_class.mapped_label_name}"
+            "#{name}:`#{target_class.mapped_label_name}`"
           end.join(' OR ')
         end
 
