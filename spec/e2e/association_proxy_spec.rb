@@ -29,24 +29,26 @@ describe 'Association Proxy' do
   let(:science)   { Lesson.create(subject: 'science', level: 102) }
   let(:math_exam) { Exam.create(name: 'Math Exam') }
   let(:science_exam) { Exam.create(name: 'Science Exam') }
+  let(:science_exam2) { Exam.create(name: 'Science Exam 2') }
 
   before do
     [math, science].each { |lesson| billy.lessons << lesson }
     [math_exam, science_exam].each { |exam| billy.exams << exam }
     math.exams_given << math_exam
     science.exams_given << science_exam
+    science.exams_given << science_exam2
     billy.favorite_lesson = math
   end
 
   it 'Should only make one query per association' do
-    expect(billy.lessons.exams_given.to_a).to match_array([math_exam, science_exam])
+    expect(billy.lessons.exams_given.to_a).to match_array([math_exam, science_exam, science_exam2])
 
     expect_queries(3) do
       grouped_lessons = billy.lessons.group_by(&:subject)
 
       expect(billy.lessons.to_a).to match_array([math, science])
       expect(grouped_lessons['math'][0].exams_given.to_a).to eq([math_exam])
-      expect(grouped_lessons['science'][0].exams_given.to_a).to eq([science_exam])
+      expect(grouped_lessons['science'][0].exams_given.to_a).to match_array([science_exam, science_exam2])
 
       expect(grouped_lessons['math'][0].students.to_a).to eq([billy])
       expect(grouped_lessons['science'][0].students.to_a).to eq([billy])
@@ -73,7 +75,7 @@ describe 'Association Proxy' do
       expect(grouped_lessons['math'][0].exams_given).to eq([math_exam])
 
       expect(grouped_lessons['science'][0].students).to eq([billy])
-      expect(grouped_lessons['science'][0].exams_given).to eq([science_exam])
+      expect(grouped_lessons['science'][0].exams_given).to match_array([science_exam, science_exam2])
     end
   end
 
