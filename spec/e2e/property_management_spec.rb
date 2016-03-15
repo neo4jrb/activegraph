@@ -168,6 +168,17 @@ describe 'declared property classes' do
           let(:node) { MyModel.create(foo: 'foo') }
           it { is_expected.to eq false }
         end
+
+        describe 'question mark methods' do
+          subject { node.baz? }
+
+          it { is_expected.to eq false }
+
+          context 'value is true' do
+            before { node.baz = true }
+            it { is_expected.to eq true }
+          end
+        end
       end
 
       context 'with value not default, not updated' do
