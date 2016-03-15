@@ -834,4 +834,17 @@ describe 'Neo4j::ActiveNode' do
       end
     end
   end
+
+  describe 'indexing' do
+    subject { model.declared_properties[:flavour].options[:index] }
+    context 'index method' do
+      let(:model) { IceLolly.new }
+      it { is_expected.to eq :exact }
+    end
+
+    context 'index option' do
+      let(:model) { IceCream.new }
+      it { is_expected.to eq :exact }
+    end
+  end
 end
