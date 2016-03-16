@@ -22,6 +22,7 @@ module Neo4j::Shared
     included do
       attribute_method_suffix '' if attribute_method_matchers.none? { |matcher| matcher.prefix == '' && matcher.suffix == '' }
       attribute_method_suffix '='
+      attribute_method_suffix '?'
     end
 
     # Performs equality checking on the result of attributes and its type.
@@ -68,6 +69,14 @@ module Neo4j::Shared
     end
     alias_method :[]=, :write_attribute
 
+    def query_attribute(name)
+      if respond_to? "#{name}?"
+        send "#{name}?"
+      else
+        fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+      end
+    end
+
     private
 
     # Read an attribute from the attributes hash
@@ -93,6 +102,10 @@ module Neo4j::Shared
     # @return [Hash{String => Object}] The Hash of mapped attributes
     def attributes_map
       Hash[self.class.attribute_names.map { |name| [name, yield(name)] }]
+    end
+
+    def attribute?(name)
+      Neo4j::Shared::TypeConverters::BooleanConverter.to_ruby(read_attribute(name))
     end
 
     module ClassMethods
