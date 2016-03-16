@@ -170,6 +170,7 @@ describe 'declared property classes' do
         end
       end
 
+
       context 'with value not default, not updated' do
         before do
           node.bar = 'bar'

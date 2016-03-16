@@ -1,10 +1,11 @@
 describe Neo4j::ActiveNode do
-  class SimpleClass
-    include Neo4j::ActiveNode
-    property :name
+  before do
+    stub_active_node_class('SimpleClass') do
+      property :name
+    end
   end
 
-  describe SimpleClass do
+  describe 'SimpleClass' do
     context 'when instantiated with new()' do
       subject do
         SimpleClass.new
@@ -43,6 +44,43 @@ describe Neo4j::ActiveNode do
 
       it 'does not allow setting undeclared properties' do
         expect { subject }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
+      end
+    end
+  end
+
+  describe 'question mark methods' do
+    let(:node) { SimpleClass.new }
+
+    it 'is false when unset' do
+      expect(node.name?).to eq false
+    end
+
+    context 'value is true' do
+      it 'changes when the value is present' do
+        expect { node.name = 'true' }.to change { node.name? }.from(false).to(true)
+      end
+    end
+  end
+
+  describe '#query_attribute' do
+    let(:node) { SimpleClass.new }
+
+    subject { node.query_attribute(method_name) }
+
+    context 'attribute is defined' do
+      let(:method_name) { :name }
+
+      it 'calls the question mark method' do
+        expect(node).to receive(:name?)
+        subject
+      end
+    end
+
+    context 'attribute is not defined' do
+      let(:method_name) { :foo }
+
+      it do
+        expect { subject }.to raise_error Neo4j::UnknownAttributeError
       end
     end
   end

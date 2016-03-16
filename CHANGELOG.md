@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.0.rc.6] - 03-16-2016
+
+### Fixed
+
+- Question mark methods (`node.foo?`) broke when ActiveAttr was removed
+
 ## [7.0.0.rc.5] - 03-14-2016
 
 ### Fixed
