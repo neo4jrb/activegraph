@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.0.rc.7] - 03-16-2016
+
+### Changed
+
+- `with_associations` now generates separate `OPTIONAL MATCH` clauses, separated by `WITH` clauses and is preceeded by a `WITH` clause.
+
 ## [7.0.0.rc.6] - 03-16-2016
 
 ### Fixed
