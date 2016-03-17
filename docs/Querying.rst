@@ -230,7 +230,7 @@ When using strings inside of a ``Query`` method, you have access to an ``identit
 
 .. code-block:: ruby
 
-  Student.scope :in_order, -> { order("#{identity}.level_num DESC") }
+  Student.scope :in_order, -> { order("coalesce(#{identity}.level_num, #{identity}.backup_num) DESC") }
 
   Student.in_order
 
@@ -238,7 +238,7 @@ This avoids needing to use ``query_as`` when calling the scope - here is the alt
 
 .. code-block:: ruby
 
-  Student.scope :in_order, -> (student) { order("#{student}.level_num DESC") }
+  Student.scope :in_order, -> (student) { order("coalesce(#{student}.level_num, #{student}.backup_num) DESC") }
 
   Student.query_as(:student).in_order(:student)
 
