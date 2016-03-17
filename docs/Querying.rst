@@ -226,6 +226,22 @@ Here we can make our own ``MATCH`` clauses unlike in model scoping.  We have ``w
 **TODO Duplicate this page and link to it from here (or just duplicate it here):**
 https://github.com/neo4jrb/neo4j-core/wiki/Queries
 
+When using strings inside of a ``Query`` method, you have access to an ``identity`` variable that can simplify your code.  For instance:
+
+.. code-block:: ruby
+
+  Student.scope :in_order, -> { order("#{identity}.level_num DESC") }
+
+  Student.in_order
+
+This avoids needing to use ``query_as`` when calling the scope - here is the alternative:
+
+.. code-block:: ruby
+
+  Student.scope :in_order, -> (student) { order("#{student}.level_num DESC") }
+
+  Student.query_as(:student).in_order(:student)
+
 .. seealso::
   .. raw:: html
 
