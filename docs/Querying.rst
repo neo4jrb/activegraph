@@ -234,13 +234,13 @@ When using strings inside of a ``Query`` method, you have access to an ``identit
 
   Student.in_order
 
-This avoids needing to use ``query_as`` when calling the scope - here is the alternative:
+This avoids needing to use ``as`` when calling the scope - here is the alternative:
 
 .. code-block:: ruby
 
   Student.scope :in_order, -> (student) { order("coalesce(#{student}.level_num, #{student}.backup_num) DESC") }
 
-  Student.query_as(:student).in_order(:student)
+  Student.as(:student).in_order(:student)
 
 .. seealso::
   .. raw:: html
