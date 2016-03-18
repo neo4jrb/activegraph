@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.0] - 03-18-2016
+
+No changes from `rc.7`
+
 ## [7.0.0.rc.7] - 03-16-2016
 
 ### Changed
