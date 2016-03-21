@@ -140,6 +140,17 @@ module Neo4j
           end
         end
 
+        def find_or_initialize_by(params)
+          fail 'Method invalid when called on Class objects' unless source_object
+
+          inverse_association = find_inverse_association!(model, source_object.class, association)
+          where(params).first || model.new(params).tap { |m| m.public_send(inverse_association.name) << source_object }
+        end
+
+        def first_or_initialize
+          first || initialize_by_where_clause
+        end
+
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
         def optional(association, node_var = nil, rel_var = nil)
           self.send(association, node_var, rel_var, optional: true)
@@ -164,6 +175,31 @@ module Neo4j
         end
 
         private
+
+        def find_inverse_association!(model, source, association)
+          model.associations.values.find do |reverse_association|
+            association.inverse_of?(reverse_association) ||
+              reverse_association.inverse_of?(association) ||
+              inverse_relation_of?(source, association, model, reverse_association)
+          end || fail("Could not find reverse association for #{@context}")
+        end
+
+        def inverse_relation_of?(source, source_association, target, target_association)
+          source_association.direction != target_association.direction &&
+            source == target_association.target_class &&
+            target == source_association.target_class &&
+            source_association.relationship_class_name == target_association.relationship_class_name
+        end
+
+        def initialize_by_where_clause
+          inverse_association = find_inverse_association!(model, source_object.class, association)
+          new(where_clause_params).tap { |m| m.public_send(inverse_association.name) << source_object }
+        end
+
+        def where_clause_params
+          query.clauses.select { |c| c.is_a?(Neo4j::Core::QueryClauses::WhereClause) && c.arg.is_a?(Hash) }
+            .map! { |e| e.arg[identity] }.compact!.inject { |a, b| a.merge(b) } || {}
+        end
 
         def first_and_last(func, target)
           new_query, pluck_proc = if self.query.clause?(:order)

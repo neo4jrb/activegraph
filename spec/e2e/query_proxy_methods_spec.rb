@@ -72,6 +72,56 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'find_or_initialize_by' do
+    let(:emily)       { Student.create(name: 'Emily') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    before do
+      philosophy.students << jimmy
+    end
+
+    it 'returns the correct node if it can be found' do
+      expect(philosophy.students.find_or_initialize_by(name: jimmy.name).name).to eq(jimmy.name)
+    end
+
+    it 'initializes and associates a new node if one is not found' do
+      expect(philosophy.students.where(name: 'Rebecca').first).to be_nil
+      student = philosophy.students.find_or_initialize_by(name: 'Rebecca')
+      expect(student).not_to be_persisted
+      expect(student.name).to eq('Rebecca')
+      expect(student.lessons.to_a).to include(philosophy)
+      expect { student.save }.to change { philosophy.reload.students.count }.by(1)
+    end
+
+    it 'returns the node after initializing' do
+      expect(philosophy.students.find_or_initialize_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
+    end
+  end
+
+  describe 'first_or_initialize' do
+    let(:emily)       { Student.create(name: 'Emily') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    before do
+      philosophy.students << jimmy
+    end
+
+    it 'returns the correct node if it can be found' do
+      expect(philosophy.students.where(name: jimmy.name).first_or_initialize.name).to eq(jimmy.name)
+    end
+
+    it 'initializes and associates a new node if one is not found' do
+      expect(philosophy.students.where(name: 'Rebecca').blank?).to be_truthy
+      student = philosophy.students.where(name: 'Rebecca').first_or_initialize
+      expect(student).not_to be_persisted
+      expect(student.name).to eq('Rebecca')
+      expect(student.lessons.to_a).to include(philosophy)
+      expect { student.save }.to change { philosophy.reload.students.count }.by(1)
+    end
+
+    it 'returns the node after initializing' do
+      expect(philosophy.students.where(name: 'Jacob').first_or_initialize).to be_a(Neo4j::ActiveNode)
+    end
+  end
+
   describe 'first and last' do
     it 'returns objects across multiple associations' do
       jimmy.lessons << science

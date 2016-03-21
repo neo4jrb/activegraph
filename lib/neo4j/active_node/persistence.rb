@@ -159,6 +159,10 @@ module Neo4j::ActiveNode
         find_by(attributes) || create!(attributes, &block)
       end
 
+      def find_or_initialize_by(attributes, &block)
+        find_by(attributes) || new(attributes).tap(&block)
+      end
+
       def load_entity(id)
         Neo4j::Node.load(id)
       end

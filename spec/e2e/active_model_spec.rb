@@ -426,6 +426,23 @@ describe 'Neo4j::ActiveNode' do
       expect { Person.find_or_create_by!(name: nil) }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
     end
 
+    it 'can find (or initialize) by...' do
+      expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
+      person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
+      expect(person).to be_a(Neo4j::ActiveNode)
+      expect(person).not_to be_persisted
+      expect(person.name).to eq('Donovan')
+      expect(person.age).to eq(30)
+    end
+
+    it 'can (find or) initialize by...' do
+      person = Person.create!(name: 'Donovan', age: 30)
+      found_person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
+      expect(found_person).to be_a(Neo4j::ActiveNode)
+      expect(found_person).to be_persisted
+      expect(found_person).to eq(person)
+    end
+
     describe 'create using a block' do
       let(:person) do
         Person.create do |p|

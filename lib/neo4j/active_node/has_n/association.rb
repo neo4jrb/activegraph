@@ -67,6 +67,10 @@ module Neo4j
                                   end
         end
 
+        def inverse_of?(other)
+          origin_association == other
+        end
+
         def target_classes
           ClassArguments.constantize_argument(target_class_names)
         end
