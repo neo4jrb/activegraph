@@ -506,8 +506,7 @@ module Neo4j::ActiveNode
       def build_association(macro, direction, name, options)
         options[:model_class] = options[:model_class].name if options[:model_class] == self
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
-          @associations ||= {}
-          @associations[name] = association
+          add_association(name, association)
           create_reflection(macro, name, association, self)
         end
 
@@ -517,6 +516,11 @@ module Neo4j::ActiveNode
       # make sure error message is helpful
       rescue StandardError => e
         raise e.class, "#{e.message} (#{self.class}##{name})"
+      end
+
+      def add_association(name, association_object)
+        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if associations.key?(name)
+        associations[name] = association_object
       end
     end
   end

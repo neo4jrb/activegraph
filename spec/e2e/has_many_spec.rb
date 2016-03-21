@@ -580,4 +580,15 @@ describe 'has_many' do
       end
     end
   end
+
+  describe 'checking for double definitions of associations' do
+    it 'should raise an error if an assocation is defined twice' do
+      expect do
+        stub_active_node_class('DoubledAssociation') do
+          has_many :in, :the_name, type: :the_name
+          has_many :out, :the_name, type: :the_name2
+        end
+      end.to raise_error RuntimeError, /Associations can only be defined once/
+    end
+  end
 end
