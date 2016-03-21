@@ -590,5 +590,17 @@ describe 'has_many' do
         end
       end.to raise_error RuntimeError, /Associations can only be defined once/
     end
+
+    it 'should allow for redefining of an association in a subclass' do
+      expect do
+        stub_active_node_class('DoubledAssociation') do
+          has_many :in, :the_name, type: :the_name
+        end
+
+        stub_named_class('DoubledAssociationSubClass', DoubledAssociation) do
+          has_many :out, :the_name, type: :the_name2
+        end
+      end.to_not raise_error
+    end
   end
 end
