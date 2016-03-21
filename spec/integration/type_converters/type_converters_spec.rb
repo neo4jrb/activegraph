@@ -351,6 +351,10 @@ describe Neo4j::Shared::TypeConverters do
       it 'translate a Integer back to DateTime' do
         expect(subject.to_ruby(@dt + 6 * @hr)).to eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
       end
+
+      it 'translate a String back to DateTime' do
+        expect(subject.to_ruby(Time.at(@dt - 6 * @hr).to_datetime.to_s)).to eq(DateTime.parse('2012-11-10T09:08:07+06:00'))
+      end
     end
 
     it 'translate from and to database' do

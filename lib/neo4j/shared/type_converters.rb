@@ -2,6 +2,7 @@ require 'date'
 require 'bigdecimal'
 require 'bigdecimal/util'
 require 'active_support/core_ext/big_decimal/conversions'
+require 'active_support/core_ext/string/conversions'
 
 module Neo4j::Shared
   class Boolean; end
@@ -176,7 +177,6 @@ module Neo4j::Shared
           Time.utc(*args).to_i
         end
 
-        DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S %z'
         def to_ruby(value)
           return value if value.is_a?(DateTime)
           t = case value
@@ -185,7 +185,7 @@ module Neo4j::Shared
               when Integer
                 Time.at(value).utc
               when String
-                DateTime.strptime(value, DATETIME_FORMAT)
+                return value.to_datetime
               else
                 fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
               end
