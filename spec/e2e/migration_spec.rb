@@ -135,6 +135,19 @@ describe 'migration tasks' do
       expect(User.first.songs).not_to be_empty
     end
 
+    it 'cleans up the old relationship' do
+      Neo4j::Session.query('CREATE (n:`User`) return n')
+      Neo4j::Session.query('CREATE (s:`Song`) return s')
+      Neo4j::Session.query('MATCH  (n:`User`),(s:`Song`) CREATE (n)-[r:`#songs`]->(s) RETURN r')
+
+      hashtagged_songs = Neo4j::Session.query('MATCH (n)-[r:`#songs`]->(s) RETURN r').to_a
+      expect(hashtagged_songs).not_to be_empty
+
+      clazz.new.migrate
+      hashtagged_songs_again = Neo4j::Session.query('MATCH (n)-[r:`#songs`]->(s) RETURN r').to_a
+      expect(hashtagged_songs_again).to be_empty
+    end
+
     it 'does not relabel relationships already in the requested format' do
       Neo4j::Session.query('CREATE (n:`User`) return n')
       Neo4j::Session.query('CREATE (s:`Song`) return s')
@@ -143,6 +156,22 @@ describe 'migration tasks' do
       expect(User.first.songs.count).to eq 1
       clazz.new.migrate
       expect(User.first.songs.count).to eq 1
+    end
+
+    it 'does not fail if no old-style relationships are found' do
+      expect { clazz.new.migrate }.not_to raise_error
+    end
+
+    it 'strips properties off the relationship node' do
+      Neo4j::Session.query('CREATE (n:`User`) return n')
+      Neo4j::Session.query('CREATE (s:`Song`) return s')
+      Neo4j::Session.query('MATCH  (n:`User`),(s:`Song`) CREATE (n)-[r:`#songs` { foo: "bar"}]->(s) RETURN r')
+
+      old_rel = Neo4j::Session.query('MATCH (n)-[r]->(s) RETURN r').to_a.first['r']
+      expect(old_rel.props[:foo]).to eq 'bar'
+      clazz.new.migrate
+      new_rel = Neo4j::Session.query('MATCH (n)-[r]->(s) RETURN r').to_a.first['r']
+      expect(new_rel.props[:foo]).to be_nil
     end
   end
 end
