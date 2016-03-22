@@ -107,4 +107,42 @@ describe 'migration tasks' do
       expect(user.neo_id).to eq neo_id
     end
   end
+
+  describe 'RelabelRelationships class' do
+    let(:full_path)    { '/hd/gems/rails/relabel_relationships.yml' }
+    let(:clazz)        { Neo4j::Migration::RelabelRelationships }
+    let(:map_template) { {'relationships' => %w(songs singers), 'formats' => {'old' => 'lower_hashtag', 'new' => 'lower'}} }
+
+    before do
+      allow(Rails).to receive_message_chain(:root, :join).and_return('/hd/gems/rails/add_id_property.yml')
+      allow(YAML).to receive(:load_file).and_return(map_template)
+    end
+
+    it 'loads an initialization file' do
+      expect(Rails).to receive(:root).and_return(path)
+      expect { clazz.new }.not_to raise_error
+    end
+
+    after { [User, Song].each(&:delete_all) }
+
+    it 'converts the old format to the new' do
+      Neo4j::Session.query('CREATE (n:`User`) return n')
+      Neo4j::Session.query('CREATE (s:`Song`) return s')
+      Neo4j::Session.query('MATCH  (n:`User`),(s:`Song`) CREATE (n)-[r:`#songs`]->(s) RETURN r')
+
+      expect(User.first.songs).to be_empty
+      clazz.new.migrate
+      expect(User.first.songs).not_to be_empty
+    end
+
+    it 'does not relabel relationships already in the requested format' do
+      Neo4j::Session.query('CREATE (n:`User`) return n')
+      Neo4j::Session.query('CREATE (s:`Song`) return s')
+      Neo4j::Session.query('MATCH  (n:`User`),(s:`Song`) CREATE (n)-[r:`songs`]->(s) RETURN r')
+
+      expect(User.first.songs.count).to eq 1
+      clazz.new.migrate
+      expect(User.first.songs.count).to eq 1
+    end
+  end
 end

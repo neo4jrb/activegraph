@@ -65,5 +65,68 @@ MESSAGE
         end
       end
     end
+
+    class RelabelRelationships < Neo4j::Migration
+      attr_accessor :relationships_filename, :old_format, :new_format
+
+      def initialize(path = default_path)
+        @relationships_filename = File.join(joined_path(path), 'relabel_relationships.yml')
+      end
+
+      MESSAGE = <<MESSAGE
+# Provide relationships which should be relabled.
+# relationships: [students,lessons,teachers,exams]\nrelationships: []
+# Provide old and new label formats:
+# Allowed options are lower_hashtag, lower, or upper
+formats:\n  old: lower_hashtag\n  new: lower
+MESSAGE
+
+      def setup
+        super
+        return if File.file?(relationships_filename)
+        File.open(relationships_filename, 'w') { |f| f.write(MESSAGE) }
+      end
+
+      def migrate
+        config        = YAML.load_file(relationships_filename).to_hash
+        relationships = config['relationships']
+        @old_format   = config['formats']['old']
+        @new_format   = config['formats']['new']
+
+        output 'This task will relabel every given relationship.'
+        output 'It may take a significant amount of time, please be patient.'
+        relationships.each { |relationship| reindex relationship }
+      end
+
+      private
+
+      def count(relationship)
+        Neo4j::Session.query(
+          "MATCH (a)-[r:#{style(relationship, :old)}]->(b) RETURN COUNT(r)"
+        ).to_a[0]['COUNT(r)']
+      end
+
+      def reindex(relationship)
+        count = count(relationship)
+        output "Indexing #{count} #{style(relationship, :old)}s into #{style(relationship, :new)}..."
+        while count > 0
+          Neo4j::Session.query(
+            "MATCH (a)-[r:#{style(relationship, :old)}]->(b) CREATE (a)-[r2:#{style(relationship, :new)}]->(b) SET r2 = r WITH r LIMIT 1000 DELETE r"
+          )
+          count = count(relationship)
+          if count > 0
+            output "... #{count} #{style(relationship, :old)}'s left to go.."
+          end
+        end
+      end
+
+      def style(relationship, old_or_new)
+        case (old_or_new == :old ? old_format : new_format)
+        when 'lower_hashtag' then "`##{relationship.downcase}`"
+        when 'lower'         then "`#{relationship.downcase}`"
+        when 'upper'         then "`#{relationship.upcase}`"
+        end
+      end
+    end
   end
 end
