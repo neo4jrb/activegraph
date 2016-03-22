@@ -22,6 +22,10 @@ module Neo4j
       File.join(path.to_s, 'db', 'neo4j-migrate')
     end
 
+    def setup
+      FileUtils.mkdir_p('db/neo4j-migrate')
+    end
+
     class AddIdProperty < Neo4j::Migration
       attr_reader :models_filename
 
@@ -42,8 +46,7 @@ module Neo4j
       end
 
       def setup
-        FileUtils.mkdir_p('db/neo4j-migrate')
-
+        super
         return if File.file?(models_filename)
 
         File.open(models_filename, 'w') do |file|
