@@ -221,18 +221,11 @@ module Neo4j::ActiveNode
       end
 
       def associations
-        @associations ||= {}
+        (@associations ||= {}).merge(superclass == Object ? {} : superclass.associations)
       end
 
       def associations_keys
         @associations_keys ||= associations.keys
-      end
-
-      # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
-      def inherited(klass)
-        klass.instance_variable_set(:@associations, associations.clone)
-        @associations_keys = klass.associations_keys.clone
-        super
       end
 
       # For defining an "has many" association on a model.  This defines a set of methods on
@@ -519,8 +512,9 @@ module Neo4j::ActiveNode
       end
 
       def add_association(name, association_object)
-        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if associations.key?(name)
-        associations[name] = association_object
+        @associations ||= {}
+        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if @associations.key?(name)
+        @associations[name] = association_object
       end
     end
   end
