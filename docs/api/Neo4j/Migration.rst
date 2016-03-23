@@ -23,6 +23,8 @@ Migration
 
    Migration/AddIdProperty
 
+   Migration/RelabelRelationships
+
 
 
 
@@ -110,6 +112,19 @@ Methods
 
      def print_output(string)
        print string unless !!ENV['silenced']
+     end
+
+
+
+.. _`Neo4j/Migration#setup`:
+
+**#setup**
+
+
+  .. code-block:: ruby
+
+     def setup
+       FileUtils.mkdir_p('db/neo4j-migrate')
      end
 
 
