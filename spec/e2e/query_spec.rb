@@ -9,6 +9,8 @@ describe 'Query API' do
   end
 
 
+  let(:student_interests_association_options) { {} }
+
   before(:each) do
     stub_active_node_class('Interest') do
       property :name
@@ -36,6 +38,7 @@ describe 'Query API' do
       scope :level_number, ->(num) { where(level: num) }
     end
 
+    scoped_interests_options = student_interests_association_options # Grrr
     stub_active_node_class('Student') do
       property :name
       property :age, type: Integer
@@ -44,7 +47,7 @@ describe 'Query API' do
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
-      has_many :out, :interests, type: nil
+      has_many :out, :interests, {type: nil}.merge(scoped_interests_options)
 
       has_many :both, :favorite_teachers, type: nil, model_class: 'Teacher'
       has_many :both, :hated_teachers, type: nil, model_class: 'Teacher'
@@ -741,13 +744,13 @@ describe 'Query API' do
       let(:changed_props_create) { proc { from_node.interests.create(to_node, second_props) } }
 
       before do
-        Student.has_many :out, :interests, options
         from_node.interests.create(to_node, first_props)
         expect(from_node.interests.count).to eq 1
       end
 
       context 'with `true` option' do
-        let(:options) { {type: nil, unique: true} }
+        let(:student_interests_association_options) { {type: nil, unique: true} }
+
         it 'becomes :none' do
           expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
           changed_props_create.call
@@ -755,7 +758,7 @@ describe 'Query API' do
       end
 
       context 'with :none open' do
-        let(:options) { {type: nil, unique: :none} }
+        let(:student_interests_association_options) { {type: nil, unique: :none} }
 
         it 'does not create additional rels, even when properties change' do
           expect do
@@ -765,7 +768,7 @@ describe 'Query API' do
       end
 
       context 'with `:all` option' do
-        let(:options) { {type: nil, unique: :all} }
+        let(:student_interests_association_options) { {type: nil, unique: :all} }
 
         it 'creates additional rels when properties change' do
           expect { changed_props_create.call }.to change { from_node.interests.count }
@@ -773,7 +776,7 @@ describe 'Query API' do
       end
 
       context 'with {on: [keys]} option' do
-        let(:options) { {type: nil, unique: {on: :score}} }
+        let(:student_interests_association_options) { {type: nil, unique: {on: :score}} }
 
         context 'and a listed property changes' do
           it 'creates a new rel' do
