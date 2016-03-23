@@ -81,19 +81,22 @@ module Neo4j
         Neo4j::Session.on_next_session_available do |_|
           next if other.manual_id_property? || !self.id_property?
           id_prop = self.id_property_info
-          conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
+          conf = id_prop[:type].empty? && id_prop[:name] != :neo_id ? {auto: :uuid} : id_prop[:type]
           other.id_property id_prop[:name], conf
         end
       end
 
       Neo4j::Session.on_next_session_available do |_|
         next if manual_id_property?
-        id_property :uuid, auto: :uuid unless self.id_property?
 
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]
         value = Neo4j::Config[:id_property_type_value]
-        id_property(name, type => value) if name && type && value
+        if name
+          id_property(name, type && value ? {type => value} : {})
+        else
+          id_property :uuid, auto: :uuid
+        end
       end
     end
 
