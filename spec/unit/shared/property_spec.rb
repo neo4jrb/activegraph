@@ -10,7 +10,9 @@ describe Neo4j::Shared::Property do
 
   describe 'option validation' do
     it 'gives an error for unknown option keys' do
-      expect { SharedPropertyTest.property :new_prop, unknown_key: true }.to raise_error ArgumentError, 'Invalid options for property `new_prop` on `SharedPropertyTest`: unknown_key'
+      expect do
+        SharedPropertyTest.property :new_prop, unknown_key: true
+      end.to raise_error ArgumentError, 'Invalid options for property `new_prop` on `SharedPropertyTest`: unknown_key'
     end
   end
 
