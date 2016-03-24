@@ -37,7 +37,7 @@ describe 'BasicModel' do
   it_should_behave_like 'updatable model'
 
   it 'has a label' do
-    subject.class.create!.labels.should == [:BasicModel]
+    expect(subject.class.create!.labels).to eq([:BasicModel])
   end
 
   context "when there's lots of them" do
@@ -47,7 +47,7 @@ describe 'BasicModel' do
     end
 
     it 'should be possible to #count' do
-      subject.class.count.should == 3
+      expect(subject.class.count).to eq(3)
     end
 
     it 'should be possible to #delete_all' do

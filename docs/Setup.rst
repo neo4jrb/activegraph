@@ -54,7 +54,7 @@ Include in your ``Gemfile``:
 .. code-block:: ruby
 
   # for rubygems
-  gem 'neo4j', '~> 5.0.0'
+  gem 'neo4j', '~> 7.0.0'
 
 In ``application.rb``:
 
@@ -128,9 +128,9 @@ Include either ``neo4j`` or ``neo4j-core`` in your ``Gemfile`` (``neo4j`` includ
 
 .. code-block:: ruby
 
-  gem 'neo4j', '~> 5.0.0'
+  gem 'neo4j', '~> 7.0.0'
   # OR
-  gem 'neo4j-core', '~> 5.0.0'
+  gem 'neo4j-core', '~> 7.0.0'
 
 If using only ``neo4j-core`` you can optionally include the rake tasks (:doc:`documentation </RakeTasks>`) manually in your ``Rakefile``:
 

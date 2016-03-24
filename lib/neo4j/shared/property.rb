@@ -2,15 +2,12 @@ module Neo4j::Shared
   module Property
     extend ActiveSupport::Concern
 
-    include ActiveAttr::Attributes
-    include ActiveAttr::MassAssignment
-    include ActiveAttr::TypecastedAttributes
-    include ActiveAttr::AttributeDefaults
-    include ActiveAttr::QueryAttributes
+    include Neo4j::Shared::MassAssignment
+    include Neo4j::Shared::TypecastedAttributes
     include ActiveModel::Dirty
 
-    class UndefinedPropertyError < RuntimeError; end
-    class MultiparameterAssignmentError < StandardError; end
+    class UndefinedPropertyError < Neo4j::Error; end
+    class MultiparameterAssignmentError < Neo4j::Error; end
 
     attr_reader :_persisted_obj
 
@@ -23,11 +20,8 @@ module Neo4j::Shared
       "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
     end
 
-    # TODO: Remove the commented :super entirely once this code is part of a release.
-    # It calls an init method in active_attr that has a very negative impact on performance.
     def initialize(attributes = nil)
       attributes = process_attributes(attributes)
-      @relationship_props = self.class.extract_association_attributes!(attributes)
       modded_attributes = inject_defaults!(attributes)
       validate_attributes!(modded_attributes)
       writer_method_props = extract_writer_methods!(modded_attributes)
@@ -40,11 +34,8 @@ module Neo4j::Shared
       self.class.declared_properties.inject_defaults!(self, starting_props || {})
     end
 
-    # Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
     def read_attribute(name)
-      super(name)
-    rescue ActiveAttr::UnknownAttributeError
-      nil
+      respond_to?(name) ? send(name) : nil
     end
     alias_method :[], :read_attribute
 
@@ -56,16 +47,6 @@ module Neo4j::Shared
     def reload_properties!(properties)
       @attributes = nil
       convert_and_assign_attributes(properties)
-    end
-
-    protected
-
-    # This method is defined in ActiveModel.
-    # When each node is loaded, it is called once in pursuit of 'sanitize_for_mass_assignment', which this gem does not implement.
-    # In the course of doing that, it calls :attributes, which is quite expensive, so we return immediately.
-    def attribute_method?(attr_name) #:nodoc:
-      return false if attr_name == 'sanitize_for_mass_assignment'
-      super(attr_name)
     end
 
     private
@@ -123,7 +104,7 @@ module Neo4j::Shared
     def instantiate_object(field, values_with_empty_parameters)
       return nil if values_with_empty_parameters.all?(&:nil?)
       values = values_with_empty_parameters.collect { |v| v.nil? ? 1 : v }
-      klass = field[:type]
+      klass = field.type
       klass ? klass.new(*values) : values
     end
 
@@ -131,13 +112,6 @@ module Neo4j::Shared
       extend Forwardable
 
       def_delegators :declared_properties, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
-
-      def inherited(other)
-        self.declared_properties.registered_properties.each_pair do |prop_key, prop_def|
-          other.property(prop_key, prop_def.options)
-        end
-        super
-      end
 
       # Defines a property on the class
       #
@@ -169,44 +143,36 @@ module Neo4j::Shared
       #    end
       def property(name, options = {})
         build_property(name, options) do |prop|
-          attribute(name, prop.options)
+          attribute(prop)
         end
       end
 
       # @param [Symbol] name The property name
-      # @param [ActiveAttr::AttributeDefinition] active_attr A cloned AttributeDefinition to reuse
+      # @param [Neo4j::Shared::AttributeDefinition] attr_def A cloned AttributeDefinition to reuse
       # @param [Hash] options An options hash to use in the new property definition
-      def inherit_property(name, active_attr, options = {})
-        build_property(name, options) do |prop|
-          attributes[prop.name.to_s] = active_attr
+      def inherit_property(name, attr_def, options = {})
+        build_property(name, options) do |prop_name|
+          attributes[prop_name] = attr_def
         end
       end
 
       def build_property(name, options)
-        prop = DeclaredProperty.new(name, options)
-        prop.register
-        declared_properties.register(prop)
-        yield prop
-        constraint_or_index(name, options)
+        DeclaredProperty.new(name, options).tap do |prop|
+          prop.register
+          declared_properties.register(prop)
+          yield name
+          constraint_or_index(name, options)
+        end
       end
 
       def undef_property(name)
+        undef_constraint_or_index(name)
         declared_properties.unregister(name)
         attribute_methods(name).each { |method| undef_method(method) }
-        undef_constraint_or_index(name)
       end
 
       def declared_properties
         @_declared_properties ||= DeclaredProperties.new(self)
-      end
-
-      def attribute!(name, options = {})
-        super(name, options)
-        define_method("#{name}=") do |value|
-          typecast_value = typecast_attribute(_attribute_typecaster(name), value)
-          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
-          super(value)
-        end
       end
 
       # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents
@@ -215,7 +181,22 @@ module Neo4j::Shared
         declared_properties.attributes_nil_hash
       end
 
+      def extract_association_attributes!(props)
+        props
+      end
+
       private
+
+      def attribute!(name)
+        remove_instance_variable('@attribute_methods_generated') if instance_variable_defined?('@attribute_methods_generated')
+        define_attribute_methods([name]) unless attribute_names.include?(name)
+        attributes[name.to_s] = declared_properties[name]
+        define_method("#{name}=") do |value|
+          typecast_value = typecast_attribute(_attribute_typecaster(name), value)
+          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
+          super(value)
+        end
+      end
 
       def constraint_or_index(name, options)
         # either constraint or index, do not set both
@@ -226,6 +207,13 @@ module Neo4j::Shared
           fail "unknown index type #{options[:index]}, only :exact supported" if options[:index] != :exact
           index(name) if options[:index] == :exact
         end
+      end
+
+      def undef_constraint_or_index(name)
+        prop = declared_properties[name]
+        return unless prop.index_or_constraint?
+        type = prop.constraint? ? :constraint : :index
+        send(:"drop_#{type}", name)
       end
     end
   end

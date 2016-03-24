@@ -21,6 +21,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -36,7 +38,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/property.rb:38 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L38>`_
+  * `lib/neo4j/active_rel/property.rb:39 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L39>`_
 
 
 
@@ -176,6 +178,20 @@ Methods
 
      def creates_unique?
        !!@creates_unique
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Property/ClassMethods#valid_class_argument?`:
+
+**#valid_class_argument?**
+  
+
+  .. code-block:: ruby
+
+     def valid_class_argument?(class_argument)
+       [String, Symbol, FalseClass].include?(class_argument.class) ||
+         (class_argument.is_a?(Array) && class_argument.all? { |c| [String, Symbol].include?(c.class) })
      end
 
 

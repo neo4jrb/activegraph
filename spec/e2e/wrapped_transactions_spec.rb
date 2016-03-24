@@ -14,8 +14,8 @@ describe 'wrapped nodes in transactions' do
     end
 
     stub_active_rel_class('StudentTeacher') do
-      from_class Student
-      to_class Teacher
+      from_class :Student
+      to_class :Teacher
       type 'teacher'
       property :appreciation, type: Integer
     end

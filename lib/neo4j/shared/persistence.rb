@@ -37,6 +37,29 @@ module Neo4j::Shared
       props_for_db(changed_props)
     end
 
+    # Increments a numeric attribute by a centain amount
+    # @param [Symbol, String] name of the attribute to increment
+    # @param [Integer, Float] amount to increment
+    def increment(attribute, by = 1)
+      self[attribute] ||= 0
+      self[attribute] += by
+      self
+    end
+
+    # Convenience method to increment numeric attribute and #save at the same time
+    # @param [Symbol, String] name of the attribute to increment
+    # @param [Integer, Float] amount to increment
+    def increment!(attribute, by = 1)
+      increment(attribute, by).update_attribute(attribute, self[attribute])
+    end
+
+    # Increments concurrently a numeric attribute by a centain amount
+    # @param [Symbol, String] name of the attribute to increment
+    # @param [Integer, Float] amount to increment
+    def concurrent_increment!(_attribute, _by = 1)
+      fail 'not_implemented'
+    end
+
     # Convenience method to set attribute and #save at the same time
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
@@ -164,6 +187,19 @@ module Neo4j::Shared
       else
         "#{model_cache_key}/#{neo_id}"
       end
+    end
+
+    protected
+
+    def increment_by_query!(match_query, attribute, by, element_name = :n)
+      new_attribute = match_query.with(element_name)
+                      .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + {by}")
+                      .params(by: by).limit(1)
+                      .pluck("#{element_name}.`#{attribute}`").first
+      return false unless new_attribute
+      self[attribute] = new_attribute
+      changed_attributes.delete(attribute)
+      true
     end
 
     private

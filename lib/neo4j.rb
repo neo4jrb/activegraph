@@ -1,14 +1,5 @@
 require 'neo4j/version'
 
-# require "delegate"
-# require "time"
-# require "set"
-#
-# require "active_support/core_ext"
-# require "active_support/json"
-# require "active_support/inflector"
-# require "active_support/time_with_zone"
-
 require 'neo4j-core'
 require 'neo4j/core/cypher_session'
 require 'neo4j/core/query'
@@ -16,7 +7,6 @@ require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
 
-require 'active_attr'
 require 'neo4j/errors'
 require 'neo4j/config'
 require 'neo4j/wrapper'
@@ -24,6 +14,7 @@ require 'neo4j/active_rel/rel_wrapper'
 require 'neo4j/active_node/node_wrapper'
 require 'neo4j/shared/type_converters'
 require 'neo4j/shared/rel_type_converters'
+require 'neo4j/shared/marshal'
 require 'neo4j/type_converters'
 require 'neo4j/paginated'
 require 'neo4j/schema/operation'
@@ -35,6 +26,10 @@ require 'neo4j/shared/filtered_hash'
 require 'neo4j/shared/declared_property/index'
 require 'neo4j/shared/declared_property'
 require 'neo4j/shared/declared_properties'
+require 'neo4j/shared/enum'
+require 'neo4j/shared/mass_assignment'
+require 'neo4j/shared/attributes'
+require 'neo4j/shared/typecasted_attributes'
 require 'neo4j/shared/property'
 require 'neo4j/shared/persistence'
 require 'neo4j/shared/validations'
@@ -60,8 +55,10 @@ require 'neo4j/active_rel'
 require 'neo4j/active_node/dependent'
 require 'neo4j/active_node/dependent/query_proxy_methods'
 require 'neo4j/active_node/dependent/association_methods'
+require 'neo4j/active_node/enum'
 require 'neo4j/active_node/query_methods'
 require 'neo4j/active_node/query/query_proxy_methods'
+require 'neo4j/active_node/query/query_proxy_methods_of_mass_updating'
 require 'neo4j/active_node/query/query_proxy_enumerable'
 require 'neo4j/active_node/query/query_proxy_find_in_batches'
 require 'neo4j/active_node/query/query_proxy_eager_loading'

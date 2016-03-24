@@ -17,6 +17,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -32,7 +34,7 @@ Files
 
 
 
-  * `lib/neo4j/active_rel/persistence.rb:47 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L47>`_
+  * `lib/neo4j/active_rel/persistence.rb:55 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L55>`_
 
 
 
@@ -91,6 +93,19 @@ Methods
 
      def create_method
        creates_unique? ? :create_unique : :create
+     end
+
+
+
+.. _`Neo4j/ActiveRel/Persistence/ClassMethods#load_entity`:
+
+**#load_entity**
+  
+
+  .. code-block:: ruby
+
+     def load_entity(id)
+       Neo4j::Relationship.load(id)
      end
 
 

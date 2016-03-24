@@ -12,6 +12,8 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
    :titlesonly:
 
 
+   
+
    ActiveRel/FrozenRelError
 
    
@@ -26,9 +28,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/ClassMethods
 
-   ActiveRel/Query
-
    ActiveRel/Types
+
+   ActiveRel/Query
 
    ActiveRel/Property
 
@@ -36,9 +38,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/Initialize
 
-   ActiveRel/Validations
-
    ActiveRel/Persistence
+
+   ActiveRel/Validations
 
    ActiveRel/RelatedNode
 
@@ -50,9 +52,13 @@ Constants
 
 
 
+  * MARSHAL_INSTANCE_VARIABLES
+
   * WRAPPED_CLASSES
 
   * DATE_KEY_REGEX
+
+  * DEPRECATED_OBJECT_METHODS
 
 
 
@@ -63,19 +69,19 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
-
   * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
 
-  * `lib/neo4j/active_rel/property.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L1>`_
+  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
+
+  * `lib/neo4j/active_rel/property.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L3>`_
 
   * `lib/neo4j/active_rel/callbacks.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/callbacks.rb#L2>`_
 
   * `lib/neo4j/active_rel/initialize.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/initialize.rb#L1>`_
 
-  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
-
   * `lib/neo4j/active_rel/persistence.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/persistence.rb#L1>`_
+
+  * `lib/neo4j/active_rel/validations.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/validations.rb#L2>`_
 
   * `lib/neo4j/active_rel/related_node.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/related_node.rb#L1>`_
 
@@ -91,12 +97,13 @@ Methods
 .. _`Neo4j/ActiveRel#==`:
 
 **#==**
-  
+  Performs equality checking on the result of attributes and its type.
 
   .. code-block:: ruby
 
      def ==(other)
-       other.class == self.class && other.id == id
+       return false unless other.instance_of? self.class
+       attributes == other.attributes
      end
 
 
@@ -104,14 +111,29 @@ Methods
 .. _`Neo4j/ActiveRel#[]`:
 
 **#[]**
-  Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+  
 
   .. code-block:: ruby
 
      def read_attribute(name)
-       super(name)
-     rescue ActiveAttr::UnknownAttributeError
-       nil
+       respond_to?(name) ? send(name) : nil
+     end
+
+
+
+.. _`Neo4j/ActiveRel#[]=`:
+
+**#[]=**
+  Write a single attribute to the model's attribute hash.
+
+  .. code-block:: ruby
+
+     def write_attribute(name, value)
+       if respond_to? "#{name}="
+         send "#{name}=", value
+       else
+         fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+       end
      end
 
 
@@ -145,6 +167,63 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#assign_attributes`:
+
+**#assign_attributes**
+  Mass update a model's attributes
+
+  .. code-block:: ruby
+
+     def assign_attributes(new_attributes = nil)
+       return unless new_attributes.present?
+       new_attributes.each do |name, value|
+         writer = :"#{name}="
+         send(writer, value) if respond_to?(writer)
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#attribute_before_type_cast`:
+
+**#attribute_before_type_cast**
+  Read the raw attribute value
+
+  .. code-block:: ruby
+
+     def attribute_before_type_cast(name)
+       @attributes ||= {}
+       @attributes[name.to_s]
+     end
+
+
+
+.. _`Neo4j/ActiveRel#attributes`:
+
+**#attributes**
+  Returns a Hash of all attributes
+
+  .. code-block:: ruby
+
+     def attributes
+       attributes_map { |name| send name }
+     end
+
+
+
+.. _`Neo4j/ActiveRel#attributes=`:
+
+**#attributes=**
+  Mass update a model's attributes
+
+  .. code-block:: ruby
+
+     def attributes=(new_attributes)
+       assign_attributes(new_attributes)
+     end
+
+
+
 .. _`Neo4j/ActiveRel#cache_key`:
 
 **#cache_key**
@@ -160,6 +239,20 @@ Methods
        else
          "#{model_cache_key}/#{neo_id}"
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#concurrent_increment!`:
+
+**#concurrent_increment!**
+  Increments concurrently a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def concurrent_increment!(attribute, by = 1)
+       query_rel = Neo4j::Session.query.match('()-[n]-()').where(n: {neo_id: neo_id})
+       increment_by_query! query_rel, attribute, by
      end
 
 
@@ -392,6 +485,34 @@ Methods
 
 
 
+.. _`Neo4j/ActiveRel#increment`:
+
+**#increment**
+  Increments a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def increment(attribute, by = 1)
+       self[attribute] ||= 0
+       self[attribute] += by
+       self
+     end
+
+
+
+.. _`Neo4j/ActiveRel#increment!`:
+
+**#increment!**
+  Convenience method to increment numeric attribute and #save at the same time
+
+  .. code-block:: ruby
+
+     def increment!(attribute, by = 1)
+       increment(attribute, by).update_attribute(attribute, self[attribute])
+     end
+
+
+
 .. _`Neo4j/ActiveRel#init_on_load`:
 
 **#init_on_load**
@@ -405,6 +526,24 @@ Methods
        changed_attributes && changed_attributes.clear
        @attributes = convert_and_assign_attributes(persisted_rel.props)
        load_nodes(from_node_id, to_node_id)
+     end
+
+
+
+.. _`Neo4j/ActiveRel#init_on_reload`:
+
+**#init_on_reload**
+  
+
+  .. code-block:: ruby
+
+     def init_on_reload(unwrapped_reloaded)
+       @attributes = nil
+       init_on_load(unwrapped_reloaded,
+                    unwrapped_reloaded._start_node_id,
+                    unwrapped_reloaded._end_node_id,
+                    unwrapped_reloaded.rel_type)
+       self
      end
 
 
@@ -453,6 +592,34 @@ Methods
      
        separator = ' ' unless attribute_descriptions.empty?
        "#<#{Neo4j::ANSI::YELLOW}#{self.class.name}#{Neo4j::ANSI::CLEAR}#{separator}#{attribute_descriptions}>"
+     end
+
+
+
+.. _`Neo4j/ActiveRel#marshal_dump`:
+
+**#marshal_dump**
+  
+
+  .. code-block:: ruby
+
+     def marshal_dump
+       marshal_instance_variables.map(&method(:instance_variable_get))
+     end
+
+
+
+.. _`Neo4j/ActiveRel#marshal_load`:
+
+**#marshal_load**
+  
+
+  .. code-block:: ruby
+
+     def marshal_load(array)
+       marshal_instance_variables.zip(array).each do |var, value|
+         instance_variable_set(var, value)
+       end
      end
 
 
@@ -607,14 +774,12 @@ Methods
 .. _`Neo4j/ActiveRel#read_attribute`:
 
 **#read_attribute**
-  Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+  
 
   .. code-block:: ruby
 
      def read_attribute(name)
-       super(name)
-     rescue ActiveAttr::UnknownAttributeError
-       nil
+       respond_to?(name) ? send(name) : nil
      end
 
 
@@ -673,11 +838,22 @@ Methods
   .. code-block:: ruby
 
      def reload_from_database
-       # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-       if reloaded = self.class.load_entity(neo_id)
-         send(:attributes=, reloaded.attributes)
-       end
-       reloaded
+       reloaded = self.class.load_entity(neo_id)
+       reloaded ? init_on_reload(reloaded._persisted_obj) : nil
+     end
+
+
+
+.. _`Neo4j/ActiveRel#reload_properties!`:
+
+**#reload_properties!**
+  
+
+  .. code-block:: ruby
+
+     def reload_properties!(properties)
+       @attributes = nil
+       convert_and_assign_attributes(properties)
      end
 
 
@@ -950,6 +1126,23 @@ Methods
 
      def wrapper
        self
+     end
+
+
+
+.. _`Neo4j/ActiveRel#write_attribute`:
+
+**#write_attribute**
+  Write a single attribute to the model's attribute hash.
+
+  .. code-block:: ruby
+
+     def write_attribute(name, value)
+       if respond_to? "#{name}="
+         send "#{name}=", value
+       else
+         fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+       end
      end
 
 

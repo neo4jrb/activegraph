@@ -113,6 +113,8 @@ QueryProxy
 
    
 
+   
+
    QueryProxy/Link
 
 
@@ -333,6 +335,23 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Query/QueryProxy#branch`:
+
+**#branch**
+  Executes the relation chain specified in the block, while keeping the current scope
+
+  .. code-block:: ruby
+
+     def branch(&block)
+       if block
+         instance_eval(&block).query.proxy_as(self.model, identity)
+       else
+         fail LocalJumpError, 'no block given'
+       end
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Query/QueryProxy#context`:
 
 **#context**
@@ -354,7 +373,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil, target = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        query_with_target(target) do |var|
          q = distinct.nil? ? var : "DISTINCT #{var}"
          limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
@@ -557,7 +576,9 @@ Methods
   .. code-block:: ruby
 
      def exists?(node_condition = nil, target = nil)
-       fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+       unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+         fail(Neo4j::InvalidParameterError, ':exists? only accepts neo_ids')
+       end
        query_with_target(target) do |var|
          start_q = exists_query_start(node_condition, var)
          start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
@@ -699,7 +720,7 @@ Methods
                           "#{var}.#{association_id_key} = {other_node_id}"
                         end
          node_id = other.respond_to?(:neo_id) ? other.neo_id : other
-         self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
+         self.where(where_filter).params(other_node_id: node_id).query.reorder.return("count(#{var}) as count").first.count > 0
        end
      end
 
@@ -1327,6 +1348,36 @@ Methods
        return false if send(association.name).empty?
        unique_nodes_query(association, self_identifer, other_node, other_rel)
          .proxy_as(association.target_class, other_node)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#update_all`:
+
+**#update_all**
+  Updates some attributes of a group of nodes within a QP chain.
+  The optional argument makes sense only of `updates` is a string.
+
+  .. code-block:: ruby
+
+     def update_all(updates, params = {})
+       # Move this to ActiveNode module?
+       update_all_with_query(identity, updates, params)
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Query/QueryProxy#update_all_rels`:
+
+**#update_all_rels**
+  Updates some attributes of a group of relationships within a QP chain.
+  The optional argument makes sense only of `updates` is a string.
+
+  .. code-block:: ruby
+
+     def update_all_rels(updates, params = {})
+       fail 'Cannot update rels without a relationship variable.' unless @rel_var
+       update_all_with_query(@rel_var, updates, params)
      end
 
 

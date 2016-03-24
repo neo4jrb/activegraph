@@ -50,7 +50,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         before do
           stub_const('FooClass', Class.new)
         end
-        let(:options) { {type: false, model_class: FooClass} }
+        let(:options) { {type: false, model_class: :FooClass} }
         it { expect(subject.relationship_type).to be_falsey }
       end
     end
@@ -78,64 +78,64 @@ describe Neo4j::ActiveNode::HasN::Association do
       end
 
 
-      it { should == '-[]->' }
+      it { is_expected.to eq('-[]->') }
 
       context 'inbound' do
         let(:direction) { :in }
 
-        it { should == '<-[]-' }
+        it { is_expected.to eq('<-[]-') }
       end
 
       context 'bidirectional' do
         let(:direction) { :both }
 
-        it { should == '-[]-' }
+        it { is_expected.to eq('-[]-') }
       end
 
       context 'creation' do
         let(:create) { true }
 
-        it { should == '-[:`DEFAULT`]->' }
+        it { is_expected.to eq('-[:`DEFAULT`]->') }
 
         context 'properties given' do
           let(:properties) { {foo: 1, bar: 'test'} }
 
-          it { should == '-[:`DEFAULT` {foo: 1, bar: "test"}]->' }
+          it { is_expected.to eq('-[:`DEFAULT` {foo: 1, bar: "test"}]->') }
         end
       end
 
       context 'variable given' do
         let(:var) { :fooy }
 
-        it { should == '-[fooy]->' }
+        it { is_expected.to eq('-[fooy]->') }
 
         context 'properties given' do
           let(:properties) { {foo: 1, bar: 'test'} }
 
-          it { should == '-[fooy {foo: 1, bar: "test"}]->' }
+          it { is_expected.to eq('-[fooy {foo: 1, bar: "test"}]->') }
         end
 
         context 'relationship type given' do
           let(:options) { {type: :new_type} }
 
-          it { should == '-[fooy:`new_type`]->' }
+          it { is_expected.to eq('-[fooy:`new_type`]->') }
         end
 
         context 'rel_class given' do
-          let(:options) { {rel_class: MyRel} }
+          let(:options) { {rel_class: :MyRel} }
 
-          it { should == '-[fooy:`ar_type`]->' }
+          it { is_expected.to eq('-[fooy:`ar_type`]->') }
         end
 
         context 'creation' do
           let(:create) { true }
 
-          it { should == '-[fooy:`DEFAULT`]->' }
+          it { is_expected.to eq('-[fooy:`DEFAULT`]->') }
 
           context 'properties given' do
             let(:properties) { {foo: 1, bar: 'test'} }
 
-            it { should == '-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->' }
+            it { is_expected.to eq('-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->') }
           end
         end
       end
@@ -145,7 +145,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           context ':any' do
             let(:length) { :any }
 
-            it { should == '-[*]->' }
+            it { is_expected.to eq('-[*]->') }
           end
 
           context 'invalid' do
@@ -161,7 +161,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           context 'positive' do
             let(:length) { 42 }
 
-            it { should == '-[*42]->' }
+            it { is_expected.to eq('-[*42]->') }
           end
 
           context 'negative' do
@@ -177,12 +177,12 @@ describe Neo4j::ActiveNode::HasN::Association do
           context 'positive & increasing' do
             let(:length) { (2..6) }
 
-            it { should == '-[*2..6]->' }
+            it { is_expected.to eq('-[*2..6]->') }
 
             context 'with end = Float::INFINITY' do
               let(:length) { (2..Float::INFINITY) }
 
-              it { should == '-[*2..]->' }
+              it { is_expected.to eq('-[*2..]->') }
             end
           end
 
@@ -207,19 +207,19 @@ describe Neo4j::ActiveNode::HasN::Association do
           context 'with :min and :max specified' do
             let(:length) { {min: 2, max: 6} }
 
-            it { should == '-[*2..6]->' }
+            it { is_expected.to eq('-[*2..6]->') }
           end
 
           context 'with only :min specified' do
             let(:length) { {min: 2} }
 
-            it { should == '-[*2..]->' }
+            it { is_expected.to eq('-[*2..]->') }
           end
 
           context 'with only :max specified' do
             let(:length) { {max: 2} }
 
-            it { should == '-[*..2]->' }
+            it { is_expected.to eq('-[*..2]->') }
           end
 
           context 'with both :min and :max missing' do
@@ -252,17 +252,17 @@ describe Neo4j::ActiveNode::HasN::Association do
           let(:length) { {min: 0} }
           let(:var) { :r }
 
-          it { should == '-[r*0..]->' }
+          it { is_expected.to eq('-[r*0..]->') }
 
           context 'with relationship type given' do
             let(:options) { {type: :TYPE} }
 
-            it { should == '-[r:`TYPE`*0..]->' }
+            it { is_expected.to eq('-[r:`TYPE`*0..]->') }
 
             context 'with properties given' do
               let(:properties) { {foo: 1, bar: 'test'} }
 
-              it { should == '-[r:`TYPE`*0.. {foo: 1, bar: "test"}]->' }
+              it { is_expected.to eq('-[r:`TYPE`*0.. {foo: 1, bar: "test"}]->') }
             end
           end
         end
@@ -275,7 +275,7 @@ describe Neo4j::ActiveNode::HasN::Association do
       context 'assumed model class' do
         let(:name) { :burzs }
 
-        it { should == ['::Burz'] }
+        it { is_expected.to eq(['::Burz']) }
       end
 
 
@@ -283,7 +283,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         context 'specified as string' do
           let(:options) { {type: :foo, model_class: 'Bizzl'} }
 
-          it { should == ['::Bizzl'] }
+          it { is_expected.to eq(['::Bizzl']) }
         end
 
         context 'specified as class' do
@@ -293,7 +293,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
           let(:options) { {type: :foo, model_class: 'Fizzl'} }
 
-          it { should == ['::Fizzl'] }
+          it { is_expected.to eq(['::Fizzl']) }
         end
       end
 
@@ -316,17 +316,17 @@ describe Neo4j::ActiveNode::HasN::Association do
             TheRel.to_class(:any)
           end
 
-          it { should be_nil }
+          it { is_expected.to be_nil }
         end
 
         context 'targeting a specific class' do
           context 'outbound' do
             before(:each) do
               stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
-              TheRel.to_class(Fizzl)
+              TheRel.to_class(:Fizzl)
             end
 
-            it { should == ['::Fizzl'] }
+            it { is_expected.to eq(['::Fizzl']) }
           end
 
           context 'inbound' do
@@ -334,17 +334,17 @@ describe Neo4j::ActiveNode::HasN::Association do
 
             before(:each) do
               stub_const 'Buzz', Class.new { include Neo4j::ActiveNode }
-              TheRel.from_class(Buzz)
+              TheRel.from_class(:Buzz)
             end
 
-            it { should == ['::Buzz'] }
+            it { is_expected.to eq(['::Buzz']) }
           end
         end
       end
     end
 
     describe 'target_class' do
-      subject { association.target_class }
+      subject { association.target_classes }
 
       let(:options) { {type: nil, model_class: 'BadClass'} }
 
@@ -433,8 +433,8 @@ describe Neo4j::ActiveNode::HasN::Association do
     describe 'refresh_model_class!' do
       context 'with model class set' do
         before do
-          association.instance_variable_set(:@model_class, named_class('MyModel'))
-          stub_named_class('MyModel')
+          stub_active_node_class('MyModel')
+          association.instance_variable_set(:@model_class, 'MyModel')
         end
 
         it 'changes the value of #derive_model_class' do

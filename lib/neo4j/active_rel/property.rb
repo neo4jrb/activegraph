@@ -1,3 +1,5 @@
+require 'neo4j/class_arguments'
+
 module Neo4j::ActiveRel
   module Property
     extend ActiveSupport::Concern
@@ -28,7 +30,6 @@ module Neo4j::ActiveRel
 
     def initialize(attributes = nil)
       super(attributes)
-      send_props(@relationship_props) unless @relationship_props.nil?
     end
 
     def creates_unique_option
@@ -55,11 +56,21 @@ module Neo4j::ActiveRel
 
       %w(to_class from_class).each do |direction|
         define_method("#{direction}") do |argument = nil|
-          return self.instance_variable_get("@#{direction}") if argument.nil?
-          instance_variable_set("@#{direction}", argument)
+          if !argument.nil?
+            Neo4j::ClassArguments.validate_argument!(argument, direction)
+
+            instance_variable_set("@#{direction}", argument)
+          end
+
+          self.instance_variable_get("@#{direction}")
         end
 
         define_method("_#{direction}") { instance_variable_get "@#{direction}" }
+      end
+
+      def valid_class_argument?(class_argument)
+        [String, Symbol, FalseClass].include?(class_argument.class) ||
+          (class_argument.is_a?(Array) && class_argument.all? { |c| [String, Symbol].include?(c.class) })
       end
 
       alias_method :start_class,  :from_class

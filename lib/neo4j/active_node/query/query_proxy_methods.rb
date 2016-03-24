@@ -2,7 +2,6 @@ module Neo4j
   module ActiveNode
     module Query
       module QueryProxyMethods
-        class InvalidParameterError < StandardError; end
         FIRST = 'HEAD'
         LAST = 'LAST'
 
@@ -30,32 +29,15 @@ module Neo4j
           first_and_last(LAST, target)
         end
 
-        def first_and_last(func, target)
-          new_query, pluck_proc = if self.query.clause?(:order)
-                                    [self.query.with(identity),
-                                     proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
-                                  else
-                                    [self.order(order_property).limit(1),
-                                     proc { |var| var }]
-                                  end
-          result = query_with_target(target) do |var|
-            final_pluck = pluck_proc.call(var)
-            new_query.pluck(final_pluck)
-          end
-          result.first
-        end
-
         def order_property
           # This should maybe be based on a setting in the association
           # rather than a hardcoded `nil`
           model ? model.id_property_name : nil
         end
 
-        private :first_and_last
-
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
-          fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+          fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
             q = distinct.nil? ? var : "DISTINCT #{var}"
             limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
@@ -93,29 +75,17 @@ module Neo4j
                              "#{var}.#{association_id_key} = {other_node_id}"
                            end
             node_id = other.respond_to?(:neo_id) ? other.neo_id : other
-            self.where(where_filter).params(other_node_id: node_id).query.return("count(#{var}) as count").first.count > 0
+            self.where(where_filter).params(other_node_id: node_id).query.reorder.return("count(#{var}) as count").first.count > 0
           end
         end
 
         def exists?(node_condition = nil, target = nil)
-          fail(InvalidParameterError, ':exists? only accepts neo_ids') unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+          unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+            fail(Neo4j::InvalidParameterError, ':exists? only accepts neo_ids')
+          end
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
             start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
-          end
-        end
-
-        # Deletes a group of nodes and relationships within a QP chain. When identifier is omitted, it will remove the last link in the chain.
-        # The optional argument must be a node identifier. A relationship identifier will result in a Cypher Error
-        # @param identifier [String,Symbol] the optional identifier of the link in the chain to delete.
-        def delete_all(identifier = nil)
-          query_with_target(identifier) do |target|
-            begin
-              self.query.with(target).optional_match("(#{target})-[#{target}_rel]-()").delete("#{target}, #{target}_rel").exec
-            rescue Neo4j::Session::CypherError
-              self.query.delete(target).exec
-            end
-            clear_source_object_cache
           end
         end
 
@@ -157,27 +127,6 @@ module Neo4j
         end
         alias_method :all_rels_to, :rels_to
 
-        # Deletes the relationship between a node and its last link in the QueryProxy chain. Executed in the database, callbacks will not run.
-        def delete(node)
-          self.match_to(node).query.delete(rel_var).exec
-          clear_source_object_cache
-        end
-
-        # Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
-        def delete_all_rels
-          return unless start_object && start_object._persisted_obj
-          self.query.delete(rel_var).exec
-        end
-
-        # Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
-        # Executed in the database, callbacks will not be run.
-        def replace_with(node_or_nodes)
-          nodes = Array(node_or_nodes)
-
-          self.delete_all_rels
-          nodes.each { |node| self << node }
-        end
-
         # When called, this method returns a single node that satisfies the match specified in the params hash.
         # If no existing node is found to satisfy the match, one is created or associated as expected.
         def find_or_create_by(params)
@@ -189,12 +138,6 @@ module Neo4j
             self << node
             return node
           end
-        end
-
-        # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
-        def destroy(node)
-          self.rels_to(node).map!(&:destroy)
-          clear_source_object_cache
         end
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -222,8 +165,18 @@ module Neo4j
 
         private
 
-        def clear_source_object_cache
-          self.source_object.clear_association_cache if self.source_object.respond_to?(:clear_association_cache)
+        def first_and_last(func, target)
+          new_query, pluck_proc = if self.query.clause?(:order)
+                                    [self.query.with(identity),
+                                     proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
+                                  else
+                                    [self.order(order_property).limit(1),
+                                     proc { |var| var }]
+                                  end
+          query_with_target(target) do |var|
+            final_pluck = pluck_proc.call(var)
+            new_query.pluck(final_pluck)
+          end.first
         end
 
         # @return [String] The primary key of a the current QueryProxy's model or target class
@@ -243,8 +196,10 @@ module Neo4j
 
         def exists_query_start(condition, target)
           case condition
-          when Integer then self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
-          when Hash then self.where(condition.keys.first => condition.values.first)
+          when Integer
+            self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
+          when Hash
+            self.where(condition.keys.first => condition.values.first)
           else
             self
           end

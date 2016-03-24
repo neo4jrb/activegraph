@@ -4,9 +4,12 @@ module Neo4j
   module ActiveRel
     extend ActiveSupport::Concern
 
+    MARSHAL_INSTANCE_VARIABLES = [:@attributes, :@rel_type, :@_persisted_obj]
+
     include Neo4j::Shared
     include Neo4j::ActiveRel::Initialize
     include Neo4j::Shared::Identity
+    include Neo4j::Shared::Marshal
     include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveRel::Property
     include Neo4j::ActiveRel::Persistence
@@ -14,8 +17,9 @@ module Neo4j
     include Neo4j::ActiveRel::Callbacks
     include Neo4j::ActiveRel::Query
     include Neo4j::ActiveRel::Types
+    include Neo4j::Shared::Enum
 
-    class FrozenRelError < StandardError; end
+    class FrozenRelError < Neo4j::Error; end
 
     def initialize(from_node = nil, to_node = nil, args = nil)
       load_nodes(node_or_nil(from_node), node_or_nil(to_node))
@@ -40,6 +44,9 @@ module Neo4j
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 
       def self.inherited(other)
+        attributes.each_pair do |k, v|
+          other.inherit_property k.to_sym, v.clone, declared_properties[k].options
+        end
         super
       end
     end

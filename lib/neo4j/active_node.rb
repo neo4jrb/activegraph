@@ -23,8 +23,11 @@ module Neo4j
   module ActiveNode
     extend ActiveSupport::Concern
 
+    MARSHAL_INSTANCE_VARIABLES = [:@attributes, :@_persisted_obj, :@default_property_value]
+
     include Neo4j::Shared
     include Neo4j::Shared::Identity
+    include Neo4j::Shared::Marshal
     include Neo4j::ActiveNode::Initialize
     include Neo4j::ActiveNode::IdProperty
     include Neo4j::Shared::SerializedProperties
@@ -40,6 +43,7 @@ module Neo4j
     include Neo4j::ActiveNode::HasN
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent
+    include Neo4j::ActiveNode::Enum
 
     def initialize(args = nil)
       symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args

@@ -41,6 +41,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -56,7 +58,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/labels.rb:78 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L78>`_
+  * `lib/neo4j/active_node/labels.rb:77 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/labels.rb#L77>`_
 
 
 
@@ -109,7 +111,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        q = distinct.nil? ? 'n' : 'DISTINCT n'
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end
@@ -166,7 +168,7 @@ Methods
 
      def exists?(node_condition = nil)
        unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
-         fail(InvalidParameterError, ':exists? only accepts ids or conditions')
+         fail(Neo4j::InvalidParameterError, ':exists? only accepts ids or conditions')
        end
        query_start = exists_query_start(node_condition)
        start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
@@ -185,12 +187,11 @@ Methods
      def find(id)
        map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
      
-       result = if id.is_a?(Array)
-                  find_by_ids(id.map { |o| map_id.call(o) })
-                else
-                  find_by_id(map_id.call(id))
-                end
-       fail Neo4j::RecordNotFound if result.blank?
+       result = find_by_id_or_ids(map_id, id)
+     
+       fail RecordNotFound.new(
+         "Couldn't find #{name} with '#{id_property_name}'=#{id}",
+         name, id_property_name, id) if result.blank?
        result.tap { |r| find_callbacks!(r) }
      end
 
@@ -286,7 +287,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        q = distinct.nil? ? 'n' : 'DISTINCT n'
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end
@@ -340,7 +341,7 @@ Methods
   .. code-block:: ruby
 
      def count(distinct = nil)
-       fail(InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
+       fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
        q = distinct.nil? ? 'n' : 'DISTINCT n'
        self.query_as(:n).return("count(#{q}) AS count").first.count
      end

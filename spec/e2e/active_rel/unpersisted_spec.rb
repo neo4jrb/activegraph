@@ -13,7 +13,7 @@ describe 'ActiveRel unpersisted handling' do
       property :name
       property :created_at, type: Integer
       property :updated_at, type: Integer
-      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :before_run, type: Neo4j::Shared::Boolean
       property :after_run
 
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
@@ -32,7 +32,7 @@ describe 'ActiveRel unpersisted handling' do
       after_create :log_after
       property :created_at, type: Integer
       property :updated_at, type: Integer
-      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :before_run, type: Neo4j::Shared::Boolean
       property :after_run
 
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
@@ -48,8 +48,8 @@ describe 'ActiveRel unpersisted handling' do
     end
 
     stub_active_rel_class('MyRelClass') do
-      from_class FromClass
-      to_class ToClass
+      from_class :FromClass
+      to_class :ToClass
       type 'rel_class_type'
 
       property :score, type: Integer

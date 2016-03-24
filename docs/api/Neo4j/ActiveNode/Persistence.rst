@@ -27,6 +27,8 @@ Persistence
 
    
 
+   
+
    Persistence/ClassMethods
 
 
@@ -104,6 +106,20 @@ Methods
 
 
 
+.. _`Neo4j/ActiveNode/Persistence#concurrent_increment!`:
+
+**#concurrent_increment!**
+  Increments concurrently a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def concurrent_increment!(attribute, by = 1)
+       query_node = Neo4j::Session.query.match_nodes(n: neo_id)
+       increment_by_query! query_node, attribute, by
+     end
+
+
+
 .. _`Neo4j/ActiveNode/Persistence#create_model`:
 
 **#create_model**
@@ -114,8 +130,7 @@ Methods
      def create_model
        node = _create_node(props_for_create)
        init_on_load(node, node.props)
-       send_props(@relationship_props) if @relationship_props
-       @relationship_props = @deferred_nodes = nil
+       @deferred_nodes = nil
        true
      end
 
@@ -212,6 +227,34 @@ Methods
 
      def frozen?
        @attributes.frozen?
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Persistence#increment`:
+
+**#increment**
+  Increments a numeric attribute by a centain amount
+
+  .. code-block:: ruby
+
+     def increment(attribute, by = 1)
+       self[attribute] ||= 0
+       self[attribute] += by
+       self
+     end
+
+
+
+.. _`Neo4j/ActiveNode/Persistence#increment!`:
+
+**#increment!**
+  Convenience method to increment numeric attribute and #save at the same time
+
+  .. code-block:: ruby
+
+     def increment!(attribute, by = 1)
+       increment(attribute, by).update_attribute(attribute, self[attribute])
      end
 
 
@@ -379,11 +422,8 @@ Methods
   .. code-block:: ruby
 
      def reload_from_database
-       # TODO: - Neo4j::IdentityMap.remove_node_by_id(neo_id)
-       if reloaded = self.class.load_entity(neo_id)
-         send(:attributes=, reloaded.attributes)
-       end
-       reloaded
+       reloaded = self.class.load_entity(neo_id)
+       reloaded ? init_on_reload(reloaded._persisted_obj) : nil
      end
 
 

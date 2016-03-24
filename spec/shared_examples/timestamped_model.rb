@@ -9,18 +9,21 @@ shared_examples_for 'timestamped model' do
   end
 
   context 'when saved' do
+    around do |example|
+      Timecop.freeze do
+        example.run
+      end
+    end
+
     before do
       @time = Time.now
       @tomorrow = Time.now.tomorrow
     end
 
-    before { Timecop.freeze }
-    after { Timecop.return }
-
     before { subject.save! }
 
     it 'should have set updated_at' do
-      subject.updated_at.to_i.should == @time.to_i
+      expect(subject.updated_at.to_i).to eq(@time.to_i)
     end
 
     it 'should have set created_at' do
@@ -31,20 +34,20 @@ shared_examples_for 'timestamped model' do
       before { Timecop.freeze(@tomorrow) }
 
       it 'created_at is not changed' do
-        lambda { subject.update_attributes!(a: 1, b: 2) }.should_not change(subject, :created_at)
+        expect { subject.update_attributes!(a: 1, b: 2) }.not_to change(subject, :created_at)
       end
 
       it 'should have altered the updated_at property' do
-        lambda { subject.update_attributes!(a: 1, b: 2) }.should change(subject, :updated_at)
+        expect { subject.update_attributes!(a: 1, b: 2) }.to change(subject, :updated_at)
       end
 
       describe '#touch' do
         it 'should change updated_at' do
-          lambda { subject.touch }.should change(subject, :updated_at)
+          expect { subject.touch }.to change(subject, :updated_at)
         end
 
         it 'will not change created_at' do
-          lambda { subject.touch }.should_not change(subject, :created_at)
+          expect { subject.touch }.not_to change(subject, :created_at)
         end
       end
 
@@ -69,7 +72,7 @@ shared_examples_for 'timestamped model' do
 
       context 'without modifications' do
         it 'should not alter the updated_at property' do
-          lambda { subject.save! }.should_not change(subject, :updated_at)
+          expect { subject.save! }.not_to change(subject, :updated_at)
         end
       end
     end

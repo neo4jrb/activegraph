@@ -2,7 +2,7 @@ module Neo4j::ActiveNode
   module HasN
     extend ActiveSupport::Concern
 
-    class NonPersistedNodeError < StandardError; end
+    class NonPersistedNodeError < Neo4j::Error; end
 
     # Return this object from associations
     # It uses a QueryProxy to get results
@@ -221,18 +221,11 @@ module Neo4j::ActiveNode
       end
 
       def associations
-        @associations ||= {}
+        (@associations ||= {}).merge(superclass == Object ? {} : superclass.associations)
       end
 
       def associations_keys
         @associations_keys ||= associations.keys
-      end
-
-      # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
-      def inherited(klass)
-        klass.instance_variable_set(:@associations, associations.clone)
-        @associations_keys = klass.associations_keys.clone
-        super
       end
 
       # For defining an "has many" association on a model.  This defines a set of methods on
@@ -304,11 +297,11 @@ module Neo4j::ActiveNode
       #         # `model_class` of `Post` is assumed here
       #         Person.has_many :out, :posts, origin: :author
       #
-      #         Post.has_one :in, :author, type: :has_author, model_class: 'Person'
+      #         Post.has_one :in, :author, type: :has_author, model_class: :Person
       #
-      #     *model_class*: The model class to which the association is referring.  Can be either a
-      #       model object ``include`` ing ``ActiveNode`` or a Symbol/String (or an ``Array`` of same).
-      #       **A Symbol or String is recommended** to avoid load-time issues
+      #     *model_class*: The model class to which the association is referring.  Can be a
+      #       Symbol/String (or an ``Array`` of same) with the name of the `ActiveNode` class,
+      #       `false` to specify any model, or nil to specify that it should be guessed.
       #
       #     *rel_class*: The ``ActiveRel`` class to use for this association.  Can be either a
       #       model object ``include`` ing ``ActiveRel`` or a Symbol/String (or an ``Array`` of same).
@@ -504,9 +497,9 @@ module Neo4j::ActiveNode
       end
 
       def build_association(macro, direction, name, options)
+        options[:model_class] = options[:model_class].name if options[:model_class] == self
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
-          @associations ||= {}
-          @associations[name] = association
+          add_association(name, association)
           create_reflection(macro, name, association, self)
         end
 
@@ -516,6 +509,12 @@ module Neo4j::ActiveNode
       # make sure error message is helpful
       rescue StandardError => e
         raise e.class, "#{e.message} (#{self.class}##{name})"
+      end
+
+      def add_association(name, association_object)
+        @associations ||= {}
+        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if @associations.key?(name)
+        @associations[name] = association_object
       end
     end
   end

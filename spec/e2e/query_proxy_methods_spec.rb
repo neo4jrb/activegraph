@@ -30,6 +30,8 @@ describe 'query_proxy_methods' do
       to_class 'Lesson'
       type 'lessons'
 
+      property :absence_count, type: Integer, default: 0
+
       after_destroy :destroy_called
 
       def destroy_called
@@ -117,6 +119,10 @@ describe 'query_proxy_methods' do
       jimmy.lessons << science
       expect(jimmy.lessons.include?(science.uuid)).to be_truthy
     end
+
+    it 'does not break when the query has been ordered' do
+      expect(jimmy.lessons.order(created_at: :desc).include?(science)).to eq jimmy.lessons.include?(science)
+    end
   end
 
   describe 'exists?' do
@@ -141,7 +147,7 @@ describe 'query_proxy_methods' do
       end
 
       it 'raises an error if something other than a neo id is given' do
-        expect { Lesson.exists?(:fooooo) }.to raise_error(Neo4j::ActiveNode::QueryMethods::InvalidParameterError)
+        expect { Lesson.exists?(:fooooo) }.to raise_error(Neo4j::InvalidParameterError)
       end
     end
 
@@ -196,7 +202,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'raises an exception if a bad parameter is passed' do
-      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::ActiveNode::Query::QueryProxyMethods::InvalidParameterError)
+      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::InvalidParameterError)
     end
 
     it 'works on an object earlier in the chain' do
@@ -252,6 +258,67 @@ describe 'query_proxy_methods' do
         expect_queries(0) { proxy.to_a }
         expect_queries(0) { proxy.length }
       end
+    end
+  end
+
+  describe '#update_all' do
+    let!(:jimmy_clone) { Student.create(name: 'Jimmy') }
+    let!(:john)        { Student.create(name: 'John') }
+
+    let(:changing_students) { Student.where(name: 'Bob') }
+
+    it 'updates all students' do
+      expect(Student.update_all(name: 'Bob')).to eq(Student.count)
+      expect(Student.all.map(&:name)).to be_all { |age| age == 'Bob' }
+    end
+
+    it 'updates students' do
+      expect do
+        expect(Student.as(:p).where('p.name = "Jimmy"').update_all(name: 'Bob')).to eq(2)
+      end.to change(changing_students, :count).by(2)
+    end
+
+    it 'updates people with age < 30 (using string parameter)' do
+      expect do
+        expect(Student.as(:p).where('p.name = "Jimmy"').update_all('p.name = {new_name}', new_name: 'Bob')).to eq(2)
+      end.to change(changing_students, :count).by(2)
+    end
+
+    it 'updates nothing when matching nothing' do
+      expect do
+        expect(Student.as(:n).where('n.name = "Frank"').update_all(name: 'Bob')).to eq(0)
+      end.not_to change(changing_students, :count)
+    end
+
+    it 'raises error on invalid argument' do
+      expect do
+        Student.update_all(7)
+      end.to raise_error ArgumentError
+    end
+  end
+
+  describe '#update_all_rels' do
+    before do
+      science.students << jimmy
+      math.students << jimmy
+    end
+
+    it 'updates all jimmy\'s lessions absence' do
+      count = Student.all.match_to(jimmy).lessons(:l)
+              .update_all_rels(absence_count: 3)
+      expect(count).to eq(2)
+    end
+
+    it 'updates all jimmy\'s lessions absence (with string parameter)' do
+      count = Student.all.match_to(jimmy).lessons(:l)
+              .update_all_rels('rel1.absence_count = 3')
+      expect(count).to eq(2)
+    end
+
+    it 'raises error on invalid argument' do
+      expect do
+        Student.all.match_to(jimmy).lessons(:l).update_all(7)
+      end.to raise_error ArgumentError
     end
   end
 
@@ -484,6 +551,45 @@ describe 'query_proxy_methods' do
           expect(@john.lessons.to_a).not_to include(@math, @history)
         end
       end
+    end
+  end
+
+  describe 'branch' do
+    before(:each) do
+      [Student, Lesson, Teacher].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @bill = Student.create(name: 'Bill')
+      @history = Lesson.create(name: 'history')
+      @jim = Teacher.create(name: 'Jim', age: 40)
+      3.times { @john.lessons << @history }
+      @history.teachers << @jim
+    end
+
+    it 'returns a QueryProxy object' do
+      expect(@john.lessons.branch { teachers }).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+    end
+
+    it 'keeps identity to the external chain' do
+      expect(@john.lessons(:l).branch { teachers(:t) }.identity).to eq(:l)
+    end
+
+    it 'queries lessions' do
+      expect(@john.lessons(:l).branch { teachers(:t) }.to_a.first).to be_a(Lesson)
+    end
+
+    it 'applies the query in the block' do
+      expect(@john.lessons.branch { teachers(:t) }.to_cypher).to include('(t:`Teacher`)')
+    end
+
+    it 'returns only records matching the relation' do
+      students_with_lessons = Student.all.branch { lessons }.to_a
+      expect(students_with_lessons).to include(@john)
+      expect(students_with_lessons).not_to include(@bill)
+    end
+
+    it 'raises LocalJumpError when no block is passed' do
+      expect { @john.lessons.branch }.to raise_error LocalJumpError
     end
   end
 

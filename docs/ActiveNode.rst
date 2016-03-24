@@ -159,6 +159,76 @@ Neo4j.rb serializes as JSON by default but pass it the constant Hash as a second
 
 *Neo4j allows you to save Ruby arrays to undefined or String types but their contents need to all be of the same type. You can do user.stuff = [1, 2, 3] or user.stuff = ["beer, "pizza", "doritos"] but not user.stuff = [1, "beer", "pizza"]. If you wanted to do that, you could call serialize on your property in the model.*
 
+Enums
+~~~~~~
+You can declare special properties that maps an integer value in the database with a set of keywords, like ``ActiveRecord::Enum``
+
+.. code-block:: ruby
+
+    class Media
+      include Neo4j::ActiveNode
+
+      enum type: [:image, :video, :unknown]
+    end
+
+    media = Media.create(type: :video)
+    media.type
+    # => :video
+    media.image!
+    media.image?
+    # => true
+
+For every keyword specified, a couple of methods are defined to set or check the current enum state (In the example: `image?`, `image!`, `video?`, ... ).
+
+With options ``_prefix`` and ``_suffix``, you can define how this methods are generating, by adding a prefix or a suffix.
+
+With ``_prefix: :something``, something will be added before every method name.
+
+.. code-block:: ruby
+
+    Media.enum type: [:image, :video, :unknown], _prefix: :something
+    media.something_image?
+    media.something_image!
+
+With ``_suffix: true``, instead, the name of the enum is added in the bottom of all methods:
+
+.. code-block:: ruby
+
+    Media.enum type: [:image, :video, :unknown], _suffix: true
+    media.image_type?
+    media.image_type!
+
+You can find elements by enum value by using a set of scope that ``enum`` defines:
+
+.. code-block:: ruby
+
+    Media.image
+    # => CYPHER: "MATCH (result_media:`Media`) WHERE (result_media.type = 0)"
+    Media.video
+    # => CYPHER: "MATCH (result_media:`Media`) WHERE (result_media.type = 1)"
+
+Or by using ``where``:
+
+.. code-block:: ruby
+
+    Media.where(type: :image)
+    # => CYPHER: "MATCH (result_media:`Media`) WHERE (result_media.type = 0)"
+    Media.where(type: [Media.types[:image], Media.types[:video]])
+    # => CYPHER: "MATCH (result_media:`StoredFile`) WHERE (result_media.type IN [0, 1])"
+    Media.as(:m).where('m.type <> ?', Media.types[:image])
+    # => CYPHER: "MATCH (result_media:`StoredFile`) WHERE (result_media.type <> 0)"
+
+By default, every ``enum`` property will be defined as ``unique``, to improve query performances. If you want to disable this, simply pass ``_index: false`` to ``enum``:
+
+.. code-block:: ruby
+
+    class Media
+      include Neo4j::ActiveNode
+
+      enum type: [:image, :video, :unknown], _index: false
+    end
+
+
 .. _activenode-wrapping:
 
 Wrapping
@@ -285,7 +355,7 @@ By including the ``unique`` option in a ``has_many`` or ``has_one`` association'
 
 .. code-block:: ruby
 
-  has_many :out, :friends, type: 'FRIENDS_WITH', model_class: User, unique: true
+  has_many :out, :friends, type: 'FRIENDS_WITH', model_class: :User, unique: true
 
 Instead of ``true``, you can give one of three different options:
 

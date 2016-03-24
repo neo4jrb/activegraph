@@ -4,6 +4,7 @@ module Neo4j
       class QueryProxy
         include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
+        include Neo4j::ActiveNode::Query::QueryProxyMethodsOfMassUpdating
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
         include Neo4j::ActiveNode::Query::QueryProxyEagerLoading
         include Neo4j::ActiveNode::Dependent::QueryProxyMethods
@@ -171,6 +172,25 @@ module Neo4j
             fail 'Another crazy error!'
           end
           self
+        end
+
+        # Executes the relation chain specified in the block, while keeping the current scope
+        #
+        # @example Load all people that have friends
+        #   Person.all.branch { friends }.to_a # => Returns a list of `Person`
+        #
+        # @example Load all people that has old friends
+        #   Person.all.branch { friends.where('age > 70') }.to_a # => Returns a list of `Person`
+        #
+        # @yield the block that will be evaluated starting from the current scope
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def branch(&block)
+          if block
+            instance_eval(&block).query.proxy_as(self.model, identity)
+          else
+            fail LocalJumpError, 'no block given'
+          end
         end
 
         def [](index)

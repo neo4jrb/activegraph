@@ -45,9 +45,16 @@ describe 'association creation' do
         Student.new(name: 'Chris', favorite_class: math)
       end
 
+      it 'returns the node' do
+        expect(chris.favorite_class).to eq(math)
+      end
+
       context 'upon save...' do
+        before { chris.save }
+
         it 'returns the node' do
           expect(chris.favorite_class).to eq(math)
+          expect(chris.query_as(:c).match('(c)-[rel:FAVORITE_CLASS]-()').count(:rel)).to eq(1)
         end
       end
     end
@@ -137,7 +144,7 @@ describe 'association creation' do
           end
 
           it 'rolls back the entire transaction' do
-            expect { chris.save }.to raise_error
+            expect { chris.save }.to raise_error(/Unable to defer node persistence, could not save/)
             expect(chris).not_to exist
           end
         end

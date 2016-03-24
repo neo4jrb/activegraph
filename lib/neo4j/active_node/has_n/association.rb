@@ -1,4 +1,5 @@
 require 'active_support/inflector/inflections'
+require 'neo4j/class_arguments'
 
 module Neo4j
   module ActiveNode
@@ -32,7 +33,7 @@ module Neo4j
           @pending_model_refresh = @target_classes_or_nil = nil
 
           # Using #to_s on purpose here to take care of classes/strings/symbols
-          @model_class = @model_class.to_s.constantize if @model_class
+          @model_class = ClassArguments.constantize_argument(@model_class.to_s) if @model_class
         end
 
         def queue_model_refresh!
@@ -67,7 +68,7 @@ module Neo4j
         end
 
         def target_classes
-          target_class_names.map(&:constantize)
+          ClassArguments.constantize_argument(target_class_names)
         end
 
         def target_classes_or_nil
@@ -78,12 +79,12 @@ module Neo4j
           return if model_class == false
 
           Array.new(target_classes).map do |target_class|
-            "#{name}:#{target_class.mapped_label_name}"
+            "#{name}:`#{target_class.mapped_label_name}`"
           end.join(' OR ')
         end
 
         def discovered_model
-          target_class_names.map(&:constantize).select do |constant|
+          target_classes.select do |constant|
             constant.ancestors.include?(::Neo4j::ActiveNode)
           end
         end
@@ -91,17 +92,11 @@ module Neo4j
         def target_class
           return @target_class if @target_class
 
-          if target_class_names && target_class_names.size == 1
-            class_const = target_class_names[0].constantize
+          return if !(target_class_names && target_class_names.size == 1)
 
-            if !class_const.included_modules.include?(Neo4j::ActiveNode)
-              fail ArgumentError, "Invalid argument to `#{name}` association: `#{class_const.inspect}` is not an ActiveNode model"
-            end
+          class_const = ClassArguments.constantize_argument(target_class_names[0])
 
-            @target_class = class_const
-          end
-        rescue NameError
-          raise ArgumentError, "Invalid argument to `#{name}` association: Could not find class `#{target_class_names[0]}`"
+          @target_class = class_const
         end
 
         def callback(type)
@@ -215,17 +210,26 @@ module Neo4j
         VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique]
 
         def validate_association_options!(_association_name, options)
-          type_keys = (options.keys & [:type, :origin, :rel_class])
+          ClassArguments.validate_argument!(options[:model_class], 'model_class')
+          ClassArguments.validate_argument!(options[:rel_class], 'rel_class')
+
           message = case
-                    when type_keys.size > 1
-                      "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations"
-                    when type_keys.empty?
-                      "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified"
+                    when (message = type_keys_error_message(options.keys))
+                      message
                     when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
                       "Unknown option(s) specified: #{unknown_keys.join(', ')}"
                     end
 
           fail ArgumentError, message if message
+        end
+
+        def type_keys_error_message(keys)
+          type_keys = (keys & [:type, :origin, :rel_class])
+          if type_keys.size > 1
+            "Only one of 'type', 'origin', or 'rel_class' options are allowed for associations"
+          elsif type_keys.empty?
+            "The 'type' option must be specified( even if it is `nil`) or `origin`/`rel_class` must be specified"
+          end
         end
 
         def check_valid_type_and_dir(type, direction)

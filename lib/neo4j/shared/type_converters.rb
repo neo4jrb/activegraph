@@ -2,14 +2,25 @@ require 'date'
 require 'bigdecimal'
 require 'bigdecimal/util'
 require 'active_support/core_ext/big_decimal/conversions'
+require 'active_support/core_ext/string/conversions'
 
 module Neo4j::Shared
+  class Boolean; end
+
   module TypeConverters
+    CONVERTERS = {}
+
+    class Boolean; end
+
     class BaseConverter
       class << self
         def converted?(value)
           value.is_a?(db_type)
         end
+      end
+
+      def supports_array?
+        false
       end
     end
 
@@ -102,7 +113,7 @@ module Neo4j::Shared
         end
 
         def db_type
-          ActiveAttr::Typecasting::Boolean
+          Neo4j::Shared::Boolean
         end
 
         alias_method :convert_type, :db_type
@@ -139,7 +150,7 @@ module Neo4j::Shared
         end
 
         def to_ruby(value)
-          Time.at(value).utc.to_date
+          value.respond_to?(:to_date) ? value.to_date : Time.at(value).utc.to_date
         end
       end
     end
@@ -166,13 +177,15 @@ module Neo4j::Shared
           Time.utc(*args).to_i
         end
 
-        DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S %z'
         def to_ruby(value)
+          return value if value.is_a?(DateTime)
           t = case value
+              when Time
+                return value.to_datetime.utc
               when Integer
                 Time.at(value).utc
               when String
-                DateTime.strptime(value, DATETIME_FORMAT)
+                return value.to_datetime
               else
                 fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
               end
@@ -211,7 +224,6 @@ module Neo4j::Shared
         def to_ruby(value)
           Time.at(value).utc
         end
-        alias_method :call, :to_ruby
       end
     end
 
@@ -257,6 +269,55 @@ module Neo4j::Shared
       end
     end
 
+    class EnumConverter
+      def initialize(enum_keys)
+        @enum_keys = enum_keys
+      end
+
+      def converted?(value)
+        value.is_a?(db_type)
+      end
+
+      def supports_array?
+        true
+      end
+
+      def db_type
+        Integer
+      end
+
+      def convert_type
+        Symbol
+      end
+
+      def to_ruby(value)
+        @enum_keys.key(value) unless value.nil?
+      end
+
+      alias_method :call, :to_ruby
+
+      def to_db(value)
+        if value.is_a?(Array)
+          value.map(&method(:to_db))
+        else
+          @enum_keys[value.to_s.to_sym] || 0
+        end
+      end
+    end
+
+    class ObjectConverter < BaseConverter
+      class << self
+        def convert_type
+          Object
+        end
+
+        def to_ruby(value)
+          value
+        end
+      end
+    end
+
+
     # Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
     # @param [Neo4j::Shared::Property] obj A node or rel that mixes in the Property module
     # @param [Symbol] medium Indicates the type of conversion to perform.
@@ -277,11 +338,24 @@ module Neo4j::Shared
       converted_property(primitive_type(key.to_sym), value, direction)
     end
 
+    def supports_array?(key)
+      type = primitive_type(key.to_sym)
+      type.respond_to?(:supports_array?) && type.supports_array?
+    end
+
+    def typecaster_for(value)
+      Neo4j::Shared::TypeConverters.typecaster_for(value)
+    end
+
+    def typecast_attribute(typecaster, value)
+      Neo4j::Shared::TypeConverters.typecast_attribute(typecaster, value)
+    end
+
     private
 
-    def converted_property(type, value, converter)
+    def converted_property(type, value, direction)
       return nil if value.nil?
-      TypeConverters.converters[type].nil? ? value : TypeConverters.to_other(converter, value, type)
+      type.respond_to?(:db_type) || TypeConverters::CONVERTERS[type] ? TypeConverters.to_other(direction, value, type) : value
     end
 
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
@@ -302,29 +376,35 @@ module Neo4j::Shared
     end
 
     class << self
-      attr_reader :converters
-
       def included(_)
-        return if @converters
-        @converters = {}
         Neo4j::Shared::TypeConverters.constants.each do |constant_name|
           constant = Neo4j::Shared::TypeConverters.const_get(constant_name)
           register_converter(constant) if constant.respond_to?(:convert_type)
         end
       end
 
+      def typecast_attribute(typecaster, value)
+        fail ArgumentError, "A typecaster must be given, #{typecaster} is invalid" unless typecaster.respond_to?(:to_ruby)
+        return value if value.nil?
+        typecaster.to_ruby(value)
+      end
+
       def typecaster_for(primitive_type)
         return nil if primitive_type.nil?
-        converters.key?(primitive_type) ? converters[primitive_type] : nil
+        CONVERTERS[primitive_type]
       end
 
       # @param [Symbol] direction either :to_ruby or :to_other
       def to_other(direction, value, type)
         fail "Unknown direction given: #{direction}" unless direction == :to_ruby || direction == :to_db
-        found_converter = converters[type]
+        found_converter = converter_for(type)
         return value unless found_converter
         return value if direction == :to_db && formatted_for_db?(found_converter, value)
         found_converter.send(direction, value)
+      end
+
+      def converter_for(type)
+        type.respond_to?(:db_type) ? type : CONVERTERS[type]
       end
 
       # Attempts to determine whether conversion should be skipped because the object is already of the anticipated output type.
@@ -332,15 +412,11 @@ module Neo4j::Shared
       # @param value The value for conversion.
       def formatted_for_db?(found_converter, value)
         return false unless found_converter.respond_to?(:db_type)
-        if found_converter.respond_to?(:converted)
-          found_converter.converted?(value)
-        else
-          value.is_a?(found_converter.db_type)
-        end
+        found_converter.respond_to?(:converted) ? found_converter.converted?(value) : value.is_a?(found_converter.db_type)
       end
 
       def register_converter(converter)
-        converters[converter.convert_type] = converter
+        CONVERTERS[converter.convert_type] = converter
       end
     end
   end

@@ -20,7 +20,7 @@ describe Neo4j::ActiveNode::Persistence do
   describe 'initialize' do
     it 'can take a hash of properties' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.props.should eq(name: 'kalle', age: 42)
+      expect(o.props).to eq(name: 'kalle', age: 42)
     end
 
     it 'raises an error when given a property which is not defined' do
@@ -32,27 +32,27 @@ describe Neo4j::ActiveNode::Persistence do
     let(:session) { double('Session') }
     before do
       @session = double('Mock Session')
-      Neo4j::Session.stub(:current).and_return(session)
+      allow(Neo4j::Session).to receive(:current).and_return(session)
     end
 
     # TODO: This should be an e2e test. This stubbing...
     it 'creates a new node if not persisted before' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.stub(:serialized_properties).and_return({})
+      allow(o).to receive(:serialized_properties).and_return({})
       allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
-      clazz.should_receive(:neo4j_session).and_return(session)
-      clazz.should_receive(:mapped_label_names).and_return(:MyClass)
-      node.should_receive(:props).and_return(name: 'kalle2', age: '43')
-      session.should_receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
-      clazz.any_instance.should_receive(:init_on_load).with(node, age: '43', name: 'kalle2')
+      expect(clazz).to receive(:neo4j_session).and_return(session)
+      expect(clazz).to receive(:mapped_label_names).and_return(:MyClass)
+      expect(node).to receive(:props).and_return(name: 'kalle2', age: '43')
+      expect(session).to receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
+      expect_any_instance_of(clazz).to receive(:init_on_load).with(node, age: '43', name: 'kalle2')
       allow(Object).to receive(:default_property_values).and_return({})
       o.save
     end
 
     it 'does not update persisted node if nothing changed' do
       o = clazz.new(name: 'kalle', age: '42')
-      o.stub(:_persisted_obj).and_return(node)
-      o.stub(:changed_attributes).and_return({})
+      allow(o).to receive(:_persisted_obj).and_return(node)
+      allow(o).to receive(:changed_attributes).and_return({})
       expect(node).not_to receive(:update_props).with(anything)
       o.save
     end
@@ -60,8 +60,8 @@ describe Neo4j::ActiveNode::Persistence do
     it 'updates node if already persisted before if an attribute was changed' do
       o = clazz.new
       o.name = 'sune'
-      o.stub(:serialized_properties).and_return({})
-      o.stub(:_persisted_obj).and_return(node)
+      allow(o).to receive(:serialized_properties).and_return({})
+      allow(o).to receive(:_persisted_obj).and_return(node)
       allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
 
       expect(node).to receive(:update_props).and_return(name: 'sune')
@@ -72,13 +72,13 @@ describe Neo4j::ActiveNode::Persistence do
   describe 'new_record?' do
     it 'is true if it does not wrap a persisted node' do
       o = clazz.new
-      o.new_record?.should eq(true)
+      expect(o.new_record?).to eq(true)
     end
 
     it 'is false if it does wrap a persisted node' do
-      clazz.any_instance.stub(:_persisted_obj).and_return(node)
+      allow_any_instance_of(clazz).to receive(:_persisted_obj).and_return(node)
       o = clazz.new
-      o.new_record?.should eq(false)
+      expect(o.new_record?).to eq(false)
     end
   end
 
@@ -86,13 +86,13 @@ describe Neo4j::ActiveNode::Persistence do
     it 'returns type casted attributes and undeclared attributes' do
       o = clazz.new
       o.age = '18'
-      o.age.should eq(18)
+      expect(o.age).to eq(18)
     end
 
     it 'does not return undefined properties' do
       o = clazz.new # name not defined
       o.age = '18'
-      o.props.should eq(age: 18)
+      expect(o.props).to eq(age: 18)
     end
   end
 

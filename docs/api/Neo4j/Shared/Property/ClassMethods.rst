@@ -29,6 +29,8 @@ ClassMethods
 
    
 
+   
+
 
 
 
@@ -44,7 +46,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/property.rb:125 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L125>`_
+  * `lib/neo4j/shared/property.rb:111 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/property.rb#L111>`_
 
 
 
@@ -52,24 +54,6 @@ Files
 
 Methods
 -------
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#attribute!`:
-
-**#attribute!**
-  
-
-  .. code-block:: ruby
-
-     def attribute!(name, options = {})
-       super(name, options)
-       define_method("#{name}=") do |value|
-         typecast_value = typecast_attribute(_attribute_typecaster(name), value)
-         send("#{name}_will_change!") unless typecast_value == read_attribute(name)
-         super(value)
-       end
-     end
 
 
 
@@ -94,11 +78,12 @@ Methods
   .. code-block:: ruby
 
      def build_property(name, options)
-       prop = DeclaredProperty.new(name, options)
-       prop.register
-       declared_properties.register(prop)
-       yield prop
-       constraint_or_index(name, options)
+       DeclaredProperty.new(name, options).tap do |prop|
+         prop.register
+         declared_properties.register(prop)
+         yield name
+         constraint_or_index(name, options)
+       end
      end
 
 
@@ -116,6 +101,19 @@ Methods
 
 
 
+.. _`Neo4j/Shared/Property/ClassMethods#extract_association_attributes!`:
+
+**#extract_association_attributes!**
+  
+
+  .. code-block:: ruby
+
+     def extract_association_attributes!(props)
+       props
+     end
+
+
+
 .. _`Neo4j/Shared/Property/ClassMethods#inherit_property`:
 
 **#inherit_property**
@@ -123,26 +121,10 @@ Methods
 
   .. code-block:: ruby
 
-     def inherit_property(name, active_attr, options = {})
-       build_property(name, options) do |prop|
-         attributes[prop.name.to_s] = active_attr
+     def inherit_property(name, attr_def, options = {})
+       build_property(name, options) do |prop_name|
+         attributes[prop_name] = attr_def
        end
-     end
-
-
-
-.. _`Neo4j/Shared/Property/ClassMethods#inherited`:
-
-**#inherited**
-  
-
-  .. code-block:: ruby
-
-     def inherited(other)
-       self.declared_properties.registered_properties.each_pair do |prop_key, prop_def|
-         other.property(prop_key, prop_def.options)
-       end
-       super
      end
 
 
@@ -159,7 +141,7 @@ Methods
 
      def property(name, options = {})
        build_property(name, options) do |prop|
-         attribute(name, prop.options)
+         attribute(prop)
        end
      end
 
@@ -173,9 +155,9 @@ Methods
   .. code-block:: ruby
 
      def undef_property(name)
+       undef_constraint_or_index(name)
        declared_properties.unregister(name)
        attribute_methods(name).each { |method| undef_method(method) }
-       undef_constraint_or_index(name)
      end
 
 

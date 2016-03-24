@@ -11,11 +11,11 @@ describe 'ActiveModel::Lint' do
   #      # <tt>dom_id</tt> to generate unique ids for the object.
   describe 'to_key' do
     subject { model }
-    it { should respond_to(:to_key) }
+    it { is_expected.to respond_to(:to_key) }
 
     # "to_key should return nil when `persisted?` returns false"
     describe 'when persisted? returns false' do
-      its(:to_key) { should be_nil }
+      its(:to_key) { is_expected.to be_nil }
     end
   end
 
@@ -32,13 +32,13 @@ describe 'ActiveModel::Lint' do
   #      # should always return +nil+.
   describe 'to_param' do
     subject { model }
-    its(:to_param) { should be_nil }
+    its(:to_param) { is_expected.to be_nil }
   end
 
   describe 'to_partial_path' do
     subject { model }
-    it { should respond_to(:to_partial_path) }
-    its(:to_partial_path) { should be_kind_of(String) }
+    it { is_expected.to respond_to(:to_partial_path) }
+    its(:to_partial_path) { is_expected.to be_kind_of(String) }
   end
 
   #      # == Responds to <tt>to_partial_path</tt>
@@ -51,8 +51,8 @@ describe 'ActiveModel::Lint' do
   #      end
   describe 'to_partial_path' do
     subject { model }
-    it { should respond_to(:to_partial_path) }
-    its(:to_partial_path) { should be_kind_of(String) }
+    it { is_expected.to respond_to(:to_partial_path) }
+    its(:to_partial_path) { is_expected.to be_kind_of(String) }
   end
 
   #      # == \Errors Testing
@@ -67,21 +67,21 @@ describe 'ActiveModel::Lint' do
   #      end
   describe 'errors' do
     subject { model }
-    it { should respond_to(:errors) }
-    its(:errors) { should be_kind_of(ActiveModel::Errors) }
+    it { is_expected.to respond_to(:errors) }
+    its(:errors) { is_expected.to be_kind_of(ActiveModel::Errors) }
   end
 
   #      # Model.model_name must return a string with some convenience methods:
   #      # <tt>:human</tt>, <tt>:singular</tt> and <tt>:plural</tt>. Check
   #      # ActiveModel::Naming for more information.
-  it { clazz.should respond_to(:model_name) }
+  it { expect(clazz).to respond_to(:model_name) }
 
   describe 'model_name' do
     subject { clazz.model_name }
-    it { subject.should respond_to(:to_str) }
-    it { subject.human.should respond_to(:to_str) }
-    it { subject.singular.should respond_to(:to_str) }
-    it { subject.plural.should respond_to(:to_str) }
+    it { expect(subject).to respond_to(:to_str) }
+    it { expect(subject.human).to respond_to(:to_str) }
+    it { expect(subject.singular).to respond_to(:to_str) }
+    it { expect(subject.plural).to respond_to(:to_str) }
   end
 end
 

@@ -34,7 +34,7 @@ describe Neo4j::ActiveNode::Labels do
       end
 
       it 'should have labels for baseclass' do
-        MySubClass.mapped_label_names.should =~ ([:MyBaseClass, :MySubClass])
+        expect(MySubClass.mapped_label_names).to match_array([:MyBaseClass, :MySubClass])
       end
 
       # TODO: REVIEW THIS. I do not think its claim has been true since early v3.
@@ -42,8 +42,8 @@ describe Neo4j::ActiveNode::Labels do
         base_label = double(:label_base, indexes: {property_keys: []})
         sub_label = double(:label_sub, indexes: {property_keys: []})
         # base_label.should_receive(:create_index).with(:things, {}).and_return(:something1)
-        sub_label.should_receive(:create_index).with(:things, {}).and_return(:something2)
-        Neo4j::Label.stub(:create) do |label|
+        expect(sub_label).to receive(:create_index).with(:things, {}).and_return(:something2)
+        allow(Neo4j::Label).to receive(:create) do |label|
           {MyBaseClass: base_label, MySubClass: sub_label}[label]
         end
         MySubClass.index :things
@@ -52,8 +52,8 @@ describe Neo4j::ActiveNode::Labels do
       # TODO: REVIEW THIS. I do not think its claim has been true since early v3.
       it 'an index in base class will not exist in sub class' do
         base_label = double(:label_base, indexes: {property_keys: []})
-        base_label.should_receive(:create_index).with(:things, {}).and_return(:something1)
-        Neo4j::Label.stub(:create) do |label|
+        expect(base_label).to receive(:create_index).with(:things, {}).and_return(:something1)
+        allow(Neo4j::Label).to receive(:create) do |label|
           {MyBaseClass: base_label}[label]
         end
         MyBaseClass.index :things
@@ -68,7 +68,7 @@ describe Neo4j::ActiveNode::Labels do
             'MyClass'
           end
         end
-        clazz.mapped_label_name.should eq(:MyClass)
+        expect(clazz.mapped_label_name).to eq(:MyClass)
       end
     end
 
@@ -76,7 +76,7 @@ describe Neo4j::ActiveNode::Labels do
       it 'sets the label name and overrides the class name' do
         clazz = Class.new { extend Neo4j::ActiveNode::Labels::ClassMethods }
         clazz.send(:mapped_label_name=, 'foo')
-        clazz.mapped_label_name.should eq(:foo)
+        expect(clazz.mapped_label_name).to eq(:foo)
       end
     end
 
@@ -89,8 +89,8 @@ describe Neo4j::ActiveNode::Labels do
           end
         end
 
-        Neo4j::Label.should_receive(:create).with(:MyClass).and_return('foo')
-        clazz.send(:mapped_label).should eq('foo')
+        expect(Neo4j::Label).to receive(:create).with(:MyClass).and_return('foo')
+        expect(clazz.send(:mapped_label)).to eq('foo')
       end
     end
 
@@ -102,7 +102,7 @@ describe Neo4j::ActiveNode::Labels do
             'mylabel'
           end
         end
-        clazz.mapped_label_names.should eq([:mylabel])
+        expect(clazz.mapped_label_names).to eq([:mylabel])
       end
 
       it 'returns all labels for inherited ancestors which have a label method' do
@@ -129,8 +129,8 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         # notice the order is important since it will try to load and map in that order
-        middle_class.mapped_label_names.should eq([:middle, :base])
-        top_class.mapped_label_names.should eq([:top, :middle, :base])
+        expect(middle_class.mapped_label_names).to eq([:middle, :base])
+        expect(top_class.mapped_label_names).to eq([:top, :middle, :base])
       end
 
       it 'returns all labels for included modules which have a label class method' do
@@ -156,7 +156,7 @@ describe Neo4j::ActiveNode::Labels do
           end
         end
 
-        clazz.mapped_label_names.should =~ [:module, :module1, :module2]
+        expect(clazz.mapped_label_names).to match_array([:module, :module1, :module2])
       end
     end
   end

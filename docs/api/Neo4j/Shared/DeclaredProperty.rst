@@ -49,6 +49,18 @@ Contains methods related to the management
 
    
 
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
    DeclaredProperty/Index
 
 
@@ -81,6 +93,34 @@ Methods
 
 
 
+.. _`Neo4j/Shared/DeclaredProperty#<=>`:
+
+**#<=>**
+  Compare attribute definitions
+
+  .. code-block:: ruby
+
+     def <=>(other)
+       return nil unless other.instance_of? self.class
+       return nil if name == other.name && options != other.options
+       self.to_s <=> other.to_s
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperty#[]`:
+
+**#[]**
+  
+
+  .. code-block:: ruby
+
+     def [](key)
+       respond_to?(key) ? public_send(key) : nil
+     end
+
+
+
 .. _`Neo4j/Shared/DeclaredProperty#constraint!`:
 
 **#constraint!**
@@ -104,6 +144,19 @@ Methods
 
      def constraint?(type = :unique)
        options.key?(:constraint) && options[:constraint] == type
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperty#default`:
+
+**#default**
+  
+
+  .. code-block:: ruby
+
+     def default_value
+       options[:default]
      end
 
 
@@ -187,10 +240,26 @@ Methods
 
      def initialize(name, options = {})
        fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
-       @name = @name_sym = name
+       fail TypeError, "can't convert #{name.class} into Symbol" unless name.respond_to?(:to_sym)
+       @name = @name_sym = name.to_sym
        @name_string = name.to_s
        @options = options
        fail_invalid_options!
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperty#inspect`:
+
+**#inspect**
+  
+
+  .. code-block:: ruby
+
+     def inspect
+       options_description = options.map { |key, value| "#{key.inspect} => #{value.inspect}" }.sort.join(', ')
+       inspected_options = ", #{options_description}" unless options_description.empty?
+       "attribute :#{name}#{inspected_options}"
      end
 
 
@@ -269,6 +338,32 @@ Methods
 
      def register
        register_magic_properties
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperty#to_s`:
+
+**#to_s**
+  
+
+  .. code-block:: ruby
+
+     def to_s
+       name.to_s
+     end
+
+
+
+.. _`Neo4j/Shared/DeclaredProperty#to_sym`:
+
+**#to_sym**
+  
+
+  .. code-block:: ruby
+
+     def to_sym
+       name
      end
 
 

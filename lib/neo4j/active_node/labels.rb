@@ -20,8 +20,7 @@ module Neo4j
         Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels._wrapped_classes.include?(model)
       end
 
-      class InvalidQueryError < StandardError; end
-      class RecordNotFound < StandardError; end
+      class RecordNotFound < Neo4j::RecordNotFound; end
 
       # @return the labels
       # @see Neo4j-core
@@ -78,17 +77,18 @@ module Neo4j
       module ClassMethods
         include Neo4j::ActiveNode::QueryMethods
 
+        delegate :update_all, to: :all
+
         # Returns the object with the specified neo4j id.
         # @param [String,Integer] id of node to find
         def find(id)
           map_id = proc { |object| object.respond_to?(:id) ? object.send(:id) : object }
 
-          result = if id.is_a?(Array)
-                     find_by_ids(id.map { |o| map_id.call(o) })
-                   else
-                     find_by_id(map_id.call(id))
-                   end
-          fail Neo4j::RecordNotFound if result.blank?
+          result = find_by_id_or_ids(map_id, id)
+
+          fail RecordNotFound.new(
+            "Couldn't find #{name} with '#{id_property_name}'=#{id}",
+            name, id_property_name, id) if result.blank?
           result.tap { |r| find_callbacks!(r) }
         end
 
@@ -161,6 +161,14 @@ module Neo4j
         # rubocop:enable Style/AccessorMethodName
 
         private
+
+        def find_by_id_or_ids(map_id, id)
+          if id.is_a?(Array)
+            find_by_ids(id.map(&map_id))
+          else
+            find_by_id(map_id.call(id))
+          end
+        end
 
         def find_callbacks!(result)
           case result

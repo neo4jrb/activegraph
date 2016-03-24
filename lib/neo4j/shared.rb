@@ -32,6 +32,13 @@ module Neo4j
       def self.i18n_scope
         :neo4j
       end
+
+      def self.inherited(other)
+        attributes.each_pair do |k, v|
+          other.inherit_property k.to_sym, v.clone, declared_properties[k].options
+        end
+        super
+      end
     end
 
     def declared_properties

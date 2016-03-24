@@ -7,8 +7,30 @@ ClassMethods
 
 
 .. toctree::
-:maxdepth: 3
-     :titlesonly:
+   :maxdepth: 3
+   :titlesonly:
+
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+
+
 
 Constants
 ---------
@@ -22,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/persistence.rb:95 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L95>`_
+  * `lib/neo4j/active_node/persistence.rb:102 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L102>`_
 
 
 
@@ -63,7 +85,7 @@ Methods
      def create!(*args)
        props = args[0] || {}
        association_props = extract_association_attributes!(props) || {}
-
+     
        new(*args).tap do |o|
          yield o if block_given?
          o.save!
@@ -78,12 +100,13 @@ Methods
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#find_or_create`:
 
 **#find_or_create**
-
+  
 
   .. code-block:: ruby
 
      def find_or_create(find_attributes, set_attributes = {})
        on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
+     
        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
          .on_create_set(n: on_create_attributes)
          .pluck(:n).first
@@ -120,7 +143,7 @@ Methods
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#load_entity`:
 
 **#load_entity**
-
+  
 
   .. code-block:: ruby
 
@@ -133,14 +156,21 @@ Methods
 .. _`Neo4j/ActiveNode/Persistence/ClassMethods#merge`:
 
 **#merge**
-
+  
 
   .. code-block:: ruby
 
-     def merge(attributes)
-       neo4j_session.query.merge(n: {self.mapped_label_names => attributes})
-         .on_create_set(n: on_create_props(attributes))
-         .on_match_set(n: on_match_props)
+     def merge(match_attributes, optional_attrs = {})
+       options = [:on_create, :on_match, :set]
+       optional_attrs.assert_valid_keys(*options)
+     
+       optional_attrs.default = {}
+       on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
+     
+       neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
+         .on_create_set(n: on_create_props(on_create_attrs))
+         .on_match_set(n: on_match_props(on_match_attrs))
+         .break.set(n: set_attrs)
          .pluck(:n).first
      end
 
