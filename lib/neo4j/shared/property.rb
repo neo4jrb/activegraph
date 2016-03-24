@@ -113,7 +113,7 @@ module Neo4j::Shared
 
       def_delegators :declared_properties, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
 
-      VALID_PROPERTY_OPTIONS = %i(type default index constraint serializer typecaster)
+      VALID_PROPERTY_OPTIONS = %w(type default index constraint serializer typecaster).map(&:to_sym)
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
