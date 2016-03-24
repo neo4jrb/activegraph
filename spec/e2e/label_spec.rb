@@ -116,6 +116,9 @@ describe 'Neo4j::ActiveNode' do
   end
 
   describe 'index' do
+    let_config(:id_property) { nil }
+    let_config(:id_property_type) { nil }
+    let_config(:id_property_type_value) { nil }
     let(:clazz) do
       UniqueClass.create do
         include Neo4j::ActiveNode

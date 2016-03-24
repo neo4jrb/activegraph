@@ -69,7 +69,7 @@ module Neo4j
         # @return [Boolean]
         def include?(other, target = nil)
           query_with_target(target) do |var|
-            where_filter = if other.respond_to?(:neo_id)
+            where_filter = if other.respond_to?(:neo_id) || association_id_key == :neo_id
                              "ID(#{var}) = {other_node_id}"
                            else
                              "#{var}.#{association_id_key} = {other_node_id}"

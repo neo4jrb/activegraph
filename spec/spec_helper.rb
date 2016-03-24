@@ -199,6 +199,10 @@ module ActiveNodeRelStubHelpers
       module_eval(&block) if block
     end
   end
+
+  def primary_key(o)
+    o.send o.class.primary_key
+  end
 end
 
 # Introduces `let_context` helper method
@@ -235,6 +239,7 @@ RSpec.configure do |c|
   c.include Neo4jSpecHelpers
 
   c.before(:all) do
+    Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session
   end

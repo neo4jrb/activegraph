@@ -773,7 +773,7 @@ describe 'Neo4j::ActiveNode' do
       it 'should use uuid' do
         expect(activenode_class.where(id: object).first).to eq(object)
         expect(activenode_class.where(id: object.id).first).to eq(object)
-        expect(activenode_class.where(id: object.uuid).first).to eq(object)
+        expect(activenode_class.where(id: primary_key(object)).first).to eq(object)
       end
 
       context 'different id_property is specified' do
@@ -795,7 +795,7 @@ describe 'Neo4j::ActiveNode' do
       it 'should use uuid' do
         expect(activenode_class.find_by(id: object)).to eq(object)
         expect(activenode_class.find_by(id: object.id)).to eq(object)
-        expect(activenode_class.find_by(id: object.uuid)).to eq(object)
+        expect(activenode_class.find_by(id: primary_key(object))).to eq(object)
       end
 
       context 'different id_property is specified' do

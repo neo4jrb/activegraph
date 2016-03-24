@@ -10,7 +10,7 @@ describe Neo4j::ActiveNode::Initialize do
     let(:keys) { first_node.instance_variable_get(:@attributes).keys }
 
     it 'sets @attributes with the expected properties' do
-      expect(keys).to eq(%w(name uuid))
+      expect(keys).to eq(['name', (MyModel.primary_key.to_s unless MyModel.primary_key == :neo_id )].compact)
     end
   end
 end

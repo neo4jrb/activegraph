@@ -65,7 +65,7 @@ describe Neo4j::ActiveNode do
     it '(type: :video) finds elements by enum key' do
       file1 = StoredFile.create!(type: :unknown)
       file2 = StoredFile.create!(type: :video)
-      ids = StoredFile.where(type: :video).pluck(:uuid)
+      ids = StoredFile.where(type: :video).pluck(StoredFile.primary_key)
       expect(ids).not_to include(file1.id)
       expect(ids).to include(file2.id)
     end
@@ -74,7 +74,7 @@ describe Neo4j::ActiveNode do
       file1 = StoredFile.create!(type: :unknown)
       file2 = StoredFile.create!(type: :video)
       file3 = StoredFile.create!(type: :image)
-      ids = StoredFile.where(type: [:unknown, :video]).pluck(:uuid)
+      ids = StoredFile.where(type: [:unknown, :video]).pluck(StoredFile.primary_key)
       expect(ids).to include(file1.id)
       expect(ids).to include(file2.id)
       expect(ids).to_not include(file3.id)
@@ -88,7 +88,7 @@ describe Neo4j::ActiveNode do
       file2 = StoredFile.create!
       UploaderRel.create!(from_node: user, to_node: file, origin: :web)
       UploaderRel.create!(from_node: user, to_node: file2, origin: :disk)
-      expect(user.files(:f).rel_where(origin: :web).pluck(:uuid)).to contain_exactly(file.id)
+      expect(user.files(:f).rel_where(origin: :web).pluck(StoredFile.primary_key)).to contain_exactly(file.id)
     end
   end
 
