@@ -81,19 +81,17 @@ describe Neo4j::ActiveNode::IdProperty do
       before do
         before_session do
           Neo4j::Config[:id_property] = :neo_id
-          stub_const('Clazz', Class.new do
-            include Neo4j::ActiveNode
-          end)
+          stub_active_node_class('NeoIdTest')
         end
       end
 
       it 'it will find node by neo_id' do
-        node = Clazz.new
+        node = NeoIdTest.new
         expect(node).to respond_to(:id)
         expect(node).to respond_to(:neo_id)
         node.save
         expect(node.id).to eq(node.neo_id)
-        expect(Clazz.where(id: node).first).to eq(node)
+        expect(NeoIdTest.where(id: node).first).to eq(node)
       end
     end
   end
@@ -176,6 +174,14 @@ describe Neo4j::ActiveNode::IdProperty do
         node1 = Clazz.create
         found = Clazz.find_by_neo_id(node1.neo_id)
         expect(found).to eq node1
+      end
+    end
+
+    describe 'order' do
+      it 'should order by myid' do
+        nodes = 3.times.map { |i| Clazz.create myid: i }
+
+        expect(Clazz.order(id: :desc).to_a).to eq(nodes.reverse)
       end
     end
   end
@@ -362,32 +368,32 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :neo_id' do
     before do
-      Neo4j::Session.current.close if Neo4j::Session.current
-      stub_const('Clazz', UniqueClass.create do
-        include Neo4j::ActiveNode
-        id_property :neo_id
-      end)
-      create_session
+      before_session do
+        stub_const('NeoIdTest', UniqueClass.create do
+          include Neo4j::ActiveNode
+          id_property :neo_id
+        end)
+      end
     end
 
     it 'has an index' do
-      expect(Clazz.mapped_label.indexes[:property_keys]).to be_empty
+      expect(NeoIdTest.mapped_label.indexes[:property_keys]).to be_empty
     end
 
     describe 'property id' do
       it 'is not defined when before save ' do
-        node = Clazz.new
+        node = NeoIdTest.new
         expect(node.id).to be_nil
       end
 
       it 'is is set when saving ' do
-        node = Clazz.new
+        node = NeoIdTest.new
         node.save
         expect(node.id).to be_present
       end
 
       it 'is same as neo_id' do
-        node = Clazz.new
+        node = NeoIdTest.new
         expect(node.id).to be_nil
         node.save
         expect(node.id).to eq(node.neo_id)
@@ -396,68 +402,75 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        Clazz.create
-        node = Clazz.create
-        Clazz.create
+        NeoIdTest.create
+        node = NeoIdTest.create
+        NeoIdTest.create
 
-        found = Clazz.find_by_id(node.id)
+        found = NeoIdTest.find_by_id(node.id)
         expect(found).to eq(node)
       end
 
       it 'does not find it if it does not exist' do
-        Clazz.create
+        NeoIdTest.create
 
-        found = Clazz.find_by_id('something else')
+        found = NeoIdTest.find_by_id('something else')
         expect(found).to be_nil
       end
     end
 
     describe 'find_by_ids' do
       it 'finds them if they exist' do
-        Clazz.create
-        nodes = 3.times.map { Clazz.create }
-        Clazz.create
+        NeoIdTest.create
+        nodes = 3.times.map { NeoIdTest.create }
+        NeoIdTest.create
 
-        expect(Clazz.find_by_ids(nodes.map(&:id))).to eq(nodes)
+        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to eq(nodes)
       end
 
       it 'does not find it if it does not exist' do
-        Clazz.create
+        NeoIdTest.create
 
-        found = Clazz.find_by_ids(['something else'])
+        found = NeoIdTest.find_by_ids(['something else'])
         expect(found).to be_empty
       end
     end
 
     describe 'where' do
       it 'should use neo_id' do
-        Clazz.create
-        node = Clazz.create
-        Clazz.create
+        NeoIdTest.create
+        node = NeoIdTest.create
+        NeoIdTest.create
 
-        found = Clazz.where(id: node.id).first
+        found = NeoIdTest.where(id: node.id).first
         expect(found).to eq(node)
       end
 
       it 'should find if id is a string' do
-        node = Clazz.create
-        expect(Clazz.where(id: node.id.to_s).first).to eq(node)
+        node = NeoIdTest.create
+        expect(NeoIdTest.where(id: node.id.to_s).first).to eq(node)
       end
 
       it 'should find with array' do
-        Clazz.create
-        nodes = 3.times.map { Clazz.create }
-        Clazz.create
+        NeoIdTest.create
+        nodes = 3.times.map { NeoIdTest.create }
+        NeoIdTest.create
 
-        expect(Clazz.where(id: nodes)).to eq(nodes)
+        expect(NeoIdTest.where(id: nodes)).to eq(nodes)
       end
     end
 
     describe 'where_not' do
       it 'should find complement' do
-        node = Clazz.create
-        excluded = Clazz.create
-        expect(Clazz.where_not(id: excluded)).to eq([node])
+        node = NeoIdTest.create
+        excluded = NeoIdTest.create
+        expect(NeoIdTest.where_not(id: excluded)).to eq([node])
+      end
+    end
+
+    describe "order" do
+      it 'should order by neo_id' do
+        nodes = 3.times.map { NeoIdTest.create }
+        expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
       end
     end
   end
