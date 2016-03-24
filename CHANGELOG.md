@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] Unreleased
+
+### Changed
+
+- Invalid options to the `property` method now raise an exception (see #1169)
+
 ## [7.0.1] - 03-22-2016
 
 ### Fixed
