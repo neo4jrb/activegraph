@@ -411,9 +411,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
 
       it 'does not find it if it does not exist' do
-        NeoIdTest.create
-
-        found = NeoIdTest.find_by_id('something else')
+        found = NeoIdTest.find_by_id(NeoIdTest.create.id + 1)
         expect(found).to be_nil
       end
     end
@@ -428,9 +426,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
 
       it 'does not find it if it does not exist' do
-        NeoIdTest.create
-
-        found = NeoIdTest.find_by_ids(['something else'])
+        found = NeoIdTest.find_by_ids([NeoIdTest.create.id + 1])
         expect(found).to be_empty
       end
     end
