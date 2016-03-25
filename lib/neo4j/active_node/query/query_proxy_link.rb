@@ -107,7 +107,7 @@ module Neo4j
             end
 
             def converted_keys(model, arg)
-              arg.is_a?(Hash) ? arg.map { |key, value| [converted_key(model, key), value]}.to_h : arg
+              arg.is_a?(Hash) ? Hash[arg.map { |key, value| [converted_key(model, key), value] }] : arg
             end
 
             def converted_key(model, key)

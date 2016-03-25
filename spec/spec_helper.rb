@@ -200,8 +200,8 @@ module ActiveNodeRelStubHelpers
     end
   end
 
-  def primary_key(o)
-    o.send o.class.primary_key
+  def id_property_value(o)
+    o.send o.class.id_property_name
   end
 end
 

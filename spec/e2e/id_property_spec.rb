@@ -467,7 +467,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
-    describe "order" do
+    describe 'order' do
       it 'should order by neo_id' do
         nodes = 3.times.map { NeoIdTest.create }
         expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)

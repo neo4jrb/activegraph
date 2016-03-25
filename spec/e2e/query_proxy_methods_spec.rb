@@ -118,7 +118,7 @@ describe 'query_proxy_methods' do
       expect(jimmy.lessons.include?(science.id)).to be_falsey
       jimmy.lessons << science
       expect(jimmy.lessons.include?(science.id)).to be_truthy
-      expect(jimmy.lessons.include?(primary_key(science))).to be_truthy
+      expect(jimmy.lessons.include?(id_property_value(science))).to be_truthy
       expect(jimmy.lessons.include?(science)).to be_truthy
     end
 

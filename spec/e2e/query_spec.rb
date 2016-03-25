@@ -303,7 +303,7 @@ describe 'Query API' do
 
         it 'sets the id property method' do
           teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
-          expect(primary_key(teacher)).not_to be nil
+          expect(teacher.id).not_to be nil
         end
 
         context 'custom id property method' do

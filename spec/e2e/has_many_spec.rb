@@ -282,14 +282,14 @@ describe 'has_many' do
     let!(:person) { Person.create }
 
     before(:each) do
-      Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {Comment.primary_key => comments.map(&:id)})
+      Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
         .create('post<-[:comments_on]-comment').exec
 
-      Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {Person.primary_key => person.id})
+      Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {Person.id_property_name => person.id})
         .create('post<-[:comments_on]-person').exec
     end
 
-    subject { post.comments.pluck(Comment.primary_key).sort }
+    subject { post.comments.pluck(Comment.id_property_name).sort }
     context 'model_class: nil' do
       let(:model_class) { nil }
       # Should assume 'Comment' as the model from the association name
