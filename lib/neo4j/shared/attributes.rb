@@ -61,20 +61,16 @@ module Neo4j::Shared
     #
     # @raise [UnknownAttributeError] if the attribute is unknown
     def write_attribute(name, value)
-      if respond_to? "#{name}="
-        send "#{name}=", value
-      else
-        fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
-      end
+      fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}" if !respond_to? "#{name}="
+
+      send "#{name}=", value
     end
     alias_method :[]=, :write_attribute
 
     def query_attribute(name)
-      if respond_to? "#{name}?"
-        send "#{name}?"
-      else
-        fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
-      end
+      fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}" if !respond_to? "#{name}?"
+
+      send "#{name}?"
     end
 
     private
@@ -126,11 +122,9 @@ module Neo4j::Shared
       #
       # @return [AttributeDefinition] Attribute's definition
       def attribute(name)
-        if dangerous_attribute?(name)
-          fail Neo4j::DangerousAttributeError, %(an attribute method named "#{name}" would conflict with an existing method)
-        else
-          attribute!(name)
-        end
+        fail Neo4j::DangerousAttributeError, %(an attribute method named "#{name}" would conflict with an existing method) if dangerous_attribute?(name)
+
+        attribute!(name)
       end
 
       # Returns an Array of attribute names as Strings
