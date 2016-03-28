@@ -116,7 +116,7 @@ module Neo4j::Shared
       !_persisted_obj
     end
 
-    alias_method :new?, :new_record?
+    alias new? new_record?
 
     def destroy
       freeze
@@ -170,14 +170,14 @@ module Neo4j::Shared
       self.attributes = process_attributes(attributes)
       save
     end
-    alias_method :update_attributes, :update
+    alias update_attributes update
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
     def update!(attributes)
       self.attributes = process_attributes(attributes)
       save!
     end
-    alias_method :update_attributes!, :update!
+    alias update_attributes! update!
 
     def cache_key
       if self.new_record?

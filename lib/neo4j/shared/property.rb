@@ -37,7 +37,7 @@ module Neo4j::Shared
     def read_attribute(name)
       respond_to?(name) ? send(name) : nil
     end
-    alias_method :[], :read_attribute
+    alias [] read_attribute
 
     def send_props(hash)
       return hash if hash.blank?

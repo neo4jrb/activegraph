@@ -38,7 +38,7 @@ module Neo4j::Shared
           value.to_i
         end
 
-        alias_method :to_ruby, :to_db
+        alias to_ruby to_db
       end
     end
 
@@ -55,7 +55,7 @@ module Neo4j::Shared
         def to_db(value)
           value.to_f
         end
-        alias_method :to_ruby, :to_db
+        alias to_ruby to_db
       end
     end
 
@@ -79,7 +79,7 @@ module Neo4j::Shared
             BigDecimal.new(value.to_s)
           end
         end
-        alias_method :to_ruby, :to_db
+        alias to_ruby to_db
       end
     end
 
@@ -96,7 +96,7 @@ module Neo4j::Shared
         def to_db(value)
           value.to_s
         end
-        alias_method :to_ruby, :to_db
+        alias to_ruby to_db
       end
     end
 
@@ -116,7 +116,7 @@ module Neo4j::Shared
           Neo4j::Shared::Boolean
         end
 
-        alias_method :convert_type, :db_type
+        alias convert_type db_type
 
         def to_db(value)
           return false if FALSE_VALUES.include?(value)
@@ -130,7 +130,7 @@ module Neo4j::Shared
           end
         end
 
-        alias_method :to_ruby, :to_db
+        alias to_ruby to_db
       end
     end
 
@@ -294,7 +294,7 @@ module Neo4j::Shared
         @enum_keys.key(value) unless value.nil?
       end
 
-      alias_method :call, :to_ruby
+      alias call to_ruby
 
       def to_db(value)
         if value.is_a?(Array)

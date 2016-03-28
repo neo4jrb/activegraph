@@ -13,20 +13,20 @@ module Neo4j::ActiveRel
       end
     end
 
-    alias_method :start_node, :from_node
-    alias_method :end_node,   :to_node
+    alias start_node from_node
+    alias end_node to_node
 
     %w(start_node end_node).each do |direction|
       define_method("#{direction}_neo_id") { send(direction).neo_id if direction }
     end
-    alias_method :from_node_neo_id, :start_node_neo_id
-    alias_method :to_node_neo_id,   :end_node_neo_id
+    alias from_node_neo_id start_node_neo_id
+    alias to_node_neo_id end_node_neo_id
 
     # @return [String] a string representing the relationship type that will be created
     def type
       self.class.type
     end
-    alias_method :rel_type, :type
+    alias rel_type type
 
     def initialize(attributes = nil)
       super(attributes)
@@ -73,8 +73,8 @@ module Neo4j::ActiveRel
           (class_argument.is_a?(Array) && class_argument.all? { |c| [String, Symbol].include?(c.class) })
       end
 
-      alias_method :start_class,  :from_class
-      alias_method :end_class,    :to_class
+      alias start_class from_class
+      alias end_class to_class
 
       def load_entity(id)
         Neo4j::Node.load(id)

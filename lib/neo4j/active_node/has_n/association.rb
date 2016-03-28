@@ -151,7 +151,7 @@ module Neo4j
         def relationship_class?
           !!relationship_class
         end
-        alias_method :rel_class?, :relationship_class?
+        alias rel_class? relationship_class?
 
         private
 

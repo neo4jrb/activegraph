@@ -65,7 +65,7 @@ module Neo4j
         def identity
           @node_var || _result_string
         end
-        alias_method :node_identity, :identity
+        alias node_identity identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
         attr_reader :rel_var
@@ -144,10 +144,10 @@ module Neo4j
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
         end
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
-        alias_method :node_where, :where
-        alias_method :node_order, :order
-        alias_method :offset, :skip
-        alias_method :order_by, :order
+        alias node_where where
+        alias node_order order
+        alias offset skip
+        alias order_by order
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         delegate :to_cypher, to: :query

@@ -65,7 +65,7 @@ module Neo4j::Shared
 
       send "#{name}=", value
     end
-    alias_method :[]=, :write_attribute
+    alias []= write_attribute
 
     def query_attribute(name)
       fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}" if !respond_to? "#{name}?"
