@@ -29,24 +29,28 @@ class Neo4j::Node
     # Only load classes once for performance
     CONSTANTS_FOR_LABELS_CACHE = {}
 
-    def self.constant_for_label(label)
-      CONSTANTS_FOR_LABELS_CACHE[label] || CONSTANTS_FOR_LABELS_CACHE[label] = constantized_label(label)
-    end
+    class << self
+      private
 
-    def self.constantized_label(label)
-      "#{association_model_namespace}::#{label}".constantize
-    rescue NameError
-      nil
-    end
-
-    def self.populate_constants_for_labels_cache(model_class, labels)
-      labels.each do |label|
-        CONSTANTS_FOR_LABELS_CACHE[label] = model_class if CONSTANTS_FOR_LABELS_CACHE[label].nil?
+      def constant_for_label(label)
+        CONSTANTS_FOR_LABELS_CACHE[label] || CONSTANTS_FOR_LABELS_CACHE[label] = constantized_label(label)
       end
-    end
 
-    def self.association_model_namespace
-      Neo4j::Config.association_model_namespace_string
+      def constantized_label(label)
+        "#{association_model_namespace}::#{label}".constantize
+      rescue NameError
+        nil
+      end
+
+      def populate_constants_for_labels_cache(model_class, labels)
+        labels.each do |label|
+          CONSTANTS_FOR_LABELS_CACHE[label] = model_class if CONSTANTS_FOR_LABELS_CACHE[label].nil?
+        end
+      end
+
+      def association_model_namespace
+        Neo4j::Config.association_model_namespace_string
+      end
     end
   end
 end
