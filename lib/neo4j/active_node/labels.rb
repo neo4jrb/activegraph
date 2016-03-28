@@ -60,7 +60,7 @@ module Neo4j
         return MODELS_FOR_LABELS_CACHE[labels] if MODELS_FOR_LABELS_CACHE[labels]
 
         models = WRAPPED_CLASSES.select do |model|
-          (model.mapped_label_names - labels).size == 0
+          (model.mapped_label_names - labels).empty?
         end
 
         MODELS_FOR_LABELS_CACHE[labels] = models.max do |model|

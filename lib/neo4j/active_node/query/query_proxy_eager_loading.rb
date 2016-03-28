@@ -23,7 +23,7 @@ module Neo4j
             model.associations[association_name]
           end
 
-          if invalid_association_names.size > 0
+          if !invalid_association_names.empty?
             fail "Invalid associations: #{invalid_association_names.join(', ')}"
           end
 

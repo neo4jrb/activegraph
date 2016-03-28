@@ -67,13 +67,3 @@ Style/ParallelAssignment:
 Style/RedundantSelf:
   Enabled: false
 
-# Offense count: 6
-# Cop supports --auto-correct.
-Style/ZeroLengthPredicate:
-  Exclude:
-    - 'bin/neo4j-jars'
-    - 'lib/neo4j/active_node/has_n/association.rb'
-    - 'lib/neo4j/active_node/has_n/association_cypher_methods.rb'
-    - 'lib/neo4j/active_node/labels.rb'
-    - 'lib/neo4j/active_node/query/query_proxy_eager_loading.rb'
-    - 'lib/neo4j/shared/property.rb'

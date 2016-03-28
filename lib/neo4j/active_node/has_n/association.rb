@@ -216,7 +216,7 @@ module Neo4j
           message = case
                     when (message = type_keys_error_message(options.keys))
                       message
-                    when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
+                    when !(unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).empty?
                       "Unknown option(s) specified: #{unknown_keys.join(', ')}"
                     end
 
