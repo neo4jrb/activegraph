@@ -10,7 +10,7 @@ module Neo4j
               record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
             end
 
-            block.call(record)
+            yield(record)
           end
         end
 

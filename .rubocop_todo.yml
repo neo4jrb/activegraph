@@ -43,12 +43,6 @@ Metrics/ModuleLength:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Performance/RedundantBlockCall:
-  Exclude:
-    - 'lib/neo4j/active_node/query/query_proxy_eager_loading.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 # Configuration parameters: MaxKeyValuePairs.
 Performance/RedundantMerge:
   Exclude:
