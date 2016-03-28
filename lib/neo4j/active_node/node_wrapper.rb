@@ -30,8 +30,6 @@ class Neo4j::Node
     CONSTANTS_FOR_LABELS_CACHE = {}
 
     class << self
-      private
-
       def constant_for_label(label)
         CONSTANTS_FOR_LABELS_CACHE[label] || CONSTANTS_FOR_LABELS_CACHE[label] = constantized_label(label)
       end
