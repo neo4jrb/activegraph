@@ -43,13 +43,6 @@ Metrics/ModuleLength:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-# Configuration parameters: MaxKeyValuePairs.
-Performance/RedundantMerge:
-  Exclude:
-    - 'spec/unit/shared/attributes_spec.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Performance/TimesMap:
   Exclude:
     - 'lib/neo4j/migration.rb'
