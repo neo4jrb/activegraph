@@ -41,12 +41,6 @@ Metrics/MethodLength:
 Metrics/ModuleLength:
   Max: 161
 
-# Offense count: 1
-# Cop supports --auto-correct.
-Performance/TimesMap:
-  Exclude:
-    - 'lib/neo4j/migration.rb'
-
 # Offense count: 38
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
