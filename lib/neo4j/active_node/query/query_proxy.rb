@@ -186,11 +186,9 @@ module Neo4j
         #
         # @return [QueryProxy] A new QueryProxy
         def branch(&block)
-          if block
-            instance_eval(&block).query.proxy_as(self.model, identity)
-          else
-            fail LocalJumpError, 'no block given'
-          end
+          fail LocalJumpError, 'no block given' if block
+
+          instance_eval(&block).query.proxy_as(self.model, identity)
         end
 
         def [](index)
