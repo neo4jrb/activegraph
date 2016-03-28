@@ -67,14 +67,6 @@ Style/ParallelAssignment:
 Style/RedundantSelf:
   Enabled: false
 
-# Offense count: 4
-# Cop supports --auto-correct.
-Style/UnneededInterpolation:
-  Exclude:
-    - 'lib/neo4j/active_node/has_n.rb'
-    - 'lib/neo4j/active_rel/property.rb'
-    - 'lib/neo4j/tasks/migration.rake'
-
 # Offense count: 6
 # Cop supports --auto-correct.
 Style/ZeroLengthPredicate:

@@ -6,7 +6,7 @@ module Neo4j::ActiveRel
     include Neo4j::Shared::Property
 
     %w(to_node from_node).each do |direction|
-      define_method("#{direction}") { instance_variable_get("@#{direction}") }
+      define_method(direction.to_s) { instance_variable_get("@#{direction}") }
       define_method("#{direction}=") do |argument|
         fail FrozenRelError, 'Relationship start/end nodes cannot be changed once persisted' if _persisted_obj
         instance_variable_set("@#{direction}", argument)
@@ -55,7 +55,7 @@ module Neo4j::ActiveRel
       end
 
       %w(to_class from_class).each do |direction|
-        define_method("#{direction}") do |argument = nil|
+        define_method(direction.to_s) do |argument = nil|
           if !argument.nil?
             Neo4j::ClassArguments.validate_argument!(argument, direction)
 
