@@ -51,13 +51,6 @@ Style/ClassAndModuleChildren:
 Style/Documentation:
   Enabled: false
 
-# Offense count: 31
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, IndentationWidth.
-# SupportedStyles: aligned, indented
-Style/MultilineMethodCallIndentation:
-  Enabled: false
-
 # Offense count: 29
 # Cop supports --auto-correct.
 Style/MutableConstant:

@@ -84,8 +84,8 @@ module Neo4j::Shared
       return match_query if graph_object.persisted?
       create_props, set_props = filtered_props
       base_query.send(graph_object.create_method, query_string).break
-        .set(identifier => set_props)
-        .params(:"#{identifier}_create_props" => create_props)
+                .set(identifier => set_props)
+                .params(:"#{identifier}_create_props" => create_props)
     end
 
     private
