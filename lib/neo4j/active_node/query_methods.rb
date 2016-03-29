@@ -27,14 +27,14 @@ module Neo4j
         self.query_as(:n).return("count(#{q}) AS count").first.count
       end
 
-      alias_method :size, :count
-      alias_method :length, :count
+      alias size count
+      alias length count
 
       def empty?
         !self.all.exists?
       end
 
-      alias_method :blank?, :empty?
+      alias blank? empty?
 
       def find_in_batches(options = {})
         self.query_as(:n).return(:n).find_in_batches(:n, primary_key, options) do |batch|

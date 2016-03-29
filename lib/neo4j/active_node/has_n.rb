@@ -493,7 +493,7 @@ module Neo4j::ActiveNode
 
       def default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize, nil,
-                                                 session: neo4j_session, query_proxy: nil, context: "#{self.name}")
+                                                 session: neo4j_session, query_proxy: nil, context: self.name.to_s)
       end
 
       def build_association(macro, direction, name, options)

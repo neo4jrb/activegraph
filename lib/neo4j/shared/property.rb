@@ -37,7 +37,7 @@ module Neo4j::Shared
     def read_attribute(name)
       respond_to?(name) ? send(name) : nil
     end
-    alias_method :[], :read_attribute
+    alias [] read_attribute
 
     def send_props(hash)
       return hash if hash.blank?
@@ -58,7 +58,7 @@ module Neo4j::Shared
       return attributes if attributes.blank?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
       invalid_properties.reject! { |name| self.respond_to?("#{name}=") }
-      fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
+      fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if !invalid_properties.empty?
     end
 
     def extract_writer_methods!(attributes)

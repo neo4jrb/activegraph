@@ -171,7 +171,7 @@ module Neo4j::ActiveNode
         !!manual_id_property
       end
 
-      alias_method :primary_key, :id_property_name
+      alias primary_key id_property_name
 
       private
 

@@ -42,8 +42,8 @@ module Neo4j
             assign_type!(namespaced_model_name, true)
           end
         end
-        alias_method :rel_type, :type
-        alias_method :_type, :type # should be deprecated
+        alias rel_type type
+        alias _type type # should be deprecated
 
         def namespaced_model_name
           case Neo4j::Config[:module_handling]

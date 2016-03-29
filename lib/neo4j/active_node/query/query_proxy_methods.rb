@@ -62,7 +62,7 @@ module Neo4j
           query_with_target(target) { |var| !self.exists?(nil, var) }
         end
 
-        alias_method :blank?, :empty?
+        alias blank? empty?
 
         # @param [Neo4j::ActiveNode, Neo4j::Node, String] other An instance of a Neo4j.rb model, a Neo4j-core node, or a string uuid
         # @param [String, Symbol] target An identifier of a link in the Cypher chain
@@ -125,7 +125,7 @@ module Neo4j
         def rels_to(node)
           self.match_to(node).pluck(rel_var)
         end
-        alias_method :all_rels_to, :rels_to
+        alias all_rels_to rels_to
 
         # When called, this method returns a single node that satisfies the match specified in the params hash.
         # If no existing node is found to satisfy the match, one is created or associated as expected.
