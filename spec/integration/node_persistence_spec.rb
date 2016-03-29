@@ -1,5 +1,5 @@
 def optional_id(props)
-  props.merge!((Neo4j::Config[:id_property] || :uuid) => 'secure123') unless Neo4j::Config[:id_property] == :neo_id
+  props[Neo4j::Config[:id_property] || :uuid] = 'secure123' unless Neo4j::Config[:id_property] == :neo_id
   props
 end
 

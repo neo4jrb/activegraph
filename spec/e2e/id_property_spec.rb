@@ -76,23 +76,19 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(Clazz.mapped_label.indexes[:property_keys].sort).to eq([[:the_id]])
       end
     end
+  end
 
-    describe 'when having neo_id configuration' do
-      before do
-        before_session do
-          Neo4j::Config[:id_property] = :neo_id
-          stub_active_node_class('NeoIdTest')
-        end
+  describe 'when having neo_id configuration' do
+    before do
+      before_session do
+        Neo4j::Config[:id_property] = :neo_id
+        stub_active_node_class('NeoIdTest')
       end
+    end
 
-      it 'it will find node by neo_id' do
-        node = NeoIdTest.new
-        expect(node).to respond_to(:id)
-        expect(node).to respond_to(:neo_id)
-        node.save
-        expect(node.id).to eq(node.neo_id)
-        expect(NeoIdTest.where(id: node).first).to eq(node)
-      end
+    it 'it will find node by neo_id' do
+      node = NeoIdTest.create
+      expect(NeoIdTest.where(id: node).first).to eq(node)
     end
   end
 
@@ -179,7 +175,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'order' do
       it 'should order by myid' do
-        nodes = 3.times.map { |i| Clazz.create myid: i }
+        nodes = Array.new(3) { |i| Clazz.create myid: i }
 
         expect(Clazz.order(id: :desc).to_a).to eq(nodes.reverse)
       end
@@ -381,21 +377,13 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     describe 'property id' do
-      it 'is not defined when before save ' do
-        node = NeoIdTest.new
-        expect(node.id).to be_nil
-      end
-
       it 'is is set when saving ' do
         node = NeoIdTest.new
-        node.save
-        expect(node.id).to be_present
+        expect { node.save }.to change { node.id.present? }.from(false).to(true)
       end
 
       it 'is same as neo_id' do
-        node = NeoIdTest.new
-        expect(node.id).to be_nil
-        node.save
+        node = NeoIdTest.create
         expect(node.id).to eq(node.neo_id)
       end
     end
@@ -419,7 +407,7 @@ describe Neo4j::ActiveNode::IdProperty do
     describe 'find_by_ids' do
       it 'finds them if they exist' do
         NeoIdTest.create
-        nodes = 3.times.map { NeoIdTest.create }
+        nodes = Array.new(3) { NeoIdTest.create }
         NeoIdTest.create
 
         expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to eq(nodes)
@@ -448,7 +436,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       it 'should find with array' do
         NeoIdTest.create
-        nodes = 3.times.map { NeoIdTest.create }
+        nodes = Array.new(3) { NeoIdTest.create }
         NeoIdTest.create
 
         expect(NeoIdTest.where(id: nodes)).to eq(nodes)
@@ -465,7 +453,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'order' do
       it 'should order by neo_id' do
-        nodes = 3.times.map { NeoIdTest.create }
+        nodes = Array.new(3) { NeoIdTest.create }
         expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
       end
     end

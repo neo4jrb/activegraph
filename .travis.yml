@@ -12,7 +12,6 @@ env:
   - NEO4J_VERSION=community-2.3.0
   - NEO4J_VERSION=community-2.2.6
   - NEO4J_VERSION=community-2.1.8
-  - NEO4J_VERSION=community-2.3.0 NEO4J_ID_PROPERTY=neo_id
 matrix:
   include:
     - rvm: 2.3.0
