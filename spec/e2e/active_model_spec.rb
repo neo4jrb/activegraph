@@ -339,6 +339,7 @@ describe 'Neo4j::ActiveNode' do
       property :links
       property :datetime,     type: DateTime
       property :date,         type: Date
+      property :time,         type: Time
       property :numbers
 
       serialize :links
@@ -575,6 +576,21 @@ describe 'Neo4j::ActiveNode' do
         expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
+
+      context Time do
+        around do |ex|
+          Time.zone = 'America/New_York'
+          ex.run
+          Time.zone = nil
+        end
+
+        it 'converts to Time' do
+          person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => '9', 'time(5i)' => '12', 'time(6i)' => '42')
+          expect(person.time).to be_a(Time)
+          expect(person.time).to eq '0001-01-01 14:12:42 UTC'
+        end
+      end
+
 
       it 'raises an error when it receives values it cannot process' do
         expect do
