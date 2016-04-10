@@ -3,11 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [UNRELEASED]
+## [7.0.2] - 04-10-2016
 
 ### Fixed
 
 - Multiparameter Attributes for properties of type `Time` were failing due to a hack that should have been removed with `ActiveAttr`'s removal
+- Rel creation factory was not using backticks around rel type during create action.
 
 ## [7.0.1] - 03-22-2016
 
