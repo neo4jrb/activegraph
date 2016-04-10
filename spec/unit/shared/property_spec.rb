@@ -93,9 +93,9 @@ describe Neo4j::Shared::Property do
       end
 
       # ActiveAttr does not know what to do with Time, so it is stored as Int.
-      it 'tells ActiveAttr it is an Integer' do
-        expect(clazz.attributes[:created_at][:type]).to eq(Integer)
-        expect(clazz.attributes[:updated_at][:type]).to eq(Integer)
+      it 'does not change the attributes type' do
+        expect(clazz.attributes[:created_at][:type]).to eq(Time)
+        expect(clazz.attributes[:updated_at][:type]).to eq(Time)
       end
     end
   end

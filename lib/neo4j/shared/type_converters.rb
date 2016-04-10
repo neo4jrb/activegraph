@@ -201,12 +201,6 @@ module Neo4j::Shared
           Time
         end
 
-        # ActiveAttr, which assists with property management, does not recognize Time as a valid type. We tell it to interpret it as
-        # Integer, as it will be when saved to the database.
-        def primitive_type
-          Integer
-        end
-
         def db_type
           Integer
         end
