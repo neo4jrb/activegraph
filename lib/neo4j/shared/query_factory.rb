@@ -95,7 +95,7 @@ module Neo4j::Shared
     end
 
     def query_string
-      "#{graph_object.from_node_identifier}-[#{identifier}:#{graph_object.type} {#{identifier}_create_props}]->#{graph_object.to_node_identifier}"
+      "#{graph_object.from_node_identifier}-[#{identifier}:`#{graph_object.type}` {#{identifier}_create_props}]->#{graph_object.to_node_identifier}"
     end
   end
 end
