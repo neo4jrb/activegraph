@@ -66,7 +66,7 @@ module Neo4j::Shared
     def default_value
       options[:default]
     end
-    alias_method :default, :default_value
+    alias default default_value
 
     def fail_invalid_options!
       case

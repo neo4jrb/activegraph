@@ -39,5 +39,5 @@ A Neo4j OGM (Object-Graph-Mapper) for use in Ruby on Rails and Rack frameworks h
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rubocop')
   s.add_development_dependency('guard-rspec')
-  s.add_development_dependency('rubocop', '~> 0.34.0')
+  s.add_development_dependency('rubocop', '~> 0.39.0')
 end

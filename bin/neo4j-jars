@@ -2,7 +2,7 @@
 
 require 'neo4j'
 
-if ARGV.length == 0
+if ARGV.empty?
   puts <<TEXT
 A tool for copying jar files needed by the application server, like trinidad
 It copies all jar files which has been required (neo4j-community, neo4j-advanced or neo4j-enterprise) to the lib folder of the current directory

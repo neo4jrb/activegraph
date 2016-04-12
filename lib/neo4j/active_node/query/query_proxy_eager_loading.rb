@@ -10,7 +10,7 @@ module Neo4j
               record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
             end
 
-            block.call(record)
+            yield(record)
           end
         end
 
@@ -23,7 +23,7 @@ module Neo4j
             model.associations[association_name]
           end
 
-          if invalid_association_names.size > 0
+          if !invalid_association_names.empty?
             fail "Invalid associations: #{invalid_association_names.join(', ')}"
           end
 
@@ -52,8 +52,8 @@ module Neo4j
           association = model.associations[association_name]
 
           base_query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}")
-            .where(association.target_where_clause)
-            .with(identity, "collect(#{association_name}) AS #{association_name}_collection", *with_associations_return_clause(previous_with_variables))
+                    .where(association.target_where_clause)
+                    .with(identity, "collect(#{association_name}) AS #{association_name}_collection", *with_associations_return_clause(previous_with_variables))
         end
       end
     end
