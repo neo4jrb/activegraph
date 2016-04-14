@@ -10,7 +10,7 @@ namespace :neo4j do
       migration_class = "Neo4j::Migration::#{task_name_constant}".constantize
     rescue NameError
       load File.join(path, 'db', 'neo4j-migrate', "#{migration_task}.rb")
-      migration_class = "#{task_name_constant}".constantize
+      migration_class = task_name_constant.to_s.constantize
     end
     migration = migration_class.new(path)
 

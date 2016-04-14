@@ -28,9 +28,9 @@ See documentation at https://github.com/neo4jrb/neo4j/wiki/Neo4j%3A%3AActiveRel
 
    ActiveRel/ClassMethods
 
-   ActiveRel/Query
-
    ActiveRel/Types
+
+   ActiveRel/Query
 
    ActiveRel/Property
 
@@ -58,6 +58,8 @@ Constants
 
   * DATE_KEY_REGEX
 
+  * DEPRECATED_OBJECT_METHODS
+
 
 
 Files
@@ -67,9 +69,9 @@ Files
 
   * `lib/neo4j/active_rel.rb:4 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel.rb#L4>`_
 
-  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
-
   * `lib/neo4j/active_rel/types.rb:2 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/types.rb#L2>`_
+
+  * `lib/neo4j/active_rel/query.rb:1 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/query.rb#L1>`_
 
   * `lib/neo4j/active_rel/property.rb:3 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_rel/property.rb#L3>`_
 
@@ -95,12 +97,13 @@ Methods
 .. _`Neo4j/ActiveRel#==`:
 
 **#==**
-  
+  Performs equality checking on the result of attributes and its type.
 
   .. code-block:: ruby
 
      def ==(other)
-       other.class == self.class && other.id == id
+       return false unless other.instance_of? self.class
+       attributes == other.attributes
      end
 
 
@@ -108,14 +111,29 @@ Methods
 .. _`Neo4j/ActiveRel#[]`:
 
 **#[]**
-  Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+  
 
   .. code-block:: ruby
 
      def read_attribute(name)
-       super(name)
-     rescue ActiveAttr::UnknownAttributeError
-       nil
+       respond_to?(name) ? send(name) : nil
+     end
+
+
+
+.. _`Neo4j/ActiveRel#[]=`:
+
+**#[]=**
+  Write a single attribute to the model's attribute hash.
+
+  .. code-block:: ruby
+
+     def write_attribute(name, value)
+       if respond_to? "#{name}="
+         send "#{name}=", value
+       else
+         fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+       end
      end
 
 
@@ -145,6 +163,63 @@ Methods
        self.class.declared_property_defaults.each_pair do |key, value|
          self.send("#{key}=", value) if self.send(key).nil?
        end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#assign_attributes`:
+
+**#assign_attributes**
+  Mass update a model's attributes
+
+  .. code-block:: ruby
+
+     def assign_attributes(new_attributes = nil)
+       return unless new_attributes.present?
+       new_attributes.each do |name, value|
+         writer = :"#{name}="
+         send(writer, value) if respond_to?(writer)
+       end
+     end
+
+
+
+.. _`Neo4j/ActiveRel#attribute_before_type_cast`:
+
+**#attribute_before_type_cast**
+  Read the raw attribute value
+
+  .. code-block:: ruby
+
+     def attribute_before_type_cast(name)
+       @attributes ||= {}
+       @attributes[name.to_s]
+     end
+
+
+
+.. _`Neo4j/ActiveRel#attributes`:
+
+**#attributes**
+  Returns a Hash of all attributes
+
+  .. code-block:: ruby
+
+     def attributes
+       attributes_map { |name| send name }
+     end
+
+
+
+.. _`Neo4j/ActiveRel#attributes=`:
+
+**#attributes=**
+  Mass update a model's attributes
+
+  .. code-block:: ruby
+
+     def attributes=(new_attributes)
+       assign_attributes(new_attributes)
      end
 
 
@@ -699,14 +774,12 @@ Methods
 .. _`Neo4j/ActiveRel#read_attribute`:
 
 **#read_attribute**
-  Returning nil when we get ActiveAttr::UnknownAttributeError from ActiveAttr
+  
 
   .. code-block:: ruby
 
      def read_attribute(name)
-       super(name)
-     rescue ActiveAttr::UnknownAttributeError
-       nil
+       respond_to?(name) ? send(name) : nil
      end
 
 
@@ -1053,6 +1126,23 @@ Methods
 
      def wrapper
        self
+     end
+
+
+
+.. _`Neo4j/ActiveRel#write_attribute`:
+
+**#write_attribute**
+  Write a single attribute to the model's attribute hash.
+
+  .. code-block:: ruby
+
+     def write_attribute(name, value)
+       if respond_to? "#{name}="
+         send "#{name}=", value
+       else
+         fail Neo4j::UnknownAttributeError, "unknown attribute: #{name}"
+       end
      end
 
 

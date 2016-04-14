@@ -3,6 +3,141 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] Unreleased
+
+### Changed
+
+- Invalid options to the `property` method now raise an exception (see #1169)
+
+## [7.0.1] - 03-22-2016
+
+### Fixed
+
+- Conversion of string values from form inputs (thanks to jbhannah / see #1163)
+
+## [7.0.0] - 03-18-2016
+
+No changes from `rc.7`
+
+## [7.0.0.rc.7] - 03-16-2016
+/
+### Changed
+
+- `with_associations` now generates separate `OPTIONAL MATCH` clauses, separated by `WITH` clauses and is preceeded by a `WITH` clause.
+
+## [7.0.0.rc.6] - 03-16-2016
+
+### Fixed
+
+- Question mark methods (`node.foo?`) broke when ActiveAttr was removed
+
+## [7.0.0.rc.5] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
+
+## [7.0.0.rc.4] - 03-11-2016
+
+### Fixed
+
+- Catching errors for 404s in Rails (thanks ProGm, see #1153)
+
+## [7.0.0.rc.3] - 03-08-2016
+
+### Fixed
+
+- Allow for array values when querying for enums (i.e. `where(enum_field: [:value1, :value2])`) (see #1150)
+
+## [7.0.0.rc.2] - 03-08-2016
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships (forward ported from 6.0.7 / 6.1.9)
+
+## [7.0.0.rc.1] - 03-08-2016
+
+### Changed
+
+- All explicit dependencies on `ActiveAttr` code that was not removed outright can now be found in the `Neo4j::Shared` namespace.
+- All type conversion uses Neo4j.rb-owned converters in the `Neo4j::Shared::TypeConverters` namespace. This is of particular importance where `Boolean` is concerned. Where explicitly using `ActiveAttr::Typecasting::Boolean`, use `Neo4j::Shared::Boolean`.
+- `Neo4j::Shared::TypeConverters.converters` was replaced with `Neo4j::Shared::TypeConverters::CONVERTERS`.
+- Error classes refactor: All errors now inherits from `Neo4j::Error`. All specific `InvalidParameterError` were replaced with a more generic `Neo4j::InvalidParameterError`.
+- When calling `Node.find(...)` with missing ids, `Neo4j::RecordNotFound` now returns a better error message and some informations about the query.
+
+#### Internal
+
+- Ran transpec and fixed error warning (thanks brucek / #1132)
+
+### Added
+
+- A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
+- `ActiveNode` models now respond to `update_all` (thanks ProGM / #1113)
+- Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
+- Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
+- A clone of [ActiveRecord::Enum](http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html) API. See docs for details. (thanks ProGM / #1129)
+- Added #branch method to `QueryProxy` to allow for easy branching of matches in association chains (thanks ProGM / #1147 / #1143)
+
+### Removed
+
+- All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
+- All `call` class methods from Type Converters. Use `to_ruby` instead.
+- `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
+
+## [6.1.10] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
+
+## [6.1.9] - 2016-03-08
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships (forward ported from 6.0.7)
+
+## [6.1.8] - 2016-03-02
+
+### Fixed
+
+- The `@attributes` hash of the first node of each class returned from the database would have have the wrong id property key. This did not appear to cause any problems accessing the value and would be normal for subsequent saves of the affected node as well as all other nodes.
+
+## [6.1.7] - 2016-02-16
+
+### Fixed
+
+- Bug related to creating subclassed nodes alongside rels in ActiveRel. (#1135. Thanks, brucek!)
+
+## [6.1.6] - 2016-02-03
+
+### Added
+
+- `wait_for_connection` configuration variable allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose
+
+## [6.1.5] - 2016-01-28
+
+### Fixed
+
+- Calls to `.find`/`.find_by_id`/`.find_by_ids` now respect scopes and associations
+
+## [6.1.4] - 2016-01-26
+
+### Fixed
+
+- Model generators now respect module namespaces (thanks to michaeldelorenzo in #1119)
+
+## [6.1.3] - 2016-01-20
+
+### Fixed
+
+- Issue where `ActiveRel.create` would not work with `RelatedNode` (`rel.from_node`) instances (Thanks, djvs #1107)
+
+## [6.1.2] - 2016-01-19
+
+### Fixed
+
+- Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
+
 ## [6.1.1] - 2016-01-01
 
 ### Fixed
@@ -27,6 +162,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+
+## [6.0.8] - 03-14-2016
+
+### Fixed
+
+- Fixed issue where backticks weren't being added to where clauses for `with_associations`
+
+## [6.0.7] - 03-08-2016
+
+### Fixed
+
+- Issue where creating relationships via `has_one` association created two relationships
+
+## [6.0.6] - 01-20-2016
+
+### Fixed
+
+- Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
 
 ## [6.0.5] - 12-29-2015
 

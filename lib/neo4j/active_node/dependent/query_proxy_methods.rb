@@ -37,12 +37,12 @@ module Neo4j
 
         def unique_nodes_query(association, self_identifer, other_node, other_rel)
           query.with(identity).proxy_as_optional(source_object.class, self_identifer)
-            .send(association.name, other_node, other_rel)
-            .query
-            .with(other_node)
-            .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
-            .with(other_node, count: 'count(*)')
-            .where('count = {one}', one: 1)
+               .send(association.name, other_node, other_rel)
+               .query
+               .with(other_node)
+               .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
+               .with(other_node, count: 'count(*)')
+               .where('count = {one}', one: 1)
         end
       end
     end

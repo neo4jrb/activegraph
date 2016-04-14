@@ -8,7 +8,7 @@ describe 'ActiveRel' do
     stub_active_node_class('FromClass') do
       before_create :log_before
       after_create :log_after
-      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :before_run, type: Neo4j::Shared::Boolean
       property :after_run
 
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
@@ -26,7 +26,7 @@ describe 'ActiveRel' do
     stub_active_node_class('ToClass') do
       before_create :log_before
       after_create :log_after
-      property :before_run, type: ActiveAttr::Typecasting::Boolean
+      property :before_run, type: Neo4j::Shared::Boolean
       property :after_run
 
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
@@ -451,8 +451,8 @@ describe 'ActiveRel' do
       let(:new_rel) { MyRelClass.new }
 
       it 'does not raise an error' do
-        new_rel.stub(:from_node).and_return double('From double')
-        new_rel.stub(:to_node).and_return double('To double')
+        allow(new_rel).to receive(:from_node).and_return double('From double')
+        allow(new_rel).to receive(:to_node).and_return double('To double')
         expect(new_rel.from_node).not_to receive(:loaded)
         expect(new_rel.to_node).not_to receive(:loaded)
         expect { new_rel.inspect }.not_to raise_error

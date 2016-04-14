@@ -1,5 +1,5 @@
 describe 'Neo4j::VERSION' do
   it 'is defined' do
-    Neo4j::VERSION.should be_a(String)
+    expect(Neo4j::VERSION).to be_a(String)
   end
 end

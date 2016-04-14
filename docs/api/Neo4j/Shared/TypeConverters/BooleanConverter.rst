@@ -42,7 +42,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:92 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L92>`_
+  * `lib/neo4j/shared/type_converters.rb:98 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L98>`_
 
 
 
@@ -61,7 +61,7 @@ Methods
   .. code-block:: ruby
 
      def db_type
-       ActiveAttr::Typecasting::Boolean
+       Neo4j::Shared::Boolean
      end
 
 
@@ -100,7 +100,7 @@ Methods
   .. code-block:: ruby
 
      def db_type
-       ActiveAttr::Typecasting::Boolean
+       Neo4j::Shared::Boolean
      end
 
 

@@ -39,7 +39,7 @@ module Neo4j
           p = properties.map do |key, value|
             "#{key}: #{value.inspect}"
           end.join(', ')
-          p.size == 0 ? '' : " {#{p}}"
+          p.empty? ? '' : " {#{p}}"
         end
 
         VALID_REL_LENGTH_SYMBOLS = {

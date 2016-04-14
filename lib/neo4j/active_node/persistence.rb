@@ -56,8 +56,7 @@ module Neo4j::ActiveNode
     def create_model
       node = _create_node(props_for_create)
       init_on_load(node, node.props)
-      send_props(@relationship_props) if @relationship_props
-      @relationship_props = @deferred_nodes = nil
+      @deferred_nodes = nil
       true
     end
 
@@ -132,18 +131,26 @@ module Neo4j::ActiveNode
         end
       end
 
-      def merge(attributes)
-        new_query.merge(n: {self.mapped_label_names => attributes})
-          .on_create_set(n: on_create_props(attributes))
-          .on_match_set(n: on_match_props)
-          .pluck(:n).first
+      def merge(match_attributes, optional_attrs = {})
+        options = [:on_create, :on_match, :set]
+        optional_attrs.assert_valid_keys(*options)
+
+        optional_attrs.default = {}
+        on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
+
+        new_query.merge(n: {self.mapped_label_names => match_attributes})
+                 .on_create_set(n: on_create_props(on_create_attrs))
+                 .on_match_set(n: on_match_props(on_match_attrs))
+                 .break.set(n: set_attrs)
+                 .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
         on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
+
         new_query.merge(n: {self.mapped_label_names => find_attributes})
-          .on_create_set(n: on_create_attributes)
-          .pluck(:n).first
+                     .on_create_set(n: on_create_attributes)
+                     .pluck(:n).first
       end
 
       # Finds the first node with the given attributes, or calls create if none found
@@ -171,8 +178,8 @@ module Neo4j::ActiveNode
         find_attributes.merge(self.new(find_attributes).props_for_create)
       end
 
-      def on_match_props
-        {}.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at'.freeze) }
+      def on_match_props(match_attributes)
+        match_attributes.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at') }
       end
     end
   end

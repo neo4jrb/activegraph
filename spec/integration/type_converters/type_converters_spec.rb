@@ -1,23 +1,23 @@
 describe Neo4j::Shared::TypeConverters do
   describe 'converters' do
     it 'has converters for DateTime' do
-      Neo4j::Shared::TypeConverters.converters[DateTime].should eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[DateTime]).to eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
     end
 
     it 'has converters for Time' do
-      Neo4j::Shared::TypeConverters.converters[Time].should eq(Neo4j::Shared::TypeConverters::TimeConverter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Time]).to eq(Neo4j::Shared::TypeConverters::TimeConverter)
     end
 
     it 'has converters for Date' do
-      Neo4j::Shared::TypeConverters.converters[Date].should eq(Neo4j::Shared::TypeConverters::DateConverter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Date]).to eq(Neo4j::Shared::TypeConverters::DateConverter)
     end
 
     it 'has converters for JSON' do
-      Neo4j::Shared::TypeConverters.converters[JSON].should eq(Neo4j::Shared::TypeConverters::JSONConverter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[JSON]).to eq(Neo4j::Shared::TypeConverters::JSONConverter)
     end
 
     it 'has converters for YAML' do
-      Neo4j::Shared::TypeConverters.converters[Hash].should eq(Neo4j::Shared::TypeConverters::YAMLConverter)
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Hash]).to eq(Neo4j::Shared::TypeConverters::YAMLConverter)
     end
   end
 
@@ -25,15 +25,15 @@ describe Neo4j::Shared::TypeConverters do
     it 'converts if there is a converter' do
       date_time = Time.utc(2011, 3, 2, 10, 0, 0).to_i
       converter_value = Neo4j::Shared::TypeConverters.to_other(:to_ruby, date_time, DateTime)
-      converter_value.should be_a(DateTime)
-      converter_value.year.should eq(2011)
-      converter_value.month.should eq(3)
-      converter_value.day.should eq(2)
-      converter_value.hour.should eq(10)
+      expect(converter_value).to be_a(DateTime)
+      expect(converter_value.year).to eq(2011)
+      expect(converter_value.month).to eq(3)
+      expect(converter_value.day).to eq(2)
+      expect(converter_value.hour).to eq(10)
     end
 
     it 'returns the same value if there is no converter' do
-      Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer).should eq(42)
+      expect(Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer)).to eq(42)
     end
   end
 
@@ -41,11 +41,11 @@ describe Neo4j::Shared::TypeConverters do
     it 'converts if there is a converter' do
       date_time = DateTime.civil(2011, 3, 4, 1, 2, 3, 0)
       converter_value = Neo4j::Shared::TypeConverters.to_other(:to_db, date_time, DateTime)
-      converter_value.should be_a(Integer)
+      expect(converter_value).to be_a(Integer)
     end
 
     it 'returns the same value if there is no converter' do
-      Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer).should eq(42)
+      expect(Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer)).to eq(42)
     end
 
     it 'returns the same value if it is already of the expected type' do
@@ -138,28 +138,28 @@ describe Neo4j::Shared::TypeConverters do
 
     describe '#to_db' do
       it 'returns true for true' do
-        subject.to_db(true).should equal true
+        expect(subject.to_db(true)).to equal true
       end
 
       it 'returns false for false' do
-        subject.to_db(false).should equal false
+        expect(subject.to_db(false)).to equal false
       end
 
       it 'casts nil to false' do
-        subject.to_db(nil).should equal false
+        expect(subject.to_db(nil)).to equal false
       end
 
       it 'casts an Object to true' do
-        subject.to_db(Object.new).should equal true
+        expect(subject.to_db(Object.new)).to equal true
       end
 
       context 'when the value is a String' do
         it 'casts an empty String to false' do
-          subject.to_db('').should equal false
+          expect(subject.to_db('')).to equal false
         end
 
         it 'casts a non-empty String to true' do
-          subject.to_db('abc').should equal true
+          expect(subject.to_db('abc')).to equal true
         end
 
         {
@@ -192,84 +192,84 @@ describe Neo4j::Shared::TypeConverters do
           'OFF' => false
         }.each_pair do |value, result|
           it "casts #{value.inspect} to #{result.inspect}" do
-            subject.to_db(value).should equal result
+            expect(subject.to_db(value)).to equal result
           end
         end
       end
 
       context 'when the value is Numeric' do
         it 'casts 0 to false' do
-          subject.to_db(0).should equal false
+          expect(subject.to_db(0)).to equal false
         end
 
         it 'casts 1 to true' do
-          subject.to_db(1).should equal true
+          expect(subject.to_db(1)).to equal true
         end
 
         it 'casts 0.0 to false' do
-          subject.to_db(0.0).should equal false
+          expect(subject.to_db(0.0)).to equal false
         end
 
         it 'casts 0.1 to true' do
-          subject.to_db(0.1).should equal true
+          expect(subject.to_db(0.1)).to equal true
         end
 
         it 'casts a zero BigDecimal to false' do
-          subject.to_db(BigDecimal.new('0.0')).should equal false
+          expect(subject.to_db(BigDecimal.new('0.0'))).to equal false
         end
 
         it 'casts a non-zero BigDecimal to true' do
-          subject.to_db(BigDecimal.new('0.1')).should equal true
+          expect(subject.to_db(BigDecimal.new('0.1'))).to equal true
         end
 
         it 'casts -1 to true' do
-          subject.to_db(-1).should equal true
+          expect(subject.to_db(-1)).to equal true
         end
 
         it 'casts -0.0 to false' do
-          subject.to_db(-0.0).should equal false
+          expect(subject.to_db(-0.0)).to equal false
         end
 
         it 'casts -0.1 to true' do
-          subject.to_db(-0.1).should equal true
+          expect(subject.to_db(-0.1)).to equal true
         end
 
         it 'casts a negative zero BigDecimal to false' do
-          subject.to_db(BigDecimal.new('-0.0')).should equal false
+          expect(subject.to_db(BigDecimal.new('-0.0'))).to equal false
         end
 
         it 'casts a negative BigDecimal to true' do
-          subject.to_db(BigDecimal.new('-0.1')).should equal true
+          expect(subject.to_db(BigDecimal.new('-0.1'))).to equal true
         end
       end
 
       context 'when the value is the String version of a Numeric' do
         it "casts '0' to false" do
-          subject.to_db('0').should equal false
+          expect(subject.to_db('0')).to equal false
         end
 
         it "casts '1' to true" do
-          subject.to_db('1').should equal true
+          expect(subject.to_db('1')).to equal true
         end
 
         it "casts '0.0' to false" do
-          subject.to_db('0.0').should equal false
+          expect(subject.to_db('0.0')).to equal false
         end
 
         it "casts '0.1' to true" do
-          subject.to_db('0.1').should equal true
+          expect(subject.to_db('0.1')).to equal true
         end
 
         it "casts '-1' to true" do
-          subject.to_db('-1').should equal true
+          expect(subject.to_db('-1')).to equal true
         end
 
         it "casts '-0.0' to false" do
-          subject.to_db('-0.0').should equal false
+          expect(subject.to_db('-0.0')).to equal false
         end
 
         it "casts '-0.1' to true" do
-          subject.to_db('-0.1').should equal true
+          expect(subject.to_db('-0.1')).to equal true
         end
       end
     end
@@ -283,9 +283,9 @@ describe Neo4j::Shared::TypeConverters do
     it 'translates from and to database' do
       db_value = Neo4j::Shared::TypeConverters::JSONConverter.to_db(links)
       ruby_value = Neo4j::Shared::TypeConverters::JSONConverter.to_ruby(db_value)
-      db_value.class.should eq String
-      ruby_value.class.should eq Hash
-      ruby_value['neo4j'].should eq 'http://www.neo4j.org'
+      expect(db_value.class).to eq String
+      expect(ruby_value.class).to eq Hash
+      expect(ruby_value['neo4j']).to eq 'http://www.neo4j.org'
     end
   end
 
@@ -297,9 +297,9 @@ describe Neo4j::Shared::TypeConverters do
     it 'translates from and to database' do
       db_value = Neo4j::Shared::TypeConverters::YAMLConverter.to_db(links)
       ruby_value = Neo4j::Shared::TypeConverters::YAMLConverter.to_ruby(db_value)
-      db_value.class.should eq String
-      ruby_value.class.should eq Hash
-      ruby_value[:neo4j].should eq 'http://www.neo4j.org'
+      expect(db_value.class).to eq String
+      expect(ruby_value.class).to eq Hash
+      expect(ruby_value[:neo4j]).to eq 'http://www.neo4j.org'
     end
   end
 
@@ -311,8 +311,8 @@ describe Neo4j::Shared::TypeConverters do
     it 'translate from and to database' do
       db_value = Neo4j::Shared::TypeConverters::DateConverter.to_db(now)
       ruby_value = Neo4j::Shared::TypeConverters::DateConverter.to_ruby(db_value)
-      ruby_value.class.should eq(Date)
-      ruby_value.to_s.should eq(now.to_s)
+      expect(ruby_value.class).to eq(Date)
+      expect(ruby_value.to_s).to eq(now.to_s)
     end
   end
 
@@ -326,8 +326,8 @@ describe Neo4j::Shared::TypeConverters do
       db_value = Neo4j::Shared::TypeConverters::TimeConverter.to_db(now)
       ruby_value = Neo4j::Shared::TypeConverters::TimeConverter.to_ruby(db_value)
 
-      ruby_value.class.should eq(Time)
-      ruby_value.to_s.should eq(now.to_s)
+      expect(ruby_value.class).to eq(Time)
+      expect(ruby_value.to_s).to eq(now.to_s)
     end
   end
 
@@ -339,17 +339,21 @@ describe Neo4j::Shared::TypeConverters do
       @hr = 3600
     end
 
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { should eq(@dt + 6 * @hr) }
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { should eq(@dt + 4 * @hr) }
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { should eq(@dt + 2 * @hr) }
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { should eq(@dt) }
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { should eq(@dt - 2 * @hr) }
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { should eq(@dt - 4 * @hr) }
-    its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { should eq(@dt - 6 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { is_expected.to eq(@dt + 6 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { is_expected.to eq(@dt + 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { is_expected.to eq(@dt + 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { is_expected.to eq(@dt) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { is_expected.to eq(@dt - 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { is_expected.to eq(@dt - 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { is_expected.to eq(@dt - 6 * @hr) }
 
     describe 'to_ruby' do
       it 'translate a Integer back to DateTime' do
-        subject.to_ruby(@dt + 6 * @hr).should eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
+        expect(subject.to_ruby(@dt + 6 * @hr)).to eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
+      end
+
+      it 'translate a String back to DateTime' do
+        expect(subject.to_ruby(Time.at(@dt - 6 * @hr).to_datetime.to_s)).to eq(DateTime.parse('2012-11-10T09:08:07+06:00'))
       end
     end
 
@@ -357,8 +361,8 @@ describe Neo4j::Shared::TypeConverters do
       value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
       db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
       ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
-      ruby_value.class.should eq(DateTime)
-      ruby_value.to_s.should eq(value.to_s)
+      expect(ruby_value.class).to eq(DateTime)
+      expect(ruby_value.to_s).to eq(value.to_s)
     end
   end
 end

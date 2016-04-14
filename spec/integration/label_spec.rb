@@ -52,34 +52,34 @@ describe 'Labels' do
   describe 'create' do
     it 'automatically sets a label' do
       p = TestClass.create
-      p.labels.to_a.should eq([:TestClass])
+      expect(p.labels.to_a).to eq([:TestClass])
     end
 
     it 'sets label for mixin classes' do
       p = SomeLabelClass.create
-      p.labels.to_a.should =~ [:SomeLabelClass, :some_label]
+      expect(p.labels.to_a).to match_array([:SomeLabelClass, :some_label])
     end
   end
 
   describe 'all' do
     it 'finds it without an index' do
       p = TestClass.create
-      TestClass.all.to_a.should include(p)
+      expect(TestClass.all.to_a).to include(p)
     end
 
     describe 'when indexed' do
       it 'can find it without using the index' do
         andreas = IndexedTestClass.create(name: 'andreas')
         result = IndexedTestClass.all
-        result.should include(andreas)
+        expect(result).to include(andreas)
       end
 
       it 'does not find it if it has been deleted' do
         jimmy = IndexedTestClass.create(name: 'jimmy')
         result = IndexedTestClass.all
-        result.should include(jimmy)
+        expect(result).to include(jimmy)
         jimmy.destroy
-        IndexedTestClass.all.should_not include(jimmy)
+        expect(IndexedTestClass.all).not_to include(jimmy)
       end
     end
 
@@ -91,23 +91,23 @@ describe 'Labels' do
   describe 'find' do
     it 'finds it without an index' do
       p = TestClass.create
-      TestClass.all.to_a.should include(p)
+      expect(TestClass.all.to_a).to include(p)
     end
 
     describe 'when indexed' do
       it 'can find it using the index' do
         IndexedTestClass.delete_all
         kalle = IndexedTestClass.create(name: 'kalle')
-        IndexedTestClass.where(name: 'kalle').first.should eq(kalle)
+        expect(IndexedTestClass.where(name: 'kalle').first).to eq(kalle)
       end
 
       it 'does not find it if deleted' do
         IndexedTestClass.delete_all
         kalle2 = IndexedTestClass.create(name: 'kalle2')
         result = IndexedTestClass.where(name: 'kalle2').first
-        result.should eq(kalle2)
+        expect(result).to eq(kalle2)
         kalle2.destroy
-        IndexedTestClass.where(name: 'kalle2').should_not include(kalle2)
+        expect(IndexedTestClass.where(name: 'kalle2')).not_to include(kalle2)
       end
     end
 
@@ -116,11 +116,11 @@ describe 'Labels' do
       let!(:n2) { RelationTestClass.create(test_class: n1) }
 
       it 'finds when association matches' do
-        RelationTestClass.where(test_class: n1).first.should eq(n2)
+        expect(RelationTestClass.where(test_class: n1).first).to eq(n2)
       end
 
       it 'does not find when association does not match' do
-        RelationTestClass.where(test_class: n2).first.should be_nil
+        expect(RelationTestClass.where(test_class: n2).first).to be_nil
       end
     end
   end

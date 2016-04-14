@@ -130,8 +130,7 @@ Methods
      def create_model
        node = _create_node(props_for_create)
        init_on_load(node, node.props)
-       send_props(@relationship_props) if @relationship_props
-       @relationship_props = @deferred_nodes = nil
+       @deferred_nodes = nil
        true
      end
 

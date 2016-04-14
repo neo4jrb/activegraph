@@ -4,6 +4,7 @@ module Neo4j
       class QueryProxy
         include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
+        include Neo4j::ActiveNode::Query::QueryProxyMethodsOfMassUpdating
         include Neo4j::ActiveNode::Query::QueryProxyFindInBatches
         include Neo4j::ActiveNode::Query::QueryProxyEagerLoading
         include Neo4j::ActiveNode::Dependent::QueryProxyMethods
@@ -64,7 +65,7 @@ module Neo4j
         def identity
           @node_var || _result_string
         end
-        alias_method :node_identity, :identity
+        alias node_identity identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
         attr_reader :rel_var
@@ -143,10 +144,10 @@ module Neo4j
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
         end
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
-        alias_method :node_where, :where
-        alias_method :node_order, :order
-        alias_method :offset, :skip
-        alias_method :order_by, :order
+        alias node_where where
+        alias node_order order
+        alias offset skip
+        alias order_by order
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         delegate :to_cypher, to: :query
@@ -171,6 +172,23 @@ module Neo4j
             fail 'Another crazy error!'
           end
           self
+        end
+
+        # Executes the relation chain specified in the block, while keeping the current scope
+        #
+        # @example Load all people that have friends
+        #   Person.all.branch { friends }.to_a # => Returns a list of `Person`
+        #
+        # @example Load all people that has old friends
+        #   Person.all.branch { friends.where('age > 70') }.to_a # => Returns a list of `Person`
+        #
+        # @yield the block that will be evaluated starting from the current scope
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def branch(&block)
+          fail LocalJumpError, 'no block given' if !block
+
+          instance_eval(&block).query.proxy_as(self.model, identity)
         end
 
         def [](index)

@@ -7,6 +7,8 @@ describe 'Query API' do
   end
 
 
+  let(:student_interests_association_options) { {} }
+
   before(:each) do
     stub_active_node_class('Interest') do
       property :name
@@ -34,15 +36,16 @@ describe 'Query API' do
       scope :level_number, ->(num) { where(level: num) }
     end
 
+    scoped_interests_options = student_interests_association_options # Grrr
     stub_active_node_class('Student') do
       property :name
       property :age, type: Integer
 
-      property :likely_to_succeed, type: ActiveAttr::Typecasting::Boolean, default: false
+      property :likely_to_succeed, type: Neo4j::Shared::Boolean, default: false
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
-      has_many :out, :interests, type: nil
+      has_many :out, :interests, {type: nil}.merge(scoped_interests_options)
 
       has_many :both, :favorite_teachers, type: nil, model_class: 'Teacher'
       has_many :both, :hated_teachers, type: nil, model_class: 'Teacher'
@@ -80,10 +83,10 @@ describe 'Query API' do
       student = Student.create
       student.lessons << lesson
 
-      Student.as(:s).pluck(:s).should eq([student])
-      Student.all.pluck(:uuid).should eq([student.uuid])
+      expect(Student.as(:s).pluck(:s)).to eq([student])
+      expect(Student.all.pluck(:uuid)).to eq([student.uuid])
 
-      lesson.students.pluck(:uuid).should eq([student.uuid])
+      expect(lesson.students.pluck(:uuid)).to eq([student.uuid])
     end
 
     it 'responds to to_ary' do
@@ -171,72 +174,95 @@ describe 'Query API' do
     it 'evaluates `all` lazily' do
       result = Teacher.all
       expect(result).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
-      result.size.should eq(2)
-      result.should include(samuels)
-      result.should include(othmar)
+      expect(result.size).to eq(2)
+      expect(result).to include(samuels)
+      expect(result).to include(othmar)
     end
 
     describe 'filtering' do
       it 'allows filtering in where' do
-        Teacher.where(name: /.*Othmar.*/).to_a.should eq([othmar])
+        expect(Teacher.where(name: /.*Othmar.*/).to_a).to eq([othmar])
       end
 
       it 'allows NOT() filtering in where' do
-        Teacher.where_not(name: /.*Othmar.*/).to_a.should eq([samuels])
+        expect(Teacher.where_not(name: /.*Othmar.*/).to_a).to eq([samuels])
       end
 
       it 'allows filtering by String in where' do
-        Teacher.as(:teach).where('teach.name =~ ".*Othmar.*"').to_a.should eq([othmar])
+        expect(Teacher.as(:teach).where('teach.name =~ ".*Othmar.*"').to_a).to eq([othmar])
 
-        Teacher.as(:teach).where('teach.name =~ ?', '.*Othmar.*').to_a.should eq([othmar])
+        expect(Teacher.as(:teach).where('teach.name =~ ?', '.*Othmar.*').to_a).to eq([othmar])
       end
 
       it 'allows filtering and parametarizing by String and Hash in where' do
-        Teacher.as(:teach).where('teach.name =~ {name}', name: '.*Othmar.*').to_a.should eq([othmar])
+        expect(Teacher.as(:teach).where('teach.name =~ {name}', name: '.*Othmar.*').to_a).to eq([othmar])
       end
     end
 
     describe 'merge methods' do
-      before(:each) do
-        Teacher.delete_all
-      end
+      before { Teacher.delete_all }
 
       describe '.merge' do
+        let(:timestamps) { [1, 1, 2, 3].map(&DateTime.method(:new)) }
+        let(:merge_attrs) { {name: 'Dr. Dre'} }
+        let(:on_match_attrs) { {} }
+        let(:on_create_attrs) { {} }
+        let(:set_attrs) { {status: 'on create status'} }
+
+        before { allow(DateTime).to receive(:now).and_return(*timestamps) }
+        after { expect(Teacher.count).to eq 1 }
+
+        # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
+        # so please excuse this kludge.
+        after(:all) do
+          Object.send(:remove_const, :TeacherFoo)
+          Object.send(:remove_const, :Substitute)
+        end
+
         before(:each) do
           stub_active_node_class('TeacherFoo')
           stub_named_class('Substitute', TeacherFoo)
         end
 
-        it 'sets all expected labels' do
-          node = Substitute.merge({})
-          expect(node.labels.count).to eq 2
-          expect(node.labels).to include(:TeacherFoo, :Substitute)
-        end
+        subject { Teacher.merge(merge_attrs, on_match: on_match_attrs, on_create: on_create_attrs, set: set_attrs) }
 
-        it 'allows for merging' do
-          Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-          Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(Teacher.count).to eq(1)
-        end
+        its(:name) { is_expected.to eq 'Dr. Dre' }
 
-        it 'sets created_at and updated_at' do
-          teacher = Teacher.merge(name: 'Dr. Harold Samuels')
-          expect(teacher.created_at).not_to be_nil
-          expect(teacher.updated_at).not_to be_nil
-          expect(teacher.created_at).to eq teacher.updated_at
-        end
-
-        context 'on match' do
-          it 'updates updated_at but not created_at' do
-            teacher1 = Teacher.merge(name: 'Dr. Harold Samuels')
-            expect(teacher1.created_at).to eq teacher1.updated_at
-            expect(DateTime).to receive(:now).at_least(2).times.and_return 1234
-            teacher2 = Teacher.merge(name: 'Dr. Harold Samuels')
-            expect(teacher1.uuid).to eq teacher2.uuid
-            expect(teacher1.created_at).to eq teacher2.created_at
-            expect(teacher1.created_at).not_to eq teacher2.updated_at
+        context 'expected labels' do
+          subject do
+            super()
+            Substitute.merge({})
           end
+
+          its(:labels) { is_expected.to match_array [:TeacherFoo, :Substitute] }
+        end
+
+        let_context 'on_create', on_create_attrs: {age: 49} do
+          its(:age) { is_expected.to eq 49 }
+          its(:status) { is_expected.to eq 'on create status' }
+
+          it 'has the same created and updated' do
+            expect(subject.created_at).to eq subject.updated_at
+          end
+        end
+
+        let_context 'on_merge', on_match_attrs: {age: 50}, on_create_attrs: {age: 49}, set_attrs: {status: 'on match status'} do
+          before { Teacher.merge(on_create_attrs.merge(merge_attrs)) }
+
+          its(:age) { is_expected.to eq 50 }
+          its(:status) { is_expected.to eq 'on match status' }
+
+          it 'updated_at' do
+            expect(subject.updated_at).to be > subject.created_at
+          end
+        end
+
+        context 'valid options' do
+          before { Teacher.merge(merge_attrs) }
+
+          subject { -> { Teacher.merge(merge_attrs, extra: 'thing') } }
+
+          it { is_expected.to raise_error ArgumentError, 'Unknown key: :extra. Valid keys are: :on_create, :on_match, :set' }
         end
       end
 
@@ -338,7 +364,7 @@ describe 'Query API' do
       describe '`:as`' do
         context 'on a class' do
           it 'allows defining of a variable for class as start of QueryProxy chain' do
-            Teacher.as(:t).lessons.where(level: 101).pluck(:t).should eq([samuels])
+            expect(Teacher.as(:t).lessons.where(level: 101).pluck(:t)).to eq([samuels])
           end
         end
 
@@ -355,6 +381,7 @@ describe 'Query API' do
 
       it 'allows for finds on associations' do
         expect(samuels.lessons_teaching.find(ss101.id)).to eq(ss101)
+        expect { samuels.lessons_teaching.find(math101.id) }.to raise_error(Neo4j::RecordNotFound)
       end
 
       context 'samuels taught math 101 lesson' do
@@ -377,8 +404,8 @@ describe 'Query API' do
       end
 
       it 'differentiates associations on the same model for the same class' do
-        bobby.favorite_teachers.to_a.should eq([samuels])
-        bobby.hated_teachers.to_a.should eq([othmar])
+        expect(bobby.favorite_teachers.to_a).to eq([samuels])
+        expect(bobby.hated_teachers.to_a).to eq([othmar])
       end
     end
 
@@ -389,25 +416,25 @@ describe 'Query API' do
       end
 
       it 'allows params' do
-        Teacher.as(:t).where('t.name = {name}').params(name: 'Harold Samuels').to_a.should eq([samuels])
+        expect(Teacher.as(:t).where('t.name = {name}').params(name: 'Harold Samuels').to_a).to eq([samuels])
 
-        samuels.lessons_teaching(:lesson).where('lesson.level = {level}').params(level: 103).to_a.should eq([geo103])
+        expect(samuels.lessons_teaching(:lesson).where('lesson.level = {level}').params(level: 103).to_a).to eq([geo103])
       end
 
       it 'allows filtering on associations' do
-        samuels.lessons_teaching.where(level: 101).to_a.should eq([ss101])
+        expect(samuels.lessons_teaching.where(level: 101).to_a).to eq([ss101])
       end
 
       it 'allows class methods on associations' do
-        samuels.lessons_teaching.level_number(101).to_a.should eq([ss101])
+        expect(samuels.lessons_teaching.level_number(101).to_a).to eq([ss101])
 
-        samuels.lessons_teaching.max_level.should eq(103)
-        samuels.lessons_teaching.where(subject: 'Social Studies').max_level.should eq(101)
+        expect(samuels.lessons_teaching.max_level).to eq(103)
+        expect(samuels.lessons_teaching.where(subject: 'Social Studies').max_level).to eq(101)
       end
 
       it 'allows chaining of scopes and then class methods' do
-        samuels.lessons_teaching.level_number(101).max_level.should eq(101)
-        samuels.lessons_teaching.level_number(103).max_level.should eq(103)
+        expect(samuels.lessons_teaching.level_number(101).max_level).to eq(101)
+        expect(samuels.lessons_teaching.level_number(103).max_level).to eq(103)
       end
 
       context 'samuels also teaching math 201' do
@@ -416,7 +443,7 @@ describe 'Query API' do
         end
 
         it 'allows chaining of class methods and then scopes' do
-          samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a.should eq([math101, ss101])
+          expect(samuels.lessons_teaching.ordered_by_subject.level_number(101).to_a).to eq([math101, ss101])
         end
       end
 
@@ -472,8 +499,8 @@ describe 'Query API' do
         end
 
         it 'Should only find one of each' do
-          GitHubUser.count.should eq(1)
-          StackOverflowUser.count.should eq(1)
+          expect(GitHubUser.count).to eq(1)
+          expect(StackOverflowUser.count).to eq(1)
         end
       end
     end
@@ -486,14 +513,14 @@ describe 'Query API' do
           before(:each) { bobby.lessons << math101 }
           before(:each) { sandra.lessons << ss101 }
 
-          it { othmar.lessons_teaching.students.to_a.should eq([bobby]) }
+          it { expect(othmar.lessons_teaching.students.to_a).to eq([bobby]) }
 
           context 'bobby likes to read, sandra likes math' do
             before(:each) { bobby.interests << reading }
             before(:each) { sandra.interests << math }
 
             # Simple association chaining on three levels
-            it { othmar.lessons_teaching.students.interests.to_a.should eq([reading]) }
+            it { expect(othmar.lessons_teaching.students.interests.to_a).to eq([reading]) }
           end
         end
 
@@ -501,13 +528,13 @@ describe 'Query API' do
           before(:each) { danny.lessons << math101 }
 
           # Filtering on last association
-          it { othmar.lessons_teaching.students.where(age: 15).to_a.should eq([danny]) }
+          it { expect(othmar.lessons_teaching.students.where(age: 15).to_a).to eq([danny]) }
 
           # Mid-association variable assignment when filtering later
-          it { othmar.lessons_teaching(:lesson).students.where(age: 15).pluck(:lesson).should eq([math101]) }
+          it { expect(othmar.lessons_teaching(:lesson).students.where(age: 15).pluck(:lesson)).to eq([math101]) }
 
           # Two variable assignments
-          it { othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student).should eq([[math101, danny]]) }
+          it { expect(othmar.lessons_teaching(:lesson).students(:student).where(age: 15).pluck(:lesson, :student)).to eq([[math101, danny]]) }
         end
 
         describe 'on classes' do
@@ -525,24 +552,24 @@ describe 'Query API' do
           end
 
           context 'students, age 15, who are taking level 101 lessons' do
-            it { Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should eq([danny]) }
-            it { Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson).should_not eq([[othmar]]) }
+            it { expect(Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student)).to eq([danny]) }
+            it { expect(Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson)).not_to eq([[othmar]]) }
             it do
-              Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student).should ==
+              expect(Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student)).to eq(
                 Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
+              )
             end
           end
 
           context 'Students enrolled in math 101 with grade 65' do
             # with automatic identifier
-
-            it { Student.as(:student).lessons.rel_where(grade: 65).pluck(:student).should eq([danny]) }
+            it { expect(Student.as(:student).lessons.rel_where(grade: 65).pluck(:student)).to eq([danny]) }
 
             # with manual identifier
-            it { Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student).should eq([danny]) }
+            it { expect(Student.as(:student).lessons(:l, :r).rel_where(grade: 65).pluck(:student)).to eq([danny]) }
 
             # with multiple instances of rel_where
-            it { Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t).should eq([othmar]) }
+            it { expect(Student.as(:student).lessons(:l).rel_where(grade: 65).teachers(:t, :t_r).rel_where(since: 2001).pluck(:t)).to eq([othmar]) }
           end
 
           context 'with has_one' do
@@ -555,12 +582,12 @@ describe 'Query API' do
             end
 
             context 'on instances' do
-              it { math101.teachers_pet(:l).lessons.where(level: 103).should eq([geo103]) }
+              it { expect(math101.teachers_pet(:l).lessons.where(level: 103)).to eq([geo103]) }
             end
 
             context 'on class' do
               # Lessons of level 101 that have a teachers pet, age 16, whose hated teachers include Ms Othmar... Who hates Mrs Othmar!?
-              it { Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s).should eq([bobby]) }
+              it { expect(Lesson.where(level: 101).teachers_pet(:s).where(age: 16).hated_teachers.where(name: 'Ms. Othmar').pluck(:s)).to eq([bobby]) }
             end
           end
         end
@@ -571,7 +598,7 @@ describe 'Query API' do
         before(:each) { brian.lessons << math201 }
 
         # Mid-association filtering
-        it { othmar.lessons_teaching.where(level: 201).students.to_a.should eq([brian]) }
+        it { expect(othmar.lessons_teaching.where(level: 201).students.to_a).to eq([brian]) }
       end
     end
 
@@ -582,15 +609,15 @@ describe 'Query API' do
       end
 
       # Should get both
-      it { monster_trucks.interested.count.should eq(2) }
-      it { monster_trucks.interested.to_a.should include(samuels, othmar) }
+      it { expect(monster_trucks.interested.count).to eq(2) }
+      it { expect(monster_trucks.interested.to_a).to include(samuels, othmar) }
 
       # Variable assignment and filtering on a relationship
-      it { monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person).should eq([samuels]) }
+      it { expect(monster_trucks.interested(:person, :r).where('r.intensity < 5').pluck(:person)).to eq([samuels]) }
 
       it 'considers symbols as node fields for order' do
-        monster_trucks.interested(:person).order(:name).pluck(:person).should eq([samuels, othmar])
-        monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person).should eq([othmar, samuels])
+        expect(monster_trucks.interested(:person).order(:name).pluck(:person)).to eq([samuels, othmar])
+        expect(monster_trucks.interested(:person, :r).order('r.intensity DESC').pluck(:person)).to eq([othmar, samuels])
       end
     end
   end
@@ -708,13 +735,13 @@ describe 'Query API' do
       let(:changed_props_create) { proc { from_node.interests.create(to_node, second_props) } }
 
       before do
-        Student.has_many :out, :interests, options
         from_node.interests.create(to_node, first_props)
         expect(from_node.interests.count).to eq 1
       end
 
       context 'with `true` option' do
-        let(:options) { {type: nil, unique: true} }
+        let(:student_interests_association_options) { {type: nil, unique: true} }
+
         it 'becomes :none' do
           expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
           changed_props_create.call
@@ -722,7 +749,7 @@ describe 'Query API' do
       end
 
       context 'with :none open' do
-        let(:options) { {type: nil, unique: :none} }
+        let(:student_interests_association_options) { {type: nil, unique: :none} }
 
         it 'does not create additional rels, even when properties change' do
           expect do
@@ -732,7 +759,7 @@ describe 'Query API' do
       end
 
       context 'with `:all` option' do
-        let(:options) { {type: nil, unique: :all} }
+        let(:student_interests_association_options) { {type: nil, unique: :all} }
 
         it 'creates additional rels when properties change' do
           expect { changed_props_create.call }.to change { from_node.interests.count }
@@ -740,7 +767,7 @@ describe 'Query API' do
       end
 
       context 'with {on: [keys]} option' do
-        let(:options) { {type: nil, unique: {on: :score}} }
+        let(:student_interests_association_options) { {type: nil, unique: {on: :score}} }
 
         context 'and a listed property changes' do
           it 'creates a new rel' do

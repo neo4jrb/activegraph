@@ -3,8 +3,8 @@ describe Neo4j::ActiveRel::Property do
 
   before do
     @session = double('Mock Session')
-    Neo4j::Session.stub(:current).and_return(@session)
-    clazz.stub(:neo4j_session).and_return(session)
+    allow(Neo4j::Session).to receive(:current).and_return(@session)
+    allow(clazz).to receive(:neo4j_session).and_return(session)
   end
 
   let(:clazz) do

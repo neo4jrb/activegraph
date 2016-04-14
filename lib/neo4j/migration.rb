@@ -69,7 +69,7 @@ MESSAGE
 
           count = [nodes_left, max_per_batch].min
           last_time_taken = Benchmark.realtime do
-            max_per_batch = id_batch_set(label, model.primary_key, count.times.map { new_id_for(model) }, count)
+            max_per_batch = id_batch_set(label, model.primary_key, Array.new(count) { new_id_for(model) }, count)
           end
         end
       end

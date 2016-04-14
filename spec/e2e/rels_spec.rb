@@ -12,33 +12,33 @@ describe 'Neo4j::ActiveNode#rels' do
   end
 
   it 'delegates #nodes' do
-    @n.nodes(dir: :outgoing).to_a.should =~ [@a]
+    expect(@n.nodes(dir: :outgoing).to_a).to match_array([@a])
   end
 
   it 'delegates #node' do
-    @n.node(dir: :outgoing).should eq(@a)
+    expect(@n.node(dir: :outgoing)).to eq(@a)
   end
 
   it 'delegates #rels' do
     rels = @n.rels(dir: :outgoing)
-    rels.count.should eq(1)
-    rels.first.end_node.should eq(@a)
-    rels.first.start_node.should eq(@n)
+    expect(rels.count).to eq(1)
+    expect(rels.first.end_node).to eq(@a)
+    expect(rels.first.start_node).to eq(@n)
   end
 
   it 'delegates #rel' do
     rel = @n.rel(dir: :outgoing)
-    rel.end_node.should eq(@a)
-    rel.start_node.should eq(@n)
+    expect(rel.end_node).to eq(@a)
+    expect(rel.start_node).to eq(@n)
   end
 
   it 'delegates #rel?' do
-    @n.rel?(dir: :outgoing).should be true
-    @n.rel?(dir: :outgoing, type: :knows).should be false
+    expect(@n.rel?(dir: :outgoing)).to be true
+    expect(@n.rel?(dir: :outgoing, type: :knows)).to be false
   end
 
   it 'delegates #rel?' do
-    @n.rel?(dir: :outgoing).should be true
-    @n.rel?(dir: :outgoing, type: :knows).should be false
+    expect(@n.rel?(dir: :outgoing)).to be true
+    expect(@n.rel?(dir: :outgoing, type: :knows)).to be false
   end
 end

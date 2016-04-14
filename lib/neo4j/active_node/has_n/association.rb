@@ -79,7 +79,7 @@ module Neo4j
           return if model_class == false
 
           Array.new(target_classes).map do |target_class|
-            "#{name}:#{target_class.mapped_label_name}"
+            "#{name}:`#{target_class.mapped_label_name}`"
           end.join(' OR ')
         end
 
@@ -151,7 +151,7 @@ module Neo4j
         def relationship_class?
           !!relationship_class
         end
-        alias_method :rel_class?, :relationship_class?
+        alias rel_class? relationship_class?
 
         private
 
@@ -216,7 +216,7 @@ module Neo4j
           message = case
                     when (message = type_keys_error_message(options.keys))
                       message
-                    when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
+                    when !(unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).empty?
                       "Unknown option(s) specified: #{unknown_keys.join(', ')}"
                     end
 

@@ -26,7 +26,7 @@ describe Neo4j::ActiveRel::RelatedNode do
       end
 
       it 'changes the value of @node' do
-        Neo4j::Node.stub(:load).and_return(node1)
+        allow(Neo4j::Node).to receive(:load).and_return(node1)
         r.loaded
         expect(r.instance_variable_get(:@node)).to eq node1
       end
@@ -113,7 +113,7 @@ describe Neo4j::ActiveRel::RelatedNode do
     it 'does not accept an invalid initialization param' do
       expect do
         RelatedNode.new(foo: 'bar')
-      end.to raise_error(Neo4j::ActiveRel::RelatedNode::InvalidParameterError)
+      end.to raise_error(Neo4j::InvalidParameterError)
     end
   end
 end

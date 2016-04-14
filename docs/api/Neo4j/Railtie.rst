@@ -31,6 +31,8 @@ Railtie
 
    
 
+   
+
 
 
 
@@ -46,7 +48,7 @@ Files
 
 
 
-  * `lib/neo4j/railtie.rb:5 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/railtie.rb#L5>`_
+  * `lib/neo4j/railtie.rb:7 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/railtie.rb#L7>`_
 
 
 
@@ -126,18 +128,20 @@ Methods
 
   .. code-block:: ruby
 
-     def open_neo4j_session(options)
+     def open_neo4j_session(options, wait_for_connection = false)
        type, name, default, path = options.values_at(:type, :name, :default, :path)
      
        if !java_platform? && type == :embedded_db
          fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
        end
      
-       session = if options.key?(:name)
-                   Neo4j::Session.open_named(type, name, default, path)
-                 else
-                   Neo4j::Session.open(type, path, options[:options])
-                 end
+       session = wait_for_value(wait_for_connection) do
+         if options.key?(:name)
+           Neo4j::Session.open_named(type, name, default, path)
+         else
+           Neo4j::Session.open(type, path, options[:options])
+         end
+       end
      
        start_embedded_session(session) if type == :embedded_db
      end
@@ -212,6 +216,34 @@ Methods
        restricted_field.accessible = true
        restricted_field.set nil, false
        session.start
+     end
+
+
+
+.. _`Neo4j/Railtie#wait_for_value`:
+
+**#wait_for_value**
+  
+
+  .. code-block:: ruby
+
+     def wait_for_value(wait)
+       session = nil
+       Timeout.timeout(60) do
+         until session
+           begin
+             if session = yield
+               puts
+               return session
+             end
+           rescue Faraday::ConnectionFailed => e
+             raise e if !wait
+     
+             putc '.'
+             sleep(1)
+           end
+         end
+       end
      end
 
 

@@ -142,6 +142,8 @@ If you need to use a string in where, you should set the parameter manually.
 Variable-length relationships
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+**Introduced in version 5.1.0**
+
 It is possible to specify a variable-length qualifier to apply to relationships when calling association methods.
 
 .. code-block:: ruby
@@ -212,6 +214,8 @@ The ``neo4j-core`` gem provides a ``Query`` class which can be used for building
   student.lessons.query_as(:l)
 
 The ``Query`` class has a set of methods which map directly to Cypher clauses and which return another ``Query`` object to allow chaining.  For example:
+
+.. code-block:: ruby
 
   student.lessons.query_as(:l) # This gives us our first Query object
     .match("l-[:has_category*]->(root_category:Category)").where("NOT(root_category-[:has_category]->()))

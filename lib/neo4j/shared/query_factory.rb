@@ -11,15 +11,18 @@ module Neo4j::Shared
     end
 
     def self.create(graph_object, identifier)
-      factory = case graph_object
-                when Neo4j::ActiveNode
-                  NodeQueryFactory
-                when Neo4j::ActiveRel
-                  RelQueryFactory
-                else
-                  fail "Unable to find factory for #{graph_object}"
-                end
-      factory.new(graph_object, identifier)
+      factory_for(graph_object).new(graph_object, identifier)
+    end
+
+    def self.factory_for(graph_obj)
+      case
+      when graph_obj.respond_to?(:labels_for_create)
+        NodeQueryFactory
+      when graph_obj.respond_to?(:rel_type)
+        RelQueryFactory
+      else
+        fail "Unable to find factory for #{graph_obj}"
+      end
     end
 
     def query
@@ -66,7 +69,7 @@ module Neo4j::Shared
 
     def create_query
       return match_query if graph_object.persisted?
-      base_query.create(identifier => {graph_object.labels_for_create.join(':').to_sym => graph_object.props_for_create})
+      base_query.create(identifier => {graph_object.labels_for_create => graph_object.props_for_create})
     end
   end
 
@@ -81,8 +84,8 @@ module Neo4j::Shared
       return match_query if graph_object.persisted?
       create_props, set_props = filtered_props
       base_query.send(graph_object.create_method, query_string).break
-        .set(identifier => set_props)
-        .params(:"#{identifier}_create_props" => create_props)
+                .set(identifier => set_props)
+                .params(:"#{identifier}_create_props" => create_props)
     end
 
     private

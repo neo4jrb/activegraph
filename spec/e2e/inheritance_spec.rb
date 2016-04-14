@@ -6,6 +6,7 @@ describe 'Inheritance', type: :e2e do
     stub_active_node_class('Node') do
       property :created_at, type: DateTime
       property :updated_at, type: DateTime
+      property :foo, type: String, default: 'foo'
     end
 
     stub_named_class('Vehicle', Node) do
@@ -20,6 +21,16 @@ describe 'Inheritance', type: :e2e do
       property :model
       index :model
     end
+
+    stub_active_rel_class('BaseRel') do
+      from_class false
+      to_class false
+      property :foo, type: String, default: 'foo'
+    end
+
+    stub_named_class('ManufacturedBy', BaseRel) do
+      property :on, type: DateTime
+    end
   end
 
   before(:each) do
@@ -29,30 +40,46 @@ describe 'Inheritance', type: :e2e do
     @saab = Car.create(name: 'saab', model: '900')
   end
 
-  describe 'find' do
-    it 'can find using subclass index' do
-      @volvo.labels.should =~ [:Car, :Node, :Vehicle]
-      Car.where(name: 'volvo').first.should eq(@volvo)
-      Vehicle.where(name: 'volvo').first.should eq(@volvo)
+  describe 'ActiveNode' do
+    describe 'find' do
+      it 'can find using subclass index' do
+        expect(@volvo.labels).to match_array([:Car, :Node, :Vehicle])
+        expect(Car.where(name: 'volvo').first).to eq(@volvo)
+        expect(Vehicle.where(name: 'volvo').first).to eq(@volvo)
+      end
+
+      it 'can find using baseclass index' do
+        expect(@saab.labels).to match_array([:Car, :Node, :Vehicle])
+        expect(Car.where(model: '900').first).to eq(@saab)
+        expect(Vehicle.where(model: '900').first).to eq(@saab)
+      end
     end
 
-    it 'can find using baseclass index' do
-      @saab.labels.should =~ [:Car, :Node, :Vehicle]
-      Car.where(model: '900').first.should eq(@saab)
-      Vehicle.where(model: '900').first.should eq(@saab)
+    describe 'all' do
+      it 'can find all sub and base classes' do
+        expect(Vehicle.all.to_a).to match_array([@saab, @bike, @volvo])
+        expect(Car.all.to_a).to match_array([@saab, @volvo])
+      end
+    end
+
+    describe 'indexes' do
+      it 'inherits the indexes of the base class' do
+        expect(Car.indexed_properties).to include :name
+      end
+    end
+
+    describe 'properties' do
+      it 'inherits' do
+        expect(Car.new.foo).to eq 'foo'
+      end
     end
   end
 
-  describe 'all' do
-    it 'can find all sub and base classes' do
-      Vehicle.all.to_a.should =~ [@saab, @bike, @volvo]
-      Car.all.to_a.should =~ [@saab, @volvo]
-    end
-  end
+  describe 'ActiveRel' do
+    let(:rel) { ManufacturedBy.new }
 
-  describe 'indexes' do
-    it 'inherits the indexes of the base class' do
-      expect(Car.indexed_properties).to include :name
+    it 'inherits properties' do
+      expect(rel.foo).to eq 'foo'
     end
   end
 

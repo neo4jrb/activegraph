@@ -34,7 +34,7 @@ Files
 
 
 
-  * `lib/neo4j/shared/type_converters.rb:34 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L34>`_
+  * `lib/neo4j/shared/type_converters.rb:40 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/shared/type_converters.rb#L40>`_
 
 
 

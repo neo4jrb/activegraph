@@ -24,7 +24,6 @@ require 'its'
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
-require 'active_attr/rspec'
 
 require 'neo4j-core'
 require 'neo4j-server'
@@ -186,11 +185,36 @@ session_adaptor = case session_mode
                     Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
                   end
 
+# Introduces `let_context` helper method
+# This allows us to simplify the case where we want to
+# have a context which contains one or more `let` statements
+module RSpecHelpers
+  # Supports giving either a Hash or a String and a Hash as arguments
+  # In both cases the Hash will be used to define `let` statements
+  # When a String is specified that becomes the context description
+  # If String isn't specified, Hash#inspect becomes the context description
+  def let_context(*args, &block)
+    context_string, hash =
+      case args.map(&:class)
+      when [String, Hash] then ["#{args[0]} #{args[1]}", args[1]]
+      when [Hash] then [args[0].inspect, args[0]]
+      end
+
+    context(context_string) do
+      hash.each { |var, value| let(var) { value } }
+
+      instance_eval(&block)
+    end
+  end
+end
+
+
 puts 'setting session'
 Neo4j::ActiveBase.set_current_session(Neo4j::Core::CypherSession.new(session_adaptor))
 
 
 RSpec.configure do |config|
+  c.extend RSpecHelpers
   config.include Neo4jSpecHelpers
   config.include ActiveNodeRelStubHelpers
 

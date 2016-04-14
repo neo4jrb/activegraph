@@ -13,7 +13,7 @@ describe Neo4j::Node::Wrapper do
       allow(wrapper).to receive(:props).and_return({})
       allow(wrapper).to receive(:labels).and_return([:'AutoLoadTest::MyWrapperClass'])
       obj = wrapper.wrapper
-      obj.should be_kind_of(AutoLoadTest::MyWrapperClass)
+      expect(obj).to be_kind_of(AutoLoadTest::MyWrapperClass)
     end
   end
 end

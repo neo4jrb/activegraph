@@ -44,7 +44,7 @@ Files
 
 
 
-  * `lib/neo4j/active_node/persistence.rb:103 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L103>`_
+  * `lib/neo4j/active_node/persistence.rb:102 <https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_node/persistence.rb#L102>`_
 
 
 
@@ -106,6 +106,7 @@ Methods
 
      def find_or_create(find_attributes, set_attributes = {})
        on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
+     
        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
          .on_create_set(n: on_create_attributes)
          .pluck(:n).first
@@ -159,10 +160,17 @@ Methods
 
   .. code-block:: ruby
 
-     def merge(attributes)
-       neo4j_session.query.merge(n: {self.mapped_label_names => attributes})
-         .on_create_set(n: on_create_props(attributes))
-         .on_match_set(n: on_match_props)
+     def merge(match_attributes, optional_attrs = {})
+       options = [:on_create, :on_match, :set]
+       optional_attrs.assert_valid_keys(*options)
+     
+       optional_attrs.default = {}
+       on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
+     
+       neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
+         .on_create_set(n: on_create_props(on_create_attrs))
+         .on_match_set(n: on_match_props(on_match_attrs))
+         .break.set(n: set_attrs)
          .pluck(:n).first
      end
 

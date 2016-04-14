@@ -39,7 +39,7 @@ module Neo4j
               end
               result
             end
-            alias_method :for_node_where_clause, :for_where_clause
+            alias for_node_where_clause for_where_clause
 
             def for_where_not_clause(*args)
               for_where_clause(*args).each do |link|

@@ -69,7 +69,7 @@ Methods
   .. code-block:: ruby
 
      def create_model_file
-       template 'model.erb', File.join('app/models', "#{singular_name}.rb")
+       template 'model.erb', File.join('app/models', class_path, "#{singular_name}.rb")
      end
 
 
