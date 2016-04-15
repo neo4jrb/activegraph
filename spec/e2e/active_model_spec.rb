@@ -304,7 +304,7 @@ describe 'Neo4j::ActiveNode' do
           expect { c.save }.not_to raise_error
         end.not_to change { c.name }.from('Katatonia')
 
-        Company.after_update { fail 'Bar error' }
+        Company.after_update { puts 'bar'; fail 'Bar error' }
 
         c.name = 'October Tide'
         expect do

@@ -66,22 +66,29 @@ describe 'has_many' do
   end
 
   describe 'rel_type' do
+    def first_rel_type(node, dir = :both)
+      rel = case dir
+            when :both then '-[r]-'
+            when :incoming then '<-[r]-'
+            when :outgoing then '-[r]->'
+            end
+
+      node.query_as(:n).match("(n)#{rel}()").pluck('type(r)').first
+    end
     it 'creates the correct type' do
       node.friends << friend1
-      r = node.rel
-      expect(r.rel_type).to eq(:FRIENDS)
+      expect(first_rel_type(node)).to eq('FRIENDS')
     end
 
     it 'creates the correct type' do
       node.knows << friend1
-      r = node.rel
-      expect(r.rel_type).to eq(:KNOWS)
+      expect(first_rel_type(node)).to eq('KNOWS')
     end
 
     it 'creates correct incoming relationship' do
       node.knows_me << friend1
-      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:KNOWS)
-      expect(node.rel(dir: :incoming).rel_type).to eq(:KNOWS)
+      expect(first_rel_type(friend1, :outgoing)).to eq('KNOWS')
+      expect(first_rel_type(node, :incoming)).to eq('KNOWS')
     end
   end
 
@@ -99,8 +106,8 @@ describe 'has_many' do
     rels = node.friends.rels
     expect(rels.count).to eq(1)
     rel = rels.first
-    expect(rel.start_node).to eq(node)
-    expect(rel.end_node).to eq(friend1)
+    expect(rel.start_node_id).to eq(node.neo_id)
+    expect(rel.end_node_id).to eq(friend1.neo_id)
   end
 
   describe 'me.friends << friend_1 << friend' do

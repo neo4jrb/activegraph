@@ -75,6 +75,10 @@ module Neo4jSpecHelpers
     current_session
   end
 
+  def neo4j_query(*args)
+    current_session.query(*args)
+  end
+
   def log_queries!
     Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
     Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(&method(:puts))
@@ -209,12 +213,11 @@ module RSpecHelpers
 end
 
 
-puts 'setting session'
-Neo4j::ActiveBase.set_current_session(Neo4j::Core::CypherSession.new(session_adaptor))
+Neo4j::ActiveBase.set_current_session_by_adaptor(session_adaptor)
 
 
 RSpec.configure do |config|
-  c.extend RSpecHelpers
+  config.extend RSpecHelpers
   config.include Neo4jSpecHelpers
   config.include ActiveNodeRelStubHelpers
 

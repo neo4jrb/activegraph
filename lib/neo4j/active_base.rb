@@ -29,7 +29,7 @@ module Neo4j
       end
 
       def new_query(options = {})
-        Neo4j::Core::Query.new({session: current_transaction || current_session}.merge(options))
+        Neo4j::Core::Query.new({session: current_session}.merge(options))
       end
 
       def current_transaction

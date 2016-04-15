@@ -10,6 +10,7 @@ module Neo4j::Shared
     def update_model
       return if !changed_attributes || changed_attributes.empty?
       query = query_as(:n).set(n: props_for_update)
+      puts 'herehere!'
       neo4j_query(query)
       changed_attributes.clear
     end
