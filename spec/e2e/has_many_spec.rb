@@ -1,4 +1,21 @@
 describe 'has_many' do
+  def rel_cypher_string(dir = :both, type = nil)
+    type_string = type ? ":#{type}" : ''
+    case dir
+    when :both then "-[r#{type_string}]-"
+    when :incoming then "<-[r#{type_string}]-"
+    when :outgoing then "-[r#{type_string}]->"
+    end
+  end
+
+  def first_rel_type(node, dir = :both, type = nil)
+    node.query_as(:n).match("(n)#{rel_cypher_string(dir, type)}()").pluck('type(r)').first
+  end
+
+  def node_rels(node, dir = :both, type = nil)
+    node.query_as(:n).match("(n)#{rel_cypher_string(dir, type)}()").pluck('r')
+  end
+
   before(:each) do
     clear_model_memory_caches
     delete_db
@@ -66,15 +83,6 @@ describe 'has_many' do
   end
 
   describe 'rel_type' do
-    def first_rel_type(node, dir = :both)
-      rel = case dir
-            when :both then '-[r]-'
-            when :incoming then '<-[r]-'
-            when :outgoing then '-[r]->'
-            end
-
-      node.query_as(:n).match("(n)#{rel}()").pluck('type(r)').first
-    end
     it 'creates the correct type' do
       node.friends << friend1
       expect(first_rel_type(node)).to eq('FRIENDS')
@@ -178,19 +186,19 @@ describe 'has_many' do
       it 'creates a new relationship when given existing nodes and given properties' do
         node.friends.create(friend1, since: 1994)
 
-        r = node.rel(dir: :outgoing, type: 'FRIENDS')
+        r = node_rels(node, :outgoing, 'FRIENDS').first
 
-        expect(r[:since]).to eq(1994)
+        expect(r.props[:since]).to eq(1994)
       end
 
       it 'creates new relationships when given an array of nodes and given properties' do
         node.friends.create([friend1, friend2], since: 1995)
 
-        rs = node.rels(dir: :outgoing, type: 'FRIENDS')
+        rs = node_rels(node, :outgoing, 'FRIENDS')
 
-        expect(rs.map(&:end_node)).to match_array([friend1, friend2])
+        expect(rs.map(&:end_node_id)).to match_array([friend1.neo_id, friend2.neo_id])
         rs.each do |r|
-          expect(r[:since]).to eq(1995)
+          expect(r.props[:since]).to eq(1995)
         end
       end
     end
@@ -199,26 +207,28 @@ describe 'has_many' do
       let(:node2) { double('unpersisted node', props: {name: 'Brad'}) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
-        node.friends.create(Person.new(name: 'Brad'), since: 1996)
+        p = Person.new(name: 'Brad')
+        node.friends.create(p, since: 1996)
         # node2.stub(:persisted?).and_return(false)
         # node2.stub(:save).and_return(true)
         # node2.stub(:neo_id).and_return(2)
 
         # node.friends.create(node2, since: 1996)
-        r = node.rel(dir: :outgoing, type: 'FRIENDS')
+        r = node_rels(node, :outgoing, 'FRIENDS').first
 
-        expect(r[:since]).to eq(1996)
-        expect(r.end_node.name).to eq('Brad')
+        expect(r.props[:since]).to eq(1996)
+        expect(r.end_node_id).to eq(p.neo_id)
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
-        node.friends.create([Person.new(name: 'James'), Person.new(name: 'Cat')], since: 1997)
+        peeps = [Person.new(name: 'James'), Person.new(name: 'Cat')]
+        node.friends.create(peeps, since: 1997)
 
-        rs = node.rels(dir: :outgoing, type: 'FRIENDS')
+        rs = node_rels(node, :outgoing, 'FRIENDS')
 
-        expect(rs.map(&:end_node).map(&:name)).to match_array(%w(James Cat))
+        expect(rs.map(&:end_node_id)).to match_array(peeps.map(&:neo_id))
         rs.each do |r|
-          expect(r[:since]).to eq(1997)
+          expect(r.props[:since]).to eq(1997)
         end
       end
     end
@@ -450,7 +460,7 @@ describe 'has_many' do
     context 'failure' do
       it 'rolls back <<' do
         begin
-          tx = Neo4j::Transaction.new
+          tx = Neo4j::ActiveBase.new_transaction
           node.friends << friend1
           tx.failure
         ensure
@@ -462,7 +472,7 @@ describe 'has_many' do
       it 'rolls back =' do
         node.friends = friend1
         begin
-          tx = Neo4j::Transaction.new
+          tx = Neo4j::ActiveBase.new_transaction
           node.friends = friend2
           tx.failure
         ensure

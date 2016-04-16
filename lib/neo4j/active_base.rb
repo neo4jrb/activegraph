@@ -3,10 +3,19 @@ module Neo4j
   # is external to the main classes
   module ActiveBase
     class << self
+      # private?
       def current_session
         SessionRegistry.current_session.tap do |session|
           fail 'No session defined!' if session.nil?
         end
+      end
+
+      def current_transaction_or_session
+        current_transaction || current_session
+      end
+
+      def query(*args)
+        current_transaction_or_session.query(*args)
       end
 
       # Should support setting session via config options
@@ -24,8 +33,8 @@ module Neo4j
         end
       end
 
-      def wait_for_schema_changes
-        current_session.wait_for_schema_changes
+      def new_transaction
+        Neo4j::Transaction.new(current_session)
       end
 
       def new_query(options = {})

@@ -92,7 +92,7 @@ MESSAGE
 
 
       def id_batch_set(label, id_property, new_ids, count)
-        tx = Neo4j::Transaction.new
+        tx = Neo4j::ActiveBase.new_transaction
 
         Neo4j::ActiveBase.current_session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{id_property})
           with COLLECT(n) as nodes, #{new_ids} as ids

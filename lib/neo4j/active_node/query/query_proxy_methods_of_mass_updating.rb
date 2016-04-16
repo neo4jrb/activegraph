@@ -27,7 +27,7 @@ module Neo4j
           query_with_target(identifier) do |target|
             begin
               self.query.with(target).optional_match("(#{target})-[#{target}_rel]-()").delete("#{target}, #{target}_rel").exec
-            rescue Neo4j::Session::CypherError
+            rescue Neo4j::Core::CypherSession::Responses::Base::CypherError # <=- Seems hacky
               self.query.delete(target).exec
             end
             clear_source_object_cache

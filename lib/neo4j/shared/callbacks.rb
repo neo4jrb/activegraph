@@ -19,7 +19,7 @@ module Neo4j
       end
 
       def destroy #:nodoc:
-        tx = Neo4j::Transaction.new(Neo4j::ActiveBase.current_session)
+        tx = Neo4j::ActiveBase.new_transaction
         run_callbacks(:destroy) { super }
       rescue
         @_deleted = false

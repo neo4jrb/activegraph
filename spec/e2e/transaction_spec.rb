@@ -12,7 +12,7 @@ describe 'Neo4j::Transaction' do
 
     it 'returns a wrapped node inside and outside of transaction' do
       begin
-        tx = Neo4j::Transaction.new
+        tx = Neo4j::ActiveBase.new_transaction
         a = clazz.create name: 'a'
         b = clazz.create name: 'b'
         a.thing = b

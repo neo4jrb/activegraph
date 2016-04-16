@@ -3,7 +3,7 @@ require 'neo4j/core/node'
 
 wrapping_proc = Proc.new do |node|
   found_class = Neo4j::NodeWrapping.class_to_wrap(node.labels)
-  return node if not found_class
+  next node if not found_class
 
   found_class.new.tap do |wrapped_node|
     wrapped_node.init_on_load(node, node.props)

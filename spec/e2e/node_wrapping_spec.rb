@@ -42,17 +42,15 @@ describe 'Node Wrapping' do
       Neo4j::ActiveBase.new_query.create("(n#{label_string})").exec
     end
 
-    let(:result) { Neo4j::ActiveBase.current_session.query.match("(n#{label_string})").pluck(:n).first }
-
-    raw_node_class = (RUBY_PLATFORM =~ /java/) ? 'Java::OrgNeo4jKernelImplCore::NodeProxy' : '::Neo4j::Server::CypherNode'
+    let(:result) { Neo4j::ActiveBase.new_query.match("(n#{label_string})").pluck(:n).first }
 
     {
-      %w(ExtraneousLabel) => raw_node_class,
+      %w(ExtraneousLabel) => '::Neo4j::Core::Node',
       %w(Post) => 'Post',
 
       %w(ExtraneousLabel Post) => 'Post',
 
-      %w(SomeOtherClass) => raw_node_class,
+      %w(SomeOtherClass) => '::Neo4j::Core::Node',
       %w(SomeOtherClass Post) => 'Post',
 
       %w(User GitHub) => 'GitHubUser',
