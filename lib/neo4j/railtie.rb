@@ -105,8 +105,8 @@ module Neo4j
         end
       end
 
-      def session_type_is_embedded?(_session_type)
-        [:embedded_db, :embedded].include?(type)
+      def session_type_is_embedded?(session_type)
+        [:embedded_db, :embedded].include?(session_type)
       end
 
       def validate_platform!(session_type)

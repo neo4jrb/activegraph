@@ -174,9 +174,9 @@ module ActiveNodeRelStubHelpers
   end
 end
 
-session_mode = RUBY_PLATFORM == 'java' ? :embedded : :http
+TEST_SESSION_MODE = RUBY_PLATFORM == 'java' ? :embedded : :http
 
-session_adaptor = case session_mode
+session_adaptor = case TEST_SESSION_MODE
                   when :embedded
                     Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH, impermanent: true, auto_commit: true, wrap_level: :proc)
                   when :http

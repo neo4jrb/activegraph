@@ -8,7 +8,8 @@ describe 'Labels' do
       include Neo4j::ActiveNode
     end
 
-    Neo4j::Label.create(:IndexedTestClass).drop_index(:name)
+    Neo4j::Core::Label.new(:IndexedTestClass, current_session).drop_index(:name)
+    Neo4j::Core::Label.wait_for_schema_changes(current_session)
 
     class IndexedTestClass
       include Neo4j::ActiveNode
@@ -76,10 +77,10 @@ describe 'Labels' do
 
       it 'does not find it if it has been deleted' do
         jimmy = IndexedTestClass.create(name: 'jimmy')
-        result = IndexedTestClass.all
+        result = IndexedTestClass.all.to_a
         expect(result).to include(jimmy)
         jimmy.destroy
-        expect(IndexedTestClass.all).not_to include(jimmy)
+        expect(IndexedTestClass.all.to_a).not_to include(jimmy)
       end
     end
 

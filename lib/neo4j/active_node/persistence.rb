@@ -89,7 +89,7 @@ module Neo4j::ActiveNode
     private
 
     def destroy_query
-      query_as(:n).optional_match('(n)-[r]-()').delete(:n, :r)
+      query_as(:n).break.optional_match('(n)-[r]-()').delete(:n, :r)
     end
 
     # The pending associations are cleared during the save process, so it's necessary to

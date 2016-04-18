@@ -1,12 +1,12 @@
 require 'neo4j/core/relationship'
 
 wrapping_proc = Proc.new do |relationship|
-  Neo4j::NodeWrapping.wrapper(relationship)
+  Neo4j::RelWrapping.wrapper(relationship)
 end
 Neo4j::Core::Relationship.wrapper_callback(wrapping_proc)
 
 module Neo4j
-  module NodeWrapping
+  module RelWrapping
     class << self
       def wrapper(rel)
         rel.props.symbolize_keys!

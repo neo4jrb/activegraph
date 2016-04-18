@@ -1,25 +1,35 @@
-describe Neo4j::Relationship::Wrapper do
-  class RelClass; end
+describe Neo4j::RelWrapping do
 
-  let(:clazz) do
-    Class.new do
-      include Neo4j::Relationship::Wrapper
+  let(:id) { 1 }
+  let(:type) { :DEFAULT }
+  let(:properties) { {} }
+  let(:start_node_id) { 1 }
+  let(:end_node_id) { 2 }
+
+  let(:rel) { Neo4j::Core::Relationship.new(id, type, properties, start_node_id, end_node_id) }
+
+  subject { Neo4j::RelWrapping.wrapper(rel) }
+
+  it { should eq(rel) }
+
+  context 'HasFoo ActiveRel class defined' do
+    before do
+      stub_active_rel_class('HasFoo') do
+        property :bar
+        property :biz
+      end
     end
-  end
 
-  before do
-    allow_any_instance_of(clazz).to receive(:props).and_return('name' => 'superman')
-    allow_any_instance_of(RelClass).to receive(:init_on_load)
-  end
+    let_context type: :HAS_FOO do
+      it { should be_a(HasFoo) }
 
-  let(:r) { clazz.new }
+      let_context(properties: {'bar' => 'baz', 'biz' => 1}) do
+        its(:bar) { should eq('baz') }
+        its(:biz) { should eq(1) }
 
-  it 'converts symbolizes the keys of properties' do
-    r.wrapper
-    expect(r.props).to eq name: 'superman'
-  end
-
-  it 'returns self when unable to find a valid class' do
-    expect(r.wrapper).to eq(r)
+        its('start_node.neo_id') { should eq(1) }
+        its('end_node.neo_id') { should eq(2) }
+      end
+    end
   end
 end
