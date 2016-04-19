@@ -505,9 +505,11 @@ describe 'Neo4j::ActiveNode' do
       person = Person.create(name: 'andreas', age: 21)
       person.age = 22
       person.save
-      person2 = Neo4j::Node.load(person.neo_id)
-      expect(person2.age).to eq(22)
-      expect(person2.name).to eq('andreas')
+
+      person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = {neo_id} RETURN p',
+                            {neo_id: person.neo_id},
+                            wrap_level: :core_entity).first.p
+      expect(person2.props).to match hash_including age: 22, name: 'andreas'
     end
 
     it 'they can be all found' do

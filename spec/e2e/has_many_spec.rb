@@ -1,21 +1,4 @@
 describe 'has_many' do
-  def rel_cypher_string(dir = :both, type = nil)
-    type_string = type ? ":#{type}" : ''
-    case dir
-    when :both then "-[r#{type_string}]-"
-    when :incoming then "<-[r#{type_string}]-"
-    when :outgoing then "-[r#{type_string}]->"
-    end
-  end
-
-  def first_rel_type(node, dir = :both, type = nil)
-    node.query_as(:n).match("(n)#{rel_cypher_string(dir, type)}()").pluck('type(r)').first
-  end
-
-  def node_rels(node, dir = :both, type = nil)
-    node.query_as(:n).match("(n)#{rel_cypher_string(dir, type)}()").pluck('r')
-  end
-
   before(:each) do
     clear_model_memory_caches
     delete_db

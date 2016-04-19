@@ -108,6 +108,25 @@ module Neo4jSpecHelpers
   end
 end
 
+module Neo4jEntityFindingHelpers
+  def rel_cypher_string(dir = :both, type = nil)
+    type_string = type ? ":#{type}" : ''
+    case dir
+    when :both then "-[r#{type_string}]-"
+    when :incoming then "<-[r#{type_string}]-"
+    when :outgoing then "-[r#{type_string}]->"
+    end
+  end
+
+  def first_rel_type(node, dir = :both, type = nil)
+    node.query_as(:n).match("(n)#{rel_cypher_string(dir, type)}()").pluck('type(r)').first
+  end
+
+  def node_rels(node, dir = :both, type = nil)
+    node.query_as(:n).match("(n)#{rel_cypher_string(dir, type)}()").pluck('r')
+  end
+end
+
 $expect_queries_count = 0
 Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |_message|
   $expect_queries_count += 1
@@ -220,6 +239,7 @@ RSpec.configure do |config|
   config.extend RSpecHelpers
   config.include Neo4jSpecHelpers
   config.include ActiveNodeRelStubHelpers
+  config.include Neo4jEntityFindingHelpers
 
   # Setup the current session
   config.before(:suite) do

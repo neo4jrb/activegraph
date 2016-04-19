@@ -79,14 +79,6 @@ describe 'has_one' do
       expect(a.children.to_a).to eq([b])
     end
 
-    it 'can return relationship object via parent.rel' do
-      a = HasOneA.create(name: 'a')
-      b = HasOneB.create(name: 'b')
-      b.parent = a
-      rel = b.parent.rel
-      expect(rel.other_node(b)).to eq(a)
-    end
-
     it 'deletes previous parent relationship' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
