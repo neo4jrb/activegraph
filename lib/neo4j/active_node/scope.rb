@@ -96,6 +96,10 @@ module Neo4j::ActiveNode
         @target = target
       end
 
+      def identity
+        @query_proxy ? @query_proxy.identity : :n
+      end
+
       Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
         module_eval(%{
             def #{method}(params={})
