@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Invalid options to the `property` method now raise an exception (see #1169)
 
+### Added
+
+- Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
+
 ## [7.0.1] - 03-22-2016
 
 ### Fixed
