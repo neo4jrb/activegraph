@@ -85,15 +85,6 @@ module Neo4j
           other.id_property id_prop[:name], conf
         end
       end
-
-      if !manual_id_property?
-        id_property :uuid, auto: :uuid unless self.id_property?
-
-        name = Neo4j::Config[:id_property]
-        type = Neo4j::Config[:id_property_type]
-        value = Neo4j::Config[:id_property_type_value]
-        id_property(name, type => value) if name && type && value
-      end
     end
 
     ActiveSupport.run_load_hooks(:active_node, self)

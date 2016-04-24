@@ -3,25 +3,24 @@ describe Neo4j::ActiveNode::IdProperty do
     Neo4j::Config.delete(:id_property)
     Neo4j::Config.delete(:id_property_type)
     Neo4j::Config.delete(:id_property_type_value)
+    clear_model_memory_caches
   end
 
   describe 'abnormal cases' do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
         expect do
-          stub_const('Unique', UniqueClass.create do
-            include Neo4j::ActiveNode
+          stub_active_node_class('Unique') do
             id_property :something, :bla
-          end)
+          end
         end.to raise_error(/Expected a Hash/)
       end
 
       it 'raise for id_property :something, bla: 42' do
         expect do
-          stub_const('Unique', UniqueClass.create do
-            include Neo4j::ActiveNode
+          stub_active_node_class('Unique') do
             id_property :something, bla: 42
-          end)
+          end
         end.to raise_error(/Illegal value/)
       end
     end
@@ -30,10 +29,9 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'when no id_property' do
     before do
-      stub_const('Clazz', UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('Clazz') do
         property :name
-      end)
+      end
     end
 
     it 'uses the neo_id as id after save' do
@@ -60,36 +58,34 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'when having a configuration' do
       before do
-        before_session do
+        #before_session do
           Neo4j::Config[:id_property] = :the_id
           Neo4j::Config[:id_property_type] = :auto
           Neo4j::Config[:id_property_type_value] = :uuid
-          stub_const('Clazz', Class.new do
-            include Neo4j::ActiveNode
-          end)
-        end
+          stub_active_node_class('Clazz')
+        #end
       end
 
       it 'will set the id_property after a session has been created' do
         node = Clazz.new
         expect(node).to respond_to(:the_id)
-        expect(Clazz.mapped_label.indexes[:property_keys].sort).to eq([[:the_id], [:uuid]])
+        expect(Clazz.mapped_label.indexes).to match array_including([[:the_id], [:uuid]])
       end
     end
   end
 
   describe 'id_property :myid' do
     before do
-      before_session do
-        stub_const('Clazz', UniqueClass.create do
-          include Neo4j::ActiveNode
-          id_property :myid
-        end)
+      delete_db
+      delete_schema
+      stub_active_node_class('Clazz') do
+        id_property :myid
       end
     end
 
     it 'has an index' do
-      expect(Clazz.mapped_label.indexes[:property_keys]).to eq([[:myid]])
+      # Wait for thread to create index
+      expect(Clazz.mapped_label.indexes).to match array_including([[:myid]])
     end
 
     describe 'property myid' do
@@ -163,20 +159,19 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_id, on: :foobar' do
     before do
-      before_session do
-        stub_const('Clazz', UniqueClass.create do
-          include Neo4j::ActiveNode
-          id_property :my_id, on: :foobar
+      delete_db
+      delete_schema
+      stub_active_node_class('Clazz') do
+        id_property :my_id, on: :foobar
 
-          def foobar
-            'some id'
-          end
-        end)
+        def foobar
+          'some id'
+        end
       end
     end
 
     it 'has an index' do
-      expect(Clazz.mapped_label.indexes[:property_keys]).to eq([[:my_id]])
+      expect(Clazz.mapped_label.indexes).to eq([[:my_id]])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -218,9 +213,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'constraint setting' do
     before do
-      stub_const('Clazz', UniqueClass.create do
-        include Neo4j::ActiveNode
-      end)
+      stub_active_node_class('Clazz')
     end
 
     context 'constraint: false' do
@@ -246,34 +239,31 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'redefining the default property' do
-    before { current_session.close if current_session }
-
     context 'without a constraint' do
       before do
-        stub_const('NoConstraintClass', Class.new do
-                                          include Neo4j::ActiveNode
-                                          id_property :uuid, auto: :uuid, constraint: false
-                                          index :uuid
-                                        end)
+        delete_db
+        delete_schema
+        stub_active_node_class('NoConstraintClass') do
+          id_property :uuid, auto: :uuid, constraint: false
+          index :uuid
+        end
       end
 
       it 'prevents the setting of default uuid constraint' do
-        expect(NoConstraintClass).not_to receive(:constraint)
-        create_session
-        expect(Neo4j::Label.index?(NoConstraintClass.mapped_label_name, :uuid)).to be_truthy
+        expect(NoConstraintClass.constraint?(:uuid)).to be_falsy
+        expect(NoConstraintClass.mapped_label.index?(:uuid)).to be_truthy
       end
 
       describe 'inheritence' do
         before do
-          stub_const('ConstraintSubclass', Class.new(NoConstraintClass) do
-                                             include Neo4j::ActiveNode
-                                             id_property :uuid, auto: :uuid, constraint: true
-                                           end)
+          stub_active_node_class('ConstraintSubclass') do
+            id_property :uuid, auto: :uuid, constraint: true
+          end
         end
 
         it 'overrides the parent' do
-          expect(ConstraintSubclass).to receive(:constraint)
-          create_session
+          expect(NoConstraintClass.constraint?(:uuid)).to be_truthy
+          expect(NoConstraintClass.mapped_label.index?(:uuid)).to be_truthy
         end
       end
     end
@@ -281,11 +271,8 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
-      before_session do
-        stub_const('Clazz', UniqueClass.create do
-          include Neo4j::ActiveNode
-          id_property :my_uuid, auto: :uuid
-        end)
+      stub_active_node_class('Clazz') do
+        id_property :my_uuid, auto: :uuid
       end
     end
 
@@ -386,26 +373,22 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     context 'when a session is not started' do
-      it 'waits until the session is loaded, then sets id property' do
-        before_session do
+      before do
+        stub_active_node_class('IdProp::Executive') do
+          id_property :my_id, on: :my_method
 
-          module IdProp
-            class Executive
-              include Neo4j::ActiveNode
-              id_property :my_id, on: :my_method
-
-              def my_method
-                'an id'
-              end
-            end
-
-            class CEO < Executive; end
+          def my_method
+            'an id'
           end
-
-          expect(IdProp::CEO.primary_key).to be_nil
         end
-        expect(IdProp::CEO.primary_key).not_to be_nil
+
+        stub_named_class('IdProp::CEO', IdProp::Executive)
       end
+
+      it 'waits until the session is loaded, then sets id property' do
+        expect(IdProp::CEO.primary_key).to be_nil
+      end
+#      expect(IdProp::CEO.primary_key).not_to be_nil
     end
   end
 end

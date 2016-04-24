@@ -146,6 +146,11 @@ def delete_db
   Neo4j::ActiveBase.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
+def delete_schema
+  Neo4j::Core::Label.drop_uniqueness_constraints_for(Neo4j::ActiveBase.current_session)
+  Neo4j::Core::Label.drop_indexes_for(Neo4j::ActiveBase.current_session)
+end
+
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers

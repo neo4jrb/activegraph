@@ -125,7 +125,7 @@ module Neo4j::ActiveNode
       attr_accessor :manual_id_property
 
       def find_by_neo_id(id)
-        Neo4j::Node.load(id)
+        find_by(neo_id: id)
       end
 
       def find_by_id(id)
@@ -157,6 +157,8 @@ module Neo4j::ActiveNode
       end
 
       def id_property_info
+        ensure_id_property_info!
+
         @id_property_info ||= {}
       end
 
@@ -171,6 +173,21 @@ module Neo4j::ActiveNode
       alias primary_key id_property_name
 
       private
+
+      # Since there's no way to know when a class is done being described, we wait until the id_property
+      # information is requested and use that as the opportunity to set up the defaults if no others are specified
+      def ensure_id_property_info!
+        return if manual_id_property? || @id_property_info
+
+        name = Neo4j::Config[:id_property]
+        type = Neo4j::Config[:id_property_type]
+        value = Neo4j::Config[:id_property_type_value]
+        if name && type && value
+          id_property(name, type => value)
+        else
+          id_property :uuid, auto: :uuid
+        end
+      end
 
       def id_property_constraint(name)
         if id_property?
