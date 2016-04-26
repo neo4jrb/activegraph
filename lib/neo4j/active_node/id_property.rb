@@ -141,7 +141,6 @@ module Neo4j::ActiveNode
 
         @id_property_info = {name: name, type: conf}
         TypeMethods.define_id_methods(self, name, conf)
-        constraint(name, type: :unique) unless conf[:constraint] == false
       end
 
       # rubocop:disable Style/PredicateName
@@ -172,22 +171,27 @@ module Neo4j::ActiveNode
 
       alias primary_key id_property_name
 
-      private
-
       # Since there's no way to know when a class is done being described, we wait until the id_property
       # information is requested and use that as the opportunity to set up the defaults if no others are specified
       def ensure_id_property_info!
-        return if manual_id_property? || @id_property_info
+        if !manual_id_property? && !@id_property_info
+          name = Neo4j::Config[:id_property]
+          type = Neo4j::Config[:id_property_type]
+          value = Neo4j::Config[:id_property_type_value]
+          if name && type && value
+            id_property(name, type => value)
+          else
+            id_property :uuid, auto: :uuid
+          end
+        end
 
-        name = Neo4j::Config[:id_property]
-        type = Neo4j::Config[:id_property_type]
-        value = Neo4j::Config[:id_property_type_value]
-        if name && type && value
-          id_property(name, type => value)
-        else
-          id_property :uuid, auto: :uuid
+        unless @id_property_info[:type][:constraint] == false || @constraint_created
+          @constraint_created = true
+          constraint(@id_property_info[:name], type: :unique)
         end
       end
+
+      private
 
       def id_property_constraint(name)
         if id_property?

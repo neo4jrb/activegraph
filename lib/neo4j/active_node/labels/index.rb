@@ -29,7 +29,6 @@ module Neo4j::ActiveNode::Labels
       # @example
       #   Person.constraint :name, type: :unique
       def constraint(property, constraints = {type: :unique})
-        puts 'CONSTRAINT FUCKING CALLED!', caller
         declared_properties.constraint_or_fail!(property, id_property_name)
         schema_create_operation(:constraint, property, constraints)
       end
@@ -48,10 +47,14 @@ module Neo4j::ActiveNode::Labels
       end
 
       def index?(property)
+        ensure_id_property_info!
+
         mapped_label.indexes.include?([property])
       end
 
       def constraint?(property)
+        ensure_id_property_info!
+
         mapped_label.uniqueness_constraints.include?([property])
       end
 

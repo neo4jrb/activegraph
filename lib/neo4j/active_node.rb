@@ -46,6 +46,8 @@ module Neo4j
     include Neo4j::ActiveNode::Enum
 
     def initialize(args = nil)
+      self.class.ensure_id_property_info! # So that we make sure all objects have an id_property
+
       symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args
       super(symbol_args)
     end
@@ -78,12 +80,10 @@ module Neo4j
       end
 
       def self.inherit_id_property(other)
-        Neo4j::Session.on_next_session_available do |_|
-          next if other.manual_id_property? || !self.id_property?
-          id_prop = self.id_property_info
-          conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
-          other.id_property id_prop[:name], conf
-        end
+        return if other.manual_id_property? || !self.id_property?
+        id_prop = self.id_property_info
+        conf = id_prop[:type].empty? ? {auto: :uuid} : id_prop[:type]
+        other.id_property id_prop[:name], conf
       end
     end
 
