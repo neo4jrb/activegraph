@@ -101,7 +101,7 @@ module Neo4j
           require 'neo4j/core/cypher_session/adaptors/http'
           Neo4j::Core::CypherSession::Adaptors::HTTP.new(path_or_url, options)
         else
-          fail ArgumentError, "Unrecognized session_type: #{type.inspect}"
+          fail ArgumentError, "Invalid session type: #{type.inspect}"
         end
       end
 
@@ -125,7 +125,7 @@ module Neo4j
         enable_unlimited_strength_crypto! if session_type_is_embedded?(session_type)
 
         adaptor = wait_for_value(wait_for_connection) do
-          cypher_session_adaptor(session_type, url || path, options[:options].merge(wrap_level: :proc))
+          cypher_session_adaptor(session_type, url || path, (options[:options] || {}).merge(wrap_level: :proc))
         end
 
         Neo4j::ActiveBase.set_current_session_by_adaptor(adaptor)

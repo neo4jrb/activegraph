@@ -36,20 +36,14 @@ module Rails
 
   describe 'railtie' do
     it 'configures a default Neo4j server_db' do
-      expect(Neo4j::Session).to receive(:open).with(:server_db, server_url, default: true).and_return(double)
-      app = App.new
-      Railtie.init['neo4j.start'].call(app)
-    end
+      expect(Neo4j::ActiveBase).to receive(:set_current_session_by_adaptor).with(an_instance_of(Neo4j::Core::CypherSession::Adaptors::HTTP))
 
-    it 'allows multi session' do
-      expect(Neo4j::Session).to receive(:open).with(:mysession_type, 'asd', nil).and_return(double)
       app = App.new
-      app.neo4j.sessions = [{type: :mysession_type, path: 'asd'}]
       Railtie.init['neo4j.start'].call(app)
     end
 
     it 'allows sessions with additional options' do
-      expect(Neo4j::Session).to receive(:open).with(:server_db, 'http://localhost:7474', basic_auth: {username: 'user', password: 'password'}).and_return(double)
+      expect(Neo4j::Core::CypherSession::Adaptors::HTTP).to receive(:new).with('http://localhost:7474', basic_auth: {username: 'user', password: 'password'}, wrap_level: :proc).and_call_original
       app = App.new
       app.neo4j.sessions = [{type: :server_db, path: 'http://localhost:7474',
                              options: {basic_auth: {username: 'user', password: 'password'}}}]
@@ -62,11 +56,21 @@ module Rails
       expect(cfg.session_path).to eq('http://user:password@localhost:7474')
     end
 
-    it 'allows named session' do
-      expect(Neo4j::Session).to receive(:open_named).with('type', 'name', 'default', 'path').and_return(double)
-      app = App.new
-      app.neo4j.sessions = [{type: 'type', name: 'name', default: 'default', path: 'path'}]
-      Railtie.init['neo4j.start'].call(app)
+    describe 'validation' do
+      let(:valid_session_options) do
+        {
+          type: :http,
+          url: 'http://neo4j:neo4j@localhost:7474'
+        }
+      end
+
+      it 'validates type' do
+        app = App.new
+        app.neo4j.sessions = [valid_session_options.merge(type: :invalid)]
+        expect do
+          Railtie.init['neo4j.start'].call(app)
+        end.to raise_error(ArgumentError, /Invalid session type/)
+      end
     end
   end
 end
