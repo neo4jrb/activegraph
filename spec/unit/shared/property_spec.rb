@@ -101,8 +101,8 @@ describe Neo4j::Shared::Property do
       end
 
       it 'does not change the attributes type' do
-        expect(clazz.attributes[:created_at][:type]).to eq(Time)
-        expect(clazz.attributes[:updated_at][:type]).to eq(Time)
+        expect(SharedPropertyTest.attributes[:created_at][:type]).to eq(Time)
+        expect(SharedPropertyTest.attributes[:updated_at][:type]).to eq(Time)
       end
     end
   end
