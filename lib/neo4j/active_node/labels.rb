@@ -37,15 +37,32 @@ module Neo4j
 
       # adds one or more labels
       # @see Neo4j-core
-      def add_label(*label)
-        @_persisted_obj.add_label(*label)
+      def add_labels(*labels)
+        labels.inject(query_as(:n)) do |query, label|
+          query.set("n:`#{label}`")
+        end.exec
+        @_persisted_obj.labels.concat(labels)
+        @_persisted_obj.labels.uniq!
+      end
+
+      # Remove this method in 9.0.0
+      def add_label(*labels)
+        fail 'add_label has been removed in favor of `add_labels`'
       end
 
       # Removes one or more labels
       # Be careful, don't remove the label representing the Ruby class.
       # @see Neo4j-core
-      def remove_label(*label)
-        @_persisted_obj.remove_label(*label)
+      def remove_labels(*labels)
+        labels.inject(query_as(:n)) do |query, label|
+          query.remove("n:`#{label}`")
+        end.exec
+        labels.each(&@_persisted_obj.labels.method(:delete))
+      end
+
+      # Remove this method in 9.0.0
+      def remove_label(*labels)
+        fail 'remove_label has been removed in favor of `remove_labels`'
       end
 
       def self._wrapped_classes

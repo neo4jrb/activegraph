@@ -73,7 +73,7 @@ module Neo4j
       end
 
       def type
-        'constraint'
+        'uniqueness_constraint'
       end
 
       def create!

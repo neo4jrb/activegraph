@@ -1,77 +1,64 @@
 describe 'Neo4j::ActiveNode' do
-  let(:clazz) do
-    UniqueClass.create do
-      include Neo4j::ActiveNode
-    end
+  before do
+    clear_model_memory_caches
+    delete_db
+    delete_schema
+  end
+
+  let!(:clazz) do
+    stub_active_node_class('Clazz')
   end
 
   let(:label_name) do
-    clazz.to_s.to_sym
+    Clazz.to_s.to_sym
   end
 
   describe 'labels' do
     context 'with _persisted_obj.labels present' do
       it 'returns the label of the class' do
-        expect(clazz.create.labels).to eq([label_name])
+        expect(Clazz.create.labels).to eq([label_name])
       end
     end
   end
 
   describe 'property' do
     describe 'property :age, index: :exact' do
-      let(:clazz) do
-        UniqueClass.create do
-          include Neo4j::ActiveNode
-        end
-      end
 
       it 'creates an index' do
-        expect(clazz).to receive(:index).with(:age)
-        clazz.property :age, index: :exact
+        expect(Clazz).to receive(:index).with(:age)
+        Clazz.property :age, index: :exact
       end
     end
 
     describe 'property :name, constraint: :unique' do
       it 'delegates to the Schema Operation class' do
-        clazz = UniqueClass.create { include Neo4j::ActiveNode }
+        Clazz = UniqueClass.create { include Neo4j::ActiveNode }
+        Clazz.ensure_id_property_info!
         expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).to receive(:create!).and_call_original
-        clazz.property :name, constraint: :unique
+        Clazz.property :name, constraint: :unique
       end
     end
 
     describe 'property :age, index: :exact, constraint: :unique' do
-      let(:clazz) do
-        UniqueClass.create do
-          include Neo4j::ActiveNode
-        end
-      end
-
       it 'raises an error, cannot set both index and constraint' do
-        expect { clazz.property :age, index: :exact, constraint: :unique }
+        expect { Clazz.property :age, index: :exact, constraint: :unique }
           .to raise_error(Neo4j::InvalidPropertyOptionsError)
       end
     end
 
     describe 'property :age, constraint: :unique' do
-      let(:clazz) do
-        UniqueClass.create do
-          include Neo4j::ActiveNode
-        end
-      end
-
       it 'creates a constraint but not an index' do # creating an constraint does also automatically create an index
-        expect(clazz).not_to receive(:index).with(:age, index: :exact)
-        expect(clazz).to receive(:constraint).with(:age, type: :unique)
-        clazz.property :age, constraint: :unique
+        expect(Clazz).not_to receive(:index).with(:age, index: :exact)
+        expect(Clazz).to receive(:constraint).with(:age, type: :unique)
+        Clazz.property :age, constraint: :unique
       end
     end
   end
 
 
   describe 'constraint' do
-    let(:clazz_with_constraint) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    let!(:clazz_with_constraint) do
+      stub_active_node_class('ClazzWithConstraint') do
         property :name
         property :age
         constraint :name, type: :unique
@@ -80,72 +67,68 @@ describe 'Neo4j::ActiveNode' do
 
     describe 'constraint :name, type: :unique' do
       it 'can not create two nodes with unique properties' do
-        clazz_with_constraint.create(name: 'foobar')
-        expect { clazz_with_constraint.create(name: 'foobar') }.to raise_error StandardError, /already exists/
+        ClazzWithConstraint.create(name: 'foobar')
+        expect { ClazzWithConstraint.create(name: 'foobar') }.to raise_error StandardError, /already exists/
       end
 
       it 'can create two nodes with different properties' do
-        clazz_with_constraint.create(name: 'foobar1')
-        expect { clazz_with_constraint.create(name: 'foobar2') }.to_not raise_error
+        ClazzWithConstraint.create(name: 'foobar1')
+        expect { ClazzWithConstraint.create(name: 'foobar2') }.to_not raise_error
       end
     end
 
     context 'with existing constraint' do
       context 'when trying to set an index' do
-        before { clazz_with_constraint }
+        before { ClazzWithConstraint }
 
         it 'raises an error, does not create the index' do
           expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).not_to receive(:create!)
-          expect { clazz_with_constraint.index :name }.to raise_error Neo4j::InvalidPropertyOptionsError
+          expect { ClazzWithConstraint.index :name }.to raise_error Neo4j::InvalidPropertyOptionsError
         end
       end
     end
 
     context 'with existing exact index' do
-      # before { clazz_with_constraint.index(:foo) }
       before do
-        Neo4j::Schema::UniqueConstraintOperation.new(clazz_with_constraint.mapped_label_name, :name).drop!
-        Neo4j::Schema::ExactIndexOperation.new(clazz_with_constraint.mapped_label_name, :name).create!
+        Neo4j::Schema::UniqueConstraintOperation.new(ClazzWithConstraint.mapped_label, :name).drop!
+        Neo4j::Schema::ExactIndexOperation.new(ClazzWithConstraint.mapped_label, :name).create!
       end
 
       it 'drops the index before making the constraint' do
         expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).to receive(:drop!).and_call_original
-        clazz_with_constraint.constraint(:name, type: :unique)
+        ClazzWithConstraint.constraint(:name, type: :unique)
       end
     end
   end
 
   describe 'index' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    let!(:clazz) do
+      stub_active_node_class('Clazz') do
         property :name
         index :name
       end
     end
 
-    let(:other_class) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-      end
+    let!(:other_class) do
+      stub_active_node_class('OtherClass')
     end
 
     it 'creates an index' do
-      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
+      expect(Clazz.mapped_label.indexes).to eq([[:name], [:uuid]])
     end
 
     it 'does not create index on other classes' do
-      expect(clazz.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
-      expect(other_class.mapped_label.indexes).to eq(property_keys: [[:uuid]])
+      Clazz.ensure_id_property_info!
+      OtherClass.ensure_id_property_info!
+      expect(Clazz.mapped_label.indexes).to eq([[:name], [:uuid]])
+      expect(OtherClass.mapped_label.indexes).to eq([[:uuid]])
     end
 
     context 'when set' do
       context 'and trying to also set a constraint' do
-        before { clazz }
-
         it 'raises an error, does not modify the schema' do
           expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).not_to receive(:create!)
-          expect { clazz.constraint :name, type: :unique }.to raise_error Neo4j::InvalidPropertyOptionsError
+          expect { Clazz.constraint :name, type: :unique }.to raise_error Neo4j::InvalidPropertyOptionsError
         end
       end
     end
@@ -158,75 +141,81 @@ describe 'Neo4j::ActiveNode' do
         end
         class Foo2 < Foo1
         end
-        expect(Foo1.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
-        expect(Foo2.mapped_label.indexes).to eq(property_keys: [[:name], [:uuid]])
+        expect(Foo1.mapped_label.indexes).to eq([[:name], [:uuid]])
+        expect(Foo2.mapped_label.indexes).to eq([[:name], [:uuid]])
       end
     end
 
     context 'with existing unique constraint' do
       before do
-        Neo4j::Schema::ExactIndexOperation.new(clazz.mapped_label_name, :name).drop!
-        Neo4j::Schema::UniqueConstraintOperation.new(clazz.mapped_label_name, :name, type: :unique).create!
+        Neo4j::Schema::ExactIndexOperation.new(Clazz.mapped_label, :name).drop!
+        Neo4j::Schema::UniqueConstraintOperation.new(Clazz.mapped_label, :name, type: :unique).create!
       end
 
       it 'drops the constraint before creating the index' do
         expect do
-          clazz.index(:name)
-        end.to change { Neo4j::Label.constraint?(clazz.mapped_label_name, :name) }.from(true).to(false)
+          Clazz.index(:name)
+        end.to change { Clazz.mapped_label.uniqueness_constraint?(:name) }.from(true).to(false)
       end
     end
   end
 
   describe 'index?' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    let!(:clazz) do
+      stub_active_node_class('Clazz') do
         property :name
         index :name
       end
     end
 
     it 'indicates whether a property is indexed' do
-      expect(clazz.index?(:name)).to be_truthy
-      expect(clazz.index?(:foo)).to be_falsey
+      expect(Clazz.index?(:name)).to be_truthy
+      expect(Clazz.index?(:foo)).to be_falsey
     end
   end
 
-  describe 'add_label' do
+  def labels_for(node)
+    node.query_as(:n).with('labels(n) AS labels').unwind(label: :labels).pluck(:label).map(&:to_sym)
+  end
+
+  describe 'add_labels' do
     it 'can add one label' do
-      node = clazz.create
-      node.add_label(:foo)
+      node = Clazz.create
+      node.add_labels(:foo)
       expect(node.labels).to match_array([label_name, :foo])
+      expect(labels_for(node)).to match_array([label_name, :foo])
     end
 
     it 'can add two label' do
-      node = clazz.create
-      node.add_label(:foo, :bar)
+      node = Clazz.create
+      node.add_labels(:foo, :bar)
       expect(node.labels).to match_array([label_name, :foo, :bar])
+      expect(labels_for(node)).to match_array([label_name, :foo, :bar])
     end
   end
 
 
-  describe 'remove_label' do
+  describe 'remove_labels' do
     it 'can remove one label' do
-      node = clazz.create
-      node.add_label(:foo)
-      node.remove_label(:foo)
+      node = Clazz.create
+      node.add_labels(:foo)
+      node.remove_labels(:foo)
       expect(node.labels).to match_array([label_name])
+      expect(labels_for(node)).to match_array([label_name])
     end
 
     it 'can add two label' do
-      node = clazz.create
-      node.add_label(:foo, :bar, :baaz)
-      node.remove_label(:foo, :baaz)
+      node = Clazz.create
+      node.add_labels(:foo, :bar, :baaz)
+      node.remove_labels(:foo, :baaz)
       expect(node.labels).to match_array([label_name, :bar])
+      expect(labels_for(node)).to match_array([label_name, :bar])
     end
   end
 
   describe 'setting association values via initialize' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    let!(:clazz) do
+      stub_active_node_class('Clazz') do
         property :name
         has_one :out, :foo, type: nil
       end
@@ -235,7 +224,7 @@ describe 'Neo4j::ActiveNode' do
     it 'indicates whether a property is indexed' do
       stub_const('::Foo', Class.new { include Neo4j::ActiveNode })
 
-      o = clazz.new(name: 'Jim', foo: 2)
+      o = Clazz.new(name: 'Jim', foo: 2)
 
       expect(o.name).to eq('Jim')
       expect do
@@ -252,45 +241,39 @@ describe 'Neo4j::ActiveNode' do
   end
 
   describe '.find' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
-      end
-    end
-
-    let(:object1) { clazz.create }
-    let(:object2) { clazz.create }
+    let(:object1) { Clazz.create }
+    let(:object2) { Clazz.create }
 
     describe 'finding individual records' do
       it 'by id' do
-        expect(clazz.find(object1.id)).to eq(object1)
-        found = clazz.find(object1.id)
-        expect(found).to be_a(clazz)
+        expect(Clazz.find(object1.id)).to eq(object1)
+        found = Clazz.find(object1.id)
+        expect(found).to be_a(Clazz)
       end
 
       it 'by object' do
-        expect(clazz.find(object1)).to eq(object1)
+        expect(Clazz.find(object1)).to eq(object1)
       end
 
       context 'with no results' do
         it 'raises an error' do
-          expect { clazz.find(8_675_309) }.to raise_error { Neo4j::RecordNotFound }
+          expect { Clazz.find(8_675_309) }.to raise_error { Neo4j::RecordNotFound }
         end
       end
     end
 
     describe 'finding multiple records' do
       it 'by id' do
-        expect(clazz.find([object1.id, object2.id]).to_set).to eq([object1, object2].to_set)
+        expect(Clazz.find([object1.id, object2.id]).to_set).to eq([object1, object2].to_set)
       end
 
       it 'by object' do
-        expect(clazz.find([object1, object2]).to_set).to eq([object1, object2].to_set)
+        expect(Clazz.find([object1, object2]).to_set).to eq([object1, object2].to_set)
       end
 
       context 'with no results' do
         it 'raises an error' do
-          expect { clazz.find[8_675_309] }.to raise_error { Neo4j::RecordNotFound }
+          expect { Clazz.find[8_675_309] }.to raise_error { Neo4j::RecordNotFound }
         end
       end
     end
