@@ -14,6 +14,9 @@ class Neo4j::Generators::InstallGenerator < Rails::Generators::Base
       inject_into_file 'config/application.rb', File.read("../../templates/neo4j_rails4.rb"), :after => '[:password]'
     end
 
+    # db:clear & db:seed tasks
+    template 'db.rake', 'lib/tasks/db.rake'
+
     # we are using JRuby - use Threads !
     gsub_file "config/environments/production.rb", "# config.threadsafe!", "config.threadsafe!"
   end
