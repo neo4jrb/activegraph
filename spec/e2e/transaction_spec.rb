@@ -33,7 +33,7 @@ describe 'Neo4j::Transaction' do
       end
     end
 
-    it 'rollbacks the current transaction' do
+    it 'rollbacks the current transaction by default' do
       expect do
         Neo4j::Transaction.run do |tx|
           clazz.create
@@ -43,7 +43,7 @@ describe 'Neo4j::Transaction' do
       end.not_to change { clazz.count }
     end
 
-    it 'rollbacks the current transaction' do
+    it 'keeps running the current transaction when `fail_transaction_when_validations_fail` is false' do
       Neo4j::Config[:fail_transaction_when_validations_fail] = false
 
       expect do
