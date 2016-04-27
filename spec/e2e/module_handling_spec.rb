@@ -1,4 +1,8 @@
 describe 'Module handling from config: :module_handling option' do
+  before do
+    delete_db
+  end
+
   let(:clazz) do
     Class.new do
       include Neo4j::ActiveNode
@@ -46,24 +50,24 @@ describe 'Module handling from config: :module_handling option' do
   end
 
   describe 'association model locations' do
-    let(:discovered_model) { clazz.associations[:students].instance_variable_get(:@target_class_option) }
+    let(:discovered_target_class_names) { clazz.associations[:students].target_class_names }
 
     context 'with config set to :none or unspecified' do
-      before { clazz.has_many :out, :students }
+      before { clazz.has_many :out, :students, type: :HAS_STUDENT }
 
       it 'expects a class with the singular version of the association' do
-        expect(discovered_model).to eq '::Student'
+        expect(discovered_target_class_names).to eq ['::Student']
       end
     end
 
     context ' with :association_model_namespace set' do
       before do
         Neo4j::Config[:association_model_namespace] = 'ModuleTest'
-        clazz.has_many :out, :students
+        clazz.has_many :out, :students, type: :HAS_STUDENT
       end
 
       it 'expects namespacing and looks for a model in the same namespace as the source' do
-        expect(discovered_model).to eq '::ModuleTest::Student'
+        expect(discovered_target_class_names).to eq ['::ModuleTest::Student']
         node1 = ModuleTest::Student.create
         node2 = ModuleTest::Student.create
         node1.students << node2
