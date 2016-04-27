@@ -1,7 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
+      # rubocop:disable Metrics/ModuleLength
       module QueryProxyMethods
+        # rubocop:enable Metrics/ModuleLength
         FIRST = 'HEAD'
         LAST = 'LAST'
 
@@ -140,15 +142,12 @@ module Neo4j
           end
         end
 
-        def find_or_initialize_by(params)
-          fail 'Method invalid when called on Class objects' unless source_object
-
-          inverse_association = find_inverse_association!(model, source_object.class, association)
-          where(params).first || model.new(params).tap { |m| m.public_send(inverse_association.name) << source_object }
+        def find_or_initialize_by(attributes, &block)
+          find_by(attributes) || initialize_by_current_chain_params(attributes, &block)
         end
 
-        def first_or_initialize
-          first || initialize_by_where_clause
+        def first_or_initialize(attributes = {}, &block)
+          first || initialize_by_current_chain_params(attributes, &block)
         end
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -191,14 +190,19 @@ module Neo4j
             source_association.relationship_class_name == target_association.relationship_class_name
         end
 
-        def initialize_by_where_clause
-          inverse_association = find_inverse_association!(model, source_object.class, association)
-          new(where_clause_params).tap { |m| m.public_send(inverse_association.name) << source_object }
+        def initialize_by_current_chain_params(params = {})
+          result = new(where_clause_params.merge(params))
+
+          inverse_association = find_inverse_association!(model, source_object.class, association) if source_object
+          result.tap do |m|
+            yield(m) if block_given?
+            m.public_send(inverse_association.name) << source_object if inverse_association
+          end
         end
 
         def where_clause_params
           query.clauses.select { |c| c.is_a?(Neo4j::Core::QueryClauses::WhereClause) && c.arg.is_a?(Hash) }
-            .map! { |e| e.arg[identity] }.compact!.inject { |a, b| a.merge(b) } || {}
+               .map! { |e| e.arg[identity] }.compact.inject { |a, b| a.merge(b) } || {}
         end
 
         def first_and_last(func, target)

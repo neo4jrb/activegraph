@@ -73,52 +73,106 @@ describe 'query_proxy_methods' do
   end
 
   describe 'find_or_initialize_by' do
-    let(:emily)       { Student.create(name: 'Emily') }
-    let(:philosophy)  { Lesson.create(name: 'philosophy') }
-    before do
-      philosophy.students << jimmy
+    context 'with relations chain' do
+      let(:emily)       { Student.create(name: 'Emily') }
+      let(:philosophy)  { Lesson.create(name: 'philosophy') }
+      before do
+        philosophy.students << jimmy
+      end
+
+      it 'returns the matching node when exists' do
+        expect(philosophy.students.find_or_initialize_by(name: jimmy.name).name).to eq(jimmy.name)
+      end
+
+      it 'initializes and associates a new node when it didn\'t exist' do
+        expect(philosophy.students.where(name: 'Rebecca').first).to be_nil
+        student = philosophy.students.find_or_initialize_by(name: 'Rebecca')
+        expect(student).not_to be_persisted
+        expect(student.name).to eq('Rebecca')
+        expect(student.lessons.to_a).to include(philosophy)
+        expect { student.save }.to change { philosophy.reload.students.count }.by(1)
+      end
+
+      it 'returns the node after initializing' do
+        expect(philosophy.students.find_or_initialize_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
+      end
     end
 
-    it 'returns the correct node if it can be found' do
-      expect(philosophy.students.find_or_initialize_by(name: jimmy.name).name).to eq(jimmy.name)
-    end
+    context 'with query proxy chains' do
+      let!(:old_emily)   { Teacher.create(name: 'Emily', age: 72) }
+      let!(:young_emily) { Teacher.create(name: 'Emily', age: 24) }
 
-    it 'initializes and associates a new node if one is not found' do
-      expect(philosophy.students.where(name: 'Rebecca').first).to be_nil
-      student = philosophy.students.find_or_initialize_by(name: 'Rebecca')
-      expect(student).not_to be_persisted
-      expect(student.name).to eq('Rebecca')
-      expect(student.lessons.to_a).to include(philosophy)
-      expect { student.save }.to change { philosophy.reload.students.count }.by(1)
-    end
+      it 'returns the matching node when exists' do
+        expect(Teacher.where(name: 'Emily').find_or_initialize_by(age: 24)).to eq(young_emily)
+      end
 
-    it 'returns the node after initializing' do
-      expect(philosophy.students.find_or_initialize_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
+      it 'initializes a new node when it didn\'t exist' do
+        another_emily = Teacher.where(name: 'Emily').find_or_initialize_by(age: 37)
+        expect(another_emily).not_to be_persisted
+        expect(another_emily.name).to eq('Emily')
+        expect(another_emily.age).to eq(37)
+      end
+
+      it 'initializes a new node when it didn\'t exist with a block' do
+        another_emily = Teacher.where(name: 'Emily').find_or_initialize_by(age: 92) do |e|
+          e.name = 'Donna'
+        end
+        expect(another_emily).not_to be_persisted
+        expect(another_emily.name).to eq('Donna')
+        expect(another_emily.age).to eq(92)
+      end
     end
   end
 
   describe 'first_or_initialize' do
-    let(:emily)       { Student.create(name: 'Emily') }
-    let(:philosophy)  { Lesson.create(name: 'philosophy') }
-    before do
-      philosophy.students << jimmy
+    context 'with relations chain' do
+      let(:emily)       { Student.create(name: 'Emily') }
+      let(:philosophy)  { Lesson.create(name: 'philosophy') }
+      before do
+        philosophy.students << jimmy
+      end
+
+      it 'returns the correct node if it can be found' do
+        expect(philosophy.students.where(name: jimmy.name).first_or_initialize.name).to eq(jimmy.name)
+      end
+
+      it 'initializes and associates a new node if one is not found' do
+        expect(philosophy.students.where(name: 'Rebecca').blank?).to be_truthy
+        student = philosophy.students.where(name: 'Rebecca').first_or_initialize
+        expect(student).not_to be_persisted
+        expect(student.name).to eq('Rebecca')
+        expect(student.lessons.to_a).to include(philosophy)
+        expect { student.save }.to change { philosophy.reload.students.count }.by(1)
+      end
+
+      it 'returns the node after initializing' do
+        expect(philosophy.students.where(name: 'Jacob').first_or_initialize).to be_a(Neo4j::ActiveNode)
+      end
     end
 
-    it 'returns the correct node if it can be found' do
-      expect(philosophy.students.where(name: jimmy.name).first_or_initialize.name).to eq(jimmy.name)
-    end
+    context 'with query proxy chains' do
+      let!(:old_emily)   { Teacher.create(name: 'Emily', age: 72) }
+      let!(:young_emily) { Teacher.create(name: 'Emily', age: 29) }
 
-    it 'initializes and associates a new node if one is not found' do
-      expect(philosophy.students.where(name: 'Rebecca').blank?).to be_truthy
-      student = philosophy.students.where(name: 'Rebecca').first_or_initialize
-      expect(student).not_to be_persisted
-      expect(student.name).to eq('Rebecca')
-      expect(student.lessons.to_a).to include(philosophy)
-      expect { student.save }.to change { philosophy.reload.students.count }.by(1)
-    end
+      it 'returns the matching node when exists' do
+        expect(Teacher.where(name: 'Emily', age: 29).first_or_initialize).to eq(young_emily)
+      end
 
-    it 'returns the node after initializing' do
-      expect(philosophy.students.where(name: 'Jacob').first_or_initialize).to be_a(Neo4j::ActiveNode)
+      it 'initializes a new node when it didn\'t exist' do
+        another_emily = Teacher.where(name: 'Emily', age: 36).first_or_initialize
+        expect(another_emily).not_to be_persisted
+        expect(another_emily.name).to eq('Emily')
+        expect(another_emily.age).to eq(36)
+      end
+
+      it 'initializes a new node when it didn\'t exist with a block' do
+        another_emily = Teacher.where(name: 'Emily', age: 36).first_or_initialize do |e|
+          e.age = 92
+        end
+        expect(another_emily).not_to be_persisted
+        expect(another_emily.name).to eq('Emily')
+        expect(another_emily.age).to eq(92)
+      end
     end
   end
 

@@ -160,7 +160,11 @@ module Neo4j::ActiveNode
       end
 
       def find_or_initialize_by(attributes, &block)
-        find_by(attributes) || new(attributes).tap(&block)
+        if block
+          find_by(attributes) || new(attributes).tap(&block)
+        else
+          find_by(attributes) || new(attributes)
+        end
       end
 
       def load_entity(id)
