@@ -7,4 +7,3 @@ end
 Neo4j::Config.use do |config|
   config[:storage_path] = "#{Rails.application.config.root}/db/neo4j-#{Rails.env}"
 end
-# Neo4j::Config[:include_root_in_json]
