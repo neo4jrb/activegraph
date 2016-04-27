@@ -657,8 +657,8 @@ describe 'Neo4j::ActiveNode' do
 
     let(:datetime_db_value) do
       Neo4j::Session.query.match(p: :Person)
-        .where(p: {neo_id: person.neo_id})
-        .pluck(p: :datetime).first
+                    .where(p: {neo_id: person.neo_id})
+                    .pluck(p: :datetime).first
     end
 
     it 'saves as date/time string by default' do

@@ -135,18 +135,18 @@ module Neo4j::ActiveNode
         on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
 
         neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
-          .on_create_set(n: on_create_props(on_create_attrs))
-          .on_match_set(n: on_match_props(on_match_attrs))
-          .break.set(n: set_attrs)
-          .pluck(:n).first
+                     .on_create_set(n: on_create_props(on_create_attrs))
+                     .on_match_set(n: on_match_props(on_match_attrs))
+                     .break.set(n: set_attrs)
+                     .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
         on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
 
         neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
-          .on_create_set(n: on_create_attributes)
-          .pluck(:n).first
+                     .on_create_set(n: on_create_attributes)
+                     .pluck(:n).first
       end
 
       # Finds the first node with the given attributes, or calls create if none found

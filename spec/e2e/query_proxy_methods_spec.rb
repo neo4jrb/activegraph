@@ -355,13 +355,13 @@ describe 'query_proxy_methods' do
 
     it 'updates all jimmy\'s lessions absence' do
       count = Student.all.match_to(jimmy).lessons(:l)
-              .update_all_rels(absence_count: 3)
+                     .update_all_rels(absence_count: 3)
       expect(count).to eq(2)
     end
 
     it 'updates all jimmy\'s lessions absence (with string parameter)' do
       count = Student.all.match_to(jimmy).lessons(:l)
-              .update_all_rels('rel1.absence_count = 3')
+                     .update_all_rels('rel1.absence_count = 3')
       expect(count).to eq(2)
     end
 

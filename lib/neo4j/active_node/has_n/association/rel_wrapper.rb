@@ -7,7 +7,7 @@ class Neo4j::ActiveNode::HasN::Association
     attr_reader :type, :association
     attr_accessor :properties
     private :association
-    alias_method :props_for_create, :properties
+    alias props_for_create properties
 
     def initialize(association, properties = {})
       @association = association

@@ -221,18 +221,11 @@ module Neo4j::ActiveNode
       end
 
       def associations
-        @associations ||= {}
+        (@associations ||= {}).merge(superclass == Object ? {} : superclass.associations)
       end
 
       def associations_keys
         @associations_keys ||= associations.keys
-      end
-
-      # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
-      def inherited(klass)
-        klass.instance_variable_set(:@associations, associations.clone)
-        @associations_keys = klass.associations_keys.clone
-        super
       end
 
       # For defining an "has many" association on a model.  This defines a set of methods on
@@ -500,14 +493,13 @@ module Neo4j::ActiveNode
 
       def default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize, nil,
-                                                 session: neo4j_session, query_proxy: nil, context: "#{self.name}")
+                                                 session: neo4j_session, query_proxy: nil, context: self.name.to_s)
       end
 
       def build_association(macro, direction, name, options)
         options[:model_class] = options[:model_class].name if options[:model_class] == self
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
-          @associations ||= {}
-          @associations[name] = association
+          add_association(name, association)
           create_reflection(macro, name, association, self)
         end
 
@@ -517,6 +509,12 @@ module Neo4j::ActiveNode
       # make sure error message is helpful
       rescue StandardError => e
         raise e.class, "#{e.message} (#{self.class}##{name})"
+      end
+
+      def add_association(name, association_object)
+        @associations ||= {}
+        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if @associations.key?(name)
+        @associations[name] = association_object
       end
     end
   end

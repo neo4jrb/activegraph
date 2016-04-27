@@ -1,3 +1,4 @@
+
 describe 'migration tasks' do
   require 'neo4j/migration'
 
@@ -5,49 +6,38 @@ describe 'migration tasks' do
   after(:all)  { ENV['silenced'] = nil }
 
   before do
-    module MigrationSpecs
-      class Song; end
-      class SecondRelClass; end
-      class ThirdRelClass; end
+    stub_active_node_class('User') do
+      property :name
+      has_many :out, :songs, model_class: :Song, type: 'songs'
+    end
 
-      class User
-        include Neo4j::ActiveNode
-        property :name
-        has_many :out, :songs, model_class: :Song, type: 'songs'
+    stub_active_node_class('Song') do
+      property :name
+
+      has_many :in, :owners, model_class: :User, origin: :songs
+      has_many :out, :singers, model_class: :User, rel_class: :oSecondRelClass
+      has_many :out, :new_singers, model_class: :User, rel_class: :ThirdRelClass
+      def custom_id
+        'my new id'
       end
+    end
 
-      class Song
-        include Neo4j::ActiveNode
-        property :name
+    stub_active_rel_class('FirstRelClass') do
+      from_class false
+      to_class false
+      type 'songs'
+    end
 
-        has_many :in, :owners, model_class: :User, origin: :songs
-        has_many :out, :singers, model_class: :User, rel_class: 'MigrationSpecs::SecondRelClass'
-        has_many :out, :new_singers, model_class: :User, rel_class: 'MigrationSpecs::ThirdRelClass'
-        def custom_id
-          'my new id'
-        end
-      end
+    stub_active_rel_class('SecondRelClass') do
+      from_class false
+      to_class false
+      type 'singers'
+    end
 
-      class FirstRelClass
-        include Neo4j::ActiveRel
-        from_class false
-        to_class false
-        type 'songs'
-      end
-
-      class SecondRelClass
-        include Neo4j::ActiveRel
-        from_class false
-        to_class false
-        type 'singers'
-      end
-
-      class ThirdRelClass
-        include Neo4j::ActiveRel
-        from_class false
-        to_class false
-        type 'singers'
-      end
+    stub_active_rel_class('ThirdRelClass') do
+      from_class false
+      to_class false
+      type 'singers'
     end
   end
 
@@ -64,7 +54,7 @@ describe 'migration tasks' do
   describe 'AddIdProperty class' do
     let(:full_path) { '/hd/gems/rails/add_id_property.yml' }
     let(:clazz) { Neo4j::Migration::AddIdProperty }
-    let(:map_template) { {models: ['MigrationSpecs::User', 'MigrationSpecs::Song']} }
+    let(:map_template) { {models: %w(User Song)} }
 
     before do
       allow(Rails).to receive_message_chain(:root, :join).and_return('/hd/gems/rails/add_id_property.yml')
@@ -77,37 +67,37 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      Neo4j::Session.query('CREATE (n:`MigrationSpecs::User`) return n')
-      user = MigrationSpecs::User.first
+      Neo4j::Session.query('CREATE (n:`User`) return n')
+      user = User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil
       clazz.new.migrate
 
-      user = MigrationSpecs::User.first
+      user = User.first
       expect(user.uuid).not_to be_nil
       expect(user.neo_id).to eq neo_id
     end
 
     it 'does not modify existing ids' do
-      user = MigrationSpecs::User.create
+      user = User.create
       expect(user.uuid).not_to be_nil
       uuid = user.uuid
 
       clazz.new.migrate
-      user_again = MigrationSpecs::User.find(uuid)
-      expect(user_again).to eq user
+      user_again = User.find(uuid)
+      expect(user_again.uuid).to eq user.uuid
     end
 
     it 'respects the id_property declared on the model' do
-      MigrationSpecs::Song.id_property :my_id, on: :custom_id
-      Neo4j::Session.query('CREATE (n:`MigrationSpecs::Song`) return n')
-      user = MigrationSpecs::Song.first
+      Song.id_property :my_id, on: :custom_id
+      Neo4j::Session.query('CREATE (n:`Song`) return n')
+      user = Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)
       expect(user.my_id).to be_nil
 
       clazz.new.migrate
-      user = MigrationSpecs::Song.first
+      user = Song.first
       expect(user.my_id).to eq 'my new id'
       expect(user.neo_id).to eq neo_id
     end

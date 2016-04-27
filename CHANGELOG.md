@@ -3,12 +3,28 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] Unreleased
+
+### Changed
+
+- Invalid options to the `property` method now raise an exception (see #1169)
+
+### Added
+
+- Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
+
+## [7.0.1] - 03-22-2016
+
+### Fixed
+
+- Conversion of string values from form inputs (thanks to jbhannah / see #1163)
+
 ## [7.0.0] - 03-18-2016
 
 No changes from `rc.7`
 
 ## [7.0.0.rc.7] - 03-16-2016
-
+/
 ### Changed
 
 - `with_associations` now generates separate `OPTIONAL MATCH` clauses, separated by `WITH` clauses and is preceeded by a `WITH` clause.

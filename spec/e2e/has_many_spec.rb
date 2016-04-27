@@ -283,10 +283,10 @@ describe 'has_many' do
 
     before(:each) do
       Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
-        .create('post<-[:comments_on]-comment').exec
+                    .create('post<-[:comments_on]-comment').exec
 
       Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
-        .create('post<-[:comments_on]-person').exec
+                    .create('post<-[:comments_on]-person').exec
     end
 
     subject { post.comments.pluck(:uuid).sort }
@@ -578,6 +578,29 @@ describe 'has_many' do
         expect(post.comment_ids).to eq([comment.id])
         expect(post.comment_neo_ids).to eq([comment.neo_id])
       end
+    end
+  end
+
+  describe 'checking for double definitions of associations' do
+    it 'should raise an error if an assocation is defined twice' do
+      expect do
+        stub_active_node_class('DoubledAssociation') do
+          has_many :in, :the_name, type: :the_name
+          has_many :out, :the_name, type: :the_name2
+        end
+      end.to raise_error RuntimeError, /Associations can only be defined once/
+    end
+
+    it 'should allow for redefining of an association in a subclass' do
+      expect do
+        stub_active_node_class('DoubledAssociation') do
+          has_many :in, :the_name, type: :the_name
+        end
+
+        stub_named_class('DoubledAssociationSubClass', DoubledAssociation) do
+          has_many :out, :the_name, type: :the_name2
+        end
+      end.to_not raise_error
     end
   end
 end

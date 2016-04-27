@@ -1,39 +1,47 @@
 describe Neo4j::Shared::Property do
-  let(:clazz) { Class.new { include Neo4j::ActiveNode::Property } }
+  before { stub_named_class('SharedPropertyTest') { include Neo4j::ActiveNode::Property } }
 
   describe ':property class method' do
     it 'raises an error when passing illegal properties' do
       Neo4j::Shared::DeclaredProperty::ILLEGAL_PROPS.push 'foo'
-      expect { clazz.property :foo }.to raise_error(Neo4j::Shared::DeclaredProperty::IllegalPropertyError)
+      expect { SharedPropertyTest.property :foo }.to raise_error(Neo4j::Shared::DeclaredProperty::IllegalPropertyError)
+    end
+  end
+
+  describe 'option validation' do
+    it 'gives an error for unknown option keys' do
+      expect do
+        SharedPropertyTest.property :new_prop, unknown_key: true
+      end.to raise_error ArgumentError, 'Invalid options for property `new_prop` on `SharedPropertyTest`: unknown_key'
     end
   end
 
   describe '.undef_property' do
-    before(:each) { clazz.property(:bar, options) }
+    before(:each) { SharedPropertyTest.property(:bar, options) }
     let(:options) { {} }
-    let(:remove!) { clazz.undef_property(:bar) }
+    let(:remove!) { SharedPropertyTest.undef_property(:bar) }
 
     describe 'methods' do
       it 'are removed' do
-        expect { remove! }.to change { [:bar, :bar=].all? { |meth| clazz.method_defined?(meth) } }.from(true).to(false)
+        expect { remove! }.to change { [:bar, :bar=].all? { |meth| SharedPropertyTest.method_defined?(meth) } }.from(true).to(false)
       end
     end
 
     describe 'property definition' do
       it 'is removed' do
-        expect { remove! }.to change { clazz.declared_properties[:bar] }.to(nil)
+        expect { remove! }.to change { SharedPropertyTest.declared_properties[:bar] }.to(nil)
       end
     end
 
     describe 'schema' do
       before do
         allow_any_instance_of(Neo4j::Shared::DeclaredProperty).to receive(:index_or_constraint?).and_return true
-        allow(clazz.class).to receive(:index)
+        allow(SharedPropertyTest.class).to receive(:index)
       end
 
       context 'exact index' do
         it 'is removed' do
-          expect(clazz).to receive(:drop_index)
+          expect(SharedPropertyTest).to receive(:drop_index)
           remove!
         end
       end
@@ -41,7 +49,7 @@ describe Neo4j::Shared::Property do
       context 'unique constraint' do
         it 'is removed' do
           expect_any_instance_of(Neo4j::Shared::DeclaredProperty).to receive(:constraint?).and_return(true)
-          expect(clazz).to receive(:drop_constraint)
+          expect(SharedPropertyTest).to receive(:drop_constraint)
           remove!
         end
       end
@@ -51,51 +59,51 @@ describe Neo4j::Shared::Property do
   describe 'types for timestamps' do
     context 'when type is undefined inline' do
       before do
-        clazz.property :created_at
-        clazz.property :updated_at
+        SharedPropertyTest.property :created_at
+        SharedPropertyTest.property :updated_at
       end
 
       it 'defaults to DateTime' do
-        expect(clazz.attributes[:created_at][:type]).to eq(DateTime)
-        expect(clazz.attributes[:updated_at][:type]).to eq(DateTime)
+        expect(SharedPropertyTest.attributes[:created_at][:type]).to eq(DateTime)
+        expect(SharedPropertyTest.attributes[:updated_at][:type]).to eq(DateTime)
       end
 
       context '...and specified in config' do
         before do
           Neo4j::Config[:timestamp_type] = Integer
-          clazz.property :created_at
-          clazz.property :updated_at
+          SharedPropertyTest.property :created_at
+          SharedPropertyTest.property :updated_at
         end
 
         it 'uses type set in config' do
-          expect(clazz.attributes[:created_at][:type]).to eq(Integer)
-          expect(clazz.attributes[:updated_at][:type]).to eq(Integer)
+          expect(SharedPropertyTest.attributes[:created_at][:type]).to eq(Integer)
+          expect(SharedPropertyTest.attributes[:updated_at][:type]).to eq(Integer)
         end
       end
     end
 
     context 'when type is defined' do
       before do
-        clazz.property :created_at, type: Date
-        clazz.property :updated_at, type: Date
+        SharedPropertyTest.property :created_at, type: Date
+        SharedPropertyTest.property :updated_at, type: Date
       end
 
       it 'does not change type' do
-        expect(clazz.attributes[:created_at][:type]).to eq(Date)
-        expect(clazz.attributes[:updated_at][:type]).to eq(Date)
+        expect(SharedPropertyTest.attributes[:created_at][:type]).to eq(Date)
+        expect(SharedPropertyTest.attributes[:updated_at][:type]).to eq(Date)
       end
     end
 
     context 'for Time type' do
       before do
-        clazz.property :created_at, type: Time
-        clazz.property :updated_at, type: Time
+        SharedPropertyTest.property :created_at, type: Time
+        SharedPropertyTest.property :updated_at, type: Time
       end
 
       # ActiveAttr does not know what to do with Time, so it is stored as Int.
       it 'tells ActiveAttr it is an Integer' do
-        expect(clazz.attributes[:created_at][:type]).to eq(Integer)
-        expect(clazz.attributes[:updated_at][:type]).to eq(Integer)
+        expect(SharedPropertyTest.attributes[:created_at][:type]).to eq(Integer)
+        expect(SharedPropertyTest.attributes[:updated_at][:type]).to eq(Integer)
       end
     end
   end
@@ -110,11 +118,11 @@ describe Neo4j::Shared::Property do
         end
       end
 
-      let(:instance) { clazz.new }
+      let(:instance) { SharedPropertyTest.new }
 
       before do
-        allow(clazz).to receive(:extract_association_attributes!)
-        clazz.property :some_property, typecaster: typecaster.new
+        allow(SharedPropertyTest).to receive(:extract_association_attributes!)
+        SharedPropertyTest.property :some_property, typecaster: typecaster.new
       end
 
       it 'uses custom typecaster' do
@@ -144,17 +152,17 @@ describe Neo4j::Shared::Property do
       end
     end
 
-    let(:clazz)     { Class.new { include Neo4j::ActiveNode } }
-    let(:instance)  { clazz.new }
+    before { stub_active_node_class('CustomTypeTest') }
+    let(:instance)  { CustomTypeTest.new }
     let(:range)     { 1..3 }
 
     before do
-      clazz.property :range, serializer: converter
+      CustomTypeTest.property :range, serializer: converter
     end
 
     # TODO: Is this still necessary past 7.0, post ActiveAttr removal?
     it 'sets underlying typecaster to ObjectTypecaster' do
-      expect(clazz.attributes[:range][:typecaster]).to eq(Neo4j::Shared::TypeConverters::ObjectConverter)
+      expect(CustomTypeTest.attributes[:range][:typecaster]).to eq(Neo4j::Shared::TypeConverters::ObjectConverter)
     end
 
     it 'adds new converter' do
