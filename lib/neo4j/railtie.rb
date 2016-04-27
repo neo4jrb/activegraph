@@ -4,7 +4,7 @@ require 'rails/railtie'
 require 'action_dispatch/railtie'
 
 module Neo4j
-  class Railtie < ::Rails::Railtie
+  class Railtie < Rails::Railtie
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     if const_defined?(:ActionDispatch)

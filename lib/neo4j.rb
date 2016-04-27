@@ -90,4 +90,5 @@ require 'neo4j/active_node/orm_adapter'
 if defined?(Rails)
   require 'rails/generators'
   require 'rails/generators/neo4j_generator'
+  require 'neo4j/railtie'
 end
