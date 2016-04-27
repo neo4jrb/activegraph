@@ -119,6 +119,11 @@ module Neo4j
         return nil if namespace.nil?
         "::#{namespace}"
       end
+
+      def fail_transaction_when_validations_fail
+        fail_transaction = Neo4j::Config[:fail_transaction_when_validations_fail]
+        fail_transaction.nil? ? true : fail_transaction
+      end
     end
   end
 end
