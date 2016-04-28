@@ -452,8 +452,8 @@ describe 'Query API' do
         let(:without_labels) { proc { |target| target.lessons_teaching(:l, :r, labels: false).students(:s, :sr, labels: false).to_cypher } }
         let(:expected_label_cypher) do
           proc do
-            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`) MATCH l<-[sr:`is_enrolled_for`]-(s:`Student`)')
-            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l) MATCH l<-[sr:`is_enrolled_for`]-(s)')
+            expect(query_with_labels).to include('[r:`LESSONS_TEACHING`]->(l:`Lesson`) MATCH (l)<-[sr:`is_enrolled_for`]-(s:`Student`)')
+            expect(query_without_labels).to include('-[r:`LESSONS_TEACHING`]->(l) MATCH (l)<-[sr:`is_enrolled_for`]-(s)')
           end
         end
 
@@ -631,7 +631,7 @@ describe 'Query API' do
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
     it 'builds a new QueryProxy object upon an existing Core::Query object' do
-      part2 = 'MATCH s-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})'
+      part2 = 'MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})'
       combined_strings = "#{core_query.to_cypher} #{part2}"
       combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
 
@@ -653,7 +653,7 @@ describe 'Query API' do
 
     describe 'optional matches' do
       let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
-      let(:part2) { 'OPTIONAL MATCH s-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})' }
+      let(:part2) { 'OPTIONAL MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})' }
       let(:combined_strings) { "#{core_query.to_cypher} #{part2}" }
       it 'can create an optional match' do
         expect(combined_query.to_cypher).to eq combined_strings

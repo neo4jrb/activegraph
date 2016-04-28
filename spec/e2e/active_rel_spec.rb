@@ -362,6 +362,16 @@ describe 'ActiveRel' do
       current_session.query('MATCH (start)-[r]-() WHERE ID(start) = {start_id} RETURN r.default AS value', start_id: f1.neo_id).to_a
     end
 
+    context 'with a rel type requiring backticks' do
+      before do
+        MyRelClass.type 'LegacyClass#legacy_type'
+      end
+
+      it 'creates correctly' do
+        expect { f1.others << t1 }.to change { f1.reload.others.count }.by(1)
+      end
+    end
+
     context 'with rel created from node' do
       context 'successfully' do
         before { f1.others << t1 }

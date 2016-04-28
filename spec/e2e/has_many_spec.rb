@@ -283,10 +283,10 @@ describe 'has_many' do
 
     before(:each) do
       Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
-                    .create('post<-[:comments_on]-comment').exec
+                    .create('(post)<-[:comments_on]-(comment)').exec
 
       Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
-                    .create('post<-[:comments_on]-person').exec
+                    .create('(post)<-[:comments_on]-(person)').exec
     end
 
     subject { post.comments.pluck(:uuid).sort }

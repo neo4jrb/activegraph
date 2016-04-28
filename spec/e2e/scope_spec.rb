@@ -35,7 +35,7 @@ describe 'Neo4j::NodeMixin::Scope' do
     end
   end
 
-  describe 'Person.scope :in_order, -> { order(level: num)}' do
+  describe 'Person.scope :in_order, ->(identifier) { order("#{identifier}.level_num DESC") }' do
     before(:each) do
       Person.scope :in_order, ->(identifier) { order("#{identifier}.level_num DESC") }
     end
@@ -44,6 +44,31 @@ describe 'Neo4j::NodeMixin::Scope' do
       it 'returns person in order' do
         expect(Person.as(:people).in_order(:people).to_a).to eq([@b2, @b1, @b, @a])
       end
+    end
+  end
+
+  describe 'Person.scope :in_order, -> { order("#{identity}.level_num DESC") }' do
+    before(:each) do
+      Person.scope :in_order, -> { order("#{identity}.level_num DESC") }
+    end
+
+    describe 'Person.in_order' do
+      it 'returns person in order without explicit identifier' do
+        expect(Person.in_order.to_a).to eq([@b2, @b1, @b, @a])
+      end
+    end
+  end
+
+  describe 'Person.scope :great_students, -> { where("#{identity}.score > 41")' do
+    before(:each) do
+      Person.scope :great_students, -> { where("#{identity}.score > 41") }
+    end
+
+    describe 'Person.top_students.to_a' do
+      subject do
+        Person.great_students.to_a
+      end
+      it { is_expected.to match_array([@a, @b, @b1, @b2]) }
     end
   end
 

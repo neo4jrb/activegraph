@@ -98,8 +98,8 @@ describe 'has_one' do
       a = HasOneA.create(name: 'a')
       b = HasOneB.create(name: 'b')
       b.parent = a
-      expect(b.query_as(:b).match('b<-[:`CHILDREN`]-(r)').pluck(:r)).to eq([a])
-      expect(a.query_as(:a).match('a-[:`CHILDREN`]->(r)').pluck(:r)).to eq([b])
+      expect(b.query_as(:b).match('(b)<-[:`CHILDREN`]-(r)').pluck(:r)).to eq([a])
+      expect(a.query_as(:a).match('(a)-[:`CHILDREN`]->(r)').pluck(:r)).to eq([b])
       #      b.nodes(dir: :incoming, type: HasOneB.parent).to_a.should eq([a])
       #      a.nodes(dir: :outgoing, type: HasOneB.parent).to_a.should eq([b])
     end
