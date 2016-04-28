@@ -24,8 +24,8 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
           def self.count
             Neo4j::Session.current.query
-              .match('(from:FromClass)-[r:HAS_REL]->()')
-              .pluck('COUNT(r)').first
+                          .match('(from:FromClass)-[r:HAS_REL]->()')
+                          .pluck('COUNT(r)').first
           end
         end
       end
@@ -96,8 +96,8 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
           def self.count
             Neo4j::Session.current.query
-              .match('(from:FromClass:ParentClass)-[r:HAS_REL]->()')
-              .pluck('COUNT(r)').first
+                          .match('(from:FromClass:ParentClass)-[r:HAS_REL]->()')
+                          .pluck('COUNT(r)').first
           end
         end
       end

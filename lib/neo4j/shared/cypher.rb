@@ -17,7 +17,7 @@ module Neo4j::Shared
       def creates_unique?
         !!@creates_unique
       end
-      alias_method :unique?, :creates_unique?
+      alias unique? creates_unique?
     end
 
     module RelIdentifiers

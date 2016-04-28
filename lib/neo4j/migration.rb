@@ -69,13 +69,13 @@ MESSAGE
 
           count = [nodes_left, max_per_batch].min
           last_time_taken = Benchmark.realtime do
-            max_per_batch = id_batch_set(label, model.primary_key, count.times.map { new_id_for(model) }, count)
+            max_per_batch = id_batch_set(label, model.primary_key, Array.new(count) { new_id_for(model) }, count)
           end
         end
       end
 
       def idless_count(label, id_property)
-        Neo4j::Session.query.match(n: label).where("NOT has(n.#{id_property})").pluck('COUNT(n) AS ids').first
+        Neo4j::Session.query.match(n: label).where("NOT EXISTS(n.#{id_property})").pluck('COUNT(n) AS ids').first
       end
 
       def print_status(last_time_taken, max_per_batch, nodes_left)
@@ -94,7 +94,7 @@ MESSAGE
       def id_batch_set(label, id_property, new_ids, count)
         tx = Neo4j::Transaction.new
 
-        Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT has(n.#{id_property})
+        Neo4j::Session.query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
           with COLLECT(n) as nodes, #{new_ids} as ids
           FOREACH(i in range(0,#{count - 1})|
             FOREACH(node in [nodes[i]]|

@@ -39,7 +39,7 @@ module Neo4j
               end
               result
             end
-            alias_method :for_node_where_clause, :for_where_clause
+            alias for_node_where_clause for_where_clause
 
             def for_where_not_clause(*args)
               for_where_clause(*args).each do |link|
@@ -66,7 +66,7 @@ module Neo4j
               fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
 
               [
-                new(:match, ->(v, _) { "#{v}#{model.associations[name].arrow_cypher}(#{n_string})" }),
+                new(:match, ->(v, _) { "(#{v})#{model.associations[name].arrow_cypher}(#{n_string})" }),
                 new(:where, ->(_, _) { {"ID(#{n_string})" => neo_id.to_i} })
               ]
             end

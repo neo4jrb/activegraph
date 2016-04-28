@@ -37,7 +37,7 @@ module Neo4j::Shared
     def read_attribute(name)
       respond_to?(name) ? send(name) : nil
     end
-    alias_method :[], :read_attribute
+    alias [] read_attribute
 
     def send_props(hash)
       return hash if hash.blank?
@@ -58,7 +58,7 @@ module Neo4j::Shared
       return attributes if attributes.blank?
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
       invalid_properties.reject! { |name| self.respond_to?("#{name}=") }
-      fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if invalid_properties.size > 0
+      fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if !invalid_properties.empty?
     end
 
     def extract_writer_methods!(attributes)
@@ -113,6 +113,7 @@ module Neo4j::Shared
 
       def_delegators :declared_properties, :serialized_properties, :serialized_properties=, :serialize, :declared_property_defaults
 
+      VALID_PROPERTY_OPTIONS = %w(type default index constraint serializer typecaster).map(&:to_sym)
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
@@ -142,6 +143,8 @@ module Neo4j::Shared
       #      property :name, constraint: :unique
       #    end
       def property(name, options = {})
+        invalid_option_keys = options.keys.map(&:to_sym) - VALID_PROPERTY_OPTIONS
+        fail ArgumentError, "Invalid options for property `#{name}` on `#{self.name}`: #{invalid_option_keys.join(', ')}" if invalid_option_keys.any?
         build_property(name, options) do |prop|
           attribute(prop)
         end

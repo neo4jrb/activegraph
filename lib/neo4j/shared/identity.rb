@@ -3,7 +3,7 @@ module Neo4j::Shared
     def ==(other)
       other.class == self.class && other.id == id
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     # Returns an Enumerable of all (primary) key attributes
     # or nil if model.persisted? is false
