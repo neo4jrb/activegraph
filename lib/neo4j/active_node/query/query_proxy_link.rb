@@ -66,7 +66,7 @@ module Neo4j
               fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
 
               [
-                new(:match, ->(v, _) { "#{v}#{model.associations[name].arrow_cypher}(#{n_string})" }),
+                new(:match, ->(v, _) { "(#{v})#{model.associations[name].arrow_cypher}(#{n_string})" }),
                 new(:where, ->(_, _) { {"ID(#{n_string})" => neo_id.to_i} })
               ]
             end

@@ -51,7 +51,7 @@ module Neo4j
         def with_association_query_part(base_query, association_name, previous_with_variables)
           association = model.associations[association_name]
 
-          base_query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}")
+          base_query.optional_match("(#{identity})#{association.arrow_cypher}(#{association_name})")
             .where(association.target_where_clause)
             .with(identity, "collect(#{association_name}) AS #{association_name}_collection", *with_associations_return_clause(previous_with_variables))
         end

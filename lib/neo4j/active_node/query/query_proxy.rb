@@ -105,7 +105,7 @@ module Neo4j
           if @association
             chain_var = _association_chain_var
             (_association_query_start(chain_var) & _query).break.send(@match_type,
-                                                                      "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
+                                                                      "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})")
           else
             starting_query ? starting_query : _query_model_as(var, with_labels)
           end
@@ -287,9 +287,9 @@ module Neo4j
         def _match_arg(var, with_labels)
           if @model && with_labels != false
             labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
-            {var => labels}
+            {var.to_sym => labels}
           else
-            var
+            var.to_sym
           end
         end
 
