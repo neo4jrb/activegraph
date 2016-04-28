@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.3] - 04-28-2016
+
+### Fixed
+
+- Added parens to queries to support new required syntax in Neo4j 3.0
+
 ## [7.0.2] - 04-10-2016
 
 ### Fixed
