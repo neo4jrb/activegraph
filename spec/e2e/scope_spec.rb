@@ -1,7 +1,8 @@
 # module Neo4j::ActiveNode::Scope
 
 describe 'Neo4j::NodeMixin::Scope' do
-  before(:each) do
+  before do
+    delete_db
     clear_model_memory_caches
 
     stub_active_node_class('Person') do
@@ -21,11 +22,6 @@ describe 'Neo4j::NodeMixin::Scope' do
     @a.friends << @b
     @b.friends << @b1 << @b2
   end
-
-  after(:each) do
-    delete_db
-  end
-
 
   describe 'Person.scope :level, -> (num) { where(level: num)}' do
     before(:each) do

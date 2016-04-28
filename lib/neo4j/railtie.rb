@@ -38,7 +38,7 @@ module Neo4j
     class << self
       # TODO: Remove ability for multiple sessions?
       # Ability to overwrite default session per-model like ActiveRecord?
-      def setup_default_session(cfg)
+      def setup_default_session!(cfg)
         setup_config_defaults!(cfg)
 
         return if !cfg.sessions.empty?
@@ -177,7 +177,7 @@ module Neo4j
     initializer 'neo4j.start', after: :load_config_initializers do |app|
       cfg = app.config.neo4j
       # Set Rails specific defaults
-      Neo4j::Railtie.setup_default_session(cfg)
+      Neo4j::Railtie.setup_default_session!(cfg)
 
       cfg.sessions.each do |session_opts|
         Neo4j::Railtie.open_neo4j_session(session_opts, cfg.wait_for_connection)

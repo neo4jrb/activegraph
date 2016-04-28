@@ -64,7 +64,7 @@ module Neo4jSpecHelpers
   extend ActiveSupport::Concern
 
   def new_query
-    Neo4j::Core::Query.new
+    Neo4j::ActiveBase.new_query
   end
 
   def current_session

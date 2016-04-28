@@ -1,11 +1,10 @@
 shared_examples 'schema operation create/drop' do |clazz, incompatible_clazz|
-  before(:all) do
-    l = Neo4j::Label.create(:MyLabel)
-    l.drop_constraint(:name, type: :unique) if Neo4j::Label.constraint?(:MyLabel, :name)
-    l.drop_index(:name) if Neo4j::Label.index?(:MyLabel, :name)
+  before do
+    delete_db
+    delete_schema
   end
 
-  let(:label) { 'MyLabel' }
+  let(:label) { Neo4j::Core::Label.new('MyLabel', current_session) }
   let(:property) { 'name' }
   let(:instance) { clazz.new(label, property) }
 
