@@ -13,6 +13,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
 
+## [7.0.3] - 04-28-2016
+
+### Fixed
+
+- Added parens to queries to support new required syntax in Neo4j 3.0
+
 ## [7.0.2] - 04-10-2016
 
 ### Fixed

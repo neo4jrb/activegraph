@@ -237,7 +237,7 @@ describe 'association creation' do
           chris = Student.create(name: 'Chris', favorite_class: math)
           expect(chris.errors).to be_empty
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -252,7 +252,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -268,7 +268,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -276,7 +276,7 @@ describe 'association creation' do
           chris = Student.create(name: 'Chris', favorite_class_id: math.id)
           expect(chris.errors).to be_empty
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -291,7 +291,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:FAVORITE_CLASS]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
       end
@@ -301,7 +301,7 @@ describe 'association creation' do
           chris = Student.create(name: 'Chris', lessons: [math])
           expect(chris.errors).to be_empty
 
-          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -316,7 +316,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -332,7 +332,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([science.id])
         end
 
@@ -340,7 +340,7 @@ describe 'association creation' do
           chris = Student.create(name: 'Chris', lesson_ids: [math.id])
           expect(chris.errors).to be_empty
 
-          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
 
@@ -355,7 +355,7 @@ describe 'association creation' do
 
           chris.save
 
-          lessons = chris.query_as(:c).match('c-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
+          lessons = chris.query_as(:c).match('(c)-[:ENROLLED_IN]->(l:Lesson)').pluck('l.uuid')
           expect(lessons).to match_array([math.id])
         end
       end
