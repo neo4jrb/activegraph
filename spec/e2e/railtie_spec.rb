@@ -57,7 +57,7 @@ module Rails
         subject_should_raise(ArgumentError, /Invalid session type/)
       end
 
-      describe "resulting adaptor" do
+      describe 'resulting adaptor' do
         subject do
           super()
           Neo4j::ActiveBase.current_session.adaptor

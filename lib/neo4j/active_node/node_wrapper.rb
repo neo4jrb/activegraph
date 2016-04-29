@@ -1,7 +1,7 @@
 require 'active_support/inflector'
 require 'neo4j/core/node'
 
-wrapping_proc = Proc.new do |node|
+wrapping_proc = proc do |node|
   found_class = Neo4j::NodeWrapping.class_to_wrap(node.labels)
   next node if not found_class
 

@@ -30,10 +30,10 @@ module Neo4j::ActiveRel
     def loaded
       fail UnsetRelatedNodeError, 'Node not set, cannot load' if @node.nil?
       @node = if @node.respond_to?(:neo_id)
-        @node
-      else
-        Neo4j::ActiveBase.new_query.match(:n).where(n: {neo_id: @node}).pluck(:n).first
-      end
+                @node
+              else
+                Neo4j::ActiveBase.new_query.match(:n).where(n: {neo_id: @node}).pluck(:n).first
+              end
     end
 
     # @param [String, Symbol, Array] clazz An alternate label to use in the event the node is not present or loaded

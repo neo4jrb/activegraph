@@ -1,5 +1,4 @@
 describe Neo4j::RelWrapping do
-
   let(:id) { 1 }
   let(:type) { :DEFAULT }
   let(:properties) { {} }

@@ -540,13 +540,13 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
-            rel = danny.lessons(:l, :r).query.set(r: {grade: 65}).exec
+            danny.lessons(:l, :r).query.set(r: {grade: 65}).exec
 
             bobby.lessons << math101
-            rel = bobby.lessons(:l, :r).query.set(r: {grade: 71})
+            bobby.lessons(:l, :r).query.set(r: {grade: 71})
 
             math101.teachers << othmar
-            rel = math101.teachers(:t, :r).query.set(r: {since: 2001}).exec
+            math101.teachers(:t, :r).query.set(r: {since: 2001}).exec
 
             sandra.lessons << ss101
           end

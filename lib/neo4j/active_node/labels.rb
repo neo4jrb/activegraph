@@ -46,7 +46,7 @@ module Neo4j
       end
 
       # Remove this method in 9.0.0
-      def add_label(*labels)
+      def add_label(*_labels)
         fail 'add_label has been removed in favor of `add_labels`'
       end
 
@@ -61,7 +61,7 @@ module Neo4j
       end
 
       # Remove this method in 9.0.0
-      def remove_label(*labels)
+      def remove_label(*_labels)
         fail 'remove_label has been removed in favor of `remove_labels`'
       end
 

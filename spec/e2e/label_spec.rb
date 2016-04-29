@@ -23,7 +23,6 @@ describe 'Neo4j::ActiveNode' do
 
   describe 'property' do
     describe 'property :age, index: :exact' do
-
       it 'creates an index' do
         expect(Clazz).to receive(:index).with(:age)
         Clazz.property :age, index: :exact

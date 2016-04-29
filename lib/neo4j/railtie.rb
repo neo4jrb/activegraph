@@ -120,7 +120,7 @@ module Neo4j
 
       # TODO: Deprecate named sessions in 6.x
       def open_neo4j_session(options, wait_for_connection = false)
-        session_type, default, path, url = options.values_at(:type, :default, :path, :url)
+        session_type, path, url = options.values_at(:type, :path, :url)
 
         validate_platform!(session_type)
 
@@ -158,9 +158,9 @@ module Neo4j
 
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
 
-      logger_proc = ->(message) {
+      logger_proc = ->(message) do
         (Neo4j::Config[:logger] || Rails.logger).debug message
-      }
+      end
       Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
       Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(&logger_proc)
       Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(&logger_proc)

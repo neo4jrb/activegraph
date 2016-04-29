@@ -149,8 +149,8 @@ module Neo4j::ActiveNode
         on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
 
         new_query.merge(n: {self.mapped_label_names => find_attributes})
-                     .on_create_set(n: on_create_attributes)
-                     .pluck(:n).first
+                 .on_create_set(n: on_create_attributes)
+                 .pluck(:n).first
       end
 
       # Finds the first node with the given attributes, or calls create if none found

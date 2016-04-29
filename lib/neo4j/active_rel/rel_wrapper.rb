@@ -1,6 +1,6 @@
 require 'neo4j/core/relationship'
 
-wrapping_proc = Proc.new do |relationship|
+wrapping_proc = proc do |relationship|
   Neo4j::RelWrapping.wrapper(relationship)
 end
 Neo4j::Core::Relationship.wrapper_callback(wrapping_proc)
@@ -14,7 +14,7 @@ module Neo4j
           most_concrete_class = class_from_type(rel.rel_type)
           most_concrete_class.constantize.new
         rescue NameError => e
-          raise e unless e.message.match(/uninitialized constant/)
+          raise e unless e.message =~ /uninitialized constant/
 
           return rel
         end.tap do |wrapped_rel|

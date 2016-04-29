@@ -129,10 +129,10 @@ module Neo4j::Shared
     end
 
     def exist?
-      if _persisted_obj
-        query = query_as(:n).return('ID(n)')
-        neo4j_query(query).any?
-      end
+      return if !_persisted_obj
+
+      query = query_as(:n).return('ID(n)')
+      neo4j_query(query).any?
     end
 
     # Returns +true+ if the object was destroyed.

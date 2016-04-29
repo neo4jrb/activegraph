@@ -654,8 +654,8 @@ describe 'Neo4j::ActiveNode' do
 
     let(:datetime_db_value) do
       query = new_query.match(p: :Person)
-                    .where(p: {neo_id: person.neo_id})
-                    .return('p.datetime AS datetime')
+                       .where(p: {neo_id: person.neo_id})
+                       .return('p.datetime AS datetime')
       Neo4j::ActiveBase.current_session.query(query).first.datetime
     end
 
