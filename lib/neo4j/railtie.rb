@@ -72,7 +72,7 @@ module Neo4j
         if ENV['NEO4J_TYPE']
           :embedded
         else
-          config_data[:type] || :server_db
+          config_data[:type] || :http
         end.to_sym
       end
 
@@ -90,14 +90,14 @@ module Neo4j
         restricted_field.set nil, false
       end
 
-      # TODO: Deprecate embedded_db and server_db in favor of embedded and http
+      # TODO: Deprecate embedded_db and http in favor of embedded and http
       #
       def cypher_session_adaptor(type, path_or_url, options = {})
         case type
         when :embedded_db, :embedded
           require 'neo4j/core/cypher_session/adaptors/embedded'
           Neo4j::Core::CypherSession::Adaptors::Embedded.new(path_or_url, options)
-        when :server_db, :http
+        when :http
           require 'neo4j/core/cypher_session/adaptors/http'
           Neo4j::Core::CypherSession::Adaptors::HTTP.new(path_or_url, options)
         else
@@ -112,6 +112,8 @@ module Neo4j
       def validate_platform!(session_type)
         return if !RUBY_PLATFORM =~ /java/
         return if !session_type_is_embedded?(session_type)
+
+        fail ArgumentError, 'server_db is no longer supported.  Use `http` instead for HTTP JSON connections' if session_type == :server_db
 
         fail ArgumentError, "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
       end
