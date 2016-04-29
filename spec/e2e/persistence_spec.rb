@@ -1,6 +1,8 @@
 describe Neo4j::ActiveNode do
   before(:each) do
-    stub_active_node_class('Person')
+    stub_active_node_class('Person') do
+      property :name
+    end
   end
 
   describe '#persisted?' do
@@ -18,6 +20,41 @@ describe Neo4j::ActiveNode do
       o = Person.create
       o.destroy
       expect(o.persisted?).to eq(false)
+    end
+  end
+
+  # moved from unit/active_node/persistence_spec.rb
+  describe 'save' do
+    it 'creates a new node if not persisted before' do
+      delete_db
+
+      p = Person.new
+      expect(Person.count).to eq(0)
+      p.save
+      expect(Person.count).to eq(1)
+      expect(Person.first.neo_id).to eq(p.neo_id)
+    end
+
+    it 'creates a new node if started as unpersisted' do
+      p = nil
+      expect_queries(0) do
+        p = Person.new(name: 'Francis')
+      end
+      expect_queries(1) { p.save }
+      expect_queries(0) { p.save }
+      p.name = 'Deadpool'
+      expect_queries(1) { p.save }
+    end
+
+    it "doesn't make the query if nothing changed" do
+      p = nil
+      expect_queries(1) do
+        p = Person.create(name: 'Francis')
+      end
+      expect_queries(0) { p.save }
+      p.name = 'Deadpool'
+      expect_queries(1) { p.save }
+      expect_queries(0) { p.save }
     end
   end
 end

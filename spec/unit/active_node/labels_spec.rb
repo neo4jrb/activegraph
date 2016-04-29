@@ -36,28 +36,6 @@ describe Neo4j::ActiveNode::Labels do
       it 'should have labels for baseclass' do
         expect(MySubClass.mapped_label_names).to match_array([:MyBaseClass, :MySubClass])
       end
-
-      # TODO: REVIEW THIS. I do not think its claim has been true since early v3.
-      it 'an index in sub class will exist in base' do
-        base_label = double(:label_base, indexes: {property_keys: []})
-        sub_label = double(:label_sub, indexes: {property_keys: []})
-        # base_label.should_receive(:create_index).with(:things, {}).and_return(:something1)
-        expect(sub_label).to receive(:create_index).with(:things, {}).and_return(:something2)
-        allow(Neo4j::Label).to receive(:create) do |label|
-          {MyBaseClass: base_label, MySubClass: sub_label}[label]
-        end
-        MySubClass.index :things
-      end
-
-      # TODO: REVIEW THIS. I do not think its claim has been true since early v3.
-      it 'an index in base class will not exist in sub class' do
-        base_label = double(:label_base, indexes: {property_keys: []})
-        expect(base_label).to receive(:create_index).with(:things, {}).and_return(:something1)
-        allow(Neo4j::Label).to receive(:create) do |label|
-          {MyBaseClass: base_label}[label]
-        end
-        MyBaseClass.index :things
-      end
     end
 
     describe 'mapped_label_name' do
@@ -81,16 +59,18 @@ describe Neo4j::ActiveNode::Labels do
     end
 
     describe 'label' do
-      it 'wraps the mapped_label_name in a Neo4j::Label object' do
+      it 'wraps the mapped_label_name in a Neo4j::Core::Label object' do
         clazz = Class.new do
+          include Neo4j::Shared
           extend Neo4j::ActiveNode::Labels::ClassMethods
           def self.name
             'MyClass'
           end
         end
 
-        expect(Neo4j::Label).to receive(:create).with(:MyClass).and_return('foo')
-        expect(clazz.send(:mapped_label)).to eq('foo')
+        label_double = double('label')
+        expect(Neo4j::Core::Label).to receive(:new).with(:MyClass, Neo4j::ActiveBase.current_session).and_return(label_double)
+        expect(clazz.send(:mapped_label)).to eq(label_double)
       end
     end
 

@@ -4,6 +4,9 @@ describe Neo4j::ActiveNode::Validations do
 
   let(:clazz) do
     Class.new do
+      include Neo4j::Shared
+      include Neo4j::Shared::Identity
+      include Neo4j::ActiveNode::Query
       include Neo4j::ActiveNode::Persistence
       include Neo4j::ActiveNode::Unpersisted
       include Neo4j::ActiveNode::HasN
@@ -46,16 +49,6 @@ describe Neo4j::ActiveNode::Validations do
         expect(node).to receive(:props).and_return(name: 'kalle2', age: '43')
         expect(o).to receive(:_create_node).with({name: 'kalle', age: 42}).and_return(node)
         expect(o).to receive(:init_on_load).with(node, age: '43', name: 'kalle2')
-        allow(Object).to receive(:serialized_properties_keys).and_return([])
-        expect(o.save).to be true
-      end
-
-      it 'updates node if already persisted before if an attribute was changed' do
-        o = clazz.new
-        o.name = 'sune'
-        allow(o).to receive(:_persisted_obj).and_return(node)
-        allow(o).to receive(:serialized_properties).and_return({})
-        expect(node).to receive(:update_props).and_return(name: 'sune')
         allow(Object).to receive(:serialized_properties_keys).and_return([])
         expect(o.save).to be true
       end

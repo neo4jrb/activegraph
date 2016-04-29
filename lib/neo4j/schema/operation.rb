@@ -4,13 +4,22 @@ module Neo4j
       attr_reader :label, :property, :options
 
       def initialize(label, property, options = default_options)
-        @label = label
+        @label = if label.is_a?(Neo4j::Core::Label)
+                   label
+                 else
+                   Neo4j::Core::Label.new(label, ActiveBase.current_session)
+                 end
+
         @property = property.to_sym
         @options = options
       end
 
       def self.incompatible_operation_classes
         []
+      end
+
+      def label_object
+        label
       end
 
       def create!

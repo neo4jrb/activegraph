@@ -135,13 +135,22 @@ describe 'Neo4j::ActiveNode' do
 
     describe 'when inherited' do
       it 'has an index on both base and subclass' do
-        class Foo1
-          include Neo4j::ActiveNode
+        stub_active_node_class('Foo1') do
           property :name, index: :exact
         end
-        class Foo2 < Foo1
-        end
+        stub_named_class('Foo2', Foo1)
+
         expect(Foo1.mapped_label.indexes).to eq([[:name], [:uuid]])
+        expect(Foo2.mapped_label.indexes).to eq([])
+      end
+
+      it 'only puts index on subclass if defined there' do
+        stub_active_node_class('Foo1')
+        stub_named_class('Foo2', Foo1) do
+          property :name, index: :exact
+        end
+
+        expect(Foo1.mapped_label.indexes).to eq([[:uuid]])
         expect(Foo2.mapped_label.indexes).to eq([[:name], [:uuid]])
       end
     end
