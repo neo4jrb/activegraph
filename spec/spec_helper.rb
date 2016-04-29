@@ -213,10 +213,7 @@ session_adaptor = case TEST_SESSION_MODE
                     Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
                   end
 
-# Introduces `let_context` helper method
-# This allows us to simplify the case where we want to
-# have a context which contains one or more `let` statements
-module RSpecHelpers
+module FixingRSpecHelpers
   # Supports giving either a Hash or a String and a Hash as arguments
   # In both cases the Hash will be used to define `let` statements
   # When a String is specified that becomes the context description
@@ -234,14 +231,22 @@ module RSpecHelpers
       instance_eval(&block)
     end
   end
-end
 
+  def subject_should_raise(error, message = nil)
+    it_string = error.to_s
+    it_string += " (#{message.inspect})" if message
+
+    it it_string do
+      expect { subject }.to raise_error error, message
+    end
+  end
+end
 
 Neo4j::ActiveBase.set_current_session_by_adaptor(session_adaptor)
 
 
 RSpec.configure do |config|
-  config.extend RSpecHelpers
+  config.extend FixingRSpecHelpers
   config.include Neo4jSpecHelpers
   config.include ActiveNodeRelStubHelpers
   config.include Neo4jEntityFindingHelpers
