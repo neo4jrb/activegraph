@@ -8,10 +8,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Invalid options to the `property` method now raise an exception (see #1169)
+- Label #indexes/#constraints return array without needing to access [:property_keys]
+
 
 ### Added
 
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
+- New adaptor-based API has been created for connecting to Neo4j (See the [upgrade guide](TODO!!!!)).  Changes include:
+ - The old APIs are deprecated and will be removed later.
+ - In the new API, there is no such thing as a "current" session.  Users of `neo4j-core` must create and maintain references themselves to their sessions
+ - New `Neo4j::Core::Node` and `Neo4j::Core::Relationshp` classes have been created to provide consistent results between adaptors.  `Neo4j::Core::Path` has also been added
+ - New API is centered around Cypher.  No special methods are defined to, for example, load/create/etc... nodes/relationships
+ - There is now a new API for making multiple queries in the same HTTP request
+ - It is now possible to subscribe separately to events for querying in different adaptors and for HTTP requests (see [the docs](TODO!!!!))
+ - Schema queries (changes to indexes/constraints) happen in a separate thread for performance and reduce the complexity of the code
+ - New session API does not include replacement for on_next_session_available
+
 
 ## [7.0.3] - 04-28-2016
 
