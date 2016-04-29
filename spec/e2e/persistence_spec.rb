@@ -42,7 +42,7 @@ describe Neo4j::ActiveNode do
       end
       expect_queries(1) { p.save }
       expect_queries(0) { p.save }
-      p.name = 'Deadpool'
+      p.name = 'Wade Winston Wilson'
       expect_queries(1) { p.save }
     end
 
@@ -52,7 +52,7 @@ describe Neo4j::ActiveNode do
         p = Person.create(name: 'Francis')
       end
       expect_queries(0) { p.save }
-      p.name = 'Deadpool'
+      p.name = 'Wade Winston Wilson'
       expect_queries(1) { p.save }
       expect_queries(0) { p.save }
     end
