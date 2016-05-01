@@ -3,10 +3,10 @@ language: ruby
 cache: bundler
 sudo: false
 rvm:
-  - 2.3.0
-  - 2.2.4
-  - 2.0.0
-  - jruby-1.7.23
+  - 2.3.1
+  - 2.2.5
+  - 2.1.9
+  - jruby-1.7.25
   - jruby-9.0.4.0
 env:
   - NEO4J_VERSION=community-2.3.0
