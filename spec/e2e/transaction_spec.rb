@@ -25,9 +25,8 @@ describe 'Neo4j::Transaction' do
   end
 
   describe 'transaction behaviour when a validation fails' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    before(:each) do
+      stub_active_node_class('Clazz') do
         property :name
         validates :name, presence: true
       end
@@ -36,24 +35,26 @@ describe 'Neo4j::Transaction' do
     it 'rollbacks the current transaction by default' do
       expect do
         Neo4j::Transaction.run do |tx|
-          clazz.create
+          Clazz.create
           expect(tx).to be_failed
-          clazz.create(name: 'john')
+          Clazz.create(name: 'john')
         end
-      end.not_to change { clazz.count }
+      end.not_to change { Clazz.count }
     end
 
-    it 'keeps running the current transaction when `fail_transaction_when_validations_fail` is false' do
-      Neo4j::Config[:fail_transaction_when_validations_fail] = false
+    context 'when `fail_transaction_when_validations_fail` is disabled' do
+      let_config(:fail_transaction_when_validations_fail) { false }
 
-      expect do
-        Neo4j::Transaction.run do |tx|
-          clazz.create
-          expect(tx).not_to be_failed
-          clazz.create(name: 'john')
-        end
-      end.to change { clazz.count }.by(1)
-      Neo4j::Config.delete(:fail_transaction_when_validations_fail)
+      it 'keeps running the current transaction' do
+        expect do
+          Neo4j::Transaction.run do |tx|
+            Clazz.create
+            expect(tx).not_to be_failed
+            Clazz.create(name: 'john')
+          end
+        end.to change { Clazz.count }.by(1)
+        Neo4j::Config.delete(:fail_transaction_when_validations_fail)
+      end
     end
   end
 end
