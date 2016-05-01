@@ -9,7 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Invalid options to the `property` method now raise an exception (see #1169)
 - Label #indexes/#constraints return array without needing to access [:property_keys]
-
+- `server_db` server type is no longer supported.  Use `http` instead to connect to Neo4j via the HTTP JSON API
 
 ### Added
 
