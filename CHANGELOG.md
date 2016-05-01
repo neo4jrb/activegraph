@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Uses Rails 5 beta dependencies
+- Fixes `to_prepare` deprecation in Rails 5
 
 ### Changed
 

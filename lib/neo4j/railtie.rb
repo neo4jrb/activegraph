@@ -8,7 +8,9 @@ module Neo4j
     config.neo4j = ActiveSupport::OrderedOptions.new
 
     if const_defined?(:ActionDispatch)
-      ActionDispatch::Reloader.to_prepare do
+      to_prepare_method = defined?(ActiveSupport::Reloader) ? ActiveSupport::Reloader.method(:to_prepare) : ActionDispatch::Reloader.method(:to_prepare)
+
+      to_prepare_method.call do
         Neo4j::ActiveNode::Labels::Reloading.reload_models!
       end
     end
