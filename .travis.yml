@@ -5,8 +5,8 @@ sudo: false
 rvm:
   - 2.3.1
   - 2.2.5
-  - 2.1.9
-  - jruby-1.7.25
+  - 2.1.8
+  - jruby-1.7.20
   - jruby-9.0.5.0
 env:
   - NEO4J_VERSION=community-2.3.0
