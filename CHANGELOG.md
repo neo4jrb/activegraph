@@ -3,7 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] Unreleased
+## Unreleased
+
+### Fixed
+
+- Uses Rails 5 beta dependencies
+- Fixes `to_prepare` deprecation in Rails 5
 
 ### Changed
 
@@ -197,6 +202,10 @@ No changes from `rc.7`
 ### Fixed
 
 - Issue where `inspect` failed outside of Rails (Thanks to louspringer, #1111)
+
+### Removed
+
+- `#to_xml` due to `ActiveModel::Serializers` removal of their `XML` support
 
 ## [6.0.5] - 12-29-2015
 

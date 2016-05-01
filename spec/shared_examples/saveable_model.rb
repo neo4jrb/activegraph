@@ -43,8 +43,5 @@ shared_examples 'saveable model' do
     #  subject.class.should respond_to(:primary_key)
     # end
 
-    it 'should render as XML' do
-      expect(subject.to_xml).to match(/^<\?xml version=/)
-    end
   end
 end

@@ -4,7 +4,6 @@ module Neo4j
     extend ActiveModel::Naming
 
     include ActiveModel::Conversion
-    include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
 
     module ClassMethods
