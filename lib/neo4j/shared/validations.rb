@@ -16,7 +16,7 @@ module Neo4j
       # @return [Boolean] true if it saved it successfully
       def save(options = {})
         result = perform_validations(options) ? super : false
-        if !result
+        if !result && Neo4j::Config.fail_transaction_when_validations_fail
           Neo4j::Transaction.current.failure if Neo4j::Transaction.current
         end
         result
