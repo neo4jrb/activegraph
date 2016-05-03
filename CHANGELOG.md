@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Invalid options to the `property` method now raise an exception (see #1169)
+- Invalid options to the `property` method now raise an exception (thanks ProGM / see #1169)
 
 ### Added
 
