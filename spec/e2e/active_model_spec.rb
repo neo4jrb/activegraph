@@ -339,6 +339,7 @@ describe 'Neo4j::ActiveNode' do
       property :links
       property :datetime,     type: DateTime
       property :date,         type: Date
+      property :time,         type: Time
       property :numbers
 
       serialize :links
@@ -424,6 +425,23 @@ describe 'Neo4j::ActiveNode' do
       expect(Person.find_by(name: 'Darcy', age: 5)).to be_falsey
       expect { Person.find_or_create_by!(name: 'Darcy', age: 30) }.to change { Person.count }
       expect { Person.find_or_create_by!(name: nil) }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
+    end
+
+    it 'can find (or initialize) by...' do
+      expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
+      person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
+      expect(person).to be_a(Neo4j::ActiveNode)
+      expect(person).not_to be_persisted
+      expect(person.name).to eq('Donovan')
+      expect(person.age).to eq(30)
+    end
+
+    it 'can (find or) initialize by...' do
+      person = Person.create!(name: 'Donovan', age: 30)
+      found_person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
+      expect(found_person).to be_a(Neo4j::ActiveNode)
+      expect(found_person).to be_persisted
+      expect(found_person).to eq(person)
     end
 
     describe 'create using a block' do
@@ -575,6 +593,22 @@ describe 'Neo4j::ActiveNode' do
         expect(person.datetime).to be_a DateTime
         expect(person.datetime).to eq 'Sun, 13 Jul 2014 17:45:00 +0000'
       end
+
+      context Time do
+        let(:tz_offset) { Time.now.gmt_offset }
+        let(:dst_offset) { tz_offset != 0 && Time.now.dst? ? 1 : 0 }
+        let(:base_hour) { 9 }
+        let(:expected_hour) { base_hour - (tz_offset / 60 / 60) + dst_offset }
+
+        it 'converts to Time' do
+          person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => base_hour.to_s, 'time(5i)' => '12', 'time(6i)' => '42')
+          expect(person.time).to be_a(Time)
+          expect(person.time.hour).to eq expected_hour
+          expect(person.time.utc.min).to eq 12
+          expect(person.time.utc.sec).to eq 42
+        end
+      end
+
 
       it 'raises an error when it receives values it cannot process' do
         expect do

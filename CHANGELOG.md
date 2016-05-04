@@ -7,11 +7,26 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
 - Invalid options to the `property` method now raise an exception (see #1169)
 
 ### Added
 
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
+- Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
+
+## [7.0.3] - 04-28-2016
+
+### Fixed
+
+- Added parens to queries to support new required syntax in Neo4j 3.0
+
+## [7.0.2] - 04-10-2016
+
+### Fixed
+
+- Multiparameter Attributes for properties of type `Time` were failing due to a hack that should have been removed with `ActiveAttr`'s removal
+- Rel creation factory was not using backticks around rel type during create action.
 
 ## [7.0.1] - 03-22-2016
 
@@ -24,7 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 No changes from `rc.7`
 
 ## [7.0.0.rc.7] - 03-16-2016
-/
+
 ### Changed
 
 - `with_associations` now generates separate `OPTIONAL MATCH` clauses, separated by `WITH` clauses and is preceeded by a `WITH` clause.

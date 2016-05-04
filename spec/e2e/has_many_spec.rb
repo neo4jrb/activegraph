@@ -283,10 +283,10 @@ describe 'has_many' do
 
     before(:each) do
       Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
-                    .create('post<-[:comments_on]-comment').exec
+                    .create('(post)<-[:comments_on]-(comment)').exec
 
       Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {Person.id_property_name => person.id})
-                    .create('post<-[:comments_on]-person').exec
+                    .create('(post)<-[:comments_on]-(person)').exec
     end
 
     subject { post.comments.pluck(Comment.id_property_name).sort }

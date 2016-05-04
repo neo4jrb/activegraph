@@ -44,6 +44,66 @@ describe 'query_proxy_methods' do
   let!(:mr_jones) { Teacher.create }
   let!(:mr_adams) { Teacher.create }
 
+  shared_examples 'is initialized correctly with associations' do
+    it { should be_a(Neo4j::ActiveNode) }
+    its(:name) { should eq(student_name) }
+    its(:lessons) { should include(philosophy) }
+  end
+
+  shared_examples 'finds existing records or initializes them with relations' do
+    let(:frank)       { Student.create(name: 'Frank') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    before { philosophy.students << frank }
+
+    context 'when it already exists' do
+      let(:student_name) { 'Frank' }
+
+      it_should_behave_like 'is initialized correctly with associations'
+      it { should be_persisted }
+    end
+
+    context 'when it\'s a new record' do
+      let(:student_name) { 'Jacob' }
+
+      it_should_behave_like 'is initialized correctly with associations'
+      it { should_not be_persisted }
+      it 'can be saved' do
+        expect { subject.save }.to change { philosophy.reload.students.count }.by(1)
+      end
+    end
+  end
+
+  shared_examples 'is initialized correctly with attributes' do
+    it { should be_a(Neo4j::ActiveNode) }
+    its(:name) { should eq(teacher_name) }
+    its(:age) { should eq(teacher_age) }
+  end
+
+  shared_examples 'finds existing records or initializes them with attributes' do
+    let!(:old_emily)   { Teacher.create(name: 'Emily', age: 72) }
+    let!(:young_emily) { Teacher.create(name: 'Emily', age: 24) }
+
+    context 'when it already exists' do
+      let(:teacher_name) { 'Emily' }
+      let(:teacher_age)  { 24 }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should be_persisted }
+    end
+
+    context 'when it\'s a new record' do
+      let(:teacher_name) { 'Emily' }
+      let(:teacher_age)  { 37 }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should_not be_persisted }
+      it 'can be saved' do
+        expect { subject.save }.to change { Teacher.count }.by(1)
+        subject.destroy
+      end
+    end
+  end
+
   describe 'find_or_create_by' do
     let(:emily)       { Student.create(name: 'Emily') }
     let(:philosophy)  { Lesson.create(name: 'philosophy') }
@@ -69,6 +129,49 @@ describe 'query_proxy_methods' do
       expect(philosophy.students.include?(emily)).to be_falsey
       expect { philosophy.students.find_or_create_by(name: 'Emily') }.not_to change { Student.all.count }
       expect(philosophy.students.include?(emily)).to be_truthy
+    end
+  end
+
+  describe 'find_or_initialize_by on an association' do
+    subject { philosophy.students.find_or_initialize_by(name: student_name) }
+
+    it_should_behave_like 'finds existing records or initializes them with relations'
+  end
+
+  describe 'find_or_initialize_by on query proxy' do
+    subject { Teacher.where(name: teacher_name).find_or_initialize_by(age: teacher_age) }
+    it_should_behave_like 'finds existing records or initializes them with attributes'
+
+    context 'when a block is passed' do
+      let(:teacher_name) { 'Donna' }
+      let(:teacher_age)  { 92 }
+
+      subject { Teacher.where(name: 'Emily').find_or_initialize_by(age: teacher_age) { |t| t.name = teacher_name } }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should_not be_persisted }
+    end
+  end
+
+  describe 'first_or_initialize on relations' do
+    subject { philosophy.students.where(name: student_name).first_or_initialize }
+
+    it_should_behave_like 'finds existing records or initializes them with relations'
+  end
+
+  describe 'first_or_initialize on query proxy' do
+    subject { Teacher.where(name: teacher_name, age: teacher_age).first_or_initialize }
+
+    it_should_behave_like 'finds existing records or initializes them with attributes'
+
+    context 'when a block is passed' do
+      let(:teacher_name) { 'Donna' }
+      let(:teacher_age)  { 92 }
+
+      subject { Teacher.where(name: 'Emily', age: teacher_age).first_or_initialize { |t| t.name = teacher_name } }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should_not be_persisted }
     end
   end
 
