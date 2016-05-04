@@ -218,9 +218,11 @@ describe 'query_proxy_methods' do
     end
 
     it 'can find by primary key/uuid' do
-      expect(jimmy.lessons.include?(science.uuid)).to be_falsey
+      expect(jimmy.lessons.include?(science.id)).to be_falsey
       jimmy.lessons << science
-      expect(jimmy.lessons.include?(science.uuid)).to be_truthy
+      expect(jimmy.lessons.include?(science.id)).to be_truthy
+      expect(jimmy.lessons.include?(id_property_value(science))).to be_truthy
+      expect(jimmy.lessons.include?(science)).to be_truthy
     end
 
     it 'does not break when the query has been ordered' do
@@ -522,7 +524,11 @@ describe 'query_proxy_methods' do
 
       context 'with an id' do
         it 'generates cypher using the primary key' do
-          expect(@john.lessons.match_to(@history.id).to_cypher).to include('WHERE (result_lessons.uuid =')
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include(if Lesson.primary_key == :neo_id
+                                                                             'WHERE (ID(result_lessons) ='
+                                                                           else
+                                                                             'WHERE (result_lessons.uuid ='
+                                                                           end)
         end
 
         it 'matches' do

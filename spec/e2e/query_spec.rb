@@ -86,9 +86,9 @@ describe 'Query API' do
       student.lessons << lesson
 
       expect(Student.as(:s).pluck(:s)).to eq([student])
-      expect(Student.all.pluck(:uuid)).to eq([student.uuid])
+      expect(Student.all.pluck(:id)).to eq([student.id])
 
-      expect(lesson.students.pluck(:uuid)).to eq([student.uuid])
+      expect(lesson.students.pluck(:id)).to eq([student.id])
     end
 
     it 'responds to to_ary' do
@@ -303,7 +303,7 @@ describe 'Query API' do
 
         it 'sets the id property method' do
           teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
-          expect(teacher.uuid).not_to be nil
+          expect(teacher.id).not_to be nil
         end
 
         context 'custom id property method' do

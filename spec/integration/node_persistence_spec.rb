@@ -1,3 +1,8 @@
+def optional_id(props)
+  props[Neo4j::Config[:id_property] || :uuid] = 'secure123' unless Neo4j::Config[:id_property] == :neo_id
+  props
+end
+
 describe 'Neo4j::ActiveNode' do
   let(:transaction) { double('Mock transaction', close: true) }
   let(:session) { double('Mock Session', create_node: nil, begin_tx: transaction) }
@@ -29,14 +34,14 @@ describe 'Neo4j::ActiveNode' do
   describe 'create' do
     it 'does not store nil values' do
       node = double('unwrapped_node', props: {a: 999})
-      expect(session).to receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 1), [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
       expect(thing.props).to eq(a: 999)
     end
 
     it 'stores undefined attributes' do
       node = double('unwrapped_node', props: {a: 999})
-      expect(session).to receive(:create_node).with({a: 1, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 1), [:MyThing]).and_return(node)
       thing = MyThing.create(a: 1)
       expect(thing.attributes).to eq('a' => 999, 'x' => nil) # always reads the result from the database
     end
@@ -51,7 +56,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'saves declared the properties that has been changed with []= operator' do
-      expect(session).to receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(x: 42), [:MyThing]).and_return(node)
       thing = MyThing.new
       thing[:x] = 42
       thing.save
@@ -67,7 +72,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'returns true on success' do
-      expect(session).to receive(:create_node).with({x: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(x: 42), [:MyThing]).and_return(node)
       thing = MyThing.new
       thing[:x] = 42
       expect(thing.save!).to be true
@@ -85,7 +90,7 @@ describe 'Neo4j::ActiveNode' do
     let(:node) { double('unwrapped_node', props: {a: 3}) }
 
     it 'does not save unchanged properties' do
-      expect(session).to receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 'foo', x: 44), [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
       # only change X
@@ -95,7 +100,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'handles nil properties' do
-      expect(session).to receive(:create_node).with({a: 'foo', x: 44, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 'foo', x: 44), [:MyThing]).and_return(node)
       thing = MyThing.create(a: 'foo', x: 44)
 
       expect(node).to receive(:update_props).with(x: nil)
@@ -112,7 +117,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'updates given property' do
-      expect(session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 42), [:MyThing]).and_return(node)
       thing.update(a: 42)
     end
 
@@ -130,7 +135,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'updates given properties' do
-      expect(session).to receive(:create_node).with({a: 42, x: 'hej', uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 42, x: 'hej'), [:MyThing]).and_return(node)
       thing.update_attributes(a: 42, x: 'hej')
     end
 
@@ -148,7 +153,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'updates given property' do
-      expect(session).to receive(:create_node).with({a: 42, uuid: 'secure123'}, [:MyThing]).and_return(node)
+      expect(session).to receive(:create_node).with(optional_id(a: 42), [:MyThing]).and_return(node)
       thing.update_attribute!(:a, 42)
     end
 

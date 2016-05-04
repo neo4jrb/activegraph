@@ -48,7 +48,7 @@ module Neo4j
             end
 
             def new_for_key_and_value(model, key, value)
-              key = (key.to_sym == :id ? model.id_property_name : key)
+              key = converted_key(model, key)
 
               val = if !model
                       value
@@ -84,8 +84,8 @@ module Neo4j
               [new(:order, ->(_, v) { arg.is_a?(String) ? arg : {v => arg} })]
             end
 
-            def for_order_clause(arg, _)
-              [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => arg} })]
+            def for_order_clause(arg, model)
+              [new(:order, ->(v, _) { arg.is_a?(String) ? arg : {v => converted_keys(model, arg)} })]
             end
 
             def for_args(model, clause, args, association = nil)
@@ -104,6 +104,14 @@ module Neo4j
               Link.for_clause(clause, arg, model, *args) || default
             rescue NoMethodError
               default
+            end
+
+            def converted_keys(model, arg)
+              arg.is_a?(Hash) ? Hash[arg.map { |key, value| [converted_key(model, key), value] }] : arg
+            end
+
+            def converted_key(model, key)
+              key.to_sym == :id ? model.id_property_name : key
             end
 
             def converted_value(model, key, value)
