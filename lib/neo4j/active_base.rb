@@ -24,7 +24,7 @@ module Neo4j
       end
 
       def current_adaptor=(adaptor)
-        current_session = Neo4j::Core::CypherSession.new(adaptor)
+        self.current_session = Neo4j::Core::CypherSession.new(adaptor)
       end
 
       def run_transaction(run_in_tx = true)
