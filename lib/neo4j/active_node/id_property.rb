@@ -40,6 +40,8 @@ module Neo4j::ActiveNode
       def define_id_methods(clazz, name, conf)
         validate_conf!(conf)
 
+        return if name == :neo_id
+
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
@@ -186,7 +188,7 @@ module Neo4j::ActiveNode
           id_property(name, type => value)
         end
 
-        unless @id_property_info[:type][:constraint] == false || @constraint_created
+        unless @id_property_info[:type][:constraint] == false || @id_property_info[:name] == :neo_id || @constraint_created
           @constraint_created = true
           constraint(@id_property_info[:name], type: :unique)
         end

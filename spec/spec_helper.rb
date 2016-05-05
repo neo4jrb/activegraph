@@ -196,6 +196,10 @@ module ActiveNodeRelStubHelpers
       module_eval(&block) if block
     end
   end
+
+  def id_property_value(o)
+    o.send o.class.id_property_name
+  end
 end
 
 TEST_SESSION_MODE = RUBY_PLATFORM == 'java' ? :embedded : :http
@@ -244,7 +248,6 @@ end
 
 Neo4j::ActiveBase.set_current_session_by_adaptor(session_adaptor)
 
-
 RSpec.configure do |config|
   config.extend FixingRSpecHelpers
   config.include Neo4jSpecHelpers
@@ -257,6 +260,10 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     # Ability to close session?
+  end
+
+  config.before(:all) do
+    Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
   end
 
   # config.before(:each) do

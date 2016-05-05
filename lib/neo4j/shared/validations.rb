@@ -15,11 +15,7 @@ module Neo4j
       # @option options [true, false] :validate if false no validation will take place
       # @return [Boolean] true if it saved it successfully
       def save(options = {})
-        result = perform_validations(options) ? super : false
-        if !result
-          Neo4j::ActiveBase.current_transaction.mark_failed if Neo4j::ActiveBase.current_transaction
-        end
-        result
+        perform_validations(options) ? super : false
       end
 
       # @return [Boolean] true if valid

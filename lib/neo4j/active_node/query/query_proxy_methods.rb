@@ -1,7 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
+      # rubocop:disable Metrics/ModuleLength
       module QueryProxyMethods
+        # rubocop:enable Metrics/ModuleLength
         FIRST = 'HEAD'
         LAST = 'LAST'
 
@@ -69,7 +71,7 @@ module Neo4j
         # @return [Boolean]
         def include?(other, target = nil)
           query_with_target(target) do |var|
-            where_filter = if other.respond_to?(:neo_id)
+            where_filter = if other.respond_to?(:neo_id) || association_id_key == :neo_id
                              "ID(#{var}) = {other_node_id}"
                            else
                              "#{var}.#{association_id_key} = {other_node_id}"
@@ -140,6 +142,14 @@ module Neo4j
           end
         end
 
+        def find_or_initialize_by(attributes, &block)
+          find_by(attributes) || initialize_by_current_chain_params(attributes, &block)
+        end
+
+        def first_or_initialize(attributes = {}, &block)
+          first || initialize_by_current_chain_params(attributes, &block)
+        end
+
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
         def optional(association, node_var = nil, rel_var = nil)
           self.send(association, node_var, rel_var, optional: true)
@@ -164,6 +174,36 @@ module Neo4j
         end
 
         private
+
+        def find_inverse_association!(model, source, association)
+          model.associations.values.find do |reverse_association|
+            association.inverse_of?(reverse_association) ||
+              reverse_association.inverse_of?(association) ||
+              inverse_relation_of?(source, association, model, reverse_association)
+          end || fail("Could not find reverse association for #{@context}")
+        end
+
+        def inverse_relation_of?(source, source_association, target, target_association)
+          source_association.direction != target_association.direction &&
+            source == target_association.target_class &&
+            target == source_association.target_class &&
+            source_association.relationship_class_name == target_association.relationship_class_name
+        end
+
+        def initialize_by_current_chain_params(params = {})
+          result = new(where_clause_params.merge(params))
+
+          inverse_association = find_inverse_association!(model, source_object.class, association) if source_object
+          result.tap do |m|
+            yield(m) if block_given?
+            m.public_send(inverse_association.name) << source_object if inverse_association
+          end
+        end
+
+        def where_clause_params
+          query.clauses.select { |c| c.is_a?(Neo4j::Core::QueryClauses::WhereClause) && c.arg.is_a?(Hash) }
+               .map! { |e| e.arg[identity] }.compact.inject { |a, b| a.merge(b) } || {}
+        end
 
         def first_and_last(func, target)
           new_query, pluck_proc = if self.query.clause?(:order)

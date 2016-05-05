@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
 - Invalid options to the `property` method now raise an exception (see #1169)
 - Label #indexes/#constraints return array without needing to access [:property_keys]
 - `server_db` server type is no longer supported.  Use `http` instead to connect to Neo4j via the HTTP JSON API
@@ -23,7 +24,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - It is now possible to subscribe separately to events for querying in different adaptors and for HTTP requests (see [the docs](TODO!!!!))
  - Schema queries (changes to indexes/constraints) happen in a separate thread for performance and reduce the complexity of the code
  - New session API does not include replacement for on_next_session_available
-
+- Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 
 ## [7.0.3] - 04-28-2016
 

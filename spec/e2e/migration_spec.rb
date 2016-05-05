@@ -52,6 +52,12 @@ describe 'migration tasks' do
   end
 
   describe 'AddIdProperty class' do
+    before do
+      Neo4j::Config.delete(:id_property)
+      Neo4j::Config.delete(:id_property_type)
+      Neo4j::Config.delete(:id_property_type_value)
+    end
+
     let(:full_path) { '/hd/gems/rails/add_id_property.yml' }
     let(:clazz) { Neo4j::Migration::AddIdProperty }
     let(:map_template) { {models: %w(User Song)} }

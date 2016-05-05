@@ -282,43 +282,43 @@ describe 'has_many' do
     let!(:person) { Person.create }
 
     before(:each) do
-      Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
-                       .create('(post)<-[:comments_on]-(comment)').exec
+      Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
+                    .create('(post)<-[:comments_on]-(comment)').exec
 
-      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
-                       .create('(post)<-[:comments_on]-(person)').exec
+      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {Person.id_property_name => person.id})
+                    .create('(post)<-[:comments_on]-(person)').exec
     end
 
-    subject { post.comments.pluck(:uuid).sort }
+    subject { post.comments.pluck(Comment.id_property_name).sort }
     context 'model_class: nil' do
       let(:model_class) { nil }
       # Should assume 'Comment' as the model from the association name
-      it { is_expected.to eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
     context "model_class: 'Comment'" do
       let(:model_class) { 'Comment' }
-      it { is_expected.to eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
     context "model_class: 'Person'" do
       let(:model_class) { 'Person' }
-      it { is_expected.to eq([person.uuid]) }
+      it { is_expected.to eq([person.id]) }
     end
 
     context 'model_class: false' do
       let(:model_class) { false }
-      it { is_expected.to eq((comments.map(&:uuid) + [person.uuid]).sort) }
+      it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
     end
 
     context "model_class: ['Comment']" do
       let(:model_class) { ['Comment'] }
-      it { is_expected.to eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
     context "model_class: ['Comment', 'Person']" do
       let(:model_class) { %w(Comment Person) }
-      it { is_expected.to eq((comments.map(&:uuid) + [person.uuid]).sort) }
+      it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
     end
   end
 
