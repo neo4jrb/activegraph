@@ -59,10 +59,11 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     describe 'when having a configuration' do
+      let_config(:id_property) { :the_id }
+      let_config(:id_property_type) { :auto }
+      let_config(:id_property_type_value) { :uuid }
+
       before do
-        let_context(:id_property) { :the_id }
-        let_context(:id_property_type) { :auto }
-        let_context(:id_property_type_value) { :uuid }
         stub_active_node_class('Clazz')
       end
 
@@ -75,11 +76,9 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'when having neo_id configuration' do
+    let_config(:id_property) { :neo_id }
     before do
-      before_session do
-        Neo4j::Config[:id_property] = :neo_id
-        stub_active_node_class('NeoIdTest')
-      end
+      stub_active_node_class('NeoIdTest')
     end
 
     it 'it will find node by neo_id' do
@@ -361,16 +360,17 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :neo_id' do
     before do
-      before_session do
-        stub_const('NeoIdTest', UniqueClass.create do
-          include Neo4j::ActiveNode
-          id_property :neo_id
-        end)
+      stub_active_node_class('NeoIdTest') do
+        id_property :neo_id
       end
+
+      delete_db
     end
 
     it 'has an index' do
-      expect(NeoIdTest.mapped_label.indexes[:property_keys]).to be_empty
+      NeoIdTest.ensure_id_property_info!
+
+      expect(NeoIdTest.mapped_label.indexes).to be_empty
     end
 
     describe 'property id' do
@@ -457,71 +457,59 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'inheritance' do
-    before(:all) do
-      before_session do
-        module IdProp
-          Teacher = UniqueClass.create do
-            include Neo4j::ActiveNode
-            id_property :my_id, on: :my_method
+    before do
+      stub_active_node_class('Teacher') do
+        id_property :my_id, on: :my_method
 
-            def my_method
-              'an id'
-            end
-          end
-
-          class Substitute < Teacher; end
-
-          Vehicle = UniqueClass.create do
-            include Neo4j::ActiveNode
-            id_property :my_id, auto: :uuid
-          end
-
-          class Car < Vehicle; end
-
-          Fruit = UniqueClass.create do
-            include Neo4j::ActiveNode
-
-            id_property :my_id
-          end
-
-          class Apple < Fruit; end
-
-          Sport = UniqueClass.create do
-            include Neo4j::ActiveNode
-
-            id_property :neo_id
-          end
-
-          class Skiing < Sport; end
+        def my_method
+          'an id'
         end
       end
+
+      stub_named_class('Substitute', Teacher)
+
+      stub_active_node_class('Vehicle') do
+        id_property :my_id, auto: :uuid
+      end
+
+      stub_named_class('Car', Vehicle)
+
+      stub_active_node_class('Fruit') do
+        id_property :my_id
+      end
+
+      stub_named_class('Apple', Fruit)
+
+      stub_active_node_class('Sport') do
+        id_property :neo_id
+      end
+
+      stub_named_class('Skiing', Sport)
     end
 
-    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple, IdProp::Sport, IdProp::Skiing].each(&:delete_all) }
+    after(:all) { [Teacher, Car, Apple, Sport, Skiing].each(&:delete_all) }
 
     it 'inherits the base id_property' do
-      expect(IdProp::Substitute.create.my_id).to eq 'an id'
+      expect(Substitute.create.my_id).to eq 'an id'
     end
 
     it 'works with auto uuid' do
-      expect(IdProp::Car.create.my_id).not_to be_nil
+      expect(Car.create.my_id).not_to be_nil
     end
 
     it 'works without conf specified' do
-      expect(IdProp::Apple.create.my_id).not_to be_nil
+      expect(Apple.create.my_id).not_to be_nil
     end
 
     it 'works with neo_id' do
-      node = IdProp::Skiing.create
+      node = Skiing.create
       expect(node.id).not_to be_nil
       expect(node.id).to eq(node.neo_id)
     end
 
     context 'when a session is not started' do
-      it 'waits until the session is loaded, then sets id property' do
-        Neo4j::Session.current.close
-
-        stub_active_node_class('IdProp::Executive') do
+      before do
+        stub_active_node_class('Executive') do
           id_property :my_id, on: :my_method
 
           def my_method
@@ -529,11 +517,11 @@ describe Neo4j::ActiveNode::IdProperty do
           end
         end
 
-        stub_named_class('IdProp::CEO', IdProp::Executive)
+        stub_named_class('CEO', Executive)
       end
 
       it 'subclass inherits the primary_key' do
-        expect(IdProp::CEO.primary_key).to eq(:my_id)
+        expect(CEO.primary_key).to eq(:my_id)
       end
     end
   end
