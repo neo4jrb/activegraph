@@ -19,12 +19,12 @@ module Neo4j
       end
 
       # Should support setting session via config options
-      def set_current_session(session)
+      def current_session=(session)
         SessionRegistry.current_session = session
       end
 
-      def set_current_session_by_adaptor(adaptor)
-        set_current_session(Neo4j::Core::CypherSession.new(adaptor))
+      def current_adaptor=(adaptor)
+        current_session = Neo4j::Core::CypherSession.new(adaptor)
       end
 
       def run_transaction(run_in_tx = true)

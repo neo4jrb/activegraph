@@ -130,7 +130,7 @@ module Neo4j
           cypher_session_adaptor(session_type, url || path, (options[:options] || {}).merge(wrap_level: :proc))
         end
 
-        Neo4j::ActiveBase.set_current_session_by_adaptor(adaptor)
+        Neo4j::ActiveBase.current_adaptor = adaptor
       end
     end
 

@@ -41,7 +41,7 @@ module Rails
     around(:each) do |example|
       main_spec_session = Neo4j::ActiveBase.current_session
       example.run
-      Neo4j::ActiveBase.set_current_session(main_spec_session)
+      Neo4j::ActiveBase.current_session = main_spec_session
     end
 
     describe 'open_neo4j_session' do

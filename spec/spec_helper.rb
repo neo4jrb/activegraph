@@ -246,7 +246,7 @@ module FixingRSpecHelpers
   end
 end
 
-Neo4j::ActiveBase.set_current_session_by_adaptor(session_adaptor)
+Neo4j::ActiveBase.current_adaptor = session_adaptor
 
 RSpec.configure do |config|
   config.extend FixingRSpecHelpers
