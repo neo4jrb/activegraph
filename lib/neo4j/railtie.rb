@@ -7,10 +7,9 @@ module Neo4j
   class Railtie < ::Rails::Railtie
     config.neo4j = ActiveSupport::OrderedOptions.new
 
-    if const_defined?(:ActionDispatch)
-      ActionDispatch::Reloader.to_prepare do
-        Neo4j::ActiveNode::Labels::Reloading.reload_models!
-      end
+    config.to_prepare do
+      Neo4j::ActiveNode::Labels::Reloading.reload_models!
+      Neo4j::ActiveNode::Labels.clear_wrapped_models
     end
 
     # Rescue responses similar to ActiveRecord.
