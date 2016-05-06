@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.4] - 05-06-2016
+
+### Fixed
+
+- A bug/inconsistency between ActiveNode's class method `create` and instance `save` led to faulty validation of associations in some cases.
+
 ## [7.0.3] - 04-28-2016
 
 ### Fixed
