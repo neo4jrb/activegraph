@@ -15,6 +15,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 
+
+## [7.0.4] - 05-06-2016
+
+### Fixed
+
+- A bug/inconsistency between ActiveNode's class method `create` and instance `save` led to faulty validation of associations in some cases.
+
 ## [7.0.3] - 04-28-2016
 
 ### Fixed
