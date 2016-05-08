@@ -25,4 +25,5 @@ module Neo4j
 
   class DangerousAttributeError < ScriptError; end
   class UnknownAttributeError < NoMethodError; end
+  class IrreversibleMigration < Error; end
 end
