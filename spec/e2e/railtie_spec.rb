@@ -63,14 +63,14 @@ module Rails
           Neo4j::ActiveBase.current_session.adaptor
         end
 
-        let_context(session_options: {type: :http, url: 'http://neo4j:specs@the_host:1234'}) do
+        let_context(session_options: {type: :http, url: 'http://neo4j:specs@the-host:1234'}) do
           it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
-          its(:url) { should eq('http://neo4j:specs@the_host:1234') }
+          its(:url) { should eq('http://neo4j:specs@the-host:1234') }
 
           describe 'faraday connection' do
             subject { super().requestor.instance_variable_get('@faraday') }
 
-            its('url_prefix.host') { should eq('the_host') }
+            its('url_prefix.host') { should eq('the-host') }
             its('url_prefix.port') { should eq(1234) }
             describe 'headers' do
               subject { super().headers }
@@ -79,14 +79,14 @@ module Rails
           end
         end
 
-        let_context(session_options: {type: :http, url: 'http://neo4j:specs@the_host:1234', options: {basic_auth: 'neo4j', password: 'specs2'}}) do
+        let_context(session_options: {type: :http, url: 'http://neo4j:specs@the-host:1234', options: {basic_auth: 'neo4j', password: 'specs2'}}) do
           it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
-          its(:url) { should eq('http://neo4j:specs@the_host:1234') }
+          its(:url) { should eq('http://neo4j:specs@the-host:1234') }
 
           describe 'faraday connection' do
             subject { super().requestor.instance_variable_get('@faraday') }
 
-            its('url_prefix.host') { should eq('the_host') }
+            its('url_prefix.host') { should eq('the-host') }
             its('url_prefix.port') { should eq(1234) }
             describe 'headers' do
               subject { super().headers }
