@@ -202,6 +202,7 @@ module ActiveNodeRelStubHelpers
   end
 end
 
+# Should allow for http on java
 TEST_SESSION_MODE = RUBY_PLATFORM == 'java' ? :embedded : :http
 
 session_adaptor = case TEST_SESSION_MODE
