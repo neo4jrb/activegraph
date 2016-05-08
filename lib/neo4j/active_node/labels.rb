@@ -105,7 +105,7 @@ module Neo4j
 
         # Deletes all nodes and connected relationships from Cypher.
         def delete_all
-          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH n-[r]-() DELETE n,r")
+          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH (n)-[r]-() DELETE n,r")
           self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 
