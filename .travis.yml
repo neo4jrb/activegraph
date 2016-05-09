@@ -2,6 +2,8 @@ script: "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81
 language: ruby
 cache: bundler
 sudo: false
+jdk:
+  - oraclejdk8
 rvm:
   - 2.3.0
   - 2.2.4
