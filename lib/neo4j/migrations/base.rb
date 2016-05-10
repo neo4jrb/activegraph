@@ -1,6 +1,8 @@
 module Neo4j
   module Migrations
     class Base < ::Neo4j::Migration
+      include Neo4j::Migrations::Helpers
+
       def initialize(migration_id)
         @migration_id = migration_id
       end
@@ -20,28 +22,6 @@ module Neo4j
       def down
         fail NotImplementedError
       end
-
-      protected
-
-      def execute(string)
-        Neo4j::Session.query(string).to_a
-      end
-
-      private
-
-      # def migrate_up
-      #   migration = SchemaMigration.new(migration_id: @migration_id)
-      #   if migration.save
-      #     output "Running migration #{@migration_id}..."
-      #     up
-      #   else
-      #     output('Already migrated.')
-      #   end
-      # end
-
-      # def migrate_down
-      #   SchemaMigration.find_by(migration_id: @migration_id) && down
-      # end
     end
   end
 end
