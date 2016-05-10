@@ -52,6 +52,14 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
+  describe '#execute' do
+    it 'executes plan cypher query with parameters' do
+      expect do
+        execute 'MATCH (b:`Book`) WHERE b.name = {book_name} DELETE b', book_name: Book.first.name
+      end.to change { Book.count }.by(-1)
+    end
+  end
+
   describe '#remove_index' do
     it 'removes an index from a property' do
       remove_index :Book, :author_name

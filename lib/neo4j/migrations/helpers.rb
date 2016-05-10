@@ -9,9 +9,9 @@ module Neo4j
       end
 
       def drop_nodes(label)
-        Neo4j::Session.query.match("(n:`#{label}`)")
-                      .optional_match('(n)-[r]-()')
-                      .delete(:r, :n).exec
+        query.match("(n:`#{label}`)")
+             .optional_match('(n)-[r]-()')
+             .delete(:r, :n).exec
       end
 
       def add_labels(label, *labels)
@@ -33,11 +33,13 @@ module Neo4j
         execute("DROP INDEX ON :#{label}(#{property})")
       end
 
-      def execute(string)
-        Neo4j::Session.query(string).to_a
+      def execute(string, params = {})
+        query(string, params).to_a
       end
 
       private
+
+      delegate :query, to: Neo4j::Session
 
       def by_label(label, symbol: :n)
         Neo4j::Session.query.match("(#{symbol}:`#{label}`)")
