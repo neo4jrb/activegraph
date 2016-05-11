@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.6] - 05-11-2016
+
+### Added
+
+- Explination about why you can't have an index and a constraint at the same time
+
 ## [7.0.5] - 05-06-2016
 
 ### Fixed
