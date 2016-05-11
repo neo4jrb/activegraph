@@ -41,7 +41,8 @@ module Neo4j
 
       delegate :query, to: Neo4j::Session
 
-      def by_label(label, symbol: :n)
+      def by_label(label, options = {})
+        symbol = options[:symbol] || :n
         Neo4j::Session.query.match("(#{symbol}:`#{label}`)")
       end
     end
