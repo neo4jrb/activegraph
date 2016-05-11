@@ -88,6 +88,7 @@ require 'neo4j/active_node'
 
 require 'neo4j/migration'
 require 'neo4j/migrations/helpers'
+require 'neo4j/migrations/migration_file'
 require 'neo4j/migrations/base'
 require 'neo4j/migrations/runner'
 require 'neo4j/migrations/schema_migration'

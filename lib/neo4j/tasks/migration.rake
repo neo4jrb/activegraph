@@ -36,22 +36,29 @@ namespace :neo4j do
 
     desc 'Run a migration given its VERSION'
     task :up do
-      version = ENV['VERSION'] || fail('VERSION is required')
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.up version
     end
 
-    desc 'Reverts a migration given its VERSION'
+    desc 'Revert a migration given its VERSION'
     task :down do
-      version = ENV['VERSION'] || fail('VERSION is required')
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.down version
+    end
+
+    desc 'Print a report of migrations status'
+    task :status do
+      runner = Neo4j::Migrations::Runner.new
+      runner.status
     end
   end
 
   desc 'Rollbacks migrations given a STEP number'
   task :rollback do
+    steps = (ENV['STEP'] || 1).to_i
     runner = Neo4j::Migrations::Runner.new
-    runner.rollback
+    runner.rollback(steps)
   end
 end

@@ -1,71 +1,105 @@
 module Neo4j
   module Migrations
     class Runner
+      STATUS_TABLE_FORMAT = '%-10s %-20s %s'.freeze
+      SEPARATOR = '--------------------------------------------------'.freeze
+      FILE_MISSING = '**** file missing ****'.freeze
+      STATUS_TABLE_HEADER = ['Status'.freeze, 'Migration ID'.freeze, 'Migration Name'.freeze].freeze
+      UP_MESSAGE = 'up'.freeze
+      DOWN_MESSAGE = 'down'.freeze
+
       def initialize
         @up_versions = SchemaMigration.all.pluck(:migration_id)
       end
 
       def all
-        all_migrations.each do |file|
-          version, file_name = *version_and_file_name_by_path(file)
-          next if @up_versions.include?(version)
-          klass = classify(file_name)
-          require file
-          migrate_up(version, klass)
+        migration_files.each do |migration_file|
+          next if @up_versions.include?(migration_file.version)
+          migrate_up(migration_file)
         end
       end
 
       def up(version)
-        file = find_by_version!(version)
+        migration_file = find_by_version!(version)
         return if @up_versions.include?(version)
-        _, file_name = *version_and_file_name_by_path(file)
-        require file
-        migrate_up(version, classify(file_name))
+        migrate_up(migration_file)
       end
 
       def down(version)
-        file = find_by_version!(version)
-        return if @up_versions.include?(version)
-        _, file_name = *version_and_file_name_by_path(file)
-        require file
-        migrate_down(version, classify(file_name))
+        migration_file = find_by_version!(version)
+        return unless @up_versions.include?(version)
+        migrate_down(migration_file)
       end
 
-      def rollback
-        fail NotImplementedError
+      def rollback(steps)
+        @up_versions.sort.reverse.first(steps).each do |version|
+          down(version)
+        end
+      end
+
+      def status
+        output STATUS_TABLE_FORMAT, *STATUS_TABLE_HEADER
+        output SEPARATOR
+        all_migrations.each do |version|
+          status = @up_versions.include?(version) ? UP_MESSAGE : DOWN_MESSAGE
+          migration_file = find_by_version(version)
+          migration_name = migration_file ? migration_file.class_name : FILE_MISSING
+          output STATUS_TABLE_FORMAT, status, version, migration_name
+        end
       end
 
       private
 
-      def classify(string)
-        string.split('_').map(&:capitalize).join('')
+      def migrate_up(migration_file)
+        migration_message(migration_file, 'running', 'migrated') do
+          migration = migration_file.create
+          migration.migrate(:up)
+        end
       end
 
-      def version_and_file_name_by_path(path)
-        File.basename(path, '.rb').split('_', 2)
+      def migrate_down(migration_file)
+        migration_message(migration_file, 'reverting', 'reverted') do
+          migration = migration_file.create
+          migration.migrate(:down)
+        end
       end
 
-      def migrate_up(version, klass)
-        puts "== #{version} #{klass}: running... ========="
-        migration = klass.constantize.new(version)
-        migration.migrate(:up)
-        puts "== #{version} #{klass}: migrated ========="
+      def migration_message(migration, running_message, complete_message)
+        output "== #{migration.version} #{migration.class_name}: #{running_message}... ========="
+        yield
+        output "== #{migration.version} #{migration.class_name}: #{complete_message} ========="
       end
 
-      def migrate_down(version, klass)
-        puts "== #{version} #{klass}: reverting... ========="
-        migration = klass.constantize.new(version)
-        migration.migrate(:down)
-        puts "== #{version} #{klass}: reverted ========="
+      def output(*string_format)
+        puts format(*string_format) unless ENV['silenced']
       end
 
       def find_by_version!(version)
-        all_migrations.find { |file| File.basename(file).starts_with?(version) } ||
-          fail("No such migration #{version}")
+        find_by_version(version) || fail(UnknownMigrationVersionError, "No such migration #{version}")
+      end
+
+      def find_by_version(version)
+        migration_files.find { |file| file.version == version }
       end
 
       def all_migrations
-        Dir[Rails.root.join('db', 'neo4j', 'migrate', '*.rb')].sort
+        (@up_versions + files_versions).uniq.sort
+      end
+
+      def files_versions
+        migration_files.map(&:version)
+      end
+
+      def migration_files
+        files.map { |file_path| MigrationFile.new(file_path) }
+      end
+
+      def files
+        Dir[files_path].sort
+      end
+
+      def files_path
+        Rails.root.join('db', 'neo4j', 'migrate', '*.rb')
       end
     end
   end

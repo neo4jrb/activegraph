@@ -10,7 +10,13 @@ module Neo4j
       def migrate(method)
         Benchmark.realtime do
           Neo4j::Transaction.run do
-            __send__(method)
+            if method == :up
+              up
+              SchemaMigration.create!(migration_id: @migration_id)
+            else
+              down
+              SchemaMigration.find_by!(migration_id: @migration_id).destroy
+            end
           end
         end
       end
