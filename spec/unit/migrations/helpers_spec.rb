@@ -18,7 +18,7 @@ describe Neo4j::Migrations::Helpers do
   describe '#rename_property' do
     it 'renames a property' do
       rename_property :Book, :name, :title
-      expect(Book.all.pluck(n: :title)).to include('Book1', 'Book2', 'Book3')
+      expect(Book.all(:n).pluck('n.title')).to include('Book1', 'Book2', 'Book3')
     end
   end
 
