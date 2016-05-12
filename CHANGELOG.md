@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## UNRELEASED
+
+### Changed
+
+- Gemspec dependency requirements were modified where ActiveModel, ActiveSupport, and Railties are concerned. The gem now requires >= 4.0, < 5.1.
+- `ActiveModel::Serializers::Xml` is only included if supported if available.
+
 ## [7.0.12] - 06-27-2016
 
 ### Fixed
