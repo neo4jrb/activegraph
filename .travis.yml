@@ -1,8 +1,6 @@
 script:
   - "travis_retry bundle exec rake neo4j:install[$NEO4J_VERSION] neo4j:start --trace"
-  - "./db/neo4j/development/bin/neo4j status"
-  - "sleep 10"
-  - "./db/neo4j/development/bin/neo4j status"
+  - "tail -f ./db/neo4j/development/logs/*.log"
   - "travis_retry bundle exec rake default --trace"
 language: ruby
 cache: bundler
