@@ -9,15 +9,15 @@ module Neo4j
       end
 
       def create
-        require file_name
-        class_name.constantize.new(version)
+        require @file_name
+        class_name.constantize.new(@version)
       end
 
       private
 
       def extract_data!
-        @version, @symbol_name = File.basename(file_name, '.rb').split('_', 2)
-        @class_name = @symbol_name.split('_').map(&:capitalize).join('')
+        @version, @symbol_name = File.basename(@file_name, '.rb').split('_', 2)
+        @class_name = @symbol_name.classify
       end
     end
   end

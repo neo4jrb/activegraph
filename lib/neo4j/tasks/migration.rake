@@ -24,7 +24,7 @@ namespace :neo4j do
 
   desc 'A shortcut for neo4j::migrate::all'
   task :migrate do
-    Rake::Task['neo4j::migrate::all'].invoke
+    Rake::Task['neo4j:migrate:all'].invoke
   end
 
   namespace :migrate do

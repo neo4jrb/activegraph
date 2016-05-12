@@ -15,10 +15,21 @@ describe Neo4j::Migrations::Helpers do
     Book.create!(name: 'Book3')
   end
 
+  describe '#remove_property' do
+    it 'removes a property' do
+      remove_property :Book, :name
+      expect(Book.all(:n).pluck('n.title')).to eq([nil, nil, nil])
+    end
+  end
+
   describe '#rename_property' do
     it 'renames a property' do
       rename_property :Book, :name, :title
       expect(Book.all(:n).pluck('n.title')).to include('Book1', 'Book2', 'Book3')
+    end
+
+    it 'fails to remove when destination property is already defined' do
+      expect { rename_property :Book, :author_name, :name }.to raise_error('Property `name` is already defined in `Book`')
     end
   end
 
@@ -31,24 +42,30 @@ describe Neo4j::Migrations::Helpers do
 
   describe '#add_labels' do
     it 'adds labels to a node' do
-      add_labels :Book, :Item, :Readable
+      add_labels :Book, [:Item, :Readable]
       expect(Book.first.labels).to eq([:Book, :Item, :Readable])
     end
   end
 
   describe '#remove_labels' do
     it 'removes labels from a node' do
-      add_labels :Book, :Item
+      add_label :Book, :Item
       expect(Book.first.labels).to eq([:Book, :Item])
-      remove_labels :Book, :Item
+      remove_label :Book, :Item
       expect(Book.first.labels).to eq([:Book])
     end
   end
 
-  describe '#remove_constraint' do
+  describe '#drop_constraint' do
     it 'removes a constraint from a property' do
-      remove_constraint :Book, :name
+      expect do
+        drop_constraint :Book, :name
+      end.to change { Neo4j::Label.create(:Book).uniqueness_constraints[:property_keys].flatten.count }.by(-1)
       expect { Book.create! name: Book.first.name }.not_to raise_error
+    end
+
+    it 'fails when constraint is not defined' do
+      expect { drop_constraint :Book, :missing }.to raise_error('No such constraint for Book#missing')
     end
   end
 
@@ -60,9 +77,17 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
-  describe '#remove_index' do
+  describe '#drop_index' do
     it 'removes an index from a property' do
-      remove_index :Book, :author_name
+      expect do
+        drop_index :Book, :author_name
+      end.to change { Neo4j::Label.create(:Book).indexes[:property_keys].flatten.count }.by(-1)
+    end
+
+    it 'fails when index is not defined' do
+      expect do
+        expect { drop_index :Book, :missing }.to raise_error('No such index for Book#missing')
+      end.not_to change { Neo4j::Label.create(:Book).indexes[:property_keys].flatten.count }
     end
   end
 end
