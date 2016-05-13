@@ -10,7 +10,8 @@ addons:
     s3_region: "us-east-1"
     debug: true
     paths:
-      - ./db/neo4j/development/logs/*.log
+      - ./db/neo4j/development/logs/neo4j.log
+      - ./db/neo4j/development/logs/debug.log
 jdk:
   - oraclejdk8
 rvm:
