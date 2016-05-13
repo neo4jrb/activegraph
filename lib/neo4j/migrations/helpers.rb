@@ -1,9 +1,15 @@
 module Neo4j
   module Migrations
     module Helpers
+      extend ActiveSupport::Concern
+
+      SCHEMA_CHANGE_IN_TRANSACTIONS = 'Can\'t drop %s inside a transaction.'\
+                                      'Please add `disable_transactions!` in your migration file'.freeze
+
+      CONSTRAINT_OR_INDEX_MISSING = 'No such %{type} for %{label}#%{property}'.freeze
+
       def remove_property(label, property)
-        by_label(label).remove(n: property)
-                       .exec
+        by_label(label).remove(n: property).exec
       end
 
       def rename_property(label, old_property, new_property)
@@ -35,17 +41,17 @@ module Neo4j
       end
 
       def drop_constraint(label, property)
-        neo4j_label = Neo4j::Label.create(label)
-        fail Neo4j::MigrationError,
-             "No such constraint for #{label}\##{property}" unless neo4j_label.uniqueness_constraints[:property_keys].flatten.include?(property)
-        neo4j_label.drop_constraint(property, type: :unique)
+        fail Neo4j::MigrationError, format(SCHEMA_CHANGE_IN_TRANSACTIONS, 'constraints') if transactions? || Neo4j::Transaction.current
+        constraint = Neo4j::Schema::UniqueConstraintOperation.new(label, property)
+        fail_missing_constraint_or_index!(:constraint, label, property) unless constraint.exist?
+        constraint.drop!
       end
 
       def drop_index(label, property)
-        neo4j_label = Neo4j::Label.create(label)
-        fail Neo4j::MigrationError,
-             "No such index for #{label}\##{property}" unless neo4j_label.indexes[:property_keys].flatten.include?(property)
-        neo4j_label.drop_index(property, type: :exact)
+        fail Neo4j::MigrationError, format(SCHEMA_CHANGE_IN_TRANSACTIONS, 'indexes') if transactions? || Neo4j::Transaction.current
+        index = Neo4j::Schema::ExactIndexOperation.new(label, property)
+        fail_missing_constraint_or_index!(:index, label, property) unless index.exist?
+        index.drop!
       end
 
       def execute(string, params = {})
@@ -54,7 +60,19 @@ module Neo4j
 
       delegate :query, to: Neo4j::Session
 
+      protected
+
+      def transactions?
+        self.class.transaction?
+      end
+
       private
+
+      def fail_missing_constraint_or_index!(type, label, property)
+        fail Neo4j::MigrationError,
+             format(CONSTRAINT_OR_INDEX_MISSING, type: type, label: label, property: property)
+      end
+
 
       def property_exists?(label, property)
         by_label(label).where("EXISTS(n.#{property})").return(:n).any?
@@ -63,6 +81,16 @@ module Neo4j
       def by_label(label, options = {})
         symbol = options[:symbol] || :n
         query.match(symbol => label)
+      end
+
+      module ClassMethods
+        def disable_transactions!
+          @disable_transactions = true
+        end
+
+        def transaction?
+          !@disable_transactions
+        end
       end
     end
   end

@@ -2,6 +2,9 @@ describe Neo4j::Migrations::Helpers do
   include described_class
 
   before do
+    Neo4j::Session.current.close if Neo4j::Session.current
+    create_session
+
     clear_model_memory_caches
     delete_db
 
@@ -9,6 +12,8 @@ describe Neo4j::Migrations::Helpers do
       property :name, constraint: :unique
       property :author_name, index: :exact
     end
+
+    self.class.disable_transactions!
 
     Book.create!(name: 'Book1')
     Book.create!(name: 'Book2')
@@ -56,19 +61,6 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
-  describe '#drop_constraint' do
-    it 'removes a constraint from a property' do
-      expect do
-        drop_constraint :Book, :name
-      end.to change { Neo4j::Label.create(:Book).uniqueness_constraints[:property_keys].flatten.count }.by(-1)
-      expect { Book.create! name: Book.first.name }.not_to raise_error
-    end
-
-    it 'fails when constraint is not defined' do
-      expect { drop_constraint :Book, :missing }.to raise_error('No such constraint for Book#missing')
-    end
-  end
-
   describe '#execute' do
     it 'executes plan cypher query with parameters' do
       expect do
@@ -77,11 +69,24 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
+  describe '#drop_constraint' do
+    it 'removes a constraint from a property' do
+      expect do
+        drop_constraint :Book, :name
+      end.to change { Neo4j::Label.constraint?(:Book, :name) }.from(true).to(false)
+      expect { Book.create! name: Book.first.name }.not_to raise_error
+    end
+
+    it 'fails when constraint is not defined' do
+      expect { drop_constraint :Book, :missing }.to raise_error('No such constraint for Book#missing')
+    end
+  end
+
   describe '#drop_index' do
     it 'removes an index from a property' do
       expect do
         drop_index :Book, :author_name
-      end.to change { Neo4j::Label.create(:Book).indexes[:property_keys].flatten.count }.by(-1)
+      end.to change { Neo4j::Label.index?(:Book, :author_name) }.from(true).to(false)
     end
 
     it 'fails when index is not defined' do

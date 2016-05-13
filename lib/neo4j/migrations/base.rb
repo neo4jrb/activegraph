@@ -9,15 +9,7 @@ module Neo4j
 
       def migrate(method)
         Benchmark.realtime do
-          Neo4j::Transaction.run do
-            if method == :up
-              up
-              SchemaMigration.create!(migration_id: @migration_id)
-            else
-              down
-              SchemaMigration.find_by!(migration_id: @migration_id).destroy
-            end
-          end
+          transactions? ? migrate_with_transactions(method) : migrate_without_transactions(method)
         end
       end
 
@@ -27,6 +19,24 @@ module Neo4j
 
       def down
         fail NotImplementedError
+      end
+
+      protected
+
+      def migrate_with_transactions(method)
+        Neo4j::Transaction.run do
+          migrate_without_transactions(method)
+        end
+      end
+
+      def migrate_without_transactions(method)
+        if method == :up
+          up
+          SchemaMigration.create!(migration_id: @migration_id)
+        else
+          down
+          SchemaMigration.find_by!(migration_id: @migration_id).destroy
+        end
       end
     end
   end

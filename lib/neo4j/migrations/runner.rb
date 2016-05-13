@@ -7,8 +7,8 @@ module Neo4j
       STATUS_TABLE_HEADER = ['Status'.freeze, 'Migration ID'.freeze, 'Migration Name'.freeze].freeze
       UP_MESSAGE = 'up'.freeze
       DOWN_MESSAGE = 'down'.freeze
-      MIGRATION_RUNNING = { up: 'running'.freeze, down: 'reverting'.freeze }.freeze
-      MIGRATION_DONE = { up: 'migrated'.freeze, down: 'reverted'.freeze }.freeze
+      MIGRATION_RUNNING = {up: 'running'.freeze, down: 'reverting'.freeze}.freeze
+      MIGRATION_DONE = {up: 'migrated'.freeze, down: 'reverted'.freeze}.freeze
 
       def initialize
         @up_versions = SortedSet.new(SchemaMigration.all.pluck(:migration_id))

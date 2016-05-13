@@ -111,6 +111,35 @@ module Neo4j
             .and(change { u.reload.name }.to('Jack'))
         end
       end
+
+      describe 'transactional behavior in migrations' do
+        before do
+          stub_active_node_class('Contact') do
+            property :phone, constraint: :unique
+          end
+
+          Contact.delete_all
+          Contact.create! phone: '123123'
+
+          allow_any_instance_of(described_class).to receive(:files_path) do
+            Rails.root.join('spec', 'support', 'transactional_migrations', '*.rb')
+          end
+        end
+
+        it 'rollbacks any change when one of the queries fails' do
+          joe = User.create! name: 'Joe'
+          expect do
+            expect { described_class.new.up '1231231231' }.to raise_error(/already exists/)
+          end.not_to change { joe.reload.name }
+        end
+
+        it 'rollbacks nothing when transactions are disabled' do
+          joe = User.create! name: 'Joe'
+          expect do
+            expect { described_class.new.up '1234567890' }.to raise_error(/already exists/)
+          end.to change { joe.reload.name }.to('Jack')
+        end
+      end
     end
   end
 end
