@@ -1,11 +1,16 @@
 script:
   - "travis_retry bundle exec rake neo4j:install[$NEO4J_VERSION] neo4j:start --trace"
+  - "sleep 10"
   - "travis_retry bundle exec rake default --trace"
 language: ruby
 cache: bundler
 sudo: false
 addons:
-  artifacts: true
+  artifacts:
+    s3_region: "us-east-1"
+    debug: true
+    paths:
+      - ./db/neo4j/development/logs/neo4j.log
 jdk:
   - oraclejdk8
 rvm:
