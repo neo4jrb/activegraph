@@ -58,6 +58,19 @@ module Neo4j
         query(string, params).to_a
       end
 
+      def say_with_time(message)
+        say(message)
+        result = nil
+        time = Benchmark.measure { result = yield }
+        say format('%.4fs', time.real), :subitem
+        say("#{result} rows", :subitem) if result.is_a?(Integer)
+        result
+      end
+
+      def say(message, subitem = false)
+        output "#{subitem ? '   ->' : '--'} #{message}"
+      end
+
       delegate :query, to: Neo4j::Session
 
       protected

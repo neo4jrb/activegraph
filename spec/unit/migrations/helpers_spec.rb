@@ -69,6 +69,32 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
+  describe '#say' do
+    it 'prints some text' do
+      expect(self).to receive(:output).with('-- Hello')
+      say 'Hello'
+    end
+
+    it 'prints some text as sub item' do
+      expect(self).to receive(:output).with('   -> Hello')
+      say 'Hello', :subitem
+    end
+  end
+
+  describe '#say_with_time' do
+    it 'wraps a block within some text' do
+      text = ''
+      allow(self).to receive(:output) do |new_text|
+        text += "#{new_text}\n"
+      end
+      say_with_time 'Hello' do
+        sleep 0.1
+        12
+      end
+      expect(text).to match(/-- Hello\n   -> [0-9]\.[0-9]+s\n   -> 12 rows\n/)
+    end
+  end
+
   describe '#drop_constraint' do
     it 'removes a constraint from a property' do
       expect do
