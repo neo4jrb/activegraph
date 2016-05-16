@@ -13,8 +13,6 @@ describe Neo4j::Migrations::Helpers do
       property :author_name, index: :exact
     end
 
-    self.class.disable_transactions!
-
     Book.create!(name: 'Book1')
     Book.create!(name: 'Book2')
     Book.create!(name: 'Book3')
@@ -34,7 +32,8 @@ describe Neo4j::Migrations::Helpers do
     end
 
     it 'fails to remove when destination property is already defined' do
-      expect { rename_property :Book, :author_name, :name }.to raise_error('Property `name` is already defined in `Book`')
+      expect { rename_property :Book, :author_name, :name }.to raise_error(
+        'Property `name` is already defined in `Book`. To overwrite, call `remove_property(:Book, :name)` before this method.')
     end
   end
 

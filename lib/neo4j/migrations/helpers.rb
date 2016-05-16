@@ -2,18 +2,16 @@ module Neo4j
   module Migrations
     module Helpers
       extend ActiveSupport::Concern
-
-      SCHEMA_CHANGE_IN_TRANSACTIONS = 'Can\'t drop %s inside a transaction.'\
-                                      'Please add `disable_transactions!` in your migration file'.freeze
-
       CONSTRAINT_OR_INDEX_MISSING = 'No such %{type} for %{label}#%{property}'.freeze
+      PROPERTY_ALREADY_DEFINED = 'Property `%{new_property}` is already defined in `%{label}`. '\
+                                 'To overwrite, call `remove_property(:%{label}, :%{new_property})` before this method.'.freeze
 
       def remove_property(label, property)
         by_label(label).remove(n: property).exec
       end
 
       def rename_property(label, old_property, new_property)
-        fail Neo4j::MigrationError, "Property `#{new_property}` is already defined in `#{label}`" if property_exists?(label, new_property)
+        fail Neo4j::MigrationError, format(PROPERTY_ALREADY_DEFINED, new_property: new_property, label: label) if property_exists?(label, new_property)
         by_label(label).set("n.#{new_property} = n.#{old_property}")
                        .remove("n.#{old_property}").exec
       end
@@ -45,14 +43,12 @@ module Neo4j
       end
 
       def drop_constraint(label, property)
-        fail Neo4j::MigrationError, format(SCHEMA_CHANGE_IN_TRANSACTIONS, 'constraints') if transactions? || Neo4j::Transaction.current
         constraint = Neo4j::Schema::UniqueConstraintOperation.new(label, property)
         fail_missing_constraint_or_index!(:constraint, label, property) unless constraint.exist?
         constraint.drop!
       end
 
       def drop_index(label, property)
-        fail Neo4j::MigrationError, format(SCHEMA_CHANGE_IN_TRANSACTIONS, 'indexes') if transactions? || Neo4j::Transaction.current
         index = Neo4j::Schema::ExactIndexOperation.new(label, property)
         fail_missing_constraint_or_index!(:index, label, property) unless index.exist?
         index.drop!

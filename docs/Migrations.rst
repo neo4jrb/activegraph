@@ -1,7 +1,7 @@
 Migrations
 ==================
 
-Neo4j.rb provides an ``ActiveRecord``-like migration framework and a set of helper methods to manipulate both database schema and data.
+Neo4j does not have a set schema like relational databases, but sometimes changes to the schema and the data are required. To help with this, Neo4j.rb provides an ``ActiveRecord``-like migration framework and a set of helper methods to manipulate both database schema and data.
 
 
 Generators
@@ -18,9 +18,11 @@ This will generate a new file located in ``db/neo4j/migrate/xxxxxxxxxx_rename_us
 .. code-block:: ruby
   class RenameUserNameToFirstName < Neo4j::Migrations::Base
     def up
+      rename_property :User, :name, :first_name
     end
 
     def down
+      rename_property :User, :first_name, :name
     end
   end
 
@@ -43,7 +45,7 @@ To disable this, you can use the ``disable_transactions!`` helper in your migrat
     ...
   end
 
-Neo4j::Migrations::Helpers
+Migration Helpers
 ------------------
 
 #execute
@@ -67,7 +69,7 @@ An alias for ``Neo4j::Session.query``. You can use it as root for the query buil
 
 .. code-block:: ruby
 
-  query.match(:n).where(name: 'John').delete(:n)
+  query.match(:n).where(name: 'John').delete(:n).exec
 
 
 #remove_property
@@ -195,7 +197,7 @@ Renames a label
 
 Drops an unique constraint on a given label attribute.
 
-**Warning** it would fail unless you define ``disable_transactions!`` in your migration file.
+**Warning** it would fail if you make data changes in the same migration. To fix, define ``disable_transactions!`` in your migration file.
 
 .. code-block:: ruby
 
@@ -206,7 +208,7 @@ Drops an unique constraint on a given label attribute.
 
 Drops an exact index on a given label attribute.
 
-**Warning** it would fail unless you define ``disable_transactions!`` in your migration file.
+**Warning** it would fail if you make data changes in the same migration. To fix, define ``disable_transactions!`` in your migration file.
 
 .. code-block:: ruby
 
