@@ -40,6 +40,10 @@ module Neo4j
         remove_labels(label, [label_to_remove])
       end
 
+      def rename_label(old_label, new_label)
+        by_label(old_label).set(n: new_label).remove(n: old_label).exec
+      end
+
       def drop_constraint(label, property)
         fail Neo4j::MigrationError, format(SCHEMA_CHANGE_IN_TRANSACTIONS, 'constraints') if transactions? || Neo4j::Transaction.current
         constraint = Neo4j::Schema::UniqueConstraintOperation.new(label, property)
@@ -85,7 +89,6 @@ module Neo4j
         fail Neo4j::MigrationError,
              format(CONSTRAINT_OR_INDEX_MISSING, type: type, label: label, property: property)
       end
-
 
       def property_exists?(label, property)
         by_label(label).where("EXISTS(n.#{property})").return(:n).any?

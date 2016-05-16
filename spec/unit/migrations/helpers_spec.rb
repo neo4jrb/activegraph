@@ -61,6 +61,14 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
+  describe '#rename_label' do
+    it 'renames a label' do
+      execute 'CREATE (n:`Item` { name: "Lorem Ipsum" })'
+      rename_label :Item, :Book
+      expect(Book.find_by(name: 'Lorem Ipsum')).not_to be_nil
+    end
+  end
+
   describe '#execute' do
     it 'executes plan cypher query with parameters' do
       expect do
