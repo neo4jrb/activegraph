@@ -17,7 +17,7 @@ module Neo4j
 
       def extract_data!
         @version, @symbol_name = File.basename(@file_name, '.rb').split('_', 2)
-        @class_name = @symbol_name.classify
+        @class_name = @symbol_name.camelize
       end
     end
   end

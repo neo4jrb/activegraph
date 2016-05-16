@@ -1,4 +1,4 @@
-class MigrationWithoutTransaction < Neo4j::Migrations::Base
+class MigrationWithoutTransactions < Neo4j::Migrations::Base
   disable_transactions!
 
   def up
