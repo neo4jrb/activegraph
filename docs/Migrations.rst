@@ -77,120 +77,72 @@ An alias for ``Neo4j::Session.query``. You can use it as root for the query buil
 
 Removes a property given a label.
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    remove_property(:User, :money)
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) REMOVE n.money
+  remove_property(:User, :money)
 
 #rename_property
 ------
 
 Renames a property given a label.
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    rename_property(:User, :name, :first_name)
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) SET n.first_name = n.name REMOVE n.name
+  rename_property(:User, :name, :first_name)
 
 #drop_nodes
 ------
 
 Removes all nodes with a certain label
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    drop_nodes(:User)
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) OPTIONAL MATCH (n)-[r]-() DELETE r,n
+  drop_nodes(:User)
 
 #add_label
 ------
 
 Adds a label to nodes, given their current label
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    add_label(:User, :Person)
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) SET n:`Person`
+  add_label(:User, :Person)
 
 #add_labels
 ------
 
 Adds labels to nodes, given their current label
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    add_label(:User, [:Person, :Boy])
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) SET n:`Person`:`Boy`
+  add_label(:User, [:Person, :Boy])
 
 #remove_label
 ------
 
 Removes a label from nodes, given a label
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    remove_label(:User, :Person)
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) REMOVE n:`Person`
+  remove_label(:User, :Person)
 
 #remove_labels
 ------
 
 Removes labels from nodes, given a label
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    remove_label(:User, [:Person, :Boy])
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) REMOVE n:`Person`:`Boy`
+  remove_label(:User, [:Person, :Boy])
 
 #rename_label
 ------
 
 Renames a label
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    rename_label(:User, :Person)
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n:`User`) SET n:`Person` REMOVE n:`Person`
+  rename_label(:User, :Person)
 
 #drop_constraint
 ------
@@ -251,7 +203,7 @@ Wraps a set of statements inside a block, printing the given and the execution t
   .. code-block:: ruby
 
     say_with_time 'Trims all names' do
-      query.match(n: :User).set('n.name = TRIM(n.name)').pluck('count(*)')
+      query.match(n: :User).set('n.name = TRIM(n.name)').pluck('count(*)').first
     end
 
 :Output:
