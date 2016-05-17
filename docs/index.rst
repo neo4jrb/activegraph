@@ -27,6 +27,8 @@ Contents:
 
    Configuration
 
+   Migrations
+
    Contributing
 
    api/index

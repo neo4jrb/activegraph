@@ -7,11 +7,11 @@ module Neo4j
     end
 
     def output(string = '')
-      puts string unless !!ENV['silenced']
+      puts string unless !!ENV['MIGRATIONS_SILENCED']
     end
 
     def print_output(string)
-      print string unless !!ENV['silenced']
+      print string unless !!ENV['MIGRATIONS_SILENCED']
     end
 
     def default_path

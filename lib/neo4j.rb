@@ -86,6 +86,12 @@ require 'neo4j/active_node/query'
 require 'neo4j/active_node/scope'
 require 'neo4j/active_node'
 
+module Neo4j
+  extend ActiveSupport::Autoload
+  autoload :Migration
+  autoload :Migrations
+end
+
 require 'neo4j/active_node/orm_adapter'
 if defined?(Rails)
   require 'rails/generators'

@@ -7,11 +7,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Renamed the old migration task to `neo4j:legacy_migrate`
+- Renamed the ENV variable to silence migrations output from `silenced` to `MIGRATIONS_SILENCED`
 - Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
 - Invalid options to the `property` method now raise an exception (see #1169)
 
 ### Added
 
+- Adding a new ActiveRecord-like migration framework (thanks ProGM / see #1197)
+- Adding a set of rake tasks to manage migrations (thanks ProGM / see #1197)
+- Implemented autoloading for new and legacy migration modules (there's no need to `require` them anymore)
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)

@@ -125,6 +125,16 @@ module Neo4jSpecHelpers
         @neo4j_config_vars.delete(var_name)
       end
     end
+
+    def let_env_variable(var_name)
+      before do
+        ENV[var_name] = yield
+      end
+
+      after do
+        ENV[var_name] = nil
+      end
+    end
   end
 
   # rubocop:disable Style/GlobalVars
