@@ -1,7 +1,8 @@
 before_script:
   - "bundle exec rake neo4j:install[$NEO4J_VERSION] --trace"
-  - "./db/neo4j/development/bin/neo4j console"
 script:
+  - "./db/neo4j/development/bin/neo4j console"
+  - "travis_debug"
   - "travis_retry bundle exec rake default --trace"
 language: ruby
 cache: bundler
