@@ -278,7 +278,7 @@ validates_uniqueness_of :name, :scope => :adult
 id property (primary key)
 -------------------------
 
-Unique IDs are automatically created for all nodes using SecureRandom::uuid. See Unique IDs for details.
+Unique IDs are automatically created for all nodes using SecureRandom::uuid. See :doc:`UniqueIDs </Setup>` for details.
 
 Associations
 ------------
