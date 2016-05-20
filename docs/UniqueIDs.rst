@@ -3,7 +3,7 @@ Unique IDs
 
 The database generates unique IDs and they are accessible from all nodes and relationships using the ``neo_id`` method. These keys are somewhat volatile and may be reused or change throughout a database's lifetime, so they are unsafe to use within an application.
 
-To work around this, you can define which key should act as primary key on ``Neo4j::ActiveNode`` classes instead of using the internal Neo4j ids. By default, ActiveNode will generate a unique ID using ``SecureRandom::uuid``. The instance methods ``id`` and ``uuid`` will both point to this.
+Neo4j.rb requires yout to define which key should act as primary key on ``Neo4j::ActiveNode`` classes instead of using the internal Neo4j ids. By default, ActiveNode will generate a unique ID using ``SecureRandom::uuid`` saving it in a ``uuid`` property. The instance method ``id`` will also point to this.
 
 You can define a global or per-model generation methods if you do not want to use the default. Additionally, you can change the property that will be aliased to the ``id`` method. This can be done through :doc:`Configuration </Setup>` or models themselves.
 
@@ -43,7 +43,7 @@ Even if using internal Neo4j ids is not recommended, you can configure your mode
 A note regarding constraints
 ----------------------------
 
-By default, a uniqueness constraint will be set for all ID properties. To disable this, you can call ``id_property`` with ``constraint: false`` in your third param.
+By default, a uniqueness constraint will be set for all ID properties. To disable this, you can call ``id_property`` with the ``constraint: false`` option.
 
 .. code-block:: ruby
 
@@ -76,12 +76,25 @@ This command will provide a list of indexes and constraints
 
     schema
 
-**Step 2: Clean up any indexes that are not unique**
+**Step 2: Clean up any indexes that are not unique using a migration**
 
-.. code-block:: cypher
+.. code-block:: bash
 
-    DROP INDEX ON :Tag(uuid);
-    CREATE CONSTRAINT ON (n:Tag) ASSERT n.uuid IS UNIQUE;
+    rails g neo4j:migration AddConstraintToTag
+
+.. code-block:: ruby
+
+    class AddConstraintToTag < Neo4j::Migrations::Base
+      def up
+        drop_index :Tag, :uuid
+        add_constraint :Tag, :uuid
+      end
+
+      def down
+        drop_constraint :Tag, :uuid
+        add_index :Tag, :uuid
+      end
+    end
 
 **Step 3: Add an id_property to your ActiveNode**
 
