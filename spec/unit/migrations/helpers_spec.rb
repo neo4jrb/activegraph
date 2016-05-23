@@ -104,6 +104,66 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
+  describe '#add_constraint' do
+    after { drop_constraint :Book, :code if Neo4j::Label.constraint?(:Book, :code) }
+
+    it 'adds a constraint to a property' do
+      expect do
+        add_constraint :Book, :code
+      end.to change { Neo4j::Label.constraint?(:Book, :code) }.from(false).to(true)
+    end
+
+    it 'fails when constraint is already defined' do
+      expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+    end
+  end
+
+  describe '#add_index' do
+    after { drop_index :Book, :pages if Neo4j::Label.index?(:Book, :pages) }
+    it 'adds an index to a property' do
+      expect do
+        add_index :Book, :pages
+      end.to change { Neo4j::Label.index?(:Book, :pages) }.from(false).to(true)
+    end
+
+    it 'fails when index is already defined' do
+      expect do
+        expect { add_index :Book, :author_name }.to raise_error('Duplicate index for Book#author_name')
+      end.not_to change { Neo4j::Label.create(:Book).indexes[:property_keys].flatten.count }
+    end
+  end
+
+  describe '#populate_id_property' do
+    before do
+      3.times do
+        execute 'CREATE (c:`Cat`)'
+        execute 'CREATE (d:`Dog`)'
+      end
+
+      stub_active_node_class('Cat') {}
+      stub_active_node_class('Dog') do
+        id_property :my_id, on: :generate_id
+
+        def generate_id
+          "id-#{rand}"
+        end
+      end
+    end
+
+    it 'populates uuid' do
+      populate_id_property :Cat
+      uuids = Cat.all.pluck(:uuid)
+      expect(uuids.count).to eq(3)
+      expect(uuids.all? { |u| u =~ /\A([a-z0-9]+\-?)+\Z/ }).to be_truthy
+    end
+
+    it 'populates custom ids' do
+      populate_id_property :Dog
+      uuids = Dog.all(:n).pluck('n.my_id')
+      expect(uuids.all? { |u| u.start_with?('id-') }).to be_truthy
+    end
+  end
+
   describe '#drop_constraint' do
     it 'removes a constraint from a property' do
       expect do

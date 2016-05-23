@@ -5,7 +5,7 @@ module Neo4j
         extend ActiveSupport::Concern
 
         def populate_id_property(label)
-          model = label.constantize
+          model = label.to_s.constantize
           max_per_batch = (ENV['MAX_PER_BATCH'] || default_max_per_batch).to_i
 
           last_time_taken = nil
