@@ -108,6 +108,7 @@ No changes from `rc.7`
 - Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
 - A clone of [ActiveRecord::Enum](http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html) API. See docs for details. (thanks ProGM / #1129)
 - Added #branch method to `QueryProxy` to allow for easy branching of matches in association chains (thanks ProGM / #1147 / #1143)
+- The `.match` method on ActiveNode model class has changed to allow a second argument which takes `on_create`, `on_match`, and `set` keys.  These allow you to define attribute values for the Cypher `MERGE` in the different cases (thanks leviwilson / see #1123)
 
 ### Removed
 
