@@ -88,8 +88,8 @@ require 'neo4j/active_node'
 
 module Neo4j
   extend ActiveSupport::Autoload
-  autoload :Migration
   autoload :Migrations
+  autoload :Migration
 end
 
 require 'neo4j/active_node/orm_adapter'

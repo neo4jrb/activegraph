@@ -1,5 +1,7 @@
 describe Neo4j::Migrations::Helpers do
   include described_class
+  include Neo4j::Migrations::Helpers::Schema
+  include Neo4j::Migrations::Helpers::IdProperty
 
   before do
     Neo4j::Session.current.close if Neo4j::Session.current
