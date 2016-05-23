@@ -41,7 +41,7 @@ module Neo4j
           output
           output
           output "Adding IDs to #{model}"
-          add_id_property model
+          populate_id_property model
         end
       end
 
