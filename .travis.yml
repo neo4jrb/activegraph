@@ -1,8 +1,10 @@
 before_script:
   - "bundle exec rake neo4j:install[$NEO4J_VERSION] --trace"
+  - "echo 'dbms.memory.pagecache.size=1g' >> ./db/neo4j/development/conf/neo4j.conf"
+  - "echo 'dbms.memory.heap.max_size=1000' >> ./db/neo4j/development/conf/neo4j.conf"
+  - "echo 'dbms.memory.heap.initial_size=1000' >> ./db/neo4j/development/conf/neo4j.conf"
+  - "bundle exec rake neo4j:start --trace"
 script:
-  - "./db/neo4j/development/bin/neo4j console"
-  - "travis_debug"
   - "travis_retry bundle exec rake default --trace"
 language: ruby
 cache: bundler
