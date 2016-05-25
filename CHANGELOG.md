@@ -109,6 +109,12 @@ No changes from `rc.7`
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 - `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
 
+## [6.1.11] - 05-25-2016
+
+### Fixed
+
+- Allow models to use their superclass' scopes (thanks to veetow for the heads-up / see #1205)
+
 ## [6.1.10] - 03-14-2016
 
 ### Fixed
