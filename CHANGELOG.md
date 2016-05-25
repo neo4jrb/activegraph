@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.11] - 05-25-2016
+
+### Fixed
+
+- Allow models to use their superclass' scopes (thanks to veetow for the heads-up / see #1205)
+
 ## [6.1.10] - 03-14-2016
 
 ### Fixed
