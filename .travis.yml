@@ -3,8 +3,8 @@ before_script:
   - "echo 'dbms.memory.pagecache.size=1g' >> ./db/neo4j/development/conf/neo4j.conf"
   - "echo 'dbms.memory.heap.max_size=1000' >> ./db/neo4j/development/conf/neo4j.conf"
   - "echo 'dbms.memory.heap.initial_size=1000' >> ./db/neo4j/development/conf/neo4j.conf"
-  - "./db/neo4j/development/bin/neo4j console"
-  # - "bundle exec rake neo4j:start --trace"
+  - "sleep 5"
+  - "bundle exec rake neo4j:start --trace"
 script:
   - "travis_retry bundle exec rake default --trace"
 language: ruby
