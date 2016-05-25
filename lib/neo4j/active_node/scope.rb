@@ -35,13 +35,13 @@ module Neo4j::ActiveNode
       #
       # @see http://guides.rubyonrails.org/active_record_querying.html#scopes
       def scope(name, proc)
-        _scope[name.to_sym] = proc
+        scopes[name.to_sym] = proc
 
         klass = class << self; self; end
         klass.instance_eval do
           define_method(name) do |query_params = nil, _ = nil|
             eval_context = ScopeEvalContext.new(self, current_scope || self.query_proxy)
-            proc = _scope[name.to_sym]
+            proc = full_scopes[name.to_sym]
             _call_scope_context(eval_context, query_params, proc)
           end
         end
@@ -56,11 +56,15 @@ module Neo4j::ActiveNode
       # rubocop:enable Style/PredicateName
 
       def scope?(name)
-        _scope.key?(name.to_sym)
+        full_scopes.key?(name.to_sym)
       end
 
-      def _scope
-        @_scope ||= {}
+      def scopes
+        @scopes ||= {}
+      end
+
+      def full_scopes
+        scopes.merge(self.superclass.respond_to?(:scopes) ? self.superclass.scopes : {})
       end
 
       def _call_scope_context(eval_context, query_params, proc)
