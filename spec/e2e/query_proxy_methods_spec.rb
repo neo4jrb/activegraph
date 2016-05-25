@@ -663,6 +663,39 @@ describe 'query_proxy_methods' do
     end
   end
 
+  context 'matching by relations' do
+    before(:each) do
+      [Student, Lesson, Teacher].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @bill = Student.create(name: 'Bill')
+      @frank = Student.create(name: 'Frank')
+      @history = Lesson.create(name: 'history')
+      @john.lessons << @history
+      EnrolledIn.create(from_node: @frank, to_node: @history, absence_count: 10)
+    end
+
+    describe 'having_rel' do
+      it 'returns students having at least a lesson' do
+        expect(Student.all.having_rel(:lessons)).to contain_exactly(@john, @frank)
+      end
+
+      it 'returns students having at least a lesson with no absences' do
+        expect(Student.all.having_rel(:lessons, absence_count: 0)).to contain_exactly(@john)
+      end
+    end
+
+    describe 'not_having_rel' do
+      it 'returns students having at least a lesson' do
+        expect(Student.all.not_having_rel(:lessons)).to contain_exactly(@bill)
+      end
+
+      it 'returns students having at least a lesson with no absences' do
+        expect(Student.all.not_having_rel(:lessons, absence_count: 0)).to contain_exactly(@bill, @frank)
+      end
+    end
+  end
+
   describe 'branch' do
     before(:each) do
       [Student, Lesson, Teacher].each(&:delete_all)

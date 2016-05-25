@@ -191,6 +191,36 @@ module Neo4j
           instance_eval(&block).query.proxy_as(self.model, identity)
         end
 
+        # Matches all nodes having at least a relation
+        #
+        # @example Load all people having a friend
+        #   Person.all.having_rel(:friends).to_a # => Returns a list of `Person`
+        #
+        # @example Load all people having a best friend
+        #   Person.all.having_rel(:friends, best: true).to_a # => Returns a list of `Person`
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def having_rel(association_name, rel_properties = {})
+          association = model.associations[association_name]
+          fail "No such association #{association_name}" unless association
+          where("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+        end
+
+        # Matches all nodes not having a certain relation
+        #
+        # @example Load all people not having friends
+        #   Person.all.not_having_rel(:friends).to_a # => Returns a list of `Person`
+        #
+        # @example Load all people not having best friends
+        #   Person.all.not_having_rel(:friends, best: true).to_a # => Returns a list of `Person`
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def not_having_rel(association_name, rel_properties = {})
+          association = model.associations[association_name]
+          fail "No such association #{association_name}" unless association
+          where_not("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+        end
+
         def [](index)
           # TODO: Maybe for this and other methods, use array if already loaded, otherwise
           # use OFFSET and LIMIT 1?
