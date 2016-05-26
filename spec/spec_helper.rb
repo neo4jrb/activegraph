@@ -96,6 +96,9 @@ module Neo4jSpecHelpers
     else
       create_server_session
     end
+  rescue Faraday::ConnectionFailed
+    puts 'Could not create Neo4j session'
+    exit!
   end
 
   def create_named_server_session(name, default = nil)
