@@ -29,5 +29,6 @@ env:
 matrix:
   include:
     - rvm: 2.3.0
+      jdk:
       script: "bundle exec rubocop"
       env: "RUBOCOP=true"
