@@ -21,6 +21,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
 
+## [7.0.6] - 05-26-2016
+
+### Fixed
+
+- Allow models to use their superclass' scopes (forward-ported from 6.1.11 / thanks to veetow for the heads-up / see #1205)
+
 ## [7.0.6] - 05-11-2016
 
 ### Added
