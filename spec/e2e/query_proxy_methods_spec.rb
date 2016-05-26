@@ -683,6 +683,18 @@ describe 'query_proxy_methods' do
       it 'returns students having at least a lesson with no absences' do
         expect(Student.all.having_rel(:lessons, absence_count: 0)).to contain_exactly(@john)
       end
+
+      it 'returns no student when absence is negative' do
+        expect(Student.all.having_rel(:lessons, absence_count: -1)).to eq([])
+      end
+
+      it 'returns no lesson having teacher, since there\'s none' do
+        expect(Lesson.all.having_rel(:teachers)).to eq([])
+      end
+
+      it 'raises ArgumentError when passing a missing relation' do
+        expect { Lesson.all.having_rel(:friends) }.to raise_error(ArgumentError)
+      end
     end
 
     describe 'not_having_rel' do
@@ -692,6 +704,14 @@ describe 'query_proxy_methods' do
 
       it 'returns students having at least a lesson with no absences' do
         expect(Student.all.not_having_rel(:lessons, absence_count: 0)).to contain_exactly(@bill, @frank)
+      end
+
+      it 'returns no lesson having no students, since there\'s none' do
+        expect(Lesson.all.not_having_rel(:students)).to eq([])
+      end
+
+      it 'raises ArgumentError when passing a missing relation' do
+        expect { Lesson.all.not_having_rel(:friends) }.to raise_error(ArgumentError)
       end
     end
   end
