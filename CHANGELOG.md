@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.9] - 05-27-2016
+
+### Fixed
+
+- Fix to `find_in_batches` (thanks to ProGM / see #1208)
+
 ## [6.0.8] - 03-14-2016
 
 ### Fixed
