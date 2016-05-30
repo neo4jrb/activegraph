@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.9] - 05-30-2016
+
+### Fixed
+
+- Fix to parens in Cypher query for `with_associations` for Neo4j 3.0 (thanks ProGM / see #1211)
+
 ## [7.0.8] - 05-27-2016
 
 ### Fixed
