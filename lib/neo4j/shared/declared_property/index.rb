@@ -16,12 +16,12 @@ module Neo4j::Shared
       end
 
       def index!(type = :exact)
-        fail Neo4j::InvalidPropertyOptionsError, "Unable to set index on constrainted property #{name}" if constraint?(:unique)
+        fail Neo4j::InvalidPropertyOptionsError, "Can't set index on constrainted property #{name} (constraints get indexes automatically)" if constraint?(:unique)
         options[:index] = type
       end
 
       def constraint!(type = :unique)
-        fail Neo4j::InvalidPropertyOptionsError, "Unable to set constraint on indexed property #{name}" if index?(:exact)
+        fail Neo4j::InvalidPropertyOptionsError, "Can't set constraint on indexed property #{name} (constraints get indexes automatically)" if index?(:exact)
         options[:constraint] = type
       end
 

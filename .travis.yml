@@ -1,7 +1,17 @@
-script: "export CODECLIMATE_REPO_TOKEN=04853df625409de0a0f4e9126aee11bbee3428c81c20c27df6e6ab5c60bff2c8 && export JRUBY_OPTS='-X+O -J-Djruby.launch.inproc=false -J-Xmx1024m -J-XX:MaxPermSize=2048m' && travis_retry bundle exec rake neo4j:install[$NEO4J_VERSION] neo4j:start default --trace"
+before_script:
+  - "bundle exec rake neo4j:install[$NEO4J_VERSION] --trace"
+  - "echo 'dbms.memory.pagecache.size=1g' >> ./db/neo4j/development/conf/neo4j.conf"
+  - "echo 'dbms.memory.heap.max_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "echo 'dbms.memory.heap.initial_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "bundle exec rake neo4j:start --trace"
+  - "sleep 10"
+script:
+  - "travis_retry bundle exec rake default --trace"
 language: ruby
 cache: bundler
 sudo: false
+jdk:
+  - oraclejdk8
 rvm:
   - 2.3.1
   - 2.2.5
@@ -9,18 +19,17 @@ rvm:
   - jruby-1.7.20
   - jruby-9.0.5.0
 env:
-  - NEO4J_VERSION=community-2.3.0
-  - NEO4J_VERSION=community-2.2.6
-  - NEO4J_VERSION=community-2.1.8
+  global:
+    - JRUBY_OPTS="-X+O -J-Djruby.launch.inproc=false -J-Xmx1024m -J-XX:MaxPermSize=2048m"
+  matrix:
+    - NEO4J_VERSION=community-3.0.1
+    - NEO4J_VERSION=community-2.3.0
+    - NEO4J_VERSION=community-2.2.6
+    - NEO4J_VERSION=community-2.1.8
 matrix:
   include:
     - rvm: 2.3.0
+      jdk:
+      before_script:
       script: "bundle exec rubocop"
       env: "RUBOCOP=true"
-notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/b803232e5210f6134a1e
-    on_success: change  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: false     # default: false

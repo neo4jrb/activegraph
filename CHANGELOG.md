@@ -21,6 +21,30 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
 
+## [7.0.8] - 05-27-2016
+
+### Fixed
+
+- Fix to `find_in_batches` (thanks to ProGM / see #1208)
+
+## [7.0.7] - 05-26-2016
+
+### Fixed
+
+- Allow models to use their superclass' scopes (forward-ported from 6.1.11 / thanks to veetow for the heads-up / see #1205)
+
+## [7.0.6] - 05-11-2016
+
+### Added
+
+- Explination about why you can't have an index and a constraint at the same time
+
+## [7.0.5] - 05-06-2016
+
+### Fixed
+
+- Added parens to delete_all query to support new required syntax in Neo4j 3.0
+
 ## [7.0.4] - 05-06-2016
 
 ### Fixed
@@ -108,12 +132,25 @@ No changes from `rc.7`
 - Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
 - A clone of [ActiveRecord::Enum](http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html) API. See docs for details. (thanks ProGM / #1129)
 - Added #branch method to `QueryProxy` to allow for easy branching of matches in association chains (thanks ProGM / #1147 / #1143)
+- The `.match` method on ActiveNode model class has changed to allow a second argument which takes `on_create`, `on_match`, and `set` keys.  These allow you to define attribute values for the Cypher `MERGE` in the different cases (thanks leviwilson / see #1123)
 
 ### Removed
 
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
 - `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
+
+## [6.1.12] - 05-27-2016
+
+### Fixed
+
+- Fix to `find_in_batches` (thanks to ProGM / see #1208)
+
+## [6.1.11] - 05-25-2016
+
+### Fixed
+
+- Allow models to use their superclass' scopes (thanks to veetow for the heads-up / see #1205)
 
 ## [6.1.10] - 03-14-2016
 
@@ -193,6 +230,12 @@ No changes from `rc.7`
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
 - `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+
+## [6.0.9] - 05-27-2016
+
+### Fixed
+
+- Fix to `find_in_batches` (thanks to ProGM / see #1208)
 
 ## [6.0.8] - 03-14-2016
 
