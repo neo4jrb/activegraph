@@ -162,7 +162,7 @@ module Neo4j::ActiveNode
       end
 
       def id_property_name
-        id_property_info[:name]
+        defined?(super) ? super : id_property_info[:name]
       end
 
       def manual_id_property?
