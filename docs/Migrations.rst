@@ -218,6 +218,18 @@ Renames a label
 
   rename_label(:User, :Person)
 
+#add_constraint
+~~~~~~~~~~~~~~~
+
+Adds a new unique constraint on a given label attribute.
+
+**Warning** it would fail if you make data changes in the same migration. To fix, define ``disable_transactions!`` in your migration file.
+
+.. code-block:: ruby
+
+  add_constraint(:User, :name)
+
+
 #drop_constraint
 ~~~~~~~~~~~~~~~~
 
@@ -228,6 +240,19 @@ Drops an unique constraint on a given label attribute.
 .. code-block:: ruby
 
   drop_constraint(:User, :name)
+
+
+#add_index
+~~~~~~~~~~
+
+Adds a new exact index on a given label attribute.
+
+**Warning** it would fail if you make data changes in the same migration. To fix, define ``disable_transactions!`` in your migration file.
+
+.. code-block:: ruby
+
+  add_index(:User, :name)
+
 
 #drop_index
 ~~~~~~~~~~~
@@ -286,3 +311,15 @@ Wraps a set of statements inside a block, printing the given and the execution t
     -- Trims all names.
        -> 0.3451s
        -> 2233 rows
+
+#populate_id_property
+~~~~~~~~~~~~~~~~~~~~~
+
+Populates the ``uuid`` property (or any ``id_property`` you defined) of nodes given their model name.
+
+:Ruby:
+  .. code-block:: ruby
+
+    populate_id_property :User
+
+Check :doc:`Adding IDs to Existing Data </UniqueIDs>` for more usage details.
