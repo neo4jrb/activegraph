@@ -1,8 +1,14 @@
+require 'benchmark'
+
 module Neo4j
   module Migrations
     module Helpers
       extend ActiveSupport::Concern
-      CONSTRAINT_OR_INDEX_MISSING = 'No such %{type} for %{label}#%{property}'.freeze
+      extend ActiveSupport::Autoload
+
+      autoload :Schema
+      autoload :IdProperty
+
       PROPERTY_ALREADY_DEFINED = 'Property `%{new_property}` is already defined in `%{label}`. '\
                                  'To overwrite, call `remove_property(:%{label}, :%{new_property})` before this method.'.freeze
 
@@ -42,18 +48,6 @@ module Neo4j
         by_label(old_label).set(n: new_label).remove(n: old_label).exec
       end
 
-      def drop_constraint(label, property)
-        constraint = Neo4j::Schema::UniqueConstraintOperation.new(label, property)
-        fail_missing_constraint_or_index!(:constraint, label, property) unless constraint.exist?
-        constraint.drop!
-      end
-
-      def drop_index(label, property)
-        index = Neo4j::Schema::ExactIndexOperation.new(label, property)
-        fail_missing_constraint_or_index!(:index, label, property) unless index.exist?
-        index.drop!
-      end
-
       def execute(string, params = {})
         query(string, params).to_a
       end
@@ -80,11 +74,6 @@ module Neo4j
       end
 
       private
-
-      def fail_missing_constraint_or_index!(type, label, property)
-        fail Neo4j::MigrationError,
-             format(CONSTRAINT_OR_INDEX_MISSING, type: type, label: label, property: property)
-      end
 
       def property_exists?(label, property)
         by_label(label).where("EXISTS(n.#{property})").return(:n).any?
