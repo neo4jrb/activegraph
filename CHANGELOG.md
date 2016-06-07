@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.10] - 06-07-2016
+
+### Fixed
+
+- Calling `.create` on associations shouldn't involve extra queries (thanks for the report from rahulmeena13 / see #1216)
+
 ## [7.0.9] - 05-30-2016
 
 ### Fixed
