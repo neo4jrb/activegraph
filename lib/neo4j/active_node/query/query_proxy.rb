@@ -199,7 +199,7 @@ module Neo4j
           self.to_a[index]
         end
 
-        def create(other_nodes, properties)
+        def create(other_nodes, properties = {})
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
