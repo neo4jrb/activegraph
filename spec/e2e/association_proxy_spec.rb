@@ -114,6 +114,15 @@ describe 'Association Proxy' do
     end
   end
 
+  it 'does not make extra queries when using .create' do
+    lesson = Lesson.create
+    expect_queries(2) do
+      science.students.each do |student|
+        student.lessons.create(lesson)
+      end
+    end
+  end
+
   describe 'issue reported by @andrewhavens in #881' do
     it 'does not break' do
       l1 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!] }
