@@ -21,6 +21,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
 
+## [7.0.10] - 06-07-2016
+
+### Fixed
+
+- Calling `.create` on associations shouldn't involve extra queries (thanks for the report from rahulmeena13 / see #1216)
+
+## [7.0.9] - 05-30-2016
+
+### Fixed
+
+- Fix to parens in Cypher query for `with_associations` for Neo4j 3.0 (thanks ProGM / see #1211)
+
 ## [7.0.8] - 05-27-2016
 
 ### Fixed

@@ -6,6 +6,7 @@ require 'neo4j/core/query'
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
+require 'json'
 
 require 'neo4j/errors'
 require 'neo4j/config'

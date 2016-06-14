@@ -663,6 +663,59 @@ describe 'query_proxy_methods' do
     end
   end
 
+  context 'matching by relations' do
+    before(:each) do
+      [Student, Lesson, Teacher].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @bill = Student.create(name: 'Bill')
+      @frank = Student.create(name: 'Frank')
+      @history = Lesson.create(name: 'history')
+      @john.lessons << @history
+      EnrolledIn.create(from_node: @frank, to_node: @history, absence_count: 10)
+    end
+
+    describe 'having_rel' do
+      it 'returns students having at least a lesson' do
+        expect(Student.all.having_rel(:lessons)).to contain_exactly(@john, @frank)
+      end
+
+      it 'returns students having at least a lesson with no absences' do
+        expect(Student.all.having_rel(:lessons, absence_count: 0)).to contain_exactly(@john)
+      end
+
+      it 'returns no student when absence is negative' do
+        expect(Student.all.having_rel(:lessons, absence_count: -1)).to eq([])
+      end
+
+      it 'returns no lesson having teacher, since there\'s none' do
+        expect(Lesson.all.having_rel(:teachers)).to eq([])
+      end
+
+      it 'raises ArgumentError when passing a missing relation' do
+        expect { Lesson.all.having_rel(:friends) }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe 'not_having_rel' do
+      it 'returns students having at least a lesson' do
+        expect(Student.all.not_having_rel(:lessons)).to contain_exactly(@bill)
+      end
+
+      it 'returns students having at least a lesson with no absences' do
+        expect(Student.all.not_having_rel(:lessons, absence_count: 0)).to contain_exactly(@bill, @frank)
+      end
+
+      it 'returns no lesson having no students, since there\'s none' do
+        expect(Lesson.all.not_having_rel(:students)).to eq([])
+      end
+
+      it 'raises ArgumentError when passing a missing relation' do
+        expect { Lesson.all.not_having_rel(:friends) }.to raise_error(ArgumentError)
+      end
+    end
+  end
+
   describe 'branch' do
     before(:each) do
       [Student, Lesson, Teacher].each(&:delete_all)
