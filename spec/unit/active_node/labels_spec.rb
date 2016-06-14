@@ -159,5 +159,38 @@ describe Neo4j::ActiveNode::Labels do
         expect(clazz.mapped_label_names).to match_array([:module, :module1, :module2])
       end
     end
+
+    describe 'model_for_labels' do
+      class Event
+        include Neo4j::ActiveNode
+      end
+
+      class URL
+        include Neo4j::ActiveNode
+      end
+
+      module DataSource
+        class URL < ::URL
+          self.mapped_label_name = 'DataSource'
+        end
+
+        class Event < URL
+          self.mapped_label_name = 'Event'
+        end
+      end
+
+      it 'returns the correct model for the node' do
+        classes = [Event, URL, DataSource::URL, DataSource::Event]
+
+        # TODO: not sure why this is not being called when the class is defined
+        classes.reverse.each {|c| Neo4j::ActiveNode::Labels.add_wrapped_class(c)}
+
+        classes.each do |c|
+          labels = c.mapped_label_names
+          model = Neo4j::ActiveNode::Labels::model_for_labels(labels)
+          expect(model).to eq(c)
+        end
+      end
+    end
   end
 end
