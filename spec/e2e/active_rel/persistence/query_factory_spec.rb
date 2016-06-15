@@ -24,8 +24,8 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
           def self.count
             Neo4j::Session.current.query
-              .match('(from:FromClass)-[r:HAS_REL]->()')
-              .pluck('COUNT(r)').first
+                          .match('(from:FromClass)-[r:HAS_REL]->()')
+                          .pluck('COUNT(r)').first
           end
         end
       end
@@ -55,7 +55,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
       it 'adds uuids to nodes' do
         expect do
           rel.save
-        end.to change { [from_node, to_node].all? { |o| o.uuid.nil? } }.from(true).to(false)
+        end.to change { [from_node, to_node].all? { |o| o.id.nil? } }.from(true).to(false)
       end
 
       it 'validates unpersisted nodes' do
@@ -96,8 +96,8 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
           def self.count
             Neo4j::Session.current.query
-              .match('(from:FromClass:ParentClass)-[r:HAS_REL]->()')
-              .pluck('COUNT(r)').first
+                          .match('(from:FromClass:ParentClass)-[r:HAS_REL]->()')
+                          .pluck('COUNT(r)').first
           end
         end
       end

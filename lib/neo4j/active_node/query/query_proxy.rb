@@ -65,7 +65,7 @@ module Neo4j
         def identity
           @node_var || _result_string
         end
-        alias_method :node_identity, :identity
+        alias node_identity identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
         attr_reader :rel_var
@@ -105,7 +105,7 @@ module Neo4j
           if @association
             chain_var = _association_chain_var
             (_association_query_start(chain_var) & _query).break.send(@match_type,
-                                                                      "#{chain_var}#{_association_arrow}(#{var}#{_model_label_string})")
+                                                                      "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})")
           else
             starting_query ? starting_query : _query_model_as(var, with_labels)
           end
@@ -144,10 +144,10 @@ module Neo4j
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
         end
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
-        alias_method :node_where, :where
-        alias_method :node_order, :order
-        alias_method :offset, :skip
-        alias_method :order_by, :order
+        alias node_where where
+        alias node_order order
+        alias offset skip
+        alias order_by order
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         delegate :to_cypher, to: :query
@@ -186,11 +186,9 @@ module Neo4j
         #
         # @return [QueryProxy] A new QueryProxy
         def branch(&block)
-          if block
-            instance_eval(&block).query.proxy_as(self.model, identity)
-          else
-            fail LocalJumpError, 'no block given'
-          end
+          fail LocalJumpError, 'no block given' if !block
+
+          instance_eval(&block).query.proxy_as(self.model, identity)
         end
 
         def [](index)
@@ -199,7 +197,7 @@ module Neo4j
           self.to_a[index]
         end
 
-        def create(other_nodes, properties)
+        def create(other_nodes, properties = {})
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
@@ -287,9 +285,9 @@ module Neo4j
         def _match_arg(var, with_labels)
           if @model && with_labels != false
             labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
-            {var => labels}
+            {var.to_sym => labels}
           else
-            var
+            var.to_sym
           end
         end
 

@@ -8,7 +8,10 @@ describe 'Neo4j::NodeMixin::Scope' do
       property :name
       property :score
       property :level_num
+      property :date_of_death
       has_many :out, :friends, type: nil, model_class: 'Person'
+
+      scope :only_living, -> { where(date_of_death: nil) }
     end
   end
 
@@ -26,6 +29,17 @@ describe 'Neo4j::NodeMixin::Scope' do
     delete_db
   end
 
+  describe 'Inherited scope' do
+    before { stub_named_class('Mutant', Person) }
+
+    let!(:alive) { Mutant.create name: 'aa' }
+    let!(:dead)  { Mutant.create name: 'bb', date_of_death: 'yesterday' }
+
+    it 'has the scope of the parent class' do
+      expect(Mutant.scope?(:only_living)).to be true
+      expect(Mutant.all.only_living.to_a).to eq([alive])
+    end
+  end
 
   describe 'Person.scope :level, -> (num) { where(level: num)}' do
     before(:each) do
@@ -39,7 +53,7 @@ describe 'Neo4j::NodeMixin::Scope' do
     end
   end
 
-  describe 'Person.scope :in_order, -> { order(level: num)}' do
+  describe 'Person.scope :in_order, ->(identifier) { order("#{identifier}.level_num DESC") }' do
     before(:each) do
       Person.scope :in_order, ->(identifier) { order("#{identifier}.level_num DESC") }
     end
@@ -48,6 +62,31 @@ describe 'Neo4j::NodeMixin::Scope' do
       it 'returns person in order' do
         expect(Person.as(:people).in_order(:people).to_a).to eq([@b2, @b1, @b, @a])
       end
+    end
+  end
+
+  describe 'Person.scope :in_order, -> { order("#{identity}.level_num DESC") }' do
+    before(:each) do
+      Person.scope :in_order, -> { order("#{identity}.level_num DESC") }
+    end
+
+    describe 'Person.in_order' do
+      it 'returns person in order without explicit identifier' do
+        expect(Person.in_order.to_a).to eq([@b2, @b1, @b, @a])
+      end
+    end
+  end
+
+  describe 'Person.scope :great_students, -> { where("#{identity}.score > 41")' do
+    before(:each) do
+      Person.scope :great_students, -> { where("#{identity}.score > 41") }
+    end
+
+    describe 'Person.top_students.to_a' do
+      subject do
+        Person.great_students.to_a
+      end
+      it { is_expected.to match_array([@a, @b, @b1, @b2]) }
     end
   end
 

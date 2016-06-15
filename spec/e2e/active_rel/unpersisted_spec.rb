@@ -93,7 +93,7 @@ describe 'ActiveRel unpersisted handling' do
 
         it 'persists both nodes' do
           expect { rel.save }.to change { [from_node, to_node].all?(&:persisted?) }.from(false).to true
-          expect(from_node.uuid).not_to be_nil
+          expect(from_node.id).not_to be_nil
         end
 
         context 'with creates_unique set' do
@@ -129,7 +129,7 @@ describe 'ActiveRel unpersisted handling' do
       end
 
       it 'does not change the uuid of the persisted node' do
-        expect { rel.save }.not_to change { to_node.uuid }
+        expect { rel.save }.not_to change { to_node.id }
       end
 
       it 'does not change the timestamps of the persisted node' do

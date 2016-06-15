@@ -116,7 +116,7 @@ module Neo4j::Shared
       !_persisted_obj
     end
 
-    alias_method :new?, :new_record?
+    alias new? new_record?
 
     def destroy
       freeze
@@ -170,14 +170,14 @@ module Neo4j::Shared
       self.attributes = process_attributes(attributes)
       save
     end
-    alias_method :update_attributes, :update
+    alias update_attributes update
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
     def update!(attributes)
       self.attributes = process_attributes(attributes)
       save!
     end
-    alias_method :update_attributes!, :update!
+    alias update_attributes! update!
 
     def cache_key
       if self.new_record?
@@ -193,9 +193,9 @@ module Neo4j::Shared
 
     def increment_by_query!(match_query, attribute, by, element_name = :n)
       new_attribute = match_query.with(element_name)
-                      .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + {by}")
-                      .params(by: by).limit(1)
-                      .pluck("#{element_name}.`#{attribute}`").first
+                                 .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + {by}")
+                                 .params(by: by).limit(1)
+                                 .pluck("#{element_name}.`#{attribute}`").first
       return false unless new_attribute
       self[attribute] = new_attribute
       changed_attributes.delete(attribute)

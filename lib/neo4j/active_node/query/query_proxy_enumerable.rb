@@ -75,6 +75,7 @@ module Neo4j
         def pluck(*args)
           transformable_attributes = (model ? model.attribute_names : []) + %w(uuid neo_id)
           arg_list = args.map do |arg|
+            arg = Neo4j::ActiveNode::Query::QueryProxy::Link.converted_key(model, arg)
             if transformable_attributes.include?(arg.to_s)
               {identity => arg}
             else

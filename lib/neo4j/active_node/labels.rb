@@ -60,7 +60,7 @@ module Neo4j
         return MODELS_FOR_LABELS_CACHE[labels] if MODELS_FOR_LABELS_CACHE[labels]
 
         models = WRAPPED_CLASSES.select do |model|
-          (model.mapped_label_names - labels).size == 0
+          (model.mapped_label_names - labels).empty?
         end
 
         MODELS_FOR_LABELS_CACHE[labels] = models.max do |model|
@@ -105,7 +105,7 @@ module Neo4j
 
         # Deletes all nodes and connected relationships from Cypher.
         def delete_all
-          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH n-[r]-() DELETE n,r")
+          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH (n)-[r]-() DELETE n,r")
           self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
         end
 

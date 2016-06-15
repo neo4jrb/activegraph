@@ -7,7 +7,7 @@ require 'neo4j/version'
 Gem::Specification.new do |s|
   s.name     = 'neo4j'
   s.version  = Neo4j::VERSION
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.1.9'
 
   s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg'
   s.email    = 'andreas.ronge@gmail.com, brian@brian-underwood.codes, chris@subvertallmedia.com'
@@ -40,5 +40,5 @@ A Neo4j OGM (Object-Graph-Mapper) for use in Ruby on Rails and Rack frameworks h
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rubocop')
   s.add_development_dependency('guard-rspec')
-  s.add_development_dependency('rubocop', '~> 0.34.0')
+  s.add_development_dependency('rubocop', '~> 0.39.0')
 end

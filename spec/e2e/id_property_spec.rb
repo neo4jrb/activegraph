@@ -64,7 +64,7 @@ describe Neo4j::ActiveNode::IdProperty do
           Neo4j::Config[:id_property] = :the_id
           Neo4j::Config[:id_property_type] = :auto
           Neo4j::Config[:id_property_type_value] = :uuid
-          stub_const('Clazz', Class.new do
+          stub_const('Clazz', UniqueClass.create do
             include Neo4j::ActiveNode
           end)
         end
@@ -73,8 +73,22 @@ describe Neo4j::ActiveNode::IdProperty do
       it 'will set the id_property after a session has been created' do
         node = Clazz.new
         expect(node).to respond_to(:the_id)
-        expect(Clazz.mapped_label.indexes[:property_keys].sort).to eq([[:the_id], [:uuid]])
+        expect(Clazz.mapped_label.indexes[:property_keys].sort).to eq([[:the_id]])
       end
+    end
+  end
+
+  describe 'when having neo_id configuration' do
+    before do
+      before_session do
+        Neo4j::Config[:id_property] = :neo_id
+        stub_active_node_class('NeoIdTest')
+      end
+    end
+
+    it 'it will find node by neo_id' do
+      node = NeoIdTest.create
+      expect(NeoIdTest.where(id: node).first).to eq(node)
     end
   end
 
@@ -156,6 +170,14 @@ describe Neo4j::ActiveNode::IdProperty do
         node1 = Clazz.create
         found = Clazz.find_by_neo_id(node1.neo_id)
         expect(found).to eq node1
+      end
+    end
+
+    describe 'order' do
+      it 'should order by myid' do
+        nodes = Array.new(3) { |i| Clazz.create myid: i }
+
+        expect(Clazz.order(id: :desc).to_a).to eq(nodes.reverse)
       end
     end
   end
@@ -340,38 +362,145 @@ describe Neo4j::ActiveNode::IdProperty do
     end
   end
 
-  describe 'inheritance' do
-    before(:all) do
-      module IdProp
-        Teacher = UniqueClass.create do
+  describe 'id_property :neo_id' do
+    before do
+      before_session do
+        stub_const('NeoIdTest', UniqueClass.create do
           include Neo4j::ActiveNode
-          id_property :my_id, on: :my_method
-
-          def my_method
-            'an id'
-          end
-        end
-
-        class Substitute < Teacher; end
-
-        Vehicle = UniqueClass.create do
-          include Neo4j::ActiveNode
-          id_property :my_id, auto: :uuid
-        end
-
-        class Car < Vehicle; end
-
-        Fruit = UniqueClass.create do
-          include Neo4j::ActiveNode
-
-          id_property :my_id
-        end
-
-        class Apple < Fruit; end
+          id_property :neo_id
+        end)
       end
     end
 
-    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple].each(&:delete_all) }
+    it 'has an index' do
+      expect(NeoIdTest.mapped_label.indexes[:property_keys]).to be_empty
+    end
+
+    describe 'property id' do
+      it 'is is set when saving ' do
+        node = NeoIdTest.new
+        expect { node.save }.to change { node.id.present? }.from(false).to(true)
+      end
+
+      it 'is same as neo_id' do
+        node = NeoIdTest.create
+        expect(node.id).to eq(node.neo_id)
+      end
+    end
+
+    describe 'find_by_id' do
+      it 'finds it if it exists' do
+        NeoIdTest.create
+        node = NeoIdTest.create
+        NeoIdTest.create
+
+        found = NeoIdTest.find_by_id(node.id)
+        expect(found).to eq(node)
+      end
+
+      it 'does not find it if it does not exist' do
+        found = NeoIdTest.find_by_id(NeoIdTest.create.id + 1)
+        expect(found).to be_nil
+      end
+    end
+
+    describe 'find_by_ids' do
+      it 'finds them if they exist' do
+        NeoIdTest.create
+        nodes = Array.new(3) { NeoIdTest.create }
+        NeoIdTest.create
+
+        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to eq(nodes)
+      end
+
+      it 'does not find it if it does not exist' do
+        found = NeoIdTest.find_by_ids([NeoIdTest.create.id + 1])
+        expect(found).to be_empty
+      end
+    end
+
+    describe 'where' do
+      it 'should use neo_id' do
+        NeoIdTest.create
+        node = NeoIdTest.create
+        NeoIdTest.create
+
+        found = NeoIdTest.where(id: node.id).first
+        expect(found).to eq(node)
+      end
+
+      it 'should find if id is a string' do
+        node = NeoIdTest.create
+        expect(NeoIdTest.where(id: node.id.to_s).first).to eq(node)
+      end
+
+      it 'should find with array' do
+        NeoIdTest.create
+        nodes = Array.new(3) { NeoIdTest.create }
+        NeoIdTest.create
+
+        expect(NeoIdTest.where(id: nodes)).to eq(nodes)
+      end
+    end
+
+    describe 'where_not' do
+      it 'should find complement' do
+        node = NeoIdTest.create
+        excluded = NeoIdTest.create
+        expect(NeoIdTest.where_not(id: excluded)).to eq([node])
+      end
+    end
+
+    describe 'order' do
+      it 'should order by neo_id' do
+        nodes = Array.new(3) { NeoIdTest.create }
+        expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
+      end
+    end
+  end
+
+  describe 'inheritance' do
+    before(:all) do
+      before_session do
+        module IdProp
+          Teacher = UniqueClass.create do
+            include Neo4j::ActiveNode
+            id_property :my_id, on: :my_method
+
+            def my_method
+              'an id'
+            end
+          end
+
+          class Substitute < Teacher; end
+
+          Vehicle = UniqueClass.create do
+            include Neo4j::ActiveNode
+            id_property :my_id, auto: :uuid
+          end
+
+          class Car < Vehicle; end
+
+          Fruit = UniqueClass.create do
+            include Neo4j::ActiveNode
+
+            id_property :my_id
+          end
+
+          class Apple < Fruit; end
+
+          Sport = UniqueClass.create do
+            include Neo4j::ActiveNode
+
+            id_property :neo_id
+          end
+
+          class Skiing < Sport; end
+        end
+      end
+    end
+
+    after(:all) { [IdProp::Teacher, IdProp::Car, IdProp::Apple, IdProp::Sport, IdProp::Skiing].each(&:delete_all) }
 
     it 'inherits the base id_property' do
       expect(IdProp::Substitute.create.my_id).to eq 'an id'
@@ -383,6 +512,12 @@ describe Neo4j::ActiveNode::IdProperty do
 
     it 'works without conf specified' do
       expect(IdProp::Apple.create.my_id).not_to be_nil
+    end
+
+    it 'works with neo_id' do
+      node = IdProp::Skiing.create
+      expect(node.id).not_to be_nil
+      expect(node.id).to eq(node.neo_id)
     end
 
     context 'when a session is not started' do

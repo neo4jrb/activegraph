@@ -99,6 +99,9 @@ module Neo4jSpecHelpers
     else
       create_server_session
     end
+  rescue Faraday::ConnectionFailed
+    puts 'Could not create Neo4j session'
+    exit!
   end
 
   def create_named_server_session(name, default = nil)
@@ -126,6 +129,16 @@ module Neo4jSpecHelpers
       after do
         Neo4j::Config[var_name] = @neo4j_config_vars[var_name]
         @neo4j_config_vars.delete(var_name)
+      end
+    end
+
+    def let_env_variable(var_name)
+      before do
+        ENV[var_name] = yield
+      end
+
+      after do
+        ENV[var_name] = nil
       end
     end
   end
@@ -202,6 +215,10 @@ module ActiveNodeRelStubHelpers
       module_eval(&block) if block
     end
   end
+
+  def id_property_value(o)
+    o.send o.class.id_property_name
+  end
 end
 
 # Introduces `let_context` helper method
@@ -238,6 +255,7 @@ RSpec.configure do |c|
   c.include Neo4jSpecHelpers
 
   c.before(:all) do
+    Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
     Neo4j::Session.current.close if Neo4j::Session.current
     create_session
   end

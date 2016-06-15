@@ -40,6 +40,8 @@ module Neo4j::ActiveNode
       def define_id_methods(clazz, name, conf)
         validate_conf!(conf)
 
+        return if name == :neo_id
+
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
         elsif conf[:auto]
@@ -141,7 +143,7 @@ module Neo4j::ActiveNode
         Neo4j::Session.on_next_session_available do |_|
           @id_property_info = {name: name, type: conf}
           TypeMethods.define_id_methods(self, name, conf)
-          constraint(name, type: :unique) unless conf[:constraint] == false
+          constraint(name, type: :unique) unless conf[:constraint] == false || id_property_name == :neo_id
         end
       end
 
@@ -169,7 +171,7 @@ module Neo4j::ActiveNode
         !!manual_id_property
       end
 
-      alias_method :primary_key, :id_property_name
+      alias primary_key id_property_name
 
       private
 

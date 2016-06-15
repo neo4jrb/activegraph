@@ -1,5 +1,7 @@
 # Welcome to Neo4j.rb
 
+**FOR INFORMATION ABOUT NEO4J 3.0 SUPPORT, SEE [VERSION SUPPORT](https://github.com/neo4jrb/neo4j#neo4j-version-support) and [FEATURE SUPPORT](https://github.com/neo4jrb/neo4j#neo4j-feature-support) sections**
+
 ## Code Status
 
 [![Build Status](https://secure.travis-ci.org/neo4jrb/neo4j.png?branch=master)](http://travis-ci.org/neo4jrb/neo4j) [![Coverage Status](https://coveralls.io/repos/neo4jrb/neo4j/badge.png?branch=master)](https://coveralls.io/r/neo4jrb/neo4j?branch=master) [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.png)](https://codeclimate.com/github/neo4jrb/neo4j) [![PullReview stats](https://www.pullreview.com/github/neo4jrb/neo4j/badges/master.svg?)](https://www.pullreview.com/github/neo4jrb/neo4j/reviews/master)
@@ -48,25 +50,27 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 ## Neo4j version support
 
-| **Neo4j Version** | v2.x | v3.x  | >= v4.x |
-|-------------------|------|-------|---------|
-| 1.9.x             | Yes  | No    | No      |
-| 2.0.x             | No   | Yes   | No      |
-| 2.1.x             | No   | Yes   | Yes *   |
-| 2.2.x             | No   | No    | Yes     |
-| 2.3.x             | No   | No    | Yes     |
+| **Neo4j Version** | v2.x | v3.x  | >= v4.x | >= 7.0.3 |
+|-------------------|------|-------|---------|----------|
+| 1.9.x             | Yes  | No    | No      | No       |
+| 2.0.x             | No   | Yes   | No      | No       |
+| 2.1.x             | No   | Yes   | Yes *   | Yes      |
+| 2.2.x             | No   | No    | Yes     | Yes      |
+| 2.3.x             | No   | No    | Yes     | Yes      |
+| 3.0.x             | No   | No    | No      | Yes      |
 
 `*` Neo4j.rb >= 4.x doesn't support Neo4j versions before 2.1.5.  To use 2.1.x you should upgrade to a version >= 2.1.5
 
 ## Neo4j feature support
 
-| **Neo4j Feature**          |   v2.x | v3.x | >= v4.x |
-|----------------------------|--------|------|---------|
-| Auth                       |   No   |  No  | Yes     |
-| Remote Cypher              |   Yes  |  Yes | Yes     |
-| Transactions               |   Yes  |  Yes | Yes     |
-| High Availability          |   No   |  Yes | Yes     |
-| Embedded JVM support       |   Yes  |  Yes | Yes     |
+| **Neo4j Feature**          |   v2.x | v3.x | >= v4.x | >= 8.x (coming soon) |
+|----------------------------|--------|------|---------|----------------------|
+| Bolt Protocol              |   No   |  No  | No      | Yes (coming soon)    |
+| Auth                       |   No   |  No  | Yes     | Yes                  |
+| Remote Cypher              |   Yes  |  Yes | Yes     | Yes                  |
+| Transactions               |   Yes  |  Yes | Yes     | Yes                  |
+| High Availability          |   No   |  Yes | Yes     | Yes                  |
+| Embedded JVM support       |   Yes  |  Yes | Yes     | Yes                  |
 
 ## Modern (3.x/4.X) Documentation
 
