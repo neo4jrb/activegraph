@@ -7,6 +7,10 @@ module Neo4j
         @deferred_create_cache ||= {}
       end
 
+      def deferred_create_cache_clear
+        @deferred_create_cache = {}
+      end
+
       def defer_create(association_name, object, options = {})
         clear_deferred_nodes_for_association(association_name) if options[:clear]
 

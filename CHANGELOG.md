@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed 04-24-2016
+
+- Rails 5 beta3 support
+
 ### Fixed
 
 - Uses Rails 5 beta dependencies

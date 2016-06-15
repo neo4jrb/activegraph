@@ -67,11 +67,13 @@ module Neo4jSpecHelpers
   end
 
   def server_username
-    ENV['NEO4J_USERNAME'] || 'neo4j'
+    # ENV['NEO4J_USERNAME'] || 'neo4j'
+    'neo4j'
   end
 
   def server_password
-    ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
+    # ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
+    'frederic'
   end
 
   def basic_auth_hash
@@ -82,7 +84,8 @@ module Neo4jSpecHelpers
   end
 
   def server_url
-    ENV['NEO4J_URL'] || 'http://localhost:7474'
+    # ENV['NEO4J_URL'] || 'http://localhost:7474'
+    'http://localhost:7474'
   end
 
   def create_server_session(options = {})
