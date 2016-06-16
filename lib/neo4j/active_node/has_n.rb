@@ -225,7 +225,7 @@ module Neo4j::ActiveNode
       end
 
       def associations
-        (@associations ||= {}).merge(superclass == Object ? {} : superclass.associations)
+        (@associations ||= superclass == Object ? {} : superclass.associations)
       end
 
       def associations_keys
