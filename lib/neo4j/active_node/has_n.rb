@@ -224,8 +224,12 @@ module Neo4j::ActiveNode
         !!associations[name.to_sym]
       end
 
+      def parent_associations
+        superclass == Object ? {} : superclass.associations
+      end
+
       def associations
-        (@associations ||= superclass == Object ? {} : superclass.associations)
+        (@associations ||= parent_associations)
       end
 
       def associations_keys
@@ -516,9 +520,13 @@ module Neo4j::ActiveNode
       end
 
       def add_association(name, association_object)
-        @associations ||= {}
-        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if @associations.key?(name)
-        @associations[name] = association_object
+        fail "Association `#{name}` defined for a second time. "\
+             'Associations can only be defined once' if duplicate_association?(name)
+        associations[name] = association_object
+      end
+
+      def duplicate_association?(name)
+        associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
   end
