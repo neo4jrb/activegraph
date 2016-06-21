@@ -231,7 +231,7 @@ module Neo4j::ActiveNode
       end
 
       def associations
-        (@associations ||= parent_associations)
+        (@associations ||= parent_associations.dup)
       end
 
       def associations_keys
@@ -513,7 +513,7 @@ module Neo4j::ActiveNode
           create_reflection(macro, name, association, self)
         end
 
-        associations_keys << name
+        @associations_keys = nil
 
       # Re-raise any exception with added class name and association name to
       # make sure error message is helpful

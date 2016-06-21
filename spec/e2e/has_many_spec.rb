@@ -588,7 +588,7 @@ describe 'has_many' do
       end
 
       stub_active_node_class('OtherThing') do
-        has_many :out, :children, origin: :things
+        has_many :out, :children, origin: :other_things
       end
 
       stub_active_node_class('Parent') do
@@ -601,8 +601,9 @@ describe 'has_many' do
       end
     end
 
-    it 'should return the same associations' do
-      expect(Parent.associations).to eq(Child.associations)
+    it 'Child associations should include Parent ones' do
+      expect(Parent.associations_keys).to contain_exactly(:thing)
+      expect(Child.associations_keys).to contain_exactly(:thing, :other_things)
     end
   end
 
