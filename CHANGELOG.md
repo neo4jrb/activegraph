@@ -21,6 +21,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
 
+### Fixed
+
+- Made some memory optimizations (thanks ProGM / see #1221)
+
 ## [7.0.10] - 06-07-2016
 
 ### Fixed
