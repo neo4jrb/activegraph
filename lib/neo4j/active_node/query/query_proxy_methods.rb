@@ -173,7 +173,39 @@ module Neo4j
           where("(#{where_clause})")
         end
 
+        # Matches all nodes having at least a relation
+        #
+        # @example Load all people having a friend
+        #   Person.all.having_rel(:friends).to_a # => Returns a list of `Person`
+        #
+        # @example Load all people having a best friend
+        #   Person.all.having_rel(:friends, best: true).to_a # => Returns a list of `Person`
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def having_rel(association_name, rel_properties = {})
+          association = association_or_fail(association_name)
+          where("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+        end
+
+        # Matches all nodes not having a certain relation
+        #
+        # @example Load all people not having friends
+        #   Person.all.not_having_rel(:friends).to_a # => Returns a list of `Person`
+        #
+        # @example Load all people not having best friends
+        #   Person.all.not_having_rel(:friends, best: true).to_a # => Returns a list of `Person`
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def not_having_rel(association_name, rel_properties = {})
+          association = association_or_fail(association_name)
+          where_not("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+        end
+
         private
+
+        def association_or_fail(association_name)
+          model.associations[association_name] || fail(ArgumentError, "No such association #{association_name}")
+        end
 
         def find_inverse_association!(model, source, association)
           model.associations.values.find do |reverse_association|

@@ -20,6 +20,7 @@ Contents:
    ActiveRel
 
    Properties
+   UniqueIDs
 
    Querying
 
@@ -27,7 +28,11 @@ Contents:
 
    Configuration
 
+   Migrations
+
    Contributing
+
+   AdditionalResources
 
    api/index
 

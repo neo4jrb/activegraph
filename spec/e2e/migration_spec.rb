@@ -1,9 +1,6 @@
 
 describe 'migration tasks' do
-  require 'neo4j/migration'
-
-  before(:all) { ENV['silenced'] = 'true' }
-  after(:all)  { ENV['silenced'] = nil }
+  let_env_variable('MIGRATIONS_SILENCED') { 'true' }
 
   before do
     stub_active_node_class('User') do

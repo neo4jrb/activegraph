@@ -8,11 +8,11 @@ module Neo4j::ActiveNode
     # It uses a QueryProxy to get results
     # But also caches results and can have results cached on it
     class AssociationProxy
-      def initialize(query_proxy, deferred_objects = [], cached_result = nil)
+      def initialize(query_proxy, deferred_objects = [], result_cache_proc = nil)
         @query_proxy = query_proxy
         @deferred_objects = deferred_objects
 
-        cache_result(cached_result)
+        @result_cache_proc = result_cache_proc
 
         # Represents the thing which can be enumerated
         # default to @query_proxy, but will be set to
@@ -88,7 +88,11 @@ module Neo4j::ActiveNode
       end
 
       def cache_query_proxy_result
-        @query_proxy.to_a.tap { |result| cache_result(result) }
+        (result_cache_proc_cache || @query_proxy).to_a.tap { |result| cache_result(result) }
+      end
+
+      def result_cache_proc_cache
+        @result_cache_proc_cache ||= @result_cache_proc.call if @result_cache_proc
       end
 
       def clear_cache_result
@@ -105,7 +109,7 @@ module Neo4j::ActiveNode
         @query_proxy.public_send(:replace_with, *args)
       end
 
-      QUERY_PROXY_METHODS = [:<<, :delete]
+      QUERY_PROXY_METHODS = [:<<, :delete, :create]
       CACHED_RESULT_METHODS = []
 
       def method_missing(method_name, *args, &block)
@@ -171,10 +175,10 @@ module Neo4j::ActiveNode
       hash = association_proxy_hash(name, options)
       association_proxy_cache_fetch(hash) do
         if result_cache = self.instance_variable_get('@source_proxy_result_cache')
-          result_by_previous_id = previous_proxy_results_by_previous_id(result_cache, name)
-
+          cache = nil
           result_cache.inject(nil) do |proxy_to_return, object|
-            proxy = fresh_association_proxy(name, options.merge(start_object: object), result_by_previous_id[object.neo_id])
+            proxy = fresh_association_proxy(name, options.merge(start_object: object),
+                                            proc { (cache ||= previous_proxy_results_by_previous_id(result_cache, name))[object.neo_id] })
 
             object.association_proxy_cache[hash] = proxy
 
@@ -188,8 +192,8 @@ module Neo4j::ActiveNode
 
     private
 
-    def fresh_association_proxy(name, options = {}, cached_result = nil)
-      AssociationProxy.new(association_query_proxy(name, options), deferred_nodes_for_association(name), cached_result)
+    def fresh_association_proxy(name, options = {}, result_cache_proc = nil)
+      AssociationProxy.new(association_query_proxy(name, options), deferred_nodes_for_association(name), result_cache_proc)
     end
 
     def previous_proxy_results_by_previous_id(result_cache, association_name)

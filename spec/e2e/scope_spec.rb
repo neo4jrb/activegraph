@@ -9,7 +9,10 @@ describe 'Neo4j::NodeMixin::Scope' do
       property :name
       property :score
       property :level_num
+      property :date_of_death
       has_many :out, :friends, type: nil, model_class: 'Person'
+
+      scope :only_living, -> { where(date_of_death: nil) }
     end
   end
 
@@ -21,6 +24,22 @@ describe 'Neo4j::NodeMixin::Scope' do
 
     @a.friends << @b
     @b.friends << @b1 << @b2
+  end
+
+  after(:each) do
+    delete_db
+  end
+
+  describe 'Inherited scope' do
+    before { stub_named_class('Mutant', Person) }
+
+    let!(:alive) { Mutant.create name: 'aa' }
+    let!(:dead)  { Mutant.create name: 'bb', date_of_death: 'yesterday' }
+
+    it 'has the scope of the parent class' do
+      expect(Mutant.scope?(:only_living)).to be true
+      expect(Mutant.all.only_living.to_a).to eq([alive])
+    end
   end
 
   describe 'Person.scope :level, -> (num) { where(level: num)}' do

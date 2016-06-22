@@ -10,6 +10,7 @@ require 'neo4j/active_base/session_registry'
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
+require 'json'
 
 require 'neo4j/errors'
 require 'neo4j/config'
@@ -89,6 +90,12 @@ require 'neo4j/active_node/query/query_proxy'
 require 'neo4j/active_node/query'
 require 'neo4j/active_node/scope'
 require 'neo4j/active_node'
+
+module Neo4j
+  extend ActiveSupport::Autoload
+  autoload :Migrations
+  autoload :Migration
+end
 
 require 'neo4j/active_node/orm_adapter'
 if defined?(Rails)

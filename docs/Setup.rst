@@ -10,7 +10,9 @@ Ruby on Rails
 
 The following contains instructions on how to setup Neo4j with Rails.  If you prefer a video to follow along you can use `this YouTube video <https://www.youtube.com/watch?v=bDjbqRL9HcM>`_
 
-There are two ways to add neo4j to your Rails project.  You can LINK||generate a new project||LINK with Neo4j as the default model mapper or you can LINK||add it manually||LINK.
+There are two ways to add neo4j to your Rails project.  You can :ref:`generate a new project<generating-new-app>` with Neo4j as the default model mapper or you can :ref:`add it manually<add-gem-to-existing-project>`.
+
+.. _generating-new-app:
 
 Generating a new app
 ^^^^^^^^^^^^^^^^^^^^
@@ -45,6 +47,8 @@ An example series of setup commands:
     There is also a screencast available demonstrating how to set up a new Rails app:
 
     <iframe width="560" height="315" src="https://www.youtube.com/embed/n0P0pOP34Mw" frameborder="0" allowfullscreen></iframe>
+
+.. _add-gem-to-existing-project:
 
 Adding the gem to an existing project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

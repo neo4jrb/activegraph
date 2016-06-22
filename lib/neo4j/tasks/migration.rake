@@ -1,8 +1,10 @@
+require 'active_support/concern'
+require 'neo4j/migrations/helpers/id_property'
 require 'neo4j/migration'
 
 namespace :neo4j do
   desc 'Run a script against the database to perform system-wide changes'
-  task :migrate, [:task_name, :subtask] => :environment do |_, args|
+  task :legacy_migrate, [:task_name, :subtask] => :environment do |_, args|
     path = Rake.original_dir
     migration_task = args[:task_name]
     task_name_constant = migration_task.split('_').map(&:capitalize).join('')
@@ -20,5 +22,45 @@ namespace :neo4j do
     else
       migration.migrate
     end
+  end
+
+  desc 'A shortcut for neo4j::migrate::all'
+  task :migrate do
+    Rake::Task['neo4j:migrate:all'].invoke
+  end
+
+  namespace :migrate do
+    desc 'Run all pending migrations'
+    task :all do
+      runner = Neo4j::Migrations::Runner.new
+      runner.all
+    end
+
+    desc 'Run a migration given its VERSION'
+    task :up do
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
+      runner = Neo4j::Migrations::Runner.new
+      runner.up version
+    end
+
+    desc 'Revert a migration given its VERSION'
+    task :down do
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
+      runner = Neo4j::Migrations::Runner.new
+      runner.down version
+    end
+
+    desc 'Print a report of migrations status'
+    task :status do
+      runner = Neo4j::Migrations::Runner.new
+      runner.status
+    end
+  end
+
+  desc 'Rollbacks migrations given a STEP number'
+  task :rollback do
+    steps = (ENV['STEP'] || 1).to_i
+    runner = Neo4j::Migrations::Runner.new
+    runner.rollback(steps)
   end
 end
