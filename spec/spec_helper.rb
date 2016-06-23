@@ -71,43 +71,8 @@ module Neo4jSpecHelpers
     Neo4j::ActiveBase.current_session
   end
 
-  # def session
-  #   current_session
-  # end
-
-  def server_password
-    ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
-  end
-
-  def basic_auth_hash
-    {
-      username: server_username,
-      password: server_password
-    }
-  end
-
-  def server_url
-    ENV['NEO4J_URL'] || 'http://localhost:7474'
-  end
-
-  def create_server_session(options = {})
-    Neo4j::Session.open(:server_db, server_url, {basic_auth: basic_auth_hash}.merge(options))
-    delete_db # Should separate this out
-  end
-
-  def create_session
-    if RUBY_PLATFORM == 'java'
-      create_embedded_session
-    else
-      create_server_session
-    end
-  rescue Faraday::ConnectionFailed
-    puts 'Could not create Neo4j session'
-    exit!
-  end
-
-  def create_named_server_session(name, default = nil)
-    Neo4j::Session.open_named(:server_db, name, default, server_url, basic_auth: basic_auth_hash)
+  def session
+    current_session
   end
 
   def neo4j_query(*args)

@@ -49,7 +49,7 @@ module Neo4j
       end
 
       def execute(string, params = {})
-        query(string, params).to_a
+        ActiveBase.query(string, params).to_a
       end
 
       def say_with_time(message)
@@ -66,7 +66,7 @@ module Neo4j
       end
 
       def query(*args)
-        ActiveBase.magic_query(*args)
+        ActiveBase.new_query(*args)
       end
 
       protected

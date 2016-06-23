@@ -177,14 +177,7 @@ module Neo4j::ActiveNode
       # information is requested and use that as the opportunity to set up the defaults if no others are specified
       def ensure_id_property_info!
         if !manual_id_property? && !@id_property_info
-          name, type, value = Neo4j::Config.to_hash.values_at(*%w(id_property id_property_type id_property_type_value))
-
-          if !(name && type && value)
-            name = :uuid
-            type = :auto
-            value = :uuid
-          end
-
+          name, type, value = id_property_name_type_value
           id_property(name, type => value)
         end
 
@@ -195,6 +188,18 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      def id_property_name_type_value
+        name, type, value = Neo4j::Config.to_hash.values_at(*%w(id_property id_property_type id_property_type_value))
+
+        if !(name && type && value)
+          name = :uuid
+          type = :auto
+          value = :uuid
+        end
+
+        [name, type, value]
+      end
 
       def id_property_constraint(name)
         if id_property?

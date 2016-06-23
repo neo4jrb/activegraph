@@ -10,6 +10,7 @@ module Neo4j
       end
 
       def migrate(method)
+        ensure_schema_migration_constraint
         Benchmark.realtime do
           ActiveBase.run_transaction(transactions?) do
             if method == :up
@@ -29,6 +30,13 @@ module Neo4j
 
       def down
         fail NotImplementedError
+      end
+
+      private
+
+      def ensure_schema_migration_constraint
+        SchemaMigration.first
+        Neo4j::Core::Label.wait_for_schema_changes(ActiveBase.current_session)
       end
     end
   end
