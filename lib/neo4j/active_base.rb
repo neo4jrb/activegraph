@@ -41,6 +41,14 @@ module Neo4j
         Neo4j::Core::Query.new({session: current_session}.merge(options))
       end
 
+      def magic_query(*args)
+        if args.empty? || args.map(&:class) == [Hash]
+          ActiveBase.new_query(*args)
+        else
+          ActiveBase.current_session.query(*args)
+        end
+      end
+
       def current_transaction
         Neo4j::Transaction.current_for(current_session)
       end

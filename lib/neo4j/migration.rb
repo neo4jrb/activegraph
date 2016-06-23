@@ -45,7 +45,9 @@ module Neo4j
         end
       end
 
-      delegate :query, to: Neo4j::Session
+      def query(*args)
+        ActiveBase.magic_query(*args)
+      end
 
       def setup
         FileUtils.mkdir_p('db/neo4j-migrate')

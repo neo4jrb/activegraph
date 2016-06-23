@@ -11,7 +11,7 @@ module Neo4j
 
       def migrate(method)
         Benchmark.realtime do
-          Neo4j::Transaction.run(transactions?) do
+          ActiveBase.run_transaction(transactions?) do
             if method == :up
               up
               SchemaMigration.create!(migration_id: @migration_id)
