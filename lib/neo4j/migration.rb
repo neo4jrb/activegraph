@@ -49,6 +49,10 @@ module Neo4j
         ActiveBase.magic_query(*args)
       end
 
+      def execute(*args)
+        ActiveBase.query(*args)
+      end
+
       def setup
         FileUtils.mkdir_p('db/neo4j-migrate')
 
