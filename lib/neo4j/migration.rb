@@ -65,9 +65,9 @@ MESSAGE
       end
 
       # Might need some of this...
-      #private
+      # private
 
-      #def add_ids_to(model)
+      # def add_ids_to(model)
       #  max_per_batch = (ENV['MAX_PER_BATCH'] || default_max_per_batch).to_i
 
       #  label = model.mapped_label_name
@@ -81,13 +81,13 @@ MESSAGE
       #      max_per_batch = id_batch_set(label, model.primary_key, Array.new(count) { new_id_for(model) }, count)
       #    end
       #  end
-      #end
+      # end
 
-      #def idless_count(label, id_property)
+      # def idless_count(label, id_property)
       #  Neo4j::ActiveBase.new_query.match(n: label).where("NOT EXISTS(n.#{id_property})").pluck('COUNT(n) AS ids').first
-      #end
+      # end
 
-      #def print_status(last_time_taken, max_per_batch, nodes_left)
+      # def print_status(last_time_taken, max_per_batch, nodes_left)
       #  time_per_node = last_time_taken / max_per_batch if last_time_taken
       #  message = if time_per_node
       #              eta_seconds = (nodes_left * time_per_node).round
@@ -97,10 +97,10 @@ MESSAGE
       #            end
 
       #  print_output message
-      #end
+      # end
 
 
-      #def id_batch_set(label, id_property, new_ids, count)
+      # def id_batch_set(label, id_property, new_ids, count)
       #  tx = Neo4j::ActiveBase.new_transaction
 
       #  Neo4j::ActiveBase.current_session.query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
@@ -112,25 +112,25 @@ MESSAGE
       #    LIMIT #{count}")
 
       #  count
-      #rescue Neo4j::Server::CypherResponse::ResponseError, Faraday::TimeoutError
+      # rescue Neo4j::Server::CypherResponse::ResponseError, Faraday::TimeoutError
       #  new_max_per_batch = (max_per_batch * 0.8).round
       #  output "Error querying #{max_per_batch} nodes.  Trying #{new_max_per_batch}"
       #  new_max_per_batch
-      #ensure
+      # ensure
       #  tx.close
-      #end
+      # end
 
-      #def default_max_per_batch
+      # def default_max_per_batch
       #  900
-      #end
+      # end
 
-      #def new_id_for(model)
+      # def new_id_for(model)
       #  if model.id_property_info[:type][:auto]
       #    SecureRandom.uuid
       #  else
       #    model.new.send(model.id_property_info[:type][:on])
       #  end
-      #end
+      # end
     end
   end
 end
