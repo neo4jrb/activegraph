@@ -118,12 +118,10 @@ module Neo4j
         fail ArgumentError, "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
       end
 
-      # TODO: Deprecate named sessions in 6.x
       def open_neo4j_session(options, wait_for_connection = false)
         session_type, path, url = options.values_at(:type, :path, :url)
 
         validate_platform!(session_type)
-
         enable_unlimited_strength_crypto! if session_type_is_embedded?(session_type)
 
         adaptor = wait_for_value(wait_for_connection) do
