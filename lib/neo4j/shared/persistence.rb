@@ -9,8 +9,7 @@ module Neo4j::Shared
 
     def update_model
       return if !changed_attributes || changed_attributes.empty?
-      query = query_as(:n).set(n: props_for_update)
-      neo4j_query(query)
+      neo4j_query(query_as(:n).set(n: props_for_update))
       changed_attributes.clear
     end
 
@@ -197,9 +196,7 @@ module Neo4j::Shared
 
     module ClassMethods
       def run_transaction(run_in_tx = true)
-        Neo4j::ActiveBase.run_transaction(run_in_tx) do |tx|
-          yield tx
-        end
+        Neo4j::ActiveBase.run_transaction(run_in_tx) { |tx| yield tx }
       end
     end
 
