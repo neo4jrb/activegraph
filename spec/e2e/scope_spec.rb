@@ -143,5 +143,32 @@ describe 'Neo4j::NodeMixin::Scope' do
     it_behaves_like 'scopable model'
     it_behaves_like 'chained scopable model'
   end
-  # end
+
+  describe 'Person.scope :top_friends, -> { friends.where(score: 42) }' do
+    before(:each) do
+      Person.scope :top_friends, -> { friends.where(score: 42) }
+    end
+
+    describe 'Person.top_friends.to_a' do
+      subject do
+        Person.top_friends
+      end
+
+      it { is_expected.to match_array([@b, @b1, @b2]) }
+    end
+  end
+
+  describe 'Person.scope :having_friends_being_top_students, -> { all(:p).friends(:f).where(score: 42).query_as(Person, :p) }' do
+    before(:each) do
+      Person.scope :having_friends_being_top_students, -> { all(:p).branch { friends(:f).where(score: 42) } }
+    end
+
+    describe 'Person.having_friends_being_top_students.to_a' do
+      subject do
+        Person.having_friends_being_top_students
+      end
+
+      it { is_expected.to match_array([@a, @b, @b]) }
+    end
+  end
 end
