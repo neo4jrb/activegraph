@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.12] - 06-27-2016
+
+### Fixed
+
+- Bug where models weren't being loaded correctly by label (thanks bloomdido / see #1220)
+
 ## [7.0.11] - 06-09-2016
 
 ### Fixed
