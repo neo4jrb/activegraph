@@ -64,7 +64,7 @@ module Neo4j::ActiveNode
       end
 
       def full_scopes
-        scopes.merge(self.superclass.respond_to?(:scopes) ? self.superclass.scopes : {})
+        self.superclass.respond_to?(:scopes) ? self.superclass.scopes.merge(scopes) : scopes
       end
 
       def _call_scope_context(eval_context, query_params, proc)
@@ -101,16 +101,30 @@ module Neo4j::ActiveNode
       end
 
       def identity
-        @query_proxy ? @query_proxy.identity : :n
+        query_proxy_or_target.identity
       end
 
       Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
         module_eval(%{
-            def #{method}(params={})
+            def #{method}(*args)
               @target.all.scoping do
-                (@query_proxy || @target).#{method}(params)
+                query_proxy_or_target.#{method}(*args)
               end
             end}, __FILE__, __LINE__)
+      end
+
+      def method_missing(name, *params, &block)
+        if query_proxy_or_target.respond_to?(name)
+          query_proxy_or_target.public_send(name, *params, &block)
+        else
+          super
+        end
+      end
+
+      private
+
+      def query_proxy_or_target
+        @query_proxy_or_target ||= @query_proxy || @target
       end
     end
 
