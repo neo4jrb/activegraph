@@ -105,12 +105,11 @@ module Neo4j::ActiveNode
       end
 
       Neo4j::ActiveNode::Query::QueryProxy::METHODS.each do |method|
-        module_eval(%{
-            def #{method}(*args)
-              @target.all.scoping do
-                query_proxy_or_target.#{method}(*args)
-              end
-            end}, __FILE__, __LINE__)
+        define_method(method) do |*args|
+          @target.all.scoping do
+            query_proxy_or_target.public_send(method, *args)
+          end
+        end
       end
 
       def method_missing(name, *params, &block)
