@@ -25,40 +25,40 @@ namespace :neo4j do
   end
 
   desc 'A shortcut for neo4j::migrate::all'
-  task :migrate do
+  task migrate: :environment do
     Rake::Task['neo4j:migrate:all'].invoke
   end
 
   namespace :migrate do
     desc 'Run all pending migrations'
-    task :all do
+    task all: :environment do
       runner = Neo4j::Migrations::Runner.new
       runner.all
     end
 
     desc 'Run a migration given its VERSION'
-    task :up do
+    task up: :environment do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.up version
     end
 
     desc 'Revert a migration given its VERSION'
-    task :down do
+    task down: :environment do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.down version
     end
 
     desc 'Print a report of migrations status'
-    task :status do
+    task status: :environment do
       runner = Neo4j::Migrations::Runner.new
       runner.status
     end
   end
 
   desc 'Rollbacks migrations given a STEP number'
-  task :rollback do
+  task :rollback, :environment do
     steps = (ENV['STEP'] || 1).to_i
     runner = Neo4j::Migrations::Runner.new
     runner.rollback(steps)
