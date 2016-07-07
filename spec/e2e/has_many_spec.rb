@@ -581,6 +581,32 @@ describe 'has_many' do
     end
   end
 
+  describe 'checking if associations are propagated to child classes' do
+    before(:each) do
+      stub_active_node_class('Thing') do
+        has_many :out, :parents, origin: :things
+      end
+
+      stub_active_node_class('OtherThing') do
+        has_many :out, :children, origin: :other_things
+      end
+
+      stub_active_node_class('Parent') do
+        has_one :in, :thing, type: :HAS_THINGS, model_class: :Thing, unique: true
+      end
+
+      stub_named_class('Child', Parent) do
+        has_many :in, :other_things, type: :HAS_OTHER_THINGS, model_class: :OtherThing, unique: true
+        validates :things, presence: true
+      end
+    end
+
+    it 'Child associations should include Parent ones' do
+      expect(Parent.associations_keys).to contain_exactly(:thing)
+      expect(Child.associations_keys).to contain_exactly(:thing, :other_things)
+    end
+  end
+
   describe 'checking for double definitions of associations' do
     it 'should raise an error if an assocation is defined twice' do
       expect do

@@ -207,7 +207,9 @@ module Neo4j::ActiveNode
       end
     end
 
+    # rubocop:disable Metrics/ModuleLength
     module ClassMethods
+      # rubocop:enable Style/PredicateName
       # rubocop:disable Style/PredicateName
 
       # :nocov:
@@ -224,8 +226,12 @@ module Neo4j::ActiveNode
         !!associations[name.to_sym]
       end
 
+      def parent_associations
+        superclass == Object ? {} : superclass.associations
+      end
+
       def associations
-        (@associations ||= {}).merge(superclass == Object ? {} : superclass.associations)
+        (@associations ||= parent_associations.dup)
       end
 
       def associations_keys
@@ -507,7 +513,7 @@ module Neo4j::ActiveNode
           create_reflection(macro, name, association, self)
         end
 
-        associations_keys << name
+        @associations_keys = nil
 
       # Re-raise any exception with added class name and association name to
       # make sure error message is helpful
@@ -516,9 +522,13 @@ module Neo4j::ActiveNode
       end
 
       def add_association(name, association_object)
-        @associations ||= {}
-        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if @associations.key?(name)
-        @associations[name] = association_object
+        fail "Association `#{name}` defined for a second time. "\
+             'Associations can only be defined once' if duplicate_association?(name)
+        associations[name] = association_object
+      end
+
+      def duplicate_association?(name)
+        associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
   end
