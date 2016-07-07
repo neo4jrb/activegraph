@@ -204,8 +204,8 @@ describe 'Query API' do
       describe '.merge' do
         let(:timestamps) { [1, 1, 2, 3].map(&DateTime.method(:new)) }
         let(:merge_attrs) { {name: 'Dr. Dre'} }
-        let(:on_match_attrs) { {} }
-        let(:on_create_attrs) { {} }
+        let(:on_match_clause) { {} }
+        let(:on_create_clause) { {} }
         let(:set_attrs) { {status: 'on create status'} }
 
         before { allow(DateTime).to receive(:now).and_return(*timestamps) }
@@ -226,7 +226,7 @@ describe 'Query API' do
           include Neo4j::ActiveNode
         end
 
-        subject { Teacher.merge(merge_attrs, on_match: on_match_attrs, on_create: on_create_attrs, set: set_attrs) }
+        subject { Teacher.merge(merge_attrs, on_match: on_match_clause, on_create: on_create_clause, set: set_attrs) }
 
         its(:name) { is_expected.to eq 'Dr. Dre' }
 
@@ -239,7 +239,7 @@ describe 'Query API' do
           its(:labels) { is_expected.to match_array [:TeacherFoo, :Substitute] }
         end
 
-        let_context 'on_create', on_create_attrs: {age: 49} do
+        let_context 'on_create', on_create_clause: {age: 49} do
           its(:age) { is_expected.to eq 49 }
           its(:status) { is_expected.to eq 'on create status' }
 
@@ -248,14 +248,26 @@ describe 'Query API' do
           end
         end
 
-        let_context 'on_merge', on_match_attrs: {age: 50}, on_create_attrs: {age: 49}, set_attrs: {status: 'on match status'} do
-          before { Teacher.merge(on_create_attrs.merge(merge_attrs)) }
+
+        let_context 'on_merge', on_match_clause: {age: 50}, on_create_clause: {age: 49}, set_attrs: {status: 'on match status'} do
+          before { Teacher.merge(on_create_clause.merge(merge_attrs)) }
 
           its(:age) { is_expected.to eq 50 }
           its(:status) { is_expected.to eq 'on match status' }
 
           it 'updated_at' do
             expect(subject.updated_at).to be > subject.created_at
+          end
+        end
+
+        describe 'string clauses' do
+          let_context on_match_clause: 'n.age = 30 + 1', on_create_clause: 'n.age = 30 + 2' do
+            its(:age) { is_expected.to eq 32 }
+          end
+
+          let_context on_match_clause: 'n.age = 30 + 1', on_create_clause: 'n.age = 30 + 2' do
+            before { Teacher.create(merge_attrs) }
+            its(:age) { is_expected.to eq 31 }
           end
         end
 
