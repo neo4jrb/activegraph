@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.14] - 07-10-2016
+
+### Fixed
+
+- Bug in setting `NEO4J_TYPE` (thanks bloomdido / see #1235)
+
 ## [7.0.12] - 06-27-2016
 
 ### Fixed
