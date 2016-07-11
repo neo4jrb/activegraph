@@ -2,6 +2,14 @@ require 'active_support/concern'
 require 'neo4j/migrations/helpers/id_property'
 require 'neo4j/migration'
 
+unless Rake::Task.task_defined?('environment')
+  require 'neo4j/session_manager'
+  desc 'Run a script against the database to perform system-wide changes'
+  task :environment do
+    Neo4j::SessionManager.setup!
+  end
+end
+
 namespace :neo4j do
   desc 'Run a script against the database to perform system-wide changes'
   task :legacy_migrate, [:task_name, :subtask] => :environment do |_, args|

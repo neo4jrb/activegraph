@@ -98,7 +98,11 @@ module Neo4j
       end
 
       def files_path
-        Rails.root.join('db', 'neo4j', 'migrate', '*.rb')
+        app_root.join('db', 'neo4j', 'migrate', '*.rb')
+      end
+
+      def app_root
+        defined?(Rails) ? Rails.root : Pathname.new('.')
       end
     end
   end

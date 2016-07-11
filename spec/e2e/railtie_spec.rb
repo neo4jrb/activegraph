@@ -58,7 +58,7 @@ module Rails
 
     it 'allows sessions with authentication' do
       cfg = OpenStruct.new(session_path: 'http://user:password@localhost:7474')
-      Neo4j::Railtie.setup_default_session(cfg)
+      Neo4j::SessionManager.setup_default_session(cfg)
       expect(cfg.session_path).to eq('http://user:password@localhost:7474')
     end
 
