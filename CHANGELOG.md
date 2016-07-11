@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Improved `QueryProxy` and `AssociationProxy` `#inspect` method to show a result preview (thanks ProGM / see #1228 #1232)
 - Renamed the old migration task to `neo4j:legacy_migrate`
 - Renamed the ENV variable to silence migrations output from `silenced` to `MIGRATIONS_SILENCED`
 - Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
