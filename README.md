@@ -2,6 +2,8 @@
 
 **FOR INFORMATION ABOUT NEO4J 3.0 SUPPORT, SEE [VERSION SUPPORT](https://github.com/neo4jrb/neo4j#neo4j-version-support) and [FEATURE SUPPORT](https://github.com/neo4jrb/neo4j#neo4j-feature-support) sections**
 
+**ALSO NOTE THAT MASTER IS CURRENT IN FLUX IN PREPARATION FOR AN ALPHA OF 8.0 AND IT IS NOT RECOMMENDED TO BE USED**
+
 ## Code Status
 
 [![Build Status](https://secure.travis-ci.org/neo4jrb/neo4j.png?branch=master)](http://travis-ci.org/neo4jrb/neo4j) [![Coverage Status](https://coveralls.io/repos/neo4jrb/neo4j/badge.png?branch=master)](https://coveralls.io/r/neo4jrb/neo4j?branch=master) [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.png)](https://codeclimate.com/github/neo4jrb/neo4j) [![PullReview stats](https://www.pullreview.com/github/neo4jrb/neo4j/badges/master.svg?)](https://www.pullreview.com/github/neo4jrb/neo4j/reviews/master)
@@ -105,3 +107,4 @@ Always welcome!  Please review the [guidelines for contributing](CONTRIBUTING.md
 * Neo4j - Dual free software/commercial license, see [Licensing Guide](http://www.neo4j.org/learn/licensing).
 
 **Notice:** There are different licenses for the `neo4j-community`, `neo4j-advanced`, and `neo4j-enterprise` jar gems. Only the `neo4j-community` gem is required by default.
+
