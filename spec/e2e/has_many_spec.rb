@@ -219,8 +219,7 @@ describe 'has_many' do
 
   describe 'callbacks' do
     before do
-      stub_const('ClazzC', UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('ClazzC') do
         property :name
 
         has_many :out, :knows, type: nil, model_class: self, before: :before_callback
@@ -236,7 +235,7 @@ describe 'has_many' do
         def false_callback(_other)
           false
         end
-      end)
+      end
     end
 
     let(:node) { Person.create }
@@ -324,17 +323,13 @@ describe 'has_many' do
 
   describe 'using mapped_label_name' do
     before do
-      stub_const('ClazzC', UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('ClazzC') do
+        has_many :in, :furrs, type: nil, model_class: :ClazzD
+      end
 
-        has_many :in, :furrs, type: nil, model_class: 'ClazzD'
-      end)
-
-      stub_const('ClazzD', UniqueClass.create do
-        include Neo4j::ActiveNode
-
+      stub_active_node_class('ClazzD') do
         self.mapped_label_name = 'Fuur'
-      end)
+      end
     end
 
     let(:c1) { ClazzC.create }

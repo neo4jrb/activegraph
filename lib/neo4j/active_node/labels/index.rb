@@ -28,9 +28,13 @@ module Neo4j::ActiveNode::Labels
       #
       # @example
       #   Person.constraint :name, type: :unique
-      def constraint(property, constraints = {type: :unique})
-        declared_properties.constraint_or_fail!(property, id_property_name)
-        schema_create_operation(:constraint, property, constraints)
+      def constraint(property, _constraints = {type: :unique})
+        fail <<MSG
+
+          Constraints defined on models are no longer supported.  To ensure that you have this index you can generate a migration:
+
+rails generate migration ForceAddIndex#{self.name.gsub(/[^a-z0-9]/i, '')}#{property.to_s.camelize} force_add_index #{self.name} #{property}
+MSG
       end
 
       # @param [Symbol] property The name of the property index to be dropped

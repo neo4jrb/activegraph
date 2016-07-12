@@ -2,6 +2,9 @@ require 'active_support/notifications'
 require 'rails/railtie'
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
+require 'neo4j/core/cypher_session/adaptors/http'
+require 'neo4j/core/cypher_session/adaptors/bolt'
+require 'neo4j/core/cypher_session/adaptors/embedded'
 
 module Neo4j
   class Railtie < ::Rails::Railtie
@@ -101,7 +104,8 @@ module Neo4j
           require 'neo4j/core/cypher_session/adaptors/http'
           Neo4j::Core::CypherSession::Adaptors::HTTP.new(path_or_url, options)
         else
-          fail ArgumentError, "Invalid session type: #{type.inspect}"
+          extra = ' (`server_db` has been replaced by `http` or `bolt`)'
+          fail ArgumentError, "Invalid session type: #{type.inspect} #{extra if type.to_sym == :server_db}"
         end
       end
 
@@ -151,25 +155,31 @@ module Neo4j
       end
     end
 
-    def register_neo4j_cypher_logging
+    TYPE_SUBSCRIBERS = {
+      http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
+      bolt: Neo4j::Core::CypherSession::Adaptors::Bolt.method(:subscribe_to_request),
+      embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
+    }
+    def register_neo4j_cypher_logging(session_types)
       return if @neo4j_cypher_logging_registered
 
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
 
       logger_proc = ->(message) do
-        (Neo4j::Config[:logger] || Rails.logger).debug message
+        (Neo4j::Config[:logger] ||= Rails.logger).debug message
       end
       Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
-      Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(&logger_proc)
-      Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(&logger_proc)
+      session_types.map(&:to_sym).uniq.each do |type|
+        TYPE_SUBSCRIBERS[type].call(&logger_proc)
+      end
 
       @neo4j_cypher_logging_registered = true
     end
 
-    console do
+    console do |app|
       Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
 
-      register_neo4j_cypher_logging
+      register_neo4j_cypher_logging(app.config.neo4j.sessions.map { |s| s[:type] })
     end
 
     # Starting Neo after :load_config_initializers allows apps to
@@ -179,14 +189,16 @@ module Neo4j
       # Set Rails specific defaults
       Neo4j::Railtie.setup_default_session!(cfg)
 
+      session_types = []
       cfg.sessions.each do |session_opts|
+        session_types << session_opts[:type]
         Neo4j::Railtie.open_neo4j_session(session_opts, cfg.wait_for_connection)
       end
       Neo4j::Config.configuration.merge!(cfg.to_hash)
 
       Neo4j::Config[:logger] ||= Rails.logger
 
-      register_neo4j_cypher_logging
+      register_neo4j_cypher_logging(session_types)
     end
   end
 end

@@ -161,8 +161,9 @@ describe 'Neo4j::ActiveNode' do
 
     context 'a model with a case sensitive uniqueness validation' do
       before do
+        create_constraint(:Uniqueness, :unique_property, type: :unique)
         stub_active_node_class('Uniqueness') do
-          property :unique_property, type: String, constraint: :unique
+          property :unique_property, type: String
           validates :unique_property, uniqueness: {case_sensitive: false}
         end
       end
@@ -706,10 +707,9 @@ describe 'Neo4j::ActiveNode' do
 
       describe 'without updated_at property' do
         before do
-          stub_const('NoStamp', UniqueClass.create do
-            include Neo4j::ActiveNode
+          stub_active_node_class('NoStamp') do
             property :name
-          end)
+          end
         end
 
         let(:nostamp) { NoStamp.create }

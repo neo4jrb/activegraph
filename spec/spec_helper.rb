@@ -148,11 +148,11 @@ FileUtils.rm_rf(EMBEDDED_DB_PATH)
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
+  Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
   Neo4j::ActiveNode::Labels.clear_wrapped_models
 end
 
 def delete_db
-  # clear_model_memory_caches
   Neo4j::ActiveBase.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
@@ -181,6 +181,8 @@ module ActiveNodeRelStubHelpers
       include Neo4j::ActiveNode
 
       module_eval(&block) if block
+    end.tap do |model|
+      create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
     end
   end
 
@@ -209,6 +211,10 @@ module ActiveNodeRelStubHelpers
 
   def id_property_value(o)
     o.send o.class.id_property_name
+  end
+
+  def create_constraint(label_name, property, options = {})
+    Neo4j::ActiveBase.label_object(label_name).create_constraint(property, options)
   end
 end
 
@@ -271,6 +277,10 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     # Ability to close session?
+  end
+
+  config.before(:each) do
+    Neo4j::ActiveBase::MISSING_ID_PROPERTY_CONSTRAINTS.clear
   end
 
   config.before(:all) do

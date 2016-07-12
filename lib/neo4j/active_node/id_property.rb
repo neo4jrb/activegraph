@@ -181,9 +181,11 @@ module Neo4j::ActiveNode
           id_property(name, type => value)
         end
 
-        unless @id_property_info[:type][:constraint] == false || @id_property_info[:name] == :neo_id || @constraint_created
-          @constraint_created = true
-          constraint(@id_property_info[:name], type: :unique)
+        id_property_name = @id_property_info[:name]
+        unless @id_property_info[:type][:constraint] == false || id_property_name == :neo_id
+          if !Neo4j::ActiveBase.unique_constraint_exists?(mapped_label_name, id_property_name)
+            Neo4j::ActiveBase.missing_id_property_constraints[self] = id_property_name
+          end
         end
       end
 

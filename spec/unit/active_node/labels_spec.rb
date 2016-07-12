@@ -25,12 +25,13 @@ describe Neo4j::ActiveNode::Labels do
 
   describe Neo4j::ActiveNode::Labels::ClassMethods do
     describe 'index and inheritance' do
-      class MyBaseClass
-        include Neo4j::ActiveNode
-        property :things
-      end
-      class MySubClass < MyBaseClass
-        property :stuff
+      before do
+        stub_active_node_class('MyBaseClass') do
+          property :things
+        end
+        stub_named_class('MySubClass', MyBaseClass) do
+          property :stuff
+        end
       end
 
       it 'should have labels for baseclass' do
