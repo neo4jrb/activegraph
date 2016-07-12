@@ -23,11 +23,8 @@ module Neo4j::ActiveNode
       # States:
       # Default
       def inspect
-        if @cached_result
-          result_nodes.inspect
-        else
-          "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
-        end
+        formatted_nodes = ::Neo4j::ActiveNode::NodeListFormatter.new(result_nodes)
+        "#<AssociationProxy #{@query_proxy.context} #{formatted_nodes.inspect}>"
       end
 
       extend Forwardable

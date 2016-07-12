@@ -777,4 +777,24 @@ describe 'query_proxy_methods' do
                             [@science, nil]]
     end
   end
+
+  describe '#inspect' do
+    before(:each) do
+      delete_db
+
+      Student.create(name: 'Lauren')
+      Student.create(name: 'Bob')
+      Student.create(name: 'Bill')
+    end
+
+    context 'when inspecting a query proxy' do
+      let(:query_proxy) { Student.all }
+      let(:inspected_elements) { query_proxy.inspect }
+
+      it 'returns the list of resulting elements' do
+        expect(inspected_elements).to include('#<QueryProxy Student')
+        expect(inspected_elements).to include(query_proxy.to_a.inspect)
+      end
+    end
+  end
 end

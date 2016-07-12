@@ -54,7 +54,8 @@ module Neo4j
         end
 
         def inspect
-          "#<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
+          formatted_nodes = Neo4j::ActiveNode::NodeListFormatter.new(to_a)
+          "#<QueryProxy #{@context} #{formatted_nodes.inspect}>"
         end
 
         attr_reader :start_object, :query_proxy
