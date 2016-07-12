@@ -183,11 +183,11 @@ describe Neo4j::ActiveNode::Labels do
         classes = [Event, URL, DataSource::URL, DataSource::Event]
 
         # TODO: not sure why this is not being called when the class is defined
-        classes.reverse.each {|c| Neo4j::ActiveNode::Labels.add_wrapped_class(c)}
+        classes.reverse_each { |c| Neo4j::ActiveNode::Labels.add_wrapped_class(c) }
 
         classes.each do |c|
           labels = c.mapped_label_names
-          model = Neo4j::ActiveNode::Labels::model_for_labels(labels)
+          model = Neo4j::ActiveNode::Labels.model_for_labels(labels)
           expect(model).to eq(c)
         end
       end

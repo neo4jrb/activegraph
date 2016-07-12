@@ -4,7 +4,9 @@ module Neo4j
     extend ActiveModel::Naming
 
     include ActiveModel::Conversion
+    begin
     include ActiveModel::Serializers::Xml
+    rescue NameError; end # rubocop:disable Lint/HandleExceptions
     include ActiveModel::Serializers::JSON
 
     module ClassMethods

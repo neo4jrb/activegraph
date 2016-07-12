@@ -12,6 +12,12 @@ end
 
 gem 'listen', '< 3.1'
 
+if RUBY_VERSION.to_f < 2.2
+  gem 'activemodel', '~> 4'
+  gem 'activesupport', '~> 4'
+  gem 'railties', '~> 4'
+end
+
 group 'test' do
   gem 'coveralls', require: false
   gem 'codecov', require: false
