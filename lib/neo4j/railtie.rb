@@ -74,11 +74,8 @@ module Neo4j
       end
 
       def default_session_type
-        if ENV['NEO4J_TYPE']
-          :embedded_db
-        else
-          config_data[:type] || :server_db
-        end.to_sym
+        type = ENV['NEO4J_TYPE'] || config_data[:type] || :server_db
+        type.to_sym
       end
 
       def default_session_path
