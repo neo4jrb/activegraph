@@ -26,6 +26,8 @@ module Neo4j
       FileUtils.mkdir_p('db/neo4j-migrate')
     end
 
+    delegate :query, to: Neo4j::Session
+
     class AddIdProperty < Neo4j::Migration
       include Neo4j::Migrations::Helpers::IdProperty
 
@@ -49,8 +51,6 @@ module Neo4j
         end
       end
 
-      delegate :query, to: Neo4j::Session
-
       def setup
         super
         return if File.file?(models_filename)
@@ -67,7 +67,8 @@ MESSAGE
     end
 
     class RelabelRelationships < Neo4j::Migration
-      attr_accessor :relationships_filename, :old_format, :new_format
+      include Neo4j::Migrations::Helpers::Relationships
+      attr_accessor :relationships_filename
 
       def initialize(path = default_path)
         @relationships_filename = File.join(joined_path(path), 'relabel_relationships.yml')
@@ -90,42 +91,12 @@ MESSAGE
       def migrate
         config        = YAML.load_file(relationships_filename).to_hash
         relationships = config['relationships']
-        @old_format   = config['formats']['old']
-        @new_format   = config['formats']['new']
+        old_format   = config['formats']['old']
+        new_format   = config['formats']['new']
 
         output 'This task will relabel every given relationship.'
         output 'It may take a significant amount of time, please be patient.'
-        relationships.each { |relationship| reindex relationship }
-      end
-
-      private
-
-      def count(relationship)
-        Neo4j::Session.query(
-          "MATCH (a)-[r:#{style(relationship, :old)}]->(b) RETURN COUNT(r)"
-        ).to_a[0]['COUNT(r)']
-      end
-
-      def reindex(relationship)
-        count = count(relationship)
-        output "Indexing #{count} #{style(relationship, :old)}s into #{style(relationship, :new)}..."
-        while count > 0
-          Neo4j::Session.query(
-            "MATCH (a)-[r:#{style(relationship, :old)}]->(b) CREATE (a)-[r2:#{style(relationship, :new)}]->(b) SET r2 = r WITH r LIMIT 1000 DELETE r"
-          )
-          count = count(relationship)
-          if count > 0
-            output "... #{count} #{style(relationship, :old)}'s left to go.."
-          end
-        end
-      end
-
-      def style(relationship, old_or_new)
-        case (old_or_new == :old ? old_format : new_format)
-        when 'lower_hashtag' then "`##{relationship.downcase}`"
-        when 'lower'         then "`#{relationship.downcase}`"
-        when 'upper'         then "`#{relationship.upcase}`"
-        end
+        change_relation_style(relationships, old_format, new_format)
       end
     end
   end
