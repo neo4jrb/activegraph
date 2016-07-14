@@ -44,7 +44,7 @@ shared_examples 'saveable model' do
     # end
 
     it 'should render as XML' do
-      expect(subject.to_xml).to match(/^<\?xml version=/)
+      expect(subject.to_xml).to match(/^<\?xml version=/) if subject.respond_to?(:to_xml)
     end
   end
 end

@@ -101,6 +101,8 @@ An example ``config/neo4j.yml`` file:
     type: server_db
     url: http://neo4j:password@localhost:7000
 
+The `railtie` provided by the `neo4j` gem will automatically look for and load this file.
+
 You can also use your Rails configuration.  The following example can be put into ``config/application.rb`` or any of your environment configurations (``config/environments/(development|test|production).rb``) file:
 
 .. code-block:: ruby

@@ -58,7 +58,7 @@ shared_examples_for 'timestamped model' do
 
         it 'creates the property' do
           expect { subject.reload }.to change { subject.updated_at }.from(instance_of(DateTime)).to(nil)
-          expect { subject.touch }.to change { subject.updated_at }.from(nil).to(instance_of(DateTime))
+          expect { subject.touch }.to change { subject.updated_at }.from(nil)
         end
       end
 
