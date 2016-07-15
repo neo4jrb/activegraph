@@ -3,6 +3,8 @@ describe 'migration tasks' do
   let_env_variable('MIGRATIONS_SILENCED') { 'true' }
 
   before do
+    clear_model_memory_caches
+    delete_db
     stub_active_node_class('User') do
       property :name
       has_many :out, :songs, model_class: :Song, type: 'songs'
