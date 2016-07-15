@@ -4,6 +4,8 @@ module Neo4j
       module Relationships
         extend ActiveSupport::Concern
 
+        DEFAULT_MAX_PER_BATCH = 1000
+
         def change_relation_style(relationships, old_style, new_style, params = {})
           relationships.each do |rel|
             relabel_relation(relationship_style(rel, old_style), relationship_style(rel, new_style), params)
@@ -13,13 +15,15 @@ module Neo4j
         def relabel_relation(old_name, new_name, params = {})
           relation_query = match_relation(old_name, params)
 
+          max_per_batch = (ENV['MAX_PER_BATCH'] || DEFAULT_MAX_PER_BATCH).to_i
+
           count = count_relations(relation_query)
           output "Indexing #{count} #{old_name}s into #{new_name}..."
           while count > 0
-            relation_query.create("(a)-[r2:`#{new_name}`]->(b)").set('r2 = r').with(:r).limit(1000).delete(:r).exec
+            relation_query.create("(a)-[r2:`#{new_name}`]->(b)").set('r2 = r').with(:r).limit(max_per_batch).delete(:r).exec
             count = count_relations(relation_query)
             if count > 0
-              output "... #{count} #{style(relationship, :old)}'s left to go.."
+              output "... #{count} #{old_name}'s left to go.."
             end
           end
         end
@@ -28,7 +32,7 @@ module Neo4j
 
         def match_relation(label, params = {})
           from = params[:from] ? "(a:`#{params[:from]}`)" : '(a)'
-          to = params[:to] ? "(a:`#{params[:to]}`)" : '(b)'
+          to = params[:to] ? "(b:`#{params[:to]}`)" : '(b)'
           relation = arrow_cypher(label, params[:direction])
 
           query.match("#{from}#{relation}#{to}")
@@ -50,7 +54,7 @@ module Neo4j
         end
 
         def relationship_style(relationship, format)
-          case format
+          case format.to_s
           when 'lower_hashtag' then "##{relationship.downcase}"
           when 'lower'         then "#{relationship.downcase}"
           when 'upper'         then "#{relationship.upcase}"
