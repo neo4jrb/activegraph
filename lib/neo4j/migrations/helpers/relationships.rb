@@ -22,9 +22,7 @@ module Neo4j
           while count > 0
             relation_query.create("(a)-[r2:`#{new_name}`]->(b)").set('r2 = r').with(:r).limit(max_per_batch).delete(:r).exec
             count = count_relations(relation_query)
-            if count > 0
-              output "... #{count} #{old_name}'s left to go.."
-            end
+            output "... #{count} #{old_name}'s left to go.." if count > 0
           end
         end
 
@@ -56,8 +54,8 @@ module Neo4j
         def relationship_style(relationship, format)
           case format.to_s
           when 'lower_hashtag' then "##{relationship.downcase}"
-          when 'lower'         then "#{relationship.downcase}"
-          when 'upper'         then "#{relationship.upcase}"
+          when 'lower'         then relationship.downcase
+          when 'upper'         then relationship.upcase
           else
             fail("Invalid relationship type style `#{format}`.")
           end
