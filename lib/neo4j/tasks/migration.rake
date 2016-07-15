@@ -1,6 +1,4 @@
 require 'active_support/concern'
-require 'neo4j/migrations/helpers/id_property'
-require 'neo4j/migrations/helpers/relationships'
 require 'neo4j/migration'
 
 namespace :neo4j do

@@ -170,8 +170,8 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
-  describe '#change_relation_style' do
-    let(:migrate!) { change_relation_style(%w(has_books), :lower_hashtag, :lower) }
+  describe '#change_relations_style' do
+    let(:migrate!) { change_relations_style(%w(has_books), :lower_hashtag, :lower) }
 
     before do
       Bookcase.create!

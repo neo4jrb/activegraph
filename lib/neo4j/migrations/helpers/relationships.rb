@@ -6,7 +6,7 @@ module Neo4j
 
         DEFAULT_MAX_PER_BATCH = 1000
 
-        def change_relation_style(relationships, old_style, new_style, params = {})
+        def change_relations_style(relationships, old_style, new_style, params = {})
           relationships.each do |rel|
             relabel_relation(relationship_style(rel, old_style), relationship_style(rel, new_style), params)
           end

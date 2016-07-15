@@ -1,4 +1,5 @@
 require 'benchmark'
+require 'neo4j/migrations/helpers/id_property'
 
 module Neo4j
   class Migration
@@ -63,40 +64,6 @@ module Neo4j
 MESSAGE
           file.write(message)
         end
-      end
-    end
-
-    class RelabelRelationships < Neo4j::Migration
-      include Neo4j::Migrations::Helpers::Relationships
-      attr_accessor :relationships_filename
-
-      def initialize(path = default_path)
-        @relationships_filename = File.join(joined_path(path), 'relabel_relationships.yml')
-      end
-
-      MESSAGE = <<MESSAGE
-# Provide relationships which should be relabled.
-# relationships: [students,lessons,teachers,exams]\nrelationships: []
-# Provide old and new label formats:
-# Allowed options are lower_hashtag, lower, or upper
-formats:\n  old: lower_hashtag\n  new: lower
-MESSAGE
-
-      def setup
-        super
-        return if File.file?(relationships_filename)
-        File.open(relationships_filename, 'w') { |f| f.write(MESSAGE) }
-      end
-
-      def migrate
-        config        = YAML.load_file(relationships_filename).to_hash
-        relationships = config['relationships']
-        old_format   = config['formats']['old']
-        new_format   = config['formats']['new']
-
-        output 'This task will relabel every given relationship.'
-        output 'It may take a significant amount of time, please be patient.'
-        change_relation_style(relationships, old_format, new_format)
       end
     end
   end
