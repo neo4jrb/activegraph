@@ -2,8 +2,6 @@ module Neo4j
   # To contain any base login for ActiveNode/ActiveRel which
   # is external to the main classes
   module ActiveBase
-    MISSING_ID_PROPERTY_CONSTRAINTS = {}
-
     class << self
       # private?
       def current_session
@@ -36,12 +34,12 @@ module Neo4j
       end
 
       def new_transaction
-        ensure_constraints_created!
+        Neo4j::ModelSchema.validate_model_schema!
         Neo4j::Transaction.new(current_session)
       end
 
       def new_query(options = {})
-        ensure_constraints_created!
+        Neo4j::ModelSchema.validate_model_schema!
         Neo4j::Core::Query.new({session: current_session}.merge(options))
       end
 
@@ -54,19 +52,8 @@ module Neo4j
       end
 
       def current_transaction
-        ensure_constraints_created!
+        Neo4j::ModelSchema.validate_model_schema!
         Neo4j::Transaction.current_for(current_session)
-      end
-
-      def unique_constraint_exists?(label, property)
-        fetch_unique_constraints if !@unique_constraints
-
-        if check_unique_constraint_exists?(label, property)
-          true
-        else
-          fetch_unique_constraints
-          check_unique_constraint_exists?(label, property)
-        end
       end
 
       def label_object(label_name)
@@ -74,52 +61,7 @@ module Neo4j
       end
 
       def logger
-        Neo4j::Config[:logger] || Logger.new
-      end
-
-      def id_property_constraints_missing?
-        if !MISSING_ID_PROPERTY_CONSTRAINTS.empty?
-          refresh_missing_id_property_constraints!
-          !MISSING_ID_PROPERTY_CONSTRAINTS.empty?
-        end
-      end
-
-      def missing_id_property_constraints
-        MISSING_ID_PROPERTY_CONSTRAINTS
-      end
-
-      def refresh_missing_id_property_constraints!
-        MISSING_ID_PROPERTY_CONSTRAINTS.each do |model, id_property_name|
-          if unique_constraint_exists?(model.mapped_label_name, id_property_name)
-            MISSING_ID_PROPERTY_CONSTRAINTS.delete(model)
-          end
-        end
-      end
-
-      private
-
-      def ensure_constraints_created!
-        if id_property_constraints_missing?
-          message = <<MSG
-          Model constraints for ID properties must exist.  Run the following to create them:
-
-MSG
-
-          missing_id_property_constraints.each do |model, id_property_name|
-            message << "rails generate migration ForceAddIndex#{model.name.gsub(/[^a-z0-9]/i, '')}#{id_property_name.to_s.camelize} force_add_index #{model.name} #{id_property_name}\n"
-          end
-
-          fail message
-        end
-      end
-
-      def fetch_unique_constraints
-        @unique_constraints = current_session.constraints(nil, type: :uniqueness)
-      end
-
-      def check_unique_constraint_exists?(label, property)
-        label_constraints = @unique_constraints[label.to_s]
-        label_constraints && label_constraints.include?([property.to_sym])
+        @logger ||= (Neo4j::Config[:logger] || Logger.new(STDOUT))
       end
     end
   end

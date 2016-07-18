@@ -1,8 +1,13 @@
 describe Neo4j::ActiveNode::IdProperty do
-  before do
+  before(:all) do
     Neo4j::Config.delete(:id_property)
     Neo4j::Config.delete(:id_property_type)
     Neo4j::Config.delete(:id_property_type_value)
+  end
+
+  before do
+    delete_db
+    delete_schema
     clear_model_memory_caches
   end
 
@@ -28,9 +33,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
 
   describe 'when no id_property' do
-    before do
-      delete_db
-      delete_schema
+    let!(:clazz) do
       stub_active_node_class('Clazz') do
         property :name
       end
@@ -59,11 +62,11 @@ describe Neo4j::ActiveNode::IdProperty do
     end
 
     describe 'when having a configuration' do
-      let_config(:id_property) { :the_id }
-      let_config(:id_property_type) { :auto }
-      let_config(:id_property_type_value) { :uuid }
+      let_config(:id_property, :the_id)
+      let_config(:id_property_type, :auto)
+      let_config(:id_property_type_value, :uuid)
 
-      before do
+      let!(:clazz) do
         stub_active_node_class('Clazz')
       end
 
@@ -76,7 +79,8 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'when having neo_id configuration' do
-    let_config(:id_property) { :neo_id }
+    let_config(:id_property, :neo_id)
+
     before do
       stub_active_node_class('NeoIdTest')
     end
@@ -89,8 +93,6 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :myid' do
     before do
-      delete_db
-      delete_schema
       stub_active_node_class('Clazz') do
         id_property :myid
       end
@@ -180,8 +182,6 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_id, on: :foobar' do
     before do
-      delete_db
-      delete_schema
       stub_active_node_class('Clazz') do
         id_property :my_id, on: :foobar
 
@@ -235,31 +235,104 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'constraint setting' do
+    let(:id_property_name) { }
+    let(:id_property_options) { {} }
+
+    let(:subclass_id_property_name) { }
+    let(:subclass_id_property_options) { {} }
+
+    let(:active_base_logger) { spy('ActiveBase logger') }
+
     before do
-      stub_active_node_class('Clazz')
-    end
+      delete_schema
 
-    context 'constraint: false' do
-      it 'does not create a constraint' do
-        Clazz.id_property :my_uuid, auto: :uuid, constraint: false
-        expect(Clazz).not_to receive(:constraint)
-        Clazz.ensure_id_property_info!
+      allow(Neo4j::ActiveBase).to receive(:logger).and_return(active_base_logger)
+
+      property_name, property_options = [id_property_name, id_property_options]
+      stub_active_node_class('Clazz', false) do
+        id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
-    end
-
-    context 'constraint: true' do
-      it 'does create a constraint' do
-        Clazz.id_property :my_uuid, auto: :uuid, constraint: true
-        expect(Clazz).to receive(:constraint)
-        Clazz.ensure_id_property_info!
+      property_name, property_options = [subclass_id_property_name, subclass_id_property_options]
+      stub_named_class('SubClazz', Clazz) do
+        id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
+      Clazz.ensure_id_property_info!
+      SubClazz.ensure_id_property_info!
     end
 
-    context 'constraint: nil' do
-      it 'creates a constraint' do
-        Clazz.id_property :my_uuid, auto: :uuid
-        expect(Clazz).to receive(:constraint)
-        Clazz.ensure_id_property_info!
+    it_behaves_like 'raises constraint error including', :Clazz, :uuid
+    it_behaves_like 'raises constraint error not including', :SubClazz
+
+    let_context id_property_name: :my_uuid do
+      let_context id_property_options: {constraint: false} do
+        it_behaves_like 'logs constraint option false warning', :Clazz
+        it_behaves_like 'does not log constraint option false warning', :SubClazz
+
+        let_context subclass_id_property_name: :other_uuid do
+          it_behaves_like 'logs constraint option false warning', :Clazz
+          it_behaves_like 'does not log constraint option false warning', :SubClazz
+
+          let_context subclass_id_property_options: {constraint: false} do
+            it_behaves_like 'logs constraint option false warning', :Clazz
+            it_behaves_like 'logs constraint option false warning', :SubClazz
+          end
+        end
+
+        let_context subclass_id_property_name: :my_uuid do
+          it_behaves_like 'logs constraint option false warning', :Clazz
+          it_behaves_like 'does not log constraint option false warning', :SubClazz
+
+          let_context subclass_id_property_options: {constraint: false} do
+            it_behaves_like 'logs constraint option false warning', :Clazz
+            it_behaves_like 'logs constraint option false warning', :SubClazz
+          end
+        end
+      end
+
+      let_context id_property_options: {constraint: true} do
+        it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+        it_behaves_like 'raises constraint error not including', :SubClazz, :my_uuid
+
+        let_context subclass_id_property_options: {constraint: true} do
+          let_context subclass_id_property_name: :other_uuid do
+            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz, :other_uuid
+          end
+
+          let_context subclass_id_property_name: :my_uuid do
+            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
+          end
+        end
+      end
+
+      let_context id_property_options: {constraint: nil} do
+        it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+        it_behaves_like 'raises constraint error not including', :SubClazz, :my_uuid
+
+        let_context subclass_id_property_options: {constraint: nil} do
+          let_context subclass_id_property_name: :other_uuid do
+            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz, :other_uuid
+          end
+
+          let_context subclass_id_property_name: :my_uuid do
+            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
+          end
+        end
+
+        let_context subclass_id_property_options: {constraint: true} do
+          let_context subclass_id_property_name: :other_uuid do
+            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz, :other_uuid
+          end
+
+          let_context subclass_id_property_name: :my_uuid do
+            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
+          end
+        end
       end
     end
   end
@@ -267,8 +340,6 @@ describe Neo4j::ActiveNode::IdProperty do
   describe 'redefining the default property' do
     context 'without a constraint' do
       before do
-        delete_db
-        delete_schema
         stub_active_node_class('NoConstraintClass') do
           id_property :uuid, auto: :uuid, constraint: false
           index :uuid
@@ -364,7 +435,7 @@ describe Neo4j::ActiveNode::IdProperty do
         id_property :neo_id
       end
 
-      delete_db
+      # delete_db
     end
 
     it 'has an index' do

@@ -5,6 +5,7 @@ require 'neo4j/core/cypher_session'
 require 'neo4j/core/query'
 
 require 'neo4j/active_base'
+require 'neo4j/model_schema'
 require 'neo4j/active_base/session_registry'
 
 require 'active_model'

@@ -33,7 +33,7 @@ module Neo4j::ActiveNode::Labels
 
           Constraints defined on models are no longer supported.  To ensure that you have this index you can generate a migration:
 
-rails generate migration ForceAddIndex#{self.name.gsub(/[^a-z0-9]/i, '')}#{property.to_s.camelize} force_add_index #{self.name} #{property}
+#{Neo4j::ActiveBase.force_add_index_message(self.name, property)}
 MSG
       end
 

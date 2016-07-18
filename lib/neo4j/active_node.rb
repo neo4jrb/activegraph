@@ -69,7 +69,12 @@ module Neo4j
     included do
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 
+      def self.inherited?
+        !!@inherited
+      end
+
       def self.inherited(other)
+        other.instance_variable_set('@inherited', true)
         inherit_id_property(other)
         attributes.each_pair do |k, v|
           other.inherit_property k.to_sym, v.clone, declared_properties[k].options
@@ -83,7 +88,7 @@ module Neo4j
         return if other.manual_id_property? || !self.id_property?
         id_prop = self.id_property_info
         conf = id_prop[:type].empty? && id_prop[:name] != :neo_id ? {auto: :uuid} : id_prop[:type]
-        other.id_property id_prop[:name], conf
+        other.id_property id_prop[:name], conf, true
       end
     end
 

@@ -86,16 +86,12 @@ module Neo4jSpecHelpers
   end
 
   class_methods do
-    def let_config(var_name)
-      before do
-        @neo4j_config_vars ||= ActiveSupport::HashWithIndifferentAccess.new
-        @neo4j_config_vars[var_name] = Neo4j::Config[var_name]
-        Neo4j::Config[var_name]      = yield
-      end
-
-      after do
-        Neo4j::Config[var_name] = @neo4j_config_vars[var_name]
-        @neo4j_config_vars.delete(var_name)
+    def let_config(var_name, value)
+      around do |example|
+        old_value = Neo4j::Config[var_name]
+        Neo4j::Config[var_name] = value
+        example.run
+        Neo4j::Config[var_name] = old_value
       end
     end
 
@@ -164,8 +160,8 @@ end
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
-  def stub_active_node_class(class_name, &block)
-    stub_const class_name, active_node_class(class_name, &block)
+  def stub_active_node_class(class_name, create_constraint = true, &block)
+    stub_const class_name, active_node_class(class_name, create_constraint, &block)
   end
 
   def stub_active_rel_class(class_name, &block)
@@ -176,13 +172,13 @@ module ActiveNodeRelStubHelpers
     stub_const class_name, named_class(class_name, superclass, &block)
   end
 
-  def active_node_class(class_name, &block)
+  def active_node_class(class_name, create_constraint = true, &block)
     named_class(class_name) do
       include Neo4j::ActiveNode
 
       module_eval(&block) if block
     end.tap do |model|
-      create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
+      create_constraint(model.mapped_label_name, model.id_property_name, type: :unique) if create_constraint
     end
   end
 
@@ -280,7 +276,8 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
-    Neo4j::ActiveBase::MISSING_ID_PROPERTY_CONSTRAINTS.clear
+    Neo4j::ModelSchema::MODEL_INDEXES.clear
+    Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
   end
 
   config.before(:all) do

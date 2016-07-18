@@ -8,8 +8,9 @@ describe Neo4j::Migrations::Helpers do
     delete_db
     delete_schema
 
+    create_constraint(:Book, :name, type: :unique)
     stub_active_node_class('Book') do
-      property :name, constraint: :unique
+      property :name
       property :author_name, index: :exact
     end
 

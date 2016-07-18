@@ -138,10 +138,10 @@ module Neo4j::ActiveNode
         all.where(id_property_name => ids).to_a
       end
 
-      def id_property(name, conf = {})
+      def id_property(name, conf = {}, inherited = false)
         self.manual_id_property = true
 
-        @id_property_info = {name: name, type: conf}
+        @id_property_info = {name: name, type: conf, inherited: inherited}
         TypeMethods.define_id_methods(self, name, conf)
       end
 
@@ -182,10 +182,15 @@ module Neo4j::ActiveNode
         end
 
         id_property_name = @id_property_info[:name]
-        unless @id_property_info[:type][:constraint] == false || id_property_name == :neo_id
-          if !Neo4j::ActiveBase.unique_constraint_exists?(mapped_label_name, id_property_name)
-            Neo4j::ActiveBase.missing_id_property_constraints[self] = id_property_name
-          end
+        constraint_value = @id_property_info[:type][:constraint]
+        if @id_property_info[:type][:constraint] == false && !@id_property_info[:inherited] && !@id_property_info[:warned_of_constraint]
+          @id_property_info[:warned_of_constraint] = true
+          Neo4j::ActiveBase.logger.warn "WARNING: The constraint option is no longer supported (Used on #{self.name}.#{id_property_name}).  Since you specified `constraint: false` this option can simply be removed."
+          return
+        end
+
+        unless id_property_name == :neo_id || @id_property_info[:inherited]
+          Neo4j::ModelSchema.add_defined_constraint(self, id_property_name)
         end
       end
 
@@ -201,16 +206,6 @@ module Neo4j::ActiveNode
         end
 
         [name, type, value]
-      end
-
-      def id_property_constraint(name)
-        if id_property?
-          unless mapped_label.uniqueness_constraints[:property_keys].include?([name])
-            # Neo4j Embedded throws a crazy error when a constraint can't be dropped
-            drop_constraint(id_property_name, type: :unique) if constraint?(mapped_label_name, id_property_name)
-          end
-        end
-      rescue Neo4j::Server::CypherResponse::ResponseError, Java::OrgNeo4jCypher::CypherExecutionException
       end
     end
   end
