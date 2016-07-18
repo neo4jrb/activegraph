@@ -1,4 +1,5 @@
 require 'benchmark'
+require 'neo4j/migrations/helpers/id_property'
 
 module Neo4j
   class Migration
@@ -21,6 +22,12 @@ module Neo4j
     def joined_path(path)
       File.join(path.to_s, 'db', 'neo4j-migrate')
     end
+
+    def setup
+      FileUtils.mkdir_p('db/neo4j-migrate')
+    end
+
+    delegate :query, to: Neo4j::Session
 
     class AddIdProperty < Neo4j::Migration
       include Neo4j::Migrations::Helpers::IdProperty
@@ -45,11 +52,8 @@ module Neo4j
         end
       end
 
-      delegate :query, to: Neo4j::Session
-
       def setup
-        FileUtils.mkdir_p('db/neo4j-migrate')
-
+        super
         return if File.file?(models_filename)
 
         File.open(models_filename, 'w') do |file|
