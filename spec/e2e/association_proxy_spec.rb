@@ -144,6 +144,15 @@ describe 'Association Proxy' do
     end
   end
 
+  context 'when requiring "active_support/core_ext/enumerable"' do
+    require 'active_support/core_ext/enumerable'
+
+    it 'uses the correct `pluck` method' do
+      expect(billy.lessons(:l).pluck(:l)).not_to include(nil)
+      expect(billy.lessons(:l).method(:pluck).source_location.first).not_to include('active_support')
+    end
+  end
+
   describe '#inspect' do
     context 'when inspecting an association proxy' do
       let(:association_proxy) { billy.lessons }
