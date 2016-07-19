@@ -12,17 +12,18 @@ end
 
 shared_examples 'raises constraint error including' do |model, id_property_name|
   it 'raised error includes label / property' do
-    expect { Clazz.first }.to raise_error /Some constraints were defined.*force_add_index #{model} #{id_property_name}/m
+    expect { model.to_s.constantize.first }.to raise_error /Some constraints were defined.*force_add_index #{model} #{id_property_name}/m
   end
 end
 
 shared_examples 'raises constraint error not including' do |model, id_property_name = ''|
   it 'raised error does not include label / property' do
     begin
-      Clazz.first
+      model.to_s.constantize.first
+
+      fail 'Expected an error to be raised'
     rescue Exception => e
       expect(e.message).to_not match(/Some constraints were defined.*force_add_index #{model} #{id_property_name}/m)
     end
   end
 end
-

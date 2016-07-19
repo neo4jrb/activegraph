@@ -136,12 +136,28 @@ describe Neo4j::ActiveNode::IdProperty do
         expect(Clazz.id_property?).to be_truthy
       end
 
-      it 'removes any previously declared properties' do
-        Clazz.id_property :my_property, auto: :uuid
-        Clazz.id_property :another_property, auto: :uuid
-        node = Clazz.create
-        expect(node.respond_to?(:uuid)).to be_falsey
-        expect(node.respond_to?(:my_property)).to be_falsey
+      context 'id_property defined twice' do
+        before do
+          Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
+
+          Clazz.id_property :my_property, auto: :uuid
+          Clazz.id_property :another_property, auto: :uuid
+          Clazz.ensure_id_property_info!
+        end
+        it 'removes any previously declared properties' do
+          begin
+            node = Clazz.create
+          rescue RuntimeError
+            nil
+          end
+          expect(node.respond_to?(:uuid)).to be_falsey
+          expect(node.respond_to?(:my_property)).to be_falsey
+        end
+
+        it_behaves_like 'raises constraint error not including', :Clazz, :uuid
+        it_behaves_like 'raises constraint error not including', :Clazz, :myid
+        it_behaves_like 'raises constraint error not including', :Clazz, :my_property
+        it_behaves_like 'raises constraint error including', :Clazz, :another_property
       end
     end
 
@@ -235,10 +251,10 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   describe 'constraint setting' do
-    let(:id_property_name) { }
+    let(:id_property_name) {}
     let(:id_property_options) { {} }
 
-    let(:subclass_id_property_name) { }
+    let(:subclass_id_property_name) {}
     let(:subclass_id_property_options) { {} }
 
     let(:active_base_logger) { spy('ActiveBase logger') }
@@ -248,11 +264,13 @@ describe Neo4j::ActiveNode::IdProperty do
 
       allow(Neo4j::ActiveBase).to receive(:logger).and_return(active_base_logger)
 
-      property_name, property_options = [id_property_name, id_property_options]
+      property_name = id_property_name
+      property_options = id_property_options
       stub_active_node_class('Clazz', false) do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
-      property_name, property_options = [subclass_id_property_name, subclass_id_property_options]
+      property_name = subclass_id_property_name
+      property_options = subclass_id_property_options
       stub_named_class('SubClazz', Clazz) do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
@@ -275,6 +293,14 @@ describe Neo4j::ActiveNode::IdProperty do
           let_context subclass_id_property_options: {constraint: false} do
             it_behaves_like 'logs constraint option false warning', :Clazz
             it_behaves_like 'logs constraint option false warning', :SubClazz
+          end
+
+          let_context subclass_id_property_options: {constraint: true} do
+            it_behaves_like 'logs constraint option false warning', :Clazz
+            it_behaves_like 'does not log constraint option false warning', :SubClazz
+
+            it_behaves_like 'raises constraint error not including', :Clazz, :other_uuid
+            it_behaves_like 'raises constraint error including', :SubClazz
           end
         end
 
@@ -332,38 +358,6 @@ describe Neo4j::ActiveNode::IdProperty do
             it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
             it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
           end
-        end
-      end
-    end
-  end
-
-  describe 'redefining the default property' do
-    context 'without a constraint' do
-      before do
-        stub_active_node_class('NoConstraintClass') do
-          id_property :uuid, auto: :uuid, constraint: false
-          index :uuid
-        end
-      end
-
-      it 'prevents the setting of default uuid constraint' do
-        expect(NoConstraintClass.constraint?(:uuid)).to be_falsy
-        expect(NoConstraintClass.mapped_label.index?(:uuid)).to be_truthy
-      end
-
-      describe 'inheritence' do
-        before do
-          stub_named_class('ConstraintSubclass', NoConstraintClass) do
-            id_property :uuid, auto: :uuid, constraint: true
-          end
-        end
-
-        it 'overrides the parent' do
-          expect(NoConstraintClass.constraint?(:uuid)).to be_falsy
-          expect(NoConstraintClass.mapped_label.index?(:uuid)).to be_truthy
-
-          expect(ConstraintSubclass.constraint?(:uuid)).to be_truthy
-          expect(ConstraintSubclass.mapped_label.index?(:uuid)).to be_truthy
         end
       end
     end

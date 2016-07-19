@@ -178,7 +178,9 @@ module ActiveNodeRelStubHelpers
 
       module_eval(&block) if block
     end.tap do |model|
-      create_constraint(model.mapped_label_name, model.id_property_name, type: :unique) if create_constraint
+      if model.id_property_info[:type][:constraint] != false && create_constraint
+        create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
+      end
     end
   end
 
