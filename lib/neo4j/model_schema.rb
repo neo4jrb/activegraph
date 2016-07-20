@@ -32,60 +32,49 @@ module Neo4j
       def model_constraints
         constraints = Neo4j::ActiveBase.current_session.constraints(nil, type: :uniqueness)
 
-        MODEL_CONSTRAINTS.flat_map do |model, property_names|
-          label = model.mapped_label_name.to_s
-          property_names.map do |property_name|
-            exists = constraints[label] && constraints[label].include?([property_name])
-            [model, label, property_name, exists]
-          end
-        end
+        schema_elements_list(MODEL_CONSTRAINTS, constraints)
       end
 
       def model_indexes
         indexes = Neo4j::ActiveBase.current_session.indexes(nil)
 
-        MODEL_INDEXES.flat_map do |model, property_names|
+        schema_elements_list(MODEL_INDEXES, indexes) +
+          schema_elements_list(REQUIRED_INDEXES, indexes).reject(&:last)
+        # reject required indexes which are already in the DB
+      end
+
+      # should be private
+      def schema_elements_list(by_model, db_results)
+        by_model.flat_map do |model, property_names|
           label = model.mapped_label_name.to_s
           property_names.map do |property_name|
-            exists = indexes[label] && indexes[label].include?([property_name])
+            exists = db_results[label] && db_results[label].include?([property_name])
             [model, label, property_name, exists]
           end
-        end + REQUIRED_INDEXES.flat_map do |model, property_names|
-          label = model.mapped_label_name.to_s
-          property_names.map do |property_name|
-            if !indexes[label] || !indexes[label].include?([property_name])
-              [model, label, property_name, false]
-            end
-          end.compact
         end
       end
 
       def validate_model_schema!
-        constraint_messages = []
-        index_messages = []
+        messages = {index: [], constraint: []}
+        [[:constraint, model_constraints],
+         [:index, model_indexes]].each do |type, schema_elements|
+          schema_elements.map do |model, label, property_name, exists|
+            if exists
+              log_warning!(type, model, property_name)
+            else
+              messages[type] << force_add_message(type, label, property_name)
+            end
+          end
+        end
 
-        model_constraints.map do |model, label, property_name, exists|
-          if exists
-            log_warning!(:constraint, model, property_name)
-          else
-            constraint_messages << force_add_message(:constraint, label, property_name)
-          end
-        end
-        model_indexes.map do |model, label, property_name, exists|
-          if exists
-            log_warning!(:index, model, property_name)
-          else
-            index_messages << force_add_message(:index, label, property_name)
-          end
-        end
-        if !constraint_messages.empty? || !index_messages.empty?
-          fail <<MSG
+        return if messages.values.all?(&:empty?)
+
+        fail <<MSG
           Some schema elements were defined by the model (which is no longer support), but they do not exist in the database.  Run the following to create them:
 
-#{constraint_messages.join("\n")}
-#{index_messages.join("\n")}
+#{messages[:constraint].join("\n")}
+#{messages[:index].join("\n")}
 MSG
-        end
       end
 
       def force_add_message(index_or_constraint, model_name, property_name)

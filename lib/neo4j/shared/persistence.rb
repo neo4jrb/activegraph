@@ -41,7 +41,8 @@ module Neo4j::Shared
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def increment(attribute, by = 1)
-      (self[attribute] ||= 0) += by
+      self[attribute] ||= 0
+      self[attribute] += by
       self
     end
 
