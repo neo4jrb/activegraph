@@ -44,6 +44,7 @@ module Neo4j
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent
     include Neo4j::ActiveNode::Enum
+    include Neo4j::Shared::PermittedAttributes
 
     def initialize(args = nil)
       symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args

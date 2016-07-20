@@ -40,6 +40,7 @@ require 'neo4j/shared/typecaster'
 require 'neo4j/shared/initialize'
 require 'neo4j/shared/query_factory'
 require 'neo4j/shared/cypher'
+require 'neo4j/shared/permitted_attributes'
 require 'neo4j/shared'
 
 require 'neo4j/active_rel/callbacks'
