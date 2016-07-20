@@ -866,6 +866,8 @@ describe 'Neo4j::ActiveNode' do
   end
 
   context 'with `ActionController::Parameters`' do
+    require 'rack'
+    require 'rack/test'
     require 'action_controller/metal/strong_parameters'
     let(:params) { ActionController::Parameters.new('prop_with_default' => 'something else') }
 

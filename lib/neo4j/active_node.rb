@@ -47,8 +47,8 @@ module Neo4j
     include Neo4j::Shared::PermittedAttributes
 
     def initialize(args = nil)
-      symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args
-      super(symbol_args)
+      args = sanitize_for_mass_assignment(args)
+      super(args)
     end
 
     def neo4j_obj

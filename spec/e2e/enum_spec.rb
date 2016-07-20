@@ -181,6 +181,8 @@ describe Neo4j::ActiveNode do
   end
 
   context 'when using `ActionController::Parameters`' do
+    require 'rack'
+    require 'rack/test'
     require 'action_controller/metal/strong_parameters'
     let(:params) { ActionController::Parameters.new('type' => 'image') }
     it 'assigns enums correctly when instancing a new class' do
