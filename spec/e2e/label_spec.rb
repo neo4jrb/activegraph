@@ -86,9 +86,9 @@ describe 'Neo4j::ActiveNode' do
 
     def define_active_node_class(name, model_properties, model_constraints, model_indexes, with_constraint = true)
       stub_active_node_class(name.to_s, with_constraint) do
-        model_properties.each { |args| property *Array(args) }
-        model_constraints.each { |args| constraint *Array(args) }
-        model_indexes.each { |args| index *Array(args) }
+        model_properties.each { |args| property(*Array(args)) }
+        model_constraints.each { |args| constraint(*Array(args)) }
+        model_indexes.each { |args| index(*Array(args)) }
       end
     end
 
