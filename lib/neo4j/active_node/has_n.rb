@@ -106,7 +106,14 @@ module Neo4j::ActiveNode
         @query_proxy.public_send(:replace_with, *args)
       end
 
-      QUERY_PROXY_METHODS = [:<<, :delete, :create]
+      QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit]
+
+      QUERY_PROXY_METHODS.each do |method|
+        define_method(method) do |*args, &block|
+          @query_proxy.public_send(method, *args, &block)
+        end
+      end
+
       CACHED_RESULT_METHODS = []
 
       def method_missing(method_name, *args, &block)
@@ -114,7 +121,7 @@ module Neo4j::ActiveNode
         super if target.nil?
 
         cache_query_proxy_result if !cached? && !target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-        clear_cache_result if !QUERY_PROXY_METHODS.include?(method_name) && target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
+        clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
 
         target.public_send(method_name, *args, &block)
       end
@@ -127,8 +134,6 @@ module Neo4j::ActiveNode
 
       def target_for_missing_method(method_name)
         case method_name
-        when *QUERY_PROXY_METHODS
-          @query_proxy
         when *CACHED_RESULT_METHODS
           @cached_result
         else
