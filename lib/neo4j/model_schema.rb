@@ -63,6 +63,7 @@ module Neo4j
       def validate_model_schema!
         constraint_messages = []
         index_messages = []
+
         model_constraints.map do |model, label, property_name, exists|
           if exists
             log_warning!(:constraint, model, property_name)

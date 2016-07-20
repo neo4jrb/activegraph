@@ -177,11 +177,13 @@ module ActiveNodeRelStubHelpers
       include Neo4j::ActiveNode
 
       module_eval(&block) if block
-    end.tap do |model|
-      if model.id_property_info[:type][:constraint] != false && with_constraint
-        create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
-      end
-    end
+    end.tap { |model| create_id_property_constraint(model, with_constraint) }
+  end
+
+  def create_id_property_constraint(model, with_constraint)
+    return if model.id_property_info[:type][:constraint] == false || !with_constraint
+
+    create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
   end
 
   def active_rel_class(class_name, &block)

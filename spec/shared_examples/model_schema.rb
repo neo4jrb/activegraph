@@ -14,7 +14,8 @@ shared_examples 'logs schema option warning' do |index_or_constraint, model, pro
   it("logs a warning that the #{index_or_constraint} definition for #{model}.#{property_name} is no longer needed") do
     model.to_s.constantize.first
 
-    expect(@active_base_logger).to have_received(:warn).with(/WARNING: The #{index_or_constraint} option is no longer supported \(Defined on #{model} for #{property_name}/)
+    expect(@active_base_logger).to have_received(:warn)
+      .with(/WARNING: The #{index_or_constraint} option is no longer supported \(Defined on #{model} for #{property_name}/)
   end
 end
 
@@ -35,7 +36,7 @@ end
 shared_examples 'raises schema error including' do |index_or_constraint, model, property_name|
   let(:label) { model.to_s.constantize.mapped_label_name }
   it "raises error including #{index_or_constraint} for #{model}.#{property_name}" do
-    expect { model.to_s.constantize.first }.to raise_error /Some schema elements were defined.*force_add_#{index_or_constraint} #{label} #{property_name}/m
+    expect { model.to_s.constantize.first }.to raise_error(/Some schema elements were defined.*force_add_#{index_or_constraint} #{label} #{property_name}/m)
   end
 end
 
@@ -46,12 +47,10 @@ shared_examples 'raises schema error not including' do |index_or_constraint, mod
       model.to_s.constantize.first
 
       fail 'Expected an error to be raised'
-    rescue Exception => e
-      if e.message =~ /Some schema elements were defined/
-        expect(e.message).to_not match(/force_add_#{index_or_constraint} #{label} #{property_name}/m)
-      else
-        raise e
-      end
+    rescue Exception => e # rubocop:disable Lint/RescueException
+      raise e unless e.message =~ /Some schema elements were defined/
+
+      expect(e.message).to_not match(/force_add_#{index_or_constraint} #{label} #{property_name}/m)
     end
   end
 end

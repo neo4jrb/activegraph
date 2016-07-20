@@ -181,20 +181,32 @@ module Neo4j::ActiveNode
           id_property(name, type => value)
         end
 
-        id_property_name = @id_property_info[:name]
-        constraint_value = @id_property_info[:type][:constraint]
-        if @id_property_info[:type][:constraint] == false && !@id_property_info[:inherited] && !@id_property_info[:warned_of_constraint]
-          @id_property_info[:warned_of_constraint] = true
-          Neo4j::ActiveBase.logger.warn "WARNING: The constraint option for id_property is no longer supported (Used on #{self.name}.#{id_property_name}).  Since you specified `constraint: false` this option can simply be removed."
-          return
-        end
-
-        unless id_property_name == :neo_id || @id_property_info[:inherited]
-          Neo4j::ModelSchema.add_defined_constraint(self, id_property_name)
-        end
+        handle_model_schema!
       end
 
       private
+
+      def handle_model_schema!
+        id_property_name = @id_property_info[:name]
+        if @id_property_info[:type][:constraint] == false &&
+           !@id_property_info[:inherited] &&
+           !@id_property_info[:warned_of_constraint]
+          @id_property_info[:warned_of_constraint] = true
+          warn_constraint_option_false!(id_property_name)
+          return
+        end
+
+        return if id_property_name == :neo_id || @id_property_info[:inherited]
+
+        Neo4j::ModelSchema.add_defined_constraint(self, id_property_name)
+      end
+
+      def warn_constraint_option_false!(id_property_name)
+        Neo4j::ActiveBase.logger.warn <<MSG
+        WARNING: The constraint option for id_property is no longer supported (Used on #{self.name}.#{id_property_name}).
+        Since you specified `constraint: false` this option can simply be removed.
+MSG
+      end
 
       def id_property_name_type_value
         name, type, value = Neo4j::Config.to_hash.values_at(*%w(id_property id_property_type id_property_type_value))

@@ -41,8 +41,7 @@ module Neo4j::Shared
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def increment(attribute, by = 1)
-      self[attribute] ||= 0
-      self[attribute] += by
+      (self[attribute] ||= 0) += by
       self
     end
 
@@ -82,12 +81,10 @@ module Neo4j::Shared
       apply_default_values
       result = _persisted_obj ? update_model : create_model
       current_transaction = Neo4j::ActiveBase.current_transaction
-      if result == false
-        current_transaction.mark_failed if current_transaction
-        false
-      else
-        true
-      end
+
+      current_transaction.mark_failed if result == false && current_transaction
+
+      result != false
     rescue => e
       current_transaction.mark_failed if current_transaction
       raise e

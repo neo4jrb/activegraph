@@ -20,9 +20,9 @@ module Neo4j::ActiveNode::Labels
       #      index :name
       #    end
       def index(property)
-        unless Neo4j::ModelSchema.defined_constraint?(self, property)
-          Neo4j::ModelSchema.add_defined_index(self, property)
-        end
+        return if Neo4j::ModelSchema.defined_constraint?(self, property)
+
+        Neo4j::ModelSchema.add_defined_index(self, property)
       end
 
       # Creates a neo4j constraint on this class for given property

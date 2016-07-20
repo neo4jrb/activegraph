@@ -29,6 +29,9 @@ Style/SignalException:
 Style/FileName:
   Enabled: false
 
+Style/MultilineBlockChain:
+  Enabled: false
+
 #---------------------------
 # Don't intend to fix these:
 #---------------------------
