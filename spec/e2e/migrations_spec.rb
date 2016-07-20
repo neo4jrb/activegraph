@@ -1,9 +1,14 @@
 module Neo4j
   module Migrations
     describe Runner do
+      before { delete_schema }
+
       let_env_variable('MIGRATIONS_SILENCED') { 'true' }
 
       before do
+        create_constraint :'Neo4j::Migrations::SchemaMigration', :migration_id, type: :unique
+
+        create_constraint :User, :uuid, type: :unique
         stub_active_node_class('User') do
           property :name
         end
@@ -114,8 +119,10 @@ module Neo4j
 
       describe 'transactional behavior in migrations' do
         before do
+          create_constraint :Contact, :uuid, type: :unique
+          create_constraint :Contact, :phone, type: :unique
           stub_active_node_class('Contact') do
-            property :phone, constraint: :unique
+            property :phone
           end
 
           Contact.delete_all

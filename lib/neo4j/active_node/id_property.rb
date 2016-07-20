@@ -185,7 +185,7 @@ module Neo4j::ActiveNode
         constraint_value = @id_property_info[:type][:constraint]
         if @id_property_info[:type][:constraint] == false && !@id_property_info[:inherited] && !@id_property_info[:warned_of_constraint]
           @id_property_info[:warned_of_constraint] = true
-          Neo4j::ActiveBase.logger.warn "WARNING: The constraint option is no longer supported (Used on #{self.name}.#{id_property_name}).  Since you specified `constraint: false` this option can simply be removed."
+          Neo4j::ActiveBase.logger.warn "WARNING: The constraint option for id_property is no longer supported (Used on #{self.name}.#{id_property_name}).  Since you specified `constraint: false` this option can simply be removed."
           return
         end
 

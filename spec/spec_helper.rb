@@ -160,8 +160,8 @@ end
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
-  def stub_active_node_class(class_name, create_constraint = true, &block)
-    stub_const class_name, active_node_class(class_name, create_constraint, &block)
+  def stub_active_node_class(class_name, with_constraint = true, &block)
+    stub_const class_name, active_node_class(class_name, with_constraint, &block)
   end
 
   def stub_active_rel_class(class_name, &block)
@@ -172,13 +172,13 @@ module ActiveNodeRelStubHelpers
     stub_const class_name, named_class(class_name, superclass, &block)
   end
 
-  def active_node_class(class_name, create_constraint = true, &block)
+  def active_node_class(class_name, with_constraint = true, &block)
     named_class(class_name) do
       include Neo4j::ActiveNode
 
       module_eval(&block) if block
     end.tap do |model|
-      if model.id_property_info[:type][:constraint] != false && create_constraint
+      if model.id_property_info[:type][:constraint] != false && with_constraint
         create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
       end
     end
@@ -213,6 +213,10 @@ module ActiveNodeRelStubHelpers
 
   def create_constraint(label_name, property, options = {})
     Neo4j::ActiveBase.label_object(label_name).create_constraint(property, options)
+  end
+
+  def create_index(label_name, property, options = {})
+    Neo4j::ActiveBase.label_object(label_name).create_index(property, options)
   end
 end
 
@@ -280,10 +284,17 @@ RSpec.configure do |config|
   config.before(:each) do
     Neo4j::ModelSchema::MODEL_INDEXES.clear
     Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
+    Neo4j::ModelSchema::REQUIRED_INDEXES.clear
   end
 
   config.before(:all) do
     Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
+  end
+
+
+  config.before(:each) do
+    @active_base_logger = spy('ActiveBase logger')
+    allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
   end
 
   # config.before(:each) do

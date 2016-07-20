@@ -4,6 +4,7 @@ describe 'migration tasks' do
 
   before do
     delete_db
+    delete_schema
 
     stub_active_node_class('User') do
       property :name
@@ -94,6 +95,8 @@ describe 'migration tasks' do
     end
 
     it 'respects the id_property declared on the model' do
+      create_constraint :Song, :my_id, type: :unique
+
       Song.id_property :my_id, on: :custom_id
       Neo4j::ActiveBase.current_session.query('CREATE (n:`Song`) return n')
       user = Song.first

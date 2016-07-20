@@ -154,10 +154,10 @@ describe Neo4j::ActiveNode::IdProperty do
           expect(node.respond_to?(:my_property)).to be_falsey
         end
 
-        it_behaves_like 'raises constraint error not including', :Clazz, :uuid
-        it_behaves_like 'raises constraint error not including', :Clazz, :myid
-        it_behaves_like 'raises constraint error not including', :Clazz, :my_property
-        it_behaves_like 'raises constraint error including', :Clazz, :another_property
+        it_behaves_like 'raises schema error not including', :constraint, :Clazz, :uuid
+        it_behaves_like 'raises schema error not including', :constraint, :Clazz, :myid
+        it_behaves_like 'raises schema error not including', :constraint, :Clazz, :my_property
+        it_behaves_like 'raises schema error including', :constraint, :Clazz, :another_property
       end
     end
 
@@ -257,12 +257,8 @@ describe Neo4j::ActiveNode::IdProperty do
     let(:subclass_id_property_name) {}
     let(:subclass_id_property_options) { {} }
 
-    let(:active_base_logger) { spy('ActiveBase logger') }
-
     before do
       delete_schema
-
-      allow(Neo4j::ActiveBase).to receive(:logger).and_return(active_base_logger)
 
       property_name = id_property_name
       property_options = id_property_options
@@ -278,8 +274,8 @@ describe Neo4j::ActiveNode::IdProperty do
       SubClazz.ensure_id_property_info!
     end
 
-    it_behaves_like 'raises constraint error including', :Clazz, :uuid
-    it_behaves_like 'raises constraint error not including', :SubClazz
+    it_behaves_like 'raises schema error including', :constraint, :Clazz, :uuid
+    it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
     let_context id_property_name: :my_uuid do
       let_context id_property_options: {constraint: false} do
@@ -299,8 +295,8 @@ describe Neo4j::ActiveNode::IdProperty do
             it_behaves_like 'logs constraint option false warning', :Clazz
             it_behaves_like 'does not log constraint option false warning', :SubClazz
 
-            it_behaves_like 'raises constraint error not including', :Clazz, :other_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
           end
         end
 
@@ -316,47 +312,47 @@ describe Neo4j::ActiveNode::IdProperty do
       end
 
       let_context id_property_options: {constraint: true} do
-        it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-        it_behaves_like 'raises constraint error not including', :SubClazz, :my_uuid
+        it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+        it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
 
         let_context subclass_id_property_options: {constraint: true} do
           let_context subclass_id_property_name: :other_uuid do
-            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz, :other_uuid
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
           end
 
           let_context subclass_id_property_name: :my_uuid do
-            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
           end
         end
       end
 
       let_context id_property_options: {constraint: nil} do
-        it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-        it_behaves_like 'raises constraint error not including', :SubClazz, :my_uuid
+        it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+        it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
 
         let_context subclass_id_property_options: {constraint: nil} do
           let_context subclass_id_property_name: :other_uuid do
-            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz, :other_uuid
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
           end
 
           let_context subclass_id_property_name: :my_uuid do
-            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
           end
         end
 
         let_context subclass_id_property_options: {constraint: true} do
           let_context subclass_id_property_name: :other_uuid do
-            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz, :other_uuid
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
           end
 
           let_context subclass_id_property_name: :my_uuid do
-            it_behaves_like 'raises constraint error including', :Clazz, :my_uuid
-            it_behaves_like 'raises constraint error including', :SubClazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
+            it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
           end
         end
       end

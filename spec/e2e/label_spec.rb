@@ -30,12 +30,8 @@ describe 'Neo4j::ActiveNode' do
     end
 
     describe 'property :name, constraint: :unique' do
-      it 'delegates to the Schema Operation class' do
-        Clazz = UniqueClass.create { include Neo4j::ActiveNode }
-        Clazz.ensure_id_property_info!
-        expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).to receive(:create!).and_call_original
-        Clazz.property :name, constraint: :unique
-      end
+      before { Clazz.property :name, constraint: :unique }
+      it_behaves_like 'raises schema error including', :constraint, :Clazz, :name
     end
 
     describe 'property :age, index: :exact, constraint: :unique' do
@@ -65,123 +61,75 @@ describe 'Neo4j::ActiveNode' do
     end
 
     describe 'constraint :name, type: :unique' do
-      it 'can not create two nodes with unique properties' do
-        ClazzWithConstraint.create(name: 'foobar')
-        expect { ClazzWithConstraint.create(name: 'foobar') }.to raise_error StandardError, /already exists/
-      end
-
-      it 'can create two nodes with different properties' do
-        ClazzWithConstraint.create(name: 'foobar1')
-        expect { ClazzWithConstraint.create(name: 'foobar2') }.to_not raise_error
-      end
+      it_behaves_like 'raises schema error including', :constraint, :ClazzWithConstraint, :name
     end
 
-    context 'with existing constraint' do
-      context 'when trying to set an index' do
-        before { ClazzWithConstraint }
+    context 'when trying to set an index' do
+      before { ClazzWithConstraint.index :name }
 
-        it 'raises an error, does not create the index' do
-          expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).not_to receive(:create!)
-          expect { ClazzWithConstraint.index :name }.to raise_error Neo4j::InvalidPropertyOptionsError
-        end
-      end
-    end
-
-    context 'with existing exact index' do
-      before do
-        Neo4j::Schema::UniqueConstraintOperation.new(ClazzWithConstraint.mapped_label, :name).drop!
-        Neo4j::Schema::ExactIndexOperation.new(ClazzWithConstraint.mapped_label, :name).create!
-      end
-
-      it 'drops the index before making the constraint' do
-        expect_any_instance_of(Neo4j::Schema::ExactIndexOperation).to receive(:drop!).and_call_original
-        ClazzWithConstraint.constraint(:name, type: :unique)
-      end
+      it_behaves_like 'raises schema error including', :constraint, :ClazzWithConstraint, :name
     end
   end
 
-  describe 'index' do
-    let_config(:id_property) { nil }
-    let_config(:id_property_type) { nil }
-    let_config(:id_property_type_value) { nil }
-    let!(:clazz) do
-      stub_active_node_class('Clazz') do
-        property :name
-        index :name
+  describe 'model schema definitions' do
+    let_config(:id_property, nil)
+    let_config(:id_property_type, nil)
+    let_config(:id_property_type_value, nil)
+    let(:properties) { [] }
+    let(:constraints) { [] }
+    let(:indexes) { [] }
+    let(:with_constraint) { true }
+    let(:subclass_properties) { [] }
+    let(:subclass_constraints) { [] }
+    let(:subclass_indexes) { [] }
+    let(:subclass_with_constraint) { true }
+
+    def define_active_node_class(name, model_properties, model_constraints, model_indexes, with_constraint = true)
+      stub_active_node_class(name.to_s, with_constraint) do
+        model_properties.each { |args| property *Array(args) }
+        model_constraints.each { |args| constraint *Array(args) }
+        model_indexes.each { |args| index *Array(args) }
       end
+    end
+
+    let!(:clazz) do
+      define_active_node_class(:Clazz, properties, constraints, indexes, with_constraint)
     end
 
     let!(:other_class) do
-      stub_active_node_class('OtherClass')
+      define_active_node_class(:SubClazz, subclass_properties, subclass_constraints, subclass_indexes, subclass_with_constraint)
     end
 
-    it 'creates an index' do
-      expect(Clazz.mapped_label.indexes).to eq([[:name], [:uuid]])
-    end
+    it_behaves_like 'does not raise schema error', :Clazz
 
-    it 'does not create index on other classes' do
-      Clazz.ensure_id_property_info!
-      OtherClass.ensure_id_property_info!
-      expect(Clazz.mapped_label.indexes).to eq([[:name], [:uuid]])
-      expect(OtherClass.mapped_label.indexes).to eq([[:uuid]])
-    end
+    let_context properties: [:name] do
+      it_behaves_like 'does not raise schema error', :Clazz
 
-    context 'when set' do
-      context 'and trying to also set a constraint' do
-        it 'raises an error, does not modify the schema' do
-          expect_any_instance_of(Neo4j::Schema::UniqueConstraintOperation).not_to receive(:create!)
-          expect { Clazz.constraint :name, type: :unique }.to raise_error Neo4j::InvalidPropertyOptionsError
+      let_context constraints: [:name] do
+        it_behaves_like 'raises schema error including', :constraint, :Clazz, :name
+
+        let_context indexes: [:name] do
+          it_behaves_like 'raises schema error including', :constraint, :Clazz, :name
+          it_behaves_like 'raises schema error not including', :constraint, :Clazz, :uuid
+          it_behaves_like 'raises schema error not including', :constraint, :SubClazz
+
+          context 'name constraint created' do
+            before { create_constraint(:Clazz, :name, type: :unique) }
+
+            it_behaves_like 'does not raise schema error', :Clazz
+            it_behaves_like 'logs schema option warning', :constraint, :Clazz, :name
+          end
+
+          let_context with_constraint: false do
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :name
+            it_behaves_like 'raises schema error including', :constraint, :Clazz, :uuid
+            it_behaves_like 'raises schema error not including', :constraint, :SubClazz
+          end
         end
       end
-    end
-
-    describe 'when inherited' do
-      it 'has an index on both base and subclass' do
-        stub_active_node_class('Foo1') do
-          property :name, index: :exact
-        end
-        stub_named_class('Foo2', Foo1)
-
-        expect(Foo1.mapped_label.indexes).to eq([[:name], [:uuid]])
-        expect(Foo2.mapped_label.indexes).to eq([])
+      let_context indexes: [:name] do
+        it_behaves_like 'raises schema error including', :index, :Clazz, :name
       end
-
-      it 'only puts index on subclass if defined there' do
-        stub_active_node_class('Foo1')
-        stub_named_class('Foo2', Foo1) do
-          property :name, index: :exact
-        end
-
-        expect(Foo1.mapped_label.indexes).to eq([[:uuid]])
-        expect(Foo2.mapped_label.indexes).to eq([[:name], [:uuid]])
-      end
-    end
-
-    context 'with existing unique constraint' do
-      before do
-        Neo4j::Schema::ExactIndexOperation.new(Clazz.mapped_label, :name).drop!
-        Neo4j::Schema::UniqueConstraintOperation.new(Clazz.mapped_label, :name, type: :unique).create!
-      end
-
-      it 'drops the constraint before creating the index' do
-        expect do
-          Clazz.index(:name)
-        end.to change { Clazz.mapped_label.uniqueness_constraint?(:name) }.from(true).to(false)
-      end
-    end
-  end
-
-  describe 'index?' do
-    let!(:clazz) do
-      stub_active_node_class('Clazz') do
-        property :name
-        index :name
-      end
-    end
-
-    it 'indicates whether a property is indexed' do
-      expect(Clazz.index?(:name)).to be_truthy
-      expect(Clazz.index?(:foo)).to be_falsey
     end
   end
 
@@ -230,11 +178,11 @@ describe 'Neo4j::ActiveNode' do
         property :name
         has_one :out, :foo, type: nil
       end
+
+      stub_active_node_class('Foo')
     end
 
     it 'indicates whether a property is indexed' do
-      stub_const('::Foo', Class.new { include Neo4j::ActiveNode })
-
       o = Clazz.new(name: 'Jim', foo: 2)
 
       expect(o.name).to eq('Jim')

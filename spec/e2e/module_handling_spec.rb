@@ -1,16 +1,13 @@
 describe 'Module handling from config: :module_handling option' do
   before do
     delete_db
-  end
+    delete_schema
 
-  let(:clazz) do
-    Class.new do
-      include Neo4j::ActiveNode
-    end
+    stub_active_node_class('Clazz')
   end
 
   before do
-    stub_const 'ModuleTest::Student', clazz
+    stub_named_class 'ModuleTest::Student', Clazz
     Neo4j::Config[:association_model_namespace] = nil
     Neo4j::Config[:module_handling] = nil
   end
@@ -50,10 +47,10 @@ describe 'Module handling from config: :module_handling option' do
   end
 
   describe 'association model locations' do
-    let(:discovered_target_class_names) { clazz.associations[:students].target_class_names }
+    let(:discovered_target_class_names) { Clazz.associations[:students].target_class_names }
 
     context 'with config set to :none or unspecified' do
-      before { clazz.has_many :out, :students, type: :HAS_STUDENT }
+      before { Clazz.has_many :out, :students, type: :HAS_STUDENT }
 
       it 'expects a class with the singular version of the association' do
         expect(discovered_target_class_names).to eq ['::Student']
@@ -63,7 +60,7 @@ describe 'Module handling from config: :module_handling option' do
     context ' with :association_model_namespace set' do
       before do
         Neo4j::Config[:association_model_namespace] = 'ModuleTest'
-        clazz.has_many :out, :students, type: :HAS_STUDENT
+        Clazz.has_many :out, :students, type: :HAS_STUDENT
       end
 
       it 'expects namespacing and looks for a model in the same namespace as the source' do
@@ -81,14 +78,14 @@ describe 'Module handling from config: :module_handling option' do
       Neo4j::Config[:module_handling] = :demodulize
       Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE.clear
     end
-    let(:cache) { Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE }
+    let!(:cache) { Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE }
 
     it 'saves the map of label to class correctly when labels do not match class' do
       expect(cache).to be_empty
       ModuleTest::Student.create
       ModuleTest::Student.first
       expect(cache).not_to be_empty
-      expect(cache[[:Student]]).to eq ModuleTest::Student
+      expect(cache[[:Student, :Clazz]]).to eq ModuleTest::Student
     end
   end
 

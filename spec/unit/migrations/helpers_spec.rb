@@ -9,9 +9,10 @@ describe Neo4j::Migrations::Helpers do
     delete_schema
 
     create_constraint(:Book, :name, type: :unique)
+    create_index(:Book, :author_name, type: :exact)
     stub_active_node_class('Book') do
       property :name
-      property :author_name, index: :exact
+      property :author_name
     end
 
     Book.create!(name: 'Book1')

@@ -3,6 +3,7 @@ describe 'Neo4j::ActiveNode' do
     clear_model_memory_caches
     delete_db
 
+    create_index(:IceLolly, :flavour, type: :exact)
     stub_active_node_class('IceLolly') do
       property :flavour
       property :name
@@ -20,8 +21,6 @@ describe 'Neo4j::ActiveNode' do
       attr_writer :writable_attr
 
       property :prop_with_default, default: 'something'
-
-      index :flavour
 
       validates :flavour, presence: true
       validates :required_on_create, presence: true, on: :create
@@ -41,8 +40,9 @@ describe 'Neo4j::ActiveNode' do
       end
     end
 
+    create_index(:IceCream, :flavour, type: :exact)
     stub_active_node_class('IceCream') do
-      property :flavour, index: :exact
+      property :flavour
       # has_n(:ingredients).to(Ingredient)
       validates_presence_of :flavour
     end
@@ -201,7 +201,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'when record_timestamps is enabled' do
-      let_config(:record_timestamps) { true }
+      let_config(:record_timestamps, true)
 
       before do
         stub_active_node_class('TimestampedClass')
@@ -864,19 +864,6 @@ describe 'Neo4j::ActiveNode' do
         expect(reload_cache).to receive(:clear)
         Neo4j::ActiveNode::Labels::Reloading.reload_models!
       end
-    end
-  end
-
-  describe 'indexing' do
-    subject { model.declared_properties[:flavour].options[:index] }
-    context 'index method' do
-      let(:model) { IceLolly.new }
-      it { is_expected.to eq :exact }
-    end
-
-    context 'index option' do
-      let(:model) { IceCream.new }
-      it { is_expected.to eq :exact }
     end
   end
 end

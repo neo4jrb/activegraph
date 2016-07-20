@@ -11,6 +11,7 @@ module Neo4j
       MIGRATION_DONE = {up: 'migrated'.freeze, down: 'reverted'.freeze}.freeze
 
       def initialize
+        SchemaMigration.mapped_label.create_constraint(:migration_id, type: :unique)
         @up_versions = SortedSet.new(SchemaMigration.all.pluck(:migration_id))
       end
 

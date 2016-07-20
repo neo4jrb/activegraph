@@ -20,8 +20,9 @@ module Neo4j::ActiveNode::Labels
       #      index :name
       #    end
       def index(property)
-        declared_properties.index_or_fail!(property, id_property_name)
-        schema_create_operation(:index, property)
+        unless Neo4j::ModelSchema.defined_constraint?(self, property)
+          Neo4j::ModelSchema.add_defined_index(self, property)
+        end
       end
 
       # Creates a neo4j constraint on this class for given property
@@ -29,12 +30,7 @@ module Neo4j::ActiveNode::Labels
       # @example
       #   Person.constraint :name, type: :unique
       def constraint(property, _constraints = {type: :unique})
-        fail <<MSG
-
-          Constraints defined on models are no longer supported.  To ensure that you have this index you can generate a migration:
-
-#{Neo4j::ActiveBase.force_add_index_message(self.name, property)}
-MSG
+        Neo4j::ModelSchema.add_defined_constraint(self, property)
       end
 
       # @param [Symbol] property The name of the property index to be dropped
@@ -48,18 +44,6 @@ MSG
       def drop_constraint(property, constraint = {type: :unique})
         declared_properties[property].unconstraint! if declared_properties[property]
         schema_drop_operation(:constraint, property, constraint)
-      end
-
-      def index?(property)
-        ensure_id_property_info!
-
-        mapped_label.indexes.include?([property])
-      end
-
-      def constraint?(property)
-        ensure_id_property_info!
-
-        mapped_label.uniqueness_constraints.include?([property])
       end
 
       private
