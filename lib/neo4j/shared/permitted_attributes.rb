@@ -3,11 +3,6 @@ module Neo4j::Shared
     extend ActiveSupport::Concern
     include ActiveModel::ForbiddenAttributesProtection
 
-    def initialize(attributes = nil)
-      attributes = sanitize_for_mass_assignment(attributes)
-      super(attributes)
-    end
-
     def process_attributes(attributes)
       attributes = sanitize_for_mass_assignment(attributes)
       super(attributes)
