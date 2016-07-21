@@ -152,16 +152,4 @@ describe 'Association Proxy' do
       expect(billy.lessons(:l).method(:pluck).source_location.first).not_to include('active_support')
     end
   end
-
-  describe '#inspect' do
-    context 'when inspecting an association proxy' do
-      let(:association_proxy) { billy.lessons }
-      let(:inspected_elements) { association_proxy.inspect }
-
-      it 'returns the list of resulting elements' do
-        expect(inspected_elements).to include('#<AssociationProxy Student#lessons')
-        expect(inspected_elements).to include(association_proxy.to_a.inspect)
-      end
-    end
-  end
 end
