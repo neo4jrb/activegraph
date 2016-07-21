@@ -45,12 +45,18 @@ module Rails
     end
 
     describe 'open_neo4j_session' do
-      subject { Neo4j::Railtie.open_neo4j_session(session_options) }
+      subject { Neo4j::SessionManager.open_neo4j_session(session_options) }
 
       if TEST_SESSION_MODE == :embedded
         let_context(session_options: {type: :embedded, path: './db'}) do
           subject_should_raise(ArgumentError, /Tried to start embedded Neo4j db without using JRuby/)
         end
+      end
+
+      it 'allows sessions with authentication' do
+        cfg = OpenStruct.new(session_path: 'http://user:password@localhost:7474')
+        Neo4j::SessionManager.setup!(cfg)
+        expect(cfg.session_path).to eq('http://user:password@localhost:7474')
       end
 
       let_context(session_options: {type: :invalid_type}) do

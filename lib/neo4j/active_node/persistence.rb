@@ -129,14 +129,14 @@ module Neo4j::ActiveNode
         on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
 
         new_query.merge(n: {self.mapped_label_names => match_attributes})
-                 .on_create_set(n: on_create_props(on_create_attrs))
-                 .on_match_set(n: on_match_props(on_match_attrs))
+                 .on_create_set(on_create_clause(on_create_attrs))
+                 .on_match_set(on_match_clause(on_match_attrs))
                  .break.set(n: set_attrs)
                  .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
-        on_create_attributes = set_attributes.reverse_merge(on_create_props(find_attributes))
+        on_create_attributes = set_attributes.reverse_merge(find_attributes.merge(self.new(find_attributes).props_for_create))
 
         new_query.merge(n: {self.mapped_label_names => find_attributes})
                  .on_create_set(n: on_create_attributes)
@@ -169,12 +169,20 @@ module Neo4j::ActiveNode
 
       private
 
-      def on_create_props(find_attributes)
-        find_attributes.merge(self.new(find_attributes).props_for_create)
+      def on_create_clause(clause)
+        if clause.is_a?(Hash)
+          {n: clause.merge(self.new(clause).props_for_create)}
+        else
+          clause
+        end
       end
 
-      def on_match_props(match_attributes)
-        match_attributes.tap { |props| props[:updated_at] = DateTime.now.to_i if attributes_nil_hash.key?('updated_at') }
+      def on_match_clause(clause)
+        if clause.is_a?(Hash)
+          {n: clause.merge(attributes_nil_hash.key?('updated_at') ? {updated_at: Time.new.to_i} : {})}
+        else
+          clause
+        end
       end
     end
   end

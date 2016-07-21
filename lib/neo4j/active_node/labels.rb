@@ -82,7 +82,7 @@ module Neo4j
           (model.mapped_label_names - labels).empty?
         end
 
-        MODELS_FOR_LABELS_CACHE[labels] = models.max do |model|
+        MODELS_FOR_LABELS_CACHE[labels] = models.max_by do |model|
           (model.mapped_label_names & labels).size
         end
       end

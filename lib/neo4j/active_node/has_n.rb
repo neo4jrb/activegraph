@@ -23,11 +23,8 @@ module Neo4j::ActiveNode
       # States:
       # Default
       def inspect
-        if @cached_result
-          result_nodes.inspect
-        else
-          "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
-        end
+        formatted_nodes = ::Neo4j::ActiveNode::NodeListFormatter.new(result_nodes)
+        "#<AssociationProxy #{@query_proxy.context} #{formatted_nodes.inspect}>"
       end
 
       extend Forwardable
@@ -109,7 +106,14 @@ module Neo4j::ActiveNode
         @query_proxy.public_send(:replace_with, *args)
       end
 
-      QUERY_PROXY_METHODS = [:<<, :delete, :create]
+      QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit]
+
+      QUERY_PROXY_METHODS.each do |method|
+        define_method(method) do |*args, &block|
+          @query_proxy.public_send(method, *args, &block)
+        end
+      end
+
       CACHED_RESULT_METHODS = []
 
       def method_missing(method_name, *args, &block)
@@ -117,7 +121,7 @@ module Neo4j::ActiveNode
         super if target.nil?
 
         cache_query_proxy_result if !cached? && !target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
-        clear_cache_result if !QUERY_PROXY_METHODS.include?(method_name) && target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
+        clear_cache_result if target.is_a?(Neo4j::ActiveNode::Query::QueryProxy)
 
         target.public_send(method_name, *args, &block)
       end
@@ -130,8 +134,6 @@ module Neo4j::ActiveNode
 
       def target_for_missing_method(method_name)
         case method_name
-        when *QUERY_PROXY_METHODS
-          @query_proxy
         when *CACHED_RESULT_METHODS
           @cached_result
         else
@@ -207,7 +209,9 @@ module Neo4j::ActiveNode
       end
     end
 
+    # rubocop:disable Metrics/ModuleLength
     module ClassMethods
+      # rubocop:enable Style/PredicateName
       # rubocop:disable Style/PredicateName
 
       # :nocov:
@@ -224,8 +228,12 @@ module Neo4j::ActiveNode
         !!associations[name.to_sym]
       end
 
+      def parent_associations
+        superclass == Object ? {} : superclass.associations
+      end
+
       def associations
-        (@associations ||= {}).merge(superclass == Object ? {} : superclass.associations)
+        (@associations ||= parent_associations.dup)
       end
 
       def associations_keys
@@ -507,7 +515,7 @@ module Neo4j::ActiveNode
           create_reflection(macro, name, association, self)
         end
 
-        associations_keys << name
+        @associations_keys = nil
 
       # Re-raise any exception with added class name and association name to
       # make sure error message is helpful
@@ -516,9 +524,13 @@ module Neo4j::ActiveNode
       end
 
       def add_association(name, association_object)
-        @associations ||= {}
-        fail "Association `#{name}` defined for a second time.  Associations can only be defined once" if @associations.key?(name)
-        @associations[name] = association_object
+        fail "Association `#{name}` defined for a second time. "\
+             'Associations can only be defined once' if duplicate_association?(name)
+        associations[name] = association_object
+      end
+
+      def duplicate_association?(name)
+        associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
   end

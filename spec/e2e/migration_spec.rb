@@ -5,6 +5,7 @@ describe 'migration tasks' do
   before do
     delete_db
     delete_schema
+    clear_model_memory_caches
 
     stub_active_node_class('User') do
       property :name

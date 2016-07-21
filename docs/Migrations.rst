@@ -1,7 +1,7 @@
 Migrations
 ==========
 
-Neo4j does not have a set schema like relational databases, but sometimes changes to the schema and the data are required. To help with this, Neo4j.rb provides an ``ActiveRecord``-like migration framework and a set of helper methods to manipulate both database schema and data.
+Neo4j does not have a set schema like relational databases, but sometimes changes to the schema and the data are required. To help with this, Neo4j.rb provides an ``ActiveRecord``-like migration framework and a set of helper methods to manipulate both database schema and data.  Just like ``ActiveRecord``, a record of which transactions have been run will be stored in the database so that a migration is automatically only run once per environment.
 
 
 Generators
@@ -317,9 +317,53 @@ Wraps a set of statements inside a block, printing the given and the execution t
 
 Populates the ``uuid`` property (or any ``id_property`` you defined) of nodes given their model name.
 
-:Ruby:
-  .. code-block:: ruby
+.. code-block:: ruby
 
-    populate_id_property :User
+  populate_id_property :User
 
 Check :doc:`Adding IDs to Existing Data </UniqueIDs>` for more usage details.
+
+
+#relabel_relation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Relabels a relationship, keeping intact any relationship attribute.
+
+.. code-block:: ruby
+
+  relabel_relation :old_label, :new_label
+
+Additionally you can specify the starting and the destination node, using ``:from`` and ``:to``.
+
+You can specify also the ``:direction`` (one if ``:in``, ``:out`` or ``:both``).
+
+Example:
+
+.. code-block:: ruby
+
+  relabel_relation :friends, :FRIENDS, from: :Animal, to: :Person, direction: :both
+
+
+#change_relations_style
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Relabels relationship nodes from one format to another.
+
+Usage:
+
+.. code-block:: ruby
+
+  change_relations_style list_of_labels, old_style, new_style
+
+
+For example, if you created a relationship ``#foo`` in 3.x, and you want to convert it to the 4.x+ ``foo`` syntax, you could run this.
+
+.. code-block:: ruby
+
+  change_relations_style [:all, :your, :labels, :here], :lower_hash, :lower
+
+Allowed styles are:
+
+* ``:lower``: lowercase string, like ``my_relation``
+* ``:upper``: uppercase string, like ``MY_RELATION``
+* ``:lower_hash``: Lowercase string starting with hash, like ``#my_relation``

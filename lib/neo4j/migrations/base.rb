@@ -4,6 +4,7 @@ module Neo4j
       include Neo4j::Migrations::Helpers
       include Neo4j::Migrations::Helpers::Schema
       include Neo4j::Migrations::Helpers::IdProperty
+      include Neo4j::Migrations::Helpers::Relationships
 
       def initialize(migration_id)
         @migration_id = migration_id

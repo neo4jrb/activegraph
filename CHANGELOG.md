@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Improved `QueryProxy` and `AssociationProxy` `#inspect` method to show a result preview (thanks ProGM / see #1228 #1232)
 - Renamed the old migration task to `neo4j:legacy_migrate`
 - Renamed the ENV variable to silence migrations output from `silenced` to `MIGRATIONS_SILENCED`
 - Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
@@ -21,16 +22,47 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Implemented autoloading for new and legacy migration modules (there's no need to `require` them anymore)
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
 - New adaptor-based API has been created for connecting to Neo4j (See the [upgrade guide](TODO!!!!)).  Changes include:
- - The old APIs are deprecated and will be removed later.
- - In the new API, there is no such thing as a "current" session.  Users of `neo4j-core` must create and maintain references themselves to their sessions
- - New `Neo4j::Core::Node` and `Neo4j::Core::Relationshp` classes have been created to provide consistent results between adaptors.  `Neo4j::Core::Path` has also been added
- - New API is centered around Cypher.  No special methods are defined to, for example, load/create/etc... nodes/relationships
- - There is now a new API for making multiple queries in the same HTTP request
- - It is now possible to subscribe separately to events for querying in different adaptors and for HTTP requests (see [the docs](TODO!!!!))
- - Schema queries (changes to indexes/constraints) happen in a separate thread for performance and reduce the complexity of the code
- - New session API does not include replacement for on_next_session_available
+- The old APIs are deprecated and will be removed later.
+- In the new API, there is no such thing as a "current" session.  Users of `neo4j-core` must create and maintain references themselves to their sessions
+- New `Neo4j::Core::Node` and `Neo4j::Core::Relationshp` classes have been created to provide consistent results between adaptors.  `Neo4j::Core::Path` has also been added
+- New API is centered around Cypher.  No special methods are defined to, for example, load/create/etc... nodes/relationships
+- There is now a new API for making multiple queries in the same HTTP request
+- It is now possible to subscribe separately to events for querying in different adaptors and for HTTP requests (see [the docs](TODO!!!!))
+- Schema queries (changes to indexes/constraints) happen in a separate thread for performance and reduce the complexity of the code
+- New session API does not include replacement for on_next_session_available
+- Adding a migration helper to mass relabel migrations (thanks @JustinAiken / see #1166 #1239)
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
+
+### Fixed
+
+- Made some memory optimizations (thanks ProGM / see #1221)
+
+## [7.1.0] - 07-14-2016
+
+### Changed
+
+- Gemspec dependency requirements were modified where ActiveModel, ActiveSupport, and Railties are concerned. The gem now requires >= 4.0, < 5.1.
+- `ActiveModel::Serializers::Xml` is only included if supported if available.
+
+## [7.0.14] - 07-10-2016
+
+### Fixed
+
+- Bug in setting `NEO4J_TYPE` (thanks bloomdido / see #1235)
+
+## [7.0.12] - 06-27-2016
+
+### Fixed
+
+- Bug where models weren't being loaded correctly by label (thanks bloomdido / see #1220)
+
+## [7.0.11] - 06-09-2016
+
+### Fixed
+
+- Fix dipendence from JSON when using outside of rails (thanks ProGM)
+>>>>>>> 7.1.x
 
 ## [7.0.10] - 06-07-2016
 

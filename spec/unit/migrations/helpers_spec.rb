@@ -2,11 +2,16 @@ describe Neo4j::Migrations::Helpers do
   include described_class
   include Neo4j::Migrations::Helpers::Schema
   include Neo4j::Migrations::Helpers::IdProperty
+  include Neo4j::Migrations::Helpers::Relationships
 
   before do
     clear_model_memory_caches
     delete_db
     delete_schema
+
+    stub_active_node_class('Bookcase') do
+      has_many :out, :books, type: :has_books
+    end
 
     create_constraint(:Book, :name, type: :unique)
     create_index(:Book, :author_name, type: :exact)
@@ -181,6 +186,80 @@ describe Neo4j::Migrations::Helpers do
       populate_id_property :Dog
       uuids = Dog.all(:n).pluck('n.my_id')
       expect(uuids.all? { |u| u.start_with?('id-') }).to be_truthy
+    end
+  end
+
+  describe '#change_relations_style' do
+    let(:migrate!) { change_relations_style(%w(has_books), :lower_hashtag, :lower) }
+
+    before do
+      Bookcase.create!
+    end
+
+    context 'when there\'s some data to migrate' do
+      before do
+        query.match('(bc:`Bookcase`)').match('(b:`Book`)').create('(bc)-[r:`#has_books`]->(b)').pluck(:r)
+      end
+
+      it 'converts the old format to the new' do
+        expect { migrate! }.to change { Bookcase.first.books.size }.from(0).to(3)
+      end
+
+      it 'cleans up the old relationship' do
+        expect { migrate! }.to change { query.match('()-[r:`#has_books`]->()').pluck(:r).size }.from(3).to(0)
+      end
+    end
+
+    it 'keeps the relationship\'s properties' do
+      query.match('(bc:`Bookcase`)').match('(b:`Book`)').create('(bc)-[r:`#has_books` { foo: "bar"}]->(b)').pluck(:r)
+
+      old_rels = query.match('()-[r:`#has_books`]->()').pluck(:r)
+      expect(old_rels.map { |e| e.props[:foo] }).to eq(['bar'] * 3)
+      migrate!
+      new_rel = query.match('()-[r:`has_books`]->()').pluck(:r)
+      expect(new_rel.map { |e| e.props[:foo] }).to eq(['bar'] * 3)
+    end
+
+    it 'does not relabel relationships already in the requested format' do
+      query.match('(bc:`Bookcase`)').match('(b:`Book`)').create('(bc)-[r:`has_books`]->(b)').pluck(:r)
+
+      expect { migrate! }.not_to change { Bookcase.first.books.size }
+    end
+
+    it 'does not fail if no old-style relationships are found' do
+      expect { migrate! }.not_to raise_error
+    end
+  end
+
+  describe '#relabel_relation' do
+    before do
+      Bookcase.create!
+      query.match('(bc:`Bookcase`)').match('(b:`Book`)').create('(bc)-[r:`something`]->(b)').pluck(:r)
+    end
+
+    it 'relabels a relation' do
+      expect do
+        relabel_relation :something, :something_else
+      end.to change { query.match('()-[r]-()').pluck(:r).first.rel_type }.from(:something).to(:something_else)
+    end
+
+    it 'relabels a relation giving :from, :to and :direction' do
+      expect do
+        relabel_relation :something, :something_else, from: :Book, to: :Bookcase, direction: :in
+      end.to change { query.match('()-[r]-()').pluck(:r).first.rel_type }.from(:something).to(:something_else)
+    end
+
+    it 'relabels nothing when giving wrong :from and :to' do
+      expect do
+        relabel_relation :something, :something_else, from: :Cat, to: :Dog
+      end.not_to change { query.match('()-[r]-()').pluck(:r).first.rel_type }.from(:something)
+    end
+
+    it 'runs relabeling in batches' do
+      ENV['MAX_PER_BATCH'] = '2'
+      expect(self).to receive(:output).exactly(2).times
+      relabel_relation :something, :something_else
+      ENV['MAX_PER_BATCH'] = nil
     end
   end
 
