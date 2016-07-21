@@ -56,7 +56,7 @@ module Neo4j::ActiveRel
       # Creates a new relationship between objects
       # @param [Hash] props the properties the new relationship should have
       def create(*args)
-        new(*args).tap(&:save!)
+        new(*args).tap(&:save)
       end
 
       # Same as #create, but raises an error if there is a problem during save.
