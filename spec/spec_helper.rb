@@ -115,7 +115,24 @@ module Neo4jSpecHelpers
     end
   end
 
+  def action_controller_params(args)
+    ActionController::Parameters.new(args)
+  end
+
   class_methods do
+    # A trick to load action_controller without requiring in all specs. Not working in JRuby.
+    def using_action_controller
+      if RUBY_PLATFORM == 'java'
+        require 'action_controller'
+        yield
+      else
+        fork do
+          require 'action_controller'
+          yield
+        end
+      end
+    end
+
     def let_config(var_name)
       before do
         @neo4j_config_vars ||= ActiveSupport::HashWithIndifferentAccess.new

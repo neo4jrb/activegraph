@@ -161,22 +161,19 @@ describe Neo4j::ActiveNode do
     end
   end
 
-  context 'when using `ActionController::Parameters`' do
-    require 'rack'
-    require 'rack/test'
-    require 'action_controller/metal/strong_parameters'
-    let(:params) { ActionController::Parameters.new('type' => 'image') }
-    it 'assigns enums correctly when instancing a new class' do
-      params.permit!
-      file = StoredFile.new(params)
-      expect(file.type).to eq('image')
-    end
+  using_action_controller do
+    context 'when using `ActionController::Parameters`' do
+      let(:params) { action_controller_params('type' => 'image').permit! }
+      it 'assigns enums correctly when instancing a new class' do
+        file = StoredFile.new(params)
+        expect(file.type).to eq('image')
+      end
 
-    it 'assigns enums correctly when assigning to `attributes`' do
-      params.permit!
-      file = StoredFile.new
-      file.attributes = params
-      expect(file.type).to eq('image')
+      it 'assigns enums correctly when assigning to `attributes`' do
+        file = StoredFile.new
+        file.attributes = params
+        expect(file.type).to eq('image')
+      end
     end
   end
 end
