@@ -2,6 +2,7 @@ describe 'Module handling from config: :module_handling option' do
   before do
     delete_db
     delete_schema
+    clear_model_memory_caches
 
     stub_active_node_class('Clazz')
   end
@@ -76,7 +77,6 @@ describe 'Module handling from config: :module_handling option' do
   describe 'node wrapping' do
     before do
       Neo4j::Config[:module_handling] = :demodulize
-      Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE.clear
     end
     let!(:cache) { Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE }
 

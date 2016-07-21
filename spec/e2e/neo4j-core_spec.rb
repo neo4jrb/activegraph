@@ -1,5 +1,7 @@
 describe 'works well together with Neo4j::Core' do
   before do
+    clear_model_memory_caches
+
     stub_active_node_class('Clazz') do
       has_many :out, :stuff, type: :stuff, model_class: false
     end

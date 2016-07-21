@@ -14,7 +14,7 @@ module Neo4j
           most_concrete_class = class_from_type(rel.rel_type)
           most_concrete_class.constantize.new
         rescue NameError => e
-          raise e unless e.message =~ /uninitialized constant/
+          raise e unless e.message =~ /(uninitialized|wrong) constant/
 
           return rel
         end.tap do |wrapped_rel|

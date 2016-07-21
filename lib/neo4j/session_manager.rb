@@ -37,23 +37,23 @@ module Neo4j
         cfg.sessions ||= []
       end
 
-      def open_neo4j_session(options, wait_for_connection = false)
-        type, name, default, path = options.values_at(:type, :name, :default, :path)
+      # def open_neo4j_session(options, wait_for_connection = false)
+      #   type, name, default, path = options.values_at(:type, :name, :default, :path)
 
-        if !java_platform? && type == :embedded_db
-          fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
-        end
+      #   if !java_platform? && type == :embedded_db
+      #     fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
+      #   end
 
-        session = wait_for_value(wait_for_connection) do
-          if options.key?(:name)
-            Neo4j::Session.open_named(type, name, default, path)
-          else
-            Neo4j::Session.open(type, path, options[:options])
-          end
-        end
+      #   session = wait_for_value(wait_for_connection) do
+      #     if options.key?(:name)
+      #       Neo4j::Session.open_named(type, name, default, path)
+      #     else
+      #       Neo4j::Session.open(type, path, options[:options])
+      #     end
+      #   end
 
-        start_embedded_session(session) if type == :embedded_db
-      end
+      #   start_embedded_session(session) if type == :embedded_db
+      # end
 
       def open_neo4j_session(options, wait_for_connection = false)
         session_type, path, url = options.values_at(:type, :path, :url)
