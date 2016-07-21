@@ -865,45 +865,14 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
-  context 'with `ActionController::Parameters`' do
-    require 'rack'
-    require 'rack/test'
-    require 'action_controller/metal/strong_parameters'
-    let(:params) { ActionController::Parameters.new('prop_with_default' => 'something else') }
+  using_action_controller do
+    context 'with `ActionController::Parameters`' do
+      let(:params) { action_controller_params('prop_with_default' => 'something else') }
+      let(:create_params) { params }
+      let(:klass) { IceLolly }
+      let(:subject) { klass.new }
 
-    describe '#new' do
-      it 'assigns permitted params' do
-        params.permit!
-        expect(IceLolly.new(params).prop_with_default).to eq 'something else'
-      end
-
-      it 'fails on unpermitted parameters' do
-        expect { IceLolly.new(params) }.to raise_error ActiveModel::ForbiddenAttributesError
-      end
-    end
-
-    describe '#create' do
-      it 'assigns permitted params' do
-        params.permit!
-        expect(IceLolly.create(params).prop_with_default).to eq 'something else'
-      end
-
-      it 'fails on unpermitted parameters' do
-        expect { IceLolly.create(params) }.to raise_error ActiveModel::ForbiddenAttributesError
-      end
-    end
-
-    describe '#update' do
-      it 'assigns permitted params' do
-        params.permit!
-        model = IceLolly.new
-        model.update(params)
-        expect(model.prop_with_default).to eq 'something else'
-      end
-
-      it 'fails on unpermitted parameters' do
-        expect { IceLolly.new.update(params) }.to raise_error ActiveModel::ForbiddenAttributesError
-      end
+      it_should_behave_like 'handles permitted parameters'
     end
   end
 end

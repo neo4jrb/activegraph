@@ -47,7 +47,7 @@ module Neo4j
     include Neo4j::Shared::PermittedAttributes
 
     def initialize(args = nil)
-      args = sanitize_for_mass_assignment(args)
+      args = sanitize_input_parameters(args)
       super(args)
     end
 
