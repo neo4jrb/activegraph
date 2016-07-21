@@ -82,7 +82,7 @@ namespace :neo4j do
     content = <<-CONTENT
 class #{migration_class_name} < Neo4j::Migrations::Base
   def up
-    force_add_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}
+    add_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}, force: true
   end
 
   def down

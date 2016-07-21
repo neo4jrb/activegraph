@@ -118,7 +118,16 @@ describe Neo4j::Migrations::Helpers do
     end
 
     it 'fails when constraint is already defined' do
-      expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+      expect do
+        expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+      end.not_to change { label_object.constraint?(:name) }
+    end
+
+    it 'does not fail when constraint is already defined when forced' do
+      add_constraint :Book, :genre
+      expect do
+        expect { add_constraint :Book, :genre, force: true }.not_to raise_error
+      end.not_to change { label_object.constraint?(:genre) }
     end
   end
 
@@ -134,6 +143,13 @@ describe Neo4j::Migrations::Helpers do
       expect do
         expect { add_index :Book, :author_name }.to raise_error('Duplicate index for Book#author_name')
       end.not_to change { label_object.indexes.flatten.count }
+    end
+
+    it 'does not fail when index is already defined when forced' do
+      add_index :Book, :isbn
+      expect do
+        expect { add_index :Book, :isbn, force: true }.not_to raise_error
+      end.not_to change { label_object.index?(:isbn) }
     end
   end
 

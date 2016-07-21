@@ -6,16 +6,22 @@ module Neo4j
         MISSING_CONSTRAINT_OR_INDEX = 'No such %{type} for %{label}#%{property}'.freeze
         DUPLICATE_CONSTRAINT_OR_INDEX = 'Duplicate %{type} for %{label}#%{property}'.freeze
 
-        def add_constraint(label, property)
+        def add_constraint(label, property, options = {})
+          force = options[:force] || false
           constraint = Neo4j::Schema::UniqueConstraintOperation.new(label, property)
-          fail_duplicate_constraint_or_index!(:constraint, label, property) if constraint.exist?
+          fail_duplicate_constraint_or_index!(:constraint, label, property) if !force && constraint.exist?
           constraint.create!
         end
 
-        def add_index(label, property)
+        def add_index(label, property, options = {})
+          force = options[:force] || false
           index = Neo4j::Schema::ExactIndexOperation.new(label, property)
-          fail_duplicate_constraint_or_index!(:index, label, property) if index.exist?
+          fail_duplicate_constraint_or_index!(:index, label, property) if !force && index.exist?
           index.create!
+        end
+
+        def force_add_index(label, property)
+          add_index(label, property)
         end
 
         def drop_constraint(label, property)
