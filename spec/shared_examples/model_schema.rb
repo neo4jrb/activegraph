@@ -36,7 +36,9 @@ end
 shared_examples 'raises schema error including' do |index_or_constraint, model, property_name|
   let(:label) { model.to_s.constantize.mapped_label_name }
   it "raises error including #{index_or_constraint} for #{model}.#{property_name}" do
-    expect { model.to_s.constantize.first }.to raise_error(/Some schema elements were defined.*force_add_#{index_or_constraint} #{label} #{property_name}/m)
+    expect do
+      model.to_s.constantize.first
+    end.to raise_error(/Some schema elements were defined.*rake neo4j:generate_schema_migration\[#{index_or_constraint},#{label},#{property_name}\]/m)
   end
 end
 

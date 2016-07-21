@@ -56,8 +56,7 @@ module Neo4j
 
       def validate_model_schema!
         messages = {index: [], constraint: []}
-        [[:constraint, model_constraints],
-         [:index, model_indexes]].each do |type, schema_elements|
+        [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
           schema_elements.map do |model, label, property_name, exists|
             if exists
               log_warning!(type, model, property_name)
@@ -74,11 +73,13 @@ module Neo4j
 
 #{messages[:constraint].join("\n")}
 #{messages[:index].join("\n")}
+
+(zshell users may need to escape the brackets)
 MSG
       end
 
-      def force_add_message(index_or_constraint, model_name, property_name)
-        "rails generate migration ForceAdd#{index_or_constraint.to_s.capitalize}#{model_name.gsub(/[^a-z0-9]/i, '')}#{property_name.to_s.camelize} force_add_#{index_or_constraint} #{model_name} #{property_name}\n"
+      def force_add_message(index_or_constraint, label, property_name)
+        "rake neo4j:generate_schema_migration[#{index_or_constraint},#{label},#{property_name}]"
       end
 
       def log_warning!(index_or_constraint, model, property_name)
