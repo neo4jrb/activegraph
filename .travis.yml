@@ -4,7 +4,7 @@ before_script:
   - "echo 'dbms.memory.pagecache.size=1g' >> ./db/neo4j/development/conf/neo4j.conf"
   - "echo 'dbms.memory.heap.max_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "echo 'dbms.memory.heap.initial_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
-  - "bundle exec rake neo4j:start --trace"
+  - "bundle exec rake neo4j:console --trace"
   - "sleep 10"
 script:
   - "travis_retry bundle exec rake default --trace"
