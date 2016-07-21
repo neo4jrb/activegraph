@@ -313,7 +313,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       let_context id_property_options: {constraint: true} do
         it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
-        it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
+        it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
         let_context subclass_id_property_options: {constraint: true} do
           let_context subclass_id_property_name: :other_uuid do
@@ -330,7 +330,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       let_context id_property_options: {constraint: nil} do
         it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
-        it_behaves_like 'raises schema error including', :constraint, :SubClazz, :my_uuid
+        it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
         let_context subclass_id_property_options: {constraint: nil} do
           let_context subclass_id_property_name: :other_uuid do
@@ -421,7 +421,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :neo_id' do
     before do
-      stub_active_node_class('NeoIdTest') do
+      stub_active_node_class('NeoIdTest', false) do
         id_property :neo_id
       end
 
