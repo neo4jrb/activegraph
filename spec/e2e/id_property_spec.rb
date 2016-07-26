@@ -73,7 +73,7 @@ describe Neo4j::ActiveNode::IdProperty do
       it 'will set the id_property' do
         node = Clazz.new
         expect(node).to respond_to(:the_id)
-        expect(Clazz.mapped_label.indexes).to match_array [[:the_id]]
+        expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
       end
     end
   end
@@ -100,7 +100,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
     it 'has an index' do
       Clazz.ensure_id_property_info!
-      expect(Clazz.mapped_label.indexes).to match array_including([[:myid]])
+      expect(Clazz.mapped_label.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:myid])])
     end
 
     describe 'property myid' do
@@ -210,7 +210,7 @@ describe Neo4j::ActiveNode::IdProperty do
     it 'has an index' do
       Clazz.ensure_id_property_info!
 
-      expect(Clazz.mapped_label.indexes).to eq([[:my_id]])
+      expect(Clazz.mapped_label.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:my_id])])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -369,7 +369,7 @@ describe Neo4j::ActiveNode::IdProperty do
     it 'has an index' do
       Clazz.ensure_id_property_info!
 
-      expect(Clazz.mapped_label.indexes).to eq([[:my_uuid]])
+      expect(Clazz.mapped_label.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:my_uuid])])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do

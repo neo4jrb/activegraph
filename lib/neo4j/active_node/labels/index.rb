@@ -32,40 +32,6 @@ module Neo4j::ActiveNode::Labels
       def constraint(property, _constraints = {type: :unique})
         Neo4j::ModelSchema.add_defined_constraint(self, property)
       end
-
-      # @param [Symbol] property The name of the property index to be dropped
-      def drop_index(property, options = {})
-        declared_properties[property].unindex! if declared_properties[property]
-        schema_drop_operation(:index, property, options)
-      end
-
-      # @param [Symbol] property The name of the property constraint to be dropped
-      # @param [Hash] constraint The constraint type to be dropped.
-      def drop_constraint(property, constraint = {type: :unique})
-        declared_properties[property].unconstraint! if declared_properties[property]
-        schema_drop_operation(:constraint, property, constraint)
-      end
-
-      private
-
-      def schema_create_operation(type, property, options = {})
-        new_schema_class(type, property, options).create!
-      end
-
-      def schema_drop_operation(type, property, options = {})
-        new_schema_class(type, property, options).drop!
-      end
-
-      def new_schema_class(type, property, options)
-        case type
-        when :index
-          Neo4j::Schema::ExactIndexOperation
-        when :constraint
-          Neo4j::Schema::UniqueConstraintOperation
-        else
-          fail "Unknown Schema Operation class #{type}"
-        end.new(mapped_label, property, options)
-      end
     end
   end
 end
