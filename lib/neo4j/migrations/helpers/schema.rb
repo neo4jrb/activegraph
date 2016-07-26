@@ -9,14 +9,14 @@ module Neo4j
         def add_constraint(label, property, options = {})
           force = options[:force] || false
           label_object = ActiveBase.label_object(label)
-          fail_duplicate_constraint_or_index!(:constraint, label, property) if !force && !label_object.constraint?(property)
-          label_object.create_constraint(property)
+          fail_duplicate_constraint_or_index!(:constraint, label, property) if !force && label_object.constraint?(property)
+          label_object.create_constraint(property, type: :uniqueness)
         end
 
         def add_index(label, property, options = {})
           force = options[:force] || false
           label_object = ActiveBase.label_object(label)
-          fail_duplicate_constraint_or_index!(:index, label, property) if !force && !label_object.index?(property)
+          fail_duplicate_constraint_or_index!(:index, label, property) if !force && label_object.index?(property)
           label_object.create_index(property)
         end
 
@@ -27,7 +27,7 @@ module Neo4j
         def drop_constraint(label, property)
           label_object = ActiveBase.label_object(label)
           fail_missing_constraint_or_index!(:constraint, label, property) if !label_object.constraint?(property)
-          label_object.drop_constraint(property)
+          label_object.drop_constraint(property, type: :uniqueness)
         end
 
         def drop_index(label, property)
