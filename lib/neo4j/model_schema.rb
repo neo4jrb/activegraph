@@ -30,13 +30,19 @@ module Neo4j
       end
 
       def model_constraints
-        constraints = Neo4j::ActiveBase.current_session.constraints(nil, type: :uniqueness)
+        constraints = Neo4j::ActiveBase.current_session.constraints.each_with_object({}) do |row, result|
+          result[row[:label]] ||= []
+          result[row[:label]] << row[:properties]
+        end
 
         schema_elements_list(MODEL_CONSTRAINTS, constraints)
       end
 
       def model_indexes
-        indexes = Neo4j::ActiveBase.current_session.indexes(nil)
+        indexes = Neo4j::ActiveBase.current_session.indexes.each_with_object({}) do |row, result|
+          result[row[:label]] ||= []
+          result[row[:label]] << row[:properties]
+        end
 
         schema_elements_list(MODEL_INDEXES, indexes) +
           schema_elements_list(REQUIRED_INDEXES, indexes).reject(&:last)
@@ -46,7 +52,7 @@ module Neo4j
       # should be private
       def schema_elements_list(by_model, db_results)
         by_model.flat_map do |model, property_names|
-          label = model.mapped_label_name.to_s
+          label = model.mapped_label_name.to_sym
           property_names.map do |property_name|
             exists = db_results[label] && db_results[label].include?([property_name])
             [model, label, property_name, exists]
@@ -68,7 +74,11 @@ module Neo4j
 
         return if messages.values.all?(&:empty?)
 
-        fail <<MSG
+        fail validation_error_message(messages)
+      end
+
+      def validation_error_message(messages)
+        <<MSG
           Some schema elements were defined by the model (which is no longer support), but they do not exist in the database.  Run the following to create them:
 
 #{messages[:constraint].join("\n")}
