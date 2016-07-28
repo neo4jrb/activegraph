@@ -58,7 +58,6 @@ module Neo4j
       def open_neo4j_session(options, wait_for_connection = false)
         session_type, path, url = options.values_at(:type, :path, :url)
 
-        validate_platform!(session_type)
         enable_unlimited_strength_crypto! if session_type_is_embedded?(session_type)
 
         adaptor = wait_for_value(wait_for_connection) do
@@ -78,15 +77,6 @@ module Neo4j
 
       def session_type_is_embedded?(session_type)
         [:embedded_db, :embedded].include?(session_type)
-      end
-
-      def validate_platform!(session_type)
-        return if !RUBY_PLATFORM =~ /java/
-        return if !session_type_is_embedded?(session_type)
-
-        fail ArgumentError, 'server_db is no longer supported.  Use `http` instead for HTTP JSON connections' if session_type == :server_db
-
-        fail ArgumentError, "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
       end
 
       def enable_unlimited_strength_crypto!

@@ -47,9 +47,9 @@ module Rails
     describe 'open_neo4j_session' do
       subject { Neo4j::SessionManager.open_neo4j_session(session_options) }
 
-      if TEST_SESSION_MODE == :embedded
+      if TEST_SESSION_MODE == :embedded && !(RUBY_PLATFORM =~ /java/)
         let_context(session_options: {type: :embedded, path: './db'}) do
-          subject_should_raise(ArgumentError, /Tried to start embedded Neo4j db without using JRuby/)
+          subject_should_raise(ArgumentError, /JRuby is required for embedded mode/)
         end
       end
 
