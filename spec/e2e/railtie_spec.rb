@@ -47,9 +47,9 @@ module Rails
     describe 'open_neo4j_session' do
       subject { Neo4j::SessionManager.open_neo4j_session(session_options) }
 
-      if TEST_SESSION_MODE == :embedded && !(RUBY_PLATFORM =~ /java/)
+      if TEST_SESSION_MODE != :embedded
         let_context(session_options: {type: :embedded, path: './db'}) do
-          subject_should_raise(ArgumentError, /JRuby is required for embedded mode/)
+          subject_should_raise(/JRuby is required for embedded mode/)
         end
       end
 
@@ -111,8 +111,14 @@ module Rails
               {type: :embedded, path: tmpdir}
             end
 
+            # Mocking the embedded connection, to avoid `OutOfMemory` on Travis
+            # This checks that the connection would be created
+            before(:each) do
+              expect_any_instance_of(Neo4j::Core::CypherSession::Adaptors::Embedded).to receive(:connect)
+            end
+
             it { should be_a(Neo4j::Core::CypherSession::Adaptors::Embedded) }
-            its(:path) { should eq(tmpdir) }
+            its(:path) { is_expected.to eq(tmpdir) }
           end
         end
       end

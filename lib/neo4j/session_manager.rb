@@ -58,7 +58,7 @@ module Neo4j
       def open_neo4j_session(options, wait_for_connection = false)
         session_type, path, url = options.values_at(:type, :path, :url)
 
-        enable_unlimited_strength_crypto! if session_type_is_embedded?(session_type)
+        enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(session_type)
 
         adaptor = wait_for_value(wait_for_connection) do
           cypher_session_adaptor(session_type, url || path, (options[:options] || {}).merge(wrap_level: :proc))

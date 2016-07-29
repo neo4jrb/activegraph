@@ -37,7 +37,7 @@ task docs: 'docs:all'
 
 desc 'Run neo4j.rb specs'
 task 'spec' do
-  success = system('rspec spec -fd')
+  success = system('rspec spec')
   abort('RSpec neo4j failed') unless success
 end
 
