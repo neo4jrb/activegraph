@@ -19,7 +19,7 @@ rvm:
   - jruby-9.0.5.0
 env:
   global:
-    - JRUBY_OPTS="-J-Djruby.launch.inproc=false -J-Xmx2048m -J-XX:MaxPermSize=2048m"
+    - JRUBY_OPTS="-J-Djruby.launch.inproc=false -J-Xmx1024m"
     - NEO4J_URL="http://localhost:7474"
     - NEO4J_BOLT_URL="bolt://localhost:7472"
   matrix:
