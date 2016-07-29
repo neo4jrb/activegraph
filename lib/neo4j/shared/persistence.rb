@@ -97,7 +97,7 @@ module Neo4j::Shared
     def apply_default_values
       return if self.class.declared_property_defaults.empty?
       self.class.declared_property_defaults.each_pair do |key, value|
-        self.send("#{key}=", value) if self.send(key).nil?
+        self.send("#{key}=", value.respond_to?(:call) ? value.call : value) if self.send(key).nil?
       end
     end
 
