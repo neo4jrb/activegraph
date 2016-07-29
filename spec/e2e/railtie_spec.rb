@@ -103,9 +103,16 @@ module Rails
         end
 
         if TEST_SESSION_MODE == :embedded
-          let_context(session_options: {type: :embedded, path: './db'}) do
+          require 'tmpdir'
+
+          context 'embedded session options' do
+            let(:tmpdir) { Dir.mktmpdir }
+            let(:session_options) do
+              {type: :embedded, path: tmpdir}
+            end
+
             it { should be_a(Neo4j::Core::CypherSession::Adaptors::Embedded) }
-            its(:path) { should eq('./db') }
+            its(:path) { should eq(tmpdir) }
           end
         end
       end
