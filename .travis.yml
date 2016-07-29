@@ -1,9 +1,9 @@
 before_script:
   - "bundle exec rake neo4j:install[$NEO4J_VERSION] --trace"
   - "bundle exec rake neo4j:config[development,7474] --trace"
-  - "echo 'dbms.memory.pagecache.size=1g' >> ./db/neo4j/development/conf/neo4j.conf"
-  - "echo 'dbms.memory.heap.max_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
-  - "echo 'dbms.memory.heap.initial_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "echo 'dbms.memory.pagecache.size=800m' >> ./db/neo4j/development/conf/neo4j.conf"
+  - "echo 'dbms.memory.heap.max_size=800' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "echo 'dbms.memory.heap.initial_size=800' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "bundle exec rake neo4j:start --trace"
   - "sleep 20"
 script:
@@ -19,7 +19,7 @@ rvm:
   - jruby-9.0.5.0
 env:
   global:
-    - JRUBY_OPTS="-X+O -J-Djruby.launch.inproc=false -J-Xmx2048m -J-XX:MaxPermSize=2048m"
+    - JRUBY_OPTS="-X+O -J-Djruby.launch.inproc=false -J-Xmx1848m -J-XX:MaxPermSize=2048m"
     - NEO4J_URL="http://localhost:7474"
     - NEO4J_BOLT_URL="bolt://localhost:7472"
   matrix:
