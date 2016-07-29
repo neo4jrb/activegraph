@@ -22,6 +22,10 @@ if RUBY_VERSION.to_f < 2.2
   gem 'railties', '~> 4'
 end
 
+if RUBY_VERSION.to_f < 2.0
+  gem 'tins', '< 1.7'
+end
+
 group 'test' do
   gem 'coveralls', require: false
   gem 'codecov', require: false
