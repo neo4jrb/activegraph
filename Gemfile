@@ -20,6 +20,7 @@ end
 
 group 'test' do
   gem 'coveralls', require: false
+  gem 'tins', '< 1.7' if RUBY_VERSION.to_f < 2.0
   gem 'codecov', require: false
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
