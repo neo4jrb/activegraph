@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Allow to pass a Proc for a default property value (thanks @knapo / see #1250)
 - Adding a new ActiveRecord-like migration framework (thanks ProGM / see #1197)
 - Adding a set of rake tasks to manage migrations (thanks ProGM / see #1197)
 - Implemented autoloading for new and legacy migration modules (there's no need to `require` them anymore)
