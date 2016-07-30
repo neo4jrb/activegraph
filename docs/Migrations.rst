@@ -3,6 +3,9 @@ Migrations
 
 Neo4j does not have a set schema like relational databases, but sometimes changes to the schema and the data are required. To help with this, Neo4j.rb provides an ``ActiveRecord``-like migration framework and a set of helper methods to manipulate both database schema and data.  Just like ``ActiveRecord``, a record of which transactions have been run will be stored in the database so that a migration is automatically only run once per environment.
 
+.. note::
+
+  The migration functionality described on this page was introduced in version 8.0 of the ``neo4j`` gem.
 
 Generators
 ----------
