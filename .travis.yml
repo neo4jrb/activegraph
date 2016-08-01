@@ -20,10 +20,10 @@ rvm:
 env:
   global:
     - JRUBY_OPTS="-J-Xmx1280m"
-    - NEO4J_URL="http://localhost:7474"
-    - NEO4J_BOLT_URL="bolt://localhost:7472"
-  matrix:
     - NEO4J_VERSION=community-3.0.3
+  matrix:
+    - NEO4J_URL="http://localhost:7474"
+    - NEO4J_URL="bolt://localhost:7472"
 matrix:
   include:
     - rvm: 2.3.1
