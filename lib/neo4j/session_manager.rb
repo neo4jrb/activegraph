@@ -51,12 +51,6 @@ module Neo4j
 
       protected
 
-      TYPE_SUBSCRIBERS = {
-        http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
-        bolt: Neo4j::Core::CypherSession::Adaptors::Bolt.method(:subscribe_to_request),
-        embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
-      }
-
       def session_type_is_embedded?(session_type)
         [:embedded_db, :embedded].include?(session_type)
       end

@@ -58,8 +58,16 @@ module Neo4j
 
       Neo4j::Config[:logger] ||= Rails.logger
 
+      session_types = cfg.sessions.map { |session_opts| session_opts[:type] }
+
       register_neo4j_cypher_logging(session_types)
     end
+
+    TYPE_SUBSCRIBERS = {
+      http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
+      bolt: Neo4j::Core::CypherSession::Adaptors::Bolt.method(:subscribe_to_request),
+      embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
+    }
 
     def register_neo4j_cypher_logging(session_types)
       return if @neo4j_cypher_logging_registered
