@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.1.2] - 08-01-2016
+
+### Fixed
+
+- Fixed issue where the label wrapping cache would get stuck
+
 ## [7.1.1] - 07-22-2016
 
 ### Fixed
