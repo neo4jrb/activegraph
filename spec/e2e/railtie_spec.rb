@@ -12,7 +12,7 @@ module Rails
     end
 
     describe '#setup!' do
-      let(:session_path) { }
+      let(:session_path) {}
       let(:cfg) do
         ActiveSupport::OrderedOptions.new.tap do |c|
           c.session_path = session_path if session_path
@@ -44,7 +44,6 @@ module Rails
         its(:session_path) { should eq('bolt://localhost:7472') }
         its(:session_type) { should eq(:bolt) }
       end
-
     end
 
     describe 'open_neo4j_session' do
