@@ -35,6 +35,7 @@ require 'pry' if ENV['APP_ENV'] == 'debug'
 
 require 'neo4j/core/cypher_session'
 require 'neo4j/core/cypher_session/adaptors/http'
+require 'neo4j/core/cypher_session/adaptors/bolt'
 require 'neo4j/core/cypher_session/adaptors/embedded'
 
 class MockLogger
@@ -235,7 +236,14 @@ session_adaptor = case TEST_SESSION_MODE
 
                     basic_auth_hash = {username: server_username, password: server_password}
 
-                    Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
+                    case URI(server_url).scheme
+                    when 'http'
+                      Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
+                    when 'bolt'
+                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc)
+                    else
+                      fail "Invalid scheme for NEO4J_URL: #{scheme} (expected `http` or `bolt`)"
+                    end
                   end
 
 module FixingRSpecHelpers
