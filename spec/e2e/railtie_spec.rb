@@ -2,46 +2,49 @@ require 'ostruct'
 
 module Rails
   describe 'railtie' do
-    before do
-      # stub_named_class('Config') do
-      #   attr_accessor :neo4j, :session_type, :session_path, :sessions, :session_options, :wait_for_connection
-      #   def to_hash
-      #     {}
-      #   end
-      # end
-
-      # stub_named_class('Railtie') do
-      #   cattr_accessor :init, :conf
-
-      #   class << self
-      #     # attr_reader :init, :config
-
-      #     def initializer(name, _options = {}, &block)
-      #       Railtie.init ||= {}
-      #       Railtie.init[name] = block
-      #     end
-      #   end
-      # end
-
-      # stub_named_class('App') do
-      #   attr_accessor :neo4j
-
-      #   def config
-      #     self
-      #   end
-
-      #   def neo4j
-      #     @neo4j ||= Config.new
-      #   end
-      # end
-    end
-
     require 'neo4j/railtie'
+
 
     around(:each) do |example|
       main_spec_session = Neo4j::ActiveBase.current_session
       example.run
       Neo4j::ActiveBase.current_session = main_spec_session
+    end
+
+    describe '#setup!' do
+      let(:session_path) { }
+      let(:cfg) do
+        ActiveSupport::OrderedOptions.new.tap do |c|
+          c.session_path = session_path if session_path
+        end
+      end
+
+      before do
+        expect(Neo4j::SessionManager).to receive(:open_neo4j_session)
+      end
+
+      subject do
+        Neo4j::SessionManager.setup!(cfg)
+        cfg
+      end
+
+      let_context(session_path: 'http://user:password@localhost:7474') do
+        its(:session_path) { should eq(session_path) }
+      end
+
+      context 'NEO4J_URL is http' do
+        let_env_variable(:NEO4J_URL) { 'http://localhost:7474' }
+
+        its(:session_path) { should eq('http://localhost:7474') }
+        its(:session_type) { should eq(:http) }
+      end
+
+      context 'NEO4J_URL is bolt' do
+        let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
+        its(:session_path) { should eq('bolt://localhost:7472') }
+        its(:session_type) { should eq(:bolt) }
+      end
+
     end
 
     describe 'open_neo4j_session' do
@@ -53,15 +56,12 @@ module Rails
         end
       end
 
-      it 'allows sessions with authentication' do
-        cfg = ActiveSupport::OrderedOptions.new
-        cfg.session_path = 'http://user:password@localhost:7474'
-        Neo4j::SessionManager.setup!(cfg)
-        expect(cfg.session_path).to eq('http://user:password@localhost:7474')
+      let_context(session_options: {type: :invalid_type}) do
+        subject_should_raise(ArgumentError, /Invalid session type: :invalid_type$/)
       end
 
-      let_context(session_options: {type: :invalid_type}) do
-        subject_should_raise(ArgumentError, /Invalid session type/)
+      let_context(session_options: {type: :server_db}) do
+        subject_should_raise(ArgumentError, /Invalid session type: :server_db \(`server_db` has been replaced/)
       end
 
       describe 'resulting adaptor' do

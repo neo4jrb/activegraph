@@ -96,12 +96,11 @@ module Neo4jSpecHelpers
     end
 
     def let_env_variable(var_name)
-      before do
-        ENV[var_name] = yield
-      end
-
-      after do
-        ENV[var_name] = nil
+      around do |example|
+        old_value = ENV[var_name.to_s]
+        ENV[var_name.to_s] = yield
+        example.run
+        ENV[var_name.to_s] = old_value
       end
     end
   end
