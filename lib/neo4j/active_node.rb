@@ -68,6 +68,8 @@ module Neo4j
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 
       def self.inherited(other)
+        Neo4j::ActiveNode::Labels.clear_wrapped_models
+
         inherit_id_property(other)
         attributes.each_pair do |k, v|
           other.inherit_property k.to_sym, v.clone, declared_properties[k].options

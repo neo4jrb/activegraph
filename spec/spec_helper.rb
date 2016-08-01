@@ -149,6 +149,7 @@ FileUtils.rm_rf(EMBEDDED_DB_PATH)
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
+  Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
   Neo4j::ActiveNode::Labels.clear_wrapped_models
 end
 
