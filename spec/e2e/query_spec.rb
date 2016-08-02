@@ -1,7 +1,5 @@
 require 'set'
 
-
-
 describe 'Query API' do
   before(:each) do
     delete_db
@@ -221,12 +219,9 @@ describe 'Query API' do
           Object.send(:remove_const, :Substitute)
         end
 
-        class TeacherFoo
-          include Neo4j::ActiveNode
-        end
-
-        class Substitute < TeacherFoo
-          include Neo4j::ActiveNode
+        before(:each) do
+          stub_active_node_class('TeacherFoo')
+          stub_named_class('Substitute', TeacherFoo)
         end
 
         subject { Teacher.merge(merge_attrs, on_match: on_match_clause, on_create: on_create_clause, set: set_attrs) }
@@ -557,17 +552,13 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
-            rel = danny.lessons(:l, :r).pluck(:r).first
-            rel[:grade] = 65
-            rel.save
+            danny.lessons(:l, :r).query.set(r: {grade: 65}).exec
 
             bobby.lessons << math101
-            rel = bobby.lessons(:l, :r).pluck(:r).first
-            rel[:grade] = 71
+            bobby.lessons(:l, :r).query.set(r: {grade: 71})
 
             math101.teachers << othmar
-            rel = math101.teachers(:t, :r).pluck(:r).first
-            rel[:since] = 2001
+            math101.teachers(:t, :r).query.set(r: {since: 2001}).exec
 
             sandra.lessons << ss101
           end
@@ -645,9 +636,9 @@ describe 'Query API' do
 
   describe 'Core::Query#proxy_as' do
     let(:core_query) do
-      Neo4j::Session.current.query
-                    .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
-                    .with(:other_end, :s)
+      new_query
+        .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
+        .with(:other_end, :s)
     end
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }

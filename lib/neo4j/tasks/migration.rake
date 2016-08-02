@@ -70,4 +70,36 @@ namespace :neo4j do
     runner = Neo4j::Migrations::Runner.new
     runner.rollback(steps)
   end
+
+  # Temporary to help people change to 8.0
+  desc 'Generates a migration for the specified constraint/index and label/property combination.'
+  task :generate_schema_migration, :index_or_constraint, :label, :property_name do |_t, args|
+    index_or_constraint, label, property_name = args.values_at(:index_or_constraint, :label, :property_name)
+
+    if !%w(index constraint).include?(index_or_constraint)
+      fail "Invalid schema element type: #{index_or_constraint} (should be either `index` or `constraint`)"
+    end
+    fail 'Label must be specified' if label.blank?
+    fail 'Property name must be specified' if property_name.blank?
+
+    migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}"
+
+    path = File.join('db/neo4j/migrate', "#{DateTime.now.utc.strftime('%Y%m%d%H%M%S')}_#{migration_class_name.underscore}.rb")
+
+    content = <<-CONTENT
+class #{migration_class_name} < Neo4j::Migrations::Base
+  def up
+    add_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}, force: true
+  end
+
+  def down
+    drop_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}
+  end
+end
+CONTENT
+
+    File.open(path, 'w') { |f| f << content }
+
+    puts "Generated #{path}"
+  end
 end

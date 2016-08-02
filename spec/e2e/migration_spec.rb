@@ -3,8 +3,10 @@ describe 'migration tasks' do
   let_env_variable('MIGRATIONS_SILENCED') { 'true' }
 
   before do
-    clear_model_memory_caches
     delete_db
+    delete_schema
+    clear_model_memory_caches
+
     stub_active_node_class('User') do
       property :name
       has_many :out, :songs, model_class: :Song, type: 'songs'
@@ -72,7 +74,7 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      Neo4j::Session.query('CREATE (n:`User`) return n')
+      Neo4j::ActiveBase.current_session.query('CREATE (n:`User`) return n')
       user = User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil
@@ -94,8 +96,10 @@ describe 'migration tasks' do
     end
 
     it 'respects the id_property declared on the model' do
+      create_constraint :Song, :my_id, type: :unique
+
       Song.id_property :my_id, on: :custom_id
-      Neo4j::Session.query('CREATE (n:`Song`) return n')
+      Neo4j::ActiveBase.current_session.query('CREATE (n:`Song`) return n')
       user = Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)

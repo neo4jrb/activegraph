@@ -27,9 +27,9 @@ module Neo4j
         end
 
         def id_batch_set(label, id_property, new_ids, count)
-          tx = Neo4j::Transaction.new
+          tx = ActiveBase.new_transaction
 
-          query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
+          execute("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
             with COLLECT(n) as nodes, #{new_ids} as ids
             FOREACH(i in range(0,#{count - 1})|
               FOREACH(node in [nodes[i]]|

@@ -10,21 +10,26 @@ module Neo4j
     include ActiveModel::Serializers::JSON
 
     module ClassMethods
-      attr_writer :neo4j_session_name
+      # TODO: Deprecate neo4j_session_name(name)
 
-      def neo4j_session_name(name)
-        ActiveSupport::Deprecation.warn 'neo4j_session_name is deprecated and may be removed from future releases, use neo4j_session_name= instead.', caller
-
-        @neo4j_session_name = name
+      # remove?
+      def neo4j_session
+        Neo4j::ActiveBase.current_session
       end
 
-      def neo4j_session
-        if @neo4j_session_name
-          Neo4j::Session.named(@neo4j_session_name) ||
-            fail("#{self.name} is configured to use a neo4j session named #{@neo4j_session_name}, but no such session is registered with Neo4j::Session")
-        else
-          Neo4j::Session.current!
-        end
+      # remove?
+      def current_transaction
+        Neo4j::ActiveBase.current_transaction
+      end
+
+      # This should be used everywhere.  Should make it easy
+      # to support a session-per-model system
+      def neo4j_query(*args)
+        Neo4j::ActiveBase.query(*args)
+      end
+
+      def new_query
+        Neo4j::ActiveBase.new_query
       end
     end
 
@@ -46,6 +51,10 @@ module Neo4j
 
     def declared_properties
       self.class.declared_properties
+    end
+
+    def neo4j_query(*args)
+      self.class.neo4j_query(*args)
     end
   end
 end

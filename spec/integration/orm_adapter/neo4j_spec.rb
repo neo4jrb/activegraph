@@ -20,17 +20,19 @@ module Neo4j
         before(:each) do
           clear_model_memory_caches
 
-          stub_active_node_class('User') do
-            property :name, index: :exact
-            property :rating, type: Integer, index: :exact
+          create_index :User, :name, type: :exact
+          create_index :User, :rating, type: :exact
 
-            index :name
+          stub_active_node_class('User') do
+            property :name
+            property :rating, type: Integer
 
             has_many :out, :notes, type: nil, model_class: 'Note'
           end
 
+          create_index :Note, :body, type: :exact
           stub_active_node_class('Note') do
-            property :body, index: :exact
+            property :body
 
             has_one :in, :owner, type: :notes, model_class: 'User'
           end

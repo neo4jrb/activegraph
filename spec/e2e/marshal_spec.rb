@@ -23,7 +23,7 @@ describe Neo4j::Shared::Marshal do
       expect(unmarshaled.neo_id).to eq(neo_id)
       expect(unmarshaled.foo).to eq('bar')
       expect(unmarshaled.labels).to match_array([:Parent, :Child])
-      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Node)
+      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Core::Node)
     end
   end
 
@@ -52,7 +52,7 @@ describe Neo4j::Shared::Marshal do
       expect(unmarshaled.neo_id).to eq(neo_id)
       expect(unmarshaled.foo).to eq('bar')
       expect(unmarshaled.type).to eq('HAS_PARENT')
-      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Relationship)
+      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Core::Relationship)
     end
   end
 end

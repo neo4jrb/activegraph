@@ -17,16 +17,15 @@ describe Neo4j::ActiveNode::Validations do
     end
 
     it 'should not fail when new object is out of scope' do
-      other_clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('OtherClazz') do
         property :name
         property :adult
         validates_uniqueness_of :name, scope: :adult
       end
-      o = other_clazz.new('name' => 'joe', :adult => true)
+      o = OtherClazz.new('name' => 'joe', :adult => true)
       expect(o.save).to be true
 
-      o2 = other_clazz.new('name' => 'joe', :adult => false)
+      o2 = OtherClazz.new('name' => 'joe', :adult => false)
       expect(o2).to be_valid
     end
 
@@ -58,49 +57,46 @@ describe Neo4j::ActiveNode::Validations do
     end
 
     it 'should allow multiple blank entries if :allow_blank => true' do
-      other_clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('OtherClazz') do
         property :name
         validates_uniqueness_of :name, allow_blank: :true
       end
 
-      o = other_clazz.new('name' => '')
+      o = OtherClazz.new('name' => '')
       expect(o.save).to be true
 
-      allow(other_clazz) \
+      allow(OtherClazz) \
         .to receive(:first) \
         .with(name: '') \
         .and_return(o)
 
-      o2 = other_clazz.new('name' => '')
+      o2 = OtherClazz.new('name' => '')
       expect(o2).not_to have_error_on(:name)
     end
 
     it 'should allow multiple nil entries if :allow_nil => true' do
-      other_clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('OtherClazz') do
         property :name
         validates_uniqueness_of :name, allow_nil: :true
       end
 
-      o = other_clazz.new('name' => nil)
+      o = OtherClazz.new('name' => nil)
       expect(o.save).to be true
 
-      o2 = other_clazz.new('name' => nil)
+      o2 = OtherClazz.new('name' => nil)
       expect(o2).not_to have_error_on(:name)
     end
 
     it 'should allow entries that differ only in case by default' do
-      other_clazz = UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('OtherClazz') do
         property :name
         validates_uniqueness_of :name
       end
 
-      o = other_clazz.new('name' => 'BLAMMO')
+      o = OtherClazz.new('name' => 'BLAMMO')
       expect(o.save).to be true
 
-      o2 = other_clazz.new('name' => 'blammo')
+      o2 = OtherClazz.new('name' => 'blammo')
       expect(o2).not_to have_error_on(:name)
     end
 

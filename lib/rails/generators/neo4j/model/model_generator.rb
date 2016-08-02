@@ -31,11 +31,9 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
   end
 
   def has_many_statements
-    txt = ''
-    options[:has_many].each do |key|
+    options[:has_many].each_with_object('') do |key, txt|
       txt << has_x('has_many', key)
     end
-    txt
   end
 
   def has_one?

@@ -2,9 +2,13 @@ source 'http://rubygems.org'
 
 gemspec
 
-if ENV['CI']
-  gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
-  gem 'neo4j-rake_tasks', github: 'neo4jrb/neo4j-rake_tasks', branch: 'master'
+# gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master' if ENV['CI']
+
+if branch = ENV['TRAVIS_BRANCH']
+  same_branch_exists = `curl --head https://github.com/neo4jrb/neo4j-core/tree/#{branch} | head -1`.match(/200 OK/)
+  gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: same_branch_exists ? branch : 'master'
+else
+  gem 'neo4j-core', github: 'neo4jrb/neo4j-core'
 end
 
 # gem 'active_attr', github: 'neo4jrb/active_attr', branch: 'performance'
@@ -17,6 +21,8 @@ if RUBY_VERSION.to_f < 2.2
   gem 'activesupport', '~> 4'
   gem 'railties', '~> 4'
 end
+
+gem 'tins', '< 1.7' if RUBY_VERSION.to_f < 2.0
 
 group 'test' do
   gem 'coveralls', require: false

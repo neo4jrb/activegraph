@@ -48,28 +48,6 @@ class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
   end
 end
 
-module Neo4j
-  module Generators
-    class Migration < ::Rails::Generators::NamedBase
-      def create_migration_file
-        real_file_name = "#{Time.zone.now.strftime('%Y%m%d%H%M%S')}_#{file_name.parameterize}"
-        class_name = file_name.camelize
-
-        create_file "db/neo4j/migrate/#{real_file_name}.rb", <<-FILE
-class #{class_name} < Neo4j::Migrations::Base
-  def up
-  end
-
-  def down
-    raise Neo4j::IrreversibleMigration
-  end
-end
-        FILE
-      end
-    end
-  end
-end
-
 
 module Rails
   module Generators

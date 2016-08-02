@@ -202,7 +202,7 @@ module Neo4j
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
-          Neo4j::Transaction.run do
+          Neo4j::ActiveBase.run_transaction do
             other_nodes.each do |other_node|
               other_node.save unless other_node.neo_id
 
@@ -293,7 +293,7 @@ module Neo4j
         end
 
         def _query
-          _session.query(context: @context)
+          Neo4j::ActiveBase.new_query(context: @context)
         end
 
         # TODO: Refactor this. Too much happening here.

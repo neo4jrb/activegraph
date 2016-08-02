@@ -1,3 +1,5 @@
+require 'neo4j/core/label'
+
 module Neo4j
   module ActiveNode
     # Provides a mapping between neo4j labels and Ruby classes
@@ -35,15 +37,32 @@ module Neo4j
 
       # adds one or more labels
       # @see Neo4j-core
-      def add_label(*label)
-        @_persisted_obj.add_label(*label)
+      def add_labels(*labels)
+        labels.inject(query_as(:n)) do |query, label|
+          query.set("n:`#{label}`")
+        end.exec
+        @_persisted_obj.labels.concat(labels)
+        @_persisted_obj.labels.uniq!
+      end
+
+      # Remove this method in 9.0.0
+      def add_label(*_labels)
+        fail 'add_label has been removed in favor of `add_labels`'
       end
 
       # Removes one or more labels
       # Be careful, don't remove the label representing the Ruby class.
       # @see Neo4j-core
-      def remove_label(*label)
-        @_persisted_obj.remove_label(*label)
+      def remove_labels(*labels)
+        labels.inject(query_as(:n)) do |query, label|
+          query.remove("n:`#{label}`")
+        end.exec
+        labels.each(&@_persisted_obj.labels.method(:delete))
+      end
+
+      # Remove this method in 9.0.0
+      def remove_label(*_labels)
+        fail 'remove_label has been removed in favor of `remove_labels`'
       end
 
       def self._wrapped_classes
@@ -69,9 +88,8 @@ module Neo4j
       end
 
       def self.clear_wrapped_models
-        WRAPPED_CLASSES.clear
         MODELS_FOR_LABELS_CACHE.clear
-        Neo4j::Node::Wrapper::CONSTANTS_FOR_LABELS_CACHE.clear
+        Neo4j::NodeWrapping::CONSTANTS_FOR_LABELS_CACHE.clear
       end
 
       module ClassMethods
@@ -105,8 +123,7 @@ module Neo4j
 
         # Deletes all nodes and connected relationships from Cypher.
         def delete_all
-          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH (n)-[r]-() DELETE n,r")
-          self.neo4j_session._query("MATCH (n:`#{mapped_label_name}`) DELETE n")
+          neo4j_query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH (n)-[r]-() DELETE n,r")
         end
 
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
@@ -127,7 +144,7 @@ module Neo4j
 
         # @return [Neo4j::Label] the label for this class
         def mapped_label
-          Neo4j::Label.create(mapped_label_name)
+          Neo4j::Core::Label.new(mapped_label_name, neo4j_session)
         end
 
         def base_class

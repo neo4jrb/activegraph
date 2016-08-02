@@ -1,10 +1,15 @@
 module Neo4j
   module Schema
     class Operation
-      attr_reader :label_name, :property, :options
+      attr_reader :label, :property, :options
 
-      def initialize(label_name, property, options = default_options)
-        @label_name = label_name.to_sym
+      def initialize(label, property, options = default_options)
+        @label = if label.is_a?(Neo4j::Core::Label)
+                   label
+                 else
+                   Neo4j::Core::Label.new(label, ActiveBase.current_session)
+                 end
+
         @property = property.to_sym
         @options = options
       end
@@ -13,14 +18,14 @@ module Neo4j
         []
       end
 
+      def label_object
+        label
+      end
+
       def create!
         drop_incompatible!
         return if exist?
-        label_object.send(:"create_#{type}", property, options)
-      end
-
-      def label_object
-        @label_object ||= Neo4j::Label.create(label_name)
+        schema_query(:"create_#{type}")
       end
 
       def incompatible_operation_classes
@@ -28,12 +33,12 @@ module Neo4j
       end
 
       def drop!
-        label_object.send(:"drop_#{type}", property, options)
+        schema_query(:"drop_#{type}")
       end
 
       def drop_incompatible!
         incompatible_operation_classes.each do |clazz|
-          operation = clazz.new(label_name, property)
+          operation = clazz.new(@label, property)
           operation.drop! if operation.exist?
         end
       end
@@ -49,6 +54,12 @@ module Neo4j
       def type
         fail 'Abstract class, not implemented'
       end
+
+      private
+
+      def schema_query(method)
+        label.send(method, property, options)
+      end
     end
 
     class ExactIndexOperation < Neo4j::Schema::Operation
@@ -61,7 +72,7 @@ module Neo4j
       end
 
       def exist?
-        label_object.indexes[:property_keys].include?([property])
+        label.index?(property)
       end
     end
 
@@ -71,7 +82,7 @@ module Neo4j
       end
 
       def type
-        'constraint'
+        'uniqueness_constraint'
       end
 
       def create!
@@ -80,7 +91,7 @@ module Neo4j
       end
 
       def exist?
-        Neo4j::Label.constraint?(label_name, property)
+        label.uniqueness_constraint?(property)
       end
 
       def default_options

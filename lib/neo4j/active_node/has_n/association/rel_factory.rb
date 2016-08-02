@@ -44,7 +44,7 @@ module Neo4j::ActiveNode::HasN
 
       def _match_query(other_node, wrapper)
         nodes = _nodes_for_create(other_node, wrapper.from_node_identifier, wrapper.to_node_identifier)
-        Neo4j::Session.current.query.match_nodes(nodes)
+        Neo4j::ActiveBase.new_query.match_nodes(nodes)
       end
 
       def _nodes_for_create(other_node, from_node_id, to_node_id)

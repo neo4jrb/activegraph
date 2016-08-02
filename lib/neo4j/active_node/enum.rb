@@ -6,12 +6,9 @@ module Neo4j::ActiveNode
     module ClassMethods
       protected
 
-      def build_property_options(enum_keys, options = {})
-        if options[:_index]
-          super.merge!(index: :exact)
-        else
-          super
-        end
+      def define_property(property_name, *args)
+        super
+        Neo4j::ModelSchema.add_required_index(self, property_name)
       end
 
       def define_enum_methods(property_name, enum_keys, options)

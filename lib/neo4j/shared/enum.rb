@@ -36,9 +36,6 @@ module Neo4j::Shared
       #   media.video_type!
       #   media.video_type? # => true
       #
-      # @example Disable index: :exact for enum elements
-      #   Media.enum type: [:image, :video, :unknown], _index: false
-      #
       # @example Define a custom mapping for keys-numbers
       #   Media.enum type: { image: 1, video: 2, unknown: 3 }
       #
@@ -67,13 +64,11 @@ module Neo4j::Shared
         end
       end
 
-      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix]
-      DEFAULT_OPTIONS_FOR_ENUMS = {
-        _index: true
-      }
+      VALID_OPTIONS_FOR_ENUMS = [:_prefix, :_suffix]
+      DEFAULT_OPTIONS_FOR_ENUMS = {}
 
       def split_options_and_parameters(parameters)
-        options = DEFAULT_OPTIONS_FOR_ENUMS.clone
+        options = {}
         new_parameters = {}
         parameters.each do |k, v|
           if VALID_OPTIONS_FOR_ENUMS.include? k
@@ -85,16 +80,9 @@ module Neo4j::Shared
         [options, new_parameters]
       end
 
-      def define_property(property_name, enum_keys, options)
-        property_options = build_property_options(enum_keys, options)
-        property property_name, property_options
+      def define_property(property_name, enum_keys, _options)
+        property property_name, default: enum_keys.keys.first # .merge(options)
         serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys)
-      end
-
-      def build_property_options(enum_keys, _options = {})
-        {
-          default: enum_keys.keys.first
-        }
       end
 
       def define_enum_methods(property_name, enum_keys, options)

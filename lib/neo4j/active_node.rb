@@ -46,6 +46,8 @@ module Neo4j
     include Neo4j::ActiveNode::Enum
 
     def initialize(args = nil)
+      self.class.ensure_id_property_info! # So that we make sure all objects have an id_property
+
       symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args
       super(symbol_args)
     end
@@ -67,7 +69,12 @@ module Neo4j
     included do
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
 
+      def self.inherited?
+        !!@inherited
+      end
+
       def self.inherited(other)
+        other.instance_variable_set('@inherited', true)
         inherit_id_property(other)
         attributes.each_pair do |k, v|
           other.inherit_property k.to_sym, v.clone, declared_properties[k].options
@@ -78,25 +85,10 @@ module Neo4j
       end
 
       def self.inherit_id_property(other)
-        Neo4j::Session.on_next_session_available do |_|
-          next if other.manual_id_property? || !self.id_property?
-          id_prop = self.id_property_info
-          conf = id_prop[:type].empty? && id_prop[:name] != :neo_id ? {auto: :uuid} : id_prop[:type]
-          other.id_property id_prop[:name], conf
-        end
-      end
-
-      Neo4j::Session.on_next_session_available do |_|
-        next if manual_id_property?
-
-        name = Neo4j::Config[:id_property]
-        type = Neo4j::Config[:id_property_type]
-        value = Neo4j::Config[:id_property_type_value]
-        if name
-          id_property(name, type && value ? {type => value} : {})
-        else
-          id_property :uuid, auto: :uuid
-        end
+        return if other.manual_id_property? || !self.id_property?
+        id_prop = self.id_property_info
+        conf = id_prop[:type].empty? && id_prop[:name] != :neo_id ? {auto: :uuid} : id_prop[:type]
+        other.id_property id_prop[:name], conf, true
       end
     end
 

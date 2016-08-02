@@ -1,35 +1,55 @@
 before_script:
   - "bundle exec rake neo4j:install[$NEO4J_VERSION] --trace"
-  - "echo 'dbms.memory.pagecache.size=1g' >> ./db/neo4j/development/conf/neo4j.conf"
-  - "echo 'dbms.memory.heap.max_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
-  - "echo 'dbms.memory.heap.initial_size=1000' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "bundle exec rake neo4j:config[development,7474] --trace"
+  - "echo 'dbms.memory.pagecache.size=600m' >> ./db/neo4j/development/conf/neo4j.conf"
+  - "echo 'dbms.memory.heap.max_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "echo 'dbms.memory.heap.initial_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "bundle exec rake neo4j:start --trace"
-  - "sleep 10"
+  - "sleep 20"
 script:
   - "travis_retry bundle exec rake default --trace"
 language: ruby
 cache: bundler
 sudo: false
-jdk:
-  - oraclejdk8
+jdk: oraclejdk8
 rvm:
   - 2.3.1
   - 2.2.5
-  - 2.1.8
-  - jruby-1.7.20
+  - jruby-1.7.23
   - jruby-9.0.5.0
 env:
   global:
-    - JRUBY_OPTS="-X+O -J-Djruby.launch.inproc=false -J-Xmx1024m -J-XX:MaxPermSize=2048m"
+    - JRUBY_OPTS="-J-Xmx1280m"
+    - NEO4J_VERSION=community-3.0.3
   matrix:
-    - NEO4J_VERSION=community-3.0.1
-    - NEO4J_VERSION=community-2.3.0
-    - NEO4J_VERSION=community-2.2.6
-    - NEO4J_VERSION=community-2.1.8
+    - NEO4J_URL="http://localhost:7474"
 matrix:
   include:
-    - rvm: 2.3.0
+    - rvm: 2.3.1
       jdk:
       before_script:
       script: "bundle exec rubocop"
       env: "RUBOCOP=true"
+
+    # Testing bolt
+    - rvm: 2.3.1
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.0.3
+
+    # Older versions of Neo4j with latest version of Ruby
+    - rvm: 2.3.1
+      env: NEO4J_VERSION=community-2.3.6
+    - rvm: 2.3.1
+      env: NEO4J_VERSION=community-2.2.10
+    - rvm: 2.3.1
+      env: NEO4J_VERSION=community-2.1.8
+
+    # Older versions of Neo4j with latest version of jRuby
+    - rvm: jruby-9.0.5.0
+      env: NEO4J_VERSION=community-2.3.6
+    - rvm: jruby-9.0.5.0
+      env: NEO4J_VERSION=community-2.2.10
+    - rvm: jruby-9.0.5.0
+      env: NEO4J_VERSION=community-2.1.8
+
+
+

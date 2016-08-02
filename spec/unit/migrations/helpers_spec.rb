@@ -5,20 +5,19 @@ describe Neo4j::Migrations::Helpers do
   include Neo4j::Migrations::Helpers::Relationships
 
   before do
-    Neo4j::Session.current.close if Neo4j::Session.current
-    create_session
-
     clear_model_memory_caches
     delete_db
+    delete_schema
 
     stub_active_node_class('Bookcase') do
       has_many :out, :books, type: :has_books
     end
 
+    create_constraint(:Book, :name, type: :unique)
+    create_index(:Book, :author_name, type: :exact)
     stub_active_node_class('Book') do
-      property :name, constraint: :unique
-      property :author_name, index: :exact
-      has_one :in, :bookcase, origin: :books
+      property :name
+      property :author_name
     end
 
     Book.create!(name: 'Book1')
@@ -110,32 +109,52 @@ describe Neo4j::Migrations::Helpers do
     end
   end
 
+  def label_object
+    Neo4j::Core::Label.new(:Book, current_session)
+  end
+
   describe '#add_constraint' do
-    after { drop_constraint :Book, :code if Neo4j::Label.constraint?(:Book, :code) }
+    after { drop_constraint :Book, :code if label_object.constraint?(:code) }
 
     it 'adds a constraint to a property' do
       expect do
         add_constraint :Book, :code
-      end.to change { Neo4j::Label.constraint?(:Book, :code) }.from(false).to(true)
+      end.to change { label_object.constraint?(:code) }.from(false).to(true)
     end
 
     it 'fails when constraint is already defined' do
-      expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+      expect do
+        expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+      end.not_to change { label_object.constraint?(:name) }
+    end
+
+    it 'does not fail when constraint is already defined when forced' do
+      add_constraint :Book, :genre
+      expect do
+        expect { add_constraint :Book, :genre, force: true }.not_to raise_error
+      end.not_to change { label_object.constraint?(:genre) }
     end
   end
 
   describe '#add_index' do
-    after { drop_index :Book, :pages if Neo4j::Label.index?(:Book, :pages) }
+    after { drop_index :Book, :pages if label_object.index?(:pages) }
     it 'adds an index to a property' do
       expect do
         add_index :Book, :pages
-      end.to change { Neo4j::Label.index?(:Book, :pages) }.from(false).to(true)
+      end.to change { label_object.index?(:pages) }.from(false).to(true)
     end
 
     it 'fails when index is already defined' do
       expect do
         expect { add_index :Book, :author_name }.to raise_error('Duplicate index for Book#author_name')
-      end.not_to change { Neo4j::Label.create(:Book).indexes[:property_keys].flatten.count }
+      end.not_to change { label_object.indexes.flatten.count }
+    end
+
+    it 'does not fail when index is already defined when forced' do
+      add_index :Book, :isbn
+      expect do
+        expect { add_index :Book, :isbn, force: true }.not_to raise_error
+      end.not_to change { label_object.index?(:isbn) }
     end
   end
 
@@ -248,7 +267,7 @@ describe Neo4j::Migrations::Helpers do
     it 'removes a constraint from a property' do
       expect do
         drop_constraint :Book, :name
-      end.to change { Neo4j::Label.constraint?(:Book, :name) }.from(true).to(false)
+      end.to change { label_object.constraint?(:name) }.from(true).to(false)
       expect { Book.create! name: Book.first.name }.not_to raise_error
     end
 
@@ -261,13 +280,13 @@ describe Neo4j::Migrations::Helpers do
     it 'removes an index from a property' do
       expect do
         drop_index :Book, :author_name
-      end.to change { Neo4j::Label.index?(:Book, :author_name) }.from(true).to(false)
+      end.to change { label_object.index?(:author_name) }.from(true).to(false)
     end
 
     it 'fails when index is not defined' do
       expect do
         expect { drop_index :Book, :missing }.to raise_error('No such index for Book#missing')
-      end.not_to change { Neo4j::Label.create(:Book).indexes[:property_keys].flatten.count }
+      end.not_to change { label_object.indexes.flatten.count }
     end
   end
 end

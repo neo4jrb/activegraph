@@ -1,35 +1,35 @@
 require 'active_support/inflector'
+require 'neo4j/core/node'
 
-class Neo4j::Node
-  # The wrapping process is what transforms a raw CypherNode or EmbeddedNode from Neo4j::Core into a healthy ActiveNode (or ActiveRel) object.
-  module Wrapper
-    # this is a plugin in the neo4j-core so that the Ruby wrapper will be wrapped around the Neo4j::Node objects
-    def wrapper
-      found_class = class_to_wrap
-      return self if not found_class
+wrapping_proc = proc do |node|
+  found_class = Neo4j::NodeWrapping.class_to_wrap(node.labels)
+  next node if not found_class
 
-      found_class.new.tap do |wrapped_node|
-        wrapped_node.init_on_load(self, self.props)
-      end
-    end
+  found_class.new.tap do |wrapped_node|
+    wrapped_node.init_on_load(node, node.props)
+  end
+end
+Neo4j::Core::Node.wrapper_callback(wrapping_proc)
 
-    def class_to_wrap
-      load_classes_from_labels
-      Neo4j::ActiveNode::Labels.model_for_labels(labels).tap do |model_class|
-        Neo4j::Node::Wrapper.populate_constants_for_labels_cache(model_class, labels)
-      end
-    end
-
-    private
-
-    def load_classes_from_labels
-      labels.each { |label| Neo4j::Node::Wrapper.constant_for_label(label) }
-    end
-
+module Neo4j
+  module NodeWrapping
     # Only load classes once for performance
     CONSTANTS_FOR_LABELS_CACHE = {}
 
     class << self
+      def class_to_wrap(labels)
+        load_classes_from_labels(labels)
+        Neo4j::ActiveNode::Labels.model_for_labels(labels).tap do |model_class|
+          populate_constants_for_labels_cache(model_class, labels)
+        end
+      end
+
+      private
+
+      def load_classes_from_labels(labels)
+        labels.each { |label| constant_for_label(label) }
+      end
+
       def constant_for_label(label)
         CONSTANTS_FOR_LABELS_CACHE[label] || CONSTANTS_FOR_LABELS_CACHE[label] = constantized_label(label)
       end
