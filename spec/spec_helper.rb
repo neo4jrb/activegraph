@@ -97,13 +97,17 @@ module Neo4jSpecHelpers
     end
 
     def capture_output!(variable)
-      before(:each) do
-        @__output_string = ''
-        allow($stdout).to receive(:puts) do |*args|
-          @__output_string += args.join('') + "\n"
-        end
+      around do |example|
+        @captured_stream = StringIO.new
+
+        original_stream = $stdout
+        $stdout = @captured_stream
+
+        example.run
+
+        $stdout = original_stream
       end
-      let(variable) { @__output_string }
+      let(variable) { @captured_stream.string }
     end
 
     def let_env_variable(var_name)

@@ -65,10 +65,10 @@ module Neo4j
       end
 
       def migration_message(direction, migration)
-        output ''
         output_migration_message "#{migration.version} #{migration.class_name}: #{MIGRATION_RUNNING[direction]}..."
         time = format('%.4fs', yield)
         output_migration_message "#{migration.version} #{migration.class_name}: #{MIGRATION_DONE[direction]} (#{time})"
+        output ''
       end
 
       def output(*string_format)
