@@ -3,7 +3,7 @@ module Neo4j
     describe Runner do
       before { delete_schema }
 
-      let_env_variable('MIGRATIONS_SILENCED') { 'true' }
+      capture_output!(:output_string)
 
       before do
         create_constraint :'Neo4j::Migrations::SchemaMigration', :migration_id, type: :unique
@@ -52,10 +52,6 @@ module Neo4j
         end
 
         it 'prints the current migration status' do
-          output_string = ''
-          allow_any_instance_of(described_class).to receive(:output) do |_, *args|
-            output_string += format(*args) + "\n"
-          end
           described_class.new.status
           expect(output_string).to match(/^\s*up\s*1234567890\s*RenameJohnJack$/)
           expect(output_string).to match(/^\s*down\s*9500000001\s*RenameBobFrank/)
@@ -78,6 +74,12 @@ module Neo4j
             described_class.new.up '9500000000'
           end.to change { u.reload.name }.to('Bob')
             .and(change { SchemaMigration.count }.by(1))
+        end
+
+        it 'prints queries and execution time' do
+          described_class.new.up '9500000000'
+          expect(output_string).to include('MATCH (u:`User`)')
+          expect(output_string).to match(/migrated \(\d.\d+s\)/)
         end
 
         it 'fails when passing a missing version' do

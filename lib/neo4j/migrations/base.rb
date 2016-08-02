@@ -15,10 +15,10 @@ module Neo4j
         Benchmark.realtime do
           ActiveBase.run_transaction(transactions?) do
             if method == :up
-              up
+              log_queries { up }
               SchemaMigration.create!(migration_id: @migration_id)
             else
-              down
+              log_queries { down }
               SchemaMigration.find_by!(migration_id: @migration_id).destroy
             end
           end
@@ -34,6 +34,13 @@ module Neo4j
       end
 
       private
+
+      def log_queries
+        subscriber = Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:output))
+        yield
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
 
       def ensure_schema_migration_constraint
         SchemaMigration.first

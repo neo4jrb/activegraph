@@ -96,6 +96,16 @@ module Neo4jSpecHelpers
       end
     end
 
+    def capture_output!(variable)
+      before(:each) do
+        @__output_string = ''
+        allow($stdout).to receive(:puts) do |*args|
+          @__output_string += args.join('') + "\n"
+        end
+      end
+      let(variable) { @__output_string }
+    end
+
     def let_env_variable(var_name)
       around do |example|
         old_value = ENV[var_name.to_s]
