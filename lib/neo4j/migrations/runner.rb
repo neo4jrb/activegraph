@@ -65,13 +65,20 @@ module Neo4j
       end
 
       def migration_message(direction, migration)
-        output "== #{migration.version} #{migration.class_name}: #{MIGRATION_RUNNING[direction]}... ========="
-        time = "#{yield.to_d.truncate(4)}s"
-        output "== #{migration.version} #{migration.class_name}: #{MIGRATION_DONE[direction]} (#{time}) ========="
+        output ''
+        output_migration_message "#{migration.version} #{migration.class_name}: #{MIGRATION_RUNNING[direction]}..."
+        time = format('%.4fs', yield)
+        output_migration_message "#{migration.version} #{migration.class_name}: #{MIGRATION_DONE[direction]} (#{time})"
       end
 
       def output(*string_format)
         puts format(*string_format) unless !!ENV['MIGRATIONS_SILENCED']
+      end
+
+      def output_migration_message(message)
+        out = "== #{message} "
+        tail = '=' * [0, 80 - out.length].max
+        output "#{out}#{tail}"
       end
 
       def find_by_version!(version)
