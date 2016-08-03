@@ -185,6 +185,7 @@ module ActiveNodeRelStubHelpers
 
   def stub_named_class(class_name, superclass = nil, &block)
     stub_const class_name, named_class(class_name, superclass, &block)
+    Neo4j::ModelSchema.reload_models_data!
   end
 
   def active_node_class(class_name, with_constraint = true, &block)
@@ -230,10 +231,12 @@ module ActiveNodeRelStubHelpers
 
   def create_constraint(label_name, property, options = {})
     Neo4j::ActiveBase.label_object(label_name).create_constraint(property, options)
+    Neo4j::ModelSchema.reload_models_data!
   end
 
   def create_index(label_name, property, options = {})
     Neo4j::ActiveBase.label_object(label_name).create_index(property, options)
+    Neo4j::ModelSchema.reload_models_data!
   end
 end
 
@@ -309,6 +312,7 @@ RSpec.configure do |config|
     Neo4j::ModelSchema::MODEL_INDEXES.clear
     Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
     Neo4j::ModelSchema::REQUIRED_INDEXES.clear
+    Neo4j::ModelSchema.reload_models_data!
   end
 
   config.before(:all) do
