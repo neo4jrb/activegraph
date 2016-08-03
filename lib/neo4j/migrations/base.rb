@@ -10,13 +10,45 @@ module Neo4j
         @migration_id = migration_id
       end
 
+      def trace_execution(levels = 4)
+        cyan = "\e[36m"
+        clear = "\e[0m"
+        green = "\e[32m"
+
+        indent = 0
+        output = ''
+        trace = TracePoint.new(:call, :c_call, :return, :c_return) do |tp|
+          if [:return, :c_return].include?(tp.event) && indent.nonzero?
+            indent -= 1
+          else
+            if indent <= levels
+              parts = []
+              parts << ('|  ' * indent).to_s
+              parts << "#{cyan if tp.event == :call}%-8s#{clear}"
+              parts << "%s:%-4d %-18s\n"
+              puts format(parts.join(' '), tp.event, tp.path, tp.lineno, tp.defined_class.to_s + '#' + green + tp.method_id.to_s + clear)
+            end
+            indent += 1
+          end
+        end
+
+        trace.enable
+        yield
+      ensure
+        trace.disable
+        puts output
+      end
+
+
       def migrate(method)
         ensure_schema_migration_constraint
         Benchmark.realtime do
           ActiveBase.run_transaction(transactions?) do
             if method == :up
               log_queries { up }
-              SchemaMigration.create!(migration_id: @migration_id)
+              trace_execution(1000) do
+                SchemaMigration.create!(migration_id: @migration_id)
+              end
             else
               log_queries { down }
               SchemaMigration.find_by!(migration_id: @migration_id).destroy
