@@ -98,14 +98,36 @@ If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, 
 
   Neo4j::ActiveBase.current_session
 
-``server_db``
-^^^^^^^^^^^^^
+server_db
+^^^^^^^^^
+
+In previous version of the ``neo4j`` gem to connect to Neo4j via HTTP you would define the value ``server_db`` in the ``neo4j.yml`` file, the ``NEO4J_TYPE`` environment variable, or a Rails configuration (``config.neo4j.session_type``).  This should now be replaced and either ``bolt`` or ``http`` should be used.
 
 Indexes and Constraints
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+In previous versions of the ``neo4j`` gem, ``ActiveNode`` models would allow you to define indexes and constraints as part of the model.  While this was a convenient feature, it would often cause problems because Neo4j does not allow schema changes to happen in the same transaction as data changes.  This would often happen when using ``ActiveNode`` because constraints and indexes would be automatically created when your model was first loaded, which may very well be in the middle of a transaction.
+
+In version 8.0 of the ``neo4j`` gem, you must now create indexes and constraints separately.  You can do this yourself, but version 8.0 provides fully featured migration functionality to make this easy (see the `Migrations`_ section).
+
+If you still have indexes or constraints defined, the gem will check to see if those indexes or constraints exist.  If they don't, an exception will be raised with command that you can run to generate the appropriate migrations.  If they do exist, a warning will be given to remove the index / constraint definitions.
+
+Also note that all ``ActiveNode`` models must have an ``id_property`` defined (which is the ``uuid`` property by default).  These constraints will also be checked and an exception will be raised if they do not exist.
+
 Migrations
 ^^^^^^^^^^
 
+Version 8.0 of the ``neo4j`` gem now includes a fully featured migration system similar to the one provided by ``ActiveRecord``.  See the :doc:`documentation <Migrations>` for details.
 
+neo_id id_properties
+^^^^^^^^^^^^^^^^^^^^
 
+In version 8.0 of the ``neo4j`` gem support was added to allow for definining the internal Neo4j ID as the ``id_property`` for a model like so:
+
+.. code-block:: ruby
+
+  id_property :neo_id
+
+.. warning::
+
+  Use of ``neo_id`` as a perminent identifier should be done with caution.  Neo4j can recycle IDs from deleted nodes meaning that URLs or other external references using that ID will reference the wrong item.  Neo4j may be updated in the future to support internal IDs which aren't recycled, but for now use at your own risk
