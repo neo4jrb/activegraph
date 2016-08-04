@@ -50,7 +50,7 @@ module Neo4j
         output STATUS_TABLE_FORMAT, *STATUS_TABLE_HEADER
         output SEPARATOR
         all_migrations.each do |version|
-          status = up?(version) ? UP_MESSAGE : DOWN_MESSAGE
+          status = migration_status(version)
           migration_file = find_by_version(version)
           migration_name = migration_file ? migration_file.class_name : FILE_MISSING
           output STATUS_TABLE_FORMAT, status, version, migration_name
@@ -71,7 +71,7 @@ module Neo4j
 
       def migration_status(version)
         return DOWN_MESSAGE unless up?(version)
-        incomplete_states.find { |v| v == version } ? INCOMPLETE_MESSAGE : UP_MESSAGE
+        incomplete_states.find { |v| v.migration_id == version } ? INCOMPLETE_MESSAGE : UP_MESSAGE
       end
 
       def handle_incomplete_states!

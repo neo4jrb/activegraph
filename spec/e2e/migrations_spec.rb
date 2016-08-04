@@ -50,14 +50,14 @@ module Neo4j
 
       describe '#status' do
         before do
-          SchemaMigration.create! migration_id: '1234567890'
+          SchemaMigration.create! migration_id: '1234567890', incomplete: true
           SchemaMigration.create! migration_id: '9500000000'
           SchemaMigration.create! migration_id: '9400000000'
         end
 
         it 'prints the current migration status' do
           described_class.new.status
-          expect(output_string).to match(/^\s*up\s*1234567890\s*RenameJohnJack$/)
+          expect(output_string).to match(/^\s*incomplete\s*1234567890\s*RenameJohnJack$/)
           expect(output_string).to match(/^\s*down\s*9500000001\s*RenameBobFrank/)
           expect(output_string).to match(/^\s*up\s*9400000000\s*\*\*\*\* file missing \*\*\*\*/)
         end
