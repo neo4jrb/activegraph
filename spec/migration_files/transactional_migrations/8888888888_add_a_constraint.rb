@@ -1,9 +1,9 @@
 class AddAConstraint < Neo4j::Migrations::Base
   def up
-    add_constraint :Book, :isbn
+    add_constraint :Book, :some
   end
 
   def down
-    remove_constraint :Book, :isbn
+    drop_constraint :Book, :some
   end
 end

@@ -130,12 +130,22 @@ module Neo4j
           end
         end
 
-        it 'run without raising errors' do
+        it 'run `up` without raising errors' do
           expect do
             expect do
               described_class.new.up '8888888888'
             end.not_to raise_error
-          end.to change { Neo4j::Core::Label.new(:Book, current_session).constraint?(:isbn) }.to(true)
+          end.to change { Neo4j::Core::Label.new(:Book, current_session).constraint?(:some) }.to(true)
+        end
+
+        it 'run `down` without raising errors' do
+          create_constraint :Book, :some, type: :unique
+          SchemaMigration.create! migration_id: '8888888888'
+          expect do
+            expect do
+              described_class.new.down '8888888888'
+            end.not_to raise_error
+          end.to change { Neo4j::Core::Label.new(:Book, current_session).constraint?(:some) }.to(false)
         end
       end
 
