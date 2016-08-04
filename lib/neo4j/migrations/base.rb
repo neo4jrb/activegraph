@@ -34,7 +34,7 @@ module Neo4j
           schema.destroy
           handle_migration_error!(e)
         end
-        schema.update!(incomplete: false)
+        schema.update!(incomplete: nil)
       end
 
       def migrate_down
@@ -43,7 +43,7 @@ module Neo4j
         begin
           run_migration(:down)
         rescue StandardError => e
-          schema.update!(incomplete: false)
+          schema.update!(incomplete: nil)
           handle_migration_error!(e)
         end
         schema.destroy
