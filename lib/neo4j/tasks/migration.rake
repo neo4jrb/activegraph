@@ -62,6 +62,20 @@ namespace :neo4j do
       runner = Neo4j::Migrations::Runner.new
       runner.status
     end
+
+    desc 'Resolve an incomplete version state'
+    task resolve: :environment do
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
+      runner = Neo4j::Migrations::Runner.new
+      runner.resolve version
+    end
+
+    desc 'Resolve an incomplete version state'
+    task reset: :environment do
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
+      runner = Neo4j::Migrations::Runner.new
+      runner.reset version
+    end
   end
 
   desc 'Rollbacks migrations given a STEP number'

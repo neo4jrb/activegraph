@@ -7,7 +7,7 @@ guard :rubocop, cli: '--auto-correct --display-cop-names --except Lint/Debugger'
   callback(:start_begin) { puts '👮 🚨 👮 🚨 👮 🚨 👮 🚨 👮 ' }
 end
 
-guard :rspec, cmd: 'bundle exec rspec -fd', failed_mode: :focus do
+guard :rspec, cmd: 'bundle exec rspec', failed_mode: :focus do
   watch(%r{^spec/.+_spec\.rb$})
   watch(%r{^lib/(.+)\.rb}) { |m| "spec/lib/#{m[1]}_spec.rb" }
   watch('spec/spec_helper.rb') { 'spec' }

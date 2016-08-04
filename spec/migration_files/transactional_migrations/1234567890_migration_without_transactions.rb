@@ -5,6 +5,7 @@ class MigrationWithoutTransactions < Neo4j::Migrations::Base
     execute 'MATCH (u:`User`) WHERE u.name = {name} SET u.name = {new_name}',
             name: 'Joe', new_name: 'Jack'
     execute 'CREATE (n:`Contact` {phone: "123123"})'
+    fail
   end
 
   def down

@@ -1,6 +1,6 @@
 describe Neo4j::Migrations::MigrationFile do
   let(:file_name) do
-    "#{Rails.root}/spec/support/transactional_migrations/1234567890_migration_without_transactions.rb"
+    "#{Rails.root}/spec/migration_files/transactional_migrations/1234567890_migration_without_transactions.rb"
   end
   subject { described_class.new(file_name) }
 
