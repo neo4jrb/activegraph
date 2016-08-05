@@ -65,17 +65,28 @@ module Neo4j
       end
 
       def reload_models_data!
-        @model_indexes = @model_constraints = nil
+        @legacy_model_schema_informations = @model_indexes = @model_constraints = nil
+      end
+
+      def legacy_model_schema_informations
+        @legacy_model_schema_informations ||= begin
+          data = {index: [], constraint: []}
+          [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
+            schema_elements.map do |*args|
+              data[type] << [:model, :label, :property_name, :exists].zip(args).to_h
+            end
+          end
+          data
+        end
       end
 
       def validate_model_schema!
-        messages = {index: [], constraint: []}
-        [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
-          schema_elements.map do |model, label, property_name, exists|
+        messages = legacy_model_schema_informations.each_with_object(index: [], constraint: []) do |(type, schema_infos), msg|
+          schema_infos.each do |data|
             if exists
-              log_warning!(type, model, property_name)
+              log_warning!(type, data[:model], data[:property_name])
             else
-              messages[type] << force_add_message(type, label, property_name)
+              msg[type] << force_add_message(*data.values_at(:type, :label, :property_name))
             end
           end
         end

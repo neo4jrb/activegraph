@@ -13,6 +13,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
 
   def create_model_file
     template 'model.erb', File.join('app/models', class_path, "#{singular_name}.rb")
+    migration_template 'migration.erb'
   end
 
   protected

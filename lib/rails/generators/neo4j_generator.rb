@@ -7,6 +7,19 @@ module Neo4j
   end
 end
 
+module Neo4j::Generators::Migration
+  def migration_file_name(file_name)
+    "#{Time.zone.now.strftime('%Y%m%d%H%M%S')}_#{file_name.parameterize}"
+  end
+
+  def migration_template(template_name)
+    real_file_name = migration_file_name(file_name)
+    @migration_class_name = file_name.camelize
+
+    template template_name, File.join('db/neo4j/migrate', real_file_name)
+  end
+end
+
 class Neo4j::Generators::Base < ::Rails::Generators::NamedBase #:nodoc:
   def self.source_root
     @_neo4j_source_root ||= File.expand_path(File.join(File.dirname(__FILE__),
