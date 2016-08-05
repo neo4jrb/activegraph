@@ -312,6 +312,7 @@ RSpec.configure do |config|
     Neo4j::ModelSchema::MODEL_INDEXES.clear
     Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
     Neo4j::ModelSchema::REQUIRED_INDEXES.clear
+    Neo4j::ActiveNode.loaded_classes.clear
     Neo4j::ModelSchema.reload_models_data!
   end
 

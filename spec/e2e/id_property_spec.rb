@@ -144,6 +144,7 @@ describe Neo4j::ActiveNode::IdProperty do
           Clazz.id_property :another_property, auto: :uuid
           Clazz.ensure_id_property_info!
         end
+
         it 'removes any previously declared properties' do
           begin
             node = Clazz.create

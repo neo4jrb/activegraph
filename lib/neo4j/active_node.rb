@@ -56,6 +56,12 @@ module Neo4j
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
+    LOADED_CLASSES = []
+
+    def self.loaded_classes
+      LOADED_CLASSES
+    end
+
     module ClassMethods
       def nodeify(object)
         if object.is_a?(::Neo4j::ActiveNode) || object.nil?
@@ -68,12 +74,14 @@ module Neo4j
 
     included do
       include Neo4j::Timestamps if Neo4j::Config[:record_timestamps]
+      LOADED_CLASSES << self
 
       def self.inherited?
         !!@inherited
       end
 
       def self.inherited(other)
+        LOADED_CLASSES << other
         other.instance_variable_set('@inherited', true)
         inherit_id_property(other)
         attributes.each_pair do |k, v|
