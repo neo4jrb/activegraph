@@ -100,7 +100,7 @@ module Neo4j
 
         return if messages.values.all?(&:empty?)
 
-        fail validation_error_message(messages)
+        fail ::Neo4j::DeprecatedSchemaDefinitionError, validation_error_message(messages)
       end
 
       def validation_error_message(messages)

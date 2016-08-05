@@ -24,14 +24,8 @@ module Neo4j
       end
 
       def initialize_all_models!
-        models = ObjectSpace.each_object(Class).select { |klass| klass < ::Neo4j::ActiveNode }
-        models.each do |model|
-          begin
-            model.all
-          rescue RuntimeError
-            nil
-          end
-        end
+        models = Neo4j::ActiveNode.loaded_classes
+        models.map(&:ensure_id_property_info!)
       end
     end
   end
