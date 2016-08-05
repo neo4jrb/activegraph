@@ -3,7 +3,20 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] Unreleased
+## [8.0.0.alpha.2] 2016-08-05
+
+### Changed
+
+- Improve migration output format / show execution time in migrations
+
+### Fixed
+
+- Caching of model index and constraint checks
+- Error when running schema migrations.  Migrations now give a warning and instructions if a migration fails and cannot be recovered
+- Error when running rake tasks to generate "force" creations of indexes / constraints and there is no migration directory
+- `WARNING` is no longer displayed for constraints defined from `id_property` (either one which is implict or explict)
+
+## [8.0.0.alpha.1] 2016-08-02
 
 ### Changed
 
