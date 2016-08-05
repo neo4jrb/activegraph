@@ -96,6 +96,20 @@ module Neo4jSpecHelpers
       end
     end
 
+    def capture_output!(variable)
+      around do |example|
+        @captured_stream = StringIO.new
+
+        original_stream = $stdout
+        $stdout = @captured_stream
+
+        example.run
+
+        $stdout = original_stream
+      end
+      let(variable) { @captured_stream.string }
+    end
+
     def let_env_variable(var_name)
       around do |example|
         old_value = ENV[var_name.to_s]
@@ -171,6 +185,7 @@ module ActiveNodeRelStubHelpers
 
   def stub_named_class(class_name, superclass = nil, &block)
     stub_const class_name, named_class(class_name, superclass, &block)
+    Neo4j::ModelSchema.reload_models_data!
   end
 
   def active_node_class(class_name, with_constraint = true, &block)
@@ -216,10 +231,12 @@ module ActiveNodeRelStubHelpers
 
   def create_constraint(label_name, property, options = {})
     Neo4j::ActiveBase.label_object(label_name).create_constraint(property, options)
+    Neo4j::ModelSchema.reload_models_data!
   end
 
   def create_index(label_name, property, options = {})
     Neo4j::ActiveBase.label_object(label_name).create_index(property, options)
+    Neo4j::ModelSchema.reload_models_data!
   end
 end
 
@@ -295,6 +312,7 @@ RSpec.configure do |config|
     Neo4j::ModelSchema::MODEL_INDEXES.clear
     Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
     Neo4j::ModelSchema::REQUIRED_INDEXES.clear
+    Neo4j::ModelSchema.reload_models_data!
   end
 
   config.before(:all) do

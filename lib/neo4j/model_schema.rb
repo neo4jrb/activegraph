@@ -30,23 +30,27 @@ module Neo4j
       end
 
       def model_constraints
-        constraints = Neo4j::ActiveBase.current_session.constraints.each_with_object({}) do |row, result|
-          result[row[:label]] ||= []
-          result[row[:label]] << row[:properties]
-        end
+        @model_constraints ||= begin
+          constraints = Neo4j::ActiveBase.current_session.constraints.each_with_object({}) do |row, result|
+            result[row[:label]] ||= []
+            result[row[:label]] << row[:properties]
+          end
 
-        schema_elements_list(MODEL_CONSTRAINTS, constraints)
+          schema_elements_list(MODEL_CONSTRAINTS, constraints)
+        end
       end
 
       def model_indexes
-        indexes = Neo4j::ActiveBase.current_session.indexes.each_with_object({}) do |row, result|
-          result[row[:label]] ||= []
-          result[row[:label]] << row[:properties]
-        end
+        @model_indexes ||= begin
+          indexes = Neo4j::ActiveBase.current_session.indexes.each_with_object({}) do |row, result|
+            result[row[:label]] ||= []
+            result[row[:label]] << row[:properties]
+          end
 
-        schema_elements_list(MODEL_INDEXES, indexes) +
+          schema_elements_list(MODEL_INDEXES, indexes) +
           schema_elements_list(REQUIRED_INDEXES, indexes).reject(&:last)
-        # reject required indexes which are already in the DB
+          # reject required indexes which are already in the DB
+        end
       end
 
       # should be private
@@ -58,6 +62,10 @@ module Neo4j
             [model, label, property_name, exists]
           end
         end
+      end
+
+      def reload_models_data!
+        @model_indexes = @model_constraints = nil
       end
 
       def validate_model_schema!
