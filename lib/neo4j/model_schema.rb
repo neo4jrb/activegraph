@@ -85,7 +85,7 @@ module Neo4j
         [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
           schema_elements.map do |model, label, property_name, exists|
             if exists
-              log_warning!(type, model, property_name)
+              log_warning!(type, model, property_name) if model.id_property_name.to_sym != property_name
             else
               messages[type] << force_add_message(type, label, property_name)
             end
