@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
 
-class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
+class Neo4j::Generators::ModelGenerator < Rails::Generators::NamedBase #:nodoc:
+  include ::Neo4j::Generators::PathHelper
   include ::Neo4j::Generators::MigrationHelper
 
   argument :attributes, type: :array, default: [], banner: 'field:type field:type'
