@@ -98,6 +98,8 @@ namespace :neo4j do
 
     migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}"
 
+    require 'fileutils'
+    FileUtils.mkdir_p('db/neo4j/migrate')
     path = File.join('db/neo4j/migrate', "#{DateTime.now.utc.strftime('%Y%m%d%H%M%S')}_#{migration_class_name.underscore}.rb")
 
     content = <<-CONTENT

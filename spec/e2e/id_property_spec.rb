@@ -144,6 +144,7 @@ describe Neo4j::ActiveNode::IdProperty do
           Clazz.id_property :another_property, auto: :uuid
           Clazz.ensure_id_property_info!
         end
+
         it 'removes any previously declared properties' do
           begin
             node = Clazz.create
@@ -280,21 +281,21 @@ describe Neo4j::ActiveNode::IdProperty do
 
     let_context id_property_name: :my_uuid do
       let_context id_property_options: {constraint: false} do
-        it_behaves_like 'logs constraint option false warning', :Clazz
-        it_behaves_like 'does not log constraint option false warning', :SubClazz
+        it_behaves_like 'logs id_property constraint option false warning', :Clazz
+        it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
         let_context subclass_id_property_name: :other_uuid do
-          it_behaves_like 'logs constraint option false warning', :Clazz
-          it_behaves_like 'does not log constraint option false warning', :SubClazz
+          it_behaves_like 'logs id_property constraint option false warning', :Clazz
+          it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
           let_context subclass_id_property_options: {constraint: false} do
-            it_behaves_like 'logs constraint option false warning', :Clazz
-            it_behaves_like 'logs constraint option false warning', :SubClazz
+            it_behaves_like 'logs id_property constraint option false warning', :Clazz
+            it_behaves_like 'logs id_property constraint option false warning', :SubClazz
           end
 
           let_context subclass_id_property_options: {constraint: true} do
-            it_behaves_like 'logs constraint option false warning', :Clazz
-            it_behaves_like 'does not log constraint option false warning', :SubClazz
+            it_behaves_like 'logs id_property constraint option false warning', :Clazz
+            it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
             it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
             it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
@@ -302,12 +303,12 @@ describe Neo4j::ActiveNode::IdProperty do
         end
 
         let_context subclass_id_property_name: :my_uuid do
-          it_behaves_like 'logs constraint option false warning', :Clazz
-          it_behaves_like 'does not log constraint option false warning', :SubClazz
+          it_behaves_like 'logs id_property constraint option false warning', :Clazz
+          it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
           let_context subclass_id_property_options: {constraint: false} do
-            it_behaves_like 'logs constraint option false warning', :Clazz
-            it_behaves_like 'logs constraint option false warning', :SubClazz
+            it_behaves_like 'logs id_property constraint option false warning', :Clazz
+            it_behaves_like 'logs id_property constraint option false warning', :SubClazz
           end
         end
       end

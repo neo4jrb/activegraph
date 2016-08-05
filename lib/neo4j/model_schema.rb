@@ -30,27 +30,27 @@ module Neo4j
       end
 
       def model_constraints
-        @model_constraints ||= begin
-          constraints = Neo4j::ActiveBase.current_session.constraints.each_with_object({}) do |row, result|
-            result[row[:label]] ||= []
-            result[row[:label]] << row[:properties]
-          end
+        return @model_constraints if @model_constraints
 
-          schema_elements_list(MODEL_CONSTRAINTS, constraints)
+        constraints = Neo4j::ActiveBase.current_session.constraints.each_with_object({}) do |row, result|
+          result[row[:label]] ||= []
+          result[row[:label]] << row[:properties]
         end
+
+        @model_constraints = schema_elements_list(MODEL_CONSTRAINTS, constraints)
       end
 
       def model_indexes
-        @model_indexes ||= begin
-          indexes = Neo4j::ActiveBase.current_session.indexes.each_with_object({}) do |row, result|
-            result[row[:label]] ||= []
-            result[row[:label]] << row[:properties]
-          end
+        return @model_indexes if @model_indexes
 
-          schema_elements_list(MODEL_INDEXES, indexes) +
-          schema_elements_list(REQUIRED_INDEXES, indexes).reject(&:last)
-          # reject required indexes which are already in the DB
+        indexes = Neo4j::ActiveBase.current_session.indexes.each_with_object({}) do |row, result|
+          result[row[:label]] ||= []
+          result[row[:label]] << row[:properties]
         end
+
+        @model_indexes = schema_elements_list(MODEL_INDEXES, indexes) +
+                         schema_elements_list(REQUIRED_INDEXES, indexes).reject(&:last)
+        # reject required indexes which are already in the DB
       end
 
       # should be private
@@ -64,27 +64,37 @@ module Neo4j
         end
       end
 
-      def reload_models_data!
-        @legacy_model_schema_informations = @model_indexes = @model_constraints = nil
-      end
-
-      def legacy_model_schema_informations
-        @legacy_model_schema_informations ||= begin
-          data = {index: [], constraint: []}
-          [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
-            schema_elements.map do |args|
-              data[type] << [:model, :label, :property_name, :exists].zip(args).to_h
-            end
-          end
-          data
+      def ensure_model_data_state!
+        # If we load a new model, reset everything
+        if @previously_loaded_models_count != Neo4j::ActiveNode.loaded_classes.size
+          # Make sure we've finalized id_property details and have called
+          # add_ constraint/index methods above
+          Neo4j::ActiveNode.loaded_classes.each(&:ensure_id_property_info!)
+          reload_models_data!
         end
       end
 
+      def reload_models_data!
+        @previously_loaded_models_count = Neo4j::ActiveNode.loaded_classes.size
+        @model_indexes = @model_constraints = nil
+      end
+
+      def legacy_model_schema_informations
+        data = {index: [], constraint: []}
+        [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
+          schema_elements.map do |args|
+            data[type] << [:model, :label, :property_name, :exists].zip(args).to_h
+          end
+        end
+        data
+      end
+
       def validate_model_schema!
-        messages = legacy_model_schema_informations.each_with_object(index: [], constraint: []) do |(type, schema_infos), msg|
-          schema_infos.each do |data|
+        ensure_model_data_state!
+        messages = legacy_model_schema_informations.each_with_object(index: [], constraint: []) do |(type, schema_elements), msg|
+          schema_elements.each do |data|
             if exists
-              log_warning!(type, data[:model], data[:property_name])
+              log_warning!(type, data[:model], data[:property_name]) if model.id_property_name.to_sym != property_name
             else
               msg[type] << force_add_message(*data.values_at(:type, :label, :property_name))
             end
@@ -98,10 +108,12 @@ module Neo4j
 
       def validation_error_message(messages)
         <<MSG
-          Some schema elements were defined by the model (which is no longer support), but they do not exist in the database.  Run the following to create them:
+          Some schema elements were defined by the model (which is no longer supported), but they do not exist in the database.  Run the following to create them:
 
 #{messages[:constraint].join("\n")}
 #{messages[:index].join("\n")}
+
+And then run `rake neo4j:migrate`
 
 (zshell users may need to escape the brackets)
 MSG

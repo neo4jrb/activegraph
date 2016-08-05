@@ -110,6 +110,7 @@ describe 'Neo4j::ActiveNode' do
 
         let_context indexes: [:name] do
           it_behaves_like 'raises schema error including', :constraint, :Clazz, :name
+          it_behaves_like 'raises schema error not including', :index, :Clazz, :name
           it_behaves_like 'raises schema error not including', :constraint, :Clazz, :uuid
           it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
@@ -117,6 +118,8 @@ describe 'Neo4j::ActiveNode' do
             before { create_constraint(:Clazz, :name, type: :unique) }
 
             it_behaves_like 'does not raise schema error', :Clazz
+            it_behaves_like 'does not log id_property constraint option false warning', :Clazz
+            it_behaves_like 'does not log schema option warning', :constraint, :Clazz, :uuid
             it_behaves_like 'logs schema option warning', :constraint, :Clazz, :name
           end
 
