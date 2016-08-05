@@ -19,7 +19,19 @@ module Neo4j
 
       def load_all_models_schema!
         Rails.application.eager_load!
+        initialize_all_models!
         Neo4j::ModelSchema.legacy_model_schema_informations
+      end
+
+      def initialize_all_models!
+        models = ObjectSpace.each_object(Class).select { |klass| klass < ::Neo4j::ActiveNode }
+        models.each do |model|
+          begin
+            model.all
+          rescue RuntimeError
+            nil
+          end
+        end
       end
     end
   end
