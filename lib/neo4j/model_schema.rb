@@ -72,7 +72,7 @@ module Neo4j
         @legacy_model_schema_informations ||= begin
           data = {index: [], constraint: []}
           [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
-            schema_elements.map do |*args|
+            schema_elements.map do |args|
               data[type] << [:model, :label, :property_name, :exists].zip(args).to_h
             end
           end

@@ -1,7 +1,6 @@
 require 'rails/generators/named_base'
 require 'rails/generators/active_model'
 
-
 module Neo4j
   module Generators #:nodoc:
   end
