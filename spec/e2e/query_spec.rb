@@ -212,13 +212,6 @@ describe 'Query API' do
         before { allow(DateTime).to receive(:now).and_return(*timestamps) }
         after { expect(Teacher.count).to eq 1 }
 
-        # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
-        # so please excuse this kludge.
-        after(:all) do
-          Object.send(:remove_const, :TeacherFoo)
-          Object.send(:remove_const, :Substitute)
-        end
-
         before(:each) do
           stub_active_node_class('TeacherFoo')
           stub_named_class('Substitute', TeacherFoo)

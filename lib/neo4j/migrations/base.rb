@@ -11,17 +11,8 @@ module Neo4j
       end
 
       def migrate(method)
-        ensure_schema_migration_constraint
         Benchmark.realtime do
-          ActiveBase.run_transaction(transactions?) do
-            if method == :up
-              up
-              SchemaMigration.create!(migration_id: @migration_id)
-            else
-              down
-              SchemaMigration.find_by!(migration_id: @migration_id).destroy
-            end
-          end
+          method == :up ? migrate_up : migrate_down
         end
       end
 
@@ -35,9 +26,48 @@ module Neo4j
 
       private
 
-      def ensure_schema_migration_constraint
-        SchemaMigration.first
-        Neo4j::Core::Label.wait_for_schema_changes(ActiveBase.current_session)
+      def migrate_up
+        schema = SchemaMigration.create!(migration_id: @migration_id, incomplete: true)
+        begin
+          run_migration(:up)
+        rescue StandardError => e
+          schema.destroy
+          handle_migration_error!(e)
+        end
+        schema.update!(incomplete: nil)
+      end
+
+      def migrate_down
+        schema = SchemaMigration.find_by!(migration_id: @migration_id)
+        schema.update!(incomplete: true)
+        begin
+          run_migration(:down)
+        rescue StandardError => e
+          schema.update!(incomplete: nil)
+          handle_migration_error!(e)
+        end
+        schema.destroy
+      end
+
+      def run_migration(direction)
+        migration_transaction { log_queries { public_send(direction) } }
+      end
+
+      def handle_migration_error!(e)
+        fail e unless e.message =~ /Cannot perform data updates in a transaction that has performed schema updates./
+        fail MigrationError,
+             "#{e.message}. Please add `disable_transactions!` in your migration file."
+      end
+
+      def migration_transaction(&block)
+        ActiveBase.run_transaction(transactions?, &block)
+      end
+
+      def log_queries
+        subscriber = Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:output))
+        yield
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
       end
     end
   end

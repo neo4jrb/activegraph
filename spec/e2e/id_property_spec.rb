@@ -272,6 +272,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
       Clazz.ensure_id_property_info!
       SubClazz.ensure_id_property_info!
+      Neo4j::ModelSchema.reload_models_data!
     end
 
     it_behaves_like 'raises schema error including', :constraint, :Clazz, :uuid
@@ -547,8 +548,6 @@ describe Neo4j::ActiveNode::IdProperty do
 
       stub_named_class('Skiing', Sport)
     end
-
-    after(:all) { [Teacher, Car, Apple, Sport, Skiing].each(&:delete_all) }
 
     it 'inherits the base id_property' do
       expect(Substitute.create.my_id).to eq 'an id'
