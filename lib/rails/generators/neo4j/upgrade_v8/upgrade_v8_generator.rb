@@ -2,10 +2,11 @@ require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
 
 module Neo4j
   module Generators
-    class UpgradeV8 < ::Rails::Generators::Base
+    class UpgradeV8Generator < ::Rails::Generators::Base
+      include ::Neo4j::Generators::SourcePathHelper
       include ::Neo4j::Generators::MigrationHelper
 
-      def create_neo4j_migration_file
+      def create_upgrade_v8_file
         @schema = load_all_models_schema!
         migration_template 'migration.erb'
       end
