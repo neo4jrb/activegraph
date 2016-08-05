@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
 
-class Neo4j::Generators::UpgradeV8Generator < Rails::Generators::Base
+class Neo4j::Generators::UpgradeV8Generator < Neo4j::Generators::Base
   include Neo4j::Generators::MigrationHelper
 
   def create_neo4j_migration_file

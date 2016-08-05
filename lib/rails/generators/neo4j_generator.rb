@@ -9,7 +9,7 @@ end
 
 module Neo4j::Generators::MigrationHelper
   def migration_file_name(file_name)
-    "#{Time.zone.now.strftime('%Y%m%d%H%M%S')}_#{file_name.parameterize}"
+    "#{Time.zone.now.strftime('%Y%m%d%H%M%S')}_#{file_name.parameterize}.rb"
   end
 
   def migration_template(template_name)
