@@ -123,7 +123,7 @@ module Neo4j
                 puts
                 return session
               end
-            rescue Faraday::ConnectionFailed => e
+            rescue Neo4j::Core::CypherSession::ConnectionFailedError
               raise e if !wait
 
               putc '.'
