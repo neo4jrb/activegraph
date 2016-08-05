@@ -81,23 +81,20 @@ module Neo4j
 
       def legacy_model_schema_informations
         data = {index: [], constraint: []}
-        [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
-          schema_elements.map do |args|
-            data[type] << [:model, :label, :property_name, :exists].zip(args).to_h
-          end
+        each_schema_element do |type, model, label, property_name|
+          data[type] << {label: label, property_name: property_name, model: model}
         end
         data
       end
 
       def validate_model_schema!
         ensure_model_data_state!
-        messages = legacy_model_schema_informations.each_with_object(index: [], constraint: []) do |(type, schema_elements), msg|
-          schema_elements.each do |data|
-            if exists
-              log_warning!(type, data[:model], data[:property_name]) if model.id_property_name.to_sym != property_name
-            else
-              msg[type] << force_add_message(*data.values_at(:type, :label, :property_name))
-            end
+        messages = {index: [], constraint: []}
+        each_schema_element do |type, model, label, property_name, exists|
+          if exists
+            log_warning!(type, model, property_name) if model.id_property_name.to_sym != property_name
+          else
+            messages[type] << force_add_message(type, label, property_name)
           end
         end
 
@@ -125,6 +122,16 @@ MSG
 
       def log_warning!(index_or_constraint, model, property_name)
         Neo4j::ActiveBase.logger.warn "WARNING: The #{index_or_constraint} option is no longer supported (Defined on #{model.name} for #{property_name})"
+      end
+
+      private
+
+      def each_schema_element
+        [[:constraint, model_constraints], [:index, model_indexes]].each do |type, schema_elements|
+          schema_elements.each do |args|
+            yield(type, *args)
+          end
+        end
       end
     end
   end
