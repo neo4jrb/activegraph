@@ -1,13 +1,13 @@
 before_script:
-  - "bundle exec rake neo4j:install[$NEO4J_VERSION] --trace"
-  - "bundle exec rake neo4j:config[development,7474] --trace"
+  - "bin/rake neo4j:install[$NEO4J_VERSION] --trace"
+  - "bin/rake neo4j:config[development,7474] --trace"
   - "echo 'dbms.memory.pagecache.size=600m' >> ./db/neo4j/development/conf/neo4j.conf"
   - "echo 'dbms.memory.heap.max_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "echo 'dbms.memory.heap.initial_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
-  - "bundle exec rake neo4j:start --trace"
+  - "bin/rake neo4j:start --trace"
   - "sleep 20"
 script:
-  - "travis_retry bundle exec rake default --trace"
+  - "travis_retry bin/rake default --trace"
 language: ruby
 cache: bundler
 sudo: false
@@ -19,7 +19,7 @@ rvm:
   - jruby-9.0.5.0
 env:
   global:
-    - JRUBY_OPTS="-J-Xmx1280m"
+    - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
     - NEO4J_VERSION=community-3.0.3
   matrix:
     - NEO4J_URL="http://localhost:7474"
