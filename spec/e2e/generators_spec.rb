@@ -47,7 +47,7 @@ describe 'Generators' do
       expect(described_class.source_root).to include('rails/generators/neo4j/upgrade_v8/templates')
     end
 
-    it 'creates a model and a migration file' do
+    it 'creates a migration file' do
       expect_any_instance_of(described_class).to receive(:template).with('migration.erb', 'db/neo4j/migrate/19901210000000_upgrate_to_v8.rb')
       described_class.new.create_upgrade_v8_file
     end
