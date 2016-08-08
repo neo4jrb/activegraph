@@ -2,9 +2,9 @@ require 'active_support/concern'
 require 'neo4j/migration'
 
 unless Rake::Task.task_defined?('environment')
-  require 'neo4j/session_manager'
   desc 'Run a script against the database to perform system-wide changes'
   task :environment do
+    require 'neo4j/session_manager'
     Neo4j::SessionManager.setup!
   end
 end
@@ -62,6 +62,20 @@ namespace :neo4j do
       runner = Neo4j::Migrations::Runner.new
       runner.status
     end
+
+    desc 'Resolve an incomplete version state'
+    task resolve: :environment do
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
+      runner = Neo4j::Migrations::Runner.new
+      runner.resolve version
+    end
+
+    desc 'Resolve an incomplete version state'
+    task reset: :environment do
+      version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
+      runner = Neo4j::Migrations::Runner.new
+      runner.reset version
+    end
   end
 
   desc 'Rollbacks migrations given a STEP number'
@@ -69,5 +83,39 @@ namespace :neo4j do
     steps = (ENV['STEP'] || 1).to_i
     runner = Neo4j::Migrations::Runner.new
     runner.rollback(steps)
+  end
+
+  # Temporary to help people change to 8.0
+  desc 'Generates a migration for the specified constraint/index and label/property combination.'
+  task :generate_schema_migration, :index_or_constraint, :label, :property_name do |_t, args|
+    index_or_constraint, label, property_name = args.values_at(:index_or_constraint, :label, :property_name)
+
+    if !%w(index constraint).include?(index_or_constraint)
+      fail "Invalid schema element type: #{index_or_constraint} (should be either `index` or `constraint`)"
+    end
+    fail 'Label must be specified' if label.blank?
+    fail 'Property name must be specified' if property_name.blank?
+
+    migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}"
+
+    require 'fileutils'
+    FileUtils.mkdir_p('db/neo4j/migrate')
+    path = File.join('db/neo4j/migrate', "#{DateTime.now.utc.strftime('%Y%m%d%H%M%S')}_#{migration_class_name.underscore}.rb")
+
+    content = <<-CONTENT
+class #{migration_class_name} < Neo4j::Migrations::Base
+  def up
+    add_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}, force: true
+  end
+
+  def down
+    drop_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}
+  end
+end
+CONTENT
+
+    File.open(path, 'w') { |f| f << content }
+
+    puts "Generated #{path}"
   end
 end

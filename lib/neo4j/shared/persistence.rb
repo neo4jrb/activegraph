@@ -9,7 +9,7 @@ module Neo4j::Shared
 
     def update_model
       return if !changed_attributes || changed_attributes.empty?
-      _persisted_obj.update_props(props_for_update)
+      neo4j_query(query_as(:n).set(n: props_for_update))
       changed_attributes.clear
     end
 
@@ -81,14 +81,13 @@ module Neo4j::Shared
       @_create_or_updating = true
       apply_default_values
       result = _persisted_obj ? update_model : create_model
-      if result == false
-        Neo4j::Transaction.current.failure if Neo4j::Transaction.current
-        false
-      else
-        true
-      end
+      current_transaction = Neo4j::ActiveBase.current_transaction
+
+      current_transaction.mark_failed if result == false && current_transaction
+
+      result != false
     rescue => e
-      Neo4j::Transaction.current.failure if Neo4j::Transaction.current
+      current_transaction.mark_failed if current_transaction
       raise e
     ensure
       @_create_or_updating = nil
@@ -97,7 +96,7 @@ module Neo4j::Shared
     def apply_default_values
       return if self.class.declared_property_defaults.empty?
       self.class.declared_property_defaults.each_pair do |key, value|
-        self.send("#{key}=", value) if self.send(key).nil?
+        self.send("#{key}=", value.respond_to?(:call) ? value.call : value) if self.send(key).nil?
       end
     end
 
@@ -120,12 +119,16 @@ module Neo4j::Shared
 
     def destroy
       freeze
-      _persisted_obj && _persisted_obj.del
+
+      destroy_query.exec if _persisted_obj
+
       @_deleted = true
     end
 
     def exist?
-      _persisted_obj && _persisted_obj.exist?
+      return if !_persisted_obj
+
+      neo4j_query(query_as(:n).return('ID(n)')).any?
     end
 
     # Returns +true+ if the object was destroyed.
@@ -186,6 +189,12 @@ module Neo4j::Shared
         "#{model_cache_key}/#{neo_id}-#{self.updated_at.utc.to_s(:number)}"
       else
         "#{model_cache_key}/#{neo_id}"
+      end
+    end
+
+    module ClassMethods
+      def run_transaction(run_in_tx = true)
+        Neo4j::ActiveBase.run_transaction(run_in_tx) { |tx| yield tx }
       end
     end
 

@@ -3,7 +3,20 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] Unreleased
+## [8.0.0.alpha.2] 2016-08-05
+
+### Changed
+
+- Improve migration output format / show execution time in migrations
+
+### Fixed
+
+- Caching of model index and constraint checks
+- Error when running schema migrations.  Migrations now give a warning and instructions if a migration fails and cannot be recovered
+- Error when running rake tasks to generate "force" creations of indexes / constraints and there is no migration directory
+- `WARNING` is no longer displayed for constraints defined from `id_property` (either one which is implict or explict)
+
+## [8.0.0.alpha.1] 2016-08-02
 
 ### Changed
 
@@ -12,13 +25,25 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Renamed the ENV variable to silence migrations output from `silenced` to `MIGRATIONS_SILENCED`
 - Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
 - Invalid options to the `property` method now raise an exception (see #1169)
+- Label #indexes/#constraints return array without needing to access [:property_keys]
+- `server_db` server type is no longer supported.  Use `http` instead to connect to Neo4j via the HTTP JSON API
 
 ### Added
 
+- Allow to pass a Proc for a default property value (thanks @knapo / see #1250)
 - Adding a new ActiveRecord-like migration framework (thanks ProGM / see #1197)
 - Adding a set of rake tasks to manage migrations (thanks ProGM / see #1197)
 - Implemented autoloading for new and legacy migration modules (there's no need to `require` them anymore)
 - Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
+- New adaptor-based API has been created for connecting to Neo4j (See the [upgrade guide](TODO!!!!)).  Changes include:
+- The old APIs are deprecated and will be removed later.
+- In the new API, there is no such thing as a "current" session.  Users of `neo4j-core` must create and maintain references themselves to their sessions
+- New `Neo4j::Core::Node` and `Neo4j::Core::Relationshp` classes have been created to provide consistent results between adaptors.  `Neo4j::Core::Path` has also been added
+- New API is centered around Cypher.  No special methods are defined to, for example, load/create/etc... nodes/relationships
+- There is now a new API for making multiple queries in the same HTTP request
+- It is now possible to subscribe separately to events for querying in different adaptors and for HTTP requests (see [the docs](TODO!!!!))
+- Schema queries (changes to indexes/constraints) happen in a separate thread for performance and reduce the complexity of the code
+- New session API does not include replacement for on_next_session_available
 - Adding a migration helper to mass relabel migrations (thanks @JustinAiken / see #1166 #1239)
 - Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
 - Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
@@ -26,6 +51,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Made some memory optimizations (thanks ProGM / see #1221)
+
+## [7.1.1] - 07-22-2016
+
+### Fixed
+
+- `AssociationProxy` changed so that `pluck` can be used in rails/acivesupport 5 (thanks ProGM / see #1243)
 
 ## [7.1.0] - 07-14-2016
 

@@ -1,5 +1,11 @@
 describe Neo4j::ActiveNode do
   before(:each) do
+    delete_schema
+    delete_db
+
+    create_index :StoredFile, :type, type: :exact
+    create_index :StoredFile, :size, type: :exact
+    create_index :StoredFile, :flag, type: :exact
     stub_active_node_class('StoredFile') do
       enum type: [:unknown, :image, :video]
       enum size: {big: 100, medium: 7, small: 2}, _prefix: :dimension
@@ -152,6 +158,9 @@ describe Neo4j::ActiveNode do
 
   describe 'conflicts' do
     it 'raises an error when two enums are conflicting' do
+      create_index :ConflictingModel, :enum1, type: :exact
+      create_index :ConflictingModel, :enum2, type: :exact
+
       expect do
         stub_active_node_class('ConflictingModel') do
           enum enum1: [:a, :b, :c]
@@ -174,6 +183,26 @@ describe Neo4j::ActiveNode do
         file.attributes = params
         expect(file.type).to eq('image')
       end
+    end
+  end
+
+  describe 'required index behavior' do
+    before do
+      create_index(:Incomplete, :foo, type: :exact)
+      stub_active_node_class('Incomplete') do
+        enum foo: [:a, :b]
+        enum bar: [:c, :d]
+      end
+    end
+
+    it_behaves_like 'raises schema error not including', :index, :Incomplete, :foo
+    it_behaves_like 'raises schema error including', :index, :Incomplete, :bar
+
+    context 'second enum index created' do
+      before { create_index(:Incomplete, :bar, type: :exact) }
+
+      it_behaves_like 'does not raise schema error', :Incomplete
+      it_behaves_like 'does not log schema option warning', :index, :Incomplete
     end
   end
 end

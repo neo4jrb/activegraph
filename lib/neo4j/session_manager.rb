@@ -1,5 +1,8 @@
 require 'active_support/core_ext/hash'
 require 'active_support/ordered_options'
+require 'neo4j/core/cypher_session/adaptors/http'
+require 'neo4j/core/cypher_session/adaptors/bolt'
+require 'neo4j/core/cypher_session/adaptors/embedded'
 
 module Neo4j
   class SessionManager
@@ -12,9 +15,12 @@ module Neo4j
         cfg.sessions.each do |session_opts|
           open_neo4j_session(session_opts, cfg.wait_for_connection)
         end
-        Neo4j::Config.configuration.merge!(cfg.to_hash)
+
+        Neo4j::Config.configuration.merge!(cfg.to_h)
       end
 
+      # TODO: Remove ability for multiple sessions?
+      # Ability to overwrite default session per-model like ActiveRecord?
       def setup_default_session(cfg)
         setup_config_defaults!(cfg)
 
@@ -23,6 +29,7 @@ module Neo4j
         cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options.merge(default: true)}
       end
 
+      # TODO: Support `session_url` config for server mode
       def setup_config_defaults!(cfg)
         cfg.session_type ||= default_session_type
         cfg.session_path ||= default_session_path
@@ -30,34 +37,31 @@ module Neo4j
         cfg.sessions ||= []
       end
 
-      def start_embedded_session(session)
+      def open_neo4j_session(options, wait_for_connection = false)
+        session_type, path, url = options.values_at(:type, :path, :url)
+
+        enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(session_type)
+
+        adaptor = wait_for_value(wait_for_connection) do
+          cypher_session_adaptor(session_type, url || path, (options[:options] || {}).merge(wrap_level: :proc))
+        end
+
+        Neo4j::ActiveBase.current_adaptor = adaptor
+      end
+
+      protected
+
+      def session_type_is_embedded?(session_type)
+        [:embedded_db, :embedded].include?(session_type)
+      end
+
+      def enable_unlimited_strength_crypto!
         # See https://github.com/jruby/jruby/wiki/UnlimitedStrengthCrypto
         security_class = java.lang.Class.for_name('javax.crypto.JceSecurity')
         restricted_field = security_class.get_declared_field('isRestricted')
         restricted_field.accessible = true
         restricted_field.set nil, false
-        session.start
       end
-
-      def open_neo4j_session(options, wait_for_connection = false)
-        type, name, default, path = options.values_at(:type, :name, :default, :path)
-
-        if !java_platform? && type == :embedded_db
-          fail "Tried to start embedded Neo4j db without using JRuby (got #{RUBY_PLATFORM}), please run `rvm jruby`"
-        end
-
-        session = wait_for_value(wait_for_connection) do
-          if options.key?(:name)
-            Neo4j::Session.open_named(type, name, default, path)
-          else
-            Neo4j::Session.open(type, path, options[:options])
-          end
-        end
-
-        start_embedded_session(session) if type == :embedded_db
-      end
-
-      protected
 
       def config_data
         @config_data ||= if yaml_path
@@ -74,9 +78,30 @@ module Neo4j
         end.detect(&:exist?)
       end
 
+      # TODO: Deprecate embedded_db and http in favor of embedded and http
+      #
+      def cypher_session_adaptor(type, path_or_url, options = {})
+        case type
+        when :embedded_db, :embedded
+          Neo4j::Core::CypherSession::Adaptors::Embedded.new(path_or_url, options)
+        when :http
+          Neo4j::Core::CypherSession::Adaptors::HTTP.new(path_or_url, options)
+        when :bolt
+          Neo4j::Core::CypherSession::Adaptors::Bolt.new(path_or_url, options)
+        else
+          extra = ' (`server_db` has been replaced by `http` or `bolt`)'
+          fail ArgumentError, "Invalid session type: #{type.inspect}#{extra if type.to_sym == :server_db}"
+        end
+      end
+
       def default_session_type
-        type = ENV['NEO4J_TYPE'] || config_data[:type] || :server_db
-        type.to_sym
+        if ENV['NEO4J_URL']
+          URI(ENV['NEO4J_URL']).scheme.tap do |scheme|
+            fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http bolt).include?(scheme)
+          end
+        else
+          ENV['NEO4J_TYPE'] || config_data[:type] || :http
+        end.to_sym
       end
 
       def default_session_path
@@ -98,7 +123,7 @@ module Neo4j
                 puts
                 return session
               end
-            rescue Faraday::ConnectionFailed => e
+            rescue Neo4j::Core::CypherSession::ConnectionFailedError
               raise e if !wait
 
               putc '.'

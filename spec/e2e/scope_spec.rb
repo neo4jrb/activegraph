@@ -1,7 +1,8 @@
 # module Neo4j::ActiveNode::Scope
 
 describe 'Neo4j::NodeMixin::Scope' do
-  before(:each) do
+  before do
+    delete_db
     clear_model_memory_caches
 
     stub_active_node_class('Person') do

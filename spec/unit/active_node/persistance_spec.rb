@@ -3,6 +3,9 @@ describe Neo4j::ActiveNode::Persistence do
 
   let(:clazz) do
     Class.new do
+      include Neo4j::Shared
+      include Neo4j::Shared::Identity
+      include Neo4j::ActiveNode::Query
       include Neo4j::ActiveNode::Persistence
       include Neo4j::ActiveNode::Unpersisted
       include Neo4j::ActiveNode::HasN
@@ -25,47 +28,6 @@ describe Neo4j::ActiveNode::Persistence do
 
     it 'raises an error when given a property which is not defined' do
       expect { clazz.new(unknown: true) }.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
-    end
-  end
-
-  describe 'save' do
-    let(:session) { double('Session') }
-    before do
-      @session = double('Mock Session')
-      allow(Neo4j::Session).to receive(:current).and_return(session)
-    end
-
-    # TODO: This should be an e2e test. This stubbing...
-    it 'creates a new node if not persisted before' do
-      o = clazz.new(name: 'kalle', age: '42')
-      allow(o).to receive(:serialized_properties).and_return({})
-      allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
-      expect(clazz).to receive(:neo4j_session).and_return(session)
-      expect(clazz).to receive(:mapped_label_names).and_return(:MyClass)
-      expect(node).to receive(:props).and_return(name: 'kalle2', age: '43')
-      expect(session).to receive(:create_node).with({name: 'kalle', age: 42}, :MyClass).and_return(node)
-      expect_any_instance_of(clazz).to receive(:init_on_load).with(node, age: '43', name: 'kalle2')
-      allow(Object).to receive(:default_property_values).and_return({})
-      o.save
-    end
-
-    it 'does not update persisted node if nothing changed' do
-      o = clazz.new(name: 'kalle', age: '42')
-      allow(o).to receive(:_persisted_obj).and_return(node)
-      allow(o).to receive(:changed_attributes).and_return({})
-      expect(node).not_to receive(:update_props).with(anything)
-      o.save
-    end
-
-    it 'updates node if already persisted before if an attribute was changed' do
-      o = clazz.new
-      o.name = 'sune'
-      allow(o).to receive(:serialized_properties).and_return({})
-      allow(o).to receive(:_persisted_obj).and_return(node)
-      allow_any_instance_of(Object).to receive(:serialized_properties_keys).and_return([])
-
-      expect(node).to receive(:update_props).and_return(name: 'sune')
-      o.save
     end
   end
 

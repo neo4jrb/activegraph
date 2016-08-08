@@ -12,8 +12,10 @@ module Neo4j::ActiveRel
       end
 
       # Loads the relationship using its neo_id.
-      def find_by_id(key, session = Neo4j::Session.current!)
-        session.query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
+      def find_by_id(key, session = nil)
+        options = session ? {session: session} : {}
+        query ||= Neo4j::ActiveBase.new_query(options)
+        query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
       end
 
       # Performs a very basic match on the relationship.
@@ -47,12 +49,12 @@ module Neo4j::ActiveRel
 
       def where_query
         deprecation_warning!
-        Neo4j::Session.query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+        Neo4j::ActiveBase.new_query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
       end
 
       def all_query
         deprecation_warning!
-        Neo4j::Session.query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+        Neo4j::ActiveBase.new_query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
       end
 
       def cypher_string(dir = :outbound)

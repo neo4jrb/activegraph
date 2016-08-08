@@ -14,6 +14,8 @@ Contents:
    Introduction
    Setup
 
+   UpgradeGuide
+
    RakeTasks
 
    ActiveNode

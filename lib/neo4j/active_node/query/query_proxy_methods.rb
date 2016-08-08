@@ -135,7 +135,7 @@ module Neo4j
           fail 'Method invalid when called on Class objects' unless source_object
           result = self.where(params).first
           return result unless result.nil?
-          Neo4j::Transaction.run do
+          Neo4j::ActiveBase.run_transaction do
             node = model.find_or_create_by(params)
             self << node
             return node

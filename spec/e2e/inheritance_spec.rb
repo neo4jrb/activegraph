@@ -9,17 +9,17 @@ describe 'Inheritance', type: :e2e do
       property :foo, type: String, default: 'foo'
     end
 
+    create_index :Vehicle, :name, type: :exact
     stub_named_class('Vehicle', Node) do
       property :name, type: String
       property :specs # Hash
-      index :name
       serialize :specs
       has_many :out, :models, type: nil, model_class: false
     end
 
+    create_index :Car, :model, type: :exact
     stub_named_class('Car', Vehicle) do
       property :model
-      index :model
     end
 
     stub_active_rel_class('BaseRel') do
@@ -59,12 +59,6 @@ describe 'Inheritance', type: :e2e do
       it 'can find all sub and base classes' do
         expect(Vehicle.all.to_a).to match_array([@saab, @bike, @volvo])
         expect(Car.all.to_a).to match_array([@saab, @volvo])
-      end
-    end
-
-    describe 'indexes' do
-      it 'inherits the indexes of the base class' do
-        expect(Car.indexed_properties).to include :name
       end
     end
 

@@ -1,20 +1,19 @@
 describe 'Neo4j::Transaction' do
   context 'reading has_one relationships for Neo4j::Server' do
-    let(:clazz) do
-      UniqueClass.create do
-        include Neo4j::ActiveNode
+    before do
+      stub_active_node_class('Clazz') do
         property :name
         has_one :out, :thing, type: nil, model_class: self
       end
     end
 
-    before { clazz }
+    before { Clazz }
 
     it 'returns a wrapped node inside and outside of transaction' do
       begin
-        tx = Neo4j::Transaction.new
-        a = clazz.create name: 'a'
-        b = clazz.create name: 'b'
+        tx = Neo4j::ActiveBase.new_transaction
+        a = Clazz.create name: 'a'
+        b = Clazz.create name: 'b'
         a.thing = b
         expect(a.thing).to eq b
       ensure

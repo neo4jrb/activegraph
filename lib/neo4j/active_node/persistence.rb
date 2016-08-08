@@ -33,8 +33,7 @@ module Neo4j::ActiveNode
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def concurrent_increment!(attribute, by = 1)
-      query_node = Neo4j::Session.query.match_nodes(n: neo_id)
-      increment_by_query! query_node, attribute, by
+      increment_by_query! query_as(:n), attribute, by
     end
 
     # Persist the object to the database.  Validations and Callbacks are included
@@ -67,7 +66,8 @@ module Neo4j::ActiveNode
     # @param [Array] labels The labels to use for creating the new node.
     # @return [Neo4j::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
-      self.class.neo4j_session.create_node(node_props, labels)
+      query = "CREATE (n:`#{Array(labels).join('`:`')}`) SET n = {props} RETURN n"
+      neo4j_query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
     end
 
     # As the name suggests, this inserts the primary key (id property) into the properties hash.
@@ -88,11 +88,15 @@ module Neo4j::ActiveNode
 
     private
 
+    def destroy_query
+      query_as(:n).break.optional_match('(n)-[r]-()').delete(:n, :r)
+    end
+
     # The pending associations are cleared during the save process, so it's necessary to
     # build the processable hash before it begins. If there are nodes and associations that
     # need to be created after the node is saved, a new transaction is started.
     def cascade_save
-      Neo4j::Transaction.run(pending_deferred_creations?) do
+      self.class.run_transaction(pending_deferred_creations?) do
         result = yield
         process_unpersisted_nodes!
         result
@@ -124,19 +128,19 @@ module Neo4j::ActiveNode
         optional_attrs.default = {}
         on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
 
-        neo4j_session.query.merge(n: {self.mapped_label_names => match_attributes})
-                     .on_create_set(on_create_clause(on_create_attrs))
-                     .on_match_set(on_match_clause(on_match_attrs))
-                     .break.set(n: set_attrs)
-                     .pluck(:n).first
+        new_query.merge(n: {self.mapped_label_names => match_attributes})
+                 .on_create_set(on_create_clause(on_create_attrs))
+                 .on_match_set(on_match_clause(on_match_attrs))
+                 .break.set(n: set_attrs)
+                 .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
         on_create_attributes = set_attributes.reverse_merge(find_attributes.merge(self.new(find_attributes).props_for_create))
 
-        neo4j_session.query.merge(n: {self.mapped_label_names => find_attributes})
-                     .on_create_set(n: on_create_attributes)
-                     .pluck(:n).first
+        new_query.merge(n: {self.mapped_label_names => find_attributes})
+                 .on_create_set(n: on_create_attributes)
+                 .pluck(:n).first
       end
 
       # Finds the first node with the given attributes, or calls create if none found
@@ -154,7 +158,13 @@ module Neo4j::ActiveNode
       end
 
       def load_entity(id)
-        Neo4j::Node.load(id)
+        query = query_base_for(id, :n).return(:n)
+        result = neo4j_query(query).first
+        result && result.n
+      end
+
+      def query_base_for(neo_id, var = :n)
+        Neo4j::ActiveBase.new_query.match(var).where(var => {neo_id: neo_id})
       end
 
       private
