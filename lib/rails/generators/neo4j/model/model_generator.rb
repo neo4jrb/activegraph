@@ -1,6 +1,9 @@
 require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
 
-class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
+class Neo4j::Generators::ModelGenerator < Rails::Generators::NamedBase #:nodoc:
+  include ::Neo4j::Generators::SourcePathHelper
+  include ::Neo4j::Generators::MigrationHelper
+
   argument :attributes, type: :array, default: [], banner: 'field:type field:type'
 
   check_class_collision
@@ -13,6 +16,7 @@ class Neo4j::Generators::ModelGenerator < Neo4j::Generators::Base #:nodoc:
 
   def create_model_file
     template 'model.erb', File.join('app/models', class_path, "#{singular_name}.rb")
+    migration_template 'migration.erb'
   end
 
   protected

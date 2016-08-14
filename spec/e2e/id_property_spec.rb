@@ -148,7 +148,7 @@ describe Neo4j::ActiveNode::IdProperty do
         it 'removes any previously declared properties' do
           begin
             node = Clazz.create
-          rescue RuntimeError
+          rescue Neo4j::DeprecatedSchemaDefinitionError
             nil
           end
           expect(node.respond_to?(:uuid)).to be_falsey
