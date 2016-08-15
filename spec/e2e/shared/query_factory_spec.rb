@@ -33,6 +33,15 @@ describe Neo4j::Shared::QueryFactory do
           expect(from_node_factory.query.pluck(:from_node).first).to be_a(FactoryFromClass)
         end.to change { FactoryFromClass.count }
       end
+
+      context 'with a value that might be interpreted as a prop' do
+        let(:from_node) { FactoryFromClass.new(name: '{Tricky .Value}')}
+        it 'creates without error' do
+          expect do
+            expect(from_node_factory.query.pluck(:from_node).first).to be_a(FactoryFromClass)
+          end.to change { FactoryFromClass.where(name: from_node.name).count }
+        end
+      end
     end
 
     context 'persisted' do
@@ -53,6 +62,16 @@ describe Neo4j::Shared::QueryFactory do
         expect do
           expect(rel_factory.query.pluck(:rel).first).to be_a(FactoryRelClass)
         end.to change { FactoryRelClass.count }
+      end
+
+      context 'with a value that might be interpreted as a prop' do
+        let(:rel) { FactoryRelClass.new(score: '{9000 ....}') }
+
+        it 'creates without error' do
+          expect do
+            expect(rel_factory.query.pluck(:rel).first).to be_a(FactoryRelClass)
+          end.to change { FactoryRelClass.count }
+        end
       end
     end
 
