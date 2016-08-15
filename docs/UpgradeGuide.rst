@@ -131,3 +131,17 @@ In version 8.0 of the ``neo4j`` gem support was added to allow for definining th
 .. warning::
 
   Use of ``neo_id`` as a perminent identifier should be done with caution.  Neo4j can recycle IDs from deleted nodes meaning that URLs or other external references using that ID will reference the wrong item.  Neo4j may be updated in the future to support internal IDs which aren't recycled, but for now use at your own risk
+
+Exceptions
+^^^^^^^^^^
+
+With the new API comes some new exceptions which are raised.  With the new adaptor API errors are more dependable across different ways of connecting to Neo4j.
+
+=======================================================  =========================================================================
+Old Exception                                            New Exception
+-------------------------------------------------------  -------------------------------------------------------------------------
+Neo4j::Server::Resource::ServerException                 Neo4j::Core::CypherSession::ConnectionFailedError
+Neo4j::Server::CypherResponse::ConstraintViolationError  Neo4j::Core::CypherSession::SchemaErrors::ConstraintValidationFailedError
+Neo4j::Session::CypherError                              Neo4j::Core::CypherSession::CypherError
+=======================================================  =========================================================================
+
