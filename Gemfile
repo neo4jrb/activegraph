@@ -14,13 +14,18 @@ gem 'listen', '< 3.1'
 
 group 'test' do
   gem 'coveralls', require: false
+  if RUBY_VERSION.to_f < 2.0
+    gem 'tins', '< 1.7'
+    gem 'overcommit', '< 0.35.0'
+  else
+    gem 'overcommit'
+  end
   gem 'codecov', require: false
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
   gem 'rspec', '~> 3.4'
   gem 'its'
   gem 'test-unit'
-  gem 'overcommit'
   gem 'colored'
   gem 'dotenv'
   gem 'timecop'
