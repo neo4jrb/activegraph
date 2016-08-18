@@ -67,7 +67,7 @@ module Neo4j::Shared
         end
       end
 
-      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix]
+      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default]
       DEFAULT_OPTIONS_FOR_ENUMS = {
         _index: true
       }
@@ -88,12 +88,12 @@ module Neo4j::Shared
       def define_property(property_name, enum_keys, options)
         property_options = build_property_options(enum_keys, options)
         property property_name, property_options
-        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys)
+        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, property_options)
       end
 
-      def build_property_options(enum_keys, _options = {})
+      def build_property_options(_enum_keys, options = {})
         {
-          default: enum_keys.keys.first
+          default: options[:_default]
         }
       end
 
