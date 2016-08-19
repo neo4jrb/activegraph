@@ -101,7 +101,61 @@ If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, 
 server_db
 ^^^^^^^^^
 
-In previous version of the ``neo4j`` gem to connect to Neo4j via HTTP you would define the value ``server_db`` in the ``neo4j.yml`` file, the ``NEO4J_TYPE`` environment variable, or a Rails configuration (``config.neo4j.session_type``).  This should now be replaced and either ``bolt`` or ``http`` should be used.
+In previous version of the ``neo4j`` gem to connect to Neo4j via HTTP you would define the value ``server_db`` in the ``neo4j.yml`` file, the ``NEO4J_TYPE`` environment variable, or a Rails configuration (``config.neo4j.session_type``).  This should now be replaced and either ``bolt`` or ``http`` should be used depending on which connection type you need.
+
+Some examples:
+
+.. code-block:: yaml
+
+  # config/neo4j.yml
+  # Before
+  development:
+    type: server_db
+    url: http://localhost:7474
+
+  # After
+  development:
+    type: http # or bolt
+    url: http://localhost:7474
+
+.. code-block:: ruby
+
+  # Rails config/application.rb, config/environments/development.rb, etc...
+
+  # Before
+  config.neo4j.session_type = :server_db
+  config.neo4j.session_url = 'http://localhost:7474'
+
+  # AFter
+  config.neo4j.session_type = :http # or :bolt
+  config.neo4j.session_url = 'http://localhost:7474'
+
+Outside of Rails
+^^^^^^^^^^^^^^^^
+
+The ``neo4j`` gem will automatically set up a number of things with it's ``railtie``.  If you aren't using Rails you may need to set some things up yourself and some of the details have changed with version 8.0 of the ``neo4j`` gem.
+
+Previously a connection with be established with ``Neo4j::Session.open`` and the default session from ``neo4j-core`` would be used.  In version 7.0 of the ``neo4j-core`` gem, no such default session exists for the new API so you will need to establish a session to use the ``ActiveNode`` and ``ActiveRel`` modules like so:
+
+.. code-block:: ruby
+
+  adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474')
+
+  session = Neo4j::Core::CypherSession.new(adaptor)
+
+  Neo4j::ActiveBase.current_session = session
+
+  # Or skip setting up the session yourself:
+
+  Neo4j::ActiveBase.current_adaptor = adaptor
+
+Migrations:
+
+If you would like to use the migrations provided by the ``neo4j`` outside of Rails you can include this in your ``Rakefile``:
+
+.. code-block:: ruby
+  load 'neo4j/tasks/migration.rake'
+
 
 Indexes and Constraints
 ^^^^^^^^^^^^^^^^^^^^^^^
