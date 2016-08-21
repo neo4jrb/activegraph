@@ -82,6 +82,8 @@ module Neo4j
       end
 
       def self.inherited(other)
+        Neo4j::ActiveNode::Labels.clear_wrapped_models
+
         LOADED_CLASSES << other
         other.instance_variable_set('@inherited', true)
         inherit_id_property(other)

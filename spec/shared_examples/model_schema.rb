@@ -23,8 +23,8 @@ shared_examples 'does not log schema option warning' do |index_or_constraint, mo
   it("does not log a warning that the #{index_or_constraint} definition for #{model} is no longer needed") do
     model.to_s.constantize.first
 
-    expect(@active_base_logger).not_to have_received(:warn)
-      .with(/WARNING: The #{index_or_constraint} option is no longer supported \(Defined on #{model}#{" for #{property_name}" if property_name}/)
+    expect(@active_base_logger).not_to have_received(:warn).with(
+      /WARNING: The #{index_or_constraint} option is no longer supported \(Defined on #{model}#{" for #{property_name}" if property_name}/)
   end
 end
 

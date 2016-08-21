@@ -123,6 +123,8 @@ module Neo4j::Shared
       destroy_query.exec if _persisted_obj
 
       @_deleted = true
+
+      self
     end
 
     def exist?
