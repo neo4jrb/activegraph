@@ -18,13 +18,14 @@ module Neo4j
     include Neo4j::ActiveRel::Query
     include Neo4j::ActiveRel::Types
     include Neo4j::Shared::Enum
+    include Neo4j::Shared::PermittedAttributes
 
     class FrozenRelError < Neo4j::Error; end
 
     def initialize(from_node = nil, to_node = nil, args = nil)
       load_nodes(node_or_nil(from_node), node_or_nil(to_node))
       resolved_args = hash_or_nil(from_node, args)
-      symbol_args = resolved_args.is_a?(Hash) ? resolved_args.symbolize_keys : resolved_args
+      symbol_args = sanitize_input_parameters(resolved_args)
       super(symbol_args)
     end
 
@@ -60,26 +61,7 @@ module Neo4j
     end
 
     def hash_or_nil(node_or_hash, hash_or_nil)
-      node_or_hash.is_a?(Hash) ? node_or_hash : hash_or_nil
-    end
-
-    module ClassMethods
-      [:create, :create!].each do |meth|
-        define_method(meth) do |from_node_or_args = nil, to_node = nil, args = nil|
-          return super(from_node_or_args) if from_node_or_args.is_a?(Hash)
-          args_hash = args || {}
-          args_with_node!(:from_node, from_node_or_args, args_hash)
-          args_with_node!(:to_node, to_node, args_hash)
-          super(args_hash)
-        end
-      end
-
-      private
-
-      def args_with_node!(key, node, args)
-        args[key] = node if node.is_a?(Neo4j::ActiveNode)
-        args
-      end
+      hash_or_parameter?(node_or_hash) ? node_or_hash : hash_or_nil
     end
   end
 end
