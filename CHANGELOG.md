@@ -58,6 +58,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Made some memory optimizations (thanks ProGM / see #1221)
 
+## [7.1.3] - 08-18-2016
+
+### Changed
+
+- Default value for `enum` is `nil` instead of the first value.  This is a **BREAKING** change but is being released as a patch because the original behavior was considered a bug.  See [this pull request](https://github.com/neo4jrb/neo4j/pull/1270) (thanks to ProGM and andyweiss1982)
+
+## [7.1.2] - 08-01-2016
+
+### Fixed
+
+- Fixed issue where the label wrapping cache would get stuck
+
 ## [7.1.1] - 07-22-2016
 
 ### Fixed
@@ -70,6 +82,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Gemspec dependency requirements were modified where ActiveModel, ActiveSupport, and Railties are concerned. The gem now requires >= 4.0, < 5.1.
 - `ActiveModel::Serializers::Xml` is only included if supported if available.
+
+## [7.0.15] - 08-18-2016
+
+### Changed
+
+- Default value for `enum` is `nil` instead of the first value.  This is a **BREAKING** change but is being released as a patch because the original behavior was considered a bug.  See [this pull request](https://github.com/neo4jrb/neo4j/pull/1270) (thanks to ProGM and andyweiss1982)
 
 ## [7.0.14] - 07-10-2016
 
@@ -88,7 +106,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fix dipendence from JSON when using outside of rails (thanks ProGM)
->>>>>>> 7.1.x
 
 ## [7.0.10] - 06-07-2016
 

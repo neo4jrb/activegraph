@@ -13,11 +13,7 @@ module Neo4j
       MODELS_FOR_LABELS_CACHE.clear
 
       included do |model|
-        def self.inherited(model)
-          add_wrapped_class(model)
-
-          super
-        end
+        Neo4j::ActiveNode::Labels.clear_wrapped_models
 
         Neo4j::ActiveNode::Labels.add_wrapped_class(model) unless Neo4j::ActiveNode::Labels._wrapped_classes.include?(model)
       end

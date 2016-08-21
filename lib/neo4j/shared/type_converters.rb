@@ -264,8 +264,9 @@ module Neo4j::Shared
     end
 
     class EnumConverter
-      def initialize(enum_keys)
+      def initialize(enum_keys, options)
         @enum_keys = enum_keys
+        @options = options
       end
 
       def converted?(value)
