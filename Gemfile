@@ -25,7 +25,6 @@ group 'test' do
     gem 'overcommit', '< 0.35.0'
   else
     gem 'overcommit'
-    gem 'activesupport', '>= 4.2'
   end
   gem 'codecov', require: false
   gem 'simplecov', require: false
