@@ -13,9 +13,9 @@ gemspec
 gem 'listen', '< 3.1'
 
 if RUBY_VERSION.to_f < 2.2
-  gem 'activemodel', '~> 4'
-  gem 'activesupport', '~> 4'
-  gem 'railties', '~> 4'
+  gem 'activemodel', '~> 4.2'
+  gem 'activesupport', '~> 4.2'
+  gem 'railties', '~> 4.2'
 end
 
 group 'test' do
@@ -25,7 +25,6 @@ group 'test' do
     gem 'overcommit', '< 0.35.0'
   else
     gem 'overcommit'
-    gem 'activesupport', '>= 4.2'
   end
   gem 'codecov', require: false
   gem 'simplecov', require: false

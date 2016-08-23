@@ -55,26 +55,13 @@ module Neo4j::ActiveRel
     module ClassMethods
       # Creates a new relationship between objects
       # @param [Hash] props the properties the new relationship should have
-      def create(props = {})
-        relationship_props = extract_association_attributes!(props) || {}
-        new(props).tap do |obj|
-          relationship_props.each do |prop, value|
-            obj.send("#{prop}=", value)
-          end
-          obj.save
-        end
+      def create(*args)
+        new(*args).tap(&:save)
       end
 
       # Same as #create, but raises an error if there is a problem during save.
       def create!(*args)
-        props = args[0] || {}
-        relationship_props = extract_association_attributes!(props) || {}
-        new(props).tap do |obj|
-          relationship_props.each do |prop, value|
-            obj.send("#{prop}=", value)
-          end
-          obj.save!
-        end
+        new(*args).tap(&:save!)
       end
 
       def create_method

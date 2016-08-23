@@ -593,4 +593,13 @@ describe 'ActiveRel' do
       end
     end
   end
+
+  context 'with `ActionController::Parameters`' do
+    let(:params) { action_controller_params('score' => 7) }
+    let(:create_params) { params.merge(from_node: from_node, to_node: to_node) }
+    let(:klass) { MyRelClass }
+    subject { klass.new(from_node: from_node, to_node: to_node) }
+
+    it_should_behave_like 'handles permitted parameters'
+  end
 end
