@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Support for [`ForbiddenAttributesProtection` API](http://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html) from ActiveRecord. (thanks ProGM, see #1245)
+
 ### Changed
 
 - `ActiveNode#destroy` and `ActiveRel#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
