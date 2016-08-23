@@ -62,6 +62,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Made some memory optimizations (thanks ProGM / see #1221)
 
+## [7.2.0] - 08-23-2016
+
+### Added
+
+- Backporting #1245 to 7.x versions. It implements the [`ForbiddenAttributesProtection` API](http://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html) from ActiveRecord.
+
 ## [7.1.3] - 08-18-2016
 
 ### Changed
