@@ -875,13 +875,4 @@ describe 'Neo4j::ActiveNode' do
 
     it_should_behave_like 'handles permitted parameters'
   end
-
-  context 'with `ActionController::Parameters`' do
-    let(:params) { action_controller_params('prop_with_default' => 'something else') }
-    let(:create_params) { params }
-    let(:klass) { IceLolly }
-    let(:subject) { klass.new }
-
-    it_should_behave_like 'handles permitted parameters'
-  end
 end
