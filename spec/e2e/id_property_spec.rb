@@ -511,12 +511,13 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
-    describe 'order' do
-      it 'should order by neo_id' do
-        nodes = Array.new(3) { NeoIdTest.create }
-        expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
-      end
-    end
+    # this cannot be guaranteed anymore in community version'
+    # describe 'order' do
+    #   it 'should order by neo_id' do
+    #     nodes = Array.new(3) { NeoIdTest.create }
+    #     expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
+    #   end
+    # end
   end
 
   describe 'inheritance' do
