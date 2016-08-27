@@ -44,12 +44,13 @@ module Neo4j
     include Neo4j::ActiveNode::Scope
     include Neo4j::ActiveNode::Dependent
     include Neo4j::ActiveNode::Enum
+    include Neo4j::Shared::PermittedAttributes
 
     def initialize(args = nil)
       self.class.ensure_id_property_info! # So that we make sure all objects have an id_property
 
-      symbol_args = args.is_a?(Hash) ? args.symbolize_keys : args
-      super(symbol_args)
+      args = sanitize_input_parameters(args)
+      super(args)
     end
 
     def neo4j_obj
@@ -81,6 +82,8 @@ module Neo4j
       end
 
       def self.inherited(other)
+        Neo4j::ActiveNode::Labels.clear_wrapped_models
+
         LOADED_CLASSES << other
         other.instance_variable_set('@inherited', true)
         inherit_id_property(other)

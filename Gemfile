@@ -19,23 +19,25 @@ end
 gem 'listen', '< 3.1'
 
 if RUBY_VERSION.to_f < 2.2
-  gem 'activemodel', '~> 4'
-  gem 'activesupport', '~> 4'
-  gem 'railties', '~> 4'
+  gem 'activemodel', '~> 4.2'
+  gem 'activesupport', '~> 4.2'
+  gem 'railties', '~> 4.2'
 end
-
-gem 'tins', '< 1.7' if RUBY_VERSION.to_f < 2.0
 
 group 'test' do
   gem 'coveralls', require: false
-  gem 'tins', '< 1.7' if RUBY_VERSION.to_f < 2.0
+  if RUBY_VERSION.to_f < 2.0
+    gem 'tins', '< 1.7'
+    gem 'overcommit', '< 0.35.0'
+  else
+    gem 'overcommit'
+  end
   gem 'codecov', require: false
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
   gem 'rspec', '~> 3.4'
   gem 'its'
   gem 'test-unit'
-  gem 'overcommit'
   gem 'colored'
   gem 'dotenv'
   gem 'timecop'

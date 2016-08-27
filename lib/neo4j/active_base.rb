@@ -61,7 +61,7 @@ module Neo4j
       end
 
       def logger
-        @logger ||= (Neo4j::Config[:logger] || Logger.new(STDOUT))
+        @logger ||= (Neo4j::Config[:logger] || ActiveSupport::Logger.new(STDOUT))
       end
     end
   end

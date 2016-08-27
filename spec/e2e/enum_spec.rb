@@ -7,7 +7,7 @@ describe Neo4j::ActiveNode do
     create_index :StoredFile, :size, type: :exact
     create_index :StoredFile, :flag, type: :exact
     stub_active_node_class('StoredFile') do
-      enum type: [:unknown, :image, :video]
+      enum type: [:unknown, :image, :video], _default: :unknown
       enum size: {big: 100, medium: 7, small: 2}, _prefix: :dimension
       enum flag: [:clean, :dangerous], _suffix: true
 
@@ -37,7 +37,12 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'getters and setters' do
-    it 'returns a type as symbol' do
+    it 'returns nil by default' do
+      file = StoredFile.new
+      expect(file.flag).to be_nil
+    end
+
+    it 'returns the default value' do
       file = StoredFile.new
       expect(file.type).to eq(:unknown)
     end
@@ -54,6 +59,14 @@ describe Neo4j::ActiveNode do
       file.save!
       expect(StoredFile.as(:f).pluck('f.type')).to eq([2])
       expect(file.reload.type).to eq(:video)
+    end
+
+    it 'accepts nil as value' do
+      file = StoredFile.new
+      file.flag = nil
+      file.save!
+      expect(StoredFile.as(:f).where(id: file.id).pluck('f.flag')).to eq([nil])
+      expect(file.reload.flag).to eq(nil)
     end
   end
 
@@ -99,6 +112,12 @@ describe Neo4j::ActiveNode do
   end
 
   describe '? methods' do
+    it 'returns false when accessing to a nil value' do
+      file = StoredFile.new
+      expect(file).not_to be_clean_flag
+      expect(file).not_to be_dangerous_flag
+    end
+
     it 'returns true when the enum is in the current state' do
       file = StoredFile.new
       file.type = :video
@@ -167,6 +186,24 @@ describe Neo4j::ActiveNode do
           enum enum2: [:c, :d]
         end
       end.to raise_error(Neo4j::Shared::Enum::ConflictingEnumMethodError)
+    end
+  end
+
+  context 'when using `ActionController::Parameters`' do
+    let(:params) { action_controller_params('type' => 'image').permit! }
+    it 'assigns enums correctly when instancing a new class' do
+      using_action_controller do
+        file = StoredFile.new(params)
+        expect(file.type).to eq('image')
+      end
+    end
+
+    it 'assigns enums correctly when assigning to `attributes`' do
+      using_action_controller do
+        file = StoredFile.new
+        file.attributes = params
+        expect(file.type).to eq('image')
+      end
     end
   end
 

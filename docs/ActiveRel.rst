@@ -118,7 +118,7 @@ Any of these methods can return relationship objects.
 
     Student.first.lessons.each_rel { |r| }
     Student.first.lessons.each_with_rel { |node, rel| }
-    Student.first.query_as(:s).match('s-[rel1:\`enrolled_in\`]->n2').pluck(:rel1)
+    Student.first.query_as(:s).match('(s)-[rel1:\`enrolled_in\`]->(n2)').pluck(:rel1)
 
 These are available as both class or instance methods. Because both each_rel and each_with_rel return enumerables when a block is skipped, you can take advantage of the full suite of enumerable methods:
 
