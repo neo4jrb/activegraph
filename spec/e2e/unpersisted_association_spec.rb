@@ -221,7 +221,11 @@ describe 'association creation' do
       it 'does not raise error, creates rel on save' do
         expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
         expect { chris.lesson_ids = [math.id] }.not_to raise_error
-        expect { chris.save }.to change { chris.lessons.count }
+        expect { chris.save }.not_to change { chris.lessons.count }
+      end
+
+      it 'changes count' do
+        expect { chris.lesson_ids = [math.id] }.to change { chris.lessons.count }
       end
     end
   end

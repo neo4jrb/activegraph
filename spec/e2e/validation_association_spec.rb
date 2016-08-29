@@ -15,6 +15,8 @@ describe Neo4j::ActiveNode::Validations do
     end
 
     it 'should be valid with comments' do
+      post = Post.new(comments: [Comment.create])
+      post.valid?
       expect(Post.new(comments: [Comment.create])).to be_valid
     end
   end
