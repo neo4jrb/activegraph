@@ -27,7 +27,30 @@ module Neo4j
 
   class DangerousAttributeError < ScriptError; end
   class UnknownAttributeError < NoMethodError; end
+
   class MigrationError < Error; end
   class IrreversibleMigration < MigrationError; end
   class UnknownMigrationVersionError < MigrationError; end
+
+  # Inspired/taken from active_record/migration.rb
+  class PendingMigrationError < MigrationError
+    def initialize
+      if rails? && defined?(Rails.env)
+        super("Migrations are pending. To resolve this issue, run:\n\n        #{command_name} neo4j:migrate RAILS_ENV=#{::Rails.env}")
+      else
+        super("Migrations are pending. To resolve this issue, run:\n\n        #{command_name} neo4j:migrate")
+      end
+    end
+
+    private
+
+    def command_name
+      return 'rake' unless rails?
+      Rails.version.to_f >= 5 ? 'bin/rails' : 'bin/rake'
+    end
+
+    def rails?
+      defined?(Rails)
+    end
+  end
 end
