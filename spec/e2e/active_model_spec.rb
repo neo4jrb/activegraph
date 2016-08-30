@@ -596,7 +596,7 @@ describe 'Neo4j::ActiveNode' do
         let(:tz_offset) { Time.now.gmt_offset }
         let(:dst_offset) { tz_offset != 0 && Time.now.dst? ? 1 : 0 }
         let(:base_hour) { 9 }
-        let(:expected_hour) { base_hour - (tz_offset / 60 / 60) + dst_offset }
+        let(:expected_hour) { (base_hour - (tz_offset / 60 / 60) + dst_offset) % 24  }
 
         it 'converts to Time' do
           person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => base_hour.to_s, 'time(5i)' => '12', 'time(6i)' => '42')
