@@ -557,8 +557,7 @@ describe 'has_many' do
     end
 
     it 'ignores blank IDs for has_many' do
-      post = Post.create
-      comment = Comment.create
+      post = Post.create(comment: Comment.create)
 
       post.comment_ids = ['', nil]
 
