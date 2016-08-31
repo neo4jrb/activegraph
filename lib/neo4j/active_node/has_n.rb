@@ -35,7 +35,7 @@ module Neo4j::ActiveNode
       include Enumerable
 
       def deferred_objects_or_enumerable
-        #This is not good enough. Updates have to be taken care of as well
+        # This is not good enough. Updates have to be taken care of as well
         @query_proxy.start_object.try(:new_record?) ? @deferred_objects : @enumerable
       end
 
