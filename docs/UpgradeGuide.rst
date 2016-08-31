@@ -197,5 +197,7 @@ Old Exception                                            New Exception
 Neo4j::Server::Resource::ServerException                 Neo4j::Core::CypherSession::ConnectionFailedError
 Neo4j::Server::CypherResponse::ConstraintViolationError  Neo4j::Core::CypherSession::SchemaErrors::ConstraintValidationFailedError
 Neo4j::Session::CypherError                              Neo4j::Core::CypherSession::CypherError
+?                                                        ConstraintAlreadyExistsError
+?                                                        IndexAlreadyExistsError
 =======================================================  =========================================================================
 
