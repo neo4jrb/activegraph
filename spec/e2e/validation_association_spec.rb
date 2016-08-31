@@ -10,28 +10,48 @@ describe Neo4j::ActiveNode::Validations do
   end
 
   context 'validating presence' do
+    it 'new object should not be valid without comments' do
+      expect(Post.new({})).not_to be_valid
+    end
+
     it 'should not be valid without comments' do
-      expect(Post.create.valid?).to be false
+      expect(Post.create).not_to be_valid
     end
 
     it 'should be valid with comments' do
-      post = Post.new(comments: [Comment.create])
       expect(Post.new(comments: [Comment.create])).to be_valid
     end
+  end
 
-    it 'direct comments assignment should ignore validation' do
-      post = Post.new(comments: [Comment.create])
-      post.comments = []
-      expect(post.reload.comments).to be_empty
+  #The below spec pass on active_record as is
+  context 'active_record behaviour' do
+    before :each do
+      @post = Post.create(comments: [Comment.create])
+    end
+    it "comment= ignores validation" do
+      @post.comments = []
+      expect(@post.comments.size).to eq(0)
+      expect(@post.comments.count).to eq(0)
+      expect(Post.find(@post.id).comments.count).to eq(0)
     end
 
-    it 'should not save on update_attributes if invalid' do
-      post = Post.create(comments: [Comment.create])
-      expect(post.update(comment_ids: [])).to be false
-      post.comments
-      # expect(Post.find(post.id).comments).not_to be_empty
-      # expect(post.reload.comments).not_to be_empty
-      expect(post.reload.comments).to be_present
+    it "update respects validation" do
+      expect(@post.update(comments: [])).to be false
+      expect(@post.comments.size).to eq(0)
+      expect(@post.comments.count).to eq(1)
+      expect(Post.find(@post.id).comments.count).to eq(1)
+    end
+
+    it 'comments= saves invalid object' do
+      expect(Post.find(@post.id)).to be_valid
+      @post.comments = []
+      expect(Post.find(@post.id)).not_to be_valid
+    end
+
+    it 'update does not save invalid object' do
+      expect(Post.find(@post.id)).to be_valid
+      expect(@post.update(comments: [])).to be false
+      expect(Post.find(@post.id)).to be_valid
     end
   end
 end
