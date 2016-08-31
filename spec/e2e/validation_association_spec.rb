@@ -3,8 +3,10 @@ describe Neo4j::ActiveNode::Validations do
     stub_active_node_class('Comment')
 
     stub_active_node_class('Post') do
+      property :name, type: String
       has_many :out, :comments, type: :COMMENT
 
+      validates :name, presence: true
       validates :comments, presence: true
     end
   end
@@ -19,14 +21,14 @@ describe Neo4j::ActiveNode::Validations do
     end
 
     it 'should be valid with comments' do
-      expect(Post.new(comments: [Comment.create])).to be_valid
+      expect(Post.new(name: 'abc', comments: [Comment.create])).to be_valid
     end
   end
 
   #The below spec pass on active_record as is
   context 'active_record behaviour' do
     before :each do
-      @post = Post.create(comments: [Comment.create])
+      @post = Post.create(name: 'abc', comments: [Comment.create])
     end
     it "comment= ignores validation" do
       @post.comments = []
@@ -52,6 +54,11 @@ describe Neo4j::ActiveNode::Validations do
       expect(Post.find(@post.id)).to be_valid
       expect(@post.update(comments: [])).to be false
       expect(Post.find(@post.id)).to be_valid
+    end
+
+    it 'does not save valid association if property is invalid' do
+      expect(@post.update(name: nil, comments: [Comment.create, Comment.create])).to be false
+      expect(Post.find(@post.id).comments.count).to eq(1)
     end
   end
 end
