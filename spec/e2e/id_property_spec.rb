@@ -513,7 +513,8 @@ describe Neo4j::ActiveNode::IdProperty do
 
     describe 'order' do
       it 'should order by neo_id' do
-        nodes = Array.new(3) { NeoIdTest.create }
+        # ascending neo_ids during insertion cannot be guaranteed anymore in community version'
+        nodes = Array.new(3) { NeoIdTest.create }.sort_by!(&:id)
         expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
       end
     end

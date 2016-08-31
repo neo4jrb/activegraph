@@ -13,6 +13,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `ActiveNode#destroy` and `ActiveRel#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
 
+### Fixed
+
+- Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
+
 ## [8.0.0.alpha.2] 2016-08-05
 
 ### Changed
