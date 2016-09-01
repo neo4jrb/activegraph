@@ -11,7 +11,8 @@ module Neo4j
       MIGRATION_RUNNING = {up: 'running'.freeze, down: 'reverting'.freeze}.freeze
       MIGRATION_DONE = {up: 'migrated'.freeze, down: 'reverted'.freeze}.freeze
 
-      def initialize
+      def initialize(options = {})
+        @silenced = options[:silenced] || !!ENV['MIGRATIONS_SILENCED']
         SchemaMigration.mapped_label.create_constraint(:migration_id, type: :unique)
         @schema_migrations = SchemaMigration.all.to_a
         @up_versions = SortedSet.new(@schema_migrations.map(&:migration_id))
@@ -44,6 +45,10 @@ module Neo4j
         @up_versions.to_a.reverse.first(steps).each do |version|
           down(version)
         end
+      end
+
+      def pending_migrations?
+        all_migrations.any? { |migration| !up?(migration) }
       end
 
       def status
@@ -118,7 +123,7 @@ MSG
       end
 
       def output(*string_format)
-        puts format(*string_format) unless !!ENV['MIGRATIONS_SILENCED']
+        puts format(*string_format) unless @silenced
       end
 
       def output_migration_message(message)
