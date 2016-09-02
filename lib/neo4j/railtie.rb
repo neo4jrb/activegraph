@@ -22,17 +22,10 @@ module Neo4j
     end
 
     # Rescue responses similar to ActiveRecord.
-    # For rails 3.2 and 4.0
-    if config.action_dispatch.respond_to?(:rescue_responses)
-      config.action_dispatch.rescue_responses.merge!(
-        'Neo4j::RecordNotFound' => :not_found,
-        'Neo4j::ActiveNode::Labels::RecordNotFound' => :not_found
-      )
-    else
-      # For rails 3.0 and 3.1
-      ActionDispatch::ShowExceptions.rescue_responses['Neo4j::RecordNotFound'] = :not_found
-      ActionDispatch::ShowExceptions.rescue_responses['Neo4j::ActiveNode::Labels::RecordNotFound'] = :not_found
-    end
+    config.action_dispatch.rescue_responses.merge!(
+      'Neo4j::RecordNotFound' => :not_found,
+      'Neo4j::ActiveNode::Labels::RecordNotFound' => :not_found
+    )
 
     # Add ActiveModel translations to the I18n load_path
     initializer 'i18n' do
@@ -61,6 +54,7 @@ module Neo4j
       session_types = cfg.sessions.map { |session_opts| session_opts[:type] }
 
       register_neo4j_cypher_logging(session_types)
+      Neo4j::Migrations.check_for_pending_migrations! if Rails.env.development? && Neo4j::Config.fail_on_pending_migrations
     end
 
     TYPE_SUBSCRIBERS = {
