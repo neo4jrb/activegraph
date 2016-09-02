@@ -95,6 +95,10 @@ module Neo4j
         configuration.to_yaml
       end
 
+      def fail_on_pending_migrations
+        Neo4j::Config[:fail_on_pending_migrations].nil? ? true : Neo4j::Config[:fail_on_pending_migrations]
+      end
+
       def include_root_in_json
         # we use ternary because a simple || will always evaluate true
         Neo4j::Config[:include_root_in_json].nil? ? true : Neo4j::Config[:include_root_in_json]

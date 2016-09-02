@@ -38,9 +38,9 @@ module Neo4j::ActiveNode
 
     module TypeMethods
       def define_id_methods(clazz, name, conf)
-        validate_conf!(conf)
-
         return if name == :neo_id
+
+        validate_conf!(conf)
 
         if conf[:on]
           define_custom_method(clazz, name, conf[:on])
@@ -188,15 +188,15 @@ module Neo4j::ActiveNode
 
       def handle_model_schema!
         id_property_name = @id_property_info[:name]
+
+        return if id_property_name == :neo_id || @id_property_info[:inherited]
+
         if @id_property_info[:type][:constraint] == false &&
-           !@id_property_info[:inherited] &&
            !@id_property_info[:warned_of_constraint]
           @id_property_info[:warned_of_constraint] = true
           warn_constraint_option_false!(id_property_name)
           return
         end
-
-        return if id_property_name == :neo_id || @id_property_info[:inherited]
 
         Neo4j::ModelSchema.add_defined_constraint(self, id_property_name)
       end
@@ -211,7 +211,7 @@ MSG
       def id_property_name_type_value
         name, type, value = Neo4j::Config.to_hash.values_at(*%w(id_property id_property_type id_property_type_value))
 
-        if !(name && type && value)
+        unless name == :neo_id || (name && type && value)
           name = :uuid
           type = :auto
           value = :uuid

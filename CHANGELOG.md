@@ -7,11 +7,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- A `Neo4j::Migrations.maintain_test_schema!` method, to keep the test database up to date with schema changes. (see #1277)
+- A `Neo4j::Migrations.check_for_pending_migrations!` method, that fails when there are pending migration. In Rails, it's executed automatically on startup. (see #1277)
 - Support for [`ForbiddenAttributesProtection` API](http://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html) from ActiveRecord. (thanks ProGM, see #1245)
 
 ### Changed
 
 - `ActiveNode#destroy` and `ActiveRel#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
+
+### Fixed
+
+- Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
 
 ## [8.0.0.alpha.2] 2016-08-05
 
