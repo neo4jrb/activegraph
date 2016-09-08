@@ -34,12 +34,12 @@ module Neo4j
       end
 
       def new_transaction
-        Neo4j::ModelSchema.validate_model_schema!
+        validate_model_schema!
         Neo4j::Transaction.new(current_session)
       end
 
       def new_query(options = {})
-        Neo4j::ModelSchema.validate_model_schema!
+        validate_model_schema!
         Neo4j::Core::Query.new({session: current_session}.merge(options))
       end
 
@@ -52,7 +52,7 @@ module Neo4j
       end
 
       def current_transaction
-        Neo4j::ModelSchema.validate_model_schema!
+        validate_model_schema!
         Neo4j::Transaction.current_for(current_session)
       end
 
@@ -62,6 +62,12 @@ module Neo4j
 
       def logger
         @logger ||= (Neo4j::Config[:logger] || ActiveSupport::Logger.new(STDOUT))
+      end
+
+      private
+
+      def validate_model_schema!
+        Neo4j::ModelSchema.validate_model_schema! unless Neo4j::Migrations.currently_running_migrations
       end
     end
   end
