@@ -54,7 +54,9 @@ module Neo4j
       session_types = cfg.sessions.map { |session_opts| session_opts[:type] }
 
       register_neo4j_cypher_logging(session_types)
-      Neo4j::Migrations.check_for_pending_migrations! if Rails.env.development? && !Neo4j::Migrations.currently_running_migrations && Neo4j::Config.fail_on_pending_migrations
+      if Rails.env.development? && !Neo4j::Migrations.currently_running_migrations && Neo4j::Config.fail_on_pending_migrations
+        Neo4j::Migrations.check_for_pending_migrations!
+      end
     end
 
     TYPE_SUBSCRIBERS = {
