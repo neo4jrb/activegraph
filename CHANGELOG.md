@@ -22,6 +22,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
 - Issue where `session_url` (now `session.url`) was not working
 - Various issues with not be able to run migrations when migration were pending
+- Broken sessions when threading
 
 ## [8.0.0.alpha.2] 2016-08-05
 
