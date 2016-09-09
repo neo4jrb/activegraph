@@ -107,19 +107,19 @@ You can also use your Rails configuration.  The following example can be put int
 
 .. code-block:: ruby
 
-  config.neo4j.session_type = :http
-  config.neo4j.session_url = 'http://localhost:7474'
+  config.neo4j.session.type = :http
+  config.neo4j.session.url = 'http://localhost:7474'
 
   # Or, for embedded in jRuby
 
-  config.neo4j.session_type = :embedded
-  config.neo4j.session_path = '/path/to/graph.db'
+  config.neo4j.session.type = :embedded
+  config.neo4j.session.path = '/path/to/graph.db'
 
 Neo4j requires authentication by default but if you install using the built-in :doc:`rake tasks </RakeTasks>`) authentication is disabled.  If you are using authentication you can configure it like this:
 
 .. code-block:: ruby
 
-  config.neo4j.session_url = 'http://neo4j:password@localhost:7474'
+  config.neo4j.session.url = 'http://neo4j:password@localhost:7474'
 
 Of course it's often the case that you don't want to expose your username / password / URL in your repository.  In these cases you can use the ``NEO4J_TYPE`` (either ``http`` or ``embedded``) and ``NEO4J_URL``/``NEO4J_PATH`` environment variables.
 
@@ -130,7 +130,7 @@ Configuring Faraday
 
 .. code-block:: ruby
 
-  config.neo4j.session_options = {initialize: { ssl: { verify: true }}}
+  config.neo4j.session.options = {initialize: { ssl: { verify: true }}}
 
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
@@ -212,8 +212,9 @@ Rails configuration
 
 .. code-block:: ruby
 
-  config.neo4j.session_type = :http
+  config.neo4j.session.type = :http
   # GrapheneDB
-  config.neo4j.session_path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
+  config.neo4j.session.path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
   # Graph Story
-  config.neo4j.session_path = ENV["GRAPHSTORY_URL"] || 'http://localhost:7474'
+  config.neo4j.session.path = ENV["GRAPHSTORY_URL"] || 'http://localhost:7474'
+

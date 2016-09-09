@@ -5,9 +5,17 @@ module Neo4j
     class << self
       # private?
       def current_session
-        SessionRegistry.current_session.tap do |session|
+        (SessionRegistry.current_session || establish_session).tap do |session|
           fail 'No session defined!' if session.nil?
         end
+      end
+
+      def on_establish_session(&block)
+        @establish_session_block = block
+      end
+
+      def establish_session
+        @establish_session_block.call if @establish_session_block
       end
 
       def current_transaction_or_session

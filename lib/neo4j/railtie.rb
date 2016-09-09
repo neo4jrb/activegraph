@@ -45,19 +45,61 @@ module Neo4j
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
     initializer 'neo4j.start', after: :load_config_initializers do |app|
-      cfg = app.config.neo4j
-      # Set Rails specific defaults
-      Neo4j::SessionManager.setup! cfg
+      Neo4j::ActiveBase.on_establish_session { setup! app.config.neo4j }
 
       Neo4j::Config[:logger] ||= Rails.logger
 
-      session_types = cfg.sessions.map { |session_opts| session_opts[:type] }
-
-      register_neo4j_cypher_logging(session_types)
       if Rails.env.development? && !Neo4j::Migrations.currently_running_migrations && Neo4j::Config.fail_on_pending_migrations
         Neo4j::Migrations.check_for_pending_migrations!
       end
     end
+
+    def setup!(cfg = nil)
+      neo4j_config ||= ActiveSupport::OrderedOptions.new
+      cfg.each {|k, v| neo4j_config[k] = v } if cfg
+
+      support_deprecated_session_configs!(neo4j_config)
+
+      Neo4j::Config.configuration.merge!(neo4j_config.to_h)
+
+      type, url, path, options, wait_for_connection = neo4j_config.session.values_at(:type, :path, :url, :options, :wait_for_connection)
+      register_neo4j_cypher_logging(type || default_session_type)
+
+      Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
+                                               url || path || default_session_path_or_url,
+                                               wait_for_connection,
+                                               options || {})
+    end
+
+    def support_deprecated_session_configs!(neo4j_config)
+      ActiveSupport::Deprecation.warn('neo4j.config.sessions is deprecated, please use neo4j.config.session (not an array)') if neo4j_config.sessions.present?
+      neo4j_config.session ||= (neo4j_config.sessions && neo4j_config.sessions[0]) || {}
+
+      %w(type path url options).each do |key|
+        value = neo4j_config.send("session_#{key}")
+        if value.present?
+          ActiveSupport::Deprecation.warn("neo4j.config.session_#{key} is deprecated, please use neo4j.config.session.#{key}")
+          neo4j_config.session[key] = value
+        end
+      end
+    end
+
+    def default_session_type
+      if ENV['NEO4J_URL']
+        URI(ENV['NEO4J_URL']).scheme.tap do |scheme|
+          fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http bolt).include?(scheme)
+        end
+      else
+        ENV['NEO4J_TYPE'] || config_data[:type] || :http
+      end.to_sym
+    end
+
+    def default_session_path_or_url
+      ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] ||
+        config_data[:url] || config_data[:path] ||
+        'http://localhost:7474'
+    end
+
 
     TYPE_SUBSCRIBERS = {
       http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
@@ -65,7 +107,7 @@ module Neo4j
       embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
     }
 
-    def register_neo4j_cypher_logging(session_types)
+    def register_neo4j_cypher_logging(session_type)
       return if @neo4j_cypher_logging_registered
 
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
@@ -74,9 +116,7 @@ module Neo4j
         (Neo4j::Config[:logger] ||= Rails.logger).debug message
       end
       Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
-      session_types.map(&:to_sym).uniq.each do |type|
-        TYPE_SUBSCRIBERS[type].call(&logger_proc)
-      end
+      TYPE_SUBSCRIBERS[session_type.to_sym].call(&logger_proc)
 
       @neo4j_cypher_logging_registered = true
     end

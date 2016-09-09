@@ -7,46 +7,14 @@ require 'neo4j/core/cypher_session/adaptors/embedded'
 module Neo4j
   class SessionManager
     class << self
-      def setup!(cfg = nil)
-        cfg ||= ActiveSupport::OrderedOptions.new
-
-        setup_default_session(cfg)
-
-        cfg.sessions.each do |session_opts|
-          open_neo4j_session(session_opts, cfg.wait_for_connection)
-        end
-
-        Neo4j::Config.configuration.merge!(cfg.to_h)
-      end
-
-      # TODO: Remove ability for multiple sessions?
-      # Ability to overwrite default session per-model like ActiveRecord?
-      def setup_default_session(cfg)
-        setup_config_defaults!(cfg)
-
-        return if !cfg.sessions.empty?
-
-        cfg.sessions << {type: cfg.session_type, path: cfg.session_path, options: cfg.session_options.merge(default: true)}
-      end
-
-      # TODO: Support `session_url` config for server mode
-      def setup_config_defaults!(cfg)
-        cfg.session_type ||= default_session_type
-        cfg.session_path ||= default_session_path
-        cfg.session_options ||= {}
-        cfg.sessions ||= []
-      end
-
-      def open_neo4j_session(options, wait_for_connection = false)
-        session_type, path, url = options.values_at(:type, :path, :url)
-
+      def open_neo4j_session(type, url_or_path, url, wait_for_connection = false, options = {})
         enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(session_type)
 
         adaptor = wait_for_value(wait_for_connection) do
-          cypher_session_adaptor(session_type, url || path, (options[:options] || {}).merge(wrap_level: :proc))
+          cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc))
         end
 
-        Neo4j::ActiveBase.current_adaptor = adaptor
+        Neo4j::Core::CypherSession.new(adaptor)
       end
 
       protected
@@ -92,22 +60,6 @@ module Neo4j
           extra = ' (`server_db` has been replaced by `http` or `bolt`)'
           fail ArgumentError, "Invalid session type: #{type.inspect}#{extra if type.to_sym == :server_db}"
         end
-      end
-
-      def default_session_type
-        if ENV['NEO4J_URL']
-          URI(ENV['NEO4J_URL']).scheme.tap do |scheme|
-            fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http bolt).include?(scheme)
-          end
-        else
-          ENV['NEO4J_TYPE'] || config_data[:type] || :http
-        end.to_sym
-      end
-
-      def default_session_path
-        ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] ||
-          config_data[:url] || config_data[:path] ||
-          'http://localhost:7474'
       end
 
       def java_platform?
