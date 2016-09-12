@@ -5,7 +5,7 @@ module Neo4j
     class << self
       # private?
       def current_session
-        (SessionRegistry.current_session || establish_session).tap do |session|
+        (SessionRegistry.current_session ||= establish_session).tap do |session|
           fail 'No session defined!' if session.nil?
         end
       end
