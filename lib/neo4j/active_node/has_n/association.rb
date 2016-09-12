@@ -16,7 +16,7 @@ module Neo4j
           @type = type.to_sym
           @name = name
           @direction = direction.to_sym
-          @target_class_name_from_name = name.to_s.classify
+          @target_class_name_from_name = name.to_s.pluralize.classify
           apply_vars_from_options(options)
         end
 
