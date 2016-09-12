@@ -11,6 +11,7 @@ AllCops:
   DisplayStyleGuide: true
   Exclude:
     - 'lib/backports/**/*'
+    - 'vendor/**/*'
 
 
 # Cop supports --auto-correct.
