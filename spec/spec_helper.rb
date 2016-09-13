@@ -50,6 +50,8 @@ module Rails
   end
 end
 
+require 'action_controller'
+require 'backports/action_controller/metal/strong_parameters'
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 

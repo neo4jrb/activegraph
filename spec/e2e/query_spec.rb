@@ -276,7 +276,11 @@ describe 'Query API' do
 
           subject { -> { Teacher.merge(merge_attrs, extra: 'thing') } }
 
-          it { is_expected.to raise_error ArgumentError, 'Unknown key: :extra. Valid keys are: :on_create, :on_match, :set' }
+          if ActiveSupport.respond_to?(:version) # method introduced in version 4
+            it { is_expected.to raise_error ArgumentError, 'Unknown key: :extra. Valid keys are: :on_create, :on_match, :set' }
+          else
+            it { is_expected.to raise_error ArgumentError, 'Unknown key: extra' }
+          end
         end
       end
 

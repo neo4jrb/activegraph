@@ -9,6 +9,9 @@ inherit_from: .rubocop_todo.yml
 AllCops:
   DisplayCopNames: true
   DisplayStyleGuide: true
+  Exclude:
+    - 'lib/backports/**/*'
+    - 'vendor/**/*'
 
 
 # Cop supports --auto-correct.
