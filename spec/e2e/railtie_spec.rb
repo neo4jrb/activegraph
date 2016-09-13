@@ -24,7 +24,7 @@ module Rails
       end
 
       subject do
-        Neo4j::SessionManager.setup!(cfg)
+        Neo4j::Railtie.setup!(cfg)
         cfg
       end
 

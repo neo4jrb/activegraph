@@ -38,14 +38,17 @@ module Neo4j
 
     console do |app|
       Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
-
-      register_neo4j_cypher_logging(app.config.neo4j.sessions.map { |s| s[:type] })
     end
 
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
     initializer 'neo4j.start', after: :load_config_initializers do |app|
-      Neo4j::ActiveBase.on_establish_session { setup! app.config.neo4j }
+      neo4j_config = ActiveSupport::OrderedOptions.new
+      app.config.neo4j.each {|k, v| neo4j_config[k] = v } if app.config.neo4j
+
+      Neo4j::Config.configuration.merge!(neo4j_config.to_h)
+
+      Neo4j::ActiveBase.on_establish_session { setup! neo4j_config }
 
       Neo4j::Config[:logger] ||= Rails.logger
 
@@ -54,13 +57,8 @@ module Neo4j
       end
     end
 
-    def setup!(cfg = nil)
-      neo4j_config ||= ActiveSupport::OrderedOptions.new
-      cfg.each {|k, v| neo4j_config[k] = v } if cfg
-
+    def setup!(neo4j_config = nil)
       support_deprecated_session_configs!(neo4j_config)
-
-      Neo4j::Config.configuration.merge!(neo4j_config.to_h)
 
       type, url, path, options, wait_for_connection = neo4j_config.session.values_at(:type, :path, :url, :options, :wait_for_connection)
       register_neo4j_cypher_logging(type || default_session_type)
