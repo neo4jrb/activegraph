@@ -27,6 +27,7 @@ module Rails
       end
 
       let_context(session_path: 'http://user:password@localhost:7474') do
+        let_env_variable(:NEO4J_URL) { nil }
         it 'calls Neo4j::SessionManager' do
           expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'http://user:password@localhost:7474', nil, {})
         end

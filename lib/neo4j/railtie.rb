@@ -88,14 +88,12 @@ module Neo4j
           fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http bolt).include?(scheme)
         end
       else
-        ENV['NEO4J_TYPE'] || config_data[:type] || :http
+        ENV['NEO4J_TYPE'] || :http
       end.to_sym
     end
 
     def default_session_path_or_url
-      ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] ||
-        config_data[:url] || config_data[:path] ||
-        'http://localhost:7474'
+      ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
     end
 
 

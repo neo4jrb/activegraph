@@ -8,7 +8,7 @@ module Neo4j
   class SessionManager
     class << self
       def open_neo4j_session(type, url_or_path, wait_for_connection = false, options = {})
-        enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(session_type)
+        enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(type)
 
         adaptor = wait_for_value(wait_for_connection) do
           cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc))
