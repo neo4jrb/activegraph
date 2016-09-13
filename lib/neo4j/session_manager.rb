@@ -7,7 +7,7 @@ require 'neo4j/core/cypher_session/adaptors/embedded'
 module Neo4j
   class SessionManager
     class << self
-      def open_neo4j_session(type, url_or_path, url, wait_for_connection = false, options = {})
+      def open_neo4j_session(type, url_or_path, wait_for_connection = false, options = {})
         enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(session_type)
 
         adaptor = wait_for_value(wait_for_connection) do

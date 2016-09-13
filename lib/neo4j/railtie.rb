@@ -36,7 +36,7 @@ module Neo4j
       load 'neo4j/tasks/migration.rake'
     end
 
-    console do |app|
+    console do
       Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
     end
 
@@ -44,7 +44,7 @@ module Neo4j
     # register migrations in config/initializers
     initializer 'neo4j.start', after: :load_config_initializers do |app|
       neo4j_config = ActiveSupport::OrderedOptions.new
-      app.config.neo4j.each {|k, v| neo4j_config[k] = v } if app.config.neo4j
+      app.config.neo4j.each { |k, v| neo4j_config[k] = v } if app.config.neo4j
 
       Neo4j::Config.configuration.merge!(neo4j_config.to_h)
 
