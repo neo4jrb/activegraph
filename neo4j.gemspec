@@ -8,12 +8,7 @@ Gem::Specification.new do |s|
   s.name     = 'neo4j'
   s.version  = Neo4j::VERSION
 
-  if RUBY_PLATFORM == 'java'
-    s.required_ruby_version = '>= 1.9.3'
-  else
-    s.required_ruby_version = '>= 2.1.9'
-  end
-
+  s.required_ruby_version = ((RUBY_PLATFORM == 'java') ? '>= 1.9.3' : '>= 2.1.9')
 
   s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg'
   s.email    = 'andreas.ronge@gmail.com, brian@brian-underwood.codes, chris@subvertallmedia.com'
