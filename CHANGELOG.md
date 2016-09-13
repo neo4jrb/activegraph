@@ -14,10 +14,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - `ActiveNode#destroy` and `ActiveRel#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
+- Multiple sessions in Rails config no longer supported
+- Instead of using `session_type`, `session_url`, `session_path`, and `session_options` in config `session.type`, `session.url`, `session.path`, and `session.options` should now be used.
 
 ### Fixed
 
 - Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
+- Issue where `session_url` (now `session.url`) was not working
+- Various issues with not be able to run migrations when migration were pending
+- Broken sessions when threading
 
 ## [8.0.0.alpha.2] 2016-08-05
 

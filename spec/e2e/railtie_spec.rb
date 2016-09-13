@@ -15,61 +15,67 @@ module Rails
       let(:session_path) {}
       let(:cfg) do
         ActiveSupport::OrderedOptions.new.tap do |c|
-          c.session_path = session_path if session_path
+          c.session = ActiveSupport::OrderedOptions.new
+          c.session.path = session_path if session_path
         end
       end
 
       before do
-        expect(Neo4j::SessionManager).to receive(:open_neo4j_session)
-      end
+        stub_const('Neo4j::SessionManager', spy('Neo4j::SessionManager'))
 
-      subject do
-        Neo4j::SessionManager.setup!(cfg)
-        cfg
+        Neo4j::Railtie.setup!(cfg)
       end
 
       let_context(session_path: 'http://user:password@localhost:7474') do
-        its(:session_path) { should eq(session_path) }
+        let_env_variable(:NEO4J_URL) { nil }
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'http://user:password@localhost:7474', nil, {})
+        end
       end
 
       context 'NEO4J_URL is http' do
         let_env_variable(:NEO4J_URL) { 'http://localhost:7474' }
 
-        its(:session_path) { should eq('http://localhost:7474') }
-        its(:session_type) { should eq(:http) }
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'http://localhost:7474', nil, {})
+        end
       end
 
       context 'NEO4J_URL is bolt' do
         let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
-        its(:session_path) { should eq('bolt://localhost:7472') }
-        its(:session_type) { should eq(:bolt) }
+
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:bolt, 'bolt://localhost:7472', nil, {})
+        end
       end
     end
 
     describe 'open_neo4j_session' do
-      subject { Neo4j::SessionManager.open_neo4j_session(session_options) }
+      let(:session_type) { nil }
+      let(:session_path_or_url) { nil }
+      let(:session_options) { {} }
+      subject { Neo4j::SessionManager.open_neo4j_session(session_type, session_path_or_url, nil, session_options) }
 
       if TEST_SESSION_MODE != :embedded
-        let_context(session_options: {type: :embedded, path: './db'}) do
+        let_context(session_type: :embedded, session_path_or_url: './db') do
           subject_should_raise(/JRuby is required for embedded mode/)
         end
       end
 
-      let_context(session_options: {type: :invalid_type}) do
+      let_context(session_type: :invalid_type) do
         subject_should_raise(ArgumentError, /Invalid session type: :invalid_type$/)
       end
 
-      let_context(session_options: {type: :server_db}) do
+      let_context(session_type: :server_db) do
         subject_should_raise(ArgumentError, /Invalid session type: :server_db \(`server_db` has been replaced/)
       end
 
       describe 'resulting adaptor' do
         subject do
-          super()
-          Neo4j::ActiveBase.current_session.adaptor
+          super().adaptor
         end
 
-        let_context(session_options: {type: :http, url: 'http://neo4j:specs@the-host:1234'}) do
+        let_context(session_type: :http, session_path_or_url: 'http://neo4j:specs@the-host:1234') do
           it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
           its(:url) { should eq('http://neo4j:specs@the-host:1234') }
 
@@ -85,7 +91,7 @@ module Rails
           end
         end
 
-        let_context(session_options: {type: :http, url: 'http://neo4j:specs@the-host:1234', options: {basic_auth: 'neo4j', password: 'specs2'}}) do
+        let_context(session_type: :http, session_path_or_url: 'http://neo4j:specs@the-host:1234', session_options: {basic_auth: 'neo4j', password: 'specs2'}) do
           it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
           its(:url) { should eq('http://neo4j:specs@the-host:1234') }
 
@@ -106,9 +112,8 @@ module Rails
 
           context 'embedded session options' do
             let(:tmpdir) { Dir.mktmpdir }
-            let(:session_options) do
-              {type: :embedded, path: tmpdir}
-            end
+            let(:session_type) { :embedded }
+            let(:session_path_or_url) { tmpdir }
 
             # Mocking the embedded connection, to avoid `OutOfMemory` on Travis
             # This checks that the connection would be created

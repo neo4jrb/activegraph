@@ -101,7 +101,9 @@ If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, 
 server_db
 ^^^^^^^^^
 
-In previous version of the ``neo4j`` gem to connect to Neo4j via HTTP you would define the value ``server_db`` in the ``neo4j.yml`` file, the ``NEO4J_TYPE`` environment variable, or a Rails configuration (``config.neo4j.session_type``).  This should now be replaced and either ``bolt`` or ``http`` should be used depending on which connection type you need.
+In previous version of the ``neo4j`` gem to connect to Neo4j via HTTP you would define the value ``server_db`` in the ``neo4j.yml`` file, the ``NEO4J_TYPE`` environment variable, or a Rails configuration (``config.neo4j.session.type``).  This should now be replaced and either ``bolt`` or ``http`` should be used depending on which connection type you need.
+
+Also, instead of using `session_type`, `session_url`, `session_path`, and `session_options`, you should use `session.type`, `session.url`, `session.path`, and `session.options` respectively.
 
 Some examples:
 
@@ -123,12 +125,12 @@ Some examples:
   # Rails config/application.rb, config/environments/development.rb, etc...
 
   # Before
-  config.neo4j.session_type = :server_db
-  config.neo4j.session_url = 'http://localhost:7474'
+  config.neo4j.session.type = :server_db
+  config.neo4j.session.url = 'http://localhost:7474'
 
   # AFter
-  config.neo4j.session_type = :http # or :bolt
-  config.neo4j.session_url = 'http://localhost:7474'
+  config.neo4j.session.type = :http # or :bolt
+  config.neo4j.session.url = 'http://localhost:7474'
 
 Outside of Rails
 ^^^^^^^^^^^^^^^^
