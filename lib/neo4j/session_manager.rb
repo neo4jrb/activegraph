@@ -34,7 +34,7 @@ module Neo4j
       # TODO: Deprecate embedded_db and http in favor of embedded and http
       #
       def cypher_session_adaptor(type, path_or_url, options = {})
-        case type
+        case type.to_sym
         when :embedded_db, :embedded
           Neo4j::Core::CypherSession::Adaptors::Embedded.new(path_or_url, options)
         when :http
