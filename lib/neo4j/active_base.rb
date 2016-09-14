@@ -5,9 +5,17 @@ module Neo4j
     class << self
       # private?
       def current_session
-        SessionRegistry.current_session.tap do |session|
+        (SessionRegistry.current_session ||= establish_session).tap do |session|
           fail 'No session defined!' if session.nil?
         end
+      end
+
+      def on_establish_session(&block)
+        @establish_session_block = block
+      end
+
+      def establish_session
+        @establish_session_block.call if @establish_session_block
       end
 
       def current_transaction_or_session
@@ -34,12 +42,12 @@ module Neo4j
       end
 
       def new_transaction
-        Neo4j::ModelSchema.validate_model_schema!
+        validate_model_schema!
         Neo4j::Transaction.new(current_session)
       end
 
       def new_query(options = {})
-        Neo4j::ModelSchema.validate_model_schema!
+        validate_model_schema!
         Neo4j::Core::Query.new({session: current_session}.merge(options))
       end
 
@@ -52,7 +60,7 @@ module Neo4j
       end
 
       def current_transaction
-        Neo4j::ModelSchema.validate_model_schema!
+        validate_model_schema!
         Neo4j::Transaction.current_for(current_session)
       end
 
@@ -62,6 +70,12 @@ module Neo4j
 
       def logger
         @logger ||= (Neo4j::Config[:logger] || ActiveSupport::Logger.new(STDOUT))
+      end
+
+      private
+
+      def validate_model_schema!
+        Neo4j::ModelSchema.validate_model_schema! unless Neo4j::Migrations.currently_running_migrations
       end
     end
   end

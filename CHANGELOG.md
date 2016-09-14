@@ -5,6 +5,32 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Remove blank objects from association results to be compatible with `ActiveRecord` (see #1276 / thanks klobuczek)
+
+## [8.0.0.alpha.7] 2016-09-13
+
+### Changed
+
+- Multiple sessions in Rails config no longer supported
+
+## [8.0.0.alpha.6] 2016-09-12
+
+### Fixed
+
+- Instead of using `session_type`, `session_url`, `session_path`, and `session_options` in config `session.type`, `session.url`, `session.path`, and `session.options` should now be used.
+- Issue where `session_url` (now `session.url`) was not working
+- Broken sessions when threading
+
+## [8.0.0.alpha.5] 2016-09-08
+
+### Fixed
+
+- Various issues with not be able to run migrations when migration were pending (see 22b7e6aaadd46c11d421b4dac8d3fb15f663a4c4)
+
+## [8.0.0.alpha.4] 2016-09-08
+
 ### Added
 
 - A `Neo4j::Migrations.maintain_test_schema!` method, to keep the test database up to date with schema changes. (see #1277)
@@ -18,6 +44,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
+
+## [8.0.0.alpha.3]
+
+### Skipped
 
 ## [8.0.0.alpha.2] 2016-08-05
 

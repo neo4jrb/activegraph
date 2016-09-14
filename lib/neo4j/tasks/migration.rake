@@ -10,6 +10,10 @@ unless Rake::Task.task_defined?('environment')
 end
 
 namespace :neo4j do
+  task :allow_migrations do
+    Neo4j::Migrations.currently_running_migrations = true
+  end
+
   desc 'Run a script against the database to perform system-wide changes'
   task :legacy_migrate, [:task_name, :subtask] => :environment do |_, args|
     path = Rake.original_dir
@@ -32,46 +36,46 @@ namespace :neo4j do
   end
 
   desc 'A shortcut for neo4j::migrate::all'
-  task migrate: :environment do
+  task :migrate do
     Rake::Task['neo4j:migrate:all'].invoke
   end
 
   namespace :migrate do
     desc 'Run all pending migrations'
-    task all: :environment do
+    task all: [:allow_migrations, :environment] do
       runner = Neo4j::Migrations::Runner.new
       runner.all
     end
 
     desc 'Run a migration given its VERSION'
-    task up: :environment do
+    task up: [:allow_migrations, :environment] do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.up version
     end
 
     desc 'Revert a migration given its VERSION'
-    task down: :environment do
+    task down: [:allow_migrations, :environment] do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.down version
     end
 
     desc 'Print a report of migrations status'
-    task status: :environment do
+    task status: [:allow_migrations, :environment] do
       runner = Neo4j::Migrations::Runner.new
       runner.status
     end
 
     desc 'Resolve an incomplete version state'
-    task resolve: :environment do
+    task resolve: [:allow_migrations, :environment] do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.resolve version
     end
 
     desc 'Resolve an incomplete version state'
-    task reset: :environment do
+    task reset: [:allow_migrations, :environment] do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.reset version
@@ -79,7 +83,7 @@ namespace :neo4j do
   end
 
   desc 'Rollbacks migrations given a STEP number'
-  task :rollback, :environment do
+  task :rollback, [:allow_migrations, :environment] do
     steps = (ENV['STEP'] || 1).to_i
     runner = Neo4j::Migrations::Runner.new
     runner.rollback(steps)
@@ -96,7 +100,7 @@ namespace :neo4j do
     fail 'Label must be specified' if label.blank?
     fail 'Property name must be specified' if property_name.blank?
 
-    migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}"
+    migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}".gsub('::', '')
 
     require 'fileutils'
     FileUtils.mkdir_p('db/neo4j/migrate')

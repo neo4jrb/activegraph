@@ -499,7 +499,7 @@ describe Neo4j::ActiveNode::IdProperty do
         nodes = Array.new(3) { NeoIdTest.create }
         NeoIdTest.create
 
-        expect(NeoIdTest.where(id: nodes)).to eq(nodes)
+        expect(NeoIdTest.where(id: nodes)).to match_array(nodes)
       end
     end
 
