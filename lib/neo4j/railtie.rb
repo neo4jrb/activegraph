@@ -10,6 +10,7 @@ require 'neo4j/core/cypher_session/adaptors/embedded'
 module Neo4j
   class Railtie < ::Rails::Railtie
     config.neo4j = ActiveSupport::OrderedOptions.new
+    config.neo4j.session = ActiveSupport::OrderedOptions.new
 
     if defined?(ActiveSupport::Reloader)
       ActiveSupport::Reloader.to_prepare do
@@ -58,7 +59,7 @@ module Neo4j
     end
 
     def setup!(neo4j_config = nil)
-      type, url, path, options, wait_for_connection = final_config!(neo4j_config).values_at(:type, :path, :url, :options, :wait_for_connection)
+      type, url, path, options, wait_for_connection = final_config!(neo4j_config).values_at(:type, :url, :path, :options, :wait_for_connection)
       register_neo4j_cypher_logging(type || default_session_type)
 
       Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
@@ -74,8 +75,10 @@ module Neo4j
     end
 
     def support_deprecated_session_configs!(neo4j_config)
-      ActiveSupport::Deprecation.warn('neo4j.config.sessions is deprecated, please use neo4j.config.session (not an array)') if neo4j_config.sessions.present?
-      neo4j_config.session ||= (neo4j_config.sessions && neo4j_config.sessions[0]) || {}
+      if neo4j_config.sessions.present?
+        ActiveSupport::Deprecation.warn('neo4j.config.sessions is deprecated, please use neo4j.config.session (not an array)')
+        neo4j_config.session = neo4j_config.sessions[0] if neo4j_config.session.empty?
+      end
 
       %w(type path url options).each do |key|
         value = neo4j_config.send("session_#{key}")
