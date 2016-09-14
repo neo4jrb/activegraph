@@ -5,9 +5,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
 - Remove blank objects from association results to be compatible with `ActiveRecord` (see #1276 / thanks klobuczek)
+
+## [8.0.0.alpha.9] 2016-09-14
+
+### Fixed
+
+- String / symbol issue for session types in railtie
+- Put in fix for allowing models to reload for wrapping nodes / relationshps
+
+## [8.0.0.alpha.8] 2016-09-14
+
+### Fixed
+
+- Issues with railtie
 
 ## [8.0.0.alpha.7] 2016-09-13
 
