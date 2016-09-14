@@ -58,16 +58,19 @@ module Neo4j
     end
 
     def setup!(neo4j_config = nil)
-      support_deprecated_session_configs!(neo4j_config)
-
-      session_data = neo4j_config.session.empty? ? yaml_config_data : neo4j_config.session
-      type, url, path, options, wait_for_connection = session_data.values_at(:type, :path, :url, :options, :wait_for_connection)
+      type, url, path, options, wait_for_connection = final_config!(neo4j_config).values_at(:type, :path, :url, :options, :wait_for_connection)
       register_neo4j_cypher_logging(type || default_session_type)
 
       Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
                                                url || path || default_session_path_or_url,
                                                wait_for_connection,
                                                options || {})
+    end
+
+    def final_config!(neo4j_config)
+      support_deprecated_session_configs!(neo4j_config)
+
+      neo4j_config.session.empty? ? yaml_config_data : neo4j_config.session
     end
 
     def support_deprecated_session_configs!(neo4j_config)
@@ -99,10 +102,10 @@ module Neo4j
 
     def yaml_config_data
       @yaml_config_data ||= if yaml_path
-                         HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
-                       else
-                         {}
-                       end
+                              HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
+                            else
+                              {}
+                            end
     end
 
     def yaml_path
