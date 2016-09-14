@@ -5,18 +5,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [8.0.0.alpha.9] 2016-09-14
+
+### Fixed
+
+- String / symbol issue for session types in railtie
+- Put in fix for allowing models to reload for wrapping nodes / relationshps
+
+## [8.0.0.alpha.8] 2016-09-14
+
+### Fixed
+
+- Issues with railtie
 
 ## [8.0.0.alpha.7] 2016-09-13
 
 ### Changed
 
 - Multiple sessions in Rails config no longer supported
-
-## [8.0.0.alpha.6] 2016-09-14
-
-### Fixed
-
-- Issues with railtie
 
 ## [8.0.0.alpha.6] 2016-09-12
 
