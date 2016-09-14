@@ -5,7 +5,8 @@ unless Rake::Task.task_defined?('environment')
   desc 'Run a script against the database to perform system-wide changes'
   task :environment do
     require 'neo4j/session_manager'
-    Neo4j::SessionManager.setup!
+    require 'ostruct'
+    Neo4j::Railtie.setup!(OpenStruct.new)
   end
 end
 

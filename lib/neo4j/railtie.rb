@@ -60,7 +60,8 @@ module Neo4j
     def setup!(neo4j_config = nil)
       support_deprecated_session_configs!(neo4j_config)
 
-      type, url, path, options, wait_for_connection = neo4j_config.session.values_at(:type, :path, :url, :options, :wait_for_connection)
+      session_data = neo4j_config.session.empty? ? yaml_config_data : neo4j_config.session
+      type, url, path, options, wait_for_connection = session_data.values_at(:type, :path, :url, :options, :wait_for_connection)
       register_neo4j_cypher_logging(type || default_session_type)
 
       Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
@@ -96,6 +97,20 @@ module Neo4j
       ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
     end
 
+    def yaml_config_data
+      @yaml_config_data ||= if yaml_path
+                         HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
+                       else
+                         {}
+                       end
+    end
+
+    def yaml_path
+      return unless defined?(Rails)
+      @yaml_path ||= %w(config/neo4j.yml config/neo4j.yaml).map do |path|
+        Rails.root.join(path)
+      end.detect(&:exist?)
+    end
 
     TYPE_SUBSCRIBERS = {
       http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),

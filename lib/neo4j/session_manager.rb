@@ -31,21 +31,6 @@ module Neo4j
         restricted_field.set nil, false
       end
 
-      def config_data
-        @config_data ||= if yaml_path
-                           HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
-                         else
-                           {}
-                         end
-      end
-
-      def yaml_path
-        return unless defined?(Rails)
-        @yaml_path ||= %w(config/neo4j.yml config/neo4j.yaml).map do |path|
-          Rails.root.join(path)
-        end.detect(&:exist?)
-      end
-
       # TODO: Deprecate embedded_db and http in favor of embedded and http
       #
       def cypher_session_adaptor(type, path_or_url, options = {})
