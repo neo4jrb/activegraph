@@ -12,6 +12,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Multiple sessions in Rails config no longer supported
 
+## [8.0.0.alpha.6] 2016-09-14
+
+### Fixed
+
+- Issues with railtie
+
 ## [8.0.0.alpha.6] 2016-09-12
 
 ### Fixed
