@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Remove blank objects from association results to be compatible with `ActiveRecord` (see #1276 / thanks klobuczek)
+
 ## [8.0.0.alpha.9] 2016-09-14
 
 ### Fixed

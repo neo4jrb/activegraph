@@ -386,7 +386,7 @@ module Neo4j::ActiveNode
 
         define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
           clear_deferred_nodes_for_association(name)
-          association_proxy(name).replace_with(ids)
+          association_proxy(name).replace_with(Array(ids).reject(&:blank?))
         end
 
         define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do

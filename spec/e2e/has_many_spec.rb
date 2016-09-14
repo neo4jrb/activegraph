@@ -556,6 +556,25 @@ describe 'has_many' do
       expect(post.comments.to_a).to match_array([comment])
     end
 
+    it 'ignores blank IDs for has_many' do
+      post = Post.create(comments: Comment.create)
+
+      post.comment_ids = ['', nil]
+
+      post = Post.find(post.id)
+      expect(post.comments.to_a).to be_empty
+    end
+
+    it 'allows single ID for has_many' do
+      post = Post.create
+      comment = Comment.create
+
+      post.comment_ids = comment.id
+
+      post = Post.find(post.id)
+      expect(post.comments.to_a).to match_array([comment])
+    end
+
     it 'sets IDs for has_one' do
       post = Post.create
       comment = Comment.create
