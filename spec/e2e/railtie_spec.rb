@@ -50,6 +50,22 @@ module Rails
       end
     end
 
+    describe '#support_deprecated_session_configs!' do
+      let(:config) { ActiveSupport::InheritableOptions.new(session: ActiveSupport::OrderedOptions.new) }
+
+      it 'uses sessions if present' do
+        config.sessions = [:abc]
+        Neo4j::Railtie.support_deprecated_session_configs!(config)
+        expect(config.session).to eq(:abc)
+      end
+
+      it 'leverages session_type if present' do
+        config.session_type = :bolt
+        Neo4j::Railtie.support_deprecated_session_configs!(config)
+        expect(config.session.type.to_sym).to eq(:bolt)
+      end
+    end
+
     describe 'open_neo4j_session' do
       let(:session_type) { nil }
       let(:session_path_or_url) { nil }
