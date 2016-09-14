@@ -24,6 +24,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various issues with not be able to run migrations when migration were pending
 - Broken sessions when threading
 
+### Fixed
+
+- Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
+
 ## [8.0.0.alpha.2] 2016-08-05
 
 ### Changed
