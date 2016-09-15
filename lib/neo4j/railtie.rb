@@ -58,7 +58,7 @@ module Neo4j
       end
     end
 
-    def setup!(neo4j_config = nil)
+    def setup!(neo4j_config = OpenStruct.new(session: {}))
       type, url, path, options, wait_for_connection = final_config!(neo4j_config).values_at(:type, :url, :path, :options, :wait_for_connection)
       register_neo4j_cypher_logging(type || default_session_type)
 

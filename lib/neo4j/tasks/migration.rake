@@ -6,7 +6,7 @@ unless Rake::Task.task_defined?('environment')
   task :environment do
     require 'neo4j/session_manager'
     require 'ostruct'
-    Neo4j::Railtie.setup!(OpenStruct.new)
+    Neo4j::Railtie.setup!
   end
 end
 
