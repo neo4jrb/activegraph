@@ -62,7 +62,7 @@ module Rails
       it 'leverages session_type if present' do
         config.session_type = :bolt
         Neo4j::Railtie.support_deprecated_session_configs!(config)
-        expect(config.session.type.to_sym).to eq(:bolt)
+        expect(config.session.type).to eq(:bolt)
       end
     end
 
