@@ -71,6 +71,10 @@ describe 'association creation' do
         expect { chris.favorite_class = math }.to change { chris.pending_deferred_creations? }
       end
 
+      it 'skips queries when accessing to an unpersisted association' do
+        expect_queries(0) { chris.favorite_class }
+      end
+
       context 'upon save...' do
         before do
           chris.favorite_class = math
@@ -123,6 +127,10 @@ describe 'association creation' do
 
       it 'is aware that there are cascading relationships' do
         expect { chris.lessons << math }.to change { chris.pending_deferred_creations? }
+      end
+
+      it 'skips queries when accessing to unpersisted associations' do
+        expect_queries(0) { chris.lessons.to_a }
       end
 
       context 'upon save...' do
