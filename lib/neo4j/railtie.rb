@@ -10,7 +10,7 @@ require 'neo4j/core/cypher_session/adaptors/embedded'
 module Neo4j
   class Railtie < ::Rails::Railtie
     def empty_config
-      ActiveSupport::InheritableOptions.new.tap { |cfg| cfg.session = ActiveSupport::InheritableOptions.new }
+      ActiveSupport::OrderedOptions.new.tap { |cfg| cfg.session = ActiveSupport::OrderedOptions.new }
     end
 
     config.neo4j = empty_config
