@@ -5,7 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [8.0.0.alpha.10] 2016-09-16
+
+### Fixed
 - Remove blank objects from association results to be compatible with `ActiveRecord` (see #1276 / thanks klobuczek)
+- Allow https scheme in the NEO4J_URL (see #1287 / thanks jacob-ewald)
 
 ## [8.0.0.alpha.9] 2016-09-14
 
