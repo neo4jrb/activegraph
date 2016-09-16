@@ -9,8 +9,11 @@ require 'neo4j/core/cypher_session/adaptors/embedded'
 
 module Neo4j
   class Railtie < ::Rails::Railtie
-    config.neo4j = ActiveSupport::OrderedOptions.new
-    config.neo4j.session = ActiveSupport::OrderedOptions.new
+    def empty_config
+      ActiveSupport::InheritableOptions.new(sessions: ActiveSupport::OrderedOptions.new)
+    end
+
+    config.neo4j = empty_config
 
     if defined?(ActiveSupport::Reloader)
       ActiveSupport::Reloader.to_prepare do
@@ -58,7 +61,7 @@ module Neo4j
       end
     end
 
-    def setup!(neo4j_config = OpenStruct.new(session: {}))
+    def setup!(neo4j_config = empty_config)
       type, url, path, options, wait_for_connection = final_config!(neo4j_config).values_at(:type, :url, :path, :options, :wait_for_connection)
       register_neo4j_cypher_logging(type || default_session_type)
 
