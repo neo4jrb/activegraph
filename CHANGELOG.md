@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.2.1] - 09-19-2016
+
+### Fixed
+
+- During ActiveRel create, node and rel property values formatted like Cypher props (`{val}`) were interpreted as props, causing errors.
+
 ## [7.2.0] - 08-23-2016
 
 ### Added
