@@ -193,6 +193,10 @@ describe 'Query API' do
         expect(Teacher.as(:teach).where('teach.name =~ ?', '.*Othmar.*').to_a).to eq([othmar])
       end
 
+      it 'allows filtering by array' do
+        expect(Student.as(:s).where('s.name IN ?', %w(Danny Sandra)).to_a).to contain_exactly(danny, sandra)
+      end
+
       it 'allows filtering and parametarizing by String and Hash in where' do
         expect(Teacher.as(:teach).where('teach.name =~ {name}', name: '.*Othmar.*').to_a).to eq([othmar])
       end
