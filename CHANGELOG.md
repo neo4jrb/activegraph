@@ -109,6 +109,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Made some memory optimizations (thanks ProGM / see #1221)
 
+## [7.2.1] - 09-19-2016
+
+### Fixed
+
+- During ActiveRel create, node and rel property values formatted like Cypher props (`{val}`) were interpreted as props, causing errors.
+
 ## [7.2.0] - 08-23-2016
 
 ### Added
