@@ -19,7 +19,7 @@ describe 'association creation' do
     stub_active_node_class 'Lesson' do
       property :subject
       validates_presence_of :subject
-      has_many :in, :students, origin: :lesson
+      has_many :in, :students, origin: :lessons
     end
   end
 
@@ -131,6 +131,16 @@ describe 'association creation' do
 
       it 'skips queries when accessing to unpersisted associations' do
         expect_queries(0) { chris.lessons.to_a }
+        expect_queries(0) { chris.lessons.count }
+      end
+
+      it '.count, .size and .length returns the number of unpersisted associations' do
+        chris.lessons << math
+        expect_queries(0) do
+          expect(chris.lessons.count).to eq(1)
+          expect(chris.lessons.length).to eq(1)
+          expect(chris.lessons.size).to eq(1)
+        end
       end
 
       context 'upon save...' do
@@ -229,7 +239,7 @@ describe 'association creation' do
       it 'does not raise error, creates rel on save' do
         expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
         expect { chris.lesson_ids = [math.id] }.not_to raise_error
-        expect { chris.save }.to change { chris.lessons.count }
+        expect { chris.save }.to change { math.students.count }
       end
     end
   end

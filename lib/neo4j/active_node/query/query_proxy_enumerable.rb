@@ -14,7 +14,7 @@ module Neo4j
         end
 
         def result(node = true, rel = nil)
-          return [].freeze if @start_object && @start_object.new_record?
+          return [].freeze if unpersisted_start_object?
 
           @result_cache ||= {}
           return result_cache_for(node, rel) if result_cache?(node, rel)

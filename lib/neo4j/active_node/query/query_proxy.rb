@@ -266,6 +266,10 @@ module Neo4j
           end
         end
 
+        def unpersisted_start_object?
+          @start_object && @start_object.new_record?
+        end
+
         protected
 
         # Methods are underscored to prevent conflict with user class methods

@@ -28,7 +28,7 @@ module Neo4j::ActiveNode
       end
 
       extend Forwardable
-      %w(include? empty? count find first last ==).each do |delegated_method|
+      %w(include? find first last ==).each do |delegated_method|
         def_delegator :@enumerable, delegated_method
       end
 
@@ -36,6 +36,22 @@ module Neo4j::ActiveNode
 
       def each(&block)
         result_nodes.each(&block)
+      end
+
+      def count(*args)
+        @deferred_objects.count + @enumerable.count(*args)
+      end
+
+      def length
+        @deferred_objects.length + @enumerable.length
+      end
+
+      def size
+        @deferred_objects.size + @enumerable.size
+      end
+
+      def empty?(*args)
+        @deferred_objects.empty? && @enumerable.empty?(*args)
       end
 
       def ==(other)
