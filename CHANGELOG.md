@@ -15,6 +15,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Backporting #1245 to 7.x versions. It implements the [`ForbiddenAttributesProtection` API](http://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html) from ActiveRecord.
 
+## [7.1.4] - 09-20-2016
+
+### Fixed
+
+- `where` clause with question mark parameter and array values only using the first element (see #1247 #1290)
+
 ## [7.1.3] - 08-18-2016
 
 ### Changed
@@ -39,6 +45,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Gemspec dependency requirements were modified where ActiveModel, ActiveSupport, and Railties are concerned. The gem now requires >= 4.0, < 5.1.
 - `ActiveModel::Serializers::Xml` is only included if supported if available.
+
+## [7.0.16] - 09-20-2016
+
+### Fixed
+
+- `where` clause with question mark parameter and array values only using the first element (see #1247 #1290)
 
 ## [7.0.15] - 08-18-2016
 
