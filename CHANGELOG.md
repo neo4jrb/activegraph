@@ -28,6 +28,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Gemspec dependency requirements were modified where ActiveModel, ActiveSupport, and Railties are concerned. The gem now requires >= 4.0, < 5.1.
 - `ActiveModel::Serializers::Xml` is only included if supported if available.
 
+## [7.0.16] - 09-20-2016
+
+### Fixed
+
+- `where` clause with question mark parameter and array values only using the first element (see #1247 #1290)
+
 ## [7.0.15] - 08-18-2016
 
 ### Changed
