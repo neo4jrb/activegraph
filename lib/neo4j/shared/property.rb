@@ -23,9 +23,10 @@ module Neo4j::Shared
     def initialize(attributes = nil)
       attributes = process_attributes(attributes)
       modded_attributes = inject_defaults!(attributes)
-      validate_attributes!(modded_attributes)
+      # validate_attributes!(modded_attributes)
       writer_method_props = extract_writer_methods!(modded_attributes)
       send_props(writer_method_props)
+      @undeclared_attributes = attributes
       @_persisted_obj = nil
     end
 
@@ -35,7 +36,7 @@ module Neo4j::Shared
     end
 
     def read_attribute(name)
-      respond_to?(name) ? send(name) : nil
+      respond_to?(name) ? send(name) : (_persisted_obj && _persisted_obj.props[name])
     end
     alias [] read_attribute
 

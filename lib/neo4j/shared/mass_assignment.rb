@@ -26,7 +26,11 @@ module Neo4j::Shared
       return unless new_attributes.present?
       new_attributes.each do |name, value|
         writer = :"#{name}="
-        send(writer, value) if respond_to?(writer)
+        if respond_to?(writer)
+          send(writer, value)
+        else
+          (@undeclared_attributes ||= {})[name] = value
+        end
       end
     end
 
