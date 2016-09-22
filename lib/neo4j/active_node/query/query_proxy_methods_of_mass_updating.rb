@@ -52,7 +52,10 @@ module Neo4j
           nodes = Array(node_or_nodes)
 
           self.delete_all_rels
-          nodes.each { |node| self << node }
+          nodes.map do |node|
+            node if _create_relation_or_defer(node)
+          end.compact
+          # nodes.each { |node| self << node }
         end
 
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.

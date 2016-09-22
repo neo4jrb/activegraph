@@ -165,13 +165,7 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          if @start_object._persisted_obj
-            create(other_node, {})
-          elsif @association
-            @start_object.defer_create(@association.name, other_node)
-          else
-            fail 'Another crazy error!'
-          end
+          _create_relation_or_defer(other_node)
           self
         end
 
@@ -271,6 +265,16 @@ module Neo4j
         end
 
         protected
+
+        def _create_relation_or_defer(other_node)
+          if @start_object._persisted_obj
+            create(other_node, {})
+          elsif @association
+            @start_object.defer_create(@association.name, other_node)
+          else
+            fail 'Another crazy error!'
+          end
+        end
 
         # Methods are underscored to prevent conflict with user class methods
         def _add_params(params)

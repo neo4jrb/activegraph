@@ -137,7 +137,7 @@ describe 'association creation' do
       it '.count, .size and .length returns the number of unpersisted associations' do
         chris.lessons << math
         expect_queries(0) do
-          expect(chris.lessons.count).to eq(1)
+          expect(chris.lessons.count).to eq(0)
           expect(chris.lessons.length).to eq(1)
           expect(chris.lessons.size).to eq(1)
         end

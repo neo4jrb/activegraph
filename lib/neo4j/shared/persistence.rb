@@ -172,15 +172,21 @@ module Neo4j::Shared
     # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
     # If saving fails because the resource is invalid then false will be returned.
     def update(attributes)
-      self.attributes = process_attributes(attributes)
-      save
+      self.class.run_transaction do |tx|
+        self.attributes = process_attributes(attributes)
+        saved = save
+        tx.mark_failed unless saved
+        saved
+      end
     end
     alias update_attributes update
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
     def update!(attributes)
-      self.attributes = process_attributes(attributes)
-      save!
+      self.class.run_transaction do
+        self.attributes = process_attributes(attributes)
+        save!
+      end
     end
     alias update_attributes! update!
 
