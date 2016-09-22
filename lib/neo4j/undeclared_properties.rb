@@ -11,7 +11,7 @@ module Neo4j
     end
 
     def read_attribute(name)
-      respond_to?(name) ? super(name) : read_undeclared_property(name)
+      respond_to?(name) ? super(name) : read_undeclared_property(name.to_sym)
     end
     alias [] read_attribute
 
