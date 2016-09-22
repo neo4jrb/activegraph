@@ -29,10 +29,12 @@ module Neo4j::Shared
         if respond_to?(writer)
           send(writer, value)
         else
-          (@undeclared_attributes ||= {})[name] = value
+          add_undeclared_property(name, value)
         end
       end
     end
+
+    def add_undeclared_property(_, _); end
 
     # Mass update a model's attributes
     #

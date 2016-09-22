@@ -23,12 +23,14 @@ module Neo4j::Shared
     def initialize(attributes = nil)
       attributes = process_attributes(attributes)
       modded_attributes = inject_defaults!(attributes)
-      # validate_attributes!(modded_attributes)
+      validate_attributes!(modded_attributes)
       writer_method_props = extract_writer_methods!(modded_attributes)
       send_props(writer_method_props)
-      @undeclared_attributes = attributes
+      self.undeclared_properties = attributes
       @_persisted_obj = nil
     end
+
+    def undeclared_properties=(_); end
 
     def inject_defaults!(starting_props)
       return starting_props if self.class.declared_properties.declared_property_defaults.empty?
@@ -36,7 +38,7 @@ module Neo4j::Shared
     end
 
     def read_attribute(name)
-      respond_to?(name) ? send(name) : (_persisted_obj && _persisted_obj.props[name])
+      respond_to?(name) ? send(name) : nil
     end
     alias [] read_attribute
 

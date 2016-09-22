@@ -8,9 +8,15 @@ module Neo4j::Shared
     end
 
     def update_model
-      return if (!changed_attributes || changed_attributes.empty?) && @undeclared_attributes.blank?
-      neo4j_query(query_as(:n).set(n: props_for_update))
+      return if skip_update?
+      props = props_for_update
+      neo4j_query(query_as(:n).set(n: props))
+      _persisted_obj.props.merge!(props)
       changed_attributes.clear
+    end
+
+    def skip_update?
+      changed_attributes.blank?
     end
 
     # Returns a hash containing:
@@ -24,7 +30,6 @@ module Neo4j::Shared
       inject_timestamps!
       props_with_defaults = inject_defaults!(props)
       converted_props = props_for_db(props_with_defaults)
-      inject_undeclared_attributes!(converted_props)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
     end
@@ -35,14 +40,7 @@ module Neo4j::Shared
       changed_props = attributes.select { |k, _| changed_attributes.include?(k) }
       changed_props.symbolize_keys!
       inject_defaults!(changed_props)
-      changed_props = props_for_db(changed_props)
-      inject_undeclared_attributes!(changed_props)
-      changed_props
-    end
-
-    def inject_undeclared_attributes!(converted_props)
-      converted_props.merge!(@undeclared_attributes) if @undeclared_attributes.present?
-      @undeclared_attributes = nil
+      props_for_db(changed_props)
     end
 
     # Increments a numeric attribute by a centain amount
@@ -72,7 +70,7 @@ module Neo4j::Shared
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
     def update_attribute(attribute, value)
-      send("#{attribute}=", value)
+      write_attribute(attribute, value)
       self.save
     end
 
@@ -80,7 +78,7 @@ module Neo4j::Shared
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
     def update_attribute!(attribute, value)
-      send("#{attribute}=", value)
+      write_attribute(attribute, value)
       self.save!
     end
 
