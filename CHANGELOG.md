@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.2.2] - 09-22-2016
+
+### Fixed
+
+- `where` clause with question mark parameter and array values only using the first element (see #1247 #1290)
+
 ## [7.2.1] - 09-19-2016
 
 ### Fixed
