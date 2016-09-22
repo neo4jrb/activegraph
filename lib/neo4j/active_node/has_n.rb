@@ -114,7 +114,7 @@ module Neo4j::ActiveNode
       end
 
       def replace_with(*args)
-        nodes = @query_proxy.public_send(:replace_with, *args).to_a
+        nodes = @query_proxy.replace_with(*args).to_a
         if @query_proxy.start_object.try(:new_record?)
           @cached_result = nil
         else
