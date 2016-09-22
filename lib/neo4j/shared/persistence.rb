@@ -1,5 +1,7 @@
 module Neo4j::Shared
+  # rubocop:disable Metrics/ModuleLength
   module Persistence
+    # rubocop:enable Metrics/ModuleLength
     extend ActiveSupport::Concern
 
     # @return [Hash] Given a node's state, will call the appropriate `props_for_{action}` method.
