@@ -48,6 +48,14 @@ module Rails
           expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:bolt, 'bolt://localhost:7472', nil, {})
         end
       end
+
+      context 'NEO4J_URL is https' do
+        let_env_variable(:NEO4J_URL) { 'https://localhost:7472' }
+
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'https://localhost:7472', nil, {})
+        end
+      end
     end
 
     describe '#support_deprecated_session_configs!' do

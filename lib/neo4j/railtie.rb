@@ -94,9 +94,9 @@ module Neo4j
 
     def default_session_type
       if ENV['NEO4J_URL']
-        URI(ENV['NEO4J_URL']).scheme.tap do |scheme|
-          fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http bolt).include?(scheme)
-        end
+        scheme = URI(ENV['NEO4J_URL']).scheme
+        fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http https bolt).include?(scheme)
+        scheme == 'https' ? 'http' : scheme
       else
         ENV['NEO4J_TYPE'] || :http
       end.to_sym
