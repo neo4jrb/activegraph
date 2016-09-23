@@ -28,7 +28,7 @@ module Neo4j::ActiveNode
       end
 
       extend Forwardable
-      %w(include? empty? count find first last ==).each do |delegated_method|
+      %w(include? find first last ==).each do |delegated_method|
         def_delegator :@enumerable, delegated_method
       end
 
@@ -36,6 +36,21 @@ module Neo4j::ActiveNode
 
       def each(&block)
         result_nodes.each(&block)
+      end
+
+      # .count always hits the database
+      def_delegator :@query_proxy, :count
+
+      def length
+        @deferred_objects.length + @enumerable.length
+      end
+
+      def size
+        @deferred_objects.size + @enumerable.size
+      end
+
+      def empty?(*args)
+        @deferred_objects.empty? && @enumerable.empty?(*args)
       end
 
       def ==(other)
@@ -59,9 +74,7 @@ module Neo4j::ActiveNode
       def result_nodes
         return result_objects if !@query_proxy.model
 
-        result_objects.map do |object|
-          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
-        end
+        map_results_as_nodes(result_objects)
       end
 
       def result_objects
@@ -101,9 +114,12 @@ module Neo4j::ActiveNode
       end
 
       def replace_with(*args)
-        @cached_result = nil
-
-        @query_proxy.public_send(:replace_with, *args)
+        nodes = @query_proxy.replace_with(*args).to_a
+        if @query_proxy.start_object.try(:new_record?)
+          @cached_result = nil
+        else
+          cache_result(nodes)
+        end
       end
 
       QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit]
@@ -131,6 +147,12 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      def map_results_as_nodes(result)
+        result.map do |object|
+          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
+        end
+      end
 
       def target_for_missing_method(method_name)
         case method_name
