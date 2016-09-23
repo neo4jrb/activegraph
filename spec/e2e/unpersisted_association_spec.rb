@@ -19,7 +19,7 @@ describe 'association creation' do
     stub_active_node_class 'Lesson' do
       property :subject
       validates_presence_of :subject
-      has_many :in, :students, origin: :lesson
+      has_many :in, :students, origin: :lessons
     end
   end
 
@@ -221,7 +221,11 @@ describe 'association creation' do
       it 'does not raise error, creates rel on save' do
         expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
         expect { chris.lesson_ids = [math.id] }.not_to raise_error
-        expect { chris.save }.to change { chris.lessons.count }
+        expect { chris.save }.to change { Lesson.where(id: math.id).students.count }.by(1)
+      end
+
+      it 'changes count, even before persisting the node' do
+        expect { chris.lesson_ids = [math.id] }.to change { chris.lessons.count }
       end
     end
   end

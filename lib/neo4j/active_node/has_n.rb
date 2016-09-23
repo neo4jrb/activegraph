@@ -29,10 +29,15 @@ module Neo4j::ActiveNode
 
       extend Forwardable
       %w(include? empty? count find first last ==).each do |delegated_method|
-        def_delegator :@enumerable, delegated_method
+        def_delegator :deferred_objects_or_enumerable, delegated_method
       end
 
       include Enumerable
+
+      def deferred_objects_or_enumerable
+        # This is not good enough. Updates have to be taken care of as well
+        @query_proxy.start_object.try(:new_record?) ? @deferred_objects : @enumerable
+      end
 
       def each(&block)
         result_nodes.each(&block)
