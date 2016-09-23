@@ -12,7 +12,11 @@ module Neo4j
           end
 
           def args(var, rel_var)
-            @arg.respond_to?(:call) ? @arg.call(var, rel_var) : [@arg, @args].flatten
+            if @arg.respond_to?(:call)
+              @arg.call(var, rel_var)
+            else
+              [@arg] + @args
+            end
           end
 
           class << self
