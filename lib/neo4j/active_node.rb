@@ -90,7 +90,7 @@ module Neo4j
 
       Neo4j::Session.on_next_session_available do |_|
         next if manual_id_property?
-        id_property :uuid, auto: :uuid unless self.id_property?
+        id_property id_property_name || :uuid, auto: :uuid unless self.id_property?
 
         name = Neo4j::Config[:id_property]
         type = Neo4j::Config[:id_property_type]

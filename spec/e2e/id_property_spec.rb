@@ -408,4 +408,24 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
   end
+
+  describe 'after calling .id_property_config class method' do
+    before do
+      stub_const('CrazyModel', Class.new do
+        def self.id_property_name
+          :custom_id_property
+        end
+      end)
+    end
+
+    it 'does not generate constraint for :uuid' do
+      expect(CrazyModel).not_to receive(:id_property).with(:uuid, auto: :uuid)
+      CrazyModel.include Neo4j::ActiveNode
+    end
+
+    it 'sets the constraint to match the ID_PROPERTY constant value' do
+      expect(CrazyModel).to receive(:id_property).with(:custom_id_property, auto: :uuid)
+      CrazyModel.include Neo4j::ActiveNode
+    end
+  end
 end
