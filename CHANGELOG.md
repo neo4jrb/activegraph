@@ -5,6 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Don't fire database when accessing to unpersisted model associations (thanks @klobuczek & @ProGM see #1273)
+- `size` and `length` methods not taking account of `@deferred_objects` (see #1293)
+- `update` was not rolling-back association changes when validations fail
+
+# Changed
+- `count` method in associations, now always fire the database like AR does
+- Neo4j now passes all association validations specs, taken from AR (thanks @klobuczek)
+
 ## [8.0.0.alpha.10] 2016-09-16
 
 ### Fixed
