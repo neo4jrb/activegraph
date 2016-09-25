@@ -39,7 +39,7 @@ module Neo4j::ActiveNode
 
         klass = class << self; self; end
         klass.instance_eval do
-          define_method(name) do |query_params = nil, _ = nil|
+          define_method(name) do |*query_params|
             eval_context = ScopeEvalContext.new(self, current_scope || self.query_proxy)
             proc = full_scopes[name.to_sym]
             _call_scope_context(eval_context, query_params, proc)
@@ -68,13 +68,8 @@ module Neo4j::ActiveNode
       end
 
       def _call_scope_context(eval_context, query_params, proc)
-        if proc.arity == 1
-          eval_context.instance_exec(query_params, &proc)
-        else
-          eval_context.instance_exec(&proc)
-        end
+        eval_context.instance_exec(*query_params.fill(nil, query_params.length..proc.arity - 1), &proc)
       end
-
 
       def current_scope #:nodoc:
         ScopeRegistry.value_for(:current_scope, base_class.to_s)
