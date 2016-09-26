@@ -15,6 +15,10 @@ module Neo4j
           rels.first
         end
 
+        def as(node_var)
+          new_link(node_var)
+        end
+
         # Give ability to call `#find` on associations to get a scoped find
         # Doesn't pass through via `method_missing` because Enumerable has a `#find` method
         def find(*args)
