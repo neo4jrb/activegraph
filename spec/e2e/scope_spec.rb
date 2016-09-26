@@ -99,7 +99,7 @@ describe 'Neo4j::NodeMixin::Scope' do
 
   describe 'Person.scope :great_students, -> (identifier, score) { where("#{identifier}.score > ?", score)' do
     before(:each) do
-      Person.scope :great_students, -> (identifier, score) { where("#{identifier}.score > ?", score || 41) }
+      Person.scope :great_students, ->(identifier, score) { where("#{identifier}.score > ?", score || 41) }
     end
 
     describe 'Person.great_students.to_a' do
