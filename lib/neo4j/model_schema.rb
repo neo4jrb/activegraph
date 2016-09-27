@@ -80,6 +80,7 @@ module Neo4j
       end
 
       def legacy_model_schema_informations
+        ensure_model_data_state!
         data = {index: [], constraint: []}
         each_schema_element do |type, model, label, property_name|
           data[type] << {label: label, property_name: property_name, model: model}
