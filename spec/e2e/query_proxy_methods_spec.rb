@@ -620,6 +620,26 @@ describe 'query_proxy_methods' do
       end
     end
 
+    describe 'as' do
+      it 'changes query variable' do
+        query = Student.as(:stud)
+        expect(query.to_cypher).to include('(stud:`Student`)')
+        query.to_a
+      end
+
+      it 'keeps the current context' do
+        query = Student.where(name: 'John').as(:stud)
+        expect(query.to_cypher).to include('(stud:`Student`)', ' WHERE ')
+        query.to_a
+      end
+
+      it 'keeps the current context with associations' do
+        query = Student.all.lessons.as(:less)
+        expect(query.to_cypher).to include('`Student`)', '(less:`Lesson`)')
+        query.to_a
+      end
+    end
+
     describe 'delete, destroy' do
       before { @john.lessons << @history unless @john.lessons.include?(@history) }
 

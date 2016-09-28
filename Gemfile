@@ -27,6 +27,7 @@ end
 group 'test' do
   gem 'coveralls', require: false
   if RUBY_VERSION.to_f < 2.0
+    gem 'term-ansicolor', '< 1.4'
     gem 'tins', '< 1.7'
     gem 'overcommit', '< 0.35.0'
   else
