@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.2.3] - 09-28-2016
+
+### Fixed
+
+- `as` resetting scope of the current query chain (see #1298)
+
 ## [7.2.2] - 09-22-2016
 
 ### Fixed
