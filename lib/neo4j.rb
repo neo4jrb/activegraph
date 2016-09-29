@@ -26,6 +26,7 @@ require 'neo4j/paginated'
 require 'neo4j/schema/operation'
 
 require 'neo4j/timestamps'
+require 'neo4j/undeclared_properties'
 
 require 'neo4j/shared/callbacks'
 require 'neo4j/shared/filtered_hash'

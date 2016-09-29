@@ -26,8 +26,11 @@ module Neo4j::Shared
       validate_attributes!(modded_attributes)
       writer_method_props = extract_writer_methods!(modded_attributes)
       send_props(writer_method_props)
+      self.undeclared_properties = attributes
       @_persisted_obj = nil
     end
+
+    def undeclared_properties=(_); end
 
     def inject_defaults!(starting_props)
       return starting_props if self.class.declared_properties.declared_property_defaults.empty?

@@ -10,9 +10,15 @@ module Neo4j::Shared
     end
 
     def update_model
-      return if !changed_attributes || changed_attributes.empty?
-      neo4j_query(query_as(:n).set(n: props_for_update))
+      return if skip_update?
+      props = props_for_update
+      neo4j_query(query_as(:n).set(n: props))
+      _persisted_obj.props.merge!(props)
       changed_attributes.clear
+    end
+
+    def skip_update?
+      changed_attributes.blank?
     end
 
     # Returns a hash containing:
@@ -66,7 +72,7 @@ module Neo4j::Shared
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
     def update_attribute(attribute, value)
-      send("#{attribute}=", value)
+      write_attribute(attribute, value)
       self.save
     end
 
@@ -74,7 +80,7 @@ module Neo4j::Shared
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
     def update_attribute!(attribute, value)
-      send("#{attribute}=", value)
+      write_attribute(attribute, value)
       self.save!
     end
 
