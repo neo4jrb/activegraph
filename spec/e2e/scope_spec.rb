@@ -97,6 +97,26 @@ describe 'Neo4j::NodeMixin::Scope' do
     end
   end
 
+  describe 'Person.scope :great_students, -> (identifier, score) { where("#{identifier}.score > ?", score)' do
+    before(:each) do
+      Person.scope :great_students, ->(identifier, score) { where("#{identifier}.score > ?", score || 41) }
+    end
+
+    describe 'Person.great_students.to_a' do
+      subject do
+        Person.as(:foo).great_students(:foo, 41).to_a
+      end
+      it { is_expected.to match_array([@a, @b, @b1, @b2]) }
+    end
+
+    describe 'Person.great_students.to_a with omitted parameter' do
+      subject do
+        Person.as(:foo).great_students(:foo).to_a
+      end
+      it { is_expected.to match_array([@a, @b, @b1, @b2]) }
+    end
+  end
+
   describe 'Person.scope :great_students, -> (identifier) { where("#{identifier}.score > 41")' do
     before(:each) do
       Person.scope :great_students, ->(identifier) { where("#{identifier}.score > 41") }

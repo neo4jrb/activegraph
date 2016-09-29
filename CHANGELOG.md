@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Allow multiple arguments to scopes (see #1297 / thanks @klobuczek)
+- Fixed validations with unpersisted nodes (see #1293 / thanks @klobuczek & @ProGM)
+- Fixed various association bugs (see #1293 / thanks @klobuczek & @ProGM)
 
 ## [8.0.0.alpha.11] 2016-09-27
 
