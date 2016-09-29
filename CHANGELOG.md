@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add support for undeclared properties on specific models (see #1294 / thanks @klobuczek)
+
 ## [8.0.0.alpha.12] 2016-09-29
 
 ### Fixed
