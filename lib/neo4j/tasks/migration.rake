@@ -1,7 +1,7 @@
 require 'active_support/concern'
 require 'neo4j/migration'
 
-unless Rake::Task.task_defined?('environment')
+if !defined?(Rails) && !Rake::Task.task_defined?('environment')
   desc 'Run a script against the database to perform system-wide changes'
   task :environment do
     require 'neo4j/session_manager'
@@ -84,7 +84,7 @@ namespace :neo4j do
   end
 
   desc 'Rollbacks migrations given a STEP number'
-  task :rollback, [:allow_migrations, :environment] do
+  task rollback: [:allow_migrations, :environment] do
     steps = (ENV['STEP'] || 1).to_i
     runner = Neo4j::Migrations::Runner.new
     runner.rollback(steps)
