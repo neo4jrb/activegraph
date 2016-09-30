@@ -20,9 +20,9 @@ rvm:
 env:
   global:
     - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
-    - NEO4J_VERSION=community-3.0.3
   matrix:
-    - NEO4J_URL="http://localhost:7474"
+    - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.0.3
+    - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.0-M09
 matrix:
   include:
     - rvm: 2.3.1
@@ -34,6 +34,8 @@ matrix:
     # Testing bolt
     - rvm: 2.3.1
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.0.3
+    - rvm: 2.3.1
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.0-M09
 
     # Older versions of Neo4j with latest version of Ruby
     - rvm: 2.3.1
