@@ -16,7 +16,7 @@ module Neo4j
           property :name
         end
 
-        allow_any_instance_of(Runner).to receive(:files_path) do
+        allow(Runner).to receive(:files_path) do
           Rails.root.join('spec', 'migration_files', 'migrations', '*.rb')
         end
         User.delete_all
@@ -169,7 +169,7 @@ module Neo4j
 
         describe 'schema changes in migrations' do
           before do
-            allow_any_instance_of(described_class).to receive(:files_path) do
+            allow(described_class).to receive(:files_path) do
               Rails.root.join('spec', 'migration_files', 'transactional_migrations', '*.rb')
             end
           end
@@ -234,7 +234,7 @@ module Neo4j
 
         describe 'schema and data changes in migrations' do
           before do
-            allow_any_instance_of(described_class).to receive(:files_path) do
+            allow(described_class).to receive(:files_path) do
               Rails.root.join('spec', 'migration_files', 'transactional_migrations', '*.rb')
             end
           end
@@ -261,7 +261,7 @@ module Neo4j
             create_constraint :Contact, :phone, type: :unique
             Contact.create! phone: '123123'
 
-            allow_any_instance_of(described_class).to receive(:files_path) do
+            allow(described_class).to receive(:files_path) do
               Rails.root.join('spec', 'migration_files', 'transactional_migrations', '*.rb')
             end
           end

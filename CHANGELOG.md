@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Pending migrations check, now using a Rack Middleware instead of failing on startup (thanks @ProGM / see #1300)
+
 ### Added
 
 - Add support for undeclared properties on specific models (see #1294 / thanks @klobuczek)
@@ -26,7 +29,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `update` was not rolling-back association changes when validations fail
 - Broken Rails `neo4j:migrate_v8` generator
 
-# Changed
+### Changed
 - `count` method in associations, now always fire the database like AR does
 - Neo4j now passes all association validations specs, taken from AR (thanks @klobuczek)
 

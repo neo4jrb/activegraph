@@ -56,8 +56,8 @@ module Neo4j
 
       Neo4j::Config[:logger] ||= Rails.logger
 
-      if Rails.env.development? && !Neo4j::Migrations.currently_running_migrations && Neo4j::Config.fail_on_pending_migrations
-        Neo4j::Migrations.check_for_pending_migrations!
+      if Neo4j::Config.fail_on_pending_migrations
+        config.app_middleware.insert_after ::ActionDispatch::Callbacks, Neo4j::Migrations::CheckPending
       end
     end
 
