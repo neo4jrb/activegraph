@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add support for undeclared properties on specific models (see #1294 / thanks @klobuczek)
+- Add `update_node_property` and `update_node_properties` methods, aliased as `update_column` and `update_columns`, to persist changes without triggering validations, callbacks, timestamps, etc,...
 
 ## [8.0.0.alpha.12] 2016-09-29
 
