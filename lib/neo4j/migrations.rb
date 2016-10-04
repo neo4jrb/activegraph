@@ -6,6 +6,7 @@ module Neo4j
     autoload :Base
     autoload :Runner
     autoload :SchemaMigration
+    autoload :CheckPending
 
     class << self
       def check_for_pending_migrations!

@@ -141,31 +141,41 @@ MSG
       end
 
       def all_migrations
-        @up_versions + files_versions
-      end
-
-      def files_versions
-        migration_files.map(&:version)
-      end
-
-      def migration_files
-        files.map { |file_path| MigrationFile.new(file_path) }
+        @up_versions + migration_files_versions
       end
 
       def incomplete_states
         @incomplete_states ||= SortedSet.new(@schema_migrations.select(&:incomplete?))
       end
 
-      def files
-        Dir[files_path].sort
-      end
+      delegate :migration_files, :migration_files_versions, to: :class
 
-      def files_path
-        app_root.join('db', 'neo4j', 'migrate', '*.rb')
-      end
+      class <<self
+        def migration_files_versions
+          migration_files.map!(&:version)
+        end
 
-      def app_root
-        defined?(Rails) ? Rails.root : Pathname.new('.')
+        def migration_files
+          files.map! { |file_path| MigrationFile.new(file_path) }
+        end
+
+        def latest_migration
+          migration_files.last
+        end
+
+        def files
+          Dir[files_path].sort
+        end
+
+        private
+
+        def files_path
+          app_root.join('db', 'neo4j', 'migrate', '*.rb')
+        end
+
+        def app_root
+          defined?(Rails) ? Rails.root : Pathname.new('.')
+        end
       end
     end
   end
