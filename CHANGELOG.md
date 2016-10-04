@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [8.0.0.rc.1] 2016-10-04
 
 ### Changed
+
 - Pending migrations check, now using a Rack Middleware instead of failing on startup (thanks @ProGM / see #1300)
 
 ### Added
