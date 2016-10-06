@@ -41,12 +41,18 @@ module Neo4j
           model ? model.id_property_name : nil
         end
 
+        def distinct
+          new_link.tap do |e|
+            e.instance_variable_set(:@distinct, true)
+          end
+        end
+
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
           return 0 if unpersisted_start_object?
           fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
-            q = distinct.nil? ? var : "DISTINCT #{var}"
+            q = ensure_distinct(var, !distinct.nil?)
             limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
             limited_query.pluck("count(#{q}) AS #{var}").first
           end

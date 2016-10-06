@@ -336,6 +336,41 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'distinct' do
+    let(:frank)       { Student.create(name: 'Frank') }
+    let(:bill) { Teacher.create(name: 'Bill') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    let(:science)     { Lesson.create(name: 'science') }
+    before do
+      philosophy.students << frank
+      science.students << frank
+      philosophy.teachers << bill
+      science.teachers << bill
+    end
+
+    context 'when building the query' do
+      after do
+        ActiveSupport::Notifications.unsubscribe(@subscription) if @subscription
+      end
+
+      it 'adds distinct to a select query' do
+        @subscription = Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |query|
+          expect(query).to include('DISTINCT')
+        end
+        frank.lessons.teachers.distinct.to_a
+      end
+    end
+
+    it 'counts values without duplicates' do
+      expect(frank.lessons.teachers.count).to eq(2)
+      expect(frank.lessons.teachers.distinct.count).to eq(1)
+    end
+
+    it 'selects values without duplicates' do
+      expect(frank.lessons.teachers.distinct.to_a).to eq(frank.lessons.teachers.to_a.uniq)
+    end
+  end
+
   describe 'query counts for count, size, and length' do
     describe 'size' do
       it 'always queries' do
