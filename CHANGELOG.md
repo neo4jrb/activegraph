@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Pending migration check was failing when there are no migrations
+
 ## [8.0.0.rc.1] 2016-10-04
 
 ### Changed
