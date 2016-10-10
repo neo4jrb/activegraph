@@ -1,13 +1,14 @@
 module Neo4j
   module Migrations
-    class Base < ::Neo4j::Migration
+    class Base
       include Neo4j::Migrations::Helpers
       include Neo4j::Migrations::Helpers::Schema
       include Neo4j::Migrations::Helpers::IdProperty
       include Neo4j::Migrations::Helpers::Relationships
 
-      def initialize(migration_id)
+      def initialize(migration_id, options = {})
         @migration_id = migration_id
+        @silenced = options[:silenced]
       end
 
       def migrate(method)

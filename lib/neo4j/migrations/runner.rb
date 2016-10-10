@@ -13,7 +13,8 @@ module Neo4j
 
       def initialize(options = {})
         @silenced = options[:silenced] || !!ENV['MIGRATIONS_SILENCED']
-        SchemaMigration.mapped_label.create_constraint(:migration_id, type: :unique)
+        label = SchemaMigration.mapped_label
+        label.create_constraint(:migration_id, type: :unique) unless label.constraint?(:migration_id)
         @schema_migrations = SchemaMigration.all.to_a
         @up_versions = SortedSet.new(@schema_migrations.map(&:migration_id))
       end
@@ -47,8 +48,8 @@ module Neo4j
         end
       end
 
-      def pending_migrations?
-        all_migrations.any? { |migration| !up?(migration) }
+      def pending_migrations
+        all_migrations.select { |migration| !up?(migration) }
       end
 
       def status
@@ -110,7 +111,7 @@ MSG
 
       def migrate(direction, migration_file)
         migration_message(direction, migration_file) do
-          migration = migration_file.create
+          migration = migration_file.create(silenced: @silenced)
           migration.migrate(direction)
         end
       end

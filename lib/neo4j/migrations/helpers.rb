@@ -72,6 +72,10 @@ module Neo4j
 
       protected
 
+      def output(*string_format)
+        puts format(*string_format) unless @silenced
+      end
+
       def transactions?
         self.class.transaction?
       end

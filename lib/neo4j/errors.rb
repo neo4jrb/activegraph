@@ -34,11 +34,12 @@ module Neo4j
 
   # Inspired/taken from active_record/migration.rb
   class PendingMigrationError < MigrationError
-    def initialize
+    def initialize(migrations)
+      pending_migrations = migrations.join("\n")
       if rails? && defined?(Rails.env)
-        super("Migrations are pending. To resolve this issue, run:\n\n        #{command_name} neo4j:migrate RAILS_ENV=#{::Rails.env}")
+        super("Migrations are pending:\n#{pending_migrations}\n To resolve this issue, run:\n\n        #{command_name} neo4j:migrate RAILS_ENV=#{::Rails.env}")
       else
-        super("Migrations are pending. To resolve this issue, run:\n\n        #{command_name} neo4j:migrate")
+        super("Migrations are pending:\n#{pending_migrations}\n To resolve this issue, run:\n\n        #{command_name} neo4j:migrate")
       end
     end
 
