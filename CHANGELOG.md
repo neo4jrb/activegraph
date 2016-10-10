@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+# Added
+- `distinct` method for QueryProxy (thanks @ProGM / see #1305)
+
 ## [8.0.0.rc.2] 2016-10-07
 
 ### Fixed
