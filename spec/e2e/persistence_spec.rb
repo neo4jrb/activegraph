@@ -6,6 +6,8 @@ describe Neo4j::ActiveNode do
     end
 
     stub_active_node_class('WithValidations') do
+      attr_accessor :callback_fired
+
       property :name
 
       validates :name, presence: true
@@ -170,6 +172,114 @@ describe Neo4j::ActiveNode do
     it 'does not update it if it is not valid' do
       expect(person.update_attributes(name: nil)).to be false
       expect(get_value_from_db(person, :name)).to eq('Jim')
+    end
+  end
+
+  describe '#update_db_propert(y|ies)' do
+    before do
+      stub_active_node_class('UpdateWithValidations') do
+        attr_accessor :callback_fired
+
+        property :name
+        property :updated_at
+        property :age, type: Integer
+        after_update -> { self.callback_fired = true }
+
+        validates :name, presence: true
+        validates :age, inclusion: {in: [21]}
+      end
+    end
+
+    let!(:person) { UpdateWithValidations.create!(name: 'Jim', age: 21) }
+
+    shared_examples_for 'an update using update_db_propert(y|ies)' do
+      it 'updates the value in the database without validating' do
+        expect { update! }.to change { UpdateWithValidations.find(person).age }.from(21).to(20)
+      end
+
+      it 'updates the value on instance' do
+        expect { update! }.to change { person.age }.from(21).to(20)
+      end
+
+      it 'does not flag the field as dirty' do
+        expect { update! }.not_to change { person.age_changed? }.from(false)
+      end
+
+      it 'does not update timestamps' do
+        Timecop.travel(Time.now + 3600) do
+          expect { update! }.not_to change { UpdateWithValidations.find(person).updated_at }
+        end
+      end
+
+      it 'does not trigger callbacks' do
+        expect { update! }.not_to change { person.callback_fired }.from(nil)
+        expect { person.update(age: 21) }.to change { person.callback_fired }.to(true)
+      end
+
+      it 'updates the _persisted_obj' do
+        expect { update! }.to change { person._persisted_obj.props[:age] }.to(20)
+      end
+
+      it 'returns true' do
+        expect(update!).to eq(true)
+      end
+    end
+
+    describe 'singular `update_db_property`' do
+      let(:update!) { person.update_db_property(:age, 20) }
+      it_behaves_like 'an update using update_db_propert(y|ies)'
+
+      it 'rejects undeclared values' do
+        expect { person.update_db_property(:foo_col, 'foo') }.to raise_error NoMethodError
+      end
+
+      it 'performs type conversion' do
+        expect do
+          person.update_db_property(:age, '20')
+        end.not_to change { UpdateWithValidations.find(person).age.is_a?(Numeric) }.from(true)
+      end
+
+      context 'on a new record' do
+        it do
+          expect do
+            UpdateWithValidations.new.update_db_property(:age, 20)
+          end.to raise_error(Neo4j::Error, /can not update on a new record object/)
+        end
+      end
+    end
+
+    describe 'plurual `update_db_properties`' do
+      let(:update!) { person.update_db_properties(age: 20) }
+      it_behaves_like 'an update using update_db_propert(y|ies)'
+
+      it 'rejects undeclared values' do
+        expect { person.update_db_properties(foo_col: 'foo') }.to raise_error NoMethodError
+      end
+
+      it 'performs type conversion' do
+        expect do
+          person.update_db_properties(age: '20')
+        end.not_to change { UpdateWithValidations.find(person).age.is_a?(Numeric) }.from(true)
+      end
+
+      context 'on a new record' do
+        it do
+          expect do
+            UpdateWithValidations.new.update_db_properties(age: 20)
+          end.to raise_error StandardError, /can not update on a new record object/
+        end
+      end
+
+      context 'when an error occurs in the body of the error' do
+        let(:foo_val) { SecureRandom.hex }
+        it 'rolls back the database change' do
+          expect do
+            begin
+              person.update_db_properties(foo_val: foo_val)
+            rescue; end # rubocop:disable Lint/HandleExceptions
+          end.not_to change { UpdateWithValidations.where(foo_val: foo_val).exists? }.from(false)
+        end
+      end
     end
   end
 
