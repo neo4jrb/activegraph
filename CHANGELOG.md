@@ -13,6 +13,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Removed "strange" inheritance between Neo4j::Migrations::Base and the legacy Neo4j::Migration class
 - Avoid creating the `SchemaMigration` model constraint when it already exists
 
+## [8.0.0.rc.3] 2016-10-12
+
+# Added
+
+- `distinct` method for QueryProxy (thanks @ProGM / see #1305)
+- Added `update_node_property` / `update_node_properties` (aliased as `update_column` / `update_columns`)
+
 ## [8.0.0.rc.2] 2016-10-07
 
 ### Fixed
@@ -28,6 +35,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add support for undeclared properties on specific models (see #1294 / thanks @klobuczek)
+- Add `update_node_property` and `update_node_properties` methods, aliased as `update_column` and `update_columns`, to persist changes without triggering validations, callbacks, timestamps, etc,...
 
 ## [8.0.0.alpha.12] 2016-09-29
 
