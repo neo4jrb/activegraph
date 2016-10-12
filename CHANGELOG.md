@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Inconsistent `drop_constraint` and `drop_index` behavior: they were accepting `force` option (like `add_*` methods)
+- `PendingMigrationError` not showing pending migrations versions
+- Fixed `silenced: true` for `Neo4j::Migration::Runner` option, not working properly
+- Removed "strange" inheritance between Neo4j::Migrations::Base and the legacy Neo4j::Migration class
+- Avoid creating the `SchemaMigration` model constraint when it already exists
+
 ## [8.0.0.rc.3] 2016-10-12
 
 # Added

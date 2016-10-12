@@ -11,7 +11,8 @@ module Neo4j
     class << self
       def check_for_pending_migrations!
         runner = Neo4j::Migrations::Runner.new
-        fail ::Neo4j::PendingMigrationError if runner.pending_migrations?
+        pending = runner.pending_migrations
+        fail ::Neo4j::PendingMigrationError, pending if pending.any?
       end
 
       attr_accessor :currently_running_migrations

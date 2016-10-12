@@ -61,15 +61,15 @@ module Neo4j
       end
 
       describe Runner do
-        describe '#pending_migrations?' do
-          it 'returns true if there are pending migrations' do
+        describe '#pending_migrations' do
+          it 'returns a list of pending migrations' do
             SchemaMigration.create! migration_id: '1234567890'
-            expect(described_class.new.pending_migrations?).to be_truthy
+            expect(described_class.new.pending_migrations).to eq(%w(9500000000 9500000001))
           end
 
-          it 'returns false if all migrations are up' do
+          it 'returns an empty list if all migrations are up' do
             all_migrations_on!
-            expect(described_class.new.pending_migrations?).to be_falsey
+            expect(described_class.new.pending_migrations).to be_empty
           end
         end
 

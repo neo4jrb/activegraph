@@ -8,9 +8,9 @@ module Neo4j
         extract_data!
       end
 
-      def create
+      def create(options = {})
         require @file_name
-        class_name.constantize.new(@version)
+        class_name.constantize.new(@version, options)
       end
 
       private

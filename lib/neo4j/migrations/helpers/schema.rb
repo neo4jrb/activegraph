@@ -24,13 +24,13 @@ module Neo4j
         def drop_constraint(label, property, options = {})
           type = options[:type] || :uniqueness
           label_object = ActiveBase.label_object(label)
-          fail_missing_constraint_or_index!(:constraint, label, property) if !label_object.constraint?(property)
+          fail_missing_constraint_or_index!(:constraint, label, property) if !options[:force] && !label_object.constraint?(property)
           label_object.drop_constraint(property, type: type)
         end
 
-        def drop_index(label, property)
+        def drop_index(label, property, options = {})
           label_object = ActiveBase.label_object(label)
-          fail_missing_constraint_or_index!(:index, label, property) if !label_object.index?(property)
+          fail_missing_constraint_or_index!(:index, label, property) if !options[:force] && !label_object.index?(property)
           label_object.drop_index(property)
         end
 
