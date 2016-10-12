@@ -5,8 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [8.0.0.rc.3] 2016-10-12
+
 # Added
+
 - `distinct` method for QueryProxy (thanks @ProGM / see #1305)
+- Added `update_node_property` / `update_node_properties` (aliased as `update_column` / `update_columns`)
 
 ## [8.0.0.rc.2] 2016-10-07
 
