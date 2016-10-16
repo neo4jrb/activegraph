@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ((RUBY_PLATFORM == 'java') ? '>= 1.9.3' : '>= 2.1.9')
 
   s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg'
-  s.email    = 'andreas.ronge@gmail.com, brian@brian-underwood.codes, chris@subvertallmedia.com'
+  s.email    = 'andreas.ronge@gmail.com, public@brian-underwood.codes, chris@subvertallmedia.com'
   s.homepage = 'https://github.com/neo4jrb/neo4j/'
   s.rubyforge_project = 'neo4j'
   s.summary = 'A graph database for Ruby'
