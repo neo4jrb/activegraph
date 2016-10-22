@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [8.0.0.rc.3] 2016-10-12
+
+### Changed
+
+- `find_or_create_by` on an association does not look for nodes which aren't related to the node in question (thanks for the report @efatsi / see #1240)
+
 ### Fixed
 
 - Inconsistent `drop_constraint` and `drop_index` behavior: they were accepting `force` option (like `add_*` methods)
