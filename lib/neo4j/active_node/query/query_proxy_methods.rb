@@ -148,7 +148,7 @@ module Neo4j
           result = self.where(params).first
           return result unless result.nil?
           Neo4j::ActiveBase.run_transaction do
-            node = model.find_or_create_by(params)
+            node = model.create(params)
             self << node
             return node
           end

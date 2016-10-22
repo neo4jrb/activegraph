@@ -107,6 +107,7 @@ describe 'query_proxy_methods' do
   describe 'find_or_create_by' do
     let(:emily)       { Student.create(name: 'Emily') }
     let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    let(:mixology) { Lesson.create(name: 'mixology') }
     before do
       philosophy.students << jimmy
     end
@@ -125,10 +126,10 @@ describe 'query_proxy_methods' do
       expect(philosophy.students.find_or_create_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
     end
 
-    it 'creates the relationship if the node exists but is not association' do
-      expect(philosophy.students.include?(emily)).to be_falsey
-      expect { philosophy.students.find_or_create_by(name: 'Emily') }.not_to change { Student.all.count }
-      expect(philosophy.students.include?(emily)).to be_truthy
+    it 'does not look outside of scope' do
+      mixology.students.find_or_create_by(name: 'Emily')
+
+      expect { philosophy.students.find_or_create_by(name: 'Emily') }.to change { Student.all.count }
     end
   end
 
