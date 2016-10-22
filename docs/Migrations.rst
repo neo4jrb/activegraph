@@ -232,6 +232,8 @@ Adds a new unique constraint on a given label attribute.
 
   add_constraint(:User, :name)
 
+Use `force: true` as an option in the third argument to ignore errors about an already existing constraint.
+
 
 #drop_constraint
 ~~~~~~~~~~~~~~~~
@@ -244,6 +246,7 @@ Drops an unique constraint on a given label attribute.
 
   drop_constraint(:User, :name)
 
+Use `force: true` as an option in the third argument to ignore errors about the constraint being missing.
 
 #add_index
 ~~~~~~~~~~
@@ -256,6 +259,7 @@ Adds a new exact index on a given label attribute.
 
   add_index(:User, :name)
 
+Use `force: true` as an option in the third argument to ignore errors about an already existing index.
 
 #drop_index
 ~~~~~~~~~~~
@@ -268,6 +272,7 @@ Drops an exact index on a given label attribute.
 
   drop_index(:User, :name)
 
+Use `force: true` as an option in the third argument to ignore errors about the index being missing.
 
 #say
 ~~~~
