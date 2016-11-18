@@ -3,7 +3,7 @@ describe Neo4j::ActiveRel::RelatedNode do
 
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
-  let(:node1) { double('a wrapped node') }
+  let(:node1) { Neo4j::Core::Node.new(1, [:Test], {}) }
   let(:rel)   { double('ActiveRel object') }
 
   describe 'initialize' do
@@ -21,14 +21,9 @@ describe Neo4j::ActiveRel::RelatedNode do
 
     describe 'loaded' do
       it 'loads the node from the server if not loaded' do
-        expect(Neo4j::Node).to receive(:load).with(1).and_return(true)
-        r.loaded
-      end
-
-      it 'changes the value of @node' do
-        allow(Neo4j::Node).to receive(:load).and_return(node1)
-        r.loaded
-        expect(r.instance_variable_get(:@node)).to eq node1
+        expect_queries(1) do
+          r.loaded
+        end
       end
 
       context 'with @node unset' do
@@ -48,9 +43,8 @@ describe Neo4j::ActiveRel::RelatedNode do
 
     describe '==' do
       it 'loads the node and compares' do
-        expect(Neo4j::Node).to receive(:load).and_return(node1)
+        r.instance_variable_set('@node', node1.dup)
         expect(r == node1).to be_truthy
-        expect(r.instance_variable_get(:@node)).to eq node1
       end
     end
   end

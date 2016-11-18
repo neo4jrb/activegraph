@@ -14,11 +14,13 @@ module Neo4j
         end
 
         def result(node = true, rel = nil)
+          return [].freeze if unpersisted_start_object?
+
           @result_cache ||= {}
           return result_cache_for(node, rel) if result_cache?(node, rel)
 
           pluck_vars = []
-          pluck_vars << identity if node
+          pluck_vars << ensure_distinct(identity) if node
           pluck_vars << @rel_var if rel
 
           result = pluck(*pluck_vars)
@@ -75,6 +77,7 @@ module Neo4j
         def pluck(*args)
           transformable_attributes = (model ? model.attribute_names : []) + %w(uuid neo_id)
           arg_list = args.map do |arg|
+            arg = Neo4j::ActiveNode::Query::QueryProxy::Link.converted_key(model, arg)
             if transformable_attributes.include?(arg.to_s)
               {identity => arg}
             else
@@ -83,6 +86,12 @@ module Neo4j
           end
 
           self.query.pluck(*arg_list)
+        end
+
+        protected
+
+        def ensure_distinct(node, force = false)
+          @distinct || force ? "DISTINCT(#{node})" : node
         end
       end
     end

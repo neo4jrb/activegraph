@@ -68,20 +68,18 @@ describe 'has_many' do
   describe 'rel_type' do
     it 'creates the correct type' do
       node.friends << friend1
-      r = node.rel
-      expect(r.rel_type).to eq(:FRIENDS)
+      expect(first_rel_type(node)).to eq('FRIENDS')
     end
 
     it 'creates the correct type' do
       node.knows << friend1
-      r = node.rel
-      expect(r.rel_type).to eq(:KNOWS)
+      expect(first_rel_type(node)).to eq('KNOWS')
     end
 
     it 'creates correct incoming relationship' do
       node.knows_me << friend1
-      expect(friend1.rel(dir: :outgoing).rel_type).to eq(:KNOWS)
-      expect(node.rel(dir: :incoming).rel_type).to eq(:KNOWS)
+      expect(first_rel_type(friend1, :outgoing)).to eq('KNOWS')
+      expect(first_rel_type(node, :incoming)).to eq('KNOWS')
     end
   end
 
@@ -99,8 +97,8 @@ describe 'has_many' do
     rels = node.friends.rels
     expect(rels.count).to eq(1)
     rel = rels.first
-    expect(rel.start_node).to eq(node)
-    expect(rel.end_node).to eq(friend1)
+    expect(rel.start_node_id).to eq(node.neo_id)
+    expect(rel.end_node_id).to eq(friend1.neo_id)
   end
 
   describe 'me.friends << friend_1 << friend' do
@@ -171,19 +169,19 @@ describe 'has_many' do
       it 'creates a new relationship when given existing nodes and given properties' do
         node.friends.create(friend1, since: 1994)
 
-        r = node.rel(dir: :outgoing, type: 'FRIENDS')
+        r = node_rels(node, :outgoing, 'FRIENDS').first
 
-        expect(r[:since]).to eq(1994)
+        expect(r.props[:since]).to eq(1994)
       end
 
       it 'creates new relationships when given an array of nodes and given properties' do
         node.friends.create([friend1, friend2], since: 1995)
 
-        rs = node.rels(dir: :outgoing, type: 'FRIENDS')
+        rs = node_rels(node, :outgoing, 'FRIENDS')
 
-        expect(rs.map(&:end_node)).to match_array([friend1, friend2])
+        expect(rs.map(&:end_node_id)).to match_array([friend1.neo_id, friend2.neo_id])
         rs.each do |r|
-          expect(r[:since]).to eq(1995)
+          expect(r.props[:since]).to eq(1995)
         end
       end
     end
@@ -192,26 +190,28 @@ describe 'has_many' do
       let(:node2) { double('unpersisted node', props: {name: 'Brad'}) }
 
       it 'creates a new relationship when given unpersisted node and given properties' do
-        node.friends.create(Person.new(name: 'Brad'), since: 1996)
+        p = Person.new(name: 'Brad')
+        node.friends.create(p, since: 1996)
         # node2.stub(:persisted?).and_return(false)
         # node2.stub(:save).and_return(true)
         # node2.stub(:neo_id).and_return(2)
 
         # node.friends.create(node2, since: 1996)
-        r = node.rel(dir: :outgoing, type: 'FRIENDS')
+        r = node_rels(node, :outgoing, 'FRIENDS').first
 
-        expect(r[:since]).to eq(1996)
-        expect(r.end_node.name).to eq('Brad')
+        expect(r.props[:since]).to eq(1996)
+        expect(r.end_node_id).to eq(p.neo_id)
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
-        node.friends.create([Person.new(name: 'James'), Person.new(name: 'Cat')], since: 1997)
+        peeps = [Person.new(name: 'James'), Person.new(name: 'Cat')]
+        node.friends.create(peeps, since: 1997)
 
-        rs = node.rels(dir: :outgoing, type: 'FRIENDS')
+        rs = node_rels(node, :outgoing, 'FRIENDS')
 
-        expect(rs.map(&:end_node).map(&:name)).to match_array(%w(James Cat))
+        expect(rs.map(&:end_node_id)).to match_array(peeps.map(&:neo_id))
         rs.each do |r|
-          expect(r[:since]).to eq(1997)
+          expect(r.props[:since]).to eq(1997)
         end
       end
     end
@@ -219,8 +219,7 @@ describe 'has_many' do
 
   describe 'callbacks' do
     before do
-      stub_const('ClazzC', UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('ClazzC') do
         property :name
 
         has_many :out, :knows, type: nil, model_class: self, before: :before_callback
@@ -236,7 +235,7 @@ describe 'has_many' do
         def false_callback(_other)
           false
         end
-      end)
+      end
     end
 
     let(:node) { Person.create }
@@ -282,59 +281,55 @@ describe 'has_many' do
     let!(:person) { Person.create }
 
     before(:each) do
-      Neo4j::Session.query.match(post: :Post, comment: :Comment).where(comment: {uuid: comments.map(&:uuid)})
-        .create('(post)<-[:comments_on]-(comment)').exec
+      Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
+                       .create('(post)<-[:comments_on]-(comment)').exec
 
-      Neo4j::Session.query.match(post: :Post, person: :Person).where(person: {uuid: person.uuid})
-        .create('(post)<-[:comments_on]-(person)').exec
+      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {Person.id_property_name => person.id})
+                       .create('(post)<-[:comments_on]-(person)').exec
     end
 
-    subject { post.comments.pluck(:uuid).sort }
+    subject { post.comments.pluck(Comment.id_property_name).sort }
     context 'model_class: nil' do
       let(:model_class) { nil }
       # Should assume 'Comment' as the model from the association name
-      it { is_expected.to eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
     context "model_class: 'Comment'" do
       let(:model_class) { 'Comment' }
-      it { is_expected.to eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
     context "model_class: 'Person'" do
       let(:model_class) { 'Person' }
-      it { is_expected.to eq([person.uuid]) }
+      it { is_expected.to eq([person.id]) }
     end
 
     context 'model_class: false' do
       let(:model_class) { false }
-      it { is_expected.to eq((comments.map(&:uuid) + [person.uuid]).sort) }
+      it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
     end
 
     context "model_class: ['Comment']" do
       let(:model_class) { ['Comment'] }
-      it { is_expected.to eq(comments.map(&:uuid).sort) }
+      it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
     context "model_class: ['Comment', 'Person']" do
       let(:model_class) { %w(Comment Person) }
-      it { is_expected.to eq((comments.map(&:uuid) + [person.uuid]).sort) }
+      it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
     end
   end
 
   describe 'using mapped_label_name' do
     before do
-      stub_const('ClazzC', UniqueClass.create do
-        include Neo4j::ActiveNode
+      stub_active_node_class('ClazzC') do
+        has_many :in, :furrs, type: nil, model_class: :ClazzD
+      end
 
-        has_many :in, :furrs, type: nil, model_class: 'ClazzD'
-      end)
-
-      stub_const('ClazzD', UniqueClass.create do
-        include Neo4j::ActiveNode
-
+      stub_active_node_class('ClazzD') do
         self.mapped_label_name = 'Fuur'
-      end)
+      end
     end
 
     let(:c1) { ClazzC.create }
@@ -443,7 +438,7 @@ describe 'has_many' do
     context 'failure' do
       it 'rolls back <<' do
         begin
-          tx = Neo4j::Transaction.new
+          tx = Neo4j::ActiveBase.new_transaction
           node.friends << friend1
           tx.failure
         ensure
@@ -455,7 +450,7 @@ describe 'has_many' do
       it 'rolls back =' do
         node.friends = friend1
         begin
-          tx = Neo4j::Transaction.new
+          tx = Neo4j::ActiveBase.new_transaction
           node.friends = friend2
           tx.failure
         ensure
@@ -561,6 +556,25 @@ describe 'has_many' do
       expect(post.comments.to_a).to match_array([comment])
     end
 
+    it 'ignores blank IDs for has_many' do
+      post = Post.create(comments: Comment.create)
+
+      post.comment_ids = ['', nil]
+
+      post = Post.find(post.id)
+      expect(post.comments.to_a).to be_empty
+    end
+
+    it 'allows single ID for has_many' do
+      post = Post.create
+      comment = Comment.create
+
+      post.comment_ids = comment.id
+
+      post = Post.find(post.id)
+      expect(post.comments.to_a).to match_array([comment])
+    end
+
     it 'sets IDs for has_one' do
       post = Post.create
       comment = Comment.create
@@ -578,6 +592,55 @@ describe 'has_many' do
         expect(post.comment_ids).to eq([comment.id])
         expect(post.comment_neo_ids).to eq([comment.neo_id])
       end
+    end
+  end
+
+  describe 'checking if associations are propagated to child classes' do
+    before(:each) do
+      stub_active_node_class('Thing') do
+        has_many :out, :parents, origin: :things
+      end
+
+      stub_active_node_class('OtherThing') do
+        has_many :out, :children, origin: :other_things
+      end
+
+      stub_active_node_class('Parent') do
+        has_one :in, :thing, type: :HAS_THINGS, model_class: :Thing, unique: true
+      end
+
+      stub_named_class('Child', Parent) do
+        has_many :in, :other_things, type: :HAS_OTHER_THINGS, model_class: :OtherThing, unique: true
+        validates :things, presence: true
+      end
+    end
+
+    it 'Child associations should include Parent ones' do
+      expect(Parent.associations_keys).to contain_exactly(:thing)
+      expect(Child.associations_keys).to contain_exactly(:thing, :other_things)
+    end
+  end
+
+  describe 'checking for double definitions of associations' do
+    it 'should raise an error if an assocation is defined twice' do
+      expect do
+        stub_active_node_class('DoubledAssociation') do
+          has_many :in, :the_name, type: :the_name
+          has_many :out, :the_name, type: :the_name2
+        end
+      end.to raise_error RuntimeError, /Associations can only be defined once/
+    end
+
+    it 'should allow for redefining of an association in a subclass' do
+      expect do
+        stub_active_node_class('DoubledAssociation') do
+          has_many :in, :the_name, type: :the_name
+        end
+
+        stub_named_class('DoubledAssociationSubClass', DoubledAssociation) do
+          has_many :out, :the_name, type: :the_name2
+        end
+      end.to_not raise_error
     end
   end
 end

@@ -1,7 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
+      # rubocop:disable Metrics/ClassLength
       class QueryProxy
+        # rubocop:enable Metrics/ClassLength
         include Neo4j::ActiveNode::Query::QueryProxyEnumerable
         include Neo4j::ActiveNode::Query::QueryProxyMethods
         include Neo4j::ActiveNode::Query::QueryProxyMethodsOfMassUpdating
@@ -54,7 +56,8 @@ module Neo4j
         end
 
         def inspect
-          "#<QueryProxy #{@context} CYPHER: #{self.to_cypher.inspect}>"
+          formatted_nodes = Neo4j::ActiveNode::NodeListFormatter.new(to_a)
+          "#<QueryProxy #{@context} #{formatted_nodes.inspect}>"
         end
 
         attr_reader :start_object, :query_proxy
@@ -65,7 +68,7 @@ module Neo4j
         def identity
           @node_var || _result_string
         end
-        alias_method :node_identity, :identity
+        alias node_identity identity
 
         # The relationship identifier most recently used by the QueryProxy chain.
         attr_reader :rel_var
@@ -144,10 +147,10 @@ module Neo4j
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
         end
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
-        alias_method :node_where, :where
-        alias_method :node_order, :order
-        alias_method :offset, :skip
-        alias_method :order_by, :order
+        alias node_where where
+        alias node_order order
+        alias offset skip
+        alias order_by order
 
         # Cypher string for the QueryProxy's query. This will not include params. For the full output, see <tt>to_cypher_with_params</tt>.
         delegate :to_cypher, to: :query
@@ -164,13 +167,7 @@ module Neo4j
 
         # To add a relationship for the node for the association on this QueryProxy
         def <<(other_node)
-          if @start_object._persisted_obj
-            create(other_node, {})
-          elsif @association
-            @start_object.defer_create(@association.name, other_node)
-          else
-            fail 'Another crazy error!'
-          end
+          _create_relation_or_defer(other_node)
           self
         end
 
@@ -200,7 +197,7 @@ module Neo4j
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
-          Neo4j::Transaction.run do
+          Neo4j::ActiveBase.run_transaction do
             other_nodes.each do |other_node|
               other_node.save unless other_node.neo_id
 
@@ -264,7 +261,21 @@ module Neo4j
           end
         end
 
+        def unpersisted_start_object?
+          @start_object && @start_object.new_record?
+        end
+
         protected
+
+        def _create_relation_or_defer(other_node)
+          if @start_object._persisted_obj
+            create(other_node, {})
+          elsif @association
+            @start_object.defer_create(@association.name, other_node)
+          else
+            fail 'Another crazy error!'
+          end
+        end
 
         # Methods are underscored to prevent conflict with user class methods
         def _add_params(params)
@@ -291,7 +302,7 @@ module Neo4j
         end
 
         def _query
-          _session.query(context: @context)
+          Neo4j::ActiveBase.new_query(context: @context)
         end
 
         # TODO: Refactor this. Too much happening here.

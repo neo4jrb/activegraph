@@ -1,5 +1,7 @@
 module Neo4j::Shared
+  # rubocop:disable Metrics/ModuleLength
   module Persistence
+    # rubocop:enable Metrics/ModuleLength
     extend ActiveSupport::Concern
 
     # @return [Hash] Given a node's state, will call the appropriate `props_for_{action}` method.
@@ -8,9 +10,15 @@ module Neo4j::Shared
     end
 
     def update_model
-      return if !changed_attributes || changed_attributes.empty?
-      _persisted_obj.update_props(props_for_update)
+      return if skip_update?
+      props = props_for_update
+      neo4j_query(query_as(:n).set(n: props))
+      _persisted_obj.props.merge!(props)
       changed_attributes.clear
+    end
+
+    def skip_update?
+      changed_attributes.blank?
     end
 
     # Returns a hash containing:
@@ -64,7 +72,7 @@ module Neo4j::Shared
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
     def update_attribute(attribute, value)
-      send("#{attribute}=", value)
+      write_attribute(attribute, value)
       self.save
     end
 
@@ -72,7 +80,7 @@ module Neo4j::Shared
     # @param [Symbol, String] attribute of the attribute to update
     # @param [Object] value to set
     def update_attribute!(attribute, value)
-      send("#{attribute}=", value)
+      write_attribute(attribute, value)
       self.save!
     end
 
@@ -81,14 +89,13 @@ module Neo4j::Shared
       @_create_or_updating = true
       apply_default_values
       result = _persisted_obj ? update_model : create_model
-      if result == false
-        Neo4j::Transaction.current.failure if Neo4j::Transaction.current
-        false
-      else
-        true
-      end
+      current_transaction = Neo4j::ActiveBase.current_transaction
+
+      current_transaction.mark_failed if result == false && current_transaction
+
+      result != false
     rescue => e
-      Neo4j::Transaction.current.failure if Neo4j::Transaction.current
+      current_transaction.mark_failed if current_transaction
       raise e
     ensure
       @_create_or_updating = nil
@@ -97,7 +104,7 @@ module Neo4j::Shared
     def apply_default_values
       return if self.class.declared_property_defaults.empty?
       self.class.declared_property_defaults.each_pair do |key, value|
-        self.send("#{key}=", value) if self.send(key).nil?
+        self.send("#{key}=", value.respond_to?(:call) ? value.call : value) if self.send(key).nil?
       end
     end
 
@@ -116,16 +123,22 @@ module Neo4j::Shared
       !_persisted_obj
     end
 
-    alias_method :new?, :new_record?
+    alias new? new_record?
 
     def destroy
       freeze
-      _persisted_obj && _persisted_obj.del
+
+      destroy_query.exec if _persisted_obj
+
       @_deleted = true
+
+      self
     end
 
     def exist?
-      _persisted_obj && _persisted_obj.exist?
+      return if !_persisted_obj
+
+      neo4j_query(query_as(:n).return('ID(n)')).any?
     end
 
     # Returns +true+ if the object was destroyed.
@@ -167,17 +180,42 @@ module Neo4j::Shared
     # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
     # If saving fails because the resource is invalid then false will be returned.
     def update(attributes)
-      self.attributes = process_attributes(attributes)
-      save
+      self.class.run_transaction do |tx|
+        self.attributes = process_attributes(attributes)
+        saved = save
+        tx.mark_failed unless saved
+        saved
+      end
     end
-    alias_method :update_attributes, :update
+    alias update_attributes update
+
+    def update_db_property(field, value)
+      update_db_properties(field => value)
+      true
+    end
+    alias update_column update_db_property
+
+    def update_db_properties(hash)
+      fail ::Neo4j::Error, 'can not update on a new record object' unless persisted?
+      self.class.run_transaction do
+        db_values = props_for_db(hash)
+        neo4j_query(query_as(:n).set(n: db_values))
+        db_values.each_pair { |k, v| self.public_send(:"#{k}=", v) }
+        _persisted_obj.props.merge!(db_values)
+        db_values.each_key { |k| changed_attributes.delete(k) }
+        true
+      end
+    end
+    alias update_columns update_db_properties
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
     def update!(attributes)
-      self.attributes = process_attributes(attributes)
-      save!
+      self.class.run_transaction do
+        self.attributes = process_attributes(attributes)
+        save!
+      end
     end
-    alias_method :update_attributes!, :update!
+    alias update_attributes! update!
 
     def cache_key
       if self.new_record?
@@ -189,13 +227,19 @@ module Neo4j::Shared
       end
     end
 
+    module ClassMethods
+      def run_transaction(run_in_tx = true)
+        Neo4j::ActiveBase.run_transaction(run_in_tx) { |tx| yield tx }
+      end
+    end
+
     protected
 
     def increment_by_query!(match_query, attribute, by, element_name = :n)
       new_attribute = match_query.with(element_name)
-                      .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + {by}")
-                      .params(by: by).limit(1)
-                      .pluck("#{element_name}.`#{attribute}`").first
+                                 .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + {by}")
+                                 .params(by: by).limit(1)
+                                 .pluck("#{element_name}.`#{attribute}`").first
       return false unless new_attribute
       self[attribute] = new_attribute
       changed_attributes.delete(attribute)

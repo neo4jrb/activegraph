@@ -67,6 +67,7 @@ describe 'declared property classes' do
         include Neo4j::ActiveNode
         property :foo
         property :bar, type: String, default: 'foo'
+        property :qux, type: String, default: proc { "QUX-#{SecureRandom.hex(16)}" }
         property :baz, type: Neo4j::Shared::Boolean, default: false
         validates :baz, inclusion: {in: [true, false]}
       end
@@ -140,9 +141,19 @@ describe 'declared property classes' do
     # This mimics the behavior of active_attr's default property values
     describe 'default property values' do
       let(:node) { MyModel.new }
+      let(:node2) { MyModel.new }
 
-      it 'sets the default property val at init' do
+      it 'sets the string default property val at init' do
         expect(node.bar).to eq 'foo'
+      end
+
+      it 'sets the proc default property val at init' do
+        expect(node.qux).to match(/^QUX\-[\w]{32}$/)
+        expect(node2.qux).to match(/^QUX\-[\w]{32}$/)
+      end
+
+      it 'ensures that the default value proc is called each time' do
+        expect(node.qux).not_to eq node2.qux
       end
 
       context 'with type: Boolean and default: false' do
@@ -188,26 +199,31 @@ describe 'declared property classes' do
 
       context 'with changed values' do
         before do
-          node.bar = value
+          node.bar = bar_value
+          node.qux = qux_value
           node.baz = true
           node.save!
           node.reload
         end
 
         context 'on reload when prop was changed to nil' do
-          let(:value) { nil }
+          let(:bar_value) { nil }
+          let(:qux_value) { nil }
 
           it 'resets nil default properties on reload' do
             expect(node.bar).to eq 'foo'
+            expect(node.qux).to match(/^QUX\-[\w]{32}$/)
           end
         end
 
         context 'on reload when prop was set' do
-          let(:value) { 'bar' }
+          let(:bar_value) { 'bar' }
+          let(:qux_value) { 'QUX-e3bd73f9da932dccdabdd96952a00a4a' }
 
           it 'does not reset to default' do
             expect(node.bar).to eq 'bar'
             expect(node.baz).to eq true
+            expect(node.qux).to eq 'QUX-e3bd73f9da932dccdabdd96952a00a4a'
           end
         end
       end

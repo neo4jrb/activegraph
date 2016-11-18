@@ -1,0 +1,17 @@
+class <%= @migration_class_name %> < Neo4j::Migrations::Base
+  def up
+<% @schema.each do |type, data|
+     data.each do |element| %>
+    add_<%= type %> <%= element[:label].inspect %>, <%= element[:property_name].inspect %>, force: true
+  <% end
+   end %>
+  end
+
+  def down
+<% @schema.each do |type, data|
+     data.each do |element| %>
+    drop_<%= type %> <%= element[:label].inspect %>, <%= element[:property_name].inspect %>
+  <% end
+   end %>
+  end
+end

@@ -26,9 +26,15 @@ module Neo4j::Shared
       return unless new_attributes.present?
       new_attributes.each do |name, value|
         writer = :"#{name}="
-        send(writer, value) if respond_to?(writer)
+        if respond_to?(writer)
+          send(writer, value)
+        else
+          add_undeclared_property(name, value)
+        end
       end
     end
+
+    def add_undeclared_property(_, _); end
 
     # Mass update a model's attributes
     #

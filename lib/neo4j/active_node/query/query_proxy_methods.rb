@@ -1,7 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
+      # rubocop:disable Metrics/ModuleLength
       module QueryProxyMethods
+        # rubocop:enable Metrics/ModuleLength
         FIRST = 'HEAD'
         LAST = 'LAST'
 
@@ -39,11 +41,18 @@ module Neo4j
           model ? model.id_property_name : nil
         end
 
+        def distinct
+          new_link.tap do |e|
+            e.instance_variable_set(:@distinct, true)
+          end
+        end
+
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
+          return 0 if unpersisted_start_object?
           fail(Neo4j::InvalidParameterError, ':count accepts `distinct` or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
-            q = distinct.nil? ? var : "DISTINCT #{var}"
+            q = ensure_distinct(var, !distinct.nil?)
             limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
             limited_query.pluck("count(#{q}) AS #{var}").first
           end
@@ -63,17 +72,18 @@ module Neo4j
         end
 
         def empty?(target = nil)
+          return true if unpersisted_start_object?
           query_with_target(target) { |var| !self.exists?(nil, var) }
         end
 
-        alias_method :blank?, :empty?
+        alias blank? empty?
 
         # @param [Neo4j::ActiveNode, Neo4j::Node, String] other An instance of a Neo4j.rb model, a Neo4j-core node, or a string uuid
         # @param [String, Symbol] target An identifier of a link in the Cypher chain
         # @return [Boolean]
         def include?(other, target = nil)
           query_with_target(target) do |var|
-            where_filter = if other.respond_to?(:neo_id)
+            where_filter = if other.respond_to?(:neo_id) || association_id_key == :neo_id
                              "ID(#{var}) = {other_node_id}"
                            else
                              "#{var}.#{association_id_key} = {other_node_id}"
@@ -129,7 +139,7 @@ module Neo4j
         def rels_to(node)
           self.match_to(node).pluck(rel_var)
         end
-        alias_method :all_rels_to, :rels_to
+        alias all_rels_to rels_to
 
         # When called, this method returns a single node that satisfies the match specified in the params hash.
         # If no existing node is found to satisfy the match, one is created or associated as expected.
@@ -137,11 +147,19 @@ module Neo4j
           fail 'Method invalid when called on Class objects' unless source_object
           result = self.where(params).first
           return result unless result.nil?
-          Neo4j::Transaction.run do
-            node = model.find_or_create_by(params)
+          Neo4j::ActiveBase.run_transaction do
+            node = model.create(params)
             self << node
             return node
           end
+        end
+
+        def find_or_initialize_by(attributes, &block)
+          find_by(attributes) || initialize_by_current_chain_params(attributes, &block)
+        end
+
+        def first_or_initialize(attributes = {}, &block)
+          first || initialize_by_current_chain_params(attributes, &block)
         end
 
         # A shortcut for attaching a new, optional match to the end of a QueryProxy chain.
@@ -167,7 +185,69 @@ module Neo4j
           where("(#{where_clause})")
         end
 
+        # Matches all nodes having at least a relation
+        #
+        # @example Load all people having a friend
+        #   Person.all.having_rel(:friends).to_a # => Returns a list of `Person`
+        #
+        # @example Load all people having a best friend
+        #   Person.all.having_rel(:friends, best: true).to_a # => Returns a list of `Person`
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def having_rel(association_name, rel_properties = {})
+          association = association_or_fail(association_name)
+          where("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+        end
+
+        # Matches all nodes not having a certain relation
+        #
+        # @example Load all people not having friends
+        #   Person.all.not_having_rel(:friends).to_a # => Returns a list of `Person`
+        #
+        # @example Load all people not having best friends
+        #   Person.all.not_having_rel(:friends, best: true).to_a # => Returns a list of `Person`
+        #
+        # @return [QueryProxy] A new QueryProxy
+        def not_having_rel(association_name, rel_properties = {})
+          association = association_or_fail(association_name)
+          where_not("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+        end
+
         private
+
+        def association_or_fail(association_name)
+          model.associations[association_name] || fail(ArgumentError, "No such association #{association_name}")
+        end
+
+        def find_inverse_association!(model, source, association)
+          model.associations.values.find do |reverse_association|
+            association.inverse_of?(reverse_association) ||
+              reverse_association.inverse_of?(association) ||
+              inverse_relation_of?(source, association, model, reverse_association)
+          end || fail("Could not find reverse association for #{@context}")
+        end
+
+        def inverse_relation_of?(source, source_association, target, target_association)
+          source_association.direction != target_association.direction &&
+            source == target_association.target_class &&
+            target == source_association.target_class &&
+            source_association.relationship_class_name == target_association.relationship_class_name
+        end
+
+        def initialize_by_current_chain_params(params = {})
+          result = new(where_clause_params.merge(params))
+
+          inverse_association = find_inverse_association!(model, source_object.class, association) if source_object
+          result.tap do |m|
+            yield(m) if block_given?
+            m.public_send(inverse_association.name) << source_object if inverse_association
+          end
+        end
+
+        def where_clause_params
+          query.clauses.select { |c| c.is_a?(Neo4j::Core::QueryClauses::WhereClause) && c.arg.is_a?(Hash) }
+               .map! { |e| e.arg[identity] }.compact.inject { |a, b| a.merge(b) } || {}
+        end
 
         def first_and_last(func, target)
           new_query, pluck_proc = if self.query.clause?(:order)

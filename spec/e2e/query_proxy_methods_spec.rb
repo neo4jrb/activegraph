@@ -44,9 +44,70 @@ describe 'query_proxy_methods' do
   let!(:mr_jones) { Teacher.create }
   let!(:mr_adams) { Teacher.create }
 
+  shared_examples 'is initialized correctly with associations' do
+    it { should be_a(Neo4j::ActiveNode) }
+    its(:name) { should eq(student_name) }
+    its(:lessons) { should include(philosophy) }
+  end
+
+  shared_examples 'finds existing records or initializes them with relations' do
+    let(:frank)       { Student.create(name: 'Frank') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    before { philosophy.students << frank }
+
+    context 'when it already exists' do
+      let(:student_name) { 'Frank' }
+
+      it_should_behave_like 'is initialized correctly with associations'
+      it { should be_persisted }
+    end
+
+    context 'when it\'s a new record' do
+      let(:student_name) { 'Jacob' }
+
+      it_should_behave_like 'is initialized correctly with associations'
+      it { should_not be_persisted }
+      it 'can be saved' do
+        expect { subject.save }.to change { philosophy.reload.students.count }.by(1)
+      end
+    end
+  end
+
+  shared_examples 'is initialized correctly with attributes' do
+    it { should be_a(Neo4j::ActiveNode) }
+    its(:name) { should eq(teacher_name) }
+    its(:age) { should eq(teacher_age) }
+  end
+
+  shared_examples 'finds existing records or initializes them with attributes' do
+    let!(:old_emily)   { Teacher.create(name: 'Emily', age: 72) }
+    let!(:young_emily) { Teacher.create(name: 'Emily', age: 24) }
+
+    context 'when it already exists' do
+      let(:teacher_name) { 'Emily' }
+      let(:teacher_age)  { 24 }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should be_persisted }
+    end
+
+    context 'when it\'s a new record' do
+      let(:teacher_name) { 'Emily' }
+      let(:teacher_age)  { 37 }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should_not be_persisted }
+      it 'can be saved' do
+        expect { subject.save }.to change { Teacher.count }.by(1)
+        subject.destroy
+      end
+    end
+  end
+
   describe 'find_or_create_by' do
     let(:emily)       { Student.create(name: 'Emily') }
     let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    let(:mixology) { Lesson.create(name: 'mixology') }
     before do
       philosophy.students << jimmy
     end
@@ -65,10 +126,53 @@ describe 'query_proxy_methods' do
       expect(philosophy.students.find_or_create_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
     end
 
-    it 'creates the relationship if the node exists but is not association' do
-      expect(philosophy.students.include?(emily)).to be_falsey
-      expect { philosophy.students.find_or_create_by(name: 'Emily') }.not_to change { Student.all.count }
-      expect(philosophy.students.include?(emily)).to be_truthy
+    it 'does not look outside of scope' do
+      mixology.students.find_or_create_by(name: 'Emily')
+
+      expect { philosophy.students.find_or_create_by(name: 'Emily') }.to change { Student.all.count }
+    end
+  end
+
+  describe 'find_or_initialize_by on an association' do
+    subject { philosophy.students.find_or_initialize_by(name: student_name) }
+
+    it_should_behave_like 'finds existing records or initializes them with relations'
+  end
+
+  describe 'find_or_initialize_by on query proxy' do
+    subject { Teacher.where(name: teacher_name).find_or_initialize_by(age: teacher_age) }
+    it_should_behave_like 'finds existing records or initializes them with attributes'
+
+    context 'when a block is passed' do
+      let(:teacher_name) { 'Donna' }
+      let(:teacher_age)  { 92 }
+
+      subject { Teacher.where(name: 'Emily').find_or_initialize_by(age: teacher_age) { |t| t.name = teacher_name } }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should_not be_persisted }
+    end
+  end
+
+  describe 'first_or_initialize on relations' do
+    subject { philosophy.students.where(name: student_name).first_or_initialize }
+
+    it_should_behave_like 'finds existing records or initializes them with relations'
+  end
+
+  describe 'first_or_initialize on query proxy' do
+    subject { Teacher.where(name: teacher_name, age: teacher_age).first_or_initialize }
+
+    it_should_behave_like 'finds existing records or initializes them with attributes'
+
+    context 'when a block is passed' do
+      let(:teacher_name) { 'Donna' }
+      let(:teacher_age)  { 92 }
+
+      subject { Teacher.where(name: 'Emily', age: teacher_age).first_or_initialize { |t| t.name = teacher_name } }
+
+      it_should_behave_like 'is initialized correctly with attributes'
+      it { should_not be_persisted }
     end
   end
 
@@ -115,9 +219,11 @@ describe 'query_proxy_methods' do
     end
 
     it 'can find by primary key/uuid' do
-      expect(jimmy.lessons.include?(science.uuid)).to be_falsey
+      expect(jimmy.lessons.include?(science.id)).to be_falsey
       jimmy.lessons << science
-      expect(jimmy.lessons.include?(science.uuid)).to be_truthy
+      expect(jimmy.lessons.include?(science.id)).to be_truthy
+      expect(jimmy.lessons.include?(id_property_value(science))).to be_truthy
+      expect(jimmy.lessons.include?(science)).to be_truthy
     end
 
     it 'does not break when the query has been ordered' do
@@ -231,6 +337,41 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'distinct' do
+    let(:frank)       { Student.create(name: 'Frank') }
+    let(:bill) { Teacher.create(name: 'Bill') }
+    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    let(:science)     { Lesson.create(name: 'science') }
+    before do
+      philosophy.students << frank
+      science.students << frank
+      philosophy.teachers << bill
+      science.teachers << bill
+    end
+
+    context 'when building the query' do
+      after do
+        ActiveSupport::Notifications.unsubscribe(@subscription) if @subscription
+      end
+
+      it 'adds distinct to a select query' do
+        @subscription = Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |query|
+          expect(query).to include('DISTINCT')
+        end
+        frank.lessons.teachers.distinct.to_a
+      end
+    end
+
+    it 'counts values without duplicates' do
+      expect(frank.lessons.teachers.count).to eq(2)
+      expect(frank.lessons.teachers.distinct.count).to eq(1)
+    end
+
+    it 'selects values without duplicates' do
+      expect(frank.lessons.teachers.distinct.to_a).to eq(frank.lessons.teachers.to_a.uniq)
+    end
+  end
+
   describe 'query counts for count, size, and length' do
     describe 'size' do
       it 'always queries' do
@@ -305,13 +446,13 @@ describe 'query_proxy_methods' do
 
     it 'updates all jimmy\'s lessions absence' do
       count = Student.all.match_to(jimmy).lessons(:l)
-              .update_all_rels(absence_count: 3)
+                     .update_all_rels(absence_count: 3)
       expect(count).to eq(2)
     end
 
     it 'updates all jimmy\'s lessions absence (with string parameter)' do
       count = Student.all.match_to(jimmy).lessons(:l)
-              .update_all_rels('rel1.absence_count = 3')
+                     .update_all_rels('rel1.absence_count = 3')
       expect(count).to eq(2)
     end
 
@@ -419,7 +560,11 @@ describe 'query_proxy_methods' do
 
       context 'with an id' do
         it 'generates cypher using the primary key' do
-          expect(@john.lessons.match_to(@history.id).to_cypher).to include('WHERE (result_lessons.uuid =')
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include(if Lesson.primary_key == :neo_id
+                                                                             'WHERE (ID(result_lessons) ='
+                                                                           else
+                                                                             'WHERE (result_lessons.uuid ='
+                                                                           end)
         end
 
         it 'matches' do
@@ -574,6 +719,59 @@ describe 'query_proxy_methods' do
     end
   end
 
+  context 'matching by relations' do
+    before(:each) do
+      [Student, Lesson, Teacher].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @bill = Student.create(name: 'Bill')
+      @frank = Student.create(name: 'Frank')
+      @history = Lesson.create(name: 'history')
+      @john.lessons << @history
+      EnrolledIn.create(from_node: @frank, to_node: @history, absence_count: 10)
+    end
+
+    describe 'having_rel' do
+      it 'returns students having at least a lesson' do
+        expect(Student.all.having_rel(:lessons)).to contain_exactly(@john, @frank)
+      end
+
+      it 'returns students having at least a lesson with no absences' do
+        expect(Student.all.having_rel(:lessons, absence_count: 0)).to contain_exactly(@john)
+      end
+
+      it 'returns no student when absence is negative' do
+        expect(Student.all.having_rel(:lessons, absence_count: -1)).to eq([])
+      end
+
+      it 'returns no lesson having teacher, since there\'s none' do
+        expect(Lesson.all.having_rel(:teachers)).to eq([])
+      end
+
+      it 'raises ArgumentError when passing a missing relation' do
+        expect { Lesson.all.having_rel(:friends) }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe 'not_having_rel' do
+      it 'returns students having at least a lesson' do
+        expect(Student.all.not_having_rel(:lessons)).to contain_exactly(@bill)
+      end
+
+      it 'returns students having at least a lesson with no absences' do
+        expect(Student.all.not_having_rel(:lessons, absence_count: 0)).to contain_exactly(@bill, @frank)
+      end
+
+      it 'returns no lesson having no students, since there\'s none' do
+        expect(Lesson.all.not_having_rel(:students)).to eq([])
+      end
+
+      it 'raises ArgumentError when passing a missing relation' do
+        expect { Lesson.all.not_having_rel(:friends) }.to raise_error(ArgumentError)
+      end
+    end
+  end
+
   describe 'branch' do
     before(:each) do
       [Student, Lesson, Teacher].each(&:delete_all)
@@ -633,6 +831,26 @@ describe 'query_proxy_methods' do
 
       expect(result).to eq [[@math, @johnson],
                             [@science, nil]]
+    end
+  end
+
+  describe '#inspect' do
+    before(:each) do
+      delete_db
+
+      Student.create(name: 'Lauren')
+      Student.create(name: 'Bob')
+      Student.create(name: 'Bill')
+    end
+
+    context 'when inspecting a query proxy' do
+      let(:query_proxy) { Student.all }
+      let(:inspected_elements) { query_proxy.inspect }
+
+      it 'returns the list of resulting elements' do
+        expect(inspected_elements).to include('#<QueryProxy Student')
+        expect(inspected_elements).to include(query_proxy.to_a.inspect)
+      end
     end
   end
 end

@@ -3,6 +3,11 @@ require 'neo4j/version'
 require 'neo4j-core'
 require 'neo4j/core/cypher_session'
 require 'neo4j/core/query'
+
+require 'neo4j/active_base'
+require 'neo4j/model_schema'
+require 'neo4j/active_base/session_registry'
+
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
@@ -21,6 +26,7 @@ require 'neo4j/paginated'
 require 'neo4j/schema/operation'
 
 require 'neo4j/timestamps'
+require 'neo4j/undeclared_properties'
 
 require 'neo4j/shared/callbacks'
 require 'neo4j/shared/filtered_hash'
@@ -54,6 +60,7 @@ require 'neo4j/active_rel/related_node'
 require 'neo4j/active_rel/types'
 require 'neo4j/active_rel'
 
+require 'neo4j/active_node/node_list_formatter'
 require 'neo4j/active_node/dependent'
 require 'neo4j/active_node/dependent/query_proxy_methods'
 require 'neo4j/active_node/dependent/association_methods'
@@ -87,6 +94,12 @@ require 'neo4j/active_node/query/query_proxy'
 require 'neo4j/active_node/query'
 require 'neo4j/active_node/scope'
 require 'neo4j/active_node'
+
+module Neo4j
+  extend ActiveSupport::Autoload
+  autoload :Migrations
+  autoload :Migration
+end
 
 require 'neo4j/active_node/orm_adapter'
 if defined?(Rails)

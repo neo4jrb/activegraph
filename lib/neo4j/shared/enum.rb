@@ -36,9 +36,6 @@ module Neo4j::Shared
       #   media.video_type!
       #   media.video_type? # => true
       #
-      # @example Disable index: :exact for enum elements
-      #   Media.enum type: [:image, :video, :unknown], _index: false
-      #
       # @example Define a custom mapping for keys-numbers
       #   Media.enum type: { image: 1, video: 2, unknown: 3 }
       #
@@ -68,12 +65,9 @@ module Neo4j::Shared
       end
 
       VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default]
-      DEFAULT_OPTIONS_FOR_ENUMS = {
-        _index: true
-      }
 
       def split_options_and_parameters(parameters)
-        options = DEFAULT_OPTIONS_FOR_ENUMS.clone
+        options = {}
         new_parameters = {}
         parameters.each do |k, v|
           if VALID_OPTIONS_FOR_ENUMS.include? k

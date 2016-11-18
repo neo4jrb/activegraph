@@ -10,7 +10,9 @@ Ruby on Rails
 
 The following contains instructions on how to setup Neo4j with Rails.  If you prefer a video to follow along you can use `this YouTube video <https://www.youtube.com/watch?v=bDjbqRL9HcM>`_
 
-There are two ways to add neo4j to your Rails project.  You can LINK||generate a new project||LINK with Neo4j as the default model mapper or you can LINK||add it manually||LINK.
+There are two ways to add neo4j to your Rails project.  You can :ref:`generate a new project<generating-new-app>` with Neo4j as the default model mapper or you can :ref:`add it manually<add-gem-to-existing-project>`.
+
+.. _generating-new-app:
 
 Generating a new app
 ^^^^^^^^^^^^^^^^^^^^
@@ -45,6 +47,8 @@ An example series of setup commands:
     There is also a screencast available demonstrating how to set up a new Rails app:
 
     <iframe width="560" height="315" src="https://www.youtube.com/embed/n0P0pOP34Mw" frameborder="0" allowfullscreen></iframe>
+
+.. _add-gem-to-existing-project:
 
 Adding the gem to an existing project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,15 +90,15 @@ An example ``config/neo4j.yml`` file:
 .. code-block:: yaml
 
   development:
-    type: server_db
+    type: http
     url: http://localhost:7474
 
   test:
-    type: server_db
+    type: http
     url: http://localhost:7575
 
   production:
-    type: server_db
+    type: http
     url: http://neo4j:password@localhost:7000
 
 The `railtie` provided by the `neo4j` gem will automatically look for and load this file.
@@ -103,16 +107,21 @@ You can also use your Rails configuration.  The following example can be put int
 
 .. code-block:: ruby
 
-  config.neo4j.session_type = :server_db
-  config.neo4j.session_path = 'http://localhost:7474'
+  config.neo4j.session.type = :http
+  config.neo4j.session.url = 'http://localhost:7474'
+
+  # Or, for embedded in jRuby
+
+  config.neo4j.session.type = :embedded
+  config.neo4j.session.path = '/path/to/graph.db'
 
 Neo4j requires authentication by default but if you install using the built-in :doc:`rake tasks </RakeTasks>`) authentication is disabled.  If you are using authentication you can configure it like this:
 
 .. code-block:: ruby
 
-  config.neo4j.session_path = 'http://neo4j:password@localhost:7474'
+  config.neo4j.session.url = 'http://neo4j:password@localhost:7474'
 
-Of course it's often the case that you don't want to expose your username / password / URL in your repository.  In these cases you can use the ``NEO4J_TYPE`` (either ``server_db`` or ``embedded_db``) and ``NEO4J_URL``/``NEO4J_PATH`` environment variables.
+Of course it's often the case that you don't want to expose your username / password / URL in your repository.  In these cases you can use the ``NEO4J_TYPE`` (either ``http`` or ``embedded``) and ``NEO4J_URL``/``NEO4J_PATH`` environment variables.
 
 Configuring Faraday
 ^^^^^^^^^^^^^^^^^^^
@@ -121,7 +130,7 @@ Configuring Faraday
 
 .. code-block:: ruby
 
-  config.neo4j.session_options = {initialize: { ssl: { verify: true }}}
+  config.neo4j.session.options = {initialize: { ssl: { verify: true }}}
 
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
@@ -158,7 +167,7 @@ In Ruby
 .. code-block:: ruby
 
   # In JRuby or MRI, using Neo4j Server mode. When the railtie is included, this happens automatically.
-  Neo4j::Session.open(:server_db)
+  Neo4j::Session.open(:http)
 
 Embedded mode in JRuby
 ``````````````````````
@@ -167,7 +176,7 @@ In jRuby you can access the data in server mode as above.  If you want to run th
 
 .. code-block:: ruby
 
-  session = Neo4j::Session.open(:embedded_db, '/folder/db')
+  session = Neo4j::Session.open(:embedded, '/folder/db')
   session.start
 
 Embedded mode means that Neo4j is running inside your jRuby process.  This allows for direct access to the Neo4j Java APIs for faster and more direct querying.
@@ -203,8 +212,9 @@ Rails configuration
 
 .. code-block:: ruby
 
-  config.neo4j.session_type = :server_db
+  config.neo4j.session.type = :http
   # GrapheneDB
-  config.neo4j.session_path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
+  config.neo4j.session.path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
   # Graph Story
-  config.neo4j.session_path = ENV["GRAPHSTORY_URL"] || 'http://localhost:7474'
+  config.neo4j.session.path = ENV["GRAPHSTORY_URL"] || 'http://localhost:7474'
+

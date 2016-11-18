@@ -22,8 +22,14 @@ Style/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space
 
+Style/SignalException:
+  EnforcedStyle: semantic
+
 # I think this one is broken...
 Style/FileName:
+  Enabled: false
+
+Style/MultilineBlockChain:
   Enabled: false
 
 #---------------------------

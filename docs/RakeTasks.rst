@@ -8,6 +8,20 @@ The ``neo4j-core`` gem (automatically included with the ``neo4j`` gem) includes 
 
 .. glossary::
 
+  .. _rake_tasks-neo4j_generate_schema_migration:
+
+  **neo4j:generate_schema_migration**
+    **Arguments**
+      Either the string `index` or the string `constraint`
+
+      The Neo4j label
+
+      The property
+
+    **Example:** rake neo4j:generate_schema_migration[constraint,Person,uuid]
+
+    Creates a migration which force creates either a constraint or an index in the database for the given label / property pair.  When you create a model the gem will require that a migration be created and run and it will give you the appropriate rake task in the exception.
+
   .. _rake_tasks-neo4j_install:
 
   **neo4j:install**

@@ -67,6 +67,10 @@ module Neo4j
                                   end
         end
 
+        def inverse_of?(other)
+          origin_association == other
+        end
+
         def target_classes
           ClassArguments.constantize_argument(target_class_names)
         end
@@ -151,7 +155,7 @@ module Neo4j
         def relationship_class?
           !!relationship_class
         end
-        alias_method :rel_class?, :relationship_class?
+        alias rel_class? relationship_class?
 
         private
 
@@ -216,7 +220,7 @@ module Neo4j
           message = case
                     when (message = type_keys_error_message(options.keys))
                       message
-                    when (unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).size > 0
+                    when !(unknown_keys = options.keys - VALID_ASSOCIATION_OPTION_KEYS).empty?
                       "Unknown option(s) specified: #{unknown_keys.join(', ')}"
                     end
 

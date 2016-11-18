@@ -1,13 +1,13 @@
 require 'set'
 
-
-
 describe 'Query API' do
   before(:each) do
     delete_db
     clear_model_memory_caches
   end
 
+
+  let(:student_interests_association_options) { {} }
 
   before(:each) do
     stub_active_node_class('Interest') do
@@ -36,6 +36,7 @@ describe 'Query API' do
       scope :level_number, ->(num) { where(level: num) }
     end
 
+    scoped_interests_options = student_interests_association_options # Grrr
     stub_active_node_class('Student') do
       property :name
       property :age, type: Integer
@@ -44,7 +45,7 @@ describe 'Query API' do
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
-      has_many :out, :interests, type: nil
+      has_many :out, :interests, {type: nil}.merge(scoped_interests_options)
 
       has_many :both, :favorite_teachers, type: nil, model_class: 'Teacher'
       has_many :both, :hated_teachers, type: nil, model_class: 'Teacher'
@@ -83,9 +84,9 @@ describe 'Query API' do
       student.lessons << lesson
 
       expect(Student.as(:s).pluck(:s)).to eq([student])
-      expect(Student.all.pluck(:uuid)).to eq([student.uuid])
+      expect(Student.all.pluck(:id)).to eq([student.id])
 
-      expect(lesson.students.pluck(:uuid)).to eq([student.uuid])
+      expect(lesson.students.pluck(:id)).to eq([student.id])
     end
 
     it 'responds to to_ary' do
@@ -215,19 +216,9 @@ describe 'Query API' do
         before { allow(DateTime).to receive(:now).and_return(*timestamps) }
         after { expect(Teacher.count).to eq 1 }
 
-        # The ActiveNode stubbing is doing some odd things with the `name` method on the defined classes,
-        # so please excuse this kludge.
-        after(:all) do
-          Object.send(:remove_const, :TeacherFoo)
-          Object.send(:remove_const, :Substitute)
-        end
-
-        class TeacherFoo
-          include Neo4j::ActiveNode
-        end
-
-        class Substitute < TeacherFoo
-          include Neo4j::ActiveNode
+        before(:each) do
+          stub_active_node_class('TeacherFoo')
+          stub_named_class('Substitute', TeacherFoo)
         end
 
         subject { Teacher.merge(merge_attrs, on_match: on_match_clause, on_create: on_create_clause, set: set_attrs) }
@@ -316,7 +307,7 @@ describe 'Query API' do
 
         it 'sets the id property method' do
           teacher = Teacher.find_or_create(name: 'Dr. Harold Samuels')
-          expect(teacher.uuid).not_to be nil
+          expect(teacher.id).not_to be nil
         end
 
         context 'custom id property method' do
@@ -558,17 +549,13 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
-            rel = danny.lessons(:l, :r).pluck(:r).first
-            rel[:grade] = 65
-            rel.save
+            danny.lessons(:l, :r).query.set(r: {grade: 65}).exec
 
             bobby.lessons << math101
-            rel = bobby.lessons(:l, :r).pluck(:r).first
-            rel[:grade] = 71
+            bobby.lessons(:l, :r).query.set(r: {grade: 71})
 
             math101.teachers << othmar
-            rel = math101.teachers(:t, :r).pluck(:r).first
-            rel[:since] = 2001
+            math101.teachers(:t, :r).query.set(r: {since: 2001}).exec
 
             sandra.lessons << ss101
           end
@@ -646,7 +633,7 @@ describe 'Query API' do
 
   describe 'Core::Query#proxy_as' do
     let(:core_query) do
-      Neo4j::Session.current.query
+      new_query
         .match("(thing:CrazyLabel)-[weird_identifier:SOME_TYPE]->(other_end:DifferentLabel { size: 'grand' })<-[:REFERS_TO]-(s:Student)")
         .with(:other_end, :s)
     end
@@ -759,13 +746,13 @@ describe 'Query API' do
       let(:changed_props_create) { proc { from_node.interests.create(to_node, second_props) } }
 
       before do
-        Student.has_many :out, :interests, options
         from_node.interests.create(to_node, first_props)
         expect(from_node.interests.count).to eq 1
       end
 
       context 'with `true` option' do
-        let(:options) { {type: nil, unique: true} }
+        let(:student_interests_association_options) { {type: nil, unique: true} }
+
         it 'becomes :none' do
           expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
           changed_props_create.call
@@ -773,7 +760,7 @@ describe 'Query API' do
       end
 
       context 'with :none open' do
-        let(:options) { {type: nil, unique: :none} }
+        let(:student_interests_association_options) { {type: nil, unique: :none} }
 
         it 'does not create additional rels, even when properties change' do
           expect do
@@ -783,7 +770,7 @@ describe 'Query API' do
       end
 
       context 'with `:all` option' do
-        let(:options) { {type: nil, unique: :all} }
+        let(:student_interests_association_options) { {type: nil, unique: :all} }
 
         it 'creates additional rels when properties change' do
           expect { changed_props_create.call }.to change { from_node.interests.count }
@@ -791,7 +778,7 @@ describe 'Query API' do
       end
 
       context 'with {on: [keys]} option' do
-        let(:options) { {type: nil, unique: {on: :score}} }
+        let(:student_interests_association_options) { {type: nil, unique: {on: :score}} }
 
         context 'and a listed property changes' do
           it 'creates a new rel' do
