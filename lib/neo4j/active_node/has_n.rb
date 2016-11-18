@@ -23,15 +23,12 @@ module Neo4j::ActiveNode
       # States:
       # Default
       def inspect
-        if @cached_result
-          result_nodes.inspect
-        else
-          "#<AssociationProxy @query_proxy=#{@query_proxy.inspect}>"
-        end
+        formatted_nodes = ::Neo4j::ActiveNode::NodeListFormatter.new(result_nodes)
+        "#<AssociationProxy #{@query_proxy.context} #{formatted_nodes.inspect}>"
       end
 
       extend Forwardable
-      %w(include? empty? count find first last ==).each do |delegated_method|
+      %w(include? find first last ==).each do |delegated_method|
         def_delegator :@enumerable, delegated_method
       end
 
@@ -39,6 +36,21 @@ module Neo4j::ActiveNode
 
       def each(&block)
         result_nodes.each(&block)
+      end
+
+      # .count always hits the database
+      def_delegator :@query_proxy, :count
+
+      def length
+        @deferred_objects.length + @enumerable.length
+      end
+
+      def size
+        @deferred_objects.size + @enumerable.size
+      end
+
+      def empty?(*args)
+        @deferred_objects.empty? && @enumerable.empty?(*args)
       end
 
       def ==(other)
@@ -62,9 +74,7 @@ module Neo4j::ActiveNode
       def result_nodes
         return result_objects if !@query_proxy.model
 
-        result_objects.map do |object|
-          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
-        end
+        map_results_as_nodes(result_objects)
       end
 
       def result_objects
@@ -104,9 +114,12 @@ module Neo4j::ActiveNode
       end
 
       def replace_with(*args)
-        @cached_result = nil
-
-        @query_proxy.public_send(:replace_with, *args)
+        nodes = @query_proxy.replace_with(*args).to_a
+        if @query_proxy.start_object.try(:new_record?)
+          @cached_result = nil
+        else
+          cache_result(nodes)
+        end
       end
 
       QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit]
@@ -134,6 +147,12 @@ module Neo4j::ActiveNode
       end
 
       private
+
+      def map_results_as_nodes(result)
+        result.map do |object|
+          object.is_a?(Neo4j::ActiveNode) ? object : @query_proxy.model.find(object)
+        end
+      end
 
       def target_for_missing_method(method_name)
         case method_name
@@ -212,7 +231,9 @@ module Neo4j::ActiveNode
       end
     end
 
+    # rubocop:disable Metrics/ModuleLength
     module ClassMethods
+      # rubocop:enable Style/PredicateName
       # rubocop:disable Style/PredicateName
 
       # :nocov:
@@ -229,19 +250,16 @@ module Neo4j::ActiveNode
         !!associations[name.to_sym]
       end
 
+      def parent_associations
+        superclass == Object ? {} : superclass.associations
+      end
+
       def associations
-        @associations ||= {}
+        (@associations ||= parent_associations.dup)
       end
 
       def associations_keys
         @associations_keys ||= associations.keys
-      end
-
-      # make sure the inherited classes inherit the <tt>_decl_rels</tt> hash
-      def inherited(klass)
-        klass.instance_variable_set(:@associations, associations.clone)
-        @associations_keys = klass.associations_keys.clone
-        super
       end
 
       # For defining an "has many" association on a model.  This defines a set of methods on
@@ -379,7 +397,7 @@ module Neo4j::ActiveNode
 
           clear_deferred_nodes_for_association(name)
 
-          Neo4j::Transaction.run { association_proxy(name).replace_with(other_nodes) }
+          self.class.run_transaction { association_proxy(name).replace_with(other_nodes) }
         end
       end
 
@@ -390,7 +408,7 @@ module Neo4j::ActiveNode
 
         define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
           clear_deferred_nodes_for_association(name)
-          association_proxy(name).replace_with(ids)
+          association_proxy(name).replace_with(Array(ids).reject(&:blank?))
         end
 
         define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
@@ -455,7 +473,7 @@ module Neo4j::ActiveNode
           if persisted?
             other_node.save if other_node.respond_to?(:persisted?) && !other_node.persisted?
             association_proxy_cache.clear # TODO: Should probably just clear for this association...
-            Neo4j::Transaction.run { association_proxy(name).replace_with(other_node) }
+            self.class.run_transaction { association_proxy(name).replace_with(other_node) }
             # handle_non_persisted_node(other_node)
           else
             defer_create(name, other_node, clear: true)
@@ -509,23 +527,32 @@ module Neo4j::ActiveNode
 
       def default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize, nil,
-                                                 session: neo4j_session, query_proxy: nil, context: "#{self.name}")
+                                                 session: neo4j_session, query_proxy: nil, context: self.name.to_s)
       end
 
       def build_association(macro, direction, name, options)
         options[:model_class] = options[:model_class].name if options[:model_class] == self
         Neo4j::ActiveNode::HasN::Association.new(macro, direction, name, options).tap do |association|
-          @associations ||= {}
-          @associations[name] = association
+          add_association(name, association)
           create_reflection(macro, name, association, self)
         end
 
-        associations_keys << name
+        @associations_keys = nil
 
       # Re-raise any exception with added class name and association name to
       # make sure error message is helpful
       rescue StandardError => e
         raise e.class, "#{e.message} (#{self.class}##{name})"
+      end
+
+      def add_association(name, association_object)
+        fail "Association `#{name}` defined for a second time. "\
+             'Associations can only be defined once' if duplicate_association?(name)
+        associations[name] = association_object
+      end
+
+      def duplicate_association?(name)
+        associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
   end

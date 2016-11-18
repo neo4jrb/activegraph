@@ -302,7 +302,6 @@ Neo4j::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    
 
 
 ------------
@@ -315,7 +314,6 @@ Neo4j::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    
 
 
 ------------
@@ -608,8 +606,6 @@ Neo4j::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    
-
 
 ------------
 
@@ -620,8 +616,6 @@ Neo4j::Core::Query
 
 :Cypher:
   .. code-block:: cypher
-
-    
 
 
 ------------
@@ -1180,7 +1174,6 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    
 
 
 ------------
@@ -1824,7 +1817,6 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    
 
 
 ------------
@@ -1853,7 +1845,6 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    
 
 
 ------------
@@ -1924,7 +1915,6 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    
 
 
 ------------

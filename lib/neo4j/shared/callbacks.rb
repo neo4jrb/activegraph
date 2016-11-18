@@ -19,12 +19,12 @@ module Neo4j
       end
 
       def destroy #:nodoc:
-        tx = Neo4j::Transaction.new
+        tx = Neo4j::ActiveBase.new_transaction
         run_callbacks(:destroy) { super }
       rescue
         @_deleted = false
         @attributes = @attributes.dup
-        tx.mark_failed
+        tx.mark_failed if tx
         raise
       ensure
         tx.close if tx
@@ -49,13 +49,13 @@ module Neo4j
       end
 
       def create_model #:nodoc:
-        Neo4j::Transaction.run do
+        self.class.run_transaction do
           run_callbacks(:create) { super }
         end
       end
 
       def update_model(*) #:nodoc:
-        Neo4j::Transaction.run do
+        self.class.run_transaction do
           run_callbacks(:update) { super }
         end
       end

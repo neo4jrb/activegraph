@@ -3,6 +3,175 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+## [8.0.0.rc.3] 2016-10-12
+
+### Changed
+
+- `find_or_create_by` on an association does not look for nodes which aren't related to the node in question (thanks for the report @efatsi / see #1240)
+
+### Fixed
+
+- Inconsistent `drop_constraint` and `drop_index` behavior: they were accepting `force` option (like `add_*` methods)
+- `PendingMigrationError` not showing pending migrations versions
+- Fixed `silenced: true` for `Neo4j::Migration::Runner` option, not working properly
+- Removed "strange" inheritance between Neo4j::Migrations::Base and the legacy Neo4j::Migration class
+- Avoid creating the `SchemaMigration` model constraint when it already exists
+
+## [8.0.0.rc.3] 2016-10-12
+
+# Added
+
+- `distinct` method for QueryProxy (thanks @ProGM / see #1305)
+- Added `update_node_property` / `update_node_properties` (aliased as `update_column` / `update_columns`)
+
+## [8.0.0.rc.2] 2016-10-07
+
+### Fixed
+
+- Pending migration check was failing when there are no migrations
+
+## [8.0.0.rc.1] 2016-10-04
+
+### Changed
+
+- Pending migrations check, now using a Rack Middleware instead of failing on startup (thanks @ProGM / see #1300)
+
+### Added
+
+- Add support for undeclared properties on specific models (see #1294 / thanks @klobuczek)
+- Add `update_node_property` and `update_node_properties` methods, aliased as `update_column` and `update_columns`, to persist changes without triggering validations, callbacks, timestamps, etc,...
+
+## [8.0.0.alpha.12] 2016-09-29
+
+### Fixed
+
+- Allow multiple arguments to scopes (see #1297 / thanks @klobuczek)
+- Fixed validations with unpersisted nodes (see #1293 / thanks @klobuczek & @ProGM)
+- Fixed various association bugs (see #1293 / thanks @klobuczek & @ProGM)
+- Fix `as` losing the current query chain scope (see #1298 and #1278 / thanks @ProGM & @ernestoe)
+
+## [8.0.0.alpha.11] 2016-09-27
+
+### Fixed
+- Don't fire database when accessing to unpersisted model associations (thanks @klobuczek & @ProGM see #1273)
+- `size` and `length` methods not taking account of `@deferred_objects` (see #1293)
+- `update` was not rolling-back association changes when validations fail
+- Broken Rails `neo4j:migrate_v8` generator
+
+### Changed
+- `count` method in associations, now always fire the database like AR does
+- Neo4j now passes all association validations specs, taken from AR (thanks @klobuczek)
+
+## [8.0.0.alpha.10] 2016-09-16
+
+### Fixed
+- Remove blank objects from association results to be compatible with `ActiveRecord` (see #1276 / thanks klobuczek)
+- Allow https scheme in the NEO4J_URL (see #1287 / thanks jacob-ewald)
+
+## [8.0.0.alpha.9] 2016-09-14
+
+### Fixed
+
+- String / symbol issue for session types in railtie
+- Put in fix for allowing models to reload for wrapping nodes / relationshps
+
+## [8.0.0.alpha.8] 2016-09-14
+
+### Fixed
+
+- Issues with railtie
+
+## [8.0.0.alpha.7] 2016-09-13
+
+### Changed
+
+- Multiple sessions in Rails config no longer supported
+
+## [8.0.0.alpha.6] 2016-09-12
+
+### Fixed
+
+- Instead of using `session_type`, `session_url`, `session_path`, and `session_options` in config `session.type`, `session.url`, `session.path`, and `session.options` should now be used.
+- Issue where `session_url` (now `session.url`) was not working
+- Broken sessions when threading
+
+## [8.0.0.alpha.5] 2016-09-08
+
+### Fixed
+
+- Various issues with not be able to run migrations when migration were pending (see 22b7e6aaadd46c11d421b4dac8d3fb15f663a4c4)
+
+## [8.0.0.alpha.4] 2016-09-08
+
+### Added
+
+- A `Neo4j::Migrations.maintain_test_schema!` method, to keep the test database up to date with schema changes. (see #1277)
+- A `Neo4j::Migrations.check_for_pending_migrations!` method, that fails when there are pending migration. In Rails, it's executed automatically on startup. (see #1277)
+- Support for [`ForbiddenAttributesProtection` API](http://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html) from ActiveRecord. (thanks ProGM, see #1245)
+
+### Changed
+
+- `ActiveNode#destroy` and `ActiveRel#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
+
+### Fixed
+
+- Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
+
+## [8.0.0.alpha.3]
+
+### Skipped
+
+## [8.0.0.alpha.2] 2016-08-05
+
+### Changed
+
+- Improve migration output format / show execution time in migrations
+
+### Fixed
+
+- Caching of model index and constraint checks
+- Error when running schema migrations.  Migrations now give a warning and instructions if a migration fails and cannot be recovered
+- Error when running rake tasks to generate "force" creations of indexes / constraints and there is no migration directory
+- `WARNING` is no longer displayed for constraints defined from `id_property` (either one which is implict or explict)
+
+## [8.0.0.alpha.1] 2016-08-02
+
+### Changed
+
+- Improved `QueryProxy` and `AssociationProxy` `#inspect` method to show a result preview (thanks ProGM / see #1228 #1232)
+- Renamed the old migration task to `neo4j:legacy_migrate`
+- Renamed the ENV variable to silence migrations output from `silenced` to `MIGRATIONS_SILENCED`
+- Changed the behavior with transactions when a validation fails. This is a potentially breaking change, since now calling `save` would not fail the current transaction, as expected. (thanks ProGM / see #1156)
+- Invalid options to the `property` method now raise an exception (see #1169)
+- Label #indexes/#constraints return array without needing to access [:property_keys]
+- `server_db` server type is no longer supported.  Use `http` instead to connect to Neo4j via the HTTP JSON API
+
+### Added
+
+- Allow to pass a Proc for a default property value (thanks @knapo / see #1250)
+- Adding a new ActiveRecord-like migration framework (thanks ProGM / see #1197)
+- Adding a set of rake tasks to manage migrations (thanks ProGM / see #1197)
+- Implemented autoloading for new and legacy migration modules (there's no need to `require` them anymore)
+- Adding explicit identity method for use in Query strings (thanks brucek / see #1159)
+- New adaptor-based API has been created for connecting to Neo4j (See the [upgrade guide](TODO!!!!)).  Changes include:
+- The old APIs are deprecated and will be removed later.
+- In the new API, there is no such thing as a "current" session.  Users of `neo4j-core` must create and maintain references themselves to their sessions
+- New `Neo4j::Core::Node` and `Neo4j::Core::Relationshp` classes have been created to provide consistent results between adaptors.  `Neo4j::Core::Path` has also been added
+- New API is centered around Cypher.  No special methods are defined to, for example, load/create/etc... nodes/relationships
+- There is now a new API for making multiple queries in the same HTTP request
+- It is now possible to subscribe separately to events for querying in different adaptors and for HTTP requests (see [the docs](TODO!!!!))
+- Schema queries (changes to indexes/constraints) happen in a separate thread for performance and reduce the complexity of the code
+- New session API does not include replacement for on_next_session_available
+- Adding a migration helper to mass relabel migrations (thanks @JustinAiken / see #1166 #1239)
+- Added support for `find_or_initialize_by` and `first_or_initialize` methods from ActiveRecord (thanks ProGM / see #1164)
+- Support for using Neo4j-provided IDs (`neo_id`) instead of UUID or another Ruby-provided ID. (Huge thanks to @klobuczek, see #1174)
+
+### Fixed
+
+- Made some memory optimizations (thanks ProGM / see #1221)
+
 ## [7.2.3] - 09-28-2016
 
 ### Fixed
@@ -154,7 +323,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 No changes from `rc.7`
 
 ## [7.0.0.rc.7] - 03-16-2016
-/
+
 ### Changed
 
 - `with_associations` now generates separate `OPTIONAL MATCH` clauses, separated by `WITH` clauses and is preceeded by a `WITH` clause.
@@ -211,6 +380,7 @@ No changes from `rc.7`
 - Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
 - A clone of [ActiveRecord::Enum](http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html) API. See docs for details. (thanks ProGM / #1129)
 - Added #branch method to `QueryProxy` to allow for easy branching of matches in association chains (thanks ProGM / #1147 / #1143)
+- The `.match` method on ActiveNode model class has changed to allow a second argument which takes `on_create`, `on_match`, and `set` keys.  These allow you to define attribute values for the Cypher `MERGE` in the different cases (thanks leviwilson / see #1123)
 
 ### Removed
 

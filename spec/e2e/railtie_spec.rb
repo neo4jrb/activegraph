@@ -1,72 +1,155 @@
 require 'ostruct'
 
 module Rails
-  class Config
-    attr_accessor :neo4j, :session_type, :session_path, :sessions, :session_options, :wait_for_connection
-    def to_hash
-      {}
+  describe 'railtie' do
+    require 'neo4j/railtie'
+
+
+    around(:each) do |example|
+      main_spec_session = Neo4j::ActiveBase.current_session
+      example.run
+      Neo4j::ActiveBase.current_session = main_spec_session
     end
-  end
 
-  class Railtie
-    cattr_accessor :init, :conf
+    describe '#setup!' do
+      let(:session_path) {}
+      let(:cfg) do
+        ActiveSupport::OrderedOptions.new.tap do |c|
+          c.session = ActiveSupport::OrderedOptions.new
+          c.session.path = session_path if session_path
+        end
+      end
 
-    class << self
-      # attr_reader :init, :config
+      before do
+        stub_const('Neo4j::SessionManager', spy('Neo4j::SessionManager'))
 
-      def initializer(name, _options = {}, &block)
-        Railtie.init ||= {}
-        Railtie.init[name] = block
+        Neo4j::Railtie.setup!(cfg)
+      end
+
+      let_context(session_path: 'http://user:password@localhost:7474') do
+        let_env_variable(:NEO4J_URL) { nil }
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'http://user:password@localhost:7474', nil, {})
+        end
+      end
+
+      context 'NEO4J_URL is http' do
+        let_env_variable(:NEO4J_URL) { 'http://localhost:7474' }
+
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'http://localhost:7474', nil, {})
+        end
+      end
+
+      context 'NEO4J_URL is bolt' do
+        let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
+
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:bolt, 'bolt://localhost:7472', nil, {})
+        end
+      end
+
+      context 'NEO4J_URL is https' do
+        let_env_variable(:NEO4J_URL) { 'https://localhost:7472' }
+
+        it 'calls Neo4j::SessionManager' do
+          expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with(:http, 'https://localhost:7472', nil, {})
+        end
       end
     end
-  end
-  class App
-    attr_accessor :neo4j
 
-    def config
-      self
+    describe '#support_deprecated_session_configs!' do
+      let(:config) { ActiveSupport::InheritableOptions.new(session: ActiveSupport::OrderedOptions.new) }
+
+      it 'uses sessions if present' do
+        config.sessions = [:abc]
+        Neo4j::Railtie.support_deprecated_session_configs!(config)
+        expect(config.session).to eq(:abc)
+      end
+
+      it 'leverages session_type if present' do
+        config.session_type = :bolt
+        Neo4j::Railtie.support_deprecated_session_configs!(config)
+        expect(config.session.type).to eq(:bolt)
+      end
     end
 
-    def neo4j
-      @neo4j ||= Config.new
-    end
-  end
+    describe 'open_neo4j_session' do
+      let(:session_type) { nil }
+      let(:session_path_or_url) { nil }
+      let(:session_options) { {} }
+      subject { Neo4j::SessionManager.open_neo4j_session(session_type, session_path_or_url, nil, session_options) }
 
-  require 'neo4j/railtie'
+      if TEST_SESSION_MODE != :embedded
+        let_context(session_type: :embedded, session_path_or_url: './db') do
+          subject_should_raise(/JRuby is required for embedded mode/)
+        end
+      end
 
-  describe 'railtie' do
-    it 'configures a default Neo4j server_db' do
-      expect(Neo4j::Session).to receive(:open).with(:server_db, server_url, default: true).and_return(double)
-      app = App.new
-      Railtie.init['neo4j.start'].call(app)
-    end
+      let_context(session_type: :invalid_type) do
+        subject_should_raise(ArgumentError, /Invalid session type: :invalid_type$/)
+      end
 
-    it 'allows multi session' do
-      expect(Neo4j::Session).to receive(:open).with(:mysession_type, 'asd', nil).and_return(double)
-      app = App.new
-      app.neo4j.sessions = [{type: :mysession_type, path: 'asd'}]
-      Railtie.init['neo4j.start'].call(app)
-    end
+      let_context(session_type: :server_db) do
+        subject_should_raise(ArgumentError, /Invalid session type: :server_db \(`server_db` has been replaced/)
+      end
 
-    it 'allows sessions with additional options' do
-      expect(Neo4j::Session).to receive(:open).with(:server_db, 'http://localhost:7474', basic_auth: {username: 'user', password: 'password'}).and_return(double)
-      app = App.new
-      app.neo4j.sessions = [{type: :server_db, path: 'http://localhost:7474',
-                             options: {basic_auth: {username: 'user', password: 'password'}}}]
-      Railtie.init['neo4j.start'].call(app)
-    end
+      describe 'resulting adaptor' do
+        subject do
+          super().adaptor
+        end
 
-    it 'allows sessions with authentication' do
-      cfg = OpenStruct.new(session_path: 'http://user:password@localhost:7474')
-      Neo4j::Railtie.setup_default_session(cfg)
-      expect(cfg.session_path).to eq('http://user:password@localhost:7474')
-    end
+        let_context(session_type: :http, session_path_or_url: 'http://neo4j:specs@the-host:1234') do
+          it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
+          its(:url) { should eq('http://neo4j:specs@the-host:1234') }
 
-    it 'allows named session' do
-      expect(Neo4j::Session).to receive(:open_named).with('type', 'name', 'default', 'path').and_return(double)
-      app = App.new
-      app.neo4j.sessions = [{type: 'type', name: 'name', default: 'default', path: 'path'}]
-      Railtie.init['neo4j.start'].call(app)
+          describe 'faraday connection' do
+            subject { super().requestor.instance_variable_get('@faraday') }
+
+            its('url_prefix.host') { should eq('the-host') }
+            its('url_prefix.port') { should eq(1234) }
+            describe 'headers' do
+              subject { super().headers }
+              its(['Authorization']) { should eq "Basic #{Base64.strict_encode64('neo4j:specs')}" }
+            end
+          end
+        end
+
+        let_context(session_type: :http, session_path_or_url: 'http://neo4j:specs@the-host:1234', session_options: {basic_auth: 'neo4j', password: 'specs2'}) do
+          it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
+          its(:url) { should eq('http://neo4j:specs@the-host:1234') }
+
+          describe 'faraday connection' do
+            subject { super().requestor.instance_variable_get('@faraday') }
+
+            its('url_prefix.host') { should eq('the-host') }
+            its('url_prefix.port') { should eq(1234) }
+            describe 'headers' do
+              subject { super().headers }
+              its(['Authorization']) { should eq "Basic #{Base64.strict_encode64('neo4j:specs')}" }
+            end
+          end
+        end
+
+        if TEST_SESSION_MODE == :embedded
+          require 'tmpdir'
+
+          context 'embedded session options' do
+            let(:tmpdir) { Dir.mktmpdir }
+            let(:session_type) { :embedded }
+            let(:session_path_or_url) { tmpdir }
+
+            # Mocking the embedded connection, to avoid `OutOfMemory` on Travis
+            # This checks that the connection would be created
+            before(:each) do
+              expect_any_instance_of(Neo4j::Core::CypherSession::Adaptors::Embedded).to receive(:connect)
+            end
+
+            it { should be_a(Neo4j::Core::CypherSession::Adaptors::Embedded) }
+            its(:path) { is_expected.to eq(tmpdir) }
+          end
+        end
+      end
     end
   end
 end

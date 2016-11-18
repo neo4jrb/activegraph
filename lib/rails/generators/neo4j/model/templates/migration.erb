@@ -1,0 +1,9 @@
+class <%= @migration_class_name %> < Neo4j::Migrations::Base
+  def up
+    add_constraint :<%= class_name %>, :uuid
+  end
+
+  def down
+    drop_constraint :<%= class_name %>, :uuid
+  end
+end

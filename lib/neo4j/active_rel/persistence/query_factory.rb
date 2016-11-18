@@ -15,9 +15,9 @@ module Neo4j::ActiveRel::Persistence
     # TODO: This feels like it should also wrap the rel, but that is handled in Neo4j::ActiveRel::Persistence at the moment.
     # Builds and executes the query using the objects giving during init.
     # It holds the process:
-    #   * Execute node callbacks if needed
-    #   * Create and execute the query
-    #   * Mix the query response into the unpersisted objects given during init
+    # * Execute node callbacks if needed
+    # * Create and execute the query
+    # * Mix the query response into the unpersisted objects given during init
     def build!
       node_before_callbacks! do
         res = query_factory(rel, rel_id, iterative_query).query.unwrapped.return(*unpersisted_return_ids).first

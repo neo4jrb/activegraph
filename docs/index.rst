@@ -14,18 +14,23 @@ Contents:
    Introduction
    Setup
 
+   UpgradeGuide
+
    RakeTasks
 
    ActiveNode
    ActiveRel
 
    Properties
+   UniqueIDs
 
    Querying
 
    QueryClauseMethods
 
    Configuration
+
+   Migrations
 
    Contributing
 

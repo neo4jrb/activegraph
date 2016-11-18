@@ -143,7 +143,7 @@ module Neo4j::Shared
         end
 
         it 'returns a new Hash ' do
-          model.attributes.merge!('first_name' => 'Bob')
+          model.attributes['first_name'] = 'Bob'
           expect(model.attributes).not_to include('first_name' => 'Bob')
         end
 

@@ -1,0 +1,9 @@
+class <%= @migration_class_name %> < Neo4j::Migrations::Base
+  def up
+    <%= @content %>
+  end
+
+  def down
+    raise Neo4j::IrreversibleMigration
+  end
+end

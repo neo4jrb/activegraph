@@ -4,7 +4,6 @@ module Neo4j
   # == Configurations keys
   class Config
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
-    CLASS_NAME_PROPERTY_KEY = 'class_name_property'
 
     class << self
       # In keeping with the Rails convention, this class writer lets you globally configure
@@ -94,6 +93,10 @@ module Neo4j
       # @return [String] The config as a YAML
       def to_yaml
         configuration.to_yaml
+      end
+
+      def fail_on_pending_migrations
+        Neo4j::Config[:fail_on_pending_migrations].nil? ? true : Neo4j::Config[:fail_on_pending_migrations]
       end
 
       def include_root_in_json

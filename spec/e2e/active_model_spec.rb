@@ -1,12 +1,9 @@
-# class ExtendedIceLolly < IceLolly
-#  property :extended_property
-# end
-
 describe 'Neo4j::ActiveNode' do
   before(:each) do
     clear_model_memory_caches
     delete_db
 
+    create_index(:IceLolly, :flavour, type: :exact)
     stub_active_node_class('IceLolly') do
       property :flavour
       property :name
@@ -24,8 +21,6 @@ describe 'Neo4j::ActiveNode' do
       attr_writer :writable_attr
 
       property :prop_with_default, default: 'something'
-
-      index :flavour
 
       validates :flavour, presence: true
       validates :required_on_create, presence: true, on: :create
@@ -45,8 +40,9 @@ describe 'Neo4j::ActiveNode' do
       end
     end
 
+    create_index(:IceCream, :flavour, type: :exact)
     stub_active_node_class('IceCream') do
-      property :flavour, index: :exact
+      property :flavour
       # has_n(:ingredients).to(Ingredient)
       validates_presence_of :flavour
     end
@@ -165,8 +161,9 @@ describe 'Neo4j::ActiveNode' do
 
     context 'a model with a case sensitive uniqueness validation' do
       before do
+        create_constraint(:Uniqueness, :unique_property, type: :unique)
         stub_active_node_class('Uniqueness') do
-          property :unique_property, type: String, constraint: :unique
+          property :unique_property, type: String
           validates :unique_property, uniqueness: {case_sensitive: false}
         end
       end
@@ -204,7 +201,7 @@ describe 'Neo4j::ActiveNode' do
     end
 
     context 'when record_timestamps is enabled' do
-      let_config(:record_timestamps) { true }
+      let_config(:record_timestamps, true)
 
       before do
         stub_active_node_class('TimestampedClass')
@@ -427,6 +424,23 @@ describe 'Neo4j::ActiveNode' do
       expect { Person.find_or_create_by!(name: nil) }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
     end
 
+    it 'can find (or initialize) by...' do
+      expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
+      person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
+      expect(person).to be_a(Neo4j::ActiveNode)
+      expect(person).not_to be_persisted
+      expect(person.name).to eq('Donovan')
+      expect(person.age).to eq(30)
+    end
+
+    it 'can (find or) initialize by...' do
+      person = Person.create!(name: 'Donovan', age: 30)
+      found_person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
+      expect(found_person).to be_a(Neo4j::ActiveNode)
+      expect(found_person).to be_persisted
+      expect(found_person).to eq(person)
+    end
+
     describe 'create using a block' do
       let(:person) do
         Person.create do |p|
@@ -494,8 +508,8 @@ describe 'Neo4j::ActiveNode' do
 
     it 'can be loaded by id' do
       person1 = Person.create(name: 'andreas', age: 21)
-      person2 = Neo4j::Node.load(person1.neo_id)
-      expect(person2.neo_id).to eq(person1.neo_id)
+      person2 = Person.find(person1.id)
+      expect(person2.id).to eq(person1.id)
       expect(person2.neo_id).to eq(person1.neo_id)
     end
 
@@ -503,17 +517,18 @@ describe 'Neo4j::ActiveNode' do
       person = Person.create(name: 'andreas', age: 21)
       person[:age] = 22
 
-      person2 = Neo4j::Node.load(person.neo_id)
-      expect(person2[:age]).to eq(21)
+      expect(Person.find(person.id).age).to eq(21)
     end
 
     it 'should not clear out existing properties when property is set and saved' do
       person = Person.create(name: 'andreas', age: 21)
       person.age = 22
       person.save
-      person2 = Neo4j::Node.load(person.neo_id)
-      expect(person2.age).to eq(22)
-      expect(person2.name).to eq('andreas')
+
+      person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = {neo_id} RETURN p',
+                            {neo_id: person.neo_id},
+                            wrap_level: :core_entity).first.p
+      expect(person2.props).to match hash_including age: 22, name: 'andreas'
     end
 
     it 'they can be all found' do
@@ -581,14 +596,14 @@ describe 'Neo4j::ActiveNode' do
         let(:tz_offset) { Time.now.gmt_offset }
         let(:dst_offset) { tz_offset != 0 && Time.now.dst? ? 1 : 0 }
         let(:base_hour) { 9 }
-        let(:expected_hour) { base_hour - (tz_offset / 60 / 60) + dst_offset }
+        let(:expected_hour) { (base_hour - (tz_offset / 60 / 60) + dst_offset) % 24 }
 
         it 'converts to Time' do
           person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => base_hour.to_s, 'time(5i)' => '12', 'time(6i)' => '42')
           expect(person.time).to be_a(Time)
           expect(person.time.hour).to eq expected_hour
-          expect(person.time.utc.min).to eq 12
-          expect(person.time.utc.sec).to eq 42
+          # expect(person.time.utc.min).to eq 12
+          # expect(person.time.utc.sec).to eq 42
         end
       end
 
@@ -656,9 +671,10 @@ describe 'Neo4j::ActiveNode' do
     let!(:person) { Person.create(name: 'DateTime', datetime: datetime) }
 
     let(:datetime_db_value) do
-      Neo4j::Session.query.match(p: :Person)
-        .where(p: {neo_id: person.neo_id})
-        .pluck(p: :datetime).first
+      query = new_query.match(p: :Person)
+                       .where(p: {neo_id: person.neo_id})
+                       .return('p.datetime AS datetime')
+      Neo4j::ActiveBase.current_session.query(query).first.datetime
     end
 
     it 'saves as date/time string by default' do
@@ -691,10 +707,9 @@ describe 'Neo4j::ActiveNode' do
 
       describe 'without updated_at property' do
         before do
-          stub_const('NoStamp', UniqueClass.create do
-            include Neo4j::ActiveNode
+          stub_active_node_class('NoStamp') do
             property :name
-          end)
+          end
         end
 
         let(:nostamp) { NoStamp.create }
@@ -735,7 +750,7 @@ describe 'Neo4j::ActiveNode' do
             it 'reuses or resets' do
               expect(Cat.as(:c).named_jim.pluck(:c)).to eq([jim])
               expect(Cat.as(:c).all.named_jim.pluck(:c)).to eq([jim])
-              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error Neo4j::Session::CypherError
+              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error Neo4j::Core::CypherSession::CypherError
               expect(Cat.as(:c).all(:another_variable).named_jim.pluck(:another_variable)).to eq [jim]
             end
           end
@@ -790,7 +805,7 @@ describe 'Neo4j::ActiveNode' do
       it 'should use uuid' do
         expect(activenode_class.where(id: object).first).to eq(object)
         expect(activenode_class.where(id: object.id).first).to eq(object)
-        expect(activenode_class.where(id: object.uuid).first).to eq(object)
+        expect(activenode_class.where(id: id_property_value(object)).first).to eq(object)
       end
 
       context 'different id_property is specified' do
@@ -812,7 +827,7 @@ describe 'Neo4j::ActiveNode' do
       it 'should use uuid' do
         expect(activenode_class.find_by(id: object)).to eq(object)
         expect(activenode_class.find_by(id: object.id)).to eq(object)
-        expect(activenode_class.find_by(id: object.uuid)).to eq(object)
+        expect(activenode_class.find_by(id: id_property_value(object))).to eq(object)
       end
 
       context 'different id_property is specified' do
@@ -828,40 +843,6 @@ describe 'Neo4j::ActiveNode' do
           end
         end
       end
-    end
-  end
-
-  # TODO: Rewrite/move into unit tests once master is merged into 5.1.x.
-  describe 'model reloading' do
-    before { stub_active_node_class('MyModel') }
-
-    describe 'before_remove_const' do
-      it 'populates the MODELS_TO_RELOAD set' do
-        expect { MyModel.before_remove_const }.to change { Neo4j::ActiveNode::Labels::Reloading::MODELS_TO_RELOAD.count }
-      end
-    end
-
-    describe 'reload_models!' do
-      let!(:reload_cache) { Neo4j::ActiveNode::Labels::Reloading::MODELS_TO_RELOAD }
-      before { MyModel.before_remove_const }
-      it 'constantizes the models and clears list of models to reload' do
-        expect(reload_cache).to receive(:each)
-        expect(reload_cache).to receive(:clear)
-        Neo4j::ActiveNode::Labels::Reloading.reload_models!
-      end
-    end
-  end
-
-  describe 'indexing' do
-    subject { model.declared_properties[:flavour].options[:index] }
-    context 'index method' do
-      let(:model) { IceLolly.new }
-      it { is_expected.to eq :exact }
-    end
-
-    context 'index option' do
-      let(:model) { IceCream.new }
-      it { is_expected.to eq :exact }
     end
   end
 

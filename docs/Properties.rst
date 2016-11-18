@@ -43,16 +43,26 @@ You will now be able to set the ``title`` property through mass-assignment (``Po
 Undeclared Properties
 ---------------------
 
-Neo4j, being schemaless as far as the database is concerned, does not require that property keys be defined ahead of time. As a result, it's possible (and sometimes desirable) to set properties on the node that are not also defined on the database. For instance:
+Neo4j, being schemaless as far as the database is concerned, does not require that property keys be defined ahead of time. As a result, it's possible (and sometimes desirable) to set properties on the node that are not also defined on the database. By including the module ``Neo4j::UndeclaredProperties`` no exceptions will be thrown if unknown attributes are passed to selected methods.
+
 
 .. code-block:: ruby
 
-  Neo4j::Node.create({ property: 'MyProp', secret_val: 123 }, :Post)
-  post = Post.first
-  post.secret_val
-  => NoMethodError: undefined method `secret_val`...
+  class Post
+    include Neo4j::ActiveNode
+    include Neo4j::UndeclaredProperties
 
-In this case, simply adding the ``secret_val`` property to your model will make it available through the ``secret_val`` method. Alternatively, you can also access the properties of the "unwrapped node" through ``post._persisted_obj.props``. See the Neo4j::Core API for more details about working with CypherNode objects.
+    property :title
+  end
+
+  Post.create(title: 'My Post', secret_val: 123)
+  post = Post.first
+  post.secret_val #=> NoMethodError: undefined method `secret_val`
+  post[:secret_val] #=> 123...
+
+
+In this case, simply adding the ``secret_val`` property to your model will make it available through the ``secret_val`` method.
+The module supports undeclared properties in the following methods: `new`, `create`, `[]`, `[]=`, `update_attribute`, `update_attribute!`, `update_attributes` and their corresponding aliases.
 
 Types and Conversion
 ____________________
