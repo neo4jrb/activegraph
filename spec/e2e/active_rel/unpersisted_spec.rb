@@ -124,7 +124,8 @@ describe 'ActiveRel unpersisted handling' do
 
       it 'triggers only the unpersisted before_create callback' do
         expect(to_node).not_to receive(:run_callbacks)
-        expect(from_node).to receive(:run_callbacks).and_call_original
+        callback_count = ActiveSupport.respond_to?(:version) ? 1 : 3
+        expect(from_node).to receive(:run_callbacks).exactly(callback_count).times.and_call_original
         expect { rel.save }.to change { from_node.persisted? }
       end
 
