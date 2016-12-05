@@ -221,6 +221,10 @@ describe 'Neo4j::ActiveNode' do
           attr_reader :"before_#{verb}_called", :"after_#{verb}_called"
         end
 
+        %w(update_commit create_commit destroy_commit).each do |verb|
+          attr_reader :"after_#{verb}_called"
+        end
+
         attr_reader :after_find_called, :after_initialize_called
 
         property :name
@@ -238,6 +242,10 @@ describe 'Neo4j::ActiveNode' do
         after_destroy { @after_destroy_called = true }
         before_validation { @before_validation_called = true }
         after_validation { @after_validation_called = true }
+
+        after_create_commit { @after_create_commit_called = true }
+        after_update_commit { @after_update_commit_called = true }
+        after_destroy_commit { @after_destroy_commit_called = true }
       end
     end
 
@@ -278,6 +286,10 @@ describe 'Neo4j::ActiveNode' do
       it 'handles destroy callbacks' do
         expect { c.destroy }.to change { true_results?(c, :destroy) }
       end
+
+      include_context 'after_commit', transactions_count: 0
+      include_context 'after_commit', transactions_count: 2
+      include_context 'after_commit', transactions_count: 2, fail_transaction: true
     end
 
 
