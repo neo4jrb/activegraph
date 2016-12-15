@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [8.0.0] 2016-12-14
+
+NO CHANGES FROM 8.0.0.rc.3
+
 ## [8.0.0.rc.3] 2016-10-12
 
 ### Changed
