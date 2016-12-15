@@ -5,7 +5,7 @@ module Neo4j
         def each(node = true, rel = nil, &block)
           return super if with_associations_spec.size.zero?
 
-          query_from_association_spec.pluck(identity, with_associations_return_clause).map do |record, eager_data|
+          query_from_association_spec.pluck(identity, "[#{with_associations_return_clause}]").map do |record, eager_data|
             eager_data.each_with_index do |eager_records, index|
               record.association_proxy(with_associations_spec[index]).cache_result(eager_records)
             end
@@ -16,10 +16,6 @@ module Neo4j
 
         def with_associations_spec
           @with_associations_spec ||= []
-        end
-
-        def with_associations_return_clause
-          '[' + with_associations_spec.map { |n| "collect(#{n})" }.join(',') + ']'
         end
 
         def with_associations(*spec)
@@ -39,14 +35,25 @@ module Neo4j
 
         private
 
-        def query_from_association_spec
-          with_associations_spec.inject(query_as(identity).return(identity)) do |query, association_name|
-            association = model.associations[association_name]
+        def with_associations_return_clause(variables = with_associations_spec)
+          variables.map { |n| "#{n}_collection" }.join(',')
+        end
 
-            query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}")
-              .where(association.target_where_clause)
-              .break
-          end
+        def query_from_association_spec
+          previous_with_variables = []
+          with_associations_spec.inject(query_as(identity).with(identity)) do |query, association_name|
+            with_association_query_part(query, association_name, previous_with_variables).tap do
+              previous_with_variables << association_name
+            end
+          end.return(identity)
+        end
+
+        def with_association_query_part(base_query, association_name, previous_with_variables)
+          association = model.associations[association_name]
+
+          base_query.optional_match("#{identity}#{association.arrow_cypher}#{association_name}")
+            .where(association.target_where_clause)
+            .with(identity, "collect(#{association_name}) AS #{association_name}_collection", *with_associations_return_clause(previous_with_variables))
         end
       end
     end
