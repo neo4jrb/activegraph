@@ -125,10 +125,10 @@ Some examples:
   # Rails config/application.rb, config/environments/development.rb, etc...
 
   # Before
-  config.neo4j.session.type = :server_db
-  config.neo4j.session.url = 'http://localhost:7474'
+  config.neo4j.session_type = :server_db
+  config.neo4j.session_url = 'http://localhost:7474'
 
-  # AFter
+  # After
   config.neo4j.session.type = :http # or :bolt
   config.neo4j.session.url = 'http://localhost:7474'
 
