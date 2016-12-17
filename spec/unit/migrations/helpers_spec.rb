@@ -54,14 +54,14 @@ describe Neo4j::Migrations::Helpers do
   describe '#add_labels' do
     it 'adds labels to a node' do
       add_labels :Book, [:Item, :Readable]
-      expect(Book.first.labels).to eq([:Book, :Item, :Readable])
+      expect(Book.first.labels).to match_array([:Book, :Item, :Readable])
     end
   end
 
   describe '#remove_labels' do
     it 'removes labels from a node' do
       add_label :Book, :Item
-      expect(Book.first.labels).to eq([:Book, :Item])
+      expect(Book.first.labels).to match_array([:Book, :Item])
       remove_label :Book, :Item
       expect(Book.first.labels).to eq([:Book])
     end
