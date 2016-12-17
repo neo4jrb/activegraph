@@ -141,7 +141,7 @@ Previously a connection with be established with ``Neo4j::Session.open`` and the
 
 .. code-block:: ruby
 
-  adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474')
+  adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474', wrap_level: :proc)
 
   session = Neo4j::Core::CypherSession.new(adaptor)
 
@@ -156,7 +156,7 @@ If you are using multiple threads, you should use the `on_establish_session` met
 .. code-block:: ruby
 
   Neo4j::ActiveBase.on_establish_session do
-    adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474')
+    adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474', wrap_level: :proc)
 
     Neo4j::Core::CypherSession.new(adaptor)
   end
