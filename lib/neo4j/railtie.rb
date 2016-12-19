@@ -36,10 +36,6 @@ module Neo4j
       config.i18n.load_path += Dir[File.join(File.dirname(__FILE__), '..', '..', '..', 'config', 'locales', '*.{rb,yml}')]
     end
 
-    rake_tasks do
-      load 'neo4j/tasks/migration.rake'
-    end
-
     console do
       Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
     end
