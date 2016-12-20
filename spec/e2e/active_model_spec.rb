@@ -278,6 +278,10 @@ describe 'Neo4j::ActiveNode' do
       it 'handles destroy callbacks' do
         expect { c.destroy }.to change { true_results?(c, :destroy) }
       end
+
+      include_context 'after_commit', :c, transactions_count: 0
+      include_context 'after_commit', :c, transactions_count: 2
+      include_context 'after_commit', :c, transactions_count: 2, fail_transaction: true
     end
 
 

@@ -11,6 +11,7 @@ module Neo4j
         include ActiveModel::Validations::Callbacks
         # after_find is triggered by the `find` method defined in lib/neo4j/active_node/id_property.rb
         define_model_callbacks :initialize, :find, only: :after
+        define_model_callbacks :create_commit, :update_commit, :destroy_commit, only: :after
         define_model_callbacks :save, :create, :update, :destroy, :touch
       end
 
@@ -20,6 +21,7 @@ module Neo4j
 
       def destroy #:nodoc:
         tx = Neo4j::ActiveBase.new_transaction
+        tx.root.after_commit { run_callbacks(:destroy_commit) {} }
         run_callbacks(:destroy) { super }
       rescue
         @_deleted = false
@@ -49,13 +51,15 @@ module Neo4j
       end
 
       def create_model #:nodoc:
-        self.class.run_transaction do
+        self.class.run_transaction do |tx|
+          tx.root.after_commit { run_callbacks(:create_commit) {} }
           run_callbacks(:create) { super }
         end
       end
 
       def update_model(*) #:nodoc:
-        self.class.run_transaction do
+        self.class.run_transaction do |tx|
+          tx.root.after_commit { run_callbacks(:update_commit) {} }
           run_callbacks(:update) { super }
         end
       end
