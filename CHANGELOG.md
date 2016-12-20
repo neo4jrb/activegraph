@@ -5,11 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [8.0.1] 2016-12-20
+
+### Fixed
+
+- Use UTC timezone for timestamps on migration files
+
 ## [8.0.0] 2016-12-14
 
-NO CHANGES FROM 8.0.0.rc.3
+NO CHANGES FROM 8.0.0.rc.4
 
-## [8.0.0.rc.3] 2016-10-12
+## [8.0.0.rc.4] 2016-10-12
 
 ### Changed
 
