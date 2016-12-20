@@ -1,4 +1,15 @@
-shared_context 'after_commit' do |options|
+shared_context 'after_commit' do |company_variable, options|
+  before(:each) do
+    %w(update create destroy).each do |verb|
+      Company.send(:attr_reader, :"after_#{verb}_commit_called")
+    end
+
+    Company.after_create_commit { @after_create_commit_called = true }
+    Company.after_update_commit { @after_update_commit_called = true }
+    Company.after_destroy_commit { @after_destroy_commit_called = true }
+  end
+
+  let(:company) { send(company_variable) }
   let(:transactions_count) { options[:transactions_count] }
   let(:fail_transaction) { options[:fail_transaction] }
 
@@ -10,36 +21,36 @@ shared_context 'after_commit' do |options|
     company = Company.new
 
     if transactions.empty?
-      expect { company.save }.to change { c.after_create_commit_called }
+      expect { company.save }.to change { company.after_create_commit_called }
     else
       company.save
       transactions.last.mark_failed if fail_transaction
       close_inner_transactions!
-      expect { transactions.first.close }.send(to_or_not_to, change { c.after_create_commit_called })
+      expect { transactions.first.close }.send(to_or_not_to, change { company.after_create_commit_called })
     end
   end
 
   it 'handles after_update_commit callbacks' do
-    c
+    company
     if transactions.empty?
-      expect { c.update(name: 'some') }.to change { c.after_update_commit_called }
+      expect { company.update(name: 'some') }.to change { company.after_update_commit_called }
     else
-      c.update(name: 'some')
+      company.update(name: 'some')
       transactions.last.mark_failed if fail_transaction
       close_inner_transactions!
-      expect { transactions.first.close }.send(to_or_not_to, change { c.after_update_commit_called })
+      expect { transactions.first.close }.send(to_or_not_to, change { company.after_update_commit_called })
     end
   end
 
   it 'handles after_destroy_commit callbacks' do
-    c
+    company
     if transactions.empty?
-      expect { c.destroy }.to change { c.after_destroy_commit_called }
+      expect { company.destroy }.to change { company.after_destroy_commit_called }
     else
-      c.destroy
+      company.destroy
       transactions.last.mark_failed if fail_transaction
       close_inner_transactions!
-      expect { transactions.first.close }.send(to_or_not_to, change { c.after_destroy_commit_called })
+      expect { transactions.first.close }.send(to_or_not_to, change { company.after_destroy_commit_called })
     end
   end
 end
