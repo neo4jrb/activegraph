@@ -6,7 +6,7 @@ require 'rails/generators/neo4j/upgrade_v8/upgrade_v8_generator'
 
 describe 'Generators' do
   around do |example|
-    Timecop.freeze(Time.parse("1990-12-10 00:00:00 -0000")) { example.run }
+    Timecop.freeze(Time.parse('1990-12-10 00:00:00 -0000')) { example.run }
   end
 
   describe Neo4j::Generators::ModelGenerator do
