@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Camelization of class names for migrations should now match the snake case of the migration file name (see #1329)
+
 ## [8.0.1] 2016-12-20
 
 ### Fixed
