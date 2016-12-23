@@ -20,10 +20,10 @@ inject_into_file 'config/application.rb', "\nrequire 'neo4j/railtie'", after: 'r
 
 yaml_data = <<YAML
 development:
-  type: server_db
+  type: http
   url: http://localhost:7474
 test:
-  type: server_db
+  type: http
   url: http://localhost:7575
 YAML
 
