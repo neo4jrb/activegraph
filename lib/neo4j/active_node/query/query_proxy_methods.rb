@@ -94,7 +94,7 @@ module Neo4j
         end
 
         def exists?(node_condition = nil, target = nil)
-          unless [Integer, String, Hash, NilClass].include?(node_condition.class)
+          unless [Integer, Fixnum, String, Hash, NilClass].include?(node_condition.class)
             fail(Neo4j::InvalidParameterError, ':exists? only accepts ids or conditions')
           end
           query_with_target(target) do |var|

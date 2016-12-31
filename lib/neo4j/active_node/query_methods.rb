@@ -2,7 +2,7 @@ module Neo4j
   module ActiveNode
     module QueryMethods
       def exists?(node_condition = nil)
-        unless [Integer, String, Hash, NilClass].include?(node_condition.class)
+        unless [Integer, Fixnum, String, Hash, NilClass].include?(node_condition.class)
           fail(Neo4j::InvalidParameterError, ':exists? only accepts ids or conditions')
         end
         query_start = exists_query_start(node_condition)
