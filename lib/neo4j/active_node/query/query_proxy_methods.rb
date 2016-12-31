@@ -94,12 +94,13 @@ module Neo4j
         end
 
         def exists?(node_condition = nil, target = nil)
-          unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
-            fail(Neo4j::InvalidParameterError, ':exists? only accepts neo_ids')
+          unless [Integer, String, Hash, NilClass].include?(node_condition.class)
+            fail(Neo4j::InvalidParameterError, ':exists? only accepts ids or conditions')
           end
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
-            start_q.query.reorder.return("COUNT(#{var}) AS count").first.count > 0
+            result = start_q.query.reorder.return("ID(#{var}) AS found_ids LIMIT 1").first
+            !!result && result.found_ids > 0
           end
         end
 
@@ -284,6 +285,8 @@ module Neo4j
             self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
           when Hash
             self.where(condition.keys.first => condition.values.first)
+          when String
+            self.where(model.primary_key => condition)
           else
             self
           end

@@ -2,12 +2,13 @@ module Neo4j
   module ActiveNode
     module QueryMethods
       def exists?(node_condition = nil)
-        unless node_condition.is_a?(Integer) || node_condition.is_a?(Hash) || node_condition.nil?
+        unless [Integer, String, Hash, NilClass].include?(node_condition.class)
           fail(Neo4j::InvalidParameterError, ':exists? only accepts ids or conditions')
         end
         query_start = exists_query_start(node_condition)
         start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
-        start_q.return('COUNT(n) AS count').first.count > 0
+        result = start_q.return('ID(n) AS found_ids LIMIT 1').first
+        !!result && result.found_ids > 0
       end
 
       # Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -54,6 +55,8 @@ module Neo4j
         case node_condition
         when Integer
           self.query_as(:n).where('ID(n)' => node_condition)
+        when String
+          self.query_as(:n).where(n: {primary_key => node_condition})
         when Hash
           self.where(node_condition.keys.first => node_condition.values.first)
         else
