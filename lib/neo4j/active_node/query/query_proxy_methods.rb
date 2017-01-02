@@ -99,8 +99,8 @@ module Neo4j
           end
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
-            result = start_q.query.reorder.return("ID(#{var}) AS found_ids LIMIT 1").first
-            !!result && result.found_ids > 0
+            result = start_q.query.reorder.return("ID(#{var}) AS proof_of_life LIMIT 1").first
+            !!result
           end
         end
 

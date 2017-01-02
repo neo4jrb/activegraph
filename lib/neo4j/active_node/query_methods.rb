@@ -7,8 +7,8 @@ module Neo4j
         end
         query_start = exists_query_start(node_condition)
         start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
-        result = start_q.return('ID(n) AS found_ids LIMIT 1').first
-        !!result && result.found_ids > 0
+        result = start_q.return('ID(n) AS proof_of_life LIMIT 1').first
+        !!result
       end
 
       # Returns the first node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
