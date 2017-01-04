@@ -10,7 +10,7 @@ module Neo4j
       def open_neo4j_session(type, url_or_path, wait_for_connection = false, options = {})
         enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(type)
 
-        adaptor = wait_for_value(wait_for_connection) do
+        adaptor = wait_for_value(wait_for_connection, Neo4j::Core::CypherSession::ConnectionFailedError) do
           cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc))
         end
 
@@ -51,16 +51,16 @@ module Neo4j
         RUBY_PLATFORM =~ /java/
       end
 
-      def wait_for_value(wait)
-        session = nil
+      def wait_for_value(wait, exception_class)
+        value = nil
         Timeout.timeout(60) do
-          until session
+          until value
             begin
-              if session = yield
+              if value = yield
                 puts
-                return session
+                return value
               end
-            rescue Neo4j::Core::CypherSession::ConnectionFailedError
+            rescue exception_class => e
               raise e if !wait
 
               putc '.'
