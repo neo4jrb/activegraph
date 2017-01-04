@@ -62,7 +62,8 @@ module Neo4j
     end
 
     def setup!(neo4j_config = empty_config)
-      type, url, path, options, wait_for_connection = final_config!(neo4j_config).values_at(:type, :url, :path, :options, :wait_for_connection)
+      wait_for_connection = neo4j_config.wait_for_connection
+      type, url, path, options = final_session_config!(neo4j_config).values_at(:type, :url, :path, :options)
       register_neo4j_cypher_logging(type || default_session_type)
 
       Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
@@ -71,7 +72,7 @@ module Neo4j
                                                options || {})
     end
 
-    def final_config!(neo4j_config)
+    def final_session_config!(neo4j_config)
       support_deprecated_session_configs!(neo4j_config)
 
       neo4j_config.session.empty? ? yaml_config_data : neo4j_config.session
