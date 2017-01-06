@@ -122,12 +122,6 @@ module Neo4j
       end.detect(&:exist?)
     end
 
-    TYPE_SUBSCRIBERS = {
-      http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
-      bolt: Neo4j::Core::CypherSession::Adaptors::Bolt.method(:subscribe_to_request),
-      embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
-    }
-
     def register_neo4j_cypher_logging(session_type)
       return if @neo4j_cypher_logging_registered
 
@@ -137,9 +131,23 @@ module Neo4j
         (Neo4j::Config[:logger] ||= Rails.logger).debug message
       end
       Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
-      TYPE_SUBSCRIBERS[session_type.to_sym].call(&logger_proc)
+      subscribe_to_session_type_logging!(session_type, logger_proc)
 
       @neo4j_cypher_logging_registered = true
+    end
+
+    TYPE_SUBSCRIBERS = {
+      http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
+      bolt: Neo4j::Core::CypherSession::Adaptors::Bolt.method(:subscribe_to_request),
+      embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
+    }
+
+    def subscribe_to_session_type_logging!(session_type, logger_proc)
+      if TYPE_SUBSCRIBERS.key?(session_type.to_sym)
+        TYPE_SUBSCRIBERS[session_type.to_sym].call(&logger_proc)
+      else
+        fail ArgumentError, "Invalid session type: #{session_type.inspect} (expected one of #{TYPE_SUBSCRIBERS.keys.inspect})"
+      end
     end
   end
 end

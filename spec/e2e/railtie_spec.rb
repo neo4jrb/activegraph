@@ -13,17 +13,35 @@ module Rails
 
     describe '#setup!' do
       let(:session_path) {}
+      let(:session_type) {}
       let(:cfg) do
         ActiveSupport::OrderedOptions.new.tap do |c|
           c.session = ActiveSupport::OrderedOptions.new
           c.session.path = session_path if session_path
+          c.session.type = session_type if session_type
         end
       end
+
+      let(:raise_expectation) { [:not_to, raise_error] }
 
       before do
         stub_const('Neo4j::SessionManager', spy('Neo4j::SessionManager'))
 
-        Neo4j::Railtie.setup!(cfg)
+        expect do
+          Neo4j::Railtie.setup!(cfg)
+        end.send(*raise_expectation)
+      end
+
+      describe 'errors' do
+        let(:raise_expectation) { [:to, raise_error(ArgumentError, 'Invalid session type: :foo (expected one of [:http, :bolt, :embedded])')] }
+        let_context(session_type: :foo) do
+          it { 1 }
+        end
+      end
+
+      let_context(session_type: :http) do
+        # Expect to not raise
+        it { 1 }
       end
 
       let_context(session_path: 'http://user:password@localhost:7474') do
