@@ -32,6 +32,8 @@ Contents:
 
    Migrations
 
+   Miscellany
+
    Contributing
 
    AdditionalResources
