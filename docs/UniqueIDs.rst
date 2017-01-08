@@ -43,16 +43,19 @@ Even if using internal Neo4j ids is not recommended, you can configure your mode
 A note regarding constraints
 ----------------------------
 
-By default, a uniqueness constraint will be set for all ID properties. To disable this, you can call ``id_property`` with the ``constraint: false`` option.
+A constraint is required for the ``id_property`` of an ``ActiveNode`` model.  To create constraints, you can run the following command:
 
-.. code-block:: ruby
+.. code-block:: bash
 
-    class Student
-      include Neo4j::ActiveNode
-      id_property :uuid, auto: :uuid, constraint: :false
-    end
+  rake neo4j:generate_schema_migration[constraint,Model,uuid]
 
-Of course, you can also use ``on: :method_name``. Omitting the ``constraint`` option will set a constraint.
+Replacing ``Model`` with your model name and ``uuid`` with another ``id_property`` if you have specified something else.  When you are ready you can run the migrations:
+
+.. code-block:: bash
+
+  rake neo4j:migrate
+
+If you forget to do this, an exception will be raised giving you the appropriate command to generate the migration.
 
 Adding IDs to Existing Data
 ---------------------------
@@ -82,7 +85,7 @@ It will load the model, find its given ID property and generation method, and po
 Working with Legacy Schemas
 ---------------------------
 
-If you already were using uuids, give yourself a pat on the back. Unfortunately, you may run into problems with Neo4j.rb v3. Why? By default Neo4j.rb creates a uuid index and a uuid unique constraint on every `ActiveNode`. You can change the name of the uuid by adding ``id_property`` as shown above. But, either way, you're getting ``uuid`` as a shadow index for your nodes.
+If you already were using uuids, give yourself a pat on the back. Unfortunately, you may run into problems with Neo4j.rb v3. Why? By default Neo4j.rb requires a uuid index and a uuid unique constraint on every `ActiveNode`. You can change the name of the uuid by adding ``id_property`` as shown above. But, either way, you're getting ``uuid`` as a shadow index for your nodes.
 
 If you had a property called ``uuid``, you'll have to change it or remove it since ``uuid`` is now a reserved word. If you want to keep it, your indexes will have to match the style of the default ``id_property`` (uuid index and unique).
 
