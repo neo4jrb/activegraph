@@ -73,7 +73,8 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 ## Modern (3.x/4.X) Documentation
 
 * [Website](http://neo4jrb.io/) (for an introduction)
-* [Wiki](https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction)
+* [readthedocs](http://neo4jrb.readthedocs.io/)
+* **Note:** Our GitHub Wiki pages have outdated information.  We are in the process of moving all documentation to [readthedocs](http://neo4jrb.readthedocs.io/)
 
 ## Legacy (2.x) Documentation
 
