@@ -9,7 +9,7 @@ There are a number of ways to find and return nodes.
 ``.find``
 ~~~~~~~~~
 
-Find an object by `id_property` **(TODO: LINK TO id_property documentation)**
+Find an object by :doc:`id_property <UniqueIDs>`
 
 ``.find_by``
 ~~~~~~~~~~~~
@@ -131,12 +131,28 @@ In the above example, ``lesson`` would be saved and the relationship would be cr
 Parameters
 ~~~~~~~~~~
 
-If you need to use a string in where, you should set the parameter manually.
+Neo4j supports parameters which have a number of advantages:
+
+ * You don't need to worry about injection attacks when a value is passed as a parameter
+ * There is no need to worry about escaping values for parameters
+ * If only the values that you are passing down for a query change, using parameters keeps the query string the same and allows Neo4j to cache the query execution
+
+The Neo4j.rb project gems try as much as possible to use parameters.  For example, if you call ``where`` with a Hash:
+
+.. code-block:: ruby
+
+  Student.all.where(age: 20)
+
+A parameter will be automatically created for the value passed in.
+
+Don't assume that all methods use parameters.  Always check the resulting query!
+
+You can also specify parameters yourself with the ``params`` method like so:
 
 .. code-block:: ruby
 
   Student.all.where("s.age < {age} AND s.name = {name} AND s.home_town = {home_town}")
-    .params(age: params[:age], name: params[:name], home_town: params[:home_town])
+    .params(age: 24, name: 'James', home_town: 'Dublin')
     .pluck(:s)
 
 Variable-length relationships
@@ -210,8 +226,11 @@ The ``neo4j-core`` gem provides a ``Query`` class which can be used for building
   Neo4j::Session.current.query # Get a new Query object
 
   # Get a Query object based on a scope
-  Student.query_as(:s)
+  Student.query_as(:s) # For a
   student.lessons.query_as(:l)
+
+  # ... and based on an object:
+  student.query_as(:s)
 
 The ``Query`` class has a set of methods which map directly to Cypher clauses and which return another ``Query`` object to allow chaining.  For example:
 
@@ -295,7 +314,7 @@ Orm_Adapter
 You can also use the orm_adapter API, by calling #to_adapter on your class. See the API, https://github.com/ianwhite/orm_adapter
 
 Find or Create By...
---------------
+--------------------
 
 QueryProxy has a ``find_or_create_by`` method to make the node rel creation process easier. Its usage is simple:
 
