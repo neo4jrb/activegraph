@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Removed `before` and `after` callback options from assoications (model callbacks still exist)
+
 ## [8.0.5] 2016-01-05
 
 ### Fixed

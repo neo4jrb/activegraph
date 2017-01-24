@@ -217,50 +217,6 @@ describe 'has_many' do
     end
   end
 
-  describe 'callbacks' do
-    before do
-      stub_active_node_class('ClazzC') do
-        property :name
-
-        has_many :out, :knows, type: nil, model_class: self, before: :before_callback
-        has_many :in, :knows_me, origin: :knows, model_class: self, after: :after_callback
-        has_many :in, :will_fail, origin: :knows, model_class: self, before: :false_callback
-
-        def before_callback(_other)
-        end
-
-        def after_callback(_other)
-        end
-
-        def false_callback(_other)
-          false
-        end
-      end
-    end
-
-    let(:node) { Person.create }
-    let(:friend1) { Person.create }
-    let(:friend2) { Person.create }
-
-    let(:callback_friend1) { ClazzC.create }
-    let(:callback_friend2) { ClazzC.create }
-
-    it 'calls before_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:before_callback).with(callback_friend2) { expect(callback_friend1.knows.to_a.size).to eq(0) }
-      callback_friend1.knows << callback_friend2
-    end
-
-    it 'calls after_callback when node added to #knows association' do
-      expect(callback_friend1).to receive(:after_callback).with(callback_friend2) { expect(callback_friend2.knows.to_a.size).to eq(1) }
-      callback_friend1.knows_me << callback_friend2
-    end
-
-    it 'prevents the association from being created if before returns "false" explicitly' do
-      callback_friend1.will_fail << callback_friend2
-      expect(callback_friend1.knows_me.to_a.size).to eq 0
-    end
-  end
-
   describe 'model_class' do
     before(:each) do
       mc = model_class
