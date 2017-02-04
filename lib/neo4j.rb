@@ -101,6 +101,8 @@ module Neo4j
   autoload :Migration
 end
 
+load 'neo4j/tasks/migration.rake'
+
 require 'neo4j/active_node/orm_adapter'
 if defined?(Rails)
   require 'rails/generators'

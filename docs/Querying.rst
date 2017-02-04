@@ -85,6 +85,20 @@ Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relat
 
     <iframe width="560" height="315" src="https://www.youtube.com/embed/pUAl9ov22j4" frameborder="0" allowfullscreen></iframe>
 
+Branching
+~~~~~~~~~
+
+When making association chains with ``ActiveNode`` you can use the ``branch`` method to go down one path before jumping back to continue where you started from.  For example:
+
+.. code-block:: ruby
+
+  # Finds all exams for the student's lessons where there is a teacher who's age is greater than 34
+  student.lessons.branch { teachers.where('t.age > 34') }.exams
+
+  # Similar to the Cypher:
+  # MATCH (s:Student)-[:HAS_LESSON]->(lesson:Lesson)<-[:TEACHES]-(:Teacher), (lesson)<-[:FOR_LESSON]-(exam:Exam)
+  # RETURN exam
+
 Associations and Unpersisted Nodes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
