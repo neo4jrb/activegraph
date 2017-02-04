@@ -9,7 +9,7 @@ if !defined?(Rails) && !Rake::Task.task_defined?('environment')
     neo4j_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
     $:.unshift File.dirname('./')
     Neo4j::ActiveBase.on_establish_session do
-      type = neo4j_url.match(/^bolt/) ? :bolt : http
+      type = neo4j_url.match(/^bolt/) ? :bolt : :http
       Neo4j::SessionManager.open_neo4j_session(type, neo4j_url)
     end
   end
