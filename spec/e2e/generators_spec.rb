@@ -5,8 +5,8 @@ require 'rails/generators/neo4j/migration/migration_generator'
 require 'rails/generators/neo4j/upgrade_v8/upgrade_v8_generator'
 
 describe 'Generators' do
-  before do
-    allow(Time).to receive(:zone).and_return(double(now: Time.parse('10/12/1990')))
+  around do |example|
+    Timecop.freeze(Time.parse('1990-12-10 00:00:00 -0000')) { example.run }
   end
 
   describe Neo4j::Generators::ModelGenerator do

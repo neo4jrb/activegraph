@@ -32,6 +32,10 @@ Contents:
 
    Migrations
 
+   Testing
+
+   Miscellany
+
    Contributing
 
    AdditionalResources

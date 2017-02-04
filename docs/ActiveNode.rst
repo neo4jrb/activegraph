@@ -332,6 +332,27 @@ You can create associations
 
     comment.post = post1                  # Removes all existing relationships
 
+Dependent Associations
+~~~~~~~~~~~~~~~~~~~~~~
+
+Similar to ActiveRecord, you can specify four ``dependent`` options when declaring an association.
+
+.. code-block:: ruby
+
+    class Route
+      include Neo4j::ActiveNode
+      has_many :out, :stops, type: :STOPPING_AT, dependent: :delete_orphans
+    end
+
+The available options are:
+
+* ``:delete``, which will delete all associated records in Cypher. Callbacks will not be called. This is the fastest method.
+* ``:destroy``, which will call ``each`` on the association and then ``destroy`` on each related object. Callbacks will be called. Since this happens in Ruby, it can be a very expensive procedure, so use it carefully.
+* ``:delete_orphans``, which will delete only the associated records that have no other relationships of the same type.
+* ``:destroy_orphans``, same as above, but it takes place in Ruby.
+
+The two orphan-destruction options are unique to Neo4j.rb. As an example of when you'd use them, imagine you are modeling tours, routes, and stops along those routes. A tour can have multiple routes, a route can have multiple stops, a stop can be in multiple routes but must have at least one. When a route is destroyed, ``:delete_orphans`` would delete only those related stops that have no other routes.
+
 .. seealso::
 
   .. raw:: html

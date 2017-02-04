@@ -3,13 +3,41 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [8.0.5] 2016-01-05
+
+### Fixed
+
+- When invalid session type is given, an exception will be raised to aid debugging (see #1335 / thanks @Joshfindit)
+
+## [8.0.4] 2016-01-03
+
+### Fixed
+
+- Fixed/refactored `wait_for_connection`
+
+## [8.0.3] 2016-01-03
+
+### Fixed
+
+- Fixed/refactored `wait_for_connection`
+
+## [8.0.2] 2016-12-22
+
+### Fixed
+
+- Camelization of class names for migrations should now match the snake case of the migration file name (see #1329)
+
+## [8.0.1] 2016-12-20
+
+### Fixed
+
+- Use UTC timezone for timestamps on migration files
 
 ## [8.0.0] 2016-12-14
 
-NO CHANGES FROM 8.0.0.rc.3
+NO CHANGES FROM 8.0.0.rc.4
 
-## [8.0.0.rc.3] 2016-10-12
+## [8.0.0.rc.4] 2016-10-12
 
 ### Changed
 

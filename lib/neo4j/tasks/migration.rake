@@ -106,7 +106,7 @@ namespace :neo4j do
     fail 'Label must be specified' if label.blank?
     fail 'Property name must be specified' if property_name.blank?
 
-    migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}".gsub('::', '')
+    migration_class_name = "ForceCreate#{label.camelize}#{property_name.camelize}#{index_or_constraint.capitalize}".gsub('::', '').underscore.camelize
 
     require 'fileutils'
     FileUtils.mkdir_p('db/neo4j/migrate')

@@ -3,7 +3,12 @@ Rake Tasks
 
 The ``neo4j-core`` gem (automatically included with the ``neo4j`` gem) includes some rake tasks which make it easy to install and manage a Neo4j server in the same directory as your Ruby project.
 
+.. warning::
+
+  Setting up a Neo4j server with the rake tasks below will disable authentication and is thus most useful for development and test environments.  Note that installing Neo4j on production can be as straightforward as downloading, unzipping, and starting your server.
+
 .. note::
+
   If you are using zsh, you need to prefix any rake tasks with arguments with the noglob command, e.g. ``$ noglob bundle exec rake neo4j:install[community-latest]``.
 
 .. glossary::
