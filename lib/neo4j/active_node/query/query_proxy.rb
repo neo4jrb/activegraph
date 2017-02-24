@@ -31,7 +31,7 @@ module Neo4j
         # @param [Hash] options Additional options pertaining to the QueryProxy object. These may include:
         # @option options [String, Symbol] :node_var A string or symbol to be used by Cypher within its query string as an identifier
         # @option options [String, Symbol] :rel_var Same as above but pertaining to a relationship identifier
-        # @option options [Range, Fixnum, Symbol, Hash] :rel_length A Range, a Fixnum, a Hash or a Symbol to indicate the variable-length/fixed-length
+        # @option options [Range, Integer, Symbol, Hash] :rel_length A Range, a Integer, a Hash or a Symbol to indicate the variable-length/fixed-length
         #   qualifier of the relationship. See http://neo4jrb.readthedocs.org/en/latest/Querying.html#variable-length-relationships.
         # @option options [Neo4j::Session] :session The session to be used for this query
         # @option options [Neo4j::ActiveNode] :source_object The node instance at the start of the QueryProxy chain

@@ -396,7 +396,7 @@ describe 'has_many' do
       end
     end
 
-    context 'as Fixnum' do
+    context 'as Integer' do
       it 'returns related nodes at exactly `length` hops from start node' do
         expect(node.knows(:n, :r, rel_length: 1).to_a).to match_array([friend1])
         expect(node.knows(:n, :r, rel_length: 2).to_a).to match_array([friend2])
