@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.7] 2016-02-24
+
+### Fixed
+
+- Fix Ruby 2.4 deprecations re: Integer (see #1360 / thanks @jboler)
+
 ## [8.0.6] 2016-02-04
 
 ### Fixed
