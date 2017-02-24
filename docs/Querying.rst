@@ -196,7 +196,7 @@ There are many ways to provide the length information to generate all the variou
 
 .. code-block:: ruby
 
-  # As a Fixnum:
+  # As a Integer:
   ## Cypher: -[:`FRIENDS`*2]->
   student.friends(rel_length: 2)
 
