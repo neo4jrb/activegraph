@@ -11,7 +11,7 @@ module Neo4j
       # timestamp inclusion.
       # @return [Boolean] the true/false value specified.
 
-      # @return [Fixnum] The location of the default configuration file.
+      # @return [Integer] The location of the default configuration file.
       def default_file
         @default_file ||= DEFAULT_FILE
       end

@@ -454,7 +454,7 @@ module Neo4j::ActiveNode
 
           # Return all results if a variable-length relationship length was given
           association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
-          if options[:rel_length] && !options[:rel_length].is_a?(Fixnum)
+          if options[:rel_length] && !options[:rel_length].is_a?(Integer)
             association_proxy
           else
             target_class = self.class.send(:association_target_class, name)

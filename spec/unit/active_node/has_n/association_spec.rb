@@ -157,7 +157,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           end
         end
 
-        context 'as Fixnum' do
+        context 'as Integer' do
           context 'positive' do
             let(:length) { 42 }
 
@@ -235,7 +235,7 @@ describe Neo4j::ActiveNode::HasN::Association do
           let(:length) { 'any' }
 
           it 'raises an error' do
-            expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length ("any"): should be a Symbol, Fixnum, Range or Hash'
+            expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length ("any"): should be a Symbol, Integer, Range or Hash'
           end
         end
 
@@ -353,10 +353,10 @@ describe Neo4j::ActiveNode::HasN::Association do
       end
 
       context 'target_class_names defines class which exists, but is not ActiveNode' do
-        let(:options) { {type: nil, model_class: 'Fixnum'} }
+        let(:options) { {type: nil, model_class: 'Integer'} }
 
         context 'with invalid target class name' do
-          it { expect { subject }.to raise_error ArgumentError, /Fixnum.* is not an ActiveNode model/ }
+          it { expect { subject }.to raise_error ArgumentError, /Integer.* is not an ActiveNode model/ }
         end
       end
     end

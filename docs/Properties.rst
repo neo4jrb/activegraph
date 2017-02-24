@@ -71,7 +71,6 @@ The ``type`` option has some interesting qualities that are worth being aware of
 
 - String
 - Integer
-- Fixnum
 - BigDecimal
 - Date
 - Time
