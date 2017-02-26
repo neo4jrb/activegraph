@@ -103,15 +103,6 @@ module Neo4j
           @target_class = class_const
         end
 
-        def callback(type)
-          @callbacks[type]
-        end
-
-        def perform_callback(caller, other_node, type)
-          return if callback(type).nil?
-          caller.send(callback(type), other_node)
-        end
-
         def relationship_type(create = false)
           case
           when relationship_class
@@ -191,7 +182,6 @@ module Neo4j
           @relationship_type = options[:type] && options[:type].to_sym
 
           @model_class = options[:model_class]
-          @callbacks = {before: options[:before], after: options[:after]}
           @origin = options[:origin] && options[:origin].to_sym
           @dependent = options[:dependent].try(:to_sym)
           @unique = options[:unique]

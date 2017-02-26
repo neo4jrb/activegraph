@@ -201,13 +201,9 @@ module Neo4j
             other_nodes.each do |other_node|
               other_node.save unless other_node.neo_id
 
-              return false if @association.perform_callback(@start_object, other_node, :before) == false
-
               @start_object.association_proxy_cache.clear
 
               _create_relationship(other_node, properties)
-
-              @association.perform_callback(@start_object, other_node, :after)
             end
           end
         end
@@ -258,6 +254,7 @@ module Neo4j
           self.clone.tap do |new_query_proxy|
             new_query_proxy.instance_variable_set('@result_cache', nil)
             new_query_proxy.instance_variable_set('@node_var', node_var) if node_var
+            new_query_proxy.instance_variable_set('@distinct', @distinct) if @distinct
           end
         end
 
