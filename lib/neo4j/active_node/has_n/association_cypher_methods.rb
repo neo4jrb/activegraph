@@ -53,7 +53,7 @@ module Neo4j
 
           case length
           when Symbol then VALID_REL_LENGTH_SYMBOLS[length]
-          when Fixnum then "*#{length}"
+          when Integer then "*#{length}"
           when Range then cypher_for_range_rel_length(length)
           when Hash then cypher_for_hash_rel_length(length)
           end
@@ -79,11 +79,11 @@ module Neo4j
 
         def rel_length_error_message(length)
           case length
-          when Fixnum then 'cannot be negative' if length < 0
+          when Integer then 'cannot be negative' if length < 0
           when Symbol then rel_length_symbol_error_message(length)
           when Range then rel_length_range_error_message(length)
           when Hash then rel_length_hash_error_message(length)
-          else 'should be a Symbol, Fixnum, Range or Hash'
+          else 'should be a Symbol, Integer, Range or Hash'
           end
         end
 

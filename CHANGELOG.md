@@ -9,6 +9,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `before` and `after` callback options from assoications (model callbacks still exist)
 
+## [8.0.6] 2016-02-04
+
+### Fixed
+
+- Rake tasks broken without Rails (thanks @CoralineAda, @phreakocious, and @Joshfindit, see #1330, #1331, and #1353)
+
 ## [8.0.5] 2016-01-05
 
 ### Fixed
