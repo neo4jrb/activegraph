@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Removed `before` and `after` callback options from assoications (model callbacks still exist)
+- Removed `before` and `after` callback options from associations (model callbacks still exist)
 
 ## [8.0.6] 2016-02-04
 
