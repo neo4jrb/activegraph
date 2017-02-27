@@ -254,7 +254,6 @@ module Neo4j
           self.clone.tap do |new_query_proxy|
             new_query_proxy.instance_variable_set('@result_cache', nil)
             new_query_proxy.instance_variable_set('@node_var', node_var) if node_var
-            new_query_proxy.instance_variable_set('@distinct', @distinct) if @distinct
           end
         end
 
