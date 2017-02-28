@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.8] 2016-02-27
+
+### Fixed
+
+- Performance and response consistency improvements to `exists?` methods
+
 ## [8.0.7] 2016-02-24
 
 ### Fixed
