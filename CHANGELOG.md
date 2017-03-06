@@ -9,6 +9,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `before` and `after` callback options from associations (model callbacks still exist)
 
+## [8.0.8] 2016-02-27
+
+### Fixed
+
+- Performance and response consistency improvements to `exists?` methods
+
+## [8.0.7] 2016-02-24
+
+### Fixed
+
+- Fix Ruby 2.4 deprecations re: Integer (see #1360 / thanks @jboler)
+
 ## [8.0.6] 2016-02-04
 
 ### Fixed

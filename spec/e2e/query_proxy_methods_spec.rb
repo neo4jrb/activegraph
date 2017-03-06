@@ -239,17 +239,22 @@ describe 'query_proxy_methods' do
       end
 
       it 'does not fail from an ordered context' do
-        expect(Lesson.order(:name).empty?).to be_falsey
+        expect(Lesson.order(:name).empty?).to eq false
       end
 
       it 'can be called with a property and value' do
-        expect(Lesson.exists?(name: 'math')).to be_truthy
-        expect(Lesson.exists?(name: 'boat repair')).to be_falsey
+        expect(Lesson.exists?(name: 'math')).to eq true
+        expect(Lesson.exists?(name: 'boat repair')).to eq false
       end
 
       it 'can be called on the class with a neo_id' do
-        expect(Lesson.exists?(math.neo_id)).to be_truthy
-        expect(Lesson.exists?(8_675_309)).to be_falsey
+        expect(Lesson.exists?(math.neo_id)).to eq true
+        expect(Lesson.exists?(8_675_309)).to eq false
+      end
+
+      it 'can be called on a class with a primary key value' do
+        expect(Lesson.exists?(math.id)).to eq true
+        expect(Lesson.exists?('this_other_value')).to eq false
       end
 
       it 'raises an error if something other than a neo id is given' do
@@ -259,33 +264,38 @@ describe 'query_proxy_methods' do
 
     context 'QueryProxy methods' do
       it 'can be called on a query' do
-        expect(Lesson.where(name: 'history').exists?).to be_falsey
-        expect(Lesson.where(name: 'math').exists?).to be_truthy
+        expect(Lesson.where(name: 'history').exists?).to eq false
+        expect(Lesson.where(name: 'math').exists?).to eq true
       end
 
       it 'can be called with property and value' do
-        expect(jimmy.lessons.exists?(name: 'science')).to be_falsey
+        expect(jimmy.lessons.exists?(name: 'science')).to eq false
         jimmy.lessons << science
-        expect(jimmy.lessons.exists?(name: 'science')).to be_truthy
-        expect(jimmy.lessons.exists?(name: 'bomb disarming')).to be_falsey
+        expect(jimmy.lessons.exists?(name: 'science')).to eq true
+        expect(jimmy.lessons.exists?(name: 'bomb disarming')).to eq false
       end
 
       it 'can be called with a neo_id' do
-        expect(Lesson.where(name: 'math').exists?(math.neo_id)).to be_truthy
-        expect(Lesson.where(name: 'math').exists?(science.neo_id)).to be_falsey
+        expect(Lesson.where(name: 'math').exists?(math.neo_id)).to eq true
+        expect(Lesson.where(name: 'math').exists?(science.neo_id)).to eq false
+      end
+
+      it 'can be called with a primary key' do
+        expect(Lesson.where(name: 'math').exists?(math.id)).to eq true
+        expect(Lesson.where(name: 'math').exists?(science.id)).to eq false
       end
 
       it 'is called by :blank? and :empty?' do
-        expect(jimmy.lessons.blank?).to be_truthy
-        expect(jimmy.lessons.empty?).to be_truthy
+        expect(jimmy.lessons.blank?).to eq true
+        expect(jimmy.lessons.empty?).to eq true
         jimmy.lessons << science
-        expect(jimmy.lessons.blank?).to be_falsey
-        expect(jimmy.lessons.empty?).to be_falsey
+        expect(jimmy.lessons.blank?).to eq false
+        expect(jimmy.lessons.empty?).to eq false
       end
 
       it 'does not fail from an ordered context' do
-        expect(jimmy.lessons.order(:name).blank?).to be_truthy
-        expect(jimmy.lessons.order(:name).empty?).to be_truthy
+        expect(jimmy.lessons.order(:name).blank?).to eq true
+        expect(jimmy.lessons.order(:name).empty?).to eq true
       end
     end
   end
