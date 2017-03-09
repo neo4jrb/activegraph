@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.9] 2016-03-09
+
+### Fixed
+
+- Support `to_ary` on association proxies to help support serializers (thanks @gnapse / see #1362)
+
 ## [8.0.8] 2016-02-27
 
 ### Fixed
