@@ -52,6 +52,10 @@ module Neo4j::ActiveNode
       def empty?(*args)
         @deferred_objects.empty? && @enumerable.empty?(*args)
       end
+      
+      def to_ary
+        self
+      end
 
       def ==(other)
         self.to_a == other.to_a
