@@ -40,18 +40,23 @@ describe 'Association Proxy' do
     billy.favorite_lesson = math
   end
 
+  it 'allows associations to respond to to_ary' do
+    expect(billy.lessons).to respond_to(:to_ary)
+    expect(billy.lessons.exams_given).to respond_to(:to_ary)
+  end
+
   it 'Should only make one query per association' do
-    expect(billy.lessons.exams_given.to_a).to match_array([math_exam, science_exam, science_exam2])
+    expect(billy.lessons.exams_given).to match_array([math_exam, science_exam, science_exam2])
 
     expect_queries(3) do
       grouped_lessons = billy.lessons.group_by(&:subject)
 
-      expect(billy.lessons.to_a).to match_array([math, science])
-      expect(grouped_lessons['math'][0].exams_given.to_a).to eq([math_exam])
-      expect(grouped_lessons['science'][0].exams_given.to_a).to match_array([science_exam, science_exam2])
+      expect(billy.lessons).to match_array([math, science])
+      expect(grouped_lessons['math'][0].exams_given).to eq([math_exam])
+      expect(grouped_lessons['science'][0].exams_given).to match_array([science_exam, science_exam2])
 
-      expect(grouped_lessons['math'][0].students.to_a).to eq([billy])
-      expect(grouped_lessons['science'][0].students.to_a).to eq([billy])
+      expect(grouped_lessons['math'][0].students).to eq([billy])
+      expect(grouped_lessons['science'][0].students).to eq([billy])
     end
   end
 
@@ -59,11 +64,11 @@ describe 'Association Proxy' do
     expect_queries(3) do
       grouped_exams = Exam.all.group_by(&:name)
 
-      expect(grouped_exams['Science Exam'][0].students.to_a).to eq([billy])
-      expect(grouped_exams['Science Exam'][0].lessons.to_a).to eq([science])
+      expect(grouped_exams['Science Exam'][0].students).to eq([billy])
+      expect(grouped_exams['Science Exam'][0].lessons).to eq([science])
 
-      expect(grouped_exams['Math Exam'][0].students.to_a).to eq([billy])
-      expect(grouped_exams['Math Exam'][0].lessons.to_a).to eq([math])
+      expect(grouped_exams['Math Exam'][0].students).to eq([billy])
+      expect(grouped_exams['Math Exam'][0].lessons).to eq([math])
     end
   end
 

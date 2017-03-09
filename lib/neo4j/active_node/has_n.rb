@@ -53,8 +53,6 @@ module Neo4j::ActiveNode
         @deferred_objects.empty? && @enumerable.empty?(*args)
       end
 
-      alias to_ary to_a
-
       def ==(other)
         self.to_a == other.to_a
       end
@@ -123,6 +121,8 @@ module Neo4j::ActiveNode
           cache_result(nodes)
         end
       end
+
+      alias to_ary to_a
 
       QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit]
 
