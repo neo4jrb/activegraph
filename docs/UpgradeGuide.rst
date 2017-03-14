@@ -132,6 +132,16 @@ Some examples:
   config.neo4j.session.type = :http # or :bolt
   config.neo4j.session.url = 'http://localhost:7474'
 
+Also, there was a slight change in the way that you configure the internal faraday adaptor of the ``neo4j-core`` gem:
+
+  # Before 8.0.x of `neo4j` gem
+  config.neo4j.session_options = {initialize: { ssl: { verify: true }}}
+
+  # After 8.0.x of `neo4j` gem
+  config.neo4j.session.options = {faraday_options: { ssl: { verify: true }}}
+
+.. code-block:: ruby
+
 Outside of Rails
 ^^^^^^^^^^^^^^^^
 
