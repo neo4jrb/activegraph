@@ -32,13 +32,13 @@ matrix:
 
     # Testing bolt
     - rvm: 2.3.1
-      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.0.3
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.0.9
 
     # Older versions of Neo4j with latest version of Ruby
     - rvm: 2.3.1
-      env: NEO4J_VERSION=community-3.0.8
+      env: NEO4J_VERSION=community-3.0.9
     - rvm: 2.3.1
-      env: NEO4J_VERSION=community-2.3.6
+      env: NEO4J_VERSION=community-2.3.9
     - rvm: 2.3.1
       env: NEO4J_VERSION=community-2.2.10
     - rvm: 2.3.1
@@ -46,9 +46,9 @@ matrix:
 
     # Older versions of Neo4j with latest version of jRuby
     - rvm: jruby-9.0.5.0
-      env: NEO4J_VERSION=community-3.0.8
+      env: NEO4J_VERSION=community-3.0.9
     - rvm: jruby-9.0.5.0
-      env: NEO4J_VERSION=community-2.3.6
+      env: NEO4J_VERSION=community-2.3.9
     - rvm: jruby-9.0.5.0
       env: NEO4J_VERSION=community-2.2.10
     - rvm: jruby-9.0.5.0
