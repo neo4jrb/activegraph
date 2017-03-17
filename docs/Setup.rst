@@ -134,7 +134,20 @@ Configuring Faraday
   config.neo4j.session.options = {initialize: { ssl: { verify: true }}}
 
   # After 8.0.x of `neo4j` gem
-  config.neo4j.session.options = {faraday_options: { ssl: { verify: true }}}
+  # Switched to allowing a "configurator" since everything can be done there
+  config.neo4j.session.options = {
+    faraday_configurator: proc do |faraday|
+      # The default configurator uses NetHttpPersistent, so if you override the configurator you must specify this
+      faraday.use Faraday::Adapter::NetHttpPersistent
+      # Optionally you can instead specify another adaptor
+      # faraday.adapter :typhoeus
+
+      # If you need to set options which would normally be the second argument of `Faraday.new`, you can do the following:
+      faraday.options[:open_timeout] = 5
+      faraday.options[:timeout] = 65
+      faraday.options[:ssl] = { verify: true }
+    end
+  }
 
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
