@@ -166,10 +166,14 @@ If using only ``neo4j-core`` you can optionally include the rake tasks (:doc:`do
 
   # Both are optional
 
-  # This provides tasks to install/start/stop/configure Neo4j
-  load 'neo4j/rake_tasks/neo4j_server.rake'
-  # This provides tasks to have migrations
-  load 'neo4j/tasks/migration.rake'
+  # To provide tasks to install/start/stop/configure Neo4j
+  require 'neo4j/rake_tasks'
+  # Comes from the `neo4j-rake_tasks` gem
+
+
+  # It was formerly requried that you load migrations via a rake task like this:
+  # load 'neo4j/tasks/migration.rake'
+  # This is NO LONGER required.  Migrations are included automatically when requiring the `neo4j` gem.
 
 If you don't already have a server you can install one with the rake tasks from ``neo4j_server.rake``.  See the (:doc:`rake tasks documentation </RakeTasks>`) for details on how to install, configure, and start/stop a Neo4j server in your project directory.
 
