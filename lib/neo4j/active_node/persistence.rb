@@ -97,9 +97,7 @@ module Neo4j::ActiveNode
     # need to be created after the node is saved, a new transaction is started.
     def cascade_save
       self.class.run_transaction(pending_deferred_creations?) do
-        result = yield
-        process_unpersisted_nodes!
-        result
+        yield.tap { process_unpersisted_nodes! }
       end
     end
 
