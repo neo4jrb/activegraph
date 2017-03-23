@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.11] 2016-03-23
+
+### Fixed
+
+- Fix issue where an association (which hasn't been accessed) is accessed from an ActiveNode callback
+
 ## [8.0.9] 2016-03-15
 
 ### Fixed
