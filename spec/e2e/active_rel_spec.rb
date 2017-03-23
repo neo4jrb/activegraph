@@ -602,4 +602,23 @@ describe 'ActiveRel' do
 
     it_should_behave_like 'handles permitted parameters'
   end
+
+  # Regression tests
+  context 'ToClass has an unrelated association' do
+    before { ToClass.has_many :out, :randoms, type: :HAS_RANDOM, model_class: :ToClass }
+
+    context 'MyRelClass has after_create hook which refers to unrelated association' do
+      before do
+        MyRelClass.after_create :after_create_association_check
+
+        MyRelClass.send(:define_method, :after_create_association_check) do
+          to_node.randoms
+        end
+      end
+
+      it 'Should not fail' do
+        ToClass.create(others: [FromClass.create])
+      end
+    end
+  end
 end

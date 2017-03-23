@@ -28,7 +28,7 @@ module Neo4j
       private
 
       def process_unpersisted_nodes!
-        deferred_create_cache.each do |association_name, nodes|
+        deferred_create_cache.dup.each do |association_name, nodes|
           association_proxy = association_proxy(association_name)
 
           nodes.each do |node|
