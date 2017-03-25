@@ -112,6 +112,7 @@ describe 'ActiveRel' do
 
   describe '#concurrent_increment!' do
     it 'increments an attribute (concurrently)' do
+      Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
       rel1 = MyRelClass.create(from_node: from_node, to_node: to_node)
       rel2 = MyRelClass.find(rel1.neo_id)
       rel1.concurrent_increment!(:score)
