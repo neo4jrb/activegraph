@@ -40,7 +40,7 @@ module Neo4j::ActiveRel
     # @param [Symbol, String] name of the attribute to increment
     # @param [Integer, Float] amount to increment
     def concurrent_increment!(attribute, by = 1)
-      increment_by_query! query_as(:n), attribute, by
+      increment_by_query! query_as(:n), attribute, by, :r
     end
 
     def create_model
