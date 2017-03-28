@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Created `neo4j:schema:dump` and `neo4j:schema:load` rake tasks to create `schema.yml` files which can be checked into the repository for quick setup of a fresh database
+
 ### Changed
 
 - Removed `before` and `after` callback options from associations (model callbacks still exist)

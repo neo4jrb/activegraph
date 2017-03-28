@@ -19,7 +19,6 @@ namespace :neo4j do
   task :allow_migrations do
     Neo4j::Migrations.currently_running_migrations = true
   end
-
   desc 'Run a script against the database to perform system-wide changes'
   task :legacy_migrate, [:task_name, :subtask] => :environment do |_, args|
     path = Rake.original_dir
@@ -46,11 +45,63 @@ namespace :neo4j do
     Rake::Task['neo4j:migrate:all'].invoke
   end
 
+  # TODO Make sure these tasks don't run in versions of Neo4j before 3.0
+  namespace :schema do
+    SCHEMA_YAML_PATH = 'db/neo4j/schema.yml'
+
+    def check_neo4j_version_3
+      if Neo4j::ActiveBase.current_session.version > '3.0.0'
+        yield
+      else
+        puts 'WARNING: This task does not work for versions of Neo4j before 3.0.0'
+      end
+    end
+
+    desc 'Creates a db/neo4j/schema.yml file which represents the indexes / constraints in the Neo4j DB'
+    task :dump => :environment do
+      check_neo4j_version_3 do
+        require 'neo4j/migrations/schema'
+
+        schema_data = Neo4j::Migrations::Schema.fetch_schema_data(Neo4j::ActiveBase.current_session)
+
+        runner = Neo4j::Migrations::Runner.new
+        schema_data[:versions] = runner.complete_migration_versions.sort
+
+        FileUtils.mkdir_p(File.dirname(SCHEMA_YAML_PATH))
+        File.open(SCHEMA_YAML_PATH, 'w') { |file| file << schema_data.to_yaml }
+
+        puts "Dumped updated schema file to #{SCHEMA_YAML_PATH}"
+      end
+    end
+
+    desc "Loads a db/neo4j/schema.yml file into the database\nOptionally removes schema elements which aren't in the schema.yml file (defaults to false)"
+    task :load, [:remove_missing] => :environment do |t, args|
+      check_neo4j_version_3 do
+        require 'neo4j/migrations/schema'
+
+        args.with_defaults(remove_missing: false)
+
+        schema_data = YAML.load(File.read(SCHEMA_YAML_PATH))
+
+        Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
+
+        Neo4j::ActiveBase.run_transaction do
+          Neo4j::Migrations::Schema.synchronize_schema_data(Neo4j::ActiveBase.current_session, schema_data, args[:remove_missing])
+
+          runner = Neo4j::Migrations::Runner.new
+          runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
+        end
+      end
+    end
+  end
+
   namespace :migrate do
     desc 'Run all pending migrations'
     task all: [:allow_migrations, :environment] do
       runner = Neo4j::Migrations::Runner.new
       runner.all
+
+      Rake::Task['neo4j:schema:dump'].invoke
     end
 
     desc 'Run a migration given its VERSION'
@@ -58,6 +109,8 @@ namespace :neo4j do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.up version
+
+      Rake::Task['neo4j:schema:dump'].invoke
     end
 
     desc 'Revert a migration given its VERSION'
@@ -65,6 +118,8 @@ namespace :neo4j do
       version = ENV['VERSION'] || fail(ArgumentError, 'VERSION is required')
       runner = Neo4j::Migrations::Runner.new
       runner.down version
+
+      Rake::Task['neo4j:schema:dump'].invoke
     end
 
     desc 'Print a report of migrations status'
@@ -93,6 +148,8 @@ namespace :neo4j do
     steps = (ENV['STEP'] || 1).to_i
     runner = Neo4j::Migrations::Runner.new
     runner.rollback(steps)
+
+    Rake::Task['neo4j:schema:dump'].invoke
   end
 
   # Temporary to help people change to 8.0

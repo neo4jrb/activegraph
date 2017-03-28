@@ -10,6 +10,8 @@ module Neo4j
 
     class << self
       def check_for_pending_migrations!
+        return if Neo4j::Config.configuration['skip_migration_check']
+
         runner = Neo4j::Migrations::Runner.new
         pending = runner.pending_migrations
         fail ::Neo4j::PendingMigrationError, pending if pending.any?
