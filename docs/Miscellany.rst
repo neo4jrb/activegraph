@@ -29,7 +29,7 @@ Often when writing tests for Neo4j it is desirable to start with a fresh databas
   OPTIONAL MATCH (n)-[r]-()
   DELETE n,r
 
-  // For version of Neo4j before 2.3.0
+  // For version of Neo4j after 2.3.0
   // DETACH DELETE takes care of removing relationships for you
   MATCH (n) DETACH DELETE n
 
