@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.12] 2016-03-28
+
+### Fixed
+
+- Sessions in the `neo4j` gem are automatically set to have `wrap_level: :proc` to ensure that nodes and relationships are wrapped in models (even if you aren't using Rails)
+
 ## [8.0.11] 2016-03-23
 
 ### Fixed
