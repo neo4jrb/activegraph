@@ -13,6 +13,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `before` and `after` callback options from associations (model callbacks still exist)
 
+## [8.0.13] 2016-04-07
+
+### Fixed
+
+- Removed `put(s|c)` statements to avoid issues with background jobs (thanks @andyweiss1982 and @sureshblp71)
+
+## [8.0.12] 2016-03-28
+
+### Fixed
+
+- Sessions in the `neo4j` gem are automatically set to have `wrap_level: :proc` to ensure that nodes and relationships are wrapped in models (even if you aren't using Rails)
+
 ## [8.0.11] 2016-03-23
 
 ### Fixed

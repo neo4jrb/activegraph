@@ -15,7 +15,7 @@ module Neo4j
       end
 
       def establish_session
-        @establish_session_block.call if @establish_session_block
+        make_session_wrap!(@establish_session_block.call) if @establish_session_block
       end
 
       def current_transaction_or_session
@@ -28,7 +28,7 @@ module Neo4j
 
       # Should support setting session via config options
       def current_session=(session)
-        SessionRegistry.current_session = session
+        SessionRegistry.current_session = make_session_wrap!(session)
       end
 
       def current_adaptor=(adaptor)
@@ -76,6 +76,11 @@ module Neo4j
 
       def validate_model_schema!
         Neo4j::ModelSchema.validate_model_schema! unless Neo4j::Migrations.currently_running_migrations
+      end
+
+      def make_session_wrap!(session)
+        session.adaptor.instance_variable_get('@options')[:wrap_level] = :proc
+        session
       end
     end
   end
