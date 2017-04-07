@@ -149,6 +149,16 @@ Configuring Faraday
     end
   }
 
+If you are just using the ``neo4j-core`` gem, the configurator can also be set via the Neo4j HTTP adaptor.  For example:
+
+.. code-block:: ruby
+
+  require 'neo4j/core/cypher_session/adaptors/http'
+  faraday_configurator = proc do |faraday|
+    faraday.adapter :typhoeus
+  end
+  http_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://neo4j:pass@localhost:7474', faraday_configurator: faraday_configurator)
+
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
 
@@ -197,11 +207,26 @@ In jRuby you can access the data in server mode as above.  If you want to run th
 
 .. code-block:: ruby
 
-  session = Neo4j::Session.open(:embedded, '/folder/db')
-  session.start
+  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Embedded.new('/file/path/to/graph.db')
+  neo4j_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
 
 Embedded mode means that Neo4j is running inside your jRuby process.  This allows for direct access to the Neo4j Java APIs for faster and more direct querying.
 
+Using the ``neo4j`` gem (``ActiveNode`` and ``ActiveRel``) without Rails
+````````````````````````````````````````````````````````````````````````
+
+To define your own session for the ``neo4j`` gem you create a ``Neo4j::Core::CypherSession`` object and establish it as the current session for the ``neo4j`` gem with the ``ActiveBase`` module (this is done automatically in Rails):
+
+.. code-block:: ruby
+
+  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:7474')
+  Neo4j::ActiveBase.on_establish_session { Neo4j::Core::CypherSession.new(neo4j_adaptor) }
+
+You could instead use the following, but ``on_establish_session`` will establish a new session for each thread for thread-safety and thus the above is recommended in general unless you know what you are doing:
+
+.. code-block:: ruby
+
+  Neo4j::ActiveBase.current_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
 
 Heroku
 ~~~~~~
@@ -225,17 +250,4 @@ Add a Neo4j db to your application:
   Graph Story
     https://devcenter.heroku.com/articles/graphstory
     For plans: https://addons.heroku.com/graphstory
-
-Rails configuration
-^^^^^^^^^^^^^^^^^^^
-
-``config/application.rb``
-
-.. code-block:: ruby
-
-  config.neo4j.session.type = :http
-  # GrapheneDB
-  config.neo4j.session.path = ENV["GRAPHENEDB_URL"] || 'http://localhost:7474'
-  # Graph Story
-  config.neo4j.session.path = ENV["GRAPHSTORY_URL"] || 'http://localhost:7474'
 

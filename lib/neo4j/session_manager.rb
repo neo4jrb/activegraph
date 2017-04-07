@@ -57,13 +57,13 @@ module Neo4j
           until value
             begin
               if value = yield
-                puts
+                # puts
                 return value
               end
             rescue exception_class => e
               raise e if !wait
 
-              putc '.'
+              # putc '.'
               sleep(1)
             end
           end
