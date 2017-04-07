@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.13] 2016-04-07
+
+### Fixed
+
+- Removed `put(s|c)` statements to avoid issues with background jobs (thanks @andyweiss1982 and @sureshblp71)
+
 ## [8.0.12] 2016-03-28
 
 ### Fixed
