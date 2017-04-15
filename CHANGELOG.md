@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.14] 2016-04-15
+
+### Fixed
+
+- Simple change to description in gemspec file to remove "Ruby on Rails" and "Rack" as the gem can be use in any Ruby-based script / application
+
 ## [8.0.13] 2016-04-07
 
 ### Fixed

@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.summary = 'A graph database for Ruby'
   s.license = 'MIT'
   s.description = <<-EOF
-A Neo4j OGM (Object-Graph-Mapper) for use in Ruby on Rails and Rack frameworks heavily inspired by ActiveRecord.
+A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   EOF
 
   s.require_path = 'lib'
