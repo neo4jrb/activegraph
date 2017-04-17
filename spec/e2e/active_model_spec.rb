@@ -147,6 +147,41 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
+  describe 'global timestamps config' do
+    context 'default' do
+      before do
+        stub_active_node_class('NoTimestampsClass')
+        stub_active_node_class('ClassWithTimestampsIncluded') do
+          include Neo4j::Timestamps
+        end
+      end
+
+      it 'does not include timestamp properites on all models' do
+        node = NoTimestampsClass.new
+        expect(node).not_to be_a(Neo4j::Timestamps)
+      end
+
+      it 'allows timestamps to be manually included' do
+        node = ClassWithTimestampsIncluded.new
+        expect(node).to be_a(Neo4j::Timestamps)
+      end
+    end
+
+    context 'when record_timestamps is enabled' do
+      before do
+        Neo4j::Config.record_timestamps = true
+        stub_active_node_class('TimestampedClass')
+      end
+
+      after(:all) { Neo4j::Config.record_timestamps = false }
+
+      it 'includes timestamp properties on all models' do
+        node = TimestampedClass.new
+        expect(node).to be_a(Neo4j::Timestamps)
+      end
+    end
+  end
+
 
   describe 'callbacks' do
     before(:each) do

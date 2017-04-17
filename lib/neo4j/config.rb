@@ -2,12 +2,12 @@ module Neo4j
   # == Keeps configuration for neo4j
   #
   # == Configurations keys
-  #
   class Config
     DEFAULT_FILE = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'config', 'neo4j', 'config.yml'))
     CLASS_NAME_PROPERTY_KEY = 'class_name_property'
 
     class << self
+      attr_writer :record_timestamps
       # @return [Fixnum] The location of the default configuration file.
       def default_file
         @default_file ||= DEFAULT_FILE
@@ -93,6 +93,12 @@ module Neo4j
         configuration.to_yaml
       end
 
+      # @return [Boolean] The value of the config variable for including
+      # timestamps on all models.
+      def record_timestamps
+        @record_timestamps ||= false
+      end
+
       def class_name_property
         @_class_name_property = Neo4j::Config[CLASS_NAME_PROPERTY_KEY] || :_classname
       end
@@ -104,6 +110,10 @@ module Neo4j
 
       def module_handling
         Neo4j::Config[:module_handling] || :none
+      end
+
+      def timestamp_type
+        Neo4j::Config[:timestamp_type] || DateTime
       end
 
       def association_model_namespace

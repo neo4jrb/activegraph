@@ -3,9 +3,7 @@ module Neo4j
     # This mixin includes a updated_at timestamp property
     module Updated
       extend ActiveSupport::Concern
-      included do
-        property :updated_at, type: DateTime
-      end
+      included { property :updated_at }
     end
   end
 end
