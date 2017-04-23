@@ -219,6 +219,7 @@ To define your own session for the ``neo4j`` gem you create a ``Neo4j::Core::Cyp
 
 .. code-block:: ruby
 
+  require 'neo4j/core/cypher_session/adaptors/http'
   neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:7474')
   Neo4j::ActiveBase.on_establish_session { Neo4j::Core::CypherSession.new(neo4j_adaptor) }
 
