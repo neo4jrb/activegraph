@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.15] 2016-04-24
+
+### Fixed
+
+- Error message for getting distinct on count was not clear
+
 ## [8.0.14] 2016-04-15
 
 ### Fixed
