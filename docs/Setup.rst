@@ -137,10 +137,10 @@ Configuring Faraday
   # Switched to allowing a "configurator" since everything can be done there
   config.neo4j.session.options = {
     faraday_configurator: proc do |faraday|
-      # The default configurator uses NetHttpPersistent, so if you override the configurator you must specify this
-      faraday.use Faraday::Adapter::NetHttpPersistent
+      # The default configurator uses typhoeus (it was `Faraday::Adapter::NetHttpPersistent` for `neo4j-core` < 7.1.0), so if you override the configurator you must specify this
+      faraday.adapter :typhoeus
       # Optionally you can instead specify another adaptor
-      # faraday.adapter :typhoeus
+      # faraday.use Faraday::Adapter::NetHttpPersistent
 
       # If you need to set options which would normally be the second argument of `Faraday.new`, you can do the following:
       faraday.options[:open_timeout] = 5
@@ -219,6 +219,7 @@ To define your own session for the ``neo4j`` gem you create a ``Neo4j::Core::Cyp
 
 .. code-block:: ruby
 
+  require 'neo4j/core/cypher_session/adaptors/http'
   neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:7474')
   Neo4j::ActiveBase.on_establish_session { Neo4j::Core::CypherSession.new(neo4j_adaptor) }
 
