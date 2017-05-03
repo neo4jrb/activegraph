@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.17] 2016-05-03
+
+### Fixed
+
+- Don't lock out Rails 5.1 in `gemspec`
+
 ## [8.0.16] 2016-05-01
 
 ### Fixed
