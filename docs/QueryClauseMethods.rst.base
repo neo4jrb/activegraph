@@ -5,8 +5,8 @@ The ``Neo4j::Core::Query`` class from the `neo4j-core` gem defines a DSL which a
 
 .. code-block:: ruby
 
-  # The current session can be retrieved with `Neo4j::Session.current`
   a_session.query
+  # The current session for `ActiveNode` / `ActiveRel` in the `neo4j` gem can be retrieved with `Neo4j::ActiveBase.current_session`
 
 Advantages of using the `Query` class include:
 
