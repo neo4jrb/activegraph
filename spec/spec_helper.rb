@@ -41,6 +41,10 @@ require 'neo4j/core/cypher_session/adaptors/embedded'
 class MockLogger
   def debug(*_args)
   end
+
+  def debug?
+    false
+  end
 end
 
 module Rails
