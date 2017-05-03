@@ -13,6 +13,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `before` and `after` callback options from associations (model callbacks still exist)
 
+## [8.0.16] 2016-05-01
+
+### Fixed
+
+- Don't lock out Rails 5.1 in `gemspec`
+
+## [8.0.15] 2016-04-24
+
+### Fixed
+
+- Error message for getting distinct on count was not clear
+
 ## [8.0.14] 2016-04-15
 
 ### Fixed
