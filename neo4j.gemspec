@@ -32,7 +32,7 @@ A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('neo4j-core', '>= 7.0.0')
   s.add_dependency('neo4j-community', '~> 2.0') if RUBY_PLATFORM =~ /java/
-  s.add_development_dependency('railties', '>= 4.0', '< 5.1')
+  s.add_development_dependency('railties', '>= 4.0')
   s.add_development_dependency('pry')
   s.add_development_dependency('os')
   s.add_development_dependency('rake')
