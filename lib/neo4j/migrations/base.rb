@@ -32,10 +32,11 @@ module Neo4j
         begin
           run_migration(:up)
         rescue StandardError => e
-          schema.destroy
+          schema.destroy if transactions?
           handle_migration_error!(e)
+        else
+          schema.update!(incomplete: nil)
         end
-        schema.update!(incomplete: nil)
       end
 
       def migrate_down
@@ -44,10 +45,11 @@ module Neo4j
         begin
           run_migration(:down)
         rescue StandardError => e
-          schema.update!(incomplete: nil)
+          schema.update!(incomplete: nil) if transactions?
           handle_migration_error!(e)
+        else
+          schema.destroy
         end
-        schema.destroy
       end
 
       def run_migration(direction)

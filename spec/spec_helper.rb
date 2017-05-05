@@ -339,6 +339,8 @@ end
 
 Neo4j::ActiveBase.current_adaptor = session_adaptor
 
+RSpec::Matchers.define_negated_matcher :not_change, :change
+
 RSpec.configure do |config|
   config.extend FixingRSpecHelpers
   config.include Neo4jSpecHelpers

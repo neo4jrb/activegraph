@@ -35,3 +35,6 @@ docs_site/
 
 # dotenv
 .env
+
+# Mac
+.DS_Store
