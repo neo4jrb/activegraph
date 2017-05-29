@@ -278,6 +278,8 @@ While that's useful in of itself, sometimes you want to be able to create more d
 
 All of the examples so far have used the Ruby API for automatically generating Cypher.  While it is often possible to get by with this, it is sometimes not possible to create a scope without defining it with a Cypher string.  For example, if you need to use ``OR``:
 
+.. code-block:: ruby
+
     class Person
       include Neo4j::ActiveNode
 
@@ -287,6 +289,8 @@ All of the examples so far have used the Ruby API for automatically generating C
 Since a Cypher query can have a number of different nodes and relationships that it is referencing, we need to be able to refer to the current node's variable.  This is why we call the ``identity`` method, which will give the variable which is being used in the query chain on which the scope is being called.
 
 Finally, the ``scope`` method just gives us a convenient way of having a method on our model class which returns another query chain object.  Sometimes to make even more complex logic or even to just return a simple result which can be called on a query chain but which doesn't continue the chain, we can create a class method ourselves:
+
+.. code-block:: ruby
 
     class Person
       include Neo4j::ActiveNode
