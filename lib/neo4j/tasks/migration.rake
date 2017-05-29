@@ -45,7 +45,7 @@ namespace :neo4j do
     Rake::Task['neo4j:migrate:all'].invoke
   end
 
-  # TODO Make sure these tasks don't run in versions of Neo4j before 3.0
+  # TODO: Make sure these tasks don't run in versions of Neo4j before 3.0
   namespace :schema do
     SCHEMA_YAML_PATH = 'db/neo4j/schema.yml'
 
@@ -58,7 +58,7 @@ namespace :neo4j do
     end
 
     desc 'Creates a db/neo4j/schema.yml file which represents the indexes / constraints in the Neo4j DB'
-    task :dump => :environment do
+    task dump: :environment do
       check_neo4j_version_3 do
         require 'neo4j/migrations/schema'
 
@@ -75,7 +75,7 @@ namespace :neo4j do
     end
 
     desc "Loads a db/neo4j/schema.yml file into the database\nOptionally removes schema elements which aren't in the schema.yml file (defaults to false)"
-    task :load, [:remove_missing] => :environment do |t, args|
+    task :load, [:remove_missing] => :environment do |_t, args|
       check_neo4j_version_3 do
         require 'neo4j/migrations/schema'
 
