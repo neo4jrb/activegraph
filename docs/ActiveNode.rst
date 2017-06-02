@@ -286,7 +286,12 @@ All of the examples so far have used the Ruby API for automatically generating C
       scope :non_teenagers, -> { where("#{identity}.age < 13 OR #{identity}.age >= 18") }
     end
 
+
 Since a Cypher query can have a number of different nodes and relationships that it is referencing, we need to be able to refer to the current node's variable.  This is why we call the ``identity`` method, which will give the variable which is being used in the query chain on which the scope is being called.
+
+.. warning::
+
+  Since the ``identity`` comes from whatever was specified as the cypher variable for the node on the other side of the association.  If the cypher variables were generated from an untrusted source (like from a user of your app) you may leave yourself open to a Cypher injection vulnerability.  It is not recommended to generate your Cypher variables based on user input!
 
 Finally, the ``scope`` method just gives us a convenient way of having a method on our model class which returns another query chain object.  Sometimes to make even more complex logic or even to just return a simple result which can be called on a query chain but which doesn't continue the chain, we can create a class method ourselves:
 
