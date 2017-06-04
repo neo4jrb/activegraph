@@ -1,6 +1,6 @@
 class <%= @migration_class_name.underscore.camelize %> < Neo4j::Migrations::Base
   def up
-    add_constraint :<%= class_name %>, :uuid
+    add_constraint :<%= class_name %>, :uuid, force: true
   end
 
   def down

@@ -35,3 +35,8 @@ docs_site/
 
 # dotenv
 .env
+
+# Ignore vagrant files
+Vagrantfile
+/.vagrant/
+ubuntu-xenial*
