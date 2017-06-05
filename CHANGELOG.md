@@ -13,6 +13,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `before` and `after` callback options from associations (model callbacks still exist)
 
+## [8.0.18] 2016-06-04
+
+### Fixed
+
+- Migration name when generating a model shouldn't be the same as the model (see #1387 / thanks @thefliik and @apotonick)
+
 ## [8.0.17] 2016-05-03
 
 ### Fixed

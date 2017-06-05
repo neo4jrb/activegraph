@@ -228,6 +228,86 @@ By default, every ``enum`` property will be defined as ``unique``, to improve qu
       enum type: [:image, :video, :unknown], _index: false
     end
 
+.. _activenode-scopes:
+
+Scopes
+------
+
+Scopes in ``ActiveNode`` are a way of defining a subset of nodes for a particular ``ActiveNode`` model.  This could be as simple as:
+
+
+.. code-block:: ruby
+
+    class Person
+      include Neo4j::ActiveNode
+
+      scope :minors, -> { where(age: 0..17) }
+    end
+
+This allows you chain a description of the defined set of nodes which can make your code easier to read such as ``Person.minors`` or ``Car.all.owners.minors``.  While scopes are very useful in encapsulating logic, this scope doesn't neccessarily save us much beyond simply using ``Person.where(age: 0..17)`` directly.  Scopes become much more useful when they encapsulate more complicated logic:
+
+.. code-block:: ruby
+
+    class Person
+      include Neo4j::ActiveNode
+
+      scope :eligible, -> { where_not(age: 0..17).where(completed_form: true) }
+    end
+
+And because you can chain scopes together, this can make your query chains very composable and expressive like:
+
+.. code-block:: ruby
+
+    # Getting all hybrid convertables owned by recently active eligible people
+    Person.eligible.where(recently_active: true).cars.hybrids.convertables
+
+While that's useful in of itself, sometimes you want to be able to create more dynamic scopes by passing arguments.  This is supported like so:
+
+.. code-block:: ruby
+
+    class Person
+      include Neo4j::ActiveNode
+
+      scope :around_age_of, -> (age) { where(age: (age - 5..age + 5)) }
+    end
+
+    # Which can be used as:
+    Person.around_age_of(20)
+    # or
+    Car.all.owners.around_age_of(20)
+
+All of the examples so far have used the Ruby API for automatically generating Cypher.  While it is often possible to get by with this, it is sometimes not possible to create a scope without defining it with a Cypher string.  For example, if you need to use ``OR``:
+
+.. code-block:: ruby
+
+    class Person
+      include Neo4j::ActiveNode
+
+      scope :non_teenagers, -> { where("#{identity}.age < 13 OR #{identity}.age >= 18") }
+    end
+
+
+Since a Cypher query can have a number of different nodes and relationships that it is referencing, we need to be able to refer to the current node's variable.  This is why we call the ``identity`` method, which will give the variable which is being used in the query chain on which the scope is being called.
+
+.. warning::
+
+  Since the ``identity`` comes from whatever was specified as the cypher variable for the node on the other side of the association.  If the cypher variables were generated from an untrusted source (like from a user of your app) you may leave yourself open to a Cypher injection vulnerability.  It is not recommended to generate your Cypher variables based on user input!
+
+Finally, the ``scope`` method just gives us a convenient way of having a method on our model class which returns another query chain object.  Sometimes to make even more complex logic or even to just return a simple result which can be called on a query chain but which doesn't continue the chain, we can create a class method ourselves:
+
+.. code-block:: ruby
+
+    class Person
+      include Neo4j::ActiveNode
+
+      def self.average_age
+        all(:person).pluck('avg(person.age)').first
+      end
+    end
+
+So if you wanted to find the average age of all eligible people, you could call ``Person.eligible.average_age`` and you would be given a single number.
+
+To implement a more complicated scope with a class method you simply need to return a query chain at the end.
 
 .. _activenode-wrapping:
 
