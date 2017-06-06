@@ -13,10 +13,10 @@ cache: bundler
 sudo: false
 jdk: oraclejdk8
 rvm:
-  - 2.3.1
-  - 2.2.5
-  - jruby-1.7.23
-  - jruby-9.0.5.0
+  - 2.3.4
+  - 2.2.7
+  - jruby-1.7.27
+  - jruby-9.1.8.0
 env:
   global:
     - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
@@ -24,24 +24,24 @@ env:
     - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.2
 matrix:
   include:
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       jdk:
       before_script:
       script: "bundle exec rubocop"
       env: "RUBOCOP=true"
 
     # Testing bolt
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.0.9
 
     # Older versions of Neo4j with latest version of Ruby
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_VERSION=community-3.0.9
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_VERSION=community-2.3.9
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_VERSION=community-2.2.10
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_VERSION=community-2.1.8
 
     # Older versions of Neo4j with latest version of jRuby
@@ -56,9 +56,9 @@ matrix:
 
   # Testing bolt, allowing failure for milestone release
   allow_failures:
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.2
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.2
 
 

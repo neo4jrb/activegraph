@@ -193,22 +193,44 @@ module Neo4j
           end
         end
 
-        describe 'incomplete states' do
-          it 'leaves incomplete states on up' do
-            allow_any_instance_of(SchemaMigration).to receive(:update!)
-            described_class.new.up '9500000000'
-            expect do
-              described_class.new.up '9500000000'
-            end.to raise_error(/incomplete states/)
+        describe 'failure' do
+          it 'Removes SchemaMigration when there is a failure' do
+            allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+            expect { described_class.new.up '9500000000' }.to raise_error('SURPRISE!')
+
+            expect(SchemaMigration.find_by(migration_id: '9500000000')).to be_nil
           end
 
-          it 'leaves incomplete states on down' do
+          it 'Rolls back SchemaMigration to being complete when there is a failure' do
             described_class.new.up '9500000000'
-            allow_any_instance_of(SchemaMigration).to receive(:destroy)
-            described_class.new.down '9500000000'
-            expect do
-              described_class.new.down '9500000000'
-            end.to raise_error(/incomplete states/)
+
+            allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+            expect { described_class.new.down '9500000000' }.to raise_error('SURPRISE!')
+
+            expect(SchemaMigration.find_by(migration_id: '9500000000').incomplete).to be_nil
+          end
+
+          context 'transaction migrations' do
+            before do
+              allow(described_class).to receive(:files_path) do
+                Rails.root.join('spec', 'migration_files', 'transactional_migrations', '*.rb')
+              end
+            end
+
+            it 'Leaves SchemaMigration as incomplete when there is a failure in a non-transactional migration up' do
+              allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+              expect { described_class.new.up '1231231232' }.to raise_error('SURPRISE!')
+
+              expect(SchemaMigration.find_by(migration_id: '1231231232').incomplete).to be true
+            end
+
+            it 'Leaves SchemaMigration as incomplete when there is a failure in a non-transactional migration down' do
+              described_class.new.up '1231231232'
+              allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+              expect { described_class.new.down '1231231232' }.to raise_error('SURPRISE!')
+
+              expect(SchemaMigration.find_by(migration_id: '1231231232').incomplete).to be true
+            end
           end
 
           describe '#resolve' do
@@ -271,13 +293,13 @@ module Neo4j
           it 'rollbacks any change when one of the queries fails' do
             expect do
               expect { described_class.new.up '1231231231' }.to raise_error(/already exists/)
-            end.not_to change { joe.reload.name }
+            end.to not_change { joe.reload.name } & not_change { SchemaMigration.count }
           end
 
           it 'rollbacks nothing when transactions are disabled' do
             expect do
-              expect { described_class.new.up '1234567890' }.to raise_error(/already exists/)
-            end.to change { joe.reload.name }.to('Jack')
+              expect { described_class.new.up '1231231232' }.to raise_error(/already exists/)
+            end.to change { joe.reload.name }.to('Jack') & change { SchemaMigration.count }.by(1)
           end
         end
       end
