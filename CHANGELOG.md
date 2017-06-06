@@ -3,7 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [8.1.0.rc.2] 2017-06-06
+
+### Removed
+
+- Support for jRuby 1.7.x
+
+## [8.1.0.rc.1] 2017-05-05
 
 ### Added
 
@@ -13,97 +19,97 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `before` and `after` callback options from associations (model callbacks still exist)
 
-## [8.0.18] 2016-06-04
+## [8.0.18] 2017-06-04
 
 ### Fixed
 
 - Migration name when generating a model shouldn't be the same as the model (see #1387 / thanks @thefliik and @apotonick)
 
-## [8.0.17] 2016-05-03
+## [8.0.17] 2017-05-03
 
 ### Fixed
 
 - Don't lock out Rails 5.1 in `gemspec`
 
-## [8.0.16] 2016-05-01
+## [8.0.16] 2017-05-01
 
 ### Fixed
 
 - Don't lock out Rails 5.1 in `gemspec`
 
-## [8.0.15] 2016-04-24
+## [8.0.15] 2017-04-24
 
 ### Fixed
 
 - Error message for getting distinct on count was not clear
 
-## [8.0.14] 2016-04-15
+## [8.0.14] 2017-04-15
 
 ### Fixed
 
 - Simple change to description in gemspec file to remove "Ruby on Rails" and "Rack" as the gem can be use in any Ruby-based script / application
 
-## [8.0.13] 2016-04-07
+## [8.0.13] 2017-04-07
 
 ### Fixed
 
 - Removed `put(s|c)` statements to avoid issues with background jobs (thanks @andyweiss1982 and @sureshblp71)
 
-## [8.0.12] 2016-03-28
+## [8.0.12] 2017-03-28
 
 ### Fixed
 
 - Sessions in the `neo4j` gem are automatically set to have `wrap_level: :proc` to ensure that nodes and relationships are wrapped in models (even if you aren't using Rails)
 
-## [8.0.11] 2016-03-23
+## [8.0.11] 2017-03-23
 
 ### Fixed
 
 - Fix issue where an association (which hasn't been accessed) is accessed from an ActiveNode callback
 
-## [8.0.9] 2016-03-15
+## [8.0.9] 2017-03-15
 
 ### Fixed
 
 - Fix more Ruby 2.4 deprecations re: Integer (see #1363 / thanks @jboler)
 
-## [8.0.9] 2016-03-09
+## [8.0.9] 2017-03-09
 
 ### Fixed
 
 - Support `to_ary` on association proxies to help support serializers (thanks @gnapse / see #1362)
 
-## [8.0.8] 2016-02-27
+## [8.0.8] 2017-02-27
 
 ### Fixed
 
 - Performance and response consistency improvements to `exists?` methods
 
-## [8.0.7] 2016-02-24
+## [8.0.7] 2017-02-24
 
 ### Fixed
 
 - Fix Ruby 2.4 deprecations re: Integer (see #1360 / thanks @jboler)
 
-## [8.0.6] 2016-02-04
+## [8.0.6] 2017-02-04
 
 ### Fixed
 
 - Rake tasks broken without Rails (thanks @CoralineAda, @phreakocious, and @Joshfindit, see #1330, #1331, and #1353)
 
-## [8.0.5] 2016-01-05
+## [8.0.5] 2017-01-05
 
 ### Fixed
 
 - When invalid session type is given, an exception will be raised to aid debugging (see #1335 / thanks @Joshfindit)
 
-## [8.0.4] 2016-01-03
+## [8.0.4] 2017-01-03
 
 ### Fixed
 
 - Fixed/refactored `wait_for_connection`
 
-## [8.0.3] 2016-01-03
+## [8.0.3] 2017-01-03
 
 ### Fixed
 
