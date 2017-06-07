@@ -60,7 +60,7 @@ module Neo4j
         Neo4j::ActiveBase.new_query
                          .with('{versions} AS versions').params(versions: versions).break
                          .unwind(version: :versions).break
-                         .merge('(:`Neo4j::Migrations::SchemaMigration` {version: version})')
+                         .merge('(:`Neo4j::Migrations::SchemaMigration` {migration_id: version})')
                          .exec
       end
 

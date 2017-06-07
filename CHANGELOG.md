@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.1.0] 2017-06-07
+
+### Fixed
+
+- Issue where `neo4j:schema:load` rake task would set schema migration properties as `version` rather than `migration_id`
+
 ## [8.1.0.rc.2] 2017-06-06
 
 ### Removed
