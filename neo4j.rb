@@ -10,8 +10,8 @@ generator = %q[
 
     # Configure where the embedded neo4j database should exist
     # Notice embedded db is only available for JRuby
-    # config.neo4j.session_type = :embedded  # default :http
-    # config.neo4j.session_path = File.expand_path('neo4j-db', Rails.root)
+    # config.neo4j.session.type = :http  # also :embedded or :bolt
+    # config.neo4j.session.url = 'http://localhost:7474'
 ]
 
 application generator
