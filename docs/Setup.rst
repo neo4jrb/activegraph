@@ -83,9 +83,23 @@ If you want the ``rails generate`` command to generate Neo4j models by default y
 Rails configuration
 ^^^^^^^^^^^^^^^^^^^
 
-For both new apps and existing apps the following configuration applies:
+For both new apps and existing apps there are multiple ways to configure how to connect to Neo4j.  You can use environment variables, the ``config/neo4j.yml`` file, or configure via the Rails application config.
 
-An example ``config/neo4j.yml`` file:
+For environment variables:
+
+.. code-block:: bash
+
+  NEO4J_URL=http://localhost:7474
+  NEO4J_URL=http://user:pass@localhost:7474
+
+  NEO4J_TYPE=bolt
+  NEO4J_URL=bolt://user:pass@localhost:7687
+
+  # jRuby only
+  NEO4J_TYPE=embedded
+  NEO4J_PATH=/path/to/graph.db
+
+For the ``config/neo4j.yml`` file:
 
 .. code-block:: yaml
 
@@ -110,6 +124,11 @@ You can also use your Rails configuration.  The following example can be put int
   config.neo4j.session.type = :http
   config.neo4j.session.url = 'http://localhost:7474'
 
+  # Or, for Bolt
+
+  config.neo4j.session.type = :bolt
+  config.neo4j.session.url = 'bolt://localhost:7687'
+
   # Or, for embedded in jRuby
 
   config.neo4j.session.type = :embedded
@@ -121,7 +140,6 @@ Neo4j requires authentication by default but if you install using the built-in :
 
   config.neo4j.session.url = 'http://neo4j:password@localhost:7474'
 
-Of course it's often the case that you don't want to expose your username / password / URL in your repository.  In these cases you can use the ``NEO4J_TYPE`` (either ``http`` or ``embedded``) and ``NEO4J_URL``/``NEO4J_PATH`` environment variables.
 
 Configuring Faraday
 ^^^^^^^^^^^^^^^^^^^

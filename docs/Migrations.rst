@@ -49,6 +49,13 @@ To disable this, you can use the ``disable_transactions!`` helper in your migrat
     ...
   end
 
+The schema file
+---------------
+
+When generating an empty database for your app you could run all of your migrations, but this strategy gets slower over time and can even cause issues if your older migrations become incompatible with your newer code.  For this reason, whenever you run migrations a ``db/neo4j/schema.yml`` file is created which keeps track of constraints, indexes (which aren't automatically created by constraints), and which migrations have been run.  This schema file can then be loaded with the ``neo4j:schema:load`` rake task to quickly and safely setup a blank database for testing or for a new environment.  While the ``neo4j:migrate`` rake task automatically creates the ``schema.yml`` file, if you ever need to generate it yourself you can use the ``neo4j:schema:dump`` rake task.
+
+It is suggested that you check in the ``db/neo4j/schema.yml`` to your repository whenever you have new migrations.
+
 Tasks
 -----
 Neo4j.rb implements a clone of the ``ActiveRecord`` migration tasks API to migrate.
@@ -109,6 +116,25 @@ Reverts the last up migration. You can additionally pass a ``STEPS`` parameter, 
 .. code-block:: bash
 
     rake neo4j:rollback
+
+neo4j:schema:dump
+~~~~~~~~~~~~~~
+
+Reads the current database and generates a ``db/neo4j/schema.yml`` file to track constraints, indexes, and migrations which have been run (runs automatically after the ``neo4j:migrate`` task)
+
+.. code-block:: bash
+
+    rake neo4j:schema:dump
+
+neo4j:schema:load
+~~~~~~~~~~~~~~
+
+Reads the ``db/neo4j/schema.yml`` file and loads the constraints, indexes, and migration nodes into the database.  The default behavior is to only add, but an argument can be passed in to tell the task to remove any indexes / constraints that were found in the database which were not in the ``schema.yml`` file.
+
+.. code-block:: bash
+
+    rake neo4j:schema:load
+    rake neo4j:schema:load[true] # Remove any constraints or indexes which aren't in the ``schema.yml`` file
 
 
 Integrate Neo4j.rb with ActiveRecord migrations
