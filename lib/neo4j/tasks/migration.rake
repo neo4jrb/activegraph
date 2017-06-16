@@ -48,6 +48,20 @@ namespace :neo4j do
   # TODO: Make sure these tasks don't run in versions of Neo4j before 3.0
   namespace :schema do
     SCHEMA_YAML_PATH = 'db/neo4j/schema.yml'
+    SCHEMA_YAML_COMMENT = <<COMMENT
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of ActiveNode to
+# incrementally modify your database, and then regenerate this schema definition.
+#
+# Note that this schema.yml definition is the authoritative source for your
+# database schema. If you need to create the application database on another
+# system, you should be using neo4j:schema:load, not running all the migrations
+# from scratch. The latter is a flawed and unsustainable approach (the more migrations
+# you'll amass, the slower it'll run and the greater likelihood for issues).
+#
+# It's strongly recommended that you check this file into your version control system.
+
+COMMENT
 
     def check_neo4j_version_3
       if Neo4j::ActiveBase.current_session.version > '3.0.0'
@@ -68,7 +82,7 @@ namespace :neo4j do
         schema_data[:versions] = runner.complete_migration_versions.sort
 
         FileUtils.mkdir_p(File.dirname(SCHEMA_YAML_PATH))
-        File.open(SCHEMA_YAML_PATH, 'w') { |file| file << schema_data.to_yaml }
+        File.open(SCHEMA_YAML_PATH, 'w') { |file| file << SCHEMA_YAML_COMMENT + schema_data.to_yaml }
 
         puts "Dumped updated schema file to #{SCHEMA_YAML_PATH}"
       end

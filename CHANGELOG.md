@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.1.1] 2017-06-15
+
+### Added
+
+- Comment to the top of the `schema.yml` file to help explain it's presence
+
 ## [8.1.0] 2017-06-07
 
 ### Fixed
