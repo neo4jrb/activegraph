@@ -56,8 +56,6 @@ matrix:
   # Testing bolt, allowing failure for milestone release
   allow_failures:
     - rvm: 2.3.1
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.2
-    - rvm: 2.3.1
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.2
 
 
