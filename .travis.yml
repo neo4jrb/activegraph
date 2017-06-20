@@ -5,7 +5,7 @@ before_script:
   - "echo 'dbms.memory.heap.max_size=600m' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "echo 'dbms.memory.heap.initial_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "bin/rake neo4j:start --trace"
-  - "sleep 20"
+  - "sleep 60"
 script:
   - "travis_retry bin/rake default --trace"
 language: ruby
