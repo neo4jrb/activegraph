@@ -5,7 +5,7 @@ gemspec
 # gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master' if ENV['CI']
 
 if branch = ENV['TRAVIS_BRANCH']
-  if `curl --head https://github.com/#{ENV['TRAVIS_REPO_SLUG']}-core/tree/#{branch} | head -1`.match(/200 OK/)
+  if `curl --head https://github.com/#{ENV['TRAVIS_REPO_SLUG']}-core/tree/#{branch} | head -1` =~ /200 OK/
     gem 'neo4j-core', github: "#{ENV['TRAVIS_REPO_SLUG']}-core", branch:  branch
   else
     gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master'
