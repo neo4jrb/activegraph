@@ -16,7 +16,7 @@ describe 'Generators' do
 
     it 'creates a model and a migration file' do
       expect_any_instance_of(described_class).to receive(:template).with('model.erb', 'app/models/some.rb')
-      expect_any_instance_of(described_class).to receive(:template).with('migration.erb', 'db/neo4j/migrate/19901210000000_some.rb')
+      expect_any_instance_of(described_class).to receive(:template).with('migration.erb', 'db/neo4j/migrate/19901210000000_create_some.rb')
       described_class.new(['some']).create_model_file
     end
   end

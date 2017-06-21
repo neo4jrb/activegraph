@@ -67,6 +67,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
 
       it 'fires :create_callbacks on unpersisted nodes' do
         [from_node, to_node].each do |o|
+          allow(o).to receive(:run_callbacks).with(:validation)
           expect(o).to receive(:run_callbacks).with(:create).and_call_original
         end
         rel.save

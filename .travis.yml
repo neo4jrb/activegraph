@@ -2,7 +2,7 @@ before_script:
   - "bin/rake neo4j:install[$NEO4J_VERSION] --trace"
   - "bin/rake neo4j:config[development,7474] --trace"
   - "echo 'dbms.memory.pagecache.size=600m' >> ./db/neo4j/development/conf/neo4j.conf"
-  - "echo 'dbms.memory.heap.max_size=600m' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
+  - "echo 'dbms.memory.heap.max_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "echo 'dbms.memory.heap.initial_size=600' >> ./db/neo4j/development/conf/neo4j-wrapper.conf"
   - "bin/rake neo4j:start --trace"
   - "sleep 20"
@@ -32,6 +32,8 @@ matrix:
     # Testing bolt
     - rvm: 2.3.1
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.0.9
+    - rvm: 2.3.1
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.2
 
     # Older versions of Neo4j with latest version of Ruby
     - rvm: 2.3.1
@@ -53,12 +55,8 @@ matrix:
     - rvm: jruby-9.0.5.0
       env: NEO4J_VERSION=community-2.1.8
 
-  # Testing bolt, allowing failure for milestone release
-  allow_failures:
+    # Latest
     - rvm: 2.3.1
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.2
+      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.1
     - rvm: 2.3.1
-      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.2
-
-
-
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.1
