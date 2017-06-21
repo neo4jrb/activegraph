@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.1.2] 2017-06-20
+
+### Fixed
+
+- Populates relationship with with already retrieved node (see #1393 / thanks @klobuczek)
+
 ## [8.1.1] 2017-06-15
 
 ### Added
