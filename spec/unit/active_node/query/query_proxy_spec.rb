@@ -20,8 +20,15 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
 
   describe 'each_with_rel' do
     it 'yields a node and rel object' do
-      expect(qp).to receive(:pluck).and_return([node, rel])
-      expect(qp.each_with_rel {}).to eq [node, rel]
+      expect(qp).to receive(:pluck).and_return([[node, rel]])
+      expect(qp.each_with_rel {}).to eq [[node, rel]]
+    end
+
+    it 'sets node on rel object' do
+      rel = stub_active_rel_class('MyRelClass').new
+      expect(qp).to receive(:pluck).and_return([[node, rel]])
+      allow(qp).to receive(:association).and_return(double(name: 'abc', direction: :out))
+      expect(qp.each_with_rel {}.first.last.to_node).to eq(node)
     end
   end
 
@@ -64,8 +71,8 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
       end
 
       it 'calls pluck and executes the block' do
-        expect(qp).to receive(:pluck).and_return([node, rel])
-        expect(node).to receive(:name)
+        expect(qp).to receive(:pluck).and_return([[node, rel]])
+        expect(node).to receive(:name).and_return('name')
         expect(rel).to receive(:name)
         qp.each_with_rel { |n, r| n.name && r.name }
       end

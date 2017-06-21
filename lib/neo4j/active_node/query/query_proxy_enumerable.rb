@@ -28,6 +28,9 @@ module Neo4j
           result.each do |object|
             object.instance_variable_set('@source_query_proxy', self)
             object.instance_variable_set('@source_proxy_result_cache', result)
+            if node && rel && object.last.is_a?(Neo4j::ActiveRel)
+              object.last.instance_variable_set(association.direction == :in ? '@from_node' : '@to_node', object.first)
+            end
           end
 
           @result_cache[[node, rel]] ||= result
