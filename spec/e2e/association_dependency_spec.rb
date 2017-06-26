@@ -58,7 +58,7 @@ describe 'association dependent delete/destroy' do
     stub_active_node_class('Comment') do
       property :note
       # In the real world, there would be no reason to setup a dependency here since you'd never want to delete
-      # the topic of a comment just because the topic is destroyed.
+      # the topic of a comment just because the comment is destroyed.
       # For the purpose of these tests, we're setting this to demonstrate that we are protected against loops.
       has_one :in, :topic, model_class: false, type: 'HAS_COMMENT', dependent: :destroy
     end
@@ -95,7 +95,7 @@ describe 'association dependent delete/destroy' do
       end
     end
 
-    context 'a node with relationshpis' do
+    context 'a node with relationships' do
       let(:band) { Band.create }
       before { node.bands << band }
 
