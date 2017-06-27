@@ -22,8 +22,8 @@ env:
   matrix:
     - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.5
     - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.1
-    - NEO4J_URL="bolt://localhost:7474" NEO4J_VERSION=community-3.1.5
-    - NEO4J_URL="bolt://localhost:7474" NEO4J_VERSION=community-3.2.1
+    - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.5
+    - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.1
 matrix:
   include:
     - rvm: 2.3.1
