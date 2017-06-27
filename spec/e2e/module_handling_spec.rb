@@ -85,7 +85,7 @@ describe 'Module handling from config: :module_handling option' do
       ModuleTest::Student.create
       ModuleTest::Student.first
       expect(cache).not_to be_empty
-      expect(cache[[:Student, :Clazz]]).to eq ModuleTest::Student
+      expect(cache[[:Clazz, :Student]]).to eq ModuleTest::Student
     end
   end
 
