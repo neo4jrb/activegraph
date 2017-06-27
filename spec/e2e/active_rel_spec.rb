@@ -573,11 +573,11 @@ describe 'ActiveRel' do
 
     describe 'first, last' do
       it 'returns the first-ish result' do
-        expect(MyRelClass.first).to eq rel1
+        expect(MyRelClass.first).to eq(rel1).or eq(rel2)
       end
 
       it 'returns the last-ish result' do
-        expect(MyRelClass.last).to eq rel2
+        expect(MyRelClass.last).to eq(rel1).or eq(rel2)
       end
 
       context 'with from_class and to_class as strings and constants' do
