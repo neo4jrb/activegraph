@@ -137,7 +137,7 @@ If you would like to use multiple labels you can use class inheritance.  In the 
 Serialization
 ~~~~~~~~~~~~~
 
-Pass a property name as a symbol to the serialize method if you want to save a hash or an array with mixed object types* to the database.
+Pass a property name as a symbol to the serialize method if you want to save JSON serializable data (strings, numbers, hash, array,  array with mixed object types*, etc.) to the database.
 
 .. code-block:: ruby
 
