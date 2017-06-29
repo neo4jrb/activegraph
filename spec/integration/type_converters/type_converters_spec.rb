@@ -287,6 +287,39 @@ describe Neo4j::Shared::TypeConverters do
       expect(ruby_value.class).to eq Hash
       expect(ruby_value['neo4j']).to eq 'http://www.neo4j.org'
     end
+
+    context 'various type combinations' do
+      before do
+        stub_active_node_class('JsonData') do
+          property :serialized_property
+          serialize :serialized_property
+        end
+      end
+
+      let(:json_data) { JsonData.create(serialized_property: value) }
+
+      subject { JsonData.find(json_data.id).serialized_property }
+
+      let_context value: 123 do
+        it { is_expected.to eq 123 }
+      end
+
+      let_context value: %i(array of symbols) do
+        it { is_expected.to eq %w(array of symbols) }
+      end
+
+      let_context value: 'expected string' do
+        it { is_expected.to eq 'expected string' }
+      end
+
+      let_context value: {hashy: :mc_hasher} do
+        it { is_expected.to eq('hashy' => 'mc_hasher') }
+      end
+
+      let_context value: ['mixed', :values, 1337, {of: :things}] do
+        it { is_expected.to eq ['mixed', 'values', 1337, {'of' => 'things'}] }
+      end
+    end
   end
 
   describe Neo4j::Shared::TypeConverters::YAMLConverter do
