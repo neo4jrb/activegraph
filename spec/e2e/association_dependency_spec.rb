@@ -165,6 +165,33 @@ describe 'association dependent delete/destroy' do
           expect(Comment.count).to eq 0
         end
       end
+
+      context 'we destroy stops, some of which have shared comments' do
+        before do
+          @philly_comment = Comment.create(note: "I'm looking forward to some of that brotherly love.")
+          @man_philly_comment = Comment.create(note: 'Manhattan is better than Philly.')
+
+          @philadelphia.comments << @philly_comment
+          @philadelphia.comments << @man_philly_comment
+          @manhattan.comments << @man_philly_comment
+        end
+
+        it 'only deletes orphan comments, not those associated with another city' do
+          expect { @boston.destroy }.not_to raise_error
+
+          expect(@philly_comment).to be_persisted
+          expect(@man_philly_comment).to be_persisted
+
+          @philadelphia.destroy
+
+          expect(@philly_comment).not_to exist
+          expect(@man_philly_comment).to exist
+
+          @manhattan.destroy
+
+          expect(@man_philly_comment).not_to exist
+        end
+      end
     end
 
     context 'things are going terribly' do
