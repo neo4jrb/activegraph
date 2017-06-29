@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.1.3] 2017-06-29
+
+### Fixed
+
+- `ActiveRel` `.first` / `.last` aren't dependable for ordering in Neo4j enterprise, so fixed test (be aware that using `.first` / `.last` are not recommended in `ActiveRel`) (see #1396 / thanks @klobuczek)
+- Labels for models are now returned alphabetically (see #1396 / thanks @klobuczek)
+- JSON serialization is fixed for `String` and objects in general which respond to `to_json` (see #1397 / thanks @leviwilson)
+
 ## [8.1.2] 2017-06-20
 
 ### Fixed
