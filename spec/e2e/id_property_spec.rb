@@ -472,7 +472,7 @@ describe Neo4j::ActiveNode::IdProperty do
         nodes = Array.new(3) { NeoIdTest.create }
         NeoIdTest.create
 
-        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to eq(nodes)
+        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to match_array(nodes)
       end
 
       it 'does not find it if it does not exist' do

@@ -72,6 +72,7 @@ module Neo4j
       # Finds an appropriate matching model given a set of labels
       # which are assigned to a node
       def self.model_for_labels(labels)
+        labels.sort!
         return MODELS_FOR_LABELS_CACHE[labels] if MODELS_FOR_LABELS_CACHE[labels]
 
         models = WRAPPED_CLASSES.select do |model|
