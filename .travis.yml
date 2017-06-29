@@ -21,9 +21,7 @@ env:
   global:
     - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
   matrix:
-    - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.5
     - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.1
-    - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.5
     - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.1
 matrix:
   include:
@@ -35,7 +33,16 @@ matrix:
 
     # Older versions of Neo4j with latest version of Ruby
     - rvm: 2.3.1
-      env: NEO4J_VERSION=community-2.3.11
+      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.5
+
+    - rvm: 2.3.1
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.5
+
+    - rvm: 2.3.1
+      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.3.11
+
+    - rvm: 2.3.1
+      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.1.8
 
     # Older versions of Neo4j with latest version of jRuby
     - rvm: jruby-9.1.12.0
