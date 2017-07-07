@@ -11,8 +11,9 @@ module Neo4j
       def wrapper(rel)
         rel.props.symbolize_keys!
         begin
-          most_concrete_class = class_from_type(rel.rel_type)
-          most_concrete_class.constantize.new
+          most_concrete_class = class_from_type(rel.rel_type).constantize
+          return rel unless most_concrete_class < Neo4j::ActiveRel
+          most_concrete_class.new
         rescue NameError => e
           raise e unless e.message =~ /(uninitialized|wrong) constant/
 
