@@ -10,23 +10,19 @@ It is not always necessary to use ActiveRel models but if you have the need for 
 
 Note that in Neo4j it isn't possible to access relationships except by first accessing a node.  Thus ``ActiveRel`` doesn't implement a ``uuid`` property like ``ActiveNode``.
 
-... Documentation notes
-
-  Separation of relationship logic instead of shoehorning it into Node models
-
-  Validations, callbacks, custom methods, etc.
-
-  Centralize relationship type, no longer need to use ``:type`` or ``:origin`` options in models
+.. Documentation notes
+  * Separation of relationship logic instead of shoehorning it into Node models
+  * Validations, callbacks, custom methods, etc.
+  * Centralize relationship type, no longer need to use ``:type`` or ``:origin`` options in models
 
 Setup
 -----
 
-ActiveRel model definitions have four requirements:
+ActiveRel model definitions have three requirements:
 
- * include Neo4j::ActiveRel
- * call from_class with a valid model constant or :any
- * call to_class with a valid model constant or :any
- * call type with a Symbol or String to define the Neo4j relationship type
+ * ``include Neo4j::ActiveRel``
+ * Call ``from_class`` with a symbol/string referring to an ``ActiveNode`` model or :any
+ * Call ``to_class`` with a symbol/string referring to an ``ActiveNode`` model or :any
 
 See the note on from/to at the end of this page for additional information.
 
@@ -39,7 +35,10 @@ See the note on from/to at the end of this page for additional information.
 
       from_class :Student
       to_class   :Lesson
-      type 'enrolled_in'
+      # `type` can be specified, but it is assumed from the model name
+      # In this case, without `type`, 'ENROLLED_IN' would be assumed
+      # If you wanted to specify something else:
+      # type 'ENROLLED'
 
       property :since, type: Integer
       property :grade, type: Integer
@@ -176,7 +175,7 @@ ActiveRel really shines when you have multiple associations that share a relatio
       validate :manageable_object
       from_class :User
       to_class :any
-      type 'manages'
+      type 'MANAGES'
 
       def update_user_stats
         from_node.update_stats
