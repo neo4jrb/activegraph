@@ -247,6 +247,13 @@ You could instead use the following, but ``on_establish_session`` will establish
 
   Neo4j::ActiveBase.current_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
 
+What if I'm integrating with a pre-existing Neo4j database?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When trying to get neo4j.rb to integrate with a pre-existing neo4j database instance (common in cases of migrating data from a legacy SQL database into a Neo4j-powered rails app), remember that every ``ActiveNode`` model is required to have an ID property with a ``unique`` constraint upon it, and that unique ID property will default to ``uuid`` unless you override it to use a different ID property.
+
+This commonly leads to getting a ``Neo4j::DeprecatedSchemaDefinitionError`` in Rails when attempting to access a node populated into a neo4j database directly via Cypher (i.e. when Rails didn't create the node itself). To solve or avoid this problem, be certain to define and constrain as unique a uuid property (or whatever other property you want Rails to treat as the unique ID property) in Cypher when loading the legacy data or use the methods discussed in :doc:`Unique IDs </UniqueIDs>`.
+
 Heroku
 ~~~~~~
 
