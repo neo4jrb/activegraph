@@ -60,8 +60,9 @@ module Neo4j
 
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
         def destroy(node)
-          self.rels_to(node).map!(&:destroy)
-          clear_source_object_cache
+          self.rels_to(node).map!(&:destroy).tap do
+            clear_source_object_cache
+          end
         end
 
         private
