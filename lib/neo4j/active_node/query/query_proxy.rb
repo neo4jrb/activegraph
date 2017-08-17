@@ -184,6 +184,9 @@ module Neo4j
         # @return [QueryProxy] A new QueryProxy
         def branch(&block)
           fail LocalJumpError, 'no block given' if block.nil?
+          # `as(identity)` is here to make sure we get the right variable
+          # There might be a deeper problem of the variable changing when we
+          # traverse an association
           as(identity).instance_eval(&block).query.proxy_as(self.model, identity)
         end
 
