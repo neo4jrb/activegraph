@@ -823,7 +823,7 @@ describe 'query_proxy_methods' do
       muth = Lesson.create(name: 'Muth', teachers: [jil])
       jummy = Student.create(name: 'Jummy', lessons: [sceince, muth])
 
-      rundom = Student.create(name: 'Rundom')
+      Student.create(name: 'Rundom')
 
       result = jummy.lessons.branch { teachers.where(age: 28) }.students
       # We should only get Jummy.  Failure in choosing the identity would give all
