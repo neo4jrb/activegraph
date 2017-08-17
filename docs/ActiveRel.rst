@@ -51,6 +51,22 @@ See the note on from/to at the end of this page for additional information.
       end
     end
 
+    # Using the `ActiveRel` model in `ActiveNode` models:
+    # app/models/student.rb
+    class Student
+      include Neo4j::ActiveNode
+
+      has_many :out, :lessons, rel_class: :EnrolledIn
+    end
+
+    # app/models/lesson.rb
+    class Lesson
+      include Neo4j::ActiveNode
+
+      has_many :in, :students, rel_class: :EnrolledIn
+    end
+
+
 .. seealso::
   .. raw:: html
 
