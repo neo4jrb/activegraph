@@ -9,12 +9,12 @@ end
 module Neo4j::Generators::MigrationHelper
   extend ActiveSupport::Concern
 
-  def migration_file_name(file_name)
-    "#{Time.now.utc.strftime('%Y%m%d%H%M%S')}_#{file_name.parameterize}.rb"
+  def migration_file_name(file_name, prefix = '')
+    "#{Time.now.utc.strftime('%Y%m%d%H%M%S')}_#{prefix}#{file_name.parameterize}.rb"
   end
 
-  def migration_template(template_name)
-    real_file_name = migration_file_name(file_name)
+  def migration_template(template_name, prefix = '')
+    real_file_name = migration_file_name(file_name, prefix)
     @migration_class_name = file_name.camelize
 
     template template_name, File.join('db/neo4j/migrate', real_file_name)

@@ -106,7 +106,7 @@ module Neo4j
 
       def validation_error_message(messages)
         <<MSG
-          Some schema elements were defined by the model (which is no longer supported), but they do not exist in the database.  Run the following to create them:
+          Some schema elements were defined by the model (which is no longer supported), but they do not exist in the database.  Run the following to create them if you haven't already:
 
 #{messages[:constraint].join("\n")}
 #{messages[:index].join("\n")}

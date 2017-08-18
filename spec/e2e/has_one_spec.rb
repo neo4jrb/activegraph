@@ -186,44 +186,6 @@ describe 'has_one' do
     end
   end
 
-  describe 'callbacks' do
-    before(:each) do
-      stub_active_node_class('CallbackUser') do
-        has_one :out, :best_friend, type: nil, model_class: 'CallbackUser', before: :before_callback
-        has_one :in, :best_friend_of, origin: :best_friend, model_class: 'CallbackUser', after: :after_callback
-        has_one :in, :failing_assoc,  origin: :best_friend, model_class: 'CallbackUser', before: :false_before_callback
-
-        def before_callback(_other)
-        end
-
-        def after_callback(_other)
-        end
-
-        def false_before_callback(_other)
-          false
-        end
-      end
-    end
-
-    let(:node1) { CallbackUser.create }
-    let(:node2) { CallbackUser.create }
-
-    it 'calls before callback' do
-      expect(node1).to receive(:before_callback).with(node2)
-      node1.best_friend = node2
-    end
-
-    it 'calls after callback' do
-      expect(node1).to receive(:after_callback).with(node2)
-      node1.best_friend_of = node2
-    end
-
-    it 'prevents the relationship from beign created if a before callback returns false' do
-      node1.failing_assoc = node2
-      expect(node1.failing_assoc).to be_nil
-    end
-  end
-
   describe 'id methods' do
     before(:each) do
       stub_active_node_class('Post') do

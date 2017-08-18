@@ -43,6 +43,8 @@ module Neo4j
     # Starting Neo after :load_config_initializers allows apps to
     # register migrations in config/initializers
     initializer 'neo4j.start', after: :load_config_initializers do |app|
+      app.config.neo4j.skip_migration_check = true if Rails.env.test?
+
       neo4j_config = ActiveSupport::OrderedOptions.new
       app.config.neo4j.each { |k, v| neo4j_config[k] = v } if app.config.neo4j
 

@@ -19,16 +19,8 @@ module Neo4j
           @result_cache ||= {}
           return result_cache_for(node, rel) if result_cache?(node, rel)
 
-          pluck_vars = []
-          pluck_vars << ensure_distinct(identity) if node
-          pluck_vars << @rel_var if rel
-
-          result = pluck(*pluck_vars)
-
-          result.each do |object|
-            object.instance_variable_set('@source_query_proxy', self)
-            object.instance_variable_set('@source_proxy_result_cache', result)
-          end
+          result = pluck_vars(node, rel)
+          set_instance_caches(result, node, rel)
 
           @result_cache[[node, rel]] ||= result
         end
@@ -92,6 +84,25 @@ module Neo4j
 
         def ensure_distinct(node, force = false)
           @distinct || force ? "DISTINCT(#{node})" : node
+        end
+
+        private
+
+        def pluck_vars(node, rel)
+          vars = []
+          vars << ensure_distinct(identity) if node
+          vars << @rel_var if rel
+          pluck(*vars)
+        end
+
+        def set_instance_caches(instance, node, rel)
+          instance.each do |object|
+            object.instance_variable_set('@source_query_proxy', self)
+            object.instance_variable_set('@source_proxy_result_cache', instance)
+            if node && rel && object.last.is_a?(Neo4j::ActiveRel)
+              object.last.instance_variable_set(association.direction == :in ? '@from_node' : '@to_node', object.first)
+            end
+          end
         end
       end
     end

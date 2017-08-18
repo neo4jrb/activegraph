@@ -197,6 +197,8 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
 
+  EXISTS_REGEXP = /Node.\d+\)? already exists with label/
+
   describe 'id_property :my_id, on: :foobar' do
     before do
       stub_active_node_class('Clazz') do
@@ -219,7 +221,7 @@ describe Neo4j::ActiveNode::IdProperty do
         'same uuid'
       end
       Clazz.create
-      expect { Clazz.create }.to raise_error(/Node \d+ already exists with label/)
+      expect { Clazz.create }.to raise_error(EXISTS_REGEXP)
     end
 
     describe 'property my_id' do
@@ -379,7 +381,7 @@ describe Neo4j::ActiveNode::IdProperty do
         'same uuid'
       end
       Clazz.create
-      expect { Clazz.create }.to raise_error(/Node \d+ already exists with label/)
+      expect { Clazz.create }.to raise_error(EXISTS_REGEXP)
     end
 
     describe 'property my_uuid' do
@@ -470,7 +472,7 @@ describe Neo4j::ActiveNode::IdProperty do
         nodes = Array.new(3) { NeoIdTest.create }
         NeoIdTest.create
 
-        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to eq(nodes)
+        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to match_array(nodes)
       end
 
       it 'does not find it if it does not exist' do

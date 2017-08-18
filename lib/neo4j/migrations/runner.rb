@@ -52,6 +52,18 @@ module Neo4j
         all_migrations.select { |migration| !up?(migration) }
       end
 
+      def complete_migration_versions
+        @schema_migrations.map(&:migration_id)
+      end
+
+      def mark_versions_as_complete(versions)
+        Neo4j::ActiveBase.new_query
+                         .with('{versions} AS versions').params(versions: versions).break
+                         .unwind(version: :versions).break
+                         .merge('(:`Neo4j::Migrations::SchemaMigration` {migration_id: version})')
+                         .exec
+      end
+
       def status
         output STATUS_TABLE_FORMAT, *STATUS_TABLE_HEADER
         output SEPARATOR

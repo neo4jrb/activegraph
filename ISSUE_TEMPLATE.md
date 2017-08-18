@@ -4,7 +4,7 @@
 
 
 
-Additional information which could be helpful if relevent to your issue:
+Additional information which could be helpful if relevant to your issue:
 
 ### Code example (inline, gist, or repo)
 

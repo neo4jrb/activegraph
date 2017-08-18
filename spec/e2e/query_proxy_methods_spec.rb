@@ -816,6 +816,20 @@ describe 'query_proxy_methods' do
       expect(students_with_lessons).not_to include(@bill)
     end
 
+    it 'uses the right cypher variable through the branch' do
+      job = Teacher.create(name: 'Job', age: 28)
+      jil = Teacher.create(name: 'Jil', age: 35)
+      sceince = Lesson.create(name: 'Sceince', teachers: [job])
+      muth = Lesson.create(name: 'Muth', teachers: [jil])
+      jummy = Student.create(name: 'Jummy', lessons: [sceince, muth])
+
+      Student.create(name: 'Rundom')
+
+      result = jummy.lessons.branch { teachers.where(age: 28) }.students
+      # We should only get Jummy.  Failure in choosing the identity would give all
+      expect(result).to eq [jummy]
+    end
+
     it 'raises LocalJumpError when no block is passed' do
       expect { @john.lessons.branch }.to raise_error LocalJumpError
     end

@@ -18,6 +18,11 @@ Variables
 
 .. glossary::
 
+  **skip_migration_check**
+    **Default:** ``false``
+
+    Prevents the ``neo4j`` gem from raising ``Neo4j::PendingMigrationError`` in web requests when migrations haven't been run.  For environments (like testing) where you need to use the ``neo4j:schema:load`` rake task to build the database instead of migrations.  Automatically set to ``true`` in Rails test environments by default
+
   .. _configuration-class_name_property:
 
   **class_name_property**
