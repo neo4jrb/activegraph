@@ -257,7 +257,7 @@ The ``neo4j-core`` gem provides a ``Query`` class which can be used for building
 
 .. code-block:: ruby
 
-  Neo4j::Session.current.query # Get a new Query object
+  Neo4j::ActiveBase.current_session.query # Get a new Query object
 
   # Get a Query object based on a scope
   Student.query_as(:s) # For a
