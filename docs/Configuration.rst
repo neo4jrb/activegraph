@@ -58,7 +58,7 @@ Variables
 
     **Available values:** ``:demodulize``, ``:none``, ``proc``
 
-    Determines what, if anything, should be done to module names when a model's class is set. By default, there is a direct mapping of model name to label, so `MyModule::MyClass` results in a label with the same name.
+    Determines what, if anything, should be done to module names when a model's class is set. By default, there is a direct mapping of an ``ActiveNode`` model name to the node label or an ``ActiveRel`` model to the relationship type, so `MyModule::MyClass` results in a label with the same name.
 
     The `:demodulize` option uses ActiveSupport's method of the same name to strip off modules. If you use a `proc`, it will the class name as an argument and you should return a string that modifies it as you see fit.
 
@@ -72,7 +72,7 @@ Variables
   **logger**
     **Default:** ``nil`` (or ``Rails.logger`` in Rails)
 
-    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used)
+    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``neo4j`` gem (that is, for models created with the ``ActiveNode`` and ``ActiveRel`` modules).
 
   **pretty_logged_cypher_queries**
     **Default:** ``nil``
@@ -92,4 +92,4 @@ Variables
   **wait_for_connection**
     **Default:** ``false``
 
-    This allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose
+    This allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose.  This is currently only for Rails
