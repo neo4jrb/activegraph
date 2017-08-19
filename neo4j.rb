@@ -25,6 +25,8 @@ application generator
 
 inject_into_file 'config/application.rb', "\nrequire 'neo4j/railtie'", after: 'require "active_record/railtie"'
 
+inject_into_file 'config/application.rb', "\nrequire 'neo4j/railtie'", after: "require 'rails/all'"
+
 yaml_data = <<YAML
 development:
   type: http
