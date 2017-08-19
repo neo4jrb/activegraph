@@ -14,7 +14,7 @@ Other Ruby apps
 You can set configuration variables directly in the Neo4j configuration class like so: ``Neo4j::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
 
 Variables
----------
+~~~~~~~~~
 
 .. glossary::
 
@@ -93,3 +93,41 @@ Variables
     **Default:** ``false``
 
     This allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose.  This is currently only for Rails
+
+Instrumented events
+~~~~~~~~~~~~~~~~~~~
+
+The ``neo4j-core`` gem instruments a handful of events so that users can subscribe to them to do logging, metrics, or anything else that they need.  For example, to create a block which is called any time a query is made via the ``neo4j-core`` gem:
+
+.. code-block:: ruby
+
+  Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |message|
+    puts message
+  end
+
+The argument to the block (``message`` in this case) will be an ANSI formatted string which can be outputted or stored.  If you want to access this event at a lower level, ``subscribe_to_query`` is actually tied to the ``neo4j.core.cypher_query`` event to which you could subscribe to like:
+
+.. code-block:: ruby
+
+  ActiveSupport::Notifications.subscribe('neo4j.core.cypher_query') do |name, start, finish, id, payload|
+    puts payload[:query].to_cypher
+    # or
+    payload[:query].print_cypher
+
+    puts "Query took: #{(finish - start)} seconds"
+  end
+
+All methods and their corresponding events:
+
+  **Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query**
+    **neo4j.core.cypher_query**
+
+  **Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request**
+    **neo4j.core.http.request**
+
+  **Neo4j::Core::CypherSession::Adaptors::Bolt.subscribe_to_request**
+    **neo4j.core.bolt.request**
+
+  **Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction**
+    **neo4j.core.embedded.transaction**
+
