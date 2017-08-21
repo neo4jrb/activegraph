@@ -63,42 +63,14 @@ Additionally you can change the name of a particular ``ActiveNode`` by using ``m
       self.mapped_label_name = 'BlogPost'
     end
 
-Indexes
-~~~~~~~
+Indexes and Constraints
+~~~~~~~~~~~~~~~~~~~~~~~
 
-To declare a index on a property
+To declare a index on a constraint on a property, you should create a migration.  See :doc:`Migrations`
 
-.. code-block:: ruby
+.. note::
 
-    class Person
-      include Neo4j::ActiveNode
-      property :name, index: :exact
-    end
-
-Only exact index is currently possible.
-
-Indexes can also be declared like this:
-
-.. code-block:: ruby
-
-    class Person
-      include Neo4j::ActiveNode
-      property :name
-      index :name
-    end
-
-Constraints
-~~~~~~~~~~~
-
-You can declare that a property should have a unique value.
-
-.. code-block:: ruby
-
-    class Person
-      property :id_number, constraint: :unique # will raise an exception if id_number is not unique
-    end
-
-Notice an unique validation is not enough to be 100% sure that a property is unique (because of concurrency issues, just like ActiveRecord). Constraints can also be declared just like indexes separately, see above.
+  In previous versions of ``ActiveNode`` indexes and constraints were defined on properties directly on the models and were automatically created.  This turned out to be not safe, and migrations are now required to create indexes and migrations.
 
 Labels
 ~~~~~~

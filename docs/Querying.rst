@@ -1,18 +1,38 @@
 Querying
 ========
 
+Introduction
+------------
+
+If you are using the ``neo4j-core`` gem, querying is as simple as calling the ``query`` method on your session object and providing a query and optional parameters:
+
+.. code-block:: ruby
+
+  neo4j_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
+
+Using the ``neo4j`` gem provides a number of additional options.  Firstly in the ``neo4j`` gem, the session is made accessible via a call to ``Neo4j::ActiveBase.current_session``.  So you could make the above query with:
+
+.. code-block:: ruby
+
+  Neo4j::ActiveBase.current_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
+
+Most of the time, though, using the ``neo4j`` gem involves using the ``ActiveNode`` and ``ActiveRel`` APIs as described below.
+
+ActiveNode
+----------
+
 Simple Query Methods
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 There are a number of ways to find and return nodes.
 
 ``.find``
-~~~~~~~~~
+^^^^^^^^^
 
 Find an object by :doc:`id_property <UniqueIDs>`
 
 ``.find_by``
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 ``find_by`` and ``find_by!`` behave as they do in ActiveRecord, returning the first object matching the criteria or nil (or an error in the case of ``find_by!``)
 
@@ -21,7 +41,7 @@ Find an object by :doc:`id_property <UniqueIDs>`
   Post.find_by(title: 'Neo4j.rb is awesome')
 
 Scope Method Chaining
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 Like in ActiveRecord you can build queries via method chaining.  This can start in one of three ways:
 
@@ -36,7 +56,7 @@ At this point it should be mentioned that what associations return isn't an ``Ar
 From a scope you can filter, sort, and limit to modify the query that will be performed or call a further association.
 
 Querying the scope
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 Similar to ActiveRecord you can perform various operations on a scope like so:
 
@@ -47,7 +67,7 @@ Similar to ActiveRecord you can perform various operations on a scope like so:
 The arguments to these methods are translated into ``Cypher`` query statements.  For example in the above statement the regular expression is translated into a Cypher ``=~`` operator.  Additionally all values are translated into Neo4j `query parameters <http://neo4j.com/docs/stable/cypher-parameters.html>`_ for the best performance and to avoid query injection attacks.
 
 Chaining associations
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 As you've seen, it's possible to chain methods to build a query on one model.  In addition it's possible to also call associations at any point along the chain to transition to another associated model.  The simplest example would be:
 
@@ -86,7 +106,7 @@ Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relat
     <iframe width="560" height="315" src="https://www.youtube.com/embed/pUAl9ov22j4" frameborder="0" allowfullscreen></iframe>
 
 Branching
-~~~~~~~~~
+^^^^^^^^^
 
 When making association chains with ``ActiveNode`` you can use the ``branch`` method to go down one path before jumping back to continue where you started from.  For example:
 
@@ -100,7 +120,7 @@ When making association chains with ``ActiveNode`` you can use the ``branch`` me
   # RETURN exam
 
 Associations and Unpersisted Nodes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is some special behavior around association creation when nodes are new and unsaved. Below are a few scenarios and their outcomes.
 
@@ -143,7 +163,7 @@ In the above example, ``lesson`` would be saved and the relationship would be cr
 
 
 Parameters
-~~~~~~~~~~
+^^^^^^^^^^
 
 Neo4j supports parameters which have a number of advantages:
 
@@ -170,7 +190,7 @@ You can also specify parameters yourself with the ``params`` method like so:
     .pluck(:s)
 
 Variable-length relationships
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Introduced in version 5.1.0**
 
@@ -231,7 +251,7 @@ There are many ways to provide the length information to generate all the variou
 
 
 The Query API
--------------
+~~~~~~~~~~~~~
 
 The ``neo4j-core`` gem provides a ``Query`` class which can be used for building very specific queries with method chaining.  This can be used either by getting a fresh ``Query`` object from a ``Session`` or by building a ``Query`` off of a scope such as above.
 
@@ -283,7 +303,7 @@ This avoids needing to use ``as`` when calling the scope - here is the alternati
     <iframe width="560" height="315" src="https://www.youtube.com/embed/UFiWqPdH7io" frameborder="0" allowfullscreen></iframe>
 
 #proxy_as
----------
+~~~~~~~~~
 
 Sometimes it makes sense to turn a ``Query`` object into (or back into) a proxy object like you would get from an association.  In these cases you can use the `Query#proxy_as` method:
 
@@ -296,7 +316,7 @@ Sometimes it makes sense to turn a ``Query`` object into (or back into) a proxy 
 Here we pick up the `s2` variable with the scope of the `Student` model so that we can continue calling associations on it.
 
 ``match_to`` and ``first_rel_to``
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are two methods, match_to and first_rel_to that both make simple patterns easier.
 
@@ -318,17 +338,17 @@ first_rel_to will return the first relationship found between two nodes in a Que
 This returns a relationship object.
 
 Finding in Batches
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Finding in batches will soon be supported in the neo4j gem, but for now is provided in the neo4j-core gem (documentation)
 
 Orm_Adapter
------------
+~~~~~~~~~~~
 
 You can also use the orm_adapter API, by calling #to_adapter on your class. See the API, https://github.com/ianwhite/orm_adapter
 
 Find or Create By...
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 QueryProxy has a ``find_or_create_by`` method to make the node rel creation process easier. Its usage is simple:
 
