@@ -22,11 +22,11 @@ module Neo4j
             super.tap { |copy| copy.each { |key, value| copy[key] = value.clone } }
           end
 
-          def add_association(spec)
+          def add_spec(spec)
             if spec.is_a?(Array)
-              spec.each { |s| add_association(s) }
+              spec.each { |s| add_spec(s) }
             elsif spec.is_a?(Hash)
-              spec.each { |k, v| (self[k] ||= AssociationTree.new(model, k)).add_association(v) }
+              spec.each { |k, v| (self[k] ||= AssociationTree.new(model, k)).add_spec(v) }
             else
               self[spec] ||= AssociationTree.new(model, spec)
             end
@@ -46,17 +46,17 @@ module Neo4j
         end
 
         def pluck_vars(node, rel)
-          return super if with_associations_spec.size.zero?
+          return super if with_associations_tree.size.zero?
 
           perform_query
         end
 
         def perform_query
           @_cache = IdentityMap.new
-          query_from_association_spec
+          query_from_association_tree
             .map do |record, eager_data|
-            cache_and_init(record, with_associations_spec)
-            eager_data.zip(with_associations_spec.paths.map(&:last)).each do |eager_records, element|
+            cache_and_init(record, with_associations_tree)
+            eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
               eager_records.first.zip(eager_records.last).each do |eager_record|
                 add_to_cache(*eager_record, element)
               end
@@ -68,17 +68,17 @@ module Neo4j
 
         def with_associations(*spec)
           new_link.tap do |new_query_proxy|
-            new_query_proxy.with_associations_spec = with_associations_spec.clone
-            new_query_proxy.with_associations_spec.add_association(spec)
+            new_query_proxy.with_associations_tree = with_associations_tree.clone
+            new_query_proxy.with_associations_tree.add_spec(spec)
           end
         end
 
-        def with_associations_spec
-          @with_associations_spec ||= AssociationTree.new(model)
+        def with_associations_tree
+          @with_associations_tree ||= AssociationTree.new(model)
         end
 
-        def with_associations_spec=(tree)
-          @with_associations_spec = tree
+        def with_associations_tree=(tree)
+          @with_associations_tree = tree
         end
 
         private
@@ -105,7 +105,7 @@ module Neo4j
         end
 
         def escape(s)
-          s =~ /\./ ? "`#{s}`" : s
+          "`#{s}`"
         end
 
         def path_name(path)
@@ -113,12 +113,12 @@ module Neo4j
         end
 
         def path_names
-          with_associations_spec.paths.map { |path| path_name(path) }
+          with_associations_tree.paths.map { |path| path_name(path) }
         end
 
-        def query_from_association_spec
+        def query_from_association_tree
           previous_with_variables = []
-          with_associations_spec.paths.inject(query_as(identity).with(identity)) do |query, path|
+          with_associations_tree.paths.inject(query_as(identity).with(identity)) do |query, path|
             with_association_query_part(query, path, previous_with_variables).tap do
               previous_with_variables << path_name(path)
             end
