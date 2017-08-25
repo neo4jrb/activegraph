@@ -10,7 +10,7 @@ describe 'Association Proxy' do
       has_one :out, :favorite_lesson, type: nil, model_class: :Lesson
     end
 
-    stub_active_rel_class('LessonEnrollment')do
+    stub_active_rel_class('LessonEnrollment') do
       from_class :Student
       to_class   :Lesson
       type :has_studet
