@@ -38,6 +38,10 @@ module Neo4j::ActiveNode
         result_nodes.each(&block)
       end
 
+      def each_rel(&block)
+        rels.each(&block)
+      end
+
       # .count always hits the database
       def_delegator :@query_proxy, :count
 

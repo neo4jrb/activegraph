@@ -81,15 +81,20 @@ module Neo4j
           @with_associations_tree = tree
         end
 
+        def first
+          limit(1).to_a.first
+        end
+
         private
 
         def add_to_cache(rel, node, element)
           direction = element.association.direction
+          node = cache_and_init(node, element)
           if rel.is_a?(Neo4j::ActiveRel)
             rel.instance_variable_set(direction == :in ? '@from_node' : '@to_node', node)
           end
           @_cache[direction == :out ? rel.start_node_neo_id : rel.end_node_neo_id]
-            .association_proxy(element.name).add_to_cache(cache_and_init(node, element), rel)
+            .association_proxy(element.name).add_to_cache(node, rel)
         end
 
         def init_associations(node, element)
