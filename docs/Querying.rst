@@ -278,14 +278,16 @@ The ``Query`` class has a set of methods which map directly to Cypher clauses an
 
 Here we can make our own ``MATCH`` clauses unlike in model scoping.  We have ``where``, ``pluck``, and ``return`` here as well in addition to all of the other clause-methods.  See `this page <https://github.com/neo4jrb/neo4j-core/wiki/Queries>`_ for more details.
 
-**TODO Duplicate this page and link to it from here (or just duplicate it here):**
-https://github.com/neo4jrb/neo4j-core/wiki/Queries
+Note that when using the ``Query`` API if you make multiple calls to methods it will try to combine the calls together into one clause and even to re-order them.  If you want to avoid this you can use the ``#break`` method:
 
 .. code-block:: ruby
 
-  Student.scope :in_order, -> (student) { order("coalesce(#{student}.level_num, #{student}.backup_num) DESC") }
+  # Creates a query representing the cypher: MATCH (q:Person), (r:Car) MATCH (p: Person)-->(q)
+  query_obj.match(q: Person).match('r:Car').break.match('(p: Person)-->(q)')
 
-  Student.as(:student).in_order(:student)
+**TODO Duplicate this page and link to it from here (or just duplicate it here):**
+https://github.com/neo4jrb/neo4j-core/wiki/Queries
+
 
 .. seealso::
   .. raw:: html
