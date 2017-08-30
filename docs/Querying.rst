@@ -40,7 +40,7 @@ Find an object by :doc:`id_property <UniqueIDs>`
 
   Post.find_by(title: 'Neo4j.rb is awesome')
 
-Scope Method Chaining
+Proxy Method Chaining
 ~~~~~~~~~~~~~~~~~~~~~
 
 Like in ActiveRecord you can build queries via method chaining.  This can start in one of three ways:
@@ -53,12 +53,14 @@ In the case of the association calls, the scope becomes a class-level representa
 
 At this point it should be mentioned that what associations return isn't an ``Array`` but in fact an ``AssociationProxy``.  ``AssociationProxy`` is ``Enumerable`` so you can still iterate over it as a collection.  This allows for the method chaining to build queries, but it also enables :ref:`eager loading <active_node-eager_loading>` of associations
 
-From a scope you can filter, sort, and limit to modify the query that will be performed or call a further association.
+If if you call a method such as ``where``, you will end up with a ``QueryProxy``.  Similar to an ``AssociationProxy``, a ``QueryProxy`` represents an enumerable query which hasn't yet been executed and which you can call filtering and sorting methods on as well as chaining further associations.
 
-Querying the scope
+From an ``AssociationProxy`` or a ``QueryProxy`` you can filter, sort, and limit to modify the query that will be performed or call a further association.
+
+Querying the proxy
 ^^^^^^^^^^^^^^^^^^
 
-Similar to ActiveRecord you can perform various operations on a scope like so:
+Similar to ActiveRecord you can perform various operations on a proxy like so:
 
 .. code-block:: ruby
 
@@ -278,16 +280,6 @@ Here we can make our own ``MATCH`` clauses unlike in model scoping.  We have ``w
 
 **TODO Duplicate this page and link to it from here (or just duplicate it here):**
 https://github.com/neo4jrb/neo4j-core/wiki/Queries
-
-When using strings inside of a ``Query`` method, you have access to an ``identity`` variable that can simplify your code.  For instance:
-
-.. code-block:: ruby
-
-  Student.scope :in_order, -> { order("coalesce(#{identity}.level_num, #{identity}.backup_num) DESC") }
-
-  Student.in_order
-
-This avoids needing to use ``as`` when calling the scope - here is the alternative:
 
 .. code-block:: ruby
 
