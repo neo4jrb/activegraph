@@ -82,7 +82,7 @@ module Neo4j
         end
 
         def first
-          limit(1).to_a.first
+          (query.clause?(:order) ? self : order(order_property)).limit(1).to_a.first
         end
 
         private
