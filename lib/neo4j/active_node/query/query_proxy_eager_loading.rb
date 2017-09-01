@@ -106,7 +106,22 @@ module Neo4j
         end
 
         def with_associations_return_clause(variables = path_names)
-          variables.map { |n| escape("#{n}_collection") }.join(',')
+          var_list(variables, &:itself)
+        end
+
+        def var_list(variables)
+          variables.map { |n| yield(escape("#{n}_collection")) }.join(',')
+        end
+
+        # In neo4j version 2.1.8 this fails due to a bug:
+        # MATCH (`n`) WITH `n` RETURN `n`
+        # but this
+        # MATCH (`n`) WITH n RETURN `n`
+        # and this
+        # MATCH (`n`) WITH `n` AS `n` RETURN `n`
+        # does not
+        def var_list_fixing_neo4j_2_1_8_bug(variables)
+          var_list(variables) { |var| "#{var} AS #{var}" }
         end
 
         def escape(s)
@@ -134,7 +149,7 @@ module Neo4j
           optional_match_with_where(base_query, path)
             .with(identity,
                   "[collect(#{escape("#{path_name(path)}_rel")}), collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
-                  *with_associations_return_clause(previous_with_variables))
+                  *var_list_fixing_neo4j_2_1_8_bug(previous_with_variables))
         end
 
         def optional_match_with_where(base_query, path)
