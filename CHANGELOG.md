@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Make sure that we handle the state of the SchemaMigration correctly when we get failures in non-transactional migrations (see #1383 / thanks @leviwilson and @ProGM)
+
+## [8.1.4] 2017-08-17
+
+### Fixed
+
 - Issue where node Cypher variable could change during a `branch` (see issue #1348 / thanks @klobuczek for the report)
 
 ## [8.1.3] 2017-06-29
