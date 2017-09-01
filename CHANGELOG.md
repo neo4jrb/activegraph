@@ -3,11 +3,21 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.2.1] 2017-09-01
+
+- Bringing forward changes from 8.1.x
+
 ## [8.2.0] 2017-09-01
 
 ### Added
 
 - Ability to load nested associations with one query using `with_associations` (big thanks to @klobuczek / see #1398)
+
+## [8.1.4] 2017-08-17
+
+### Fixed
+
+- Make sure that we handle the state of the SchemaMigration correctly when we get failures in non-transactional migrations (see #1383 / thanks @leviwilson and @ProGM)
 
 ## [8.1.4] 2017-08-17
 

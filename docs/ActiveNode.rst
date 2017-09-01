@@ -200,6 +200,18 @@ By default, every ``enum`` property will be defined as ``unique``, to improve qu
       enum type: [:image, :video, :unknown], _index: false
     end
 
+Sometimes it is desirable to have a default value for an ``enum`` property.  To acheive this, you can simply define a property with the same name which defines a default value:
+
+
+.. code-block:: ruby
+
+    class Media
+      include Neo4j::ActiveNode
+
+      enum type: [:image, :video, :unknown]
+      property :type, default: :video
+    end
+
 .. _activenode-scopes:
 
 Scopes

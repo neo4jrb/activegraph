@@ -25,7 +25,7 @@ env:
     - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.3
 matrix:
   include:
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       jdk:
       before_script:
       script: "bundle exec rubocop"
