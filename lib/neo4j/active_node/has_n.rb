@@ -38,6 +38,10 @@ module Neo4j::ActiveNode
         result_nodes.each(&block)
       end
 
+      def each_rel(&block)
+        rels.each(&block)
+      end
+
       # .count always hits the database
       def_delegator :@query_proxy, :count
 
@@ -92,9 +96,18 @@ module Neo4j::ActiveNode
         @enumerable = (@cached_result || @query_proxy)
       end
 
-      def add_to_cache(object)
+      def init_cache
+        @cached_rels ||= []
         @cached_result ||= []
-        @cached_result << object
+      end
+
+      def add_to_cache(object, rel = nil)
+        @cached_rels << rel if rel
+        (@cached_result ||= []) << object
+      end
+
+      def rels
+        @cached_rels || super
       end
 
       def cache_query_proxy_result
