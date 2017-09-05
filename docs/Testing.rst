@@ -27,7 +27,7 @@ Faster, but does not does not remove the database schema (indexes and constraint
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.current_session.query('MATCH (n) DETACH DELETE')
+  Neo4j::ActiveBase.current_session.query('MATCH (n) DETACH DELETE n')
 
   # For Neo4j < 2.3
   Neo4j::ActiveBase.current_session.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
