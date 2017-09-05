@@ -40,5 +40,5 @@ A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rubocop')
   s.add_development_dependency('guard-rspec')
-  s.add_development_dependency('rubocop', '~> 0.39.0')
+  s.add_development_dependency('rubocop', '~> 0.49.1')
 end
