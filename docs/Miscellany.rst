@@ -46,6 +46,7 @@ In Ruby:
 If you are using ``ActiveNode`` and/or ``ActiveRel`` from the ``neo4j`` gem you will no doubt have ``SchemaMigration`` nodes in the database.  If you delete these nodes the gem will complain that your migrations haven't been run.  To get around this you could modify the query to exclude those nodes:
 
 .. code-block:: cypher
+
   MATCH (n) WHERE NOT n:`Neo4j::Migrations::SchemaMigration`
   DETACH DELETE n
 
