@@ -25,8 +25,29 @@ describe 'Labels' do
       extend Neo4j::ActiveNode::Labels::ClassMethods
     end
 
+    module SomeAdditionalLabelMixin
+      def self.mapped_label_name
+        :some_label
+      end
+
+      def self.additional_mapped_label_names
+        [:additional_label, :another_additional_label]
+      end
+
+      def self.neo4j_session
+        current_session
+      end
+
+      extend Neo4j::ActiveNode::Query::ClassMethods
+      extend Neo4j::ActiveNode::Labels::ClassMethods
+    end
+
     stub_active_node_class('SomeLabelClass') do
       include SomeLabelMixin
+    end
+
+    stub_active_node_class('SomeAdditionalLabelClass') do
+      include SomeAdditionalLabelMixin
     end
 
     stub_active_node_class('RelationTestClass') do
@@ -43,6 +64,11 @@ describe 'Labels' do
     it 'sets label for mixin classes' do
       p = SomeLabelClass.create
       expect(p.labels.to_a).to match_array([:SomeLabelClass, :some_label])
+    end
+
+    it "sets label for mixin's additional classes" do
+      p = SomeAdditionalLabelClass.create
+      expect(p.labels.to_a).to match_array([:SomeAdditionalLabelClass, :some_label, :additional_label, :another_additional_label])
     end
   end
 

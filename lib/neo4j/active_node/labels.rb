@@ -131,12 +131,24 @@ module Neo4j
 
         # @return [Array{Symbol}] all the labels that this class has
         def mapped_label_names
-          self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.map { |a| a.mapped_label_name.to_sym }
+          self.ancestors.find_all { |a| a.respond_to?(:mapped_label_name) }.inject([]) do |labels, a|
+            labels.push *a.all_mapped_label_names.map(&:to_sym)
+          end
         end
 
         # @return [Symbol] the label that this class has which corresponds to a Ruby class
         def mapped_label_name
           @mapped_label_name || label_for_model
+        end
+
+        # @return [Array{Symbol}] the additional, user given labels that this class has
+        def additional_mapped_label_names
+          @additional_mapped_label_names || []
+        end
+
+        # @return [Array{Symbol}] the mapped_label_name and additional_mapped_label_names of this class
+        def all_mapped_label_names
+          [mapped_label_name, additional_mapped_label_names].flatten
         end
 
         # @return [Neo4j::Label] the label for this class
@@ -164,6 +176,17 @@ module Neo4j
 
         def mapped_label_name=(name)
           @mapped_label_name = name.to_sym
+        end
+
+        def additional_mapped_label_names=(given_names)
+          case given_names
+          when Array then names = given_names
+          when String then names = [given_names]
+          else
+            fail '"additional_mapped_label_names" must be a string or array of strings'
+          end
+          
+          @additional_mapped_label_names = names.map(&:to_sym)
         end
 
         # rubocop:disable Style/AccessorMethodName
