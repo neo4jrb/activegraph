@@ -8,7 +8,7 @@ module Neo4j::ActiveNode
 
       def define_property(property_name, *args)
         super
-        Neo4j::ModelSchema.add_required_index(self, property_name)
+        Neo4j::ModelSchema.add_required_index(self, property_name) unless args[1][:_index] == false
       end
 
       def define_enum_methods(property_name, enum_keys, options)
