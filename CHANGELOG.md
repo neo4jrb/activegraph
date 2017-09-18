@@ -3,7 +3,15 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.2.2] 2017-09-18
+
+### Fixes
+
+- Allow enums to be created without associated indexes (thanks @thefliik / see #1411)
+
 ## [8.2.1] 2017-09-01
+
+### Fixes
 
 - Bringing forward changes from 8.1.x
 
