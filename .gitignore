@@ -38,3 +38,6 @@ docs_site/
 
 # Mac
 .DS_Store
+
+.vagrant/*
+ubuntu*
