@@ -164,7 +164,8 @@ module Neo4j
           base_query.optional_match(
             "(#{identity})#{path.each_with_index.map do |element, index|
               relationship_part(element.association, path_name(path[0..index]))
-            end.join}")
+            end.join}"
+          )
         end
 
         def relationship_part(association, path_name)

@@ -21,7 +21,9 @@ shared_context 'after_commit' do |company_variable, options|
     company = Company.new
 
     if transactions.empty?
-      expect { company.save }.to change { company.after_create_commit_called }
+      expect { company.save }.to change do
+        company.after_create_commit_called
+      end
     else
       company.save
       transactions.last.mark_failed if fail_transaction
@@ -33,7 +35,9 @@ shared_context 'after_commit' do |company_variable, options|
   it 'handles after_update_commit callbacks' do
     company
     if transactions.empty?
-      expect { company.update(name: 'some') }.to change { company.after_update_commit_called }
+      expect { company.update(name: 'some') }.to change do
+        company.after_update_commit_called
+      end
     else
       company.update(name: 'some')
       transactions.last.mark_failed if fail_transaction
@@ -45,7 +49,9 @@ shared_context 'after_commit' do |company_variable, options|
   it 'handles after_destroy_commit callbacks' do
     company
     if transactions.empty?
-      expect { company.destroy }.to change { company.after_destroy_commit_called }
+      expect { company.destroy }.to change do
+        company.after_destroy_commit_called
+      end
     else
       company.destroy
       transactions.last.mark_failed if fail_transaction

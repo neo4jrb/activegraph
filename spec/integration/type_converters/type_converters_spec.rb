@@ -304,7 +304,7 @@ describe Neo4j::Shared::TypeConverters do
         it { is_expected.to eq 123 }
       end
 
-      let_context value: %i(array of symbols) do
+      let_context value: [:array, :of, :symbols] do
         it { is_expected.to eq %w(array of symbols) }
       end
 
