@@ -55,16 +55,21 @@ module Neo4j::ActiveNode
       end
       # rubocop:enable Style/PredicateName
 
+      # @return [Boolean] true if model has access to scope with this name
       def scope?(name)
         full_scopes.key?(name.to_sym)
       end
 
+      # @return [Hash] of scopes assigned to this model. Keys are scope name, value is scope callable.
       def scopes
         @scopes ||= {}
       end
 
+      # @return [Hash] of scopes available to this model. Keys are scope name, value is scope callable.
       def full_scopes
-        self.superclass.respond_to?(:scopes) ? self.superclass.scopes.merge(scopes) : scopes
+        self.ancestors.find_all { |a| a.respond_to?(:scopes) }.reverse.inject({}) do |scopes, a|
+          scopes.merge(a.scopes)
+        end
       end
 
       def _call_scope_context(eval_context, query_params, proc)
