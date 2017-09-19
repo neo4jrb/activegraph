@@ -179,12 +179,12 @@ module Neo4j
         end
 
         def additional_mapped_label_names=(given_names)
-          case given_names
-          when Array then names = given_names
-          when String then names = [given_names]
-          else
-            fail '"additional_mapped_label_names" must be a string or array of strings'
-          end
+          names = case given_names
+                  when Array then given_names
+                  when String then [given_names]
+                  else
+                    fail '"additional_mapped_label_names" must be a string or array of strings'
+                  end
           
           @additional_mapped_label_names = names.map(&:to_sym)
         end
