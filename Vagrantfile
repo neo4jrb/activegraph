@@ -27,7 +27,7 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
 
   project_name = "neo4j"
-  raise if project_name.nil? || project_name == "" #can’t use blank
+  fail "Vagrantfile project_name variable cannot be blank" if project_name.nil? || project_name == ""
 
   config.vm.synced_folder ".", "/home/ubuntu/#{project_name}"
 
@@ -96,42 +96,44 @@ Vagrant.configure("2") do |config|
       # which are needed by the "curb" gem, used in some 3rd party rake tasks--tho not actually sure about neo4j
       yes | sudo apt-get install libcurl3 libcurl4-openssl-dev
       bundle install
-      gem install overcommit
+      gem install overcommit --no-rdoc --no-ri
       overcommit --install
       echo "${GREEN}COMPLETED INSTALLING GEMS${NC}"
   SHELL
 
   unless Dir["./db/neo4j/development"].any?
-    # With default configuration, Neo4j only accepts local connections.
-    # Vagrant has been set up to forward local connections to appropriate ports on the host machine.
-    # As such, we need to change neo4j's conf to accept non-local connections:
+    # With default configuration, Neo4j only accepts local connections (which, in this case, means local to the VM).
+    # Vagrant has been set up to forward connections local to the VM to the appropriate ports on the host machine.
+    # As such, we need to change neo4j's conf to accept non-local connections if we want to be able to connect to
+    # neo4j from a browser on the host machine:
     update_neo4j_conf = <<-TEXT
       require 'fileutils'
       require 'tempfile'
-  
+
       t_file = Tempfile.new('neo4j.conf')
-      File.open("./db/neo4j/development/conf/neo4j.conf", 'r+').each do |line|
-        case line
-        when "#dbms.connectors.default_listen_address=0.0.0.0"
-          t_file.puts "dbms.connectors.default_listen_address=0.0.0.0"
-        when "dbms.connector.bolt.listen_address=localhost:7472"
-          t_file.puts "dbms.connector.bolt.listen_address=:7472"
-        when "dbms.connector.http.listen_address=localhost:7474"
-          t_file.puts "dbms.connector.http.listen_address=:7474"
-        when "dbms.connector.https.listen_address=localhost:7473"
-          t_file.puts "dbms.connector.https.listen_address=:7473"
-        else        
+      File.open('./db/neo4j/development/conf/neo4j.conf', 'r+').each do |line|
+        case line.chomp
+        when '#dbms.connectors.default_listen_address=0.0.0.0'
+          t_file.puts 'dbms.connectors.default_listen_address=0.0.0.0'
+        when 'dbms.connector.bolt.listen_address=localhost:7472'
+          t_file.puts 'dbms.connector.bolt.listen_address=:7472'
+        when 'dbms.connector.http.listen_address=localhost:7474'
+          t_file.puts 'dbms.connector.http.listen_address=:7474'
+        when 'dbms.connector.https.listen_address=localhost:7473'
+          t_file.puts 'dbms.connector.https.listen_address=:7473'
+        else
           t_file.puts line
         end
       end
       t_file.close
-      FileUtils.mv(t_file.path, "./db/neo4j/development/conf/neo4j.conf")
+      FileUtils.mv(t_file.path, './db/neo4j/development/conf/neo4j.conf')
     TEXT
 
     config.vm.provision "install neo4j", type: "shell", privileged: false,
       keep_color: true, inline: <<-SHELL
         PURPLE='\033[1;35m'; GREEN='\033[1;32m'; NC='\033[0;0m'
         echo "${PURPLE}INSTALLING NEO4J INTO 'db/neo4j/development'${NC}"
+        cd ~/#{project_name}
         rake neo4j:install[community-latest]
         ruby -e "#{update_neo4j_conf}"
         echo "${GREEN}COMPLETED INSTALLING NEO4J INTO 'db/neo4j/development'${NC}"
@@ -150,6 +152,6 @@ Vagrant.configure("2") do |config|
       echo "${BLUE}- BOLT: bolt://localhost:7472${NC}"
       echo "${BLUE}To kill the dev database server run 'rake neo4j:stop' inside the VM${NC}"
       echo ' '
-      echo "${BLUE}With the neo4j server running, execute 'rspec' inside the vm to run the test suite${NC}"
+      echo "${BLUE}With the neo4j server running, execute 'rspec' inside the VM to run the test suite${NC}"
     SHELL
 end
