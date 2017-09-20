@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.2.4] 2017-09-20
+
+### Fixes
+
+- Fixes ability to run `rails destroy model` and `rails destroy migration` (thanks @thefliik / see #1420)
+
 ## [8.2.3] 2017-09-19
 
 ### Fixes
