@@ -31,7 +31,7 @@ module Neo4j::Generators::MigrationHelper
     real_file_name = case @behavior
                      when :revoke
                        existing_migration(
-                        'db/neo4j/migrate',
+                         'db/neo4j/migrate',
                          base_migration_file_name(file_name, prefix)
                        )
                      else
@@ -39,17 +39,17 @@ module Neo4j::Generators::MigrationHelper
                      end
 
     # If running with :revoke and migration doesn't exist, real_file_name = nil
-    if real_file_name
-      @migration_class_name = file_name.camelize
+    return if !real_file_name
 
-      # template() method is still run on revoke but it doesn't generate anything
-      # other than a consol message indicating the filepath.
-      # (this appears to be behavior provided by rails)
-      template template_name, File.join('db/neo4j/migrate', real_file_name)
+    @migration_class_name = file_name.camelize
 
-      # On revoke, we need to manually remove the file
-      FileUtils.rm(real_file_name) if @behavior == :revoke
-    end
+    # template() method is still run on revoke but it doesn't generate anything
+    # other than a consol message indicating the filepath.
+    # (this appears to be behavior provided by rails)
+    template template_name, File.join('db/neo4j/migrate', real_file_name)
+
+    # On revoke, we need to manually remove the file
+    FileUtils.rm(real_file_name) if @behavior == :revoke
   end
 end
 
