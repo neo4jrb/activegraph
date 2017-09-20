@@ -31,20 +31,32 @@ describe 'Neo4j::NodeMixin::Scope' do
   end
 
   describe 'Inherited scope' do
-    before { stub_named_class('Mutant', Person) }
+    before do
+      stub_named_class('Mutant', Person)
+      stub_named_class('Sidekick', Mutant)
+    end
 
-    let!(:alive) { Mutant.create name: 'aa' }
-    let!(:dead)  { Mutant.create name: 'bb', date_of_death: 'yesterday' }
+    let!(:alive_mutant) { Mutant.create name: 'aa' }
+    let!(:dead_mutant)  { Mutant.create name: 'bb', date_of_death: 'yesterday' }
+    let!(:alive_sidekick) { Sidekick.create name: 'aa' }
+    let!(:dead_sidekick)  { Sidekick.create name: 'bb', date_of_death: 'yesterday' }
 
-    it 'has the scope of the parent class' do
+    it 'has the scopes of the parent class' do
       expect(Mutant.scope?(:only_living)).to be true
-      expect(Mutant.all.only_living.to_a).to eq([alive])
+      expect(Mutant.all.only_living.to_a).to contain_exactly(alive_mutant, alive_sidekick)
+    end
+
+    it 'has the scopes of the ancestor classes' do
+      expect(Sidekick.scope?(:only_living)).to be true
+      expect(Sidekick.all.only_living.to_a).to eq([alive_sidekick])
     end
 
     it 'inherits correctly overwritten scopes' do
       Mutant.scope :only_living, -> { where('1=0') }
       expect(Mutant.scope?(:only_living)).to be true
       expect(Mutant.all.only_living.to_a).to eq([])
+      expect(Sidekick.scope?(:only_living)).to be true
+      expect(Sidekick.all.only_living.to_a).to eq([])
     end
   end
 
