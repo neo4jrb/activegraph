@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.2.3] 2017-09-19
+
+### Fixes
+
+- Scopes now work when inherited three or more levels deep (see #1415, #1413, #1412 / thanks @thefliik)
+
 ## [8.2.2] 2017-09-18
 
 ### Fixes
