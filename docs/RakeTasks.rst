@@ -38,6 +38,8 @@ The ``neo4j-core`` gem (automatically included with the ``neo4j`` gem) includes 
 
     For the ``version`` argument you can specify either ``community-latest``/``enterprise-latest`` to get the most up-to-date stable version or you can specify a specific version with the format ``community-x.x.x``/``enterprise-x.x.x``
 
+    A custom download URL can be specified using the ``NEO4J_DIST`` environment variable like ``NEO4J_DIST=http://dist.neo4j.org/neo4j-VERSION-unix.tar.gz``
+
   .. _rake_tasks-neo4j_config:
 
   **neo4j:config**
