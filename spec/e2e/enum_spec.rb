@@ -10,6 +10,7 @@ describe Neo4j::ActiveNode do
       enum type: [:unknown, :image, :video], _default: :unknown
       enum size: {big: 100, medium: 7, small: 2}, _prefix: :dimension
       enum flag: [:clean, :dangerous], _suffix: true
+      enum type_format: [:Mpeg, :Png], _case_sensitive: true, _index: false
 
       has_one :in, :uploader, rel_class: :UploaderRel
     end
@@ -32,8 +33,13 @@ describe Neo4j::ActiveNode do
       expect(StoredFile.types).to eq(unknown: 0, image: 1, video: 2)
       expect(StoredFile.sizes).to eq(big: 100, medium: 7, small: 2)
       expect(StoredFile.flags).to eq(clean: 0, dangerous: 1)
+      expect(StoredFile.type_formats).to eq(Mpeg: 0, Png: 1)
       expect(UploaderRel.origins).to eq(disk: 0, web: 1)
     end
+  end
+
+  it 'respects _index = false option' do
+    expect { StoredFile.as(:f).pluck('f.type_format') }.to_not raise_error
   end
 
   describe 'getters and setters' do
@@ -67,6 +73,27 @@ describe Neo4j::ActiveNode do
       file.save!
       expect(StoredFile.as(:f).where(id: file.id).pluck('f.flag')).to eq([nil])
       expect(file.reload.flag).to eq(nil)
+    end
+
+    it 'respects local _case_sensitive option' do
+      file = StoredFile.new
+      file.type_format = :png
+      file.save!
+      expect(StoredFile.as(:f).pluck('f.type_format')).to eq([0])
+      expect(file.reload.type_format).to eq(:Mpeg)
+
+      file.type_format = :Png
+      file.save!
+      expect(StoredFile.as(:f).pluck('f.type_format')).to eq([1])
+      expect(file.reload.type_format).to eq(:Png)
+    end
+
+    it 'respects global _case_sensitive = false default' do
+      file = StoredFile.new
+      file.type = :VIdeO
+      file.save!
+      expect(StoredFile.as(:f).pluck('f.type')).to eq([2])
+      expect(file.reload.type).to eq(:video)
     end
   end
 

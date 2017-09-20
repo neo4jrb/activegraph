@@ -64,7 +64,7 @@ module Neo4j::Shared
         end
       end
 
-      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default]
+      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default, :_case_sensitive]
 
       def split_options_and_parameters(parameters)
         options = {}
@@ -80,15 +80,20 @@ module Neo4j::Shared
       end
 
       def define_property(property_name, enum_keys, options)
-        property_options = build_property_options(enum_keys, options)
-        property property_name, property_options
-        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, property_options)
+        property property_name, build_property_options(enum_keys, options)
+        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, build_enum_options(enum_keys, options))
       end
 
       def build_property_options(_enum_keys, options = {})
         {
           default: options[:_default]
         }
+      end
+
+      def build_enum_options(_enum_keys, options = {})
+        enum_options = build_property_options(_enum_keys, options)
+        enum_options[:case_sensitive] = options[:_case_sensitive]
+        enum_options
       end
 
       def define_enum_methods(property_name, enum_keys, options)

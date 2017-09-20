@@ -271,6 +271,10 @@ module Neo4j::Shared
       def initialize(enum_keys, options)
         @enum_keys = enum_keys
         @options = options
+
+        if @options[:case_sensitive].nil?
+          @options[:case_sensitive] = Neo4j::Config.enums_case_sensitive
+        end
       end
 
       def converted?(value)
@@ -298,8 +302,10 @@ module Neo4j::Shared
       def to_db(value)
         if value.is_a?(Array)
           value.map(&method(:to_db))
-        else
+        elsif @options[:case_sensitive]
           @enum_keys[value.to_s.to_sym] || 0
+        else
+          @enum_keys[value.to_s.downcase.to_sym] || 0
         end
       end
     end
