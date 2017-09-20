@@ -200,7 +200,7 @@ By default, every ``enum`` property will require you to add an associated index 
       enum type: [:image, :video, :unknown], _index: false
     end
 
-Sometimes it is desirable to have a default value for an ``enum`` property.  To acheive this, you can simply pass the `_default` option when defining the enum:
+Sometimes it is desirable to have a default value for an ``enum`` property.  To acheive this, you can simply pass the ``_default`` option when defining the enum:
 
 .. code-block:: ruby
 
@@ -210,7 +210,7 @@ Sometimes it is desirable to have a default value for an ``enum`` property.  To 
       enum type: [:image, :video, :unknown], _default: :video
     end
 
-By default, enum setters are case insensitive (in the example below, `Media.create(type: 'VIDEO').type == :video). If you wish to disable this for a specific enum, pass the `_case_sensitive: true` option. if you wish to change the global default for `_case_sensitive` to `true`, use Neo4jrb's `enums_case_sensitive` config option (detailed in the :ref:`configuration-variables` section).
+By default, enum setters are `case insensitive` (in the example below, ``Media.create(type: 'VIDEO').type == :video``). If you wish to disable this for a specific enum, pass the ``_case_sensitive: true`` option. if you wish to change the global default for ``_case_sensitive`` to ``true``, use Neo4jrb's ``enums_case_sensitive`` config option (detailed in the :ref:`configuration-variables` section).
 
 .. code-block:: ruby
 

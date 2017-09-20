@@ -21,16 +21,16 @@ Variables
   **association_model_namespace**
     **Default:** ``nil``
 
-    Associations defined in node models will try to match association names to classes. For example, `has_many :out, :student` will look for a `Student` class. To avoid having to use `model_class: 'MyModule::Student'`, this config option lets you specify the module that should be used globally for class name discovery.
+    Associations defined in node models will try to match association names to classes. For example, ``has_many :out, :student`` will look for a ``Student`` class. To avoid having to use ``model_class: 'MyModule::Student'``, this config option lets you specify the module that should be used globally for class name discovery.
 
-    Of course, even with this option set, you can always override it by calling `model_class: 'ClassName'`.
+    Of course, even with this option set, you can always override it by calling ``model_class: 'ClassName'``.
 
   **class_name_property**
     **Default:** ``:_classname``
 
-    Which property should be used to determine the `ActiveNode` class to wrap the node in
+    Which property should be used to determine the ``ActiveNode`` class to wrap the node in
 
-    If there is no value for this property on a node the node`s labels will be used to determine the `ActiveNode` class
+    If there is no value for this property on a node the node`s labels will be used to determine the ``ActiveNode`` class
 
     .. seealso:: :ref:`activenode-wrapping`
 
