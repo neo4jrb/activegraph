@@ -43,7 +43,7 @@ module Neo4j::Shared
       def enum(parameters = {})
         options, parameters = *split_options_and_parameters(parameters)
         parameters.each do |property_name, enum_keys|
-          enum_keys = normalize_key_list enum_keys
+          enum_keys = normalize_key_list enum_keys, options
           @neo4j_enum_data ||= {}
           @neo4j_enum_data[property_name] = enum_keys
           define_property(property_name, enum_keys, options)
@@ -53,15 +53,25 @@ module Neo4j::Shared
 
       protected
 
-      def normalize_key_list(enum_keys)
+      def normalize_key_list(enum_keys, options)
+        case_sensitive = options[:_case_sensitive]
+        case_sensitive = Neo4j::Config.enums_case_sensitive if case_sensitive.nil?
+
         case enum_keys
         when Hash
-          enum_keys
         when Array
-          Hash[enum_keys.each_with_index.to_a]
+          enum_keys = Hash[enum_keys.each_with_index.to_a]
         else
           fail ArgumentError, 'Invalid parameter for enum. Please provide an Array or an Hash.'
         end
+
+        unless case_sensitive
+          enum_keys.keys.each do |key|
+            fail ArgumentError, "enum keys must be lowercase unless _case_sensitive = true" unless key.downcase == key
+          end
+        end
+
+        enum_keys
       end
 
       VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default, :_case_sensitive]
