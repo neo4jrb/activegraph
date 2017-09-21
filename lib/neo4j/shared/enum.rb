@@ -59,6 +59,7 @@ module Neo4j::Shared
 
         case enum_keys
         when Hash
+          enum_keys
         when Array
           enum_keys = Hash[enum_keys.each_with_index.to_a]
         else
@@ -67,7 +68,7 @@ module Neo4j::Shared
 
         unless case_sensitive
           enum_keys.keys.each do |key|
-            fail ArgumentError, "enum keys must be lowercase unless _case_sensitive = true" unless key.downcase == key
+            fail ArgumentError, 'enum keys must be lowercase unless _case_sensitive = true' unless key.downcase == key
           end
         end
 
@@ -100,8 +101,8 @@ module Neo4j::Shared
         }
       end
 
-      def build_enum_options(_enum_keys, options = {})
-        enum_options = build_property_options(_enum_keys, options)
+      def build_enum_options(enum_keys, options = {})
+        enum_options = build_property_options(enum_keys, options)
         enum_options[:case_sensitive] = options[:_case_sensitive]
         enum_options
       end

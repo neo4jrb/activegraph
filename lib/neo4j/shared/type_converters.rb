@@ -272,9 +272,9 @@ module Neo4j::Shared
         @enum_keys = enum_keys
         @options = options
 
-        if @options[:case_sensitive].nil?
-          @options[:case_sensitive] = Neo4j::Config.enums_case_sensitive
-        end
+        return unless @options[:case_sensitive].nil?
+
+        @options[:case_sensitive] = Neo4j::Config.enums_case_sensitive
       end
 
       def converted?(value)
