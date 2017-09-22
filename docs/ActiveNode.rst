@@ -387,6 +387,13 @@ You can query associations:
     comment.post.comments       # Original comment and all of it's siblings.  Makes just one query
     post.comments.authors.posts # All posts of people who have commented on the post.  Still makes just one query
 
+When querying ``has_one`` associations, by default ``.first`` will be called on the result. This makes the result non-chainable if the result is ``nil``. If you want to ensure a chainable result, you can call ``has_one`` with a ``chainable: true`` argument.
+
+.. code-block:: ruby
+
+    comment.post                    # Post object
+    comment.post(chainable: true)   # Association proxy object wrapping post
+
 You can create associations
 
 .. code-block:: ruby
@@ -428,9 +435,9 @@ The two orphan-destruction options are unique to Neo4j.rb. As an example of when
 
 
 .. seealso::
-  :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>`
+  #has_many http://www.rubydoc.info/gems/neo4j/Neo4j/ActiveNode/HasN/ClassMethods#has_many-instance_method
   and
-  :ref:`#has_one <Neo4j/ActiveNode/HasN/ClassMethods#has_one>`
+  #has_one http://www.rubydoc.info/gems/neo4j/Neo4j/ActiveNode/HasN/ClassMethods#has_one-instance_method
 
 
 Creating Unique Relationships
