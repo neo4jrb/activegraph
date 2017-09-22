@@ -34,12 +34,13 @@ describe Neo4j::ActiveNode do
       expect(StoredFile.sizes).to eq(big: 100, medium: 7, small: 2)
       expect(StoredFile.flags).to eq(clean: 0, dangerous: 1)
       expect(StoredFile.type_formats).to eq(Mpeg: 0, Png: 1)
+      expect { StoredFile.enum something: [:value1, :Value1] }.to raise_error(ArgumentError)
       expect(UploaderRel.origins).to eq(disk: 0, web: 1)
     end
-  end
 
-  it 'respects _index = false option' do
-    expect { StoredFile.as(:f).pluck('f.type_format') }.to_not raise_error
+    it 'respects _index = false option' do
+      expect { StoredFile.as(:f).pluck('f.type_format') }.to_not raise_error
+    end
   end
 
   describe 'getters and setters' do

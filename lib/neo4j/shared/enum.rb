@@ -54,8 +54,7 @@ module Neo4j::Shared
       protected
 
       def normalize_key_list(enum_keys, options)
-        case_sensitive = options[:_case_sensitive]
-        case_sensitive = Neo4j::Config.enums_case_sensitive if case_sensitive.nil?
+        case_sensitive = options.fetch(:_case_sensitive, Neo4j::Config.enums_case_sensitive)
 
         case enum_keys
         when Hash
@@ -102,9 +101,9 @@ module Neo4j::Shared
       end
 
       def build_enum_options(enum_keys, options = {})
-        enum_options = build_property_options(enum_keys, options)
-        enum_options[:case_sensitive] = options[:_case_sensitive]
-        enum_options
+        build_property_options(enum_keys, options).tap do |enum_options|
+          enum_options[:case_sensitive] = options[:_case_sensitive]
+        end
       end
 
       def define_enum_methods(property_name, enum_keys, options)
