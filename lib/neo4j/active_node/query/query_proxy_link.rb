@@ -115,7 +115,11 @@ module Neo4j
             end
 
             def converted_key(model, key)
-              (model && key.to_sym == :id) ? model.id_property_name : key
+              if key.to_sym == :id
+                model ? model.id_property_name : :uuid
+              else
+                key
+              end
             end
 
             def converted_value(model, key, value)
