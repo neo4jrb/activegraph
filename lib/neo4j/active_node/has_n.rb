@@ -463,7 +463,7 @@ module Neo4j::ActiveNode
         end
       end
 
-      def define_has_one_getter(name)
+      def define_has_one_getter(name) # rubocop:disable Metrics/PerceivedComplexity
         define_method(name) do |node = nil, rel = nil, options = {}|
           options, node = node, nil if node.is_a?(Hash)
 
