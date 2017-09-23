@@ -17,9 +17,9 @@ Vagrant.configure('2') do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine and only allow access
   # via 127.0.0.1 to disable public access
-  config.vm.network 'forwarded_port', guest: 7474, host: 7474, host_ip: '127.0.0.1'
-  config.vm.network 'forwarded_port', guest: 7473, host: 7473, host_ip: '127.0.0.1'
-  config.vm.network 'forwarded_port', guest: 7472, host: 7472, host_ip: '127.0.0.1'
+  config.vm.network 'forwarded_port', guest: 7474, host: 9474, host_ip: '127.0.0.1'
+  config.vm.network 'forwarded_port', guest: 7473, host: 9473, host_ip: '127.0.0.1'
+  config.vm.network 'forwarded_port', guest: 7472, host: 9472, host_ip: '127.0.0.1'
 
   # Share an additional folder to the guest VM or configure . The first argument is
   # the path on the host to the actual folder. The second argument is
