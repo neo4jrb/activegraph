@@ -404,6 +404,25 @@ You can create associations
 
     comment.post = post1                  # Removes all existing relationships
 
+Updating Associations
+~~~~~~~~~~~~~~~~~~~~~
+
+You can update attributes for objects of an association like this:
+
+.. code-block:: ruby
+
+    post.comments.update_all(flagged: true)
+    post.comments.where(text: /.*cats.*/).update_all(flagged: true)
+
+You can even update properties of the relationships for the associations like so:
+
+.. code-block:: ruby
+
+    post.comments.update_all_rels(flagged: true)
+    post.comments.where(text: /.*cats.*/).update_all_rels(flagged: true)
+    # Or to filter on the relationships
+    post.comments.where(flagged: nil).update_all_rels(flagged: true)
+
 Dependent Associations
 ~~~~~~~~~~~~~~~~~~~~~~
 
