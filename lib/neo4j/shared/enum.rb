@@ -3,6 +3,7 @@ module Neo4j::Shared
     extend ActiveSupport::Concern
 
     class ConflictingEnumMethodError < Neo4j::Error; end
+    class InvalidEnumValueError < Neo4j::InvalidParameterError; end
 
     module ClassMethods
       attr_reader :neo4j_enum_data
@@ -67,7 +68,7 @@ module Neo4j::Shared
 
         unless case_sensitive
           enum_keys.keys.each do |key|
-            fail ArgumentError, 'enum keys must be lowercase unless _case_sensitive = true' unless key.downcase == key
+            fail ArgumentError, 'Enum keys must be lowercase unless _case_sensitive = true' unless key.downcase == key
           end
         end
 
@@ -101,6 +102,10 @@ module Neo4j::Shared
       end
 
       def build_enum_options(enum_keys, options = {})
+        if options[:_default] && not(enum_keys.include?(options[:_default]))
+          fail ArgumentError, 'Enum default value must match an enum key'
+        end
+
         build_property_options(enum_keys, options).tap do |enum_options|
           enum_options[:case_sensitive] = options[:_case_sensitive]
         end

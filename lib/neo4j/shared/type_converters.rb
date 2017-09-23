@@ -303,9 +303,11 @@ module Neo4j::Shared
         if value.is_a?(Array)
           value.map(&method(:to_db))
         elsif @options[:case_sensitive]
-          @enum_keys[value.to_s.to_sym] || 0
+          @enum_keys[value.to_s.to_sym] ||
+            fail(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
         else
-          @enum_keys[value.to_s.downcase.to_sym] || 0
+          @enum_keys[value.to_s.downcase.to_sym] ||
+            fail(Neo4j::Shared::Enum::InvalidEnumValueError, 'Case-insensitive (downcased) value passed to an enum property must match one of the enum keys')
         end
       end
     end
