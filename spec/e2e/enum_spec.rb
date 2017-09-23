@@ -34,12 +34,19 @@ describe Neo4j::ActiveNode do
       expect(StoredFile.sizes).to eq(big: 100, medium: 7, small: 2)
       expect(StoredFile.flags).to eq(clean: 0, dangerous: 1)
       expect(StoredFile.type_formats).to eq(Mpeg: 0, Png: 1)
-      expect { StoredFile.enum something: [:value1, :Value1] }.to raise_error(ArgumentError)
       expect(UploaderRel.origins).to eq(disk: 0, web: 1)
     end
 
     it 'respects _index = false option' do
       expect { StoredFile.as(:f).pluck('f.type_format') }.to_not raise_error
+    end
+
+    it 'raises error if keys are invalid' do
+      expect { StoredFile.enum something: [:value1, :Value1] }.to raise_error(ArgumentError)
+    end
+
+    it "raises error if _default option doesn't match key" do
+      expect { StoredFile.enum something: [:value1, :value2], _default: :value3 }.to raise_error(ArgumentError)
     end
   end
 
@@ -76,12 +83,16 @@ describe Neo4j::ActiveNode do
       expect(file.reload.flag).to eq(nil)
     end
 
+    it "raises error if value doesn't match an enum key" do
+      file = StoredFile.new
+      file.type = :audio
+      expect { file.save! }.to raise_error Neo4j::Shared::Enum::InvalidEnumValueError
+    end
+
     it 'respects local _case_sensitive option' do
       file = StoredFile.new
       file.type_format = :png
-      file.save!
-      expect(StoredFile.as(:f).pluck('f.type_format')).to eq([0])
-      expect(file.reload.type_format).to eq(:Mpeg)
+      expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError)
 
       file.type_format = :Png
       file.save!
