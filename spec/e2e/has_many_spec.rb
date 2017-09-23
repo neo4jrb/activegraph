@@ -274,6 +274,12 @@ describe 'has_many' do
     context "model_class: ['Comment', 'Person']" do
       let(:model_class) { %w(Comment Person) }
       it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
+
+      describe 'plucking :id instead of id_property_name' do
+        subject { post.comments.pluck(:id).sort }
+
+        it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
+      end
     end
   end
 
