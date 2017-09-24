@@ -24,6 +24,12 @@ describe 'has_one' do
       it 'returns a nil object' do
         expect(unsaved_node.parent).to eq nil
       end
+
+      describe 'with chainable: true option' do
+        it 'returns an empty association proxy object' do
+          expect(unsaved_node.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        end
+      end
     end
 
     it 'find the nodes via the has_one accessor' do
@@ -36,6 +42,22 @@ describe 'has_one' do
       expect(c.parent).to eq(a)
       expect(b.parent).to eq(a)
       expect(a.children.to_a).to match_array([b, c])
+    end
+
+    describe 'with chainable: true option' do
+      it 'find the nodes via the has_one accessor' do
+        a = HasOneA.create(name: 'a')
+        b = HasOneB.create(name: 'b')
+        c = HasOneB.create(name: 'c')
+        a.children << b
+        a.children << c
+
+        expect(c.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        expect(c.parent(chainable: true).first).to eq(a)
+        expect(b.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        expect(b.parent(chainable: true).first).to eq(a)
+        expect(a.children.to_a).to match_array([b, c])
+      end
     end
 
     it 'caches the result of has_one accessor' do

@@ -467,18 +467,14 @@ module Neo4j::ActiveNode
         define_method(name) do |node = nil, rel = nil, options = {}|
           options, node = node, nil if node.is_a?(Hash)
 
-          # Return all results if a variable-length relationship length was given
           association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
-          if options[:rel_length] && !options[:rel_length].is_a?(Integer)
+
+          # Return all results if options[:chainable] == true or a variable-length relationship length was given
+          if options[:chainable] || (options[:rel_length] && !options[:rel_length].is_a?(Integer))
             association_proxy
           else
-            target_class = self.class.send(:association_target_class, name)
             o = association_proxy.result.first
-            if target_class
-              target_class.send(:nodeify, o)
-            else
-              o
-            end
+            self.class.send(:association_target_class, name).try(:nodeify, o) || o
           end
         end
       end

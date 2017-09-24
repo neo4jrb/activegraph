@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.2.5] 2017-09-23
+
+### Fixes
+
+- Error when using `pluck(:id)` on an association which has an array argument for `model_class` (thanks @thefliik / see #1426)
+
 ## [8.2.4] 2017-09-20
 
 ### Fixes
