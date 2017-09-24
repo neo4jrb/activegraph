@@ -86,13 +86,16 @@ describe Neo4j::ActiveNode do
     it "raises error if value doesn't match an enum key" do
       file = StoredFile.new
       file.type = :audio
-      expect { file.save! }.to raise_error Neo4j::Shared::Enum::InvalidEnumValueError
+      expect { file.save! }.to raise_error(
+        Neo4j::Shared::Enum::InvalidEnumValueError,
+        'Case-insensitive (downcased) value passed to an enum property must match one of the enum keys'
+      )
     end
 
     it 'respects local _case_sensitive option' do
       file = StoredFile.new
       file.type_format = :png
-      expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError)
+      expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
 
       file.type_format = :Png
       file.save!
@@ -106,6 +109,24 @@ describe Neo4j::ActiveNode do
       file.save!
       expect(StoredFile.as(:f).pluck('f.type')).to eq([2])
       expect(file.reload.type).to eq(:video)
+    end
+
+    context 'global enums_case_sensitive config is set to true' do
+      let_config(:enums_case_sensitive, true) do
+        it 'respects global _case_sensitive = true default' do
+          file = StoredFile.new
+          file.type = :VIdeO
+          expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
+        end
+
+        it 'still accepts valid params' do
+          file = StoredFile.new
+          file.type = :video
+          file.save!
+          expect(StoredFile.as(:f).pluck('f.type')).to eq([2])
+          expect(file.reload.type).to eq(:video)
+        end
+      end
     end
   end
 
