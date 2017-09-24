@@ -83,6 +83,10 @@ module Neo4j::Shared
         property_options = build_property_options(enum_keys, options)
         property property_name, property_options
         serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, property_options)
+
+        subclasses.each do |klass|
+          klass.serialized_properties = self.serialized_properties
+        end
       end
 
       def build_property_options(_enum_keys, options = {})

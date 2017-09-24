@@ -169,6 +169,10 @@ module Neo4j::Shared
           yield name
           constraint_or_index(name, options)
         end
+
+        subclasses.each do |klass|
+          klass.inherit_property name, prop.clone, declared_properties[name].options
+        end
       end
 
       def undef_property(name)
