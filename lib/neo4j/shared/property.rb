@@ -163,7 +163,7 @@ module Neo4j::Shared
       end
 
       def build_property(name, options)
-        DeclaredProperty.new(name, options).tap do |prop|
+        prop = DeclaredProperty.new(name, options).tap do |prop|
           prop.register
           declared_properties.register(prop)
           yield name
@@ -173,6 +173,8 @@ module Neo4j::Shared
         subclasses.each do |klass|
           klass.inherit_property name, prop.clone, declared_properties[name].options
         end
+
+        prop
       end
 
       def undef_property(name)
