@@ -98,4 +98,40 @@ describe 'Inheritance', type: :e2e do
       expect(Car.associations_keys).to include(:models)
     end
   end
+
+  describe 'property declared on parent after inheritence' do
+    before(:each) do
+      stub_named_class('MiniCooper', Car) do
+        property :cost
+      end
+
+      Car.property :technical_specs
+      Car.serialize :technical_specs
+      Car.enum doors: [:four_door, :two_door], _index: false
+    end
+
+    let(:mini) { MiniCooper.new }
+
+    it 'child inherites setters' do
+      expect(mini.technical_specs = {very: 'technical'}).to eq(very: 'technical')
+      expect(mini.doors = :four_door).to eq(:four_door)
+    end
+
+    it 'child inherites getters' do
+      mini.technical_specs = {very: 'technical'}
+      mini.doors = :four_door
+
+      expect(mini.technical_specs).to eq(very: 'technical')
+      expect(mini.doors).to eq(:four_door)
+    end
+
+    it 'persists values' do
+      mini.technical_specs = {very: 'technical'}
+      mini.doors = :four_door
+      mini.save!
+
+      expect(MiniCooper.first.doors).to eq(:four_door)
+      expect(MiniCooper.first.technical_specs).to eq('very' => 'technical')
+    end
+  end
 end
