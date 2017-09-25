@@ -385,7 +385,7 @@ You can query associations:
     post.comments.to_a          # Array of comments
     comment.post                # Post object
     comment.post.comments       # Original comment and all of it's siblings.  Makes just one query
-    post.comments.authors.posts # All posts of people who have commented on the post.  Still makes just one query
+    post.comments.author.posts # All posts of people who have commented on the post.  Still makes just one query
 
 When querying ``has_one`` associations, by default ``.first`` will be called on the result. This makes the result non-chainable if the result is ``nil``. If you want to ensure a chainable result, you can call ``has_one`` with a ``chainable: true`` argument.
 
