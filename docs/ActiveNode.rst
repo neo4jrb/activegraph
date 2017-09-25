@@ -190,7 +190,7 @@ Or by using ``where``:
     Media.as(:m).where('m.type <> ?', Media.types[:image])
     # => CYPHER: "MATCH (result_media:`StoredFile`) WHERE (result_media.type <> 0)"
 
-By default, every ``enum`` property will be defined as ``unique``, to improve query performances. If you want to disable this, simply pass ``_index: false`` to ``enum``:
+By default, every ``enum`` property will require you to add an associated index to improve query performance. If you want to disable this, simply pass ``_index: false`` to ``enum``:
 
 .. code-block:: ruby
 
@@ -200,16 +200,24 @@ By default, every ``enum`` property will be defined as ``unique``, to improve qu
       enum type: [:image, :video, :unknown], _index: false
     end
 
-Sometimes it is desirable to have a default value for an ``enum`` property.  To acheive this, you can simply define a property with the same name which defines a default value:
-
+Sometimes it is desirable to have a default value for an ``enum`` property.  To acheive this, you can simply pass the ``_default`` option when defining the enum:
 
 .. code-block:: ruby
 
     class Media
       include Neo4j::ActiveNode
 
-      enum type: [:image, :video, :unknown]
-      property :type, default: :video
+      enum type: [:image, :video, :unknown], _default: :video
+    end
+
+By default, enum setters are `case insensitive` (in the example below, ``Media.create(type: 'VIDEO').type == :video``). If you wish to disable this for a specific enum, pass the ``_case_sensitive: true`` option. if you wish to change the global default for ``_case_sensitive`` to ``true``, use Neo4jrb's ``enums_case_sensitive`` config option (detailed in the :ref:`configuration-variables` section).
+
+.. code-block:: ruby
+
+    class Media
+      include Neo4j::ActiveNode
+
+      enum type: [:image, :video, :unknown], _case_sensitive: false
     end
 
 .. _activenode-scopes:
@@ -385,7 +393,7 @@ You can query associations:
     post.comments.to_a          # Array of comments
     comment.post                # Post object
     comment.post.comments       # Original comment and all of it's siblings.  Makes just one query
-    post.comments.authors.posts # All posts of people who have commented on the post.  Still makes just one query
+    post.comments.author.posts # All posts of people who have commented on the post.  Still makes just one query
 
 When querying ``has_one`` associations, by default ``.first`` will be called on the result. This makes the result non-chainable if the result is ``nil``. If you want to ensure a chainable result, you can call ``has_one`` with a ``chainable: true`` argument.
 

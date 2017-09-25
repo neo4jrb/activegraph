@@ -3,6 +3,7 @@ module Neo4j::Shared
     extend ActiveSupport::Concern
 
     class ConflictingEnumMethodError < Neo4j::Error; end
+    class InvalidEnumValueError < Neo4j::InvalidParameterError; end
 
     module ClassMethods
       attr_reader :neo4j_enum_data
@@ -43,7 +44,7 @@ module Neo4j::Shared
       def enum(parameters = {})
         options, parameters = *split_options_and_parameters(parameters)
         parameters.each do |property_name, enum_keys|
-          enum_keys = normalize_key_list enum_keys
+          enum_keys = normalize_key_list enum_keys, options
           @neo4j_enum_data ||= {}
           @neo4j_enum_data[property_name] = enum_keys
           define_property(property_name, enum_keys, options)
@@ -53,18 +54,28 @@ module Neo4j::Shared
 
       protected
 
-      def normalize_key_list(enum_keys)
+      def normalize_key_list(enum_keys, options)
+        case_sensitive = options.fetch(:_case_sensitive, Neo4j::Config.enums_case_sensitive)
+
         case enum_keys
         when Hash
           enum_keys
         when Array
-          Hash[enum_keys.each_with_index.to_a]
+          enum_keys = Hash[enum_keys.each_with_index.to_a]
         else
           fail ArgumentError, 'Invalid parameter for enum. Please provide an Array or an Hash.'
         end
+
+        unless case_sensitive
+          enum_keys.keys.each do |key|
+            fail ArgumentError, 'Enum keys must be lowercase unless _case_sensitive = true' unless key.downcase == key
+          end
+        end
+
+        enum_keys
       end
 
-      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default]
+      VALID_OPTIONS_FOR_ENUMS = [:_index, :_prefix, :_suffix, :_default, :_case_sensitive]
 
       def split_options_and_parameters(parameters)
         options = {}
@@ -80,9 +91,8 @@ module Neo4j::Shared
       end
 
       def define_property(property_name, enum_keys, options)
-        property_options = build_property_options(enum_keys, options)
-        property property_name, property_options
-        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, property_options)
+        property property_name, build_property_options(enum_keys, options)
+        serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, build_enum_options(enum_keys, options))
 
         # If class has already been inherited, make sure subclasses fully inherit enum
         subclasses.each do |klass|
@@ -94,6 +104,16 @@ module Neo4j::Shared
         {
           default: options[:_default]
         }
+      end
+
+      def build_enum_options(enum_keys, options = {})
+        if options[:_default] && not(enum_keys.include?(options[:_default]))
+          fail ArgumentError, 'Enum default value must match an enum key'
+        end
+
+        build_property_options(enum_keys, options).tap do |enum_options|
+          enum_options[:case_sensitive] = options[:_case_sensitive]
+        end
       end
 
       def define_enum_methods(property_name, enum_keys, options)
