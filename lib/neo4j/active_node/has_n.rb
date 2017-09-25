@@ -473,13 +473,8 @@ module Neo4j::ActiveNode
           if options[:chainable] || (options[:rel_length] && !options[:rel_length].is_a?(Integer))
             association_proxy
           else
-            target_class = self.class.send(:association_target_class, name)
             o = association_proxy.result.first
-            if target_class
-              target_class.send(:nodeify, o)
-            else
-              o
-            end
+            self.class.send(:association_target_class, name).try(:nodeify, o) || o
           end
         end
       end
