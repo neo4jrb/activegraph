@@ -122,6 +122,10 @@ module Neo4j
         return nil if namespace.nil?
         "::#{namespace}"
       end
+
+      def enums_case_sensitive
+        Neo4j::Config[:enums_case_sensitive] || false
+      end
     end
   end
 end
