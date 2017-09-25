@@ -163,12 +163,19 @@ module Neo4j::Shared
       end
 
       def build_property(name, options)
-        DeclaredProperty.new(name, options).tap do |prop|
+        decl_prop = DeclaredProperty.new(name, options).tap do |prop|
           prop.register
           declared_properties.register(prop)
           yield name
           constraint_or_index(name, options)
         end
+
+        # If this class has already been inherited, make sure subclasses inherit property
+        subclasses.each do |klass|
+          klass.inherit_property name, decl_prop.clone, declared_properties[name].options
+        end
+
+        decl_prop
       end
 
       def undef_property(name)
