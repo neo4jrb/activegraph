@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.3.0] 2017-09-25
+
+### Changed
+
+- Allow `chainable: true` option when calling `has_one` associations to start chaining (thanks @thefliik / see #1422)
+
 ## [8.2.5] 2017-09-23
 
 ### Fixes
