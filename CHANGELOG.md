@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- `enum` values are now case-insensitive when being set by default (with a `_case_sensitive` option) (thanks @thefliik / see #1419)
+- By default, `enum` values are now case-insensitive (but there are local and global `_case_sensitive` options [see the docs](http://neo4jrb.readthedocs.io/en/9.0.x/ActiveNode.html#enums)) (thanks @thefliik / see #1419)
 
 ### Fixed
 
