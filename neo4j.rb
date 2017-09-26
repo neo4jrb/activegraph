@@ -1,6 +1,6 @@
 # Usage: rails new myapp -m neo4j.rb -O
 
-gem "neo4j", '~> 8.1.0'
+gem "neo4j", '~> 9.0.0'
 
 
 generator = %q[
