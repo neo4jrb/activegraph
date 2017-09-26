@@ -434,7 +434,7 @@ This is done by setting ``model_class: false`` or ``model_class: [:ModelOne, :Mo
       include Neo4j::ActiveNode
 
       # Match all incoming relationship types
-      has_many :in, :written_things, type: false, model_class: [:Post, :Comment]
+      has_many :in, :written_things, type: :WROTE, model_class: [:Post, :Comment]
     end
 
 You can't perform standard association chains on a polymorphic association. For example, while you `can` call ``post.comments.author.written_things``, you `cannot` call
@@ -457,7 +457,7 @@ For example, to get ``post.comments.author.written_things.post.comments`` we cou
     post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)").match("(post)<-[:post]-(comment:Comment)").pluck(:comment)
 
 But this isn't ideal. It would be nice to make use of ``ActiveNode``'s association chains to complete our query. We `know` that the return of ``post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)")``
-is a ``Post`` object, after all. To allow for association chains in this circumstance, ``.proxy_as()`` comes to the rescue. If we `know` that a ``Query`` will return a specific model class,
+is a ``Post`` object, after all. To allow for association chains in this circumstance, ``.proxy_as()`` comes to the rescue! If we `know` that a ``Query`` will return a specific model class,
 ``proxy_as`` allows us to tell Neo4jrb this, and begin association chaining from that point. For example
 
 .. code-block:: ruby
