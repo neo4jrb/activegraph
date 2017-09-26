@@ -423,10 +423,10 @@ You can even update properties of the relationships for the associations like so
     post.comments.where(flagged: nil).update_all_rels(flagged: true)
 
 Polymorphic Associations
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``has_one`` or ``has_many`` associations which target multiple ``model_class`` are called polymorphic associations.
-This is done by setting ``model_class: false`` or ``model_class: ["Model_one", "Model_two", "Etc"]``. In our example, the ``Person`` class has a polymorphic association ``written_things``
+This is done by setting ``model_class: false`` or ``model_class: [:ModelOne, :ModelTwo, :Etc]``. In our example, the ``Person`` class has a polymorphic association ``written_things``
 
 .. code-block:: ruby
 
