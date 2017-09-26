@@ -440,8 +440,8 @@ This is done by setting ``model_class: false`` or ``model_class: [:ModelOne, :Mo
 You can't perform standard association chains on a polymorphic association. For example, while you `can` call ``post.comments.author.written_things``, you `cannot` call
 ``post.comments.author.written_things.post.comments`` (an exception will be raised). In this example, the return of ``.written_things`` can be either a ``Post`` object or a ``Comment`` object, any method you called
 on an association made up of them both could have a different meaning for the ``Post`` object vs the ``Comment`` object. So how can you execute ``post.comments.author.written_things.post.comments``?
-This is where ``.query_as`` and ``.proxy_as`` come to the rescue! While Neo4jrb doesn't know how to handle the ``.post`` call to ``.written_things``,
-`you know` that the path from the return of ``.written_things`` to ``Post`` nodes is ``(written_thing)-[:post]->(post:Post)``. To help Neo4jrb out, convert the `AssociationProxy`` object
+This is where ``.query_as`` and ``.proxy_as`` come to the rescue! While ``ActiveNode`` doesn't know how to handle the ``.post`` call on ``.written_things``,
+you `know` that the path from the return of ``.written_things`` to ``Post`` nodes is ``(written_thing)-[:post]->(post:Post)``. To help Neo4jrb out, convert the `AssociationProxy`` object
 returned by ``post.comments.author.written_things`` into a ``Query`` object with ``.query_as()``, then manually specify the path of ``.post``. Like so
 
 .. code-block:: ruby
@@ -457,7 +457,7 @@ For example, to get ``post.comments.author.written_things.post.comments`` we cou
 
     post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)").match("(post)<-[:post]-(comment:Comment)").pluck(:comment)
 
-But this isn't ideal. It would be nice to make use of Neo4jrb's association chains to complete our query. We `know` that the return of ``post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)")``
+But this isn't ideal. It would be nice to make use of ``ActiveNode``'s association chains to complete our query. We `know` that the return of ``post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)")``
 is a ``Post`` object, after all. To allow for association chains in this circumstance, ``.proxy_as()`` comes to the rescue. If we `know` that a ``Query`` will return a specific model class,
 ``proxy_as`` allows us to tell Neo4jrb this, and begin association chaining from that point. For example
 
