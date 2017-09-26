@@ -441,8 +441,7 @@ You can't perform standard association chains on a polymorphic association. For 
 ``post.comments.author.written_things.post.comments`` (an exception will be raised). In this example, the return of ``.written_things`` can be either a ``Post`` object or a ``Comment`` object, any method you called
 on an association made up of them both could have a different meaning for the ``Post`` object vs the ``Comment`` object. So how can you execute ``post.comments.author.written_things.post.comments``?
 This is where ``.query_as`` and ``.proxy_as`` come to the rescue! While ``ActiveNode`` doesn't know how to handle the ``.post`` call on ``.written_things``,
-you `know` that the path from the return of ``.written_things`` to ``Post`` nodes is ``(written_thing)-[:post]->(post:Post)``. To help Neo4jrb out, convert the `AssociationProxy`` object
-returned by ``post.comments.author.written_things`` into a ``Query`` object with ``.query_as()``, then manually specify the path of ``.post``. Like so
+you `know` that the path from the return of ``.written_things`` to ``Post`` nodes is ``(written_thing)-[:post]->(post:Post)``. To help ``ActiveNode`` out, convert the `AssociationProxy`` object returned by ``post.comments.author.written_things`` into a ``Query`` object with ``.query_as()``, then manually specify the path of ``.post``. Like so:
 
 .. code-block:: ruby
 
