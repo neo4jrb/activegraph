@@ -3,15 +3,17 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.0.1] 2017-09-26
+
+### Fixed
+
+- Properties defined on a superclass after the subclass has been defined will now take effect on the subclass (intended to be released in 9.0.0) (thanks @thefliik / see #1428)
+
 ## [9.0.0] 2017-09-26
 
 ### Changed
 
 - `enum` values are now case-insensitive when being set by default (with a `_case_sensitive` option) (thanks @thefliik / see #1419)
-
-### Fixed
-
-- Properties defined on a superclass after the subclass has been defined will now take effect on the subclass (thanks @thefliik / see #1428)
 
 ## [8.3.0] 2017-09-25
 
