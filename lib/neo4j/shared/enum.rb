@@ -93,6 +93,11 @@ module Neo4j::Shared
       def define_property(property_name, enum_keys, options)
         property property_name, build_property_options(enum_keys, options)
         serialize property_name, Neo4j::Shared::TypeConverters::EnumConverter.new(enum_keys, build_enum_options(enum_keys, options))
+
+        # If class has already been inherited, make sure subclasses fully inherit enum
+        subclasses.each do |klass|
+          klass.serialized_properties = self.serialized_properties
+        end
       end
 
       def build_property_options(_enum_keys, options = {})

@@ -11,6 +11,7 @@ require 'neo4j/active_base/session_registry'
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute.rb'
+require 'active_support/core_ext/class/subclasses.rb'
 require 'json'
 
 require 'neo4j/errors'
