@@ -12,7 +12,7 @@ Goal: Find all contacts for a user two hops away, but don't include contacts whi
       uuid: user.contacts.pluck(:uuid)
     )
 
-This works, though it makes two queries.  The first to get the ``uuid``s for the ``where_not`` and the second for the full query.  For the first query, ``user.contacts.pluck(:id)`` could be also used instead, though associations already have a pre-defined method to get IDs, so this could instead be ``user.contact_ids``.
+This works, though it makes two queries.  The first to get the ``uuid`` s for the ``where_not`` and the second for the full query.  For the first query, ``user.contacts.pluck(:id)`` could be also used instead, though associations already have a pre-defined method to get IDs, so this could instead be ``user.contact_ids``.
 
 This doesn't take care of the problem of having two queries, though.  If we keep the ``rel_length: 2``, however, we won't be able to reference the nodes which are one hop away in order.  This seems like it would be a straightforward solution:
 
