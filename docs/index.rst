@@ -25,6 +25,7 @@ Contents:
    UniqueIDs
 
    Querying
+   QueryExamples
 
    QueryClauseMethods
 
