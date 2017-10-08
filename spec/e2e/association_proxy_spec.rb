@@ -106,6 +106,12 @@ describe 'Association Proxy' do
     end
   end
 
+  it 'Should allow for loading of associations with one query when method chain ends with branch' do
+    expect_queries(1) do
+      billy.as(:b).with_associations(:lessons).branch { lessons }.first.lessons.to_a
+    end
+  end
+
   it 'Should allow for loading of `has_one` association' do
     expect_queries(1) do
       grouped_students = science.students.with_associations(:favorite_lesson).group_by(&:name)
