@@ -73,6 +73,10 @@ module Neo4j
           end
         end
 
+        def propagate_context(query_proxy)
+          query_proxy.instance_variable_set('@with_associations_tree', @with_associations_tree)
+        end
+
         def with_associations_tree
           @with_associations_tree ||= AssociationTree.new(model)
         end
