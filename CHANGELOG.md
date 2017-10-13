@@ -3,11 +3,15 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [9.0.2] 2017-10-08
+## [9.0.3] 2017-10-12
 
 ### Fixed
 
 - Ensure branch method propagates with_association_tree context (brought forward from 8.3.1.  Thanks @klobuczek / see #1437)
+
+## [9.0.2] 2017-10-08
+
+- Accidental release
 
 ## [9.0.1] 2017-09-26
 
@@ -21,11 +25,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - By default, `enum` values are now case-insensitive (but there are local and global `_case_sensitive` options [see the docs](http://neo4jrb.readthedocs.io/en/9.0.x/ActiveNode.html#enums)) (thanks @thefliik / see #1419)
 
-## [8.3.1] 2017-10-08
+## [8.3.2] 2017-10-12
 
 ## Fixes
 
 - Ensure branch method propagates with_association_tree context (thanks @klobuczek / see #1437)
+
+## [8.3.1] 2017-10-08
+
+- Accidental release
 
 ## [8.3.0] 2017-09-25
 
