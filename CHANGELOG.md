@@ -3,11 +3,15 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [8.3.1] 2017-10-08
+## [8.3.2] 2017-10-12
 
 ## Fixes
 
 - Ensure branch method propagates with_association_tree context (thanks @klobuczek / see #1437)
+
+## [8.3.1] 2017-10-08
+
+- Accidental release
 
 ## [8.3.0] 2017-09-25
 
