@@ -378,7 +378,7 @@ describe 'query_proxy_methods' do
         frank.lessons.teachers.distinct.branch { lessons }.to_a
       end
 
-      it 'with_associoations perserves distinct in a select query' do
+      it 'with_associations perserves distinct in a select query' do
         frank.lessons.teachers.distinct.with_associations(:lessons).to_a
       end
     end
