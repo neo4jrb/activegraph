@@ -74,6 +74,7 @@ module Neo4j
         end
 
         def propagate_context(query_proxy)
+          super
           query_proxy.instance_variable_set('@with_associations_tree', @with_associations_tree)
         end
 
@@ -142,7 +143,7 @@ module Neo4j
 
         def query_from_association_tree
           previous_with_variables = []
-          with_associations_tree.paths.inject(query_as(identity).with(identity)) do |query, path|
+          with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
             with_association_query_part(query, path, previous_with_variables).tap do
               previous_with_variables << path_name(path)
             end
