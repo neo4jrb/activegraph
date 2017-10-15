@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.3.3] 2017-10-15
+
+## Fixes
+
+- Change YAML.safe_load call in `neo4j:schema:load` rake task to allow Symbols (thanks @evanob / see #1439)
+
 ## [8.3.2] 2017-10-12
 
 ## Fixes
