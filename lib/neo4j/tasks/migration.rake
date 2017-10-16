@@ -95,7 +95,7 @@ COMMENT
 
         args.with_defaults(remove_missing: false)
 
-        schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH))
+        schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
 
         Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
 
