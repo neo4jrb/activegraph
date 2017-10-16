@@ -47,6 +47,10 @@ module Neo4j
           end
         end
 
+        def propagate_context(query_proxy)
+          query_proxy.instance_variable_set(:@distinct, @distinct)
+        end
+
         # @return [Integer] number of nodes of this class
         def count(distinct = nil, target = nil)
           return 0 if unpersisted_start_object?

@@ -79,3 +79,8 @@ Style/Lambda:
 # Reason: I'm proud to be part of the double negative Ruby tradition
 Style/DoubleNegation:
   Enabled: false
+
+# Reason: It's OK if the spec files get long as long as they're well factored
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'

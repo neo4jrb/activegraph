@@ -360,21 +360,36 @@ describe 'query_proxy_methods' do
     end
 
     context 'when building the query' do
+      before do
+        @subscription = Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |query|
+          expect(query).to include('DISTINCT')
+        end
+      end
+
       after do
         ActiveSupport::Notifications.unsubscribe(@subscription) if @subscription
       end
 
       it 'adds distinct to a select query' do
-        @subscription = Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |query|
-          expect(query).to include('DISTINCT')
-        end
         frank.lessons.teachers.distinct.to_a
+      end
+
+      it 'branch perserves distinct in a select query' do
+        frank.lessons.teachers.distinct.branch { lessons }.to_a
+      end
+
+      it 'with_associations perserves distinct in a select query' do
+        frank.lessons.teachers.distinct.with_associations(:lessons).to_a
       end
     end
 
     it 'counts values without duplicates' do
       expect(frank.lessons.teachers.count).to eq(2)
       expect(frank.lessons.teachers.distinct.count).to eq(1)
+    end
+
+    it 'counts values without duplicates in a branch query' do
+      expect(frank.lessons.teachers.distinct.branch { lessons }.count).to eq(1)
     end
 
     it 'selects values without duplicates' do
