@@ -40,6 +40,13 @@ In practice, you can put it all together like this:
 
 You will now be able to set the ``title`` property through mass-assignment (``Post.new(title: 'My Title')``) or by calling the `title=` method. You can also give a hash of links (``{ homepage: 'http://neo4jrb.io', twitter: 'https://twitter.com/neo4jrb' }``) to the ``links`` property and it will be saved as JSON to the db.
 
+Validations
+-----------
+
+The ``ActiveNode`` and ``ActiveRel`` modules in the ``neo4j`` gem are based off of ``ActiveModel``.  Because of this you can use any validations defined by ``ActiveModel`` as well as create your own in the same style.  For the best documentation on validations, see the <Active Record Validations http://guides.rubyonrails.org/active_record_validations.html>_ page.  The ``neo4j`` gem isn't based off of ``ActiveRecord`` aside from being inspired by it, but they both use ``ActiveModel`` under the covers.
+
+One validation to note in particular is ``validates_uniqueness_of``.  Whereas most validations work only on the model in memory, this validation requires connecting to the database.  The ``neo4j`` gem implements it's own version of ``validates_uniqueness_of`` for Neo4j.
+
 Undeclared Properties
 ---------------------
 
