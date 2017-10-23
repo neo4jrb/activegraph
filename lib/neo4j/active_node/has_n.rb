@@ -248,8 +248,8 @@ module Neo4j::ActiveNode
 
     # rubocop:disable Metrics/ModuleLength
     module ClassMethods
-      # rubocop:enable Style/PredicateName
-      # rubocop:disable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
+      # rubocop:disable Naming/PredicateName
 
       # :nocov:
       def has_association?(name)
@@ -259,7 +259,7 @@ module Neo4j::ActiveNode
       end
       # :nocov:
 
-      # rubocop:enable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
 
       def association?(name)
         !!associations[name.to_sym]
@@ -360,7 +360,7 @@ module Neo4j::ActiveNode
       #       **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
       #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
       #
-      def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
+      def has_many(direction, name, options = {}) # rubocop:disable Naming/PredicateName
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
@@ -377,7 +377,7 @@ module Neo4j::ActiveNode
       # See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
       # not specified here
       #
-      def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+      def has_one(direction, name, options = {}) # rubocop:disable Naming/PredicateName
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 

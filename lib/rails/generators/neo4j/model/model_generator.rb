@@ -29,7 +29,7 @@ class Neo4j::Generators::ModelGenerator < Rails::Generators::NamedBase #:nodoc:
     options[:timestamps]
   end
 
-  # rubocop:disable Style/PredicateName
+  # rubocop:disable Naming/PredicateName
   def has_many?
     options[:has_many]
   end
@@ -56,7 +56,7 @@ class Neo4j::Generators::ModelGenerator < Rails::Generators::NamedBase #:nodoc:
     end
     txt
   end
-  # rubocop:enable Style/PredicateName
+  # rubocop:enable Naming/PredicateName
 
   def indices?
     options[:indices]
