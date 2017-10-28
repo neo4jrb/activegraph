@@ -16,9 +16,9 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'neo4j'
   s.summary = 'A graph database for Ruby'
   s.license = 'MIT'
-  s.description = <<-EOF
+  s.description = <<-DESCRIPTION
 A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
-  EOF
+DESCRIPTION
 
   s.require_path = 'lib'
   s.files = Dir.glob('{bin,lib,config}/**/*') + %w(README.md CHANGELOG.md CONTRIBUTORS Gemfile neo4j.gemspec)
