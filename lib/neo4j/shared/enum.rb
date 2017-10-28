@@ -67,7 +67,7 @@ module Neo4j::Shared
         end
 
         unless case_sensitive
-          enum_keys.keys.each do |key|
+          enum_keys.each_key do |key|
             fail ArgumentError, 'Enum keys must be lowercase unless _case_sensitive = true' unless key.downcase == key
           end
         end
@@ -130,7 +130,7 @@ module Neo4j::Shared
       end
 
       def define_enum_methods_?(property_name, enum_keys, options)
-        enum_keys.keys.each do |enum_value|
+        enum_keys.each_key do |enum_value|
           method_name = build_method_name(enum_value, property_name, options)
           check_enum_method_conflicts! property_name, :"#{method_name}?"
           define_method("#{method_name}?") do
@@ -140,7 +140,7 @@ module Neo4j::Shared
       end
 
       def define_enum_methods_!(property_name, enum_keys, options)
-        enum_keys.keys.each do |enum_value|
+        enum_keys.each_key do |enum_value|
           method_name = build_method_name(enum_value, property_name, options)
           check_enum_method_conflicts! property_name, :"#{method_name}!"
           define_method("#{method_name}!") do

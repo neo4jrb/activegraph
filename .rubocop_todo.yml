@@ -166,16 +166,6 @@ Metrics/MethodLength:
 Metrics/ModuleLength:
   Max: 133
 
-# Offense count: 6
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect.
-Performance/HashEachMethods:
-  Exclude:
-    - 'lib/neo4j/active_node/enum.rb'
-    - 'lib/neo4j/active_node/has_n.rb'
-    - 'lib/neo4j/active_node/query/query_proxy_eager_loading.rb'
-    - 'lib/neo4j/shared/enum.rb'
-
 # Offense count: 1
 Security/MarshalLoad:
   Exclude:

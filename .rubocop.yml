@@ -32,6 +32,9 @@ Layout/FileName:
 Style/MultilineBlockChain:
   Enabled: false
 
+Performance/HashEachMethods:
+  AutoCorrect: true
+
 #---------------------------
 # Don't intend to fix these:
 #---------------------------

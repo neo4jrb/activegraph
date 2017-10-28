@@ -17,7 +17,7 @@ module Neo4j::ActiveNode
       end
 
       def define_enum_scopes(property_name, enum_keys)
-        enum_keys.keys.each do |name|
+        enum_keys.each_key do |name|
           scope name, -> { where(property_name => name) }
         end
       end
