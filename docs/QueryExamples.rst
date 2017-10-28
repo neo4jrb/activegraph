@@ -36,7 +36,7 @@ And there we have a query which is much more verbose than the original code, but
 Example 2: Simple Recommendation Engine
 ---------------------------------------
 
-If you are interested in more complex collaborative filter methods check out this article https://neo4j.com/blog/collaborative-filtering-creating-teams/
+If you are interested in more complex collaborative filter methods check out this `article <https://neo4j.com/blog/collaborative-filtering-creating-teams/>`_
 
 Let's assume you have the following schema:
 
@@ -69,7 +69,7 @@ Given our schema, we could write the following Cypher to accomplish this:
       size(sources) as sources_count
     order by score desc
 
-No let's see how we could write this using ActiveNode syntax in a simple Ruby service class.
+Now let's see how we could write this using ActiveNode syntax in a simple Ruby service class.
 
 .. code-block:: ruby
 
@@ -102,6 +102,8 @@ No let's see how we could write this using ActiveNode syntax in a simple Ruby se
       end
 
       private
+
+      attr_reader :id
 
       def user
         User.merge id: id
