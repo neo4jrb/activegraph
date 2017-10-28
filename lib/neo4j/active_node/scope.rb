@@ -47,13 +47,13 @@ module Neo4j::ActiveNode
         end
       end
 
-      # rubocop:disable Style/PredicateName
+      # rubocop:disable Naming/PredicateName
       def has_scope?(name)
         ActiveSupport::Deprecation.warn 'has_scope? is deprecated and may be removed from future releases, use scope? instead.', caller
 
         scope?(name)
       end
-      # rubocop:enable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
 
       # @return [Boolean] true if model has access to scope with this name
       def scope?(name)

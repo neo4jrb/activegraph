@@ -166,13 +166,13 @@ module Neo4j
           @mapped_label_name = name.to_sym
         end
 
-        # rubocop:disable Style/AccessorMethodName
+        # rubocop:disable Naming/AccessorMethodName
         def set_mapped_label_name(name)
           ActiveSupport::Deprecation.warn 'set_mapped_label_name is deprecated, use self.mapped_label_name= instead.', caller
 
           self.mapped_label_name = name
         end
-        # rubocop:enable Style/AccessorMethodName
+        # rubocop:enable Naming/AccessorMethodName
 
         private
 
