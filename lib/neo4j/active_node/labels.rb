@@ -115,7 +115,7 @@ module Neo4j
 
         # Like find_by, except that if no record is found, raises a RecordNotFound error.
         def find_by!(values)
-          find_by(values) || fail(RecordNotFound, "#{self.query_as(:n).where(n: values).limit(1).to_cypher} returned no results")
+          find_by(values) || fail(RecordNotFound.new("#{self.query_as(:n).where(n: values).limit(1).to_cypher} returned no results", name))
         end
 
         # Deletes all nodes and connected relationships from Cypher.

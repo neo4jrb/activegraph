@@ -129,7 +129,8 @@ describe 'Labels' do
       end
 
       it 'raises an error if no results match' do
-        expect { IndexedTestClass.find_by!(name: 'foo') }.to raise_exception Neo4j::ActiveNode::Labels::RecordNotFound
+        expect { IndexedTestClass.find_by!(name: 'foo') }
+          .to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound) { |e| expect(e.model).to eq 'IndexedTestClass' }
       end
     end
   end
