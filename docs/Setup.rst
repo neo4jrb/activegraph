@@ -186,7 +186,6 @@ Include either ``neo4j`` or ``neo4j-core`` in your ``Gemfile`` (``neo4j`` includ
 
   gem 'neo4j', '~> 9.0.0' # For example, see https://rubygems.org/gems/neo4j/versions for the latest versions
   # OR
-  gem 'neo4j-core', '~> 7.0.0'
   gem 'neo4j-core', '~> 8.0.0' # For example, see https://rubygems.org/gems/neo4j-core/versions for the latest versions
 
 If using only ``neo4j-core`` you can optionally include the rake tasks (:doc:`documentation </RakeTasks>`) manually in your ``Rakefile``:
