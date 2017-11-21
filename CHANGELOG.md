@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.0.6] 2017-11-21
+
+## Fixes
+
+- Ensure `RecordNotFound` consistent in providing the model (thanks @leviwilson / see #1442)
+
 ## [9.0.5] 2017-10-16
 
 ## Fixes
