@@ -36,7 +36,7 @@ describe 'association dependent delete/destroy' do
       after_destroy lambda { CALL_COUNT[:called] += 1 }
       property :city
       has_many :in, :routes, model_class: 'Route', origin: :stops
-      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :destroy
+      has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :delete_orphans
       has_one :out, :poorly_modeled_thing, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODEL', dependent: :delete
       has_many :out, :poorly_modeled_things, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODELS', dependent: :delete
     end
@@ -58,7 +58,7 @@ describe 'association dependent delete/destroy' do
     stub_active_node_class('Comment') do
       property :note
       # In the real world, there would be no reason to setup a dependency here since you'd never want to delete
-      # the topic of a comment just because the topic is destroyed.
+      # the topic of a comment just because the comment is destroyed.
       # For the purpose of these tests, we're setting this to demonstrate that we are protected against loops.
       has_one :in, :topic, model_class: false, type: 'HAS_COMMENT', dependent: :destroy
     end
@@ -95,7 +95,7 @@ describe 'association dependent delete/destroy' do
       end
     end
 
-    context 'a node with relationshpis' do
+    context 'a node with relationships' do
       let(:band) { Band.create }
       before { node.bands << band }
 
@@ -163,6 +163,33 @@ describe 'association dependent delete/destroy' do
           expect(Comment.count).to eq 1
           expect { @route2.destroy }.not_to raise_error
           expect(Comment.count).to eq 0
+        end
+      end
+
+      context 'we destroy stops, some of which have shared comments' do
+        before do
+          @philly_comment = Comment.create(note: "I'm looking forward to some of that brotherly love.")
+          @man_philly_comment = Comment.create(note: 'Manhattan is better than Philly.')
+
+          @philadelphia.comments << @philly_comment
+          @philadelphia.comments << @man_philly_comment
+          @manhattan.comments << @man_philly_comment
+        end
+
+        it 'only deletes orphan comments, not those associated with another city' do
+          expect { @boston.destroy }.not_to raise_error
+
+          expect(@philly_comment).to be_persisted
+          expect(@man_philly_comment).to be_persisted
+
+          @philadelphia.destroy
+
+          expect(@philly_comment).not_to exist
+          expect(@man_philly_comment).to exist
+
+          @manhattan.destroy
+
+          expect(@man_philly_comment).not_to exist
         end
       end
     end
