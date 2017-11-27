@@ -29,7 +29,7 @@ module Neo4j
 
         def dependent_delete_orphans_callback(object)
           unique_query = object.as(:self).unique_nodes(self, :self, :n, :other_rel)
-          unique_query.query.detach_delete(:n).exec if unique_query
+          unique_query.query.optional_match('(n)-[r]-()').delete(:n, :r).exec if unique_query
         end
 
         def dependent_destroy_callback(object)

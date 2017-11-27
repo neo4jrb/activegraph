@@ -1,6 +1,25 @@
 Upgrade Guide
 =============
 
+This guide outlines changes to major version of the Neo4j.rb gems.  For more detail about version changes, see the `neo4j gem CHANGELOG <https://github.com/neo4jrb/neo4j/blob/master/CHANGELOG.md>`_ and the `neo4j-core gem CHANGELOG <https://github.com/neo4jrb/neo4j-core/blob/master/CHANGELOG.md>`_.
+
+Note that starting with version 9.0 of the ``neo4j`` gem and version 8.0 of the ``neo4j-core`` gem, a new practice has been enacted to release a new major / minor change in accordance with `Semantic Versioning <http://semver.org/>`_ as soon as it is warranted.  While older versions followed semantic versioning, they would contain more changes rolled up into a single version.
+
+This upgrade guide does not cover changes before version 8.0 of the ``neo4j`` gem and version 7.0 of the ``neo4j-core`` gem.  Changes in previous versions weren't as significant and are covered in the ``CHANGELOG`` files for the respective projects.
+
+The ``neo4j`` gem from 8.x to 9.x
+---------------------------------
+
+The ``enum`` functionality for ``ActiveNode`` and ``ActiveRel`` has been changed to be case-insensitive by default.
+
+The ``neo4j-core`` gem from 8.x to 9.x
+--------------------------------------
+
+The ``neo4j-rake_tasks`` gem is no longer a dependency of the ``neo4j-core`` gem (which is, in turn, a dependency of the ``neo4j`` gem).  To use the rake tasks, you will need to specify the ``neo4j-rake_tasks`` gem yourself.
+
+The ``neo4j`` gem from 7.x to 8.x and the ``neo4j-core`` gem from 6.x to 7.x
+----------------------------------------------------------------------------
+
 Version 8.0 of the ``neo4j`` gem and version 7.0 of the ``neo4j-core`` gem introduce the most significant change to the Neo4j.rb project since version 3.0 when we introduced support for the HTTP protocol.  With this update comes a number of breaking changes which will be outlined on this page
 
 What has changed
