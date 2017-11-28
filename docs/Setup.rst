@@ -175,6 +175,7 @@ If you are just using the ``neo4j-core`` gem, the configurator can also be set v
   faraday_configurator = proc do |faraday|
     faraday.adapter :typhoeus
   end
+  require 'neo4j/core/cypher_session/adaptors/http'
   http_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://neo4j:pass@localhost:7474', faraday_configurator: faraday_configurator)
 
 Any Ruby Project
@@ -225,6 +226,7 @@ In jRuby you can access the data in server mode as above.  If you want to run th
 
 .. code-block:: ruby
 
+  require 'neo4j/core/cypher_session/adaptors/embedded'
   neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Embedded.new('/file/path/to/graph.db')
   neo4j_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
 

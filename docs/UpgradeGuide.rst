@@ -51,10 +51,13 @@ To make a new session, you must first create an adaptor object and then provide 
 
 .. code-block:: ruby
 
-  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Bolt.new('bolt://user:pass@host:port', options)
-  # or
+  require 'neo4j/core/cypher_session/adaptors/http'
   neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:port', options)
   # or
+  require 'neo4j/core/cypher_session/adaptors/bolt'
+  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Bolt.new('bolt://user:pass@host:port', options)
+  # or
+  require 'neo4j/core/cypher_session/adaptors/embedded'
   neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Embedded.new('path/to/db', options)
 
   neo4j_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
