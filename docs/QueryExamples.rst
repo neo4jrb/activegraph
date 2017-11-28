@@ -36,81 +36,43 @@ And there we have a query which is much more verbose than the original code, but
 Example 2: Simple Recommendation Engine
 ---------------------------------------
 
-If you are interested in more complex collaborative filter methods check out this `article <https://neo4j.com/blog/collaborative-filtering-creating-teams/>`_
+If you are interested in more complex collaborative filter methods check out this `article <https://neo4j.com/blog/collaborative-filtering-creating-teams/>`_.
 
 Let's assume you have the following schema:
 
 .. code-block:: cypher
 
-    (:User)-[:follow|:skip]->(:Page)
+    (:User)-[:FOLLOW|:SKIP]->(:Page)
 
 We want to recommend pages for a user to follow based on their current followed pages.
+
 Constraints:
 
 - We want to include the source of the recommendation. i.e (we recommend you follow X because you follow Y).
+
+  *Note* : To do this part, we are going to use an `APOC <https://neo4j-contrib.github.io/neo4j-apoc-procedures/index33.html>`_ function ``apoc.coll.sortMaps``.
 - We want to exclude pages the user has skipped or already follows.
-- The recommended pages must have a name field
+- The recommended pages must have a name field.
 
 Given our schema, we could write the following Cypher to accomplish this:
 
 .. code-block:: cypher
 
-    match (user:User { id: "1" })
-    match (user)-[:follow]->(followed_page:Page)<-[:follow]-(co_user:User)
-    match (co_user)-[:follow]->(rec_page:Page)
+    MATCH (user:User { id: "1" })
+    MATCH (user)-[:FOLLOW]->(followed_page:Page)<-[:FOLLOW]-(co_user:User)
+    MATCH (co_user)-[:FOLLOW]->(rec_page:Page)
     WHERE exists(rec_page.name)
-    AND NOT (user)-[:follow|:skip]->(rec_page)
-    with rec_page, count(rec_page) as score, collect(followed_page.name) as source_names
+    AND NOT (user)-[:FOLLOW|:SKIP]->(rec_page)
+    WITH rec_page, count(rec_page) AS score, collect(followed_page.name) AS source_names
     ORDER BY score DESC LIMIT {limit}
-    unwind source_names as source_name
-    with rec_page, score, source_name, count(source_name) as contrib
-    with rec_page, score, apoc.coll.sortMaps(collect({name:source_name, contrib:contrib*-1}), 'contrib') as sources
-    return rec_page.name as name, score, extract(source IN sources[0..3] | source.name) as top_sources,
-      size(sources) as sources_count
-    order by score desc
+    UNWIND source_names AS source_name
+    WITH rec_page, score, source_name, count(source_name) AS contrib
+    WITH rec_page, score, apoc.coll.sortMaps(collect({name:source_name, contrib:contrib*-1}), 'contrib') AS sources
+    RETURN rec_page.name AS name, score, extract(source IN sources[0..3] | source.name) AS top_sources,
+      size(sources) AS sources_count
+    ORDER BY score DESC
 
-Now let's see how we could write this using ActiveNode syntax in a simple Ruby service class.
-
-.. code-block:: ruby
-
-    class RecommendedPages
-      def self.call(id)
-        new(id).call
-      end
-
-      def intialize(id)
-        @id = id
-      end
-
-      def call
-        user.as(:user)
-          .followed_pages(:followed_page)
-            .where("exists(followed_page.name)")
-          .followers(:co_user)
-          .followed_pages
-          .query_as(:rec_page) # Transition into Core Query
-            .where("exists(rec_page.name)")
-            .where_not("(user)-[:follows|:skip]->(rec_page)")
-          .with("rec_page, count(rec_page) as score, collect(followed_page.name) as source_names")
-            .order_by('score DESC').limit(25)
-          .unwind(source_name: :source_names) # A little awkward, this generates UNWIND source_names AS source_name
-          .with("rec_page, score, source_name, count(source_name) as contrib")
-          .with("rec_page, score, apoc.coll.sortMaps(collect({name:source_name,contrib:contrib*-1}), 'contrib') as sources")
-          .with("rec_page.name as name, score, extract(source in sources[0..3] | source.name) as top_sources, size(sources) as sources_count")
-            .order_by('score DESC')
-          .pluck(:name, :score, :top_sources, :sources_count)
-      end
-
-      private
-
-      attr_reader :id
-
-      def user
-        User.merge id: id
-      end
-    end
-
-This assumes we have a ``User`` and a ``Page`` class like the following:
+Now let's see how we could write this using ActiveNode syntax in a ``User`` Ruby class.
 
 .. code-block:: ruby
 
@@ -119,15 +81,40 @@ This assumes we have a ``User`` and a ``Page`` class like the following:
 
       property :id, type: Integer
 
-      has_many :out, :followed_pages, type: :follow, model_class: :Page
-      has_many :out, :skipped_pages, type: :skip, model_class: :Page
+      has_many :out, :followed_pages, type: :FOLLOW, model_class: :Page
+      has_many :out, :skipped_pages, type: :SKIP, model_class: :Page
+
+      def recommended_pages
+        as(:user)
+          .followed_pages(:followed_page)
+            .where("exists(followed_page.name)")
+          .followers(:co_user)
+          .followed_pages
+          .query_as(:rec_page) # Transition into Core Query
+            .where("exists(rec_page.name)")
+            .where_not("(user)-[:FOLLOW|:SKIP]->(rec_page)")
+          .with("rec_page, count(rec_page) AS score, collect(followed_page.name) AS source_names")
+            .order_by('score DESC').limit(25)
+          .unwind(source_name: :source_names) # This generates "UNWIND source_names AS source_name"
+          .with("rec_page, score, source_name, count(source_name) AS contrib")
+          .with("rec_page, score, apoc.coll.sortMaps(collect({name:source_name,contrib:contrib*-1}), 'contrib') AS sources")
+          .with("rec_page.name AS name, score, extract(source in sources[0..3] | source.name) AS top_sources, size(sources) AS sources_count")
+            .order_by('score DESC')
+          .pluck(:name, :score, :top_sources, :sources_count)
+      end
     end
+
+*Note* : The `contrib*-1` value is a way of getting the desired order out of the `sortMaps` APOC function without needing to reverse the resulting list.
+
+This assumes we have a ``Page`` class like the following:
+
+.. code-block:: ruby
 
     class Page
       include Neo4j::ActiveNode
 
       property name, type: String
 
-      has_many :in, :followers, type: :follow, model_class: :User
-      has_many :in, :skippers, type: :skip, model_class: :User
+      has_many :in, :followers, type: :FOLLOW, model_class: :User
+      has_many :in, :skippers, type: :SKIP, model_class: :User
     end
