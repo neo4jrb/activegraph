@@ -56,3 +56,8 @@ If you are using RSpec you can perform tests in a transaction as you would using
         tx.mark_failed
       end
     end
+
+Using Rack::Test
+~~~~~~~~~~~~~~~~
+
+If you're using the `Rack::Test <https://github.com/rack-test/rack-test>` gem to test your Neo4j-enabled web application from the outside, be aware that the `Rack::Test::Methods` mixin won't work with this driver.  Instead, use the `Rack::Test::Session` approach as described in the `Sinatra documentation <http://sinatrarb.com/testing.html>`.
