@@ -39,10 +39,10 @@ matrix:
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.8
 
     - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.5
+      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.7
 
     - rvm: 2.4.2
-      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.5
+      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.7
 
     - rvm: 2.4.2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.3.11
