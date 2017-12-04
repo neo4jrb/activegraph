@@ -819,6 +819,20 @@ describe 'Query API' do
         end
       end
 
+      describe '#rel_where_not' do
+        context 'with a rel_class present' do
+          let(:not_math_lesson) { Student.lessons.rel_where_not(grade: '65').to_a }
+          let(:not_science_lesson) { Student.lessons.rel_where_not(grade: '99'.to_f).to_a }
+
+          it 'excludes the nodes with relationships that match the condition' do
+            expect(not_math_lesson.count).to eq 1
+            expect(not_math_lesson.first.subject).to eq 'Science'
+            expect(not_science_lesson.count).to eq 1
+            expect(not_science_lesson.first.subject).to eq 'Math'
+          end
+        end
+      end
+
       describe '#rel_order' do
         it 'allows ordering by relationships with rel_order' do
           expect(Student.lessons(:l, :rel).rel_order(:grade).pluck('rel.grade')).to eq([65, 99])
