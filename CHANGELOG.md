@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.0] 2017-11-24
+
+## Added
+
+- Add `rel_where_not` to allow negative filtering of relationships (thanks @pmaite88 / see #1446)
+
 ## [9.0.7] 2017-11-24
 
 ## Fixes
