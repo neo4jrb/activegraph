@@ -84,6 +84,12 @@ module Neo4j
               end
             end
 
+            def for_rel_where_not_clause(*args)
+              for_rel_where_clause(*args).each do |link|
+                link.instance_variable_set('@clause', :where_not)
+              end
+            end
+
             def for_rel_order_clause(arg, _)
               [new(:order, ->(_, v) { arg.is_a?(String) ? arg : {v => arg} })]
             end
@@ -95,7 +101,7 @@ module Neo4j
             def for_args(model, clause, args, association = nil)
               if [:where, :where_not].include?(clause) && args[0].is_a?(String) # Better way?
                 [for_arg(model, clause, args[0], *args[1..-1])]
-              elsif clause == :rel_where
+              elsif [:rel_where, :rel_where_not].include?(clause)
                 args.map { |arg| for_arg(model, clause, arg, association) }
               else
                 args.map { |arg| for_arg(model, clause, arg) }
