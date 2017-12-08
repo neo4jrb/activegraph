@@ -16,13 +16,6 @@ Two options are also available to both node and relationship models. They are:
 - ``type``, to specify the expected class of the stored value in Ruby
 - ``default``, a default value to set when the property is ``nil``
 
-Node models have two more options:
-
-- ``index: :exact`` to declare an exact index in the database
-- ``constraint: :unique`` to declare a unique constraint
-
-Note that a constraint is a type of index, so there is neither need nor ability to use both.
-
 Finally, you can serialize properties as JSON with the `serialize` class method.
 
 In practice, you can put it all together like this:
@@ -32,7 +25,7 @@ In practice, you can put it all together like this:
   class Post
     include Neo4j::ActiveNode
 
-    property :title, type: String, default: 'This ia new post', index: :exact
+    property :title, type: String, default: 'This ia new post'
     property :links
 
     serialize :links
