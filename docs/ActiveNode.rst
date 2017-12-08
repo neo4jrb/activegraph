@@ -22,7 +22,7 @@ Example:
 
     class Post
       include Neo4j::ActiveNode
-      property :title, index: :exact
+      property :title
       property :text, default: 'bla bla bla'
       property :score, type: Integer, default: 0
 
@@ -35,8 +35,6 @@ Example:
 
       has_n :friends
     end
-
-Properties can be indexed using the index argument on the property method, see example above.
 
 See the Properties section for additional information.
 
