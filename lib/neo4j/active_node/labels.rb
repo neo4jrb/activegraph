@@ -102,7 +102,7 @@ module Neo4j
           result = find_by_id_or_ids(map_id, id)
 
           fail RecordNotFound.new(
-            "Couldn't find #{name} with '#{id_property_name}'=#{id}",
+            "Couldn't find #{name} with '#{id_property_name}'=#{id.inspect}",
             name, id_property_name, id) if result.blank?
           result.tap { |r| find_callbacks!(r) }
         end
