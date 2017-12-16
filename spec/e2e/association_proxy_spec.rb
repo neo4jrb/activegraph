@@ -217,6 +217,19 @@ describe 'Association Proxy' do
     end
   end
 
+  describe 'ordering' do
+    it 'supports before with_association' do
+      expect(Lesson.order(:subject).with_associations(:students).map(&:subject)).to eq(%w(math science))
+      expect(Lesson.order(subject: :desc).with_associations(:students).map(&:subject)).to eq(%w(science math))
+
+    end
+
+    it 'supports after with_association' do
+      expect(Lesson.all.with_associations(:students).order(:subject).map(&:subject)).to eq(%w(math science))
+      expect(Lesson.all.with_associations(:students).order(subject: :desc).map(&:subject)).to eq(%w(science math))
+    end
+  end
+
   describe 'issue reported by @andrewhavens in #881' do
     it 'does not break' do
       l1 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!] }
