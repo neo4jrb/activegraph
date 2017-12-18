@@ -221,7 +221,6 @@ describe 'Association Proxy' do
     it 'supports before with_association' do
       expect(Lesson.order(:subject).with_associations(:students).map(&:subject)).to eq(%w(math science))
       expect(Lesson.order(subject: :desc).with_associations(:students).map(&:subject)).to eq(%w(science math))
-
     end
 
     it 'supports after with_association' do
