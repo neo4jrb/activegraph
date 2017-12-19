@@ -46,9 +46,7 @@ module Neo4j
         end
 
         def pluck_vars(node, rel)
-          return super if with_associations_tree.size.zero?
-
-          perform_query
+          with_associations_tree.empty? ? super : perform_query
         end
 
         def perform_query
@@ -143,11 +141,13 @@ module Neo4j
 
         def query_from_association_tree
           previous_with_variables = []
-          with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
+          no_order_query = with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
             with_association_query_part(query, path, previous_with_variables).tap do
               previous_with_variables << path_name(path)
             end
-          end.pluck(identity, "[#{with_associations_return_clause}]")
+          end
+          query_from_chain(@order_chain, no_order_query, identity)
+            .pluck(identity, "[#{with_associations_return_clause}]")
         end
 
         def with_association_query_part(base_query, path, previous_with_variables)
@@ -175,6 +175,12 @@ module Neo4j
 
         def relationship_part(association, path_name)
           "#{association.arrow_cypher(escape("#{path_name}_rel"))}(#{escape(path_name)})"
+        end
+
+        def chain
+          @order_chain, other_chain =
+            with_associations_tree.empty? ? [[], @chain] : @chain.partition { |link| link.clause == :order }
+          other_chain
         end
       end
     end

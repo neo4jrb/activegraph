@@ -95,13 +95,16 @@ module Neo4j
         #
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var, with_labels = true)
-          result_query = @chain.inject(base_query(var, with_labels).params(@params)) do |query, link|
+          query_from_chain(chain, base_query(var, with_labels).params(@params), var)
+            .tap { |query| query.proxy_chain_level = _chain_level }
+        end
+
+        def query_from_chain(chain, base_query, var)
+          chain.inject(base_query) do |query, link|
             args = link.args(var, rel_var)
 
             args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
           end
-
-          result_query.tap { |query| query.proxy_chain_level = _chain_level }
         end
 
         def base_query(var, with_labels = true)
