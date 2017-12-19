@@ -19,6 +19,7 @@ Contents:
    RakeTasks
 
    ActiveNode
+   ActiveLabel
    ActiveRel
 
    Properties
